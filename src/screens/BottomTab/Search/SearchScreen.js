@@ -7,11 +7,11 @@ ScrollView,
 Button,
 Pressable
 } from 'react-native';
-const MainScreen = ({navigation}) => {
+const SearchScreen = ({navigation}) => {
   return (
 <SafeAreaView>
   <ScrollView>
-    <Pressable><Text>go</Text></Pressable>
+    <Pressable><Text>SearchScreen</Text></Pressable>
   </ScrollView>
 
 </SafeAreaView>
@@ -20,4 +20,4 @@ const MainScreen = ({navigation}) => {
   );
 };
 
-export default MainScreen;
+export default SearchScreen;
