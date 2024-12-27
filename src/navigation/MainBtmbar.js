@@ -22,7 +22,25 @@ const MainBtmbar = () => {
           alignContent: 'center',
           justifyContent: 'center',
         },
+        tabBarIcon: ({color, size}) => {
+          let iconName;
 
+          if (route.name === 'MainScreen') {
+            iconName = 'home-outline';
+          } else if (route.name === 'MapPage') {
+            iconName = 'map-outline';
+          } else if (route.name === 'SearchPage') {
+            iconName = 'search-outline';
+          } else if (route.name === 'LikePage') {
+            iconName = 'heart-outline';
+          } else if (route.name === 'MyPage') {
+            iconName = 'person-outline';
+          } else if (route.name === 'LoginStack') {
+            iconName = 'person-outline';
+          }
+
+          return <Ionicons name={iconName} size={25} color={'black'} />;
+        },
         
         
       })}>

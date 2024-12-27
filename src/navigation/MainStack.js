@@ -13,11 +13,7 @@ export default function MainStack() {
           component={MainBtmbar}
           options={{headerShown: false}}
         />
-        {/* <Stack.Screen
-          name="Ub"
-          component={Ub}
-          options={{headerShown: false}}
-        /> */}
+
       </Stack.Navigator>
     );
   }
