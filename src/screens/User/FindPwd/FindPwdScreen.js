@@ -7,11 +7,11 @@ import {
     Button,
     Pressable
 } from 'react-native';
-const UserScreen = ({ navigation }) => {
+const FindPwdScreen = ({ navigation }) => {
     return (
         <SafeAreaView>
             <ScrollView>
-                <Pressable><Text>UserScreen</Text></Pressable>
+                <Pressable><Text>FindPwdScreen</Text></Pressable>
             </ScrollView>
 
         </SafeAreaView>
@@ -20,4 +20,4 @@ const UserScreen = ({ navigation }) => {
     );
 };
 
-export default UserScreen;
+export default FindPwdScreen;
