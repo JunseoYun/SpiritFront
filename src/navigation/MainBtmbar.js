@@ -6,7 +6,8 @@ import MainScreen from '../screens/BottomTab/MainScreen';
 import SearchScreen from '../screens/BottomTab/Search/SearchScreen';
 import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
-import UserScreen from '../screens/BottomTab/User/UserScreen';
+import MyScreen from '../screens/BottomTab/My/MyScreen';
+import LoginStack from './LoginStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -34,8 +35,10 @@ const MainBtmbar = () => {
             iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'LikeScreen') {
             iconName = focused ? 'heart' : 'heart-outline';
-          } else if (route.name === 'UserScreen') {
+          } else if (route.name === 'MyScreen') {
             iconName = focused ? 'person' : 'person-outline';
+          } else if (route.name === 'LoginStack') {
+            iconName = 'person-outline';
           }
 
           return <Ionicons name={iconName} size={25} color={color} />;
@@ -68,9 +71,14 @@ const MainBtmbar = () => {
         component={LikeScreen}
         options={{ tabBarLabel: '찜', headerShown: false }}
       />
+      {/* <Tab.Screen
+        name="MyScreen"
+        component={MyScreen}
+        options={{ tabBarLabel: '마이', headerShown: false }}
+      /> */}
       <Tab.Screen
-        name="UserScreen"
-        component={UserScreen}
+        name="LoginStack"
+        component={LoginStack}
         options={{ tabBarLabel: '마이', headerShown: false }}
       />
     </Tab.Navigator>

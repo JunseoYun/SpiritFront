@@ -1,7 +1,6 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import MainBtmbar from './MainBtmbar';
-import Ub from '../screens/Ub';
 
 const Stack = createStackNavigator();
 
