@@ -15,7 +15,20 @@ const Stack = createStackNavigator();
 
 export default function LoginStack() {
   return (
-    <Stack.Navigator initialRouteName="LoginScreen">
+    <Stack.Navigator 
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: '#FFF', // 헤더 배경색 (필요하면 수정)
+        shadowColor: 'transparent', // iOS: 섀도우 없애기
+        elevation: 0, // Android: 헤더 하단 선 없애기
+      },
+      headerTitleStyle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#333', // 헤더 제목 색상
+      },
+    }}
+    initialRouteName="LoginScreen">
       <Stack.Screen
         name="LoginScreen"
         component={LoginScreen}
