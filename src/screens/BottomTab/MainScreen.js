@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import Feather from 'react-native-vector-icons/Feather';
+import MainStack from '../../navigation/MainStack';
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
 import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
 import InnerCategoryModal from '../../components/MainScreen/Category/InnerCategoryModal';
@@ -26,7 +28,7 @@ import OptionsSection from '../../components/MainScreen/OptionSection';
 const MainScreen = ({ navigation }) => {
 
   const [location, setLocation] = useState(null);
-  const [address, setAddress] = useState(null);
+  const [address, setAddress] = useState("경기도 용인시");
   const [stores, setStores] = useState([]);
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
@@ -48,7 +50,7 @@ const MainScreen = ({ navigation }) => {
   const [recentLoaded, setRecentLoaded] = useState(false);
   // const {recommendCategory} = useRecommendation();
 
-  
+
 
   useEffect(() => {
     // const fetchLocation = async () => {
@@ -88,7 +90,7 @@ const MainScreen = ({ navigation }) => {
     // fetchLocation();
   }, []);
 
-  const onScroll = async ({nativeEvent}) => {
+  const onScroll = async ({ nativeEvent }) => {
     // const {contentOffset, layoutMeasurement} = nativeEvent;
 
     // // LiveHotStoreList 스크롤 감지
@@ -216,65 +218,67 @@ const MainScreen = ({ navigation }) => {
     // setStoreActiveIndex(null);
   };
 
+  const setLocationHandle = () => {
+    navigation.navigate('SetLocationScreen');
+  };
 
 
   return (
-    <SafeAreaView>
- <ScrollView
-      style={styles.MainView}
-      onScroll={onScroll}
-      scrollEventThrottle={16}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-      }>
-      <View style={styles.topbar}>
-        <Ionicons name={'list'} size={30} color={'black'} />
-        <Image
-          source={require('../../assets/spiritLogo.png')}
-          style={styles.topimage}
-        />
-        <FontAwesomeIcon name="bell-o" size={30} color="black" />
+    <SafeAreaView style={styles.container}>
+
+      {/* 실시간 위치 */}
+      <View style={styles.topView}>
+        <Text style={styles.todayAddress}>오늘은 {address} </Text>
+        <Feather
+          onPress={setLocationHandle} name="crosshair" size={25} color="black" />
       </View>
-      {/*술집 추천 추천 주점 변경 해야함 카테고리 스토어로*/}
-      <TodayRecomm
-        address={address}
-        weather={weather}
-        recommStores={stores}
-        recommCategory={recommCategory}
-        recommReason={recommReason}
-      />
+      <ScrollView
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        }>
 
-      {/*카테고리*/}
-      <CategoryGrid onPress={catagoryClick} />
-      <InnerCategoryModal
-        isVisible={isModalVisible}
-        onPressInnerCategory={innercatagory}
-        onClose={onPressModalClose}
-      />
-      <StoreRegister
-        storeactiveIndex={storeactiveIndex}
-        handlestoreItemClick={handlestoreItemClick}
-        handlestoreItemOut={handlestoreItemOut}
-      />
 
-      {/* 현재 영업 중 주점 데이터 필요 */}
-      <OpenStoreList stores={stores} />
+        {/*술집 추천 추천 주점 변경 해야함 카테고리 스토어로*/}
+        <TodayRecomm
+          weather={weather}
+          recommStores={stores}
+          recommCategory={recommCategory}
+          recommReason={recommReason}
+        />
 
-      {/* 실시간 인기 주점 데이터 필요 */}
-      {/* <View onLayout={event => (liveHotRef.current = event.nativeEvent.layout)}>
+        {/*카테고리*/}
+        <CategoryGrid onPress={catagoryClick} />
+        <InnerCategoryModal
+          isVisible={isModalVisible}
+          onPressInnerCategory={innercatagory}
+          onClose={onPressModalClose}
+        />
+        <StoreRegister
+          storeactiveIndex={storeactiveIndex}
+          handlestoreItemClick={handlestoreItemClick}
+          handlestoreItemOut={handlestoreItemOut}
+        />
+
+        {/* 현재 영업 중 주점 데이터 필요 */}
+        <OpenStoreList stores={stores} />
+
+        {/* 실시간 인기 주점 데이터 필요 */}
+        {/* <View onLayout={event => (liveHotRef.current = event.nativeEvent.layout)}>
         <LivehotStoreList stores={liveHotStores || []} />
       </View> */}
 
-      <View onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
-        <RecentStoreList stores={recentStores || []} />
-      </View>
+        <View onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
+          <RecentStoreList stores={recentStores || []} />
+        </View>
 
-      <OptionsSection
-        storeactiveIndex={storeactiveIndex}
-        handlestoreItemClick={handlestoreItemClick}
-      />
-    </ScrollView>
+        <OptionsSection
+          storeactiveIndex={storeactiveIndex}
+          handlestoreItemClick={handlestoreItemClick}
+        />
+      </ScrollView>
     </SafeAreaView>
 
 
@@ -282,42 +286,32 @@ const MainScreen = ({ navigation }) => {
 };
 
 
-const screens = [
-  'Izakaya',
-  'Koreafood',
-  'Westernfood',
-  'Chinesefood',
-  'Emotional',
-  'Jokbal',
-  'Steamedfood',
-  'Grilled',
-  'Chicken',
-  'Pancake',
-  'Dried',
-  'Seafood',
-  'Room',
-  'Group',
-  'Yajang',
-  'Pocha',
-  'Hope',
-  'Winebar',
-  'Cocktail',
-  'Pupbar',
-];
-
 const styles = StyleSheet.create({
-  MainView: {
+  container: {
+
     backgroundColor: 'white',
+  },
+  topView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignSelf: 'center',
+    width: '90%',
+    marginTop: 10,
+  },
+  todayAddress: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: 'black',
   },
   topbar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     marginHorizontal: 25,
     alignItems: 'center',
     marginVertical: 5,
   },
   topimage: {
-    width: 70,
+    width: 120,
     resizeMode: 'contain',
     height: 70,
   },
