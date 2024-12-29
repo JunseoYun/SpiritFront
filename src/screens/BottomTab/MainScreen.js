@@ -23,9 +23,13 @@ import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStor
 import RecentStoreList from '../../components/MainScreen/RecentStore/RecentStoreList';
 import OptionsSection from '../../components/MainScreen/OptionSection';
 
+import { getLocation, getAddress } from '../../Storage/locationStorage';
+
 
 
 const MainScreen = ({ navigation }) => {
+
+
 
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState("경기도 용인시");
@@ -53,44 +57,60 @@ const MainScreen = ({ navigation }) => {
 
 
   useEffect(() => {
-    // const fetchLocation = async () => {
-    //   try {
-    //     const currentLocation = await getLocation(); // 캐시된 위치 가져오기
-    //     console.log('초기 위치:', currentLocation);
+    const fetchLocation = async () => {
+      try {
+        const currentLocation = await getLocation();
+        if(currentLocation) {
+          setLocation(currentLocation);
+        } 
+        const currentAddress = await getAddress();
+        if(currentAddress) {
+          setAddress(currentAddress);
+        } 
 
-    //     const currentAddress = await getAddress(); // 캐시된 주소 가져오기
-    //     console.log('초기 주소:', currentAddress);
+        // if (currentLocation) {
+        //   const weatherData = await getWeatherData(currentLocation);
+        //   setWeather(weatherData); // 날씨 정보 업데이트
+        //   const {category, reason} = recommendCategory(
+        //     weatherData.condition,
+        //     weatherData.temp,
+        //     weatherData.rain_probability,
+        //   );
+        //   setRecommCategory(category);
+        //   setRecommReason(reason);
+        //   const recommStoreData = await getByCategoryStore(
+        //     category,
+        //     currentLocation,
+        //   );
+        //   setRecommStores(recommStoreData);
+        //   const storeData = await getByDistanceStore(currentLocation);
+        //   setStores(storeData);
+        // }
 
-    //     if (currentLocation) {
-    //       const weatherData = await getWeatherData(currentLocation);
-    //       setWeather(weatherData); // 날씨 정보 업데이트
-    //       const {category, reason} = recommendCategory(
-    //         weatherData.condition,
-    //         weatherData.temp,
-    //         weatherData.rain_probability,
-    //       );
-    //       setRecommCategory(category);
-    //       setRecommReason(reason);
-    //       const recommStoreData = await getByCategoryStore(
-    //         category,
-    //         currentLocation,
-    //       );
-    //       setRecommStores(recommStoreData);
-    //       const storeData = await getByDistanceStore(currentLocation);
-    //       setStores(storeData);
-    //     }
+        // setLocation(currentLocation);
+        // setAddress(currentAddress);
+      } catch (error) {
+        console.error('초기 로드 오류:', error);
+      }
+    };
 
-    //     setLocation(currentLocation);
-    //     setAddress(currentAddress);
-    //   } catch (error) {
-    //     console.error('초기 로드 오류:', error);
-    //   }
-    // };
-
-    // fetchLocation();
+    fetchLocation();
   }, []);
 
   const onScroll = async ({ nativeEvent }) => {
+    try {
+      const currentLocation = await getLocation();
+      if(currentLocation) {
+        setLocation(currentLocation);
+      } 
+      const currentAddress = await getAddress();
+      if(currentAddress) {
+        setAddress(currentAddress);
+      } 
+    } catch (error) {
+      console.error('초기 로드 오류:', error);
+    }
+
     // const {contentOffset, layoutMeasurement} = nativeEvent;
 
     // // LiveHotStoreList 스크롤 감지

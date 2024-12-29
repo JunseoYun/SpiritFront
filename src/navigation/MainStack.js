@@ -6,11 +6,24 @@ import SetLocationScreen from '../screens/SetLocation/SetLocationScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
 
+
 const Stack = createStackNavigator();
 
 export default function MainStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#FFF', // 헤더 배경색 (필요하면 수정)
+          shadowColor: 'transparent', // iOS: 섀도우 없애기
+          elevation: 0, // Android: 헤더 하단 선 없애기
+        },
+        headerTitleStyle: {
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: '#333', // 헤더 제목 색상
+        },
+      }}>
       <Stack.Screen
         name="MainBtmbar"
         component={MainBtmbar}
@@ -19,7 +32,7 @@ export default function MainStack() {
       <Stack.Screen
         name="SetLocationScreen"
         component={SetLocationScreen}
-        options={({ navigation }) => ({
+        options={({ navigation, }) => ({
           title: '위치 설정',
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
