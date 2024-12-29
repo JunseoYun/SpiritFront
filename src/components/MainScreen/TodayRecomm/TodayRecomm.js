@@ -14,7 +14,6 @@ import TodayRecommItem from './TodayRecommItem';
 const {width} = Dimensions.get('window'); // 화면 너비 가져오기
 
 const TodayRecomm = ({
-  address,
   weather,
   recommStores,
   recommCategory,
@@ -29,7 +28,6 @@ const TodayRecomm = ({
     <>
       {/* 실시간 위치 */}
       <View style={styles.todayPhrasesView}>
-        <Text style={styles.todayPhrases}>오늘은 {address} </Text>
         <Text style={styles.todayReason}>{recommReason} </Text>
       </View>
 
