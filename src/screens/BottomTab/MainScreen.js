@@ -1,12 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
-  Text,
-  View,
-  SafeAreaView,
   ScrollView,
-  Button,
-  Pressable
+  StyleSheet,
+  Text,
+  Pressable,
+  View,
+  Image,
+  FlatList,
+  Dimensions,
+  RefreshControl,
+  SafeAreaView
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
+import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
+import InnerCategoryModal from '../../components/MainScreen/Category/InnerCategoryModal';
+import StoreRegister from '../../components/MainScreen/StoreRegister';
+import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
+import RecentStoreList from '../../components/MainScreen/RecentStore/RecentStoreList';
+import OptionsSection from '../../components/MainScreen/OptionSection';
+
+
+
 const MainScreen = ({ navigation }) => {
 
   const [location, setLocation] = useState(null);
@@ -34,18 +50,278 @@ const MainScreen = ({ navigation }) => {
 
   
 
+  useEffect(() => {
+    // const fetchLocation = async () => {
+    //   try {
+    //     const currentLocation = await getLocation(); // 캐시된 위치 가져오기
+    //     console.log('초기 위치:', currentLocation);
+
+    //     const currentAddress = await getAddress(); // 캐시된 주소 가져오기
+    //     console.log('초기 주소:', currentAddress);
+
+    //     if (currentLocation) {
+    //       const weatherData = await getWeatherData(currentLocation);
+    //       setWeather(weatherData); // 날씨 정보 업데이트
+    //       const {category, reason} = recommendCategory(
+    //         weatherData.condition,
+    //         weatherData.temp,
+    //         weatherData.rain_probability,
+    //       );
+    //       setRecommCategory(category);
+    //       setRecommReason(reason);
+    //       const recommStoreData = await getByCategoryStore(
+    //         category,
+    //         currentLocation,
+    //       );
+    //       setRecommStores(recommStoreData);
+    //       const storeData = await getByDistanceStore(currentLocation);
+    //       setStores(storeData);
+    //     }
+
+    //     setLocation(currentLocation);
+    //     setAddress(currentAddress);
+    //   } catch (error) {
+    //     console.error('초기 로드 오류:', error);
+    //   }
+    // };
+
+    // fetchLocation();
+  }, []);
+
+  const onScroll = async ({nativeEvent}) => {
+    // const {contentOffset, layoutMeasurement} = nativeEvent;
+
+    // // LiveHotStoreList 스크롤 감지
+    // if (
+    //   liveHotRef.current &&
+    //   liveHotRef.current.y - layoutMeasurement.height <= contentOffset.y
+    // ) {
+    //   if (!liveHotLoaded) {
+    //     try {
+    //       const liveHotData = await getByDistanceStore(location);
+    //       setLiveHotStores(liveHotData);
+    //       setLiveHotLoaded(true);
+    //     } catch (error) {
+    //       console.error('LiveHot 데이터 로드 오류:', error);
+    //     }
+    //   }
+    // }
+
+    // // RecentStoreList 스크롤 감지
+    // if (
+    //   recentRef.current &&
+    //   recentRef.current.y - layoutMeasurement.height <= contentOffset.y
+    // ) {
+    //   if (!recentLoaded) {
+    //     try {
+    //       const recentData = await getByRecentStore();
+    //       setRecentStores(recentData);
+    //       setRecentLoaded(true);
+    //     } catch (error) {
+    //       console.error('Recent 데이터 로드 오류:', error);
+    //     }
+    //   }
+    // }
+  };
+
+  const onRefresh = async () => {
+    // setIsRefreshing(true); // 새로 고침 시작
+
+    // try {
+    //   const {location: currentLocation, address: currentAddress} =
+    //     await useLocation(); // 위치와 주소 가져오기
+    //   if (
+    //     location &&
+    //     location.latitude === currentLocation.latitude &&
+    //     location.longitude === currentLocation.longitude
+    //   ) {
+    //     return;
+    //   }
+    //   console.log('새로 가져온 위치:', currentLocation);
+    //   console.log('새로 가져온 주소:', currentAddress);
+    //   // 로드 상태 초기화
+    //   setLiveHotLoaded(false);
+    //   setRecentLoaded(false);
+    //   setLocation(currentLocation);
+    //   setAddress(currentAddress);
+
+    //   // 날씨 정보 가져오기
+    //   if (currentLocation) {
+    //     const weatherData = await getWeatherData(currentLocation);
+    //     console.log('새로 가져온 날씨 정보:', weatherData);
+    //     setWeather(weatherData); // 날씨 정보 업데이트
+    //     const {category, reason} = recommendCategory(
+    //       weatherData.condition,
+    //       weatherData.temp,
+    //       weatherData.rain_probability,
+    //     );
+    //     setRecommCategory(category);
+    //     setRecommReason(reason);
+    //     const recommStoreData = await getByCategoryStore(
+    //       category,
+    //       currentLocation,
+    //     );
+    //     setRecommStores(recommStoreData);
+    //     const storeData = await getByDistanceStore(currentLocation);
+    //     setStores(storeData);
+    //     setRecentStores(null);
+    //     setLiveHotStores(null);
+    //   }
+    // } catch (error) {
+    //   console.error('새로 고침 중 오류:', error);
+    // } finally {
+    //   setIsRefreshing(false); // 새로 고침 종료
+    // }
+  };
+
+  const onPressModalOpen = () => {
+    setIsModalVisible(true);
+  };
+
+  const onPressModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const catagoryClick = index => {
+    if (index >= 0 && index < 9) {
+      // navigation.navigate('StoreListTabbar', {
+      //   screen: screens[index],
+      // });
+    } else if (index === 9) {
+      onPressModalOpen();
+    }
+  };
+
+  const innercatagory = indexinner => {
+    // if (indexinner >= 0 && indexinner < screens.length) {
+    //   console.log(location);
+    //   navigation.navigate('StoreListTabbar', {
+    //     screen: screens[indexinner],
+    //   });
+    // }
+    // setIsModalVisible(false);
+  };
+
+  const handlestoreItemClick = index => {
+    setStoreActiveIndex(index);
+    if (index === 0) {
+      // navigation.navigate(StoreaddPage);
+    }
+    if (index === 2) {
+      // navigation.navigate('MapPage');
+    }
+  };
+
+  const handlestoreItemOut = () => {
+    // setStoreActiveIndex(null);
+  };
+
 
 
   return (
     <SafeAreaView>
-      <ScrollView>
-        <Pressable><Text>MainScreen</Text></Pressable>
-      </ScrollView>
+ <ScrollView
+      style={styles.MainView}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+      }>
+      <View style={styles.topbar}>
+        <Ionicons name={'list'} size={30} color={'black'} />
+        <Image
+          source={require('../../assets/spiritLogo.png')}
+          style={styles.topimage}
+        />
+        <FontAwesomeIcon name="bell-o" size={30} color="black" />
+      </View>
+      {/*술집 추천 추천 주점 변경 해야함 카테고리 스토어로*/}
+      <TodayRecomm
+        address={address}
+        weather={weather}
+        recommStores={stores}
+        recommCategory={recommCategory}
+        recommReason={recommReason}
+      />
 
+      {/*카테고리*/}
+      <CategoryGrid onPress={catagoryClick} />
+      <InnerCategoryModal
+        isVisible={isModalVisible}
+        onPressInnerCategory={innercatagory}
+        onClose={onPressModalClose}
+      />
+      <StoreRegister
+        storeactiveIndex={storeactiveIndex}
+        handlestoreItemClick={handlestoreItemClick}
+        handlestoreItemOut={handlestoreItemOut}
+      />
+
+      {/* 현재 영업 중 주점 데이터 필요 */}
+      <OpenStoreList stores={stores} />
+
+      {/* 실시간 인기 주점 데이터 필요 */}
+      {/* <View onLayout={event => (liveHotRef.current = event.nativeEvent.layout)}>
+        <LivehotStoreList stores={liveHotStores || []} />
+      </View> */}
+
+      <View onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
+        <RecentStoreList stores={recentStores || []} />
+      </View>
+
+      <OptionsSection
+        storeactiveIndex={storeactiveIndex}
+        handlestoreItemClick={handlestoreItemClick}
+      />
+    </ScrollView>
     </SafeAreaView>
 
 
   );
 };
+
+
+const screens = [
+  'Izakaya',
+  'Koreafood',
+  'Westernfood',
+  'Chinesefood',
+  'Emotional',
+  'Jokbal',
+  'Steamedfood',
+  'Grilled',
+  'Chicken',
+  'Pancake',
+  'Dried',
+  'Seafood',
+  'Room',
+  'Group',
+  'Yajang',
+  'Pocha',
+  'Hope',
+  'Winebar',
+  'Cocktail',
+  'Pupbar',
+];
+
+const styles = StyleSheet.create({
+  MainView: {
+    backgroundColor: 'white',
+  },
+  topbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 25,
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  topimage: {
+    width: 70,
+    resizeMode: 'contain',
+    height: 70,
+  },
+});
+
 
 export default MainScreen;
