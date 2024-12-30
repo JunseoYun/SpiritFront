@@ -23,7 +23,7 @@ import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStor
 import RecentStoreList from '../../components/MainScreen/RecentStore/RecentStoreList';
 import OptionsSection from '../../components/MainScreen/OptionSection';
 
-import { getLocation, getAddress } from '../../Storage/locationStorage';
+import { getLocation, getAddress } from '../../storage/locationStorage';
 
 
 

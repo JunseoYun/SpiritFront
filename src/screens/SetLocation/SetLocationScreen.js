@@ -10,7 +10,7 @@ import {
   TextInput,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { saveLocationAddress, getAddress, getLocation, clearLocationStorage } from '../../Storage/locationStorage';
+import { saveLocationAddress, getAddress, getLocation, clearLocationStorage } from '../../storage/locationStorage';
 
 import Feather from 'react-native-vector-icons/Feather';
 
