@@ -1,4 +1,4 @@
-import {Platform, PermissionsAndroid} from 'react-native';
+import { Platform, PermissionsAndroid } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import axios from 'axios';
 import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
@@ -10,14 +10,14 @@ export const fetchLocation = () => {
     Geolocation.getCurrentPosition(
       async position => {
         try {
-          const {latitude, longitude} = position.coords;
-          const newLocation = {latitude, longitude};
-        
+          const { latitude, longitude } = position.coords;
+          const newLocation = { latitude, longitude };
+
           // 주소 정보 가져오기
           const address = await getAddressFromCoordinates(newLocation);
 
           // 위치와 주소 정보 함께 반환
-          resolve({location: newLocation, address});
+          resolve({ location: newLocation, address });
         } catch (err) {
           console.error('위치 또는 주소 가져오기 오류:', err);
           reject(err);
@@ -28,7 +28,7 @@ export const fetchLocation = () => {
         handleLocationError(error);
         reject(error);
       },
-      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
     );
   });
 };
@@ -46,6 +46,7 @@ const handleLocationError = error => {
     error = '알 수 없는 오류가 발생했습니다.';
   }
 };
+
 export const requestLocationPermission = async () => {
   if (Platform.OS === 'android') {
     try {
@@ -88,25 +89,16 @@ export const requestLocationPermission = async () => {
 
 
 const getAddressFromCoordinates = async cachedLocation => {
-  const {latitude, longitude} = cachedLocation;
+  const { latitude, longitude } = cachedLocation;
   const KAKAO_API_KEY = '9b09512f07cf4d2555413abbedcbcc3a'; // 발급받은 REST API 키
   const url = `https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${longitude}&y=${latitude}`;
 
   try {
     const response = await axios.get(url, {
-      headers: {Authorization: `KakaoAK ${KAKAO_API_KEY}`},
+      headers: { Authorization: `KakaoAK ${KAKAO_API_KEY}` },
     });
-
     if (response.data.documents.length > 0) {
       const addressDetail = response.data.documents[0].address;
-
-      // // "기흥구"만 추출
-      // let region2 = addressDetail.region_2depth_name; // 용인시 기흥구
-      // region2 = region2.split(' ').pop(); // 마지막 단어인 "기흥구" 추출
-
-      // const region3 = addressDetail.region_3depth_name; // 구갈동
-
-      // const simplifiedAddress = `${region2} ${region3}`; // "기흥구 구갈동" 형식으로 결합
       return addressDetail.address_name;
     } else {
       return '주소를 찾을 수 없습니다.';

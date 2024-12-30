@@ -61,13 +61,13 @@ const MainScreen = ({ navigation }) => {
     const fetchLocation = async () => {
       try {
         const currentLocation = await getLocation();
-        if(currentLocation) {
+        if (currentLocation) {
           setLocation(currentLocation);
-        } 
+        }
         const currentAddress = await getAddress();
-        if(currentAddress) {
+        if (currentAddress) {
           setAddress(currentAddress);
-        } 
+        }
 
         // if (currentLocation) {
         //   const weatherData = await getWeatherData(currentLocation);
@@ -99,18 +99,7 @@ const MainScreen = ({ navigation }) => {
   }, []);
 
   const onScroll = async ({ nativeEvent }) => {
-    try {
-      const currentLocation = await getLocation();
-      if(currentLocation) {
-        setLocation(currentLocation);
-      } 
-      const currentAddress = await getAddress();
-      if(currentAddress) {
-        setAddress(currentAddress);
-      } 
-    } catch (error) {
-      console.error('초기 로드 오류:', error);
-    }
+
 
     // const {contentOffset, layoutMeasurement} = nativeEvent;
 
@@ -148,8 +137,21 @@ const MainScreen = ({ navigation }) => {
   };
 
   const onRefresh = async () => {
-    // setIsRefreshing(true); // 새로 고침 시작
-
+    setIsRefreshing(true); // 새로 고침 시작
+    try {
+      const currentLocation = await getLocation();
+      if (currentLocation) {
+        setLocation(currentLocation);
+      }
+      const currentAddress = await getAddress();
+      if (currentAddress) {
+        setAddress(currentAddress);
+      }
+    } catch (error) {
+      console.error('초기 로드 오류:', error);
+    } finally {
+      setIsRefreshing(false); // 새로 고침 종료
+    }
     // try {
     //   const {location: currentLocation, address: currentAddress} =
     //     await useLocation(); // 위치와 주소 가져오기
@@ -192,9 +194,7 @@ const MainScreen = ({ navigation }) => {
     //   }
     // } catch (error) {
     //   console.error('새로 고침 중 오류:', error);
-    // } finally {
-    //   setIsRefreshing(false); // 새로 고침 종료
-    // }
+    // } 
   };
 
   const onPressModalOpen = () => {
