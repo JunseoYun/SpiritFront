@@ -1,12 +1,22 @@
-# Resolve react_native_pods.rb with node to allow for hoisting
-require Pod::Executable.execute_command('node', ['-p',
-  'require.resolve(
-    "react-native/scripts/react_native_pods.rb",
-    {paths: [process.argv[1]]},
-  )', __dir__]).strip
+def node_require(script)
+  # Resolve script with node to allow for hoisting
+  require Pod::Executable.execute_command('node', ['-p',
+    "require.resolve(
+      '#{script}',
+      {paths: [process.argv[1]]},
+    )", __dir__]).strip
+end
+
+node_require('react-native/scripts/react_native_pods.rb')
+node_require('react-native-permissions/scripts/setup.rb')
 
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
+
+setup_permissions([
+  'LocationAlways',
+  'LocationWhenInUse'
+])
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
@@ -14,9 +24,17 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
+
+
 target 'SpiritFront' do
   config = use_native_modules!
 
+  # permissions_path = '../node_modules/react-native-permissions/ios'
+
+  # # 필요한 권한만 추가합니다.
+  # pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse"
+  # pod 'Permission-LocationAlways', :path => "#{permissions_path}/LocationAlways"
+  
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
