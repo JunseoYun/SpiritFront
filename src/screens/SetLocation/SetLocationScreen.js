@@ -12,7 +12,10 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { saveLocationAddress, getAddress, getLocation, clearLocationStorage } from '../../storage/locationStorage';
 
+
 import Feather from 'react-native-vector-icons/Feather';
+
+import { fetchLocation, requestLocationPermission } from '../../hooks/useLocation';
 
 const SetLocationScreen = ({ navigation, route }) => {
   const [address, setAddress] = useState('');
@@ -84,6 +87,23 @@ const SetLocationScreen = ({ navigation, route }) => {
       }
     }
   };
+  const handleGetCurrentLocation = async () => {
+    const hasPermission = await requestLocationPermission();
+
+    if (!hasPermission) {
+      Alert.alert('위치 권한이 거부되었습니다.');
+      return;
+    }
+    try {
+      const { location, address } = await fetchLocation();
+      setSelectLocation(location);
+      setSelectAddress(address);
+      console.log('현재 위치:', location);
+      console.log('현재 주소:', address);
+    } catch (error) {
+      console.error('위치 데이터를 가져오는 중 오류:', error);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -121,7 +141,7 @@ const SetLocationScreen = ({ navigation, route }) => {
 
         </View>
 
-        <Pressable style={styles.selectButton}>
+        <Pressable onPress={handleGetCurrentLocation} style={styles.selectButton}>
           <Feather
             name="crosshair" size={25} color="#444" style={styles.selectButtonIcon}/>
           <Text style={[styles.buttonText, styles.selectButtonText]}>현재 위치로 선택</Text>
