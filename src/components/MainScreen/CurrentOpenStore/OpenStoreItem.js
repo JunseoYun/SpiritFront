@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ImageBackground, StyleSheet } from 'react-native';
-import MapCategory from '../../../hooks/MapCategory';
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
 const OpenStoreItem = ({ store }) => {
   const calculateWalkingTime = distance => {
@@ -9,7 +9,7 @@ const OpenStoreItem = ({ store }) => {
   };
 
   const walkingTime = calculateWalkingTime(store.distance);
-
+  const {translateCategory} = useCategoryTranslation();
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
@@ -32,10 +32,7 @@ const OpenStoreItem = ({ store }) => {
       <View style={styles.infoContainer}>
         <Text style={styles.storeName}>{store.storeName}</Text>
         <View style={styles.categoriesContainer}>
-          <MapCategory
-            categories={store.categories}
-            style={styles.categoryText}
-          />
+          <Text style={styles.categoryText}>{translateCategory(store.categories)}</Text>
         </View>
         <Text style={styles.menuTag}>#대표메뉴</Text>
         <View style={styles.distanceContainer}>
@@ -54,7 +51,6 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     backgroundColor: '#fff',
     borderRadius: 15,
-    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,

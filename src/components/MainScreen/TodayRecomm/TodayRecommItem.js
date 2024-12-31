@@ -1,9 +1,9 @@
 import React from 'react';
 import {View, ImageBackground, StyleSheet, Text} from 'react-native';
-import MapCategory from '../../../hooks/MapCategory';
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
 const TodayRecommItem = ({store, category}) => {
-
+  const {translateCategory} = useCategoryTranslation();
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -24,10 +24,7 @@ const TodayRecommItem = ({store, category}) => {
             <View style={styles.storeInfoContainer}>
               <Text style={styles.storeName}>{store.storeName}</Text>
               <View style={styles.categoriesContainer}>
-                <MapCategory
-                  categories={store.categories}
-                  style={styles.categoryText}
-                />
+                <Text style={styles.categoryText}>{translateCategory(store.categories)}</Text>
               </View>
             </View>
             <View style={styles.storeSubInfoContainer}>
@@ -46,7 +43,6 @@ const styles = StyleSheet.create({
   container: {
     width: 370, // 카드 너비
     height: 170, // 카드 높이
-    marginHorizontal: 10,
     marginVertical: 10,
     borderRadius: 17,
     overflow: 'hidden', // 경계선 밖 숨김
