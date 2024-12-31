@@ -225,7 +225,6 @@ const MainScreen = ({ navigation }) => {
       <ScrollView
         onScroll={onScroll}
         scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }>
@@ -278,8 +277,8 @@ const MainScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-
     backgroundColor: 'white',
+    marginBottom: 30,
   },
   topView: {
     flexDirection: 'row',
