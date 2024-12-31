@@ -11,10 +11,7 @@ import {
   RefreshControl,
   SafeAreaView
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
-import MainStack from '../../navigation/MainStack';
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
 import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
 import InnerCategoryModal from '../../components/MainScreen/Category/InnerCategoryModal';
@@ -25,8 +22,9 @@ import OptionsSection from '../../components/MainScreen/OptionSection';
 
 // import { getLocation, getAddress } from '../../storage/locationStorage';
 import { getLocation, getAddress } from '../../storage/locationStorage';
-
-
+import { getWeatherData } from '../../api/weather';
+import useRecommendation from '../../hooks/useRecommendation';
+import { getStore } from '../../api/storeApi';
 
 const MainScreen = ({ navigation }) => {
 
@@ -53,7 +51,7 @@ const MainScreen = ({ navigation }) => {
   const recentRef = useRef(null);
   const [liveHotLoaded, setLiveHotLoaded] = useState(false);
   const [recentLoaded, setRecentLoaded] = useState(false);
-  // const {recommendCategory} = useRecommendation();
+  const {recommendCategory} = useRecommendation();
 
 
 
@@ -63,11 +61,23 @@ const MainScreen = ({ navigation }) => {
         const currentLocation = await getLocation();
         if (currentLocation) {
           setLocation(currentLocation);
+          const weatherData = await getWeatherData(currentLocation);
+          setWeather(weatherData);
+          const {category, reason} = recommendCategory(
+            weatherData.condition,
+            weatherData.temp,
+            weatherData.rain_probability,
+          );
+          setRecommCategory(category);
+          setRecommReason(reason);
+          const storesData = await getStore();
+          setStores(storesData);
         }
         const currentAddress = await getAddress();
         if (currentAddress) {
           setAddress(currentAddress);
         }
+
 
         // if (currentLocation) {
         //   const weatherData = await getWeatherData(currentLocation);
@@ -142,6 +152,8 @@ const MainScreen = ({ navigation }) => {
       const currentLocation = await getLocation();
       if (currentLocation) {
         setLocation(currentLocation);
+        const weatherData = await getWeatherData(currentLocation);
+        setWeather(weatherData);
       }
       const currentAddress = await getAddress();
       if (currentAddress) {
@@ -151,50 +163,7 @@ const MainScreen = ({ navigation }) => {
       console.error('초기 로드 오류:', error);
     } finally {
       setIsRefreshing(false); // 새로 고침 종료
-    }
-    // try {
-    //   const {location: currentLocation, address: currentAddress} =
-    //     await useLocation(); // 위치와 주소 가져오기
-    //   if (
-    //     location &&
-    //     location.latitude === currentLocation.latitude &&
-    //     location.longitude === currentLocation.longitude
-    //   ) {
-    //     return;
-    //   }
-    //   console.log('새로 가져온 위치:', currentLocation);
-    //   console.log('새로 가져온 주소:', currentAddress);
-    //   // 로드 상태 초기화
-    //   setLiveHotLoaded(false);
-    //   setRecentLoaded(false);
-    //   setLocation(currentLocation);
-    //   setAddress(currentAddress);
-
-    //   // 날씨 정보 가져오기
-    //   if (currentLocation) {
-    //     const weatherData = await getWeatherData(currentLocation);
-    //     console.log('새로 가져온 날씨 정보:', weatherData);
-    //     setWeather(weatherData); // 날씨 정보 업데이트
-    //     const {category, reason} = recommendCategory(
-    //       weatherData.condition,
-    //       weatherData.temp,
-    //       weatherData.rain_probability,
-    //     );
-    //     setRecommCategory(category);
-    //     setRecommReason(reason);
-    //     const recommStoreData = await getByCategoryStore(
-    //       category,
-    //       currentLocation,
-    //     );
-    //     setRecommStores(recommStoreData);
-    //     const storeData = await getByDistanceStore(currentLocation);
-    //     setStores(storeData);
-    //     setRecentStores(null);
-    //     setLiveHotStores(null);
-    //   }
-    // } catch (error) {
-    //   console.error('새로 고침 중 오류:', error);
-    // } 
+    }  
   };
 
   const onPressModalOpen = () => {

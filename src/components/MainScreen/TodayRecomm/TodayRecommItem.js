@@ -3,10 +3,16 @@ import {View, ImageBackground, StyleSheet, Text} from 'react-native';
 import MapCategory from '../../../hooks/MapCategory';
 
 const TodayRecommItem = ({store, category}) => {
+
   return (
     <View style={styles.container}>
       <ImageBackground
         source={require('../../../assets/MainPagetodayimg.png')}
+        // source={
+        //   store.imgUrl
+        //     ? {uri: store.imgUrl} // URL이 있는 경우
+        //     : require('../../../assets/MainPagetodayimg.png') // URL이 없으면 로컬 이미지 사용
+        // }
         style={styles.imageBackground}
         imageStyle={styles.imageStyle}>
         <View style={styles.overlay}>
