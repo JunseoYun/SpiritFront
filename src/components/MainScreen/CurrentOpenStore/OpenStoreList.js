@@ -15,7 +15,7 @@ const OpenStoreList = ({stores}) => {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollViewContent}>
-        {stores.map((store, index) => (
+        {stores?.map((store, index) => (
           <View key={index} style={styles.storeContainer}>
             <OpenStoreItem store={store} />
           </View>

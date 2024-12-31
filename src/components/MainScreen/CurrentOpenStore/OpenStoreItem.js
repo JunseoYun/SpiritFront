@@ -1,8 +1,8 @@
 import React from 'react';
-import {View, Text, ImageBackground, StyleSheet} from 'react-native';
+import { View, Text, ImageBackground, StyleSheet } from 'react-native';
 import MapCategory from '../../../hooks/MapCategory';
 
-const OpenStoreItem = ({store}) => {
+const OpenStoreItem = ({ store }) => {
   const calculateWalkingTime = distance => {
     const walkingSpeed = 80; // 평균 보행 속도 (m/min)
     return Math.ceil(distance / walkingSpeed); // 소수점 올림
@@ -15,6 +15,11 @@ const OpenStoreItem = ({store}) => {
       <View style={styles.imageContainer}>
         <ImageBackground
           source={require('../../../assets/MainPagetodayimg.png')}
+          // source={
+          //   store.imgUrl
+          //     ? {uri: store.imgUrl} // URL이 있는 경우
+          //     : require('../../../assets/MainPagetodayimg.png') // URL이 없으면 로컬 이미지 사용
+          // }
           style={styles.imageBackground}
           imageStyle={styles.imageStyle}>
           <View style={styles.overlay}>
@@ -34,7 +39,7 @@ const OpenStoreItem = ({store}) => {
         </View>
         <Text style={styles.menuTag}>#대표메뉴</Text>
         <View style={styles.distanceContainer}>
-          <Text style={styles.distanceText}>{store.distance.toFixed(0)}m</Text>
+          {/* <Text style={styles.distanceText}>{store.distance.toFixed(0)}m</Text> */}
           <Text style={styles.walkingTimeText}>{walkingTime}분</Text>
         </View>
       </View>
@@ -51,7 +56,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5, // Android 그림자 효과

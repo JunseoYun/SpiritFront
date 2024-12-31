@@ -28,9 +28,19 @@
 	<dict>
 	  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 		<key>NSAllowsArbitraryLoads</key>
-		<false/>
+		<true/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+        <!-- 추가: IP 주소 허용 -->
+        <key>43.203.91.148</key>
+        <dict>
+            <key>NSExceptionAllowsInsecureHTTPLoads</key>
+            <true/>
+        </dict>
+		</dict>		
+		
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>앱이 실행 중일 때 위치를 사용합니다.</string>

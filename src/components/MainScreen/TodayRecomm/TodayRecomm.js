@@ -37,7 +37,7 @@ const TodayRecomm = ({
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.scrollContainer}>
-            {recommStores.map(store => (
+            {recommStores?.map(store => (
               <View key={store.storeId} style={styles.slideItem}>
                 <TodayRecommItem store={store} category={koreanCategory} />
               </View>
@@ -77,7 +77,7 @@ const TodayRecomm = ({
 
 const styles = StyleSheet.create({
   todayPhrasesView: {
-    marginLeft: 25,
+    marginLeft: 20,
     alignContent: 'center',
   },
   todayPhrases: {
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginHorizontal: 25,
+    marginHorizontal: 20,
   },
   weatherTemp: {
     flexDirection: 'row',
