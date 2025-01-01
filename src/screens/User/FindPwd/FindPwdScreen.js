@@ -1,9 +1,9 @@
 import React from 'react';
 import { Button, View, Text } from 'react-native';
-import { loginWithKakaoAccount, getProfile } from '@react-native-seoul/kakao-login';
+import { loginWithKakaoAccount, getProfile, logout } from '@react-native-seoul/kakao-login';
 
 const FindPwdScreen = ({ navigation }) => {
-    const handleLogin = async () => {
+    const handleKaKaoLogin = async () => {
         try {
             const token = await loginWithKakaoAccount();
             console.log('Kakao Login Token:', token);
@@ -17,13 +17,21 @@ const FindPwdScreen = ({ navigation }) => {
         }
     };
 
+    const handleKaKaoLogout = async () => {
+        try {
+            await logout();  // 카카오 로그아웃
+            console.log('Kakao Logout Success');
+        } catch (err) {
+            console.error('Kakao Logout Error:', err);
+        }
+    };
+
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Button title="카카오 로그인" onPress={handleLogin} />
+            <Button title="카카오 로그인" onPress={handleKaKaoLogin} />
+            <Button title="카카오 로그아웃" onPress={handleKaKaoLogout} />
         </View>
     );
 };
-
-
 
 export default FindPwdScreen;
