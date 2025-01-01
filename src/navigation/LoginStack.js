@@ -7,6 +7,7 @@ import LoginScreen from '../screens/User/Login/LoginScreen';
 import FindPwdScreen from '../screens/User/FindPwd/FindPwdScreen';
 import SignUpScreen from '../screens/User/SignUp/SignUpScreen';
 import MainScreen from '../screens/BottomTab/MainScreen';
+import OAuthScreen from '../screens/User/Login/OAuthScreen';
 
 import { Pressable } from 'react-native';
 
@@ -36,6 +37,23 @@ export default function LoginStack() {
           title: '로그인',
           headerLeft: () => (
             <Pressable onPress={() => navigation.navigate(MainScreen)}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{ marginLeft: 13, paddingRight: 15 }}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="OAuthScreen"
+        component={OAuthScreen}
+        options={({ navigation }) => ({
+          title: '소셜 로그인',
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
               <Ionicons
                 name="arrow-back-outline"
                 size={25}
