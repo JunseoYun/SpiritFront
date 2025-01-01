@@ -39,6 +39,17 @@
 		<string>kakaolink</string>
 		<string>kakaokompassauth</string>
 	</array>
+	<key>GIDClientID</key>
+<string>55496276543-acp3mpj3folinp0067iogp03cstubo4r.apps.googleusercontent.com</string>
+<key>CFBundleURLTypes</key>
+<array>
+	<dict>
+		<key>CFBundleURLSchemes</key>
+		<array>
+			<string>com.googleusercontent.apps.55496276543-acp3mpj3folinp0067iogp03cstubo4r</string>
+		</array>
+	</dict>
+</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
