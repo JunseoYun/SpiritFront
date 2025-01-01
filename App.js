@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import MainStack from './src/navigation/MainStack';
-import OAuthTestScreen from './src/screens/User/Login/OAuthTestScreen';
+import OAuthLoginScreen from './src/screens/User/Login/OAuthLoginScreen';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 
 const App = () => {
@@ -17,7 +17,7 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer>
-      {token ? <MainStack /> : <OAuthTestScreen />}
+      {token ? <MainStack /> : <OAuthLoginScreen />}
     </NavigationContainer>
   );
 };
