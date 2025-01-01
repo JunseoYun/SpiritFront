@@ -84,6 +84,12 @@ const LoginScreen = ({ navigation }) => {
                             <Text style={LoginStyles.LoginButtonText}>로그인</Text>
                         </Pressable>
                     </View>
+
+                    <View>
+                        <Pressable style={LoginStyles.LoginButton} onPress={() => navigation.navigate('OAuthScreen')}>
+                            <Text style={LoginStyles.LoginButtonText}>소셜 로그인</Text>
+                        </Pressable>
+                    </View>
                 </View>
             </TouchableWithoutFeedback>
         </SafeAreaView>
