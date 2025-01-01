@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SpiritFront</string>
+    <string name="kakao_app_key">f8b846c356bedec09d06f5795f823cc9</string>
 </resources>

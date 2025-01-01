@@ -29,12 +29,12 @@ end
 target 'SpiritFront' do
   config = use_native_modules!
 
-  # permissions_path = '../node_modules/react-native-permissions/ios'
-
-  # # 필요한 권한만 추가합니다.
-  # pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse"
-  # pod 'Permission-LocationAlways', :path => "#{permissions_path}/LocationAlways"
+  pod 'KakaoSDK', '~> 2.0'
+  pod 'KakaoSDKCommon'
+  pod 'KakaoSDKAuth'
+  pod 'KakaoSDKUser'
   
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
