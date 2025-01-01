@@ -1,12 +1,16 @@
 import React from 'react';
 import { Button, View, Text } from 'react-native';
-import { loginWithKakaoAccount} from '@react-native-seoul/kakao-login';
+import { loginWithKakaoAccount, getProfile } from '@react-native-seoul/kakao-login';
 
 const FindPwdScreen = ({ navigation }) => {
     const handleLogin = async () => {
         try {
             const token = await loginWithKakaoAccount();
             console.log('Kakao Login Token:', token);
+            
+            // 사용자 프로필 정보 가져오기
+            const profile = await getProfile();
+            console.log('Kakao Profile:', profile.id);
 
         } catch (err) {
             console.error('Kakao Login Error:', err);
