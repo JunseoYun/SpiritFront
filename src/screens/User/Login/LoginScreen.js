@@ -66,7 +66,7 @@ const LoginScreen = ({ navigation }) => {
                     </View>
                     <View style={LoginStyles.linksContainertext}>
                         <View style={{ flex: 1, alignItems: 'center' }}>
-                            <Pressable onPress={() => navigation.navigate('SignUpPage')}>
+                            <Pressable onPress={() => navigation.navigate('SignUpScreen')}>
                                 <Text style={LoginStyles.link}>회원가입</Text>
                             </Pressable>
                         </View>
@@ -74,7 +74,7 @@ const LoginScreen = ({ navigation }) => {
                             <Text style={LoginStyles.separator}></Text>
                         </View>
                         <View style={{ flex: 1, alignItems: 'center' }}>
-                            <Pressable onPress={() => navigation.navigate('FindPwdPage')}>
+                            <Pressable onPress={() => navigation.navigate('FindPwdScreen')}>
                                 <Text style={LoginStyles.link}>비밀번호 찾기</Text>
                             </Pressable>
                         </View>
