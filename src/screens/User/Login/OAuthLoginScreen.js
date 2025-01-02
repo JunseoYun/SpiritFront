@@ -100,7 +100,7 @@ const OAuthLoginScreen = ({ navigation }) => {
 
   return (
     <ImageBackground
-      source={require('../../../assets/LoginBack.png')}
+      source={require('../../../assets/BackLogin.png')}
       style={styles.background}
     >
       <SafeAreaView>
