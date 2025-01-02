@@ -4,6 +4,8 @@ import { loginWithKakaoAccount, getProfile, logout } from '@react-native-seoul/k
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { setToken, removeToken } from '../../../storage/tokenStorage';
 import { useAuth } from '../../../context/AuthContext';
+import {appleAuth} from '@invertase/react-native-apple-authentication';
+
 
 const OAuthLoginScreen = ({ navigation }) => {
   const { login } = useAuth();
@@ -45,8 +47,55 @@ const OAuthLoginScreen = ({ navigation }) => {
     }
   };
 
+
+
   const handleAppleSignIn = async () => {
-    Alert.alert("돈 없음 연회비 12만원 드가자")
+    try {
+      console.log('애플 로그인 요청 시작'); // 로그인이 시작되었음을 알리는 로그
+  
+      // Apple login request
+      const appleAuthRequestResponse = await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGIN,
+        requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+      });
+  
+      console.log('애플 로그인 응답:', appleAuthRequestResponse); // 로그인 응답 출력
+  
+      // Get credential state for the user
+      const credentialState = await appleAuth.getCredentialStateForUser(
+        appleAuthRequestResponse.user,
+      );
+  
+      console.log('사용자 인증 상태:', credentialState); // 인증 상태 출력
+  
+      // Check if the user is authorized
+      if (credentialState === appleAuth.State.AUTHORIZED) {
+        console.log('Apple Sign-In success');
+        console.log('User Info:', appleAuthRequestResponse);
+        // You can now use the user information, such as appleAuthRequestResponse.email or appleAuthRequestResponse.fullName
+        login(appleAuthRequestResponse.authorizationCode);  // You can save the token or authorization code here
+        console.log(appleAuthRequestResponse.authorizationCode);
+      } else {
+        console.log('Apple Sign-In failed');
+      }
+    } catch (error) {
+      console.error('Apple Sign-In Error:', error);
+      Alert.alert('Apple 로그인 오류', '로그인 중 문제가 발생했습니다.');
+    }
+  };
+  
+
+  const handleAppleSignOut = async () => {
+    try {
+      await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGOUT,  // 로그아웃 작업 수행
+      });
+      console.log('Apple Sign-Out successful');
+      // 로그아웃 후 추가 작업 (예: 앱 내 로그인 상태 초기화 등)
+    } catch (error) {
+      console.error('Apple Sign-Out Error:', error);
+      Alert.alert('애플 로그아웃 오류', '로그아웃 중 문제가 발생했습니다.');
+    }
   };
 
   return (
