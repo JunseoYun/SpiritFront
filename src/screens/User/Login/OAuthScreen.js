@@ -5,6 +5,7 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import { setToken, removeToken } from '../../../storage/tokenStorage';
 import { useAuth } from '../../../context/AuthContext';
 
+import {appleAuth} from '@invertase/react-native-apple-authentication';
 
 const OAuthScreen = ({ navigation }) => {
 
@@ -71,7 +72,28 @@ const OAuthScreen = ({ navigation }) => {
       console.error(error);
     }
   };
+  const handleAppleSignOut = async () => {
+    try {
+      await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGOUT,  // 로그아웃 작업 수행
+      });
+      console.log('Apple Sign-Out successful');
+      // 로그아웃 후 추가 작업 (예: 앱 내 로그인 상태 초기화 등)
 
+      logout();
+    } catch (error) {
+      console.error('Apple Sign-Out Error:', error);
+      Alert.alert('애플 로그아웃 오류', '로그아웃 중 문제가 발생했습니다.');
+    }
+  };
+  const handleLogout = async () => {
+    try {
+      logout();
+    } catch (error) {
+      console.error('Log-Out Error:', error);
+      Alert.alert('로그아웃 오류', '로그아웃 중 문제가 발생했습니다.');
+    }
+  };
 
 
   return (
@@ -80,6 +102,10 @@ const OAuthScreen = ({ navigation }) => {
       <Button title="카카오 로그아웃" onPress={handleKaKaoLogout} />
       <Button title="구글 로그인" onPress={handleGoogleSignIn} />
       <Button title="구글 로그아웃" onPress={handleGoogleSignOut} />
+      <Button title="애플 로그아웃" onPress={handleAppleSignOut} />
+      <Button title="걍 다 로그아웃" onPress={handleLogout} />
+
+      
     </View>
   );
 };
