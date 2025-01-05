@@ -20,36 +20,26 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>kakaof8b846c356bedec09d06f5795f823cc9</string>
+				<string>com.googleusercontent.apps.55496276543-acp3mpj3folinp0067iogp03cstubo4r</string>
 			</array>
 		</dict>
 	</array>
-	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>KAKAO_APP_KEY</key>
-	<string>f8b846c356bedec09d06f5795f823cc9</string>
+	<key>GIDClientID</key>
+	<string>55496276543-acp3mpj3folinp0067iogp03cstubo4r.apps.googleusercontent.com</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>kakaof8b846c356bedec09d06f5795f823cc9</string>
 		<string>kakaolink</string>
 		<string>kakaokompassauth</string>
 	</array>
-	<key>GIDClientID</key>
-<string>55496276543-acp3mpj3folinp0067iogp03cstubo4r.apps.googleusercontent.com</string>
-<key>CFBundleURLTypes</key>
-<array>
-	<dict>
-		<key>CFBundleURLSchemes</key>
-		<array>
-			<string>com.googleusercontent.apps.55496276543-acp3mpj3folinp0067iogp03cstubo4r</string>
-		</array>
-	</dict>
-</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -60,11 +50,25 @@
 		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
+			<key>kakao.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
 			<key>43.203.91.148</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
 			</dict>
+			<key>daumcdn.net</key>
+    	<dict>
+        <key>NSIncludesSubdomains</key>
+        <true/>
+        <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+        <true/>
+   		</dict>
 		</dict>
 	</dict>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

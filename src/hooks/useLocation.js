@@ -5,7 +5,12 @@ import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 
 
-export const fetchLocation = () => {
+export const fetchLocationAddress = () => {
+  const hasPermission = requestLocationPermission();
+  if (!hasPermission) {
+    Alert.alert('위치 권한이 거부되었습니다.');
+    return;
+  }
   return new Promise((resolve, reject) => {
     Geolocation.getCurrentPosition(
       async position => {
@@ -32,6 +37,35 @@ export const fetchLocation = () => {
     );
   });
 };
+
+export const fetchLocation = () => {
+  const hasPermission = requestLocationPermission();
+  if (!hasPermission) {
+    Alert.alert('위치 권한이 거부되었습니다.');
+    return;
+  }
+  return new Promise((resolve, reject) => {
+    Geolocation.getCurrentPosition(
+      async position => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const currentLocation = { latitude, longitude };
+          resolve(currentLocation);
+        } catch (err) {
+          console.error('위치 또는 주소 가져오기 오류:', err);
+          reject(err);
+        }
+      },
+      error => {
+        console.error('위치 가져오기 오류:', error);
+        handleLocationError(error);
+        reject(error);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+    );
+  });
+};
+
 
 const handleLocationError = error => {
   if (error.code === 1) {
@@ -69,7 +103,6 @@ export const requestLocationPermission = async () => {
     try {
       const result = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
       if (result === RESULTS.GRANTED) {
-        console.log('iOS 위치 권한이 허용되었습니다.');
         return true;
       } else if (result === RESULTS.DENIED) {
         console.log('iOS 위치 권한이 거부되었습니다.');
