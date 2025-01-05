@@ -15,7 +15,7 @@ import { saveLocationAddress, getAddress, getLocation, clearLocationStorage } fr
 
 import Feather from 'react-native-vector-icons/Feather';
 
-import { fetchLocation, requestLocationPermission } from '../../hooks/useLocation';
+import { fetchLocationAddress, requestLocationPermission } from '../../hooks/useLocation';
 
 const SetLocationScreen = ({ navigation, route }) => {
   const [address, setAddress] = useState('');
@@ -95,7 +95,7 @@ const SetLocationScreen = ({ navigation, route }) => {
       return;
     }
     try {
-      const { location, address } = await fetchLocation();
+      const { location, address } = await fetchLocationAddress();
       setSelectLocation(location);
       setSelectAddress(address);
       console.log('현재 위치:', location);
