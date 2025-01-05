@@ -8,6 +8,7 @@ import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
 import MyScreen from '../screens/BottomTab/My/MyScreen';
 import LoginStack from './LoginStack';
+import SearchStack from './SearchStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -31,7 +32,7 @@ const MainBtmbar = () => {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'MapScreen') {
             iconName = focused ? 'map' : 'map-outline';
-          } else if (route.name === 'SearchScreen') {
+          } else if (route.name === 'SearchStack') {
             iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'LikeScreen') {
             iconName = focused ? 'heart' : 'heart-outline';
@@ -49,9 +50,9 @@ const MainBtmbar = () => {
       })}
     >
       <Tab.Screen
-        name="SearchScreen"
-        component={SearchScreen}
-        options={{ headerShown: false, tabBarLabel: '검색' }}
+        name="SearchStack"
+        component={SearchStack}
+        options={{ tabBarLabel: '검색', headerShown: false }}
       />
       <Tab.Screen
         name="MapScreen"
