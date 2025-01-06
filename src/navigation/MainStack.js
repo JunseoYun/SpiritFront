@@ -7,7 +7,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
 import StoreAddScreen from '../screens/StoreRegister/StoreAddScreen';
 import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
-
+import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
 const Stack = createStackNavigator();
 
 export default function MainStack() {
@@ -68,6 +68,11 @@ export default function MainStack() {
             </Pressable>
           ),
         })}
+      />
+      <Stack.Screen
+        name="StoreAddressSearch"
+        component={StoreAddressSearch}
+        options={{ title: '매장 주소 검색' }}
       />
       <Stack.Screen
         name="StoreAuthorityScreen"

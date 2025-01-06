@@ -121,7 +121,7 @@ export const requestLocationPermission = async () => {
 
 
 
-const getAddressFromCoordinates = async cachedLocation => {
+export const getAddressFromCoordinates = async cachedLocation => {
   const { latitude, longitude } = cachedLocation;
   const KAKAO_API_KEY = '9b09512f07cf4d2555413abbedcbcc3a'; // 발급받은 REST API 키
   const url = `https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${longitude}&y=${latitude}`;
@@ -139,5 +139,37 @@ const getAddressFromCoordinates = async cachedLocation => {
   } catch (error) {
     console.error('역 지오코딩 오류:', error);
     return '역 지오코딩 실패';
+  }
+};
+
+
+export const getLatLngFromAddress = async address => {
+  const apiKey = '9b09512f07cf4d2555413abbedcbcc3a'; // 카카오맵 API 키
+  const url = `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(
+    address,
+  )}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `KakaoAK ${apiKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+
+    if (data.documents.length > 0) {
+      const {x, y} = data.documents[0].address;
+      return {latitude: y, longitude: x};
+    } else {
+      throw new Error('No results found');
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
   }
 };
