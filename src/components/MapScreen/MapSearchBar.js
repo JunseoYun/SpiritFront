@@ -1,6 +1,6 @@
 // SearchButton.js
 import React from 'react';
-import {Pressable, View, Text, StyleSheet} from 'react-native';
+import {Pressable, View, Text, StyleSheet, Platform} from 'react-native';
 
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 const MapSearchBar = ({onPress, buttonText}) => {
@@ -22,7 +22,6 @@ const MapSearchBar = ({onPress, buttonText}) => {
 const styles = StyleSheet.create({
   buttonTop: {
     position: 'absolute',
-    top: '9%',
     left: '5%',
     backgroundColor: '#ffffff',
     padding: 10,
@@ -31,16 +30,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: '90%',
     height: 50,
-    shadowColor: '#000',
+    shadowColor: '#333',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-
-    // 그라디언트 효과 (배경이 단일 색상이 아닌 경우)
-    backgroundColor: '#fdfdfd',
+    ...Platform.select({
+      ios: {
+        top: '9%',
+      },
+      android: {
+        top: '5%',
+      },
+    }),
   },
   searchBar: {
     width: '100%',
