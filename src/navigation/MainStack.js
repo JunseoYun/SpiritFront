@@ -5,7 +5,8 @@ import MainBtmbar from './MainBtmbar';
 import SetLocationScreen from '../screens/SetLocation/SetLocationScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
-
+import StoreAddScreen from '../screens/StoreRegister/StoreAddScreen';
+import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
 
 const Stack = createStackNavigator();
 
@@ -50,6 +51,40 @@ export default function MainStack() {
         name="LocationSearchScreen"
         component={LocationSearchScreen}
         options={{ title: '주소 검색' }}
+      />
+      <Stack.Screen
+        name="StoreAddScreen"
+        component={StoreAddScreen}
+        options={({ navigation }) => ({
+          title: '매장 등록하기',
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{ marginLeft: 13, paddingRight: 15 }}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="StoreAuthorityScreen"
+        component={StoreAuthorityScreen}
+        options={({ navigation }) => ({
+          title: '매장 권한 등록하기',
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{ marginLeft: 13, paddingRight: 15 }}
+              />
+            </Pressable>
+          ),
+        })}
       />
 
     </Stack.Navigator>

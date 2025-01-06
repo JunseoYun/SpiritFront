@@ -9,7 +9,8 @@ import {
   FlatList,
   Dimensions,
   RefreshControl,
-  SafeAreaView
+  SafeAreaView,
+  Alert
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
@@ -197,10 +198,14 @@ const MainScreen = ({ navigation }) => {
   const handlestoreItemClick = index => {
     setStoreActiveIndex(index);
     if (index === 0) {
-      // navigation.navigate(StoreaddPage);
+      navigation.navigate('StoreAddScreen');
     }
-    if (index === 2) {
-      // navigation.navigate('MapPage');
+    else if (index === 1) {
+      // navigation.navigate('StoreAuthorityScreen');
+      Alert.alert("서비스 준비중 입니다.")
+    }
+    else if (index === 2) {
+      navigation.navigate('MapScreen');
     }
   };
 
@@ -211,6 +216,8 @@ const MainScreen = ({ navigation }) => {
   const setLocationHandle = () => {
     navigation.navigate('SetLocationScreen');
   };
+
+
 
 
   return (
