@@ -49,7 +49,7 @@ const VisitTimeModal = ({
   ];
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true}>
+    <Modal visible={visible} animationType="fade" transparent={true}>
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
           <Text style={styles.topText}>방문 예정 시간</Text>

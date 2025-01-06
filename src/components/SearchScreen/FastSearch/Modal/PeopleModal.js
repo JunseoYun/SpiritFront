@@ -8,7 +8,7 @@ const PeopleModal = ({
   onPressClose,
 }) => {
   return (
-    <Modal visible={visible} animationType="slide" transparent={true}>
+    <Modal visible={visible} animationType="fade" transparent={true}>
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
           <Text style={styles.topText}>인원</Text>

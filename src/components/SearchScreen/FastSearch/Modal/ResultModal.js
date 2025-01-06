@@ -22,7 +22,7 @@ const ResultModal = ({
   navigation,
 }) => {
   return (
-    <Modal visible={visible} animationType="slide" transparent={true}>
+    <Modal visible={visible} animationType="fade" transparent={true}>
       <View style={styles.fastSearchModalBackground}>
         <View style={styles.fastSearchModalContainer}>
           <Image

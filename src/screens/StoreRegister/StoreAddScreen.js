@@ -14,6 +14,7 @@ import StoreTV from '../../components/StoreAddScreen/StoreTV';
 import StoreInfo from '../../components/StoreAddScreen/StoreInfo';
 import StoreSubmitButton from '../../components/StoreAddScreen/StoreSubmitButton';
 
+
 const StoreAddScreen = ({ navigation, route }) => {
 
   const [token, setToken] = useState(null);
@@ -39,10 +40,10 @@ const StoreAddScreen = ({ navigation, route }) => {
   });
 
   const [operatingHours, setOperatingHours] = useState({
-    openHour: '09',
-    openMinute: '00',
-    closedHour: '18',
-    closedMinute: '00',
+    openHour: '',
+    openMinute: '',
+    closedHour: '',
+    closedMinute: '',
   });
 
   const [selectedCategory, setSelectedCategory] = useState(['-', '-', '-']);
@@ -111,15 +112,18 @@ const StoreAddScreen = ({ navigation, route }) => {
           setDetailedAddress={setDetailedAddress}
           navigation={navigation}
         />
+
         <StoreOperatingHours
           operatingHours={operatingHours}
           setOperatingHours={setOperatingHours}
         />
 
-        <StoreCategory
+
+
+        {/* <StoreCategory
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
-        />
+        /> */}
         <StoreGroup
           selectedOption={selectedOption}
           setSelectedOption={setSelectedOption}
