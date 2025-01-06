@@ -21,8 +21,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
-    shadowColor: '#16BBFF',
-    elevation: 0.001,
+    backgroundColor: 'rgba(22, 187, 255, 0.2)',
   },
 });
 
