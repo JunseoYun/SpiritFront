@@ -7,7 +7,7 @@ const CategoryModal = ({
   onPressModalClose,
 }) => {
   return (
-    <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+    <Modal visible={isModalVisible} animationType="fade" transparent={true}>
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
           <View style={styles.modaltopview}>
