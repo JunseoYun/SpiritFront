@@ -1,36 +1,93 @@
 import React from 'react';
-import {View, Text} from 'react-native';
-import CheckBox from '@react-native-community/checkbox';
-import styles from './StoreStyle';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-const StoreTV = ({selectedscreenOption, setselectedscreenOption}) => {
+const StoreTV = ({ selectedscreenOption, setselectedscreenOption }) => {
   const handleCheckBoxscreenChange = index => {
-    setselectedscreenOption(index === 0);
+    if (index === 0 && selectedscreenOption !== true) {
+      setselectedscreenOption(true);
+    } else if (index === 1 && selectedscreenOption !== false) {
+      setselectedscreenOption(false);
+    }
   };
 
   return (
     <View>
       <View style={styles.storeinputview}>
-        <Text style={styles.storetext}>스크린 여부</Text>
+        <Text style={styles.storeinputtext}>매장 내 스크린(TV) 설치 여부</Text>
       </View>
-      <View style={styles.storeinputview}>
-        <View style={styles.CheckBoxview}>
-          <CheckBox
-            value={selectedscreenOption === true}
-            onValueChange={() => handleCheckBoxscreenChange(0)}
-          />
-          <Text style={styles.CheckBoxtext}>O</Text>
-        </View>
-        <View style={styles.CheckBoxview}>
-          <CheckBox
-            value={selectedscreenOption === false}
-            onValueChange={() => handleCheckBoxscreenChange(1)}
-          />
-          <Text style={styles.CheckBoxtext}>X</Text>
-        </View>
+      <View style={styles.storeCheckView}>
+        <TouchableOpacity
+          style={[
+            styles.checkbox,
+            selectedscreenOption === true && styles.checkboxSelected,
+          ]}
+          onPress={() => handleCheckBoxscreenChange(0)}>
+          <Text
+            style={[
+              styles.checkboxText,
+              selectedscreenOption === true && styles.checkboxTextSelected,
+            ]}>
+            설치
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.checkbox,
+            selectedscreenOption === false && styles.checkboxSelected,
+          ]}
+          onPress={() => handleCheckBoxscreenChange(1)}>
+          <Text
+            style={[
+              styles.checkboxText,
+              selectedscreenOption === false && styles.checkboxTextSelected,
+            ]}>
+            미설치
+          </Text>
+        </TouchableOpacity>
+
       </View>
     </View>
   );
 };
+
+
+const styles = StyleSheet.create({
+  storeinputview: {
+    marginTop: 30,
+    marginHorizontal: 20,
+  },
+  storeinputtext: {
+    fontWeight: '400',
+    color: '#999',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  storeCheckView: {
+    flexDirection: 'row',
+    marginVertical: 5,
+    marginHorizontal: 20,
+    alignSelf: 'center',
+  },
+  checkbox: {
+    backgroundColor: '#F2F2F2',
+    borderRadius: 5,
+    padding: 10,
+    margin: 5,
+    width: '48%',
+    alignItems: 'center',
+  },
+  checkboxSelected: {
+    backgroundColor: '#16BBFF',
+  },
+  checkboxText: {
+    color: '#16BBFF',
+    fontSize: 18,
+    fontWeight: '500',
+    padding: 3,
+  },
+  checkboxTextSelected: {
+    color: '#FFF', // 선택된 경우 흰색
+  },
+});
 
 export default StoreTV;

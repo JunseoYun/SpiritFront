@@ -11,7 +11,7 @@ export const setToken = async token => {
 };
 
 export const getToken = async () => {
-  // const tempToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMTEiLCJyb2xlIjoiUk9MRV9VU0VSIiwiZXhwIjoxNzM2MjY1NTQ3fQ.RQINr8jLgefnFqHvFccrOEege8gi4ibWewkdgcpoFoo";
+  // const tempToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMTEiLCJyb2xlIjoiUk9MRV9VU0VSIiwiZXhwIjoxNzM2MzU2NDcxfQ.GOp1yZzyhF9vyGvPBHJqbQl03E6f2kK48M2PENnLhwI";
   // return tempToken;
   try {
     const token = await AsyncStorage.getItem('token');
