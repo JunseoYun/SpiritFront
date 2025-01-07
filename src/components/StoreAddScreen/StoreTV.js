@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   storeinputtext: {
-    fontWeight: '400',
+    fontWeight: '500',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,

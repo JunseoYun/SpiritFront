@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Text, Pressable, View, Alert, SafeAreaView } from 'react-native';
+import { ScrollView, Text, Pressable, View, Alert, SafeAreaView, StyleSheet } from 'react-native';
 import { getToken } from '../../storage/tokenStorage';
 import { StoreRegister } from '../../api/storeApi';
-import styles from '../../components/StoreAddScreen/StoreStyle';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import StoreCategory from '../../components/StoreAddScreen/StoreCategory';
 import StoreClosedDay from '../../components/StoreAddScreen/StoreClosedDay';
@@ -96,7 +95,6 @@ const StoreAddScreen = ({ navigation, route }) => {
 
   return (
     <ScrollView>
-
       <SafeAreaView style={styles.storetopview}>
         <StoreInfo storeData={storeData} setStoreData={setStoreData} />
         <StoreAddress
@@ -123,16 +121,41 @@ const StoreAddScreen = ({ navigation, route }) => {
           setselectedscreenOption={setselectedscreenOption}
         />
         <StoreClosedDay closedDay={closedDay} setClosedDay={setClosedDay} />
-        {/* <StoreAlcohol alcohol={alcohol} setAlcohol={setAlcohol} /> */}
+        <StoreAlcohol alcohol={alcohol} setAlcohol={setAlcohol} />
         <StoreImage imageUris={imageUris} setImageUris={setImageUris} />
         <Pressable style={styles.savebutton} onPress={StoreAdd}>
           <Text style={styles.savebuttontext}>작성 완료</Text>
         </Pressable>
       </SafeAreaView>
-    </ScrollView>
+    </ScrollView> 
 
 
   );
 };
+
+const styles = StyleSheet.create({
+  storetopview: {
+    backgroundColor: 'white',
+    width: '100%',
+    height: '100%',
+  },
+  savebutton: {
+    alignSelf: 'center',
+    alignItems: 'center',
+    width: '80%',
+    marginVertical: 7,
+    backgroundColor: '#16BBFF',
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 30,
+  },
+  savebuttontext: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
+
+  },
+});
+
 
 export default StoreAddScreen;

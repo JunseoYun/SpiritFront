@@ -36,13 +36,13 @@ const StoreCategory = ({ selectedCategory, setSelectedCategory }) => {
         <TouchableOpacity style={styles.storeinput} onPress={openHandle}>
           {selectedCategory && selectedCategory.length > 0 ? (
             <>
-              <Text style={styles.storeinputtext}>카테고리</Text>
+              <Text style={styles.storeinputtext}>카테고리*</Text>
               <Text style={styles.inputText}>
                 {selectedCategory.map(item => translateCategory(item)).join('     ')}
               </Text>
             </>
           ) : (
-            <Text style={styles.inputHideText}>카테고리</Text>
+            <Text style={styles.inputHideText}>카테고리*</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     paddingLeft: 1,
   },
   storeinputtext: {
-    fontWeight: '400',
+    fontWeight: '500',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,

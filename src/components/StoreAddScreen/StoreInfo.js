@@ -14,7 +14,7 @@ const StoreInfo = ({ storeData, setStoreData }) => {
     <View>
       <View style={styles.storeinputview}>
         {storeData.storeName && ( // 입력값이 있거나 포커스된 경우만 보이기
-          <Text style={styles.storeinputtext}>매장 이름</Text>
+          <Text style={styles.storeinputtext}>매장 이름*</Text>
         )}
         <TextInput
           style={[
@@ -23,7 +23,7 @@ const StoreInfo = ({ storeData, setStoreData }) => {
           ]}
           value={storeData.storeName}
           onChangeText={(text) => handleChange('storeName', text)}
-          placeholder="매장 이름"
+          placeholder="매장 이름*"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('storeName')} // 활성화 상태 설정
           onBlur={() => setFocusedInput(null)} // 비활성화 상태로 변경
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   storeinputtext: {
-    fontWeight: '400',
+    fontWeight: '500',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,

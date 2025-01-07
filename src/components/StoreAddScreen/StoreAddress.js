@@ -24,13 +24,13 @@ const StoreAddress = ({
         }>
           {address ? (
             <>
-              <Text style={styles.storeinputtext}>매장 주소</Text>
+              <Text style={styles.storeinputtext}>매장 주소*</Text>
               <Text style={styles.inputText}>
                 {address}
               </Text>
             </>
           ) : (
-            <Text style={styles.inputHideText}>매장 주소</Text>
+            <Text style={styles.inputHideText}>매장 주소*</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   storeinputtext: {
-    fontWeight: '400',
+    fontWeight: '500',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
