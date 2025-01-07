@@ -19,6 +19,16 @@ const OAuthLoginScreen = ({ navigation }) => {
     });
   }, []);
 
+  const handleTempLogin = async () => {
+    try {
+      const tempToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMTEiLCJyb2xlIjoiUk9MRV9VU0VSIiwiZXhwIjoxNzM2MjY1NTQ3fQ.RQINr8jLgefnFqHvFccrOEege8gi4ibWewkdgcpoFoo";
+      console.log(tempToken);
+      login(tempToken);
+    } catch (err) {
+      console.error('Temp Login Error:', err);
+    }
+  };
+
   const handleKaKaoLogin = async () => {
     try {
       const token = await loginWithKakaoAccount();
@@ -26,7 +36,7 @@ const OAuthLoginScreen = ({ navigation }) => {
       login(token.accessToken);
 
       const profile = await getProfile();
-      console.log('Kakao Profile:', profile.id);
+      console.log('Kakao Profile:', profile);
     } catch (err) {
       console.error('Kakao Login Error:', err);
     }
@@ -134,6 +144,19 @@ const OAuthLoginScreen = ({ navigation }) => {
             <Text style={styles.appleText}>Apple로 로그인</Text>
           </View>
         </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleTempLogin} style={styles.googleButtonContainer}>
+          <View style={styles.googleView}>
+            <View style={styles.googleLogoContainer}>
+              <Image
+                source={require('../../../assets/appleLogo.png')}
+                style={styles.appleLogo}
+              />
+            </View>
+            <Text style={styles.appleText}>임시 로그인</Text>
+          </View>
+        </TouchableOpacity>
+
       </SafeAreaView>
 
     </ImageBackground>

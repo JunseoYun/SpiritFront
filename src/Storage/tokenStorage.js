@@ -11,20 +11,20 @@ export const setToken = async token => {
 };
 
 export const getToken = async () => {
-  const tempToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMTEiLCJyb2xlIjoiUk9MRV9VU0VSIiwiZXhwIjoxNzM2MjY1NTQ3fQ.RQINr8jLgefnFqHvFccrOEege8gi4ibWewkdgcpoFoo";
-  return tempToken;
-  // try {
-  //   const token = await AsyncStorage.getItem('token');
-  //   if (token !== null) {
-  //     return token;
-  //   } else {
-  //     console.log('저장된 토큰이 없습니다.');
-  //     return null;
-  //   }
-  // } catch (error) {
-  //   console.error('토큰 가져오기 중 오류가 발생했습니다:', error);
-  //   return null;
-  // }
+  // const tempToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMTEiLCJyb2xlIjoiUk9MRV9VU0VSIiwiZXhwIjoxNzM2MjY1NTQ3fQ.RQINr8jLgefnFqHvFccrOEege8gi4ibWewkdgcpoFoo";
+  // return tempToken;
+  try {
+    const token = await AsyncStorage.getItem('token');
+    if (token !== null) {
+      return token;
+    } else {
+      console.log('저장된 토큰이 없습니다.');
+      return null;
+    }
+  } catch (error) {
+    console.error('토큰 가져오기 중 오류가 발생했습니다:', error);
+    return null;
+  }
 };
 
 export const removeToken = async () => {
