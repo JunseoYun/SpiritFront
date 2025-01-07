@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, ScrollView, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
+import { Modal, View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
 import useDayTranslation from '../../hooks/useDayTranslation';
 
