@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, Text, Pressable, View, Alert, SafeAreaView, StyleSheet } from 'react-native';
-import { getToken } from '../../storage/tokenStorage';
+import React, { useState } from 'react';
+import { ScrollView, Text, Pressable, Alert, SafeAreaView, StyleSheet} from 'react-native';
 import { StoreRegister } from '../../api/storeApi';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import StoreCategory from '../../components/StoreAddScreen/StoreCategory';
@@ -11,11 +10,11 @@ import StoreImage from '../../components/StoreAddScreen/StoreImage';
 import StoreAlcohol from '../../components/StoreAddScreen/StoreAlcohol';
 import StoreTV from '../../components/StoreAddScreen/StoreTV';
 import StoreInfo from '../../components/StoreAddScreen/StoreInfo';
-
+import StoreConfirmationModal from '../../components/StoreAddScreen/StoreConfirmationModal';
 
 const StoreAddScreen = ({ navigation, route }) => {
 
-  const [coords, setCoords] = useState({latitude: 0, longitude: 0});
+  const [coords, setCoords] = useState({ latitude: 0, longitude: 0 });
   const [address, setAddress] = useState('');
   const [detailedAddress, setDetailedAddress] = useState('');
   const [selectedCategory, setSelectedCategory] = useState([]);
@@ -38,12 +37,66 @@ const StoreAddScreen = ({ navigation, route }) => {
     closedMinute: '',
   });
 
-  const handleAddressSelect = ({address, coords}) => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const confirmSubmission = () => {
+    // if (!storeData.storeName.trim()) {
+    //   Alert.alert(
+    //     '필수 정보',
+    //     '매장 이름을 입력해주세요.',
+    //     [{ text: '확인', style: 'cancel' }],
+    //     { cancelable: true }
+    //   );
+    //   return;
+    // }
+    // if (!address.trim()) {
+    //   Alert.alert(
+    //     '필수 정보',
+    //     '주소를 입력해주세요.',
+    //     [{ text: '확인', style: 'cancel' }],
+    //     { cancelable: true }
+    //   );
+    //   return;
+    // }
+    // if (!operatingHours.openHour || !operatingHours.closedHour) {
+    //   Alert.alert(
+    //     '필수 정보',
+    //     '영업시간을 입력해주세요.',
+    //     [{ text: '확인', style: 'cancel' }],
+    //     { cancelable: true }
+    //   );
+    //   return;
+    // }
+    // if (!selectedCategory.length) {
+    //   Alert.alert(
+    //     '필수 정보',
+    //     '카테고리를 선택해주세요.',
+    //     [{ text: '확인', style: 'cancel' }],
+    //     { cancelable: true }
+    //   );
+    //   return;
+    // }
+    // if (!alcohol.trim()) {
+    //   Alert.alert(
+    //     '필수 정보',
+    //     '대표 주종을 선택해주세요.',
+    //     [{ text: '확인', style: 'cancel' }],
+    //     { cancelable: true }
+    //   );
+    //   return;
+    // }
+    setIsModalVisible(true); // 모든 값이 유효하면 모달 열기
+  };
+  
+  
+
+  const handleAddressSelect = ({ address, coords }) => {
     setAddress(address);
     setCoords(coords);
   };
 
   const StoreAdd = async () => {
+    setIsModalVisible(false); // 모달 닫기
     const imageFiles = imageUris.map(uri => ({
       file: uri, // 이미지 URI를 파일로 전달
     }));
@@ -71,11 +124,12 @@ const StoreAddScreen = ({ navigation, route }) => {
       if (response) {
         console.log(response);
         Alert.alert(
-          '등록이 완료되었습니다.',
-          '',
+          '등록 완료',
+          '매장 등록이 완료되었습니다.',
           [
-            {text: '확인',
-              style: 'destructive',
+            {
+              text: '확인',
+              style: 'cancel',
               onPress: () => {
                 navigation.reset({
                   index: 0, // 새로운 스택의 첫 화면으로 설정
@@ -94,42 +148,57 @@ const StoreAddScreen = ({ navigation, route }) => {
 
 
   return (
-    <ScrollView>
-      <SafeAreaView style={styles.storetopview}>
-        <StoreInfo storeData={storeData} setStoreData={setStoreData} />
-        <StoreAddress
-          address={address}
-          detailedAddress={detailedAddress}
-          setDetailedAddress={setDetailedAddress}
-          navigation={navigation}
-          onAddressSelect={handleAddressSelect} // 콜백 전달
-        />
-        <StoreOperatingHours
-          operatingHours={operatingHours}
-          setOperatingHours={setOperatingHours}
-        />
-        <StoreCategory
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-        />
-        <StoreGroup
-          selectedOption={selectedOption}
-          setSelectedOption={setSelectedOption}
-        />
-        <StoreTV
-          selectedscreenOption={selectedscreenOption}
-          setselectedscreenOption={setselectedscreenOption}
-        />
-        <StoreClosedDay closedDay={closedDay} setClosedDay={setClosedDay} />
-        <StoreAlcohol alcohol={alcohol} setAlcohol={setAlcohol} />
-        <StoreImage imageUris={imageUris} setImageUris={setImageUris} />
-        <Pressable style={styles.savebutton} onPress={StoreAdd}>
-          <Text style={styles.savebuttontext}>작성 완료</Text>
-        </Pressable>
-      </SafeAreaView>
-    </ScrollView> 
+    <>
+      <ScrollView>
+        <SafeAreaView style={styles.storetopview}>
+          <StoreInfo storeData={storeData} setStoreData={setStoreData} />
+          <StoreAddress
+            address={address}
+            detailedAddress={detailedAddress}
+            setDetailedAddress={setDetailedAddress}
+            navigation={navigation}
+            onAddressSelect={handleAddressSelect} // 콜백 전달
+          />
+          <StoreOperatingHours
+            operatingHours={operatingHours}
+            setOperatingHours={setOperatingHours}
+          />
+          <StoreCategory
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+          />
+          <StoreGroup
+            selectedOption={selectedOption}
+            setSelectedOption={setSelectedOption}
+          />
+          <StoreTV
+            selectedscreenOption={selectedscreenOption}
+            setselectedscreenOption={setselectedscreenOption}
+          />
+          <StoreClosedDay closedDay={closedDay} setClosedDay={setClosedDay} />
+          <StoreAlcohol alcohol={alcohol} setAlcohol={setAlcohol} />
+          <StoreImage imageUris={imageUris} setImageUris={setImageUris} />
+          <Pressable style={styles.savebutton} onPress={confirmSubmission}>
+            <Text style={styles.savebuttontext}>작성 완료</Text>
+          </Pressable>
+        </SafeAreaView>
+      </ScrollView>
 
-
+      <StoreConfirmationModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        onConfirm={StoreAdd}
+        storeData={storeData}
+        selectedCategory={selectedCategory}
+        address={address}
+        detailedAddress={detailedAddress}
+        operatingHours={operatingHours}
+        closedDay={closedDay}
+        alcohol={alcohol}
+        selectedOption={selectedOption}
+        selectedscreenOption={selectedscreenOption}
+      />
+    </>
   );
 };
 
@@ -142,7 +211,7 @@ const styles = StyleSheet.create({
   savebutton: {
     alignSelf: 'center',
     alignItems: 'center',
-    width: '80%',
+    width: '90%',
     marginVertical: 7,
     backgroundColor: '#16BBFF',
     paddingVertical: 10,
@@ -153,7 +222,38 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 18,
-
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    width: '90%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  modalButton: {
+    backgroundColor: '#16BBFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 
