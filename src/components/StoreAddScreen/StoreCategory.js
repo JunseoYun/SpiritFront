@@ -227,7 +227,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   selectedCategory: {
-    backgroundColor: 'rgba(22, 187, 255, 0.7)', // 선택된 경우 배경색 및 투명도 (50%)
+    // backgroundColor: 'rgba(22, 187, 255, 0.7)', // 선택된 경우 배경색 및 투명도 (50%)
+    borderColor: 'rgba(22, 187, 255, 0.7)',
+    borderWidth: 3,
     borderRadius: 10,
   },
   catagoryimgs: {

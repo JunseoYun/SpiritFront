@@ -14,14 +14,15 @@ import StoreTV from '../../components/StoreAddScreen/StoreTV';
 import StoreInfo from '../../components/StoreAddScreen/StoreInfo';
 
 
-const StoreAddScreen = ({ navigation}) => {
+const StoreAddScreen = ({ navigation, route }) => {
+
   const [coords, setCoords] = useState({latitude: 0, longitude: 0});
   const [address, setAddress] = useState('');
   const [detailedAddress, setDetailedAddress] = useState('');
   const [selectedCategory, setSelectedCategory] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedscreenOption, setselectedscreenOption] = useState(null);
-  const [closedDay, setClosedDay] = useState('');
+  const [closedDay, setClosedDay] = useState([]);
   const [alcohol, setAlcohol] = useState('');
   const [imageUris, setImageUris] = useState([]); // 이미지 배열 상태
 
@@ -37,7 +38,7 @@ const StoreAddScreen = ({ navigation}) => {
     closedHour: '',
     closedMinute: '',
   });
-  
+
   const handleAddressSelect = ({address, coords}) => {
     setAddress(address);
     setCoords(coords);
@@ -62,6 +63,7 @@ const StoreAddScreen = ({ navigation}) => {
         hasScreen: selectedscreenOption,
         longitude: coords.longitude,
         latitude: coords.latitude,
+        closedDays: closedDay,
       },
     };
 
@@ -94,6 +96,7 @@ const StoreAddScreen = ({ navigation}) => {
 
   return (
     <ScrollView>
+
       <SafeAreaView style={styles.storetopview}>
         <StoreInfo storeData={storeData} setStoreData={setStoreData} />
         <StoreAddress
@@ -111,8 +114,6 @@ const StoreAddScreen = ({ navigation}) => {
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
         />
-
-
         <StoreGroup
           selectedOption={selectedOption}
           setSelectedOption={setSelectedOption}
@@ -122,7 +123,7 @@ const StoreAddScreen = ({ navigation}) => {
           setselectedscreenOption={setselectedscreenOption}
         />
         <StoreClosedDay closedDay={closedDay} setClosedDay={setClosedDay} />
-        <StoreAlcohol alcohol={alcohol} setAlcohol={setAlcohol} />
+        {/* <StoreAlcohol alcohol={alcohol} setAlcohol={setAlcohol} /> */}
         <StoreImage imageUris={imageUris} setImageUris={setImageUris} />
         <Pressable style={styles.savebutton} onPress={StoreAdd}>
           <Text style={styles.savebuttontext}>작성 완료</Text>
