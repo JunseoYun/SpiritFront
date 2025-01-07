@@ -1,25 +1,36 @@
 import React from 'react';
 import {Modal, View, Text, Pressable, Image, StyleSheet} from 'react-native';
 
+
 const CategoryModal = ({
   isModalVisible,
   onPressCategory,
   onPressModalClose,
 }) => {
+  const [selectedCategory, setSelectedCategory] = React.useState(null); // 단일 선택 상태
+
+  const handleCategoryPress = (text, category) => {
+    setSelectedCategory(category); // 선택된 카테고리 업데이트
+    onPressCategory(text, category); // 외부 콜백 호출
+  };
+
   return (
     <Modal visible={isModalVisible} animationType="fade" transparent={true}>
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
+      <Pressable style={styles.modalBackground} onPress={onPressModalClose}>
+        <View style={styles.modalContainer} onStartShouldSetResponder={() => true}>
           <View style={styles.modaltopview}>
             {innerCategories
-              .reduce((acc, {source, text, category}, index) => {
+              .reduce((acc, { source, text, category }, index) => {
                 const rowIndex = Math.floor(index / 5);
                 if (!acc[rowIndex]) acc[rowIndex] = [];
                 acc[rowIndex].push(
                   <Pressable
                     key={text}
-                    style={styles.categoryInnerView}
-                    onPress={() => onPressCategory(text, category)}>
+                    style={[
+                      styles.categoryInnerView,
+                      selectedCategory === category && styles.selectedCategory, // 선택된 카테고리에 스타일 적용
+                    ]}
+                    onPress={() => handleCategoryPress(text, category)}>
                     <Image source={source} style={styles.categoryImage} />
                     <Text style={styles.categoryText}>{text}</Text>
                   </Pressable>,
@@ -31,17 +42,17 @@ const CategoryModal = ({
                   {row}
                 </View>
               ))}
-            <View>
-              <Pressable onPress={onPressModalClose} style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>닫기</Text>
-              </Pressable>
-            </View>
           </View>
+          <Pressable onPress={onPressModalClose} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>닫기</Text>
+          </Pressable>
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   modalBackground: {
@@ -73,6 +84,11 @@ const styles = StyleSheet.create({
     padding: 5,
     alignItems: 'center',
   },
+  selectedCategory: {
+    backgroundColor: 'rgba(22, 187, 255, 0.7)',
+    borderRadius: 10,
+    padding: 5,
+  },
   categoryImage: {
     width: 40,
     resizeMode: 'contain',
@@ -85,14 +101,16 @@ const styles = StyleSheet.create({
     marginTop: 7,
   },
   closeButton: {
-    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    backgroundColor: 'rgba(22, 187, 255, 0.9)',
+    borderRadius: 5,
   },
   closeButtonText: {
-    color: 'gray',
-    fontSize: 14,
-    fontWeight: 'bold',
-    paddingTop: 15,
-    paddingBottom: 6,
+    fontSize: 16,
+    color: '#FFF',
   },
 });
 

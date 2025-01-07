@@ -28,8 +28,15 @@ const StoreAddScreen = ({ navigation, route }) => {
     fetchToken();
   }, []);
 
+  const [coords, setCoords] = useState({latitude: 0, longitude: 0});
+  const [address, setAddress] = useState('');
 
-  const { address, coords = { latitude: 0, longitude: 0 } } = route.params || {};
+  // const { address, coords = { latitude: 0, longitude: 0 } } = route.params || {};
+  const handleAddressSelect = ({address, coords}) => {
+    setAddress(address);
+    setCoords(coords);
+  };
+  
 
   const [detailedAddress, setDetailedAddress] = useState('');
 
@@ -46,7 +53,7 @@ const StoreAddScreen = ({ navigation, route }) => {
     closedMinute: '',
   });
 
-  const [selectedCategory, setSelectedCategory] = useState(['-', '-', '-']);
+  const [selectedCategory, setSelectedCategory] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedscreenOption, setselectedscreenOption] = useState(null);
   const [closedDay, setClosedDay] = useState('');
@@ -88,7 +95,10 @@ const StoreAddScreen = ({ navigation, route }) => {
               text: '확인',
               style: 'destructive',
               onPress: () => {
-                navigation.navigate('MainScreen');
+                navigation.reset({
+                  index: 0, // 새로운 스택의 첫 화면으로 설정
+                  routes: [{ name: 'MainBtmbar' }], // 이동할 스크린 이름
+                });
               },
             },
           ],
@@ -111,6 +121,7 @@ const StoreAddScreen = ({ navigation, route }) => {
           detailedAddress={detailedAddress}
           setDetailedAddress={setDetailedAddress}
           navigation={navigation}
+          onAddressSelect={handleAddressSelect} // 콜백 전달
         />
 
         <StoreOperatingHours
@@ -120,10 +131,10 @@ const StoreAddScreen = ({ navigation, route }) => {
 
 
 
-        {/* <StoreCategory
+        <StoreCategory
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
-        /> */}
+        />
         <StoreGroup
           selectedOption={selectedOption}
           setSelectedOption={setSelectedOption}

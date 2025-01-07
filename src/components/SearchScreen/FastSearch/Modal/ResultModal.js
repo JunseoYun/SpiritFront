@@ -23,8 +23,8 @@ const ResultModal = ({
 }) => {
   return (
     <Modal visible={visible} animationType="fade" transparent={true}>
-      <View style={styles.fastSearchModalBackground}>
-        <View style={styles.fastSearchModalContainer}>
+      <Pressable style={styles.fastSearchModalBackground} onPress={onClose}>
+        <View style={styles.fastSearchModalContainer} onStartShouldSetResponder={() => true}>
           <Image
             source={require('../../../../assets/todaylogo.png')}
             style={styles.fastSearchModaltopimage}
@@ -54,7 +54,7 @@ const ResultModal = ({
             ))}
           </ScrollView>
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 };

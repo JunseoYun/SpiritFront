@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 
 const StoreAddress = ({
   address,
   detailedAddress,
   setDetailedAddress,
   navigation,
+  onAddressSelect,
 }) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
 
@@ -14,19 +15,24 @@ const StoreAddress = ({
   return (
     <View>
       <View style={styles.storeinputview}>
-        {address && <Text style={styles.storeinputtext}>매장 주소</Text>}
-        <TextInput
-          style={[
-            styles.storeinput,
-            isFocused('address') && styles.focusedInput, // 활성화 상태 스타일
-          ]}
-          placeholder="매장 주소"
-          placeholderTextColor="#999"
-          value={address}
-          onPress={() => navigation.navigate('StoreAddressSearch')}
-          onFocus={() => setFocusedInput('address')} // 활성화 상태 설정
-          onBlur={() => setFocusedInput(null)} // 비활성화 상태로 변경
-        />
+      <TouchableOpacity
+        style={styles.storeinput}
+        onPress={() =>
+          navigation.navigate('StoreAddressSearch', {
+            onAddressSelect,
+          })
+        }>
+          {address ? (
+            <>
+              <Text style={styles.storeinputtext}>매장 주소</Text>
+              <Text style={styles.inputText}>
+                {address}
+              </Text>
+            </>
+          ) : (
+            <Text style={styles.inputHideText}>매장 주소</Text>
+          )}
+        </TouchableOpacity>
       </View>
 
       <View style={styles.storeinputview}>
@@ -68,6 +74,19 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '500',
     paddingVertical: 7, // 상하 간격 조절
+    paddingLeft: 1,
+  },
+  inputHideText: {
+    fontSize: 22,
+    fontWeight: '500',
+    paddingVertical: 1,
+    paddingLeft: 1,
+    color: '#999',
+  },
+  inputText: {
+    fontSize: 22,
+    fontWeight: '500',
+    paddingVertical: 1,
     paddingLeft: 1,
   },
   focusedInput: {
