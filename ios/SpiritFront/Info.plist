@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>SpiritFront</string>
+	<string>오늘한잔</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -25,12 +25,14 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>kakaof8b846c356bedec09d06f5795f823cc9</string>
+				<string>com.googleusercontent.apps.55496276543-acp3mpj3folinp0067iogp03cstubo4r</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>GIDClientID</key>
+	<string>55496276543-acp3mpj3folinp0067iogp03cstubo4r.apps.googleusercontent.com</string>
 	<key>KAKAO_APP_KEY</key>
 	<string>f8b846c356bedec09d06f5795f823cc9</string>
 	<key>LSApplicationQueriesSchemes</key>
@@ -39,17 +41,6 @@
 		<string>kakaolink</string>
 		<string>kakaokompassauth</string>
 	</array>
-	<key>GIDClientID</key>
-<string>55496276543-acp3mpj3folinp0067iogp03cstubo4r.apps.googleusercontent.com</string>
-<key>CFBundleURLTypes</key>
-<array>
-	<dict>
-		<key>CFBundleURLSchemes</key>
-		<array>
-			<string>com.googleusercontent.apps.55496276543-acp3mpj3folinp0067iogp03cstubo4r</string>
-		</array>
-	</dict>
-</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -65,27 +56,25 @@
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
 			</dict>
-						<key>daumcdn.net</key>
-    	<dict>
-        <key>NSIncludesSubdomains</key>
-        <true/>
-        <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
-        <true/>
-   		</dict>
+			<key>daumcdn.net</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
 		</dict>
 	</dict>
-
-<key>NSCameraUsageDescription</key>
-<string>카메라 사용 권한은 이미지 촬영 및 첨부를 위해 필요합니다.</string>
-<key>NSPhotoLibraryAddUsageDescription</key>
-<string>카메라 사용 권한은 이미지 촬영 및 첨부를 위해 필요합니다.</string>
-<key>NSPhotoLibraryUsageDescription</key>
-<string>카메라 사용 권한은 이미지 촬영 및 첨부를 위해 필요합니다.</string>
-
+	<key>NSCameraUsageDescription</key>
+	<string>카메라 사용 권한은 이미지 촬영 및 첨부를 위해 필요합니다.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>앱이 항상 위치를 사용할 수 있도록 허용하세요.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>앱이 실행 중일 때 위치를 사용합니다.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>카메라 사용 권한은 이미지 촬영 및 첨부를 위해 필요합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>카메라 사용 권한은 이미지 촬영 및 첨부를 위해 필요합니다.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>AntDesign.ttf</string>
