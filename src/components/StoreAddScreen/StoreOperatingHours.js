@@ -24,11 +24,11 @@ const StoreOperatingHours = ({ operatingHours, setOperatingHours }) => {
   const minutes = ['00', '15', '30', '45'];
 
   const isOperatingHoursSet =
-  operatingHours.openHour ||
-  operatingHours.openMinute ||
-  operatingHours.closedHour ||
-  operatingHours.closedMinute;
-  
+    operatingHours.openHour ||
+    operatingHours.openMinute ||
+    operatingHours.closedHour ||
+    operatingHours.closedMinute;
+
 
   return (
     <View>
@@ -38,7 +38,7 @@ const StoreOperatingHours = ({ operatingHours, setOperatingHours }) => {
             <>
               <Text style={styles.storeinputtext}>영업 시간</Text>
               <Text style={styles.inputText}>
-                {`${operatingHours.openHour || '00'}:${operatingHours.openMinute || '00'} - ${operatingHours.closedHour || '00'}:${operatingHours.closedMinute || '00'}`}
+                {`${operatingHours.openHour || '--'}:${operatingHours.openMinute || '--'} - ${operatingHours.closedHour || '--'}:${operatingHours.closedMinute || '--'}`}
               </Text>
             </>
           ) : (
@@ -46,10 +46,12 @@ const StoreOperatingHours = ({ operatingHours, setOperatingHours }) => {
           )}
         </TouchableOpacity>
       </View>
-
-      <Modal visible={visible} animationType="fade" transparent={true}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
+      <Modal visible={visible} animationType="slide" transparent={true}>
+        <Pressable style={styles.modalBackground} onPress={closeHandle}>
+          <View
+            style={styles.modalContainer}
+            onStartShouldSetResponder={() => true} // 이벤트 차단
+          >
             <Text style={styles.modalTopText}>매장 영업 시간</Text>
             <View style={styles.pickerTopView}>
               <Text style={styles.pickerLabel}>시작</Text>
@@ -107,12 +109,8 @@ const StoreOperatingHours = ({ operatingHours, setOperatingHours }) => {
               <Text style={styles.closeButtonText}>확인</Text>
             </Pressable>
           </View>
-        </View>
+        </Pressable>
       </Modal>
-
-
-
-
     </View>
   );
 };
@@ -189,15 +187,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainer: {
-    width: '90%',
+    position: 'absolute', // 모달을 화면의 특정 위치에 배치하기 위해 추가
+    bottom: 0,
+    width: '100%',
+    height: '45%',
     paddingVertical: 5,
     paddingTop: 5,
     backgroundColor: 'white',
-    borderRadius: 10,
+    borderRadius: 30,
     alignItems: 'center',
+    // 그림자 스타일
+    shadowColor: '#333', // 그림자 색상 (검은색)
+    shadowOffset: { width: 0, height: -4 }, // 그림자 위치 (위쪽으로)
+    shadowOpacity: 0.2, // 그림자 투명도
+    shadowRadius: 5, // 그림자 퍼짐 정도
+    elevation: 20, // 안드로이드 그림자
   },
   modalTopText: {
     color: '#333',

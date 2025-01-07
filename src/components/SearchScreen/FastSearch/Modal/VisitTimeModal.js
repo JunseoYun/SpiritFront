@@ -50,8 +50,8 @@ const VisitTimeModal = ({
 
   return (
     <Modal visible={visible} animationType="fade" transparent={true}>
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
+      <Pressable style={styles.modalBackground} onPress={onPressClose}>
+        <View style={styles.modalContainer} onStartShouldSetResponder={() => true}>
           <Text style={styles.topText}>방문 예정 시간</Text>
 
           <View style={styles.timeView}>
@@ -100,7 +100,7 @@ const VisitTimeModal = ({
             <Text style={styles.closeButtonText}>닫기</Text>
           </Pressable>
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 };
@@ -162,14 +162,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   closeButton: {
-    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    backgroundColor: 'rgba(22, 187, 255, 0.9)',
+    borderRadius: 5,
   },
   closeButtonText: {
-    color: 'gray',
-    fontSize: 14,
-    fontWeight: 'bold',
-    paddingTop: 15,
-    paddingBottom: 6,
+    fontSize: 16,
+    color: '#FFF',
   },
 });
 

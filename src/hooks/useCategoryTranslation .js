@@ -13,7 +13,7 @@ const categoryMap = {
   CHICKEN: '치킨',
   JEONMAK: '전 · 막걸리',
   DRIED: '마른 안주',
-  Seafood: '해산물',
+  SEAFOOD: '해산물',
   ROOM: '룸',
   GROUP: '단체',
   OUTDOOR: '야장',
