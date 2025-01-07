@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, Image, ScrollView, Pressable} from 'react-native';
-import styles from './StoreStyle';
+import {View, Text, Image, ScrollView, Pressable, StyleSheet} from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 
 const StoreImage = ({imageUris, setImageUris}) => {
@@ -31,7 +30,7 @@ const StoreImage = ({imageUris, setImageUris}) => {
   return (
     <View>
       <View style={styles.storeinputview}>
-        <Text style={styles.storetext}>메뉴 사진 추가하기 (최대 5장)</Text>
+        <Text style={styles.storeinputtext}>메뉴 사진 추가하기 (최대 5장)</Text>
       </View>
       <View style={styles.storeinputview}>
         <ScrollView
@@ -56,5 +55,35 @@ const StoreImage = ({imageUris, setImageUris}) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  storeinputview: {
+    marginTop: 50,
+    marginHorizontal: 20,
+  },
+  storeinputtext: {
+    fontWeight: '500',
+    color: '#999',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  imageview: {
+    flexDirection: 'row',
+    height: 80,
+  },
+  image: {
+    marginBottom: 15,
+    width: 80,
+    height: 80,
+    marginRight: 10,
+  },
+  selectimage: {
+    width: 80,
+    height: 80,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+});
+
 
 export default StoreImage;

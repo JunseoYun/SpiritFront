@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Platform, Modal, Pressable, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Modal, Pressable, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
 
@@ -36,13 +36,13 @@ const StoreOperatingHours = ({ operatingHours, setOperatingHours }) => {
         <TouchableOpacity style={styles.storeinput} onPress={openHandle}>
           {isOperatingHoursSet ? (
             <>
-              <Text style={styles.storeinputtext}>영업 시간</Text>
+              <Text style={styles.storeinputtext}>영업 시간*</Text>
               <Text style={styles.inputText}>
                 {`${operatingHours.openHour || '--'}:${operatingHours.openMinute || '--'} - ${operatingHours.closedHour || '--'}:${operatingHours.closedMinute || '--'}`}
               </Text>
             </>
           ) : (
-            <Text style={styles.inputHideText}>영업 시간</Text>
+            <Text style={styles.inputHideText}>영업 시간*</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   storeinputtext: {
-    fontWeight: '400',
+    fontWeight: '500',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
