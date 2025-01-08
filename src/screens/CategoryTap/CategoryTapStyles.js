@@ -93,6 +93,7 @@ const Categorystyles = StyleSheet.create({
   storeImg: {
     width: 112,
     height: 112,
+    borderRadius: 10,
   },
 });
 
