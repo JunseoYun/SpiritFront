@@ -32,7 +32,11 @@ const OpenStoreItem = ({ store }) => {
       <View style={styles.infoContainer}>
         <Text style={styles.storeName}>{store.storeName}</Text>
         <View style={styles.categoriesContainer}>
-          <Text style={styles.categoryText}>{translateCategory(store.categories)}</Text>
+                          <Text style={styles.categoryText}>
+                            {Array.isArray(store.categories) && store.categories.length > 0
+                              ? store.categories.map((category) => translateCategory(category)).join(' ')
+                              : '카테고리 미설정'}
+                          </Text>
         </View>
         <Text style={styles.menuTag}>#대표메뉴</Text>
         <View style={styles.distanceContainer}>

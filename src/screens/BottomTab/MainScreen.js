@@ -20,12 +20,11 @@ import StoreRegister from '../../components/MainScreen/StoreRegister';
 import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
 import RecentStoreList from '../../components/MainScreen/RecentStore/RecentStoreList';
 import OptionsSection from '../../components/MainScreen/OptionSection';
-
 // import { getLocation, getAddress } from '../../storage/locationStorage';
 import { getLocation, getAddress } from '../../storage/locationStorage';
 import { getWeatherData } from '../../api/weather';
 import useRecommendation from '../../hooks/useRecommendation';
-import { getStore } from '../../api/storeApi';
+import { getByCategoryStore, getStore } from '../../api/storeApi';
 
 const MainScreen = ({ navigation }) => {
 
@@ -71,36 +70,18 @@ const MainScreen = ({ navigation }) => {
           );
           setRecommCategory(category);
           setRecommReason(reason);
-          const storesData = await getStore();
+
+          const storesData = await getStore(); //현재 영업 중인 주점 변경
           setStores(storesData);
+
+          const recommStoresData = await getByCategoryStore(category, currentLocation);
+          setRecommStores(recommStoresData);
         }
         const currentAddress = await getAddress();
         if (currentAddress) {
           setAddress(currentAddress);
         }
 
-
-        // if (currentLocation) {
-        //   const weatherData = await getWeatherData(currentLocation);
-        //   setWeather(weatherData); // 날씨 정보 업데이트
-        //   const {category, reason} = recommendCategory(
-        //     weatherData.condition,
-        //     weatherData.temp,
-        //     weatherData.rain_probability,
-        //   );
-        //   setRecommCategory(category);
-        //   setRecommReason(reason);
-        //   const recommStoreData = await getByCategoryStore(
-        //     category,
-        //     currentLocation,
-        //   );
-        //   setRecommStores(recommStoreData);
-        //   const storeData = await getByDistanceStore(currentLocation);
-        //   setStores(storeData);
-        // }
-
-        // setLocation(currentLocation);
-        // setAddress(currentAddress);
       } catch (error) {
         console.error('초기 로드 오류:', error);
       }
@@ -177,22 +158,22 @@ const MainScreen = ({ navigation }) => {
 
   const catagoryClick = index => {
     if (index >= 0 && index < 9) {
-      // navigation.navigate('StoreListTabbar', {
-      //   screen: screens[index],
-      // });
+      navigation.navigate('CategoryListTabbar', {
+        screen: screens[index],
+      });
     } else if (index === 9) {
       onPressModalOpen();
     }
   };
 
   const innercatagory = indexinner => {
-    // if (indexinner >= 0 && indexinner < screens.length) {
-    //   console.log(location);
-    //   navigation.navigate('StoreListTabbar', {
-    //     screen: screens[indexinner],
-    //   });
-    // }
-    // setIsModalVisible(false);
+    if (indexinner >= 0 && indexinner < screens.length) {
+      console.log(location);
+      navigation.navigate('CategoryListTabbar', {
+        screen: screens[indexinner],
+      });
+    }
+    setIsModalVisible(false);
   };
 
   const handlestoreItemClick = index => {
@@ -281,6 +262,28 @@ const MainScreen = ({ navigation }) => {
   );
 };
 
+const screens = [
+  'Izakaya',
+  'Koreafood',
+  'Westernfood',
+  'Chinesefood',
+  'Emotional',
+  'Jokbal',
+  'Steamedfood',
+  'Grilled',
+  'Chicken',
+  'Pancake',
+  'Dried',
+  'Seafood',
+  'Room',
+  'Group',
+  'Yajang',
+  'Pocha',
+  'Hope',
+  'Winebar',
+  'Cocktail',
+  'Pupbar',
+];
 
 const styles = StyleSheet.create({
   container: {
