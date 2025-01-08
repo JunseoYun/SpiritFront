@@ -8,6 +8,8 @@ import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
 import StoreAddScreen from '../screens/StoreRegister/StoreAddScreen';
 import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
 import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
+import CategoryListTabbar from './CategoryListTabbar';
+
 const Stack = createStackNavigator();
 
 export default function MainStack() {
@@ -51,6 +53,23 @@ export default function MainStack() {
         name="LocationSearchScreen"
         component={LocationSearchScreen}
         options={{ title: '주소 검색' }}
+      />
+      <Stack.Screen
+        name="CategoryListTabbar"
+        component={CategoryListTabbar}
+        options={({ navigation }) => ({
+          title: '오늘한잔',
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{ marginLeft: 13, paddingRight: 15 }}
+              />
+            </Pressable>
+          ),
+        })}
       />
       <Stack.Screen
         name="StoreAddScreen"

@@ -1,9 +1,9 @@
 import React from 'react';
-import {View, ImageBackground, StyleSheet, Text} from 'react-native';
+import { View, ImageBackground, StyleSheet, Text } from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
-const TodayRecommItem = ({store, category}) => {
-  const {translateCategory} = useCategoryTranslation();
+const TodayRecommItem = ({ store, category }) => {
+  const { translateCategory } = useCategoryTranslation();
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -24,7 +24,11 @@ const TodayRecommItem = ({store, category}) => {
             <View style={styles.storeInfoContainer}>
               <Text style={styles.storeName}>{store.storeName}</Text>
               <View style={styles.categoriesContainer}>
-                <Text style={styles.categoryText}>{translateCategory(store.categories)}</Text>
+                <Text style={styles.categoryText}>
+                  {Array.isArray(store.categories) && store.categories.length > 0
+                    ? store.categories.map((category) => translateCategory(category)).join(' ')
+                    : '카테고리 미설정'}
+                </Text>
               </View>
             </View>
             <View style={styles.storeSubInfoContainer}>
@@ -99,7 +103,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 35,
     textShadowColor: 'rgba(16, 190, 251, 0.4)',
-    textShadowOffset: {width: 1, height: 1},
+    textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
     elevation: 3, // 안드로이드에서 입체감 강화
   },
