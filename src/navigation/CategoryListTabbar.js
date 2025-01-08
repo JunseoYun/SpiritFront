@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { View, Text } from 'react-native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
-import Categoryspage from '../components/Categorypage';
+import CategoryTapScreen from '../screens/CategoryTapScreen';
 import { getLocation } from '../storage/locationStorage';
 
 const categories = [
@@ -71,7 +71,7 @@ const [location, setLocation] = useState(null);
         <Tab.Screen
           key={name}
           name={name}
-          component={Categoryspage}
+          component={CategoryTapScreen}
           options={{title}}
           initialParams={{categoryname, location}} // categoryname 전달
         />
