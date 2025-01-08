@@ -49,24 +49,18 @@ const CategoryTapScreen = ({ navigation, route }) => {
                 <Text style={Categorystyles.menuPrice}>43,900원</Text>
               </View>
               <View style={Categorystyles.menuItemView}>
-                <ImageBackground
+                <Image
                   source={require('../../assets/MainPagetodayimg.png')}
                   style={Categorystyles.storeImg}
-                  imageStyle={{ borderRadius: 10 }}
-                >
-                  <Text style={Categorystyles.mainMenu}>대표</Text>
-                </ImageBackground>
+                />
                 <Text style={Categorystyles.menuName}>벽돌 계란말이</Text>
                 <Text style={Categorystyles.menuPrice}>11,000원</Text>
               </View>
               <View style={Categorystyles.menuItemView}>
-                <ImageBackground
+                <Image
                   source={require('../../assets/MainPagetodayimg.png')}
                   style={Categorystyles.storeImg}
-                  imageStyle={{ borderRadius: 10 }}
-                >
-                  <Text style={Categorystyles.mainMenu}>대표</Text>
-                </ImageBackground>
+                />
                 <Text style={Categorystyles.menuName}>세트메뉴</Text>
                 <Text style={Categorystyles.menuPrice}>57,000원</Text>
               </View>
