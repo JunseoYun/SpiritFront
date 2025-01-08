@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { View, Text } from 'react-native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
-import CategoryTapScreen from '../screens/CategoryTapScreen';
+import CategoryTapScreen from '../screens/CategoryTap/CategoryTapScreen';
 import { getLocation } from '../storage/locationStorage';
 
 const categories = [
