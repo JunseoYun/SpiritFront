@@ -60,7 +60,7 @@ const [location, setLocation] = useState(null);
       screenOptions={{
         tabBarScrollEnabled: true,
         tabBarItemStyle: {width: 100},
-        swipeEnabled: false,
+        swipeEnabled: true,
         tabBarActiveTintColor: '#80D2F4', // 선택된 탭 글자 색상
         tabBarIndicatorStyle: {
           backgroundColor: '#80D2F4', // 선택된 탭 아래의 인디케이터 색상
