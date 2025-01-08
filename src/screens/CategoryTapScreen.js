@@ -6,7 +6,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect } from '@react-navigation/native';
 import { getByCategoryStore} from '../api/storeApi';
 
-const Categoryspage = ({ navigation, route }) => {
+const CategoryTapScreen = ({ navigation, route }) => {
   const { categoryname, location } = route.params;
   const [stores, setStores] = useState([]);
   const [error, setError] = useState(null);
@@ -123,4 +123,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Categoryspage;
+export default CategoryTapScreen;
