@@ -188,6 +188,9 @@ const MainScreen = ({ navigation }) => {
     else if (index === 2) {
       navigation.navigate('MapScreen');
     }
+    else if (index === 3) {
+      navigation.navigate('RandomChoiceScreen');
+    }
   };
 
   const handlestoreItemOut = () => {
