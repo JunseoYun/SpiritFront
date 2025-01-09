@@ -9,6 +9,7 @@ import StoreAddScreen from '../screens/StoreRegister/StoreAddScreen';
 import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
 import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
 import CategoryListTabbar from './CategoryListTabbar';
+import RandomChoiceScreen from '../screens/RandomChoice/RandomChoiceScreen';
 
 const Stack = createStackNavigator();
 
@@ -110,7 +111,23 @@ export default function MainStack() {
           ),
         })}
       />
-
+      <Stack.Screen
+        name="RandomChoiceScreen"
+        component={RandomChoiceScreen}
+        options={({ navigation }) => ({
+          title: '랜덤 고르기',
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{ marginLeft: 13, paddingRight: 15 }}
+              />
+            </Pressable>
+          ),
+        })}
+      />
     </Stack.Navigator>
   );
 }
