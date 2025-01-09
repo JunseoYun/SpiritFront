@@ -1,15 +1,16 @@
 // InnerCategoryModal.js
 import React from 'react';
-import {View, Modal, Pressable, Image, Text, StyleSheet} from 'react-native';
+import { View, Modal, Pressable, Image, Text, StyleSheet } from 'react-native';
 
-const InnerCategoryModal = ({isVisible, onPressInnerCategory, onClose}) => {
+const InnerCategoryModal = ({ isVisible, onPressInnerCategory, onClose }) => {
   return (
-    <Modal visible={isVisible} animationType="slide" transparent={true}>
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
+    <Modal visible={isVisible} animationType="fade" transparent={true}>
+      <Pressable style={styles.modalBackground} onPress={onClose}>
+        <View style={styles.modalContainer}
+        onStartShouldSetResponder={() => true} >
           <View style={styles.modaltopview}>
             {innerCategories
-              .reduce((acc, {source, text}, index) => {
+              .reduce((acc, { source, text }, index) => {
                 const rowIndex = Math.floor(index / 5);
                 if (!acc[rowIndex]) acc[rowIndex] = [];
                 acc[rowIndex].push(
@@ -28,14 +29,12 @@ const InnerCategoryModal = ({isVisible, onPressInnerCategory, onClose}) => {
                   {row}
                 </View>
               ))}
-            <View>
-              <Pressable onPress={onClose} style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>닫기</Text>
-              </Pressable>
-            </View>
           </View>
+          <Pressable onPress={onClose} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>닫기</Text>
+          </Pressable>
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 };
@@ -82,14 +81,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   closeButton: {
-    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    backgroundColor: 'rgba(22, 187, 255, 0.9)',
+    borderRadius: 5,
   },
   closeButtonText: {
-    color: 'black',
-    fontSize: 14,
-    fontWeight: 'bold',
-    paddingTop: 10,
-    paddingBottom: 6,
+    fontSize: 16,
+    color: '#FFF',
   },
 });
 
@@ -150,12 +151,12 @@ const innerCategories = [
     source: require('../../../assets/free-icon-disco-ball-3935116.png'),
     text: '단체 행사',
   },
-  {source: require('../../../assets/beers_2302167.png'), text: '야장'},
+  { source: require('../../../assets/beers_2302167.png'), text: '야장' },
   {
     source: require('../../../assets/free-icon-stall-food-6734735.png'),
     text: '포차',
   },
-  {source: require('../../../assets/free-icon-beer-1887156.png'), text: '호프'},
+  { source: require('../../../assets/free-icon-beer-1887156.png'), text: '호프' },
   {
     source: require('../../../assets/free-icon-wine-6454589.png'),
     text: '와인바',

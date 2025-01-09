@@ -66,6 +66,10 @@ const [location, setLocation] = useState(null);
           backgroundColor: '#80D2F4', // 선택된 탭 아래의 인디케이터 색상
         },
         tabBarInactiveTintColor: '#CFCFCF', // 선택되지 않은 탭 글자 색상
+        tabBarLabelStyle: {
+          fontWeight: 'bold', // 글씨 두껍게
+          fontSize: 16,       // 글씨 크기 조정
+        },
       }}>
       {categories.map(({name, title, categoryname}) => (
         <Tab.Screen
