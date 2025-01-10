@@ -35,6 +35,16 @@ const CategoryTapScreen = ({ navigation, route }) => {
           <Pressable
             key={store.storeId}
             style={Categorystyles.itemContainer}
+            onPress={() =>
+              navigation.navigate('StoreStack', {
+                screen: 'StoreMainScreen',
+                params: {
+                  storeId: store.storeId,
+                  innerlatitude: location.latitude,
+                  innerlongitude: location.longitude,
+                },
+              })
+            }
           >
             <View style={Categorystyles.menuView}>
               <View style={Categorystyles.menuItemView}>
