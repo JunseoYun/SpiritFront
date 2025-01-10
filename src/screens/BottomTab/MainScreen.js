@@ -298,10 +298,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignSelf: 'center',
     width: '90%',
-    marginTop: 10,
+    paddingVertical: 10,
   },
   todayAddress: {
-    fontSize: 17,
+    fontSize: 20,
     fontWeight: 'bold',
     color: 'black',
   },

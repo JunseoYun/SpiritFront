@@ -34,6 +34,7 @@ const TodayRecomm = ({
       <View>
         {recommStores && recommStores.length > 0 ? (
           <ScrollView
+          pagingEnabled
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.scrollContainer}>

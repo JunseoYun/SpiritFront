@@ -6,6 +6,7 @@ const axiosInstance = axios.create({
   baseURL: 'http://43.203.91.148:8080/api', // 공통 URL
   headers: {
     'Content-Type': 'application/json',
+    
   },
   timeout: 30000, // 10초 타임아웃
 });

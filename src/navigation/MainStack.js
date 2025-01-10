@@ -10,6 +10,7 @@ import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen'
 import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
 import CategoryListTabbar from './CategoryListTabbar';
 import RandomChoiceScreen from '../screens/RandomChoice/RandomChoiceScreen';
+import StoreStack from './StoreStack';
 
 const Stack = createStackNavigator();
 
@@ -110,6 +111,13 @@ export default function MainStack() {
             </Pressable>
           ),
         })}
+      />
+      <Stack.Screen
+        name="StoreStack"
+        component={StoreStack}
+        options={{
+          headerShown: false,
+        }}
       />
       <Stack.Screen
         name="RandomChoiceScreen"
