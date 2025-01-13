@@ -2,12 +2,7 @@ import React from 'react';
 import {View, Text, ImageBackground, Pressable, StyleSheet} from 'react-native';
 
 const StoreTabs = ({
-  changePage,
-  latitude,
-  longitude,
-  innerlatitude,
-  innerlongitude,
-  navigation,
+  changePage
 }) => (
   <View style={styles.Storeinnercategory}>
     <Pressable
@@ -22,23 +17,30 @@ const StoreTabs = ({
     </Pressable>
     <Pressable
       style={styles.StoreButton}
-      onPress={() =>
-        navigation.navigate('StoreStack', {
-          screen: 'StoreMapScreen',
-          params: {
-            storeLatitude: latitude,
-            storeLongitude: longitude,
-            innerlatitude,
-            innerlongitude,
-          },
-        })
-      }>
+      onPress={() => changePage('StoreMapScreen')}>
       <Text style={styles.StoreButtonText}>길찾기</Text>
     </Pressable>
   </View>
 );
 
 const styles = StyleSheet.create({
+  Storeinnercategory: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff'
+  },
+  StoreButton: {
+    flex: 1,
+    paddingHorizontal: 45,
+    paddingTop: 10,
+    paddingVertical: 10,
+  },
+  StoreButtonText: {
+    fontSize: 15,
+    color: 'black',
+    fontWeight: '400',
+  },
 });
 
 export default StoreTabs;

@@ -32,21 +32,15 @@ export const getByCategoryStore = async (categoryname, location) => {
 };
 
 //스토어상세페이지 관련 api
-export const StoreMainget = async (storeId, latitude, longitude) => {
-
-
+export const StoreMainget = async (storeId, innerlatitude, innerlongitude) => {
+  console.log("통신 데이터:", storeId, innerlatitude, innerlongitude);
   try {
-    console.log(storeId);
-    console.log(latitude);
-    console.log(longitude);
-    const response = await axiosInstance.get(`/store/get/${storeId}`, {
-      params: { latitude, longitude },
-    });
-    
-
-    return response.data.data; // API 응답 구조에 따라 수정
+    const response = await axiosInstance.get(
+      `/store/get/${storeId}?latitude=${innerlatitude}&longitude=${innerlongitude}`,
+      {},
+    );
+    return response.data.data;
   } catch (error) {
-    console.error('서버 요청 실패:', error);
     functionerror(error);
   }
 };
