@@ -11,8 +11,13 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImageSlider from '../../../components/StoreScreen/ImageSlider';
 import { ScrollView } from 'react-native-gesture-handler';
-import StoreHeader from '../../../components/StoreScreen/StoreHeader';
+import StoreMainInfo from '../../../components/StoreScreen/StoreMainInfo';
+import StoreTabs from '../../../components/StoreScreen/StoreTabs';
 import { useRoute } from '@react-navigation/native';
+import { StoreMainget } from '../../../api/storeApi';
+import StoreMenuScreen from '../StoreMenu/StoreMenuScreen';
+import StoreReviewScreen from '../StoreReview/StoreReviewScreen';
+import StoreMapScreen from '../StoreMap/StoreMapScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -22,6 +27,10 @@ const StoreMainScreen = ({ navigation }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedata, setStoredata] = useState('');
   const [scrollY] = useState(new Animated.Value(0)); // 스크롤 위치 추적
+
+  const [longitude, setLongitude] = useState(127.1320999);
+  const [latitude, setLatitude] = useState(37.274125);
+  const [currentPage, setCurrentPage] = useState('StoreMenuScreen');
 
   const onPressModalOpen = () => {
     setIsModalVisible(true);
@@ -33,7 +42,12 @@ const StoreMainScreen = ({ navigation }) => {
 
   const getStoreData = async () => {
     try {
-      // 데이터를 가져오는 API 호출 코드
+      // const storeData = await StoreMainget(
+      //   storeId,
+      //   innerlatitude,
+      //   innerlongitude,
+      // );
+      // console.log(storeData);
     } catch (error) {
       console.error(error);
     }
@@ -85,9 +99,9 @@ const StoreMainScreen = ({ navigation }) => {
           </Animated.Text>
         </Pressable>
         <Animated.Text style={[styles.headerTitle, { opacity: titleOpacity }]}>
-          {storedata?.name || '가게 이름'}
+          {storedata?.name || '친구포차'}
         </Animated.Text>
-        <Pressable onPress={() => navigation.navigate('MainScreen')}>
+        <Pressable onPress={() => navigation.navigate('MainBtmbar')}>
           <Animated.Text style={{ color: iconColor }}>
             <Ionicons name="home-outline" size={25} />
           </Animated.Text>
@@ -96,7 +110,7 @@ const StoreMainScreen = ({ navigation }) => {
 
       {/* 이미지 슬라이더 및 콘텐츠 */}
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        style={{ backgroundColor: '#E7E7E&' }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
@@ -104,22 +118,59 @@ const StoreMainScreen = ({ navigation }) => {
         scrollEventThrottle={16}
       >
         {/* 이미지 슬라이더 */}
-        <View style={styles.sliderContainer}>
-          <ImageSlider images={tempImages} interval={4000} />
-        </View>
+
+        <ImageSlider images={tempImages} interval={4000} />
+
 
         {/* 추가 콘텐츠 */}
-        <StoreHeader
+        <StoreMainInfo
           storedata={storedata}
           onModalOpen={() => setIsModalVisible(true)}
           navigation={navigation}
         />
+        <StoreTabs
+          changePage={setCurrentPage}
+        />
+
+        <View>
+          {currentPage === 'StoreMenuScreen' && (
+            <StoreMenuScreen
+              navigation={navigation}
+              storeId={storeId}
+              innerlatitude={innerlatitude}
+              innerlongitude={innerlongitude}
+            />
+          )}
+          {currentPage === 'StoreReviewScreen' && (
+            <StoreReviewScreen navigation={navigation} storeId={storeId} />
+          )}
+          {currentPage === 'StoreMapScreen' && (
+            <StoreMapScreen
+              navigation={navigation}
+              storeId={storeId}
+              storeLatitude={latitude}
+              storeLongitude={longitude}
+              innerlatitude={innerlatitude}
+              innerlongitude={innerlongitude}
+            />
+          )}
+        </View>
         <View style={styles.contentContainer}>
           <View style={styles.contentBox}>
             <Text>스크롤 가능한 콘텐츠 1</Text>
           </View>
           <View style={styles.contentBox}>
             <Text>스크롤 가능한 콘텐츠 2</Text>
+          </View>
+
+          <View style={styles.contentBox}>
+            <Text>스크롤 가능한 콘텐츠 3</Text>
+          </View>
+          <View style={styles.contentBox}>
+            <Text>스크롤 가능한 콘텐츠 3</Text>
+          </View>
+          <View style={styles.contentBox}>
+            <Text>스크롤 가능한 콘텐츠 3</Text>
           </View>
           <View style={styles.contentBox}>
             <Text>스크롤 가능한 콘텐츠 3</Text>
@@ -131,10 +182,6 @@ const StoreMainScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  sliderContainer: {
-    height: 300,
-    zIndex: -1,
-  },
   navigateView: {
     position: 'absolute',
     top: 0,
@@ -147,16 +194,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     zIndex: 1,
     paddingTop: Platform.OS === 'ios' ? 50 : 30,
+
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
   },
-  scrollContent: {},
   contentContainer: {
     paddingHorizontal: 15,
     paddingTop: 10,
+    backgroundColor: 'white',
   },
   contentBox: {
     height: 150,
