@@ -4,22 +4,24 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
-import ImageSlider from '../../../components/StoreScreen/ImageSlider';
+import ImageSlider from '../../components/StoreScreen/ImageSlider';
 import { ScrollView } from 'react-native-gesture-handler';
-import StoreMainInfo from '../../../components/StoreScreen/StoreMainInfo';
-import StoreTabs from '../../../components/StoreScreen/StoreTabs';
+import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
+import StoreTabs from '../../components/StoreScreen/StoreTabs';
 import { useRoute } from '@react-navigation/native';
-import { StoreMainget } from '../../../api/storeApi';
-import StoreMenuScreen from '../StoreMenu/StoreMenuScreen';
-import StoreReviewScreen from '../StoreReview/StoreReviewScreen';
-import StoreMapScreen from '../StoreMap/StoreMapScreen';
-import StoreHeader from '../../../components/StoreScreen/StoreHeader';
+import { StoreMainget } from '../../api/storeApi';
+import StoreMenuScreen from './StoreMenuScreen';
+import StoreReviewScreen from './StoreReviewScreen';
+import StoreMapScreen from './StoreMapScreen';
+import StoreHeader from '../../components/StoreScreen/StoreHeader';
+import { StoreMenuget } from '../../api/menuApi';
 
 const { width } = Dimensions.get('window');
 
 const StoreMainScreen = ({ navigation }) => {
   const route = useRoute();
   const { storeId, innerlatitude, innerlongitude } = route.params;
+  const [menus, setMenus] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedata, setStoredata] = useState('');
   const [scrollY] = useState(new Animated.Value(0)); // 스크롤 위치 추적
@@ -28,13 +30,6 @@ const StoreMainScreen = ({ navigation }) => {
   const [latitude, setLatitude] = useState(37.274125);
   const [currentPage, setCurrentPage] = useState('StoreMenuScreen');
 
-  const onPressModalOpen = () => {
-    setIsModalVisible(true);
-  };
-
-  const onPressModalClose = () => {
-    setIsModalVisible(false);
-  };
 
   const getStoreData = async () => {
     try {
@@ -43,7 +38,10 @@ const StoreMainScreen = ({ navigation }) => {
         innerlatitude,
         innerlongitude,
       );
-      console.log(storeData);
+      setStoredata(storeData);
+      const Menus = await StoreMenuget(storeId);
+      console.log(Menus);
+      setMenus(Menus);
     } catch (error) {
       console.error(error);
     }
@@ -120,8 +118,7 @@ const StoreMainScreen = ({ navigation }) => {
             <StoreMenuScreen
               navigation={navigation}
               storeId={storeId}
-              innerlatitude={innerlatitude}
-              innerlongitude={innerlongitude}
+              menus={menus}
             />
           )}
           {currentPage === 'StoreReviewScreen' && (

@@ -16,7 +16,10 @@ const MenuItem = ({ menu, onPressMenuOption, isExpanded, toggleExpand, setButton
       <View style={styles.SignatureMenuTextsview}>
         <View style={styles.menuTitleRow}>
           {/* <Text style={styles.Signaturetitle}>{menu.menuName || '메뉴 이름'}</Text> */}
-          <Text style={styles.Signaturetitle}>매운갈비찜</Text>
+          <View style={styles.menuTitleRow}>
+            <Text style={styles.Signaturetitle}>매운갈비찜</Text>
+            {menu.isMain && <Text style={styles.mainMenu}>대표</Text>}
+          </View>
           <Pressable
             onPress={(event) => {
               onPressMenuOption(menu.menuId);
@@ -83,6 +86,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: 'bold',
+  },
+  mainMenu: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginLeft: 7,
+    backgroundColor: 'rgba(16, 190, 251, 0.7)', // 글자만 배경색
+    paddingHorizontal: 7,       // 글자 좌우 여백
+    paddingVertical: 2,         // 글자 상하 여백
+    borderRadius: 5,            // 둥근 배경 처리
+    alignSelf: 'flex-start',    // 텍스트만 차지하는 공간에 제한
   },
   Signaturecontent: {
     paddingVertical: 5,
