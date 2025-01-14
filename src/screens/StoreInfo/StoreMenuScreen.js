@@ -1,18 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Alert, SafeAreaView, StyleSheet } from 'react-native';
-import { useRoute } from '@react-navigation/native';
-import MenuHeader from '../../../components/MenuScreen/MenuHeader';
-import MenuItem from '../../../components/MenuScreen/MenuItem';
-import MenuModal from '../../../components/MenuScreen/MenuModal';
-import { StoreMenuget, StoreMenudelete } from '../../../api/menuApi';
+import { Alert, SafeAreaView, StyleSheet } from 'react-native';
+import MenuHeader from '../../components/MenuScreen/MenuHeader';
+import MenuItem from '../../components/MenuScreen/MenuItem';
+import MenuModal from '../../components/MenuScreen/MenuModal';
+import { StoreMenudelete } from '../../api/menuApi';
 
-const StoreMenuScreen = ({ navigation }) => {
+const StoreMenuScreen = ({ navigation, storeId, menus  }) => {
   const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
   const [isExpanded, setIsExpanded] = useState(false);
-  const route = useRoute();
-  const { storeId, innerlatitude, innerlongitude } = route.params;
-  const [token, setToken] = useState(null);
-  const [menus, setMenus] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedMenuId, setSelectedMenuId] = useState(null);
 
@@ -81,23 +76,14 @@ const StoreMenuScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
-    getStoreData();
-  }, []);
+  }, [menus]);
 
-  const getStoreData = async () => {
-    try {
-      const Menus = await StoreMenuget(storeId);
-      console.log(Menus);
-      setMenus(Menus);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+
 
   return (
     <SafeAreaView style={styles.container}>
       <MenuHeader storeId={storeId} navigation={navigation} />
-      {menus
+      {menus && menus
         .filter(menu => menu.isMain)
         .map(menu => (
           <MenuItem
