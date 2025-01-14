@@ -21,7 +21,7 @@ const OAuthLoginScreen = ({ navigation }) => {
 
   const handleTempLogin = async () => {
     try {
-      const tempToken = "yJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMTEiLCJyb2xlIjoiUk9MRV9VU0VSIiwiZXhwIjoxNzM2NjIzNjg0fQ.kdHaKRhagIW7cMVOqMfvhNHXfl_xgTtlJ06fXI2r7J8";
+      const tempToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMTEiLCJyb2xlIjoiUk9MRV9VU0VSIiwiZXhwIjoxNzM2OTY3ODE4fQ.vTVve46T4-aJo-aL3uPSWKoCWgL-3UhviLadjKPl4aw";
       console.log(tempToken);
       login(tempToken);
     } catch (err) {

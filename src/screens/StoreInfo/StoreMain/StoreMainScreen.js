@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
   View,
-  Pressable,
-  StyleSheet,
   Dimensions,
-  Text,
   Animated,
-  Platform,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImageSlider from '../../../components/StoreScreen/ImageSlider';
 import { ScrollView } from 'react-native-gesture-handler';
 import StoreMainInfo from '../../../components/StoreScreen/StoreMainInfo';
@@ -18,6 +13,7 @@ import { StoreMainget } from '../../../api/storeApi';
 import StoreMenuScreen from '../StoreMenu/StoreMenuScreen';
 import StoreReviewScreen from '../StoreReview/StoreReviewScreen';
 import StoreMapScreen from '../StoreMap/StoreMapScreen';
+import StoreHeader from '../../../components/StoreScreen/StoreHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -42,12 +38,12 @@ const StoreMainScreen = ({ navigation }) => {
 
   const getStoreData = async () => {
     try {
-      // const storeData = await StoreMainget(
-      //   storeId,
-      //   innerlatitude,
-      //   innerlongitude,
-      // );
-      // console.log(storeData);
+      const storeData = await StoreMainget(
+        storeId,
+        innerlatitude,
+        innerlongitude,
+      );
+      console.log(storeData);
     } catch (error) {
       console.error(error);
     }
@@ -87,30 +83,17 @@ const StoreMainScreen = ({ navigation }) => {
   return (
     <>
       {/* 네비게이션 헤더 */}
-      <Animated.View
-        style={[
-          styles.navigateView,
-          { backgroundColor: headerBackgroundColor },
-        ]}
-      >
-        <Pressable onPress={() => navigation.goBack()}>
-          <Animated.Text style={{ color: iconColor }}>
-            <Ionicons name="arrow-back-outline" size={25} />
-          </Animated.Text>
-        </Pressable>
-        <Animated.Text style={[styles.headerTitle, { opacity: titleOpacity }]}>
-          {storedata?.name || '친구포차'}
-        </Animated.Text>
-        <Pressable onPress={() => navigation.navigate('MainBtmbar')}>
-          <Animated.Text style={{ color: iconColor }}>
-            <Ionicons name="home-outline" size={25} />
-          </Animated.Text>
-        </Pressable>
-      </Animated.View>
+      <StoreHeader
+        navigation={navigation}
+        headerBackgroundColor={headerBackgroundColor}
+        iconColor={iconColor}
+        titleOpacity={titleOpacity}
+        title={storedata.storeName}
+      />
+
 
       {/* 이미지 슬라이더 및 콘텐츠 */}
       <ScrollView
-        style={{ backgroundColor: '#E7E7E&' }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
@@ -155,65 +138,12 @@ const StoreMainScreen = ({ navigation }) => {
             />
           )}
         </View>
-        <View style={styles.contentContainer}>
-          <View style={styles.contentBox}>
-            <Text>스크롤 가능한 콘텐츠 1</Text>
-          </View>
-          <View style={styles.contentBox}>
-            <Text>스크롤 가능한 콘텐츠 2</Text>
-          </View>
 
-          <View style={styles.contentBox}>
-            <Text>스크롤 가능한 콘텐츠 3</Text>
-          </View>
-          <View style={styles.contentBox}>
-            <Text>스크롤 가능한 콘텐츠 3</Text>
-          </View>
-          <View style={styles.contentBox}>
-            <Text>스크롤 가능한 콘텐츠 3</Text>
-          </View>
-          <View style={styles.contentBox}>
-            <Text>스크롤 가능한 콘텐츠 3</Text>
-          </View>
-        </View>
       </ScrollView>
     </>
   );
 };
 
-const styles = StyleSheet.create({
-  navigateView: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: Platform.OS === 'ios' ? 100 : 70,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    zIndex: 1,
-    paddingTop: Platform.OS === 'ios' ? 50 : 30,
 
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  contentContainer: {
-    paddingHorizontal: 15,
-    paddingTop: 10,
-    backgroundColor: 'white',
-  },
-  contentBox: {
-    height: 150,
-    marginBottom: 10,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-});
 
 export default StoreMainScreen;
