@@ -9,10 +9,12 @@ const StoreActions = () => (
       <Ionicons name="call-outline" size={20} color="#333" />
       <Text style={styles.CallViewtext}> 전화</Text>
     </View>
+    <View style={styles.separator} /> 
     <View style={styles.View}>
       <Ionicons name="heart-outline" size={20} color="#333" />
       <Text style={styles.CallViewtext}> 찜</Text>
     </View>
+    <View style={styles.separator} /> 
     <View style={styles.View}>
       <Ionicons name="chatbubble-ellipses-outline" size={20} color="#333" />
       <Text style={styles.CallViewtext}> 채팅</Text>
@@ -27,12 +29,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     alignSelf: 'center',
-    borderWidth: 2,
     flexDirection: 'row',
     marginTop: 12,
     marginBottom: 20,
-    borderRadius: 10,
-    borderColor: 'rgb(16, 190, 251)'
   },
   View: {
     flexDirection: 'row',
@@ -45,6 +44,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
+  separator: {
+    width: 1.5,              // 세로선 너비
+    height: '60%',         // 세로선 높이
+    backgroundColor: '#E7E7E7', // 세로선 색상
+    marginHorizontal: 10,  // 아이템과 구분선 간격
+  },
+
 });
 
 export default StoreActions;

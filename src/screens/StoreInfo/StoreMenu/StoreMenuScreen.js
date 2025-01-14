@@ -1,21 +1,134 @@
-import React, { useEffect } from 'react';
-import {
-    Text,
-    SafeAreaView,
-    ScrollView,
-    Pressable
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Alert, SafeAreaView, StyleSheet } from 'react-native';
+import { useRoute } from '@react-navigation/native';
+import MenuHeader from '../../../components/MenuScreen/MenuHeader';
+import MenuItem from '../../../components/MenuScreen/MenuItem';
+import MenuModal from '../../../components/MenuScreen/MenuModal';
+import { StoreMenuget, StoreMenudelete } from '../../../api/menuApi';
+
 const StoreMenuScreen = ({ navigation }) => {
-    return (
-        <SafeAreaView>
-            <ScrollView>
-                <Pressable><Text>StoreMenuScreen</Text></Pressable>
-            </ScrollView>
+  const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
+  const [isExpanded, setIsExpanded] = useState(false);
+  const route = useRoute();
+  const { storeId, innerlatitude, innerlongitude } = route.params;
+  const [token, setToken] = useState(null);
+  const [menus, setMenus] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedMenuId, setSelectedMenuId] = useState(null);
 
-        </SafeAreaView>
+  const onPressModalOpen = menuId => {
+    setSelectedMenuId(menuId); // 선택한 메뉴 ID를 상태로 저장
+    setIsModalVisible(true);
+  };
+
+  const onPressModalClose = () => {
+    
+    setIsModalVisible(false);
+    setSelectedMenuId(null);
+  };
+
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const handlePress = index => {
+    if (index == 0) {
+      navigation.navigate('UpdateMenu', { menuId: selectedMenuId });
+    }
+    onPressModalClose();
+  };
 
 
+  const opendeletemenu = () => {
+    Alert.alert(
+      '메뉴 삭제',
+      '메뉴를 삭제하시겠습니까?',
+      [
+        {
+          text: '확인',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await StoreMenudelete(selectedMenuId); // StoreMaindelete 함수 호출
+              Alert.alert(
+                '삭제되었습니다.',
+                '',
+                [
+                  {
+                    text: '확인',
+                    style: 'destructive',
+                    onPress: () => {
+                      setIsModalVisible(false);
+                      getStoreData(); // 삭제 후 메인 페이지로 이동
+                    },
+                  },
+                ],
+                { cancelable: false },
+              );
+            } catch (error) {
+              console.error('Error:', error);
+              Alert.alert('오류가 발생했습니다. 다시 시도해주세요.');
+            }
+          },
+        },
+        {
+          text: '취소',
+          style: 'destructive',
+        },
+      ],
+      { cancelable: true },
     );
+  };
+
+  useEffect(() => {
+    getStoreData();
+  }, []);
+
+  const getStoreData = async () => {
+    try {
+      const Menus = await StoreMenuget(storeId);
+      console.log(Menus);
+      setMenus(Menus);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <MenuHeader storeId={storeId} navigation={navigation} />
+      {menus
+        .filter(menu => menu.isMain)
+        .map(menu => (
+          <MenuItem
+            key={menu.menuId}
+            menu={menu}
+            onPressMenuOption={onPressModalOpen}
+            isExpanded={isExpanded}
+            toggleExpand={toggleExpand}
+            setButtonPosition={setButtonPosition}
+          />
+        ))}
+      {isModalVisible && (
+        <MenuModal
+          visible={isModalVisible}
+          onPressModalClose={onPressModalClose}
+          onUpdate={() => handlePress(0)}
+          onDelete={opendeletemenu}
+          buttonPosition={buttonPosition} // 모달 위치 설정
+        />
+      )}
+    </SafeAreaView>
+
+
+  );
 };
+const styles = StyleSheet.create({
+  container: {
+    paddingBottom: 20,
+    backgroundColor: '#fff'
+  },
+
+});
 
 export default StoreMenuScreen;
