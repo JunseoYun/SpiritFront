@@ -1,53 +1,51 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const MenuItem = ({ menu, onPressMenuOption, isExpanded, toggleExpand, setButtonPosition }) => {
+const MenuItem = ({ menu, onPressMenuOption, setButtonPosition }) => {
+  const [isPressed, setIsPressed] = useState(false); // 눌림 상태 관리
+
+  const handleLongPress = (event) => {
+    // 모달 위치 설정
+    event.target.measure((x, y, width, height, pageX, pageY) => {
+      setButtonPosition({ x: pageX, y: pageY + height }); // 버튼 아래로 모달 배치
+    });
+    // 모달 열기
+    onPressMenuOption(menu.menuId);
+  };
+
   return (
-    <View style={styles.SignatureMenuView}>
-      <View style={styles.ImageContainer}>
-        <Image
-          source={
-            menu.imgUrl ? { uri: menu.imgUrl } : require('../../assets/kim.png')
-          }
-          style={styles.Signatureimg}
-        />
-      </View>
+    <Pressable
+      onLongPress={handleLongPress} // 꾹 눌렀을 때 동작
+      onPressIn={() => setIsPressed(true)} // 눌렀을 때 배경색 변경
+      onPressOut={() => setIsPressed(false)} // 뗐을 때 배경색 복원
+      style={[
+        styles.SignatureMenuView,
+        isPressed && { backgroundColor: 'rgba(16, 190, 251, 0.1)' }, // 눌렸을 때 배경색
+      ]}
+    >
       <View style={styles.SignatureMenuTextsview}>
         <View style={styles.menuTitleRow}>
           {/* <Text style={styles.Signaturetitle}>{menu.menuName || '메뉴 이름'}</Text> */}
-          <View style={styles.menuTitleRow}>
-            <Text style={styles.Signaturetitle}>매운갈비찜</Text>
-            {menu.isMain && <Text style={styles.mainMenu}>대표</Text>}
-          </View>
-          <Pressable
-            onPress={(event) => {
-              onPressMenuOption(menu.menuId);
-              // 버튼의 위치 계산
-              event.target.measure((x, y, width, height, pageX, pageY) => {
-                setButtonPosition({ x: pageX, y: pageY + height }); // 버튼 아래로 모달 배치
-              });
-            }}
-            style={styles.updateicons}>
-            <MaterialCommunityIcons
-              name={'dots-vertical'}
-              size={20}
-              color={'black'}
-            />
-          </Pressable>
+          <Text style={styles.Signaturetitle}>매운갈비찜</Text>
+          {menu.isMain && <Text style={styles.mainMenu}>대표</Text>}
         </View>
-        <Pressable onPress={toggleExpand}>
-          <Text
-            style={styles.Signaturecontent}
-            numberOfLines={isExpanded ? null : 3}
-            ellipsizeMode="tail">
-            {/* {menu.menuContent || '메뉴 설명'} */}
-            시그니처 메뉴 매운갈비찜입니다. 맵기 조절 가능!
-          </Text>
-        </Pressable>
+        <Text
+          style={styles.Signaturecontent}
+          numberOfLines={3}
+          ellipsizeMode="tail"
+        >
+          {/* {menu.menuContent || '메뉴 설명'} */}
+          시그니처 메뉴 매운갈비찜입니다, 맵기 조절 가능!
+        </Text>
         <Text style={styles.Signatureprice}>{menu.price}원</Text>
       </View>
-    </View>
+      <View style={styles.ImageContainer}>
+        <Image
+          source={menu.imgUrl ? { uri: menu.imgUrl } : require('../../assets/kim.png')}
+          style={styles.Signatureimg}
+        />
+      </View>
+    </Pressable>
   );
 };
 
@@ -55,8 +53,7 @@ const styles = StyleSheet.create({
   SignatureMenuView: {
     width: '100%',
     flexDirection: 'row',
-    marginBottom: 20,
-    paddingBottom: 20,
+    paddingVertical: 20,
     paddingHorizontal: 18,
     borderBottomWidth: 1,
     borderColor: '#E7E7E7',
@@ -80,7 +77,8 @@ const styles = StyleSheet.create({
   },
   menuTitleRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    textAlign: 'center',
   },
   Signaturetitle: {
     fontSize: 16,
@@ -92,11 +90,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     marginLeft: 7,
-    backgroundColor: 'rgba(16, 190, 251, 0.7)', // 글자만 배경색
-    paddingHorizontal: 7,       // 글자 좌우 여백
-    paddingVertical: 2,         // 글자 상하 여백
-    borderRadius: 5,            // 둥근 배경 처리
-    alignSelf: 'flex-start',    // 텍스트만 차지하는 공간에 제한
+    backgroundColor: 'rgba(16, 190, 251, 0.7)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 5,
+    alignSelf: 'flex-start',
   },
   Signaturecontent: {
     paddingVertical: 5,
@@ -104,6 +102,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#999',
     fontWeight: '400',
+    marginTop: 1,
   },
   Signatureprice: {
     marginTop: 5,

@@ -15,8 +15,8 @@ const MenuModal = ({ isModalVisible, onPressModalClose, onUpdate, onDelete, butt
             styles.modalContainer,
             {
               position: 'absolute',
-              top: buttonPosition?.y || 0, // 버튼 아래로 위치
-              left: buttonPosition?.x ? buttonPosition.x - 110 : 0, // 버튼 중심으로 위치
+              top: buttonPosition?.y - 60 || 0, // 버튼 아래로 위치
+              left: buttonPosition?.x ? buttonPosition.x + 120 : 0, // 버튼 중심으로 위치
             },
           ]}
         >
