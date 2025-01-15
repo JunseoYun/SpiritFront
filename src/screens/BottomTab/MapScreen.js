@@ -20,7 +20,6 @@ import throttle from 'lodash/throttle';
 import MapSearchBar from '../../components/MapScreen/MapSearchBar';
 import MapLocation from '../../components/MapScreen/MapLocation';
 import MapDirections from '../../components/MapScreen/MapDirections';
-import MapCategory from '../../hooks/MapCategory';
 import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import generateMapScript from '../../components/MapScreen/generateMapScript';
 import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
