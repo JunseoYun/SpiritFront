@@ -26,8 +26,8 @@ const StoreMainScreen = ({ navigation }) => {
   const [storedata, setStoredata] = useState('');
   const [scrollY] = useState(new Animated.Value(0)); // 스크롤 위치 추적
 
-  const [longitude, setLongitude] = useState(127.1320999);
-  const [latitude, setLatitude] = useState(37.274125);
+  const [longitude, setLongitude] = useState('');
+  const [latitude, setLatitude] = useState('');
   const [currentPage, setCurrentPage] = useState('StoreMenuScreen');
 
 
@@ -39,6 +39,10 @@ const StoreMainScreen = ({ navigation }) => {
         innerlongitude,
       );
       setStoredata(storeData);
+      setLongitude(storeData.longitude);
+      setLatitude(storeData.latitude);
+      console.log(storeData.longitude);
+      console.log(storeData.latitude);
       const Menus = await StoreMenuget(storeId);
       setMenus(Menus);
     } catch (error) {

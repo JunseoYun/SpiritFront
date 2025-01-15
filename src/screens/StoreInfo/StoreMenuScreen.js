@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet } from 'react-native';
-import MenuHeader from '../../components/MenuScreen/MenuHeader';
-import MenuItem from '../../components/MenuScreen/MenuItem';
-import MenuModal from '../../components/MenuScreen/MenuModal';
+import MenuHeader from '../../components/StoreMenuScreen/MenuHeader';
+import MenuItem from '../../components/StoreMenuScreen/MenuItem';
+import MenuModal from '../../components/StoreMenuScreen/MenuModal';
 import { StoreMenudelete } from '../../api/menuApi';
 
 const StoreMenuScreen = ({ navigation, storeId, menus  }) => {
