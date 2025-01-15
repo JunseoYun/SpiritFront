@@ -21,7 +21,8 @@ const MenuHeader = ({ storeId, navigation }) => {
 const styles = StyleSheet.create({
   MenuaddView: {
     width: '100%',
-    marginVertical: 30,
+    marginTop: 30,
+    marginBottom: 20,
     paddingHorizontal: 18,
   },
   MenuaddButton: {
