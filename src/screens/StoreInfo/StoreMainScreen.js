@@ -40,7 +40,6 @@ const StoreMainScreen = ({ navigation }) => {
       );
       setStoredata(storeData);
       const Menus = await StoreMenuget(storeId);
-      console.log(Menus);
       setMenus(Menus);
     } catch (error) {
       console.error(error);
@@ -97,6 +96,7 @@ const StoreMainScreen = ({ navigation }) => {
           { useNativeDriver: false }
         )}
         scrollEventThrottle={16}
+        style={{backgroundColor: 'white'}}
       >
         {/* 이미지 슬라이더 */}
 
@@ -109,10 +109,10 @@ const StoreMainScreen = ({ navigation }) => {
           onModalOpen={() => setIsModalVisible(true)}
           navigation={navigation}
         />
+        <View style={{backgroundColor: '#F2F2F2', height: 20}}/>
         <StoreTabs
           changePage={setCurrentPage}
         />
-
         <View>
           {currentPage === 'StoreMenuScreen' && (
             <StoreMenuScreen

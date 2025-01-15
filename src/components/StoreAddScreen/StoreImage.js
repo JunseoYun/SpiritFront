@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, ScrollView, Pressable, StyleSheet, Alert } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const StoreImage = ({ imageUris, setImageUris }) => {
   const [images, setImage] = useState([]);
@@ -29,7 +30,6 @@ const StoreImage = ({ imageUris, setImageUris }) => {
       mediaType: 'photo',
     })
       .then(image => {
-        console.log(image);
         setImage([...images, image.path]);
         setImageUris([...imageUris, image]); // 이미지 추가
       })
@@ -90,10 +90,7 @@ const StoreImage = ({ imageUris, setImageUris }) => {
             </Pressable>
           ))}
           <Pressable onPress={selectImage}>
-            <Image
-              source={require('../../assets/imageadd.png')}
-              style={styles.image}
-            />
+            <MaterialCommunityIcons name="image-plus" size={50} color="#333" />
           </Pressable>
         </ScrollView>
       </View>

@@ -1,7 +1,10 @@
-import React from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, Pressable, StyleSheet, Image } from 'react-native';
 import MainMenuCheck from './MainMenuCheck';
 import MenuTextInput from './MenuTextInput';
+import ImagePicker from 'react-native-image-crop-picker';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import useAlert from '../../hooks/useAlert';
 
 const MenuAddForm = ({
   menu,
@@ -10,6 +13,38 @@ const MenuAddForm = ({
   handleCheckBoxChange,
   onDelete, // 삭제 함수
 }) => {
+  const { showAlert } = useAlert();
+  const [isImageSelected, setIsImageSelected] = useState(false);
+
+  const selectImage = () => {
+    ImagePicker.openPicker({
+      width: 300,
+      height: 400,
+      cropping: true,
+      mediaType: 'photo',
+    })
+      .then(image => {
+        handleMenuChange(image, index, 'imageUri');
+      })
+      .catch(error => {
+        console.log('ImagePicker Error: ', error);
+      });
+  };
+
+  const confirmDeleteImage = () => {
+    setIsImageSelected(true); // 눌렀을 때 효과 추가
+    showAlert(
+      '사진 삭제',
+      '선택된 사진을 삭제하시겠습니까?',
+      () => {
+        handleMenuChange('', index, 'imageUri');
+        setIsImageSelected(false); // 삭제 후 효과 제거
+      },
+      () => setIsImageSelected(false), // 취소 시 효과 제거
+      'delete'
+    );
+  };
+
   return (
     <View key={index}>
       <View style={styles.menuHeader}>
@@ -40,6 +75,25 @@ const MenuAddForm = ({
         placeholder="메뉴를 간단하게 소개해주세요."
         multiline
       />
+
+      <View style={styles.menuAddImageView}>
+        <Text style={styles.menuAddImageText}>메뉴 사진</Text>
+        {menu.imageUri?.path ? (
+          <Pressable onPress={confirmDeleteImage} style={styles.imagePressable}>
+            <Image
+              source={{ uri: `file://${menu.imageUri.path}` }}
+              style={[
+                styles.selectImage,
+                isImageSelected && styles.selectedEffect, // 눌렀을 때 효과 적용
+              ]}
+            />
+          </Pressable>
+        ) : (
+          <Pressable onPress={selectImage}>
+            <MaterialCommunityIcons name="image-plus" size={40} color="#333" />
+          </Pressable>
+        )}
+      </View>
       <MainMenuCheck
         isChecked={menu.main}
         onToggle={() => handleCheckBoxChange(index)}
@@ -50,6 +104,17 @@ const MenuAddForm = ({
 };
 
 const styles = StyleSheet.create({
+  menuAddImageView: {
+    marginVertical: 20,
+    width: '100%',
+    paddingHorizontal: 18,
+  },
+  menuAddImageText: {
+    fontWeight: '500',
+    color: '#999',
+    fontSize: 16,
+    marginBottom: 10,
+  },
   menuHeader: {
     width: '100%',
     paddingHorizontal: 18,
@@ -76,6 +141,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  selectImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  selectedEffect: {
+    borderWidth: 3,
+    borderColor: '#FF6B6B',
+  },
+
   line: {
     width: '100%',
     marginVertical: 20,

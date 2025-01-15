@@ -33,7 +33,6 @@ export const getByCategoryStore = async (categoryname, location) => {
 
 //스토어상세페이지 관련 api
 export const StoreMainget = async (storeId, innerlatitude, innerlongitude) => {
-  console.log("통신 데이터:", storeId, innerlatitude, innerlongitude);
   try {
     const response = await axiosInstance.get(
       `/store/get/${storeId}?latitude=${innerlatitude}&longitude=${innerlongitude}`,

@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { getToken } from '../../storage/tokenStorage';
-import ImagePicker from 'react-native-image-crop-picker';
 import MenuAddForm from '../../components/MenuAddScreen/MenuAddForm';
 import useAlert from '../../hooks/useAlert';
 
@@ -25,7 +24,7 @@ const MenuAddScreen = ({ navigation }) => {
   const { showAlert } = useAlert();
 
   const [menus, setMenus] = useState([
-    { menuName: '', price: '', menuContent: '', main: false },
+    { menuName: '', price: '', menuContent: '', main: false, imageUri: '' },
   ]);
 
   useEffect(() => {
@@ -38,7 +37,6 @@ const MenuAddScreen = ({ navigation }) => {
 
 
 
-  console.log(menus);
   const handleMenuChange = (text, index, field) => {
     const updatedMenus = [...menus];
     updatedMenus[index][field] = text;
@@ -48,7 +46,7 @@ const MenuAddScreen = ({ navigation }) => {
   const handleCheckBoxChange = (index) => {
     const maxMainMenus = 3;
     const selectedCount = menus.filter((menu) => menu.main).length;
-  
+
     if (!menus[index].main && selectedCount >= maxMainMenus) {
       showAlert(
         '제한 초과',
@@ -59,7 +57,7 @@ const MenuAddScreen = ({ navigation }) => {
       );
       return;
     }
-  
+
     const updatedMenus = [...menus];
     updatedMenus[index].main = !updatedMenus[index].main; // `main` 값 토글
     setMenus(updatedMenus);
@@ -68,7 +66,7 @@ const MenuAddScreen = ({ navigation }) => {
   const handleAddMenu = () => {
     setMenus([
       ...menus,
-      { menuName: '', price: '', menuContent: '', main: false },
+      { menuName: '', price: '', menuContent: '', main: false, imageUri: '' },
     ]);
   };
 
@@ -94,6 +92,7 @@ const MenuAddScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {menus.map((menu, index) => (
+
           <MenuAddForm
             key={index}
             menu={menu}
@@ -103,6 +102,9 @@ const MenuAddScreen = ({ navigation }) => {
             onDelete={handleDeleteMenu}
           />
         ))}
+
+
+
         <Pressable style={styles.menuAddButton} onPress={handleAddMenu}>
           <Text style={styles.menuAddText}>메뉴 추가</Text>
         </Pressable>
