@@ -9,7 +9,7 @@ const MenuHeader = ({ storeId, navigation }) => {
         <Pressable
           style={styles.MenuaddButton}
           onPress={() =>
-            navigation.navigate('MenuaddPage', { storeId: storeId })
+            navigation.navigate('MenuAddScreen', { storeId: storeId })
           }>
           <Text style={styles.MenuaddButtonText}>메뉴 추가하기</Text>
         </Pressable>
