@@ -31,7 +31,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     flexDirection: 'row',
     marginTop: 12,
-    marginBottom: 20,
   },
   View: {
     flexDirection: 'row',

@@ -12,8 +12,9 @@ const StoreHeader = ({ navigation, headerBackgroundColor, iconColor, titleOpacit
           <Ionicons name="arrow-back-outline" size={25} />
         </Animated.Text>
       </Pressable>
-      <Animated.Text style={[styles.headerTitle, { opacity: titleOpacity }]}> 
-        {title || '친구포차'}
+      <Animated.Text style={[styles.headerTitle, { opacity: titleOpacity }]}>
+        {/* {title || '친구포차'} */}
+        친구포차
       </Animated.Text>
       <Pressable onPress={() => navigation.navigate('MainBtmbar')}>
         <Animated.Text style={{ color: iconColor }}>
