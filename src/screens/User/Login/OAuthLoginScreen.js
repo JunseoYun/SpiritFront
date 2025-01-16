@@ -4,11 +4,12 @@ import { loginWithKakaoAccount, getProfile, logout } from '@react-native-seoul/k
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { setToken, removeToken } from '../../../storage/tokenStorage';
 import { useAuth } from '../../../context/AuthContext';
-import {appleAuth} from '@invertase/react-native-apple-authentication';
-
+import { appleAuth } from '@invertase/react-native-apple-authentication';
+import { userLogin } from '../../../api/userApi';
 
 const OAuthLoginScreen = ({ navigation }) => {
   const { login } = useAuth();
+
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -19,24 +20,29 @@ const OAuthLoginScreen = ({ navigation }) => {
     });
   }, []);
 
-  const handleTempLogin = async () => {
+  const handleLogin = async({type, id, socialToken}) => {
     try {
-      const tempToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMiLCJyb2xlIjoiUk9MRV9VU0VSIiwiZXhwIjoxNzM3MDU0NTY3fQ.n-zhQJ29IDC_vGkktg0o3Dy1G72NlI0Q7j749YRQu4Q";
-      console.log(tempToken);
-      login(tempToken);
-    } catch (err) {
-      console.error('Temp Login Error:', err);
+      const response = await userLogin(type, id, socialToken);
+    } catch (error) {
+      if (error.response) {
+        const { status, data, headers } = error.response;
+        if (status === 404) {
+          Alert.alert("404 잡았다 이새끼 ㅋㅋ");
+        }
+      }
     }
   };
 
   const handleKaKaoLogin = async () => {
     try {
       const token = await loginWithKakaoAccount();
-      console.log('Kakao Login Token:', token);
-      login(token.accessToken);
-
       const profile = await getProfile();
-      console.log('Kakao Profile:', profile);
+
+      const type = "KAKAO";
+      const id = profile.id;
+      const socialToken = token.accessToken;
+      handleLogin(type, id, socialToken);
+
     } catch (err) {
       console.error('Kakao Login Error:', err);
     }
@@ -45,13 +51,13 @@ const OAuthLoginScreen = ({ navigation }) => {
   const handleGoogleSignIn = async () => {
     try {
       const userInfo = await GoogleSignin.signIn();
-      console.log('Google UserInfo:', userInfo.data.user);
-      console.log('Google UserID:', userInfo.data.user.id);
-
       const tokens = await GoogleSignin.getTokens();
-      console.log("Google Access Token: ", tokens.accessToken);
-      login(tokens.accessToken);
-      console.log("Google Refresh Token: ", tokens.idToken);
+
+      const type = "GOOGLE";
+      const id = userInfo.data.user.id;
+      const socialToken = tokens.accessToken;
+      handleLogin(type, id, socialToken);
+
     } catch (error) {
       console.error(error);
     }
@@ -61,105 +67,64 @@ const OAuthLoginScreen = ({ navigation }) => {
 
   const handleAppleSignIn = async () => {
     try {
-      console.log('애플 로그인 요청 시작'); // 로그인이 시작되었음을 알리는 로그
-  
-      // Apple login request
       const appleAuthRequestResponse = await appleAuth.performRequest({
         requestedOperation: appleAuth.Operation.LOGIN,
         requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
       });
-  
-      console.log('애플 로그인 응답:', appleAuthRequestResponse); // 로그인 응답 출력
-  
-      // Get credential state for the user
       const credentialState = await appleAuth.getCredentialStateForUser(
         appleAuthRequestResponse.user,
       );
-  
-      console.log('사용자 인증 상태:', credentialState); // 인증 상태 출력
-  
       // Check if the user is authorized
       if (credentialState === appleAuth.State.AUTHORIZED) {
-        console.log('Apple Sign-In success');
-        console.log('User Info:', appleAuthRequestResponse);
-        // You can now use the user information, such as appleAuthRequestResponse.email or appleAuthRequestResponse.fullName
-        login(appleAuthRequestResponse.authorizationCode);  // You can save the token or authorization code here
-        console.log(appleAuthRequestResponse.authorizationCode);
-      } else {
-        console.log('Apple Sign-In failed');
-      }
+        const type = "APPLE";
+        const id = appleAuthRequestResponse.user;
+        const socialToken = appleAuthRequestResponse.authorizationCode;
+        console.log(type, id, socialToken);
+        handleLogin(type, id, socialToken);
+      } 
     } catch (error) {
-      console.error('Apple Sign-In Error:', error);
       Alert.alert('Apple 로그인 오류', '로그인 중 문제가 발생했습니다.');
     }
   };
-  
 
-  const handleAppleSignOut = async () => {
-    try {
-      await appleAuth.performRequest({
-        requestedOperation: appleAuth.Operation.LOGOUT,  // 로그아웃 작업 수행
-      });
-      console.log('Apple Sign-Out successful');
-      // 로그아웃 후 추가 작업 (예: 앱 내 로그인 상태 초기화 등)
-    } catch (error) {
-      console.error('Apple Sign-Out Error:', error);
-      Alert.alert('애플 로그아웃 오류', '로그아웃 중 문제가 발생했습니다.');
-    }
-  };
 
   return (
-    <ImageBackground
-      source={require('../../../assets/BackLogin.png')}
-      style={styles.background}
-    >
-      <SafeAreaView>
-        <TouchableOpacity onPress={handleKaKaoLogin} style={styles.kakaoButtonContainer}>
-          <Image
-            source={require('../../../assets/kakao_login.png')}
-            style={styles.kakaoButton}
-          />
-        </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleGoogleSignIn} style={styles.googleButtonContainer}>
-          <View style={styles.googleView}>
-            <View style={styles.googleLogoContainer}>
-              <Image
-                source={require('../../../assets/g-logo.png')}
-                style={styles.googleLogo}
-              />
-            </View>
-            <Text style={styles.googleText}>Google 계정으로 계속하기</Text>
+    <SafeAreaView style={styles.background}>
+      <Text style={styles.Logo}>한잔할까
+      </Text>
+      <TouchableOpacity onPress={handleKaKaoLogin} style={styles.kakaoButtonContainer}>
+        <Image
+          source={require('../../../assets/kakao_login.png')}
+          style={styles.kakaoButton}
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleGoogleSignIn} style={styles.googleButtonContainer}>
+        <View style={styles.googleView}>
+          <View style={styles.googleLogoContainer}>
+            <Image
+              source={require('../../../assets/g-logo.png')}
+              style={styles.googleLogo}
+            />
           </View>
-        </TouchableOpacity>
+          <Text style={styles.googleText}>Google 계정으로 계속하기</Text>
+        </View>
+      </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleAppleSignIn} style={styles.googleButtonContainer}>
-          <View style={styles.googleView}>
-            <View style={styles.googleLogoContainer}>
-              <Image
-                source={require('../../../assets/appleLogo.png')}
-                style={styles.appleLogo}
-              />
-            </View>
-            <Text style={styles.appleText}>Apple로 로그인</Text>
+      <TouchableOpacity onPress={handleAppleSignIn} style={styles.googleButtonContainer}>
+        <View style={styles.googleView}>
+          <View style={styles.googleLogoContainer}>
+            <Image
+              source={require('../../../assets/appleLogo.png')}
+              style={styles.appleLogo}
+            />
           </View>
-        </TouchableOpacity>
+          <Text style={styles.appleText}>Apple로 로그인</Text>
+        </View>
+      </TouchableOpacity>
+    </SafeAreaView>
 
-        <TouchableOpacity onPress={handleTempLogin} style={styles.googleButtonContainer}>
-          <View style={styles.googleView}>
-            <View style={styles.googleLogoContainer}>
-              <Image
-                source={require('../../../assets/appleLogo.png')}
-                style={styles.appleLogo}
-              />
-            </View>
-            <Text style={styles.appleText}>임시 로그인</Text>
-          </View>
-        </TouchableOpacity>
-
-      </SafeAreaView>
-
-    </ImageBackground>
   );
 };
 
@@ -168,6 +133,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'white',
+  },
+  Logo: {
+    position: 'absolute',
+    top: 200,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 50,
+    color: 'rgb(16, 190, 251)',
   },
   kakaoButtonContainer: {
     width: 340,
