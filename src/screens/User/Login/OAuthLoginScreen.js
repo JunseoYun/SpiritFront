@@ -1,16 +1,31 @@
-import React, { useEffect } from 'react';
-import { Button, View, Text, ImageBackground, TouchableOpacity, Image, StyleSheet, Platform, SafeAreaView, Alert } from 'react-native';
-import { loginWithKakaoAccount, getProfile, logout } from '@react-native-seoul/kakao-login';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-import { setToken, removeToken } from '../../../storage/tokenStorage';
-import { useAuth } from '../../../context/AuthContext';
-import { appleAuth } from '@invertase/react-native-apple-authentication';
-import { userLogin } from '../../../api/userApi';
+import React, {useEffect} from 'react';
+import {
+  Button,
+  View,
+  Text,
+  ImageBackground,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  Platform,
+  SafeAreaView,
+  Alert,
+} from 'react-native';
+import {
+  loginWithKakaoAccount,
+  getProfile,
+  logout,
+} from '@react-native-seoul/kakao-login';
+import {
+  GoogleSignin,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
+import {setToken, removeToken} from '../../../storage/tokenStorage';
+import {useAuth} from '../../../context/AuthContext';
+import {appleAuth} from '@invertase/react-native-apple-authentication';
+import {userLogin} from '../../../api/userApi';
 
-const OAuthLoginScreen = ({ navigation }) => {
-  const { login } = useAuth();
-
-
+const OAuthLoginScreen = ({navigation}) => {
   useEffect(() => {
     GoogleSignin.configure({
       webClientId:
@@ -20,14 +35,14 @@ const OAuthLoginScreen = ({ navigation }) => {
     });
   }, []);
 
-  const handleLogin = async({type, id, socialToken}) => {
+  const handleLogin = async ({type, id, socialToken}) => {
     try {
       const response = await userLogin(type, id, socialToken);
     } catch (error) {
       if (error.response) {
-        const { status, data, headers } = error.response;
+        const {status, data, headers} = error.response;
         if (status === 404) {
-          Alert.alert("404 잡았다 이새끼 ㅋㅋ");
+          Alert.alert('404 잡았다 이새끼 ㅋㅋ');
         }
       }
     }
@@ -38,11 +53,10 @@ const OAuthLoginScreen = ({ navigation }) => {
       const token = await loginWithKakaoAccount();
       const profile = await getProfile();
 
-      const type = "KAKAO";
+      const type = 'KAKAO';
       const id = profile.id;
       const socialToken = token.accessToken;
       handleLogin(type, id, socialToken);
-
     } catch (err) {
       console.error('Kakao Login Error:', err);
     }
@@ -53,17 +67,14 @@ const OAuthLoginScreen = ({ navigation }) => {
       const userInfo = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
 
-      const type = "GOOGLE";
+      const type = 'GOOGLE';
       const id = userInfo.data.user.id;
       const socialToken = tokens.accessToken;
       handleLogin(type, id, socialToken);
-
     } catch (error) {
       console.error(error);
     }
   };
-
-
 
   const handleAppleSignIn = async () => {
     try {
@@ -76,31 +87,31 @@ const OAuthLoginScreen = ({ navigation }) => {
       );
       // Check if the user is authorized
       if (credentialState === appleAuth.State.AUTHORIZED) {
-        const type = "APPLE";
+        const type = 'APPLE';
         const id = appleAuthRequestResponse.user;
         const socialToken = appleAuthRequestResponse.authorizationCode;
-        console.log(type, id, socialToken);
         handleLogin(type, id, socialToken);
-      } 
+      }
     } catch (error) {
       Alert.alert('Apple 로그인 오류', '로그인 중 문제가 발생했습니다.');
     }
   };
 
-
   return (
-
     <SafeAreaView style={styles.background}>
-      <Text style={styles.Logo}>한잔할까
-      </Text>
-      <TouchableOpacity onPress={handleKaKaoLogin} style={styles.kakaoButtonContainer}>
+      <Text style={styles.Logo}>한잔할까</Text>
+      <TouchableOpacity
+        onPress={handleKaKaoLogin}
+        style={styles.kakaoButtonContainer}>
         <Image
           source={require('../../../assets/kakao_login.png')}
           style={styles.kakaoButton}
         />
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleGoogleSignIn} style={styles.googleButtonContainer}>
+      <TouchableOpacity
+        onPress={handleGoogleSignIn}
+        style={styles.googleButtonContainer}>
         <View style={styles.googleView}>
           <View style={styles.googleLogoContainer}>
             <Image
@@ -112,7 +123,9 @@ const OAuthLoginScreen = ({ navigation }) => {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleAppleSignIn} style={styles.googleButtonContainer}>
+      <TouchableOpacity
+        onPress={handleAppleSignIn}
+        style={styles.googleButtonContainer}>
         <View style={styles.googleView}>
           <View style={styles.googleLogoContainer}>
             <Image
@@ -124,7 +137,6 @@ const OAuthLoginScreen = ({ navigation }) => {
         </View>
       </TouchableOpacity>
     </SafeAreaView>
-
   );
 };
 
@@ -149,7 +161,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#333',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.8,
         shadowRadius: 2,
       },
@@ -169,7 +181,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#333',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.8,
         shadowRadius: 2,
       },
@@ -197,7 +209,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 10,
     borderRadius: 10,
-
   },
   googleText: {
     color: '#333',
