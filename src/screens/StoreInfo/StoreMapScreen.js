@@ -14,21 +14,20 @@ import { fetchLocation } from '../../hooks/useLocation';
 import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import StoreMapScript from '../../components/StoreMapScreen/StoreMapScript';
 import StoreMapLocation from '../../components/StoreMapScreen/StoreMapLocation';
-import StoreMapDirections from '../../components/StoreMapScreen/StoreMapDirections';
 import StoreMapCenter from '../../components/StoreMapScreen/StoreMapCenter';
+import { openKakaoMap } from '../../hooks/openKakaoMap';
+import StoreMapFoot from '../../components/StoreMapScreen/StoreMapFoot';
+import StoreMapBus from '../../components/StoreMapScreen/StoreMapBus';
+import StoreMapCar from '../../components/StoreMapScreen/StoreMapCar';
 
 const StoreMapScreen = ({ navigation, storeId, storeLatitude, storeLongitude, innerlatitude, innerlongitude }) => {
 
-  const [location, setLocation] = useState(null);
+  const [location, setLocation] = useState({ innerlatitude, innerlongitude });
   const webViewRef = useRef(null);
   const [isWebModalVisible, setWebModalVisible] = useState(false);
-  const openWebModal = () => {
-    setWebModalVisible(true);
-  };
 
-  const closeWebModal = () => {
-    setWebModalVisible(false);
-  };
+
+
   useEffect(() => {
     fetchSaveLocation();
   }, []);
@@ -37,14 +36,13 @@ const StoreMapScreen = ({ navigation, storeId, storeLatitude, storeLongitude, in
     try {
       const currentLocation = await getLocation();
       setLocation(currentLocation);
-
       // 지도를 초기화하고 마커를 업데이트
       if (webViewRef.current) {
         const script = StoreMapScript(
           currentLocation.latitude,
           currentLocation.longitude,
           storeLatitude,
-          storeLongitude // 초기 중심이 가게 위치로 설정되도록 수정
+          storeLongitude,
         );
         webViewRef.current.injectJavaScript(script);
       }
@@ -76,6 +74,10 @@ const StoreMapScreen = ({ navigation, storeId, storeLatitude, storeLongitude, in
     moveCenterMap(storeLatitude, storeLongitude);
   };
 
+  const openMapHandle = (text) => {
+    openKakaoMap(location.latitude, location.longitude, storeLatitude, storeLongitude, text);
+  };
+
   const moveCenterMap = (lat, lng) => {
     const script = `
       if (window.map) {
@@ -91,6 +93,7 @@ const StoreMapScreen = ({ navigation, storeId, storeLatitude, storeLongitude, in
       webViewRef.current.injectJavaScript(StoreMapScript(lat, lng, storeLatitude, storeLongitude));
     }
   };
+
 
 
   return (
@@ -116,8 +119,9 @@ const StoreMapScreen = ({ navigation, storeId, storeLatitude, storeLongitude, in
 
       <StoreMapLocation onPress={updateNewLocation} />
       <StoreMapCenter onPress={storeCenter} />
-      <StoreMapDirections onPress={openWebModal} />
-
+      <StoreMapFoot onPress={() => openMapHandle("FOOT")} />
+      <StoreMapBus onPress={() => openMapHandle("PUBLICTRANSIT")} />
+      <StoreMapCar onPress={() => openMapHandle("CAR")} />
     </View>
 
 
@@ -137,9 +141,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
-
-
 });
 
 export default StoreMapScreen;

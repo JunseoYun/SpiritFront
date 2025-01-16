@@ -1,4 +1,6 @@
-const StoreMapScript = (lat, lng, storeLat, storeLong) => `
+const StoreMapScript = (lat, lng, storeLat, storeLong) => 
+  `
+
   if (!window.map) {
     var mapContainer = document.getElementById('map');
     var options = {
@@ -39,6 +41,7 @@ const StoreMapScript = (lat, lng, storeLat, storeLong) => `
       new kakao.maps.Size(24, 35)
     )
   });
+
 
   // 지도 클릭 이벤트 추가
   kakao.maps.event.addListener(map, 'click', function() {

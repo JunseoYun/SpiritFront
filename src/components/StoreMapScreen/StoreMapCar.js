@@ -3,10 +3,10 @@ import {Pressable, StyleSheet} from 'react-native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const StoreMapDirections = ({onPress}) => {
+const StoreMapCar = ({onPress}) => {
   return (
     <Pressable style={styles.buttonRoute} onPress={onPress}>
-      <Ionicons name="navigate" size={30} color="#16BBFF" />
+      <Ionicons name="car" size={30} color="#16BBFF" />
     </Pressable>
   );
 };
@@ -14,7 +14,7 @@ const StoreMapDirections = ({onPress}) => {
 const styles = StyleSheet.create({
   buttonRoute: {
     position: 'absolute',
-    bottom: '20%',
+    bottom: '40%',
     right: '7%',
     borderRadius: 50,
     alignItems: 'center',
@@ -24,4 +24,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default StoreMapDirections;
+export default StoreMapCar;

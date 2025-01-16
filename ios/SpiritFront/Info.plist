@@ -40,6 +40,7 @@
 		<string>kakaof8b846c356bedec09d06f5795f823cc9</string>
 		<string>kakaolink</string>
 		<string>kakaokompassauth</string>
+		<string>kakaomap</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
