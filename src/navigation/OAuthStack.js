@@ -16,7 +16,7 @@ export default function OAuthStack() {
         name="OAuthLoginScreen"
         component={OAuthLoginScreen}
       />
-            <Stack.Screen
+      <Stack.Screen
         name="NicknameScreen"
         component={NicknameScreen}
       />
