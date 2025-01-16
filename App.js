@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import MainStack from './src/navigation/MainStack';
 import OAuthLoginScreen from './src/screens/User/Login/OAuthLoginScreen';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import OAuthStack from './src/navigation/OAuthStack';
 
 const App = () => {
   return (
@@ -17,7 +18,7 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer>
-      {token ? <MainStack /> : <OAuthLoginScreen />}
+      {token ? <MainStack /> : <OAuthStack />}
     </NavigationContainer>
   );
 };
