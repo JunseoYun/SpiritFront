@@ -2,7 +2,10 @@ import React, {useEffect} from 'react';
 import {Button, View, Text} from 'react-native';
 
 import {useAuth} from '../../../context/AuthContext';
-import {testSetAccessTokenToken} from '../../../storage/tokenStorage';
+import {
+  testSetAccessTokenToken,
+  testSetRefreshTokenToken,
+} from '../../../storage/tokenStorage';
 
 const MyScreen = ({navigation}) => {
   const {logout} = useAuth();
@@ -16,9 +19,15 @@ const MyScreen = ({navigation}) => {
     }
   };
 
-  const handleTestSetToken = async () => {
+  const handleTestAccessSetToken = async () => {
     try {
       await testSetAccessTokenToken('!@#123ddasd123');
+    } catch (error) {}
+  };
+
+  const handleTestRefreshSetToken = async () => {
+    try {
+      await testSetRefreshTokenToken('!@#123ddasd123');
     } catch (error) {}
   };
 
@@ -27,7 +36,11 @@ const MyScreen = ({navigation}) => {
       <Button title="걍 다 로그아웃" onPress={handleLogout} />
       <Button
         title="엑세스 토큰 일부러 망가뜨리기(리프레시)"
-        onPress={handleTestSetToken}
+        onPress={handleTestAccessSetToken}
+      />
+      <Button
+        title="엑세스 토큰 일부러 망가뜨리기(리프레시)"
+        onPress={handleTestRefreshSetToken}
       />
     </View>
   );

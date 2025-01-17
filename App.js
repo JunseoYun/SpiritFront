@@ -1,14 +1,16 @@
 import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import MainStack from './src/navigation/MainStack';
-import NicknameScreen from './src/screens/OAuth/RegisterScreen';
 import {AuthProvider, useAuth} from './src/context/AuthContext';
 import OAuthStack from './src/navigation/OAuthStack';
+import {CustomAlertProvider} from './src/context/CustomAlertContext';
 
 const App = () => {
   return (
     <AuthProvider>
-      <AppNavigator />
+      <CustomAlertProvider>
+        <AppNavigator />
+      </CustomAlertProvider>
     </AuthProvider>
   );
 };
