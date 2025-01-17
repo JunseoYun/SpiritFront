@@ -15,9 +15,9 @@ import {
 } from '@react-native-seoul/kakao-login';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {appleAuth} from '@invertase/react-native-apple-authentication';
-import {user_login} from '../../../api/userApi';
-import useCustomAlert from '../../../hooks/useCustomAlert';
-import {useAuth} from '../../../context/AuthContext';
+import {user_login} from '../../api/userApi';
+import useCustomAlert from '../../hooks/useCustomAlert';
+import {useAuth} from '../../context/AuthContext';
 
 const OAuthLoginScreen = ({navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -44,7 +44,7 @@ const OAuthLoginScreen = ({navigation}) => {
             title: '등록된 회원 정보가 없습니다.',
             message: '해당 소셜 계정으로 \n회원가입을 진행하시겠습니까?',
             onConfirm: () => {
-              navigation.navigate('NicknameScreen', {
+              navigation.navigate('RegisterScreen', {
                 type: type,
                 id: id,
                 socialToken: socialToken,
@@ -132,7 +132,7 @@ const OAuthLoginScreen = ({navigation}) => {
         onPress={handleKaKaoLogin}
         style={styles.kakaoButtonContainer}>
         <Image
-          source={require('../../../assets/kakao_login.png')}
+          source={require('../../assets/kakao_login.png')}
           style={styles.kakaoButton}
         />
       </TouchableOpacity>
@@ -143,7 +143,7 @@ const OAuthLoginScreen = ({navigation}) => {
         <View style={styles.googleView}>
           <View style={styles.googleLogoContainer}>
             <Image
-              source={require('../../../assets/g-logo.png')}
+              source={require('../../assets/g-logo.png')}
               style={styles.googleLogo}
             />
           </View>
@@ -157,7 +157,7 @@ const OAuthLoginScreen = ({navigation}) => {
         <View style={styles.googleView}>
           <View style={styles.googleLogoContainer}>
             <Image
-              source={require('../../../assets/appleLogo.png')}
+              source={require('../../assets/appleLogo.png')}
               style={styles.appleLogo}
             />
           </View>

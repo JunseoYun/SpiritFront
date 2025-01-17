@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import MainStack from './src/navigation/MainStack';
-import NicknameScreen from './src/screens/User/Login/NicknameScreen';
+import NicknameScreen from './src/screens/OAuth/RegisterScreen';
 import {AuthProvider, useAuth} from './src/context/AuthContext';
 import OAuthStack from './src/navigation/OAuthStack';
 
