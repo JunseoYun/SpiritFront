@@ -1,9 +1,7 @@
 import React, {useEffect} from 'react';
 import {
-  Button,
   View,
   Text,
-  ImageBackground,
   TouchableOpacity,
   Image,
   StyleSheet,
@@ -14,18 +12,17 @@ import {
 import {
   loginWithKakaoAccount,
   getProfile,
-  logout,
 } from '@react-native-seoul/kakao-login';
-import {
-  GoogleSignin,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
-import {setToken, removeToken} from '../../../storage/tokenStorage';
-import {useAuth} from '../../../context/AuthContext';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {appleAuth} from '@invertase/react-native-apple-authentication';
-import {userLogin} from '../../../api/userApi';
+import {user_login} from '../../../api/userApi';
+import useCustomAlert from '../../../hooks/useCustomAlert';
+import {useAuth} from '../../../context/AuthContext';
 
 const OAuthLoginScreen = ({navigation}) => {
+  const {showAlert, AlertComponent} = useCustomAlert();
+  const {login} = useAuth();
+
   useEffect(() => {
     GoogleSignin.configure({
       webClientId:
@@ -37,12 +34,25 @@ const OAuthLoginScreen = ({navigation}) => {
 
   const handleLogin = async ({type, id, socialToken}) => {
     try {
-      const response = await userLogin(type, id, socialToken);
+      const response = await user_login(type, id, socialToken);
+      await login(response.accessToken, response.refreshToken);
     } catch (error) {
       if (error.response) {
         const {status, data, headers} = error.response;
         if (status === 404) {
-          Alert.alert('404 잡았다 이새끼 ㅋㅋ');
+          showAlert({
+            title: '등록된 회원 정보가 없습니다.',
+            message: '해당 소셜 계정으로 \n회원가입을 진행하시겠습니까?',
+            onConfirm: () => {
+              navigation.navigate('NicknameScreen', {
+                type: type,
+                id: id,
+                socialToken: socialToken,
+              });
+            }, // 함수 참조 전달
+            onCancel: null,
+            type: 'confirm',
+          });
         }
       }
     }
@@ -56,9 +66,15 @@ const OAuthLoginScreen = ({navigation}) => {
       const type = 'KAKAO';
       const id = profile.id;
       const socialToken = token.accessToken;
-      handleLogin(type, id, socialToken);
+      handleLogin({type, id, socialToken});
     } catch (err) {
-      console.error('Kakao Login Error:', err);
+      showAlert({
+        title: '카카오 로그인 오류',
+        message: '카카오 로그인 중 오류가 발생했습니다',
+        onConfirm: null,
+        onCancel: null,
+        type: 'ok',
+      });
     }
   };
 
@@ -70,9 +86,15 @@ const OAuthLoginScreen = ({navigation}) => {
       const type = 'GOOGLE';
       const id = userInfo.data.user.id;
       const socialToken = tokens.accessToken;
-      handleLogin(type, id, socialToken);
+      handleLogin({type, id, socialToken});
     } catch (error) {
-      console.error(error);
+      showAlert({
+        title: '구글 로그인 오류',
+        message: '구글 로그인 중 오류가 발생했습니다',
+        onConfirm: null,
+        onCancel: null,
+        type: 'ok',
+      });
     }
   };
 
@@ -90,10 +112,16 @@ const OAuthLoginScreen = ({navigation}) => {
         const type = 'APPLE';
         const id = appleAuthRequestResponse.user;
         const socialToken = appleAuthRequestResponse.authorizationCode;
-        handleLogin(type, id, socialToken);
+        handleLogin({type, id, socialToken});
       }
     } catch (error) {
-      Alert.alert('Apple 로그인 오류', '로그인 중 문제가 발생했습니다.');
+      showAlert({
+        title: '애플 로그인 오류',
+        message: '애플 로그인 중 오류가 발생했습니다',
+        onConfirm: null,
+        onCancel: null,
+        type: 'ok',
+      });
     }
   };
 
@@ -136,6 +164,7 @@ const OAuthLoginScreen = ({navigation}) => {
           <Text style={styles.appleText}>Apple로 로그인</Text>
         </View>
       </TouchableOpacity>
+      <AlertComponent />
     </SafeAreaView>
   );
 };
