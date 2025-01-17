@@ -6,6 +6,8 @@ import {
   getRefreshToken,
   setToken,
 } from '../storage/tokenStorage';
+import {getGlobalLogout} from '../context/AuthContext';
+import {getGlobalShowAlert} from '../context/CustomAlertContext';
 
 // 새로운 Access Token 요청 함수
 const refreshAccessToken = async () => {
@@ -34,7 +36,6 @@ const refreshAccessToken = async () => {
     console.log('뉴엑세스리프레시토큰', newAccessToken, newRefreshToken);
     return newAccessToken; // 새로운 Access Token 반환
   } catch (error) {
-    console.error('Error refreshing token:', error);
     throw error;
   }
 };
@@ -67,30 +68,47 @@ axiosInstance.interceptors.request.use(
     return Promise.reject(error);
   },
 );
-// 응답 인터셉터 설정
+
 axiosInstance.interceptors.response.use(
   response => response, // 성공 응답은 그대로 반환
   async error => {
-    const originalRequest = error.config; // 원래 요청 객체
+    const originalRequest = error.config;
+
+    // Access Token이 만료된 경우 처리
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true; // 무한 재시도 방지
+      originalRequest._retry = true;
 
       try {
-        // Refresh Token으로 Access Token 갱신
         const newAccessToken = await refreshAccessToken();
-
-        // 새 토큰으로 헤더 업데이트
         originalRequest.headers['x-auth-token'] = newAccessToken;
 
-        // 갱신된 토큰으로 요청 재시도
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.error('Failed to refresh token:', refreshError);
+        // Refresh Token도 만료된 경우 로그아웃
+        if (refreshError.response?.status === 401) {
+          const {logout} = getGlobalLogout();
+          const showAlert = getGlobalShowAlert();
+          if (logout) {
+            showAlert({
+              title: '세션 만료',
+              message: '다시 로그인해주세요.',
+              onConfirm: async () => {
+                try {
+                  await logout(); // 로그아웃 비동기 호출
+                  console.log('Logged out successfully');
+                } catch (error) {
+                  console.error('Logout failed:', error);
+                }
+              },
+            });
+          }
+        }
+
         return Promise.reject(refreshError);
       }
     }
 
-    return Promise.reject(error); // 다른 에러는 그대로 반환
+    return Promise.reject(error);
   },
 );
 

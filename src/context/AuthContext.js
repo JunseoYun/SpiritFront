@@ -2,6 +2,10 @@ import React, {createContext, useState, useContext, useEffect} from 'react';
 import {getAccessToken, setToken, removeToken} from '../storage/tokenStorage';
 const AuthContext = createContext();
 
+let globalAuth = {
+  logout: async () => {}, // 기본값으로 빈 함수 할당
+};
+
 export const AuthProvider = ({children}) => {
   const [token, setTokenState] = useState(null);
 
@@ -27,6 +31,7 @@ export const AuthProvider = ({children}) => {
     await removeToken(); // AsyncStorage에서 토큰 삭제
     setTokenState(null); // 상태 초기화
   };
+  globalAuth.logout = logout;
 
   return (
     <AuthContext.Provider value={{token, login, logout}}>
@@ -34,6 +39,6 @@ export const AuthProvider = ({children}) => {
     </AuthContext.Provider>
   );
 };
-
+export const getGlobalLogout = () => globalAuth;
 // AuthContext를 사용할 수 있게 해주는 custom hook
 export const useAuth = () => useContext(AuthContext);
