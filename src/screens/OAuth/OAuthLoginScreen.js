@@ -125,6 +125,16 @@ const OAuthLoginScreen = ({navigation}) => {
     }
   };
 
+  const handletempLogin = async () => {
+    try {
+      handleLogin({type: 'KAKAO', id: 111, token: 111});
+    } catch (error) {
+      showAlert({
+        title: '임시 로그인 오류',
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.background}>
       <Text style={styles.Logo}>한잔할까</Text>
@@ -162,6 +172,20 @@ const OAuthLoginScreen = ({navigation}) => {
             />
           </View>
           <Text style={styles.appleText}>Apple로 로그인</Text>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={handletempLogin}
+        style={styles.googleButtonContainer}>
+        <View style={styles.googleView}>
+          <View style={styles.googleLogoContainer}>
+            <Image
+              source={require('../../assets/appleLogo.png')}
+              style={styles.appleLogo}
+            />
+          </View>
+          <Text style={styles.appleText}>임시 로그인</Text>
         </View>
       </TouchableOpacity>
       <AlertComponent />

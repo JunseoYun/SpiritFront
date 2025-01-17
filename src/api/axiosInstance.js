@@ -27,13 +27,10 @@ const refreshAccessToken = async () => {
       },
     );
 
-    console.log('뉴엑세스리프레시토큰리스폰', response.data);
-    // 새로운 Access Token 및 Refresh Token 저장
     const newAccessToken = response.data.data.accessToken;
     const newRefreshToken = response.data.data.refreshToken;
 
     await setToken(newAccessToken, newRefreshToken);
-    console.log('뉴엑세스리프레시토큰', newAccessToken, newRefreshToken);
     return newAccessToken; // 새로운 Access Token 반환
   } catch (error) {
     throw error;
@@ -95,10 +92,7 @@ axiosInstance.interceptors.response.use(
               onConfirm: async () => {
                 try {
                   await logout(); // 로그아웃 비동기 호출
-                  console.log('Logged out successfully');
-                } catch (error) {
-                  console.error('Logout failed:', error);
-                }
+                } catch (error) {}
               },
             });
           }
