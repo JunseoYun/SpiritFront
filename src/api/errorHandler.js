@@ -5,7 +5,6 @@ export const functionError = error => {
     if (status === 500) {
       alert('서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } else if (status === 401) {
-      return 401;
     } else if (status === 404) {
     } else {
       alert(`요청 중 문제가 발생했습니다. 상태 코드: ${status}`);

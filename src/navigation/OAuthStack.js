@@ -1,8 +1,8 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import {createStackNavigator} from '@react-navigation/stack';
 
-import OAuthLoginScreen from '../screens/User/Login/OAuthLoginScreen';
-import NicknameScreen from '../screens/User/Login/NicknameScreen';
+import OAuthLoginScreen from '../screens/OAuth/OAuthLoginScreen';
+import RegisterScreen from '../screens/OAuth/RegisterScreen';
 const Stack = createStackNavigator();
 
 export default function OAuthStack() {
@@ -12,14 +12,8 @@ export default function OAuthStack() {
         headerShown: false, // 헤더를 완전히 숨김
       }}
       initialRouteName="OAuthLoginScreen">
-      <Stack.Screen
-        name="OAuthLoginScreen"
-        component={OAuthLoginScreen}
-      />
-      <Stack.Screen
-        name="NicknameScreen"
-        component={NicknameScreen}
-      />
+      <Stack.Screen name="OAuthLoginScreen" component={OAuthLoginScreen} />
+      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
     </Stack.Navigator>
   );
 }

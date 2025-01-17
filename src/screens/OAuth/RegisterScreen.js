@@ -7,13 +7,13 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import useCustomAlert from '../../../hooks/useCustomAlert';
-import {check_nickName, user_register, user_login} from '../../../api/userApi';
+import useCustomAlert from '../../hooks/useCustomAlert';
+import {check_nickName, user_register, user_login} from '../../api/userApi';
 import Entypo from 'react-native-vector-icons/Entypo';
-import forbiddenWords from '../../../hooks/forbiddenWords';
-import {useAuth} from '../../../context/AuthContext';
+import forbiddenWords from '../../hooks/forbiddenWords';
+import {useAuth} from '../../context/AuthContext';
 
-const NicknameScreen = ({route, navigation}) => {
+const RegisterScreen = ({route, navigation}) => {
   // route.params를 통해 전달된 데이터 접근
   const {type, id, socialToken} = route.params;
   const [nickname, setNickname] = useState('');
@@ -233,4 +233,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default NicknameScreen;
+export default RegisterScreen;
