@@ -1,14 +1,14 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { getToken, setToken, removeToken } from '../storage/tokenStorage';
+import React, {createContext, useState, useContext, useEffect} from 'react';
+import {getAccessToken, setToken, removeToken} from '../storage/tokenStorage';
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({children}) => {
   const [token, setTokenState] = useState(null);
 
   // 처음 렌더링 시 토큰을 가져와 상태를 업데이트
   useEffect(() => {
     const fetchToken = async () => {
-      const storedToken = await getToken();
+      const storedToken = await getAccessToken();
       if (storedToken) {
         setTokenState(storedToken); // 토큰이 있으면 상태에 저장
       }
@@ -17,9 +17,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // 로그인 처리
-  const login = async (userToken) => {
-    await setToken(userToken); // AsyncStorage에 토큰 저장
-    setTokenState(userToken); // 상태 업데이트
+  const login = async (accessToken, refreshToken) => {
+    await setToken(accessToken, refreshToken); // AsyncStorage에 토큰 저장
+    setTokenState(accessToken, refreshToken); // 상태 업데이트
   };
 
   // 로그아웃 처리
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ token, login, logout }}>
+    <AuthContext.Provider value={{token, login, logout}}>
       {children}
     </AuthContext.Provider>
   );
