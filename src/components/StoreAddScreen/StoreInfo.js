@@ -1,34 +1,56 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import React, {useState} from 'react';
+import {View, Text, TextInput, StyleSheet} from 'react-native';
+import forbiddenWords from '../../hooks/forbiddenWords';
 
-const StoreInfo = ({ storeData, setStoreData }) => {
+const StoreInfo = ({storeData, setStoreData}) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
+  const [errors, setErrors] = useState({}); // 각 필드별 에러 메시지 상태
 
   const handleChange = (key, value) => {
-    setStoreData({ ...storeData, [key]: value });
+    // 금지 단어 검사
+    const containsForbiddenWord = forbiddenWords.some(word =>
+      value.includes(word),
+    );
+
+    // 에러 메시지 업데이트
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [key]: containsForbiddenWord ? '비속어 사용 금지' : null,
+    }));
+
+    // 비속어가 없을 경우에만 데이터 업데이트
+    if (!containsForbiddenWord) {
+      setStoreData({...storeData, [key]: value});
+    }
   };
 
-  const isFocused = (key) => focusedInput === key;
+  const isFocused = key => focusedInput === key;
 
   return (
     <View>
+      {/* 매장 이름 입력 */}
       <View style={styles.storeinputview}>
-        {storeData.storeName && ( // 입력값이 있거나 포커스된 경우만 보이기
+        {storeData.storeName && (
           <Text style={styles.storeinputtext}>매장 이름*</Text>
         )}
         <TextInput
           style={[
             styles.storeinput,
-            isFocused('storeName') && styles.focusedInput, // 활성화 상태 스타일
+            isFocused('storeName') && styles.focusedInput,
           ]}
           value={storeData.storeName}
-          onChangeText={(text) => handleChange('storeName', text)}
+          onChangeText={text => handleChange('storeName', text)}
           placeholder="매장 이름*"
           placeholderTextColor="#999"
-          onFocus={() => setFocusedInput('storeName')} // 활성화 상태 설정
-          onBlur={() => setFocusedInput(null)} // 비활성화 상태로 변경
+          onFocus={() => setFocusedInput('storeName')}
+          onBlur={() => setFocusedInput(null)}
         />
+        {errors.storeName && (
+          <Text style={styles.errorText}>{errors.storeName}</Text>
+        )}
       </View>
+
+      {/* 전화번호 입력 */}
       <View style={styles.storeinputview}>
         {storeData.storeNumber && (
           <Text style={styles.storeinputtext}>전화번호</Text>
@@ -39,14 +61,19 @@ const StoreInfo = ({ storeData, setStoreData }) => {
             isFocused('storeNumber') && styles.focusedInput,
           ]}
           value={storeData.storeNumber}
-          onChangeText={(text) => handleChange('storeNumber', text)}
+          onChangeText={text => handleChange('storeNumber', text)}
           keyboardType="numeric"
           placeholder="전화번호"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('storeNumber')}
           onBlur={() => setFocusedInput(null)}
         />
+        {errors.storeNumber && (
+          <Text style={styles.errorText}>{errors.storeNumber}</Text>
+        )}
       </View>
+
+      {/* 매장 소개 입력 */}
       <View style={styles.storeinputview}>
         {storeData.storeContent && (
           <Text style={styles.storeinputtext}>매장 소개</Text>
@@ -58,12 +85,15 @@ const StoreInfo = ({ storeData, setStoreData }) => {
           ]}
           multiline
           value={storeData.storeContent}
-          onChangeText={(text) => handleChange('storeContent', text)}
+          onChangeText={text => handleChange('storeContent', text)}
           placeholder="매장을 간단하게 소개해주세요."
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('storeContent')}
           onBlur={() => setFocusedInput(null)}
         />
+        {errors.storeContent && (
+          <Text style={styles.errorText}>{errors.storeContent}</Text>
+        )}
       </View>
     </View>
   );
@@ -101,6 +131,11 @@ const styles = StyleSheet.create({
   focusedInput: {
     borderBottomColor: '#16BBFF', // 활성화 상태 색상
     borderBottomWidth: 2,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginTop: 5,
   },
 });
 

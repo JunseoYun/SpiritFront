@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
-import { ScrollView, Text, Pressable, Alert, SafeAreaView, StyleSheet} from 'react-native';
-import { StoreRegister } from '../../api/storeApi';
+import React, {useState} from 'react';
+import {
+  ScrollView,
+  Text,
+  Pressable,
+  Alert,
+  SafeAreaView,
+  StyleSheet,
+} from 'react-native';
+import {StoreRegister} from '../../api/storeApi';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import StoreCategory from '../../components/StoreAddScreen/StoreCategory';
 import StoreClosedDay from '../../components/StoreAddScreen/StoreClosedDay';
@@ -11,10 +18,9 @@ import StoreAlcohol from '../../components/StoreAddScreen/StoreAlcohol';
 import StoreTV from '../../components/StoreAddScreen/StoreTV';
 import StoreInfo from '../../components/StoreAddScreen/StoreInfo';
 import StoreConfirmationModal from '../../components/StoreAddScreen/StoreConfirmationModal';
-
-const StoreAddScreen = ({ navigation, route }) => {
-
-  const [coords, setCoords] = useState({ latitude: 0, longitude: 0 });
+import useCustomAlert from '../../hooks/useCustomAlert';
+const StoreAddScreen = ({navigation, route}) => {
+  const [coords, setCoords] = useState({latitude: 0, longitude: 0});
   const [address, setAddress] = useState('');
   const [detailedAddress, setDetailedAddress] = useState('');
   const [selectedCategory, setSelectedCategory] = useState([]);
@@ -23,6 +29,7 @@ const StoreAddScreen = ({ navigation, route }) => {
   const [closedDay, setClosedDay] = useState([]);
   const [alcohol, setAlcohol] = useState('');
   const [imageUris, setImageUris] = useState([]); // 이미지 배열 상태
+  const {showAlert, AlertComponent} = useCustomAlert();
 
   const [storeData, setStoreData] = useState({
     storeName: '',
@@ -87,10 +94,8 @@ const StoreAddScreen = ({ navigation, route }) => {
     // }
     setIsModalVisible(true); // 모든 값이 유효하면 모달 열기
   };
-  
-  
 
-  const handleAddressSelect = ({ address, coords }) => {
+  const handleAddressSelect = ({address, coords}) => {
     setAddress(address);
     setCoords(coords);
   };
@@ -122,30 +127,24 @@ const StoreAddScreen = ({ navigation, route }) => {
     try {
       const response = await StoreRegister(data);
       if (response) {
-        console.log(response);
-        Alert.alert(
-          '등록 완료',
-          '매장 등록이 완료되었습니다.',
-          [
-            {
-              text: '확인',
-              style: 'cancel',
-              onPress: () => {
-                navigation.reset({
-                  index: 0, // 새로운 스택의 첫 화면으로 설정
-                  routes: [{ name: 'MainBtmbar' }], // 이동할 스크린 이름
-                });
-              },
-            },
-          ],
-          { cancelable: false },
-        );
+        showAlert({
+          title: '매장 등록이 완료되었습니다.',
+          message: '다른 분들을 위해 \n매장 등록을 해주셔서 감사합니다.',
+          onConfirm: () => {
+            navigation.reset({
+              index: 0, // 새로운 스택의 첫 화면으로 설정
+              routes: [{name: 'MainBtmbar'}], // 이동할 스크린 이름
+            });
+          },
+        });
       }
     } catch (error) {
-      Alert.alert('등록 실패', '이메일 및 비밀번호를 확인해 주세요.' + error);
+      showAlert({
+        title: '등록 실패',
+        message: '로그인 상태를 확인해주세요.',
+      });
     }
   };
-
 
   return (
     <>
@@ -256,6 +255,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
 
 export default StoreAddScreen;

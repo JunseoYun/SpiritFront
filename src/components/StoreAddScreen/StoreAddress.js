@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
+import forbiddenWords from '../../hooks/forbiddenWords';
 
 const StoreAddress = ({
   address,
@@ -9,25 +16,39 @@ const StoreAddress = ({
   onAddressSelect,
 }) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
+  const [error, setError] = useState(null); // 에러 메시지 상태
 
-  const isFocused = (key) => focusedInput === key;
+  const isFocused = key => focusedInput === key;
+
+  const handleDetailedAddressChange = value => {
+    // 금지 단어 검사
+    const containsForbiddenWord = forbiddenWords.some(word =>
+      value.includes(word),
+    );
+
+    if (containsForbiddenWord) {
+      setError('비속어 사용 금지'); // 에러 메시지 설정
+      return; // 입력값 업데이트 중단
+    }
+
+    setError(null); // 에러 메시지 초기화
+    setDetailedAddress(value); // 입력값 업데이트
+  };
 
   return (
     <View>
       <View style={styles.storeinputview}>
-      <TouchableOpacity
-        style={styles.storeinput}
-        onPress={() =>
-          navigation.navigate('StoreAddressSearch', {
-            onAddressSelect,
-          })
-        }>
+        <TouchableOpacity
+          style={styles.storeinput}
+          onPress={() =>
+            navigation.navigate('StoreAddressSearch', {
+              onAddressSelect,
+            })
+          }>
           {address ? (
             <>
               <Text style={styles.storeinputtext}>매장 주소*</Text>
-              <Text style={styles.inputText}>
-                {address}
-              </Text>
+              <Text style={styles.inputText}>{address}</Text>
             </>
           ) : (
             <Text style={styles.inputHideText}>매장 주소*</Text>
@@ -47,10 +68,11 @@ const StoreAddress = ({
           placeholder="상세 주소, 건물 층수, 호수 등"
           placeholderTextColor="#999"
           value={detailedAddress}
-          onChangeText={setDetailedAddress} // setDetailedAddress를 직접 사용
+          onChangeText={handleDetailedAddressChange} // 상세 주소 업데이트 핸들러 사용
           onFocus={() => setFocusedInput('detailedAddress')} // 활성화 상태 설정
           onBlur={() => setFocusedInput(null)} // 비활성화 상태로 변경
         />
+        {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
     </View>
   );
@@ -93,14 +115,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#16BBFF', // 활성화 상태 색상
     borderBottomWidth: 2, // 두껍게 표시
   },
-  textarea: {
-    width: '100%',
-    borderBottomColor: '#F2F2F2',
-    borderBottomWidth: 1,
-    fontSize: 18,
-    fontWeight: '400',
-    paddingVertical: 5, // 상하 간격 조절
-    paddingLeft: 1,
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginTop: 5,
   },
 });
 
