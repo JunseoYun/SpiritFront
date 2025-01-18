@@ -104,11 +104,11 @@ const RegisterScreen = ({route, navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.titleView}>
-        <View style={{flexDirection: 'row'}}>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <Text style={styles.titleNameText}>한잔할까</Text>
           <Text style={styles.titleText}>에서 활동할</Text>
         </View>
-        <Text style={styles.titleText}>닉네임을 입력해주세요</Text>
+        <Text style={styles.titleText}>닉네임을 입력해 주세요</Text>
       </View>
 
       <View
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     color: '#333',
-    fontSize: 30,
+    fontSize: 28,
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
     marginBottom: 3,
   },

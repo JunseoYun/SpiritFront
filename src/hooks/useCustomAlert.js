@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   alertMessage: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: 'center',
     marginTop: -15,
     marginBottom: 20,

@@ -3,6 +3,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import OAuthLoginScreen from '../screens/OAuth/OAuthLoginScreen';
 import RegisterScreen from '../screens/OAuth/RegisterScreen';
+import AgreeScreen from '../screens/OAuth/AgreeScreen';
 const Stack = createStackNavigator();
 
 export default function OAuthStack() {
@@ -14,6 +15,7 @@ export default function OAuthStack() {
       initialRouteName="OAuthLoginScreen">
       <Stack.Screen name="OAuthLoginScreen" component={OAuthLoginScreen} />
       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+      <Stack.Screen name="AgreeScreen" component={AgreeScreen} />
     </Stack.Navigator>
   );
 }

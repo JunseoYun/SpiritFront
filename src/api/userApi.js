@@ -21,19 +21,6 @@ export const user_login = async (type, id, accessToken) => {
   }
 };
 
-export const user_logout = async refreshToken => {
-  try {
-    // GET 요청으로 x-auth-token 헤더에 refreshToken 전달
-    await axios.post('http://43.203.91.148:8080/api/auth/logout', {
-      headers: {
-        'x-auth-token': refreshToken,
-      },
-    });
-  } catch (error) {
-    throw error;
-  }
-};
-
 export const user_register = async (type, id, nickname) => {
   const data = {
     socialInfoDto: {
