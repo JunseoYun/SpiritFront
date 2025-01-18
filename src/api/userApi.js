@@ -1,5 +1,6 @@
 import axiosInstance from './axiosInstance';
 import {functionError} from './errorHandler';
+import axios from 'axios';
 
 export const user_login = async (type, id, accessToken) => {
   const data = {
@@ -13,13 +14,22 @@ export const user_login = async (type, id, accessToken) => {
   try {
     const response = await axiosInstance.post(`/auth/login`, data); // 요청 본문 전달
 
-    // 반환되는 accessToken과 refreshToken 저장
-    const {accessToken, refreshToken} = response.data.data;
-
-    console.log('accessToken:', accessToken, 'refreshToken:', refreshToken);
     return response.data.data; // 응답 데이터 반환
   } catch (error) {
     functionError(error); // 에러 처리
+    throw error;
+  }
+};
+
+export const user_logout = async refreshToken => {
+  try {
+    // GET 요청으로 x-auth-token 헤더에 refreshToken 전달
+    await axios.post('http://43.203.91.148:8080/api/auth/logout', {
+      headers: {
+        'x-auth-token': refreshToken,
+      },
+    });
+  } catch (error) {
     throw error;
   }
 };

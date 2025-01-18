@@ -30,6 +30,10 @@ const refreshAccessToken = async () => {
     const newAccessToken = response.data.data.accessToken;
     const newRefreshToken = response.data.data.refreshToken;
 
+    console.log('newAccessToken: ', newAccessToken);
+    console.log('newRefreshToken: ', newRefreshToken);
+    console.log('refreshToken: ', refreshToken);
+
     if (refreshToken === newRefreshToken) {
       await setToken(newAccessToken, refreshToken);
       console.log('리프레쉬 뉴리프레쉬 같음');
@@ -85,10 +89,13 @@ axiosInstance.interceptors.response.use(
         const newAccessToken = await refreshAccessToken();
         originalRequest.headers['x-auth-token'] = newAccessToken;
 
+        console.log('여기는 통과 accessToken: ', newAccessToken);
         return axiosInstance(originalRequest);
       } catch (refreshError) {
+        console.log;
         // Refresh Token도 만료된 경우 로그아웃
         if (refreshError.response?.status === 401) {
+          console.log('리프레쉬랑 다름: ');
           const {logout} = getGlobalLogout();
           const showAlert = getGlobalShowAlert();
           if (logout) {
