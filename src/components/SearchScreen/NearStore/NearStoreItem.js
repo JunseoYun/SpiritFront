@@ -6,16 +6,16 @@ import MapCategory from '../../../hooks/MapCategory';
 const NearStoreItem = ({store, navigation}) => {
   return (
     <Pressable
-      // onPress={() =>
-      //   navigation.navigate('StoreStack', {
-      //     screen: 'StoreMainPage',
-      //     params: {
-      //       storeId: store.storeId,
-      //       innerlatitude: store.latitude,
-      //       innerlongitude: store.longitude,
-      //     },
-      //   }) }
-        >
+      onPress={() =>
+        navigation.navigate('StoreStack', {
+          screen: 'StoreMainScreen',
+          params: {
+            storeId: store.storeId,
+            innerlatitude: store.latitude,
+            innerlongitude: store.longitude,
+          },
+        })
+      }>
       <View style={styles.storeInfoView}>
         <View style={styles.backimageview}>
           <ImageBackground

@@ -30,7 +30,13 @@ const refreshAccessToken = async () => {
     const newAccessToken = response.data.data.accessToken;
     const newRefreshToken = response.data.data.refreshToken;
 
-    await setToken(newAccessToken, newRefreshToken);
+    if (refreshToken === newRefreshToken) {
+      await setToken(newAccessToken, refreshToken);
+      console.log('리프레쉬 뉴리프레쉬 같음');
+    } else {
+      await setToken(newAccessToken, newRefreshToken);
+      console.log('리프레쉬 뉴리프레쉬 다름');
+    }
     return newAccessToken; // 새로운 Access Token 반환
   } catch (error) {
     throw error;

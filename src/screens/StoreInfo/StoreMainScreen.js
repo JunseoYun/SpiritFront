@@ -1,26 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Dimensions,
-  Animated,
-} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Dimensions, Animated} from 'react-native';
 import ImageSlider from '../../components/StoreScreen/ImageSlider';
-import { ScrollView } from 'react-native-gesture-handler';
+import {ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
-import { useRoute } from '@react-navigation/native';
-import { StoreMainget } from '../../api/storeApi';
+import {useRoute} from '@react-navigation/native';
+import {StoreMainget} from '../../api/storeApi';
 import StoreMenuScreen from './StoreMenuScreen';
 import StoreReviewScreen from './StoreReviewScreen';
 import StoreMapScreen from './StoreMapScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
-import { StoreMenuget } from '../../api/menuApi';
+import {StoreMenuget} from '../../api/menuApi';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
-const StoreMainScreen = ({ navigation }) => {
+const StoreMainScreen = ({navigation}) => {
   const route = useRoute();
-  const { storeId, innerlatitude, innerlongitude } = route.params;
+  const {storeId, innerlatitude, innerlongitude} = route.params;
   const [menus, setMenus] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedata, setStoredata] = useState('');
@@ -29,7 +25,6 @@ const StoreMainScreen = ({ navigation }) => {
   const [longitude, setLongitude] = useState('');
   const [latitude, setLatitude] = useState('');
   const [currentPage, setCurrentPage] = useState('StoreMenuScreen');
-
 
   const getStoreData = async () => {
     try {
@@ -55,11 +50,11 @@ const StoreMainScreen = ({ navigation }) => {
   }, [storeId]);
 
   const tempImages = [
-    { imageUrl: 'https://www.ghibli.jp/gallery/chihiro036.jpg' },
-    { imageUrl: 'https://www.ghibli.jp/gallery/chihiro021.jpg' },
-    { imageUrl: 'https://www.ghibli.jp/gallery/chihiro042.jpg' },
-    { imageUrl: 'https://www.ghibli.jp/gallery/chihiro001.jpg' },
-    { imageUrl: 'https://www.ghibli.jp/gallery/chihiro012.jpg' },
+    {imageUrl: 'https://www.ghibli.jp/gallery/chihiro036.jpg'},
+    {imageUrl: 'https://www.ghibli.jp/gallery/chihiro021.jpg'},
+    {imageUrl: 'https://www.ghibli.jp/gallery/chihiro042.jpg'},
+    {imageUrl: 'https://www.ghibli.jp/gallery/chihiro001.jpg'},
+    {imageUrl: 'https://www.ghibli.jp/gallery/chihiro012.jpg'},
   ];
 
   // 헤더 스타일 동적 변경
@@ -92,20 +87,17 @@ const StoreMainScreen = ({ navigation }) => {
         title={storedata.storeName}
       />
 
-
       {/* 이미지 슬라이더 및 콘텐츠 */}
       <ScrollView
         onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
+          [{nativeEvent: {contentOffset: {y: scrollY}}}],
+          {useNativeDriver: false},
         )}
         scrollEventThrottle={16}
-        style={{backgroundColor: 'white'}}
-      >
+        style={{backgroundColor: 'white'}}>
         {/* 이미지 슬라이더 */}
 
         <ImageSlider images={tempImages} interval={4000} />
-
 
         {/* 추가 콘텐츠 */}
         <StoreMainInfo
@@ -113,10 +105,8 @@ const StoreMainScreen = ({ navigation }) => {
           onModalOpen={() => setIsModalVisible(true)}
           navigation={navigation}
         />
-        <View style={{backgroundColor: '#F2F2F2', height: 20}}/>
-        <StoreTabs
-          changePage={setCurrentPage}
-        />
+        <View style={{backgroundColor: '#F2F2F2', height: 20}} />
+        <StoreTabs changePage={setCurrentPage} />
         <View>
           {currentPage === 'StoreMenuScreen' && (
             <StoreMenuScreen
@@ -139,12 +129,9 @@ const StoreMainScreen = ({ navigation }) => {
             />
           )}
         </View>
-
       </ScrollView>
     </>
   );
 };
-
-
 
 export default StoreMainScreen;
