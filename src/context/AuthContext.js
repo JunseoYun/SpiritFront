@@ -1,6 +1,8 @@
 import React, {createContext, useState, useContext, useEffect} from 'react';
 import {getAccessToken, setToken, removeToken} from '../storage/tokenStorage';
+import {user_logout} from '../api/userApi';
 const AuthContext = createContext();
+import useCustomAlert from '../hooks/useCustomAlert';
 
 let globalAuth = {
   logout: async () => {}, // 기본값으로 빈 함수 할당
@@ -8,6 +10,7 @@ let globalAuth = {
 
 export const AuthProvider = ({children}) => {
   const [token, setTokenState] = useState(null);
+  const {showAlert, AlertComponent} = useCustomAlert();
 
   // 처음 렌더링 시 토큰을 가져와 상태를 업데이트
   useEffect(() => {
@@ -28,6 +31,14 @@ export const AuthProvider = ({children}) => {
 
   // 로그아웃 처리
   const logout = async () => {
+    try {
+      await user_logout();
+    } catch (error) {
+      showAlert({
+        title: '닉네임 미입력',
+        message: '닉네임을 입력해주세요.',
+      });
+    }
     await removeToken(); // AsyncStorage에서 토큰 삭제
     setTokenState(null); // 상태 초기화
   };
