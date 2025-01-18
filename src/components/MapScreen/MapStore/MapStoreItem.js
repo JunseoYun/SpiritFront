@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
+import {View, Text, Pressable, Image, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
@@ -17,7 +17,7 @@ const MapStoreItem = ({
     moveCenterMap(item.latitude, item.longitude);
 
     navigation.navigate('StoreStack', {
-      screen: 'StoreMainPage',
+      screen: 'StoreMainScreen',
       params: {
         storeId: item.storeId,
         innerlatitude: location.latitude,
@@ -26,7 +26,6 @@ const MapStoreItem = ({
     });
   };
 
-  
   const {translateCategory} = useCategoryTranslation();
   return (
     <Pressable
@@ -35,29 +34,35 @@ const MapStoreItem = ({
         index === selectedStoreIndex ? styles.selectedStore : null,
       ]}
       onPress={handlePress}>
-      <Image source={require('../../../assets/kim.png')} style={styles.storeImage} />
+      <Image
+        source={require('../../../assets/kim.png')}
+        style={styles.storeImage}
+      />
       <View style={styles.titletopview}>
         <View style={styles.titleview}>
           <Text style={styles.storeName}>{item.storeName}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <FontAwesomeIcon name="star" size={15} color="#FCC104" />
             <Text style={styles.storeAddress}>{item.storeRate}</Text>
           </View>
         </View>
         <View style={styles.category}>
           {item.categories.slice(0, 3).map((category, idx) => (
-            <Text key={idx} style={styles.StoreCategory}>{translateCategory(category)}</Text>
+            <Text key={idx} style={styles.StoreCategory}>
+              {translateCategory(category)}
+            </Text>
           ))}
         </View>
         <View style={styles.timeview}>
-          <Text style={styles.timeviewtext}>영업종료 {item.closeHour.slice(0, 5)}</Text>
+          <Text style={styles.timeviewtext}>
+            영업종료 {item.closeHour.slice(0, 5)}
+          </Text>
         </View>
         <Text style={styles.menutext}>소주 5000원</Text>
       </View>
     </Pressable>
   );
 };
-
 
 const styles = StyleSheet.create({
   storeInfo: {
@@ -118,7 +123,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#16BBFF',
   },
-
 });
 
 export default MapStoreItem;

@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-  View, StyleSheet, ScrollView, RefreshControl, SafeAreaView, Pressable, Text, Keyboard,
+  View,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  SafeAreaView,
+  Pressable,
+  Text,
+  Keyboard,
   TouchableWithoutFeedback,
 } from 'react-native';
 
-import { getStore } from '../../../api/storeApi';
-import { getLocation } from '../../../storage/locationStorage';
+import {getStore} from '../../../api/storeApi';
+import {getLocation} from '../../../storage/locationStorage';
 import SearchBar from '../../../components/SearchScreen/SearchBar';
 import FastSearch from '../../../components/SearchScreen/FastSearch/FastSearch';
 import CategoryModal from '../../../components/SearchScreen/FastSearch/Modal/CategoryModal';
@@ -15,8 +22,7 @@ import NearStoreList from '../../../components/SearchScreen/NearStore/NearStoreL
 import ResultModal from '../../../components/SearchScreen/FastSearch/Modal/ResultModal';
 import SearchButton from '../../../components/SearchScreen/SearchButton';
 
-const SearchScreen = ({ navigation }) => {
-
+const SearchScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [peopleModalVisible, setPeopleModalVisible] = useState(false);
@@ -34,7 +40,6 @@ const SearchScreen = ({ navigation }) => {
   const [stores, setStores] = useState([]);
   const [fastSearchStores, setfastSearchStores] = useState([]);
   const [error, setError] = useState(null);
-
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -130,7 +135,6 @@ const SearchScreen = ({ navigation }) => {
     }
   };
 
-
   const onPressModalOpen = () => {
     setModalVisible(true);
   };
@@ -217,9 +221,7 @@ const SearchScreen = ({ navigation }) => {
   // ];
 
   return (
-
     <SafeAreaView style={styles.container}>
-
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View>
           <SearchBar
@@ -229,10 +231,15 @@ const SearchScreen = ({ navigation }) => {
           />
           {/* 스크롤 가능한 영역 */}
           <ScrollView contentContainerStyle={styles.scrollViewContent}>
-            <FastSearch title="내 주변 빠른 검색" searchOptions={searchOptions} />
+            <FastSearch
+              title="내 주변 빠른 검색"
+              searchOptions={searchOptions}
+            />
             <CategoryModal
               isModalVisible={isModalVisible}
-              onPressCategory={(text, category) => onPressCategory(text, category)}
+              onPressCategory={(text, category) =>
+                onPressCategory(text, category)
+              }
               onPressModalClose={() => onPressModalClose()}
             />
             <PeopleModal
@@ -264,15 +271,12 @@ const SearchScreen = ({ navigation }) => {
               navigation={navigation}
             />
           </ScrollView>
-
         </View>
       </TouchableWithoutFeedback>
 
       {/* 하단에 고정된 검색 버튼 */}
       <SearchButton onPress={onPressSearch} title="검색" />
     </SafeAreaView>
-
-
   );
 };
 
@@ -282,7 +286,6 @@ const styles = StyleSheet.create({
     flex: 1, // 화면 전체를 차지하도록 설정
   },
   scrollViewContent: {
-    alignItems: 'center',
     paddingBottom: 100, // 버튼 영역이 가려지지 않도록 여유 공간 추가
   },
 });

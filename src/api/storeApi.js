@@ -10,6 +10,15 @@ export const getStore = async () => {
   }
 };
 
+export const get_liked_store = async () => {
+  try {
+    const response = await axiosInstance.get(`/store/getLikedStore`);
+    return response.data.data; // API 응답 구조에 따라 수정
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 // 매장 데이터 가져오기
 export const getByCategoryStore = async (categoryname, location) => {
   const {latitude, longitude} = location;

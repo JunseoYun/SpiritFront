@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -10,7 +10,7 @@ import {
   Dimensions,
   RefreshControl,
   SafeAreaView,
-  Alert
+  Alert,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
@@ -21,17 +21,14 @@ import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStor
 import RecentStoreList from '../../components/MainScreen/RecentStore/RecentStoreList';
 import OptionsSection from '../../components/MainScreen/OptionSection';
 // import { getLocation, getAddress } from '../../storage/locationStorage';
-import { getLocation, getAddress } from '../../storage/locationStorage';
-import { getWeatherData } from '../../api/weather';
+import {getLocation, getAddress} from '../../storage/locationStorage';
+import {getWeatherData} from '../../api/weather';
 import useRecommendation from '../../hooks/useRecommendation';
-import { getByCategoryStore, getStore } from '../../api/storeApi';
+import {getByCategoryStore, getStore} from '../../api/storeApi';
 
-const MainScreen = ({ navigation }) => {
-
-
-
+const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
-  const [address, setAddress] = useState("경기도 용인시");
+  const [address, setAddress] = useState('');
   const [stores, setStores] = useState([]);
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
@@ -53,8 +50,6 @@ const MainScreen = ({ navigation }) => {
   const [recentLoaded, setRecentLoaded] = useState(false);
   const {recommendCategory} = useRecommendation();
 
-
-
   useEffect(() => {
     const fetchLocation = async () => {
       try {
@@ -74,14 +69,16 @@ const MainScreen = ({ navigation }) => {
           const storesData = await getStore(); //현재 영업 중인 주점 변경
           setStores(storesData);
 
-          const recommStoresData = await getByCategoryStore(category, currentLocation);
+          const recommStoresData = await getByCategoryStore(
+            category,
+            currentLocation,
+          );
           setRecommStores(recommStoresData);
         }
         const currentAddress = await getAddress();
         if (currentAddress) {
           setAddress(currentAddress);
         }
-
       } catch (error) {
         console.error('초기 로드 오류:', error);
       }
@@ -90,11 +87,8 @@ const MainScreen = ({ navigation }) => {
     fetchLocation();
   }, []);
 
-  const onScroll = async ({ nativeEvent }) => {
-
-
+  const onScroll = async ({nativeEvent}) => {
     // const {contentOffset, layoutMeasurement} = nativeEvent;
-
     // // LiveHotStoreList 스크롤 감지
     // if (
     //   liveHotRef.current &&
@@ -110,7 +104,6 @@ const MainScreen = ({ navigation }) => {
     //     }
     //   }
     // }
-
     // // RecentStoreList 스크롤 감지
     // if (
     //   recentRef.current &&
@@ -145,7 +138,7 @@ const MainScreen = ({ navigation }) => {
       console.error('초기 로드 오류:', error);
     } finally {
       setIsRefreshing(false); // 새로 고침 종료
-    }  
+    }
   };
 
   const onPressModalOpen = () => {
@@ -180,15 +173,12 @@ const MainScreen = ({ navigation }) => {
     setStoreActiveIndex(index);
     if (index === 0) {
       navigation.navigate('StoreAddScreen');
-    }
-    else if (index === 1) {
+    } else if (index === 1) {
       // navigation.navigate('StoreAuthorityScreen');
-      Alert.alert("서비스 준비중 입니다.")
-    }
-    else if (index === 2) {
+      Alert.alert('서비스 준비중 입니다.');
+    } else if (index === 2) {
       navigation.navigate('MapScreen');
-    }
-    else if (index === 3) {
+    } else if (index === 3) {
       navigation.navigate('RandomChoiceScreen');
     }
   };
@@ -201,17 +191,25 @@ const MainScreen = ({ navigation }) => {
     navigation.navigate('SetLocationScreen');
   };
 
-
-
+  const formatAddress = address => {
+    // 공백 기준으로 문자열 분리
+    const parts = address.split(' ');
+    return parts.slice(1, 4).join(' ');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-
       {/* 실시간 위치 */}
       <View style={styles.topView}>
-        <Text style={styles.todayAddress}>오늘은 {address} </Text>
+        <Text style={styles.todayAddress}>
+          오늘은 {formatAddress(address)}{' '}
+        </Text>
         <Feather
-          onPress={setLocationHandle} name="crosshair" size={25} color="black" />
+          onPress={setLocationHandle}
+          name="crosshair"
+          size={25}
+          color="black"
+        />
       </View>
       <ScrollView
         onScroll={onScroll}
@@ -219,8 +217,6 @@ const MainScreen = ({ navigation }) => {
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }>
-
-
         {/*술집 추천 추천 주점 변경 해야함 카테고리 스토어로*/}
         <TodayRecomm
           weather={weather}
@@ -250,7 +246,8 @@ const MainScreen = ({ navigation }) => {
         <LivehotStoreList stores={liveHotStores || []} />
       </View> */}
 
-        <View onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
+        <View
+          onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
           <RecentStoreList stores={recentStores || []} />
         </View>
 
@@ -260,8 +257,6 @@ const MainScreen = ({ navigation }) => {
         />
       </ScrollView>
     </SafeAreaView>
-
-
   );
 };
 
@@ -303,7 +298,7 @@ const styles = StyleSheet.create({
   todayAddress: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'black',
+    color: '#333',
   },
   topbar: {
     flexDirection: 'row',
@@ -318,6 +313,5 @@ const styles = StyleSheet.create({
     height: 70,
   },
 });
-
 
 export default MainScreen;
