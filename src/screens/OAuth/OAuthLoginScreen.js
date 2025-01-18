@@ -44,7 +44,7 @@ const OAuthLoginScreen = ({navigation}) => {
             title: '등록된 회원 정보가 없습니다.',
             message: '해당 소셜 계정으로 \n회원가입을 진행하시겠습니까?',
             onConfirm: () => {
-              navigation.navigate('RegisterScreen', {
+              navigation.navigate('AgreeScreen', {
                 type: type,
                 id: id,
                 socialToken: socialToken,
@@ -127,7 +127,7 @@ const OAuthLoginScreen = ({navigation}) => {
 
   const handletempLogin = async () => {
     try {
-      handleLogin({type: 'KAKAO', id: 111, token: 111});
+      handleLogin({type: 'KAKAO', id: 444, token: 111});
     } catch (error) {
       showAlert({
         title: '임시 로그인 오류',

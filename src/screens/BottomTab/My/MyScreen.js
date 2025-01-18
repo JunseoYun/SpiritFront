@@ -35,11 +35,11 @@ const MyScreen = ({navigation}) => {
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <Button title="걍 다 로그아웃" onPress={handleLogout} />
       <Button
-        title="엑세스 토큰 일부러 망가뜨리기(리프레시)"
+        title="엑세스 토큰 일부러 망가뜨리기"
         onPress={handleTestAccessSetToken}
       />
       <Button
-        title="엑세스 토큰 일부러 망가뜨리기(리프레시)"
+        title="리프레시 토큰 일부러 망가뜨리기"
         onPress={handleTestRefreshSetToken}
       />
     </View>
