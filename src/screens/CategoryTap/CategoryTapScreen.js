@@ -13,6 +13,7 @@ import {
 
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useFocusEffect} from '@react-navigation/native';
 import {getByCategoryStore} from '../../api/storeApi';
 import Categorystyles from './CategoryTapStyles';
@@ -94,12 +95,18 @@ const CategoryTapScreen = ({navigation, route}) => {
                 <Text style={Categorystyles.infoText}> · 고객리뷰 1,236</Text>
                 <Text style={Categorystyles.infoText}> · 찜 367</Text>
               </View>
-              <View style={Categorystyles.infoView}>
-                <Ionicons name="time-outline" size={15} color="#333" />
-                <Text style={Categorystyles.infoText}>
-                  {' '}
-                  영업 중 · 01:00 마감
-                </Text>
+              <View style={Categorystyles.infoTimeView}>
+                <View style={Categorystyles.infoView}>
+                  <Ionicons name="time-outline" size={15} color="#333" />
+                  <Text style={Categorystyles.infoText}>
+                    {' '}
+                    영업 중 · 01:00 마감
+                  </Text>
+                </View>
+                <View style={Categorystyles.infoView}>
+                  <MaterialCommunityIcons name="sleep" size={15} color="#333" />
+                  <Text style={Categorystyles.infoText}> 15:00 ~ 17:00</Text>
+                </View>
               </View>
             </View>
           </Pressable>
