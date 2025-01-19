@@ -47,15 +47,17 @@ const MapStoreItem = ({
           </View>
         </View>
         <View style={styles.category}>
-          {item.categories.slice(0, 3).map((category, idx) => (
+          {/* {item.categories.slice(0, 3).map((category, idx) => (
             <Text key={idx} style={styles.StoreCategory}>
               {translateCategory(category)}
             </Text>
-          ))}
+          ))} */}
+          카테고리 카테고리
         </View>
         <View style={styles.timeview}>
           <Text style={styles.timeviewtext}>
-            영업종료 {item.closeHour.slice(0, 5)}
+            {/* 영업종료 {item.closeHour.slice(0, 5)} */}
+            영업 종료
           </Text>
         </View>
         <Text style={styles.menutext}>소주 5000원</Text>
