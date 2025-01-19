@@ -123,14 +123,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   alertTitle: {
-    fontSize: 19,
+    fontSize: 17,
     fontWeight: '600',
     marginBottom: 20,
     marginTop: 30,
     color: '#333',
   },
   alertMessage: {
-    fontSize: 18,
+    fontSize: 16,
     textAlign: 'center',
     marginTop: -15,
     marginBottom: 20,
