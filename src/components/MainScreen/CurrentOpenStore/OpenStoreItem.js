@@ -1,50 +1,80 @@
-import React from 'react';
-import { View, Text, ImageBackground, StyleSheet } from 'react-native';
+import React, {useState} from 'react';
+import {View, Text, ImageBackground, StyleSheet} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
-const OpenStoreItem = ({ store }) => {
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
+const OpenStoreItem = ({store}) => {
   const calculateWalkingTime = distance => {
     const walkingSpeed = 80; // 평균 보행 속도 (m/min)
     return Math.ceil(distance / walkingSpeed); // 소수점 올림
   };
 
+  const [isBreak, setBreak] = useState(false);
+
   const walkingTime = calculateWalkingTime(store.distance);
   const {translateCategory} = useCategoryTranslation();
   return (
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <ImageBackground
-          source={require('../../../assets/MainPagetodayimg.png')}
-          // source={
-          //   store.imgUrl
-          //     ? {uri: store.imgUrl} // URL이 있는 경우
-          //     : require('../../../assets/MainPagetodayimg.png') // URL이 없으면 로컬 이미지 사용
-          // }
-          style={styles.imageBackground}
-          imageStyle={styles.imageStyle}>
-          <View style={styles.overlay}>
-            <Text style={styles.overlayText}>
-              영업종료 {store.closeHour.slice(0, 5)}
-            </Text>
+    <>
+      <View style={styles.container}>
+        <View style={styles.imageContainer}>
+          <ImageBackground
+            source={require('../../../assets/MainPagetodayimg.png')}
+            // source={
+            //   store.imgUrl
+            //     ? {uri: store.imgUrl} // URL이 있는 경우
+            //     : require('../../../assets/MainPagetodayimg.png') // URL이 없으면 로컬 이미지 사용
+            // }
+            style={styles.imageBackground}
+            imageStyle={styles.imageStyle}>
+            {isBreak ? (
+              <View style={styles.breakView}>
+                <Text style={styles.breakText}>주점 쉬는 중</Text>
+                <Text style={styles.breakText}> 15:00 ~ 17:00</Text>
+              </View>
+            ) : (
+              <View style={styles.overlay}>
+                <Text style={styles.overlayText}>
+                  영업종료 {store.closeHour.slice(0, 5)}
+                </Text>
+              </View>
+            )}
+          </ImageBackground>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.storeName} numberOfLines={1} ellipsizeMode="tail">
+            {store.storeName}
+          </Text>
+          <View style={styles.categoriesContainer}>
+            {Array.isArray(store.categories) && store.categories.length > 0 ? (
+              store.categories.map((category, index) => (
+                <Text key={index} style={styles.categoryText}>
+                  {translateCategory(category)}
+                </Text>
+              ))
+            ) : (
+              <Text style={styles.categoryText}>카테고리 미설정</Text>
+            )}
           </View>
-        </ImageBackground>
-      </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.storeName}>{store.storeName}</Text>
-        <View style={styles.categoriesContainer}>
-                          <Text style={styles.categoryText}>
-                            {Array.isArray(store.categories) && store.categories.length > 0
-                              ? store.categories.map((category) => translateCategory(category)).join(' ')
-                              : '카테고리 미설정'}
-                          </Text>
-        </View>
-        <Text style={styles.menuTag}>#대표메뉴</Text>
-        <View style={styles.distanceContainer}>
-          {/* <Text style={styles.distanceText}>{store.distance.toFixed(0)}m</Text> */}
-          <Text style={styles.walkingTimeText}>{walkingTime}분</Text>
+          <Text style={styles.menuTag} numberOfLines={2} ellipsizeMode="tail">
+            #대표메뉴
+          </Text>
+          <Text
+            style={styles.alcoholTag}
+            numberOfLines={2}
+            ellipsizeMode="tail">
+            소주 5000원 맥주 7000원
+          </Text>
         </View>
       </View>
-    </View>
+      <View style={styles.distanceContainer}>
+        {/* <Text style={styles.distanceText}>{store.distance.toFixed(0)}m</Text> */}
+
+        <Ionicons name="footsteps" size={20} color="#16BBFF" />
+        <Text style={styles.walkingTimeText}>{walkingTime}분</Text>
+      </View>
+    </>
   );
 };
 
@@ -56,7 +86,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 15,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5, // Android 그림자 효과
@@ -73,12 +103,25 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
   },
+  breakView: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 16,
+  },
+  breakText: {
+    color: '#fff',
+    fontSize: 15,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    marginBottom: 5,
+  },
   overlay: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     paddingVertical: 5,
     paddingHorizontal: 10,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
   },
   overlayText: {
     color: '#f9c74f',
@@ -93,6 +136,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 5,
+    maxWidth: '100%',
   },
   categoriesContainer: {
     flexDirection: 'row',
@@ -116,10 +160,18 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 10,
   },
+  alcoholTag: {
+    fontSize: 12,
+    color: '#333',
+    fontWeight: '500',
+    marginBottom: 10,
+  },
   distanceContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: -7,
+    marginRight: 15,
   },
   distanceText: {
     fontSize: 14,
@@ -130,6 +182,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#10BEFB',
+    marginLeft: 5,
   },
 });
 
