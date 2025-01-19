@@ -1,11 +1,22 @@
 import React from 'react';
-import {View, ImageBackground, StyleSheet, Text} from 'react-native';
+import {View, ImageBackground, StyleSheet, Text, Pressable} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
-const TodayRecommItem = ({store, category}) => {
+const TodayRecommItem = ({store, category, location, navigation}) => {
   const {translateCategory} = useCategoryTranslation();
   return (
-    <View style={styles.container}>
+    <Pressable
+      onPress={() =>
+        navigation.navigate('StoreStack', {
+          screen: 'StoreMainScreen',
+          params: {
+            storeId: store.storeId,
+            innerlatitude: location.latitude,
+            innerlongitude: location.longitude,
+          },
+        })
+      }
+      style={styles.container}>
       <ImageBackground
         source={require('../../../assets/MainPagetodayimg.png')}
         // source={
@@ -38,7 +49,7 @@ const TodayRecommItem = ({store, category}) => {
           {/* 가게 정보 */}
         </View>
       </ImageBackground>
-    </View>
+    </Pressable>
   );
 };
 

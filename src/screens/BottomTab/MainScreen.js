@@ -226,6 +226,8 @@ const MainScreen = ({navigation}) => {
           recommStores={stores}
           recommCategory={recommCategory}
           recommReason={recommReason}
+          location={location}
+          navigation={navigation}
         />
 
         {/*카테고리*/}
