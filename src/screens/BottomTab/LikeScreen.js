@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {SafeAreaView, ScrollView, StyleSheet} from 'react-native';
+import {SafeAreaView, ScrollView, StyleSheet, View, Text} from 'react-native';
 
 import LikedItem from '../../components/LikedScreen/LikedItem';
 import {get_liked_store} from '../../api/storeApi';
@@ -21,13 +21,24 @@ const LikeScreen = ({navigation}) => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.ScrollView}>
-        {stores.map(store => (
-          <LikedItem
-            key={store.storeId}
-            store={store}
-            navigation={navigation}
-          />
-        ))}
+        {stores ? (
+          <>
+            {stores?.map(store => (
+              <LikedItem
+                key={store.storeId}
+                store={store}
+                navigation={navigation}
+              />
+            ))}
+          </>
+        ) : (
+          <View
+            style={{
+              alignItems: 'center',
+            }}>
+            <Text style={styles.Text}>찜한 가게가 없어요</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -44,6 +55,11 @@ const styles = StyleSheet.create({
   ScrollView: {
     marginTop: 10,
     paddingBottom: 30,
+  },
+  Text: {
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 
