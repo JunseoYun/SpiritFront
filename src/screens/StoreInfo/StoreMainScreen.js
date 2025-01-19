@@ -29,17 +29,10 @@ const StoreMainScreen = ({navigation}) => {
 
   const getStoreData = async () => {
     try {
-      const storeData = await StoreMainget(
-        storeId,
-        innerlatitude,
-        innerlongitude,
-      );
+      const storeData = await StoreMainget(storeId);
       setStoredata(storeData);
       setLongitude(storeData.longitude);
       setLatitude(storeData.latitude);
-      console.log(storeData.longitude);
-      console.log(storeData.latitude);
-      console.log(storeId);
       const Menus = await StoreMenuget(storeId);
       setMenus(Menus);
     } catch (error) {

@@ -18,6 +18,8 @@ const TodayRecomm = ({
   recommStores,
   recommCategory,
   recommReason,
+  location,
+  navigation,
 }) => {
   const {translateWeather} = useWeatherTranslation();
   const {translateCategory} = useCategoryTranslation();
@@ -34,13 +36,18 @@ const TodayRecomm = ({
       <View>
         {recommStores && recommStores.length > 0 ? (
           <ScrollView
-          pagingEnabled
+            pagingEnabled
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.scrollContainer}>
             {recommStores?.map(store => (
               <View key={store.storeId} style={styles.slideItem}>
-                <TodayRecommItem store={store} category={koreanCategory} />
+                <TodayRecommItem
+                  store={store}
+                  category={koreanCategory}
+                  location={location}
+                  navigation={navigation}
+                />
               </View>
             ))}
           </ScrollView>
