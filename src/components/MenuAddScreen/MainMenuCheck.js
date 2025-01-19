@@ -1,13 +1,13 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
 
-const MainMenuCheck = ({ isChecked, onToggle }) => {
+const MainMenuCheck = ({isChecked, onToggle}) => {
   return (
     <Pressable style={styles.container} onPress={onToggle}>
       <View
         style={[
           styles.checkBoxIndicator,
-          isChecked && { backgroundColor: '#16BBFF' }, // 활성화된 상태 스타일
+          isChecked && {backgroundColor: '#16BBFF'}, // 활성화된 상태 스타일
         ]}
       />
       <Text style={styles.checkBoxText}>대표 메뉴로 설정</Text>
