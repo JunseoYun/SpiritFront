@@ -1,24 +1,29 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, Pressable, TouchableOpacity } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  Pressable,
+  TouchableOpacity,
+} from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 
-
-const StoreOperatingHours = ({ operatingHours, setOperatingHours }) => {
-
+const StoreOperatingHours = ({operatingHours, setOperatingHours}) => {
   const [visible, setVisible] = useState(false);
 
   const openHandle = () => {
     setVisible(true);
-  }
+  };
 
   const closeHandle = () => {
     setVisible(false);
-  }
+  };
 
   const handleChange = (key, value) => {
-    setOperatingHours({ ...operatingHours, [key]: value });
+    setOperatingHours({...operatingHours, [key]: value});
   };
-  const hours = Array.from({ length: 24 }, (_, i) =>
+  const hours = Array.from({length: 24}, (_, i) =>
     i.toString().padStart(2, '0'),
   );
   const minutes = ['00', '15', '30', '45'];
@@ -29,7 +34,6 @@ const StoreOperatingHours = ({ operatingHours, setOperatingHours }) => {
     operatingHours.closedHour ||
     operatingHours.closedMinute;
 
-
   return (
     <View>
       <View style={styles.storeinputview}>
@@ -38,7 +42,11 @@ const StoreOperatingHours = ({ operatingHours, setOperatingHours }) => {
             <>
               <Text style={styles.storeinputtext}>영업 시간*</Text>
               <Text style={styles.inputText}>
-                {`${operatingHours.openHour || '--'}:${operatingHours.openMinute || '--'} - ${operatingHours.closedHour || '--'}:${operatingHours.closedMinute || '--'}`}
+                {`${operatingHours.openHour || '--'}:${
+                  operatingHours.openMinute || '--'
+                } - ${operatingHours.closedHour || '--'}:${
+                  operatingHours.closedMinute || '--'
+                }`}
               </Text>
             </>
           ) : (
@@ -54,7 +62,7 @@ const StoreOperatingHours = ({ operatingHours, setOperatingHours }) => {
           >
             <Text style={styles.modalTopText}>매장 영업 시간</Text>
             <View style={styles.pickerTopView}>
-              <Text style={styles.pickerLabel}>시작</Text>
+              <Text style={styles.pickerLabel}>오픈</Text>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={operatingHours.openHour}
@@ -80,7 +88,7 @@ const StoreOperatingHours = ({ operatingHours, setOperatingHours }) => {
               </View>
             </View>
             <View style={styles.pickerTopView}>
-              <Text style={styles.pickerLabel}>종료</Text>
+              <Text style={styles.pickerLabel}>마감</Text>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={operatingHours.closedHour}
@@ -200,7 +208,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     // 그림자 스타일
     shadowColor: '#333', // 그림자 색상 (검은색)
-    shadowOffset: { width: 0, height: -4 }, // 그림자 위치 (위쪽으로)
+    shadowOffset: {width: 0, height: -4}, // 그림자 위치 (위쪽으로)
     shadowOpacity: 0.2, // 그림자 투명도
     shadowRadius: 5, // 그림자 퍼짐 정도
     elevation: 20, // 안드로이드 그림자

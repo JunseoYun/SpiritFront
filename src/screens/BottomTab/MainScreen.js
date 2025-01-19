@@ -79,9 +79,7 @@ const MainScreen = ({navigation}) => {
         if (currentAddress) {
           setAddress(currentAddress);
         }
-      } catch (error) {
-        console.error('초기 로드 오류:', error);
-      }
+      } catch (error) {}
     };
 
     fetchLocation();
