@@ -8,7 +8,6 @@ import MenuAddScreen from '../screens/StoreInfo/MenuAddScreen';
 import UpdateMenuScreen from '../screens/StoreInfo/UpdateMenuScreen';
 import UpdateStoreScreen from '../screens/StoreInfo/UpdateStoreScreen';
 import StoreMapScreen from '../screens/StoreInfo/StoreMapScreen';
-import ReviewAddScreen from '../screens/StoreInfo/ReviewAddScreen';
 import AlcoholAddScreen from '../screens/StoreInfo/AlcoholAddScreen';
 import useAlert from '../hooks/useAlert';
 
@@ -57,34 +56,6 @@ export default function StoreStack() {
         component={AlcoholAddScreen}
         options={({navigation}) => ({
           title: '주류 등록하기',
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                showAlert(
-                  '작성한 내용이 저장되지 않았습니다',
-                  `뒤로 가시겠습니까?`,
-                  () => {
-                    navigation.goBack();
-                  },
-                  null,
-                );
-              }}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={25}
-                color="#333"
-                style={{marginLeft: 13, paddingRight: 15}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-
-      <Stack.Screen
-        name="ReviewAddScreen"
-        component={ReviewAddScreen}
-        options={({navigation}) => ({
-          title: '리뷰 등록하기',
           headerLeft: () => (
             <Pressable
               onPress={() => {
