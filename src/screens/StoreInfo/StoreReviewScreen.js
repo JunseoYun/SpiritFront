@@ -1,23 +1,36 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Pressable,
-  Image,
-  Modal,
   SafeAreaView,
+  TextInput,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {ReviewStoreGet} from '../../api/reviewApi';
-import {ScrollView} from 'react-native-gesture-handler';
+import ReviewItem from '../../components/StoreReviewScreen/ReviewItem';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {ReviewCreate} from '../../api/reviewApi';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import useCustomAlert from '../../hooks/useCustomAlert';
+import ImagePicker from 'react-native-image-crop-picker';
 
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId} = route.params;
   const [reviewdata, setReviewdata] = useState([]);
+  const {showAlert, AlertComponent} = useCustomAlert();
 
+  const [isWriting, setIsWriting] = useState(false); // 작성 상태
+
+  const [newrate, setNewRate] = useState(0);
+  const [newReviewContent, setNewReviewContent] = useState(null);
+  const [images, setImages] = useState([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  console.log(newrate, newReviewContent, images);
   const getReviewData = async () => {
     try {
       const reviewData = await ReviewStoreGet(storeId);
@@ -33,9 +46,78 @@ const StoreReviewScreen = ({navigation}) => {
     }, [storeId]),
   );
 
+  const renderStars = () => {
+    return Array.from({length: 5}, (_, index) => {
+      const starIndex = index + 1; // 별의 번호 (1부터 시작)
+      return (
+        <TouchableOpacity key={index} onPress={() => setNewRate(starIndex)}>
+          <Ionicons
+            name="star"
+            size={30}
+            color={starIndex <= newrate ? '#FFD700' : '#D3D3D3'} // 노란색(#FFD700) 또는 회색(#D3D3D3)
+            style={styles.star}
+          />
+        </TouchableOpacity>
+      );
+    });
+  };
+
+  const onChangeText = inputText => {
+    setNewReviewContent(inputText);
+  };
+
+  const selectImage = () => {
+    ImagePicker.openPicker({
+      width: 300,
+      height: 400,
+      cropping: true,
+      mediaType: 'photo',
+    })
+      .then(image => {
+        console.log(image);
+        setImages(prevImages => [...prevImages, image]); // 이미지를 배열에 추가
+      })
+      .catch(error => {
+        console.log('ImagePicker Error: ', error);
+      });
+  };
+
+  const handleImagePress = index => {
+    setSelectedImageIndex(index); // 선택된 이미지 인덱스 설정
+    showAlert({
+      title: '사진 삭제',
+      message: '선택한 사진을 삭제하시겠습니까?',
+      onConfirm: () => {
+        setImages(prevImages => prevImages.filter((_, i) => i !== index)); // 선택된 사진 삭제
+        setSelectedImageIndex(null); // 선택된 이미지 초기화
+      },
+      onCancel: () => {
+        setSelectedImageIndex(null); // 취소 시 선택된 이미지 초기화
+      },
+      type: 'delete',
+    });
+  };
+
+  const handleSubmitReview = async () => {
+    try {
+      await ReviewCreate(newReviewContent, newrate, images);
+      showAlert({
+        title: '등록되었습니다',
+        message: '',
+        onConfirm: () => navigation.navigate('StoreMainScreen', {storeId}),
+      });
+      setIsWriting(false);
+    } catch (error) {
+      showAlert({
+        title: '등록에 실패하였습니다',
+        message: '잠시 후 다시 시도해주세요.',
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.MenuaddView}>
+      {/* <View style={styles.MenuaddView}>
         <Pressable
           style={styles.addButton}
           onPress={() =>
@@ -44,66 +126,57 @@ const StoreReviewScreen = ({navigation}) => {
           <Text style={styles.addButtonText}>리뷰 작성하기</Text>
         </Pressable>
       </View>
-
       {reviewdata.map(item => (
-        <View key={item.reviewId} style={styles.reviewContainer}>
-          <View style={styles.reviewHeader}>
-            <Image
-              source={
-                item.writerAvatar
-                  ? {uri: item.writerAvatar}
-                  : require('../../assets/kim.png')
-              }
-              style={styles.avatar}
-            />
-            <View style={styles.reviewHeaderText}>
-              <Text style={styles.writerName}>{item.writerNickName}</Text>
-              <Text style={styles.reviewInfo}>⭐ {item.rate}</Text>
-            </View>
-            {/* <Text style={styles.reviewDate}>{item.date}</Text> */}
-            <Text style={styles.reviewDate}>2024-01-19</Text>
-          </View>
-          <Text style={styles.reviewContent}>{item.reviewContent}</Text>
+        <ReviewItem key={item.reviewId} item={item} />
+      ))} */}
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.imageGallery}>
-            {/* 
-            서버 통신쪽 image
-            {item.images &&
-              item.images.map((image, index) => (
-                <Image
-                  key={index}
-                  source={
-                    image ? {uri: image} : require('../../assets/kim.png')
-                  }
-                  style={styles.reviewImage}
-                />
-              ))} */}
-            <Image
-              source={require('../../assets/kim.png')}
-              style={styles.reviewImage}
-            />
-            <Image
-              source={require('../../assets/kim.png')}
-              style={styles.reviewImage}
-            />
-            <Image
-              source={require('../../assets/kim.png')}
-              style={styles.reviewImage}
-            />
-            <Image
-              source={require('../../assets/kim.png')}
-              style={styles.reviewImage}
-            />
-            <Image
-              source={require('../../assets/kim.png')}
-              style={styles.reviewImage}
-            />
-          </ScrollView>
+      <View style={styles.writeContainer}>
+        <Text style={styles.titleText}>리뷰 작성</Text>
+        <TextInput
+          style={[styles.textarea, {color: '#333'}]} // 텍스트 색상 변경
+          multiline
+          onChangeText={onChangeText}
+          value={newReviewContent}
+          placeholder="소중한 리뷰를 남겨주세요."
+          placeholderTextColor="gray" // Placeholder 텍스트 색상
+        />
+
+        <Text style={styles.titleText}>별점 입력</Text>
+        <View style={styles.starcontainer}>{renderStars()}</View>
+        <Text style={styles.titleText}>리뷰 사진 추가 (최대 5장)</Text>
+        <View style={styles.imageContainer}>
+          {images.map((image, index) => (
+            <Pressable
+              key={index}
+              onPress={() => handleImagePress(index)} // 클릭 시 showAlert 실행
+              style={styles.imagePressable}>
+              <Image
+                source={{uri: `file://${image.path}`}}
+                style={[
+                  styles.selectImage,
+                  index === selectedImageIndex && styles.selectedEffect, // 눌렀을 때 효과 적용
+                ]}
+              />
+            </Pressable>
+          ))}
+          {images.length < 5 && (
+            <Pressable onPress={selectImage}>
+              <MaterialCommunityIcons
+                name="image-plus"
+                size={40}
+                color="#333"
+              />
+            </Pressable>
+          )}
         </View>
-      ))}
+        <TouchableOpacity
+          style={styles.savebutton}
+          onPress={handleSubmitReview}>
+          <Text style={styles.savetext}>작성완료</Text>
+        </TouchableOpacity>
+      </View>
+
+      <AlertComponent />
     </SafeAreaView>
   );
 };
@@ -111,7 +184,6 @@ const StoreReviewScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    alignItems: 'center',
     backgroundColor: '#fff',
   },
   MenuaddView: {
@@ -133,67 +205,72 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  reviewContainer: {
-    width: '90%',
-    textAlign: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    paddingHorizontal: 18,
-    padding: 15,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 40,
-    marginRight: 20,
-  },
-  reviewHeaderText: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  writerName: {
-    fontWeight: 'bold',
-    fontSize: 20,
+  text: {
+    fontSize: 15,
+    fontWeight: '500',
     color: 'black',
+    marginBottom: 10,
+    marginTop: 10,
   },
-  reviewInfo: {
-    fontSize: 16,
-    color: '#616161',
+  writeContainer: {
+    height: 640,
+    marginBottom: 10,
+    marginTop: 30,
+    marginHorizontal: 18,
+  },
+  titleText: {
     fontWeight: '500',
-  },
-  reviewDate: {
-    fontSize: 14,
-    color: '#828282',
-    fontWeight: '500',
-    paddingBottom: 16,
-  },
-  reviewContent: {
+    color: '#999',
     fontSize: 16,
     marginBottom: 10,
-    marginVertical: 5,
-    color: '#616161',
-    textAlign: 'left',
-    alignSelf: 'flex-start',
-    fontWeight: 'bold',
+    marginLeft: 3,
   },
-  imageGallery: {},
-  reviewImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 5,
-    marginHorizontal: 5,
+  textarea: {
+    backgroundColor: '#E9E9E9',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+    height: 100,
+    padding: 10,
+  },
+  starcontainer: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    marginBottom: 15,
+  },
+  star: {
+    marginHorizontal: 3, // 별 사이 간격
+  },
+  savebuttonview: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  savebutton: {
+    alignItems: 'center',
+    marginBottom: 40,
+    borderRadius: 10,
+    backgroundColor: '#16BBFF',
+    paddingVertical: 10,
+  },
+  savetext: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  imageContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 10,
+  },
+  selectImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+  selectedEffect: {
+    borderWidth: 3,
+    borderColor: '#FF6B6B', // 선택된 이미지를 강조
   },
 });
 

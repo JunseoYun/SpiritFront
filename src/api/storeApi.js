@@ -3,7 +3,7 @@ import {functionError} from './errorHandler';
 // 매장 데이터 가져오기
 export const getStore = async () => {
   try {
-    const response = await axiosInstance.get(`/store/get`);
+    const response = await axiosInstance.get(`/store/get/all`);
     return response.data.data; // API 응답 구조에 따라 수정
   } catch (error) {
     functionError(error);
@@ -39,10 +39,7 @@ export const getByCategoryStore = async (categoryname, location) => {
 //스토어상세페이지 관련 api
 export const StoreMainget = async (storeId, innerlatitude, innerlongitude) => {
   try {
-    const response = await axiosInstance.get(
-      `/store/get/${storeId}?latitude=${innerlatitude}&longitude=${innerlongitude}`,
-      {},
-    );
+    const response = await axiosInstance.get(`/store/get/${storeId}`, {});
     return response.data.data;
   } catch (error) {
     functionError(error);

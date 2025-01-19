@@ -2,7 +2,7 @@ import React from 'react';
 import {ScrollView, StyleSheet, View, Text} from 'react-native';
 import OpenStoreItem from './OpenStoreItem';
 
-const OpenStoreList = ({stores}) => {
+const OpenStoreList = ({stores, location, navigation}) => {
   return (
     <View>
       <View style={styles.todayPhrasesView}>
@@ -17,7 +17,11 @@ const OpenStoreList = ({stores}) => {
         contentContainerStyle={styles.scrollViewContent}>
         {stores?.map((store, index) => (
           <View key={index} style={styles.storeContainer}>
-            <OpenStoreItem store={store} />
+            <OpenStoreItem
+              store={store}
+              location={location}
+              navigation={navigation}
+            />
           </View>
         ))}
       </ScrollView>
