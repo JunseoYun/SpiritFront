@@ -192,6 +192,9 @@ const MainScreen = ({navigation}) => {
   };
 
   const formatAddress = address => {
+    if (address === '강남대학교') {
+      return address;
+    }
     // 공백 기준으로 문자열 분리
     const parts = address.split(' ');
     return parts.slice(1, 4).join(' ');
