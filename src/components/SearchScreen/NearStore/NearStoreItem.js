@@ -1,9 +1,10 @@
 import React from 'react';
 import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import MapCategory from '../../../hooks/MapCategory';
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
 const NearStoreItem = ({store, navigation}) => {
+  const {translateCategory} = useCategoryTranslation();
   return (
     <Pressable
       onPress={() =>
@@ -32,17 +33,20 @@ const NearStoreItem = ({store, navigation}) => {
           </View>
         </View>
         <View style={styles.storeViewInfo}>
-          {store.categories.slice(0, 3).map((category, index) => (
-            <MapCategory
-              key={index}
-              categories={[category]}
-              style={styles.StoreCategory}
-            />
-          ))}
+          {Array.isArray(store.categories) && store.categories.length > 0 ? (
+            store.categories.map((category, index) => (
+              <Text key={index} style={styles.StoreCategory}>
+                {translateCategory(category)}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.StoreCategory}>카테고리 미설정</Text>
+          )}
         </View>
         <View style={styles.storeViewInfo}>
           <Text style={styles.storeSubInfo}>
-            영업 종료 {store.closeHour.slice(0, 5)}
+            {/* 영업 종료 {store.closeHour.slice(0, 5)} */}
+            영업 종료
           </Text>
           <Text style={styles.storeSubInfo}>{store.distance} m</Text>
           {/* <Text style={styles.storeSubInfo}>{store.distance.toFixed(0)} m</Text> */}

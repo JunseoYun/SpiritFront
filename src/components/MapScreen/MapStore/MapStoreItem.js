@@ -47,12 +47,15 @@ const MapStoreItem = ({
           </View>
         </View>
         <View style={styles.category}>
-          {/* {item.categories.slice(0, 3).map((category, idx) => (
-            <Text key={idx} style={styles.StoreCategory}>
-              {translateCategory(category)}
-            </Text>
-          ))} */}
-          카테고리 카테고리
+          {Array.isArray(item.categories) && item.categories.length > 0 ? (
+            store.categories.map((category, index) => (
+              <Text key={index} style={styles.StoreCategory}>
+                {translateCategory(category)}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.StoreCategory}>카테고리 미설정</Text>
+          )}
         </View>
         <View style={styles.timeview}>
           <Text style={styles.timeviewtext}>
