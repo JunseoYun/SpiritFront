@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   storeContainer: {
     flexDirection: 'row', // 카테고리 가로 정렬
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // 반투명 배경
+    backgroundColor: 'rgba(16, 190, 251, 0.6)', // 반투명 배경
     alignItems: 'center',
   },
   storeName: {
@@ -86,16 +86,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 12,
     marginBottom: 12,
-    marginTop: 5,
+    marginTop: 7,
     maxWidth: '50%',
   },
   storeSubInfo: {
-    color: '#10BEFB',
+    color: '#fff',
     fontSize: 13,
     fontWeight: 'bold',
     marginRight: 12,
     marginBottom: 12,
-    marginTop: 5,
+    marginTop: 7,
     maxWidth: '50%',
   },
 });
