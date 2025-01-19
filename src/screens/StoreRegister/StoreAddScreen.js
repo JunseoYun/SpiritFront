@@ -13,6 +13,7 @@ import StoreCategory from '../../components/StoreAddScreen/StoreCategory';
 import StoreClosedDay from '../../components/StoreAddScreen/StoreClosedDay';
 import StoreGroup from '../../components/StoreAddScreen/StoreGroup';
 import StoreOperatingHours from '../../components/StoreAddScreen/StoreOperatingHours';
+import StoreBreakingHours from '../../components/StoreAddScreen/StoreBreakingTime';
 import StoreImage from '../../components/StoreAddScreen/StoreImage';
 import StoreAlcohol from '../../components/StoreAddScreen/StoreAlcohol';
 import StoreTV from '../../components/StoreAddScreen/StoreTV';
@@ -27,8 +28,11 @@ const StoreAddScreen = ({navigation, route}) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedscreenOption, setselectedscreenOption] = useState(null);
   const [closedDay, setClosedDay] = useState([]);
-  const [alcohol, setAlcohol] = useState('');
+  const [alcohol, setAlcohol] = useState([{type: 'SOJU', price: 0}]);
+  console.log(alcohol);
+
   const [imageUris, setImageUris] = useState([]); // 이미지 배열 상태
+
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const [storeData, setStoreData] = useState({
@@ -42,6 +46,13 @@ const StoreAddScreen = ({navigation, route}) => {
     openMinute: '',
     closedHour: '',
     closedMinute: '',
+  });
+
+  const [breakingHours, setBreakingHours] = useState({
+    startHour: '',
+    startMinute: '',
+    endHour: '',
+    endMinute: '',
   });
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -161,6 +172,11 @@ const StoreAddScreen = ({navigation, route}) => {
           <StoreOperatingHours
             operatingHours={operatingHours}
             setOperatingHours={setOperatingHours}
+          />
+
+          <StoreBreakingHours
+            breakingHours={breakingHours}
+            setBreakingHours={setBreakingHours}
           />
           <StoreCategory
             selectedCategory={selectedCategory}

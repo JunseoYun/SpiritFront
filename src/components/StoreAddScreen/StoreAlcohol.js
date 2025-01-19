@@ -1,23 +1,36 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import {View, Text, TextInput, StyleSheet} from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 
+// 한글 표시와 영어 값을 매핑한 객체 배열
 const alcohols = [
-  '소주',
-  '맥주',
-  '막걸리',
-  '와인',
-  '칵테일',
-  '사케',
-  '고량주',
-  '위스키',
-  '보드카',
-  '진',
-  '럼',
-  '데킬라',
+  {label: '소주', value: 'SOJU'},
+  {label: '맥주', value: 'BEER'},
+  {label: '막걸리', value: 'MAKGEOLLI'},
+  {label: '와인', value: 'WINE'},
+  {label: '칵테일', value: 'COCKTAIL'},
+  {label: '사케', value: 'SAKE'},
+  {label: '고량주', value: 'KAOLIANG'},
+  {label: '위스키', value: 'WHISKEY'},
+  {label: '보드카', value: 'VODKA'},
+  {label: '진', value: 'GIN'},
+  {label: '럼', value: 'RUM'},
+  {label: '데킬라', value: 'TEQUILA'},
 ];
 
-const StoreAlcohol = ({ alcohol, setAlcohol }) => {
+const StoreAlcohol = ({alcohol, setAlcohol}) => {
+  const handleAlcoholChange = (index, key, value) => {
+    setAlcohol(prev => {
+      // 특정 인덱스가 없으면 기본 객체 생성
+      const updatedAlcohol = [...prev];
+      if (!updatedAlcohol[index]) {
+        updatedAlcohol[index] = {type: '', price: 0};
+      }
+      updatedAlcohol[index][key] = value;
+      return updatedAlcohol;
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>대표주종*</Text>
@@ -25,16 +38,16 @@ const StoreAlcohol = ({ alcohol, setAlcohol }) => {
         <View key={index} style={styles.alcoholRow}>
           <View style={styles.pickerContainer}>
             <Picker
-              selectedValue={alcohol}
-              onValueChange={(value) => setAlcohol(value)}
+              selectedValue={alcohol[index]?.type || ''}
+              onValueChange={value => handleAlcoholChange(index, 'type', value)}
               style={styles.picker}
-              itemStyle={styles.pickerItem}
-            >
-              {alcohols.map((alcohol) => (
+              itemStyle={styles.pickerItem}>
+              <Picker.Item label="선택" value="" />
+              {alcohols.map(alcohol => (
                 <Picker.Item
-                  key={alcohol}
-                  label={alcohol}
-                  value={alcohol}
+                  key={alcohol.value}
+                  label={alcohol.label} // 한글 표시
+                  value={alcohol.value} // 실제 저장될 영어 값
                 />
               ))}
             </Picker>
@@ -45,6 +58,10 @@ const StoreAlcohol = ({ alcohol, setAlcohol }) => {
               keyboardType="numeric"
               placeholder="0"
               placeholderTextColor="#aaa"
+              value={alcohol[index]?.price.toString() || ''}
+              onChangeText={value =>
+                handleAlcoholChange(index, 'price', parseInt(value) || 0)
+              }
             />
             <Text style={styles.unit}>원</Text>
           </View>
@@ -65,11 +82,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#777',
-    marginBottom: 15,
-  },
   alcoholRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -82,15 +94,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     justifyContent: 'center',
     height: 60,
-    overflow: 'hidden', // iOS 겹침 방지
+    overflow: 'hidden',
   },
   picker: {
-    color: '#333', // 텍스트 색상
+    color: '#333',
   },
   pickerItem: {
-    color: '#333', // 텍스트 색상을 검은색으로 고정
-    fontSize: 18, // 텍스트 크기
-    fontWeight: '400', // 텍스트 두께
+    color: '#333',
+    fontSize: 18,
+    fontWeight: '400',
   },
   priceContainer: {
     flex: 1,
