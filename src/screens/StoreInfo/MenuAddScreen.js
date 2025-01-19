@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -11,20 +11,20 @@ import {
   ScrollView,
   TextInput,
 } from 'react-native';
-import { useRoute } from '@react-navigation/native';
-import { getToken } from '../../storage/tokenStorage';
+import {useRoute} from '@react-navigation/native';
+import {getToken} from '../../storage/tokenStorage';
 import MenuAddForm from '../../components/MenuAddScreen/MenuAddForm';
 import useAlert from '../../hooks/useAlert';
 
-const MenuAddScreen = ({ navigation }) => {
+const MenuAddScreen = ({navigation}) => {
   const route = useRoute();
-  const { storeId } = route.params;
+  const {storeId} = route.params;
   const [token, setToken] = useState(null);
 
-  const { showAlert } = useAlert();
+  const {showAlert} = useAlert();
 
   const [menus, setMenus] = useState([
-    { menuName: '', price: '', menuContent: '', main: false, imageUri: '' },
+    {menuName: '', price: '', menuContent: '', main: false, imageUri: ''},
   ]);
 
   useEffect(() => {
@@ -35,17 +35,15 @@ const MenuAddScreen = ({ navigation }) => {
     fetchToken();
   }, []);
 
-
-
   const handleMenuChange = (text, index, field) => {
     const updatedMenus = [...menus];
     updatedMenus[index][field] = text;
     setMenus(updatedMenus);
   };
 
-  const handleCheckBoxChange = (index) => {
+  const handleCheckBoxChange = index => {
     const maxMainMenus = 3;
-    const selectedCount = menus.filter((menu) => menu.main).length;
+    const selectedCount = menus.filter(menu => menu.main).length;
 
     if (!menus[index].main && selectedCount >= maxMainMenus) {
       showAlert(
@@ -53,7 +51,7 @@ const MenuAddScreen = ({ navigation }) => {
         `대표 메뉴는 최대 ${maxMainMenus}개까지 설정 가능합니다.`,
         null, // 확인만 필요하므로 확인 핸들러는 null로 설정
         null,
-        'ok'
+        'ok',
       );
       return;
     }
@@ -66,11 +64,11 @@ const MenuAddScreen = ({ navigation }) => {
   const handleAddMenu = () => {
     setMenus([
       ...menus,
-      { menuName: '', price: '', menuContent: '', main: false, imageUri: '' },
+      {menuName: '', price: '', menuContent: '', main: false, imageUri: ''},
     ]);
   };
 
-  const handleDeleteMenu = (index) => {
+  const handleDeleteMenu = index => {
     showAlert(
       '메뉴 삭제',
       '해당 메뉴를 삭제하시겠습니까?',
@@ -79,10 +77,9 @@ const MenuAddScreen = ({ navigation }) => {
         setMenus(updatedMenus);
       },
       null,
-      'delete'
+      'delete',
     );
   };
-
 
   const MenuAdd = () => {
     // 저장 로직 구현
@@ -92,7 +89,6 @@ const MenuAddScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {menus.map((menu, index) => (
-
           <MenuAddForm
             key={index}
             menu={menu}
@@ -102,8 +98,6 @@ const MenuAddScreen = ({ navigation }) => {
             onDelete={handleDeleteMenu}
           />
         ))}
-
-
 
         <Pressable style={styles.menuAddButton} onPress={handleAddMenu}>
           <Text style={styles.menuAddText}>메뉴 추가</Text>
@@ -153,7 +147,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     fontWeight: '600',
   },
-
 });
 
 export default MenuAddScreen;

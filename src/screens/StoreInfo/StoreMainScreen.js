@@ -7,6 +7,7 @@ import StoreTabs from '../../components/StoreScreen/StoreTabs';
 import {useRoute} from '@react-navigation/native';
 import {StoreMainget} from '../../api/storeApi';
 import StoreMenuScreen from './StoreMenuScreen';
+import StoreAlcoholScreen from './StoreAlcoholScreen';
 import StoreReviewScreen from './StoreReviewScreen';
 import StoreMapScreen from './StoreMapScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
@@ -38,6 +39,7 @@ const StoreMainScreen = ({navigation}) => {
       setLatitude(storeData.latitude);
       console.log(storeData.longitude);
       console.log(storeData.latitude);
+      console.log(storeId);
       const Menus = await StoreMenuget(storeId);
       setMenus(Menus);
     } catch (error) {
@@ -110,6 +112,13 @@ const StoreMainScreen = ({navigation}) => {
         <View>
           {currentPage === 'StoreMenuScreen' && (
             <StoreMenuScreen
+              navigation={navigation}
+              storeId={storeId}
+              menus={menus}
+            />
+          )}
+          {currentPage === 'StoreAlcoholScreen' && (
+            <StoreAlcoholScreen
               navigation={navigation}
               storeId={storeId}
               menus={menus}

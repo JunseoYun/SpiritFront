@@ -1,0 +1,158 @@
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  Pressable,
+  Alert,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  TextInput,
+} from 'react-native';
+import {useRoute} from '@react-navigation/native';
+import {getToken} from '../../storage/tokenStorage';
+import AlcoholAddForm from '../../components/AlcoholAddScreen/AlcoholAddForm';
+import useAlert from '../../hooks/useAlert';
+
+const AlcoholAddScreen = ({navigation}) => {
+  const route = useRoute();
+  const {storeId} = route.params;
+  const [token, setToken] = useState(null);
+
+  const {showAlert} = useAlert();
+
+  const [alcohols, setAlcohols] = useState([
+    {alcoholName: '', price: '', alcoholContent: '', main: false, imageUri: ''},
+  ]);
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const savedToken = await getToken();
+      setToken(savedToken); // 토큰을 가져온 후에 데이터 요청
+    };
+    fetchToken();
+  }, []);
+
+  const handleAlcoholChange = (text, index, field) => {
+    const updatedAlcohols = [...alcohols];
+    updatedAlcohols[index][field] = text;
+    setAlcohols(updatedAlcohols);
+  };
+
+  const handleCheckBoxChange = index => {
+    const maxMainAlcohols = 3;
+    const selectedCount = alcohols.filter(alcohol => alcohol.main).length;
+
+    if (!alcohols[index].main && selectedCount >= maxMainAlcohols) {
+      showAlert(
+        '제한 초과',
+        `대표 메뉴는 최대 ${maxMainAlcohols}개까지 설정 가능합니다.`,
+        null, // 확인만 필요하므로 확인 핸들러는 null로 설정
+        null,
+        'ok',
+      );
+      return;
+    }
+
+    const updatedAlcohols = [...alcohols];
+    updatedAlcohols[index].main = !updatedAlcohols[index].main; // `main` 값 토글
+    setAlcohols(updatedAlcohols);
+  };
+
+  const handleAddAlcohol = () => {
+    setAlcohols([
+      ...alcohols,
+      {
+        alcoholName: '',
+        price: '',
+        alcoholContent: '',
+        main: false,
+        imageUri: '',
+      },
+    ]);
+  };
+
+  const handleDeleteAlcohol = index => {
+    showAlert(
+      '메뉴 삭제',
+      '해당 메뉴를 삭제하시겠습니까?',
+      () => {
+        const updatedAlcohols = alcohols.filter((_, i) => i !== index);
+        setAlcohols(updatedAlcohols);
+      },
+      null,
+      'delete',
+    );
+  };
+
+  const AlcoholAdd = () => {
+    // 저장 로직 구현
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {alcohols.map((alcohol, index) => (
+          <AlcoholAddForm
+            key={index}
+            alcohol={alcohol}
+            index={index}
+            handleAlcoholChange={handleAlcoholChange}
+            handleCheckBoxChange={handleCheckBoxChange}
+            onDelete={handleDeleteAlcohol}
+          />
+        ))}
+
+        <Pressable style={styles.menuAddButton} onPress={handleAddAlcohol}>
+          <Text style={styles.menuAddText}>주류 추가</Text>
+        </Pressable>
+        <Pressable style={styles.saveButton} onPress={AlcoholAdd}>
+          <Text style={styles.saveButtonText}>작성 완료</Text>
+        </Pressable>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+
+  saveButton: {
+    left: '10%',
+    width: '80%',
+    marginVertical: 50,
+    alignItems: 'center',
+    backgroundColor: '#16BBFF',
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  menuAddButton: {
+    marginTop: 30,
+    color: 'white',
+    width: 120,
+    height: 50,
+    fontSize: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
+  menuAddText: {
+    color: '#333',
+    fontSize: 17,
+    alignSelf: 'center',
+    fontWeight: '600',
+  },
+});
+
+export default AlcoholAddScreen;
