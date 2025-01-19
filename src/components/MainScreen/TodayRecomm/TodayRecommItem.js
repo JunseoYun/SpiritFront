@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, ImageBackground, StyleSheet, Text } from 'react-native';
+import {View, ImageBackground, StyleSheet, Text} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
-const TodayRecommItem = ({ store, category }) => {
-  const { translateCategory } = useCategoryTranslation();
+const TodayRecommItem = ({store, category}) => {
+  const {translateCategory} = useCategoryTranslation();
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -21,19 +21,18 @@ const TodayRecommItem = ({ store, category }) => {
             <Text style={styles.tag}>{category}</Text>
           </View>
           <View style={styles.storeContainer}>
-            <View style={styles.storeInfoContainer}>
-              <Text style={styles.storeName}>{store.storeName}</Text>
-              <View style={styles.categoriesContainer}>
-                <Text style={styles.categoryText}>
-                  {Array.isArray(store.categories) && store.categories.length > 0
-                    ? store.categories.map((category) => translateCategory(category)).join(' ')
-                    : '카테고리 미설정'}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.storeSubInfoContainer}>
-              <Text style={styles.storeSubInfo}>소주 5000원 · 맥주 3500원</Text>
-            </View>
+            <Text
+              style={styles.storeName}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {store.storeName}
+            </Text>
+            <Text
+              style={styles.storeSubInfo}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              소주 5000원 · 맥주 3500원
+            </Text>
           </View>
 
           {/* 가게 정보 */}
@@ -62,62 +61,42 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'space-between',
-    padding: 12,
   },
   tag: {
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(16, 190, 251, 0.7)', // 반투명 배경
     color: 'white',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 17,
+    marginTop: 12,
+    marginLeft: 12,
   },
   storeContainer: {
     flexDirection: 'row', // 카테고리 가로 정렬
     justifyContent: 'space-between',
-  },
-  storeInfoContainer: {
-    alignSelf: 'flex-start',
     backgroundColor: 'rgba(0, 0, 0, 0.6)', // 반투명 배경
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-  },
-  storeSubInfoContainer: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 5,
-    paddingVertical: 3,
-    borderRadius: 10,
+    alignItems: 'center',
   },
   storeName: {
-    color: 'white',
-    fontSize: 13,
+    color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginLeft: 12,
+    marginBottom: 12,
+    marginTop: 5,
+    maxWidth: '50%',
   },
   storeSubInfo: {
     color: '#10BEFB',
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 'bold',
-    marginTop: 35,
-    textShadowColor: 'rgba(16, 190, 251, 0.4)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-    elevation: 3, // 안드로이드에서 입체감 강화
-  },
-
-  categoriesContainer: {
-    flexDirection: 'row', // 카테고리 가로 정렬
-    flexWrap: 'nowrap', // 줄바꿈 방지
+    marginRight: 12,
+    marginBottom: 12,
     marginTop: 5,
-  },
-  categoryText: {
-    color: '#f9c74f',
-    fontSize: 11,
-    fontWeight: 'bold',
-    marginRight: 8, // 카테고리 간 간격
+    maxWidth: '50%',
   },
 });
 
