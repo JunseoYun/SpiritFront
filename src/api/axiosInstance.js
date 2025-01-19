@@ -5,13 +5,16 @@ import {
   getAccessToken,
   getRefreshToken,
   setToken,
+  setAccessToken,
 } from '../storage/tokenStorage';
 import {getGlobalLogout} from '../context/AuthContext';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 
 // 새로운 Access Token 요청 함수
 const refreshAccessToken = async () => {
-  const refreshToken = await getRefreshToken(); // Refresh Token 가져오기
+  const refreshToken = await getRefreshToken();
+  console.log('Refresh Token:', refreshToken);
+
   if (!refreshToken) {
     throw new Error('No refresh token available');
   }
@@ -31,7 +34,7 @@ const refreshAccessToken = async () => {
     const newRefreshToken = response.data.data.refreshToken;
 
     if (refreshToken === newRefreshToken) {
-      await setToken(newAccessToken, refreshToken);
+      await setAccessToken(newAccessToken);
     } else {
       await setToken(newAccessToken, newRefreshToken);
     }
@@ -75,6 +78,8 @@ axiosInstance.interceptors.response.use(
   async error => {
     const originalRequest = error.config;
 
+    console.error(error.response);
+
     // Access Token이 만료된 경우 처리
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -86,7 +91,6 @@ axiosInstance.interceptors.response.use(
         console.log('여기는 통과 accessToken: ', newAccessToken);
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.log;
         // Refresh Token도 만료된 경우 로그아웃
         if (refreshError.response?.status === 401) {
           const {logout} = getGlobalLogout();
