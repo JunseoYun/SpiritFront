@@ -242,7 +242,11 @@ const MainScreen = ({navigation}) => {
         />
 
         {/* 현재 영업 중 주점 데이터 필요 */}
-        <OpenStoreList stores={stores} />
+        <OpenStoreList
+          stores={stores}
+          location={location}
+          navigation={navigation}
+        />
 
         {/* 실시간 인기 주점 데이터 필요 */}
         {/* <View onLayout={event => (liveHotRef.current = event.nativeEvent.layout)}>

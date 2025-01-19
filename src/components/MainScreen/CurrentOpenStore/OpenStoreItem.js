@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
-import {View, Text, ImageBackground, StyleSheet} from 'react-native';
+import {View, Text, ImageBackground, StyleSheet, Pressable} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const OpenStoreItem = ({store}) => {
+const OpenStoreItem = ({store, location, navigation}) => {
   const calculateWalkingTime = distance => {
     const walkingSpeed = 80; // 평균 보행 속도 (m/min)
     return Math.ceil(distance / walkingSpeed); // 소수점 올림
@@ -17,7 +17,18 @@ const OpenStoreItem = ({store}) => {
   const {translateCategory} = useCategoryTranslation();
   return (
     <>
-      <View style={styles.container}>
+      <Pressable
+        onPress={() =>
+          navigation.navigate('StoreStack', {
+            screen: 'StoreMainScreen',
+            params: {
+              storeId: store.storeId,
+              innerlatitude: location.latitude,
+              innerlongitude: location.longitude,
+            },
+          })
+        }
+        style={styles.container}>
         <View style={styles.imageContainer}>
           <ImageBackground
             source={require('../../../assets/MainPagetodayimg.png')}
@@ -36,7 +47,8 @@ const OpenStoreItem = ({store}) => {
             ) : (
               <View style={styles.overlay}>
                 <Text style={styles.overlayText}>
-                  영업종료 {store.closeHour.slice(0, 5)}
+                  {/* 영업종료 {store.closeHour.slice(0, 5)} */}
+                  영업 종료 18:00
                 </Text>
               </View>
             )}
@@ -67,7 +79,7 @@ const OpenStoreItem = ({store}) => {
             소주 5000원 맥주 7000원
           </Text>
         </View>
-      </View>
+      </Pressable>
       <View style={styles.distanceContainer}>
         {/* <Text style={styles.distanceText}>{store.distance.toFixed(0)}m</Text> */}
 

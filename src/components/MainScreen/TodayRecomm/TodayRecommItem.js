@@ -45,9 +45,9 @@ const TodayRecommItem = ({store, category}) => {
 const styles = StyleSheet.create({
   container: {
     width: 370, // 카드 너비
-    height: 170, // 카드 높이
+    height: 200, // 카드 높이
     marginVertical: 10,
-    borderRadius: 17,
+    borderRadius: 10,
     overflow: 'hidden', // 경계선 밖 숨김
     elevation: 5, // Android 그림자
   },
@@ -75,18 +75,20 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   storeContainer: {
+    height: 40,
     flexDirection: 'row', // 카테고리 가로 정렬
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(16, 190, 251, 0.6)', // 반투명 배경
+    backgroundColor: 'rgba(16, 190, 251, 0.4)', // 반투명 배경
+    borderRadius: 10,
     alignItems: 'center',
+    marginHorizontal: 10,
+    marginBottom: 10,
   },
   storeName: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 12,
-    marginBottom: 12,
-    marginTop: 7,
     maxWidth: '50%',
   },
   storeSubInfo: {
@@ -94,8 +96,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: 'bold',
     marginRight: 12,
-    marginBottom: 12,
-    marginTop: 7,
     maxWidth: '50%',
   },
 });

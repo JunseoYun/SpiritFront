@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
-import EvilIcons from 'react-native-vector-icons/EvilIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import StoreActions from './StoreActions';
 
+const testCategories = ['한식', '중식', '이자카야'];
 
-
-const testCategories = ["한식", "중식", "이자카야"];
-
-const StoreMainInfo = ({ storedata = {}, onModalOpen }) => {
+const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
   const [isExpanded, setIsExpanded] = useState(false); // 매장 정보 확장 상태
 
   const [isOpen, setIsOpen] = useState(true);
@@ -38,7 +36,7 @@ const StoreMainInfo = ({ storedata = {}, onModalOpen }) => {
 
       {/* 리뷰 정보 */}
       <View style={styles.ReviewView}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <Entypo name="star" size={20} color="#FCC104" />
           <Text style={styles.reviewRatetext}> 4.2</Text>
         </View>
@@ -48,21 +46,19 @@ const StoreMainInfo = ({ storedata = {}, onModalOpen }) => {
 
       {/* 영업 정보 */}
       <View style={styles.timeview}>
-        {isOpen
-          ? (
-            <>
-              <Text style={[styles.timetextnow, { color: 'green' }]}>영업 중</Text>
-              <Text style={styles.timetext}>영업 종료 - 12:00</Text>
-            </>
-          ) : (
-            <>
-              <Text style={[styles.timetextnow, { color: '#F05650' }]}>영업 종료</Text>
-              <Text style={styles.timetext}>영업 시작 - 12:00</Text>
-            </>)
-
-        }
-
-
+        {isOpen ? (
+          <>
+            <Text style={[styles.timetextnow, {color: 'green'}]}>영업 중</Text>
+            <Text style={styles.timetext}>영업 종료 - 12:00</Text>
+          </>
+        ) : (
+          <>
+            <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+              영업 종료
+            </Text>
+            <Text style={styles.timetext}>영업 시작 - 12:00</Text>
+          </>
+        )}
       </View>
 
       {/* 영업 정보 */}
@@ -70,7 +66,6 @@ const StoreMainInfo = ({ storedata = {}, onModalOpen }) => {
         <Ionicons name="location-outline" size={20} color="#333" />
         <Text style={styles.locationtext}>780m</Text>
       </View>
-
 
       {/* 매장 정보 더보기 */}
       {!isExpanded && (
@@ -94,13 +89,21 @@ const StoreMainInfo = ({ storedata = {}, onModalOpen }) => {
           </View>
 
           <View style={styles.infoHideView}>
+            <MaterialCommunityIcons name="sleep" size={20} color="#333" />
+            <Text style={styles.infoHidetext}>15:30 - 17:30(브레이크타임)</Text>
+          </View>
+
+          <View style={styles.infoHideView}>
             <SimpleLineIcons name="phone" size={20} color="#333" />
             <Text style={styles.infoHidetext}>010-1234-5678</Text>
           </View>
 
           <View style={styles.infoHideView}>
             <AntDesign name="profile" size={20} color="#333" />
-            <Text style={styles.infoHidetext}>매장 짧은 소개글입니다. 저희 매장은 매주 화요일 말고 매주 오픈입니다</Text>
+            <Text style={styles.infoHidetext}>
+              매장 짧은 소개글입니다. 저희 매장은 매주 화요일 말고 매주
+              오픈입니다
+            </Text>
           </View>
           <Pressable onPress={toggleExpand} style={styles.introduceMoreview}>
             <Text style={styles.introduceHideText}>매장 정보</Text>
