@@ -19,7 +19,7 @@ const alcoholMapping = {
 // 커스텀 훅
 const useTranslateAlcohol = () => {
   const translateAlcohol = useCallback(alcohol => {
-    return alcoholMapping[alcohol] || '알 수 없는 주종';
+    return alcoholMapping[alcohol] || '미지정';
   }, []);
 
   return {translateAlcohol};

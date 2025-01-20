@@ -41,7 +41,7 @@ const TodayRecomm = ({
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.scrollContainer}>
             {recommStores?.map(store => (
-              <View key={store.storeId} style={styles.slideItem}>
+              <View key={store.id} style={styles.slideItem}>
                 <TodayRecommItem
                   store={store}
                   category={koreanCategory}

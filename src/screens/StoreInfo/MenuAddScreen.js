@@ -14,7 +14,7 @@ import {
 import {useRoute} from '@react-navigation/native';
 import {getToken} from '../../storage/tokenStorage';
 import MenuAddForm from '../../components/MenuAddScreen/MenuAddForm';
-import useAlert from '../../hooks/useAlert';
+import useCustomAlert from '../../hooks/useCustomAlert';
 import {StoreMenucreate} from '../../api/menuApi';
 
 const MenuAddScreen = ({navigation}) => {
@@ -22,7 +22,7 @@ const MenuAddScreen = ({navigation}) => {
   const {storeId} = route.params;
   const [token, setToken] = useState(null);
 
-  const {showAlert} = useAlert();
+  const {showAlert, AlertComponent} = useCustomAlert();
 
   const [menus, setMenus] = useState([
     {menuName: '', price: '', menuContent: '', main: false, imageUri: ''},
@@ -47,13 +47,10 @@ const MenuAddScreen = ({navigation}) => {
     const selectedCount = menus.filter(menu => menu.main).length;
 
     if (!menus[index].main && selectedCount >= maxMainMenus) {
-      showAlert(
-        '제한 초과',
-        `대표 메뉴는 최대 ${maxMainMenus}개까지 설정 가능합니다.`,
-        null, // 확인만 필요하므로 확인 핸들러는 null로 설정
-        null,
-        'ok',
-      );
+      showAlert({
+        title: '제한 초과',
+        message: `대표 메뉴는 최대 ${maxMainMenus}개까지 설정 가능합니다.`,
+      });
       return;
     }
 
@@ -70,16 +67,16 @@ const MenuAddScreen = ({navigation}) => {
   };
 
   const handleDeleteMenu = index => {
-    showAlert(
-      '메뉴 삭제',
-      '해당 메뉴를 삭제하시겠습니까?',
-      () => {
+    showAlert({
+      title: '메뉴 삭제',
+      message: '해당 메뉴를 삭제하시겠습니까?',
+      onConfirm: () => {
         const updatedMenus = menus.filter((_, i) => i !== index);
         setMenus(updatedMenus);
       },
-      null,
-      'delete',
-    );
+      onCancel: null, // 취소 시 효과 제거
+      type: 'delete',
+    });
   };
 
   const MenuAdd = async () => {
@@ -128,6 +125,7 @@ const MenuAddScreen = ({navigation}) => {
           <Text style={styles.saveButtonText}>작성 완료</Text>
         </Pressable>
       </ScrollView>
+      <AlertComponent />
     </SafeAreaView>
   );
 };

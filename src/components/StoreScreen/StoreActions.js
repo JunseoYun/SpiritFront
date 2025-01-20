@@ -21,22 +21,10 @@ const StoreActions = ({storeData, navigation}) => {
   const StoreLike = async () => {
     try {
       await Storelikepost(storeData.id);
-      setStoreLike(true);
+      setStoreLike(!storeLike);
     } catch (error) {
       showAlert({
         title: '찜 실패하였습니다',
-        message: '잠시 후 다시 시도해주세요.',
-      });
-    }
-  };
-
-  const StoreUnLike = async () => {
-    try {
-      await StoreUnlikepost(storeData.id);
-      setStoreLike(false);
-    } catch (error) {
-      showAlert({
-        title: '찜 취소를 실패하였습니다',
         message: '잠시 후 다시 시도해주세요.',
       });
     }
@@ -52,7 +40,7 @@ const StoreActions = ({storeData, navigation}) => {
         </View>
       </Pressable>
       <View style={styles.separator} />
-      <Pressable onPress={storeLike ? StoreUnLike : StoreLike}>
+      <Pressable onPress={StoreLike}>
         <View style={styles.View}>
           {storeLike ? (
             <Ionicons

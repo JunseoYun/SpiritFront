@@ -10,9 +10,7 @@ const TodayRecommItem = ({store, category, location, navigation}) => {
         navigation.navigate('StoreStack', {
           screen: 'StoreMainScreen',
           params: {
-            storeId: store.storeId,
-            innerlatitude: location.latitude,
-            innerlongitude: location.longitude,
+            storeId: store.id,
           },
         })
       }
@@ -36,7 +34,7 @@ const TodayRecommItem = ({store, category, location, navigation}) => {
               style={styles.storeName}
               numberOfLines={1}
               ellipsizeMode="tail">
-              {store.storeName}
+              {store.name}
             </Text>
             <Text
               style={styles.storeSubInfo}

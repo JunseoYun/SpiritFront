@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, Pressable, Image, TouchableOpacity } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  Pressable,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
 
-const StoreCategory = ({ selectedCategory, setSelectedCategory }) => {
-
-  const { translateCategory } = useCategoryTranslation();
+const StoreCategory = ({selectedCategory, setSelectedCategory}) => {
+  const {translateCategory} = useCategoryTranslation();
 
   const [visible, setVisible] = useState(false);
   const [tempSelectedCategories, setTempSelectedCategories] = useState([]);
@@ -12,11 +19,11 @@ const StoreCategory = ({ selectedCategory, setSelectedCategory }) => {
   const openHandle = () => setVisible(true);
   const closeHandle = () => setVisible(false);
 
-  const toggleCategory = (category) => {
-    setTempSelectedCategories((prev) => {
+  const toggleCategory = category => {
+    setTempSelectedCategories(prev => {
       if (prev.includes(category)) {
         // 이미 선택된 경우 해제
-        return prev.filter((item) => item !== category);
+        return prev.filter(item => item !== category);
       } else if (prev.length < 3) {
         // 선택된 항목이 3개 미만이면 추가
         return [...prev, category];
@@ -36,9 +43,11 @@ const StoreCategory = ({ selectedCategory, setSelectedCategory }) => {
         <TouchableOpacity style={styles.storeinput} onPress={openHandle}>
           {selectedCategory && selectedCategory.length > 0 ? (
             <>
-              <Text style={styles.storeinputtext}>카테고리*</Text>
+              <Text style={styles.storeinputtext}>카테고리* (최대 3개)</Text>
               <Text style={styles.inputText}>
-                {selectedCategory.map(item => translateCategory(item)).join('     ')}
+                {selectedCategory
+                  .map(item => translateCategory(item))
+                  .join('     ')}
               </Text>
             </>
           ) : (
@@ -49,11 +58,12 @@ const StoreCategory = ({ selectedCategory, setSelectedCategory }) => {
 
       <Modal visible={visible} animationType="fade" transparent={true}>
         <Pressable style={styles.modalBackground} onPress={closeHandle}>
-          <View style={styles.modalContainer}
-            onStartShouldSetResponder={() => true} >
+          <View
+            style={styles.modalContainer}
+            onStartShouldSetResponder={() => true}>
             <View style={styles.modaltopview}>
               {innerCategories
-                .reduce((acc, { source, text, value }, index) => {
+                .reduce((acc, {source, text, value}, index) => {
                   const rowIndex = Math.floor(index / 5);
                   if (!acc[rowIndex]) acc[rowIndex] = [];
                   acc[rowIndex].push(
@@ -61,12 +71,13 @@ const StoreCategory = ({ selectedCategory, setSelectedCategory }) => {
                       key={value}
                       style={[
                         styles.catagoryinnerView,
-                        tempSelectedCategories.includes(value) && styles.selectedCategory, // 선택된 스타일
+                        tempSelectedCategories.includes(value) &&
+                          styles.selectedCategory, // 선택된 스타일
                       ]}
                       onPress={() => toggleCategory(value)}>
                       <Image source={source} style={styles.catagoryimgs} />
                       <Text style={styles.catagorytext}>{text}</Text>
-                    </Pressable>
+                    </Pressable>,
                   );
                   return acc;
                 }, [])
@@ -75,9 +86,10 @@ const StoreCategory = ({ selectedCategory, setSelectedCategory }) => {
                     {row}
                   </View>
                 ))}
-
             </View>
-            <Pressable onPress={applySelectedCategories} style={styles.closeButton}>
+            <Pressable
+              onPress={applySelectedCategories}
+              style={styles.closeButton}>
               <Text style={styles.closeButtonText}>확인</Text>
             </Pressable>
           </View>
@@ -87,81 +99,106 @@ const StoreCategory = ({ selectedCategory, setSelectedCategory }) => {
   );
 };
 
-
 const innerCategories = [
   {
     source: require('../../assets/free-icon-barbecue-4039250.png'),
-    text: '이자카야', value: 'IZAKAYA'
+    text: '이자카야',
+    value: 'IZAKAYA',
   },
   {
     source: require('../../assets/free-icon-soju-5789309.png'),
-    text: '한식주점', value: 'KOREAN'
+    text: '한식주점',
+    value: 'KOREAN',
   },
   {
     source: require('../../assets/free-icon-pizza-3595458.png'),
-    text: '양식주점', value: 'WESTERN'
+    text: '양식주점',
+    value: 'WESTERN',
   },
   {
     source: require('../../assets/free-icon-dumplings-6560368.png'),
-    text: '중화주점', value: 'CHINESE'
+    text: '중화주점',
+    value: 'CHINESE',
   },
   {
     source: require('../../assets/bar-counter_3822705.png'),
-    text: '감성주점', value: 'GAMSEONG'
+    text: '감성주점',
+    value: 'GAMSEONG',
   },
   {
     source: require('../../assets/free-icon-jokbal-8740559.png'),
-    text: '족발 보쌈', value: 'JOGBO'
+    text: '족발 보쌈',
+    value: 'JOGBO',
   },
   {
     source: require('../../assets/free-icon-soup-12404665.png'),
-    text: '찜 찌개', value: 'STEW'
+    text: '찜 찌개',
+    value: 'STEW',
   },
   {
     source: require('../../assets/free-icon-barbecue-4039250.png'),
-    text: '구이 탕', value: 'GRILLED'
+    text: '구이 탕',
+    value: 'GRILLED',
   },
   {
     source: require('../../assets/free-icon-roast-chicken-2137000.png'),
-    text: '치킨', value: 'CHICKEN'
+    text: '치킨',
+    value: 'CHICKEN',
   },
   {
     source: require('../../assets/mayonnaise_3376991.png'),
-    text: '전 막걸리', value: 'JEONMAK'
+    text: '전 막걸리',
+    value: 'JEONMAK',
   },
   {
     source: require('../../assets/free-icon-squid-12752294.png'),
-    text: '마른안주', value: 'DRIED'
+    text: '마른안주',
+    value: 'DRIED',
   },
   {
     source: require('../../assets/free-icon-steamed-fish-2885062.png'),
-    text: '해산물', value: 'SEAFOOD'
+    text: '해산물',
+    value: 'SEAFOOD',
   },
   {
     source: require('../../assets/free-icon-folder-3370758.png'),
-    text: '룸', value: 'ROOM'
+    text: '룸',
+    value: 'ROOM',
   },
   {
     source: require('../../assets/free-icon-disco-ball-3935116.png'),
-    text: '단체 행사', value: 'GROUP'
+    text: '단체 행사',
+    value: 'GROUP',
   },
-  { source: require('../../assets/beers_2302167.png'), text: '야장', value: 'OUTDOOR' },
+  {
+    source: require('../../assets/beers_2302167.png'),
+    text: '야장',
+    value: 'OUTDOOR',
+  },
   {
     source: require('../../assets/free-icon-stall-food-6734735.png'),
-    text: '포차', value: 'POCHA'
+    text: '포차',
+    value: 'POCHA',
   },
-  { source: require('../../assets/free-icon-beer-1887156.png'), text: '호프', value: 'HOF' },
+  {
+    source: require('../../assets/free-icon-beer-1887156.png'),
+    text: '호프',
+    value: 'HOF',
+  },
   {
     source: require('../../assets/free-icon-wine-6454589.png'),
-    text: '와인바', value: 'WINE'
+    text: '와인바',
+    value: 'WINE',
   },
   {
     source: require('../../assets/free-icon-cocktail-3086535.png'),
-    text: '칵테일', value: 'COCKTAIL'
+    text: '칵테일',
+    value: 'COCKTAIL',
   },
   {
     source: require('../../assets/free-icon-bar-counter-4507564.png'),
-    text: '펍 바', value: 'PUBBAR'
+    text: '펍 바',
+    value: 'PUBBAR',
   },
 ];
 

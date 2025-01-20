@@ -20,6 +20,7 @@ const StoreConfirmationModal = ({
   address,
   detailedAddress,
   operatingHours,
+  breakingHours,
   closedDay,
   alcohol,
   selectedOption,
@@ -67,6 +68,17 @@ const StoreConfirmationModal = ({
                   {operatingHours.openHour}:{operatingHours.openMinute || '00'}{' '}
                   ~ {operatingHours.closedHour}:
                   {operatingHours.closedMinute || '00'}
+                </Text>
+              ) : (
+                <Text style={styles.infoValue}>미정</Text>
+              )}
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>브레이크 타임</Text>
+              {breakingHours.startHour && breakingHours.endHour ? (
+                <Text style={styles.infoValue}>
+                  {breakingHours.startHour}:{breakingHours.startMinute || '00'}{' '}
+                  ~ {breakingHours.endHour}:{breakingHours.endMinute || '00'}
                 </Text>
               ) : (
                 <Text style={styles.infoValue}>미정</Text>
