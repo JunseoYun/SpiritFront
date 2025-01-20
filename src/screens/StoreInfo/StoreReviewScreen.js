@@ -86,8 +86,8 @@ const StoreReviewScreen = ({navigation}) => {
 
   const selectImage = () => {
     ImagePicker.openPicker({
-      width: 300,
-      height: 400,
+      width: 500,
+      height: 500,
       cropping: true,
       mediaType: 'photo',
     })
