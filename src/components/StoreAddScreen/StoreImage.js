@@ -26,8 +26,8 @@ const StoreImage = ({imageUris, setImageUris}) => {
     }
 
     ImagePicker.openPicker({
-      width: 300,
-      height: 400,
+      width: 400,
+      height: 300,
       cropping: true,
       mediaType: 'photo',
     })
