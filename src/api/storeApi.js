@@ -10,6 +10,16 @@ export const getStore = async () => {
   }
 };
 
+//매장 좋아요 api
+export const Storelikepost = async storeId => {
+  try {
+    const response = await axiosInstance.post(`/store/like/${storeId}`, {});
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 export const get_liked_store = async () => {
   // try {
   //   const response = await axiosInstance.get(`/store/getLikedStore`);

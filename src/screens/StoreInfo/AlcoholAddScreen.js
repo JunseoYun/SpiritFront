@@ -24,7 +24,7 @@ const AlcoholAddScreen = ({navigation}) => {
   const {showAlert} = useAlert();
 
   const [alcohols, setAlcohols] = useState([
-    {alcoholName: '', price: '', alcoholContent: '', main: false, imageUri: ''},
+    {alcoholName: '', price: '', alcoholContent: '', imageUri: ''},
   ]);
 
   useEffect(() => {
@@ -41,26 +41,6 @@ const AlcoholAddScreen = ({navigation}) => {
     setAlcohols(updatedAlcohols);
   };
 
-  const handleCheckBoxChange = index => {
-    const maxMainAlcohols = 3;
-    const selectedCount = alcohols.filter(alcohol => alcohol.main).length;
-
-    if (!alcohols[index].main && selectedCount >= maxMainAlcohols) {
-      showAlert(
-        '제한 초과',
-        `대표 메뉴는 최대 ${maxMainAlcohols}개까지 설정 가능합니다.`,
-        null, // 확인만 필요하므로 확인 핸들러는 null로 설정
-        null,
-        'ok',
-      );
-      return;
-    }
-
-    const updatedAlcohols = [...alcohols];
-    updatedAlcohols[index].main = !updatedAlcohols[index].main; // `main` 값 토글
-    setAlcohols(updatedAlcohols);
-  };
-
   const handleAddAlcohol = () => {
     setAlcohols([
       ...alcohols,
@@ -68,7 +48,6 @@ const AlcoholAddScreen = ({navigation}) => {
         alcoholName: '',
         price: '',
         alcoholContent: '',
-        main: false,
         imageUri: '',
       },
     ]);
@@ -100,7 +79,6 @@ const AlcoholAddScreen = ({navigation}) => {
             alcohol={alcohol}
             index={index}
             handleAlcoholChange={handleAlcoholChange}
-            handleCheckBoxChange={handleCheckBoxChange}
             onDelete={handleDeleteAlcohol}
           />
         ))}
