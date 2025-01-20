@@ -33,7 +33,7 @@ const StoreAlcohol = ({alcohol, setAlcohol}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>대표주종*</Text>
+      <Text style={styles.title}>대표주종</Text>
       {[0, 1].map((_, index) => (
         <View key={index} style={styles.alcoholRow}>
           <View style={styles.pickerContainer}>

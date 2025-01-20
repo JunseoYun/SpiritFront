@@ -14,14 +14,14 @@ import {
 import {useRoute} from '@react-navigation/native';
 import {getToken} from '../../storage/tokenStorage';
 import AlcoholAddForm from '../../components/AlcoholAddScreen/AlcoholAddForm';
-import useAlert from '../../hooks/useAlert';
+import useCustomAlert from '../../hooks/useCustomAlert';
 
 const AlcoholAddScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId} = route.params;
   const [token, setToken] = useState(null);
 
-  const {showAlert} = useAlert();
+  const {showAlert, AlertComponent} = useCustomAlert();
 
   const [alcohols, setAlcohols] = useState([
     {alcoholName: '', price: '', alcoholContent: '', imageUri: ''},
@@ -54,16 +54,16 @@ const AlcoholAddScreen = ({navigation}) => {
   };
 
   const handleDeleteAlcohol = index => {
-    showAlert(
-      '메뉴 삭제',
-      '해당 메뉴를 삭제하시겠습니까?',
-      () => {
+    showAlert({
+      title: '주류 삭제',
+      message: '해당 주류를 삭제하시겠습니까?',
+      onConfirm: () => {
         const updatedAlcohols = alcohols.filter((_, i) => i !== index);
         setAlcohols(updatedAlcohols);
       },
-      null,
-      'delete',
-    );
+      onCancel: null, // 취소 시 효과 제거
+      type: 'delete',
+    });
   };
 
   const AlcoholAdd = () => {
@@ -90,6 +90,7 @@ const AlcoholAddScreen = ({navigation}) => {
           <Text style={styles.saveButtonText}>작성 완료</Text>
         </Pressable>
       </ScrollView>
+      <AlertComponent />
     </SafeAreaView>
   );
 };

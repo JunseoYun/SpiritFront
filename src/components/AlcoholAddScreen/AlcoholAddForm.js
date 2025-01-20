@@ -11,7 +11,7 @@ import RptAlcoholPicker from './RptAlcoholPicker';
 import AlcoholTextInput from './AlcoholTextInput';
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import useAlert from '../../hooks/useAlert';
+import useCustomAlert from '../../hooks/useCustomAlert';
 
 const AlcoholAddForm = ({
   alcohol,
@@ -19,8 +19,9 @@ const AlcoholAddForm = ({
   handleAlcoholChange,
   onDelete, // 삭제 함수
 }) => {
-  const {showAlert} = useAlert();
+  const {showAlert, AlertComponent} = useCustomAlert();
   const [isImageSelected, setIsImageSelected] = useState(false);
+  console.log(alcohol);
 
   const selectImage = () => {
     ImagePicker.openPicker({
@@ -39,16 +40,17 @@ const AlcoholAddForm = ({
 
   const confirmDeleteImage = () => {
     setIsImageSelected(true); // 눌렀을 때 효과 추가
-    showAlert(
-      '사진 삭제',
-      '선택된 사진을 삭제하시겠습니까?',
-      () => {
+
+    showAlert({
+      title: '이미지 삭제',
+      message: '이미지를 삭제하시겠습니까?',
+      onConfirm: () => {
         handleAlcoholChange('', index, 'imageUri');
         setIsImageSelected(false); // 삭제 후 효과 제거
       },
-      () => setIsImageSelected(false), // 취소 시 효과 제거
-      'delete',
-    );
+      onCancel: () => setIsImageSelected(false), // 취소 시 효과 제거
+      type: 'delete',
+    });
   };
 
   return (
@@ -69,8 +71,8 @@ const AlcoholAddForm = ({
         label="주류 가격*"
         value={alcohol.price}
         onChangeText={text => {
-          const numericValue = text.replace(/[^0-9]/g, ''); // 숫자만 남기기
-          handleAlcoholChange(numericValue, index, 'price');
+          // const numericValue = text.replace(/[^0-9]/g, ''); // 숫자만 남기기
+          handleAlcoholChange(text, index, 'price');
         }}
         placeholder="주류 가격*"
         keyboardType="numeric"
@@ -85,6 +87,7 @@ const AlcoholAddForm = ({
         multiline
       />
 
+      <RptAlcoholPicker />
       <View style={styles.menuAddImageView}>
         <Text style={styles.menuAddImageText}>주류 사진</Text>
         {alcohol.imageUri?.path ? (
@@ -103,8 +106,8 @@ const AlcoholAddForm = ({
           </Pressable>
         )}
       </View>
-      <RptAlcoholPicker />
       <View style={styles.line}></View>
+      <AlertComponent />
     </View>
   );
 };

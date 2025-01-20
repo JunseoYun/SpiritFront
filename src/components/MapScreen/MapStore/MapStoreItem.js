@@ -19,9 +19,7 @@ const MapStoreItem = ({
     navigation.navigate('StoreStack', {
       screen: 'StoreMainScreen',
       params: {
-        storeId: item.storeId,
-        innerlatitude: location.latitude,
-        innerlongitude: location.longitude,
+        storeId: item.id,
       },
     });
   };
@@ -48,7 +46,7 @@ const MapStoreItem = ({
         </View>
         <View style={styles.category}>
           {Array.isArray(item.categories) && item.categories.length > 0 ? (
-            store.categories.map((category, index) => (
+            item.categories.map((category, index) => (
               <Text key={index} style={styles.StoreCategory}>
                 {translateCategory(category)}
               </Text>

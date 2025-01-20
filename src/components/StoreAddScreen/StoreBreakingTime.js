@@ -50,7 +50,7 @@ const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
               </Text>
             </>
           ) : (
-            <Text style={styles.inputHideText}>브레이킹 시간</Text>
+            <Text style={styles.inputHideText}>브레이크 시간</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -60,7 +60,7 @@ const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
             style={styles.modalContainer}
             onStartShouldSetResponder={() => true} // 이벤트 차단
           >
-            <Text style={styles.modalTopText}>매장 브레이킹 시간</Text>
+            <Text style={styles.modalTopText}>매장 브레이크 타임</Text>
             <View style={styles.pickerTopView}>
               <Text style={styles.pickerLabel}>오픈</Text>
               <View style={styles.pickerWrapper}>

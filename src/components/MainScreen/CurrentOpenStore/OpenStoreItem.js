@@ -22,7 +22,7 @@ const OpenStoreItem = ({store, location, navigation}) => {
           navigation.navigate('StoreStack', {
             screen: 'StoreMainScreen',
             params: {
-              storeId: store.storeId,
+              storeId: store.id,
               innerlatitude: location.latitude,
               innerlongitude: location.longitude,
             },
@@ -56,7 +56,7 @@ const OpenStoreItem = ({store, location, navigation}) => {
         </View>
         <View style={styles.infoContainer}>
           <Text style={styles.storeName} numberOfLines={1} ellipsizeMode="tail">
-            {store.storeName}
+            {store.name}
           </Text>
           <View style={styles.categoriesContainer}>
             {Array.isArray(store.categories) && store.categories.length > 0 ? (

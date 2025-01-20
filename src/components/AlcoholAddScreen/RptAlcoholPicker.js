@@ -3,18 +3,18 @@ import {View, Text, TextInput, StyleSheet} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 
 const alcohols = [
-  '소주',
-  '맥주',
-  '막걸리',
-  '와인',
-  '칵테일',
-  '사케',
-  '고량주',
-  '위스키',
-  '보드카',
-  '진',
-  '럼',
-  '데킬라',
+  {label: '소주', value: 'SOJU'},
+  {label: '맥주', value: 'BEER'},
+  {label: '막걸리', value: 'MAKGEOLLI'},
+  {label: '와인', value: 'WINE'},
+  {label: '칵테일', value: 'COCKTAIL'},
+  {label: '사케', value: 'SAKE'},
+  {label: '고량주', value: 'KAOLIANG'},
+  {label: '위스키', value: 'WHISKEY'},
+  {label: '보드카', value: 'VODKA'},
+  {label: '진', value: 'GIN'},
+  {label: '럼', value: 'RUM'},
+  {label: '데킬라', value: 'TEQUILA'},
 ];
 
 const RptAlcoholPicker = ({}) => {
@@ -22,7 +22,7 @@ const RptAlcoholPicker = ({}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>대표주종*</Text>
+      <Text style={styles.title}>주종*</Text>
       <View style={styles.alcoholRow}>
         <View style={styles.pickerContainer}>
           <Picker
@@ -31,7 +31,11 @@ const RptAlcoholPicker = ({}) => {
             style={styles.picker}
             itemStyle={styles.pickerItem}>
             {alcohols.map(alcohol => (
-              <Picker.Item key={alcohol} label={alcohol} value={alcohol} />
+              <Picker.Item
+                key={alcohol}
+                label={alcohol.label}
+                value={alcohol.value}
+              />
             ))}
           </Picker>
         </View>
@@ -43,10 +47,10 @@ const RptAlcoholPicker = ({}) => {
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
-    marginTop: 40,
+    marginTop: 10,
   },
   title: {
-    fontWeight: '500',
+    fontWeight: '400',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
@@ -67,6 +71,11 @@ const styles = StyleSheet.create({
   },
   picker: {
     color: '#333', // 텍스트 색상
+  },
+  pickerItem: {
+    color: '#333',
+    fontSize: 18,
+    fontWeight: '400',
   },
 });
 

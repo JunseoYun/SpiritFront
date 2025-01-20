@@ -25,17 +25,15 @@ const StoreAddScreen = ({navigation, route}) => {
   const [address, setAddress] = useState('');
   const [detailedAddress, setDetailedAddress] = useState('');
   const [selectedCategory, setSelectedCategory] = useState([]);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [selectedscreenOption, setselectedscreenOption] = useState(null);
+  const [selectedOption, setSelectedOption] = useState(false);
+  const [selectedscreenOption, setselectedscreenOption] = useState(false);
   const [closedDay, setClosedDay] = useState([]);
-  const [alcohol, setAlcohol] = useState([
-    {type: '', price: 0},
-    {type: '', price: 0},
-  ]);
+  const [alcohol, setAlcohol] = useState([{type: '', price: 0}]);
 
   const [imageUris, setImageUris] = useState([]); // 이미지 배열 상태
 
   const {showAlert, AlertComponent} = useCustomAlert();
+  console.log(alcohol);
 
   const [storeData, setStoreData] = useState({
     storeName: '',
@@ -60,51 +58,42 @@ const StoreAddScreen = ({navigation, route}) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const confirmSubmission = () => {
-    // if (!storeData.storeName.trim()) {
-    //   Alert.alert(
-    //     '필수 정보',
-    //     '매장 이름을 입력해주세요.',
-    //     [{ text: '확인', style: 'cancel' }],
-    //     { cancelable: true }
-    //   );
-    //   return;
-    // }
-    // if (!address.trim()) {
-    //   Alert.alert(
-    //     '필수 정보',
-    //     '주소를 입력해주세요.',
-    //     [{ text: '확인', style: 'cancel' }],
-    //     { cancelable: true }
-    //   );
-    //   return;
-    // }
-    // if (!operatingHours.openHour || !operatingHours.closedHour) {
-    //   Alert.alert(
-    //     '필수 정보',
-    //     '영업시간을 입력해주세요.',
-    //     [{ text: '확인', style: 'cancel' }],
-    //     { cancelable: true }
-    //   );
-    //   return;
-    // }
-    // if (!selectedCategory.length) {
-    //   Alert.alert(
-    //     '필수 정보',
-    //     '카테고리를 선택해주세요.',
-    //     [{ text: '확인', style: 'cancel' }],
-    //     { cancelable: true }
-    //   );
-    //   return;
-    // }
-    // if (!alcohol.trim()) {
-    //   Alert.alert(
-    //     '필수 정보',
-    //     '대표 주종을 선택해주세요.',
-    //     [{ text: '확인', style: 'cancel' }],
-    //     { cancelable: true }
-    //   );
-    //   return;
-    // }
+    if (!storeData.storeName.trim()) {
+      showAlert({
+        title: '필수 정보 미입력',
+        message: '매장 이름을 입력해 주세요.',
+      });
+      return;
+    }
+    if (!address.trim()) {
+      showAlert({
+        title: '필수 정보 미입력',
+        message: '매장 주소를 입력해 주세요.',
+      });
+      return;
+    }
+    if (!operatingHours.openHour || !operatingHours.closedHour) {
+      showAlert({
+        title: '필수 정보 미입력',
+        message: '매장 영업 시간을 입력해 주세요.',
+      });
+      return;
+    }
+    if (!selectedCategory.length) {
+      showAlert({
+        title: '필수 정보 미입력',
+        message: '매장 카테고리를 선택해 주세요.',
+      });
+      return;
+    }
+    if (alcohol[0].type === '') {
+      showAlert({
+        title: '필수 정보 미입력',
+        message: '대표 주종을 선택해 주세요.',
+      });
+      return;
+    }
+
     setIsModalVisible(true); // 모든 값이 유효하면 모달 열기
   };
 
@@ -134,30 +123,23 @@ const StoreAddScreen = ({navigation, route}) => {
         businessHoursDto: {
           openTime: `${operatingHours.openHour}:${operatingHours.openMinute}`,
           closeTime: `${operatingHours.closedHour}:${operatingHours.closedMinute}`,
-          breakStartTime: `${breakingHours.startHour}:${breakingHours.startMinute}`,
-          breakEndTime: `${breakingHours.endHour}:${breakingHours.endMinute}`,
+          breakStartTime:
+            breakingHours.startHour && breakingHours.startMinute
+              ? `${breakingHours.startHour}:${breakingHours.startMinute}`
+              : '', // 값이 없으면 빈 문자열
+          breakEndTime:
+            breakingHours.endHour && breakingHours.endMinute
+              ? `${breakingHours.endHour}:${breakingHours.endMinute}`
+              : '', // 값이 없으면 빈 문자열
         },
         mainDrinkDtos: alcohol,
         isGroupAvailable: selectedOption,
         categories: selectedCategory.filter(category => category !== '-'),
         description: storeData.storeContent,
-
-        // storeName: storeData.storeName,
-        // categories: selectedCategory.filter(category => category !== '-'),
-        // address: address,
-        // addressDetail: detailedAddress,
-        // storeNumber: storeData.storeNumber,
-        // storeContent: storeData.storeContent,
-        // openHour: `${operatingHours.openHour}:${operatingHours.openMinute}`,
-        // closeHour: `${operatingHours.closedHour}:${operatingHours.closedMinute}`,
-        // isGroupAvailable: selectedOption,
-        // hasScreen: selectedscreenOption,
-        // longitude: coords.longitude,
-        // latitude: coords.latitude,
-        // closedDays: closedDay,
       },
     };
 
+    console.log(data);
     try {
       const response = await StoreRegister(data);
       console.log(response);
@@ -166,9 +148,11 @@ const StoreAddScreen = ({navigation, route}) => {
           title: '매장 등록이 완료되었습니다.',
           message: '다른 분들을 위해 \n매장 등록을 해주셔서 감사합니다.',
           onConfirm: () => {
-            navigation.reset({
-              index: 0, // 새로운 스택의 첫 화면으로 설정
-              routes: [{name: 'MainBtmbar'}], // 이동할 스크린 이름
+            navigation.navigate('StoreStack', {
+              screen: 'StoreMainScreen',
+              params: {
+                storeId: response.id,
+              },
             });
           },
         });
@@ -232,6 +216,7 @@ const StoreAddScreen = ({navigation, route}) => {
         address={address}
         detailedAddress={detailedAddress}
         operatingHours={operatingHours}
+        breakingHours={breakingHours}
         closedDay={closedDay}
         alcohol={alcohol}
         selectedOption={selectedOption}

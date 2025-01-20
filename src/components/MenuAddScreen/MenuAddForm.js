@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, Image } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  Image,
+} from 'react-native';
 import MainMenuCheck from './MainMenuCheck';
 import MenuTextInput from './MenuTextInput';
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import useAlert from '../../hooks/useAlert';
+import useCustomAlert from '../../hooks/useCustomAlert';
 
 const MenuAddForm = ({
   menu,
@@ -13,7 +20,7 @@ const MenuAddForm = ({
   handleCheckBoxChange,
   onDelete, // 삭제 함수
 }) => {
-  const { showAlert } = useAlert();
+  const {showAlert, AlertComponent} = useCustomAlert();
   const [isImageSelected, setIsImageSelected] = useState(false);
 
   const selectImage = () => {
@@ -33,45 +40,43 @@ const MenuAddForm = ({
 
   const confirmDeleteImage = () => {
     setIsImageSelected(true); // 눌렀을 때 효과 추가
-    showAlert(
-      '사진 삭제',
-      '선택된 사진을 삭제하시겠습니까?',
-      () => {
+
+    showAlert({
+      title: '사진 삭제',
+      message: '선택된 사진을 삭제하시겠습니까?',
+      onConfirm: () => {
         handleMenuChange('', index, 'imageUri');
         setIsImageSelected(false); // 삭제 후 효과 제거
       },
-      () => setIsImageSelected(false), // 취소 시 효과 제거
-      'delete'
-    );
+      onCancel: () => setIsImageSelected(false),
+      type: 'delete',
+    });
   };
 
   return (
     <View key={index}>
       <View style={styles.menuHeader}>
         <Text style={styles.menuHeaderText}>메뉴 {index + 1}</Text>
-        <Pressable
-          style={styles.deleteButton}
-          onPress={() => onDelete(index)}
-        >
+        <Pressable style={styles.deleteButton} onPress={() => onDelete(index)}>
           <Text style={styles.deleteButtonText}>삭제</Text>
         </Pressable>
       </View>
       <MenuTextInput
         label="메뉴 이름*"
         value={menu.menuName}
-        onChangeText={(text) => handleMenuChange(text, index, 'menuName')}
+        onChangeText={text => handleMenuChange(text, index, 'menuName')}
         placeholder="메뉴 이름*"
       />
       <MenuTextInput
         label="메뉴 가격*"
         value={menu.price}
-        onChangeText={(text) => handleMenuChange(text, index, 'price')}
+        onChangeText={text => handleMenuChange(text, index, 'price')}
         placeholder="메뉴 가격*"
       />
       <MenuTextInput
         label="메뉴 소개"
         value={menu.menuContent}
-        onChangeText={(text) => handleMenuChange(text, index, 'menuContent')}
+        onChangeText={text => handleMenuChange(text, index, 'menuContent')}
         placeholder="메뉴를 간단하게 소개해주세요."
         multiline
       />
@@ -81,7 +86,7 @@ const MenuAddForm = ({
         {menu.imageUri?.path ? (
           <Pressable onPress={confirmDeleteImage} style={styles.imagePressable}>
             <Image
-              source={{ uri: `file://${menu.imageUri.path}` }}
+              source={{uri: `file://${menu.imageUri.path}`}}
               style={[
                 styles.selectImage,
                 isImageSelected && styles.selectedEffect, // 눌렀을 때 효과 적용
@@ -99,6 +104,7 @@ const MenuAddForm = ({
         onToggle={() => handleCheckBoxChange(index)}
       />
       <View style={styles.line}></View>
+      <AlertComponent />
     </View>
   );
 };
