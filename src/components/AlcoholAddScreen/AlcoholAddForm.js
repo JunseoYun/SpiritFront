@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
-import MainAlcoholCheck from './MainAlcoholCheck';
+import RptAlcoholPicker from './RptAlcoholPicker';
 import AlcoholTextInput from './AlcoholTextInput';
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -17,7 +17,6 @@ const AlcoholAddForm = ({
   alcohol,
   index,
   handleAlcoholChange,
-  handleCheckBoxChange,
   onDelete, // 삭제 함수
 }) => {
   const {showAlert} = useAlert();
@@ -31,7 +30,7 @@ const AlcoholAddForm = ({
       mediaType: 'photo',
     })
       .then(image => {
-        handleMenuChange(image, index, 'imageUri');
+        handleAlcoholChange(image, index, 'imageUri');
       })
       .catch(error => {
         console.log('ImagePicker Error: ', error);
@@ -44,7 +43,7 @@ const AlcoholAddForm = ({
       '사진 삭제',
       '선택된 사진을 삭제하시겠습니까?',
       () => {
-        handleMenuChange('', index, 'imageUri');
+        handleAlcoholChange('', index, 'imageUri');
         setIsImageSelected(false); // 삭제 후 효과 제거
       },
       () => setIsImageSelected(false), // 취소 시 효과 제거
@@ -63,25 +62,31 @@ const AlcoholAddForm = ({
       <AlcoholTextInput
         label="주류 이름*"
         value={alcohol.alcoholName}
-        onChangeText={text => handleAlcoholChange(text, index, 'menuName')}
+        onChangeText={text => handleAlcoholChange(text, index, 'alcoholName')}
         placeholder="주류 이름*"
       />
       <AlcoholTextInput
         label="주류 가격*"
         value={alcohol.price}
-        onChangeText={text => handleAlcoholChange(text, index, 'price')}
+        onChangeText={text => {
+          const numericValue = text.replace(/[^0-9]/g, ''); // 숫자만 남기기
+          handleAlcoholChange(numericValue, index, 'price');
+        }}
         placeholder="주류 가격*"
+        keyboardType="numeric"
       />
       <AlcoholTextInput
         label="주류 소개"
         value={alcohol.alcoholContent}
-        onChangeText={text => handleAlcoholChange(text, index, 'menuContent')}
+        onChangeText={text =>
+          handleAlcoholChange(text, index, 'alcoholContent')
+        }
         placeholder="주류를 간단하게 소개해주세요."
         multiline
       />
 
       <View style={styles.menuAddImageView}>
-        <Text style={styles.menuAddImageText}>메뉴 사진</Text>
+        <Text style={styles.menuAddImageText}>주류 사진</Text>
         {alcohol.imageUri?.path ? (
           <Pressable onPress={confirmDeleteImage} style={styles.imagePressable}>
             <Image
@@ -98,10 +103,7 @@ const AlcoholAddForm = ({
           </Pressable>
         )}
       </View>
-      <MainAlcoholCheck
-        isChecked={alcohol.main}
-        onToggle={() => handleCheckBoxChange(index)}
-      />
+      <RptAlcoholPicker />
       <View style={styles.line}></View>
     </View>
   );

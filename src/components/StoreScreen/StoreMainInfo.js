@@ -111,7 +111,7 @@ const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
           </Pressable>
         </View>
       )}
-      <StoreActions />
+      <StoreActions storeData={storedata} />
     </View>
   );
 };

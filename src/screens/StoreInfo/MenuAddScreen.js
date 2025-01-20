@@ -15,6 +15,7 @@ import {useRoute} from '@react-navigation/native';
 import {getToken} from '../../storage/tokenStorage';
 import MenuAddForm from '../../components/MenuAddScreen/MenuAddForm';
 import useAlert from '../../hooks/useAlert';
+import {StoreMenucreate} from '../../api/menuApi';
 
 const MenuAddScreen = ({navigation}) => {
   const route = useRoute();
@@ -81,8 +82,29 @@ const MenuAddScreen = ({navigation}) => {
     );
   };
 
-  const MenuAdd = () => {
-    // 저장 로직 구현
+  const MenuAdd = async () => {
+    try {
+      // 각 메뉴에 대해 StoreMenucreate를 호출하도록 map 사용
+      const promises = menus.map(menu => {
+        const data = {
+          menuName: menu.menuName,
+          price: menu.price,
+          menuContent: menu.menuContent,
+          main: menu.main,
+          storeId: storeId, // storeId는 고정된 값으로 유지되었습니다.
+        };
+        console.log(data + 'data리스트');
+
+        // StoreMenucreate 비동기 함수 호출
+        return StoreMenucreate(JSON.stringify(data));
+      });
+
+      // 모든 요청이 완료될 때까지 기다립니다.
+      await Promise.all(promises);
+      console.log('모든 메뉴가 추가되었습니다.');
+    } catch (error) {
+      console.error('메뉴 추가 중 오류 발생:', error);
+    }
   };
 
   return (
