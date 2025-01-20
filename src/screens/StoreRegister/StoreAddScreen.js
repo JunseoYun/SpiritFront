@@ -33,7 +33,6 @@ const StoreAddScreen = ({navigation, route}) => {
   const [imageUris, setImageUris] = useState([]); // 이미지 배열 상태
 
   const {showAlert, AlertComponent} = useCustomAlert();
-  console.log(alcohol);
 
   const [storeData, setStoreData] = useState({
     storeName: '',
