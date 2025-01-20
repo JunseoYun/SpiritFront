@@ -6,30 +6,51 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import StoreActions from './StoreActions';
-
-const testCategories = ['한식', '중식', '이자카야'];
+import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
+import {getLocation} from '../../storage/locationStorage';
+import useDistance from '../../hooks/useDistance';
 
 const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
   const [isExpanded, setIsExpanded] = useState(false); // 매장 정보 확장 상태
-  console.log(storedata);
-  const [isOpen, setIsOpen] = useState(true);
+
+  const [distance, setDistance] = useState(0);
+  const calculateDistance = useDistance();
+
+  const {translateCategory} = useCategoryTranslation();
+
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
 
-  useEffect(() => {}, [storedata]);
+  useEffect(() => {
+    const fetchLocation = async () => {
+      try {
+        const {latitude, longitude} = await getLocation();
+        const tempDistance = calculateDistance(
+          latitude,
+          longitude,
+          storedata.locationDto.latitude,
+          storedata.locationDto.longitude,
+        );
+
+        setDistance(tempDistance);
+      } catch (error) {}
+    };
+    fetchLocation();
+  }, [storedata]);
 
   return (
     <View style={styles.StoreTopView}>
       {/* 매장 제목 */}
       <View style={styles.Storetitleview}>
-        <Text style={styles.Storetitle}>친구포차</Text>
+        <Text style={styles.Storetitle}>{storedata?.name}</Text>
         <View style={styles.Storesubtitleview}>
-          {testCategories.map((category, index) => (
-            <Text key={index} style={styles.Storesubtitle}>
-              {category}
-            </Text>
-          ))}
+          {Array.isArray(storedata?.categories) &&
+            storedata.categories.map((category, index) => (
+              <Text key={index} style={styles.Storesubtitle}>
+                {translateCategory(category)}
+              </Text>
+            ))}
         </View>
         <Pressable onPress={onModalOpen} style={styles.updateicons}>
           <Entypo name="dots-three-vertical" size={20} color="#333" />
@@ -40,25 +61,31 @@ const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
       <View style={styles.ReviewView}>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <Entypo name="star" size={20} color="#FCC104" />
-          <Text style={styles.reviewRatetext}> 4.2</Text>
+          <Text style={styles.reviewRatetext}> {storedata?.storeRate}</Text>
         </View>
-        <Text style={styles.reviewtext}>고객 리뷰 1,321</Text>
-        <Text style={styles.reviewtext}>찜 142</Text>
+        <Text style={styles.reviewtext}>
+          고객 리뷰 {storedata?.reviewCount}
+        </Text>
+        <Text style={styles.reviewtext}>찜 {storedata?.storeLikeCount}</Text>
       </View>
 
       {/* 영업 정보 */}
       <View style={styles.timeview}>
-        {isOpen ? (
+        {storedata?.isStoreOpen ? (
           <>
             <Text style={[styles.timetextnow, {color: 'green'}]}>영업 중</Text>
-            <Text style={styles.timetext}>영업 종료 - 12:00</Text>
+            <Text style={styles.timetext}>
+              영업 종료 - {storedata?.businessHoursDto.closeTime?.slice(0, 5)}
+            </Text>
           </>
         ) : (
           <>
             <Text style={[styles.timetextnow, {color: '#F05650'}]}>
               영업 종료
             </Text>
-            <Text style={styles.timetext}>영업 시작 - 12:00</Text>
+            <Text style={styles.timetext}>
+              영업 시작 - {storedata?.businessHoursDto?.openTime?.slice(0, 5)}
+            </Text>
           </>
         )}
       </View>
@@ -66,7 +93,7 @@ const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
       {/* 영업 정보 */}
       <View style={styles.locationview}>
         <Ionicons name="location-outline" size={20} color="#333" />
-        <Text style={styles.locationtext}>780m</Text>
+        <Text style={styles.locationtext}>{distance.toFixed(2)} km</Text>
       </View>
 
       {/* 매장 정보 더보기 */}
@@ -82,30 +109,58 @@ const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
         <View style={styles.introduceview}>
           <View style={styles.infoHideView}>
             <AntDesign name="home" size={20} color="#333" />
-            <Text style={styles.infoHidetext}>경기도 용인시 기흥구 11</Text>
+            <Text style={styles.infoHidetext}>
+              {storedata?.locationDto.address}
+            </Text>
+            {storedata?.locationDto.addressDetail && (
+              <Text style={styles.addressDetailText}>
+                , {storedata?.locationDto.addressDetail}
+              </Text>
+            )}
           </View>
 
           <View style={styles.infoHideView}>
             <Ionicons name="time-outline" size={20} color="#333" />
-            <Text style={styles.infoHidetext}>16:30 - 02:10</Text>
+            <Text style={styles.infoHidetext}>
+              {storedata?.businessHoursDto?.openTime?.slice(0, 5)} -{' '}
+              {storedata?.businessHoursDto?.closeTime?.slice(0, 5)}
+            </Text>
           </View>
 
           <View style={styles.infoHideView}>
             <MaterialCommunityIcons name="sleep" size={20} color="#333" />
-            <Text style={styles.infoHidetext}>15:30 - 17:30(브레이크타임)</Text>
+
+            {storedata?.businessHoursDto?.breakStartTime ? (
+              <Text style={styles.infoHidetext}>
+                {storedata?.businessHoursDto?.breakStartTime?.slice(0, 5)} -{' '}
+                {storedata?.businessHoursDto?.breakEndTime?.slice(0, 5)}{' '}
+                (브레이크타임)
+              </Text>
+            ) : (
+              <Text style={styles.infoHidetext}>미지정 (브레이크타임)</Text>
+            )}
           </View>
 
           <View style={styles.infoHideView}>
             <SimpleLineIcons name="phone" size={20} color="#333" />
-            <Text style={styles.infoHidetext}>010-1234-5678</Text>
+            {storedata?.contact ? (
+              <Text style={styles.infoHidetext}>{storedata?.contact}</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>
+                등록된 매장 번호가 없습니다
+              </Text>
+            )}
           </View>
 
           <View style={styles.infoHideView}>
             <AntDesign name="profile" size={20} color="#333" />
-            <Text style={styles.infoHidetext}>
-              매장 짧은 소개글입니다. 저희 매장은 매주 화요일 말고 매주
-              오픈입니다
-            </Text>
+            {storedata?.description ? (
+              <Text style={styles.infoHidetext}>{storedata?.description}</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>
+                등록된 매장 소개가 없습니다
+              </Text>
+            )}
           </View>
           <Pressable onPress={toggleExpand} style={styles.introduceMoreview}>
             <Text style={styles.introduceHideText}>매장 정보</Text>
@@ -149,16 +204,15 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   Storesubtitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
     color: '#5F5F5F',
     textAlign: 'center',
   },
   ReviewView: {
-    width: '55%',
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     marginVertical: 7,
     marginHorizontal: 15,
   },
@@ -171,6 +225,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     fontSize: 16,
     color: '#5F5F5F',
+    marginLeft: 10,
   },
   timeview: {
     flexDirection: 'row',
@@ -200,7 +255,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#333',
-    marginLeft: 5,
+    marginLeft: 10,
   },
   introduceMoreview: {
     flexDirection: 'row',
@@ -232,6 +287,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   infoHideView: {
+    width: '95%',
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,
@@ -240,7 +296,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#333',
-    marginLeft: 5,
+    marginLeft: 10,
+  },
+  addressDetailText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#333',
   },
 });
 
