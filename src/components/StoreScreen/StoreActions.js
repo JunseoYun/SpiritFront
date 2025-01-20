@@ -1,28 +1,42 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, Pressable, Linking, Alert} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
-import {Storelikepost} from '../../api/storeApi';
+import {Storelikepost, StoreUnlikepost} from '../../api/storeApi';
 // import styles from '../../styles/StoreMainStyle';
 
 const StoreActions = ({storeData, navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
 
-  const [isWriting, setIsWriting] = useState(false);
-
   const storeNumber = storeData?.storeNumber || '000-0000-0000'; // 기본 전화번호
-  const [storeLike, setStoreLike] = useState(storeData?.isStoreLiked || false);
-  console.log(storeLike);
-  const StoreLike = async () => {
-    console.log(storeData?.id + '여긴가');
-    try {
-      const response = await Storelikepost(storeData.id);
+  const [storeLike, setStoreLike] = useState(storeData?.isStoreLiked);
+  console.log(storeData?.isStoreLiked);
 
-      console.log('API 응답:', response);
-      console.log(response);
+  useEffect(() => {
+    if (storeData?.isStoreLiked !== undefined) {
+      setStoreLike(storeData.isStoreLiked); // storeData가 변경될 때 상태 업데이트
+    }
+  }, [storeData]);
+
+  const StoreLike = async () => {
+    try {
+      await Storelikepost(storeData.id);
+      setStoreLike(true);
     } catch (error) {
       showAlert({
         title: '찜 실패하였습니다',
+        message: '잠시 후 다시 시도해주세요.',
+      });
+    }
+  };
+
+  const StoreUnLike = async () => {
+    try {
+      await StoreUnlikepost(storeData.id);
+      setStoreLike(false);
+    } catch (error) {
+      showAlert({
+        title: '찜 취소를 실패하였습니다',
         message: '잠시 후 다시 시도해주세요.',
       });
     }
@@ -34,21 +48,27 @@ const StoreActions = ({storeData, navigation}) => {
       <Pressable onPress={() => Linking.openURL(`tel:${storeNumber}`)}>
         <View style={styles.View}>
           <Ionicons name="call-outline" size={20} color="#333" />
-          <Text style={styles.CallViewtext}>전화</Text>
+          <Text style={styles.CallViewtext}> 전화</Text>
         </View>
       </Pressable>
       <View style={styles.separator} />
-      <Pressable onPress={StoreLike}>
+      <Pressable onPress={storeLike ? StoreUnLike : StoreLike}>
         <View style={styles.View}>
-          <Ionicons
-            name="heart-outline"
-            size={20}
-            color={storeLike ? 'red' : '#333'} // Conditional color change
-          />
-          <Text
-            style={[styles.CallViewtext, {color: storeLike ? 'red' : '#333'}]}>
-            찜
-          </Text>
+          {storeLike ? (
+            <Ionicons
+              name="heart"
+              size={20}
+              color={'red'} // Conditional color change
+            />
+          ) : (
+            <Ionicons
+              name="heart-outline"
+              size={20}
+              color={'#333'} // Conditional color change
+            />
+          )}
+
+          <Text style={styles.CallViewtext}> 찜</Text>
         </View>
       </Pressable>
       <View style={styles.separator} />
@@ -71,13 +91,14 @@ const styles = StyleSheet.create({
   },
   View: {
     flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 70,
   },
   CallViewtext: {
     color: '#333',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 'bold',
   },
   separator: {

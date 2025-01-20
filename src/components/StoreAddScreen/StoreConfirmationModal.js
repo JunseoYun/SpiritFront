@@ -1,7 +1,15 @@
 import React from 'react';
-import { Modal, View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  Modal,
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
 import useDayTranslation from '../../hooks/useDayTranslation';
+import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 
 const StoreConfirmationModal = ({
   visible,
@@ -17,9 +25,9 @@ const StoreConfirmationModal = ({
   selectedOption,
   selectedscreenOption,
 }) => {
-
-  const { translateCategory } = useCategoryTranslation();
-  const { translateDay } = useDayTranslation();
+  const {translateCategory} = useCategoryTranslation();
+  const {translateDay} = useDayTranslation();
+  const {translateAlcohol} = useTranslateAlcohol();
   return (
     <Modal visible={visible} transparent={true} animationType="fade">
       <View style={styles.modalBackground}>
@@ -46,7 +54,9 @@ const StoreConfirmationModal = ({
               <Text style={styles.infoLabel}>카테고리</Text>
               <Text style={styles.infoValue}>
                 {selectedCategory && selectedCategory.length > 0
-                  ? selectedCategory.map((category) => translateCategory(category)).join(', ')
+                  ? selectedCategory
+                      .map(category => translateCategory(category))
+                      .join(', ')
                   : '카테고리가 없습니다'}
               </Text>
             </View>
@@ -54,7 +64,9 @@ const StoreConfirmationModal = ({
               <Text style={styles.infoLabel}>영업시간</Text>
               {operatingHours.openHour && operatingHours.closedHour ? (
                 <Text style={styles.infoValue}>
-                  {operatingHours.openHour}:{operatingHours.openMinute || '00'} ~ {operatingHours.closedHour}:{operatingHours.closedMinute || '00'}
+                  {operatingHours.openHour}:{operatingHours.openMinute || '00'}{' '}
+                  ~ {operatingHours.closedHour}:
+                  {operatingHours.closedMinute || '00'}
                 </Text>
               ) : (
                 <Text style={styles.infoValue}>미정</Text>
@@ -64,33 +76,48 @@ const StoreConfirmationModal = ({
               <Text style={styles.infoLabel}>휴무일</Text>
               <Text style={styles.infoValue}>
                 {closedDay && closedDay.length > 0
-                  ? closedDay.map((day) => translateDay(day)).join(', ')
+                  ? closedDay.map(day => translateDay(day)).join(', ')
                   : '없음'}
               </Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>대표 주종</Text>
-              {alcohol ? (
-                  <Text style={styles.infoValue}>{alcohol}</Text>
-                ) : (
-                  <Text style={styles.infoValue}>미정</Text>
-                )
-              }
+              {alcohol && alcohol.length > 0 ? (
+                <Text style={styles.infoValue}>
+                  {alcohol
+                    .map(
+                      item =>
+                        `${translateAlcohol(item.type)} (${item.price}원)`, // 한글 변환 및 가격 표시
+                    )
+                    .join(', ')}
+                </Text>
+              ) : (
+                <Text style={styles.infoValue}>미정</Text>
+              )}
             </View>
+
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>8인 이상 단체 가능 여부</Text>
-              <Text style={styles.infoValue}>{selectedOption ? '가능' : '불가능'}</Text>
+              <Text style={styles.infoValue}>
+                {selectedOption ? '가능' : '불가능'}
+              </Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>매장 내 스크린(TV) 설치 여부</Text>
-              <Text style={styles.infoValue}>{selectedscreenOption ? '설치' : '미설치'}</Text>
+              <Text style={styles.infoValue}>
+                {selectedscreenOption ? '설치' : '미설치'}
+              </Text>
             </View>
           </ScrollView>
           <View style={styles.modalButtonContainer}>
-            <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={onClose}>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.cancelButton]}
+              onPress={onClose}>
               <Text style={styles.modalCancelButtonText}>취소</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.modalButton, styles.confirmButton]} onPress={onConfirm}>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.confirmButton]}
+              onPress={onConfirm}>
               <Text style={styles.modalButtonText}>완료</Text>
             </TouchableOpacity>
           </View>

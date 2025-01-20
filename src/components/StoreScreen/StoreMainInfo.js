@@ -11,11 +11,13 @@ const testCategories = ['한식', '중식', '이자카야'];
 
 const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
   const [isExpanded, setIsExpanded] = useState(false); // 매장 정보 확장 상태
-
+  console.log(storedata);
   const [isOpen, setIsOpen] = useState(true);
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
+
+  useEffect(() => {}, [storedata]);
 
   return (
     <View style={styles.StoreTopView}>
