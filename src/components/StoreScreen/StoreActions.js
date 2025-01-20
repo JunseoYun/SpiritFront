@@ -29,6 +29,13 @@ const StoreActions = ({storeData, navigation}) => {
     }
   };
 
+  const openChat = () => {
+    showAlert({
+      title: '서비스 준비중',
+      message: '서비스를 준비하고 있습니다.\n조금만 기다려주세요.',
+    });
+  };
+
   return (
     <View style={styles.CallView}>
       {/* 핸드폰 전화 넘어가기 ios => `tel://${phoneNumber}`*/}
@@ -59,10 +66,10 @@ const StoreActions = ({storeData, navigation}) => {
         </View>
       </Pressable>
       <View style={styles.separator} />
-      <View style={styles.View}>
+      <Pressable onPress={openChat} style={styles.View}>
         <Ionicons name="chatbubble-ellipses-outline" size={20} color="#333" />
         <Text style={styles.CallViewtext}> 채팅</Text>
-      </View>
+      </Pressable>
       <AlertComponent />
     </View>
   );
