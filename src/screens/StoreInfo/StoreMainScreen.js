@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Dimensions, Animated} from 'react-native';
+import {View, Dimensions, Animated, Text} from 'react-native';
 import ImageSlider from '../../components/StoreScreen/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
@@ -31,10 +31,10 @@ const StoreMainScreen = ({navigation}) => {
     try {
       const storeData = await StoreMainget(storeId);
       setStoredata(storeData);
-      setLongitude(storeData.longitude);
-      setLatitude(storeData.latitude);
-      const Menus = await StoreMenuget(storeId);
-      setMenus(Menus);
+      setLongitude(storeData.locationDto.longitude);
+      setLatitude(storeData.locationDto.latitude);
+      // const Menus = await StoreMenuget(storeId);
+      // setMenus(Menus);
     } catch (error) {
       console.error(error);
     }
@@ -43,14 +43,8 @@ const StoreMainScreen = ({navigation}) => {
   useEffect(() => {
     getStoreData();
   }, [storeId]);
-
-  const tempImages = [
-    {imageUrl: 'https://www.ghibli.jp/gallery/chihiro036.jpg'},
-    {imageUrl: 'https://www.ghibli.jp/gallery/chihiro021.jpg'},
-    {imageUrl: 'https://www.ghibli.jp/gallery/chihiro042.jpg'},
-    {imageUrl: 'https://www.ghibli.jp/gallery/chihiro001.jpg'},
-    {imageUrl: 'https://www.ghibli.jp/gallery/chihiro012.jpg'},
-  ];
+  const imageSliderData =
+    storedata.imgUrlList?.map(url => ({imageUrl: url})) || [];
 
   // 헤더 스타일 동적 변경
   const headerBackgroundColor = scrollY.interpolate({
@@ -92,7 +86,21 @@ const StoreMainScreen = ({navigation}) => {
         style={{backgroundColor: 'white'}}>
         {/* 이미지 슬라이더 */}
 
-        <ImageSlider images={tempImages} interval={4000} />
+        <View
+          style={{
+            height: '300',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          {/* <ImageSlider images={tempImages} interval={4000} /> */}
+          {imageSliderData.length > 0 ? (
+            <ImageSlider images={imageSliderData} interval={4000} />
+          ) : (
+            <View>
+              <Text>이미지 없음</Text>
+            </View>
+          )}
+        </View>
 
         {/* 추가 콘텐츠 */}
         <StoreMainInfo

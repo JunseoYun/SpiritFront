@@ -8,9 +8,8 @@ import {Storelikepost, StoreUnlikepost} from '../../api/storeApi';
 const StoreActions = ({storeData, navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
 
-  const storeNumber = storeData?.storeNumber || '000-0000-0000'; // 기본 전화번호
+  const storeNumber = storeData?.contact || '000-0000-0000'; // 기본 전화번호
   const [storeLike, setStoreLike] = useState(storeData?.isStoreLiked);
-  console.log(storeData?.isStoreLiked);
 
   useEffect(() => {
     if (storeData?.isStoreLiked !== undefined) {
