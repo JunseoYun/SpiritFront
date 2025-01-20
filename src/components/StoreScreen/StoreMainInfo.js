@@ -14,6 +14,7 @@ const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
   const [isExpanded, setIsExpanded] = useState(false); // 매장 정보 확장 상태
 
   const [distance, setDistance] = useState(0);
+  const [unit, setUnite] = useState('m');
   const calculateDistance = useDistance();
 
   const {translateCategory} = useCategoryTranslation();
@@ -26,14 +27,19 @@ const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
     const fetchLocation = async () => {
       try {
         const {latitude, longitude} = await getLocation();
-        const tempDistance = calculateDistance(
+        let tempDistance = calculateDistance(
           latitude,
           longitude,
           storedata.locationDto.latitude,
           storedata.locationDto.longitude,
         );
-
-        setDistance(tempDistance);
+        if (tempDistance < 1) {
+          tempDistance *= 1000;
+          setDistance(tempDistance.toFixed(0));
+        } else {
+          setDistance(tempDistance.toFixed(2));
+          setUnite('km');
+        }
       } catch (error) {}
     };
     fetchLocation();
@@ -93,7 +99,9 @@ const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
       {/* 영업 정보 */}
       <View style={styles.locationview}>
         <Ionicons name="location-outline" size={20} color="#333" />
-        <Text style={styles.locationtext}>{distance.toFixed(2)} km</Text>
+        <Text style={styles.locationtext}>
+          {distance} {unit}
+        </Text>
       </View>
 
       {/* 매장 정보 더보기 */}
