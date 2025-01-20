@@ -28,8 +28,10 @@ const StoreAddScreen = ({navigation, route}) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedscreenOption, setselectedscreenOption] = useState(null);
   const [closedDay, setClosedDay] = useState([]);
-  const [alcohol, setAlcohol] = useState([{type: 'SOJU', price: 0}]);
-  console.log(alcohol);
+  const [alcohol, setAlcohol] = useState([
+    {type: '', price: 0},
+    {type: '', price: 0},
+  ]);
 
   const [imageUris, setImageUris] = useState([]); // 이미지 배열 상태
 
@@ -119,24 +121,46 @@ const StoreAddScreen = ({navigation, route}) => {
     var data = {
       files: imageUris,
       createStoreDto: {
-        storeName: storeData.storeName,
-        categories: selectedCategory.filter(category => category !== '-'),
-        address: address,
-        addressDetail: detailedAddress,
-        storeNumber: storeData.storeNumber,
-        storeContent: storeData.storeContent,
-        openHour: `${operatingHours.openHour}:${operatingHours.openMinute}`,
-        closeHour: `${operatingHours.closedHour}:${operatingHours.closedMinute}`,
-        isGroupAvailable: selectedOption,
-        hasScreen: selectedscreenOption,
-        longitude: coords.longitude,
-        latitude: coords.latitude,
+        contact: storeData.storeNumber,
         closedDays: closedDay,
+        hasScreen: selectedscreenOption,
+        locationDto: {
+          address: address,
+          addressDetail: detailedAddress,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        },
+        name: storeData.storeName,
+        businessHoursDto: {
+          openTime: `${operatingHours.openHour}:${operatingHours.openMinute}`,
+          closeTime: `${operatingHours.closedHour}:${operatingHours.closedMinute}`,
+          breakStartTime: `${breakingHours.startHour}:${breakingHours.startMinute}`,
+          breakEndTime: `${breakingHours.endHour}:${breakingHours.endMinute}`,
+        },
+        mainDrinkDtos: alcohol,
+        isGroupAvailable: selectedOption,
+        categories: selectedCategory.filter(category => category !== '-'),
+        description: storeData.storeContent,
+
+        // storeName: storeData.storeName,
+        // categories: selectedCategory.filter(category => category !== '-'),
+        // address: address,
+        // addressDetail: detailedAddress,
+        // storeNumber: storeData.storeNumber,
+        // storeContent: storeData.storeContent,
+        // openHour: `${operatingHours.openHour}:${operatingHours.openMinute}`,
+        // closeHour: `${operatingHours.closedHour}:${operatingHours.closedMinute}`,
+        // isGroupAvailable: selectedOption,
+        // hasScreen: selectedscreenOption,
+        // longitude: coords.longitude,
+        // latitude: coords.latitude,
+        // closedDays: closedDay,
       },
     };
 
     try {
       const response = await StoreRegister(data);
+      console.log(response);
       if (response) {
         showAlert({
           title: '매장 등록이 완료되었습니다.',
@@ -213,6 +237,8 @@ const StoreAddScreen = ({navigation, route}) => {
         selectedOption={selectedOption}
         selectedscreenOption={selectedscreenOption}
       />
+
+      <AlertComponent />
     </>
   );
 };

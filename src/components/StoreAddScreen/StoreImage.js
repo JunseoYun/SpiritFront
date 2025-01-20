@@ -1,25 +1,28 @@
-import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, Pressable, StyleSheet, Alert } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  Alert,
+} from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import useCustomAlert from '../../hooks/useCustomAlert';
 
-const StoreImage = ({ imageUris, setImageUris }) => {
+const StoreImage = ({imageUris, setImageUris}) => {
   const [images, setImage] = useState([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null); // 선택된 이미지 인덱스 상태
 
+  const {showAlert, AlertComponent} = useCustomAlert();
   const selectImage = () => {
     if (imageUris.length >= 5) {
-      Alert.alert(
-        '매장 이미지',
-        '이미지는 최대 5개까지 선택할 수 있습니다.',
-        [
-          {
-            text: '확인',
-            style: 'cancel',
-          }
-        ],
-        { cancelable: true },
-      );
+      showAlert({
+        title: '매장 이미지',
+        message: '이미지는 최대 5개까지 선택할 수 있습니다.',
+      });
       return; // 5개 이상일 경우 선택하지 않도록 함
     }
 
@@ -38,28 +41,19 @@ const StoreImage = ({ imageUris, setImageUris }) => {
       });
   };
 
-  const handleImagePress = (index) => {
+  const handleImagePress = index => {
     setSelectedImageIndex(index); // 선택된 이미지 인덱스 설정
-    Alert.alert(
-      '이미지 삭제',
-      '이미지를 삭제하시겠습니까?',
-      [
-        {
-          text: '취소',
-          style: 'cancel',
-          onPress: () => setSelectedImageIndex(null), // 선택 초기화
-        },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: () => deleteImage(index),
-        },
-      ],
-      { cancelable: true },
-    );
+
+    showAlert({
+      title: '이미지 삭제',
+      message: '이미지를 삭제하시겠습니까?',
+      onConfirm: () => deleteImage(index),
+      onCancel: () => setSelectedImageIndex(null),
+      type: 'delete',
+    });
   };
 
-  const deleteImage = (index) => {
+  const deleteImage = index => {
     const newImages = images.filter((_, i) => i !== index);
     const newImageUris = imageUris.filter((_, i) => i !== index);
     setImage(newImages);
@@ -77,22 +71,29 @@ const StoreImage = ({ imageUris, setImageUris }) => {
           style={styles.imageview}
           horizontal
           showsHorizontalScrollIndicator={false}>
-
           {images.map((uri, index) => (
             <Pressable key={index} onPress={() => handleImagePress(index)}>
-              <Image
-                source={{ uri: `file://${uri}` }}
-                style={[
-                  styles.selectimage,
-                  selectedImageIndex === index && styles.selectedImage, // 선택된 이미지 스타일 추가
-                ]}
-              />
+              <View style={styles.imageWrapper}>
+                <Image
+                  source={{uri: `file://${uri}`}}
+                  style={[
+                    styles.selectimage,
+                    selectedImageIndex === index && styles.selectedImage, // 선택된 이미지 스타일 추가
+                  ]}
+                />
+                {index === 0 && (
+                  <View style={styles.representativeBadge}>
+                    <Text style={styles.representativeText}>대표 사진</Text>
+                  </View>
+                )}
+              </View>
             </Pressable>
           ))}
           <Pressable onPress={selectImage}>
             <MaterialCommunityIcons name="image-plus" size={50} color="#333" />
           </Pressable>
         </ScrollView>
+        <AlertComponent />
       </View>
     </View>
   );
@@ -119,11 +120,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 80,
   },
-  image: {
-    marginBottom: 15,
-    width: 50,
-    height: 50,
-    marginRight: 10,
+  imageWrapper: {
+    position: 'relative', // 배지 위치를 조정하기 위해 부모 요소를 상대 위치로 설정
   },
   selectimage: {
     width: 100,
@@ -135,6 +133,20 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FF0000', // 빨간 테두리 추가
     opacity: 0.6, // 반투명 효과
+  },
+  representativeBadge: {
+    position: 'absolute',
+    top: 5,
+    left: 5,
+    backgroundColor: '#16BBFF',
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 5,
+  },
+  representativeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 
