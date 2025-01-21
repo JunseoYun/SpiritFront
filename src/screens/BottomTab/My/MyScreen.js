@@ -3,9 +3,11 @@ import {View, ScrollView, StyleSheet, Text, SafeAreaView} from 'react-native';
 import MyPageheader from '../../../components/MyScreen/MyPageheader'; // 위에서 만든 컴포넌트
 import {Userdataget} from '../../../api/userApi';
 import Myreview from '../../../components/MyScreen/Myreview';
+import useCustomAlert from '../../../hooks/useCustomAlert';
 
 const MyScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
+  const {showAlert, AlertComponent} = useCustomAlert();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -19,13 +21,6 @@ const MyScreen = ({navigation}) => {
 
           // 에러 코드별 처리
           switch (statusCode) {
-            case 400:
-              showAlert({
-                title: '요청 실패',
-                message: '이미지를 찾을 없습니다.',
-              });
-              break;
-
             case 401:
               showAlert({
                 title: '인증 실패',
@@ -36,7 +31,7 @@ const MyScreen = ({navigation}) => {
 
             case 404:
               showAlert({
-                title: '업로드 실패',
+                title: '유저 정보 오류류',
                 message: '유저정보를 찾을 수 없습니다. 다시 시도해주세요.',
               });
               break;
@@ -89,6 +84,7 @@ const MyScreen = ({navigation}) => {
         {/* Myreview 값 가져오기 */}
         <Myreview navigation={navigation} />
       </ScrollView>
+      <AlertComponent />
     </SafeAreaView>
   );
 };

@@ -42,6 +42,14 @@ const Logout = ({navigation}) => {
         title="리프레시 토큰 일부러 망가뜨리기"
         onPress={handleTestRefreshSetToken}
       />
+      <Button
+        title="MyScreen넘어가기"
+        onPress={() => {
+          navigation.navigate('MyStack', {
+            screen: 'MyScreen',
+          });
+        }}
+      />
     </View>
   );
 };

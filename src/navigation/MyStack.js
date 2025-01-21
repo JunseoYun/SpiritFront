@@ -3,7 +3,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import ConfigScreen from '../screens/BottomTab/My/ConfigScreen';
 import Mynickchange from '../screens/BottomTab/My/Mynickchange';
-import Logout from '../screens/BottomTab/My/Logout';
+import MyScreen from '../screens/BottomTab/My/MyScreen';
 
 const Stack = createStackNavigator();
 
@@ -20,7 +20,7 @@ const getScreenOptions = title => ({
 
 export default function MyStack() {
   return (
-    <Stack.Navigator initialRouteName="ConfigScreen">
+    <Stack.Navigator initialRouteName="MyScreen">
       <Stack.Screen
         name="ConfigScreen"
         component={ConfigScreen}
@@ -32,8 +32,8 @@ export default function MyStack() {
         options={getScreenOptions('닉네임 변경')}
       />
       <Stack.Screen
-        name="Logout"
-        component={Logout}
+        name="MyScreen"
+        component={MyScreen}
         options={{title: '임시 로그아웃'}}
       />
     </Stack.Navigator>
