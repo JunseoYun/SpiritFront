@@ -22,7 +22,6 @@ import CFUserinfo from '../../../components/ConfigScreen/CFUserinfo';
 
 const ConfigScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
-  const [userimg, setUserimg] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -57,7 +56,6 @@ const ConfigScreen = ({navigation}) => {
       });
 
       await Userimgpost(formData); // API 호출
-      setUserimg(image); // 이미지 상태 업데이트
       setIsModalVisible(false);
       showAlert({
         title: '프로필 변경 성공',
@@ -70,7 +68,7 @@ const ConfigScreen = ({navigation}) => {
       });
     } catch (error) {
       onPressModalClose();
-      handleError(error, navigation, showAlert);
+      handleError(error, showAlert);
     }
   };
 
@@ -89,12 +87,12 @@ const ConfigScreen = ({navigation}) => {
       });
     } catch (error) {
       onPressModalClose();
-      handleError(error, navigation, showAlert);
+      handleError(error, showAlert);
     }
   };
 
   // 이미지 오류 핸들러
-  const handleError = (error, navigation, showAlert) => {
+  const handleError = (error, showAlert) => {
     if (error.response) {
       const statusCode = error.response.status;
       switch (statusCode) {
@@ -102,14 +100,6 @@ const ConfigScreen = ({navigation}) => {
           showAlert({
             title: '이미지 파일 오류',
             message: '이미지 파일이 없습니다.',
-          });
-          break;
-
-        case 401:
-          showAlert({
-            title: '인증 실패',
-            message: '다시 로그인 부탁드립니다.',
-            onConfirm: () => navigation.navigate('MainScreen'),
           });
           break;
 
