@@ -63,7 +63,7 @@ const ConfigScreen = ({navigation}) => {
         title: '프로필 변경 성공',
         message: '프로필이 성공적으로 변경되었습니다!',
         onConfirm: () => {
-          navigation.navigate('MainBtmbar', {
+          navigation.navigate('MyStack', {
             screen: 'MyScreen',
           });
         },
@@ -82,7 +82,7 @@ const ConfigScreen = ({navigation}) => {
         title: '프로필 삭제',
         message: '프로필이 성공적으로 삭제되었습니다!',
         onConfirm: () => {
-          navigation.navigate('MainBtmbar', {
+          navigation.navigate('MyStack', {
             screen: 'MyScreen',
           });
         },
@@ -109,7 +109,7 @@ const ConfigScreen = ({navigation}) => {
           showAlert({
             title: '인증 실패',
             message: '다시 로그인 부탁드립니다.',
-            onConfirm: () => navigation.navigate('LoginScreen'),
+            onConfirm: () => navigation.navigate('MainScreen'),
           });
           break;
 

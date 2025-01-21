@@ -53,7 +53,7 @@ const Mynickchange = () => {
         title: '닉네임 변경 성공',
         message: '닉네임이 성공적으로 변경되었습니다!',
         onConfirm: () => {
-          navigation.navigate('MainBtmbar', {
+          navigation.navigate('MyStack', {
             screen: 'MyScreen',
           });
         },
