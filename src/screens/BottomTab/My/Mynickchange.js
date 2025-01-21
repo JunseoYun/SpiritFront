@@ -59,10 +59,48 @@ const Mynickchange = () => {
         },
       });
     } catch (error) {
-      showAlert({
-        title: '닉네임 변경 실패',
-        message: '닉네임이 실패',
-      });
+      if (error.response) {
+        const statusCode = error.response.status; // 에러 코드 가져오기
+
+        // 에러 코드별 처리
+        switch (statusCode) {
+          case 400:
+            showAlert({
+              title: '닉네임 중복',
+              message: '이미 사용중인 닉네임입니다.',
+            });
+            break;
+
+          case 401:
+            showAlert({
+              title: '인증 실패',
+              message: '다시 로그인 부탁드립니다.',
+              onConfirm: () => navigation.navigate('LoginScreen'), // 로그인 화면으로 이동
+            });
+            break;
+
+          case 404:
+            showAlert({
+              title: '업로드 실패',
+              message: '유저정보를 찾을 수 없습니다. 다시 시도해주세요.',
+            });
+            break;
+
+          default:
+            showAlert({
+              title: '에러 발생',
+              message: `다시 시도해주세요.`,
+            });
+            break;
+        }
+      } else {
+        // 네트워크 또는 다른 에러 처리
+        console.error('Unexpected Error:', error);
+        showAlert({
+          title: '네트워크 오류',
+          message: '인터넷 연결을 확인하고 다시 시도해주세요.',
+        });
+      }
     }
   };
 

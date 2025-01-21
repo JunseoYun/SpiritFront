@@ -1,7 +1,7 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import ConfigPage from '../screens/BottomTab/My/ConfigPage';
+import ConfigScreen from '../screens/BottomTab/My/ConfigScreen';
 import Mynickchange from '../screens/BottomTab/My/Mynickchange';
 import Logout from '../screens/BottomTab/My/Logout';
 
@@ -20,10 +20,10 @@ const getScreenOptions = title => ({
 
 export default function MyStack() {
   return (
-    <Stack.Navigator initialRouteName="ConfigPage">
+    <Stack.Navigator initialRouteName="ConfigScreen">
       <Stack.Screen
-        name="ConfigPage"
-        component={ConfigPage}
+        name="ConfigScreen"
+        component={ConfigScreen}
         options={getScreenOptions('프로필 수정')}
       />
       <Stack.Screen
