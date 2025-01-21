@@ -4,9 +4,7 @@ import {View, Pressable, Text, StyleSheet} from 'react-native';
 const CFActionbtn = ({navigation}) => {
   return (
     <View style={styles.container}>
-      <Pressable
-        style={styles.row}
-        onPress={() => navigation.navigate('Logout')}>
+      <Pressable style={styles.row}>
         <Text style={styles.label}>로그아웃</Text>
       </Pressable>
       <View style={styles.row}>

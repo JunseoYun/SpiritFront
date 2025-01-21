@@ -6,7 +6,7 @@ import MainScreen from '../screens/BottomTab/MainScreen';
 import SearchScreen from '../screens/BottomTab/Search/SearchScreen';
 import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
-import MyScreen from '../screens/BottomTab/My/MyScreen';
+import Logout from '../screens/BottomTab/My/Logout';
 import SearchStack from './SearchStack';
 
 const Tab = createBottomTabNavigator();
@@ -35,7 +35,7 @@ const MainBtmbar = () => {
             iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'LikeScreen') {
             iconName = focused ? 'heart' : 'heart-outline';
-          } else if (route.name === 'MyScreen') {
+          } else if (route.name === 'Logout') {
             iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'LoginStack') {
             iconName = 'person-outline';
@@ -81,8 +81,8 @@ const MainBtmbar = () => {
       />
 
       <Tab.Screen
-        name="MyScreen"
-        component={MyScreen}
+        name="Logout"
+        component={Logout}
         options={{
           tabBarLabel: '마이페이지',
           headerShown: true,
