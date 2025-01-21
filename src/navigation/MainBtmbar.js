@@ -83,7 +83,16 @@ const MainBtmbar = () => {
       <Tab.Screen
         name="MyScreen"
         component={MyScreen}
-        options={{tabBarLabel: '마이', headerShown: false}}
+        options={{
+          tabBarLabel: '마이페이지',
+          headerShown: true,
+          title: '마이페이지',
+          headerTitleStyle: {
+            fontSize: 20, // 타이틀 크기 설정
+            color: '#333', // 텍스트 색상 (선택 사항)
+            fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+          },
+        }}
       />
     </Tab.Navigator>
   );
