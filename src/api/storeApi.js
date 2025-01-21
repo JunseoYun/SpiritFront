@@ -27,32 +27,6 @@ export const StoreUnlikepost = async storeId => {
   }
 };
 
-export const get_liked_store = async () => {
-  // try {
-  //   const response = await axiosInstance.get(`/store/getLikedStore`);
-  //   return response.data.data; // API 응답 구조에 따라 수정
-  // } catch (error) {
-  //   functionError(error);
-  // }
-};
-
-// 매장 데이터 가져오기
-export const getByCategoryStore = async (categoryname, location) => {
-  // const {latitude, longitude} = location;
-  // try {
-  //   const response = await axiosInstance.get(
-  //     `/store/getByCategory/${categoryname}`,
-  //     {
-  //       params: {latitude, longitude},
-  //     },
-  //   );
-  //   return response.data.data; // API 응답 구조에 따라 수정
-  // } catch (error) {
-  //   console.error(error);
-  //   functionError(error);
-  // }
-};
-
 //스토어상세페이지 관련 api
 export const StoreMainget = async storeId => {
   try {
@@ -92,6 +66,131 @@ export const StoreRegister = async data => {
     const response = await axiosInstance.post('/store/create', formData, {
       headers: {
         'Content-Type': 'multipart/form-data', // 파일 업로드는 multipart/form-data
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+// Store Query API
+
+// 최근 방문(리뷰) 가게 조회 O
+export const Store_getby_recent = async page => {
+  try {
+    const response = await axiosInstance.get(`/store/get-by/recent`, {
+      params: {
+        page, // page 값만 전달 초기 : 0
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+// 반경 내 가게 리스트 조회 O  - 요청시간 조금 걸림
+export const Store_getby_radius = async (latitude, longitude) => {
+  try {
+    const response = await axiosInstance.get(`/store/get-by/radius`, {
+      params: {
+        longitude,
+        latitude,
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+// 좋아요한 가게 리스트 조회 O
+export const Store_getby_liked = async page => {
+  try {
+    const response = await axiosInstance.get(`/store/get-by/liked`, {
+      params: {
+        page, // page 값만 전달 초기 : 0
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+// 가게 검색(가게명, 메뉴명)리스트 조회 O
+export const Store_getby_keyword = async (
+  page,
+  latitude,
+  longitude,
+  keyword,
+) => {
+  try {
+    const response = await axiosInstance.get(
+      `/store/get-by/keyword/${keyword}`,
+      {
+        params: {
+          longitude,
+          latitude,
+          page, // page 값만 전달 초기 : 0
+        },
+      },
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+// 가까운 순서 가게 리스트 조회 O
+export const Store_getby_distance = async (page, latitude, longitude) => {
+  try {
+    const response = await axiosInstance.get(`/store/get-by/distance`, {
+      params: {
+        longitude,
+        latitude,
+        page,
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+// 카테고리 가게 리스트 조회 O
+export const Store_getby_category = async (
+  page,
+  latitude,
+  longitude,
+  category,
+) => {
+  try {
+    const response = await axiosInstance.get(
+      `/store/get-by/category/${category}`,
+      {
+        params: {
+          longitude,
+          latitude,
+          page,
+        },
+      },
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+// 영업중 가게 리스트 조회
+export const Store_getby_business_hours = async (page, latitude, longitude) => {
+  try {
+    const response = await axiosInstance.get(`/store/get-by/business-hours`, {
+      params: {
+        longitude,
+        latitude,
+        page,
       },
     });
     return response.data.data;
