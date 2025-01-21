@@ -13,6 +13,7 @@ import StoreMapScreen from './StoreMapScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
 import {StoreMenuget} from '../../api/menuApi';
 import StoreModal from '../../components/StoreScreen/StoreModal';
+import UpdateHeader from '../../components/StoreScreen/UpdateHeader';
 
 const {width} = Dimensions.get('window');
 
@@ -27,6 +28,7 @@ const StoreMainScreen = ({navigation}) => {
   const [longitude, setLongitude] = useState('');
   const [latitude, setLatitude] = useState('');
   const [currentPage, setCurrentPage] = useState('StoreMenuScreen');
+  const [isUpdate, setIsUpdate] = useState(false);
 
   const getStoreData = async () => {
     try {
@@ -39,6 +41,14 @@ const StoreMainScreen = ({navigation}) => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const startUpdate = () => {
+    setIsUpdate(true);
+  };
+
+  const endUpdate = () => {
+    setIsUpdate(false);
   };
 
   const onPressModalClose = () => {
@@ -73,13 +83,15 @@ const StoreMainScreen = ({navigation}) => {
   return (
     <>
       {/* 네비게이션 헤더 */}
-      <StoreHeader
-        navigation={navigation}
-        headerBackgroundColor={headerBackgroundColor}
-        iconColor={iconColor}
-        titleOpacity={titleOpacity}
-        title={storedata.storeName}
-      />
+      {!isUpdate && (
+        <StoreHeader
+          navigation={navigation}
+          headerBackgroundColor={headerBackgroundColor}
+          iconColor={iconColor}
+          titleOpacity={titleOpacity}
+          title={storedata.storeName}
+        />
+      )}
 
       {/* 이미지 슬라이더 및 콘텐츠 */}
       <ScrollView
@@ -90,19 +102,27 @@ const StoreMainScreen = ({navigation}) => {
         scrollEventThrottle={16}
         style={{backgroundColor: 'white'}}>
         {/* 이미지 슬라이더 */}
+        {isUpdate && (
+          <UpdateHeader navigation={navigation} endUpdate={endUpdate} />
+        )}
 
         <View
           style={{
             height: '300',
             alignItems: 'center',
             justifyContent: 'center',
+            backgroundColor: 'black',
           }}>
           {/* <ImageSlider images={tempImages} interval={4000} /> */}
           {imageSliderData.length > 0 ? (
-            <ImageSlider images={imageSliderData} interval={4000} />
+            <ImageSlider
+              images={imageSliderData}
+              interval={4000}
+              isUpdate={isUpdate}
+            />
           ) : (
             <View>
-              <Text>이미지 없음</Text>
+              <Text style={{color: 'white'}}>이미지 없음</Text>
             </View>
           )}
         </View>
@@ -112,44 +132,50 @@ const StoreMainScreen = ({navigation}) => {
           storedata={storedata}
           onModalOpen={() => setIsModalVisible(true)}
           navigation={navigation}
+          isUpdate={isUpdate}
+          endUpdate={endUpdate}
         />
-        <View style={{backgroundColor: '#F2F2F2', height: 20}} />
-        <StoreTabs changePage={setCurrentPage} />
-        <View>
-          {currentPage === 'StoreMenuScreen' && (
-            <StoreMenuScreen
-              navigation={navigation}
-              storeId={storeId}
-              menus={menus}
-            />
-          )}
-          {currentPage === 'StoreAlcoholScreen' && (
-            <StoreAlcoholScreen
-              navigation={navigation}
-              storeId={storeId}
-              menus={menus}
-            />
-          )}
-          {currentPage === 'StoreReviewScreen' && (
-            <StoreReviewScreen navigation={navigation} storeId={storeId} />
-          )}
-          {currentPage === 'StoreMapScreen' && (
-            <StoreMapScreen
-              navigation={navigation}
-              storeId={storeId}
-              storeLatitude={latitude}
-              storeLongitude={longitude}
-              innerlatitude={innerlatitude}
-              innerlongitude={innerlongitude}
-            />
-          )}
-        </View>
+        {!isUpdate && <View style={{backgroundColor: '#F2F2F2', height: 20}} />}
+
+        {!isUpdate && <StoreTabs changePage={setCurrentPage} />}
+        {!isUpdate && (
+          <View>
+            {currentPage === 'StoreMenuScreen' && (
+              <StoreMenuScreen
+                navigation={navigation}
+                storeId={storeId}
+                menus={menus}
+              />
+            )}
+            {currentPage === 'StoreAlcoholScreen' && (
+              <StoreAlcoholScreen
+                navigation={navigation}
+                storeId={storeId}
+                menus={menus}
+              />
+            )}
+            {currentPage === 'StoreReviewScreen' && (
+              <StoreReviewScreen navigation={navigation} storeId={storeId} />
+            )}
+            {currentPage === 'StoreMapScreen' && (
+              <StoreMapScreen
+                navigation={navigation}
+                storeId={storeId}
+                storeLatitude={latitude}
+                storeLongitude={longitude}
+                innerlatitude={innerlatitude}
+                innerlongitude={innerlongitude}
+              />
+            )}
+          </View>
+        )}
+
         <StoreModal
           isModalVisible={isModalVisible}
-          setIsModalVisible={setIsModalVisible}
           onPressModalClose={onPressModalClose}
           storeId={storeId}
           navigation={navigation}
+          startUpdate={startUpdate}
         />
       </ScrollView>
     </>

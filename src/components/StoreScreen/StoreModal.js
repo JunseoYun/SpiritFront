@@ -6,12 +6,10 @@ const StoreModal = ({
   onPressModalClose,
   storeId,
   navigation,
+  startUpdate,
 }) => {
   const handlePress = () => {
-    navigation.navigate('UpdateStoreScreen', {
-      storeId: storeId,
-    });
-
+    startUpdate();
     onPressModalClose();
   };
 
