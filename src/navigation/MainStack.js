@@ -11,6 +11,7 @@ import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
 import CategoryListTabbar from './CategoryListTabbar';
 import RandomChoiceScreen from '../screens/RandomChoice/RandomChoiceScreen';
 import StoreStack from './StoreStack';
+import MyStack from './MyStack';
 
 const Stack = createStackNavigator();
 
@@ -140,6 +141,13 @@ export default function MainStack() {
             </Pressable>
           ),
         })}
+      />
+      <Stack.Screen
+        name="MyStack"
+        component={MyStack}
+        options={{
+          headerShown: false,
+        }}
       />
     </Stack.Navigator>
   );

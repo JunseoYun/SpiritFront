@@ -1,49 +1,74 @@
-import React, {useEffect} from 'react';
-import {Button, View, Text} from 'react-native';
-
-import {useAuth} from '../../../context/AuthContext';
-import {
-  testSetAccessTokenToken,
-  testSetRefreshTokenToken,
-} from '../../../storage/tokenStorage';
+import React, {useState, useEffect} from 'react';
+import {View, ScrollView, StyleSheet, Text, SafeAreaView} from 'react-native';
+import MyPageheader from '../../../components/MyScreen/MyPageheader'; // 위에서 만든 컴포넌트
+import {Userdataget} from '../../../api/userApi';
+import Myreview from '../../../components/MyScreen/Myreview';
 
 const MyScreen = ({navigation}) => {
-  const {logout} = useAuth();
+  const [userdata, setUserdata] = useState(null);
 
-  const handleLogout = async () => {
-    try {
-      logout();
-    } catch (error) {
-      console.error('Log-Out Error:', error);
-      Alert.alert('로그아웃 오류', '로그아웃 중 문제가 발생했습니다.');
-    }
-  };
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const data = await Userdataget(); // API 호출
+        setUserdata(data); // 결과를 상태에 저장
+        console.log(data);
+      } catch (error) {
+        console.error('Error initializing token or fetching user data:', error);
+      }
+    };
+    fetchUserData();
+  }, []);
 
-  const handleTestAccessSetToken = async () => {
-    try {
-      await testSetAccessTokenToken('!@#123ddasd123');
-    } catch (error) {}
-  };
-
-  const handleTestRefreshSetToken = async () => {
-    try {
-      await testSetRefreshTokenToken('!@#123ddasd123');
-    } catch (error) {}
-  };
+  if (!userdata) {
+    return (
+      <SafeAreaView
+        style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <Text>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Button title="걍 다 로그아웃" onPress={handleLogout} />
-      <Button
-        title="엑세스 토큰 일부러 망가뜨리기"
-        onPress={handleTestAccessSetToken}
+    <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+      <MyPageheader
+        nickname={userdata.nickname}
+        onProfilePress={() =>
+          navigation.navigate('MyStack', {
+            screen: 'ConfigPage',
+          })
+        }
       />
-      <Button
-        title="리프레시 토큰 일부러 망가뜨리기"
-        onPress={handleTestRefreshSetToken}
-      />
-    </View>
+      <View style={styles.innerviewtext}>
+        <Text style={styles.reservationtext}>나의 리뷰</Text>
+      </View>
+      <View style={styles.line} />
+      <ScrollView>
+        {/* Myreview 값 가져오기 */}
+        <Myreview navigation={navigation} />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  line: {
+    marginTop: 15,
+    width: '100%',
+    height: 2,
+    borderColor: 'lightgray',
+    borderWidth: 1,
+  },
+  innerviewtext: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reservationtext: {
+    fontSize: 20,
+    color: 'black',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});
 
 export default MyScreen;

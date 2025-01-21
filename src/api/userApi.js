@@ -50,3 +50,23 @@ export const check_nickName = async nickname => {
     throw error;
   }
 };
+
+export const Userdataget = async () => {
+  try {
+    const response = await axiosInstance.get(`/auth/get`, {});
+    return response.data.data;
+  } catch (error) {
+    functionError(error); // 에러 처리
+    throw error;
+  }
+};
+
+export const Userputnickname = async nickname => {
+  try {
+    await axiosInstance.put(`/auth/update-nickname?nickname=${nickname}`);
+  } catch (error) {
+    console.log(error);
+    functionError(error); // 에러 처리
+    throw error;
+  }
+};
