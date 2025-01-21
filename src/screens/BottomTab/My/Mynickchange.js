@@ -71,14 +71,6 @@ const Mynickchange = () => {
             });
             break;
 
-          case 401:
-            showAlert({
-              title: '인증 실패',
-              message: '다시 로그인 부탁드립니다.',
-              onConfirm: () => navigation.navigate('LoginScreen'), // 로그인 화면으로 이동
-            });
-            break;
-
           case 404:
             showAlert({
               title: '업로드 실패',

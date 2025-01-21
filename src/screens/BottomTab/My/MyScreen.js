@@ -5,6 +5,8 @@ import {Userdataget} from '../../../api/userApi';
 import Myreview from '../../../components/MyScreen/Myreview';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 
+import {Reviewget_by_recent} from '../../../api/reviewApi';
+
 const MyScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -21,17 +23,9 @@ const MyScreen = ({navigation}) => {
 
           // 에러 코드별 처리
           switch (statusCode) {
-            case 401:
-              showAlert({
-                title: '인증 실패',
-                message: '다시 로그인 부탁드립니다.',
-                onConfirm: () => navigation.navigate('LoginScreen'), // 로그인 화면으로 이동
-              });
-              break;
-
             case 404:
               showAlert({
-                title: '유저 정보 오류류',
+                title: '유저 정보 오류',
                 message: '유저정보를 찾을 수 없습니다. 다시 시도해주세요.',
               });
               break;
@@ -53,7 +47,16 @@ const MyScreen = ({navigation}) => {
         }
       }
     };
+    const fetchreview = async () => {
+      try {
+        const data = await Reviewget_by_recent();
+        console.log(data.content);
+      } catch (error) {
+        console.log(error);
+      }
+    };
     fetchUserData();
+    fetchreview();
   }, []);
 
   if (!userdata) {
