@@ -65,7 +65,28 @@ export const Userputnickname = async nickname => {
   try {
     await axiosInstance.put(`/auth/update-nickname?nickname=${nickname}`);
   } catch (error) {
-    console.log(error);
+    functionError(error); // 에러 처리
+    throw error;
+  }
+};
+
+export const Userimgpost = async formData => {
+  try {
+    await axiosInstance.post(`/auth/upload-image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data', // 파일 업로드는 multipart/form-data
+      },
+    });
+  } catch (error) {
+    functionError(error); // 에러 처리
+    throw error;
+  }
+};
+
+export const Userimgdelete = async () => {
+  try {
+    await axiosInstance.delete(`/auth/delete-image`, {});
+  } catch (error) {
     functionError(error); // 에러 처리
     throw error;
   }

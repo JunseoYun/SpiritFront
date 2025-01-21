@@ -10,11 +10,52 @@ const MyScreen = ({navigation}) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const data = await Userdataget(); // API 호출
-        setUserdata(data); // 결과를 상태에 저장
+        const data = await Userdataget();
+        setUserdata(data);
         console.log(data);
       } catch (error) {
-        console.error('Error initializing token or fetching user data:', error);
+        if (error.response) {
+          const statusCode = error.response.status; // 에러 코드 가져오기
+
+          // 에러 코드별 처리
+          switch (statusCode) {
+            case 400:
+              showAlert({
+                title: '요청 실패',
+                message: '이미지를 찾을 없습니다.',
+              });
+              break;
+
+            case 401:
+              showAlert({
+                title: '인증 실패',
+                message: '다시 로그인 부탁드립니다.',
+                onConfirm: () => navigation.navigate('LoginScreen'), // 로그인 화면으로 이동
+              });
+              break;
+
+            case 404:
+              showAlert({
+                title: '업로드 실패',
+                message: '유저정보를 찾을 수 없습니다. 다시 시도해주세요.',
+              });
+              break;
+
+            default:
+              showAlert({
+                title: '에러 발생',
+                message: `다시 시도해주세요.`,
+              });
+              break;
+          }
+        } else {
+          // 네트워크 또는 다른 에러 처리
+          console.error('Unexpected Error:', error);
+          showAlert({
+            title: '네트워크 오류',
+            message: '인터넷 연결을 확인하고 다시 시도해주세요.',
+          });
+        }
       }
     };
     fetchUserData();
@@ -33,9 +74,10 @@ const MyScreen = ({navigation}) => {
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
       <MyPageheader
         nickname={userdata.nickname}
+        imageuri={userdata.imgUrl}
         onProfilePress={() =>
           navigation.navigate('MyStack', {
-            screen: 'ConfigPage',
+            screen: 'ConfigScreen',
           })
         }
       />
