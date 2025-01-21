@@ -1,6 +1,10 @@
 import {useEffect, useState} from 'react';
 
-const useStoreStatus = (startTime, endTime, closedDays) => {
+const useStoreStatus = (
+  startTime = '00:00:00',
+  endTime = '23:59:59',
+  closedDays = [],
+) => {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
