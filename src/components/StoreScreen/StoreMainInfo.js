@@ -41,6 +41,19 @@ const StoreMainInfo = ({storedata = {}, onModalOpen, isUpdate, endUpdate}) => {
   };
 
   useEffect(() => {
+    const updateMessage = () => {
+      if (isUpdate) {
+        showAlert({
+          title: '매장 수정',
+          message:
+            '수정할 항목을 클릭하면 \n내용을 입력하거나 변경할 수 있습니다.',
+        });
+      }
+    };
+    updateMessage();
+  }, [isUpdate]);
+
+  useEffect(() => {
     const fetchLocation = async () => {
       try {
         const {latitude, longitude} = await getLocation();
