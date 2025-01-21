@@ -3,24 +3,41 @@ import {View, Text, Pressable, StyleSheet} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import StoreActions from './StoreActions';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
 import {getLocation} from '../../storage/locationStorage';
 import useDistance from '../../hooks/useDistance';
+import useDayTranslation from '../../hooks/useDayTranslation';
 
-const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
-  const [isExpanded, setIsExpanded] = useState(false); // 매장 정보 확장 상태
+import useCustomAlert from '../../hooks/useCustomAlert';
 
+const StoreMainInfo = ({storedata = {}, onModalOpen, isUpdate, endUpdate}) => {
+  const [isExpanded, setIsExpanded] = useState(true); // 매장 정보 확장 상태
+
+  console.log(isUpdate);
   const [distance, setDistance] = useState(0);
   const [unit, setUnite] = useState('m');
   const calculateDistance = useDistance();
 
   const {translateCategory} = useCategoryTranslation();
+  const {translateDays} = useDayTranslation();
+  const {showAlert, AlertComponent} = useCustomAlert();
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const endHandle = () => {
+    showAlert({
+      title: '매장 수정',
+      message: '매장 수정을 완료하시겠습니까?',
+      onConfirm: () => endUpdate(),
+      onCancel: null,
+      type: 'confirm',
+    });
   };
 
   useEffect(() => {
@@ -47,65 +64,72 @@ const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
 
   return (
     <View style={styles.StoreTopView}>
-      {/* 매장 제목 */}
       <View style={styles.Storetitleview}>
         <Text style={styles.Storetitle}>{storedata?.name}</Text>
+
         <View style={styles.Storesubtitleview}>
           {Array.isArray(storedata?.categories) &&
             storedata.categories.map((category, index) => (
               <Text key={index} style={styles.Storesubtitle}>
+                {' '}
                 {translateCategory(category)}
               </Text>
             ))}
         </View>
-        <Pressable onPress={onModalOpen} style={styles.updateicons}>
-          <Entypo name="dots-three-vertical" size={20} color="#333" />
-        </Pressable>
-      </View>
-
-      {/* 리뷰 정보 */}
-      <View style={styles.ReviewView}>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Entypo name="star" size={20} color="#FCC104" />
-          <Text style={styles.reviewRatetext}> {storedata?.storeRate}</Text>
-        </View>
-        <Text style={styles.reviewtext}>
-          고객 리뷰 {storedata?.reviewCount}
-        </Text>
-        <Text style={styles.reviewtext}>찜 {storedata?.storeLikeCount}</Text>
-      </View>
-
-      {/* 영업 정보 */}
-      <View style={styles.timeview}>
-        {storedata?.isStoreOpen ? (
-          <>
-            <Text style={[styles.timetextnow, {color: 'green'}]}>영업 중</Text>
-            <Text style={styles.timetext}>
-              영업 종료 - {storedata?.businessHoursDto.closeTime?.slice(0, 5)}
-            </Text>
-          </>
-        ) : (
-          <>
-            <Text style={[styles.timetextnow, {color: '#F05650'}]}>
-              영업 종료
-            </Text>
-            <Text style={styles.timetext}>
-              영업 시작 - {storedata?.businessHoursDto?.openTime?.slice(0, 5)}
-            </Text>
-          </>
+        {!isUpdate && (
+          <Pressable onPress={onModalOpen} style={styles.updateicons}>
+            <Entypo name="dots-three-vertical" size={20} color="#333" />
+          </Pressable>
         )}
       </View>
 
-      {/* 영업 정보 */}
-      <View style={styles.locationview}>
-        <Ionicons name="location-outline" size={20} color="#333" />
-        <Text style={styles.locationtext}>
-          {distance} {unit}
-        </Text>
-      </View>
+      {!isUpdate && (
+        <View style={styles.ReviewView}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Entypo name="star" size={20} color="#FCC104" />
+            <Text style={styles.reviewRatetext}> {storedata?.storeRate}</Text>
+          </View>
+          <Text style={styles.reviewtext}>
+            고객 리뷰 {storedata?.reviewCount}
+          </Text>
+          <Text style={styles.reviewtext}>찜 {storedata?.likeCount}</Text>
+        </View>
+      )}
 
-      {/* 매장 정보 더보기 */}
-      {!isExpanded && (
+      {!isUpdate && (
+        <View style={styles.timeview}>
+          {storedata?.isStoreOpen ? (
+            <>
+              <Text style={[styles.timetextnow, {color: 'green'}]}>
+                영업 중
+              </Text>
+              <Text style={styles.timetext}>
+                영업 종료 - {storedata?.businessHoursDto.closeTime?.slice(0, 5)}
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+                영업 종료
+              </Text>
+              <Text style={styles.timetext}>
+                영업 시작 - {storedata?.businessHoursDto?.openTime?.slice(0, 5)}
+              </Text>
+            </>
+          )}
+        </View>
+      )}
+
+      {!isUpdate && (
+        <View style={styles.locationview}>
+          <Ionicons name="location-outline" size={20} color="#333" />
+          <Text style={styles.locationtext}>
+            {distance} {unit}
+          </Text>
+        </View>
+      )}
+
+      {!isExpanded && !isUpdate && (
         <Pressable onPress={toggleExpand} style={styles.introduceMoreview}>
           <Text style={styles.introduceMoreText}>매장 정보</Text>
           <Entypo name="chevron-small-down" size={25} color="#5F5F5F" />
@@ -113,16 +137,16 @@ const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
       )}
 
       {/* 매장 정보 확장 */}
-      {isExpanded && (
+      {(isExpanded || isUpdate) && (
         <View style={styles.introduceview}>
           <View style={styles.infoHideView}>
             <AntDesign name="home" size={20} color="#333" />
             <Text style={styles.infoHidetext}>
-              {storedata?.locationDto.address}
+              {storedata?.locationDto?.address}
             </Text>
-            {storedata?.locationDto.addressDetail && (
+            {storedata?.locationDto?.addressDetail && (
               <Text style={styles.addressDetailText}>
-                , {storedata?.locationDto.addressDetail}
+                , {storedata?.locationDto?.addressDetail}
               </Text>
             )}
           </View>
@@ -150,6 +174,22 @@ const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
           </View>
 
           <View style={styles.infoHideView}>
+            <AntDesign name="calendar" size={20} color="#333" />
+
+            {storedata?.closedDays ? (
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={styles.infoHidetext}>매주 </Text>
+                <Text style={styles.closetext}>
+                  {translateDays(storedata?.closedDays)}
+                </Text>
+                <Text style={styles.closetext}> 휴무</Text>
+              </View>
+            ) : (
+              <Text style={styles.infoHidetext}>휴무일 없음</Text>
+            )}
+          </View>
+
+          <View style={styles.infoHideView}>
             <SimpleLineIcons name="phone" size={20} color="#333" />
             {storedata?.contact ? (
               <Text style={styles.infoHidetext}>{storedata?.contact}</Text>
@@ -170,13 +210,25 @@ const StoreMainInfo = ({storedata = {}, onModalOpen}) => {
               </Text>
             )}
           </View>
-          <Pressable onPress={toggleExpand} style={styles.introduceMoreview}>
-            <Text style={styles.introduceHideText}>매장 정보</Text>
-            <Entypo name="chevron-small-up" size={25} color="#5F5F5F" />
-          </Pressable>
+          {!isUpdate && (
+            <Pressable onPress={toggleExpand} style={styles.introduceMoreview}>
+              <Text style={styles.introduceHideText}>매장 정보</Text>
+              <Entypo name="chevron-small-up" size={25} color="#5F5F5F" />
+            </Pressable>
+          )}
         </View>
       )}
-      <StoreActions storeData={storedata} />
+      {/*필요한 정보만 넘기는 걸로 변경*/}
+      {!isUpdate && <StoreActions storeData={storedata} />}
+
+      {isUpdate && (
+        <Pressable onPress={endHandle}>
+          <View style={styles.endUpdateButton}>
+            <Text style={styles.endUpdateText}>완료</Text>
+          </View>
+        </Pressable>
+      )}
+      <AlertComponent />
     </View>
   );
 };
@@ -295,7 +347,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   infoHideView: {
-    width: '95%',
+    width: '90%',
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,
@@ -310,6 +362,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#333',
+  },
+  closetext: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#333',
+  },
+  endUpdateButton: {
+    marginHorizontal: 18,
+    backgroundColor: '#10BEFB',
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  endUpdateText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '500',
+    paddingVertical: 10,
   },
 });
 

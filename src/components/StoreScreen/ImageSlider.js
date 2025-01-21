@@ -1,15 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   ScrollView,
   Image,
   StyleSheet,
   Dimensions,
+  Text,
+  Pressable,
 } from 'react-native';
 
-const { width } = Dimensions.get('window');
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const ImageSlider = ({ images, interval = 3000 }) => {
+const {width} = Dimensions.get('window');
+
+const ImageSlider = ({images, interval = 3000, isUpdate = false}) => {
   const scrollRef = useRef(null); // ScrollView 참조
   const [currentIndex, setCurrentIndex] = useState(1); // 현재 페이지 (첫 번째 실제 이미지로 초기화)
 
@@ -23,7 +27,7 @@ const ImageSlider = ({ images, interval = 3000 }) => {
   // 초기 위치 설정
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTo({ x: width, animated: false }); // 두 번째 이미지(실제 첫 번째 이미지)로 이동
+      scrollRef.current.scrollTo({x: width, animated: false}); // 두 번째 이미지(실제 첫 번째 이미지)로 이동
     }
   }, []);
 
@@ -44,17 +48,20 @@ const ImageSlider = ({ images, interval = 3000 }) => {
   }, [currentIndex, interval]);
 
   // 스크롤이 끝날 때 실행 (무한 슬라이드 처리)
-  const handleScrollEnd = (event) => {
+  const handleScrollEnd = event => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const index = Math.round(offsetX / width);
 
     if (index === 0) {
       // 마지막 이미지에서 실제 마지막으로 점프
-      scrollRef.current.scrollTo({ x: width * (imagesWithLoop.length - 2), animated: false });
+      scrollRef.current.scrollTo({
+        x: width * (imagesWithLoop.length - 2),
+        animated: false,
+      });
       setCurrentIndex(imagesWithLoop.length - 2);
     } else if (index === imagesWithLoop.length - 1) {
       // 첫 번째 이미지에서 실제 첫 번째로 점프
-      scrollRef.current.scrollTo({ x: width, animated: false });
+      scrollRef.current.scrollTo({x: width, animated: false});
       setCurrentIndex(1);
     } else {
       setCurrentIndex(index);
@@ -62,19 +69,24 @@ const ImageSlider = ({ images, interval = 3000 }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isUpdate && styles.updateContainer]}>
       {/* 이미지 슬라이더 */}
+
       <ScrollView
         ref={scrollRef}
         pagingEnabled
         horizontal
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={handleScrollEnd} // 스크롤이 끝날 때 호출
-        scrollEventThrottle={16}
-      >
+        scrollEventThrottle={16}>
         {imagesWithLoop.map((item, index) => (
           <View key={index} style={styles.imageContainer}>
-            <Image source={{ uri: item.imageUrl }} style={styles.image} />
+            <Image source={{uri: item.imageUrl}} style={styles.image} />
+            {isUpdate && (
+              <Pressable style={styles.overlay}>
+                <Ionicons name="images-sharp" size={50} color="#fff" />
+              </Pressable>
+            )}
           </View>
         ))}
       </ScrollView>
@@ -99,10 +111,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  updateContainer: {
+    backgroundColor: '#black',
+  },
   imageContainer: {
     width: width,
     height: 300,
   },
+  overlay: {
+    ...StyleSheet.absoluteFillObject, // 이미지 위를 덮는 스타일
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // 반투명 배경
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlayText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
   image: {
     width: '100%',
     height: '100%',
@@ -110,7 +137,7 @@ const styles = StyleSheet.create({
   },
   indicatorContainer: {
     position: 'absolute',
-    top: 280, 
+    top: 280,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'center',

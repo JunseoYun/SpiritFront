@@ -2,7 +2,6 @@ import axios from 'axios';
 
 export const getWeatherData = async location => {
   if (!location) {
-    console.error('위치 정보가 없습니다.');
     return {temp: 0, condition: 'Unknown', rain_probability: 0}; // 기본값 반환
   }
 
@@ -19,7 +18,6 @@ export const getWeatherData = async location => {
 
   try {
     const response = await axios.get(apiUrl);
-    console.log(response.data.current);
 
     // 데이터 추출
     const temp = response.data.current?.temp_c || 0;

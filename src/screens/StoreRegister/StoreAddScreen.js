@@ -147,7 +147,12 @@ const StoreAddScreen = ({navigation, route}) => {
           title: '매장 등록이 완료되었습니다.',
           message: '다른 분들을 위해 \n매장 등록을 해주셔서 감사합니다.',
           onConfirm: () => {
-            navigation.navigate('MainScreen');
+            navigation.navigate('StoreStack', {
+              screen: 'StoreMainScreen',
+              params: {
+                storeId: response.id,
+              },
+            });
           },
         });
       }

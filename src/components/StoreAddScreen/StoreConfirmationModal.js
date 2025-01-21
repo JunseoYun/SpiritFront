@@ -27,7 +27,7 @@ const StoreConfirmationModal = ({
   selectedscreenOption,
 }) => {
   const {translateCategory} = useCategoryTranslation();
-  const {translateDay} = useDayTranslation();
+  const {translateDays} = useDayTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
   return (
     <Modal visible={visible} transparent={true} animationType="fade">
@@ -88,7 +88,7 @@ const StoreConfirmationModal = ({
               <Text style={styles.infoLabel}>휴무일</Text>
               <Text style={styles.infoValue}>
                 {closedDay && closedDay.length > 0
-                  ? closedDay.map(day => translateDay(day)).join(', ')
+                  ? translateDays(closedDay) // 중괄호 제거
                   : '없음'}
               </Text>
             </View>
