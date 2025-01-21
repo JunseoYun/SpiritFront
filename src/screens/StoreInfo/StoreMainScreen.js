@@ -1,5 +1,12 @@
-import React, {useEffect, useState} from 'react';
-import {View, Dimensions, Animated, Text} from 'react-native';
+import React, {useEffect, useState, useRef, useMemo} from 'react';
+import {
+  View,
+  Dimensions,
+  Animated,
+  Text,
+  StyleSheet,
+  Button,
+} from 'react-native';
 import ImageSlider from '../../components/StoreScreen/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
@@ -14,6 +21,7 @@ import StoreHeader from '../../components/StoreScreen/StoreHeader';
 import {StoreMenuget} from '../../api/menuApi';
 import StoreModal from '../../components/StoreScreen/StoreModal';
 import UpdateHeader from '../../components/StoreScreen/UpdateHeader';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 const {width} = Dimensions.get('window');
 
@@ -29,6 +37,17 @@ const StoreMainScreen = ({navigation}) => {
   const [latitude, setLatitude] = useState('');
   const [currentPage, setCurrentPage] = useState('StoreMenuScreen');
   const [isUpdate, setIsUpdate] = useState(false);
+
+  const bottomSheetRef = useRef(null);
+  // Define snap points
+  const snapPoints = useMemo(() => ['25%', '50%', '90%'], []);
+  const handleOpen = () => {
+    bottomSheetRef.current?.expand();
+  };
+
+  const handleClose = () => {
+    bottomSheetRef.current?.close();
+  };
 
   const getStoreData = async () => {
     try {
@@ -178,8 +197,34 @@ const StoreMainScreen = ({navigation}) => {
           startUpdate={startUpdate}
         />
       </ScrollView>
+      {isUpdate && (
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={0} // 시작 인덱스
+          snapPoints={snapPoints}
+          enablePanDownToClose={true}>
+          <View style={styles.contentContainer}>
+            <Text style={styles.contentText}>This is a Bottom Sheet</Text>
+            <Button title="Close" onPress={handleClose} />
+          </View>
+        </BottomSheet>
+      )}
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  contentContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contentText: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+});
 
 export default StoreMainScreen;
