@@ -11,13 +11,19 @@ import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
 import {getLocation} from '../../storage/locationStorage';
 import useDistance from '../../hooks/useDistance';
 import useDayTranslation from '../../hooks/useDayTranslation';
+import useStoreStatus from '../../hooks/useStoreStatus';
 
 import useCustomAlert from '../../hooks/useCustomAlert';
 
 const StoreMainInfo = ({storedata = {}, onModalOpen, isUpdate, endUpdate}) => {
   const [isExpanded, setIsExpanded] = useState(true); // 매장 정보 확장 상태
 
-  console.log(isUpdate);
+  const isStoreOpen = useStoreStatus(
+    storedata?.businessHoursDto?.openTime,
+    storedata?.businessHoursDto?.closeTime,
+    storedata?.closedDays,
+  );
+
   const [distance, setDistance] = useState(0);
   const [unit, setUnite] = useState('m');
   const calculateDistance = useDistance();
@@ -111,13 +117,14 @@ const StoreMainInfo = ({storedata = {}, onModalOpen, isUpdate, endUpdate}) => {
 
       {!isUpdate && (
         <View style={styles.timeview}>
-          {storedata?.isStoreOpen ? (
+          {isStoreOpen ? (
             <>
               <Text style={[styles.timetextnow, {color: 'green'}]}>
                 영업 중
               </Text>
               <Text style={styles.timetext}>
-                영업 종료 - {storedata?.businessHoursDto.closeTime?.slice(0, 5)}
+                영업 종료 -{' '}
+                {storedata?.businessHoursDto?.closeTime?.slice(0, 5)}
               </Text>
             </>
           ) : (
