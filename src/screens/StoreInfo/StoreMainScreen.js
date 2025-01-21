@@ -12,6 +12,7 @@ import StoreReviewScreen from './StoreReviewScreen';
 import StoreMapScreen from './StoreMapScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
 import {StoreMenuget} from '../../api/menuApi';
+import StoreModal from '../../components/StoreScreen/StoreModal';
 
 const {width} = Dimensions.get('window');
 
@@ -38,6 +39,10 @@ const StoreMainScreen = ({navigation}) => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const onPressModalClose = () => {
+    setIsModalVisible(false);
   };
 
   useEffect(() => {
@@ -139,6 +144,13 @@ const StoreMainScreen = ({navigation}) => {
             />
           )}
         </View>
+        <StoreModal
+          isModalVisible={isModalVisible}
+          setIsModalVisible={setIsModalVisible}
+          onPressModalClose={onPressModalClose}
+          storeId={storeId}
+          navigation={navigation}
+        />
       </ScrollView>
     </>
   );
