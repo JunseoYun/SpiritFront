@@ -3,33 +3,40 @@ import React from 'react';
 import {Pressable, View, Text, Image, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
+import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 
 const LikedItem = ({store, navigation}) => {
   const {translateCategory} = useCategoryTranslation();
+  const {translateAlcohol} = useTranslateAlcohol();
   return (
     <Pressable
       onPress={() =>
         navigation.navigate('StoreStack', {
           screen: 'StoreMainScreen',
           params: {
-            storeId: store.storeId,
-            innerlatitude: store.latitude,
-            innerlongitude: store.longitude,
+            storeId: store.id,
+            innerlatitude: store.locationDto.latitude,
+            innerlongitude: store.locationDto.longitude,
           },
         })
       }>
       <View style={styles.storeInfo}>
-        <Image
-          source={require('../../assets/kim.png')}
-          style={styles.storeImage}
-        />
+        {store.mainImgUrl ? (
+          <Image source={{uri: store.mainImgUrl}} style={styles.storeImage} />
+        ) : (
+          <View style={styles.storeImagetext}>
+            <Text style={{color: 'white', textAlign: 'center'}}>
+              이미지 없음
+            </Text>
+          </View>
+        )}
         <View style={styles.textContainer}>
           <View style={styles.headerRow}>
             <Text
               style={styles.storeTitle}
               numberOfLines={1}
               ellipsizeMode="tail">
-              {store.storeName}
+              {store.name}
             </Text>
             <View style={styles.scoreContainer}>
               <FontAwesomeIcon name="star" size={15} color="#FCC104" />
@@ -51,15 +58,33 @@ const LikedItem = ({store, navigation}) => {
               style={styles.infoItem}
               numberOfLines={1}
               ellipsizeMode="tail">
-              매운갈비찜 벽돌께란말이 까르보떡볶이
+              {store.menuList && store.menuList.length > 0
+                ? store.menuList
+                    .map(
+                      menu => `${menu.name}`, // 메뉴 항목 형식화
+                    )
+                    .join('  ') // 항목 간 간격 추가
+                : '메뉴가 없습니다.'}
             </Text>
           </View>
 
-          <Text style={styles.storeMainMenu}>
-            <Text style={styles.highlightText}>
-              {store.mainMenu || '소주 4500원'}
-            </Text>{' '}
-          </Text>
+          <View style={styles.infoRow}>
+            <Text
+              style={styles.highlightText}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
+                ? store.mainDrinkDtos
+                    .map(
+                      drink =>
+                        `${translateAlcohol(
+                          drink.type,
+                        )} ${drink.price.toLocaleString()}원`,
+                    ) // 데이터 형식화
+                    .join('  ') // 아이템 간 간격 추가
+                : '메인주류가 없습니다.'}
+            </Text>
+          </View>
         </View>
       </View>
     </Pressable>
@@ -85,6 +110,15 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 10,
     marginRight: 12,
+  },
+  storeImagetext: {
+    width: 100,
+    height: 120,
+    borderRadius: 10,
+    marginRight: 12,
+    justifyContent: 'center', // 수직 중앙 정렬
+    alignItems: 'center',
+    backgroundColor: 'black',
   },
   textContainer: {
     flex: 1,
@@ -126,12 +160,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  storeMainMenu: {
-    fontSize: 14,
-    color: '#444',
-    fontWeight: '600',
-  },
   highlightText: {
+    marginRight: 8,
     fontWeight: 'bold',
     color: '#16BBFF',
   },
