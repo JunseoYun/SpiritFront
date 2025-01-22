@@ -1,5 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, Pressable, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -108,7 +114,7 @@ const StoreMainInfo = ({
           {storedata?.name}
         </Text>
 
-        <Pressable
+        <TouchableOpacity
           style={styles.Storesubtitleview}
           onPress={
             isUpdate
@@ -122,7 +128,7 @@ const StoreMainInfo = ({
                 {translateCategory(category)}
               </Text>
             ))}
-        </Pressable>
+        </TouchableOpacity>
         {!isUpdate && (
           <Pressable onPress={onModalOpen} style={styles.updateicons}>
             <Entypo name="dots-three-vertical" size={20} color="#333" />
@@ -207,7 +213,7 @@ const StoreMainInfo = ({
       {/* 매장 정보 확장 */}
       {(isExpanded || isUpdate) && (
         <View style={styles.introduceview}>
-          <Pressable
+          <TouchableOpacity
             style={styles.infoHideView}
             onPress={
               isUpdate
@@ -227,9 +233,9 @@ const StoreMainInfo = ({
                 , {storedata?.locationDto?.addressDetail}
               </Text>
             )}
-          </Pressable>
+          </TouchableOpacity>
 
-          <Pressable
+          <TouchableOpacity
             style={styles.infoHideView}
             onPress={
               isUpdate
@@ -245,9 +251,9 @@ const StoreMainInfo = ({
               {storedata?.businessHoursDto?.openTime?.slice(0, 5)} -{' '}
               {storedata?.businessHoursDto?.closeTime?.slice(0, 5)}
             </Text>
-          </Pressable>
+          </TouchableOpacity>
 
-          <Pressable
+          <TouchableOpacity
             style={styles.infoHideView}
             onPress={
               isUpdate && storedata?.businessHoursDto?.breakStartTime
@@ -270,7 +276,7 @@ const StoreMainInfo = ({
             ) : (
               <Text style={styles.infoHidetext}>미지정 (브레이크타임)</Text>
             )}
-          </Pressable>
+          </TouchableOpacity>
 
           <View style={styles.infoHideView}>
             <AntDesign name="calendar" size={20} color="#333" />

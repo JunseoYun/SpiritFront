@@ -8,9 +8,10 @@ import {
   Button,
   TextInput,
   Platform,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/ImageSlider';
-import {ScrollView} from 'react-native-gesture-handler';
+import {Pressable, ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
 import {useRoute} from '@react-navigation/native';
@@ -50,6 +51,7 @@ const StoreMainScreen = ({navigation}) => {
 
   const endUpdate = () => {
     setIsUpdate(false);
+    handleBottomClose();
   };
 
   const onPressModalClose = () => {
@@ -134,7 +136,11 @@ const StoreMainScreen = ({navigation}) => {
         />
       )}
       {isUpdate && (
-        <UpdateHeader navigation={navigation} endUpdate={endUpdate} />
+        <UpdateHeader
+          navigation={navigation}
+          endUpdate={endUpdate}
+          handleBottomClose={handleBottomClose}
+        />
       )}
       {/* 이미지 슬라이더 및 콘텐츠 */}
       <ScrollView
@@ -145,91 +151,100 @@ const StoreMainScreen = ({navigation}) => {
         scrollEventThrottle={16}
         style={{backgroundColor: 'white'}}>
         {/* 이미지 슬라이더 */}
-
-        <View
-          style={[
-            {
-              height: 300, // 숫자 값은 따옴표 없이 사용
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'black',
-            },
-            isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
-          ]}>
-          {/* <ImageSlider images={tempImages} interval={4000} /> */}
-          {imageSliderData.length > 0 ? (
-            <ImageSlider
-              images={imageSliderData}
-              interval={4000}
-              isUpdate={isUpdate}
-            />
-          ) : (
-            <View>
-              <Text style={{color: 'white'}}>이미지 없음</Text>
-            </View>
-          )}
-        </View>
-
-        {/* 추가 콘텐츠 */}
-        <StoreMainInfo
-          storedata={storedata}
-          onModalOpen={() => setIsModalVisible(true)}
-          navigation={navigation}
-          isUpdate={isUpdate}
-          endUpdate={endUpdate}
-          handleBottomOpen={handleBottomOpen}
-          onEditKey={handleEditKey}
-          onEditValue={handleEditValue}
-        />
-        {!isUpdate && <View style={{backgroundColor: '#F2F2F2', height: 20}} />}
-
-        {!isUpdate && <StoreTabs changePage={setCurrentPage} />}
-        {!isUpdate && (
+        <TouchableWithoutFeedback onPress={handleBottomClose}>
           <View>
-            {currentPage === 'StoreMenuScreen' && (
-              <StoreMenuScreen
-                navigation={navigation}
-                storeId={storeId}
-                menus={menus}
-              />
-            )}
-            {currentPage === 'StoreAlcoholScreen' && (
-              <StoreAlcoholScreen
-                navigation={navigation}
-                storeId={storeId}
-                menus={menus}
-              />
-            )}
-            {currentPage === 'StoreReviewScreen' && (
-              <StoreReviewScreen navigation={navigation} storeId={storeId} />
-            )}
-            {currentPage === 'StoreMapScreen' && (
-              <StoreMapScreen
-                navigation={navigation}
-                storeId={storeId}
-                storeLatitude={latitude}
-                storeLongitude={longitude}
-                innerlatitude={innerlatitude}
-                innerlongitude={innerlongitude}
-              />
-            )}
-          </View>
-        )}
+            <View
+              style={[
+                {
+                  height: 300, // 숫자 값은 따옴표 없이 사용
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'black',
+                },
+                isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
+              ]}>
+              {/* <ImageSlider images={tempImages} interval={4000} /> */}
+              {imageSliderData.length > 0 ? (
+                <ImageSlider
+                  images={imageSliderData}
+                  interval={4000}
+                  isUpdate={isUpdate}
+                />
+              ) : (
+                <View>
+                  <Text style={{color: 'white'}}>이미지 없음</Text>
+                </View>
+              )}
+            </View>
 
-        <StoreModal
-          isModalVisible={isModalVisible}
-          onPressModalClose={onPressModalClose}
-          storeId={storeId}
-          navigation={navigation}
-          startUpdate={startUpdate}
-        />
+            {/* 추가 콘텐츠 */}
+            <StoreMainInfo
+              storedata={storedata}
+              onModalOpen={() => setIsModalVisible(true)}
+              navigation={navigation}
+              isUpdate={isUpdate}
+              endUpdate={endUpdate}
+              handleBottomOpen={handleBottomOpen}
+              onEditKey={handleEditKey}
+              onEditValue={handleEditValue}
+            />
+            {!isUpdate && (
+              <View style={{backgroundColor: '#F2F2F2', height: 20}} />
+            )}
+
+            {!isUpdate && <StoreTabs changePage={setCurrentPage} />}
+            {!isUpdate && (
+              <View>
+                {currentPage === 'StoreMenuScreen' && (
+                  <StoreMenuScreen
+                    navigation={navigation}
+                    storeId={storeId}
+                    menus={menus}
+                  />
+                )}
+                {currentPage === 'StoreAlcoholScreen' && (
+                  <StoreAlcoholScreen
+                    navigation={navigation}
+                    storeId={storeId}
+                    menus={menus}
+                  />
+                )}
+                {currentPage === 'StoreReviewScreen' && (
+                  <StoreReviewScreen
+                    navigation={navigation}
+                    storeId={storeId}
+                  />
+                )}
+                {currentPage === 'StoreMapScreen' && (
+                  <StoreMapScreen
+                    navigation={navigation}
+                    storeId={storeId}
+                    storeLatitude={latitude}
+                    storeLongitude={longitude}
+                    innerlatitude={innerlatitude}
+                    innerlongitude={innerlongitude}
+                  />
+                )}
+              </View>
+            )}
+
+            <StoreModal
+              isModalVisible={isModalVisible}
+              onPressModalClose={onPressModalClose}
+              storeId={storeId}
+              navigation={navigation}
+              startUpdate={startUpdate}
+            />
+          </View>
+        </TouchableWithoutFeedback>
       </ScrollView>
 
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
         snapPoints={snapPoints}
-        enablePanDownToClose={true}>
+        enablePanDownToClose={true}
+        backgroundStyle={{backgroundColor: '#F0F0F0'}}>
         {updatedKey === 'name' && (
           <View style={styles.bottomSheetContent}>
             <Text style={styles.title}>Editing {updatedKey}</Text>
@@ -241,7 +256,6 @@ const StoreMainScreen = ({navigation}) => {
             <Button title="Save" onPress={() => handleUpdate()} />
           </View>
         )}
-
         {updatedKey === 'category' && (
           <View style={styles.bottomSheetContent}>
             <Text style={styles.title}>Editing {updatedKey}</Text>
@@ -255,7 +269,6 @@ const StoreMainScreen = ({navigation}) => {
             <Button title="Save" onPress={() => handleUpdate()} />
           </View>
         )}
-
         {updatedKey === 'address' && (
           <View style={styles.bottomSheetContent}>
             <Text style={styles.title}>Editing {updatedKey}</Text>
@@ -266,7 +279,6 @@ const StoreMainScreen = ({navigation}) => {
             <Button title="Save" onPress={() => handleUpdate()} />
           </View>
         )}
-
         {updatedKey === 'operatingTime' && (
           <View style={styles.bottomSheetContent}>
             <Text style={styles.title}>Editing {updatedKey}</Text>
@@ -277,7 +289,6 @@ const StoreMainScreen = ({navigation}) => {
             <Button title="Save" onPress={() => handleUpdate()} />
           </View>
         )}
-
         {updatedKey === 'breakingTime' && (
           <View style={styles.bottomSheetContent}>
             <Text style={styles.title}>Editing {updatedKey}</Text>
@@ -301,7 +312,7 @@ const styles = StyleSheet.create({
   bottomSheetContent: {
     flex: 1,
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: '#F0F0F0',
   },
   title: {
     fontSize: 18,
