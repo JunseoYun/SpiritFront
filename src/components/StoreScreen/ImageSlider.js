@@ -5,17 +5,29 @@ import {
   Image,
   StyleSheet,
   Dimensions,
-  Text,
-  Pressable,
+  TouchableOpacity,
 } from 'react-native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const {width} = Dimensions.get('window');
 
-const ImageSlider = ({images, interval = 3000, isUpdate = false}) => {
+const ImageSlider = ({
+  images,
+  interval = 3000,
+  isUpdate = false,
+  handleBottomOpen,
+  onEditKey,
+  onEditValue,
+}) => {
   const scrollRef = useRef(null); // ScrollView 참조
   const [currentIndex, setCurrentIndex] = useState(1); // 현재 페이지 (첫 번째 실제 이미지로 초기화)
+
+  const handleEdit = (key, value) => {
+    onEditKey(key); // 수정 키와 값을 부모 컴포넌트로 전달
+    onEditValue(value);
+    handleBottomOpen(); // 바텀 시트 열기
+  };
 
   // 이미지 배열 확장: 첫 번째와 마지막 이미지를 복제
   const imagesWithLoop = [
@@ -71,6 +83,15 @@ const ImageSlider = ({images, interval = 3000, isUpdate = false}) => {
   return (
     <View style={[styles.container, isUpdate && styles.updateContainer]}>
       {/* 이미지 슬라이더 */}
+      {isUpdate && (
+        <Ionicons
+          name="images-sharp"
+          size={50}
+          color="#fff"
+          style={styles.icon}
+          onPress={() => handleEdit('images', images)}
+        />
+      )}
 
       <ScrollView
         ref={scrollRef}
@@ -82,13 +103,13 @@ const ImageSlider = ({images, interval = 3000, isUpdate = false}) => {
         {imagesWithLoop.map((item, index) => (
           <View key={index} style={styles.imageContainer}>
             <Image source={{uri: item.imageUrl}} style={styles.image} />
-            {isUpdate && (
-              <Pressable style={styles.overlay}>
-                <Ionicons name="images-sharp" size={50} color="#fff" />
-              </Pressable>
-            )}
           </View>
         ))}
+        {isUpdate && (
+          <TouchableOpacity
+            style={styles.overlay}
+            onPress={() => handleEdit('images', images)}></TouchableOpacity>
+        )}
       </ScrollView>
 
       {/* 인디케이터 */}
@@ -128,6 +149,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  icon: {
+    position: 'absolute',
+    top: 120,
+    left: (width - 50) / 2, // 아이콘 크기를 고려한 가운데 정렬
+    zIndex: 10, // 다른 요소 위에 표시
   },
 
   image: {

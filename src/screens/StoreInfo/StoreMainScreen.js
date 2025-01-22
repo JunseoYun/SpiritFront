@@ -103,6 +103,7 @@ const StoreMainScreen = ({navigation}) => {
   useEffect(() => {
     getStoreData();
   }, [storeId]);
+
   const imageSliderData =
     storedata.imgUrlList?.map(url => ({imageUrl: url})) || [];
 
@@ -171,6 +172,9 @@ const StoreMainScreen = ({navigation}) => {
                   images={imageSliderData}
                   interval={4000}
                   isUpdate={isUpdate}
+                  handleBottomOpen={handleBottomOpen}
+                  onEditKey={handleEditKey}
+                  onEditValue={handleEditValue}
                 />
               ) : (
                 <View>
