@@ -1,13 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, Modal, StyleSheet} from 'react-native';
 
-const StoreModal = ({
-  isModalVisible,
-  onPressModalClose,
-  storeId,
-  navigation,
-  startUpdate,
-}) => {
+const StoreModal = ({isModalVisible, onPressModalClose, startUpdate}) => {
   const handlePress = () => {
     startUpdate();
     onPressModalClose();
@@ -15,8 +9,10 @@ const StoreModal = ({
 
   return (
     <Modal visible={isModalVisible} animationType="fade" transparent={true}>
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
+      <Pressable style={styles.modalBackground} onPress={onPressModalClose}>
+        <View
+          style={styles.modalContainer}
+          onStartShouldSetResponder={() => true}>
           <View style={styles.modalContent}>
             <Pressable style={styles.modalButton} onPress={() => handlePress()}>
               <Text style={styles.modalButtonText}>매장 수정</Text>
@@ -27,7 +23,7 @@ const StoreModal = ({
             </Pressable>
           </View>
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 };

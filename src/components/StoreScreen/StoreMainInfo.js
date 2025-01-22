@@ -149,7 +149,11 @@ const StoreMainInfo = ({
         </View>
       )}
 
-      <View style={styles.timeview}>
+      <TouchableOpacity
+        style={styles.timeview}
+        onPress={
+          isUpdate ? () => handleEdit('drink', storedata?.mainDrinkDtos) : null
+        }>
         {storedata?.mainDrinkDtos && storedata.mainDrinkDtos.length > 0 ? (
           storedata.mainDrinkDtos.map((drink, index) => (
             <Text
@@ -167,7 +171,7 @@ const StoreMainInfo = ({
             대표 주종 미설정
           </Text>
         )}
-      </View>
+      </TouchableOpacity>
 
       {!isUpdate && (
         <View style={styles.timeview}>
@@ -256,7 +260,7 @@ const StoreMainInfo = ({
           <TouchableOpacity
             style={styles.infoHideView}
             onPress={
-              isUpdate && storedata?.businessHoursDto?.breakStartTime
+              isUpdate
                 ? () =>
                     handleEdit('breakingTime', {
                       breakStartTime:
@@ -274,11 +278,17 @@ const StoreMainInfo = ({
                 (브레이크타임)
               </Text>
             ) : (
-              <Text style={styles.infoHidetext}>미지정 (브레이크타임)</Text>
+              <Text style={styles.infoHidetext}>미설정 (브레이크타임)</Text>
             )}
           </TouchableOpacity>
 
-          <View style={styles.infoHideView}>
+          <TouchableOpacity
+            style={styles.infoHideView}
+            onPress={
+              isUpdate
+                ? () => handleEdit('closedDays', storedata?.closedDays)
+                : null
+            }>
             <AntDesign name="calendar" size={20} color="#333" />
 
             {storedata?.closedDays ? (
@@ -292,9 +302,15 @@ const StoreMainInfo = ({
             ) : (
               <Text style={styles.infoHidetext}>휴무일 없음</Text>
             )}
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.infoHideView}>
+          <TouchableOpacity
+            style={styles.infoHideView}
+            onPress={
+              isUpdate
+                ? () => handleEdit('hasScreen', storedata?.hasScreen)
+                : null
+            }>
             <Feather name="tv" size={20} color="#333" />
 
             {storedata?.hasScreen ? (
@@ -302,9 +318,16 @@ const StoreMainInfo = ({
             ) : (
               <Text style={styles.infoHidetext}>매장 내 스크린(TV) 미설치</Text>
             )}
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.infoHideView}>
+          <TouchableOpacity
+            style={styles.infoHideView}
+            onPress={
+              isUpdate
+                ? () =>
+                    handleEdit('isGroupAvailable', storedata?.isGroupAvailable)
+                : null
+            }>
             <MaterialIcons name="group" size={20} color="#333" />
 
             {storedata?.isGroupAvailable ? (
@@ -312,9 +335,13 @@ const StoreMainInfo = ({
             ) : (
               <Text style={styles.infoHidetext}>10인 이상 불가능</Text>
             )}
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.infoHideView}>
+          <TouchableOpacity
+            style={styles.infoHideView}
+            onPress={
+              isUpdate ? () => handleEdit('contact', storedata?.contact) : null
+            }>
             <SimpleLineIcons name="phone" size={20} color="#333" />
             {storedata?.contact ? (
               <Text style={styles.infoHidetext}>{storedata?.contact}</Text>
@@ -323,9 +350,15 @@ const StoreMainInfo = ({
                 등록된 매장 번호가 없습니다
               </Text>
             )}
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.infoHideView}>
+          <TouchableOpacity
+            style={styles.infoHideView}
+            onPress={
+              isUpdate
+                ? () => handleEdit('description', storedata?.description)
+                : null
+            }>
             <AntDesign name="profile" size={20} color="#333" />
             {storedata?.description ? (
               <Text style={styles.infoHidetext}>{storedata?.description}</Text>
@@ -334,7 +367,7 @@ const StoreMainInfo = ({
                 등록된 매장 소개가 없습니다
               </Text>
             )}
-          </View>
+          </TouchableOpacity>
           {!isUpdate && (
             <Pressable onPress={toggleExpand} style={styles.introduceMoreview}>
               <Text style={styles.introduceHideText}>매장 정보</Text>
