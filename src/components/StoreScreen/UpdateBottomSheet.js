@@ -1,5 +1,13 @@
 import React from 'react';
-import {View, Text, TextInput, Button, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Image,
+  ScrollView,
+} from 'react-native';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useDayTranslation from '../../hooks/useDayTranslation';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
@@ -16,6 +24,31 @@ const UpdateBottomSheet = ({
 
   return (
     <>
+      {updatedKey === 'images' && (
+        <View style={styles.bottomSheetContent}>
+          <Text style={styles.title}>Editing {updatedKey}</Text>
+          {updatedValue && updatedValue.length > 0 ? (
+            <ScrollView
+              horizontal={true} // 가로 스크롤 활성화
+              showsHorizontalScrollIndicator={false} // 스크롤바 표시 여부
+              contentContainerStyle={styles.horizontalScrollContainer}>
+              {updatedValue.map((image, index) => (
+                <View key={index} style={styles.imageWrapper}>
+                  <Image
+                    source={{uri: image.imageUrl}}
+                    style={styles.image}
+                    resizeMode="cover"
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          ) : (
+            <Text>이미지 없음</Text>
+          )}
+          <Button title="Save" onPress={() => handleUpdate()} />
+        </View>
+      )}
+
       {updatedKey === 'name' && (
         <View style={styles.bottomSheetContent}>
           <Text style={styles.title}>Editing {updatedKey}</Text>
@@ -178,16 +211,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
+  horizontalScrollContainer: {
+    flexDirection: 'row',
   },
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 10,
+  imageWrapper: {
+    marginRight: 10, // 이미지 간격
+  },
+  image: {
+    width: 100, // 이미지 가로 크기
+    height: 100, // 이미지 세로 크기
+    borderRadius: 10,
   },
 });
 
