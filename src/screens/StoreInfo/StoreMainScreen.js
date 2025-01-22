@@ -26,11 +26,13 @@ import StoreModal from '../../components/StoreScreen/StoreModal';
 import UpdateHeader from '../../components/StoreScreen/UpdateHeader';
 import BottomSheet from '@gorhom/bottom-sheet';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
+import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
+import useDayTranslation from '../../hooks/useDayTranslation';
+import UpdateBottomSheet from '../../components/StoreScreen/UpdateBottomSheet';
 
 const {width} = Dimensions.get('window');
 
 const StoreMainScreen = ({navigation}) => {
-  const {translateCategory} = useCategoryTranslation();
   const route = useRoute();
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['25%', '50%', '80%'], []);
@@ -227,7 +229,6 @@ const StoreMainScreen = ({navigation}) => {
                 )}
               </View>
             )}
-
             <StoreModal
               isModalVisible={isModalVisible}
               onPressModalClose={onPressModalClose}
@@ -245,64 +246,12 @@ const StoreMainScreen = ({navigation}) => {
         snapPoints={snapPoints}
         enablePanDownToClose={true}
         backgroundStyle={{backgroundColor: '#F0F0F0'}}>
-        {updatedKey === 'name' && (
-          <View style={styles.bottomSheetContent}>
-            <Text style={styles.title}>Editing {updatedKey}</Text>
-            <TextInput
-              style={styles.input}
-              defaultValue={updatedValue}
-              onChangeText={text => setUpdatedValue(text)}
-            />
-            <Button title="Save" onPress={() => handleUpdate()} />
-          </View>
-        )}
-        {updatedKey === 'category' && (
-          <View style={styles.bottomSheetContent}>
-            <Text style={styles.title}>Editing {updatedKey}</Text>
-            {Array.isArray(updatedValue) &&
-              updatedValue.map((category, index) => (
-                <Text key={index} style={styles.Storesubtitle}>
-                  {' '}
-                  {translateCategory(category)}
-                </Text>
-              ))}
-            <Button title="Save" onPress={() => handleUpdate()} />
-          </View>
-        )}
-        {updatedKey === 'address' && (
-          <View style={styles.bottomSheetContent}>
-            <Text style={styles.title}>Editing {updatedKey}</Text>
-
-            <Text style={styles.Storesubtitle}>
-              {updatedValue.address}, {updatedValue.addressDetail}
-            </Text>
-            <Button title="Save" onPress={() => handleUpdate()} />
-          </View>
-        )}
-        {updatedKey === 'operatingTime' && (
-          <View style={styles.bottomSheetContent}>
-            <Text style={styles.title}>Editing {updatedKey}</Text>
-
-            <Text style={styles.Storesubtitle}>
-              {updatedValue.openTime}, {updatedValue.closeTime}
-            </Text>
-            <Button title="Save" onPress={() => handleUpdate()} />
-          </View>
-        )}
-        {updatedKey === 'breakingTime' && (
-          <View style={styles.bottomSheetContent}>
-            <Text style={styles.title}>Editing {updatedKey}</Text>
-            {updatedValue ? (
-              <Text style={styles.Storesubtitle}>
-                {updatedValue.breakStartTime}, {updatedValue.breakEndTime}
-              </Text>
-            ) : (
-              <Text>미지정</Text>
-            )}
-
-            <Button title="Save" onPress={() => handleUpdate()} />
-          </View>
-        )}
+        <UpdateBottomSheet
+          updatedKey={updatedKey}
+          updatedValue={updatedValue}
+          setUpdatedValue={setUpdatedValue}
+          handleUpdate={handleUpdate}
+        />
       </BottomSheet>
     </>
   );
