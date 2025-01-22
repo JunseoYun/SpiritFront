@@ -41,8 +41,14 @@ const UpdateHeader = ({navigation, endUpdate}) => {
 
 const styles = StyleSheet.create({
   view: {
+    position: 'absolute',
+
+    top: 0,
+    left: 0,
+
     width: '100%',
     height: Platform.OS === 'ios' ? 100 : 60,
+
     backgroundColor: '#fff', // 헤더 배경색
     shadowColor: '#000', // iOS 그림자 색상
     shadowOffset: {width: 0, height: 2}, // iOS 그림자 위치
@@ -52,6 +58,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    zIndex: 10, // 추가
   },
   text: {
     marginTop: Platform.OS === 'ios' ? 50 : 0,
