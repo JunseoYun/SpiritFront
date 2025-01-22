@@ -14,6 +14,7 @@ import {getLocation} from '../../storage/locationStorage';
 import useDistance from '../../hooks/useDistance';
 import useDayTranslation from '../../hooks/useDayTranslation';
 import useStoreStatus from '../../hooks/useStoreStatus';
+import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 
 import useCustomAlert from '../../hooks/useCustomAlert';
 
@@ -46,6 +47,7 @@ const StoreMainInfo = ({
 
   const {translateCategory} = useCategoryTranslation();
   const {translateDays} = useDayTranslation();
+  const {translateAlcohol} = useTranslateAlcohol();
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const toggleExpand = () => {
@@ -140,6 +142,25 @@ const StoreMainInfo = ({
           <Text style={styles.reviewtext}>찜 {storedata?.likeCount}</Text>
         </View>
       )}
+
+      <View style={styles.timeview}>
+        {storedata?.mainDrinkDtos && storedata.mainDrinkDtos.length > 0 ? (
+          storedata.mainDrinkDtos.map((drink, index) => (
+            <Text
+              key={index}
+              style={[
+                styles.timetextnow,
+                {color: '#10BEFB', marginBottom: 5, marginRight: 7},
+              ]}>
+              {translateAlcohol(drink.type)} {drink.price.toLocaleString()}원
+            </Text>
+          ))
+        ) : (
+          <Text style={[styles.alcoholText, {color: '#333'}]}>
+            대표 주종 미설정
+          </Text>
+        )}
+      </View>
 
       {!isUpdate && (
         <View style={styles.timeview}>
@@ -400,6 +421,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#5F5F5F',
     marginLeft: 5,
+  },
+  alcoholText: {
+    fontSize: 15,
+    fontWeight: 'bold',
   },
   locationview: {
     flexDirection: 'row',
