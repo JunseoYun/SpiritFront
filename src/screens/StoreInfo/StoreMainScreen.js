@@ -6,6 +6,7 @@ import {
   Text,
   StyleSheet,
   Button,
+  TextInput,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
@@ -22,11 +23,15 @@ import {StoreMenuget} from '../../api/menuApi';
 import StoreModal from '../../components/StoreScreen/StoreModal';
 import UpdateHeader from '../../components/StoreScreen/UpdateHeader';
 import BottomSheet from '@gorhom/bottom-sheet';
+import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
 
 const {width} = Dimensions.get('window');
 
 const StoreMainScreen = ({navigation}) => {
+  const {translateCategory} = useCategoryTranslation();
   const route = useRoute();
+  const bottomSheetRef = useRef(null);
+  const snapPoints = useMemo(() => ['25%', '50%', '80%'], []);
   const {storeId, innerlatitude, innerlongitude} = route.params;
   const [menus, setMenus] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -38,15 +43,43 @@ const StoreMainScreen = ({navigation}) => {
   const [currentPage, setCurrentPage] = useState('StoreMenuScreen');
   const [isUpdate, setIsUpdate] = useState(false);
 
-  const bottomSheetRef = useRef(null);
-  // Define snap points
-  const snapPoints = useMemo(() => ['25%', '50%', '90%'], []);
-  const handleOpen = () => {
+  const startUpdate = () => {
+    setIsUpdate(true);
+  };
+
+  const endUpdate = () => {
+    setIsUpdate(false);
+  };
+
+  const onPressModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const [updatedKey, setUpdatedKey] = useState(null);
+  const [updatedValue, setUpdatedValue] = useState(null);
+
+  const handleBottomOpen = () => {
     bottomSheetRef.current?.expand();
   };
 
-  const handleClose = () => {
+  const handleBottomClose = () => {
+    setUpdatedKey(null);
+    setUpdatedValue(null);
     bottomSheetRef.current?.close();
+  };
+
+  const handleEditKey = key => {
+    setUpdatedKey(key); // 수정할 데이터 저장
+  };
+
+  const handleEditValue = value => {
+    setUpdatedValue(value);
+  };
+
+  const handleUpdate = () => {
+    // 업데이트된 데이터 저장 로직
+    console.log('Updated Data:', updatedKey, updatedValue);
+    handleBottomClose();
   };
 
   const getStoreData = async () => {
@@ -60,18 +93,6 @@ const StoreMainScreen = ({navigation}) => {
     } catch (error) {
       console.error(error);
     }
-  };
-
-  const startUpdate = () => {
-    setIsUpdate(true);
-  };
-
-  const endUpdate = () => {
-    setIsUpdate(false);
-  };
-
-  const onPressModalClose = () => {
-    setIsModalVisible(false);
   };
 
   useEffect(() => {
@@ -153,6 +174,9 @@ const StoreMainScreen = ({navigation}) => {
           navigation={navigation}
           isUpdate={isUpdate}
           endUpdate={endUpdate}
+          handleBottomOpen={handleBottomOpen}
+          onEditKey={handleEditKey}
+          onEditValue={handleEditValue}
         />
         {!isUpdate && <View style={{backgroundColor: '#F2F2F2', height: 20}} />}
 
@@ -197,33 +221,96 @@ const StoreMainScreen = ({navigation}) => {
           startUpdate={startUpdate}
         />
       </ScrollView>
-      {isUpdate && (
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={0} // 시작 인덱스
-          snapPoints={snapPoints}
-          enablePanDownToClose={true}>
-          <View style={styles.contentContainer}>
-            <Text style={styles.contentText}>This is a Bottom Sheet</Text>
-            <Button title="Close" onPress={handleClose} />
+
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={-1}
+        snapPoints={snapPoints}
+        enablePanDownToClose={true}>
+        {updatedKey === 'name' && (
+          <View style={styles.bottomSheetContent}>
+            <Text style={styles.title}>Editing {updatedKey}</Text>
+            <TextInput
+              style={styles.input}
+              defaultValue={updatedValue}
+              onChangeText={text => setUpdatedValue(text)}
+            />
+            <Button title="Save" onPress={() => handleUpdate()} />
           </View>
-        </BottomSheet>
-      )}
+        )}
+
+        {updatedKey === 'category' && (
+          <View style={styles.bottomSheetContent}>
+            <Text style={styles.title}>Editing {updatedKey}</Text>
+            {Array.isArray(updatedValue) &&
+              updatedValue.map((category, index) => (
+                <Text key={index} style={styles.Storesubtitle}>
+                  {' '}
+                  {translateCategory(category)}
+                </Text>
+              ))}
+            <Button title="Save" onPress={() => handleUpdate()} />
+          </View>
+        )}
+
+        {updatedKey === 'address' && (
+          <View style={styles.bottomSheetContent}>
+            <Text style={styles.title}>Editing {updatedKey}</Text>
+
+            <Text style={styles.Storesubtitle}>
+              {updatedValue.address}, {updatedValue.addressDetail}
+            </Text>
+            <Button title="Save" onPress={() => handleUpdate()} />
+          </View>
+        )}
+
+        {updatedKey === 'operatingTime' && (
+          <View style={styles.bottomSheetContent}>
+            <Text style={styles.title}>Editing {updatedKey}</Text>
+
+            <Text style={styles.Storesubtitle}>
+              {updatedValue.openTime}, {updatedValue.closeTime}
+            </Text>
+            <Button title="Save" onPress={() => handleUpdate()} />
+          </View>
+        )}
+
+        {updatedKey === 'breakingTime' && (
+          <View style={styles.bottomSheetContent}>
+            <Text style={styles.title}>Editing {updatedKey}</Text>
+            {updatedValue ? (
+              <Text style={styles.Storesubtitle}>
+                {updatedValue.breakStartTime}, {updatedValue.breakEndTime}
+              </Text>
+            ) : (
+              <Text>미지정</Text>
+            )}
+
+            <Button title="Save" onPress={() => handleUpdate()} />
+          </View>
+        )}
+      </BottomSheet>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  contentContainer: {
+  bottomSheetContent: {
     flex: 1,
     padding: 20,
     backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  contentText: {
+  title: {
     fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
     marginBottom: 20,
+    paddingHorizontal: 10,
   },
 });
 
