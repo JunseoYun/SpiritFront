@@ -3,6 +3,8 @@ import {View, Text, Pressable, StyleSheet} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Feather from 'react-native-vector-icons/Feather';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -15,7 +17,21 @@ import useStoreStatus from '../../hooks/useStoreStatus';
 
 import useCustomAlert from '../../hooks/useCustomAlert';
 
-const StoreMainInfo = ({storedata = {}, onModalOpen, isUpdate, endUpdate}) => {
+const StoreMainInfo = ({
+  storedata = {},
+  onModalOpen,
+  isUpdate,
+  endUpdate,
+  handleBottomOpen,
+  onEditKey,
+  onEditValue,
+}) => {
+  const handleEdit = (key, value) => {
+    onEditKey(key); // 수정 키와 값을 부모 컴포넌트로 전달
+    onEditValue(value);
+    handleBottomOpen(); // 바텀 시트 열기
+  };
+
   const [isExpanded, setIsExpanded] = useState(true); // 매장 정보 확장 상태
 
   const isStoreOpen = useStoreStatus(
@@ -84,17 +100,27 @@ const StoreMainInfo = ({storedata = {}, onModalOpen, isUpdate, endUpdate}) => {
   return (
     <View style={styles.StoreTopView}>
       <View style={styles.Storetitleview}>
-        <Text style={styles.Storetitle}>{storedata?.name}</Text>
+        <Text
+          style={styles.Storetitle}
+          onPress={isUpdate ? () => handleEdit('name', storedata?.name) : null}>
+          {storedata?.name}
+        </Text>
 
-        <View style={styles.Storesubtitleview}>
+        <Pressable
+          style={styles.Storesubtitleview}
+          onPress={
+            isUpdate
+              ? () => handleEdit('category', storedata?.categories)
+              : null
+          }>
           {Array.isArray(storedata?.categories) &&
-            storedata.categories.map((category, index) => (
+            storedata?.categories.map((category, index) => (
               <Text key={index} style={styles.Storesubtitle}>
                 {' '}
                 {translateCategory(category)}
               </Text>
             ))}
-        </View>
+        </Pressable>
         {!isUpdate && (
           <Pressable onPress={onModalOpen} style={styles.updateicons}>
             <Entypo name="dots-three-vertical" size={20} color="#333" />
@@ -159,7 +185,17 @@ const StoreMainInfo = ({storedata = {}, onModalOpen, isUpdate, endUpdate}) => {
       {/* 매장 정보 확장 */}
       {(isExpanded || isUpdate) && (
         <View style={styles.introduceview}>
-          <View style={styles.infoHideView}>
+          <Pressable
+            style={styles.infoHideView}
+            onPress={
+              isUpdate
+                ? () =>
+                    handleEdit('address', {
+                      address: storedata?.locationDto?.address,
+                      addressDetail: storedata?.locationDto?.addressDetail,
+                    })
+                : null
+            }>
             <AntDesign name="home" size={20} color="#333" />
             <Text style={styles.infoHidetext}>
               {storedata?.locationDto?.address}
@@ -169,17 +205,38 @@ const StoreMainInfo = ({storedata = {}, onModalOpen, isUpdate, endUpdate}) => {
                 , {storedata?.locationDto?.addressDetail}
               </Text>
             )}
-          </View>
+          </Pressable>
 
-          <View style={styles.infoHideView}>
+          <Pressable
+            style={styles.infoHideView}
+            onPress={
+              isUpdate
+                ? () =>
+                    handleEdit('operatingTime', {
+                      openTime: storedata?.businessHoursDto?.openTime,
+                      closeTime: storedata?.businessHoursDto?.closeTime,
+                    })
+                : null
+            }>
             <Ionicons name="time-outline" size={20} color="#333" />
             <Text style={styles.infoHidetext}>
               {storedata?.businessHoursDto?.openTime?.slice(0, 5)} -{' '}
               {storedata?.businessHoursDto?.closeTime?.slice(0, 5)}
             </Text>
-          </View>
+          </Pressable>
 
-          <View style={styles.infoHideView}>
+          <Pressable
+            style={styles.infoHideView}
+            onPress={
+              isUpdate && storedata?.businessHoursDto?.breakStartTime
+                ? () =>
+                    handleEdit('breakingTime', {
+                      breakStartTime:
+                        storedata?.businessHoursDto?.breakStartTime,
+                      breakEndTime: storedata?.businessHoursDto?.breakEndTime,
+                    })
+                : null
+            }>
             <MaterialCommunityIcons name="sleep" size={20} color="#333" />
 
             {storedata?.businessHoursDto?.breakStartTime ? (
@@ -191,7 +248,7 @@ const StoreMainInfo = ({storedata = {}, onModalOpen, isUpdate, endUpdate}) => {
             ) : (
               <Text style={styles.infoHidetext}>미지정 (브레이크타임)</Text>
             )}
-          </View>
+          </Pressable>
 
           <View style={styles.infoHideView}>
             <AntDesign name="calendar" size={20} color="#333" />
@@ -206,6 +263,26 @@ const StoreMainInfo = ({storedata = {}, onModalOpen, isUpdate, endUpdate}) => {
               </View>
             ) : (
               <Text style={styles.infoHidetext}>휴무일 없음</Text>
+            )}
+          </View>
+
+          <View style={styles.infoHideView}>
+            <Feather name="tv" size={20} color="#333" />
+
+            {storedata?.hasScreen ? (
+              <Text style={styles.infoHidetext}>매장 내 스크린(TV) 설치</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>매장 내 스크린(TV) 미설치</Text>
+            )}
+          </View>
+
+          <View style={styles.infoHideView}>
+            <MaterialIcons name="group" size={20} color="#333" />
+
+            {storedata?.isGroupAvailable ? (
+              <Text style={styles.infoHidetext}>10인 이상 가능</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>10인 이상 불가능</Text>
             )}
           </View>
 
