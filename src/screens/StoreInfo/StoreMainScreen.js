@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Button,
   TextInput,
+  Platform,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
@@ -132,7 +133,9 @@ const StoreMainScreen = ({navigation}) => {
           title={storedata.storeName}
         />
       )}
-
+      {isUpdate && (
+        <UpdateHeader navigation={navigation} endUpdate={endUpdate} />
+      )}
       {/* 이미지 슬라이더 및 콘텐츠 */}
       <ScrollView
         onScroll={Animated.event(
@@ -142,17 +145,17 @@ const StoreMainScreen = ({navigation}) => {
         scrollEventThrottle={16}
         style={{backgroundColor: 'white'}}>
         {/* 이미지 슬라이더 */}
-        {isUpdate && (
-          <UpdateHeader navigation={navigation} endUpdate={endUpdate} />
-        )}
 
         <View
-          style={{
-            height: '300',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'black',
-          }}>
+          style={[
+            {
+              height: 300, // 숫자 값은 따옴표 없이 사용
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'black',
+            },
+            isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
+          ]}>
           {/* <ImageSlider images={tempImages} interval={4000} /> */}
           {imageSliderData.length > 0 ? (
             <ImageSlider

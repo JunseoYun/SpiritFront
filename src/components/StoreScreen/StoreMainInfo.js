@@ -33,7 +33,7 @@ const StoreMainInfo = ({
     handleBottomOpen(); // 바텀 시트 열기
   };
 
-  const [isExpanded, setIsExpanded] = useState(true); // 매장 정보 확장 상태
+  const [isExpanded, setIsExpanded] = useState(false); // 매장 정보 확장 상태
 
   const isStoreOpen = useStoreStatus(
     storedata?.businessHoursDto?.openTime,
@@ -151,6 +151,7 @@ const StoreMainInfo = ({
               style={[
                 styles.timetextnow,
                 {color: '#10BEFB', marginBottom: 5, marginRight: 7},
+                isUpdate && {color: '#333'},
               ]}>
               {translateAlcohol(drink.type)} {drink.price.toLocaleString()}원
             </Text>
@@ -495,7 +496,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#10BEFB',
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 30,
+    marginTop: 10,
+    marginBottom: 50,
   },
   endUpdateText: {
     color: '#fff',
