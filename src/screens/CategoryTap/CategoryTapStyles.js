@@ -6,7 +6,7 @@ const Categorystyles = StyleSheet.create({
     flexWrap: 'wrap', // 줄바꿈 허용
     justifyContent: 'center', // 아이템 간 간격 조절
     alignItems: 'center',
-
+    backgroundColor: 'white',
     paddingBottom: 50,
   },
   itemContainer: {
@@ -98,6 +98,33 @@ const Categorystyles = StyleSheet.create({
     width: 112,
     height: 112,
     borderRadius: 10,
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingtext: {
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontSize: 20,
+    color: '#333',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 40,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontSize: 20,
+    color: '#333',
+  },
+
+  storeImagetext: {
+    width: 112,
+    height: 112,
+    borderRadius: 10,
+    justifyContent: 'center', // 수직 중앙 정렬
+    alignItems: 'center',
+    backgroundColor: 'black',
   },
 });
 
