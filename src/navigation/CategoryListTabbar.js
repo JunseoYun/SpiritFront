@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react';
-import { View, Text } from 'react-native';
+import {View, Text} from 'react-native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import CategoryTapScreen from '../screens/CategoryTap/CategoryTapScreen';
-import { getLocation } from '../storage/locationStorage';
+import {getLocation} from '../storage/locationStorage';
 
 const categories = [
   {name: 'Izakaya', title: '이자카야', categoryname: 'IZAKAYA'},
@@ -26,11 +26,11 @@ const categories = [
   {name: 'Cocktail', title: '칵테일', categoryname: 'COCKTAIL'},
   {name: 'Pupbar', title: '펍 바', categoryname: 'PUBBAR'},
 ];
-    
+
 const Tab = createMaterialTopTabNavigator();
 
 const CategoryListTabbar = ({route}) => {
-const [location, setLocation] = useState(null);
+  const [location, setLocation] = useState(null);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -49,7 +49,14 @@ const [location, setLocation] = useState(null);
   if (!location) {
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text>Loading...</Text>
+        <Text
+          style={{
+            fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+            fontSize: 20,
+            color: '#333',
+          }}>
+          Loading...
+        </Text>
       </View>
     );
   }
@@ -68,7 +75,7 @@ const [location, setLocation] = useState(null);
         tabBarInactiveTintColor: '#CFCFCF', // 선택되지 않은 탭 글자 색상
         tabBarLabelStyle: {
           fontWeight: 'bold', // 글씨 두껍게
-          fontSize: 16,       // 글씨 크기 조정
+          fontSize: 16, // 글씨 크기 조정
         },
       }}>
       {categories.map(({name, title, categoryname}) => (

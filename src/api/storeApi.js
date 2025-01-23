@@ -177,7 +177,7 @@ export const Store_getby_category = async (
         },
       },
     );
-    return response.data.data;
+    return response.data.data.content;
   } catch (error) {
     functionError(error);
   }
