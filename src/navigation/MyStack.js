@@ -1,9 +1,11 @@
 import React from 'react';
+import {Pressable} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import ConfigScreen from '../screens/BottomTab/My/ConfigScreen';
 import Mynickchange from '../screens/BottomTab/My/Mynickchange';
 import MyScreen from '../screens/BottomTab/My/MyScreen';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const Stack = createStackNavigator();
 
@@ -24,17 +26,43 @@ export default function MyStack() {
       <Stack.Screen
         name="ConfigScreen"
         component={ConfigScreen}
-        options={getScreenOptions('프로필 수정')}
+        options={({navigation}) => ({
+          ...getScreenOptions('프로필 수정'), // getScreenOptions 객체를 펼쳐 병합
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{marginLeft: 13, paddingRight: 15}}
+              />
+            </Pressable>
+          ),
+        })}
       />
+
       <Stack.Screen
         name="Mynickchange"
         component={Mynickchange}
-        options={getScreenOptions('닉네임 변경')}
+        options={({navigation}) => ({
+          ...getScreenOptions('닉네임 변경'), // getScreenOptions 객체를 펼쳐 병합
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{marginLeft: 13, paddingRight: 15}}
+              />
+            </Pressable>
+          ),
+        })}
       />
+
       <Stack.Screen
         name="MyScreen"
         component={MyScreen}
-        options={{title: '임시 로그아웃'}}
+        options={getScreenOptions('마이프로필')}
       />
     </Stack.Navigator>
   );

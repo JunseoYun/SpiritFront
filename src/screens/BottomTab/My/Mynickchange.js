@@ -6,6 +6,11 @@ import {
   TextInput,
   Pressable,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import {useRoute, useNavigation} from '@react-navigation/native';
@@ -39,7 +44,6 @@ const Mynickchange = () => {
   };
 
   const handlePutnick = async () => {
-    console.log(newnickname);
     if (nicknameError || !nicknameCheck || !newnickname.trim()) {
       showAlert({
         title: '닉네임 오류',
@@ -53,16 +57,16 @@ const Mynickchange = () => {
         title: '닉네임 변경 성공',
         message: '닉네임이 성공적으로 변경되었습니다!',
         onConfirm: () => {
-          navigation.navigate('MyStack', {
-            screen: 'MyScreen',
+          navigation.reset({
+            index: 0, // 초기 화면 인덱스
+            routes: [{name: 'MyScreen'}], // 이동할 화면
           });
         },
       });
     } catch (error) {
       if (error.response) {
-        const statusCode = error.response.status; // 에러 코드 가져오기
+        const statusCode = error.response.status;
 
-        // 에러 코드별 처리
         switch (statusCode) {
           case 400:
             showAlert({
@@ -70,14 +74,12 @@ const Mynickchange = () => {
               message: '이미 사용중인 닉네임입니다.',
             });
             break;
-
           case 404:
             showAlert({
               title: '업로드 실패',
               message: '유저정보를 찾을 수 없습니다. 다시 시도해주세요.',
             });
             break;
-
           default:
             showAlert({
               title: '에러 발생',
@@ -86,7 +88,6 @@ const Mynickchange = () => {
             break;
         }
       } else {
-        // 네트워크 또는 다른 에러 처리
         console.error('Unexpected Error:', error);
         showAlert({
           title: '네트워크 오류',
@@ -106,67 +107,88 @@ const Mynickchange = () => {
   }
 
   return (
-    <SafeAreaView
-      style={{
-        backgroundColor: 'white',
-        height: '100%',
-        justifyContent: 'space-between',
-      }}>
-      <View style={styles.topview}>
-        <Text style={styles.nickname}>새로운 닉네임</Text>
-        <View
-          style={[
-            styles.nicknameInputView,
-            nicknameError && styles.errorInputView, // 비속어 입력 시 빨간 테두리
-            nicknameCheck && !nicknameError && styles.checkInputView,
-          ]}>
-          <TextInput
-            style={styles.input}
-            value={newnickname}
-            placeholder={userdata.nickname}
-            onChangeText={handleNicknameChange}
-            placeholderTextColor="#999"
-          />
-          {nicknameCheck && !nicknameError && (
-            <Entypo name="check" size={25} color="#16BBFF" />
-          )}
-        </View>
-        {nicknameError && (
-          <Text style={styles.errorText}>
-            비속어 및 이용약관에 위배된 닉네임은 사용할 수 없습니다.
-          </Text>
-        )}
-      </View>
-      <Pressable style={styles.completebtn} onPress={handlePutnick}>
-        <Text style={styles.completebtntext}>완료</Text>
-      </Pressable>
+    <KeyboardAvoidingView
+      style={{flex: 1}}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <SafeAreaView style={styles.container}>
+          <ScrollView contentContainerStyle={{flexGrow: 1}}>
+            <View style={styles.topview}>
+              <Text style={styles.nickname}>새로운 닉네임</Text>
+              <View
+                style={[
+                  styles.nicknameInputView,
+                  nicknameError && styles.errorInputView,
+                  nicknameCheck && !nicknameError && styles.checkInputView,
+                ]}>
+                <TextInput
+                  style={styles.input}
+                  value={newnickname}
+                  placeholder={userdata.nickname}
+                  onChangeText={handleNicknameChange}
+                  placeholderTextColor="#999"
+                />
+                {nicknameCheck && !nicknameError && (
+                  <Entypo name="check" size={25} color="#16BBFF" />
+                )}
+              </View>
+              {nicknameError && (
+                <Text style={styles.errorText}>
+                  비속어 및 이용약관에 위배된 닉네임은 사용할 수 없습니다.
+                </Text>
+              )}
+            </View>
+          </ScrollView>
+          <Pressable
+            style={[
+              styles.completebtn,
+              (!newnickname.trim() || nicknameError) && styles.disabledbtn, // 비활성화 스타일
+            ]}
+            onPress={handlePutnick}
+            disabled={!newnickname.trim() || nicknameError} // 비활성화 조건
+          >
+            <Text style={styles.completebtntext}>완료</Text>
+          </Pressable>
 
-      <AlertComponent />
-    </SafeAreaView>
+          <AlertComponent />
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
   topview: {
     marginTop: 50,
-    marginHorizontal: 50,
+    marginHorizontal: 18,
   },
   nickname: {
     fontSize: 18,
-    color: 'black',
+    color: '#333',
     fontWeight: 'bold',
+    marginLeft: 3,
   },
   input: {
     flex: 1,
     paddingVertical: 10,
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#333',
   },
   completebtn: {
-    alignItems: 'center',
-    marginBottom: 50,
-    marginHorizontal: 50,
-    borderRadius: 10,
+    width: '90%',
     backgroundColor: '#16BBFF',
-    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 15,
+    alignSelf: 'center',
+    marginBottom: 10, // 여유 공간 추가
   },
   completebtntext: {
     color: 'white',
@@ -192,9 +214,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#FF0000',
-    marginHorizontal: 20,
+    marginLeft: 10,
     marginTop: 10,
     fontSize: 14,
+  },
+  disabledbtn: {
+    backgroundColor: '#CCCCCC', // 비활성화된 버튼 색상
   },
 });
 

@@ -8,6 +8,7 @@ import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
 import Logout from '../screens/BottomTab/My/Logout';
 import SearchStack from './SearchStack';
+import MyStack from './MyStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -35,7 +36,7 @@ const MainBtmbar = () => {
             iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'LikeScreen') {
             iconName = focused ? 'heart' : 'heart-outline';
-          } else if (route.name === 'Logout') {
+          } else if (route.name === 'MyStack') {
             iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'LoginStack') {
             iconName = 'person-outline';
@@ -81,18 +82,9 @@ const MainBtmbar = () => {
       />
 
       <Tab.Screen
-        name="Logout"
-        component={Logout}
-        options={{
-          tabBarLabel: '마이페이지',
-          headerShown: true,
-          title: '마이페이지',
-          headerTitleStyle: {
-            fontSize: 20, // 타이틀 크기 설정
-            color: '#333', // 텍스트 색상 (선택 사항)
-            fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
-          },
-        }}
+        name="MyStack"
+        component={MyStack}
+        options={{tabBarLabel: '마이', headerShown: false}}
       />
     </Tab.Navigator>
   );
