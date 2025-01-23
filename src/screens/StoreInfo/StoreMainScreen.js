@@ -165,8 +165,8 @@ const StoreMainScreen = ({navigation}) => {
       setStoredata(storeData);
       setLongitude(storeData.locationDto.longitude);
       setLatitude(storeData.locationDto.latitude);
-      // const Menus = await StoreMenuget(storeId);
-      // setMenus(Menus);
+      const Menus = await StoreMenuget(storeId);
+      setMenus(Menus);
     } catch (error) {
       console.error(error);
     }
