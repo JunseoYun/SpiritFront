@@ -92,7 +92,6 @@ const StoreMainScreen = ({navigation}) => {
     const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     if (isEqual(storedata[updatedKey], updatedValue)) {
-      console.log('같음 ㅂㅂ');
       handleBottomClose();
       return;
     }
@@ -236,7 +235,6 @@ const StoreMainScreen = ({navigation}) => {
                 },
                 isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
               ]}>
-              {/* <ImageSlider images={tempImages} interval={4000} /> */}
               {imageSliderData.length > 0 ? (
                 <ImageSlider
                   images={imageSliderData}
@@ -268,6 +266,7 @@ const StoreMainScreen = ({navigation}) => {
             )}
 
             {!isUpdate && <StoreTabs changePage={setCurrentPage} />}
+
             {!isUpdate && (
               <View>
                 {currentPage === 'StoreMenuScreen' && (

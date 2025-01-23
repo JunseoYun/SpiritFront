@@ -2,14 +2,17 @@ import React, {useState, useEffect} from 'react';
 import {View, ScrollView, StyleSheet, Text, SafeAreaView} from 'react-native';
 import MyPageheader from '../../../components/MyScreen/MyPageheader'; // 위에서 만든 컴포넌트
 import {Userdataget} from '../../../api/userApi';
-import Myreview from '../../../components/MyScreen/Myreview';
 import useCustomAlert from '../../../hooks/useCustomAlert';
-
+import MyTabs from '../../../components/MyScreen/MyTabs';
+import MyReview from '../../../components/MyScreen/MyReview';
+import MyLocation from '../../../components/MyScreen/MyLocation';
 import {Reviewget_by_recent} from '../../../api/reviewApi';
 
 const MyScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
   const {showAlert, AlertComponent} = useCustomAlert();
+
+  const [currentPage, setCurrentPage] = useState('MyReview');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -69,7 +72,7 @@ const MyScreen = ({navigation}) => {
   }
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+    <SafeAreaView style={{flex: 1, backgroundColor: '#FAFAFA'}}>
       <MyPageheader
         nickname={userdata.nickname}
         imageuri={userdata.imgUrl}
@@ -79,27 +82,19 @@ const MyScreen = ({navigation}) => {
           })
         }
       />
-      <View style={styles.innerviewtext}>
-        <Text style={styles.reservationtext}>나의 리뷰</Text>
-      </View>
-      <View style={styles.line} />
+      <MyTabs changePage={setCurrentPage} />
       <ScrollView>
         {/* Myreview 값 가져오기 */}
-        <Myreview navigation={navigation} />
+        {currentPage === 'MyReview' && <MyReview navigation={navigation} />}
+        {currentPage === 'MyLocation' && <MyLocation navigation={navigation} />}
       </ScrollView>
+
       <AlertComponent />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  line: {
-    marginTop: 15,
-    width: '100%',
-    height: 2,
-    borderColor: 'lightgray',
-    borderWidth: 1,
-  },
   innerviewtext: {
     alignItems: 'center',
     justifyContent: 'center',

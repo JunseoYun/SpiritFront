@@ -55,7 +55,19 @@ export default function MainStack() {
       <Stack.Screen
         name="LocationSearchScreen"
         component={LocationSearchScreen}
-        options={{title: '주소 검색'}}
+        options={({navigation}) => ({
+          title: '주소 검색',
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{marginLeft: 13, paddingRight: 15}}
+              />
+            </Pressable>
+          ),
+        })}
       />
       <Stack.Screen
         name="CategoryListTabbar"

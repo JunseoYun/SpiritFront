@@ -6,8 +6,8 @@ const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
   const handleImagePick = async () => {
     try {
       const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
+        width: 500,
+        height: 500,
         cropping: true,
         mediaType: 'photo',
       });
