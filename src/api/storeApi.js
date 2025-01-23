@@ -74,6 +74,14 @@ export const StoreRegister = async data => {
   }
 };
 
+export const UpdateStore = async (storeId, data) => {
+  try {
+    await axiosInstance.patch(`/store/update/${storeId}`, data); // 수정: {data}를 제거
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Store Query API
 
 // 최근 방문(리뷰) 가게 조회 O

@@ -4,9 +4,6 @@ import {
   Dimensions,
   Animated,
   Text,
-  StyleSheet,
-  Button,
-  TextInput,
   Platform,
   TouchableWithoutFeedback,
 } from 'react-native';
@@ -15,7 +12,7 @@ import {Pressable, ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
 import {useRoute} from '@react-navigation/native';
-import {StoreMainget} from '../../api/storeApi';
+import {StoreMainget, UpdateStore} from '../../api/storeApi';
 import StoreMenuScreen from './StoreMenuScreen';
 import StoreAlcoholScreen from './StoreAlcoholScreen';
 import StoreReviewScreen from './StoreReviewScreen';
@@ -25,27 +22,28 @@ import {StoreMenuget} from '../../api/menuApi';
 import StoreModal from '../../components/StoreScreen/StoreModal';
 import UpdateHeader from '../../components/StoreScreen/UpdateHeader';
 import BottomSheet from '@gorhom/bottom-sheet';
-import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
-import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
-import useDayTranslation from '../../hooks/useDayTranslation';
 import UpdateBottomSheet from '../../components/StoreScreen/UpdateBottomSheet';
+import useCustomAlert from '../../hooks/useCustomAlert';
+import forbiddenWords from '../../hooks/forbiddenWords';
 
 const {width} = Dimensions.get('window');
 
 const StoreMainScreen = ({navigation}) => {
   const route = useRoute();
+  const {showAlert, AlertComponent} = useCustomAlert();
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['25%', '50%', '80%'], []);
   const {storeId, innerlatitude, innerlongitude} = route.params;
   const [menus, setMenus] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedata, setStoredata] = useState('');
-  const [scrollY] = useState(new Animated.Value(0)); // 스크롤 위치 추적
-
+  const [scrollY] = useState(new Animated.Value(0));
   const [longitude, setLongitude] = useState('');
   const [latitude, setLatitude] = useState('');
   const [currentPage, setCurrentPage] = useState('StoreMenuScreen');
   const [isUpdate, setIsUpdate] = useState(false);
+  const [updatedKey, setUpdatedKey] = useState(null);
+  const [updatedValue, setUpdatedValue] = useState(null);
 
   const startUpdate = () => {
     setIsUpdate(true);
@@ -60,9 +58,6 @@ const StoreMainScreen = ({navigation}) => {
     setIsModalVisible(false);
   };
 
-  const [updatedKey, setUpdatedKey] = useState(null);
-  const [updatedValue, setUpdatedValue] = useState(null);
-
   const handleBottomOpen = () => {
     bottomSheetRef.current?.expand();
   };
@@ -74,17 +69,95 @@ const StoreMainScreen = ({navigation}) => {
   };
 
   const handleEditKey = key => {
-    setUpdatedKey(key); // 수정할 데이터 저장
+    setUpdatedKey(key);
   };
 
   const handleEditValue = value => {
     setUpdatedValue(value);
   };
 
-  const handleUpdate = () => {
-    // 업데이트된 데이터 저장 로직
-    console.log('Updated Data:', updatedKey, updatedValue);
+  const handleUpdate = async () => {
+    const containsForbiddenWord = value =>
+      typeof value === 'string' &&
+      forbiddenWords.some(word => value.includes(word));
+
+    const showErrorAndExit = message => {
+      showAlert({
+        title: '가이드 위반',
+        message,
+      });
+      return;
+    };
+
+    const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+    if (isEqual(storedata[updatedKey], updatedValue)) {
+      console.log('같음 ㅂㅂ');
+      handleBottomClose();
+      return;
+    }
+
+    if (containsForbiddenWord(updatedValue)) {
+      showErrorAndExit(
+        '비속어 및 이용 약관에 위배되는\n내용이 포함되어 있습니다.',
+      );
+      return;
+    }
+
+    if (
+      updatedKey === 'locationDto' &&
+      containsForbiddenWord(updatedValue?.addressDetail)
+    ) {
+      showErrorAndExit(
+        '비속어 및 이용 약관에 위배되는\n내용이 포함되어 있습니다.',
+      );
+      return;
+    }
+
+    const performUpdate = async (key, value) => {
+      try {
+        await UpdateStore(storeId, {[key]: value});
+        getStoreData();
+      } catch (error) {
+        handleError();
+      }
+    };
+
+    switch (updatedKey) {
+      case 'operatingTime':
+      case 'breakingTime':
+        await performUpdate('businessHoursDto', updatedValue);
+        break;
+      case 'description':
+        await performUpdate(updatedKey, removeLineBreaks(updatedValue));
+        break;
+      case 'locationDto':
+        await performUpdate(updatedKey, updatedValue);
+        break;
+      default:
+        await performUpdate(updatedKey, updatedValue);
+        break;
+    }
+
     handleBottomClose();
+  };
+
+  const handleError = () => {
+    showAlert({
+      title: '잘못된 요청입니다.',
+      message: '잠시 후 다시 시도해주세요.',
+    });
+  };
+
+  const removeLineBreaks = value => {
+    if (typeof value === 'string') {
+      return value
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line !== '')
+        .join('\n');
+    }
+    return value;
   };
 
   const getStoreData = async () => {
@@ -107,7 +180,6 @@ const StoreMainScreen = ({navigation}) => {
   const imageSliderData =
     storedata.imgUrlList?.map(url => ({imageUrl: url})) || [];
 
-  // 헤더 스타일 동적 변경
   const headerBackgroundColor = scrollY.interpolate({
     inputRange: [150, 250],
     outputRange: ['transparent', '#fff'],
@@ -128,7 +200,6 @@ const StoreMainScreen = ({navigation}) => {
 
   return (
     <>
-      {/* 네비게이션 헤더 */}
       {!isUpdate && (
         <StoreHeader
           navigation={navigation}
@@ -145,7 +216,7 @@ const StoreMainScreen = ({navigation}) => {
           handleBottomClose={handleBottomClose}
         />
       )}
-      {/* 이미지 슬라이더 및 콘텐츠 */}
+
       <ScrollView
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
@@ -153,7 +224,6 @@ const StoreMainScreen = ({navigation}) => {
         )}
         scrollEventThrottle={16}
         style={{backgroundColor: 'white'}}>
-        {/* 이미지 슬라이더 */}
         <TouchableWithoutFeedback onPress={handleBottomClose}>
           <View>
             <View
@@ -183,7 +253,6 @@ const StoreMainScreen = ({navigation}) => {
               )}
             </View>
 
-            {/* 추가 콘텐츠 */}
             <StoreMainInfo
               storedata={storedata}
               onModalOpen={() => setIsModalVisible(true)}
@@ -249,36 +318,28 @@ const StoreMainScreen = ({navigation}) => {
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose={true}
-        backgroundStyle={{backgroundColor: '#F0F0F0'}}>
+        backgroundStyle={{
+          backgroundColor: '#F7F7F7',
+          borderTopLeftRadius: 35,
+          borderTopRightRadius: 35,
+          shadowColor: '#000',
+          shadowOffset: {width: 0, height: -3},
+          shadowOpacity: 0.2,
+          shadowRadius: 5,
+          elevation: 10,
+        }}>
         <UpdateBottomSheet
           updatedKey={updatedKey}
           updatedValue={updatedValue}
           setUpdatedValue={setUpdatedValue}
           handleUpdate={handleUpdate}
+          handleBottomClose={handleBottomClose}
+          navigation={navigation}
         />
       </BottomSheet>
+      <AlertComponent />
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  bottomSheetContent: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#F0F0F0',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-});
 
 export default StoreMainScreen;
