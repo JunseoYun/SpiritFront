@@ -3,11 +3,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  Pressable,
   View,
-  Image,
-  FlatList,
-  Dimensions,
   RefreshControl,
   SafeAreaView,
   Alert,
@@ -20,7 +16,7 @@ import StoreRegister from '../../components/MainScreen/StoreRegister';
 import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
 import RecentStoreList from '../../components/MainScreen/RecentStore/RecentStoreList';
 import OptionsSection from '../../components/MainScreen/OptionSection';
-// import { getLocation, getAddress } from '../../storage/locationStorage';
+import AppInfo from '../../components/MainScreen/\bAppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import {getWeatherData} from '../../api/weather';
 import useRecommendation from '../../hooks/useRecommendation';
@@ -198,6 +194,22 @@ const MainScreen = ({navigation}) => {
     return parts.slice(1, 4).join(' ');
   };
 
+  const handleAgreeScreen = screen => {
+    if (screen === 'terms') {
+      navigation.navigate('OAuthStack', {
+        screen: 'TermsAgreeScreen',
+      });
+    } else if (screen === 'privacy') {
+      navigation.navigate('OAuthStack', {
+        screen: 'PrivacyAgreeScreen',
+      });
+    } else if (screen === 'location') {
+      navigation.navigate('OAuthStack', {
+        screen: 'LocationAgreeScreen',
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* 실시간 위치 */}
@@ -262,6 +274,7 @@ const MainScreen = ({navigation}) => {
           storeactiveIndex={storeactiveIndex}
           handlestoreItemClick={handlestoreItemClick}
         />
+        <AppInfo handleAgreeScreen={handleAgreeScreen} />
       </ScrollView>
     </SafeAreaView>
   );
