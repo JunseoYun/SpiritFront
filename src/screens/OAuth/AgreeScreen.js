@@ -8,9 +8,6 @@ import {
 } from 'react-native';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import AgreementItem from '../../components/OAuthRegister/AgreementItem';
-import TermsAgreeModal from '../../components/OAuthRegister/TermsAgreeModal';
-import PrivacyAgreeModal from '../../components/OAuthRegister/PrivacyAgreeModal';
-import LocationAgreeModal from '../../components/OAuthRegister/LocationAgreeModal';
 
 const AgreeScreen = ({route, navigation}) => {
   const {type, id, socialToken} = route.params;
@@ -20,12 +17,6 @@ const AgreeScreen = ({route, navigation}) => {
   // 체크박스 상태 관리
   const [agreements, setAgreements] = useState({
     all: false,
-    terms: false,
-    privacy: false,
-    location: false,
-  });
-
-  const [modalVisible, setModalVisible] = useState({
     terms: false,
     privacy: false,
     location: false,
@@ -52,8 +43,16 @@ const AgreeScreen = ({route, navigation}) => {
   };
 
   // 모달 열기/닫기 핸들러
-  const handleModal = key => {
-    setModalVisible(prevState => ({...prevState, [key]: !prevState[key]}));
+  const handleAgreeScreen = key => {
+    if (key === 'terms') {
+      navigation.navigate('TermsAgreeScreen');
+    } else if (key === 'privacy') {
+      navigation.navigate('PrivacyAgreeScreen');
+    } else if (key === 'location') {
+      navigation.navigate('LocationAgreeScreen');
+    } else {
+      return;
+    }
   };
 
   // "다음" 버튼 클릭 핸들러
@@ -103,19 +102,19 @@ const AgreeScreen = ({route, navigation}) => {
         text="[필수] 오늘한잔 이용약관 동의"
         checked={agreements.terms}
         onPress={() => handleCheck('terms')}
-        onInfoPress={() => handleModal('terms')} // 약관 보기 모달 열기
+        onInfoPress={() => handleAgreeScreen('terms')} // 약관 보기 모달 열기
       />
       <AgreementItem
         text="[필수] 개인정보 수집 및 이용 동의"
         checked={agreements.privacy}
         onPress={() => handleCheck('privacy')}
-        onInfoPress={() => handleModal('privacy')} // 약관 보기 모달 열기
+        onInfoPress={() => handleAgreeScreen('privacy')} // 약관 보기 모달 열기
       />
       <AgreementItem
         text="[필수] 위치 기반 서비스 약관 동의"
         checked={agreements.location}
         onPress={() => handleCheck('location')}
-        onInfoPress={() => handleModal('location')} // 약관 보기 모달 열기
+        onInfoPress={() => handleAgreeScreen('location')} // 약관 보기 모달 열기
       />
 
       <TouchableOpacity
@@ -130,18 +129,7 @@ const AgreeScreen = ({route, navigation}) => {
         }>
         <Text style={styles.nextButtonText}>다음</Text>
       </TouchableOpacity>
-      <TermsAgreeModal
-        visible={modalVisible.terms}
-        onPressClose={() => handleModal('terms')}
-      />
-      <PrivacyAgreeModal
-        visible={modalVisible.privacy}
-        onPressClose={() => handleModal('privacy')}
-      />
-      <LocationAgreeModal
-        visible={modalVisible.location}
-        onPressClose={() => handleModal('location')}
-      />
+
       <AlertComponent />
     </SafeAreaView>
   );
