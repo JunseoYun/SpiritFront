@@ -12,6 +12,7 @@ import CategoryListTabbar from './CategoryListTabbar';
 import RandomChoiceScreen from '../screens/RandomChoice/RandomChoiceScreen';
 import StoreStack from './StoreStack';
 import MyStack from './MyStack';
+import OAuthStack from './OAuthStack';
 
 const Stack = createStackNavigator();
 
@@ -145,6 +146,13 @@ export default function MainStack() {
       <Stack.Screen
         name="StoreStack"
         component={StoreStack}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="OAuthStack"
+        component={OAuthStack}
         options={{
           headerShown: false,
         }}
