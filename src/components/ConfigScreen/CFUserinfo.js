@@ -7,13 +7,14 @@ const CFUserinfo = ({userdata, navigation}) => {
     <View style={styles.container}>
       <View style={styles.row}>
         <Text style={styles.label}>닉네임</Text>
-        <View style={styles.info}>
+        <Pressable
+          style={styles.info}
+          onPress={() => navigation.navigate('Mynickchange', {userdata})}>
           <Text style={styles.value}>{userdata.nickname}</Text>
-          <Pressable
-            onPress={() => navigation.navigate('Mynickchange', {userdata})}>
-            <FontAwesomeIcon name="angle-right" size={30} color="gray" />
-          </Pressable>
-        </View>
+          <View>
+            <FontAwesomeIcon name="angle-right" size={25} color="#999" />
+          </View>
+        </Pressable>
       </View>
     </View>
   );
@@ -21,9 +22,9 @@ const CFUserinfo = ({userdata, navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 30,
-    borderWidth: 2,
-    borderColor: 'lightgray',
+    marginHorizontal: 18,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
     borderRadius: 10,
     marginBottom: 30,
   },
@@ -32,20 +33,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 15,
-    borderBottomWidth: 2,
-    borderColor: 'lightgray',
   },
   label: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   info: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   value: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: '#999',
+    fontSize: 15,
+    fontWeight: '600',
     marginRight: 15,
   },
 });

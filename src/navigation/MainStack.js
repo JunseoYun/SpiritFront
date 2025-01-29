@@ -12,6 +12,7 @@ import CategoryListTabbar from './CategoryListTabbar';
 import RandomChoiceScreen from '../screens/RandomChoice/RandomChoiceScreen';
 import StoreStack from './StoreStack';
 import MyStack from './MyStack';
+import OAuthStack from './OAuthStack';
 
 const Stack = createStackNavigator();
 
@@ -55,7 +56,19 @@ export default function MainStack() {
       <Stack.Screen
         name="LocationSearchScreen"
         component={LocationSearchScreen}
-        options={{title: '주소 검색'}}
+        options={({navigation}) => ({
+          title: '주소 검색',
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{marginLeft: 13, paddingRight: 15}}
+              />
+            </Pressable>
+          ),
+        })}
       />
       <Stack.Screen
         name="CategoryListTabbar"
@@ -99,7 +112,19 @@ export default function MainStack() {
       <Stack.Screen
         name="StoreAddressSearch"
         component={StoreAddressSearch}
-        options={{title: '매장 주소 검색'}}
+        options={({navigation}) => ({
+          title: '매장 주소 검색',
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{marginLeft: 13, paddingRight: 15}}
+              />
+            </Pressable>
+          ),
+        })}
       />
       <Stack.Screen
         name="StoreAuthorityScreen"
@@ -121,6 +146,13 @@ export default function MainStack() {
       <Stack.Screen
         name="StoreStack"
         component={StoreStack}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="OAuthStack"
+        component={OAuthStack}
         options={{
           headerShown: false,
         }}
