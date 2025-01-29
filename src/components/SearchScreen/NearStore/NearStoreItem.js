@@ -11,7 +11,7 @@ const NearStoreItem = ({store, navigation}) => {
         navigation.navigate('StoreStack', {
           screen: 'StoreMainScreen',
           params: {
-            storeId: store.storeId,
+            storeId: store.id,
             innerlatitude: store.latitude,
             innerlongitude: store.longitude,
           },
@@ -19,14 +19,20 @@ const NearStoreItem = ({store, navigation}) => {
       }>
       <View style={styles.storeInfoView}>
         <View style={styles.backimageview}>
-          <ImageBackground
-            source={require('../../../assets/MainPagetodayimg.png')}
-            style={styles.backimage}
-            imageStyle={styles.backimagestyle}
-          />
+          {store.mainImgUrl ? (
+            <ImageBackground
+              source={{uri: store.mainImgUrl}}
+              style={styles.backimage}
+              imageStyle={styles.backimagestyle}
+            />
+          ) : (
+            <Text style={{color: 'black', textAlign: 'center'}}>
+              이미지 없음
+            </Text>
+          )}
         </View>
         <View style={styles.storeViewInfo}>
-          <Text style={styles.storMainInfo}>{store.storeName}</Text>
+          <Text style={styles.storMainInfo}>{store.name}</Text>
           <View style={styles.storeViewInfo}>
             <FontAwesomeIcon name="star" size={15} color="#FCC104" />
             <Text style={styles.storMainInfo}> {store.storeRate}</Text>

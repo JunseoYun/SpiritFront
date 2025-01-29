@@ -15,6 +15,7 @@ import InnerCategoryModal from '../../components/MainScreen/Category/InnerCatego
 import StoreRegister from '../../components/MainScreen/StoreRegister';
 import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
 import RecentStoreList from '../../components/MainScreen/RecentStore/RecentStoreList';
+import OptionsSection from '../../components/MainScreen/OptionSection';
 import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import {getWeatherData} from '../../api/weather';
@@ -256,16 +257,15 @@ const MainScreen = ({navigation}) => {
 
         <View
           onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
-          <RecentStoreList stores={recentStores || []} />
-        </View>
-
-        <View
-          onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
           <RecentStoreList
             refresh={isRefreshing} // MainScreen의 새로고침 상태 전달
             setRefresh={onRefresh} // MainScreen의 새로고침 함수 전달
           />
         </View>
+        <OptionsSection
+          storeactiveIndex={storeactiveIndex}
+          handlestoreItemClick={handlestoreItemClick}
+        />
         <AppInfo handleAgreeScreen={handleAgreeScreen} />
       </ScrollView>
     </SafeAreaView>

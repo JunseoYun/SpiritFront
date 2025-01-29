@@ -201,7 +201,7 @@ export const Store_getby_business_hours = async (page, latitude, longitude) => {
         page,
       },
     });
-    return response.data.data;
+    return response.data.data.content;
   } catch (error) {
     functionError(error);
   }

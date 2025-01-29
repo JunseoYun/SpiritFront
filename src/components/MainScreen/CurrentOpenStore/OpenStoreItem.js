@@ -4,8 +4,11 @@ import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 
 const OpenStoreItem = ({store, location, navigation}) => {
+  const {translateAlcohol} = useTranslateAlcohol();
+
   const calculateWalkingTime = distance => {
     const walkingSpeed = 80; // 평균 보행 속도 (m/min)
     return Math.ceil(distance / walkingSpeed); // 소수점 올림
@@ -23,8 +26,8 @@ const OpenStoreItem = ({store, location, navigation}) => {
             screen: 'StoreMainScreen',
             params: {
               storeId: store.id,
-              innerlatitude: location.latitude,
-              innerlongitude: location.longitude,
+              innerlatitude: store.locationDto.latitude,
+              innerlongitude: store.locationDto.longitude,
             },
           })
         }
