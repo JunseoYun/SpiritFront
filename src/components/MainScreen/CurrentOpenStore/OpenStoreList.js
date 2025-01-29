@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import OpenStoreItem from './OpenStoreItem';
-import {Store_getby_distance} from '../../../api/storeApi';
+import {Store_getby_business_hours} from '../../../api/storeApi';
 
 const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
   const [distancestores, setDistancestores] = useState([]);
@@ -20,7 +20,7 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
 
     if (location) {
       try {
-        const data = await Store_getby_distance(
+        const data = await Store_getby_business_hours(
           reset ? 0 : distancepage,
           location.latitude,
           location.longitude,

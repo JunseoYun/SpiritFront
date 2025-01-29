@@ -21,7 +21,6 @@ const RecentStoreList = ({refresh, setRefresh, navigation}) => {
 
     try {
       const data = await Store_getby_recent(reset ? 0 : page);
-      console.log(data);
       if (data && data.length > 0) {
         setStores(prevData => {
           const newData = reset ? data : [...prevData, ...data];

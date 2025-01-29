@@ -37,7 +37,6 @@ const SearchScreen = ({navigation}) => {
   const [searchStoreName, setSearchStoreName] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [stores, setStores] = useState([]);
   const [fastSearchStores, setfastSearchStores] = useState([]);
   const [error, setError] = useState(null);
 
@@ -49,27 +48,6 @@ const SearchScreen = ({navigation}) => {
     console.log(location);
     fetchLocation();
   }, []);
-
-  // useEffect(() => {
-  //   if (location) {
-  //     // 위치가 업데이트되면 매장 정보를 가져옵니다.
-  //     getStoreData();
-  //   } else {
-  //     console.log('getStoreData fail');
-  //   }
-  // }, [location]);
-
-  // //getByDistanceStore로 변경해야됨
-  // const getStoreData = async () => {
-  //   if (!location) return;
-  //   try {
-  //     const storesData = await getStore();
-  //     setStores(storesData);
-  //   } catch (error) {
-  //     console.error('데이터를 가져오는 중 오류 발생:', error);
-  //     setError(error);
-  //   }
-  // };
 
   useEffect(() => {
     if (selectedCategory && selectedPeople && selectedHour && selectedMinute) {
@@ -258,7 +236,7 @@ const SearchScreen = ({navigation}) => {
               onMinuteChange={changeMinute}
               onPressClose={onPressTimeModalClose}
             />
-            <NearStoreList stores={stores} navigation={navigation} />
+            <NearStoreList navigation={navigation} location={location} />
 
             {/* <BestStoreList storeNames={storeNames} /> */}
 
