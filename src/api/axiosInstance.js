@@ -92,20 +92,22 @@ axiosInstance.interceptors.response.use(
         if (refreshError.response?.status === 401) {
           const {logout} = getGlobalLogout();
           const showAlert = getGlobalShowAlert();
-          if (logout) {
-            showAlert({
-              title: '세션 만료',
-              message: '다시 로그인해주세요.',
-              onConfirm: async () => {
-                try {
-                  await logout(); // 로그아웃 비동기 호출
-                } catch (error) {}
-              },
-            });
-          }
-        }
 
-        return Promise.reject(refreshError);
+          if (logout) {
+            try {
+              await logout(); // 로그아웃 먼저 실행
+            } catch (error) {
+              console.error('로그아웃 실패:', error);
+            }
+          }
+
+          showAlert({
+            title: '세션 만료',
+            message: '다시 로그인해주세요.',
+          });
+
+          return Promise.reject(refreshError);
+        }
       }
     }
 
