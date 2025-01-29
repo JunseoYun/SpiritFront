@@ -1,12 +1,10 @@
 import React from 'react';
-import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
+import {View, Text, Pressable, Image, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
-
-const ResultItem = ({ store, navigation }) => {
-
-  const { translateCategory } = useCategoryTranslation();
+const ResultItem = ({store, navigation}) => {
+  const {translateCategory} = useCategoryTranslation();
 
   return (
     <Pressable
@@ -33,7 +31,7 @@ const ResultItem = ({ store, navigation }) => {
               style={styles.StoreTitle}
               numberOfLines={1}
               ellipsizeMode="tail">
-              {store.storeName}
+              {store.name}
             </Text>
             <View style={styles.StoreScore}>
               <FontAwesomeIcon name="star" size={15} color="#FCC104" />
@@ -49,7 +47,9 @@ const ResultItem = ({ store, navigation }) => {
 
           <View style={styles.StoreCategoryList}>
             {store.categories.slice(0, 3).map((category, index) => (
-              <Text key={index} style={styles.StoreCategory}>{translateCategory(category)}</Text>
+              <Text key={index} style={styles.StoreCategory}>
+                {translateCategory(category)}
+              </Text>
             ))}
           </View>
           <View style={styles.StoreAddressView}>
@@ -58,7 +58,8 @@ const ResultItem = ({ store, navigation }) => {
             </Text>
           </View>
           <Text style={styles.StoreClose}>
-            영업 종료 {store.closeHour.slice(0, 5)}
+            영업 종료{' '}
+            {store.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
           </Text>
         </View>
       </View>

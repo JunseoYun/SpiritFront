@@ -46,29 +46,30 @@ const SearchScreen = ({navigation}) => {
       const currentLocation = await getLocation(); // 캐시된 위치 가져오기
       setLocation(currentLocation);
     };
+    console.log(location);
     fetchLocation();
   }, []);
 
-  useEffect(() => {
-    if (location) {
-      // 위치가 업데이트되면 매장 정보를 가져옵니다.
-      getStoreData();
-    } else {
-      console.log('getStoreData fail');
-    }
-  }, [location]);
+  // useEffect(() => {
+  //   if (location) {
+  //     // 위치가 업데이트되면 매장 정보를 가져옵니다.
+  //     getStoreData();
+  //   } else {
+  //     console.log('getStoreData fail');
+  //   }
+  // }, [location]);
 
-  //getByDistanceStore로 변경해야됨
-  const getStoreData = async () => {
-    if (!location) return;
-    try {
-      const storesData = await getStore();
-      setStores(storesData);
-    } catch (error) {
-      console.error('데이터를 가져오는 중 오류 발생:', error);
-      setError(error);
-    }
-  };
+  // //getByDistanceStore로 변경해야됨
+  // const getStoreData = async () => {
+  //   if (!location) return;
+  //   try {
+  //     const storesData = await getStore();
+  //     setStores(storesData);
+  //   } catch (error) {
+  //     console.error('데이터를 가져오는 중 오류 발생:', error);
+  //     setError(error);
+  //   }
+  // };
 
   useEffect(() => {
     if (selectedCategory && selectedPeople && selectedHour && selectedMinute) {
@@ -126,9 +127,10 @@ const SearchScreen = ({navigation}) => {
     if (searchStoreName) {
       const trimmedSearchName = searchStoreName.trim();
       console.log(trimmedSearchName);
+      console.log(location);
       navigation.navigate('SearchResultScreen', {
         searchName: trimmedSearchName, // 검색어 전달
-        stores: stores, // 추가적으로 stores 데이터 전달 (필요한 경우)
+        location: location,
       });
     } else {
       alert('검색어를 입력하세요.');

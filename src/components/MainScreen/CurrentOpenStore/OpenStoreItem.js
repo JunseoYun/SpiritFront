@@ -30,29 +30,54 @@ const OpenStoreItem = ({store, location, navigation}) => {
         }
         style={styles.container}>
         <View style={styles.imageContainer}>
-          <ImageBackground
-            source={require('../../../assets/MainPagetodayimg.png')}
-            // source={
-            //   store.imgUrl
-            //     ? {uri: store.imgUrl} // URL이 있는 경우
-            //     : require('../../../assets/MainPagetodayimg.png') // URL이 없으면 로컬 이미지 사용
-            // }
-            style={styles.imageBackground}
-            imageStyle={styles.imageStyle}>
-            {isBreak ? (
-              <View style={styles.breakView}>
-                <Text style={styles.breakText}>주점 쉬는 중</Text>
-                <Text style={styles.breakText}> 15:00 ~ 17:00</Text>
-              </View>
-            ) : (
-              <View style={styles.overlay}>
-                <Text style={styles.overlayText}>
-                  {/* 영업종료 {store.closeHour.slice(0, 5)} */}
-                  영업 종료 18:00
-                </Text>
-              </View>
-            )}
-          </ImageBackground>
+          {store.mainImgUrl ? (
+            <ImageBackground
+              source={{uri: store.mainImgUrl}} // URL이 있는 경우
+              style={styles.imageBackground}
+              imageStyle={styles.imageStyle}>
+              {isBreak ? (
+                <View style={styles.breakView}>
+                  <Text style={styles.breakText}>주점 쉬는 중</Text>
+                  <Text style={styles.breakText}>
+                    {store.businessHoursDto?.breakStartTime?.slice(0, 5)} ~{' '}
+                    {store.businessHoursDto?.breakEndTime?.slice(0, 5)}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.overlay}>
+                  <Text style={styles.overlayText}>
+                    영업 종료 {store.businessHoursDto.closeTime.slice(0, 5)}
+                  </Text>
+                </View>
+              )}
+            </ImageBackground>
+          ) : (
+            <View style={styles.imageBackground}>
+              <Text
+                style={{
+                  color: 'black',
+                  textAlign: 'center',
+                  paddingBottom: 30,
+                }}>
+                이미지 없음
+              </Text>
+              {isBreak ? (
+                <View style={styles.breakView}>
+                  <Text style={styles.breakText}>주점 쉬는 중</Text>
+                  <Text style={styles.breakText}>
+                    {store.businessHoursDto?.breakStartTime?.slice(0, 5)} ~{' '}
+                    {store.businessHoursDto?.breakEndTime?.slice(0, 5)}
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.overlay}>
+                  <Text style={styles.overlayText}>
+                    영업 종료 {store.businessHoursDto.closeTime.slice(0, 5)}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
         </View>
         <View style={styles.infoContainer}>
           <Text style={styles.storeName} numberOfLines={1} ellipsizeMode="tail">
@@ -70,13 +95,28 @@ const OpenStoreItem = ({store, location, navigation}) => {
             )}
           </View>
           <Text style={styles.menuTag} numberOfLines={2} ellipsizeMode="tail">
-            #대표메뉴
+            {store.menuList && store.menuList.length > 0
+              ? store.menuList
+                  .map(
+                    menu => `${menu.name}`, // 메뉴 항목 형식화
+                  )
+                  .join('  ') // 항목 간 간격 추가
+              : '메뉴가 없습니다.'}
           </Text>
           <Text
             style={styles.alcoholTag}
             numberOfLines={2}
             ellipsizeMode="tail">
-            소주 5000원 맥주 7000원
+            {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
+              ? store.mainDrinkDtos
+                  .map(
+                    drink =>
+                      `${translateAlcohol(
+                        drink.type,
+                      )} ${drink.price.toLocaleString()}원`,
+                  )
+                  .join('  ')
+              : '메인주류가 없습니다.'}
           </Text>
         </View>
       </Pressable>
