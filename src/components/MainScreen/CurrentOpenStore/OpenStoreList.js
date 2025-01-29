@@ -1,8 +1,71 @@
-import React from 'react';
-import {ScrollView, StyleSheet, View, Text} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {
+  FlatList,
+  StyleSheet,
+  View,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 import OpenStoreItem from './OpenStoreItem';
+import {Store_getby_distance} from '../../../api/storeApi';
 
-const OpenStoreList = ({stores, location, navigation}) => {
+const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
+  const [distancestores, setDistancestores] = useState([]);
+  const [distancepage, setDistancepage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const fetchdistanceStores = async (reset = false) => {
+    setLoading(true);
+
+    if (location) {
+      try {
+        const data = await Store_getby_distance(
+          reset ? 0 : distancepage,
+          location.latitude,
+          location.longitude,
+        );
+
+        if (data && data.length > 0) {
+          setDistancestores(prevData => {
+            const newData = reset ? data : [...prevData, ...data];
+            const uniqueData = newData.filter(
+              (item, index, self) =>
+                index === self.findIndex(existing => existing.id === item.id),
+            );
+            return uniqueData;
+          });
+          setDistancepage(reset ? 0 : prevPage => prevPage + 1);
+          setHasMore(true); // 데이터가 있으면 계속 로드 가능
+        } else {
+          setHasMore(false); // 더 이상 데이터가 없으면 false로 설정
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (location) {
+      fetchdistanceStores(true);
+    }
+    if (refresh) {
+      setDistancestores([]); // distancestores 초기화
+      fetchdistanceStores(true); // 새로고침 데이터 로드
+      setHasMore(true);
+      setRefresh(false);
+    }
+  }, [location, refresh]);
+
+  const renderStoreItem = ({item}) => (
+    <View style={styles.storeContainer}>
+      <OpenStoreItem store={item} location={location} navigation={navigation} />
+    </View>
+  );
+
   return (
     <View>
       <View style={styles.todayPhrasesView}>
@@ -11,20 +74,31 @@ const OpenStoreList = ({stores, location, navigation}) => {
           현재 위치에서 내 근처 영업 중인 주점을 알려드려요
         </Text>
       </View>
-      <ScrollView
+
+      <FlatList
+        data={distancestores}
+        renderItem={renderStoreItem}
+        keyExtractor={(item, index) => `${item.id}-${index}`} // 고유 키 생성
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollViewContent}>
-        {stores?.map((store, index) => (
-          <View key={index} style={styles.storeContainer}>
-            <OpenStoreItem
-              store={store}
-              location={location}
-              navigation={navigation}
-            />
-          </View>
-        ))}
-      </ScrollView>
+        contentContainerStyle={styles.scrollViewContent}
+        onEndReached={() => {
+          if (hasMore) {
+            fetchdistanceStores();
+          }
+        }}
+        onEndReachedThreshold={0.5} // 스크롤 임계값 조정
+        ListFooterComponent={
+          loading ? (
+            <View style={styles.footer}>
+              <Text style={styles.emptyText}>Loading...</Text>
+            </View>
+          ) : null
+        }
+        ListEmptyComponent={
+          !loading ? <Text style={styles.emptyText}>가게가 없어요</Text> : null
+        }
+      />
     </View>
   );
 };
@@ -32,7 +106,8 @@ const OpenStoreList = ({stores, location, navigation}) => {
 const styles = StyleSheet.create({
   scrollViewContent: {
     paddingHorizontal: 10,
-    alignItems: 'center', // 아이템 가운데 정렬
+    alignItems: 'center',
+    paddingBottom: 20,
   },
   todayPhrasesView: {
     marginTop: 10,
@@ -52,7 +127,18 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   storeContainer: {
-    marginHorizontal: 3, // 아이템 간의 간격
+    marginHorizontal: 3,
+  },
+  footer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 

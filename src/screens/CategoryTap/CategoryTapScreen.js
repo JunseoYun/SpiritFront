@@ -37,7 +37,7 @@ const CategoryTapScreen = ({navigation, route}) => {
 
       if (reset) {
         setStores(data); // 초기화 시 새 데이터를 설정
-        setPage(1); // 페이지 초기화
+        setPage(0); // 페이지 초기화
         setIsEnd(data.length === 0); // 데이터 끝 상태 설정
       } else if (data.length === 0) {
         setIsEnd(true); // 추가 데이터가 없을 경우

@@ -92,7 +92,7 @@ export const Store_getby_recent = async page => {
         page, // page 값만 전달 초기 : 0
       },
     });
-    return response.data.data;
+    return response.data.data.content;
   } catch (error) {
     functionError(error);
   }
@@ -145,7 +145,7 @@ export const Store_getby_keyword = async (
         },
       },
     );
-    return response.data.data;
+    return response.data.data.content;
   } catch (error) {
     functionError(error);
   }
@@ -156,12 +156,12 @@ export const Store_getby_distance = async (page, latitude, longitude) => {
   try {
     const response = await axiosInstance.get(`/store/get-by/distance`, {
       params: {
-        longitude,
-        latitude,
         page,
+        latitude,
+        longitude,
       },
     });
-    return response.data.data;
+    return response.data.data.content;
   } catch (error) {
     functionError(error);
   }

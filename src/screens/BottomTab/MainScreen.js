@@ -15,12 +15,10 @@ import InnerCategoryModal from '../../components/MainScreen/Category/InnerCatego
 import StoreRegister from '../../components/MainScreen/StoreRegister';
 import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
 import RecentStoreList from '../../components/MainScreen/RecentStore/RecentStoreList';
-import OptionsSection from '../../components/MainScreen/OptionSection';
-import AppInfo from '../../components/MainScreen/\bAppInfo';
+import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import {getWeatherData} from '../../api/weather';
 import useRecommendation from '../../hooks/useRecommendation';
-import {getByCategoryStore, getStore} from '../../api/storeApi';
 
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
@@ -61,15 +59,6 @@ const MainScreen = ({navigation}) => {
           );
           setRecommCategory(category);
           setRecommReason(reason);
-
-          const storesData = await getStore(); //현재 영업 중인 주점 변경
-          setStores(storesData);
-
-          const recommStoresData = await getByCategoryStore(
-            category,
-            currentLocation,
-          );
-          setRecommStores(recommStoresData);
         }
         const currentAddress = await getAddress();
         if (currentAddress) {
@@ -254,12 +243,12 @@ const MainScreen = ({navigation}) => {
         />
 
         {/* 현재 영업 중 주점 데이터 필요 */}
-        <OpenStoreList
-          stores={stores}
+        <OpenStoreList // 상위에서 내려온 데이터
           location={location}
           navigation={navigation}
+          refresh={isRefreshing} // MainScreen의 새로고침 상태 전달
+          setRefresh={onRefresh}
         />
-
         {/* 실시간 인기 주점 데이터 필요 */}
         {/* <View onLayout={event => (liveHotRef.current = event.nativeEvent.layout)}>
         <LivehotStoreList stores={liveHotStores || []} />
@@ -270,10 +259,13 @@ const MainScreen = ({navigation}) => {
           <RecentStoreList stores={recentStores || []} />
         </View>
 
-        <OptionsSection
-          storeactiveIndex={storeactiveIndex}
-          handlestoreItemClick={handlestoreItemClick}
-        />
+        <View
+          onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
+          <RecentStoreList
+            refresh={isRefreshing} // MainScreen의 새로고침 상태 전달
+            setRefresh={onRefresh} // MainScreen의 새로고침 함수 전달
+          />
+        </View>
         <AppInfo handleAgreeScreen={handleAgreeScreen} />
       </ScrollView>
     </SafeAreaView>

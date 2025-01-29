@@ -6,19 +6,23 @@ const RecentStoreItem = ({store}) => {
   return (
     <Pressable style={styles.recentView}>
       {/* 이미지 */}
-      <Image
-        source={require('../../../assets/jangan.png')}
-        style={styles.recentimg}
-      />
+      {store.mainImgUrl ? (
+        <Image source={{uri: store.mainImgUrl}} style={styles.recentimg} />
+      ) : (
+        <View style={styles.storeImagetext}>
+          <Text style={{color: 'white', textAlign: 'center'}}>이미지 없음</Text>
+        </View>
+      )}
       {/* 매장 정보 */}
       <View style={styles.infoContainer}>
-        <Text style={styles.storeName}>{store.storeName}</Text>
+        <Text style={styles.storeName}>{store.name}</Text>
         <View style={styles.ratingContainer}>
           <Ionicons name="star" size={14} color="#FFD700" />
-          <Text style={styles.ratingText}>3.7</Text>
+          <Text style={styles.ratingText}>{store.storeRate}</Text>
         </View>
         <Text style={styles.closingTime}>
-          영업 종료 {store.closeHour.slice(0, 5)}
+          영업 종료{' '}
+          {store.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
         </Text>
       </View>
     </Pressable>
@@ -36,6 +40,14 @@ const styles = StyleSheet.create({
     height: 100,
     resizeMode: 'cover',
     borderRadius: 10,
+  },
+  storeImagetext: {
+    width: '100%',
+    height: 100,
+    borderRadius: 10,
+    justifyContent: 'center', // 수직 중앙 정렬
+    alignItems: 'center',
+    backgroundColor: 'black',
   },
   infoContainer: {
     marginTop: 8,
