@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -10,18 +10,27 @@ import {
   TextInput,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { saveLocationAddress, getAddress, getLocation, clearLocationStorage } from '../../storage/locationStorage';
-
+import {
+  saveLocationAddress,
+  getAddress,
+  getLocation,
+  clearLocationStorage,
+} from '../../storage/locationStorage';
 
 import Feather from 'react-native-vector-icons/Feather';
 
-import { fetchLocationAddress, requestLocationPermission } from '../../hooks/useLocation';
+import {
+  fetchLocationAddress,
+  requestLocationPermission,
+} from '../../hooks/useLocation';
+import useCustomAlert from '../../hooks/useCustomAlert';
 
-const SetLocationScreen = ({ navigation, route }) => {
-  const [address, setAddress] = useState('');
-  const [location, setLocation] = useState(null);
+const SetLocationScreen = ({navigation, route}) => {
+  const [currentAddress, setcurrentAddress] = useState('');
+  const [currentLocation, setcurrentLocation] = useState(null);
   const [selectAddress, setSelectAddress] = useState('');
   const [selectLocation, setSelectLocation] = useState(null);
+  const {showAlert, AlertComponent} = useCustomAlert();
 
   // 이전 화면에서 전달된 데이터를 처리
   useEffect(() => {
@@ -29,11 +38,11 @@ const SetLocationScreen = ({ navigation, route }) => {
       try {
         const storageLocation = await getLocation();
         if (storageLocation) {
-          setLocation(storageLocation);
+          setcurrentLocation(storageLocation);
         }
         const storageAddress = await getAddress();
         if (storageAddress) {
-          setAddress(storageAddress);
+          setcurrentAddress(storageAddress);
         }
       } catch (error) {
         console.log(error);
@@ -51,19 +60,42 @@ const SetLocationScreen = ({ navigation, route }) => {
   }, [route.params]);
 
   const searchAddressHandle = () => {
-    navigation.navigate('LocationSearchScreen');
+    navigation.navigate('LocationSearchScreen', {
+      onAddressSelect,
+    });
+  };
+
+  const onAddressSelect = ({address, coords}) => {
+    setSelectAddress(address);
+    setSelectLocation(coords);
   };
 
   const saveLocationHandle = async () => {
+    if (currentLocation === selectLocation) {
+      showAlert({
+        title: '이전에 설정한 위치와 같습니다.',
+      });
+      return;
+    }
     try {
       if (selectLocation && selectAddress) {
-        const newLocationAddress = await saveLocationAddress(selectLocation, selectAddress);
+        const newLocationAddress = await saveLocationAddress(
+          selectLocation,
+          selectAddress,
+        );
         if (newLocationAddress) {
-          setLocation(newLocationAddress.location);
-          setAddress(newLocationAddress.address);
+          setcurrentLocation(newLocationAddress.location);
+          setcurrentAddress(newLocationAddress.address);
+          showAlert({
+            title: '주소 설정이 완료 되었습니다.',
+          });
+          setSelectAddress(null);
+          setSelectLocation(null);
         }
       } else {
-        Alert.alert('주소를 선택해주세요.');
+        showAlert({
+          title: '주소를 선택해주세요.',
+        });
       }
     } catch (error) {
       console.log(error);
@@ -71,16 +103,18 @@ const SetLocationScreen = ({ navigation, route }) => {
   };
 
   const clearLocationHandle = async () => {
-    if (address === '강남대학교') {
+    if (currentAddress === '강남대학교') {
       Alert.alert('현재 기본 주소입니다.');
     } else {
       try {
         const newLocationAddress = await clearLocationStorage();
         if (newLocationAddress) {
-          setLocation(newLocationAddress.fixedLocation);
-          setAddress(newLocationAddress.fixedAddress);
+          setcurrentLocation(newLocationAddress.fixedLocation);
+          setcurrentAddress(newLocationAddress.fixedAddress);
 
-          Alert.alert('저장된 주소가 삭제되었습니다.');
+          showAlert({
+            title: '저장된 주소가 삭제되었습니다.',
+          });
         }
       } catch (error) {
         console.log(error);
@@ -95,11 +129,10 @@ const SetLocationScreen = ({ navigation, route }) => {
       return;
     }
     try {
-      const { location, address } = await fetchLocationAddress();
+      const {location, address} = await fetchLocationAddress();
+
       setSelectLocation(location);
       setSelectAddress(address);
-      console.log('현재 위치:', location);
-      console.log('현재 주소:', address);
     } catch (error) {
       console.error('위치 데이터를 가져오는 중 오류:', error);
     }
@@ -119,11 +152,11 @@ const SetLocationScreen = ({ navigation, route }) => {
           <Ionicons name="location-outline" size={25} color="#333" />
           <View style={styles.infoBoxText}>
             <Text style={styles.label}>현재 주소</Text>
-            <Text style={styles.infoText}>{address || '저장된 주소가 없습니다.'}</Text>
+            <Text style={styles.infoText}>
+              {currentAddress || '저장된 주소가 없습니다.'}
+            </Text>
           </View>
-
         </View>
-
 
         <View style={styles.infoBox}>
           <Ionicons
@@ -132,31 +165,42 @@ const SetLocationScreen = ({ navigation, route }) => {
             color={selectAddress ? '#16BBFF' : '#999'}
           />
           <View style={styles.infoBoxText}>
-            <Text style={selectAddress ? styles.currentLabel : styles.label}>선택 주소</Text>
+            <Text style={selectAddress ? styles.currentLabel : styles.label}>
+              선택 주소
+            </Text>
             <Text style={styles.infoText}>
               {selectAddress || '선택된 주소가 없습니다.'}
             </Text>
-
           </View>
-
         </View>
 
-        <Pressable onPress={handleGetCurrentLocation} style={styles.selectButton}>
+        <Pressable
+          onPress={handleGetCurrentLocation}
+          style={styles.selectButton}>
           <Feather
-            name="crosshair" size={25} color="#444" style={styles.selectButtonIcon}/>
-          <Text style={[styles.buttonText, styles.selectButtonText]}>현재 위치로 선택</Text>
+            name="crosshair"
+            size={25}
+            color="#444"
+            style={styles.selectButtonIcon}
+          />
+          <Text style={[styles.buttonText, styles.selectButtonText]}>
+            현재 위치로 선택
+          </Text>
         </Pressable>
 
         <Pressable onPress={saveLocationHandle} style={styles.button}>
           <Text style={styles.buttonText}>선택된 주소로 위치 설정하기</Text>
         </Pressable>
 
-
-
-        <Pressable onPress={clearLocationHandle} style={[styles.button, styles.clearButton]}>
-          <Text style={[styles.buttonText, styles.clearButtonText]}>현재 주소 삭제</Text>
+        <Pressable
+          onPress={clearLocationHandle}
+          style={[styles.button, styles.clearButton]}>
+          <Text style={[styles.buttonText, styles.clearButtonText]}>
+            현재 주소 삭제
+          </Text>
         </Pressable>
       </ScrollView>
+      <AlertComponent />
     </SafeAreaView>
   );
 };
@@ -195,17 +239,16 @@ const styles = StyleSheet.create({
     borderWidth: 1, // 테두리 두께
     borderColor: '#999',
     justifyContent: 'center',
-
   },
   selectButtonIcon: {
     marginRight: 8, // 아이콘과 텍스트 간격
   },
   selectButtonText: {
-    color: '#444', 
+    color: '#444',
     fontSize: 16,
     fontWeight: '600',
   },
-  
+
   button: {
     backgroundColor: '#16BBFF',
     padding: 16,
@@ -231,7 +274,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
     marginVertical: 8,
-    elevation: 2,
   },
   infoBoxText: {
     padding: 10,
@@ -256,7 +298,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#16BBFF',
-  }
+  },
 });
 
 export default SetLocationScreen;

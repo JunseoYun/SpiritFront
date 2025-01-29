@@ -7,7 +7,11 @@ const CFImage = ({imageUrl, onPress}) => {
     <View style={styles.container}>
       <Pressable style={styles.imageContainer} onPress={onPress}>
         <Image
-          source={imageUrl ? {uri: imageUrl} : require('../../assets/kim.png')}
+          source={
+            imageUrl
+              ? {uri: imageUrl}
+              : require('../../assets/default_profile.png')
+          }
           style={styles.image}
         />
         <View style={styles.cameraButton}>

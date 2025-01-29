@@ -1,227 +1,305 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  StyleSheet,
-  Image,
-  ScrollView,
-} from 'react-native';
-import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
-import useDayTranslation from '../../hooks/useDayTranslation';
-import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
+import UpdateStoreImage from '../UpdateBottomSheet/UpdateStoreImage';
+import UpdateStoreName from '../UpdateBottomSheet/UpdateStoreName';
+import UpdateStoreCategory from '../UpdateBottomSheet/UpdateStoreCategory';
+import UpdateStoreDrink from '../UpdateBottomSheet/UpdateStoreDrink';
+import UpdateStoreLocation from '../UpdateBottomSheet/UpdateStoreLocation';
+import UpdateStoreOperatingTime from '../UpdateBottomSheet/UpdateStoreOperatingTime';
+import UpdateStoreBreakingTime from '../UpdateBottomSheet/UpdateStoreBreakingTime';
+import UpdateStoreClosedDays from '../UpdateBottomSheet/UpdateStoreClosedDays';
+import UpdateStoreTV from '../UpdateBottomSheet/UpdateStoreTV';
+import UpdateStoreGroup from '../UpdateBottomSheet/UpdateStoreGroup';
+import UpdateStoreContact from '../UpdateBottomSheet/UpdateStoreContact';
+import UpdateStoreDescription from '../UpdateBottomSheet/UpdateStoreDescription';
 
 const UpdateBottomSheet = ({
   updatedKey,
   updatedValue,
   setUpdatedValue,
   handleUpdate,
+  handleBottomClose,
+  navigation,
 }) => {
-  const {translateCategory} = useCategoryTranslation();
-  const {translateAlcohol} = useTranslateAlcohol();
-  const {translateDays} = useDayTranslation();
+  const renderContent = () => {
+    switch (updatedKey) {
+      case 'images':
+        return renderImages();
+      case 'name':
+        return renderName();
+      case 'categories':
+        return renderCategories();
+      case 'mainDrinkDtos':
+        return renderMainDrinks();
+      case 'locationDto':
+        return renderLocation();
+      case 'operatingTime':
+        return renderOperatingTime();
+      case 'breakingTime':
+        return renderBreakingTime();
+      case 'closedDays':
+        return renderClosedDays();
+      case 'hasScreen':
+        return renderHasScreen();
+      case 'isGroupAvailable':
+        return renderGroupAvailability();
+      case 'contact':
+        return renderContact();
+      case 'description':
+        return renderDescription();
+      default:
+        return null;
+    }
+  };
 
-  return (
-    <>
-      {updatedKey === 'images' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-          {updatedValue && updatedValue.length > 0 ? (
-            <ScrollView
-              horizontal={true} // 가로 스크롤 활성화
-              showsHorizontalScrollIndicator={false} // 스크롤바 표시 여부
-              contentContainerStyle={styles.horizontalScrollContainer}>
-              {updatedValue.map((image, index) => (
-                <View key={index} style={styles.imageWrapper}>
-                  <Image
-                    source={{uri: image.imageUrl}}
-                    style={styles.image}
-                    resizeMode="cover"
-                  />
-                </View>
-              ))}
-            </ScrollView>
-          ) : (
-            <Text>이미지 없음</Text>
-          )}
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-
-      {updatedKey === 'name' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-          <TextInput
-            style={styles.input}
-            defaultValue={updatedValue}
-            onChangeText={text => setUpdatedValue(text)}
-          />
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-
-      {updatedKey === 'category' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-          {Array.isArray(updatedValue) &&
-            updatedValue.map((category, index) => (
-              <Text key={index} style={styles.subtitle}>
-                {translateCategory(category)}
-              </Text>
-            ))}
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-
-      {updatedKey === 'drink' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-          {updatedValue && updatedValue.length > 0 ? (
-            updatedValue.map((drink, index) => (
-              <Text
-                key={index}
-                style={[
-                  styles.subtitle,
-                  {color: '#333', marginBottom: 5, marginRight: 7},
-                ]}>
-                {translateAlcohol(drink.type)} {drink.price.toLocaleString()}원
-              </Text>
-            ))
-          ) : (
-            <Text style={[styles.subtitle, {color: '#333'}]}>
-              대표 주종 미설정
-            </Text>
-          )}
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-
-      {updatedKey === 'address' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-          <Text style={styles.subtitle}>
-            {updatedValue.address}, {updatedValue.addressDetail}
-          </Text>
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-
-      {updatedKey === 'operatingTime' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-
-          <Text style={styles.Storesubtitle}>
-            {updatedValue.openTime}, {updatedValue.closeTime}
-          </Text>
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-      {updatedKey === 'breakingTime' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-          {updatedValue.breakStartTime ? (
-            <Text style={styles.Storesubtitle}>
-              {updatedValue.breakStartTime}, {updatedValue.breakEndTime}
-            </Text>
-          ) : (
-            <Text>브레이크 타임 미설정</Text>
-          )}
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-
-      {updatedKey === 'closedDays' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-          {updatedValue ? (
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={styles.infoHidetext}>매주 </Text>
-              <Text style={styles.closetext}>
-                {translateDays(updatedValue)}
-              </Text>
-              <Text style={styles.closetext}> 휴무</Text>
-            </View>
-          ) : (
-            <Text style={styles.infoHidetext}>휴무일 없음</Text>
-          )}
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-
-      {updatedKey === 'hasScreen' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-          {updatedValue ? (
-            <Text style={styles.infoHidetext}>매장 내 스크린(TV) 설치</Text>
-          ) : (
-            <Text style={styles.infoHidetext}>매장 내 스크린(TV) 미설치</Text>
-          )}
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-
-      {updatedKey === 'isGroupAvailable' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-          {updatedValue ? (
-            <Text style={styles.infoHidetext}>10인 이상 가능</Text>
-          ) : (
-            <Text style={styles.infoHidetext}>10인 이상 불가능</Text>
-          )}
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-      {updatedKey === 'contact' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-          <TextInput
-            style={styles.input}
-            defaultValue={updatedValue}
-            onChangeText={text => setUpdatedValue(text)}
-          />
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-
-      {updatedKey === 'description' && (
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.title}>Editing {updatedKey}</Text>
-          <TextInput
-            multiline
-            style={styles.input}
-            defaultValue={updatedValue}
-            onChangeText={text => setUpdatedValue(text)}
-          />
-          <Button title="Save" onPress={() => handleUpdate()} />
-        </View>
-      )}
-    </>
+  const renderImages = () => (
+    <UpdateStoreImage
+      images={updatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+    />
   );
+
+  const renderName = () => (
+    <UpdateStoreName
+      updatedValue={updatedValue}
+      setUpdatedValue={setUpdatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+    />
+  );
+
+  const renderCategories = () => (
+    <UpdateStoreCategory
+      innerCategories={innerCategories}
+      updatedValue={updatedValue}
+      setUpdatedValue={setUpdatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+    />
+  );
+
+  const renderMainDrinks = () => (
+    <UpdateStoreDrink
+      alcohols={alcohols}
+      updatedValue={updatedValue}
+      setUpdatedValue={setUpdatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+    />
+  );
+
+  const renderLocation = () => (
+    <UpdateStoreLocation
+      updatedValue={updatedValue}
+      setUpdatedValue={setUpdatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+      navigation={navigation}
+    />
+  );
+
+  const renderOperatingTime = () => (
+    <UpdateStoreOperatingTime
+      hours={hours}
+      minutes={minutes}
+      updatedValue={updatedValue}
+      setUpdatedValue={setUpdatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+    />
+  );
+
+  const renderBreakingTime = () => (
+    <UpdateStoreBreakingTime
+      hours={hours}
+      minutes={minutes}
+      updatedValue={updatedValue}
+      setUpdatedValue={setUpdatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+    />
+  );
+
+  const renderClosedDays = () => (
+    <UpdateStoreClosedDays
+      days={days}
+      updatedValue={updatedValue}
+      setUpdatedValue={setUpdatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+    />
+  );
+
+  const renderHasScreen = () => (
+    <UpdateStoreTV
+      updatedValue={updatedValue}
+      setUpdatedValue={setUpdatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+    />
+  );
+
+  const renderGroupAvailability = () => (
+    <UpdateStoreGroup
+      updatedValue={updatedValue}
+      setUpdatedValue={setUpdatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+    />
+  );
+
+  const renderContact = () => (
+    <UpdateStoreContact
+      updatedValue={updatedValue}
+      setUpdatedValue={setUpdatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+    />
+  );
+
+  const renderDescription = () => (
+    <UpdateStoreDescription
+      updatedValue={updatedValue}
+      setUpdatedValue={setUpdatedValue}
+      onCancel={handleBottomClose}
+      onSave={handleUpdate}
+    />
+  );
+
+  return <>{renderContent()}</>;
 };
 
-const styles = StyleSheet.create({
-  bottomSheetContent: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#F0F0F0',
+const hours = Array.from({length: 24}, (_, i) => i.toString().padStart(2, '0'));
+
+const minutes = ['00', '15', '30', '45'];
+
+const innerCategories = [
+  {
+    source: require('../../assets/free-icon-barbecue-4039250.png'),
+    text: '이자카야',
+    value: 'IZAKAYA',
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  {
+    source: require('../../assets/free-icon-soju-5789309.png'),
+    text: '한식주점',
+    value: 'KOREAN',
   },
-  horizontalScrollContainer: {
-    flexDirection: 'row',
+  {
+    source: require('../../assets/free-icon-pizza-3595458.png'),
+    text: '양식주점',
+    value: 'WESTERN',
   },
-  imageWrapper: {
-    marginRight: 10, // 이미지 간격
+  {
+    source: require('../../assets/free-icon-dumplings-6560368.png'),
+    text: '중화주점',
+    value: 'CHINESE',
   },
-  image: {
-    width: 100, // 이미지 가로 크기
-    height: 100, // 이미지 세로 크기
-    borderRadius: 10,
+  {
+    source: require('../../assets/bar-counter_3822705.png'),
+    text: '감성주점',
+    value: 'GAMSEONG',
   },
-});
+  {
+    source: require('../../assets/free-icon-jokbal-8740559.png'),
+    text: '족발 보쌈',
+    value: 'JOGBO',
+  },
+  {
+    source: require('../../assets/free-icon-soup-12404665.png'),
+    text: '찜 찌개',
+    value: 'STEW',
+  },
+  {
+    source: require('../../assets/free-icon-barbecue-4039250.png'),
+    text: '구이 탕',
+    value: 'GRILLED',
+  },
+  {
+    source: require('../../assets/free-icon-roast-chicken-2137000.png'),
+    text: '치킨',
+    value: 'CHICKEN',
+  },
+  {
+    source: require('../../assets/mayonnaise_3376991.png'),
+    text: '전 막걸리',
+    value: 'JEONMAK',
+  },
+  {
+    source: require('../../assets/free-icon-squid-12752294.png'),
+    text: '마른안주',
+    value: 'DRIED',
+  },
+  {
+    source: require('../../assets/free-icon-steamed-fish-2885062.png'),
+    text: '해산물',
+    value: 'SEAFOOD',
+  },
+  {
+    source: require('../../assets/free-icon-folder-3370758.png'),
+    text: '룸',
+    value: 'ROOM',
+  },
+  {
+    source: require('../../assets/free-icon-disco-ball-3935116.png'),
+    text: '단체 행사',
+    value: 'GROUP',
+  },
+  {
+    source: require('../../assets/beers_2302167.png'),
+    text: '야장',
+    value: 'OUTDOOR',
+  },
+  {
+    source: require('../../assets/free-icon-stall-food-6734735.png'),
+    text: '포차',
+    value: 'POCHA',
+  },
+  {
+    source: require('../../assets/free-icon-beer-1887156.png'),
+    text: '호프',
+    value: 'HOF',
+  },
+  {
+    source: require('../../assets/free-icon-wine-6454589.png'),
+    text: '와인바',
+    value: 'WINE',
+  },
+  {
+    source: require('../../assets/free-icon-cocktail-3086535.png'),
+    text: '칵테일',
+    value: 'COCKTAIL',
+  },
+  {
+    source: require('../../assets/free-icon-bar-counter-4507564.png'),
+    text: '펍 바',
+    value: 'PUBBAR',
+  },
+];
+
+const alcohols = [
+  {label: '소주', value: 'SOJU'},
+  {label: '맥주', value: 'BEER'},
+  {label: '막걸리', value: 'MAKGEOLLI'},
+  {label: '와인', value: 'WINE'},
+  {label: '칵테일', value: 'COCKTAIL'},
+  {label: '사케', value: 'SAKE'},
+  {label: '고량주', value: 'KAOLIANG'},
+  {label: '위스키', value: 'WHISKEY'},
+  {label: '보드카', value: 'VODKA'},
+  {label: '진', value: 'GIN'},
+  {label: '럼', value: 'RUM'},
+  {label: '데킬라', value: 'TEQUILA'},
+];
+
+const days = [
+  {label: '월', value: 'MONDAY'},
+  {label: '화', value: 'TUESDAY'},
+  {label: '수', value: 'WEDNESDAY'},
+  {label: '목', value: 'THURSDAY'},
+  {label: '금', value: 'FRIDAY'},
+  {label: '토', value: 'SATURDAY'},
+  {label: '일', value: 'SUNDAY'},
+  {label: '없음', value: null},
+];
 
 export default UpdateBottomSheet;

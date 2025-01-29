@@ -118,7 +118,7 @@ const StoreMainInfo = ({
           style={styles.Storesubtitleview}
           onPress={
             isUpdate
-              ? () => handleEdit('category', storedata?.categories)
+              ? () => handleEdit('categories', storedata?.categories)
               : null
           }>
           {Array.isArray(storedata?.categories) &&
@@ -152,7 +152,9 @@ const StoreMainInfo = ({
       <TouchableOpacity
         style={styles.timeview}
         onPress={
-          isUpdate ? () => handleEdit('drink', storedata?.mainDrinkDtos) : null
+          isUpdate
+            ? () => handleEdit('mainDrinkDtos', storedata?.mainDrinkDtos)
+            : null
         }>
         {storedata?.mainDrinkDtos && storedata.mainDrinkDtos.length > 0 ? (
           storedata.mainDrinkDtos.map((drink, index) => (
@@ -222,9 +224,11 @@ const StoreMainInfo = ({
             onPress={
               isUpdate
                 ? () =>
-                    handleEdit('address', {
+                    handleEdit('locationDto', {
                       address: storedata?.locationDto?.address,
                       addressDetail: storedata?.locationDto?.addressDetail,
+                      latitude: storedata?.locationDto?.latitude,
+                      longitude: storedata?.locationDto?.longitude,
                     })
                 : null
             }>
@@ -247,6 +251,9 @@ const StoreMainInfo = ({
                     handleEdit('operatingTime', {
                       openTime: storedata?.businessHoursDto?.openTime,
                       closeTime: storedata?.businessHoursDto?.closeTime,
+                      breakStartTime:
+                        storedata?.businessHoursDto?.breakStartTime,
+                      breakEndTime: storedata?.businessHoursDto?.breakEndTime,
                     })
                 : null
             }>
@@ -263,6 +270,8 @@ const StoreMainInfo = ({
               isUpdate
                 ? () =>
                     handleEdit('breakingTime', {
+                      openTime: storedata?.businessHoursDto?.openTime,
+                      closeTime: storedata?.businessHoursDto?.closeTime,
                       breakStartTime:
                         storedata?.businessHoursDto?.breakStartTime,
                       breakEndTime: storedata?.businessHoursDto?.breakEndTime,
@@ -278,7 +287,9 @@ const StoreMainInfo = ({
                 (브레이크타임)
               </Text>
             ) : (
-              <Text style={styles.infoHidetext}>미설정 (브레이크타임)</Text>
+              <Text style={styles.infoHidetext}>
+                미설정, 없음 (브레이크타임)
+              </Text>
             )}
           </TouchableOpacity>
 
@@ -291,7 +302,7 @@ const StoreMainInfo = ({
             }>
             <AntDesign name="calendar" size={20} color="#333" />
 
-            {storedata?.closedDays ? (
+            {storedata?.closedDays && storedata?.closedDays.length > 0 ? (
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Text style={styles.infoHidetext}>매주 </Text>
                 <Text style={styles.closetext}>

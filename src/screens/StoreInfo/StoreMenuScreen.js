@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {Alert, SafeAreaView, StyleSheet} from 'react-native';
 import MenuHeader from '../../components/StoreMenuScreen/MenuHeader';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
 import MenuModal from '../../components/StoreMenuScreen/MenuModal';
-import { StoreMenudelete } from '../../api/menuApi';
+import {StoreMenudelete} from '../../api/menuApi';
 
-const StoreMenuScreen = ({ navigation, storeId, menus  }) => {
-  const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
+const StoreMenuScreen = ({navigation, storeId, menus}) => {
+  const [buttonPosition, setButtonPosition] = useState({x: 0, y: 0});
   const [isExpanded, setIsExpanded] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedMenuId, setSelectedMenuId] = useState(null);
@@ -17,7 +17,6 @@ const StoreMenuScreen = ({ navigation, storeId, menus  }) => {
   };
 
   const onPressModalClose = () => {
-    
     setIsModalVisible(false);
     setSelectedMenuId(null);
   };
@@ -28,11 +27,10 @@ const StoreMenuScreen = ({ navigation, storeId, menus  }) => {
 
   const handlePress = index => {
     if (index == 0) {
-      navigation.navigate('UpdateMenu', { menuId: selectedMenuId });
+      navigation.navigate('UpdateMenu', {menuId: selectedMenuId});
     }
     onPressModalClose();
   };
-
 
   const opendeletemenu = () => {
     Alert.alert(
@@ -58,7 +56,7 @@ const StoreMenuScreen = ({ navigation, storeId, menus  }) => {
                     },
                   },
                 ],
-                { cancelable: false },
+                {cancelable: false},
               );
             } catch (error) {
               console.error('Error:', error);
@@ -71,30 +69,28 @@ const StoreMenuScreen = ({ navigation, storeId, menus  }) => {
           style: 'destructive',
         },
       ],
-      { cancelable: true },
+      {cancelable: true},
     );
   };
 
-  useEffect(() => {
-  }, [menus]);
-
-
+  useEffect(() => {}, [menus]);
 
   return (
     <SafeAreaView style={styles.container}>
       <MenuHeader storeId={storeId} navigation={navigation} />
-      {menus && menus
-        .filter(menu => menu.isMain)
-        .map(menu => (
-          <MenuItem
-            key={menu.menuId}
-            menu={menu}
-            onPressMenuOption={onPressModalOpen}
-            isExpanded={isExpanded}
-            toggleExpand={toggleExpand}
-            setButtonPosition={setButtonPosition}
-          />
-        ))}
+      {menus &&
+        menus
+          .filter(menu => menu.isMain)
+          .map(menu => (
+            <MenuItem
+              key={menu.id}
+              menu={menu}
+              onPressMenuOption={onPressModalOpen}
+              isExpanded={isExpanded}
+              toggleExpand={toggleExpand}
+              setButtonPosition={setButtonPosition}
+            />
+          ))}
       {isModalVisible && (
         <MenuModal
           visible={isModalVisible}
@@ -105,16 +101,13 @@ const StoreMenuScreen = ({ navigation, storeId, menus  }) => {
         />
       )}
     </SafeAreaView>
-
-
   );
 };
 const styles = StyleSheet.create({
   container: {
     paddingBottom: 20,
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
   },
-
 });
 
 export default StoreMenuScreen;

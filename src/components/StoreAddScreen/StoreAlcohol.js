@@ -22,7 +22,7 @@ const StoreAlcohol = ({alcohol, setAlcohol}) => {
   const handleAlcoholChange = (index, key, value) => {
     setAlcohol(prev => {
       // 특정 인덱스가 없으면 기본 객체 생성
-      const updatedAlcohol = [...prev];
+      const updatedAlcohol = [...(prev || [])]; // prev가 null일 경우 빈 배열로 초기화
       if (!updatedAlcohol[index]) {
         updatedAlcohol[index] = {type: '', price: 0};
       }
@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 16,
     color: '#333',
+    textAlign: 'center',
   },
   unit: {
     marginLeft: 10,
