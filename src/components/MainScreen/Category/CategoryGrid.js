@@ -69,39 +69,39 @@ const styles = StyleSheet.create({
 
 const categories = [
   {
-    source: require('../../../assets/free-icon-barbecue-4039250.png'),
+    source: require('../../../assets/category/Izakaya.png'),
     text: '이자카야',
   },
   {
-    source: require('../../../assets/free-icon-soju-5789309.png'),
+    source: require('../../../assets/category/Koreafood.png'),
     text: '한식주점',
   },
   {
-    source: require('../../../assets/free-icon-pizza-3595458.png'),
+    source: require('../../../assets/category/Westernfood.png'),
     text: '양식주점',
   },
   {
-    source: require('../../../assets/free-icon-dumplings-6560368.png'),
+    source: require('../../../assets/category/Chinesefood.png'),
     text: '중화주점',
   },
   {
-    source: require('../../../assets/bar-counter_3822705.png'),
+    source: require('../../../assets/category/Emotional.png'),
     text: '감성주점',
   },
   {
-    source: require('../../../assets/free-icon-jokbal-8740559.png'),
+    source: require('../../../assets/category/Jokbal.png'),
     text: '족발 보쌈',
   },
   {
-    source: require('../../../assets/free-icon-soup-12404665.png'),
+    source: require('../../../assets/category/Steamedfood.png'),
     text: '찜 찌개',
   },
   {
-    source: require('../../../assets/free-icon-barbecue-4039250.png'),
-    text: '구이 탕',
+    source: require('../../../assets/category/Grilled.png'),
+    text: '구이',
   },
   {
-    source: require('../../../assets/free-icon-roast-chicken-2137000.png'),
+    source: require('../../../assets/category/Chicken.png'),
     text: '치킨',
   },
   {
