@@ -11,7 +11,7 @@ const ResultItem = ({store, navigation}) => {
       key={store.id}
       onPress={() => {
         navigation.navigate('StoreStack', {
-          screen: 'StoreMainPage',
+          screen: 'StoreMainScreen',
           params: {
             storeId: store.id,
             innerlatitude: store.locationDto.latitude,
