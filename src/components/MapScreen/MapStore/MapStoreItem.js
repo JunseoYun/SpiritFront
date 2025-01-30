@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, Image, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
+import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 
 const MapStoreItem = ({
   item,
@@ -14,7 +15,7 @@ const MapStoreItem = ({
 }) => {
   const handlePress = () => {
     setSelectedStore(item);
-    moveCenterMap(item.latitude, item.longitude);
+    moveCenterMap(item.locationDto.latitude, item.locationDto.longitude);
 
     navigation.navigate('StoreStack', {
       screen: 'StoreMainScreen',
@@ -25,6 +26,7 @@ const MapStoreItem = ({
   };
 
   const {translateCategory} = useCategoryTranslation();
+  const {translateAlcohol} = useTranslateAlcohol();
   return (
     <Pressable
       style={[
@@ -38,7 +40,7 @@ const MapStoreItem = ({
       />
       <View style={styles.titletopview}>
         <View style={styles.titleview}>
-          <Text style={styles.storeName}>{item.storeName}</Text>
+          <Text style={styles.storeName}>{item.name}</Text>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <FontAwesomeIcon name="star" size={15} color="#FCC104" />
             <Text style={styles.storeAddress}>{item.storeRate}</Text>
@@ -57,11 +59,23 @@ const MapStoreItem = ({
         </View>
         <View style={styles.timeview}>
           <Text style={styles.timeviewtext}>
-            {/* 영업종료 {item.closeHour.slice(0, 5)} */}
-            영업 종료
+            영업 종료{' '}
+            {item.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
           </Text>
         </View>
-        <Text style={styles.menutext}>소주 5000원</Text>
+        {/* <Text style={styles.menutext}>소주 5000원</Text> */}
+        <Text style={styles.menutext} numberOfLines={1} ellipsizeMode="tail">
+          {item.mainDrinkDtos && item.mainDrinkDtos.length > 0
+            ? item.mainDrinkDtos
+                .map(
+                  drink =>
+                    `${translateAlcohol(
+                      drink.type,
+                    )} ${drink.price.toLocaleString()}원`,
+                ) // 데이터 형식화
+                .join('  ') // 아이템 간 간격 추가
+            : '메인주류가 없습니다.'}
+        </Text>
       </View>
     </Pressable>
   );

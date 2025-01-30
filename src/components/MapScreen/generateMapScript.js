@@ -26,12 +26,12 @@ const generateMapScript = (lat, lng, stores) => `
   }
 
   window.storeMarkers = ${JSON.stringify(stores)}.map(store => {
-    var markerPosition = new kakao.maps.LatLng(store.latitude, store.longitude);
+    var markerPosition = new kakao.maps.LatLng(store.locationDto.latitude, store.locationDto.longitude);
 
     var marker = new kakao.maps.Marker({
       position: markerPosition,
       map: map,
-      title: store.storeName,
+      title: store.name,
       zIndex: 2,
       image: new kakao.maps.MarkerImage(
         'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
@@ -40,7 +40,7 @@ const generateMapScript = (lat, lng, stores) => `
     });
 
     kakao.maps.event.addListener(marker, 'click', function() {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'markerClicked', storeId: store.storeId }));
+      window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'markerClicked', storeId: store.id }));
     });
 
     return marker;
