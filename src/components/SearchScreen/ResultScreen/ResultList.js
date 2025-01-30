@@ -16,13 +16,13 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
 
   // 검색된 가게들을 필터링하는 함수
-  const filteredStores = async () => {
+  const filteredStores = async currentPage => {
     setLoading(true);
 
     if (trimmedSearchWord || location) {
       try {
         const data = await Store_getby_keyword(
-          page,
+          currentPage,
           location.latitude,
           location.longitude,
           trimmedSearchWord,
@@ -39,7 +39,6 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
             );
             return uniqueStores;
           });
-          setPage(prevPage => prevPage + 1); // 페이지 증가
         }
       } catch (err) {
         console.error('오류 발생:', err.message);
@@ -55,7 +54,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
       setSearchingStores([]); // 기존 데이터 초기화
       setPage(0); // 페이지 초기화
       setIsEnd(false); // 데이터 끝 상태 초기화
-      filteredStores(); // 데이터 불러오기
+      filteredStores(0); // 데이터 불러오기
     }
   }, [trimmedSearchWord, location]);
 
@@ -69,7 +68,15 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
       renderItem={renderItem}
       keyExtractor={item => item.id.toString()}
       contentContainerStyle={styles.fastSearchModalScrollView}
-      onEndReached={filteredStores} // 끝에 도달하면 데이터 불러오기
+      onEndReached={() => {
+        if (!loading && !isEnd) {
+          setPage(prevPage => {
+            const nextPage = prevPage + 1; // 다음 페이지 번호
+            filteredStores(nextPage); // 그 페이지 번호로 데이터 요청
+            return nextPage; // 상태를 증가된 페이지 번호로 갱신
+          });
+        }
+      }} // 끝에 도달하면 데이터 불러오기
       onEndReachedThreshold={0.5}
       ListFooterComponent={
         loading && !isEnd ? (

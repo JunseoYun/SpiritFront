@@ -19,6 +19,10 @@ const RecentStoreList = ({refresh, setRefresh, navigation}) => {
     if (loading || (!hasMore && !reset)) return; // 로딩 중이거나 더 이상 데이터가 없으면 종료
     setLoading(true);
 
+    if (reset) {
+      setPage(0);
+    }
+
     try {
       const data = await Store_getby_recent(reset ? 0 : page);
       if (data && data.length > 0) {
@@ -30,7 +34,6 @@ const RecentStoreList = ({refresh, setRefresh, navigation}) => {
           );
           return uniqueData;
         });
-        setPage(reset ? 0 : prevPage => prevPage + 1);
         setHasMore(true); // 데이터가 있으면 계속 로드 가능
       } else {
         setHasMore(false); // 더 이상 데이터가 없으면 false로 설정
@@ -44,17 +47,19 @@ const RecentStoreList = ({refresh, setRefresh, navigation}) => {
 
   const handleEndReached = () => {
     if (!loading && hasMore) {
-      fetchStores(); // 추가 데이터 로드
+      setPage(prevPage => {
+        const nextPage = prevPage + 1;
+        fetchStores(); // 추가 데이터 로드
+        return nextPage; // 상태를 증가된 페이지 번호로 갱신
+      });
     }
   };
 
   useEffect(() => {
     if (refresh) {
       setStores([]); // 데이터 초기화
-      setPage(0); // 페이지 초기화
       setHasMore(true); // 더 로드할 데이터가 있음을 명시
-      fetchStores(true); // 새로고침 시 데이터 리셋
-      setRefresh(false); // 새로고침 상태 초기화
+      fetchStores(true); // 새로고침 시 데이터 리
     }
   }, [refresh]);
 

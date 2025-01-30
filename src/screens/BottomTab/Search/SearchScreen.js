@@ -104,7 +104,7 @@ const SearchScreen = ({navigation}) => {
   const onPressSearch = () => {
     if (searchStoreName) {
       const trimmedSearchName = searchStoreName.trim();
-      console.log(trimmedSearchName);
+      console.log(trimmedSearchName, 'aa');
       console.log(location);
       navigation.navigate('SearchResultScreen', {
         searchName: trimmedSearchName, // 검색어 전달
