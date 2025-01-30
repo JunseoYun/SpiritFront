@@ -16,13 +16,15 @@ const SearchResultScreen = ({navigation}) => {
   const route = useRoute();
   const {searchName, location} = route.params;
   const [searchWord, setSearchWord] = useState(searchName);
-  const [trimmedSearchWord, setTrimmedSearchWord] = useState('');
+  const [trimmedSearchWord, setTrimmedSearchWord] = useState(searchWord);
 
   useEffect(() => {
-    if (searchWord && location) {
-      setTrimmedSearchWord(searchWord.trim());
-    }
-    console.log(location);
+    const timer = setTimeout(() => {
+      if (searchWord && location) {
+        setTrimmedSearchWord(searchWord.trim());
+      }
+    }, 1000); // 500ms 후에 갱신
+    return () => clearTimeout(timer);
   }, [searchWord]);
 
   return (

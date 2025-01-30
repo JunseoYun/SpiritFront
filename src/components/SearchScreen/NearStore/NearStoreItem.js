@@ -26,9 +26,16 @@ const NearStoreItem = ({store, navigation}) => {
               imageStyle={styles.backimagestyle}
             />
           ) : (
-            <Text style={{color: 'black', textAlign: 'center'}}>
-              이미지 없음
-            </Text>
+            <View
+              style={{
+                width: '100%',
+                height: '100%',
+                justifyContent: 'center',
+              }}>
+              <Text style={{color: 'black', textAlign: 'center'}}>
+                이미지 없음
+              </Text>
+            </View>
           )}
         </View>
         <View style={styles.storeViewInfo}>
@@ -73,6 +80,13 @@ const styles = StyleSheet.create({
     marginTop: 15,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
   backimage: {
     width: '100%',

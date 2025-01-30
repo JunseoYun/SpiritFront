@@ -10,21 +10,19 @@ const NearStoreList = ({navigation, location}) => {
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    console.log(location);
     if (location) {
-      getStoreData(true);
-    } else {
-      console.log('getStoreData fail');
+      setPage(0);
+      getStoreData(0, true);
     }
   }, [location]);
 
-  const getStoreData = async (reset = false) => {
-    setLoading(true);
-
+  const getStoreData = async (currentPage, reset = false) => {
     if (location) {
+      if (loading || (!hasMore && !reset)) return;
+      setLoading(true);
       try {
         const storesData = await Store_getby_distance(
-          reset ? 0 : page,
+          currentPage,
           location.latitude,
           location.longitude,
         );
@@ -38,7 +36,6 @@ const NearStoreList = ({navigation, location}) => {
             );
             return uniqueData;
           });
-          setPage(reset ? 0 : prevPage => prevPage + 1);
           setHasMore(true); // 데이터가 있으면 계속 로드 가능
         } else {
           setHasMore(false); // 더 이상 데이터가 없으면 false로 설정
@@ -88,7 +85,11 @@ const NearStoreList = ({navigation, location}) => {
         contentContainerStyle={styles.horizontalFlatListContent}
         onEndReached={() => {
           if (hasMore && !loading) {
-            getStoreData(); // 추가 매장을 가져옵니다.
+            setPage(prevPage => {
+              const nextPage = prevPage + 1; // 다음 페이지 번호
+              getStoreData(nextPage); // 그 페이지 번호로 데이터 요청
+              return nextPage; // 상태를 증가된 페이지 번호로 갱신
+            });
           }
         }}
         onEndReachedThreshold={0.5} // 리스트 끝에 가까워지면 데이터를 추가로 가져옵니다.

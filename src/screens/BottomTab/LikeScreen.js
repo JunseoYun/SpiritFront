@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   SafeAreaView,
   FlatList,
@@ -19,55 +19,59 @@ const LikeScreen = ({navigation}) => {
   const [hasMore, setHasMore] = useState(true); // 추가 데이터 여부
 
   // 가게 데이터를 가져오는 함수
-  const fetchStores = useCallback(async (page, refresh = false) => {
-    try {
-      refresh ? setRefreshing(true) : setLoading(true);
+  const fetchStores = async (currentPage, refresh = false) => {
+    if (loading || (!hasMore && !refresh)) return;
+    setLoading(true); // 새로고침 시 0으로 설정
 
-      const storesData = await Store_getby_liked(page);
+    try {
+      const storesData = await Store_getby_liked(currentPage);
 
       // 데이터 설정
-      setStores(prevStores => {
-        const newStores = refresh
-          ? storesData.content // 새로고침 시 데이터 초기화
-          : [...prevStores, ...storesData.content]; // 추가 로드
+      if (storesData && storesData.length > 0) {
+        setStores(prevStores => {
+          const newStores = refresh
+            ? storesData // 새로고침 시 데이터 초기화
+            : [...prevStores, ...storesData]; // 추가 로드
 
-        // 중복 제거
-        const uniqueStores = Array.from(
-          new Map(newStores.map(store => [store.id, store])).values(),
-        );
-        return uniqueStores;
-      });
-
-      // 더 가져올 데이터 있는지 확인
-      setHasMore(storesData.content.length > 0);
+          // 중복 제거
+          const uniqueStores = Array.from(
+            new Map(newStores.map(store => [store.id, store])).values(),
+          );
+          return uniqueStores;
+        });
+      } else {
+        setHasMore(false); // 더 이상 데이터가 없으면 false로 설정
+      }
     } catch (error) {
       console.error('데이터 로드 중 오류 발생:', error);
     } finally {
       setLoading(false);
-      setRefreshing(false);
+      setRefreshing(false); // 데이터 로드가 끝났을 때 refreshing을 false로 설정
     }
-  }, []);
+  };
 
   // 컴포넌트 로드 시 데이터 초기화
   useEffect(() => {
     fetchStores(0, true); // 첫 페이지 데이터 로드
-  }, [fetchStores]);
+  }, []);
 
   // 다음 페이지 데이터 로드
   const loadMoreStores = () => {
     if (!loading && hasMore) {
       setPage(prevPage => {
         const nextPage = prevPage + 1;
-        fetchStores(nextPage);
-        return nextPage;
+        fetchStores(nextPage); // 새로운 페이지 데이터 로드
+        return nextPage; // 페이지 증가
       });
     }
   };
 
   // 새로고침 동작
   const handleRefresh = () => {
-    setPage(0); // 페이지 초기화
-    setHasMore(true); // 데이터 추가 가능 초기화
+    setStores([]); // 기존 stores 초기화
+    setHasMore(true); // 추가 데이터 여부 초기화
+    setPage(0);
+    setRefreshing(true); // 새로고침 시작
     fetchStores(0, true); // 새로고침
   };
 
@@ -82,13 +86,20 @@ const LikeScreen = ({navigation}) => {
         renderItem={renderItem}
         keyExtractor={item => item.id.toString()}
         showsVerticalScrollIndicator={false}
-        onEndReached={loadMoreStores}
+        onEndReached={loadMoreStores} // 더 많은 데이터 불러오기
         onEndReachedThreshold={0.5}
+        onRefresh={handleRefresh} // 새로고침
         refreshing={refreshing}
-        onRefresh={handleRefresh}
         ListFooterComponent={
-          loading && !refreshing ? (
-            <ActivityIndicator size="large" color="#0000ff" />
+          loading ? (
+            <View
+              style={{
+                height: 400,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text style={styles.emptyText}>Loading...</Text>
+            </View>
           ) : !hasMore && stores.length > 0 ? (
             <View style={styles.footer}>
               <Text style={styles.emptyText}>찜한 가게가 더 없습니다</Text>

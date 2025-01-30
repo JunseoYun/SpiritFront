@@ -16,12 +16,18 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
   const [hasMore, setHasMore] = useState(true);
 
   const fetchdistanceStores = async (reset = false) => {
-    setLoading(true);
-
     if (location) {
+      if (loading || (!hasMore && !reset)) return;
+      setLoading(true);
+
+      // 페이지 값을 직접 계산하여 설정
+      const currentPage = reset ? 0 : distancepage;
+      if (reset) {
+        setDistancepage(0);
+      }
       try {
         const data = await Store_getby_business_hours(
-          reset ? 0 : distancepage,
+          currentPage,
           location.latitude,
           location.longitude,
         );
@@ -35,15 +41,13 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
             );
             return uniqueData;
           });
-          setDistancepage(reset ? 0 : prevPage => prevPage + 1);
-          setHasMore(true); // 데이터가 있으면 계속 로드 가능
         } else {
           setHasMore(false); // 더 이상 데이터가 없으면 false로 설정
         }
       } catch (error) {
         console.error(error);
       } finally {
-        setLoading(false);
+        setLoading(false); // 로딩 상태를 false로 설정
       }
     }
   };
@@ -52,13 +56,15 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
     if (location) {
       fetchdistanceStores(true);
     }
+  }, [location]);
+
+  useEffect(() => {
     if (refresh) {
       setDistancestores([]); // distancestores 초기화
       fetchdistanceStores(true); // 새로고침 데이터 로드
       setHasMore(true);
-      setRefresh(false);
     }
-  }, [location, refresh]);
+  }, [refresh]);
 
   const renderStoreItem = ({item}) => (
     <View style={styles.storeContainer}>
@@ -83,8 +89,12 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollViewContent}
         onEndReached={() => {
-          if (hasMore) {
-            fetchdistanceStores();
+          if (!loading && hasMore) {
+            setDistancepage(prevPage => {
+              const nextPage = prevPage + 1; // 다음 페이지 번호
+              fetchdistanceStores(); // 그 페이지 번호로 데이터 요청
+              return nextPage; // 상태를 증가된 페이지 번호로 갱신
+            });
           }
         }}
         onEndReachedThreshold={0.5} // 스크롤 임계값 조정

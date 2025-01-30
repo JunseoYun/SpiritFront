@@ -92,7 +92,6 @@ export const Store_getby_recent = async page => {
         page, // page 값만 전달 초기 : 0
       },
     });
-    console.log(response.data.data + 1);
     return response.data.data.content;
   } catch (error) {
     functionError(error);
@@ -123,8 +122,7 @@ export const Store_getby_liked = async page => {
         page, // page 값만 전달 초기 : 0
       },
     });
-    console.log(response.data.data + 3);
-    return response.data.data;
+    return response.data.data.content;
   } catch (error) {
     functionError(error);
   }
@@ -137,7 +135,6 @@ export const Store_getby_keyword = async (
   longitude,
   keyword,
 ) => {
-  let isFetching = false;
   try {
     const response = await axiosInstance.get(
       `/store/get-by/keyword/${keyword}`,
@@ -149,15 +146,10 @@ export const Store_getby_keyword = async (
         },
       },
     );
-    console.log(response.data.data + 4);
+    console.log(response.data.data.pageable.pageNumber, '페이지');
     return response.data.data.content;
   } catch (error) {
     functionError(error);
-  } finally {
-    // 1초 동안 추가 요청 방지
-    setTimeout(() => {
-      isFetching = false; // 통신 가능 상태로 복구
-    }, 1000);
   }
 };
 
@@ -171,7 +163,6 @@ export const Store_getby_distance = async (page, latitude, longitude) => {
         longitude,
       },
     });
-    console.log(response.data.data + 5);
     return response.data.data.content;
   } catch (error) {
     functionError(error);
@@ -213,7 +204,6 @@ export const Store_getby_business_hours = async (page, latitude, longitude) => {
         page,
       },
     });
-    console.log(response.data.data + 7);
     return response.data.data.content;
   } catch (error) {
     functionError(error);
