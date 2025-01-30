@@ -96,9 +96,7 @@ axiosInstance.interceptors.response.use(
           if (logout) {
             try {
               await logout(); // 로그아웃 먼저 실행
-            } catch (error) {
-              console.error('로그아웃 실패:', error);
-            }
+            } catch (error) {}
           }
 
           showAlert({
