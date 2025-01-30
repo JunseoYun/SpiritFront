@@ -45,7 +45,6 @@ const SearchScreen = ({navigation}) => {
       const currentLocation = await getLocation(); // 캐시된 위치 가져오기
       setLocation(currentLocation);
     };
-    console.log(location);
     fetchLocation();
   }, []);
 
@@ -104,8 +103,6 @@ const SearchScreen = ({navigation}) => {
   const onPressSearch = () => {
     if (searchStoreName) {
       const trimmedSearchName = searchStoreName.trim();
-      console.log(trimmedSearchName, 'aa');
-      console.log(location);
       navigation.navigate('SearchResultScreen', {
         searchName: trimmedSearchName, // 검색어 전달
         location: location,

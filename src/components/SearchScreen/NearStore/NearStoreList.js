@@ -8,6 +8,7 @@ const NearStoreList = ({navigation, location}) => {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [totalpage, setTotalpage] = useState(0);
 
   useEffect(() => {
     if (location) {
@@ -27,9 +28,13 @@ const NearStoreList = ({navigation, location}) => {
           location.longitude,
         );
 
-        if (storesData && storesData.length > 0) {
+        setTotalpage(storesData.totalPages);
+
+        if (storesData.content && storesData.content.length > 0) {
           setStores(prevData => {
-            const newData = reset ? storesData : [...prevData, ...storesData];
+            const newData = reset
+              ? storesData.content
+              : [...prevData, ...storesData.content];
             const uniqueData = newData.filter(
               (item, index, self) =>
                 index === self.findIndex(existing => existing.id === item.id),
@@ -84,7 +89,7 @@ const NearStoreList = ({navigation, location}) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.horizontalFlatListContent}
         onEndReached={() => {
-          if (hasMore && !loading) {
+          if (hasMore && !loading && page < totalpage - 1) {
             setPage(prevPage => {
               const nextPage = prevPage + 1; // 다음 페이지 번호
               getStoreData(nextPage); // 그 페이지 번호로 데이터 요청

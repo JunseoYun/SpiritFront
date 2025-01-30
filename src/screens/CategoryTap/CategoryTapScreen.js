@@ -22,34 +22,35 @@ const CategoryTapScreen = ({navigation, route}) => {
   const [loading, setLoading] = useState(false); // 전체 로딩 상태
   const [isInitialLoading, setIsInitialLoading] = useState(true); // 첫 로딩 상태
   const [isEnd, setIsEnd] = useState(false); // 더 이상 데이터가 없는 상태
+  const [totalpage, setTotalpage] = useState(0);
 
-  const fetchStores = async (reset = false) => {
+  const fetchStores = async (currentPage, reset = false) => {
     if (loading || isEnd) return; // 로딩 중이거나 데이터가 끝났으면 요청 막기
     setLoading(true); // 로딩 시작
 
     try {
       const data = await Store_getby_category(
-        reset ? 0 : page, // 초기화일 경우 page = 0
+        currentPage,
         location.latitude,
         location.longitude,
         categoryname,
       );
+      setTotalpage(data.totalPages);
 
       if (reset) {
-        setStores(data); // 초기화 시 새 데이터를 설정
+        setStores(data.content); // 초기화 시 새 데이터를 설정
         setPage(0); // 페이지 초기화
-        setIsEnd(data.length === 0); // 데이터 끝 상태 설정
-      } else if (data.length === 0) {
+        setIsEnd(data.content.length === 0); // 데이터 끝 상태 설정
+      } else if (data.content.length === 0) {
         setIsEnd(true); // 추가 데이터가 없을 경우
       } else {
         setStores(prevStores => {
-          const mergedStores = [...prevStores, ...data];
+          const mergedStores = [...prevStores, ...data.content];
           const uniqueStores = Array.from(
             new Map(mergedStores.map(store => [store.id, store])).values(),
           );
           return uniqueStores;
         });
-        setPage(prevPage => prevPage + 1);
       }
     } catch (err) {
       console.error(err.message || '오류 발생');
@@ -66,7 +67,7 @@ const CategoryTapScreen = ({navigation, route}) => {
         setStores([]); // 기존 데이터 초기화
         setPage(0); // 페이지 초기화
         setIsEnd(false); // 데이터 끝 상태 초기화
-        await fetchStores(true); // 초기화된 상태로 데이터 로드
+        await fetchStores(0, true); // 초기화된 상태로 데이터 로드
       };
       resetAndFetch();
     }, [categoryname, location]),
@@ -90,13 +91,19 @@ const CategoryTapScreen = ({navigation, route}) => {
           )}
           keyExtractor={item => item.id.toString()}
           onEndReached={() => {
-            if (!loading && !isEnd) fetchStores();
+            if (!loading && !isEnd && page < totalpage - 1) {
+              setPage(prevPage => {
+                const nextPage = prevPage + 1; // 다음 페이지 번호
+                fetchStores(nextPage); // 그 페이지 번호로 데이터 요청
+                return nextPage; // 상태를 증가된 페이지 번호로 갱신
+              });
+            }
           }}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             loading ? (
               <Text style={Categorystyles.emptyText}>Loading...</Text>
-            ) : isEnd && stores.length > 0 ? (
+            ) : page === totalpage - 1 && stores.length > 0 ? (
               <Text style={Categorystyles.emptyText}>가게가 더 없습니다</Text>
             ) : null
           }

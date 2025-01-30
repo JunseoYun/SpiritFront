@@ -15,13 +15,11 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchdistanceStores = async (reset = false) => {
+  const fetchdistanceStores = async (currentPage, reset = false) => {
     if (location) {
       if (loading || (!hasMore && !reset)) return;
       setLoading(true);
 
-      // 페이지 값을 직접 계산하여 설정
-      const currentPage = reset ? 0 : distancepage;
       if (reset) {
         setDistancepage(0);
       }
@@ -32,9 +30,11 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
           location.longitude,
         );
 
-        if (data && data.length > 0) {
+        if (data.content && data.content.length > 0) {
           setDistancestores(prevData => {
-            const newData = reset ? data : [...prevData, ...data];
+            const newData = reset
+              ? data.content
+              : [...prevData, ...data.content];
             const uniqueData = newData.filter(
               (item, index, self) =>
                 index === self.findIndex(existing => existing.id === item.id),
@@ -54,14 +54,14 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
 
   useEffect(() => {
     if (location) {
-      fetchdistanceStores(true);
+      fetchdistanceStores(0, true);
     }
   }, [location]);
 
   useEffect(() => {
     if (refresh) {
       setDistancestores([]); // distancestores 초기화
-      fetchdistanceStores(true); // 새로고침 데이터 로드
+      fetchdistanceStores(0, true); // 새로고침 데이터 로드
       setHasMore(true);
     }
   }, [refresh]);
@@ -92,7 +92,7 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
           if (!loading && hasMore) {
             setDistancepage(prevPage => {
               const nextPage = prevPage + 1; // 다음 페이지 번호
-              fetchdistanceStores(); // 그 페이지 번호로 데이터 요청
+              fetchdistanceStores(nextPage); // 그 페이지 번호로 데이터 요청
               return nextPage; // 상태를 증가된 페이지 번호로 갱신
             });
           }

@@ -14,8 +14,9 @@ const RecentStoreList = ({refresh, setRefresh, navigation}) => {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [totalpage, setTotalpage] = useState(0);
 
-  const fetchStores = async (reset = false) => {
+  const fetchStores = async (currentPage, reset = false) => {
     if (loading || (!hasMore && !reset)) return; // 로딩 중이거나 더 이상 데이터가 없으면 종료
     setLoading(true);
 
@@ -24,10 +25,13 @@ const RecentStoreList = ({refresh, setRefresh, navigation}) => {
     }
 
     try {
-      const data = await Store_getby_recent(reset ? 0 : page);
-      if (data && data.length > 0) {
+      const data = await Store_getby_recent(currentPage);
+
+      setTotalpage(data.totalPages);
+
+      if (data.content && data.content.length > 0) {
         setStores(prevData => {
-          const newData = reset ? data : [...prevData, ...data];
+          const newData = reset ? data.content : [...prevData, ...data.content];
           const uniqueData = newData.filter(
             (item, index, self) =>
               index === self.findIndex(existing => existing.id === item.id),
@@ -46,10 +50,10 @@ const RecentStoreList = ({refresh, setRefresh, navigation}) => {
   };
 
   const handleEndReached = () => {
-    if (!loading && hasMore) {
+    if (!loading && hasMore && page < totalpage - 1) {
       setPage(prevPage => {
         const nextPage = prevPage + 1;
-        fetchStores(); // 추가 데이터 로드
+        fetchStores(nextPage); // 추가 데이터 로드
         return nextPage; // 상태를 증가된 페이지 번호로 갱신
       });
     }
@@ -59,9 +63,13 @@ const RecentStoreList = ({refresh, setRefresh, navigation}) => {
     if (refresh) {
       setStores([]); // 데이터 초기화
       setHasMore(true); // 더 로드할 데이터가 있음을 명시
-      fetchStores(true); // 새로고침 시 데이터 리
+      fetchStores(0, true); // 새로고침 시 데이터 리
     }
   }, [refresh]);
+
+  useEffect(() => {
+    fetchStores(0, true);
+  }, []);
 
   const renderFooter = () => {
     if (!loading) return null;

@@ -14,6 +14,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
   const [page, setPage] = useState(0); // 페이지 번호
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
+  const [totalpage, setTotalpage] = useState(0);
 
   // 검색된 가게들을 필터링하는 함수
   const filteredStores = async currentPage => {
@@ -28,12 +29,14 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
           trimmedSearchWord,
         );
 
-        if (data.length === 0) {
+        setTotalpage(data.totalPages);
+
+        if (data.content.length === 0) {
           setIsEnd(true); // 더 이상 데이터가 없으면
         } else {
           // 기존 데이터와 병합하고 중복 제거
           setSearchingStores(prevStores => {
-            const mergedStores = [...prevStores, ...data];
+            const mergedStores = [...prevStores, ...data.content];
             const uniqueStores = Array.from(
               new Map(mergedStores.map(store => [store.id, store])).values(),
             );
@@ -69,7 +72,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
       keyExtractor={item => item.id.toString()}
       contentContainerStyle={styles.fastSearchModalScrollView}
       onEndReached={() => {
-        if (!loading && !isEnd) {
+        if (!loading && !isEnd && page < totalpage - 1) {
           setPage(prevPage => {
             const nextPage = prevPage + 1; // 다음 페이지 번호
             filteredStores(nextPage); // 그 페이지 번호로 데이터 요청
@@ -83,7 +86,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
           <View style={styles.footer}>
             <Text style={styles.emptyText}>Loading...</Text>
           </View>
-        ) : isEnd && searchingStores.length > 0 ? (
+        ) : searchingStores.length > 0 && page === totalpage - 1 ? (
           <View style={styles.footer}>
             <Text style={styles.emptyText}>더 이상 결과가 없습니다</Text>
           </View>
