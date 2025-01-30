@@ -8,23 +8,27 @@ const ResultItem = ({store, navigation}) => {
 
   return (
     <Pressable
-    // key={store.storeId}
-    // onPress={() => {
-    //   navigation.navigate('StoreStack', {
-    //     screen: 'StoreMainPage',
-    //     params: {
-    //       storeId: store.storeId,
-    //       innerlatitude: store.latitude,
-    //       innerlongitude: store.longitude,
-    //     },
-    //   });
-    // }}
-    >
+      key={store.id}
+      onPress={() => {
+        navigation.navigate('StoreStack', {
+          screen: 'StoreMainPage',
+          params: {
+            storeId: store.id,
+            innerlatitude: store.locationDto.latitude,
+            innerlongitude: store.locationDto.longitude,
+          },
+        });
+      }}>
       <View style={styles.StoreInfo}>
-        <Image
-          source={require('../../../assets/kim.png')}
-          style={styles.StoreImage}
-        />
+        {store.mainImgUrl ? (
+          <Image source={{uri: store.mainImgUrl}} style={styles.StoreImage} />
+        ) : (
+          <View style={styles.storeImagetext}>
+            <Text style={{color: 'white', textAlign: 'center'}}>
+              이미지 없음
+            </Text>
+          </View>
+        )}
         <View style={styles.StoreTextView}>
           <View style={styles.StoreTitleView}>
             <Text
@@ -54,7 +58,7 @@ const ResultItem = ({store, navigation}) => {
           </View>
           <View style={styles.StoreAddressView}>
             <Text style={styles.StoreAddressText}>
-              {store.address}, {store.addressDetail}
+              {store.locationDto.address}, {store.locationDto.addressDetail}
             </Text>
           </View>
           <Text style={styles.StoreClose}>
@@ -82,6 +86,14 @@ const styles = StyleSheet.create({
     width: 80,
     height: 120,
     borderRadius: 10,
+  },
+  storeImagetext: {
+    width: 80,
+    height: 120,
+    borderRadius: 10,
+    justifyContent: 'center', // 수직 중앙 정렬
+    alignItems: 'center',
+    backgroundColor: 'black',
   },
   StoreTextView: {
     width: '80%',

@@ -27,7 +27,7 @@ const MapStoreList = ({
       const store = stores[index];
       setSelectedStore(store);
       if (store) {
-        moveCenterMap(store.latitude, store.longitude); // 지도 이동 함수 호출
+        moveCenterMap(store.locationDto.latitude, store.locationDto.longitude); // 지도 이동 함수 호출
       }
     }
   };

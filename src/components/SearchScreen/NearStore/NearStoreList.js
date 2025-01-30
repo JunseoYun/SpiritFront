@@ -28,7 +28,6 @@ const NearStoreList = ({navigation, location}) => {
           location.latitude,
           location.longitude,
         );
-        console.log(storesData);
 
         if (storesData && storesData.length > 0) {
           setStores(prevData => {
@@ -56,6 +55,22 @@ const NearStoreList = ({navigation, location}) => {
     return <NearStoreItem store={item} navigation={navigation} />;
   };
 
+  const renderFooter = () => {
+    if (!loading) return null;
+    return (
+      <View style={styles.footer}>
+        <Text style={styles.emptyText}>Loading...</Text>
+      </View>
+    );
+  };
+
+  const renderEmptyComponent = () => {
+    if (!loading) {
+      return <Text style={styles.emptyText}>가게가 없습니다.</Text>;
+    }
+    return null;
+  };
+
   return (
     <View>
       <View style={styles.storeTextView}>
@@ -77,9 +92,8 @@ const NearStoreList = ({navigation, location}) => {
           }
         }}
         onEndReachedThreshold={0.5} // 리스트 끝에 가까워지면 데이터를 추가로 가져옵니다.
-        ListFooterComponent={
-          loading ? <Text style={styles.emptyText}>Loading...</Text> : null
-        }
+        ListFooterComponent={renderFooter} // 로딩 인디케이터
+        ListEmptyComponent={renderEmptyComponent}
       />
     </View>
   );
@@ -109,6 +123,11 @@ const styles = StyleSheet.create({
   },
   horizontalScrollViewContent: {
     paddingHorizontal: 20, // 필요에 따라 조정
+  },
+  footer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emptyText: {
     textAlign: 'center',

@@ -16,63 +16,14 @@ const SearchResultScreen = ({navigation}) => {
   const route = useRoute();
   const {searchName, location} = route.params;
   const [searchWord, setSearchWord] = useState(searchName);
-  const [searchingStores, setSearchingStores] = useState([]);
-  const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isEnd, setIsEnd] = useState(false);
+  const [trimmedSearchWord, setTrimmedSearchWord] = useState('');
 
   useEffect(() => {
     if (searchWord && location) {
-      filteredStores(true); // 초기화 호출
+      setTrimmedSearchWord(searchWord.trim());
     }
     console.log(location);
   }, [searchWord]);
-
-  const filteredStores = async () => {
-    const trimmedSearchWord = searchWord.trim();
-
-    // if (!trimmedSearchWord || !location) {
-    //   console.error('검색어 또는 위치 정보가 유효하지 않습니다.');
-    //   return;
-    // }
-
-    setLoading(true);
-
-    if (trimmedSearchWord || location) {
-      try {
-        const data = await Store_getby_keyword(
-          page,
-          location.latitude,
-          location.longitude,
-          trimmedSearchWord,
-        );
-        console.log(data);
-
-        if (data.length === 0) {
-          setIsEnd(true); // 데이터 끝
-        } else {
-          // 기존 데이터와 병합
-          setSearchingStores(prevStores => {
-            const mergedStores = [...prevStores, ...data];
-            const uniqueStores = Array.from(
-              new Map(mergedStores.map(store => [store.id, store])).values(),
-            );
-            return uniqueStores;
-          });
-          setPage(prevPage => prevPage + 1); // 페이지 증가
-        }
-      } catch (err) {
-        console.error('오류 발생:', err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    // const searchStores = stores.filter(store =>
-    //   store.storeName.includes(trimmedSearchName),
-    // );
-    // setSearchingStores(searchStores);
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -82,11 +33,9 @@ const SearchResultScreen = ({navigation}) => {
         navigation={navigation}
       />
       <ResultList
-        stores={searchingStores}
+        trimmedSearchWord={trimmedSearchWord}
         navigation={navigation}
-        loading={loading}
-        isEnd={isEnd}
-        onEndReached={() => !loading && !isEnd && filteredStores()}
+        location={location}
       />
     </SafeAreaView>
   );

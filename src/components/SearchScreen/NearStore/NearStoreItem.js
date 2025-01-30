@@ -12,8 +12,8 @@ const NearStoreItem = ({store, navigation}) => {
           screen: 'StoreMainScreen',
           params: {
             storeId: store.id,
-            innerlatitude: store.latitude,
-            innerlongitude: store.longitude,
+            innerlatitude: store.locationDto.latitude,
+            innerlongitude: store.locationDto.longitude,
           },
         })
       }>
@@ -52,7 +52,8 @@ const NearStoreItem = ({store, navigation}) => {
         <View style={styles.storeViewInfo}>
           <Text style={styles.storeSubInfo}>
             {/* 영업 종료 {store.closeHour.slice(0, 5)} */}
-            영업 종료
+            영업 종료{' '}
+            {store.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
           </Text>
           <Text style={styles.storeSubInfo}>{store.distance} m</Text>
           {/* <Text style={styles.storeSubInfo}>{store.distance.toFixed(0)} m</Text> */}
@@ -64,7 +65,7 @@ const NearStoreItem = ({store, navigation}) => {
 
 const styles = StyleSheet.create({
   storeInfoView: {
-    marginRight: 12,
+    marginHorizontal: 12,
   },
   backimageview: {
     width: 170,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   StyleSheet,
   Pressable,
@@ -9,13 +9,13 @@ import {
   Modal,
   Animated, // Animated 추가
   PanResponder, // PanResponder 추가
-  SafeAreaView
+  SafeAreaView,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
+import {WebView} from 'react-native-webview';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import { getLocation } from '../../storage/locationStorage';
-import { fetchLocation } from '../../hooks/useLocation';
-import { getStore } from '../../api/storeApi';
+import {getLocation} from '../../storage/locationStorage';
+import {fetchLocation} from '../../hooks/useLocation';
+import {Store_getby_radius} from '../../api/storeApi';
 import throttle from 'lodash/throttle';
 import MapSearchBar from '../../components/MapScreen/MapSearchBar';
 import MapLocation from '../../components/MapScreen/MapLocation';
@@ -24,7 +24,7 @@ import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import generateMapScript from '../../components/MapScreen/generateMapScript';
 import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
 
-const MapScreen = ({ navigation }) => {
+const MapScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
   const [stores, setStores] = useState([]);
@@ -45,7 +45,6 @@ const MapScreen = ({ navigation }) => {
     setWebModalVisible(false);
   };
 
-
   useEffect(() => {
     fetchSaveLocation();
   }, []);
@@ -55,11 +54,18 @@ const MapScreen = ({ navigation }) => {
       const currentLocation = await getLocation();
       setLocation(currentLocation);
 
-      const storesData = await getStore();
+      const storesData = await Store_getby_radius(
+        currentLocation.latitude,
+        currentLocation.longitude,
+      );
       setStores(storesData);
 
       if (webViewRef.current) {
-        const script = generateMapScript(currentLocation.latitude, currentLocation.longitude, storesData);
+        const script = generateMapScript(
+          currentLocation.latitude,
+          currentLocation.longitude,
+          storesData,
+        );
         webViewRef.current.injectJavaScript(script);
       }
     } catch (err) {
@@ -94,7 +100,6 @@ const MapScreen = ({ navigation }) => {
     `;
     webViewRef.current?.injectJavaScript(script);
   };
-  
 
   const updateMap = (lat, lng, stores) => {
     if (webViewRef.current) {
@@ -102,15 +107,18 @@ const MapScreen = ({ navigation }) => {
     }
   };
 
-
-  const onMessageHandler = (event) => {
+  const onMessageHandler = event => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
 
       // 기존 메시지 처리
       if (message.action === 'mapLoaded') {
         console.log('Kakao Maps API가 로드되었습니다.');
-        const script = generateMapScript(location.latitude, location.longitude, stores);
+        const script = generateMapScript(
+          location.latitude,
+          location.longitude,
+          stores,
+        );
         webViewRef.current?.injectJavaScript(script);
       }
 
@@ -120,7 +128,6 @@ const MapScreen = ({ navigation }) => {
       console.error('Error parsing message from WebView:', error);
     }
   };
-
 
   const panResponder = useRef(
     PanResponder.create({
@@ -169,7 +176,7 @@ const MapScreen = ({ navigation }) => {
       console.log('Marker clicked:', message.storeId);
       showFlatList();
 
-      const index = stores.findIndex(store => store.storeId === message.storeId);
+      const index = stores.findIndex(store => store.id === message.storeId);
       if (index !== -1) {
         setSelectedStoreIndex(index);
 
@@ -183,13 +190,14 @@ const MapScreen = ({ navigation }) => {
 
         const store = stores[index];
         if (store) {
-          moveCenterMap(store.latitude, store.longitude);
+          moveCenterMap(
+            store.locationDto.latitude,
+            store.locationDto.longitude,
+          );
         }
       }
     }
   }, 500);
-
-
 
   return (
     <View style={styles.container}>
@@ -197,7 +205,7 @@ const MapScreen = ({ navigation }) => {
         <WebView
           ref={webViewRef}
           originWhitelist={['*']}
-          source={{ html: KakaoMapHTML() }}
+          source={{html: KakaoMapHTML()}}
           javaScriptEnabled={true}
           domStorageEnabled={true}
           onMessage={onMessageHandler} // 메시지 핸들러 추가
@@ -235,7 +243,7 @@ const MapScreen = ({ navigation }) => {
           <SafeAreaView style={styles.container}>
             <WebView
               source={{
-                uri: `https://map.kakao.com/link/map/${selectedStore.latitude},${selectedStore.longitude}`,
+                uri: `https://map.kakao.com/link/map/${selectedStore.locationDto.latitude},${selectedStore.locationDto.longitude}`,
               }} // 열고 싶은 웹페이지의 URL
             />
             <View style={styles.goBackButton2}>
@@ -249,7 +257,6 @@ const MapScreen = ({ navigation }) => {
               </Pressable>
             </View>
           </SafeAreaView>
-
         </Modal>
       )}
     </View>
@@ -281,7 +288,7 @@ const styles = StyleSheet.create({
 
     // 그림자 설정
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 }, // 아래쪽으로 더 깊은 그림자
+    shadowOffset: {width: 0, height: 4}, // 아래쪽으로 더 깊은 그림자
     shadowOpacity: 0.3, // 그림자의 투명도
     shadowRadius: 6, // 그림자의 퍼짐 정도
     elevation: 12, // 안드로이드 그림자 효과
@@ -293,7 +300,6 @@ const styles = StyleSheet.create({
     // 그라디언트 효과 (배경이 단일 색상이 아닌 경우)
     backgroundColor: '#fdfdfd',
   },
-  
 });
 
 export default MapScreen;
