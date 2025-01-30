@@ -1,16 +1,17 @@
 // InnerCategoryModal.js
 import React from 'react';
-import { View, Modal, Pressable, Image, Text, StyleSheet } from 'react-native';
+import {View, Modal, Pressable, Image, Text, StyleSheet} from 'react-native';
 
-const InnerCategoryModal = ({ isVisible, onPressInnerCategory, onClose }) => {
+const InnerCategoryModal = ({isVisible, onPressInnerCategory, onClose}) => {
   return (
     <Modal visible={isVisible} animationType="fade" transparent={true}>
       <Pressable style={styles.modalBackground} onPress={onClose}>
-        <View style={styles.modalContainer}
-        onStartShouldSetResponder={() => true} >
+        <View
+          style={styles.modalContainer}
+          onStartShouldSetResponder={() => true}>
           <View style={styles.modaltopview}>
             {innerCategories
-              .reduce((acc, { source, text }, index) => {
+              .reduce((acc, {source, text}, index) => {
                 const rowIndex = Math.floor(index / 5);
                 if (!acc[rowIndex]) acc[rowIndex] = [];
                 acc[rowIndex].push(
@@ -96,77 +97,77 @@ const styles = StyleSheet.create({
 
 const innerCategories = [
   {
-    source: require('../../../assets/free-icon-barbecue-4039250.png'),
+    source: require('../../../assets/category/Izakaya.png'),
     text: '이자카야',
   },
   {
-    source: require('../../../assets/free-icon-soju-5789309.png'),
+    source: require('../../../assets/category/Koreafood.png'),
     text: '한식주점',
   },
   {
-    source: require('../../../assets/free-icon-pizza-3595458.png'),
+    source: require('../../../assets/category/Westernfood.png'),
     text: '양식주점',
   },
   {
-    source: require('../../../assets/free-icon-dumplings-6560368.png'),
+    source: require('../../../assets/category/Chinesefood.png'),
     text: '중화주점',
   },
   {
-    source: require('../../../assets/bar-counter_3822705.png'),
+    source: require('../../../assets/category/Emotional.png'),
     text: '감성주점',
   },
   {
-    source: require('../../../assets/free-icon-jokbal-8740559.png'),
+    source: require('../../../assets/category/Jokbal.png'),
     text: '족발 보쌈',
   },
   {
-    source: require('../../../assets/free-icon-soup-12404665.png'),
+    source: require('../../../assets/category/Steamedfood.png'),
     text: '찜 찌개',
   },
   {
-    source: require('../../../assets/free-icon-barbecue-4039250.png'),
-    text: '구이 탕',
+    source: require('../../../assets/category/Grilled.png'),
+    text: '구이',
   },
   {
-    source: require('../../../assets/free-icon-roast-chicken-2137000.png'),
+    source: require('../../../assets/category/Chicken.png'),
     text: '치킨',
   },
   {
-    source: require('../../../assets/mayonnaise_3376991.png'),
+    source: require('../../../assets/category/Pancake.png'),
     text: '전 막걸리',
   },
   {
-    source: require('../../../assets/free-icon-squid-12752294.png'),
+    source: require('../../../assets/category/Dried.png'),
     text: '마른안주',
   },
   {
-    source: require('../../../assets/free-icon-steamed-fish-2885062.png'),
+    source: require('../../../assets/category/Seafood.png'),
     text: '해산물',
   },
   {
-    source: require('../../../assets/free-icon-folder-3370758.png'),
+    source: require('../../../assets/category/Room.png'),
     text: '룸',
   },
   {
-    source: require('../../../assets/free-icon-disco-ball-3935116.png'),
+    source: require('../../../assets/category/Group.png'),
     text: '단체 행사',
   },
-  { source: require('../../../assets/beers_2302167.png'), text: '야장' },
+  {source: require('../../../assets/category/Yajang.png'), text: '야장'},
   {
-    source: require('../../../assets/free-icon-stall-food-6734735.png'),
+    source: require('../../../assets/category/Pocha.png'),
     text: '포차',
   },
-  { source: require('../../../assets/free-icon-beer-1887156.png'), text: '호프' },
+  {source: require('../../../assets/category/Hope.png'), text: '호프'},
   {
-    source: require('../../../assets/free-icon-wine-6454589.png'),
+    source: require('../../../assets/category/Winebar.png'),
     text: '와인바',
   },
   {
-    source: require('../../../assets/free-icon-cocktail-3086535.png'),
+    source: require('../../../assets/category/Cocktail.png'),
     text: '칵테일',
   },
   {
-    source: require('../../../assets/free-icon-bar-counter-4507564.png'),
+    source: require('../../../assets/category/Pupbar.png'),
     text: '펍 바',
   },
 ];
