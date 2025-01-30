@@ -105,7 +105,7 @@ const categories = [
     text: '치킨',
   },
   {
-    source: require('../../../assets/free-icon-zoom-5460595.png'),
+    source: require('../../../assets/category/More.png'),
     text: '전체보기',
   },
 ];
