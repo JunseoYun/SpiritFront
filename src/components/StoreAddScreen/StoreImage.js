@@ -63,7 +63,9 @@ const StoreImage = ({imageUris, setImageUris}) => {
   return (
     <View>
       <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>매장 사진 추가하기 (최대 5장)</Text>
+        <Text style={styles.storeinputtext}>
+          매장 사진 추가하기* (최대 5장)
+        </Text>
       </View>
       <View style={styles.storeImageView}>
         <ScrollView
