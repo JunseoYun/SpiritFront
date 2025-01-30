@@ -92,6 +92,13 @@ const StoreAddScreen = ({navigation, route}) => {
       });
       return;
     }
+    if (!imageUris.length) {
+      showAlert({
+        title: '필수 정보 미입력',
+        message: '매장 이미지를 최소 1개 이상 업로드해 주세요.',
+      });
+      return;
+    }
 
     setIsModalVisible(true); // 모든 값이 유효하면 모달 열기
   };
