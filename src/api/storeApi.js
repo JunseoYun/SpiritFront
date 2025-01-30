@@ -92,7 +92,7 @@ export const Store_getby_recent = async page => {
         page, // page 값만 전달 초기 : 0
       },
     });
-    return response.data.data.content;
+    return response.data.data;
   } catch (error) {
     functionError(error);
   }
@@ -146,8 +146,7 @@ export const Store_getby_keyword = async (
         },
       },
     );
-    console.log(response.data.data.pageable.pageNumber, '페이지');
-    return response.data.data.content;
+    return response.data.data;
   } catch (error) {
     functionError(error);
   }
@@ -163,7 +162,7 @@ export const Store_getby_distance = async (page, latitude, longitude) => {
         longitude,
       },
     });
-    return response.data.data.content;
+    return response.data.data;
   } catch (error) {
     functionError(error);
   }
@@ -187,8 +186,7 @@ export const Store_getby_category = async (
         },
       },
     );
-    console.log(response.data.data + 6);
-    return response.data.data.content;
+    return response.data.data;
   } catch (error) {
     functionError(error);
   }
@@ -204,7 +202,7 @@ export const Store_getby_business_hours = async (page, latitude, longitude) => {
         page,
       },
     });
-    return response.data.data.content;
+    return response.data.data;
   } catch (error) {
     functionError(error);
   }
