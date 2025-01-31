@@ -44,7 +44,7 @@ const StoreMainScreen = ({navigation}) => {
   const [isUpdate, setIsUpdate] = useState(false);
   const [updatedKey, setUpdatedKey] = useState(null);
   const [updatedValue, setUpdatedValue] = useState(null);
-
+  const scrollViewRef = useRef(null); // ScrollView 참조 추가
   const startUpdate = () => {
     setIsUpdate(true);
   };
@@ -222,6 +222,7 @@ const StoreMainScreen = ({navigation}) => {
           {useNativeDriver: false},
         )}
         scrollEventThrottle={16}
+        ref={scrollViewRef}
         style={{backgroundColor: 'white'}}>
         <TouchableWithoutFeedback onPress={handleBottomClose}>
           <View>
@@ -274,6 +275,7 @@ const StoreMainScreen = ({navigation}) => {
                     navigation={navigation}
                     storeId={storeId}
                     menus={menus}
+                    scrollViewRef={scrollViewRef} // 스크롤 참조 전달
                   />
                 )}
                 {currentPage === 'StoreAlcoholScreen' && (
@@ -281,12 +283,14 @@ const StoreMainScreen = ({navigation}) => {
                     navigation={navigation}
                     storeId={storeId}
                     menus={menus}
+                    scrollViewRef={scrollViewRef}
                   />
                 )}
                 {currentPage === 'StoreReviewScreen' && (
                   <StoreReviewScreen
                     navigation={navigation}
                     storeId={storeId}
+                    scrollViewRef={scrollViewRef}
                   />
                 )}
                 {currentPage === 'StoreMapScreen' && (

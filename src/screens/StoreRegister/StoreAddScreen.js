@@ -95,7 +95,7 @@ const StoreAddScreen = ({navigation, route}) => {
     if (!imageUris.length) {
       showAlert({
         title: '필수 정보 미입력',
-        message: '매장 이미지를 최소 1개 이상 업로드해 주세요.',
+        message: '매장 이미지를 최소 1개 이상 \n업로드해 주세요.',
       });
       return;
     }
