@@ -1,108 +1,75 @@
 import React, {useEffect, useState} from 'react';
-import {Alert, SafeAreaView, StyleSheet} from 'react-native';
+import {SafeAreaView, StyleSheet} from 'react-native';
 import MenuHeader from '../../components/StoreMenuScreen/MenuHeader';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
-import MenuModal from '../../components/StoreMenuScreen/MenuModal';
 import {StoreMenudelete} from '../../api/menuApi';
+import useCustomAlert from '../../hooks/useCustomAlert';
 
-const StoreMenuScreen = ({navigation, storeId, menus}) => {
-  const [buttonPosition, setButtonPosition] = useState({x: 0, y: 0});
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedMenuId, setSelectedMenuId] = useState(null);
+const StoreMenuScreen = ({navigation, storeId, menus, scrollViewRef}) => {
+  const [openItemId, setOpenItemId] = useState(null); // 열려 있는 메뉴 ID 관리
+  const [menuList, setMenuList] = useState(menus);
 
-  const onPressModalOpen = menuId => {
-    setSelectedMenuId(menuId); // 선택한 메뉴 ID를 상태로 저장
-    setIsModalVisible(true);
+  const {showAlert, AlertComponent} = useCustomAlert();
+  // 메뉴 정렬: isMain이 true인 것 먼저
+  const sortedMenus = menuList
+    ? [...menuList].sort((a, b) => b.isMain - a.isMain)
+    : [];
+
+  useEffect(() => {
+    setMenuList(menus); // menus 변경 시 업데이트
+  }, [menus]);
+
+  const handleOpenItem = id => {
+    setOpenItemId(id); // 현재 열려 있는 항목의 ID 설정
   };
 
-  const onPressModalClose = () => {
-    setIsModalVisible(false);
-    setSelectedMenuId(null);
+  const handleCloseAll = () => {
+    setOpenItemId(null); // 모든 항목 닫기
   };
 
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
+  const handleDeleteMenu = (id, name) => {
+    handleCloseAll();
+    showAlert({
+      title: `${name} 삭제`,
+      message: `메뉴를 삭제하시겠습니까?`,
+      onConfirm: async () => {
+        try {
+          await StoreMenudelete(id);
+          setMenuList(prevMenus => prevMenus.filter(menu => menu.id !== id));
+        } catch (error) {}
+      },
+      onCancel: null,
+      type: 'delete',
+    });
   };
 
-  const handlePress = index => {
-    if (index == 0) {
-      navigation.navigate('UpdateMenu', {menuId: selectedMenuId});
-    }
-    onPressModalClose();
-  };
-
-  const opendeletemenu = () => {
-    Alert.alert(
-      '메뉴 삭제',
-      '메뉴를 삭제하시겠습니까?',
-      [
-        {
-          text: '확인',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await StoreMenudelete(selectedMenuId); // StoreMaindelete 함수 호출
-              Alert.alert(
-                '삭제되었습니다.',
-                '',
-                [
-                  {
-                    text: '확인',
-                    style: 'destructive',
-                    onPress: () => {
-                      setIsModalVisible(false);
-                      getStoreData(); // 삭제 후 메인 페이지로 이동
-                    },
-                  },
-                ],
-                {cancelable: false},
-              );
-            } catch (error) {
-              console.error('Error:', error);
-              Alert.alert('오류가 발생했습니다. 다시 시도해주세요.');
-            }
-          },
-        },
-        {
-          text: '취소',
-          style: 'destructive',
-        },
-      ],
-      {cancelable: true},
+  const handleEditMenu = updatedMenu => {
+    setMenuList(prevMenus =>
+      prevMenus.map(menu => (menu.id === updatedMenu.id ? updatedMenu : menu)),
     );
   };
-
-  useEffect(() => {}, [menus]);
 
   return (
     <SafeAreaView style={styles.container}>
       <MenuHeader storeId={storeId} navigation={navigation} />
-      {menus &&
-        menus
-          .filter(menu => menu.isMain)
-          .map(menu => (
-            <MenuItem
-              key={menu.id}
-              menu={menu}
-              onPressMenuOption={onPressModalOpen}
-              isExpanded={isExpanded}
-              toggleExpand={toggleExpand}
-              setButtonPosition={setButtonPosition}
-            />
-          ))}
-      {isModalVisible && (
-        <MenuModal
-          visible={isModalVisible}
-          onPressModalClose={onPressModalClose}
-          onUpdate={() => handlePress(0)}
-          onDelete={opendeletemenu}
-          buttonPosition={buttonPosition} // 모달 위치 설정
+
+      {sortedMenus.map(menu => (
+        <MenuItem
+          key={menu.id}
+          menu={menu}
+          isOpen={openItemId === menu.id}
+          onOpen={() => handleOpenItem(menu.id)}
+          onClose={handleCloseAll}
+          onEdit={handleEditMenu}
+          onDelete={() => handleDeleteMenu(menu.id, menu.name)} // 삭제 함수 전달
+          scrollViewRef={scrollViewRef} // 스크롤 참조 전달
         />
-      )}
+      ))}
+      <AlertComponent />
     </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     paddingBottom: 20,
