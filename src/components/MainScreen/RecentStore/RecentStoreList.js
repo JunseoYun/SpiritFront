@@ -109,6 +109,10 @@ const RecentStoreList = ({refresh, setRefresh, navigation}) => {
         contentContainerStyle={styles.scrollViewContent}
         onEndReached={handleEndReached} // 끝에 도달했을 때 추가 데이터 로드
         onEndReachedThreshold={0.5} // 스크롤 트리거 임계값
+        initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
+        maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
+        windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
+        removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
         ListFooterComponent={renderFooter} // 로딩 인디케이터
         ListEmptyComponent={renderEmptyComponent} // 빈 상태 처리
       />

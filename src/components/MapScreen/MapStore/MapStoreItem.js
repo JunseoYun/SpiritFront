@@ -34,10 +34,13 @@ const MapStoreItem = ({
         index === selectedStoreIndex ? styles.selectedStore : null,
       ]}
       onPress={handlePress}>
-      <Image
-        source={require('../../../assets/kim.png')}
-        style={styles.storeImage}
-      />
+      {item.mainImgUrl ? (
+        <Image source={{uri: item.mainImgUrl}} style={styles.storeImage} />
+      ) : (
+        <View style={styles.storeImagetext}>
+          <Text style={{color: 'white', textAlign: 'center'}}>이미지 없음</Text>
+        </View>
+      )}
       <View style={styles.titletopview}>
         <View style={styles.titleview}>
           <Text style={styles.storeName}>{item.name}</Text>
@@ -63,7 +66,6 @@ const MapStoreItem = ({
             {item.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
           </Text>
         </View>
-        {/* <Text style={styles.menutext}>소주 5000원</Text> */}
         <Text style={styles.menutext} numberOfLines={1} ellipsizeMode="tail">
           {item.mainDrinkDtos && item.mainDrinkDtos.length > 0
             ? item.mainDrinkDtos
@@ -94,6 +96,15 @@ const styles = StyleSheet.create({
     height: 100,
     resizeMode: 'contain',
     borderRadius: 10,
+  },
+  storeImagetext: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+    marginRight: 12,
+    justifyContent: 'center', // 수직 중앙 정렬
+    alignItems: 'center',
+    backgroundColor: 'black',
   },
   titletopview: {
     flex: 1,
