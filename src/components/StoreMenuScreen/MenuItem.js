@@ -76,23 +76,23 @@ const MenuItem = ({
   };
 
   return (
-    <Pressable style={styles.container} onPress={onClose}>
-      {/* 삭제/수정 버튼 */}
-      <View style={[styles.actionsContainer, {width: BUTTON_WIDTH}]}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={handleUpdate}>
-          <Text style={styles.actionText}>수정</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => onDelete(menu.id, menu.name)}>
-          <Text style={styles.actionText}>삭제</Text>
-        </TouchableOpacity>
-      </View>
+    <GestureHandlerRootView>
+      <Pressable style={styles.container} onPress={onClose}>
+        {/* 삭제/수정 버튼 */}
+        <View style={[styles.actionsContainer, {width: BUTTON_WIDTH}]}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.editButton]}
+            onPress={handleUpdate}>
+            <Text style={styles.actionText}>수정</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.deleteButton]}
+            onPress={() => onDelete(menu.id, menu.name)}>
+            <Text style={styles.actionText}>삭제</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* 메뉴 아이템 */}
-      <GestureHandlerRootView>
+        {/* 메뉴 아이템 */}
         <PanGestureHandler
           simultaneousHandlers={scrollViewRef}
           onGestureEvent={handleGestureEvent}
@@ -128,7 +128,7 @@ const MenuItem = ({
             )}
           </Animated.View>
         </PanGestureHandler>
-      </GestureHandlerRootView>
+      </Pressable>
       {/* 수정 모달 */}
       <MenuModal
         isModalVisible={isModalVisible}
@@ -139,7 +139,7 @@ const MenuItem = ({
         menuData={menu}
         onUpdate={onEdit}
       />
-    </Pressable>
+    </GestureHandlerRootView>
   );
 };
 
@@ -203,8 +203,9 @@ const styles = StyleSheet.create({
   },
   menuTitleRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center', // 세로 정렬
   },
+
   Signaturetitle: {
     fontSize: 18,
     color: '#333',
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 5,
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
   },
   Signaturecontent: {
     paddingVertical: 5,

@@ -16,6 +16,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import {Portal} from 'react-native-paper';
 
 const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
   const [originalMenu, setOriginalMenu] = useState(menuData);
@@ -173,114 +174,120 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
   };
 
   return (
-    <Modal
-      visible={isModalVisible}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={onPressModalClose}>
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>메뉴 수정</Text>
+    <Portal>
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={onPressModalClose}>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>메뉴 수정</Text>
 
-          <ScrollView style={{width: '100%'}}>
-            <View style={styles.imageContainer}>
-              {menuImage ? (
-                <Image source={{uri: menuImage}} style={styles.menuImage} />
-              ) : (
-                <View style={styles.placeholderImage}>
-                  <Text style={styles.placeholderText}>이미지 추가</Text>
-                  <Pressable onPress={selectImage}>
-                    <MaterialCommunityIcons
-                      name="image-plus"
-                      size={40}
-                      color="#333"
-                    />
-                  </Pressable>
+            <ScrollView style={{width: '100%'}}>
+              <View style={styles.imageContainer}>
+                {menuImage ? (
+                  <Image source={{uri: menuImage}} style={styles.menuImage} />
+                ) : (
+                  <View style={styles.placeholderImage}>
+                    <Text style={styles.placeholderText}>이미지 추가</Text>
+                    <Pressable onPress={selectImage}>
+                      <MaterialCommunityIcons
+                        name="image-plus"
+                        size={40}
+                        color="#333"
+                      />
+                    </Pressable>
+                  </View>
+                )}
+              </View>
+
+              {menuImage && (
+                <View style={styles.imageButtonView}>
+                  <TouchableOpacity
+                    style={styles.imageButton}
+                    onPress={selectImage}>
+                    <Text style={styles.imageButtonText}>이미지 변경</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={handleDeleteImage}>
+                    <Text style={styles.imageButtonText}>이미지 삭제</Text>
+                  </TouchableOpacity>
                 </View>
               )}
-            </View>
+              {menuName && <Text style={styles.inputText}>메뉴 이름*</Text>}
+              <TextInput
+                style={[
+                  styles.input,
+                  {borderBottomColor: isFocusedName ? '#16BBFF' : '#F2F2F2'},
+                ]}
+                value={menuName}
+                onChangeText={setMenuName}
+                placeholder=" 메뉴 이름*"
+                onFocus={() => setIsFocusedName(true)}
+                onBlur={() => setIsFocusedName(false)}
+              />
 
-            {menuImage && (
-              <View style={styles.imageButtonView}>
+              {menuDescription && (
+                <Text style={styles.inputText}>메뉴 소개</Text>
+              )}
+              <TextInput
+                style={[
+                  styles.inputMultiline,
+                  {
+                    borderBottomColor: isFocusedDescription
+                      ? '#16BBFF'
+                      : '#F2F2F2',
+                  },
+                ]}
+                value={menuDescription}
+                onChangeText={setMenuDescription}
+                placeholder="메뉴 소개"
+                multiline={true}
+                textAlignVertical="top"
+                onFocus={() => setIsFocusedDescription(true)}
+                onBlur={() => setIsFocusedDescription(false)}
+              />
+
+              {menuPrice && <Text style={styles.inputText}>메뉴 가격*</Text>}
+              <TextInput
+                style={[
+                  styles.input,
+                  {borderBottomColor: isFocusedPrice ? '#16BBFF' : '#F2F2F2'},
+                ]}
+                value={menuPrice}
+                onChangeText={setMenuPrice}
+                placeholder="메뉴 가격*"
+                onFocus={() => setIsFocusedPrice(true)}
+                onBlur={() => setIsFocusedPrice(false)}
+              />
+              <View style={styles.switchContainer}>
+                <Text style={styles.switchLabel}>대표 메뉴 여부</Text>
+                <Switch
+                  value={isMain}
+                  onValueChange={setIsMain}
+                  trackColor={{false: '#ccc', true: '#16BBFF'}} // ✅ 배경 색상 변경
+                />
+              </View>
+              <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  style={styles.imageButton}
-                  onPress={selectImage}>
-                  <Text style={styles.imageButtonText}>이미지 변경</Text>
+                  style={styles.cancelButton}
+                  onPress={handleCancel}>
+                  <Text style={styles.buttonText}>취소</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={handleDeleteImage}>
-                  <Text style={styles.imageButtonText}>이미지 삭제</Text>
+                  style={styles.saveButton}
+                  onPress={handleSave}>
+                  <Text style={styles.buttonText}>저장</Text>
                 </TouchableOpacity>
               </View>
-            )}
-            {menuName && <Text style={styles.inputText}>메뉴 이름*</Text>}
-            <TextInput
-              style={[
-                styles.input,
-                {borderBottomColor: isFocusedName ? '#16BBFF' : '#F2F2F2'},
-              ]}
-              value={menuName}
-              onChangeText={setMenuName}
-              placeholder=" 메뉴 이름*"
-              onFocus={() => setIsFocusedName(true)}
-              onBlur={() => setIsFocusedName(false)}
-            />
-
-            {menuDescription && <Text style={styles.inputText}>메뉴 소개</Text>}
-            <TextInput
-              style={[
-                styles.inputMultiline,
-                {
-                  borderBottomColor: isFocusedDescription
-                    ? '#16BBFF'
-                    : '#F2F2F2',
-                },
-              ]}
-              value={menuDescription}
-              onChangeText={setMenuDescription}
-              placeholder="메뉴 소개"
-              multiline={true}
-              textAlignVertical="top"
-              onFocus={() => setIsFocusedDescription(true)}
-              onBlur={() => setIsFocusedDescription(false)}
-            />
-
-            {menuPrice && <Text style={styles.inputText}>메뉴 가격*</Text>}
-            <TextInput
-              style={[
-                styles.input,
-                {borderBottomColor: isFocusedPrice ? '#16BBFF' : '#F2F2F2'},
-              ]}
-              value={menuPrice}
-              onChangeText={setMenuPrice}
-              placeholder="메뉴 가격*"
-              onFocus={() => setIsFocusedPrice(true)}
-              onBlur={() => setIsFocusedPrice(false)}
-            />
-            <View style={styles.switchContainer}>
-              <Text style={styles.switchLabel}>대표 메뉴 여부</Text>
-              <Switch
-                value={isMain}
-                onValueChange={setIsMain}
-                trackColor={{false: '#ccc', true: '#16BBFF'}} // ✅ 배경 색상 변경
-              />
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={handleCancel}>
-                <Text style={styles.buttonText}>취소</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.buttonText}>저장</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
+            </ScrollView>
+          </View>
         </View>
-      </View>
-      <AlertComponent />
-    </Modal>
+        <AlertComponent />
+      </Modal>
+    </Portal>
   );
 };
 const styles = StyleSheet.create({
