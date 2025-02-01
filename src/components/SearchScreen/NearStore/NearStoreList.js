@@ -97,6 +97,10 @@ const NearStoreList = ({navigation, location}) => {
             });
           }
         }}
+        initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
+        maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
+        windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
+        removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
         onEndReachedThreshold={0.5} // 리스트 끝에 가까워지면 데이터를 추가로 가져옵니다.
         ListFooterComponent={renderFooter} // 로딩 인디케이터
         ListEmptyComponent={renderEmptyComponent}

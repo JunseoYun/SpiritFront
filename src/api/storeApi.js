@@ -107,7 +107,6 @@ export const Store_getby_radius = async (latitude, longitude) => {
         latitude,
       },
     });
-    console.log(response.data.data + 2);
     return response.data.data;
   } catch (error) {
     functionError(error);
