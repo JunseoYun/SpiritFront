@@ -196,7 +196,6 @@ const styles = StyleSheet.create({
   },
   SignatureMenuTextsview: {
     flex: 1,
-    paddingLeft: 10,
     paddingVertical: 3,
     justifyContent: 'space-between',
   },

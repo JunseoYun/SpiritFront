@@ -27,8 +27,6 @@ import UpdateBottomSheet from '../../components/StoreScreen/UpdateBottomSheet';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import forbiddenWords from '../../hooks/forbiddenWords';
 
-const {width} = Dimensions.get('window');
-
 const StoreMainScreen = ({navigation}) => {
   const route = useRoute();
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -50,7 +48,6 @@ const StoreMainScreen = ({navigation}) => {
   const startUpdate = () => {
     setIsUpdate(true);
   };
-
   const endUpdate = () => {
     setIsUpdate(false);
     handleBottomClose();
@@ -287,6 +284,7 @@ const StoreMainScreen = ({navigation}) => {
                     navigation={navigation}
                     storeId={storeId}
                     alcohols={alcohols}
+                    mainDrinks={storedata.mainDrinkDtos}
                     scrollViewRef={scrollViewRef}
                   />
                 )}
