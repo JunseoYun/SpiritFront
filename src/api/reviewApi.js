@@ -33,9 +33,14 @@ export const ReviewCreate = async data => {
   }
 };
 
-export const ReviewStoreGet = async storeId => {
+export const ReviewStoreGet = async (storeId, page) => {
   try {
-    const response = await axiosInstance.get(`/review/get-by/store/${storeId}`);
+    const response = await axiosInstance.get(
+      `/review/get-by/store/${storeId}`,
+      {
+        params: {page},
+      },
+    );
     return response.data.data;
   } catch (error) {
     functionError(error);
