@@ -230,14 +230,14 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
                     onPress={selectImage}>
                     <MaterialIcons
                       name="photo-library"
-                      size={35}
-                      color="#16BBFF"
+                      size={30}
+                      color="#fff"
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.deleteButton, styles.shadowEffect]}
                     onPress={handleDeleteImage}>
-                    <Ionicons name="trash-outline" size={35} color="#FF4D4D" />
+                    <Ionicons name="trash-outline" size={30} color="#fff" />
                   </TouchableOpacity>
                 </View>
               )}
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   imageButton: {
     position: 'absolute',
     top: -75,
-    left: 50,
+    right: 50,
     alignItems: 'center',
     marginVertical: 10,
     padding: 10,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   deleteButton: {
     position: 'absolute',
     top: -75,
-    right: 50,
+    left: 50,
     alignItems: 'center',
     marginVertical: 10,
     padding: 10,

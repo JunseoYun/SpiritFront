@@ -19,7 +19,6 @@ import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Octicons from 'react-native-vector-icons/Octicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import AlcoholInput from './AlcoholInput';
@@ -237,19 +236,18 @@ const AlcoholModal = ({
               {alcoholImage && (
                 <View style={styles.imageButtonView}>
                   <TouchableOpacity
+                    style={[styles.deleteButton, styles.shadowEffect]}
+                    onPress={handleDeleteImage}>
+                    <Ionicons name="trash-outline" size={30} color="#fff" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
                     style={[styles.imageButton, styles.shadowEffect]}
                     onPress={selectImage}>
                     <MaterialIcons
                       name="photo-library"
-                      size={35}
-                      color="#16BBFF"
+                      size={30}
+                      color="#fff"
                     />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.deleteButton, styles.shadowEffect]}
-                    onPress={handleDeleteImage}>
-                    <Ionicons name="trash-outline" size={35} color="#FF4D4D" />
                   </TouchableOpacity>
                 </View>
               )}
@@ -351,7 +349,7 @@ const styles = StyleSheet.create({
   imageButton: {
     position: 'absolute',
     top: -75,
-    left: 65,
+    right: 65,
     alignItems: 'center',
     marginVertical: 10,
     padding: 10,
@@ -364,7 +362,7 @@ const styles = StyleSheet.create({
   deleteButton: {
     position: 'absolute',
     top: -75,
-    right: 65,
+    left: 65,
     alignItems: 'center',
     marginVertical: 10,
     padding: 10,
