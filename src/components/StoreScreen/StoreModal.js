@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, Pressable, Modal, StyleSheet} from 'react-native';
+import {Portal} from 'react-native-paper';
 
 const StoreModal = ({isModalVisible, onPressModalClose, startUpdate}) => {
   const handlePress = () => {
@@ -8,30 +9,33 @@ const StoreModal = ({isModalVisible, onPressModalClose, startUpdate}) => {
   };
 
   return (
-    <Modal visible={isModalVisible} animationType="fade" transparent={true}>
-      <Pressable style={styles.modalBackground} onPress={onPressModalClose}>
-        <View
-          style={styles.modalContainer}
-          onStartShouldSetResponder={() => true}>
-          <View style={styles.modalContent}>
-            <Pressable style={styles.modalButton} onPress={() => handlePress()}>
-              <Text style={styles.modalButtonText}>매장 수정</Text>
-            </Pressable>
-            <View style={styles.line}></View>
-            <Pressable onPress={onPressModalClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>닫기</Text>
-            </Pressable>
+    <Portal>
+      <Modal visible={isModalVisible} animationType="none" transparent={true}>
+        <Pressable style={styles.modalBackground} onPress={onPressModalClose}>
+          <View
+            style={styles.modalContainer}
+            onStartShouldSetResponder={() => true}>
+            <View style={styles.modalContent}>
+              <Pressable
+                style={styles.modalButton}
+                onPress={() => handlePress()}>
+                <Text style={styles.modalButtonText}>매장 수정</Text>
+              </Pressable>
+              <View style={styles.line}></View>
+              <Pressable onPress={onPressModalClose} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>닫기</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
-      </Pressable>
-    </Modal>
+        </Pressable>
+      </Modal>
+    </Portal>
   );
 };
 
 const styles = StyleSheet.create({
   modalBackground: {
-    width: '100%',
-    height: '100%',
+    flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // 어두운 반투명 배경
     justifyContent: 'center',
     alignItems: 'center',
