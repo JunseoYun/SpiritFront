@@ -30,7 +30,8 @@ const StoreModal = ({isModalVisible, onPressModalClose, startUpdate}) => {
 
 const styles = StyleSheet.create({
   modalBackground: {
-    flex: 1,
+    width: '100%',
+    height: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // 어두운 반투명 배경
     justifyContent: 'center',
     alignItems: 'center',

@@ -115,7 +115,10 @@ const StoreMainScreen = ({navigation}) => {
     const performUpdate = async (key, value) => {
       try {
         await UpdateStore(storeId, {[key]: value});
-        getStoreData();
+        const storeData = await StoreMainget(storeId);
+        setStoredata(storeData);
+        setLongitude(storeData.locationDto.longitude);
+        setLatitude(storeData.locationDto.latitude);
       } catch (error) {
         handleError();
       }
@@ -158,24 +161,23 @@ const StoreMainScreen = ({navigation}) => {
     return value;
   };
 
-  const getStoreData = async () => {
-    try {
-      const storeData = await StoreMainget(storeId);
-      setStoredata(storeData);
-      setLongitude(storeData.locationDto.longitude);
-      setLatitude(storeData.locationDto.latitude);
-      const Menus = await StoreMenuget(storeId);
-      setMenus(Menus);
-      const Drinks = await StoreDrinkget(storeId);
-      setAlcohols(Drinks);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   useEffect(() => {
+    const getStoreData = async () => {
+      try {
+        const storeData = await StoreMainget(storeId);
+        setStoredata(storeData);
+        setLongitude(storeData.locationDto.longitude);
+        setLatitude(storeData.locationDto.latitude);
+        const Menus = await StoreMenuget(storeId);
+        setMenus(Menus);
+        const Drinks = await StoreDrinkget(storeId);
+        setAlcohols(Drinks);
+      } catch (error) {
+        console.error(error);
+      }
+    };
     getStoreData();
-  }, [storeId]);
+  }, []);
 
   const imageSliderData =
     storedata.imgUrlList?.map(url => ({imageUrl: url})) || [];
