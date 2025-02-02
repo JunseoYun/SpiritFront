@@ -29,21 +29,20 @@ const MenuItem = ({
   onDelete,
   scrollViewRef,
 }) => {
-  const translateX = useSharedValue(0); // 스와이프 애니메이션 값
-  const [isModalVisible, setIsModalVisible] = useState(false); // 수정 모달 상태
+  const translateX = useSharedValue(0);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  // Animated 스타일
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{translateX: translateX.value}],
   }));
 
-  const BUTTON_WIDTH = 150; // 수정+삭제 버튼의 총 너비
-  const SWIPE_THRESHOLD = BUTTON_WIDTH * 0.3; // ✅ 버튼 크기의 30% 이상 스와이프해야 활성화
+  const BUTTON_WIDTH = 150;
+  const SWIPE_THRESHOLD = BUTTON_WIDTH * 0.3;
 
   const handleGestureEvent = event => {
     const translationX = event.nativeEvent.translationX;
     if (translationX < 0) {
-      translateX.value = Math.max(translationX / 2, -BUTTON_WIDTH); // ✅ 속도를 줄이기 위해 4로 나눔
+      translateX.value = Math.max(translationX / 2, -BUTTON_WIDTH);
     }
   };
 
@@ -51,7 +50,6 @@ const MenuItem = ({
     const {translationX, velocityX} = event.nativeEvent;
 
     if (velocityX < -800 || translationX < -SWIPE_THRESHOLD * 2) {
-      // ✅ 속도가 너무 빠를 때도 열린 상태 유지
       translateX.value = withSpring(-BUTTON_WIDTH, {
         damping: 15,
         stiffness: 150,
@@ -63,7 +61,6 @@ const MenuItem = ({
     }
   };
 
-  // 열려 있는 상태 변경
   useEffect(() => {
     if (!isOpen) {
       translateX.value = withSpring(0);
@@ -115,7 +112,9 @@ const MenuItem = ({
                 </Text>
               </View>
               <Text style={styles.Signatureprice}>
-                {menu?.price.toLocaleString()}원
+                {/^\d+$/.test(menu?.price)
+                  ? Number(menu.price).toLocaleString() + '원'
+                  : menu?.price}
               </Text>
             </View>
             {menu?.imgUrl && (

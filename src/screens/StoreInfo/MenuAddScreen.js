@@ -28,23 +28,6 @@ const MenuAddScreen = ({navigation}) => {
     setMenus(updatedMenus);
   };
 
-  const handleCheckBoxChange = index => {
-    const maxMainMenus = 3;
-    const selectedCount = menus.filter(menu => menu.main).length;
-
-    if (!menus[index].main && selectedCount >= maxMainMenus) {
-      showAlert({
-        title: '제한 초과',
-        message: `대표 메뉴는 최대 ${maxMainMenus}개까지 설정 가능합니다.`,
-      });
-      return;
-    }
-
-    const updatedMenus = [...menus];
-    updatedMenus[index].main = !updatedMenus[index].main; // `main` 값 토글
-    setMenus(updatedMenus);
-  };
-
   const handleAddMenu = () => {
     setMenus([
       ...menus,
@@ -147,7 +130,6 @@ const MenuAddScreen = ({navigation}) => {
             menu={menu}
             index={index}
             handleMenuChange={handleMenuChange}
-            handleCheckBoxChange={handleCheckBoxChange}
             onDelete={handleDeleteMenu}
           />
         ))}
@@ -171,13 +153,13 @@ const styles = StyleSheet.create({
   },
 
   saveButton: {
-    left: '10%',
-    width: '80%',
+    width: '90%',
     marginVertical: 50,
     alignItems: 'center',
     backgroundColor: '#16BBFF',
     paddingVertical: 10,
     borderRadius: 10,
+    alignSelf: 'center',
   },
   saveButtonText: {
     color: 'white',

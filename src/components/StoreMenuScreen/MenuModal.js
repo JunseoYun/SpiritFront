@@ -14,6 +14,8 @@ import {
 import {MenuUpdate, MenuUpdateImage, MenuDeleteImage} from '../../api/menuApi';
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import {Portal} from 'react-native-paper';
@@ -33,39 +35,32 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
 
   const {showAlert, AlertComponent} = useCustomAlert();
 
-  // ✅ 이미지 선택
   const selectImage = () => {
     ImagePicker.openPicker({
       width: 500,
       height: 500,
       cropping: true,
       mediaType: 'photo',
-    })
-      .then(image => {
-        setSelectedImage(image);
-        setMenuImage(image.path); // ✅ UI 미리보기 즉시 반영
-        setIsImageDeleted(false); // ✅ 삭제 상태 해제
-      })
-      .catch(error => {
-        console.log('ImagePicker Error: ', error);
-      });
+    }).then(image => {
+      setSelectedImage(image);
+      setMenuImage(image.path);
+      setIsImageDeleted(false);
+    });
   };
 
-  // ✅ 이미지 삭제 (API 호출 X, UI에서만 미리 삭제)
   const handleDeleteImage = () => {
     showAlert({
       title: `이미지를 삭제하시겠습니까?`,
       onConfirm: () => {
-        setMenuImage(''); // ✅ UI에서 즉시 반영 (기본 상태로 변경)
+        setMenuImage('');
         setSelectedImage(null);
-        setIsImageDeleted(true); // ✅ 삭제 상태 활성화
+        setIsImageDeleted(true);
       },
       onCancel: null,
       type: 'delete',
     });
   };
 
-  // ✅ 저장 버튼 클릭 시
   const handleSave = async () => {
     let isImageChanged = selectedImage !== null;
     let isInfoChanged =
@@ -157,7 +152,9 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
       onUpdate(updatedMenu);
       onPressModalClose();
     } catch (error) {
-      console.error('Update Error:', error);
+      showAlert({
+        title: '업데이트 오류',
+      });
     }
   };
 
@@ -182,7 +179,16 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
         onRequestClose={onPressModalClose}>
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>메뉴 수정</Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity onPress={handleCancel}>
+                <Ionicons name="arrow-back-outline" size={25} color="#333" />
+              </TouchableOpacity>
+
+              <Text style={styles.modalTitle}>메뉴 수정</Text>
+              <TouchableOpacity onPress={handleSave}>
+                <Ionicons name="paper-plane-sharp" size={25} color="#16BBFF" />
+              </TouchableOpacity>
+            </View>
 
             <ScrollView style={{width: '100%'}}>
               <View style={styles.imageContainer}>
@@ -190,7 +196,6 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
                   <Image source={{uri: menuImage}} style={styles.menuImage} />
                 ) : (
                   <View style={styles.placeholderImage}>
-                    <Text style={styles.placeholderText}>이미지 추가</Text>
                     <Pressable onPress={selectImage}>
                       <MaterialCommunityIcons
                         name="image-plus"
@@ -205,14 +210,19 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
               {menuImage && (
                 <View style={styles.imageButtonView}>
                   <TouchableOpacity
-                    style={styles.imageButton}
+                    style={[styles.imageButton, styles.shadowEffect]}
                     onPress={selectImage}>
-                    <Text style={styles.imageButtonText}>이미지 변경</Text>
+                    <MaterialIcons
+                      name="photo-library"
+                      size={35}
+                      color="#16BBFF"
+                    />
                   </TouchableOpacity>
+
                   <TouchableOpacity
-                    style={styles.deleteButton}
+                    style={[styles.deleteButton, styles.shadowEffect]}
                     onPress={handleDeleteImage}>
-                    <Text style={styles.imageButtonText}>이미지 삭제</Text>
+                    <Ionicons name="trash-outline" size={35} color="#FF4D4D" />
                   </TouchableOpacity>
                 </View>
               )}
@@ -270,18 +280,6 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
                   trackColor={{false: '#ccc', true: '#16BBFF'}} // ✅ 배경 색상 변경
                 />
               </View>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={handleCancel}>
-                  <Text style={styles.buttonText}>취소</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={handleSave}>
-                  <Text style={styles.buttonText}>저장</Text>
-                </TouchableOpacity>
-              </View>
             </ScrollView>
           </View>
         </View>
@@ -321,16 +319,16 @@ const styles = StyleSheet.create({
     marginVertical: 15,
   },
   menuImage: {
-    width: 150, // ✅ 이미지 크기 증가
-    height: 150,
+    width: 200, // ✅ 이미지 크기 증가
+    height: 200,
     resizeMode: 'cover',
     borderRadius: 10,
     borderWidth: 2,
     borderColor: '#E7E7E7',
   },
   placeholderImage: {
-    width: 150,
-    height: 150,
+    width: 200,
+    height: 200,
     backgroundColor: '#F2F2F2',
     justifyContent: 'center',
     alignItems: 'center',
@@ -346,13 +344,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   imageButton: {
-    backgroundColor: '#16BBFF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
+    position: 'absolute',
+    top: -75,
+    left: 45,
     alignItems: 'center',
     marginVertical: 10,
-    width: '50%',
+    padding: 10,
   },
   imageButtonText: {
     color: 'white',
@@ -360,13 +357,19 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   deleteButton: {
-    backgroundColor: '#FF4D4D',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
+    position: 'absolute',
+    top: -75,
+    right: 45,
     alignItems: 'center',
     marginVertical: 10,
-    width: '50%',
+    padding: 10,
+  },
+  shadowEffect: {
+    shadowColor: '#000', // 그림자 색상
+    shadowOffset: {width: 0, height: 4}, // 그림자 위치 (x, y)
+    shadowOpacity: 0.3, // 그림자 투명도 (0~1)
+    shadowRadius: 4, // 그림자 블러 정도
+    elevation: 5, // 안드로이드용 그림자 (숫자가 클수록 그림자 강조)
   },
 
   input: {
@@ -395,7 +398,7 @@ const styles = StyleSheet.create({
   inputText: {
     marginVertical: 5,
     fontSize: 16,
-    color: '#333',
+    color: '#999',
     fontWeight: 500,
     marginTop: 10,
   },
@@ -408,7 +411,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   switchLabel: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#333',
   },
@@ -416,7 +419,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: 20,
   },
   cancelButton: {
     flex: 1,

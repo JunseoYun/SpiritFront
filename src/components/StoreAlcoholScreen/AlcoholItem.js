@@ -1,62 +1,185 @@
-import React, {useState} from 'react';
-import {View, Text, Pressable, Image, StyleSheet} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Pressable,
+} from 'react-native';
+import {
+  PanGestureHandler,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler';
 
-const AlcoholItem = ({alcohol, onPressMenuOption, setButtonPosition}) => {
-  const [isPressed, setIsPressed] = useState(false); // 눌림 상태 관리
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 
-  const handleLongPress = event => {
-    // 모달 위치 설정
-    event.target.measure((x, y, width, height, pageX, pageY) => {
-      setButtonPosition({x: pageX, y: pageY + height}); // 버튼 아래로 모달 배치
-    });
-    // 모달 열기
-    onPressMenuOption(menu.menuId);
+import AlcoholModal from './AlcoholModal';
+const AlcoholItem = ({
+  alcohol,
+  isOpen,
+  onOpen,
+  onClose,
+  onEdit,
+  onDelete,
+  scrollViewRef,
+}) => {
+  const translateX = useSharedValue(0);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{translateX: translateX.value}],
+  }));
+
+  const BUTTON_WIDTH = 150;
+  const SWIPE_THRESHOLD = BUTTON_WIDTH * 0.3;
+
+  const handleGestureEvent = event => {
+    const translationX = event.nativeEvent.translationX;
+    if (translationX < 0) {
+      translateX.value = Math.max(translationX / 2, -BUTTON_WIDTH);
+    }
+  };
+
+  const handleGestureEnd = event => {
+    const {translationX, velocityX} = event.nativeEvent;
+
+    if (velocityX < -800 || translationX < -SWIPE_THRESHOLD * 2) {
+      translateX.value = withSpring(-BUTTON_WIDTH, {
+        damping: 15,
+        stiffness: 150,
+      });
+      onOpen();
+    } else {
+      translateX.value = withSpring(0, {damping: 15, stiffness: 150});
+      onClose();
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      translateX.value = withSpring(0);
+    }
+  }, [isOpen]);
+
+  const handleUpdate = () => {
+    setIsModalVisible(true);
+    onClose();
   };
 
   return (
-    <Pressable
-      onLongPress={handleLongPress} // 꾹 눌렀을 때 동작
-      onPressIn={() => setIsPressed(true)} // 눌렀을 때 배경색 변경
-      onPressOut={() => setIsPressed(false)} // 뗐을 때 배경색 복원
-      style={[
-        styles.SignatureMenuView,
-        isPressed && {backgroundColor: 'rgba(16, 190, 251, 0.1)'}, // 눌렸을 때 배경색
-      ]}>
-      <View style={styles.SignatureMenuTextsview}>
-        <View style={styles.menuTitleRow}>
-          {/* <Text style={styles.Signaturetitle}>{menu.menuName || '메뉴 이름'}</Text> */}
-          <Text style={styles.Signaturetitle}>매운갈비찜</Text>
-          {menu.isMain && <Text style={styles.mainMenu}>대표</Text>}
+    <GestureHandlerRootView>
+      <Pressable style={styles.container} onPress={onClose}>
+        {/* 삭제/수정 버튼 */}
+        <View style={[styles.actionsContainer, {width: BUTTON_WIDTH}]}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.editButton]}
+            onPress={handleUpdate}>
+            <Text style={styles.actionText}>수정</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.deleteButton]}
+            onPress={() => onDelete(alcohol.id, alcohol.name)}>
+            <Text style={styles.actionText}>삭제</Text>
+          </TouchableOpacity>
         </View>
-        <Text
-          style={styles.Signaturecontent}
-          numberOfLines={3}
-          ellipsizeMode="tail">
-          {/* {menu.menuContent || '메뉴 설명'} */}
-          시그니처 메뉴 매운갈비찜입니다, 맵기 조절 가능!
-        </Text>
-        <Text style={styles.Signatureprice}>{menu.price}원</Text>
-      </View>
-      <View style={styles.ImageContainer}>
-        <Image
-          source={
-            menu.imgUrl ? {uri: menu.imgUrl} : require('../../assets/kim.png')
-          }
-          style={styles.Signatureimg}
-        />
-      </View>
-    </Pressable>
+
+        {/* 메뉴 아이템 */}
+        <PanGestureHandler
+          simultaneousHandlers={scrollViewRef}
+          onGestureEvent={handleGestureEvent}
+          onEnded={handleGestureEnd}
+          activeOffsetX={[-20, 20]} // ✅ 너무 작은 움직임을 무시
+        >
+          <Animated.View style={[styles.menuContainer, animatedStyle]}>
+            {/* 메뉴 컨텐츠 */}
+            <View style={styles.SignatureMenuTextsview}>
+              <View>
+                <View style={styles.menuTitleRow}>
+                  <Text style={styles.Signaturetitle}>{alcohol?.name}</Text>
+                  <Text style={styles.mainMenu}>{alcohol?.type}</Text>
+                </View>
+                <Text
+                  style={styles.Signaturecontent}
+                  numberOfLines={3}
+                  ellipsizeMode="tail">
+                  {alcohol?.description}
+                </Text>
+              </View>
+              <Text style={styles.Signatureprice}>
+                {/^\d+$/.test(alcohol?.price)
+                  ? Number(alcohol.price).toLocaleString() + '원'
+                  : alcohol?.price}
+              </Text>
+            </View>
+            {alcohol?.imgUrl && (
+              <View style={styles.ImageContainer}>
+                <Image
+                  source={{uri: alcohol?.imgUrl}}
+                  style={styles.Signatureimg}
+                />
+              </View>
+            )}
+          </Animated.View>
+        </PanGestureHandler>
+      </Pressable>
+      {/* 수정 모달 */}
+      <AlcoholModal
+        isModalVisible={isModalVisible}
+        onPressModalClose={() => {
+          setIsModalVisible(false);
+          onClose();
+        }}
+        alcoholData={alcohol}
+        onUpdate={onEdit}
+      />
+    </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
-  SignatureMenuView: {
+  container: {
+    position: 'relative',
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+  },
+  actionsContainer: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f8f8',
+  },
+  actionButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 75,
+    height: '100%',
+  },
+  editButton: {
+    backgroundColor: '#16BBFF',
+  },
+  deleteButton: {
+    backgroundColor: '#FF4D4D',
+  },
+  actionText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  menuContainer: {
     width: '100%',
     flexDirection: 'row',
     paddingVertical: 20,
     paddingHorizontal: 18,
     borderBottomWidth: 1,
     borderColor: '#E7E7E7',
+    backgroundColor: '#fff',
   },
   ImageContainer: {
     width: 100,
@@ -74,14 +197,15 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingLeft: 10,
     paddingVertical: 3,
+    justifyContent: 'space-between',
   },
   menuTitleRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    textAlign: 'center',
+    alignItems: 'center', // 세로 정렬
   },
+
   Signaturetitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#333',
     fontWeight: 'bold',
   },
@@ -94,7 +218,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 5,
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
   },
   Signaturecontent: {
     paddingVertical: 5,
@@ -103,6 +227,7 @@ const styles = StyleSheet.create({
     color: '#999',
     fontWeight: '400',
     marginTop: 1,
+    fontSize: 15,
   },
   Signatureprice: {
     marginTop: 5,

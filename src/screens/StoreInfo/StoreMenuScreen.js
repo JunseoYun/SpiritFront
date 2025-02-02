@@ -10,13 +10,13 @@ const StoreMenuScreen = ({navigation, storeId, menus, scrollViewRef}) => {
   const [menuList, setMenuList] = useState(menus);
 
   const {showAlert, AlertComponent} = useCustomAlert();
-  // 메뉴 정렬: isMain이 true인 것 먼저
+
   const sortedMenus = menuList
     ? [...menuList].sort((a, b) => b.isMain - a.isMain)
     : [];
 
   useEffect(() => {
-    setMenuList(menus); // menus 변경 시 업데이트
+    setMenuList(menus);
   }, [menus]);
 
   const handleOpenItem = id => {

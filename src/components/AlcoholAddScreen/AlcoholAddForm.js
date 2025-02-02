@@ -21,7 +21,6 @@ const AlcoholAddForm = ({
 }) => {
   const {showAlert, AlertComponent} = useCustomAlert();
   const [isImageSelected, setIsImageSelected] = useState(false);
-  console.log(alcohol);
 
   const selectImage = () => {
     ImagePicker.openPicker({
@@ -29,13 +28,9 @@ const AlcoholAddForm = ({
       height: 500,
       cropping: true,
       mediaType: 'photo',
-    })
-      .then(image => {
-        handleAlcoholChange(image, index, 'imageUri');
-      })
-      .catch(error => {
-        console.log('ImagePicker Error: ', error);
-      });
+    }).then(image => {
+      handleAlcoholChange(image, index, 'imageUri');
+    });
   };
 
   const confirmDeleteImage = () => {
@@ -71,7 +66,6 @@ const AlcoholAddForm = ({
         label="주류 가격*"
         value={alcohol.price}
         onChangeText={text => {
-          // const numericValue = text.replace(/[^0-9]/g, ''); // 숫자만 남기기
           handleAlcoholChange(text, index, 'price');
         }}
         placeholder="주류 가격*"
@@ -87,7 +81,10 @@ const AlcoholAddForm = ({
         multiline
       />
 
-      <RptAlcoholPicker />
+      <RptAlcoholPicker
+        selectedType={alcohol.type}
+        onTypeChange={value => handleAlcoholChange(value, index, 'type')}
+      />
       <View style={styles.menuAddImageView}>
         <Text style={styles.menuAddImageText}>주류 사진</Text>
         {alcohol.imageUri?.path ? (
