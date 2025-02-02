@@ -309,17 +309,16 @@ const StoreMainScreen = ({navigation}) => {
                 )}
               </View>
             )}
-            <StoreModal
-              isModalVisible={isModalVisible}
-              onPressModalClose={onPressModalClose}
-              storeId={storeId}
-              navigation={navigation}
-              startUpdate={startUpdate}
-            />
           </View>
         </TouchableWithoutFeedback>
       </ScrollView>
-
+      <StoreModal
+        isModalVisible={isModalVisible}
+        onPressModalClose={onPressModalClose}
+        storeId={storeId}
+        navigation={navigation}
+        startUpdate={startUpdate}
+      />
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}

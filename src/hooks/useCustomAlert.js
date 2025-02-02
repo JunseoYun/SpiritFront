@@ -138,6 +138,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
     flexWrap: 'wrap',
     color: '#333',
+    height: 'auto',
+    lineHeight: 22,
+    alignSelf: 'center',
+    justifyContent: 'center',
   },
   buttonContainer: {
     height: 55,
