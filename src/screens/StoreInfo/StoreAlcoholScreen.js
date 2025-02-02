@@ -1,25 +1,91 @@
-import React, {useEffect, useState} from 'react';
-import {SafeAreaView, StyleSheet} from 'react-native';
+import React, {useEffect, useState, useMemo} from 'react';
+import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import AlcoholHeader from '../../components/StoreAlcoholScreen/AlcoholHeader';
 import AlcoholItem from '../../components/StoreAlcoholScreen/AlcoholItem';
 import {StoreDrinkdelete} from '../../api/drinkApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 
-const StoreAlcoholScreen = ({navigation, storeId, alcohols, scrollViewRef}) => {
-  const [openItemId, setOpenItemId] = useState(null); // 열려 있는 메뉴 ID 관리
-  const [alcoholList, setAlcoholList] = useState(alcohols);
+const alcoholMapping = {
+  SOJU: '소주',
+  BEER: '맥주',
+  MAKGEOLLI: '막걸리',
+  WINE: '와인',
+  COCKTAIL: '칵테일',
+  SAKE: '사케',
+  KAOLIANG: '고량주',
+  WHISKEY: '위스키',
+  VODKA: '보드카',
+  GIN: '진',
+  RUM: '럼',
+  TEQUILA: '데킬라',
+};
+
+const StoreAlcoholScreen = ({
+  navigation,
+  storeId,
+  alcohols = [],
+  mainDrinks = [],
+  scrollViewRef,
+}) => {
+  const [openItemId, setOpenItemId] = useState(null);
+  const [alcoholsState, setAlcoholsState] = useState(alcohols);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const {translateAlcohol} = useTranslateAlcohol();
 
-  useEffect(() => {
-    setAlcoholList(alcohols);
-  }, [alcohols]);
+  // ✅ `mainDrinks` 타입을 먼저 보여주도록 정렬 수정
+  const groupedAlcohols = useMemo(() => {
+    const mainDrinkTypes = new Set(mainDrinks.map(drink => drink.type));
+    console.log('mainDrinks:', mainDrinks);
+    console.log('mainDrinkTypes:', mainDrinkTypes);
+
+    const grouped = alcoholsState.reduce((acc, alcohol) => {
+      const translatedType = translateAlcohol(alcohol.type);
+      const isMainDrink = mainDrinkTypes.has(alcohol.type);
+
+      if (!acc[translatedType]) {
+        acc[translatedType] = {main: [], regular: []};
+      }
+
+      if (isMainDrink) {
+        acc[translatedType].main.push(alcohol);
+      } else {
+        acc[translatedType].regular.push(alcohol);
+      }
+
+      return acc;
+    }, {});
+
+    return Object.keys(grouped)
+      .sort((a, b) => {
+        const isAMainDrink = mainDrinkTypes.has(
+          Object.keys(alcoholMapping).find(key => alcoholMapping[key] === a),
+        );
+        const isBMainDrink = mainDrinkTypes.has(
+          Object.keys(alcoholMapping).find(key => alcoholMapping[key] === b),
+        );
+
+        if (isAMainDrink && !isBMainDrink) return -1;
+        if (!isAMainDrink && isBMainDrink) return 1;
+
+        return (
+          Object.values(alcoholMapping).indexOf(a) -
+          Object.values(alcoholMapping).indexOf(b)
+        );
+      })
+      .reduce((acc, key) => {
+        const {main, regular} = grouped[key];
+        acc[key] = [...main, ...regular];
+        return acc;
+      }, {});
+  }, [alcoholsState, mainDrinks, translateAlcohol]);
 
   const handleOpenItem = id => {
-    setOpenItemId(id); // 현재 열려 있는 항목의 ID 설정
+    setOpenItemId(id);
   };
 
   const handleCloseAll = () => {
-    setOpenItemId(null); // 모든 항목 닫기
+    setOpenItemId(null);
   };
 
   const handleDeleteAlcohol = (id, name) => {
@@ -30,7 +96,7 @@ const StoreAlcoholScreen = ({navigation, storeId, alcohols, scrollViewRef}) => {
       onConfirm: async () => {
         try {
           await StoreDrinkdelete(id);
-          setAlcoholList(prevAlcohols =>
+          setAlcoholsState(prevAlcohols =>
             prevAlcohols.filter(alcohol => alcohol.id !== id),
           );
         } catch (error) {}
@@ -41,7 +107,7 @@ const StoreAlcoholScreen = ({navigation, storeId, alcohols, scrollViewRef}) => {
   };
 
   const handleEditAlcohol = updatedAlcohol => {
-    setAlcoholList(prevAlcohols =>
+    setAlcoholsState(prevAlcohols =>
       prevAlcohols.map(alcohol =>
         alcohol.id === updatedAlcohol.id ? updatedAlcohol : alcohol,
       ),
@@ -51,28 +117,46 @@ const StoreAlcoholScreen = ({navigation, storeId, alcohols, scrollViewRef}) => {
   return (
     <SafeAreaView style={styles.container}>
       <AlcoholHeader storeId={storeId} navigation={navigation} />
-      {alcoholList &&
-        alcoholList.map(alcohol => (
-          <AlcoholItem
-            key={alcohol.id}
-            alcohol={alcohol}
-            isOpen={openItemId === alcohol.id}
-            onOpen={() => handleOpenItem(alcohol.id)}
-            onClose={handleCloseAll}
-            onEdit={handleEditAlcohol}
-            onDelete={() => handleDeleteAlcohol(alcohol.id, alcohol.name)}
-            scrollViewRef={scrollViewRef}
-          />
-        ))}
-
+      {Object.keys(groupedAlcohols).map(type => (
+        <View key={type}>
+          <Text style={styles.typeLabel}>{type}</Text>
+          {groupedAlcohols[type].map(alcohol => (
+            <AlcoholItem
+              key={alcohol.id}
+              alcohol={alcohol}
+              isOpen={openItemId === alcohol.id}
+              onOpen={() => handleOpenItem(alcohol.id)}
+              onClose={handleCloseAll}
+              onEdit={handleEditAlcohol}
+              onDelete={() => handleDeleteAlcohol(alcohol.id, alcohol.name)}
+              scrollViewRef={scrollViewRef}
+            />
+          ))}
+          <View style={styles.line} />
+        </View>
+      ))}
       <AlertComponent />
     </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     paddingBottom: 20,
     backgroundColor: '#fff',
+  },
+  typeLabel: {
+    fontSize: 20,
+    color: '#999',
+    marginLeft: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  line: {
+    height: 7,
+    backgroundColor: '#F2F2F2',
+    marginBottom: 10,
   },
 });
 
