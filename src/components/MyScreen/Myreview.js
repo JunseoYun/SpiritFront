@@ -1,150 +1,133 @@
-import React from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import React, {useState, useEffect} from 'react';
+import {View, Text, StyleSheet, FlatList} from 'react-native';
+import MyReviewItem from './MyReviewItem';
+import {ReviewRecentGet, ReviewDelete} from '../../api/reviewApi';
+import useCustomAlert from '../../hooks/useCustomAlert';
 
-const MyReview = () => {
+const MyReview = ({navigation}) => {
+  const [myReview, setMyReview] = useState([]); // 검색된 가게 목록
+  const [page, setPage] = useState(0); // 페이지 번호
+  const [loading, setLoading] = useState(false); // 로딩 상태
+  const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
+  const [totalpage, setTotalpage] = useState(0);
+  const {showAlert, AlertComponent} = useCustomAlert();
+
+  // 검색된 가게들을 필터링하는 함수
+  const myReviewsget = async currentPage => {
+    setLoading(true);
+
+    try {
+      const data = await ReviewRecentGet(currentPage);
+      setTotalpage(data.totalPages);
+
+      if (data.content.length === 0) {
+        setIsEnd(true); // 더 이상 데이터가 없으면
+      } else {
+        // 기존 데이터와 병합하고 중복 제거
+        setMyReview(prevStores => {
+          const mergedReviews = [...prevStores, ...data.content];
+          const uniqueReviews = Array.from(
+            new Map(mergedReviews.map(review => [review.id, review])).values(),
+          );
+          return uniqueReviews;
+        });
+      }
+    } catch (err) {
+      console.error('오류 발생:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 초기 로딩 시, 검색어와 위치가 있을 때 데이터를 불러옴
+  useEffect(() => {
+    setMyReview([]); // 기존 데이터 초기화
+    setPage(0); // 페이지 초기화
+    setIsEnd(false); // 데이터 끝 상태 초기화
+    myReviewsget(0); // 데이터 불러오기
+  }, []);
+
+  const deleteReview = reviewid => {
+    showAlert({
+      title: `리뷰 삭제`,
+      message: `이 리뷰를 삭제하시겠습니까?`,
+      onConfirm: async () => {
+        try {
+          await ReviewDelete(reviewid);
+          setMyReview(prevReviews =>
+            prevReviews.filter(review => review.id !== reviewid),
+          );
+        } catch (error) {}
+      },
+      onCancel: null,
+      type: 'delete',
+    });
+  };
+
+  const renderItem = ({item}) => (
+    <MyReviewItem
+      key={item.id}
+      review={item}
+      navigation={navigation}
+      deleteReview={() => deleteReview(item.id)}
+    />
+  );
   return (
-    <View style={styles.container}>
-      {/* 리뷰 카드 1 */}
-      <View style={styles.reviewCard}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.storeName}>땀땀 신논현점</Text>
-            <Text style={styles.category}>이자카야</Text>
-          </View>
-          <Text style={styles.date}>24.07.18</Text>
-        </View>
-        <View style={styles.rating}>
-          {[...Array(5)].map((_, index) => (
-            <FontAwesomeIcon
-              key={index}
-              name="star"
-              size={18}
-              color={index < 5 ? '#FFC107' : '#E0E0E0'}
-            />
-          ))}
-        </View>
-        <Text style={styles.reviewText}>
-          맛있게 잘 먹었어요! 간단하게 회식갈때 좋은 것 같아요! 다음에 또 재방문
-          할께요 ㅎㅎ
-        </Text>
-        <View style={styles.footer}>
-          <Image
-            source={require('../../assets/kim.png')}
-            style={styles.reviewImage}
-          />
-        </View>
-        <View style={styles.deleteView}>
-          <Text style={styles.deleteText}>삭제</Text>
-        </View>
-      </View>
-
-      {/* 리뷰 카드 2 */}
-      <View style={styles.reviewCard}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.storeName}>비어룸</Text>
-            <Text style={styles.category}>호프</Text>
-          </View>
-          <Text style={styles.date}>24.05.17</Text>
-        </View>
-        <View style={styles.rating}>
-          {[...Array(4)].map((_, index) => (
-            <FontAwesomeIcon
-              key={index}
-              name="star"
-              size={18}
-              color={index < 4 ? '#FFC107' : '#E0E0E0'}
-            />
-          ))}
-        </View>
-        <Text style={styles.reviewText}>
-          안주 가성비 좋았어요 장소는 조금 시끄러웠지만 안주는 good 맥주 종류
-          다양 시켰던 메뉴 굿
-        </Text>
-        <View style={styles.footer}></View>
-        <View style={styles.deleteView}>
-          <Text style={styles.deleteText}>삭제</Text>
-        </View>
-      </View>
-    </View>
+    <>
+      <FlatList
+        data={myReview}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
+        maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
+        windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
+        removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
+        onEndReached={() => {
+          if (!loading && !isEnd && page < totalpage - 1) {
+            setPage(prevPage => {
+              const nextPage = prevPage + 1; // 다음 페이지 번호
+              myReviewsget(nextPage); // 그 페이지 번호로 데이터 요청
+              return nextPage; // 상태를 증가된 페이지 번호로 갱신
+            });
+          }
+        }} // 끝에 도달하면 데이터 불러오기
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loading && !isEnd ? (
+            <View style={styles.footer}>
+              <Text style={styles.emptyText}>Loading...</Text>
+            </View>
+          ) : !isEnd && myReview.length > 0 && page === totalpage - 1 ? (
+            <View style={styles.footer}>
+              <Text style={styles.emptyText}>더 이상 리뷰가 없습니다</Text>
+            </View>
+          ) : null
+        }
+        ListEmptyComponent={
+          !loading && myReview.length === 0 ? (
+            <View style={styles.footer}>
+              <Text style={styles.emptyText}>리뷰가 없습니다</Text>
+            </View>
+          ) : null
+        }
+      />
+      <AlertComponent />
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FAFAFA',
-    padding: 16,
-  },
-  reviewCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3, // Android 그림자
-    marginBottom: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  storeName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  category: {
-    fontSize: 14,
-    color: '#888',
-    marginTop: 4,
-  },
-  date: {
-    fontSize: 12,
-    color: '#AAA',
-  },
-  rating: {
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  reviewText: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
   footer: {
-    flexDirection: 'row',
+    paddingVertical: 30,
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    textAlign: 'center',
   },
-  reviewImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-  },
-  deleteView: {
-    marginTop: 12,
-    alignItems: 'flex-start',
-  },
-  deleteText: {
-    borderRadius: 10,
-    borderColor: 'gray',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    color: '#5F5F5F',
-    fontWeight: '300',
-    backgroundColor: '#EFEFEF',
-    paddingVertical: 5,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    marginVertical: 16,
+  emptyText: {
+    textAlign: 'center',
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 

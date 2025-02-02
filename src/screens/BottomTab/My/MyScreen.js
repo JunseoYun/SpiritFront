@@ -50,16 +50,7 @@ const MyScreen = ({navigation}) => {
         }
       }
     };
-    const fetchreview = async () => {
-      try {
-        const data = await Reviewget_by_recent();
-        console.log(data.content);
-      } catch (error) {
-        console.log(error);
-      }
-    };
     fetchUserData();
-    fetchreview();
   }, []);
 
   if (!userdata) {
@@ -83,11 +74,11 @@ const MyScreen = ({navigation}) => {
         }
       />
       <MyTabs changePage={setCurrentPage} />
-      <ScrollView>
+      <>
         {/* Myreview 값 가져오기 */}
         {currentPage === 'MyReview' && <MyReview navigation={navigation} />}
         {currentPage === 'MyLocation' && <MyLocation navigation={navigation} />}
-      </ScrollView>
+      </>
 
       <AlertComponent />
     </SafeAreaView>
