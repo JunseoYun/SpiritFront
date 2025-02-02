@@ -19,6 +19,7 @@ import StoreReviewScreen from './StoreReviewScreen';
 import StoreMapScreen from './StoreMapScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
 import {StoreMenuget} from '../../api/menuApi';
+import {StoreDrinkget} from '../../api/drinkApi';
 import StoreModal from '../../components/StoreScreen/StoreModal';
 import UpdateHeader from '../../components/StoreScreen/UpdateHeader';
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -35,6 +36,7 @@ const StoreMainScreen = ({navigation}) => {
   const snapPoints = useMemo(() => ['25%', '50%', '80%'], []);
   const {storeId, innerlatitude, innerlongitude} = route.params;
   const [menus, setMenus] = useState([]);
+  const [alcohols, setAlcohols] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedata, setStoredata] = useState('');
   const [scrollY] = useState(new Animated.Value(0));
@@ -167,6 +169,8 @@ const StoreMainScreen = ({navigation}) => {
       setLatitude(storeData.locationDto.latitude);
       const Menus = await StoreMenuget(storeId);
       setMenus(Menus);
+      const Drinks = await StoreDrinkget(storeId);
+      setAlcohols(Drinks);
     } catch (error) {
       console.error(error);
     }
@@ -282,7 +286,7 @@ const StoreMainScreen = ({navigation}) => {
                   <StoreAlcoholScreen
                     navigation={navigation}
                     storeId={storeId}
-                    menus={menus}
+                    alcohols={alcohols}
                     scrollViewRef={scrollViewRef}
                   />
                 )}

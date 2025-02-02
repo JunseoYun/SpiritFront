@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Modal, View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import {Portal} from 'react-native-paper';
+
 const useCustomAlert = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState({
@@ -26,83 +26,81 @@ const useCustomAlert = () => {
     const {title, message, onConfirm, onCancel, type} = alertConfig;
 
     return (
-      <Portal>
-        <Modal transparent visible={isVisible} animationType="fade">
-          <View style={styles.overlay}>
-            <View style={styles.alertBox}>
-              {title && <Text style={styles.alertTitle}>{title}</Text>}
-              {message && <Text style={styles.alertMessage}>{message}</Text>}
+      <Modal transparent visible={isVisible} animationType="fade">
+        <View style={styles.overlay}>
+          <View style={styles.alertBox}>
+            {title && <Text style={styles.alertTitle}>{title}</Text>}
+            {message && <Text style={styles.alertMessage}>{message}</Text>}
 
-              <View style={styles.buttonContainer}>
-                {type === 'confirm' && (
-                  <>
-                    <TouchableOpacity
-                      style={styles.button}
-                      onPress={() => {
-                        closeAlert();
-                        onCancel && onCancel();
-                      }}>
-                      <Text style={styles.buttonText}>취소</Text>
-                    </TouchableOpacity>
-                    <View
-                      style={{
-                        width: 1,
-                        height: '100%',
-                        backgroundColor: '#E0E0E0',
-                      }}
-                    />
-                    <TouchableOpacity
-                      style={[styles.button, styles.confirmButton]}
-                      onPress={() => {
-                        closeAlert();
-                        onConfirm && onConfirm();
-                      }}>
-                      <Text style={styles.buttonText}>확인</Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-                {type === 'delete' && (
-                  <>
-                    <TouchableOpacity
-                      style={styles.button}
-                      onPress={() => {
-                        closeAlert();
-                        onCancel && onCancel();
-                      }}>
-                      <Text style={styles.buttonText}>취소</Text>
-                    </TouchableOpacity>
-                    <View
-                      style={{
-                        width: 1,
-                        height: '100%',
-                        backgroundColor: '#E0E0E0',
-                      }}
-                    />
-                    <TouchableOpacity
-                      style={styles.button}
-                      onPress={() => {
-                        closeAlert();
-                        onConfirm && onConfirm();
-                      }}>
-                      <Text style={styles.buttonDeleteText}>삭제</Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-                {type === 'ok' && (
+            <View style={styles.buttonContainer}>
+              {type === 'confirm' && (
+                <>
                   <TouchableOpacity
                     style={styles.button}
+                    onPress={() => {
+                      closeAlert();
+                      onCancel && onCancel();
+                    }}>
+                    <Text style={styles.buttonText}>취소</Text>
+                  </TouchableOpacity>
+                  <View
+                    style={{
+                      width: 1,
+                      height: '100%',
+                      backgroundColor: '#E0E0E0',
+                    }}
+                  />
+                  <TouchableOpacity
+                    style={[styles.button, styles.confirmButton]}
                     onPress={() => {
                       closeAlert();
                       onConfirm && onConfirm();
                     }}>
                     <Text style={styles.buttonText}>확인</Text>
                   </TouchableOpacity>
-                )}
-              </View>
+                </>
+              )}
+              {type === 'delete' && (
+                <>
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => {
+                      closeAlert();
+                      onCancel && onCancel();
+                    }}>
+                    <Text style={styles.buttonText}>취소</Text>
+                  </TouchableOpacity>
+                  <View
+                    style={{
+                      width: 1,
+                      height: '100%',
+                      backgroundColor: '#E0E0E0',
+                    }}
+                  />
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => {
+                      closeAlert();
+                      onConfirm && onConfirm();
+                    }}>
+                    <Text style={styles.buttonDeleteText}>삭제</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+              {type === 'ok' && (
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => {
+                    closeAlert();
+                    onConfirm && onConfirm();
+                  }}>
+                  <Text style={styles.buttonText}>확인</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
-        </Modal>
-      </Portal>
+        </View>
+      </Modal>
     );
   };
 

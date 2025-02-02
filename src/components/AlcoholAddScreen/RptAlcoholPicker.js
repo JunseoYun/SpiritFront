@@ -1,8 +1,7 @@
-import React, {useState} from 'react';
-import {View, Text, TextInput, StyleSheet} from 'react-native';
-import {Picker} from '@react-native-picker/picker';
+import React from 'react';
+import {View, Text, StyleSheet, Pressable} from 'react-native';
 
-const alcohols = [
+const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
   {label: '맥주', value: 'BEER'},
   {label: '막걸리', value: 'MAKGEOLLI'},
@@ -17,28 +16,28 @@ const alcohols = [
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
-const RptAlcoholPicker = ({}) => {
-  const [alcohol, setAlcohol] = useState('');
-
+const RptAlcoholPicker = ({selectedType, onTypeChange}) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>주종*</Text>
-      <View style={styles.alcoholRow}>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={alcohol}
-            onValueChange={value => setAlcohol(value)}
-            style={styles.picker}
-            itemStyle={styles.pickerItem}>
-            {alcohols.map(alcohol => (
-              <Picker.Item
-                key={alcohol}
-                label={alcohol.label}
-                value={alcohol.value}
-              />
-            ))}
-          </Picker>
-        </View>
+      <View style={styles.alcoholList}>
+        {alcoholTypes.map(alcohol => (
+          <Pressable
+            key={alcohol.value}
+            style={[
+              styles.alcoholButton,
+              selectedType === alcohol.value && styles.selectedAlcohol,
+            ]}
+            onPress={() => onTypeChange(alcohol.value)}>
+            <Text
+              style={[
+                styles.alcoholText,
+                selectedType === alcohol.value && styles.selectedAlcoholText,
+              ]}>
+              {alcohol.label}
+            </Text>
+          </Pressable>
+        ))}
       </View>
     </View>
   );
@@ -48,34 +47,36 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
     marginTop: 10,
+    marginBottom: 20,
   },
   title: {
-    fontWeight: '400',
+    fontWeight: '500',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
   },
-  alcoholRow: {
+  alcoholList: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
+    flexWrap: 'wrap', // 버튼 여러 줄 정렬
+    gap: 10,
   },
-  pickerContainer: {
-    flex: 1,
+  alcoholButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
     backgroundColor: '#F2F2F2',
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    justifyContent: 'center',
-    height: 60,
-    overflow: 'hidden', // iOS 겹침 방지
+    borderRadius: 10,
   },
-  picker: {
-    color: '#333', // 텍스트 색상
-  },
-  pickerItem: {
+  alcoholText: {
     color: '#333',
-    fontSize: 18,
-    fontWeight: '400',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  selectedAlcohol: {
+    backgroundColor: '#16BBFF',
+  },
+  selectedAlcoholText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 
