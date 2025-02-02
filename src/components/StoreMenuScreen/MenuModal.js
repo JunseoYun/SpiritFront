@@ -15,9 +15,9 @@ import {MenuUpdate, MenuUpdateImage, MenuDeleteImage} from '../../api/menuApi';
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {Portal} from 'react-native-paper';
 
 const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
@@ -35,32 +35,39 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
 
   const {showAlert, AlertComponent} = useCustomAlert();
 
+  // ✅ 이미지 선택
   const selectImage = () => {
     ImagePicker.openPicker({
       width: 500,
       height: 500,
       cropping: true,
       mediaType: 'photo',
-    }).then(image => {
-      setSelectedImage(image);
-      setMenuImage(image.path);
-      setIsImageDeleted(false);
-    });
+    })
+      .then(image => {
+        setSelectedImage(image);
+        setMenuImage(image.path); // ✅ UI 미리보기 즉시 반영
+        setIsImageDeleted(false); // ✅ 삭제 상태 해제
+      })
+      .catch(error => {
+        console.log('ImagePicker Error: ', error);
+      });
   };
 
+  // ✅ 이미지 삭제 (API 호출 X, UI에서만 미리 삭제)
   const handleDeleteImage = () => {
     showAlert({
       title: `이미지를 삭제하시겠습니까?`,
       onConfirm: () => {
-        setMenuImage('');
+        setMenuImage(''); // ✅ UI에서 즉시 반영 (기본 상태로 변경)
         setSelectedImage(null);
-        setIsImageDeleted(true);
+        setIsImageDeleted(true); // ✅ 삭제 상태 활성화
       },
       onCancel: null,
       type: 'delete',
     });
   };
 
+  // ✅ 저장 버튼 클릭 시
   const handleSave = async () => {
     let isImageChanged = selectedImage !== null;
     let isInfoChanged =
@@ -152,9 +159,7 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
       onUpdate(updatedMenu);
       onPressModalClose();
     } catch (error) {
-      showAlert({
-        title: '업데이트 오류',
-      });
+      console.error('Update Error:', error);
     }
   };
 
@@ -175,18 +180,28 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
       <Modal
         visible={isModalVisible}
         transparent={true}
-        animationType="fade"
+        animationType="slide"
         onRequestClose={onPressModalClose}>
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
             <View style={styles.buttonContainer}>
               <TouchableOpacity onPress={handleCancel}>
-                <Ionicons name="arrow-back-outline" size={25} color="#333" />
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={25}
+                  color="#333"
+                  style={{marginLeft: 13}}
+                />
               </TouchableOpacity>
 
               <Text style={styles.modalTitle}>메뉴 수정</Text>
               <TouchableOpacity onPress={handleSave}>
-                <Ionicons name="paper-plane-sharp" size={25} color="#16BBFF" />
+                <Ionicons
+                  name="paper-plane-sharp"
+                  size={25}
+                  color="#16BBFF"
+                  style={{marginRight: 13}}
+                />
               </TouchableOpacity>
             </View>
 
@@ -196,6 +211,7 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
                   <Image source={{uri: menuImage}} style={styles.menuImage} />
                 ) : (
                   <View style={styles.placeholderImage}>
+                    <Text style={styles.placeholderText}>이미지 추가</Text>
                     <Pressable onPress={selectImage}>
                       <MaterialCommunityIcons
                         name="image-plus"
@@ -218,7 +234,6 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
                       color="#16BBFF"
                     />
                   </TouchableOpacity>
-
                   <TouchableOpacity
                     style={[styles.deleteButton, styles.shadowEffect]}
                     onPress={handleDeleteImage}>
@@ -346,7 +361,7 @@ const styles = StyleSheet.create({
   imageButton: {
     position: 'absolute',
     top: -75,
-    left: 45,
+    left: 50,
     alignItems: 'center',
     marginVertical: 10,
     padding: 10,
@@ -359,7 +374,7 @@ const styles = StyleSheet.create({
   deleteButton: {
     position: 'absolute',
     top: -75,
-    right: 45,
+    right: 50,
     alignItems: 'center',
     marginVertical: 10,
     padding: 10,
@@ -367,9 +382,9 @@ const styles = StyleSheet.create({
   shadowEffect: {
     shadowColor: '#000', // 그림자 색상
     shadowOffset: {width: 0, height: 4}, // 그림자 위치 (x, y)
-    shadowOpacity: 0.3, // 그림자 투명도 (0~1)
-    shadowRadius: 4, // 그림자 블러 정도
-    elevation: 5, // 안드로이드용 그림자 (숫자가 클수록 그림자 강조)
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
 
   input: {
@@ -398,7 +413,7 @@ const styles = StyleSheet.create({
   inputText: {
     marginVertical: 5,
     fontSize: 16,
-    color: '#999',
+    color: '#333',
     fontWeight: 500,
     marginTop: 10,
   },
@@ -411,7 +426,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   switchLabel: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
@@ -419,6 +434,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+    marginVertical: 20,
   },
   cancelButton: {
     flex: 1,
