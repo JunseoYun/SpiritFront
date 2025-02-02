@@ -3,6 +3,10 @@ import {View, Text, StyleSheet, Image, ScrollView} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 
 const ReviewItem = ({item}) => {
+  const visitedDate = new Date(item.visitedAt);
+  const formattedDate = `${
+    visitedDate.getMonth() + 1
+  }.${visitedDate.getDate()}`;
   return (
     <View key={item.reviewId} style={styles.reviewContainer}>
       <View style={styles.reviewHeader}>
@@ -15,51 +19,27 @@ const ReviewItem = ({item}) => {
           style={styles.avatar}
         />
         <View style={styles.reviewHeaderText}>
-          <Text style={styles.writerName}>{item.writerNickName}</Text>
+          <Text style={styles.writerName}>{item.writerNickname}</Text>
           <View style={styles.infoView}>
             <Entypo name="star" size={17} color="#FCC104" />
             <Text style={styles.reviewInfo}> {item.rate}</Text>
           </View>
         </View>
         {/* <Text style={styles.reviewDate}>{item.date}</Text> */}
-        <Text style={styles.reviewDate}>방문 01.19</Text>
+        <Text style={styles.reviewDate}>방문 {formattedDate}</Text>
       </View>
-      <Text style={styles.reviewContent}>{item.reviewContent}</Text>
+      <Text style={styles.reviewContent}>{item.content}</Text>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {/* 
-            서버 통신쪽 image
-            {item.images &&
-              item.images.map((image, index) => (
-                <Image
-                  key={index}
-                  source={
-                    image ? {uri: image} : require('../../assets/kim.png')
-                  }
-                  style={styles.reviewImage}
-                />
-              ))} */}
-        <Image
-          source={require('../../assets/kim.png')}
-          style={styles.reviewImage}
-        />
-        <Image
-          source={require('../../assets/kim.png')}
-          style={styles.reviewImage}
-        />
-        <Image
-          source={require('../../assets/kim.png')}
-          style={styles.reviewImage}
-        />
-        <Image
-          source={require('../../assets/kim.png')}
-          style={styles.reviewImage}
-        />
-        <Image
-          source={require('../../assets/kim.png')}
-          style={styles.reviewImage}
-        />
-      </ScrollView>
+      {item.images &&
+        item.images.map((image, index) => (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <Image
+              key={index}
+              source={image ? {uri: image} : null}
+              style={styles.reviewImage}
+            />
+          </ScrollView>
+        ))}
 
       <Text style={styles.datetimeText}>리뷰 작성 01.20</Text>
     </View>
