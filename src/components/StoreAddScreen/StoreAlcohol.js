@@ -1,8 +1,13 @@
-import React from 'react';
-import {View, Text, TextInput, StyleSheet} from 'react-native';
-import {Picker} from '@react-native-picker/picker';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Pressable,
+  TouchableOpacity,
+} from 'react-native';
 
-// 한글 표시와 영어 값을 매핑한 객체 배열
 const alcohols = [
   {label: '소주', value: 'SOJU'},
   {label: '맥주', value: 'BEER'},
@@ -19,10 +24,11 @@ const alcohols = [
 ];
 
 const StoreAlcohol = ({alcohol, setAlcohol}) => {
+  const [expandedIndex, setExpandedIndex] = useState(null); // 현재 확장된 항목 인덱스
+
   const handleAlcoholChange = (index, key, value) => {
     setAlcohol(prev => {
-      // 특정 인덱스가 없으면 기본 객체 생성
-      const updatedAlcohol = [...(prev || [])]; // prev가 null일 경우 빈 배열로 초기화
+      const updatedAlcohol = [...(prev || [])];
       if (!updatedAlcohol[index]) {
         updatedAlcohol[index] = {type: '', price: 0};
       }
@@ -31,40 +37,87 @@ const StoreAlcohol = ({alcohol, setAlcohol}) => {
     });
   };
 
+  const toggleExpand = index => {
+    setExpandedIndex(expandedIndex === index ? null : index); // 현재 항목만 확장
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>대표주종*</Text>
       {[0, 1].map((_, index) => (
         <View key={index} style={styles.alcoholRow}>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={alcohol[index]?.type || ''}
-              onValueChange={value => handleAlcoholChange(index, 'type', value)}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}>
-              <Picker.Item label="선택" value="" />
-              {alcohols.map(alcohol => (
-                <Picker.Item
-                  key={alcohol.value}
-                  label={alcohol.label} // 한글 표시
-                  value={alcohol.value} // 실제 저장될 영어 값
-                />
-              ))}
-            </Picker>
-          </View>
-          <View style={styles.priceContainer}>
-            <TextInput
-              style={styles.priceInput}
-              keyboardType="numeric"
-              placeholder="0"
-              placeholderTextColor="#aaa"
-              value={alcohol[index]?.price.toString() || ''}
-              onChangeText={value =>
-                handleAlcoholChange(index, 'price', parseInt(value) || 0)
-              }
-            />
-            <Text style={styles.unit}>원</Text>
-          </View>
+          {/* 간략 정보 또는 기본 보기 */}
+          {expandedIndex !== index && (
+            <TouchableOpacity
+              style={styles.collapsedInfo}
+              onPress={() => toggleExpand(index)}>
+              <Text style={styles.collapsedText}>
+                {alcohol[index]?.type
+                  ? alcohols.find(a => a.value === alcohol[index]?.type)
+                      ?.label || '선택'
+                  : '주종 선택'}
+              </Text>
+              <Text style={styles.collapsedText}>
+                {alcohol[index]?.price
+                  ? `${alcohol[index]?.price} 원`
+                  : '가격 입력'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* 상세 입력 */}
+          {expandedIndex === index && (
+            <>
+              <View style={styles.pickerContainer}>
+                <Text style={styles.sectionTitle}>주종 선택</Text>
+                <View style={styles.alcoholList}>
+                  {alcohols.map(alcoholItem => (
+                    <Pressable
+                      key={alcoholItem.value}
+                      style={[
+                        styles.alcoholButton,
+                        alcoholItem.value === alcohol[index]?.type &&
+                          styles.selectedAlcohol,
+                      ]}
+                      onPress={() =>
+                        handleAlcoholChange(index, 'type', alcoholItem.value)
+                      }>
+                      <Text
+                        style={[
+                          styles.alcoholText,
+                          alcoholItem.value === alcohol[index]?.type &&
+                            styles.selectedAlcoholText,
+                        ]}>
+                        {alcoholItem.label}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.priceContainer}>
+                <Text style={styles.sectionTitle}>가격 입력</Text>
+                <View style={styles.priceInputWrapper}>
+                  <TextInput
+                    style={styles.priceInput}
+                    keyboardType="numeric"
+                    placeholder="0"
+                    placeholderTextColor="#aaa"
+                    value={alcohol[index]?.price?.toString() || ''}
+                    onChangeText={value =>
+                      handleAlcoholChange(index, 'price', parseInt(value) || 0)
+                    }
+                  />
+                  <Text style={styles.unit}>원</Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={() => toggleExpand(index)}>
+                <Text style={styles.saveButtonText}>완료</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       ))}
     </View>
@@ -80,43 +133,61 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#999',
     fontSize: 16,
-    marginBottom: 10,
-  },
-  alcoholRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 20,
   },
+  alcoholRow: {
+    marginBottom: 30,
+  },
   pickerContainer: {
-    flex: 2,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+  },
+  alcoholList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  alcoholButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     backgroundColor: '#F2F2F2',
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    justifyContent: 'center',
-    height: 60,
-    overflow: 'hidden',
+    borderRadius: 8,
+    minWidth: '30%',
+    alignItems: 'center',
   },
-  picker: {
+  alcoholText: {
     color: '#333',
+    fontSize: 14,
+    fontWeight: '500',
   },
-  pickerItem: {
-    color: '#333',
-    fontSize: 18,
-    fontWeight: '400',
+  selectedAlcohol: {
+    backgroundColor: '#16BBFF',
+  },
+  selectedAlcoholText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   priceContainer: {
-    flex: 1,
+    marginTop: 20,
+  },
+  priceInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: '#FFF',
+    height: 50,
   },
   priceInput: {
     flex: 1,
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
     fontSize: 16,
     color: '#333',
     textAlign: 'center',
@@ -125,6 +196,32 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 16,
     color: '#333',
+  },
+  collapsedInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F2F2F2',
+    borderRadius: 8,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+  },
+  collapsedText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+  },
+  saveButton: {
+    marginTop: 20,
+    backgroundColor: '#16BBFF',
+    borderRadius: 8,
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
