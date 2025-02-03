@@ -6,7 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
+  ImageBackground,
   ScrollView,
   Switch,
   Pressable,
@@ -48,9 +48,7 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
         setMenuImage(image.path); // ✅ UI 미리보기 즉시 반영
         setIsImageDeleted(false); // ✅ 삭제 상태 해제
       })
-      .catch(error => {
-        console.log('ImagePicker Error: ', error);
-      });
+      .catch(error => {});
   };
 
   // ✅ 이미지 삭제 (API 호출 X, UI에서만 미리 삭제)
@@ -159,7 +157,10 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
       onUpdate(updatedMenu);
       onPressModalClose();
     } catch (error) {
-      console.error('Update Error:', error);
+      showAlert({
+        title: '수정 실패',
+        message: '잘못된 요청입니다.',
+      });
     }
   };
 
@@ -186,29 +187,40 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
           <View style={styles.modalContainer}>
             <View style={styles.buttonContainer}>
               <TouchableOpacity onPress={handleCancel}>
-                <Ionicons
-                  name="arrow-back-outline"
-                  size={25}
-                  color="#333"
-                  style={{marginLeft: 13}}
-                />
+                <Ionicons name="arrow-back-outline" size={25} color="#333" />
               </TouchableOpacity>
 
               <Text style={styles.modalTitle}>메뉴 수정</Text>
               <TouchableOpacity onPress={handleSave}>
-                <Ionicons
-                  name="paper-plane-sharp"
-                  size={25}
-                  color="#16BBFF"
-                  style={{marginRight: 13}}
-                />
+                <Ionicons name="paper-plane-sharp" size={25} color="#16BBFF" />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={{width: '100%'}}>
               <View style={styles.imageContainer}>
                 {menuImage ? (
-                  <Image source={{uri: menuImage}} style={styles.menuImage} />
+                  <ImageBackground
+                    source={{uri: menuImage}}
+                    style={styles.menuImage}
+                    imageStyle={styles.backimagestyle}>
+                    {/* ✅ 이미지 안에 아이콘 배치 */}
+                    <View style={styles.imageButtonView}>
+                      <Pressable
+                        style={[styles.imageButton, styles.shadowEffect]}
+                        onPress={selectImage}>
+                        <MaterialIcons
+                          name="photo-library"
+                          size={28}
+                          color="#fff"
+                        />
+                      </Pressable>
+                      <Pressable
+                        style={[styles.deleteButton, styles.shadowEffect]}
+                        onPress={handleDeleteImage}>
+                        <Ionicons name="trash-outline" size={28} color="#fff" />
+                      </Pressable>
+                    </View>
+                  </ImageBackground>
                 ) : (
                   <View style={styles.placeholderImage}>
                     <Text style={styles.placeholderText}>이미지 추가</Text>
@@ -223,24 +235,6 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
                 )}
               </View>
 
-              {menuImage && (
-                <View style={styles.imageButtonView}>
-                  <TouchableOpacity
-                    style={[styles.imageButton, styles.shadowEffect]}
-                    onPress={selectImage}>
-                    <MaterialIcons
-                      name="photo-library"
-                      size={30}
-                      color="#fff"
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.deleteButton, styles.shadowEffect]}
-                    onPress={handleDeleteImage}>
-                    <Ionicons name="trash-outline" size={30} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-              )}
               {menuName && <Text style={styles.inputText}>메뉴 이름*</Text>}
               <TextInput
                 style={[
@@ -293,6 +287,7 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
                   value={isMain}
                   onValueChange={setIsMain}
                   trackColor={{false: '#ccc', true: '#16BBFF'}} // ✅ 배경 색상 변경
+                  thumbColor={'#fff'}
                 />
               </View>
             </ScrollView>
@@ -329,17 +324,53 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333', // ✅ 더 진한 색상 적용
   },
+
   imageContainer: {
     alignItems: 'center',
     marginVertical: 15,
+    position: 'relative', // ✅ 부모 요소 기준으로 배치
   },
   menuImage: {
-    width: 200, // ✅ 이미지 크기 증가
+    width: 200,
     height: 200,
     resizeMode: 'cover',
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#E7E7E7',
+    borderRadius: 12,
+    overflow: 'hidden', // ✅ 이미지 둥글게 적용
+  },
+  backimagestyle: {
+    borderRadius: 12, // ✅ ImageBackground에도 둥근 효과 적용
+  },
+  imageButtonView: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 20, // ✅ 버튼 간격 조정
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // ✅ 반투명 배경 추가
+    borderRadius: 12,
+  },
+  imageButton: {
+    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', // ✅ 반투명 배경으로 자연스럽게
+    borderRadius: 50,
+    marginTop: 135,
+    marginRight: 35,
+  },
+  deleteButton: {
+    padding: 10,
+    backgroundColor: 'rgba(255, 0, 0, 0.5)', // ✅ 삭제 버튼은 빨간색 톤
+    borderRadius: 50,
+    marginLeft: 35,
+    marginTop: 135,
+  },
+  shadowEffect: {
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   placeholderImage: {
     width: 200,
@@ -353,38 +384,6 @@ const styles = StyleSheet.create({
     color: '#999',
     fontSize: 14,
     fontWeight: '600',
-  },
-  imageButtonView: {
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  imageButton: {
-    position: 'absolute',
-    top: -75,
-    right: 50,
-    alignItems: 'center',
-    marginVertical: 10,
-    padding: 10,
-  },
-  imageButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-  deleteButton: {
-    position: 'absolute',
-    top: -75,
-    left: 50,
-    alignItems: 'center',
-    marginVertical: 10,
-    padding: 10,
-  },
-  shadowEffect: {
-    shadowColor: '#000', // 그림자 색상
-    shadowOffset: {width: 0, height: 4}, // 그림자 위치 (x, y)
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
   },
 
   input: {
@@ -401,13 +400,10 @@ const styles = StyleSheet.create({
     width: '100%',
     minHeight: 30, // ✅ 최소 높이 설정하여 UI 개선
     paddingVertical: 12,
-
     borderBottomColor: '#16BBFF',
     borderBottomWidth: 1,
-
     fontSize: 18,
     textAlignVertical: 'top', // ✅ 여러 줄 입력 시 텍스트가 위에서부터 입력됨
-
     marginBottom: 20,
   },
   inputText: {
@@ -442,7 +438,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
     borderRadius: 8,
-    marginRight: 5,
   },
   saveButton: {
     flex: 1,
@@ -450,7 +445,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
     borderRadius: 8,
-    marginLeft: 5,
   },
   buttonText: {
     color: 'white',

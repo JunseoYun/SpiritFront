@@ -5,20 +5,16 @@ import {
   StyleSheet,
   Pressable,
   SafeAreaView,
-  TextInput,
   TouchableOpacity,
   ScrollView,
-  Image,
 } from 'react-native';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {ReviewStoreGet} from '../../api/reviewApi';
 import ReviewItem from '../../components/StoreReviewScreen/ReviewItem';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {ReviewCreate} from '../../api/reviewApi';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import ImagePicker from 'react-native-image-crop-picker';
-import DatePicker from 'react-native-date-picker'; // 날짜 선택기
 import ReviewForm from '../../components/StoreReviewScreen/ReviewForm';
 import forbiddenWords from '../../hooks/forbiddenWords';
 
@@ -105,7 +101,7 @@ const StoreReviewScreen = ({navigation}) => {
       const starIndex = index + 1; // 별의 번호 (1부터 시작)
       return (
         <TouchableOpacity key={index} onPress={() => setNewRate(starIndex)}>
-          <Ionicons
+          <FontAwesomeIcon
             name="star"
             size={30}
             color={starIndex <= newrate ? '#FFD700' : '#D3D3D3'} // 노란색(#FFD700) 또는 회색(#D3D3D3)
@@ -262,7 +258,7 @@ const StoreReviewScreen = ({navigation}) => {
               </View>
             ) : !loading && reviewdata.length === 0 ? (
               <View style={styles.footer}>
-                <Text style={styles.emptyText}>리뷰가 없습니다</Text>
+                <Text style={styles.emptyText}>등록된 리뷰가 없습니다</Text>
               </View>
             ) : (
               <TouchableOpacity
@@ -312,9 +308,6 @@ const styles = StyleSheet.create({
   },
   star: {
     marginHorizontal: 3, // 별 사이 간격
-  },
-  reviewList: {
-    paddingHorizontal: 18,
   },
   loadMoreButton: {
     alignItems: 'center',

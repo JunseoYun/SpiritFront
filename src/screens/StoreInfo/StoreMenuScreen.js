@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {SafeAreaView, StyleSheet} from 'react-native';
+import {SafeAreaView, StyleSheet, View, Text} from 'react-native';
 import MenuHeader from '../../components/StoreMenuScreen/MenuHeader';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
 import {StoreMenudelete} from '../../api/menuApi';
@@ -65,6 +65,12 @@ const StoreMenuScreen = ({navigation, storeId, menus, scrollViewRef}) => {
           scrollViewRef={scrollViewRef} // 스크롤 참조 전달
         />
       ))}
+      {menuList?.length === 0 && (
+        <View style={styles.footer}>
+          <Text style={styles.emptyText}>등록된 메뉴가 없습니다</Text>
+        </View>
+      )}
+
       <AlertComponent />
     </SafeAreaView>
   );
@@ -74,6 +80,17 @@ const styles = StyleSheet.create({
   container: {
     paddingBottom: 20,
     backgroundColor: '#fff',
+  },
+  footer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 
