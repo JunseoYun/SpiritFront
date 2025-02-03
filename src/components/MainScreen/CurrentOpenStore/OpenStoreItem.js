@@ -1,22 +1,46 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, ImageBackground, StyleSheet, Pressable} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
+import useDistance from '../../../hooks/useDistance';
+import useStoreStatus from '../../../hooks/useStoreStatus';
 
 const OpenStoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
+  const [distance, setDistance] = useState(0);
+  const [unit, setUnit] = useState('m');
+  const calculateDistance = useDistance();
 
+  const isStoreBreak = useStoreStatus(
+    store?.businessHoursDto?.breakStartTime,
+    store?.businessHoursDto?.breakEndTime,
+  );
   const calculateWalkingTime = distance => {
     const walkingSpeed = 80; // 평균 보행 속도 (m/min)
     return Math.ceil(distance / walkingSpeed); // 소수점 올림
   };
+  useEffect(() => {
+    const fetchDistance = () => {
+      let tempDistance = calculateDistance(
+        location.latitude,
+        location.longitude,
+        store.locationDto.latitude,
+        store.locationDto.longitude,
+      );
+      if (tempDistance < 1) {
+        tempDistance *= 1000;
+        setDistance(tempDistance.toFixed(0));
+      } else {
+        setDistance(tempDistance.toFixed(2));
+        setUnit('km');
+      }
+    };
+    fetchDistance();
+  }, [store]);
 
-  const [isBreak, setBreak] = useState(false);
-
-  const walkingTime = calculateWalkingTime(store.distance);
+  const walkingTime = calculateWalkingTime(distance);
   const {translateCategory} = useCategoryTranslation();
   return (
     <>
@@ -32,55 +56,34 @@ const OpenStoreItem = ({store, location, navigation}) => {
           })
         }
         style={styles.container}>
-        <View style={styles.imageContainer}>
-          {store.mainImgUrl ? (
-            <ImageBackground
-              source={{uri: store.mainImgUrl}} // URL이 있는 경우
-              style={styles.imageBackground}
-              imageStyle={styles.imageStyle}>
-              {isBreak ? (
-                <View style={styles.breakView}>
-                  <Text style={styles.breakText}>주점 쉬는 중</Text>
-                  <Text style={styles.breakText}>
-                    {store.businessHoursDto?.breakStartTime?.slice(0, 5)} ~{' '}
-                    {store.businessHoursDto?.breakEndTime?.slice(0, 5)}
-                  </Text>
-                </View>
-              ) : (
-                <View style={styles.overlay}>
-                  <Text style={styles.overlayText}>
-                    영업 종료 {store.businessHoursDto.closeTime.slice(0, 5)}
-                  </Text>
-                </View>
-              )}
-            </ImageBackground>
-          ) : (
-            <View style={styles.imageBackground}>
-              <Text
-                style={{
-                  color: 'black',
-                  textAlign: 'center',
-                  paddingBottom: 30,
-                }}>
-                이미지 없음
-              </Text>
-              {isBreak ? (
-                <View style={styles.breakView}>
-                  <Text style={styles.breakText}>주점 쉬는 중</Text>
-                  <Text style={styles.breakText}>
-                    {store.businessHoursDto?.breakStartTime?.slice(0, 5)} ~{' '}
-                    {store.businessHoursDto?.breakEndTime?.slice(0, 5)}
-                  </Text>
-                </View>
-              ) : (
-                <View style={styles.overlay}>
-                  <Text style={styles.overlayText}>
-                    영업 종료 {store.businessHoursDto.closeTime.slice(0, 5)}
-                  </Text>
-                </View>
-              )}
-            </View>
-          )}
+        <View style={styles.backimageview}>
+          <ImageBackground
+            source={
+              store.mainImgUrl
+                ? {uri: store.mainImgUrl} // ✅ 네트워크 이미지
+                : require('../../../assets/default_store.png') // ✅ 로컬 이미지
+            }
+            style={styles.backimage}
+            imageStyle={styles.backimagestyle}>
+            {/* ✅ 브레이크 타임 표시 */}
+            {isStoreBreak && (
+              <View style={styles.overlay}>
+                <Text style={styles.overlayText}>
+                  브레이크 타임{' '}
+                  {store.businessHoursDto?.breakEndTime
+                    ? `${store.businessHoursDto.breakEndTime.slice(0, 5)} 종료`
+                    : ''}
+                </Text>
+              </View>
+            )}
+            {!isStoreBreak && (
+              <View style={styles.openOverlay}>
+                <Text style={styles.openOverlayText}>
+                  영업 종료 {store.businessHoursDto.closeTime.slice(0, 5)}{' '}
+                </Text>
+              </View>
+            )}
+          </ImageBackground>
         </View>
         <View style={styles.infoContainer}>
           <Text style={styles.storeName} numberOfLines={1} ellipsizeMode="tail">
@@ -97,15 +100,7 @@ const OpenStoreItem = ({store, location, navigation}) => {
               <Text style={styles.categoryText}>카테고리 미설정</Text>
             )}
           </View>
-          <Text style={styles.menuTag} numberOfLines={2} ellipsizeMode="tail">
-            {store.menuList && store.menuList.length > 0
-              ? store.menuList
-                  .map(
-                    menu => `${menu.name}`, // 메뉴 항목 형식화
-                  )
-                  .join('  ') // 항목 간 간격 추가
-              : '메뉴가 없습니다.'}
-          </Text>
+
           <Text
             style={styles.alcoholTag}
             numberOfLines={2}
@@ -114,20 +109,22 @@ const OpenStoreItem = ({store, location, navigation}) => {
               ? store.mainDrinkDtos
                   .map(
                     drink =>
-                      `${translateAlcohol(
+                      `# ${translateAlcohol(
                         drink.type,
                       )} ${drink.price.toLocaleString()}원`,
                   )
-                  .join('  ')
+                  .join('\n')
               : '메인주류가 없습니다.'}
           </Text>
         </View>
       </Pressable>
       <View style={styles.distanceContainer}>
-        {/* <Text style={styles.distanceText}>{store.distance.toFixed(0)}m</Text> */}
-
-        <Ionicons name="footsteps" size={20} color="#16BBFF" />
-        <Text style={styles.walkingTimeText}>{walkingTime}분</Text>
+        <Text style={styles.distanceText}>
+          {distance}
+          {unit}
+          {'  |  '}
+          {walkingTime}분
+        </Text>
       </View>
     </>
   );
@@ -136,6 +133,7 @@ const OpenStoreItem = ({store, location, navigation}) => {
 const styles = StyleSheet.create({
   container: {
     width: 160,
+    height: 240,
     marginHorizontal: 10,
     marginVertical: 15,
     backgroundColor: '#fff',
@@ -146,15 +144,27 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5, // Android 그림자 효과
   },
-  imageContainer: {
+  backimageview: {
+    width: 160,
     height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+    overflow: 'hidden', // ✅ overlay가 이미지 밖으로 나가지 않도록 처리
+  },
+  backimage: {
     width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
   },
-  imageBackground: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  imageStyle: {
+  backimagestyle: {
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
   },
@@ -165,21 +175,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderTopLeftRadius: 15,
-    borderTopRightRadius: 16,
+    borderTopRightRadius: 15,
   },
-  breakText: {
-    color: '#fff',
-    fontSize: 15,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
-    marginBottom: 5,
-  },
+
   overlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ 반투명 배경 추가
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   overlayText: {
-    color: '#f9c74f',
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  openOverlay: {
+    position: 'absolute',
+    bottom: 0, // 사진 안쪽 하단에 고정
+    width: '100%', // 가로 전체 차지
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ 어두운 반투명 배경으로 가독성 향상
+    paddingVertical: 5,
+    paddingLeft: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  openOverlayText: {
+    color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -199,45 +220,41 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   categoryText: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#fff',
     fontWeight: 'bold',
     marginHorizontal: 2,
     marginVertical: 2,
-    backgroundColor: '#6c757d',
+    backgroundColor: '#999',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
+    lineHeight: 14,
   },
-  menuTag: {
-    fontSize: 12,
-    color: '#888',
-    fontWeight: '500',
-    marginBottom: 10,
-  },
+
   alcoholTag: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#333',
-    fontWeight: '500',
+    fontWeight: '600',
     marginBottom: 10,
+    lineHeight: 20,
   },
   distanceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
     marginTop: -7,
-    marginRight: 15,
+    marginHorizontal: 18,
   },
   distanceText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: 'bold',
     color: '#333',
   },
   walkingTimeText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#10BEFB',
-    marginLeft: 5,
   },
 });
 

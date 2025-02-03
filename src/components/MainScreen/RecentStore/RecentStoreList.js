@@ -9,7 +9,7 @@ import {
 import RecentStoreItem from './RecentStoreItem';
 import {Store_getby_recent} from '../../../api/storeApi';
 
-const RecentStoreList = ({refresh, setRefresh, navigation}) => {
+const RecentStoreList = ({refresh, setRefresh, navigation, location}) => {
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -88,7 +88,7 @@ const RecentStoreList = ({refresh, setRefresh, navigation}) => {
   };
 
   const renderStoreItem = ({item}) => (
-    <RecentStoreItem store={item} navigation={navigation} />
+    <RecentStoreItem store={item} navigation={navigation} location={location} />
   );
 
   return (
@@ -126,21 +126,20 @@ const styles = StyleSheet.create({
     paddingBottom: 20, // 리스트 끝에 여유 공간 추가
   },
   todayPhrasesView: {
-    marginTop: 10,
+    marginTop: 30,
     marginLeft: 25,
-    marginBottom: 5,
   },
   mylocationlivetext: {
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'black',
     marginTop: 10,
   },
   mylocationlivesubtext: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: 'gray',
-    marginTop: 3,
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#555',
+    marginTop: 5,
   },
   footer: {
     paddingVertical: 20,

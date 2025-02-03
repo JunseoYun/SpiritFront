@@ -94,10 +94,10 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   todayReason: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: 'gray',
-    marginTop: 3,
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#555',
+    marginTop: 5,
   },
   scrollContainer: {
     paddingHorizontal: 15, // 좌우 여백 추가
