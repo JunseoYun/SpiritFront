@@ -220,11 +220,6 @@ const StoreReviewScreen = ({navigation}) => {
       });
     }
   };
-  const renderItem = ({item}) => <ReviewItem key={item.id} item={item} />;
-
-  // {reviewdata.map(item => (
-  //   <ReviewItem key={item.reviewId} item={item} />
-  // ))}
 
   return (
     <SafeAreaView style={styles.container}>

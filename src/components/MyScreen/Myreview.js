@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
 import MyReviewItem from './MyReviewItem';
+import MyReviewEditModdal from './MyReviewEditModdal';
 import {ReviewRecentGet, ReviewDelete} from '../../api/reviewApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 
@@ -57,11 +58,32 @@ const MyReview = ({navigation}) => {
           setMyReview(prevReviews =>
             prevReviews.filter(review => review.id !== reviewid),
           );
+          showAlert({
+            title: '삭제 되었습니다',
+          });
         } catch (error) {}
       },
       onCancel: null,
       type: 'delete',
     });
+  };
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedReview, setSelectedReview] = useState(null);
+
+  const updateReview = reviewdata => {
+    setSelectedReview(reviewdata);
+    setModalVisible(true);
+  };
+
+  const handleUpdateReview = () => {
+    if (!selectedReview) return;
+
+    setMyReview([]); // 기존 데이터 초기화
+    setPage(0); // 페이지 초기화
+    setIsEnd(false); // 데이터 끝 상태 초기화
+    myReviewsget(0);
+    setModalVisible(false);
   };
 
   const renderItem = ({item}) => (
@@ -70,6 +92,7 @@ const MyReview = ({navigation}) => {
       review={item}
       navigation={navigation}
       deleteReview={() => deleteReview(item.id)}
+      updateReview={() => updateReview(item)}
     />
   );
   return (
@@ -112,6 +135,13 @@ const MyReview = ({navigation}) => {
         }
       />
       <AlertComponent />
+      {/* 모달 컴포넌트 사용 */}
+      <MyReviewEditModdal
+        visible={modalVisible}
+        reviewdata={selectedReview}
+        onClose={() => setModalVisible(false)}
+        onSave={handleUpdateReview}
+      />
     </>
   );
 };
