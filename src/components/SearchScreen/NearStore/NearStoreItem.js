@@ -99,15 +99,13 @@ const NearStoreItem = ({store, navigation, location}) => {
 
         {/* ✅ 가게 카테고리 */}
         <View style={styles.storeViewInfo}>
-          {Array.isArray(store.categories) && store.categories.length > 0 ? (
-            store.categories.map((category, index) => (
-              <Text key={index} style={styles.StoreCategory}>
-                {translateCategory(category)}
-              </Text>
-            ))
-          ) : (
-            <Text style={styles.StoreCategory}>카테고리 미설정</Text>
-          )}
+          <Text style={styles.StoreCategory}>
+            {store.categories && store.categories.length > 0
+              ? store.categories
+                  .map(category => translateCategory(category))
+                  .join('  ')
+              : '카테고리 미설정'}
+          </Text>
         </View>
 
         {/* ✅ 영업 종료 시간 & 거리 표시 */}

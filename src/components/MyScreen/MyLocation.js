@@ -52,7 +52,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F9FC',
     padding: 16,
-    justifyContent: 'center',
   },
   infoBox: {
     flexDirection: 'row',

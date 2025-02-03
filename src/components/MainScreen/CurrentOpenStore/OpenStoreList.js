@@ -124,21 +124,20 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   todayPhrasesView: {
-    marginTop: 10,
+    marginTop: 20,
     marginLeft: 25,
-    marginBottom: 5,
   },
   mylocationlivetext: {
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'black',
     marginTop: 10,
   },
   mylocationlivesubtext: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: 'gray',
-    marginTop: 3,
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#555',
+    marginTop: 5,
   },
   storeContainer: {
     marginHorizontal: 3,

@@ -250,16 +250,14 @@ const MainScreen = ({navigation}) => {
           refresh={isRefreshing} // MainScreen의 새로고침 상태 전달
           setRefresh={onRefresh}
         />
-        {/* 실시간 인기 주점 데이터 필요 */}
-        {/* <View onLayout={event => (liveHotRef.current = event.nativeEvent.layout)}>
-        <LivehotStoreList stores={liveHotStores || []} />
-      </View> */}
 
         <View
           onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
           <RecentStoreList
-            refresh={isRefreshing} // MainScreen의 새로고침 상태 전달
-            setRefresh={onRefresh} // MainScreen의 새로고침 함수 전달
+            refresh={isRefreshing}
+            setRefresh={onRefresh}
+            navigation={navigation}
+            location={location}
           />
         </View>
         <OptionsSection
