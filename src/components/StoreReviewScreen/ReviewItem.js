@@ -3,10 +3,20 @@ import {View, Text, StyleSheet, Image, ScrollView} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 
 const ReviewItem = ({item}) => {
-  const visitedDate = new Date(item.visitedAt);
-  const formattedDate = `${
-    visitedDate.getMonth() + 1
-  }.${visitedDate.getDate()}`;
+  const formatDate = dateString => {
+    if (!dateString) return 'N/A';
+
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const currentYear = new Date().getFullYear();
+
+    return year === currentYear
+      ? `${date.getMonth() + 1}.${date.getDate()}`
+      : `${year}.${date.getMonth() + 1}.${date.getDate()}`;
+  };
+
+  const formattedCreatedDate = formatDate(item.createdAt);
+  const formattedVisitedDate = formatDate(item.visitedAt);
   return (
     <View key={item.reviewId} style={styles.reviewContainer}>
       <View style={styles.reviewHeader}>
@@ -14,7 +24,7 @@ const ReviewItem = ({item}) => {
           source={
             item.writerAvatar
               ? {uri: item.writerAvatar}
-              : require('../../assets/kim.png')
+              : require('../../assets/default_profile.png')
           }
           style={styles.avatar}
         />
@@ -26,22 +36,22 @@ const ReviewItem = ({item}) => {
           </View>
         </View>
         {/* <Text style={styles.reviewDate}>{item.date}</Text> */}
-        <Text style={styles.reviewDate}>방문 {formattedDate}</Text>
+        <Text style={styles.reviewDate}>방문 {formattedVisitedDate}</Text>
       </View>
       <Text style={styles.reviewContent}>{item.content}</Text>
-
-      {item.images &&
-        item.images.map((image, index) => (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      {item.imgUrlList && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {item.imgUrlList.map((image, index) => (
             <Image
-              key={index}
-              source={image ? {uri: image} : null}
+              key={image || index} // 각 이미지의 고유한 key 값 설정
+              source={image ? {uri: image} : null} // 이미지 URL을 바로 사용
               style={styles.reviewImage}
             />
-          </ScrollView>
-        ))}
+          ))}
+        </ScrollView>
+      )}
 
-      <Text style={styles.datetimeText}>리뷰 작성 01.20</Text>
+      <Text style={styles.datetimeText}>리뷰 작성 {formattedCreatedDate}</Text>
     </View>
   );
 };
@@ -113,6 +123,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 10,
     marginLeft: 3,
+  },
+  imageScrollView: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
 
