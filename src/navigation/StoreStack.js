@@ -5,7 +5,6 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import StoreMainScreen from '../screens/StoreInfo/StoreMainScreen';
 import MenuAddScreen from '../screens/StoreInfo/MenuAddScreen';
-import UpdateMenuScreen from '../screens/StoreInfo/UpdateMenuScreen';
 import StoreMapScreen from '../screens/StoreInfo/StoreMapScreen';
 import AlcoholAddScreen from '../screens/StoreInfo/AlcoholAddScreen';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
@@ -76,12 +75,6 @@ export default function StoreStack() {
             </Pressable>
           ),
         })}
-      />
-
-      <Stack.Screen
-        name="UpdateMenuScreen"
-        component={UpdateMenuScreen}
-        options={{title: '메뉴 수정하기'}}
       />
 
       <Stack.Screen

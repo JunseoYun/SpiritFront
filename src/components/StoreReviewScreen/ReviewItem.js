@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image, ScrollView} from 'react-native';
-import Entypo from 'react-native-vector-icons/Entypo';
+
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 const ReviewItem = ({item}) => {
   const formatDate = dateString => {
@@ -31,7 +32,7 @@ const ReviewItem = ({item}) => {
         <View style={styles.reviewHeaderText}>
           <Text style={styles.writerName}>{item.writerNickname}</Text>
           <View style={styles.infoView}>
-            <Entypo name="star" size={17} color="#FCC104" />
+            <FontAwesomeIcon name="star" size={17} color="#FCC104" />
             <Text style={styles.reviewInfo}> {item.rate}</Text>
           </View>
         </View>
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
   infoView: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 1,
+    marginTop: 3,
   },
   reviewInfo: {
     fontSize: 15,

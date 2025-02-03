@@ -3,10 +3,9 @@ import {
   Modal,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
+  ImageBackground,
   ScrollView,
   Pressable,
 } from 'react-native';
@@ -216,12 +215,31 @@ const AlcoholModal = ({
             <ScrollView style={{width: '100%'}}>
               <View style={styles.imageContainer}>
                 {alcoholImage ? (
-                  <Image
+                  <ImageBackground
                     source={{uri: alcoholImage}}
                     style={styles.menuImage}
-                  />
+                    imageStyle={styles.backimagestyle}>
+                    {/* ✅ 이미지 안에 아이콘 배치 */}
+                    <View style={styles.imageButtonView}>
+                      <Pressable
+                        style={[styles.imageButton, styles.shadowEffect]}
+                        onPress={selectImage}>
+                        <MaterialIcons
+                          name="photo-library"
+                          size={28}
+                          color="#fff"
+                        />
+                      </Pressable>
+                      <Pressable
+                        style={[styles.deleteButton, styles.shadowEffect]}
+                        onPress={handleDeleteImage}>
+                        <Ionicons name="trash-outline" size={28} color="#fff" />
+                      </Pressable>
+                    </View>
+                  </ImageBackground>
                 ) : (
                   <View style={styles.placeholderImage}>
+                    <Text style={styles.placeholderText}>이미지 추가</Text>
                     <Pressable onPress={selectImage}>
                       <MaterialCommunityIcons
                         name="image-plus"
@@ -232,25 +250,6 @@ const AlcoholModal = ({
                   </View>
                 )}
               </View>
-
-              {alcoholImage && (
-                <View style={styles.imageButtonView}>
-                  <TouchableOpacity
-                    style={[styles.deleteButton, styles.shadowEffect]}
-                    onPress={handleDeleteImage}>
-                    <Ionicons name="trash-outline" size={30} color="#fff" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.imageButton, styles.shadowEffect]}
-                    onPress={selectImage}>
-                    <MaterialIcons
-                      name="photo-library"
-                      size={30}
-                      color="#fff"
-                    />
-                  </TouchableOpacity>
-                </View>
-              )}
               <AlcoholInput
                 label="주류 이름*"
                 value={alcoholName}
@@ -317,17 +316,53 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333', // ✅ 더 진한 색상 적용
   },
+
   imageContainer: {
     alignItems: 'center',
     marginVertical: 15,
+    position: 'relative', // ✅ 부모 요소 기준으로 배치
   },
   menuImage: {
-    width: 200, // ✅ 이미지 크기 증가
+    width: 200,
     height: 200,
     resizeMode: 'cover',
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#E7E7E7',
+    borderRadius: 12,
+    overflow: 'hidden', // ✅ 이미지 둥글게 적용
+  },
+  backimagestyle: {
+    borderRadius: 12, // ✅ ImageBackground에도 둥근 효과 적용
+  },
+  imageButtonView: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 20, // ✅ 버튼 간격 조정
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // ✅ 반투명 배경 추가
+    borderRadius: 12,
+  },
+  imageButton: {
+    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', // ✅ 반투명 배경으로 자연스럽게
+    borderRadius: 50,
+    marginTop: 135,
+    marginRight: 35,
+  },
+  deleteButton: {
+    padding: 10,
+    backgroundColor: 'rgba(255, 0, 0, 0.5)', // ✅ 삭제 버튼은 빨간색 톤
+    borderRadius: 50,
+    marginLeft: 35,
+    marginTop: 135,
+  },
+  shadowEffect: {
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   placeholderImage: {
     width: 200,
@@ -342,39 +377,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  imageButtonView: {
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  imageButton: {
-    position: 'absolute',
-    top: -75,
-    right: 65,
-    alignItems: 'center',
-    marginVertical: 10,
-    padding: 10,
-  },
-  imageButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-  deleteButton: {
-    position: 'absolute',
-    top: -75,
-    left: 65,
-    alignItems: 'center',
-    marginVertical: 10,
-    padding: 10,
-  },
-  shadowEffect: {
-    shadowColor: '#000', // 그림자 색상
-    shadowOffset: {width: 0, height: 4}, // 그림자 위치 (x, y)
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-
   input: {
     width: '100%',
     borderBottomColor: '#16BBFF',

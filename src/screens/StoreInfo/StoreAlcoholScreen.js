@@ -36,8 +36,6 @@ const StoreAlcoholScreen = ({
   // ✅ `mainDrinks` 타입을 먼저 보여주도록 정렬 수정
   const groupedAlcohols = useMemo(() => {
     const mainDrinkTypes = new Set(mainDrinks.map(drink => drink.type));
-    console.log('mainDrinks:', mainDrinks);
-    console.log('mainDrinkTypes:', mainDrinkTypes);
 
     const grouped = alcoholsState.reduce((acc, alcohol) => {
       const translatedType = translateAlcohol(alcohol.type);
@@ -135,6 +133,11 @@ const StoreAlcoholScreen = ({
           <View style={styles.line} />
         </View>
       ))}
+      {alcohols?.length === 0 && (
+        <View style={styles.footer}>
+          <Text style={styles.emptyText}>등록된 주류가 없습니다</Text>
+        </View>
+      )}
       <AlertComponent />
     </SafeAreaView>
   );
@@ -157,6 +160,17 @@ const styles = StyleSheet.create({
     height: 7,
     backgroundColor: '#F2F2F2',
     marginBottom: 10,
+  },
+  footer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 

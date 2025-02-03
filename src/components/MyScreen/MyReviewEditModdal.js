@@ -10,6 +10,7 @@ import {
   Image,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import DatePicker from 'react-native-date-picker';
 import {
@@ -45,8 +46,8 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
   const renderStars = () => {
     return Array.from({length: 5}, (_, index) => (
       <TouchableOpacity key={index} onPress={() => setRate(index + 1)}>
-        <Ionicons
-          name={index < rate ? 'star' : 'star-outline'}
+        <FontAwesomeIcon
+          name={index < rate ? 'star' : 'star-o'}
           size={30}
           color={index < rate ? '#FFD700' : '#C0C0C0'}
         />
@@ -125,7 +126,10 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
           }
         }
       } catch (error) {
-        console.error('Error updating review:', error);
+        showAlert({
+          title: '수정 실패',
+          message: '잘못된 요청입니다.',
+        });
       }
     }
   };
@@ -142,9 +146,7 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
         .then(images => {
           setAddedImages([...addedImages, images]); // 기존 이미지 배열에 새 이미지를 추가
         })
-        .catch(error => {
-          console.error('Image picker error:', error);
-        });
+        .catch(error => {});
     } else {
       showAlert({
         title: '이미지 추가 제한',
@@ -176,8 +178,6 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
         try {
           const imageToRemove = serverImages[index]; // 삭제할 이미지
 
-          // ReviewDeleteImage API 호출
-          console.log(imageToRemove, reviewdata.id);
           await ReviewDeleteImage(reviewdata.id, imageToRemove);
           setServerImages(prevImages =>
             prevImages.filter((_, i) => i !== index),
@@ -187,7 +187,9 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
             title: '삭제 되었습니다',
           });
         } catch (error) {
-          console.error('Error deleting image:', error);
+          showAlert({
+            title: '이미지 삭제 실패',
+          });
         }
       },
       onCancel: null,
@@ -197,7 +199,7 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
 
   return (
     <Modal
-      animationType="slide"
+      animationType="fade"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}>
@@ -206,21 +208,11 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
           {/* 상단 버튼 (취소 & 저장) */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity onPress={handleCancel}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={25}
-                color="#333"
-                style={{marginLeft: 13}}
-              />
+              <Ionicons name="arrow-back-outline" size={25} color="#333" />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>리뷰 수정</Text>
             <TouchableOpacity onPress={handleSave}>
-              <Ionicons
-                name="paper-plane-sharp"
-                size={25}
-                color="#16BBFF"
-                style={{marginRight: 13}}
-              />
+              <Ionicons name="paper-plane-sharp" size={25} color="#16BBFF" />
             </TouchableOpacity>
           </View>
 
@@ -361,8 +353,8 @@ const styles = StyleSheet.create({
     marginVertical: 15,
   },
   selectImage: {
-    width: 150,
-    height: 150,
+    width: 120,
+    height: 120,
     margin: 5,
     borderRadius: 10,
     resizeMode: 'cover',

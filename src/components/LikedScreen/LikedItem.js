@@ -1,13 +1,23 @@
 // StoreCard.js
 import React from 'react';
-import {Pressable, View, Text, Image, StyleSheet} from 'react-native';
+import {Pressable, View, Text, ImageBackground, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
+import useStoreStatus from '../../hooks/useStoreStatus';
 
 const LikedItem = ({store, navigation}) => {
   const {translateCategory} = useCategoryTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
+  const isStoreOpen = useStoreStatus(
+    store?.businessHoursDto?.openTime,
+    store?.businessHoursDto?.closeTime,
+    store?.closedDays,
+  );
+  const isStoreBreak = useStoreStatus(
+    store?.businessHoursDto?.breakStartTime,
+    store?.businessHoursDto?.breakEndTime,
+  );
   return (
     <Pressable
       onPress={() =>
@@ -21,15 +31,37 @@ const LikedItem = ({store, navigation}) => {
         })
       }>
       <View style={styles.storeInfo}>
-        {store.mainImgUrl ? (
-          <Image source={{uri: store.mainImgUrl}} style={styles.storeImage} />
-        ) : (
-          <View style={styles.storeImagetext}>
-            <Text style={{color: 'white', textAlign: 'center'}}>
-              이미지 없음
-            </Text>
-          </View>
-        )}
+        <ImageBackground
+          source={
+            store.mainImgUrl
+              ? {uri: store.mainImgUrl} // ✅ 네트워크 이미지
+              : require('../../assets/default_store.png') // ✅ 로컬 이미지
+          }
+          style={styles.backimage}
+          imageStyle={styles.backimagestyle}>
+          {/* ✅ 영업 종료 표시 */}
+          {!isStoreOpen && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>
+                영업 종료{' '}
+                {store.businessHoursDto?.openTime
+                  ? `\n${store.businessHoursDto.openTime.slice(0, 5)} 오픈`
+                  : ''}
+              </Text>
+            </View>
+          )}
+          {/* ✅ 브레이크 타임 표시 */}
+          {isStoreOpen && isStoreBreak && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>
+                브레이크 타임{' '}
+                {store.businessHoursDto?.breakEndTime
+                  ? `\n${store.businessHoursDto.breakEndTime.slice(0, 5)} 종료`
+                  : ''}
+              </Text>
+            </View>
+          )}
+        </ImageBackground>
         <View style={styles.textContainer}>
           <View style={styles.headerRow}>
             <Text
@@ -64,7 +96,7 @@ const LikedItem = ({store, navigation}) => {
                       menu => `${menu.name}`, // 메뉴 항목 형식화
                     )
                     .join('  ') // 항목 간 간격 추가
-                : '메뉴가 없습니다.'}
+                : '대표 메뉴 미등록'}
             </Text>
           </View>
 
@@ -104,6 +136,30 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 5,
+  },
+  backimage: {
+    width: 100,
+    height: 120,
+    borderRadius: 10,
+    marginRight: 12,
+    borderRadius: 10,
+  },
+  backimagestyle: {
+    borderRadius: 10,
+  },
+
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ 반투명 배경 추가
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  overlayText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   storeImage: {
     width: 100,
