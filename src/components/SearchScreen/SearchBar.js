@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F2F3F5', // 부드러운 배경색
+    backgroundColor: '#F0F0F0', // 부드러운 배경색
     borderRadius: 10,
     paddingHorizontal: 15,
     height: 50,

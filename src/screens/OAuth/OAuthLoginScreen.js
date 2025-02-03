@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,9 @@ import {
   StyleSheet,
   Platform,
   SafeAreaView,
-  Alert,
+  Animated,
+  Easing,
+  ImageBackground,
 } from 'react-native';
 import {
   loginWithKakaoAccount,
@@ -30,7 +32,40 @@ const OAuthLoginScreen = ({navigation}) => {
       iosClientId:
         '55496276543-acp3mpj3folinp0067iogp03cstubo4r.apps.googleusercontent.com',
     });
+    startWaveAnimation();
   }, []);
+
+  const animations = useRef([
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+  ]).current;
+
+  const startWaveAnimation = () => {
+    Animated.loop(
+      Animated.stagger(
+        200, // 💡 각 애니메이션 사이의 지연 시간 (200ms)
+        animations.map(anim =>
+          Animated.sequence([
+            Animated.timing(anim, {
+              toValue: -15, // 위로 이동
+              duration: 500,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: true,
+            }),
+            Animated.timing(anim, {
+              toValue: 0, // 원래 위치로 복귀
+              duration: 500,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: true,
+            }),
+          ]),
+        ),
+      ),
+      {iterations: -1}, // 💡 무한 반복
+    ).start();
+  };
 
   const handleLogin = async ({type, id, socialToken}) => {
     try {
@@ -136,60 +171,78 @@ const OAuthLoginScreen = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={styles.background}>
-      <Text style={styles.Logo}>한잔할까</Text>
-      <TouchableOpacity
-        onPress={handleKaKaoLogin}
-        style={styles.kakaoButtonContainer}>
-        <Image
-          source={require('../../assets/kakao_login.png')}
-          style={styles.kakaoButton}
-        />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={handleGoogleSignIn}
-        style={styles.googleButtonContainer}>
-        <View style={styles.googleView}>
-          <View style={styles.googleLogoContainer}>
-            <Image
-              source={require('../../assets/g-logo.png')}
-              style={styles.googleLogo}
-            />
-          </View>
-          <Text style={styles.googleText}>Google 계정으로 계속하기</Text>
+    <ImageBackground
+      source={require('../../assets/background2.png')} // 배경 이미지 경로
+      style={styles.background}
+      resizeMode="cover">
+      <SafeAreaView>
+        <View style={styles.logoView}>
+          {['한', '잔', '할', '까'].map((char, index) => (
+            <Animated.Text
+              key={index}
+              style={[
+                styles.Logo,
+                {transform: [{translateY: animations[index]}]},
+              ]}>
+              {char}
+            </Animated.Text>
+          ))}
         </View>
-      </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={handleAppleSignIn}
-        style={styles.googleButtonContainer}>
-        <View style={styles.googleView}>
-          <View style={styles.googleLogoContainer}>
-            <Image
-              source={require('../../assets/appleLogo.png')}
-              style={styles.appleLogo}
-            />
-          </View>
-          <Text style={styles.appleText}>Apple로 로그인</Text>
-        </View>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleKaKaoLogin}
+          style={styles.kakaoButtonContainer}>
+          <Image
+            source={require('../../assets/kakao_login.png')}
+            style={styles.kakaoButton}
+          />
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={handletempLogin}
-        style={styles.googleButtonContainer}>
-        <View style={styles.googleView}>
-          <View style={styles.googleLogoContainer}>
-            <Image
-              source={require('../../assets/appleLogo.png')}
-              style={styles.appleLogo}
-            />
+        <TouchableOpacity
+          onPress={handleGoogleSignIn}
+          style={styles.googleButtonContainer}>
+          <View style={styles.googleView}>
+            <View style={styles.googleLogoContainer}>
+              <Image
+                source={require('../../assets/g-logo.png')}
+                style={styles.googleLogo}
+              />
+            </View>
+            <Text style={styles.googleText}>Google 계정으로 계속하기</Text>
           </View>
-          <Text style={styles.appleText}>임시 로그인</Text>
-        </View>
-      </TouchableOpacity>
-      <AlertComponent />
-    </SafeAreaView>
+        </TouchableOpacity>
+        {Platform.OS === 'ios' && (
+          <TouchableOpacity
+            onPress={handleAppleSignIn}
+            style={styles.googleButtonContainer}>
+            <View style={styles.googleView}>
+              <View style={styles.googleLogoContainer}>
+                <Image
+                  source={require('../../assets/appleLogo.png')}
+                  style={styles.appleLogo}
+                />
+              </View>
+              <Text style={styles.appleText}>Apple로 로그인</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity
+          onPress={handletempLogin}
+          style={styles.googleButtonContainer}>
+          <View style={styles.googleView}>
+            <View style={styles.googleLogoContainer}>
+              <Image
+                source={require('../../assets/appleLogo.png')}
+                style={styles.appleLogo}
+              />
+            </View>
+            <Text style={styles.appleText}>임시 로그인</Text>
+          </View>
+        </TouchableOpacity>
+        <AlertComponent />
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
@@ -198,15 +251,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
+  },
+  logoView: {
+    position: 'absolute',
+    top: 100,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   Logo: {
-    position: 'absolute',
-    top: 200,
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
-    fontSize: 50,
-    color: 'rgb(16, 190, 251)',
+    fontSize: 60,
+    color: '#fff',
+    marginHorizontal: 3,
   },
+
   kakaoButtonContainer: {
     width: 340,
     height: 50,
