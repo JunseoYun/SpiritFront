@@ -23,7 +23,11 @@ const FastSearch = ({title, searchOptions}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {marginVertical: 10, width: '90%', alignSelf: 'center'},
+  container: {
+    marginVertical: 25,
+    width: '90%',
+    alignSelf: 'center',
+  },
   titleContainer: {
     flexDirection: 'row',
     width: '90%',

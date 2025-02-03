@@ -1,10 +1,45 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
+import useDistance from '../../../hooks/useDistance';
+import useStoreStatus from '../../../hooks/useStoreStatus';
 
-const NearStoreItem = ({store, navigation}) => {
+const NearStoreItem = ({store, navigation, location}) => {
+  const [distance, setDistance] = useState(0);
+  const [unit, setUnit] = useState('m');
+  const calculateDistance = useDistance();
+  const isStoreOpen = useStoreStatus(
+    store?.businessHoursDto?.openTime,
+    store?.businessHoursDto?.closeTime,
+    store?.closedDays,
+  );
+  const isStoreBreak = useStoreStatus(
+    store?.businessHoursDto?.breakStartTime,
+    store?.businessHoursDto?.breakEndTime,
+  );
+
+  useEffect(() => {
+    const fetchDistance = () => {
+      let tempDistance = calculateDistance(
+        location.latitude,
+        location.longitude,
+        store.locationDto.latitude,
+        store.locationDto.longitude,
+      );
+      if (tempDistance < 1) {
+        tempDistance *= 1000;
+        setDistance(tempDistance.toFixed(0));
+      } else {
+        setDistance(tempDistance.toFixed(2));
+        setUnit('km');
+      }
+    };
+    fetchDistance();
+  }, [store]);
+
   const {translateCategory} = useCategoryTranslation();
+
   return (
     <Pressable
       onPress={() =>
@@ -18,26 +53,42 @@ const NearStoreItem = ({store, navigation}) => {
         })
       }>
       <View style={styles.storeInfoView}>
+        {/* ✅ 가게 이미지 (영업 상태에 따라 안내 문구 추가) */}
         <View style={styles.backimageview}>
-          {store.mainImgUrl ? (
-            <ImageBackground
-              source={{uri: store.mainImgUrl}}
-              style={styles.backimage}
-              imageStyle={styles.backimagestyle}
-            />
-          ) : (
-            <View
-              style={{
-                width: '100%',
-                height: '100%',
-                justifyContent: 'center',
-              }}>
-              <Text style={{color: 'black', textAlign: 'center'}}>
-                이미지 없음
-              </Text>
-            </View>
-          )}
+          <ImageBackground
+            source={
+              store.mainImgUrl
+                ? {uri: store.mainImgUrl} // ✅ 네트워크 이미지
+                : require('../../../assets/default_store.png') // ✅ 로컬 이미지
+            }
+            style={styles.backimage}
+            imageStyle={styles.backimagestyle}>
+            {/* ✅ 영업 종료 표시 */}
+            {!isStoreOpen && (
+              <View style={styles.overlay}>
+                <Text style={styles.overlayText}>
+                  영업 종료{' '}
+                  {store.businessHoursDto?.openTime
+                    ? `${store.businessHoursDto.openTime.slice(0, 5)} 오픈`
+                    : ''}
+                </Text>
+              </View>
+            )}
+            {/* ✅ 브레이크 타임 표시 */}
+            {isStoreOpen && isStoreBreak && (
+              <View style={styles.overlay}>
+                <Text style={styles.overlayText}>
+                  브레이크 타임{' '}
+                  {store.businessHoursDto?.breakEndTime
+                    ? `${store.businessHoursDto.breakEndTime.slice(0, 5)} 종료`
+                    : ''}
+                </Text>
+              </View>
+            )}
+          </ImageBackground>
         </View>
+
+        {/* ✅ 가게 기본 정보 */}
         <View style={styles.storeViewInfo}>
           <Text style={styles.storMainInfo}>{store.name}</Text>
           <View style={styles.storeViewInfo}>
@@ -45,6 +96,8 @@ const NearStoreItem = ({store, navigation}) => {
             <Text style={styles.storMainInfo}> {store.storeRate}</Text>
           </View>
         </View>
+
+        {/* ✅ 가게 카테고리 */}
         <View style={styles.storeViewInfo}>
           {Array.isArray(store.categories) && store.categories.length > 0 ? (
             store.categories.map((category, index) => (
@@ -56,14 +109,16 @@ const NearStoreItem = ({store, navigation}) => {
             <Text style={styles.StoreCategory}>카테고리 미설정</Text>
           )}
         </View>
+
+        {/* ✅ 영업 종료 시간 & 거리 표시 */}
         <View style={styles.storeViewInfo}>
           <Text style={styles.storeSubInfo}>
-            {/* 영업 종료 {store.closeHour.slice(0, 5)} */}
             영업 종료{' '}
             {store.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
           </Text>
-          <Text style={styles.storeSubInfo}>{store.distance} m</Text>
-          {/* <Text style={styles.storeSubInfo}>{store.distance.toFixed(0)} m</Text> */}
+          <Text style={styles.storeSubInfo}>
+            {distance} {unit}
+          </Text>
         </View>
       </View>
     </Pressable>
@@ -72,7 +127,7 @@ const NearStoreItem = ({store, navigation}) => {
 
 const styles = StyleSheet.create({
   storeInfoView: {
-    marginHorizontal: 12,
+    paddingLeft: 18,
   },
   backimageview: {
     width: 170,
@@ -87,6 +142,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5,
+    overflow: 'hidden', // ✅ overlay가 이미지 밖으로 나가지 않도록 처리
   },
   backimage: {
     width: '100%',
@@ -96,13 +152,26 @@ const styles = StyleSheet.create({
   backimagestyle: {
     borderRadius: 12,
   },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ 반투명 배경 추가
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlayText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
   storeViewInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 3,
+    marginBottom: 2,
     marginLeft: 3,
     marginRight: 3,
+    paddingHorizontal: 1,
   },
   storMainInfo: {
     fontSize: 15,
@@ -110,13 +179,14 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   StoreCategory: {
-    fontSize: 13,
-    color: '#A3A3A3',
-    marginRight: 5,
+    fontSize: 15,
+    color: '#999',
+    fontWeight: '500',
   },
   storeSubInfo: {
-    fontSize: 12,
-    color: 'gray',
+    fontSize: 14,
+    color: '#999',
+    fontWeight: '500',
   },
 });
 

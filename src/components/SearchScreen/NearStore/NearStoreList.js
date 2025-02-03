@@ -54,7 +54,9 @@ const NearStoreList = ({navigation, location}) => {
   };
 
   const renderStoreItem = ({item}) => {
-    return <NearStoreItem store={item} navigation={navigation} />;
+    return (
+      <NearStoreItem store={item} navigation={navigation} location={location} />
+    );
   };
 
   const renderFooter = () => {
