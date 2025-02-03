@@ -253,7 +253,7 @@ const AlcoholModal = ({
               <AlcoholInput
                 label="주류 이름*"
                 value={alcoholName}
-                onChangeText={text => setAlcoholName(text)}
+                onChangeText={setAlcoholName}
                 placeholder="주류 이름*"
               />
 

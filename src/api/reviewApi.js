@@ -52,7 +52,6 @@ export const ReviewRecentGet = async page => {
     const response = await axiosInstance.get(`/review/get-by/recent`, {
       params: {page},
     });
-    console.log(response.data.data);
     return response.data.data;
   } catch (error) {
     functionError(error);
