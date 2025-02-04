@@ -15,7 +15,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import StoreActions from './StoreActions';
-import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import {getLocation} from '../../storage/locationStorage';
 import useDistance from '../../hooks/useDistance';
 import useDayTranslation from '../../hooks/useDayTranslation';

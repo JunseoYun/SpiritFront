@@ -2,7 +2,7 @@
 import React from 'react';
 import {Pressable, View, Text, ImageBackground, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
 

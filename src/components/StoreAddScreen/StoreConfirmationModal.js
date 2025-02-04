@@ -7,7 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useDayTranslation from '../../hooks/useDayTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 

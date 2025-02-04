@@ -1,18 +1,12 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {
   StyleSheet,
-  Pressable,
-  FlatList,
   Text,
   View,
-  Image,
-  Modal,
   Animated, // Animated 추가
   PanResponder, // PanResponder 추가
-  SafeAreaView,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {getLocation} from '../../storage/locationStorage';
 import {fetchLocation} from '../../hooks/useLocation';
 import {Store_getby_radius} from '../../api/storeApi';
@@ -23,27 +17,17 @@ import MapDirections from '../../components/MapScreen/MapDirections';
 import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import generateMapScript from '../../components/MapScreen/generateMapScript';
 import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
-
+import {openKakaoMap} from '../../hooks/openKakaoMap';
 const MapScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
-  const [error, setError] = useState(null);
   const [stores, setStores] = useState([]);
-  const [selectedStore, setSelectedStore] = useState(null); // 선택된 가게 상태
+  const [selectedStore, setSelectedStore] = useState(null);
   const [selectedStoreIndex, setSelectedStoreIndex] = useState(0);
   const webViewRef = useRef(null);
-  const [isWebModalVisible, setWebModalVisible] = useState(false);
   const flatListRef = useRef(null);
 
   const [isFlatListVisible, setIsFlatListVisible] = useState(true); // 플랫리스트 상태
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
-
-  const openWebModal = () => {
-    setWebModalVisible(true);
-  };
-
-  const closeWebModal = () => {
-    setWebModalVisible(false);
-  };
 
   useEffect(() => {
     fetchSaveLocation();
@@ -59,6 +43,7 @@ const MapScreen = ({navigation}) => {
         currentLocation.longitude,
       );
       setStores(storesData);
+      setSelectedStore(storesData[0]);
 
       if (webViewRef.current) {
         const script = generateMapScript(
@@ -199,6 +184,15 @@ const MapScreen = ({navigation}) => {
     }
   }, 500);
 
+  const openMapHandle = () => {
+    openKakaoMap(
+      location.latitude,
+      location.longitude,
+      selectedStore.locationDto.latitude,
+      selectedStore.locationDto.longitude,
+    );
+  };
+
   return (
     <View style={styles.container}>
       {location ? (
@@ -219,7 +213,7 @@ const MapScreen = ({navigation}) => {
       )}
       <MapSearchBar buttonText="근처 주점들을 검색해보세요." />
       <MapLocation onPress={updateNewLocation} />
-      <MapDirections onPress={openWebModal} />
+      <MapDirections onPress={openMapHandle} />
 
       <MapStoreList
         panHandlers={panResponder.panHandlers}
@@ -234,30 +228,6 @@ const MapScreen = ({navigation}) => {
         navigation={navigation}
         location={location}
       />
-      {selectedStore && (
-        <Modal
-          visible={isWebModalVisible}
-          animationType="slide"
-          transparent={true}>
-          <SafeAreaView style={styles.container}>
-            <WebView
-              source={{
-                uri: `https://map.kakao.com/link/map/${selectedStore.locationDto.latitude},${selectedStore.locationDto.longitude}`,
-              }} // 열고 싶은 웹페이지의 URL
-            />
-            <View style={styles.goBackButton2}>
-              <Pressable onPress={closeWebModal}>
-                <FontAwesomeIcon
-                  name={'angle-left'}
-                  size={30}
-                  color={'gray'}
-                  style={styles.searchicon}
-                />
-              </Pressable>
-            </View>
-          </SafeAreaView>
-        </Modal>
-      )}
     </View>
   );
 };
@@ -271,33 +241,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loading: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  goBackButton2: {
-    position: 'absolute',
-    bottom: '10%',
-    left: '3%',
-    borderRadius: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
-    backgroundColor: 'white',
-
-    // 그림자 설정
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4}, // 아래쪽으로 더 깊은 그림자
-    shadowOpacity: 0.3, // 그림자의 투명도
-    shadowRadius: 6, // 그림자의 퍼짐 정도
-    elevation: 12, // 안드로이드 그림자 효과
-
-    // 테두리 설정
-    borderWidth: 1,
-    borderColor: '#ccc',
-
-    // 그라디언트 효과 (배경이 단일 색상이 아닌 경우)
-    backgroundColor: '#fdfdfd',
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 

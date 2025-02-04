@@ -8,7 +8,7 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
-import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 
 const StoreCategory = ({selectedCategory, setSelectedCategory}) => {
   const {translateCategory} = useCategoryTranslation();

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {useState, useRef} from 'react';
 import {Animated, FlatList, StyleSheet} from 'react-native';
 import MapStoreItem from './MapStoreItem';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 const MapStoreList = ({
   panHandlers,
@@ -70,16 +71,9 @@ const MapStoreList = ({
 
 const styles = StyleSheet.create({
   flatListContainer: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    zIndex: 10,
-    backgroundColor: '#fff',
     borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-    paddingTop: 10,
-    elevation: 10,
-    minHeight: 30, // 숨김 상태에서도 60px 정도 보이도록 설정
+    position: 'absolute',
+    bottom: 30,
   },
 });
 

@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, ImageBackground, StyleSheet, Pressable} from 'react-native';
-import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';

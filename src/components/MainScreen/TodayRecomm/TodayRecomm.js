@@ -8,7 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import useWeatherTranslation from '../../../hooks/useWeatherTranslation';
-import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
 
 const {width} = Dimensions.get('window'); // 화면 너비 가져오기
