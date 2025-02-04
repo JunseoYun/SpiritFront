@@ -24,6 +24,7 @@ import ImagePicker from 'react-native-image-crop-picker'; // 이미지 선택 �
 import {ScrollView} from 'react-native-gesture-handler';
 
 const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
+  const [reviewData, setReviewData] = useState('');
   const [reviewContent, setReviewContent] = useState('');
   const [rate, setRate] = useState(0);
   const [visitedAt, setVisitedAt] = useState(new Date());
@@ -32,10 +33,11 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
-  const [imgdelete, setImgdelete] = useState(false);
+  const [deletedImages, setDeletedImages] = useState([]);
 
   useEffect(() => {
     if (reviewdata) {
+      setReviewData(reviewdata);
       setReviewContent(reviewdata.content || '');
       setRate(reviewdata.rate || 0);
       setVisitedAt(new Date(reviewdata.visitedAt));
@@ -55,20 +57,22 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
     ));
   };
 
-  const handleCancel = imgdelete => {
-    if (imgdelete === true) {
-      onSave();
-      setImgdelete(false);
-      setAddedImages([]);
-      return;
-    } else {
-      onClose();
-      setAddedImages([]);
-      return;
-    }
+  const handleCancel = () => {
+    onClose();
+    setAddedImages([]);
+    setDeletedImages([]);
+    return;
   };
 
   const handleSave = async () => {
+    let isImageChanged = addedImages.length > 0;
+    let isdeleteimgchanged = deletedImages.length > 0;
+    let isInfoChanged =
+      reviewContent !== reviewData.content ||
+      rate !== reviewData.rate ||
+      new Date(visitedAt).getTime() !==
+        new Date(reviewData.visitedAt).getTime();
+
     const containsForbiddenWord = forbiddenWords.some(word =>
       reviewContent.includes(word),
     );
@@ -83,54 +87,134 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
     if (reviewContent == null || rate == null || visitedAt === null) {
       showAlert({
         title: '입력 누락',
-        message: '모든 정보를 입력해 주세요요.',
+        message: '모든 정보를 입력해 주세요.',
       });
       return;
-    } else {
-      try {
-        const updatedReview = {
-          content: reviewContent,
-          rate: rate,
-          visitedAt: visitedAt,
-        };
-        const response = await ReviewEdit(reviewdata.id, updatedReview); // 리뷰 내용 업데이트 API 호출
-        if (response.status == 200) {
-          if (addedImages.length > 0) {
-            const imageData = {
-              files: addedImages,
-            };
-            const response = await ReviewEditImage(reviewdata.id, imageData);
-            if (response.status == 200) {
-              showAlert({
-                title: `수정 되었습니다.`,
-                onConfirm: () => {
-                  onSave();
-                  setAddedImages([]);
-                  onClose();
-                },
-                onCancel: null,
-                type: 'confirm',
-              });
-            }
-          } else {
-            showAlert({
-              title: `수정 되었습니다.`,
-              onConfirm: () => {
-                onSave();
-                setAddedImages([]);
-                onClose();
-              },
-              onCancel: null,
-              type: 'confirm',
-            });
-          }
-        }
-      } catch (error) {
+    }
+
+    const updatedReview = {
+      content: reviewContent,
+      rate: rate,
+      visitedAt: visitedAt,
+    };
+
+    const imageData = {
+      files: addedImages,
+    };
+    try {
+      //정보만 변경된 경우
+      if (isInfoChanged && !isImageChanged && !isdeleteimgchanged) {
+        await ReviewEdit(reviewData.id, updatedReview);
         showAlert({
-          title: '수정 실패',
-          message: '잘못된 요청입니다.',
+          title: `수정 되었습니다.`,
+          onConfirm: () => {
+            onSave();
+            onClose();
+          },
+          onCancel: null,
+          type: 'confirm',
         });
       }
+
+      //이미지 추가만 된 경우
+      if (!isInfoChanged && isImageChanged && !isdeleteimgchanged) {
+        await ReviewEditImage(reviewData.id, imageData);
+        showAlert({
+          title: `수정 되었습니다.`,
+          onConfirm: () => {
+            onSave();
+            onClose();
+          },
+          onCancel: null,
+          type: 'confirm',
+        });
+      }
+
+      //이미지 삭제만 된 경우
+      if (!isInfoChanged && !isImageChanged && isdeleteimgchanged) {
+        await ReviewDeleteImage(reviewData.id, deletedImages);
+        showAlert({
+          title: `수정 되었습니다.`,
+          onConfirm: () => {
+            onSave();
+            onClose();
+          },
+          onCancel: null,
+          type: 'confirm',
+        });
+      }
+      //정보변경, 이미지추가
+      if (isInfoChanged && isImageChanged && !isdeleteimgchanged) {
+        await ReviewEdit(reviewData.id, updatedReview);
+        await ReviewEditImage(reviewData.id, imageData);
+        showAlert({
+          title: `수정 되었습니다.`,
+          onConfirm: () => {
+            onSave();
+            onClose();
+          },
+          onCancel: null,
+          type: 'confirm',
+        });
+      }
+      //정보변경 이미지 삭제
+      if (isInfoChanged && !isImageChanged && isdeleteimgchanged) {
+        await ReviewEdit(reviewData.id, updatedReview);
+        await ReviewDeleteImage(reviewData.id, deletedImages);
+        showAlert({
+          title: `수정 되었습니다.`,
+          onConfirm: () => {
+            onSave();
+            onClose();
+          },
+          onCancel: null,
+          type: 'confirm',
+        });
+      }
+
+      //이미지 추가 및 삭제
+      if (!isInfoChanged && isImageChanged && isdeleteimgchanged) {
+        await ReviewEditImage(reviewData.id, imageData);
+        await ReviewDeleteImage(reviewData.id, deletedImages);
+        showAlert({
+          title: `수정 되었습니다.`,
+          onConfirm: () => {
+            onSave();
+            onClose();
+          },
+          onCancel: null,
+          type: 'confirm',
+        });
+      }
+      //다 한경우
+      if (isInfoChanged && isImageChanged && isdeleteimgchanged) {
+        await ReviewEdit(reviewData.id, updatedReview);
+        await ReviewEditImage(reviewData.id, imageData);
+        await ReviewDeleteImage(reviewData.id, deletedImages);
+        showAlert({
+          title: `수정 되었습니다.`,
+          onConfirm: () => {
+            onSave();
+            onClose();
+          },
+          onCancel: null,
+          type: 'confirm',
+        });
+      }
+      // 다 안한경우
+      if (!isInfoChanged && !isImageChanged && !isdeleteimgchanged) {
+        onClose();
+        setDeletedImages([]);
+        setAddedImages([]);
+        return;
+      }
+      setAddedImages([]);
+      setDeletedImages([]);
+    } catch (error) {
+      showAlert({
+        title: '수정 실패',
+        message: '잘못된 요청입니다.',
+      });
     }
   };
 
@@ -178,11 +262,11 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
         try {
           const imageToRemove = serverImages[index]; // 삭제할 이미지
 
-          await ReviewDeleteImage(reviewdata.id, imageToRemove);
+          setDeletedImages(prevDeleted => [...prevDeleted, imageToRemove]);
+
           setServerImages(prevImages =>
             prevImages.filter((_, i) => i !== index),
           );
-          setImgdelete(true);
           showAlert({
             title: '삭제 되었습니다',
           });
@@ -238,10 +322,7 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
               </Pressable>
             ))}
             {addedImages.map((image, index) => (
-              <Pressable
-                key={index}
-                onPress={() => handleImagePress(index)}
-                style={styles.imagePressable}>
+              <Pressable key={index} style={styles.imagePressable}>
                 <Image
                   source={{uri: image.path}} // 추가한 이미지의 URI
                   style={[

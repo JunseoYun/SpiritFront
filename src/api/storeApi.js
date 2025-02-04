@@ -82,6 +82,49 @@ export const UpdateStore = async (storeId, data) => {
   }
 };
 
+export const UpdateStoreImage = async (storeId, data) => {
+  const formData = new FormData();
+  data.forEach(file => {
+    if (file.path) {
+      formData.append('files', {
+        uri: file.path, // 이미지 URI
+        type: file.mime, // 이미지 타입
+        name: file.filename, // 파일 이름
+      });
+    }
+  });
+  try {
+    const response = await axiosInstance.post(
+      `/store/upload-image/${storeId}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data', // 파일 업로드는 multipart/form-data
+        },
+      },
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const DeleteStoreImage = async (storeId, image) => {
+  try {
+    const response = await axiosInstance.delete(
+      `/store/delete-image/${storeId}`,
+      {
+        data: {
+          imgUrlList: image.map(img => img.imageUrl), // 이미지 URL을 배열로 전달
+        },
+      },
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 // Store Query API
 
 // 최근 방문(리뷰) 가게 조회 O
