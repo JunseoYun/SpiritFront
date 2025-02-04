@@ -16,6 +16,7 @@ const UpdateBottomSheet = ({
   updatedKey,
   updatedValue,
   setUpdatedValue,
+  setUpdatedImgValue,
   handleUpdate,
   handleBottomClose,
   navigation,
@@ -54,6 +55,7 @@ const UpdateBottomSheet = ({
   const renderImages = () => (
     <UpdateStoreImage
       images={updatedValue}
+      setUpdatedImgValue={setUpdatedImgValue}
       onCancel={handleBottomClose}
       onSave={handleUpdate}
     />

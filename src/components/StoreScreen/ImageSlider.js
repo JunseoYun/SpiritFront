@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  Text,
 } from 'react-native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -81,8 +82,7 @@ const ImageSlider = ({
   };
 
   return (
-    <View style={[styles.container, isUpdate && styles.updateContainer]}>
-      {/* 이미지 슬라이더 */}
+    <View style={styles.container}>
       {isUpdate && (
         <Ionicons
           name="images-sharp"
@@ -93,37 +93,39 @@ const ImageSlider = ({
         />
       )}
 
-      <ScrollView
-        ref={scrollRef}
-        pagingEnabled
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={handleScrollEnd} // 스크롤이 끝날 때 호출
-        scrollEventThrottle={16}>
-        {imagesWithLoop.map((item, index) => (
-          <View key={index} style={styles.imageContainer}>
-            <Image source={{uri: item.imageUrl}} style={styles.image} />
-          </View>
-        ))}
-        {isUpdate && (
-          <TouchableOpacity
-            style={styles.overlay}
-            onPress={() => handleEdit('images', images)}></TouchableOpacity>
-        )}
-      </ScrollView>
+      {images.length > 0 ? (
+        <View style={styles.sliderContainer}>
+          <ScrollView
+            ref={scrollRef}
+            pagingEnabled
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={handleScrollEnd}
+            scrollEventThrottle={16}>
+            {imagesWithLoop.map((item, index) => (
+              <View key={index} style={styles.imageContainer}>
+                <Image source={{uri: item.imageUrl}} style={styles.image} />
+              </View>
+            ))}
+          </ScrollView>
 
-      {/* 인디케이터 */}
-      <View style={styles.indicatorContainer}>
-        {images.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.indicator,
-              currentIndex === index + 1 && styles.activeIndicator, // +1로 조정
-            ]}
-          />
-        ))}
-      </View>
+          <View style={styles.indicatorContainer}>
+            {images.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.indicator,
+                  currentIndex === index + 1 && styles.activeIndicator,
+                ]}
+              />
+            ))}
+          </View>
+        </View>
+      ) : (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>이미지 없음</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -178,6 +180,16 @@ const styles = StyleSheet.create({
   },
   activeIndicator: {
     backgroundColor: 'rgb(16, 188, 251)',
+  },
+  emptyContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: width,
+    height: 300,
+  },
+  emptyText: {
+    color: 'white',
+    fontSize: 16,
   },
 });
 

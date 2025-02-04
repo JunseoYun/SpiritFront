@@ -12,7 +12,12 @@ import {Pressable, ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
 import {useRoute} from '@react-navigation/native';
-import {StoreMainget, UpdateStore} from '../../api/storeApi';
+import {
+  StoreMainget,
+  UpdateStore,
+  DeleteStoreImage,
+  UpdateStoreImage,
+} from '../../api/storeApi';
 import StoreMenuScreen from './StoreMenuScreen';
 import StoreAlcoholScreen from './StoreAlcoholScreen';
 import StoreReviewScreen from './StoreReviewScreen';
@@ -44,6 +49,7 @@ const StoreMainScreen = ({navigation}) => {
   const [isUpdate, setIsUpdate] = useState(false);
   const [updatedKey, setUpdatedKey] = useState(null);
   const [updatedValue, setUpdatedValue] = useState(null);
+  const [updatedImgValue, setUpdatedImgValue] = useState([]);
   const scrollViewRef = useRef(null); // ScrollView 참조 추가
   const startUpdate = () => {
     setIsUpdate(true);
@@ -114,7 +120,28 @@ const StoreMainScreen = ({navigation}) => {
 
     const performUpdate = async (key, value) => {
       try {
-        await UpdateStore(storeId, {[key]: value});
+        if (key === 'images') {
+          const {addedImages, deletedImages} = value;
+          try {
+            //매장 추가만 되었을때
+            if (addedImages.length > 0 && deletedImages.length === 0) {
+              await UpdateStoreImage(storeId, addedImages);
+            }
+            //삭제만 되었을때
+            if (addedImages.length === 0 && deletedImages.length > 0) {
+              await DeleteStoreImage(storeId, deletedImages);
+            }
+            //둘다 되었을때
+            if (addedImages.length > 0 && deletedImages.length > 0) {
+              await UpdateStoreImage(storeId, addedImages);
+              await DeleteStoreImage(storeId, deletedImages);
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        } else {
+          await UpdateStore(storeId, {[key]: value});
+        }
         const storeData = await StoreMainget(storeId);
         setStoredata(storeData);
         setLongitude(storeData.locationDto.longitude);
@@ -135,11 +162,13 @@ const StoreMainScreen = ({navigation}) => {
       case 'locationDto':
         await performUpdate(updatedKey, updatedValue);
         break;
+      case 'images':
+        await performUpdate(updatedKey, updatedImgValue);
+        break;
       default:
         await performUpdate(updatedKey, updatedValue);
         break;
     }
-
     handleBottomClose();
   };
 
@@ -239,20 +268,20 @@ const StoreMainScreen = ({navigation}) => {
                 },
                 isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
               ]}>
-              {imageSliderData.length > 0 ? (
-                <ImageSlider
-                  images={imageSliderData}
-                  interval={4000}
-                  isUpdate={isUpdate}
-                  handleBottomOpen={handleBottomOpen}
-                  onEditKey={handleEditKey}
-                  onEditValue={handleEditValue}
-                />
-              ) : (
+              {/* {imageSliderData.length > 0 ? ( */}
+              <ImageSlider
+                images={imageSliderData}
+                interval={4000}
+                isUpdate={isUpdate}
+                handleBottomOpen={handleBottomOpen}
+                onEditKey={handleEditKey}
+                onEditValue={handleEditValue}
+              />
+              {/* ) : (
                 <View>
                   <Text style={{color: 'white'}}>이미지 없음</Text>
                 </View>
-              )}
+              )} */}
             </View>
 
             <StoreMainInfo
@@ -324,6 +353,7 @@ const StoreMainScreen = ({navigation}) => {
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose={true}
+        gestureEnabled={false}
         backgroundStyle={{
           backgroundColor: '#F7F7F7',
           borderTopLeftRadius: 35,
@@ -338,6 +368,7 @@ const StoreMainScreen = ({navigation}) => {
           updatedKey={updatedKey}
           updatedValue={updatedValue}
           setUpdatedValue={setUpdatedValue}
+          setUpdatedImgValue={setUpdatedImgValue}
           handleUpdate={handleUpdate}
           handleBottomClose={handleBottomClose}
           navigation={navigation}

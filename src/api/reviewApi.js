@@ -94,7 +94,6 @@ export const ReviewEditImage = async (reviewId, data) => {
     );
     return response;
   } catch (error) {
-    console.log('asdasdasd');
     functionError(error);
   }
 };
@@ -105,7 +104,7 @@ export const ReviewDeleteImage = async (reviewId, image) => {
       `/review/delete-image/${reviewId}`,
       {
         data: {
-          imgUrlList: [image], // 이미지 URL을 배열로 전달
+          imgUrlList: image, // 이미지 URL을 배열로 전달
         },
       },
     );
