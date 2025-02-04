@@ -49,6 +49,8 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
     }, 100);
   };
 
+  const allImages = [...serverImages, ...addedImages];
+
   const selectImage = () => {
     // 서버에 있는 이미지와 추가된 이미지를 합쳐서 5개 이하로 제한
     if (addedImages.length + serverImages.length < 5) {
@@ -116,6 +118,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   return (
     <View style={styles.bottomSheetContent}>
       <Text style={styles.title}>매장 이미지</Text>
+      <Text style={styles.subtitle}>*최대 5장</Text>
       <BottomSheetScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -127,27 +130,26 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
           activeOffsetY: [-100, 0], // Y 방향 스와이프를 무시하도록 범위를 설정
         }}
         style={styles.scrollView}>
-        {(serverImages || []).map((image, index) => (
+        {allImages.map((image, index) => (
           <View key={index} style={styles.imageWrapper}>
             <Image
-              source={{uri: image.imageUrl ? image.imageUrl : image}} // 선택한 이미지가 URL로 전달될 때
+              source={{
+                uri: image.imageUrl ? image.imageUrl : image.path || image,
+              }} // URL 또는 path로 전달
               style={[styles.image, {borderColor: '#E7E7E7', borderWidth: 2}]}
             />
+            {/* 첫 번째 이미지에 '대표' 태그 추가 */}
+            {index === 0 && (
+              <View style={styles.representativeBadge}>
+                <Text style={styles.representativeText}>대표 사진</Text>
+              </View>
+            )}
             <TouchableOpacity
-              onPress={() => removeServerImage(index)}
-              style={[styles.removeButton, styles.shadowEffect]}>
-              <Ionicons name="trash-outline" size={30} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        ))}
-        {addedImages.map((image, index) => (
-          <View key={index} style={styles.imageWrapper}>
-            <Image
-              source={{uri: image.path}} // 추가한 이미지의 URI
-              style={[styles.image, {borderColor: '#E7E7E7', borderWidth: 2}]}
-            />
-            <TouchableOpacity
-              onPress={() => removeAddedImage(index)}
+              onPress={() =>
+                index < serverImages.length
+                  ? removeServerImage(index)
+                  : removeAddedImage(index - serverImages.length)
+              }
               style={[styles.removeButton, styles.shadowEffect]}>
               <Ionicons name="trash-outline" size={30} color="#fff" />
             </TouchableOpacity>
@@ -186,11 +188,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: '400',
     marginBottom: 20,
   },
-  // horizontalScrollContainer: {
-  //   flexDirection: 'row',
-  // },
   imageWrapper: {
     marginRight: 10,
   },
@@ -201,8 +205,8 @@ const styles = StyleSheet.create({
   },
   removeButton: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    top: 5,
+    right: 5,
   },
   shadowEffect: {
     shadowColor: '#000', // 그림자 색상
@@ -213,5 +217,19 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flexGrow: 1, // 부모 요소가 자식 요소의 크기에 맞게 조정되도록
+  },
+  representativeBadge: {
+    position: 'absolute',
+    top: 5,
+    left: 5,
+    backgroundColor: '#16BBFF',
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 5,
+  },
+  representativeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
