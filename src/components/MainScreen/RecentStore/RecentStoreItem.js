@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ 반투명 배경 추가
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // ✅ 반투명 배경 추가
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: 'bold',
+    lineHeight: 22,
   },
 
   infoContainer: {

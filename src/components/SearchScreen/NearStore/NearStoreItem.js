@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 
@@ -93,7 +93,9 @@ const NearStoreItem = ({store, navigation, location}) => {
           <Text style={styles.storMainInfo}>{store.name}</Text>
           <View style={styles.storeViewInfo}>
             <FontAwesomeIcon name="star" size={15} color="#FCC104" />
-            <Text style={styles.storMainInfo}> {store.storeRate}</Text>
+            <Text style={styles.storRate}> {store.storeRate}</Text>
+
+            <Text style={styles.storRateInfo}> ({store.reviewCount})</Text>
           </View>
         </View>
 
@@ -172,10 +174,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 1,
   },
   storMainInfo: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: 'black',
+    color: '#333',
   },
+  storRate: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FCC104',
+  },
+  storRateInfo: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#999',
+  },
+
   StoreCategory: {
     fontSize: 15,
     color: '#999',

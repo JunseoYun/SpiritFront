@@ -28,6 +28,7 @@ PODS:
     - KakaoSDKCommon (= 2.22.0)
     - KakaoSDKUser (= 2.22.0)
     - React
+  - KakaoMapsSDK (2.12.4)
   - KakaoSDK (2.22.0):
     - KakaoSDKAuth (= 2.22.0)
     - KakaoSDKCert (= 2.22.0)
@@ -2006,6 +2007,7 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - "kakao-login (from `../node_modules/@react-native-seoul/kakao-login`)"
+  - KakaoMapsSDK
   - KakaoSDK (~> 2.0)
   - KakaoSDKAuth
   - KakaoSDKCommon
@@ -2095,6 +2097,7 @@ SPEC REPOS:
     - GoogleSignIn
     - GTMAppAuth
     - GTMSessionFetcher
+    - KakaoMapsSDK
     - KakaoSDK
     - KakaoSDKAuth
     - KakaoSDKCert
@@ -2289,6 +2292,7 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   hermes-engine: 06a9c6900587420b90accc394199527c64259db4
   kakao-login: 6f7a39583ae9e1a4e76240e66ae3ec575d461d1e
+  KakaoMapsSDK: fdfeca50d231bcecbfb3b47c9686544fa63fb5d5
   KakaoSDK: d4108ac4357beafadcdca522d01d6576bdaee2bc
   KakaoSDKAuth: 569b377eda622d93d4575240b8031cd658163eef
   KakaoSDKCert: 56919a9e72eec3811c48af7444018d9ce44eba18
@@ -2378,6 +2382,6 @@ SPEC CHECKSUMS:
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: fcc198acd4a55599b3468cfb6ebc526baff5f06e
 
-PODFILE CHECKSUM: b6414ec419c7e44644b2943b451a124710ce37f6
+PODFILE CHECKSUM: f81f77840c4d16a49ebe6a2d9f0c152795ab7bd2
 
 COCOAPODS: 1.16.2

@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Image, Pressable} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import useCategoryTranslation from '../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 
 const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
   const formatDate = dateString => {

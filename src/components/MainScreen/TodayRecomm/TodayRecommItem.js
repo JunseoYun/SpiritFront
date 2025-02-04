@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, ImageBackground, StyleSheet, Text, Pressable} from 'react-native';
-import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 
 const TodayRecommItem = ({store, category, location, navigation}) => {
   const {translateCategory} = useCategoryTranslation();

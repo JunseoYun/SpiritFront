@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, ImageBackground, StyleSheet, Text } from 'react-native';
+import {View, ImageBackground, StyleSheet, Text} from 'react-native';
 import MapCategory from '../../../hooks/MapCategory';
-import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 
-const LivehotStoreItem = ({ store }) => {
-  const { translateCategory } = useCategoryTranslation();
+const LivehotStoreItem = ({store}) => {
+  const {translateCategory} = useCategoryTranslation();
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -19,7 +19,9 @@ const LivehotStoreItem = ({ store }) => {
           <View style={styles.storeInfo}>
             <Text style={styles.storeName}>{store.storeName}</Text>
             <View style={styles.categoriesContainer}>
-              <Text style={styles.categoryText}>{translateCategory(store.categories)}</Text>
+              <Text style={styles.categoryText}>
+                {translateCategory(store.categories)}
+              </Text>
             </View>
           </View>
         </View>

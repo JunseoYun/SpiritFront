@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, Image, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import useCategoryTranslation from '../../../hooks/useCategoryTranslation ';
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 
 const ResultItem = ({store, navigation}) => {
   const {translateCategory} = useCategoryTranslation();
