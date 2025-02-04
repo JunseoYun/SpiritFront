@@ -28,7 +28,7 @@ const MapStoreItem = ({
     item?.businessHoursDto?.breakStartTime,
     item?.businessHoursDto?.breakEndTime,
   );
-  console.log(item);
+
   const handlePress = () => {
     setSelectedStore(item);
     moveCenterMap(item.locationDto.latitude, item.locationDto.longitude);
