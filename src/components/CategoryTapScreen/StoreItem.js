@@ -150,7 +150,12 @@ const StoreItem = ({store, location, navigation}) => {
 
       <View style={Categorystyles.infoTopView}>
         <View style={Categorystyles.infoTitleView}>
-          <Text style={Categorystyles.storeName}>{store.name}</Text>
+          <Text
+            style={Categorystyles.storeName}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {store.name}
+          </Text>
           <Text
             style={Categorystyles.alcoholText}
             numberOfLines={1}
@@ -163,7 +168,7 @@ const StoreItem = ({store, location, navigation}) => {
                         drink.type,
                       )} ${drink.price.toLocaleString()}원`,
                   )
-                  .join('  ')
+                  .join(' ')
               : '대표 주종 미등록'}
           </Text>
         </View>

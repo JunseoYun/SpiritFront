@@ -101,11 +101,13 @@ const Categorystyles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
+    width: '50%',
   },
   alcoholText: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#16BBFF',
+    width: '50%',
   },
   infoView: {
     flexDirection: 'row',
