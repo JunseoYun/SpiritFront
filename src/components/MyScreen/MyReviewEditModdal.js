@@ -59,6 +59,9 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
 
   const handleCancel = () => {
     onClose();
+    setReviewContent(reviewdata.content || '');
+    setRate(reviewdata.rate || 0);
+    setVisitedAt(new Date(reviewdata.visitedAt));
     setAddedImages([]);
     setDeletedImages([]);
     return;

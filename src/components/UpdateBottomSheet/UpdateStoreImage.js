@@ -17,39 +17,93 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 
 const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
+  const [allImages, setAllImages] = useState([]);
   const [serverImages, setServerImages] = useState([]);
   const [addedImages, setAddedImages] = useState([]);
   const [deletedImages, setDeletedImages] = useState([]);
+  const [mainImages, setMainImages] = useState('');
 
   useEffect(() => {
     if (Array.isArray(images)) {
       setServerImages(images);
     } else {
-      setServerImages([]); // images가 배열이 아니면 빈 배열로 초기화
+      setServerImages([]);
     }
-    setAddedImages([]);
-    setDeletedImages([]);
   }, [images]);
+
+  useEffect(() => {
+    const updatedImages = [...serverImages, ...addedImages];
+    setAllImages(updatedImages);
+
+    // 기존 mainImages 상태 유지
+    let newMainImage = mainImages;
+
+    if (serverImages.length > 0) {
+      // 기존 첫 번째 이미지 저장 (변경 감지용)
+      const prevFirstImage =
+        allImages.length > 0 ? allImages[0].imageUrl : null;
+
+      if (updatedImages.length > 0) {
+        if (updatedImages[0].imageUrl !== prevFirstImage) {
+          newMainImage = updatedImages[0].imageUrl || updatedImages[0].path;
+        }
+      } else {
+        newMainImage = ''; // 모든 이미지가 삭제되면 초기화
+      }
+    } else if (updatedImages.length > 0) {
+      newMainImage = updatedImages[0].imageUrl || updatedImages[0].path;
+    } else {
+      newMainImage = '';
+    }
+
+    setMainImages(newMainImage);
+  }, [serverImages, addedImages, deletedImages]);
 
   useEffect(() => {
     setUpdatedImgValue({
       addedImages,
       deletedImages,
+      mainImages,
     });
-  }, [addedImages, deletedImages]);
+  }, [addedImages, deletedImages, mainImages]);
 
   const handleSave = () => {
-    const updateObj = {
-      addedImages: addedImages,
-      deletedImages: deletedImages,
-    };
-    setUpdatedImgValue(updateObj);
+    const updatedImages = [...serverImages, ...addedImages];
+
+    // 최신 상태를 강제로 반영
+    const latestMainImage =
+      updatedImages.length > 0
+        ? updatedImages[0].imageUrl || updatedImages[0].path
+        : '';
+
+    setMainImages(latestMainImage); // 최신 mainImages 업데이트
+    setUpdatedImgValue({
+      addedImages,
+      deletedImages,
+      mainImages: latestMainImage, // 최신 mainImages 반영
+    });
+
+    console.log(
+      {
+        addedImages,
+        deletedImages,
+        mainImages: latestMainImage,
+      },
+      '전체 이미지',
+    );
+
     setTimeout(() => {
       onSave();
     }, 100);
   };
 
-  const allImages = [...serverImages, ...addedImages];
+  const handleCancel = () => {
+    setAddedImages([]);
+    setDeletedImages([]);
+    setMainImages([]);
+    setAllImages([]);
+    onCancel();
+  };
 
   const selectImage = () => {
     // 서버에 있는 이미지와 추가된 이미지를 합쳐서 5개 이하로 제한
@@ -72,35 +126,27 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
     }
   };
 
-  const removeAddedImage = index => {
-    showAlert({
-      title: `이미지를 삭제하시겠습니까?`,
-      onConfirm: async () => {
-        setAddedImages(prevImages => prevImages.filter((_, i) => i !== index));
-        showAlert({
-          title: '삭제 되었습니다',
-        });
-      },
-      onCancel: null,
-      type: 'delete',
-    });
-  };
-
-  // 서버에서 받아온 이미지를 삭제하는 함수
   const removeServerImage = async index => {
+    if (allImages.length <= 1) {
+      showAlert({
+        title: '이미지는 최소 1개 이상 필요합니다.',
+      });
+      return;
+    }
+
     showAlert({
       title: `이미지를 삭제하시겠습니까?`,
       onConfirm: async () => {
         try {
-          const imageToRemove = serverImages[index]; // 삭제할 이미지 가져오기
+          const imageToRemove = serverImages[index];
 
-          // imageUrl을 기준으로 삭제할 이미지 찾기
           setServerImages(prevImages =>
             prevImages.filter(
               image => image.imageUrl !== imageToRemove.imageUrl,
             ),
           );
           setDeletedImages(prevDeleted => [...prevDeleted, imageToRemove]);
+
           showAlert({
             title: '삭제 되었습니다',
           });
@@ -109,6 +155,27 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
             title: '이미지 삭제 실패',
           });
         }
+      },
+      onCancel: null,
+      type: 'delete',
+    });
+  };
+
+  const removeAddedImage = index => {
+    if (allImages.length <= 1) {
+      showAlert({
+        title: '이미지는 최소 1개 이상 필요합니다.',
+      });
+      return;
+    }
+
+    showAlert({
+      title: `이미지를 삭제하시겠습니까?`,
+      onConfirm: async () => {
+        setAddedImages(prevImages => prevImages.filter((_, i) => i !== index));
+        showAlert({
+          title: '삭제 되었습니다',
+        });
       },
       onCancel: null,
       type: 'delete',
@@ -169,7 +236,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
         )}
         <AlertComponent />
       </BottomSheetScrollView>
-      <ActionButtons onCancel={onCancel} onSave={handleSave} />
+      <ActionButtons onCancel={handleCancel} onSave={handleSave} />
     </View>
   );
 };

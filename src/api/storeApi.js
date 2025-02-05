@@ -91,6 +91,11 @@ export const UpdateStoreImage = async (storeId, data) => {
         type: file.mime, // 이미지 타입
         name: file.filename, // 파일 이름
       });
+      console.log('이미지 파일 경로:', file.path);
+      console.log('이미지 파일 타입:', file.mime);
+      console.log('이미지 파일 이름:', file.filename);
+    } else {
+      console.error('파일이 없습니다:', file);
     }
   });
   try {
