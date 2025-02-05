@@ -34,6 +34,13 @@ const MenuAddScreen = ({navigation}) => {
       {menuName: '', price: '', menuContent: '', main: false, imageUri: ''},
     ]);
   };
+  const handleCheckBoxChange = index => {
+    const updatedMenus = menus.map((menu, i) => ({
+      ...menu,
+      main: i === index ? !menu.main : menu.main, // 해당 메뉴의 main 값을 토글
+    }));
+    setMenus(updatedMenus);
+  };
 
   const handleDeleteMenu = index => {
     showAlert({
@@ -130,6 +137,7 @@ const MenuAddScreen = ({navigation}) => {
             menu={menu}
             index={index}
             handleMenuChange={handleMenuChange}
+            handleCheckBoxChange={handleCheckBoxChange}
             onDelete={handleDeleteMenu}
           />
         ))}

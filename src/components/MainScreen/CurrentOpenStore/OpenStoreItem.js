@@ -40,7 +40,6 @@ const OpenStoreItem = ({store, location, navigation}) => {
     fetchDistance();
   }, [store]);
 
-  const walkingTime = calculateWalkingTime(distance);
   const {translateCategory} = useCategoryTranslation();
   return (
     <>
@@ -69,61 +68,81 @@ const OpenStoreItem = ({store, location, navigation}) => {
             {isStoreBreak && (
               <View style={styles.overlay}>
                 <Text style={styles.overlayText}>
-                  브레이크 타임{' '}
+                  브레이크 타임{'\n'}
                   {store.businessHoursDto?.breakEndTime
                     ? `${store.businessHoursDto.breakEndTime.slice(0, 5)} 종료`
                     : ''}
                 </Text>
+                <Text
+                  style={styles.overlayNameText}
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  친구포차
+                </Text>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  {Array.isArray(store.categories) &&
+                  store.categories.length > 0 ? (
+                    store.categories.map((category, index) => (
+                      <Text key={index} style={styles.overlayNameCategory}>
+                        {translateCategory(category)}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text style={styles.overlayNameCategory}>
+                      카테고리 미설정
+                    </Text>
+                  )}
+                </View>
               </View>
             )}
             {!isStoreBreak && (
-              <View style={styles.openOverlay}>
+              <>
                 <Text style={styles.openOverlayText}>
                   영업 종료 {store.businessHoursDto.closeTime.slice(0, 5)}{' '}
                 </Text>
-              </View>
+                <View style={styles.openOverlay}>
+                  <Text
+                    style={styles.overlayNameOpenText}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    {store.name}
+                  </Text>
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    {Array.isArray(store.categories) &&
+                    store.categories.length > 0 ? (
+                      store.categories.map((category, index) => (
+                        <Text
+                          key={index}
+                          style={styles.overlayNameOpenCategory}>
+                          {translateCategory(category)}
+                        </Text>
+                      ))
+                    ) : (
+                      <Text style={styles.overlayNameOpenCategory}>
+                        카테고리 미설정
+                      </Text>
+                    )}
+                  </View>
+                  <Text
+                    style={styles.overlayNameOpenDrink}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
+                      ? store.mainDrinkDtos
+                          .map(drink => `#${translateAlcohol(drink.type)}`)
+                          .join(' ')
+                      : '메인주류 미설정'}
+                  </Text>
+                </View>
+              </>
             )}
           </ImageBackground>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.storeName} numberOfLines={1} ellipsizeMode="tail">
-            {store.name}
-          </Text>
-          <View style={styles.categoriesContainer}>
-            {Array.isArray(store.categories) && store.categories.length > 0 ? (
-              store.categories.map((category, index) => (
-                <Text key={index} style={styles.categoryText}>
-                  {translateCategory(category)}
-                </Text>
-              ))
-            ) : (
-              <Text style={styles.categoryText}>카테고리 미설정</Text>
-            )}
-          </View>
-
-          <Text
-            style={styles.alcoholTag}
-            numberOfLines={2}
-            ellipsizeMode="tail">
-            {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
-              ? store.mainDrinkDtos
-                  .map(
-                    drink =>
-                      `# ${translateAlcohol(
-                        drink.type,
-                      )} ${drink.price.toLocaleString()}원`,
-                  )
-                  .join('\n')
-              : '메인주류가 없습니다.'}
-          </Text>
         </View>
       </Pressable>
       <View style={styles.distanceContainer}>
         <Text style={styles.distanceText}>
           {distance}
           {unit}
-          {'  |  '}
-          {walkingTime}분
         </Text>
       </View>
     </>
@@ -132,25 +151,25 @@ const OpenStoreItem = ({store, location, navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: 160,
-    height: 240,
+    width: 170,
+    height: 170,
     marginHorizontal: 10,
-    marginVertical: 15,
+    marginTop: 15,
     backgroundColor: '#fff',
     borderRadius: 15,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.4,
     shadowRadius: 5,
+    borderRadius: 15,
     elevation: 5, // Android 그림자 효과
   },
   backimageview: {
-    width: 160,
-    height: 120,
+    width: 170,
+    height: 170,
     alignItems: 'center',
     justifyContent: 'center',
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
+    borderRadius: 15,
     backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
@@ -180,81 +199,90 @@ const styles = StyleSheet.create({
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ 반투명 배경 추가
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // ✅ 반투명 배경 추가
     justifyContent: 'center',
     alignItems: 'center',
   },
+  overlayNameText: {
+    color: 'white',
+    width: '95%',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 15,
+  },
+  overlayNameOpenText: {
+    color: 'white',
+    width: '95%',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  overlayNameCategory: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginHorizontal: 3,
+    marginTop: 5,
+    textAlign: 'center',
+    alignItems: 'center',
+  },
+  overlayNameOpenCategory: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginHorizontal: 3,
+    marginTop: 5,
+    textAlign: 'center',
+    alignItems: 'center',
+  },
+  overlayNameOpenDrink: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginHorizontal: 3,
+    marginTop: 5,
+    textAlign: 'center',
+    alignItems: 'center',
+    width: '90%',
+  },
+
   overlayText: {
     color: 'white',
-    fontSize: 12,
+    fontSize: 15,
+    textAlign: 'center',
     fontWeight: 'bold',
   },
   openOverlay: {
     position: 'absolute',
+    height: '50%',
     bottom: 0, // 사진 안쪽 하단에 고정
     width: '100%', // 가로 전체 차지
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ 어두운 반투명 배경으로 가독성 향상
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // ✅ 어두운 반투명 배경으로 가독성 향상
     paddingVertical: 5,
-    paddingLeft: 10,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
+
   openOverlayText: {
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
-  },
-  infoContainer: {
-    padding: 10,
-  },
-  storeName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
-    maxWidth: '100%',
-  },
-  categoriesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 5,
-  },
-  categoryText: {
-    fontSize: 12,
-    color: '#fff',
-    fontWeight: 'bold',
-    marginHorizontal: 2,
-    marginVertical: 2,
-    backgroundColor: '#999',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-    lineHeight: 14,
+    alignSelf: 'flex-end',
+    marginTop: 7,
+    marginRight: 5,
   },
 
-  alcoholTag: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
-    marginBottom: 10,
-    lineHeight: 20,
-  },
-  distanceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    marginTop: -7,
-    marginHorizontal: 18,
-  },
   distanceText: {
     fontSize: 13,
     fontWeight: 'bold',
     color: '#333',
-  },
-  walkingTimeText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#10BEFB',
+    alignSelf: 'flex-end',
+    marginRight: 15,
+    marginTop: 7,
+    marginBottom: 15,
   },
 });
 
