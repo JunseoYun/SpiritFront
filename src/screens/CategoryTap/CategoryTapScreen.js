@@ -1,18 +1,8 @@
 import React, {useState, useCallback} from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-  SafeAreaView,
-} from 'react-native';
+import {View, Text, FlatList, StyleSheet, SafeAreaView} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {Store_getby_category} from '../../api/storeApi';
 import StoreItem from '../../components/CategoryTapScreen/StoreItem';
-import Categorystyles from './CategoryTapStyles';
 
 const CategoryTapScreen = ({navigation, route}) => {
   const {categoryname, location} = route.params;
@@ -76,8 +66,8 @@ const CategoryTapScreen = ({navigation, route}) => {
   return (
     <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
       {isInitialLoading ? ( // 초기 로딩 상태일 경우 로딩 화면만 보여줌
-        <View style={Categorystyles.loadingContainer}>
-          <Text style={Categorystyles.loadingtext}>Loading...</Text>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingtext}>Loading...</Text>
         </View>
       ) : (
         <FlatList
@@ -106,16 +96,14 @@ const CategoryTapScreen = ({navigation, route}) => {
           removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
           ListFooterComponent={
             loading ? (
-              <Text style={Categorystyles.emptyText}>Loading...</Text>
+              <Text style={styles.emptyText}>Loading...</Text>
             ) : page === totalpage - 1 && stores.length > 0 ? (
-              <Text style={Categorystyles.emptyText}>가게가 더 없습니다</Text>
+              <Text style={styles.emptyText}>가게가 더 없습니다</Text>
             ) : null
           }
           ListEmptyComponent={
             !loading && stores.length === 0 ? (
-              <Text style={Categorystyles.emptyText}>
-                이 카테고리에 가게가 없어요
-              </Text>
+              <Text style={styles.emptyText}>등록된 가게가 없습니다.</Text>
             ) : null
           }
           refreshing={loading} // 로딩 중일 때 새로 고침 아이콘을 표시
@@ -126,4 +114,23 @@ const CategoryTapScreen = ({navigation, route}) => {
   );
 };
 
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingtext: {
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontSize: 20,
+    color: '#333',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 40,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontSize: 20,
+    color: '#333',
+  },
+});
 export default CategoryTapScreen;
