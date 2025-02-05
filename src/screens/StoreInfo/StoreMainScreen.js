@@ -121,20 +121,61 @@ const StoreMainScreen = ({navigation}) => {
     const performUpdate = async (key, value) => {
       try {
         if (key === 'images') {
-          const {addedImages, deletedImages} = value;
+          const {addedImages, deletedImages, mainImages} = value;
+          console.log(value, '여기');
           try {
             //매장 추가만 되었을때
-            if (addedImages.length > 0 && deletedImages.length === 0) {
+            if (
+              addedImages.length > 0 &&
+              deletedImages.length === 0 &&
+              mainImages.length === 0
+            ) {
               await UpdateStoreImage(storeId, addedImages);
             }
             //삭제만 되었을때
-            if (addedImages.length === 0 && deletedImages.length > 0) {
+            if (
+              addedImages.length === 0 &&
+              deletedImages.length > 0 &&
+              mainImages.length === 0
+            ) {
               await DeleteStoreImage(storeId, deletedImages);
             }
-            //둘다 되었을때
-            if (addedImages.length > 0 && deletedImages.length > 0) {
+            //매장 추가 및 메인 이미지 추가
+            if (
+              addedImages.length > 0 &&
+              deletedImages.length === 0 &&
+              mainImages.length > 0
+            ) {
+              await UpdateStoreImage(storeId, addedImages);
+              await UpdateStore(storeId, {['mainImgUrl']: mainImages});
+            }
+            //매장 삭제 및 메인 이미지 추가
+            if (
+              addedImages.length === 0 &&
+              deletedImages.length > 0 &&
+              mainImages.length > 0
+            ) {
+              await DeleteStoreImage(storeId, deletedImages);
+              await UpdateStore(storeId, {['mainImgUrl']: mainImages});
+            }
+            //추가 삭제만 되었을때
+            if (
+              addedImages.length > 0 &&
+              deletedImages.length > 0 &&
+              mainImages.length === 0
+            ) {
               await UpdateStoreImage(storeId, addedImages);
               await DeleteStoreImage(storeId, deletedImages);
+            }
+            //셋다 되었을때
+            if (
+              addedImages.length > 0 &&
+              deletedImages.length > 0 &&
+              mainImages.length > 0
+            ) {
+              await UpdateStoreImage(storeId, addedImages);
+              await DeleteStoreImage(storeId, deletedImages);
+              await UpdateStore(storeId, {['mainImgUrl']: mainImages});
             }
           } catch (error) {
             console.log(error);
