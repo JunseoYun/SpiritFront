@@ -24,13 +24,10 @@ import useRecommendation from '../../hooks/useRecommendation';
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
-  const [stores, setStores] = useState([]);
+
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
   const [recommReason, setRecommReason] = useState(null);
-  const [recentStores, setRecentStores] = useState([]);
-  const [liveHotStores, setLiveHotStores] = useState([]);
-  const [error, setError] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [weather, setWeather] = useState({
@@ -39,10 +36,7 @@ const MainScreen = ({navigation}) => {
     rain_probability: 0,
   });
   const [storeactiveIndex, setStoreActiveIndex] = useState(null);
-  const liveHotRef = useRef(null);
   const recentRef = useRef(null);
-  const [liveHotLoaded, setLiveHotLoaded] = useState(false);
-  const [recentLoaded, setRecentLoaded] = useState(false);
   const {recommendCategory} = useRecommendation();
 
   useEffect(() => {
@@ -70,40 +64,6 @@ const MainScreen = ({navigation}) => {
 
     fetchLocation();
   }, []);
-
-  const onScroll = async ({nativeEvent}) => {
-    // const {contentOffset, layoutMeasurement} = nativeEvent;
-    // // LiveHotStoreList 스크롤 감지
-    // if (
-    //   liveHotRef.current &&
-    //   liveHotRef.current.y - layoutMeasurement.height <= contentOffset.y
-    // ) {
-    //   if (!liveHotLoaded) {
-    //     try {
-    //       const liveHotData = await getByDistanceStore(location);
-    //       setLiveHotStores(liveHotData);
-    //       setLiveHotLoaded(true);
-    //     } catch (error) {
-    //       console.error('LiveHot 데이터 로드 오류:', error);
-    //     }
-    //   }
-    // }
-    // // RecentStoreList 스크롤 감지
-    // if (
-    //   recentRef.current &&
-    //   recentRef.current.y - layoutMeasurement.height <= contentOffset.y
-    // ) {
-    //   if (!recentLoaded) {
-    //     try {
-    //       const recentData = await getByRecentStore();
-    //       setRecentStores(recentData);
-    //       setRecentLoaded(true);
-    //     } catch (error) {
-    //       console.error('Recent 데이터 로드 오류:', error);
-    //     }
-    //   }
-    // }
-  };
 
   const onRefresh = async () => {
     setIsRefreshing(true); // 새로 고침 시작
@@ -179,7 +139,6 @@ const MainScreen = ({navigation}) => {
     if (address === '강남대학교') {
       return address;
     }
-    // 공백 기준으로 문자열 분리
     const parts = address.split(' ');
     return parts.slice(1, 4).join(' ');
   };
@@ -202,7 +161,6 @@ const MainScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 실시간 위치 */}
       <View style={styles.topView}>
         <Text style={styles.todayAddress}>
           오늘은 {formatAddress(address)}{' '}
@@ -215,22 +173,19 @@ const MainScreen = ({navigation}) => {
         />
       </View>
       <ScrollView
-        onScroll={onScroll}
         scrollEventThrottle={16}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }>
-        {/*술집 추천 추천 주점 변경 해야함 카테고리 스토어로*/}
         <TodayRecomm
           weather={weather}
-          recommStores={stores}
           recommCategory={recommCategory}
           recommReason={recommReason}
           location={location}
+          refresh={isRefreshing}
           navigation={navigation}
         />
 
-        {/*카테고리*/}
         <CategoryGrid onPress={catagoryClick} />
         <InnerCategoryModal
           isVisible={isModalVisible}
@@ -242,15 +197,12 @@ const MainScreen = ({navigation}) => {
           handlestoreItemClick={handlestoreItemClick}
           handlestoreItemOut={handlestoreItemOut}
         />
-
-        {/* 현재 영업 중 주점 데이터 필요 */}
-        <OpenStoreList // 상위에서 내려온 데이터
+        <OpenStoreList
           location={location}
           navigation={navigation}
-          refresh={isRefreshing} // MainScreen의 새로고침 상태 전달
+          refresh={isRefreshing}
           setRefresh={onRefresh}
         />
-
         <View
           onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
           <RecentStoreList
