@@ -108,6 +108,7 @@ const Categorystyles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#16BBFF',
     width: '50%',
+    textAlign: 'right',
   },
   infoView: {
     flexDirection: 'row',
