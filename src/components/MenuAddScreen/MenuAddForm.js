@@ -17,6 +17,7 @@ const MenuAddForm = ({
   menu,
   index,
   handleMenuChange,
+  handleCheckBoxChange,
   onDelete, // 삭제 함수
 }) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -98,7 +99,11 @@ const MenuAddForm = ({
           </Pressable>
         )}
       </View>
-      <MainMenuCheck isChecked={menu.main} />
+      <MainMenuCheck
+        isChecked={menu.main}
+        onToggle={() => handleCheckBoxChange(index)} // index를 전달
+      />
+
       <View style={styles.line}></View>
       <AlertComponent />
     </View>

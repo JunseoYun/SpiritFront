@@ -86,7 +86,12 @@ const MapStoreItem = ({
       <View style={styles.titletopview}>
         <View>
           <View style={styles.titleview}>
-            <Text style={styles.storeName}>{item.name}adasdadasdasdadasd</Text>
+            <Text
+              style={styles.storeName}
+              numberOfLines={1} // 한 줄로 제한
+              ellipsizeMode="tail">
+              {item.name}
+            </Text>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <FontAwesomeIcon name="star" size={15} color="#FCC104" />
               <Text style={styles.storeAddress}>

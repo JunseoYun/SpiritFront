@@ -90,12 +90,15 @@ const NearStoreItem = ({store, navigation, location}) => {
 
         {/* ✅ 가게 기본 정보 */}
         <View style={styles.storeViewInfo}>
-          <Text style={styles.storMainInfo}>{store.name}</Text>
+          <Text
+            style={styles.storMainInfo}
+            numberOfLines={1} // 한 줄로 제한
+            ellipsizeMode="tail">
+            {store.name}
+          </Text>
           <View style={styles.storeViewInfo}>
             <FontAwesomeIcon name="star" size={15} color="#FCC104" />
             <Text style={styles.storRate}> {store.storeRate}</Text>
-
-            <Text style={styles.storRateInfo}> ({store.reviewCount})</Text>
           </View>
         </View>
 
@@ -177,9 +180,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+    width: 110,
   },
   storRate: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 'bold',
     color: '#FCC104',
   },

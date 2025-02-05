@@ -1,6 +1,6 @@
 // StoreItem.js
 import React from 'react';
-import {TouchableOpacity, View, Text, Image} from 'react-native';
+import {TouchableOpacity, View, Text, Image, Pressable} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -8,7 +8,7 @@ import Categorystyles from '../../screens/CategoryTap/CategoryTapStyles';
 
 const StoreItem = ({store, location, navigation}) => {
   return (
-    <TouchableOpacity
+    <Pressable
       style={Categorystyles.itemContainer}
       onPress={() =>
         navigation.navigate('StoreStack', {
@@ -20,32 +20,33 @@ const StoreItem = ({store, location, navigation}) => {
           },
         })
       }>
-      <View style={Categorystyles.menuView}>
-        {store.menuList && store.menuList.length > 0 ? (
-          store.menuList.map((menu, index) => (
-            <View key={index} style={Categorystyles.menuItemView}>
-              {menu.imgUrl ? (
-                <Image
-                  source={{uri: menu.imgUrl}}
-                  style={Categorystyles.storeImg}
-                />
-              ) : (
-                <View style={Categorystyles.storeImagetext}>
-                  <Text style={{color: 'white', textAlign: 'center'}}>
-                    이미지 없음
-                  </Text>
-                </View>
-              )}
-              <Text style={Categorystyles.menuName}>{menu.name}</Text>
-              <Text style={Categorystyles.menuPrice}>
-                {menu.price.toLocaleString()}원
-              </Text>
-            </View>
-          ))
-        ) : (
-          <Text style={Categorystyles.menuName}>메뉴 정보 없음</Text>
-        )}
-      </View>
+      {store.menuList && (
+        <View style={Categorystyles.menuView}>
+          {store.menuList &&
+            store.menuList.length > 0 &&
+            store.menuList.map((menu, index) => (
+              <View key={index} style={Categorystyles.menuItemView}>
+                {menu.imgUrl ? (
+                  <Image
+                    source={{uri: menu.imgUrl}}
+                    style={Categorystyles.storeImg}
+                  />
+                ) : (
+                  <View style={Categorystyles.storeImagetext}>
+                    <Text style={{color: 'white', textAlign: 'center'}}>
+                      이미지 없음
+                    </Text>
+                  </View>
+                )}
+                <Text style={Categorystyles.menuName}>{menu.name}</Text>
+                <Text style={Categorystyles.menuPrice}>
+                  {menu.price.toLocaleString()}원
+                </Text>
+              </View>
+            ))}
+        </View>
+      )}
+
       <View style={Categorystyles.infoTopView}>
         <View style={Categorystyles.infoTitleView}>
           <Text style={Categorystyles.storeName}>{store.name}</Text>
@@ -95,7 +96,7 @@ const StoreItem = ({store, location, navigation}) => {
           </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 

@@ -89,7 +89,12 @@ const RecentStoreItem = ({store, navigation, location}) => {
       {/* 매장 정보 */}
       <View style={styles.infoContainer}>
         <View style={styles.headerView}>
-          <Text style={styles.storeName}>{store.name}</Text>
+          <Text
+            style={styles.storeName}
+            numberOfLines={1} // 한 줄로 제한
+            ellipsizeMode="tail">
+            {store.name}sdasdasdasdasd
+          </Text>
           <View style={styles.ratingContainer}>
             <FontAwesomeIcon name="star" size={14} color="#FCC104" />
             <Text style={styles.ratingText}>{store.storeRate}</Text>
@@ -176,6 +181,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#333',
     marginBottom: 4,
+    width: '70%',
   },
   ratingContainer: {
     flexDirection: 'row',
