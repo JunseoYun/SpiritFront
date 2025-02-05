@@ -1,12 +1,33 @@
 // StoreItem.js
 import React from 'react';
-import {TouchableOpacity, View, Text, Image, Pressable} from 'react-native';
+import {
+  TouchableOpacity,
+  View,
+  Text,
+  Image,
+  Pressable,
+  ScrollView,
+  ImageBackground,
+} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Categorystyles from '../../screens/CategoryTap/CategoryTapStyles';
+import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
+import useStoreStatus from '../../hooks/useStoreStatus';
 
 const StoreItem = ({store, location, navigation}) => {
+  const {translateAlcohol} = useTranslateAlcohol();
+  const isStoreOpen = useStoreStatus(
+    store?.businessHoursDto?.openTime,
+    store?.businessHoursDto?.closeTime,
+    store?.closedDays,
+  );
+  const isStoreBreak = useStoreStatus(
+    store?.businessHoursDto?.breakStartTime,
+    store?.businessHoursDto?.breakEndTime,
+  );
+
   return (
     <Pressable
       style={Categorystyles.itemContainer}
@@ -20,32 +41,112 @@ const StoreItem = ({store, location, navigation}) => {
           },
         })
       }>
-      {store.menuList && (
-        <View style={Categorystyles.menuView}>
-          {store.menuList &&
-            store.menuList.length > 0 &&
-            store.menuList.map((menu, index) => (
+      <View style={Categorystyles.menuView}>
+        {store.menuList && store.menuList.length > 0 ? (
+          <ScrollView
+            horizontal
+            nestedScrollEnabled={true}
+            showsHorizontalScrollIndicator={true}
+            contentContainerStyle={{
+              paddingHorizontal: 18,
+              gap: 18,
+              flexGrow: 1,
+            }}>
+            {store.menuList.map((menu, index) => (
               <View key={index} style={Categorystyles.menuItemView}>
-                {menu.imgUrl ? (
-                  <Image
-                    source={{uri: menu.imgUrl}}
-                    style={Categorystyles.storeImg}
-                  />
-                ) : (
-                  <View style={Categorystyles.storeImagetext}>
-                    <Text style={{color: 'white', textAlign: 'center'}}>
-                      이미지 없음
-                    </Text>
-                  </View>
-                )}
+                <ImageBackground
+                  source={
+                    menu.imgUrl
+                      ? {uri: menu.imgUrl} // ✅ 네트워크 이미지
+                      : require('../../assets/AppLogoNoback.png') // ✅ 로컬 이미지
+                  }
+                  style={Categorystyles.menuImageView}
+                  imageStyle={
+                    menu.imgUrl
+                      ? Categorystyles.menuImg
+                      : Categorystyles.menuNoImg
+                  } // ✅ 스타일 조건부 적용
+                >
+                  {/* ✅ 영업 종료 표시 */}
+                  {!isStoreOpen && (
+                    <View style={Categorystyles.overlay}>
+                      {index === 0 && (
+                        <Text style={Categorystyles.overlayText}>
+                          영업 종료{'\n'}
+                          {store.businessHoursDto?.openTime
+                            ? `${store.businessHoursDto.openTime.slice(
+                                0,
+                                5,
+                              )} 오픈`
+                            : ''}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                  {/* ✅ 브레이크 타임 표시 */}
+                  {isStoreOpen && isStoreBreak && (
+                    <View style={Categorystyles.overlay}>
+                      {index === 0 && (
+                        <Text style={Categorystyles.overlayText}>
+                          브레이크 타임{'\n'}
+                          {store.businessHoursDto?.breakEndTime
+                            ? `${store.businessHoursDto.breakEndTime.slice(
+                                0,
+                                5,
+                              )} 종료`
+                            : ''}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                </ImageBackground>
+
                 <Text style={Categorystyles.menuName}>{menu.name}</Text>
                 <Text style={Categorystyles.menuPrice}>
-                  {menu.price.toLocaleString()}원
+                  {/^\d+$/.test(menu?.price)
+                    ? Number(menu.price).toLocaleString() + '원'
+                    : menu?.price}
                 </Text>
               </View>
             ))}
-        </View>
-      )}
+          </ScrollView>
+        ) : (
+          <ImageBackground
+            source={
+              store.mainImgUrl
+                ? {uri: store.mainImgUrl} // ✅ 네트워크 이미지
+                : require('../../assets/AppLogoNoback.png') // ✅ 로컬 이미지
+            }
+            style={Categorystyles.storeMainView}
+            imageStyle={
+              store.mainImgUrl
+                ? Categorystyles.storeMainImg
+                : Categorystyles.menuNoImg
+            }>
+            {!isStoreOpen && (
+              <View style={Categorystyles.overlay}>
+                <Text style={Categorystyles.overlayText}>
+                  영업 종료{'\n'}
+                  {store.businessHoursDto?.openTime
+                    ? `${store.businessHoursDto.openTime.slice(0, 5)} 오픈`
+                    : ''}
+                </Text>
+              </View>
+            )}
+            {/* ✅ 브레이크 타임 표시 */}
+            {isStoreOpen && isStoreBreak && (
+              <View style={Categorystyles.overlay}>
+                <Text style={Categorystyles.overlayText}>
+                  브레이크 타임{'\n'}
+                  {store.businessHoursDto?.breakEndTime
+                    ? `${store.businessHoursDto.breakEndTime.slice(0, 5)} 종료`
+                    : ''}
+                </Text>
+              </View>
+            )}
+          </ImageBackground>
+        )}
+      </View>
 
       <View style={Categorystyles.infoTopView}>
         <View style={Categorystyles.infoTitleView}>
@@ -63,7 +164,7 @@ const StoreItem = ({store, location, navigation}) => {
                       )} ${drink.price.toLocaleString()}원`,
                   )
                   .join('  ')
-              : '메인주류가 없습니다.'}
+              : '대표 주종 미등록'}
           </Text>
         </View>
         <View style={Categorystyles.infoView}>
