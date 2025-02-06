@@ -45,18 +45,19 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
 
       if (updatedImages.length > 0) {
         if (updatedImages[0].imageUrl !== prevFirstImage) {
-          newMainImage = updatedImages[0].imageUrl || updatedImages[0].path;
+          newMainImage = updatedImages[0].path;
         }
       } else {
         newMainImage = ''; // 모든 이미지가 삭제되면 초기화
       }
     } else if (updatedImages.length > 0) {
-      newMainImage = updatedImages[0].imageUrl || updatedImages[0].path;
+      newMainImage = updatedImages[0].path;
     } else {
       newMainImage = '';
     }
 
     setMainImages(newMainImage);
+    console.log(mainImages);
   }, [serverImages, addedImages, deletedImages]);
 
   useEffect(() => {

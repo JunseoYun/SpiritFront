@@ -39,26 +39,28 @@ const ImageSlider = ({
 
   // 초기 위치 설정
   useEffect(() => {
-    if (scrollRef.current) {
+    if (scrollRef.current && images.length > 1) {
       scrollRef.current.scrollTo({x: width, animated: false}); // 두 번째 이미지(실제 첫 번째 이미지)로 이동
     }
-  }, []);
+  }, [images]);
 
   // 자동 슬라이드 구현
   useEffect(() => {
-    const autoSlide = setInterval(() => {
-      if (scrollRef.current) {
-        const nextIndex = currentIndex + 1;
-        scrollRef.current.scrollTo({
-          x: nextIndex * width,
-          animated: true,
-        });
-        setCurrentIndex(nextIndex);
-      }
-    }, interval); // 사용자 정의 간격 (기본값: 3000ms)
+    if (images.length > 1) {
+      const autoSlide = setInterval(() => {
+        if (scrollRef.current) {
+          const nextIndex = currentIndex + 1;
+          scrollRef.current.scrollTo({
+            x: nextIndex * width,
+            animated: true,
+          });
+          setCurrentIndex(nextIndex);
+        }
+      }, interval); // 사용자 정의 간격 (기본값: 3000ms)
 
-    return () => clearInterval(autoSlide); // 컴포넌트 언마운트 시 인터벌 제거
-  }, [currentIndex, interval]);
+      return () => clearInterval(autoSlide); // 컴포넌트 언마운트 시 인터벌 제거
+    }
+  }, [currentIndex, interval, images]);
 
   // 스크롤이 끝날 때 실행 (무한 슬라이드 처리)
   const handleScrollEnd = event => {
@@ -95,31 +97,39 @@ const ImageSlider = ({
 
       {images.length > 0 ? (
         <View style={styles.sliderContainer}>
-          <ScrollView
-            ref={scrollRef}
-            pagingEnabled
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={handleScrollEnd}
-            scrollEventThrottle={16}>
-            {imagesWithLoop.map((item, index) => (
-              <View key={index} style={styles.imageContainer}>
-                <Image source={{uri: item.imageUrl}} style={styles.image} />
-              </View>
-            ))}
-          </ScrollView>
+          {images.length > 1 ? (
+            <ScrollView
+              ref={scrollRef}
+              pagingEnabled
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={handleScrollEnd}
+              scrollEventThrottle={16}>
+              {imagesWithLoop.map((item, index) => (
+                <View key={index} style={styles.imageContainer}>
+                  <Image source={{uri: item.imageUrl}} style={styles.image} />
+                </View>
+              ))}
+            </ScrollView>
+          ) : (
+            <View style={styles.imageContainer}>
+              <Image source={{uri: images[0].imageUrl}} style={styles.image} />
+            </View>
+          )}
 
-          <View style={styles.indicatorContainer}>
-            {images.map((_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.indicator,
-                  currentIndex === index + 1 && styles.activeIndicator,
-                ]}
-              />
-            ))}
-          </View>
+          {images.length > 1 && (
+            <View style={styles.indicatorContainer}>
+              {images.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.indicator,
+                    currentIndex === index + 1 && styles.activeIndicator,
+                  ]}
+                />
+              ))}
+            </View>
+          )}
         </View>
       ) : (
         <View style={styles.emptyContainer}>
@@ -134,23 +144,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  updateContainer: {
-    backgroundColor: '#black',
-  },
   imageContainer: {
     width: width,
     height: 300,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject, // 이미지 위를 덮는 스타일
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // 반투명 배경
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  overlayText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   icon: {
     position: 'absolute',
@@ -158,7 +154,6 @@ const styles = StyleSheet.create({
     left: (width - 50) / 2, // 아이콘 크기를 고려한 가운데 정렬
     zIndex: 10, // 다른 요소 위에 표시
   },
-
   image: {
     width: '100%',
     height: '100%',

@@ -21,6 +21,7 @@ import VisitTimeModal from '../../../components/SearchScreen/FastSearch/Modal/Vi
 import NearStoreList from '../../../components/SearchScreen/NearStore/NearStoreList';
 import ResultModal from '../../../components/SearchScreen/FastSearch/Modal/ResultModal';
 import SearchButton from '../../../components/SearchScreen/SearchButton';
+import moment from 'moment';
 
 const SearchScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
@@ -75,7 +76,7 @@ const SearchScreen = ({navigation}) => {
   {
     /* 빠른 검색 검색 API 개선 필요, 현재 버전: 가까운 주점 전부 필터링 */
   }
-  const onPressFastSearch = () => {
+  const onPressFastSearch = async () => {
     var visitTime = `${selectedHour}:${selectedMinute}`;
     if (
       !selectedCategory ||
@@ -85,14 +86,18 @@ const SearchScreen = ({navigation}) => {
     ) {
       console.log('Data Not');
     } else {
-      const filteredStores = stores.filter(store => {
-        return (
-          store.categories.includes(selectedEngCategory) &&
-          (isGroup ? store.isGroupAvailable === true : true) &&
-          isVisitTimeInRange(store, visitTime)
-        );
-      });
-      setfastSearchStores(filteredStores);
+      const conditionTime = new Date(
+        `2000-01-01T${selectedHour}:${selectedMinute}:00`,
+      );
+      const conditionTimeString = conditionTime.toISOString().slice(0, -1);
+      const conditionSearchDto = {
+        category: selectedEngCategory,
+        isGroupAvailable: isGroup,
+        conditionTime: conditionTimeString,
+      };
+
+      setfastSearchStores(conditionSearchDto);
+      console.log(conditionSearchDto, '??????');
       setFastSearchModalVisible(true);
     }
   };
@@ -160,6 +165,12 @@ const SearchScreen = ({navigation}) => {
   };
 
   const onPressFastSearchModalClose = () => {
+    setSelectedMinute('');
+    setSelectedHour('');
+    setSelectedCategory('');
+    setSelectedEngCategory('');
+    setSelectedPeople('');
+    setfastSearchStores([]);
     setFastSearchModalVisible(false);
   };
 
@@ -240,10 +251,11 @@ const SearchScreen = ({navigation}) => {
             <ResultModal
               visible={fastSearchModalVisible}
               onClose={onPressFastSearchModalClose}
-              selectedCategory={selectedCategory}
+              selectedCategory={selectedEngCategory}
               selectedPeople={selectedPeople}
               selectedHour={selectedHour}
               selectedMinute={selectedMinute}
+              location={location}
               fastSearchStores={fastSearchStores}
               navigation={navigation}
             />
