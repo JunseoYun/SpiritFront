@@ -1,13 +1,13 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-  Modal,
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
-  ScrollView,
+  SafeAreaView,
   Pressable,
+  Platform,
 } from 'react-native';
 import {
   DrinkUpdate,
@@ -17,13 +17,12 @@ import {
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import forbiddenWords from '../../../hooks/forbiddenWords';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useRoute} from '@react-navigation/native';
 import AlcoholInput from '../../../components/StoreAlcoholScreen/AlcoholInput';
 import RptAlcoholPicker from '../../../components/AlcoholAddScreen/RptAlcoholPicker';
-import {Portal} from 'react-native-paper';
-import {useRoute} from '@react-navigation/native';
 
 const AlcoholUpdateScreen = ({navigation}) => {
   const route = useRoute();
@@ -40,7 +39,6 @@ const AlcoholUpdateScreen = ({navigation}) => {
 
   useEffect(() => {
     if (alcohol) {
-      console.log(alcohol);
       setOriginalAlcohol(alcohol);
       setAlcoholName(alcohol.name || '');
       setAlcoholDescription(alcohol.description || '');
@@ -52,7 +50,7 @@ const AlcoholUpdateScreen = ({navigation}) => {
 
   const GotoStoreScreen = () => {
     showAlert({
-      title: `수정 되었습니다.`,
+      title: `수정이 완료되었습니다.`,
       onConfirm: () => {
         navigation.replace('StoreStack', {
           screen: 'StoreMainScreen',
@@ -187,7 +185,7 @@ const AlcoholUpdateScreen = ({navigation}) => {
 
       // 5️⃣ 변경 사항이 없으면 요청 없이 모달만 닫기
       if (!isImageChanged && !isInfoChanged && !isImageDeleted) {
-        handleCancel();
+        navigation.goBack();
         return;
       }
     } catch (error) {
@@ -217,135 +215,106 @@ const AlcoholUpdateScreen = ({navigation}) => {
   };
 
   return (
-    <Portal>
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={onPressModalClose}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity onPress={handleCancel}>
-                <Ionicons
-                  name="arrow-back-outline"
-                  size={25}
-                  color="#333"
-                  style={{marginLeft: 13}}
-                />
-              </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={handleCancel}>
+          <Ionicons name="arrow-back-outline" size={25} color="#333" />
+        </TouchableOpacity>
 
-              <Text style={styles.modalTitle}>주류 수정</Text>
-              <TouchableOpacity onPress={handleSave}>
-                <Ionicons
-                  name="paper-plane-sharp"
-                  size={25}
-                  color="#16BBFF"
-                  style={{marginRight: 13}}
-                />
-              </TouchableOpacity>
+        <Text style={styles.modalTitle}>주류 수정</Text>
+        <TouchableOpacity onPress={handleSave}>
+          <Ionicons name="paper-plane-sharp" size={25} color="#333" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.imageContainer}>
+        {alcoholImage ? (
+          <ImageBackground
+            source={{uri: alcoholImage}}
+            style={styles.menuImage}
+            imageStyle={styles.backimagestyle}>
+            {/* ✅ 이미지 안에 아이콘 배치 */}
+            <View style={styles.imageButtonView}>
+              <Pressable
+                style={[styles.imageButton, styles.shadowEffect]}
+                onPress={selectImage}>
+                <MaterialIcons name="photo-library" size={28} color="#fff" />
+              </Pressable>
+              <Pressable
+                style={[styles.deleteButton, styles.shadowEffect]}
+                onPress={handleDeleteImage}>
+                <Ionicons name="trash-outline" size={28} color="#fff" />
+              </Pressable>
             </View>
-            <ScrollView style={{width: '100%'}}>
-              <View style={styles.imageContainer}>
-                {alcoholImage ? (
-                  <ImageBackground
-                    source={{uri: alcoholImage}}
-                    style={styles.menuImage}
-                    imageStyle={styles.backimagestyle}>
-                    {/* ✅ 이미지 안에 아이콘 배치 */}
-                    <View style={styles.imageButtonView}>
-                      <Pressable
-                        style={[styles.imageButton, styles.shadowEffect]}
-                        onPress={selectImage}>
-                        <MaterialIcons
-                          name="photo-library"
-                          size={28}
-                          color="#fff"
-                        />
-                      </Pressable>
-                      <Pressable
-                        style={[styles.deleteButton, styles.shadowEffect]}
-                        onPress={handleDeleteImage}>
-                        <Ionicons name="trash-outline" size={28} color="#fff" />
-                      </Pressable>
-                    </View>
-                  </ImageBackground>
-                ) : (
-                  <View style={styles.placeholderImage}>
-                    <Text style={styles.placeholderText}>이미지 추가</Text>
-                    <Pressable onPress={selectImage}>
-                      <MaterialCommunityIcons
-                        name="image-plus"
-                        size={40}
-                        color="#333"
-                      />
-                    </Pressable>
-                  </View>
-                )}
-              </View>
-              <AlcoholInput
-                label="주류 이름*"
-                value={alcoholName}
-                onChangeText={setAlcoholName}
-                placeholder="주류 이름*"
+          </ImageBackground>
+        ) : (
+          <View style={styles.placeholderImage}>
+            <Text style={styles.placeholderText}>이미지 추가</Text>
+            <Pressable onPress={selectImage}>
+              <MaterialCommunityIcons
+                name="image-plus"
+                size={40}
+                color="#333"
               />
-
-              <AlcoholInput
-                label="주류 소개"
-                value={alcoholDescription}
-                onChangeText={setAlcoholDescription}
-                placeholder="주류 소개"
-                isMultiline={true}
-              />
-
-              <AlcoholInput
-                label="주류 가격*"
-                value={alcoholPrice}
-                onChangeText={setAlcoholPrice}
-                placeholder="주류 가격*"
-              />
-
-              <RptAlcoholPicker
-                selectedType={alcoholType}
-                onTypeChange={setAlcoholType}
-              />
-            </ScrollView>
+            </Pressable>
           </View>
-        </View>
-        <AlertComponent />
-      </Modal>
-    </Portal>
+        )}
+      </View>
+      <AlcoholInput
+        label="주류 이름*"
+        value={alcoholName}
+        onChangeText={setAlcoholName}
+        placeholder="주류 이름*"
+      />
+
+      <AlcoholInput
+        label="주류 소개"
+        value={alcoholDescription}
+        onChangeText={setAlcoholDescription}
+        placeholder="주류 소개"
+        isMultiline={true}
+      />
+
+      <AlcoholInput
+        label="주류 가격*"
+        value={alcoholPrice}
+        onChangeText={setAlcoholPrice}
+        placeholder="주류 가격*"
+      />
+
+      <RptAlcoholPicker
+        selectedType={alcoholType}
+        onTypeChange={setAlcoholType}
+      />
+
+      <AlertComponent />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  modalBackground: {
+  container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // ✅ 어두운 배경 추가
-  },
-  modalContainer: {
-    width: '85%',
-    height: '80%',
+    justifyContent: 'flex-start',
     backgroundColor: 'white',
-    borderRadius: 15, // ✅ 둥근 모서리 추가
-    alignItems: 'center',
-    elevation: 10, // ✅ 안드로이드 그림자
-    shadowColor: '#000', // ✅ iOS 그림자
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
-    marginVertical: 20,
+    paddingTop: Platform.OS === 'ios' ? 0 : 15,
+    paddingHorizontal: 18,
+    borderBottomWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    marginBottom: 15,
     textAlign: 'center',
     color: '#333', // ✅ 더 진한 색상 적용
   },

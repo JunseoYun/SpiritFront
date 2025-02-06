@@ -127,6 +127,7 @@ const StoreAlcoholScreen = ({
               key={alcohol.id}
               alcohol={alcohol}
               storeId={storeId}
+              navigation={navigation}
               isOpen={openItemId === alcohol.id}
               onOpen={() => handleOpenItem(alcohol.id)}
               onClose={handleCloseAll}

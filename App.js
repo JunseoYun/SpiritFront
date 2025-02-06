@@ -7,6 +7,12 @@ import {CustomAlertProvider} from './src/context/CustomAlertContext';
 import {Provider as PaperProvider} from 'react-native-paper';
 import './reanimatedConfig';
 
+if (!__DEV__) {
+  console.log = () => {};
+  console.warn = () => {};
+  console.error = () => {};
+}
+
 const App = () => {
   return (
     <PaperProvider>
