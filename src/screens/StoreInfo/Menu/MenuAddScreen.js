@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
   Text,
   StyleSheet,
@@ -7,59 +7,61 @@ import {
   ScrollView,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
-import AlcoholAddForm from '../../components/AlcoholAddScreen/AlcoholAddForm';
-import useCustomAlert from '../../hooks/useCustomAlert';
-import {StoreDrinkcreate} from '../../api/drinkApi';
-import forbiddenWords from '../../hooks/forbiddenWords';
+import MenuAddForm from '../../../components/MenuAddScreen/MenuAddForm';
+import useCustomAlert from '../../../hooks/useCustomAlert';
+import {StoreMenucreate} from '../../../api/menuApi';
+import forbiddenWords from '../../../hooks/forbiddenWords';
 
-const AlcoholAddScreen = ({navigation}) => {
+const MenuAddScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId} = route.params;
 
   const {showAlert, AlertComponent} = useCustomAlert();
 
-  const [alcohols, setAlcohols] = useState([
-    {alcoholName: '', price: '', alcoholContent: '', type: '', imageUri: ''},
+  const [menus, setMenus] = useState([
+    {menuName: '', price: '', menuContent: '', main: false, imageUri: ''},
   ]);
-  const handleAlcoholChange = (text, index, field) => {
-    const updatedAlcohols = [...alcohols];
-    updatedAlcohols[index][field] = text;
-    setAlcohols(updatedAlcohols);
+
+  const handleMenuChange = (text, index, field) => {
+    const updatedMenus = [...menus];
+    updatedMenus[index][field] = text;
+    setMenus(updatedMenus);
   };
 
-  const handleAddAlcohol = () => {
-    setAlcohols([
-      ...alcohols,
-      {
-        alcoholName: '',
-        price: '',
-        alcoholContent: '',
-        type: '',
-        imageUri: '',
-      },
+  const handleAddMenu = () => {
+    setMenus([
+      ...menus,
+      {menuName: '', price: '', menuContent: '', main: false, imageUri: ''},
     ]);
   };
+  const handleCheckBoxChange = index => {
+    const updatedMenus = menus.map((menu, i) => ({
+      ...menu,
+      main: i === index ? !menu.main : menu.main, // 해당 메뉴의 main 값을 토글
+    }));
+    setMenus(updatedMenus);
+  };
 
-  const handleDeleteAlcohol = index => {
+  const handleDeleteMenu = index => {
     showAlert({
-      title: '주류 삭제',
-      message: '해당 주류를 삭제하시겠습니까?',
+      title: '메뉴 삭제',
+      message: '해당 메뉴를 삭제하시겠습니까?',
       onConfirm: () => {
-        const updatedAlcohols = alcohols.filter((_, i) => i !== index);
-        setAlcohols(updatedAlcohols);
+        const updatedMenus = menus.filter((_, i) => i !== index);
+        setMenus(updatedMenus);
       },
       onCancel: null, // 취소 시 효과 제거
       type: 'delete',
     });
   };
 
-  const AlcoholAdd = async () => {
-    for (const alcohol of alcohols) {
+  const MenuAdd = async () => {
+    for (const menu of menus) {
       const containsForbiddenWord = forbiddenWords.some(
         word =>
-          alcohol.alcoholName.includes(word) ||
-          alcohol.alcoholContent.includes(word) ||
-          alcohol.price.toString().includes(word),
+          menu.menuName.includes(word) ||
+          menu.menuContent.includes(word) ||
+          menu.price.toString().includes(word),
       );
 
       if (containsForbiddenWord) {
@@ -70,26 +72,18 @@ const AlcoholAddScreen = ({navigation}) => {
         return;
       }
 
-      if (!alcohol.alcoholName.trim()) {
+      if (!menu.menuName.trim()) {
         showAlert({
           title: '입력 오류',
-          message: '주류 이름을 입력해주세요.',
+          message: '메뉴 이름을 입력해주세요.',
         });
         return;
       }
 
-      if (!alcohol.price.toString().trim()) {
+      if (!menu.price.toString().trim()) {
         showAlert({
           title: '입력 오류',
-          message: '주류 가격을 입력해주세요.',
-        });
-        return;
-      }
-
-      if (!alcohol.type.toString().trim()) {
-        showAlert({
-          title: '입력 오류',
-          message: '주류 주종을 선택해주세요.',
+          message: '메뉴 가격을 입력해주세요.',
         });
         return;
       }
@@ -97,26 +91,26 @@ const AlcoholAddScreen = ({navigation}) => {
 
     try {
       // 각 메뉴에 대해 StoreMenucreate를 호출하도록 map 사용
-      const promises = alcohols.map(alcohol => {
+      const promises = menus.map(menu => {
         const data = {
-          file: alcohol.imageUri,
-          createDrinkDto: {
-            name: alcohol.alcoholName,
-            description: alcohol.alcoholContent,
-            price: alcohol.price,
+          file: menu.imageUri,
+          createMenuDto: {
+            name: menu.menuName,
+            description: menu.menuContent,
+            price: menu.price,
             storeId: storeId,
-            type: alcohol.type,
+            isMain: menu.main,
           },
         };
 
         // StoreMenucreate 비동기 함수 호출
-        return StoreDrinkcreate(data);
+        return StoreMenucreate(data);
       });
 
       // 모든 요청이 완료될 때까지 기다립니다.
       await Promise.all(promises);
       showAlert({
-        title: '주류 등록이 완료되었습니다.',
+        title: '메뉴 등록이 완료되었습니다.',
         onConfirm: () => {
           navigation.replace('StoreStack', {
             screen: 'StoreMainScreen',
@@ -128,8 +122,8 @@ const AlcoholAddScreen = ({navigation}) => {
       });
     } catch (error) {
       showAlert({
-        title: '주류 추가 오류',
-        message: `주류 추가 중 \n오류가 발생하였습니다.`,
+        title: '메뉴 추가 오류',
+        message: `메뉴 추가 중 \n오류가 발생하였습니다.`,
       });
     }
   };
@@ -137,20 +131,21 @@ const AlcoholAddScreen = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {alcohols.map((alcohol, index) => (
-          <AlcoholAddForm
+        {menus.map((menu, index) => (
+          <MenuAddForm
             key={index}
-            alcohol={alcohol}
+            menu={menu}
             index={index}
-            handleAlcoholChange={handleAlcoholChange}
-            onDelete={handleDeleteAlcohol}
+            handleMenuChange={handleMenuChange}
+            handleCheckBoxChange={handleCheckBoxChange}
+            onDelete={handleDeleteMenu}
           />
         ))}
 
-        <Pressable style={styles.menuAddButton} onPress={handleAddAlcohol}>
-          <Text style={styles.menuAddText}>주류 추가</Text>
+        <Pressable style={styles.menuAddButton} onPress={handleAddMenu}>
+          <Text style={styles.menuAddText}>메뉴 추가</Text>
         </Pressable>
-        <Pressable style={styles.saveButton} onPress={AlcoholAdd}>
+        <Pressable style={styles.saveButton} onPress={MenuAdd}>
           <Text style={styles.saveButtonText}>작성 완료</Text>
         </Pressable>
       </ScrollView>
@@ -198,4 +193,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AlcoholAddScreen;
+export default MenuAddScreen;

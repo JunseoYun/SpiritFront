@@ -18,16 +18,15 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-import MenuModal from './MenuModal';
-
 const MenuItem = ({
   menu,
+  storeId,
   isOpen,
   onOpen,
   onClose,
-  onEdit,
   onDelete,
   scrollViewRef,
+  navigation,
 }) => {
   const translateX = useSharedValue(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -67,11 +66,6 @@ const MenuItem = ({
     }
   }, [isOpen]);
 
-  const handleUpdate = () => {
-    setIsModalVisible(true);
-    onClose();
-  };
-
   return (
     <GestureHandlerRootView>
       <Pressable style={styles.container} onPress={onClose}>
@@ -79,7 +73,12 @@ const MenuItem = ({
         <View style={[styles.actionsContainer, {width: BUTTON_WIDTH}]}>
           <TouchableOpacity
             style={[styles.actionButton, styles.editButton]}
-            onPress={handleUpdate}>
+            onPress={() =>
+              navigation.navigate('MenuUpdateScreen', {
+                menu: menu,
+                storeId: storeId,
+              })
+            }>
             <Text style={styles.actionText}>수정</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -128,16 +127,6 @@ const MenuItem = ({
           </Animated.View>
         </PanGestureHandler>
       </Pressable>
-      {/* 수정 모달 */}
-      <MenuModal
-        isModalVisible={isModalVisible}
-        onPressModalClose={() => {
-          setIsModalVisible(false);
-          onClose();
-        }}
-        menuData={menu}
-        onUpdate={onEdit}
-      />
     </GestureHandlerRootView>
   );
 };

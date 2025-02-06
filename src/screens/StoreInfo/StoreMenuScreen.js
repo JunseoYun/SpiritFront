@@ -4,8 +4,15 @@ import MenuHeader from '../../components/StoreMenuScreen/MenuHeader';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
 import {StoreMenudelete} from '../../api/menuApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import {Portal} from 'react-native-paper';
 
-const StoreMenuScreen = ({navigation, storeId, menus, scrollViewRef}) => {
+const StoreMenuScreen = ({
+  navigation,
+  storeId,
+  menus,
+  scrollViewRef,
+  onMenuDelete,
+}) => {
   const [openItemId, setOpenItemId] = useState(null); // 열려 있는 메뉴 ID 관리
   const [menuList, setMenuList] = useState(menus);
 
@@ -28,6 +35,7 @@ const StoreMenuScreen = ({navigation, storeId, menus, scrollViewRef}) => {
   };
 
   const handleDeleteMenu = (id, name) => {
+    console.log(id, 'id값');
     handleCloseAll();
     showAlert({
       title: `${name} 삭제`,
@@ -35,18 +43,12 @@ const StoreMenuScreen = ({navigation, storeId, menus, scrollViewRef}) => {
       onConfirm: async () => {
         try {
           await StoreMenudelete(id);
-          setMenuList(prevMenus => prevMenus.filter(menu => menu.id !== id));
+          onMenuDelete(id); // 부모에게 메뉴 삭제 알리기
         } catch (error) {}
       },
       onCancel: null,
       type: 'delete',
     });
-  };
-
-  const handleEditMenu = updatedMenu => {
-    setMenuList(prevMenus =>
-      prevMenus.map(menu => (menu.id === updatedMenu.id ? updatedMenu : menu)),
-    );
   };
 
   return (
@@ -57,12 +59,13 @@ const StoreMenuScreen = ({navigation, storeId, menus, scrollViewRef}) => {
         <MenuItem
           key={menu.id}
           menu={menu}
+          storeId={storeId}
           isOpen={openItemId === menu.id}
           onOpen={() => handleOpenItem(menu.id)}
           onClose={handleCloseAll}
-          onEdit={handleEditMenu}
           onDelete={() => handleDeleteMenu(menu.id, menu.name)} // 삭제 함수 전달
           scrollViewRef={scrollViewRef} // 스크롤 참조 전달
+          navigation={navigation}
         />
       ))}
       {menuList?.length === 0 && (
@@ -70,8 +73,9 @@ const StoreMenuScreen = ({navigation, storeId, menus, scrollViewRef}) => {
           <Text style={styles.emptyText}>등록된 메뉴가 없습니다</Text>
         </View>
       )}
-
-      <AlertComponent />
+      <Portal>
+        <AlertComponent />
+      </Portal>
     </SafeAreaView>
   );
 };
