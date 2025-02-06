@@ -254,3 +254,22 @@ export const Store_getby_business_hours = async (page, latitude, longitude) => {
     functionError(error);
   }
 };
+
+export const Store_getby_condition_search = async requestData => {
+  const {latitude, longitude, page, conditionSearchDto} = requestData;
+  try {
+    const response = await axiosInstance.get(`/store/get-by/condition-search`, {
+      params: {
+        latitude,
+        longitude,
+        page: page,
+        category: conditionSearchDto.category,
+        isGroupAvailable: conditionSearchDto.isGroupAvailable,
+        conditionTime: conditionSearchDto.conditionTime,
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};

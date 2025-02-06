@@ -10,7 +10,6 @@ import {
 import useWeatherTranslation from '../../../hooks/useWeatherTranslation';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
-import {Store_getby_category} from '../../../api/storeApi';
 
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
@@ -20,45 +19,20 @@ const TodayRecomm = ({
   weather,
   recommCategory,
   recommReason,
+  recommStores,
   location,
-  refresh,
   navigation,
 }) => {
   const {translateWeather} = useWeatherTranslation();
   const {translateCategory} = useCategoryTranslation();
   const koreanCategory = translateCategory(recommCategory);
-  const [recommStores, setRecommStores] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const listRef = useRef(null);
 
-  const fetchStores = async () => {
-    if (location) {
-      try {
-        const storesData = await Store_getby_category(
-          0,
-          location.latitude,
-          location.longitude,
-          recommCategory,
-        );
-        setRecommStores(storesData.content);
-      } catch (error) {}
-    }
-  };
-
-  useEffect(() => {
-    if (location) {
-      fetchStores();
-    }
-  }, [location]);
-
-  useEffect(() => {
-    if (refresh && location) {
-      fetchStores();
-    }
-  }, [refresh]);
-
-  // 무한 스크롤을 위한 확장된 배열
-  const extendedStores = [...recommStores, ...recommStores, ...recommStores];
+  const extendedStores =
+    Array.isArray(recommStores) && recommStores.length >= 3
+      ? [...recommStores, ...recommStores, ...recommStores]
+      : recommStores;
 
   // 스크롤 위치를 즉시 업데이트하여 점이 따라오도록 개선
   const handleScroll = ({nativeEvent}) => {
@@ -104,13 +78,19 @@ const TodayRecomm = ({
           horizontal
           keyExtractor={(item, index) => index.toString()}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContainer}
+          contentContainerStyle={
+            recommStores.length < 2
+              ? [styles.scrollContainer, styles.smallListContainer]
+              : styles.scrollContainer
+          }
           snapToAlignment="center"
           snapToInterval={ITEM_WIDTH + SPACING}
           decelerationRate={0.8}
-          initialScrollIndex={recommStores.length / 2} // 처음 시작 시 중앙으로 이동
+          initialScrollIndex={recommStores.length} // 처음 시작 시 중앙으로 이동
           onScroll={handleScroll} // 실시간으로 점 업데이트
-          onMomentumScrollEnd={handleScrollEnd} // 무한 스크롤 동작 유지
+          onMomentumScrollEnd={
+            recommStores.length >= 3 ? handleScrollEnd : undefined
+          } // 가게 3개 이상일 때만 무한 스크롤 적용
           getItemLayout={(data, index) => ({
             length: ITEM_WIDTH + SPACING,
             offset: (ITEM_WIDTH + SPACING) * index,
@@ -195,6 +175,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     alignItems: 'center',
   },
+  smallListContainer: {marginLeft: 15},
   pagination: {
     flexDirection: 'row',
     justifyContent: 'center',

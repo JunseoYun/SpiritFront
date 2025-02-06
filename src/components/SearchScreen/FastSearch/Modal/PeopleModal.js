@@ -10,29 +10,31 @@ const PeopleModal = ({
   return (
     <Modal visible={visible} animationType="fade" transparent={true}>
       <Pressable style={styles.modalBackground} onPress={onPressClose}>
-        <View style={styles.modalContainer} onStartShouldSetResponder={() => true}>
+        <View
+          style={styles.modalContainer}
+          onStartShouldSetResponder={() => true}>
           <Text style={styles.topText}>인원</Text>
           <View style={styles.peopleChoiceView}>
             <Pressable
               style={styles.radioButton}
-              onPress={() => onSelectPeople('8인 이하')}>
+              onPress={() => onSelectPeople('10인 이하')}>
               <Text
                 style={[
                   styles.radioText,
-                  selectedPeople === '8인 이하' && styles.selectedRadioText,
+                  selectedPeople === '10인 이하' && styles.selectedRadioText,
                 ]}>
-                8인 이하
+                10인 이하
               </Text>
             </Pressable>
             <Pressable
               style={styles.radioButton}
-              onPress={() => onSelectPeople('8인 이상')}>
+              onPress={() => onSelectPeople('10인 이상')}>
               <Text
                 style={[
                   styles.radioText,
-                  selectedPeople === '8인 이상' && styles.selectedRadioText,
+                  selectedPeople === '10인 이상' && styles.selectedRadioText,
                 ]}>
-                8인 이상
+                10인 이상
               </Text>
             </Pressable>
           </View>

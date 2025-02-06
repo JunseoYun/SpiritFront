@@ -20,6 +20,7 @@ import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import {getWeatherData} from '../../api/weather';
 import useRecommendation from '../../hooks/useRecommendation';
+import {Store_getby_category} from '../../api/storeApi';
 
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
@@ -45,6 +46,7 @@ const MainScreen = ({navigation}) => {
         const currentLocation = await getLocation();
         if (currentLocation) {
           setLocation(currentLocation);
+
           const weatherData = await getWeatherData(currentLocation);
           setWeather(weatherData);
           const {category, reason} = recommendCategory(
@@ -52,8 +54,15 @@ const MainScreen = ({navigation}) => {
             weatherData.temp,
             weatherData.rain_probability,
           );
+          const recommStoreData = await Store_getby_category(
+            0,
+            currentLocation.latitude,
+            currentLocation.longitude,
+            category,
+          );
           setRecommCategory(category);
           setRecommReason(reason);
+          setRecommStores(recommStoreData.content);
         }
         const currentAddress = await getAddress();
         if (currentAddress) {
@@ -78,8 +87,16 @@ const MainScreen = ({navigation}) => {
           weatherData.temp,
           weatherData.rain_probability,
         );
+        const recommStoreData = await Store_getby_category(
+          0,
+          currentLocation.latitude,
+          currentLocation.longitude,
+          category,
+        );
         setRecommCategory(category);
         setRecommReason(reason);
+
+        setRecommStores(recommStoreData.content);
       }
 
       const currentAddress = await getAddress();
@@ -189,6 +206,7 @@ const MainScreen = ({navigation}) => {
           weather={weather}
           recommCategory={recommCategory}
           recommReason={recommReason}
+          recommStores={recommStores}
           location={location}
           refresh={isRefreshing}
           navigation={navigation}
