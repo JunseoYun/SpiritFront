@@ -1,5 +1,12 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, FlatList, Dimensions} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Dimensions,
+  Image,
+} from 'react-native';
 import useWeatherTranslation from '../../../hooks/useWeatherTranslation';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
@@ -31,9 +38,8 @@ const TodayRecomm = ({
           0,
           location.latitude,
           location.longitude,
-          'IZAKAYA',
+          recommCategory,
         );
-        console.log(storesData);
         setRecommStores(storesData.content);
       } catch (error) {}
     }
@@ -91,49 +97,82 @@ const TodayRecomm = ({
       <View style={styles.todayPhrasesView}>
         <Text style={styles.todayReason}>{recommReason}</Text>
       </View>
-
-      <FlatList
-        ref={listRef}
-        data={extendedStores}
-        horizontal
-        keyExtractor={(item, index) => index.toString()}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
-        snapToAlignment="center"
-        snapToInterval={ITEM_WIDTH + SPACING}
-        decelerationRate={0.8}
-        initialScrollIndex={recommStores.length} // 처음 시작 시 중앙으로 이동
-        onScroll={handleScroll} // 실시간으로 점 업데이트
-        onMomentumScrollEnd={handleScrollEnd} // 무한 스크롤 동작 유지
-        getItemLayout={(data, index) => ({
-          length: ITEM_WIDTH + SPACING,
-          offset: (ITEM_WIDTH + SPACING) * index,
-          index,
-        })}
-        renderItem={({item, index}) => (
-          <View key={index} style={styles.slideItem}>
-            <TodayRecommItem
-              store={item}
-              category={koreanCategory}
-              location={location}
-              navigation={navigation}
-            />
-          </View>
-        )}
-      />
-
+      {recommStores && (
+        <FlatList
+          ref={listRef}
+          data={extendedStores}
+          horizontal
+          keyExtractor={(item, index) => index.toString()}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContainer}
+          snapToAlignment="center"
+          snapToInterval={ITEM_WIDTH + SPACING}
+          decelerationRate={0.8}
+          initialScrollIndex={recommStores.length / 2} // 처음 시작 시 중앙으로 이동
+          onScroll={handleScroll} // 실시간으로 점 업데이트
+          onMomentumScrollEnd={handleScrollEnd} // 무한 스크롤 동작 유지
+          getItemLayout={(data, index) => ({
+            length: ITEM_WIDTH + SPACING,
+            offset: (ITEM_WIDTH + SPACING) * index,
+            index,
+          })}
+          renderItem={({item, index}) => (
+            <View key={index} style={styles.slideItem}>
+              <TodayRecommItem
+                store={item}
+                category={koreanCategory}
+                location={location}
+                navigation={navigation}
+              />
+            </View>
+          )}
+        />
+      )}
       {/* 페이지네이션 점 표시 */}
-      <View style={styles.pagination}>
-        {recommStores.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.dot,
-              currentIndex === index ? styles.activeDot : null,
-            ]}
+      {/* {recommStores && (
+        <View style={styles.pagination}>
+          {recommStores.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                currentIndex === index ? styles.activeDot : null,
+              ]}
+            />
+          ))}
+        </View>
+      )} */}
+      {recommStores.length === 0 && (
+        <View style={styles.noDataView}>
+          <Image
+            source={require('../../../assets/AppLogoNoback.png')}
+            style={styles.imageStyle}
           />
-        ))}
-      </View>
+          <Text style={styles.noDataText}>
+            추천 카테고리에 등록된 주점이 없어요
+          </Text>
+        </View>
+      )}
+      {weather.condition ? (
+        <View style={styles.topdayweather}>
+          <View style={styles.weatherTemp}>
+            <Image
+              source={{uri: `https:${weather.icon}`}}
+              style={styles.weatherIcon}
+            />
+            <Text style={styles.todayweathertext}>{weather.temp}°C</Text>
+          </View>
+
+          <Text style={styles.todayweathertext}>
+            날씨: {translateWeather(weather.condition)}
+          </Text>
+          <Text style={styles.todayweathertext}>
+            강수량: {weather.rain_probability}mm
+          </Text>
+        </View>
+      ) : (
+        <Text style={styles.notWeathertext}>날씨 정보 가져오는 중...</Text>
+      )}
     </>
   );
 };
@@ -160,19 +199,74 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: -25,
+    marginTop: 0,
+    marginBottom: -5,
   },
   dot: {
     width: 6,
     height: 6,
     borderRadius: 4,
-    backgroundColor: '#999',
+    backgroundColor: '#E0E0E0',
     marginHorizontal: 4,
   },
   activeDot: {
-    backgroundColor: '#fff',
+    backgroundColor: '#999',
     width: 6,
     height: 6,
+  },
+  noDataView: {
+    width: '90%',
+    height: 200,
+    backgroundColor: '#E0E0E0',
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+    borderRadius: 10,
+  },
+  noDataText: {
+    alignSelf: 'center',
+    fontSize: 15,
+    color: '#777',
+    marginTop: 10,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+  },
+  imageStyle: {
+    width: '100%',
+    height: 70, // 추가
+    borderRadius: 10,
+    resizeMode: 'contain',
+    justifyContent: 'center',
+  },
+  topdayweather: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '88%',
+    alignSelf: 'center',
+  },
+  weatherTemp: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  weatherIcon: {
+    width: 35,
+    height: 35,
+    marginTop: -5,
+  },
+  todayweathertext: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 7,
+    fontWeight: '600',
+  },
+  notWeathertext: {
+    alignSelf: 'center',
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 7,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
   },
 });
 

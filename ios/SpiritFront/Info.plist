@@ -52,11 +52,6 @@
 		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>43.203.91.148</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
-			</dict>
 			<key>daumcdn.net</key>
 			<dict>
 				<key>NSIncludesSubdomains</key>

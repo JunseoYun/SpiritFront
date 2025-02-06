@@ -13,7 +13,6 @@ import {getGlobalShowAlert} from '../context/CustomAlertContext';
 // 새로운 Access Token 요청 함수
 const refreshAccessToken = async () => {
   const refreshToken = await getRefreshToken();
-  console.log('Refresh Token:', refreshToken);
 
   if (!refreshToken) {
     throw new Error('No refresh token available');
@@ -22,7 +21,7 @@ const refreshAccessToken = async () => {
   try {
     // GET 요청으로 x-auth-token 헤더에 refreshToken 전달
     const response = await axios.get(
-      'http://43.203.91.148:8080/api/auth/reissue-token',
+      'https://team-spirit.click/api/auth/reissue-token',
       {
         headers: {
           'x-auth-token': refreshToken,
@@ -46,7 +45,7 @@ const refreshAccessToken = async () => {
 
 // Axios 인스턴스 생성
 const axiosInstance = axios.create({
-  baseURL: 'http://43.203.91.148:8080/api', // 공통 URL
+  baseURL: 'https://team-spirit.click/api', // 공통 URL
   headers: {
     'Content-Type': 'application/json',
   },
