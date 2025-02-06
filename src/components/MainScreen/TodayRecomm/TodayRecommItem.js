@@ -16,12 +16,12 @@ const TodayRecommItem = ({store, category, location, navigation}) => {
       }
       style={styles.container}>
       <ImageBackground
-        source={require('../../../assets/MainPagetodayimg.png')}
-        // source={
-        //   store.imgUrl
-        //     ? {uri: store.imgUrl} // URL이 있는 경우
-        //     : require('../../../assets/MainPagetodayimg.png') // URL이 없으면 로컬 이미지 사용
-        // }
+        // source={require('../../../assets/MainPagetodayimg.png')}
+        source={
+          store.mainImgUrl
+            ? {uri: store.mainImgUrl} // URL이 있는 경우
+            : require('../../../assets/MainPagetodayimg.png') // URL이 없으면 로컬 이미지 사용
+        }
         style={styles.imageBackground}
         imageStyle={styles.imageStyle}>
         <View style={styles.overlay}>
@@ -53,12 +53,12 @@ const TodayRecommItem = ({store, category, location, navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: 370, // 카드 너비
+    width: '100%', // 카드 너비
     height: 200, // 카드 높이
     marginVertical: 10,
     borderRadius: 10,
     overflow: 'hidden', // 경계선 밖 숨김
-    elevation: 5, // Android 그림자
+    borderWidth: 1,
   },
   imageBackground: {
     flex: 1,
