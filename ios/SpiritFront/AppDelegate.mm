@@ -2,6 +2,7 @@
 #import <React/RCTBundleURLProvider.h>
 #import <RNKakaoLogins.h>
 #import <GoogleSignIn/GoogleSignIn.h>
+#import "RNSplashScreen.h"
 
 @implementation AppDelegate
 
@@ -11,7 +12,7 @@
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
-  return [super application:application didFinishLaunchingWithOptions:launchOptions];
+  BOOL ret = [super application:application didFinishLaunchingWithOptions:launchOptions]; if (ret == YES) { [RNSplashScreen show];  } return ret;
 }
 
 // openURL 메서드를 하나로 통합하여 카카오와 구글 로그인 처리를 모두 합니다.
