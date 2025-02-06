@@ -121,14 +121,13 @@ const StoreMainScreen = ({navigation}) => {
     const performUpdate = async (key, value) => {
       try {
         if (key === 'images') {
-          const {addedImages, deletedImages, mainImages} = value;
-          console.log(value, '여기');
+          const {addedImages, deletedImages, hasmainImg} = value;
           try {
             //매장 추가만 되었을때
             if (
               addedImages.length > 0 &&
               deletedImages.length === 0 &&
-              mainImages.length === 0
+              hasmainImg === false
             ) {
               await UpdateStoreImage(storeId, addedImages);
             }
@@ -136,7 +135,7 @@ const StoreMainScreen = ({navigation}) => {
             if (
               addedImages.length === 0 &&
               deletedImages.length > 0 &&
-              mainImages.length === 0
+              hasmainImg === false
             ) {
               await DeleteStoreImage(storeId, deletedImages);
             }
@@ -144,25 +143,26 @@ const StoreMainScreen = ({navigation}) => {
             if (
               addedImages.length > 0 &&
               deletedImages.length === 0 &&
-              mainImages.length > 0
+              hasmainImg === true
             ) {
-              await UpdateStoreImage(storeId, addedImages);
-              await UpdateStore(storeId, {['mainImgUrl']: mainImages});
+              const response = await UpdateStoreImage(storeId, addedImages);
+              console.log(response);
+              await UpdateStore(storeId, {['mainImgUrl']: response[0]});
             }
             //매장 삭제 및 메인 이미지 추가
             if (
               addedImages.length === 0 &&
               deletedImages.length > 0 &&
-              mainImages.length > 0
+              hasmainImg === true
             ) {
-              await DeleteStoreImage(storeId, deletedImages);
-              await UpdateStore(storeId, {['mainImgUrl']: mainImages});
+              const response = await DeleteStoreImage(storeId, deletedImages);
+              await UpdateStore(storeId, {['mainImgUrl']: response[0]});
             }
             //추가 삭제만 되었을때
             if (
               addedImages.length > 0 &&
               deletedImages.length > 0 &&
-              mainImages.length === 0
+              hasmainImg === false
             ) {
               await UpdateStoreImage(storeId, addedImages);
               await DeleteStoreImage(storeId, deletedImages);
@@ -171,11 +171,11 @@ const StoreMainScreen = ({navigation}) => {
             if (
               addedImages.length > 0 &&
               deletedImages.length > 0 &&
-              mainImages.length > 0
+              hasmainImg === true
             ) {
               await UpdateStoreImage(storeId, addedImages);
-              await DeleteStoreImage(storeId, deletedImages);
-              await UpdateStore(storeId, {['mainImgUrl']: mainImages});
+              const response = await DeleteStoreImage(storeId, deletedImages);
+              await UpdateStore(storeId, {['mainImgUrl']: response[0]});
             }
           } catch (error) {
             console.log(error);
@@ -248,6 +248,16 @@ const StoreMainScreen = ({navigation}) => {
     };
     getStoreData();
   }, []);
+
+  const handleMenuDelete = id => {
+    setMenus(prevMenus => prevMenus.filter(menu => menu.id !== id));
+  };
+
+  const handleAlcoholDelete = id => {
+    setAlcohols(prevAlcohols =>
+      prevAlcohols.filter(alcohol => alcohol.id !== id),
+    );
+  };
 
   const imageSliderData =
     storedata.imgUrlList?.map(url => ({imageUrl: url})) || [];
@@ -349,6 +359,7 @@ const StoreMainScreen = ({navigation}) => {
                     storeId={storeId}
                     menus={menus}
                     scrollViewRef={scrollViewRef} // 스크롤 참조 전달
+                    onMenuDelete={handleMenuDelete}
                   />
                 )}
                 {currentPage === 'StoreAlcoholScreen' && (
@@ -358,6 +369,7 @@ const StoreMainScreen = ({navigation}) => {
                     alcohols={alcohols}
                     mainDrinks={storedata.mainDrinkDtos}
                     scrollViewRef={scrollViewRef}
+                    onAlcoholDelete={handleAlcoholDelete}
                   />
                 )}
                 {currentPage === 'StoreReviewScreen' && (

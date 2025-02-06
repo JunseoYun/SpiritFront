@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Modal,
   View,
@@ -11,22 +11,28 @@ import {
   Switch,
   Pressable,
 } from 'react-native';
-import {MenuUpdate, MenuUpdateImage, MenuDeleteImage} from '../../api/menuApi';
+import {
+  MenuUpdate,
+  MenuUpdateImage,
+  MenuDeleteImage,
+} from '../../../api/menuApi';
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import useCustomAlert from '../../hooks/useCustomAlert';
-import forbiddenWords from '../../hooks/forbiddenWords';
+import useCustomAlert from '../../../hooks/useCustomAlert';
+import forbiddenWords from '../../../hooks/forbiddenWords';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {Portal} from 'react-native-paper';
+import {useRoute} from '@react-navigation/native';
 
-const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
-  const [originalMenu, setOriginalMenu] = useState(menuData);
-  const [menuName, setMenuName] = useState(menuData.name);
-  const [menuDescription, setMenuDescription] = useState(menuData.description);
-  const [menuPrice, setMenuPrice] = useState(menuData.price);
-  const [isMain, setIsMain] = useState(menuData.isMain);
-  const [menuImage, setMenuImage] = useState(menuData.imgUrl || '');
+const MenuUpdateScreen = ({navigation}) => {
+  const route = useRoute();
+  const {menu, storeId} = route.params;
+  const [originalMenu, setOriginalMenu] = useState('');
+  const [menuName, setMenuName] = useState('');
+  const [menuDescription, setMenuDescription] = useState('');
+  const [menuPrice, setMenuPrice] = useState('');
+  const [isMain, setIsMain] = useState(false);
+  const [menuImage, setMenuImage] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageDeleted, setIsImageDeleted] = useState(false); // ✅ 이미지 삭제 여부 상태 추가
   const [isFocusedName, setIsFocusedName] = useState(false);
@@ -35,7 +41,34 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
 
   const {showAlert, AlertComponent} = useCustomAlert();
 
-  // ✅ 이미지 선택
+  useEffect(() => {
+    if (menu) {
+      console.log(menu);
+      setOriginalMenu(menu);
+      setMenuName(menu.name || '');
+      setMenuDescription(menu.description || '');
+      setMenuPrice(menu.price || '');
+      setIsMain(menu.isMain || false);
+      setMenuImage(menu.imgUrl || '');
+    }
+  }, [menu]);
+
+  const GotoStoreScreen = () => {
+    showAlert({
+      title: `수정 되었습니다.`,
+      onConfirm: () => {
+        navigation.replace('StoreStack', {
+          screen: 'StoreMainScreen',
+          params: {
+            storeId: storeId,
+          },
+        });
+      },
+      onCancel: null,
+      type: 'confirm',
+    });
+  };
+
   const selectImage = () => {
     ImagePicker.openPicker({
       width: 500,
@@ -110,8 +143,9 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
 
       // 1️⃣ 이미지만 변경된 경우 → 이미지 업데이트 요청
       if (isImageChanged && !isInfoChanged) {
-        await MenuUpdateImage(menuData.id, selectedImage);
+        await MenuUpdateImage(menu.id, selectedImage);
         updatedMenu.imgUrl = selectedImage.path;
+        GotoStoreScreen();
       }
 
       // 2️⃣ 정보만 변경된 경우 → 메뉴 정보 업데이트 요청
@@ -123,12 +157,13 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
           price: Number(menuPrice),
           isMain,
         };
-        await MenuUpdate(menuData.id, updatedMenu);
+        await MenuUpdate(menu.id, updatedMenu);
+        GotoStoreScreen();
       }
 
       // 3️⃣ 둘 다 변경된 경우 → 이미지 업데이트 후 정보 업데이트 요청
       if (isImageChanged && isInfoChanged) {
-        await MenuUpdateImage(menuData.id, selectedImage);
+        await MenuUpdateImage(menu.id, selectedImage);
         updatedMenu.imgUrl = selectedImage.path;
 
         updatedMenu = {
@@ -138,24 +173,22 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
           price: Number(menuPrice),
           isMain,
         };
-        await MenuUpdate(menuData.id, updatedMenu);
+        await MenuUpdate(menu.id, updatedMenu);
+        GotoStoreScreen();
       }
 
       // 4️⃣ 이미지 삭제가 선택된 경우 → 이미지 삭제 API 호출
       if (isImageDeleted) {
-        await MenuDeleteImage(menuData.id);
+        await MenuDeleteImage(menu.id);
         updatedMenu.imgUrl = '';
+        GotoStoreScreen();
       }
 
       // 5️⃣ 변경 사항이 없으면 요청 없이 모달만 닫기
       if (!isImageChanged && !isInfoChanged && !isImageDeleted) {
-        onPressModalClose();
+        handleCancel();
         return;
       }
-
-      setOriginalMenu(updatedMenu);
-      onUpdate(updatedMenu);
-      onPressModalClose();
     } catch (error) {
       showAlert({
         title: '수정 실패',
@@ -166,156 +199,141 @@ const MenuModal = ({isModalVisible, onPressModalClose, menuData, onUpdate}) => {
 
   // ✅ 취소 버튼 클릭 시 원래 데이터로 초기화
   const handleCancel = () => {
-    setMenuName(originalMenu.name);
-    setMenuDescription(originalMenu.description);
-    setMenuPrice(String(originalMenu.price));
-    setIsMain(originalMenu.isMain);
-    setMenuImage(originalMenu.imgUrl || '');
-    setSelectedImage(null);
-    setIsImageDeleted(false); // ✅ 삭제 상태 초기화
-    onPressModalClose();
+    showAlert({
+      title: '작성한 내용이 저장되지 않았습니다',
+      message: '뒤로 가시겠습니까?',
+      onConfirm: () => {
+        setMenuName('');
+        setMenuDescription('');
+        setMenuPrice('');
+        setIsMain(false);
+        setMenuImage('');
+        setSelectedImage(null);
+        setIsImageDeleted(false);
+        navigation.goBack();
+      },
+      onCancel: null,
+      type: 'confirm',
+    });
+    // ✅ 삭제 상태 초기화
   };
-
   return (
-    <Portal>
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={onPressModalClose}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity onPress={handleCancel}>
-                <Ionicons name="arrow-back-outline" size={25} color="#333" />
-              </TouchableOpacity>
+    <View style={styles.modalContainer}>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={handleCancel}>
+          <Ionicons name="arrow-back-outline" size={25} color="#333" />
+        </TouchableOpacity>
 
-              <Text style={styles.modalTitle}>메뉴 수정</Text>
-              <TouchableOpacity onPress={handleSave}>
-                <Ionicons name="paper-plane-sharp" size={25} color="#16BBFF" />
-              </TouchableOpacity>
+        <Text style={styles.modalTitle}>메뉴 수정</Text>
+        <TouchableOpacity onPress={handleSave}>
+          <Ionicons name="paper-plane-sharp" size={25} color="#16BBFF" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.imageContainer}>
+        {menuImage ? (
+          <ImageBackground
+            source={{uri: menuImage}}
+            style={styles.menuImage}
+            imageStyle={styles.backimagestyle}>
+            {/* ✅ 이미지 안에 아이콘 배치 */}
+            <View style={styles.imageButtonView}>
+              <Pressable
+                style={[styles.imageButton, styles.shadowEffect]}
+                onPress={selectImage}>
+                <MaterialIcons name="photo-library" size={28} color="#fff" />
+              </Pressable>
+              <Pressable
+                style={[styles.deleteButton, styles.shadowEffect]}
+                onPress={handleDeleteImage}>
+                <Ionicons name="trash-outline" size={28} color="#fff" />
+              </Pressable>
             </View>
-
-            <ScrollView style={{width: '100%'}}>
-              <View style={styles.imageContainer}>
-                {menuImage ? (
-                  <ImageBackground
-                    source={{uri: menuImage}}
-                    style={styles.menuImage}
-                    imageStyle={styles.backimagestyle}>
-                    {/* ✅ 이미지 안에 아이콘 배치 */}
-                    <View style={styles.imageButtonView}>
-                      <Pressable
-                        style={[styles.imageButton, styles.shadowEffect]}
-                        onPress={selectImage}>
-                        <MaterialIcons
-                          name="photo-library"
-                          size={28}
-                          color="#fff"
-                        />
-                      </Pressable>
-                      <Pressable
-                        style={[styles.deleteButton, styles.shadowEffect]}
-                        onPress={handleDeleteImage}>
-                        <Ionicons name="trash-outline" size={28} color="#fff" />
-                      </Pressable>
-                    </View>
-                  </ImageBackground>
-                ) : (
-                  <View style={styles.placeholderImage}>
-                    <Text style={styles.placeholderText}>이미지 추가</Text>
-                    <Pressable onPress={selectImage}>
-                      <MaterialCommunityIcons
-                        name="image-plus"
-                        size={40}
-                        color="#333"
-                      />
-                    </Pressable>
-                  </View>
-                )}
-              </View>
-
-              {menuName && <Text style={styles.inputText}>메뉴 이름*</Text>}
-              <TextInput
-                style={[
-                  styles.input,
-                  {borderBottomColor: isFocusedName ? '#16BBFF' : '#F2F2F2'},
-                ]}
-                value={menuName}
-                onChangeText={setMenuName}
-                placeholder=" 메뉴 이름*"
-                onFocus={() => setIsFocusedName(true)}
-                onBlur={() => setIsFocusedName(false)}
+          </ImageBackground>
+        ) : (
+          <View style={styles.placeholderImage}>
+            <Text style={styles.placeholderText}>이미지 추가</Text>
+            <Pressable onPress={selectImage}>
+              <MaterialCommunityIcons
+                name="image-plus"
+                size={40}
+                color="#333"
               />
-
-              {menuDescription && (
-                <Text style={styles.inputText}>메뉴 소개</Text>
-              )}
-              <TextInput
-                style={[
-                  styles.inputMultiline,
-                  {
-                    borderBottomColor: isFocusedDescription
-                      ? '#16BBFF'
-                      : '#F2F2F2',
-                  },
-                ]}
-                value={menuDescription}
-                onChangeText={setMenuDescription}
-                placeholder="메뉴 소개"
-                multiline={true}
-                textAlignVertical="top"
-                onFocus={() => setIsFocusedDescription(true)}
-                onBlur={() => setIsFocusedDescription(false)}
-              />
-
-              {menuPrice && <Text style={styles.inputText}>메뉴 가격*</Text>}
-              <TextInput
-                style={[
-                  styles.input,
-                  {borderBottomColor: isFocusedPrice ? '#16BBFF' : '#F2F2F2'},
-                ]}
-                value={menuPrice}
-                onChangeText={setMenuPrice}
-                placeholder="메뉴 가격*"
-                onFocus={() => setIsFocusedPrice(true)}
-                onBlur={() => setIsFocusedPrice(false)}
-              />
-              <View style={styles.switchContainer}>
-                <Text style={styles.switchLabel}>대표 메뉴 여부</Text>
-                <Switch
-                  value={isMain}
-                  onValueChange={setIsMain}
-                  trackColor={{false: '#ccc', true: '#16BBFF'}} // ✅ 배경 색상 변경
-                  thumbColor={'#fff'}
-                />
-              </View>
-            </ScrollView>
+            </Pressable>
           </View>
+        )}
+      </View>
+
+      <View style={styles.storeinputview}>
+        {menuName && <Text style={styles.inputText}>메뉴 이름*</Text>}
+        <TextInput
+          style={[
+            styles.input,
+            {borderBottomColor: isFocusedName ? '#16BBFF' : '#F2F2F2'},
+          ]}
+          value={menuName}
+          onChangeText={setMenuName}
+          placeholder=" 메뉴 이름*"
+          onFocus={() => setIsFocusedName(true)}
+          onBlur={() => setIsFocusedName(false)}
+        />
+      </View>
+
+      <View style={styles.storeinputview}>
+        {menuDescription && <Text style={styles.inputText}>메뉴 소개</Text>}
+        <TextInput
+          style={[
+            styles.inputMultiline,
+            {
+              borderBottomColor: isFocusedDescription ? '#16BBFF' : '#F2F2F2',
+            },
+          ]}
+          value={menuDescription}
+          onChangeText={setMenuDescription}
+          placeholder="메뉴 소개"
+          multiline={true}
+          textAlignVertical="top"
+          onFocus={() => setIsFocusedDescription(true)}
+          onBlur={() => setIsFocusedDescription(false)}
+        />
+      </View>
+      <View style={styles.storeinputview}>
+        {menuPrice && <Text style={styles.inputText}>메뉴 가격*</Text>}
+        <TextInput
+          style={[
+            styles.input,
+            {borderBottomColor: isFocusedPrice ? '#16BBFF' : '#F2F2F2'},
+          ]}
+          value={menuPrice}
+          onChangeText={setMenuPrice}
+          placeholder="메뉴 가격*"
+          onFocus={() => setIsFocusedPrice(true)}
+          onBlur={() => setIsFocusedPrice(false)}
+        />
+      </View>
+      <View style={styles.storeinputview}>
+        <View style={styles.switchContainer}>
+          <Text style={styles.switchLabel}>대표 메뉴 여부</Text>
+          <Switch
+            value={isMain}
+            onValueChange={setIsMain}
+            trackColor={{false: '#ccc', true: '#16BBFF'}} // ✅ 배경 색상 변경
+            thumbColor={'#fff'}
+          />
         </View>
-        <AlertComponent />
-      </Modal>
-    </Portal>
+      </View>
+      <AlertComponent />
+    </View>
   );
 };
 const styles = StyleSheet.create({
-  modalBackground: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // ✅ 어두운 배경 추가
-  },
   modalContainer: {
-    width: '85%',
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 15, // ✅ 둥근 모서리 추가
+    width: '100%',
+    height: '100%',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    elevation: 10, // ✅ 안드로이드 그림자
-    shadowColor: '#000', // ✅ iOS 그림자
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    backgroundColor: 'white',
+    padding: 20,
   },
   modalTitle: {
     fontSize: 20,
@@ -386,6 +404,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
+  storeinputview: {
+    width: '100%',
+    marginTop: 30,
+    marginHorizontal: 20,
+  },
+
   input: {
     width: '100%',
     borderBottomColor: '#16BBFF',
@@ -432,20 +456,6 @@ const styles = StyleSheet.create({
     width: '100%',
     marginVertical: 20,
   },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: '#CCCCCC',
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  saveButton: {
-    flex: 1,
-    backgroundColor: '#16BBFF',
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
@@ -453,4 +463,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MenuModal;
+export default MenuUpdateScreen;

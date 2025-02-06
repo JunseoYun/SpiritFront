@@ -21,7 +21,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const [serverImages, setServerImages] = useState([]);
   const [addedImages, setAddedImages] = useState([]);
   const [deletedImages, setDeletedImages] = useState([]);
-  const [mainImages, setMainImages] = useState('');
+  const [hasmainImg, setHasmainImg] = useState(false);
 
   useEffect(() => {
     if (Array.isArray(images)) {
@@ -34,65 +34,26 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   useEffect(() => {
     const updatedImages = [...serverImages, ...addedImages];
     setAllImages(updatedImages);
-
-    // 기존 mainImages 상태 유지
-    let newMainImage = mainImages;
-
-    if (serverImages.length > 0) {
-      // 기존 첫 번째 이미지 저장 (변경 감지용)
-      const prevFirstImage =
-        allImages.length > 0 ? allImages[0].imageUrl : null;
-
-      if (updatedImages.length > 0) {
-        if (updatedImages[0].imageUrl !== prevFirstImage) {
-          newMainImage = updatedImages[0].path;
-        }
-      } else {
-        newMainImage = ''; // 모든 이미지가 삭제되면 초기화
-      }
-    } else if (updatedImages.length > 0) {
-      newMainImage = updatedImages[0].path;
-    } else {
-      newMainImage = '';
-    }
-
-    setMainImages(newMainImage);
-    console.log(mainImages);
   }, [serverImages, addedImages, deletedImages]);
 
   useEffect(() => {
     setUpdatedImgValue({
       addedImages,
       deletedImages,
-      mainImages,
+      hasmainImg,
     });
-  }, [addedImages, deletedImages, mainImages]);
+  }, [addedImages, deletedImages, hasmainImg]);
 
   const handleSave = () => {
-    const updatedImages = [...serverImages, ...addedImages];
-
-    // 최신 상태를 강제로 반영
-    const latestMainImage =
-      updatedImages.length > 0
-        ? updatedImages[0].imageUrl || updatedImages[0].path
-        : '';
-
-    setMainImages(latestMainImage); // 최신 mainImages 업데이트
     setUpdatedImgValue({
       addedImages,
       deletedImages,
-      mainImages: latestMainImage, // 최신 mainImages 반영
+      hasmainImg,
     });
-
-    console.log(
-      {
-        addedImages,
-        deletedImages,
-        mainImages: latestMainImage,
-      },
-      '전체 이미지',
-    );
-
+    setAddedImages([]);
+    setDeletedImages([]);
+    setAllImages([]);
+    setHasmainImg(false);
     setTimeout(() => {
       onSave();
     }, 100);
@@ -101,8 +62,8 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const handleCancel = () => {
     setAddedImages([]);
     setDeletedImages([]);
-    setMainImages([]);
     setAllImages([]);
+    setHasmainImg(false);
     onCancel();
   };
 
@@ -141,12 +102,16 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
         try {
           const imageToRemove = serverImages[index];
 
-          setServerImages(prevImages =>
-            prevImages.filter(
-              image => image.imageUrl !== imageToRemove.imageUrl,
-            ),
+          // 서버 이미지 목록에서 삭제
+          const newServerImages = serverImages.filter(
+            (image, i) => i !== index,
           );
+          setServerImages(newServerImages);
           setDeletedImages(prevDeleted => [...prevDeleted, imageToRemove]);
+
+          if (index === 0) {
+            setHasmainImg(true);
+          }
 
           showAlert({
             title: '삭제 되었습니다',

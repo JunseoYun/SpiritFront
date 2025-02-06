@@ -5,6 +5,7 @@ import AlcoholItem from '../../components/StoreAlcoholScreen/AlcoholItem';
 import {StoreDrinkdelete} from '../../api/drinkApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
+import {Portal} from 'react-native-paper';
 
 const alcoholMapping = {
   SOJU: '소주',
@@ -27,13 +28,18 @@ const StoreAlcoholScreen = ({
   alcohols = [],
   mainDrinks = [],
   scrollViewRef,
+  onAlcoholDelete,
 }) => {
   const [openItemId, setOpenItemId] = useState(null);
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
   const {showAlert, AlertComponent} = useCustomAlert();
   const {translateAlcohol} = useTranslateAlcohol();
-
   // ✅ `mainDrinks` 타입을 먼저 보여주도록 정렬 수정
+
+  useEffect(() => {
+    setAlcoholsState(alcohols);
+  }, [alcohols]);
+
   const groupedAlcohols = useMemo(() => {
     const mainDrinkTypes = new Set(mainDrinks.map(drink => drink.type));
 
@@ -94,9 +100,7 @@ const StoreAlcoholScreen = ({
       onConfirm: async () => {
         try {
           await StoreDrinkdelete(id);
-          setAlcoholsState(prevAlcohols =>
-            prevAlcohols.filter(alcohol => alcohol.id !== id),
-          );
+          onAlcoholDelete(id);
         } catch (error) {}
       },
       onCancel: null,
@@ -122,6 +126,7 @@ const StoreAlcoholScreen = ({
             <AlcoholItem
               key={alcohol.id}
               alcohol={alcohol}
+              storeId={storeId}
               isOpen={openItemId === alcohol.id}
               onOpen={() => handleOpenItem(alcohol.id)}
               onClose={handleCloseAll}
@@ -138,7 +143,9 @@ const StoreAlcoholScreen = ({
           <Text style={styles.emptyText}>등록된 주류가 없습니다</Text>
         </View>
       )}
-      <AlertComponent />
+      <Portal>
+        <AlertComponent />
+      </Portal>
     </SafeAreaView>
   );
 };

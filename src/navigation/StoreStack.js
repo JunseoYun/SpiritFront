@@ -4,9 +4,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import StoreMainScreen from '../screens/StoreInfo/StoreMainScreen';
-import MenuAddScreen from '../screens/StoreInfo/MenuAddScreen';
+import MenuAddScreen from '../screens/StoreInfo/Menu/MenuAddScreen';
 import StoreMapScreen from '../screens/StoreInfo/StoreMapScreen';
-import AlcoholAddScreen from '../screens/StoreInfo/AlcoholAddScreen';
+import AlcoholAddScreen from '../screens/StoreInfo/Alcohol/AlcoholAddScreen';
+import MenuUpdateScreen from '../screens/StoreInfo/Menu/MenuUpdateScreen';
+import AlcoholUpdateScreen from '../screens/StoreInfo/Alcohol/AlcoholUpdateScreen';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 const Stack = createStackNavigator();
 
@@ -49,6 +51,12 @@ export default function StoreStack() {
       />
 
       <Stack.Screen
+        name="MenuUpdateScreen"
+        component={MenuUpdateScreen}
+        options={{headerShown: false}}
+      />
+
+      <Stack.Screen
         name="AlcoholAddScreen"
         component={AlcoholAddScreen}
         options={({navigation}) => ({
@@ -75,6 +83,12 @@ export default function StoreStack() {
             </Pressable>
           ),
         })}
+      />
+
+      <Stack.Screen
+        name="AlcoholUpdateScreen"
+        component={AlcoholUpdateScreen}
+        options={{headerShown: false}}
       />
 
       <Stack.Screen

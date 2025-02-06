@@ -84,6 +84,7 @@ export const MenuDeleteImage = async menuId => {
 };
 
 export const StoreMenuget = async storeId => {
+  console.log('메뉴값 받아오기');
   try {
     const response = await axiosInstance.get(
       `/menu/get-by/store/${storeId}`,
@@ -97,9 +98,11 @@ export const StoreMenuget = async storeId => {
 
 export const StoreMenudelete = async menuId => {
   try {
+    console.log(menuId, '메뉴삭제id');
     const response = await axiosInstance.delete(`/menu/delete/${menuId}`, {});
     return response.data.data;
   } catch (error) {
+    console.log(error, '메뉴삭제 에러');
     functionError(error);
   }
 };

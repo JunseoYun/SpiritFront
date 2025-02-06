@@ -27,6 +27,8 @@ const AlcoholItem = ({
   onEdit,
   onDelete,
   scrollViewRef,
+  navigation,
+  storeId,
 }) => {
   const translateX = useSharedValue(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -78,7 +80,12 @@ const AlcoholItem = ({
         <View style={[styles.actionsContainer, {width: BUTTON_WIDTH}]}>
           <TouchableOpacity
             style={[styles.actionButton, styles.editButton]}
-            onPress={handleUpdate}>
+            onPress={() =>
+              navigation.navigate('AlcoholUpdateScreen', {
+                alcohol: alcohol,
+                storeId: storeId,
+              })
+            }>
             <Text style={styles.actionText}>수정</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -126,16 +133,6 @@ const AlcoholItem = ({
           </Animated.View>
         </PanGestureHandler>
       </Pressable>
-      {/* 수정 모달 */}
-      <AlcoholModal
-        isModalVisible={isModalVisible}
-        onPressModalClose={() => {
-          setIsModalVisible(false);
-          onClose();
-        }}
-        alcoholData={alcohol}
-        onUpdate={onEdit}
-      />
     </GestureHandlerRootView>
   );
 };

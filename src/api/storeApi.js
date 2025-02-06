@@ -108,7 +108,7 @@ export const UpdateStoreImage = async (storeId, data) => {
         },
       },
     );
-    return response;
+    return response.data.data.imgUrlList;
   } catch (error) {
     throw error;
   }
@@ -124,7 +124,7 @@ export const DeleteStoreImage = async (storeId, image) => {
         },
       },
     );
-    return response.data.data;
+    return response.data.data.imgUrlList;
   } catch (error) {
     functionError(error);
   }
