@@ -12,7 +12,7 @@ import {
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import ResultModalItem from './ResultModalItem';
 import {Store_getby_condition_search} from '../../../../api/storeApi';
-import moment from 'moment';
+import useCategoryTranslation from '../../../../hooks/useCategoryTranslation';
 
 const ResultModal = ({
   visible,
@@ -30,7 +30,7 @@ const ResultModal = ({
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [hasMore, setHasMore] = useState(true);
   const [totalpage, setTotalpage] = useState(0);
-
+  const {translateCategory} = useCategoryTranslation();
   const fastgetStores = async (currentPage, refresh = false) => {
     if (location) {
       if (loading || (!hasMore && !refresh)) return;
@@ -115,6 +115,7 @@ const ResultModal = ({
             source={require('../../../../assets/todaylogo.png')}
             style={styles.fastSearchModaltopimage}
           />
+          <Text style={styles.fastSearchModaltopimage}>한잔할까</Text>
           <View style={styles.searchModaltopview}>
             <Pressable
               onPress={onClose}
@@ -123,7 +124,9 @@ const ResultModal = ({
             </Pressable>
           </View>
           <View style={styles.fastSearchTextView}>
-            <Text style={styles.fastSearchText}>{selectedCategory}</Text>
+            <Text style={styles.fastSearchText}>
+              {translateCategory(selectedCategory)}
+            </Text>
             <Text style={styles.fastSearchText}>{selectedPeople}</Text>
             <Text style={styles.fastSearchText}>
               {selectedHour}:{selectedMinute}
@@ -200,7 +203,7 @@ const styles = StyleSheet.create({
   },
   fastSearchText: {
     color: '#16BBFF',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: 'bold',
   },
   fastSearchModalScrollView: {

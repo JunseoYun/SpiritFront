@@ -32,40 +32,7 @@ const OAuthLoginScreen = ({navigation}) => {
       iosClientId:
         '55496276543-acp3mpj3folinp0067iogp03cstubo4r.apps.googleusercontent.com',
     });
-    startWaveAnimation();
   }, []);
-
-  const animations = useRef([
-    new Animated.Value(0),
-    new Animated.Value(0),
-    new Animated.Value(0),
-    new Animated.Value(0),
-  ]).current;
-
-  const startWaveAnimation = () => {
-    Animated.loop(
-      Animated.stagger(
-        200, // 💡 각 애니메이션 사이의 지연 시간 (200ms)
-        animations.map(anim =>
-          Animated.sequence([
-            Animated.timing(anim, {
-              toValue: -15, // 위로 이동
-              duration: 500,
-              easing: Easing.inOut(Easing.ease),
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim, {
-              toValue: 0, // 원래 위치로 복귀
-              duration: 500,
-              easing: Easing.inOut(Easing.ease),
-              useNativeDriver: true,
-            }),
-          ]),
-        ),
-      ),
-      {iterations: -1}, // 💡 무한 반복
-    ).start();
-  };
 
   const handleLogin = async ({type, id, socialToken}) => {
     try {
@@ -171,24 +138,25 @@ const OAuthLoginScreen = ({navigation}) => {
   };
 
   return (
-    <ImageBackground
-      source={require('../../assets/background2.png')} // 배경 이미지 경로
-      style={styles.background}
-      resizeMode="cover">
-      <SafeAreaView>
-        <View style={styles.logoView}>
-          {['한', '잔', '할', '까'].map((char, index) => (
-            <Animated.Text
-              key={index}
-              style={[
-                styles.Logo,
-                {transform: [{translateY: animations[index]}]},
-              ]}>
-              {char}
-            </Animated.Text>
-          ))}
-        </View>
+    <SafeAreaView style={styles.background}>
+      <View style={styles.logoView}>
+        <Text style={styles.Logo}>한잔할까</Text>
 
+        <Text style={styles.subText}>
+          내 주변 주점을 한눈에!{'\n'}한잔할까에서 쉽고 빠르게 찾으세요.
+        </Text>
+      </View>
+      <View style={styles.loginView}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 10,
+          }}>
+          <View style={styles.line} />
+          <Text style={styles.loginText}>다음으로 시작하기</Text>
+          <View style={styles.line} />
+        </View>
         <TouchableOpacity
           onPress={handleKaKaoLogin}
           style={styles.kakaoButtonContainer}>
@@ -197,7 +165,6 @@ const OAuthLoginScreen = ({navigation}) => {
             style={styles.kakaoButton}
           />
         </TouchableOpacity>
-
         <TouchableOpacity
           onPress={handleGoogleSignIn}
           style={styles.googleButtonContainer}>
@@ -240,47 +207,64 @@ const OAuthLoginScreen = ({navigation}) => {
             <Text style={styles.appleText}>임시 로그인</Text>
           </View>
         </TouchableOpacity>
-        <AlertComponent />
-      </SafeAreaView>
-    </ImageBackground>
+      </View>
+
+      <AlertComponent />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FAFAFA',
   },
   logoView: {
-    position: 'absolute',
-    top: 100,
-    alignSelf: 'center',
-    flexDirection: 'row',
+    marginTop: 130,
     alignItems: 'center',
   },
   Logo: {
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 60,
-    color: '#fff',
-    marginHorizontal: 3,
+    color: '#16BBFF',
   },
+  subText: {
+    fontSize: 18,
+    color: '#333',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 10,
+    lineHeight: 30,
+  },
+  loginView: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 100 : 150, // OS별 높이 설정
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  line: {
+    width: 100,
 
+    marginHorizontal: 1,
+    backgroundColor: '#333',
+    borderRadius: 10,
+  },
+  loginText: {
+    fontSize: 17,
+    color: '#333',
+    marginHorizontal: 3,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+  },
   kakaoButtonContainer: {
     width: 340,
     height: 50,
-    marginTop: 400,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#333',
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
+    marginTop: 20,
+    shadowColor: '#333',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
   kakaoButton: {
     width: '100%',
@@ -289,18 +273,12 @@ const styles = StyleSheet.create({
   googleButtonContainer: {
     width: 340,
     height: 50,
-    marginTop: 30,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#333',
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
+    marginTop: 40,
+    shadowColor: '#333',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
   googleButton: {
     width: 340,

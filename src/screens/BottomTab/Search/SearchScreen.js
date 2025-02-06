@@ -137,7 +137,7 @@ const SearchScreen = ({navigation}) => {
   };
   const onSelectPeople = peopleOption => {
     setSelectedPeople(peopleOption); // 선택된 인원 값을 상태 변수에 저장
-    if (peopleOption === '8인 이하') {
+    if (peopleOption === '10인 이하') {
       setGroup(false);
     } else {
       setGroup(true);

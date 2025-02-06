@@ -1,5 +1,5 @@
 import React from 'react';
-import {Modal, View, Text, Pressable, StyleSheet} from 'react-native';
+import {Modal, View, Text, Pressable, StyleSheet, Platform} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 
 const VisitTimeModal = ({
@@ -51,7 +51,9 @@ const VisitTimeModal = ({
   return (
     <Modal visible={visible} animationType="fade" transparent={true}>
       <Pressable style={styles.modalBackground} onPress={onPressClose}>
-        <View style={styles.modalContainer} onStartShouldSetResponder={() => true}>
+        <View
+          style={styles.modalContainer}
+          onStartShouldSetResponder={() => true}>
           <Text style={styles.topText}>방문 예정 시간</Text>
 
           <View style={styles.timeView}>
@@ -61,6 +63,7 @@ const VisitTimeModal = ({
                   selectedValue={selectedHour}
                   onValueChange={itemValue => onHourChange(itemValue)}
                   mode="dropdown"
+                  itemStyle={styles.pickerItem}
                   style={styles.pickerItems}>
                   {TimeHour.map((item, index) => (
                     <Picker.Item
@@ -81,6 +84,7 @@ const VisitTimeModal = ({
                   selectedValue={selectedMinute}
                   onValueChange={itemValue => onMinuteChange(itemValue)}
                   mode="dropdown"
+                  itemStyle={styles.pickerItem}
                   style={styles.pickerItems}>
                   {TimeMinute.map((item, index) => (
                     <Picker.Item
@@ -128,32 +132,43 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   timeView: {
+    width: '90%',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
     marginTop: 30,
     marginBottom: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   hourView: {
     width: '50%',
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 50,
+    justifyContent: 'center',
   },
   minuteView: {
     width: '50%',
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   pickerView: {
-    width: '50%',
-    backgroundColor: '#F2F2F2',
-    borderRadius: 7,
+    width: 90,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    overflow: 'hidden', // iOS 겹침 방지
+    justifyContent: 'center',
+    height: Platform.OS === 'ios' ? 120 : 60, // OS별 높이 설정
+    alignSelf: 'center',
   },
   pickerItems: {
-    fontSize: 17,
-    color: 'black',
-    fontWeight: 'bold',
+    color: '#333',
+  },
+  pickerItem: {
+    color: '#333', // 텍스트 색상을 검은색으로 고정
+    fontSize: 18, // 텍스트 크기
+    fontWeight: '400', // 텍스트 두께
   },
   pickerText: {
     fontWeight: 'bold',
