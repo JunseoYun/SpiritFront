@@ -4,6 +4,7 @@ import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 
 const TodayRecommItem = ({store, category, location, navigation}) => {
   const {translateCategory} = useCategoryTranslation();
+
   return (
     <Pressable
       onPress={() =>
@@ -16,32 +17,23 @@ const TodayRecommItem = ({store, category, location, navigation}) => {
       }
       style={styles.container}>
       <ImageBackground
-        // source={require('../../../assets/MainPagetodayimg.png')}
         source={
           store.mainImgUrl
             ? {uri: store.mainImgUrl} // URL이 있는 경우
-            : require('../../../assets/MainPagetodayimg.png') // URL이 없으면 로컬 이미지 사용
+            : require('../../../assets/default_store.png') // URL이 없으면 로컬 이미지 사용
         }
         style={styles.imageBackground}
         imageStyle={styles.imageStyle}>
         <View style={styles.overlay}>
-          {/* 태그 */}
-          <View>
-            <Text style={styles.tag}>{category}</Text>
-          </View>
           <View style={styles.storeContainer}>
-            <Text
-              style={styles.storeName}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              {store.name}
-            </Text>
-            <Text
-              style={styles.storeSubInfo}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              소주 5000원 · 맥주 3500원
-            </Text>
+            <View style={styles.storeNameView}>
+              <Text
+                style={styles.storeName}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {store.name}
+              </Text>
+            </View>
           </View>
 
           {/* 가게 정보 */}
@@ -50,7 +42,6 @@ const TodayRecommItem = ({store, category, location, navigation}) => {
     </Pressable>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     width: '100%', // 카드 너비
@@ -59,6 +50,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden', // 경계선 밖 숨김
     borderWidth: 1,
+    borderColor: '#E0E0E0',
+    flexDirection: 'row',
   },
   imageBackground: {
     flex: 1,
@@ -69,43 +62,36 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    justifyContent: 'space-between',
-  },
-  tag: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(16, 190, 251, 0.7)', // 반투명 배경
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 17,
-    marginTop: 12,
-    marginLeft: 12,
+    flexDirection: 'row', // 카테고리 가로 정렬
   },
   storeContainer: {
-    height: 40,
-    flexDirection: 'row', // 카테고리 가로 정렬
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(16, 190, 251, 0.4)', // 반투명 배경
+    width: '100%',
     borderRadius: 10,
-    alignItems: 'center',
-    marginHorizontal: 10,
+    alignSelf: 'flex-end',
+  },
+  storeNameView: {
+    backgroundColor: '#fff',
+    alignSelf: 'flex-end', // 👉 텍스트 크기에 맞춰 배경 크기 자동 조절
+    borderRadius: 10,
+    paddingHorizontal: 5, // 내부 패딩 조정
+    paddingVertical: 2,
     marginBottom: 10,
+    marginRight: 10,
+    shadowColor: '#000', // 그림자 색상
+    shadowOffset: {width: 2, height: 2}, // X, Y 방향 그림자 위치
+    shadowOpacity: 0.3, // 그림자 투명도
+    shadowRadius: 3, // 그림자 퍼짐 정도
+
+    // ✅ Android 그림자 설정
+    elevation: 3, // Android의 그림자 효과
+    backgroundColor: '#fff', // elevation 사용 시 배경색이 필요함
   },
   storeName: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#333',
+    fontSize: 15,
     fontWeight: 'bold',
-    marginLeft: 12,
-    maxWidth: '50%',
-  },
-  storeSubInfo: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: 'bold',
-    marginRight: 12,
-    maxWidth: '50%',
+    paddingVertical: 7,
+    paddingHorizontal: 10,
   },
 });
 

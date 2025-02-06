@@ -45,7 +45,6 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
           setHasMore(false); // 더 이상 데이터가 없으면 false로 설정
         }
       } catch (error) {
-        console.error(error);
       } finally {
         setLoading(false); // 로딩 상태를 false로 설정
       }

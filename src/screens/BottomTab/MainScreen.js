@@ -73,7 +73,15 @@ const MainScreen = ({navigation}) => {
         setLocation(currentLocation);
         const weatherData = await getWeatherData(currentLocation);
         setWeather(weatherData);
+        const {category, reason} = recommendCategory(
+          weatherData.condition,
+          weatherData.temp,
+          weatherData.rain_probability,
+        );
+        setRecommCategory(category);
+        setRecommReason(reason);
       }
+
       const currentAddress = await getAddress();
       if (currentAddress) {
         setAddress(currentAddress);
