@@ -160,6 +160,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'center',
+    lineHeight: 22,
   },
   storeImage: {
     width: 100,
