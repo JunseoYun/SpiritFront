@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     paddingVertical: 7,
     paddingLeft: 1,
-    marginBottom: 20,
+    marginBottom: 40,
     marginHorizontal: 18,
   },
   inputMultiline: {

@@ -71,8 +71,8 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
     // 서버에 있는 이미지와 추가된 이미지를 합쳐서 5개 이하로 제한
     if (addedImages.length + serverImages.length < 5) {
       ImagePicker.openPicker({
-        width: 500,
-        height: 500,
+        width: 400,
+        height: 300,
         mediaType: 'photo',
         cropping: true,
       })
@@ -232,8 +232,8 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   image: {
-    width: 100,
-    height: 100,
+    width: 160,
+    height: 120,
     borderRadius: 10,
   },
   removeButton: {

@@ -1,15 +1,14 @@
 import React, {useState, useEffect} from 'react';
 import {
-  Modal,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
-  ScrollView,
+  SafeAreaView,
   Switch,
   Pressable,
+  Platform,
 } from 'react-native';
 import {
   MenuUpdate,
@@ -23,7 +22,7 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useRoute} from '@react-navigation/native';
-
+import MenuInput from '../../../components/StoreMenuScreen/MenuInput';
 const MenuUpdateScreen = ({navigation}) => {
   const route = useRoute();
   const {menu, storeId} = route.params;
@@ -34,16 +33,12 @@ const MenuUpdateScreen = ({navigation}) => {
   const [isMain, setIsMain] = useState(false);
   const [menuImage, setMenuImage] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
-  const [isImageDeleted, setIsImageDeleted] = useState(false); // ✅ 이미지 삭제 여부 상태 추가
-  const [isFocusedName, setIsFocusedName] = useState(false);
-  const [isFocusedDescription, setIsFocusedDescription] = useState(false);
-  const [isFocusedPrice, setIsFocusedPrice] = useState(false);
+  const [isImageDeleted, setIsImageDeleted] = useState(false);
 
   const {showAlert, AlertComponent} = useCustomAlert();
 
   useEffect(() => {
     if (menu) {
-      console.log(menu);
       setOriginalMenu(menu);
       setMenuName(menu.name || '');
       setMenuDescription(menu.description || '');
@@ -55,7 +50,7 @@ const MenuUpdateScreen = ({navigation}) => {
 
   const GotoStoreScreen = () => {
     showAlert({
-      title: `수정 되었습니다.`,
+      title: `수정이 완료되었습니다.`,
       onConfirm: () => {
         navigation.replace('StoreStack', {
           screen: 'StoreMainScreen',
@@ -186,7 +181,7 @@ const MenuUpdateScreen = ({navigation}) => {
 
       // 5️⃣ 변경 사항이 없으면 요청 없이 모달만 닫기
       if (!isImageChanged && !isInfoChanged && !isImageDeleted) {
-        handleCancel();
+        navigation.goBack();
         return;
       }
     } catch (error) {
@@ -218,7 +213,7 @@ const MenuUpdateScreen = ({navigation}) => {
     // ✅ 삭제 상태 초기화
   };
   return (
-    <View style={styles.modalContainer}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={handleCancel}>
           <Ionicons name="arrow-back-outline" size={25} color="#333" />
@@ -226,7 +221,7 @@ const MenuUpdateScreen = ({navigation}) => {
 
         <Text style={styles.modalTitle}>메뉴 수정</Text>
         <TouchableOpacity onPress={handleSave}>
-          <Ionicons name="paper-plane-sharp" size={25} color="#16BBFF" />
+          <Ionicons name="paper-plane-sharp" size={25} color="#333" />
         </TouchableOpacity>
       </View>
 
@@ -263,54 +258,25 @@ const MenuUpdateScreen = ({navigation}) => {
           </View>
         )}
       </View>
-
-      <View style={styles.storeinputview}>
-        {menuName && <Text style={styles.inputText}>메뉴 이름*</Text>}
-        <TextInput
-          style={[
-            styles.input,
-            {borderBottomColor: isFocusedName ? '#16BBFF' : '#F2F2F2'},
-          ]}
-          value={menuName}
-          onChangeText={setMenuName}
-          placeholder=" 메뉴 이름*"
-          onFocus={() => setIsFocusedName(true)}
-          onBlur={() => setIsFocusedName(false)}
-        />
-      </View>
-
-      <View style={styles.storeinputview}>
-        {menuDescription && <Text style={styles.inputText}>메뉴 소개</Text>}
-        <TextInput
-          style={[
-            styles.inputMultiline,
-            {
-              borderBottomColor: isFocusedDescription ? '#16BBFF' : '#F2F2F2',
-            },
-          ]}
-          value={menuDescription}
-          onChangeText={setMenuDescription}
-          placeholder="메뉴 소개"
-          multiline={true}
-          textAlignVertical="top"
-          onFocus={() => setIsFocusedDescription(true)}
-          onBlur={() => setIsFocusedDescription(false)}
-        />
-      </View>
-      <View style={styles.storeinputview}>
-        {menuPrice && <Text style={styles.inputText}>메뉴 가격*</Text>}
-        <TextInput
-          style={[
-            styles.input,
-            {borderBottomColor: isFocusedPrice ? '#16BBFF' : '#F2F2F2'},
-          ]}
-          value={menuPrice}
-          onChangeText={setMenuPrice}
-          placeholder="메뉴 가격*"
-          onFocus={() => setIsFocusedPrice(true)}
-          onBlur={() => setIsFocusedPrice(false)}
-        />
-      </View>
+      <MenuInput
+        label="메뉴 이름*"
+        value={menuName}
+        onChangeText={setMenuName}
+        placeholder="메뉴 이름*"
+      />
+      <MenuInput
+        label="메뉴 소개"
+        value={menuDescription}
+        onChangeText={setMenuDescription}
+        placeholder="메뉴 소개"
+        multiline={true} // 여러 줄 입력 활성화
+      />
+      <MenuInput
+        label="메뉴 가격*"
+        value={menuPrice}
+        onChangeText={setMenuPrice}
+        placeholder="메뉴 가격*"
+      />
       <View style={styles.storeinputview}>
         <View style={styles.switchContainer}>
           <Text style={styles.switchLabel}>대표 메뉴 여부</Text>
@@ -323,17 +289,28 @@ const MenuUpdateScreen = ({navigation}) => {
         </View>
       </View>
       <AlertComponent />
-    </View>
+    </SafeAreaView>
   );
 };
 const styles = StyleSheet.create({
-  modalContainer: {
-    width: '100%',
-    height: '100%',
+  container: {
+    flex: 1,
     justifyContent: 'flex-start',
-    alignItems: 'center',
     backgroundColor: 'white',
-    padding: 20,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+
+    paddingTop: Platform.OS === 'ios' ? 0 : 15,
+    paddingHorizontal: 18,
+    borderBottomWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   modalTitle: {
     fontSize: 20,
@@ -366,7 +343,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: 20, // ✅ 버튼 간격 조정
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // ✅ 반투명 배경 추가
+    backgroundColor: 'rgba(0, 0, 0, 0.2)', // ✅ 반투명 배경 추가
     borderRadius: 12,
   },
   imageButton: {
@@ -405,61 +382,21 @@ const styles = StyleSheet.create({
   },
 
   storeinputview: {
-    width: '100%',
     marginTop: 30,
     marginHorizontal: 20,
   },
 
-  input: {
-    width: '100%',
-    borderBottomColor: '#16BBFF',
-    borderBottomWidth: 1,
-    fontSize: 18,
-    fontWeight: '500',
-    paddingVertical: 7,
-    paddingLeft: 1,
-    marginBottom: 20,
-  },
-  inputMultiline: {
-    width: '100%',
-    minHeight: 30, // ✅ 최소 높이 설정하여 UI 개선
-    paddingVertical: 12,
-    borderBottomColor: '#16BBFF',
-    borderBottomWidth: 1,
-    fontSize: 18,
-    textAlignVertical: 'top', // ✅ 여러 줄 입력 시 텍스트가 위에서부터 입력됨
-    marginBottom: 20,
-  },
-  inputText: {
-    marginVertical: 5,
-    fontSize: 16,
-    color: '#333',
-    fontWeight: 500,
-    marginTop: 10,
-  },
   switchContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
     marginTop: 10,
-    paddingHorizontal: 5,
   },
   switchLabel: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#333',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginVertical: 20,
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
   },
 });
 
