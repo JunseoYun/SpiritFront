@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,16 @@ import {
   ImageBackground,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import MapCategory from '../../../../hooks/MapCategory';
 import useCategoryTranslation from '../../../../hooks/useCategoryTranslation';
 import useStoreStatus from '../../../../hooks/useStoreStatus';
+import useDistance from '../../../../hooks/useDistance';
 
-const ResultModalItem = ({store, navigation}) => {
+const ResultModalItem = ({store, navigation, location}) => {
+  console.log(store);
   const {translateCategory} = useCategoryTranslation();
+  const [distance, setDistance] = useState(0);
+  const [unit, setUnit] = useState('m');
+  const calculateDistance = useDistance();
   const isStoreOpen = useStoreStatus(
     store?.businessHoursDto?.openTime,
     store?.businessHoursDto?.closeTime,
@@ -23,6 +27,25 @@ const ResultModalItem = ({store, navigation}) => {
     store?.businessHoursDto?.breakStartTime,
     store?.businessHoursDto?.breakEndTime,
   );
+
+  useEffect(() => {
+    const fetchDistance = () => {
+      let tempDistance = calculateDistance(
+        location.latitude,
+        location.longitude,
+        store.locationDto.latitude,
+        store.locationDto.longitude,
+      );
+      if (tempDistance < 1) {
+        tempDistance *= 1000;
+        setDistance(tempDistance.toFixed(0));
+      } else {
+        setDistance(tempDistance.toFixed(2));
+        setUnit('km');
+      }
+    };
+    fetchDistance();
+  }, [store]);
   return (
     <Pressable
       onPress={() => {
@@ -89,10 +112,16 @@ const ResultModalItem = ({store, navigation}) => {
                 : '카테고리 미설정'}
             </Text>
           </View>
-          <Text style={styles.fastStoreClose}>
-            영업 종료{' '}
-            {store.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
-          </Text>
+
+          <View style={styles.subView}>
+            <Text style={styles.StoreClose}>
+              영업 종료{' '}
+              {store.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
+            </Text>
+            <Text style={styles.StoreClose}>
+              {distance} {unit}
+            </Text>
+          </View>
         </View>
       </View>
     </Pressable>
@@ -102,23 +131,24 @@ const ResultModalItem = ({store, navigation}) => {
 const styles = StyleSheet.create({
   fastSearchStoreInfo: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fff',
+
+    marginVertical: 10,
     marginHorizontal: 18,
-    marginVertical: 8,
-    padding: 16,
+    padding: 10,
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 5,
+    alignSelf: 'flex-start',
   },
 
   backimage: {
     width: 120,
     height: 120,
     borderRadius: 10,
-    marginRight: 12,
     borderRadius: 10,
   },
   backimagestyle: {
@@ -140,12 +170,13 @@ const styles = StyleSheet.create({
   fastStoreText: {
     paddingHorizontal: 10,
     justifyContent: 'space-between',
+    flex: 1,
+    marginVertical: 3,
   },
   fastSearchStoreView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    width: 200,
     marginTop: 1,
   },
   fastStoreTitle: {
@@ -173,14 +204,16 @@ const styles = StyleSheet.create({
     color: 'black',
     marginRight: 5,
   },
-  fastStoreClose: {
-    fontSize: 13,
-    color: 'black',
-    marginRight: 5,
+  subView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  fastStoreMain: {
-    fontSize: 12,
-    color: 'black',
+  StoreClose: {
+    fontSize: 13,
+    color: '#333',
+    marginRight: 5,
+    fontWeight: '500',
   },
 });
 

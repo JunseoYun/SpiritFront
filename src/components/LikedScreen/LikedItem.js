@@ -162,21 +162,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
-  storeImage: {
-    width: 100,
-    height: 120,
-    borderRadius: 10,
-    marginRight: 12,
-  },
-  storeImagetext: {
-    width: 100,
-    height: 120,
-    borderRadius: 10,
-    marginRight: 12,
-    justifyContent: 'center', // 수직 중앙 정렬
-    alignItems: 'center',
-    backgroundColor: 'black',
-  },
   textContainer: {
     flex: 1,
     justifyContent: 'space-between',
