@@ -10,14 +10,11 @@ const SearchResultScreen = ({navigation}) => {
   const [searchWord, setSearchWord] = useState(searchName);
   const [trimmedSearchWord, setTrimmedSearchWord] = useState(searchWord);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchWord && location) {
-        setTrimmedSearchWord(searchWord.trim());
-      }
-    }, 1000); // 500ms 후에 갱신
-    return () => clearTimeout(timer);
-  }, [searchWord]);
+  // ✅ 새로운 검색 실행 함수
+  const handleSearch = newSearchWord => {
+    setSearchWord(newSearchWord);
+    setTrimmedSearchWord(newSearchWord);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -25,6 +22,7 @@ const SearchResultScreen = ({navigation}) => {
         searchWord={searchWord}
         setSearchWord={setSearchWord}
         navigation={navigation}
+        onSearch={handleSearch} // ✅ 검색 버튼을 눌렀을 때만 검색 실행
       />
       <ResultList
         trimmedSearchWord={trimmedSearchWord}
@@ -38,7 +36,7 @@ const SearchResultScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
-    flex: 1, // 화면 전체를 차지하도록 설정
+    flex: 1,
   },
 });
 
