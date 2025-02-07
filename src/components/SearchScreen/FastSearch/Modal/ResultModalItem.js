@@ -166,6 +166,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'center',
+    lineHeight: 22,
   },
   fastStoreText: {
     paddingHorizontal: 10,

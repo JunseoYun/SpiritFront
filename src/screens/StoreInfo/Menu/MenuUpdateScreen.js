@@ -9,6 +9,10 @@ import {
   Switch,
   Pressable,
   Platform,
+  KeyboardAvoidingView,
+  ScrollView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import {
   MenuUpdate,
@@ -214,81 +218,97 @@ const MenuUpdateScreen = ({navigation}) => {
   };
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleCancel}>
-          <Ionicons name="arrow-back-outline" size={25} color="#333" />
-        </TouchableOpacity>
+      {/* ✅ 키보드 외 영역을 터치하면 키보드를 닫도록 설정 */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          style={styles.avoidingView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity onPress={handleCancel}>
+              <Ionicons name="arrow-back-outline" size={25} color="#333" />
+            </TouchableOpacity>
 
-        <Text style={styles.modalTitle}>메뉴 수정</Text>
-        <TouchableOpacity onPress={handleSave}>
-          <Ionicons name="paper-plane-sharp" size={25} color="#333" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.imageContainer}>
-        {menuImage ? (
-          <ImageBackground
-            source={{uri: menuImage}}
-            style={styles.menuImage}
-            imageStyle={styles.backimagestyle}>
-            {/* ✅ 이미지 안에 아이콘 배치 */}
-            <View style={styles.imageButtonView}>
-              <Pressable
-                style={[styles.imageButton, styles.shadowEffect]}
-                onPress={selectImage}>
-                <MaterialIcons name="photo-library" size={28} color="#fff" />
-              </Pressable>
-              <Pressable
-                style={[styles.deleteButton, styles.shadowEffect]}
-                onPress={handleDeleteImage}>
-                <Ionicons name="trash-outline" size={28} color="#fff" />
-              </Pressable>
-            </View>
-          </ImageBackground>
-        ) : (
-          <View style={styles.placeholderImage}>
-            <Text style={styles.placeholderText}>이미지 추가</Text>
-            <Pressable onPress={selectImage}>
-              <MaterialCommunityIcons
-                name="image-plus"
-                size={40}
-                color="#333"
-              />
-            </Pressable>
+            <Text style={styles.modalTitle}>메뉴 수정</Text>
+            <TouchableOpacity onPress={handleSave}>
+              <Ionicons name="paper-plane-sharp" size={25} color="#333" />
+            </TouchableOpacity>
           </View>
-        )}
-      </View>
-      <MenuInput
-        label="메뉴 이름*"
-        value={menuName}
-        onChangeText={setMenuName}
-        placeholder="메뉴 이름*"
-      />
-      <MenuInput
-        label="메뉴 소개"
-        value={menuDescription}
-        onChangeText={setMenuDescription}
-        placeholder="메뉴 소개"
-        multiline={true} // 여러 줄 입력 활성화
-      />
-      <MenuInput
-        label="메뉴 가격*"
-        value={menuPrice}
-        onChangeText={setMenuPrice}
-        placeholder="메뉴 가격*"
-      />
-      <View style={styles.storeinputview}>
-        <View style={styles.switchContainer}>
-          <Text style={styles.switchLabel}>대표 메뉴 여부</Text>
-          <Switch
-            value={isMain}
-            onValueChange={setIsMain}
-            trackColor={{false: '#ccc', true: '#16BBFF'}} // ✅ 배경 색상 변경
-            thumbColor={'#fff'}
-          />
-        </View>
-      </View>
-      <AlertComponent />
+          <ScrollView
+            contentContainerStyle={styles.scrollViewContent}
+            keyboardShouldPersistTaps="handled">
+            <View style={styles.imageContainer}>
+              {menuImage ? (
+                <ImageBackground
+                  source={{uri: menuImage}}
+                  style={styles.menuImage}
+                  imageStyle={styles.backimagestyle}>
+                  {/* ✅ 이미지 안에 아이콘 배치 */}
+                  <View style={styles.imageButtonView}>
+                    <Pressable
+                      style={[styles.imageButton, styles.shadowEffect]}
+                      onPress={selectImage}>
+                      <MaterialIcons
+                        name="photo-library"
+                        size={28}
+                        color="#fff"
+                      />
+                    </Pressable>
+                    <Pressable
+                      style={[styles.deleteButton, styles.shadowEffect]}
+                      onPress={handleDeleteImage}>
+                      <Ionicons name="trash-outline" size={28} color="#fff" />
+                    </Pressable>
+                  </View>
+                </ImageBackground>
+              ) : (
+                <View style={styles.placeholderImage}>
+                  <Text style={styles.placeholderText}>이미지 추가</Text>
+                  <Pressable onPress={selectImage}>
+                    <MaterialCommunityIcons
+                      name="image-plus"
+                      size={40}
+                      color="#333"
+                    />
+                  </Pressable>
+                </View>
+              )}
+            </View>
+            <MenuInput
+              label="메뉴 이름*"
+              value={menuName}
+              onChangeText={setMenuName}
+              placeholder="메뉴 이름*"
+            />
+            <MenuInput
+              label="메뉴 소개"
+              value={menuDescription}
+              onChangeText={setMenuDescription}
+              placeholder="메뉴 소개"
+              multiline={true} // 여러 줄 입력 활성화
+            />
+            <MenuInput
+              label="메뉴 가격*"
+              value={menuPrice}
+              onChangeText={setMenuPrice}
+              placeholder="메뉴 가격*"
+            />
+            <View style={styles.storeinputview}>
+              <View style={styles.switchContainer}>
+                <Text style={styles.switchLabel}>대표 메뉴 여부</Text>
+                <Switch
+                  value={isMain}
+                  onValueChange={setIsMain}
+                  trackColor={{false: '#ccc', true: '#16BBFF'}} // ✅ 배경 색상 변경
+                  thumbColor={'#fff'}
+                />
+              </View>
+            </View>
+          </ScrollView>
+
+          {/* 알림창 */}
+          <AlertComponent />
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 };
@@ -298,10 +318,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     backgroundColor: 'white',
   },
+  avoidingView: {
+    flex: 1,
+  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-
     paddingTop: Platform.OS === 'ios' ? 0 : 15,
     paddingHorizontal: 18,
     borderBottomWidth: 1,
@@ -319,7 +341,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333', // ✅ 더 진한 색상 적용
   },
-
+  scrollViewContent: {
+    flexGrow: 1,
+  },
   imageContainer: {
     alignItems: 'center',
     marginVertical: 15,
