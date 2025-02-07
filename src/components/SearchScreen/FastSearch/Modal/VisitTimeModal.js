@@ -9,6 +9,7 @@ const VisitTimeModal = ({
   onHourChange,
   onMinuteChange,
   onPressClose,
+  postbutton,
 }) => {
   const TimeHour = [
     {label: '-', value: null},
@@ -100,9 +101,14 @@ const VisitTimeModal = ({
             </View>
           </View>
 
-          <Pressable onPress={onPressClose} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>닫기</Text>
-          </Pressable>
+          <View style={{flexDirection: 'row'}}>
+            <Pressable onPress={postbutton} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>확인</Text>
+            </Pressable>
+            <Pressable onPress={onPressClose} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>닫기</Text>
+            </Pressable>
+          </View>
         </View>
       </Pressable>
     </Modal>
@@ -183,6 +189,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     backgroundColor: 'rgba(22, 187, 255, 0.9)',
     borderRadius: 5,
+    marginHorizontal: 8,
   },
   closeButtonText: {
     fontSize: 16,
