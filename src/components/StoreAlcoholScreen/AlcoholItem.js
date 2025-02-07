@@ -18,7 +18,6 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-import AlcoholModal from './AlcoholModal';
 const AlcoholItem = ({
   alcohol,
   isOpen,
