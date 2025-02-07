@@ -62,7 +62,12 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
   }, [trimmedSearchWord, location]);
 
   const renderItem = ({item}) => (
-    <ResultItem key={item.id} store={item} navigation={navigation} />
+    <ResultItem
+      key={item.id}
+      store={item}
+      navigation={navigation}
+      location={location}
+    />
   );
 
   return (

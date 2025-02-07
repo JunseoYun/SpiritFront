@@ -5,7 +5,7 @@ const MySplashScreen = () => {
   return (
     <View style={styles.container}>
       <Image source={require('../assets/logoWhite.png')} style={styles.logo} />
-      <Text style={styles.text}>TEAM SPIRIT 19</Text>
+      <Text style={styles.text}>TEAM SPIRIT</Text>
     </View>
   );
 };

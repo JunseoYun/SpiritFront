@@ -274,7 +274,6 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: 'white',
     justifyContent: 'center',
-    alignItems: 'center',
   },
   searchModaltopview: {
     width: '100%',
