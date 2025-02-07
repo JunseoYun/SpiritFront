@@ -1,16 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import {useRoute} from '@react-navigation/native';
-import {
-  Text,
-  View,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  ActivityIndicator,
-} from 'react-native';
+import {StyleSheet, SafeAreaView} from 'react-native';
 import ResultTopBar from '../../../components/SearchScreen/ResultScreen/ResultTopBar';
 import ResultList from '../../../components/SearchScreen/ResultScreen/ResultList';
-import {Store_getby_keyword} from '../../../api/storeApi';
 
 const SearchResultScreen = ({navigation}) => {
   const route = useRoute();

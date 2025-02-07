@@ -3,15 +3,11 @@ import {
   View,
   StyleSheet,
   ScrollView,
-  RefreshControl,
   SafeAreaView,
-  Pressable,
-  Text,
   Keyboard,
   TouchableWithoutFeedback,
 } from 'react-native';
 
-import {getStore} from '../../../api/storeApi';
 import {getLocation} from '../../../storage/locationStorage';
 import SearchBar from '../../../components/SearchScreen/SearchBar';
 import FastSearch from '../../../components/SearchScreen/FastSearch/FastSearch';
@@ -20,8 +16,10 @@ import PeopleModal from '../../../components/SearchScreen/FastSearch/Modal/Peopl
 import VisitTimeModal from '../../../components/SearchScreen/FastSearch/Modal/VisitTimeModal';
 import NearStoreList from '../../../components/SearchScreen/NearStore/NearStoreList';
 import SearchButton from '../../../components/SearchScreen/SearchButton';
-
+import useCustomAlert from '../../../hooks/useCustomAlert';
 const SearchScreen = ({navigation}) => {
+  const {showAlert, AlertComponent} = useCustomAlert();
+
   const [location, setLocation] = useState(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [peopleModalVisible, setPeopleModalVisible] = useState(false);
@@ -47,11 +45,7 @@ const SearchScreen = ({navigation}) => {
       onPressFastSearch();
     }
   }, [selectedCategory, selectedPeople, selectedHour, selectedMinute]);
-  //빠른 검색 엔진
 
-  {
-    /* 빠른 검색 검색 API 개선 필요, 현재 버전: 가까운 주점 전부 필터링 */
-  }
   const onPressFastSearch = async () => {
     var visitTime = `${selectedHour}:${selectedMinute}`;
     if (
@@ -95,9 +89,6 @@ const SearchScreen = ({navigation}) => {
     }
   };
 
-  {
-    /* 검색 API 개선 필요, 현재 버전: 가까운 주점 전부 필터링 */
-  }
   const onPressSearch = () => {
     if (searchStoreName) {
       const trimmedSearchName = searchStoreName.trim();
@@ -106,7 +97,9 @@ const SearchScreen = ({navigation}) => {
         location: location,
       });
     } else {
-      alert('검색어를 입력하세요.');
+      showAlert({
+        title: '검색어를 입력하세요.',
+      });
     }
   };
 
@@ -141,7 +134,6 @@ const SearchScreen = ({navigation}) => {
   };
 
   const postbutton = () => {
-    // setSelectedTime(`${selectedHour}:${selectedMinute}`);
     setTimeModalVisible(false);
   };
 
@@ -228,6 +220,8 @@ const SearchScreen = ({navigation}) => {
 
       {/* 하단에 고정된 검색 버튼 */}
       <SearchButton onPress={onPressSearch} title="검색" />
+
+      <AlertComponent />
     </SafeAreaView>
   );
 };
