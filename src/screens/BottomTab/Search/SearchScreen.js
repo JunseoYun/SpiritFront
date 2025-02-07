@@ -140,6 +140,11 @@ const SearchScreen = ({navigation}) => {
     setPeopleModalVisible(false); // 모달 닫기
   };
 
+  const postbutton = () => {
+    // setSelectedTime(`${selectedHour}:${selectedMinute}`);
+    setTimeModalVisible(false);
+  };
+
   const onPressTimeModalOpen = () => {
     setTimeModalVisible(true);
   };
@@ -214,6 +219,7 @@ const SearchScreen = ({navigation}) => {
               onHourChange={changeHour}
               onMinuteChange={changeMinute}
               onPressClose={onPressTimeModalClose}
+              postbutton={postbutton}
             />
             <NearStoreList navigation={navigation} location={location} />
           </ScrollView>

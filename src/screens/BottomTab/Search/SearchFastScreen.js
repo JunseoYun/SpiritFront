@@ -42,6 +42,7 @@ const SearchFastScreen = ({navigation}) => {
   const [selectedHour, setSelectedHour] = useState('');
   const [selectedMinute, setSelectedMinute] = useState('');
   const [selectedEngCategory, setSelectedEngCategory] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
 
   const onPressModalOpen = () => {
     setModalVisible(true);
@@ -73,17 +74,15 @@ const SearchFastScreen = ({navigation}) => {
   const onPressTimeModalClose = () => {
     setTimeModalVisible(false);
   };
+  const postbutton = () => {
+    setSelectedTime(`${selectedHour}:${selectedMinute}`);
+    setTimeModalVisible(false);
+  };
   const changeHour = text => {
     setSelectedHour(text);
-    if (text && selectedMinute) {
-      onPressTimeModalClose();
-    }
   };
   const changeMinute = text => {
     setSelectedMinute(text);
-    if (text && selectedHour) {
-      onPressTimeModalClose();
-    }
   };
 
   const searchOptions = [
@@ -103,7 +102,6 @@ const SearchFastScreen = ({navigation}) => {
       onPress: onPressTimeModalOpen,
     },
   ];
-  console.log(firstSearch.conditionTime, 111);
   useEffect(() => {
     if (location) {
       fastgetStores(0, true, firstSearch); // 서버 통신
@@ -112,11 +110,7 @@ const SearchFastScreen = ({navigation}) => {
 
   useEffect(() => {
     // selectedCategory, selectedPeople, selectedHour, selectedMinute가 변경될 때마다 상태 업데이트 후 서버 통신
-    if (
-      selectedCategory ||
-      selectedPeople ||
-      (selectedHour && selectedMinute)
-    ) {
+    if (selectedCategory || selectedPeople || selectedTime) {
       let updatedSearch = {...firstSearch}; // 현재 상태를 복사
       let updatedSearchinfo = {...firstSearchDto};
 
@@ -133,10 +127,8 @@ const SearchFastScreen = ({navigation}) => {
       }
 
       // 시간 변경 시
-      if (selectedHour && selectedMinute) {
-        const conditionTime = new Date(
-          `2025-02-01T${selectedHour}:${selectedMinute}:00`,
-        );
+      if (selectedTime) {
+        const conditionTime = new Date(`2025-02-01T${selectedTime}:00`);
         updatedSearch.conditionTime = conditionTime.toISOString().slice(0, -1);
         updatedSearchinfo.timeselectedHour = selectedHour;
         updatedSearchinfo.timeselectedMinute = selectedMinute;
@@ -149,7 +141,7 @@ const SearchFastScreen = ({navigation}) => {
       setFirstSearch(updatedSearch);
       setFirstSearchDto(updatedSearchinfo);
     }
-  }, [selectedCategory, selectedPeople, selectedHour, selectedMinute]);
+  }, [selectedCategory, selectedPeople, selectedTime]);
 
   const fastgetStores = async (currentPage, refresh = false, updatedSearch) => {
     if (location) {
@@ -163,8 +155,6 @@ const SearchFastScreen = ({navigation}) => {
           longitude: location.longitude,
           conditionSearchDto: updatedSearch,
         };
-
-        console.log(updatedSearch, '초기값22');
 
         const storesData = await Store_getby_condition_search(requestData);
 
@@ -229,10 +219,6 @@ const SearchFastScreen = ({navigation}) => {
           }}>
           <AntDesign name="arrowleft" size={25} color={'black'} />
         </Pressable>
-        {/* <Image
-          source={require('../../../assets/todaylogo.png')}
-          style={styles.fastSearchModaltopimage}
-        /> */}
         <Text style={styles.TitleText}>한잔할까</Text>
       </View>
       <FastSearch title={''} searchOptions={searchOptions} />
@@ -277,6 +263,7 @@ const SearchFastScreen = ({navigation}) => {
         onHourChange={changeHour}
         onMinuteChange={changeMinute}
         onPressClose={onPressTimeModalClose}
+        postbutton={postbutton}
       />
     </SafeAreaView>
   );
