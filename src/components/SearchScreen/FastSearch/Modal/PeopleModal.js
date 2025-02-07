@@ -17,7 +17,7 @@ const PeopleModal = ({
           <View style={styles.peopleChoiceView}>
             <Pressable
               style={styles.radioButton}
-              onPress={() => onSelectPeople('10인 이하')}>
+              onPress={() => onSelectPeople('10인 이하', false)}>
               <Text
                 style={[
                   styles.radioText,
@@ -28,7 +28,7 @@ const PeopleModal = ({
             </Pressable>
             <Pressable
               style={styles.radioButton}
-              onPress={() => onSelectPeople('10인 이상')}>
+              onPress={() => onSelectPeople('10인 이상', true)}>
               <Text
                 style={[
                   styles.radioText,

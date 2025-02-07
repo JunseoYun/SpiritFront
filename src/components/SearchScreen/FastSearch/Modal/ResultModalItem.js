@@ -12,7 +12,7 @@ import MapCategory from '../../../../hooks/MapCategory';
 import useCategoryTranslation from '../../../../hooks/useCategoryTranslation';
 import useStoreStatus from '../../../../hooks/useStoreStatus';
 
-const ResultModalItem = ({store, navigation, onClose}) => {
+const ResultModalItem = ({store, navigation}) => {
   const {translateCategory} = useCategoryTranslation();
   const isStoreOpen = useStoreStatus(
     store?.businessHoursDto?.openTime,
@@ -23,7 +23,6 @@ const ResultModalItem = ({store, navigation, onClose}) => {
     store?.businessHoursDto?.breakStartTime,
     store?.businessHoursDto?.breakEndTime,
   );
-  console.log(store);
   return (
     <Pressable
       onPress={() => {
@@ -35,72 +34,65 @@ const ResultModalItem = ({store, navigation, onClose}) => {
             innerlongitude: store.locationDto.longitude,
           },
         });
-
-        onClose();
       }}>
-      <View style={{width: '100%', alignItems: 'center'}}>
-        <View style={styles.fastSearchStoreInfo}>
-          <ImageBackground
-            source={
-              store.mainImgUrl
-                ? {uri: store.mainImgUrl} // ✅ 네트워크 이미지
-                : require('../../../../assets/default_store.png') // ✅ 로컬 이미지
-            }
-            style={styles.backimage}
-            imageStyle={styles.backimagestyle}>
-            {/* ✅ 영업 종료 표시 */}
-            {!isStoreOpen && (
-              <View style={styles.overlay}>
-                <Text style={styles.overlayText}>
-                  영업 종료{' '}
-                  {store.businessHoursDto?.openTime
-                    ? `\n${store.businessHoursDto.openTime.slice(0, 5)} 오픈`
-                    : ''}
-                </Text>
-              </View>
-            )}
-            {/* ✅ 브레이크 타임 표시 */}
-            {isStoreOpen && isStoreBreak && (
-              <View style={styles.overlay}>
-                <Text style={styles.overlayText}>
-                  브레이크 타임{' '}
-                  {store.businessHoursDto?.breakEndTime
-                    ? `\n${store.businessHoursDto.breakEndTime.slice(
-                        0,
-                        5,
-                      )} 종료`
-                    : ''}
-                </Text>
-              </View>
-            )}
-          </ImageBackground>
-          <View style={styles.fastStoreText}>
-            <View style={styles.fastSearchStoreView}>
-              <Text
-                style={styles.fastStoreTitle}
-                numberOfLines={1}
-                ellipsizeMode="tail">
-                {store.name}
-              </Text>
-              <View style={styles.fastStorescore}>
-                <FontAwesomeIcon name="star" size={15} color="#FCC104" />
-                <Text style={styles.fastScoretext}>{store.storeRate}</Text>
-              </View>
-            </View>
-            <View style={styles.fastStoreCategoryList}>
-              <Text style={styles.fastStoreCategory} ellipsizeMode="tail">
-                {Array.isArray(store.categories) && store.categories.length > 0
-                  ? store.categories
-                      .map(category => translateCategory(category))
-                      .join(' ')
-                  : '카테고리 미설정'}
+      <View style={styles.fastSearchStoreInfo}>
+        <ImageBackground
+          source={
+            store.mainImgUrl
+              ? {uri: store.mainImgUrl} // ✅ 네트워크 이미지
+              : require('../../../../assets/default_store.png') // ✅ 로컬 이미지
+          }
+          style={styles.backimage}
+          imageStyle={styles.backimagestyle}>
+          {/* ✅ 영업 종료 표시 */}
+          {!isStoreOpen && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>
+                영업 종료{' '}
+                {store.businessHoursDto?.openTime
+                  ? `\n${store.businessHoursDto.openTime.slice(0, 5)} 오픈`
+                  : ''}
               </Text>
             </View>
-            <Text style={styles.fastStoreClose}>
-              영업 종료{' '}
-              {store.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
+          )}
+          {/* ✅ 브레이크 타임 표시 */}
+          {isStoreOpen && isStoreBreak && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>
+                브레이크 타임{' '}
+                {store.businessHoursDto?.breakEndTime
+                  ? `\n${store.businessHoursDto.breakEndTime.slice(0, 5)} 종료`
+                  : ''}
+              </Text>
+            </View>
+          )}
+        </ImageBackground>
+        <View style={styles.fastStoreText}>
+          <View style={styles.fastSearchStoreView}>
+            <Text
+              style={styles.fastStoreTitle}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {store.name}
+            </Text>
+            <View style={styles.fastStorescore}>
+              <FontAwesomeIcon name="star" size={15} color="#FCC104" />
+              <Text style={styles.fastScoretext}>{store.storeRate}</Text>
+            </View>
+          </View>
+          <View style={styles.fastStoreCategoryList}>
+            <Text style={styles.fastStoreCategory} ellipsizeMode="tail">
+              {Array.isArray(store.categories) && store.categories.length > 0
+                ? store.categories
+                    .map(category => translateCategory(category))
+                    .join(' ')
+                : '카테고리 미설정'}
             </Text>
           </View>
+          <Text style={styles.fastStoreClose}>
+            영업 종료{' '}
+            {store.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
+          </Text>
         </View>
       </View>
     </Pressable>
@@ -109,19 +101,17 @@ const ResultModalItem = ({store, navigation, onClose}) => {
 
 const styles = StyleSheet.create({
   fastSearchStoreInfo: {
-    width: '95%',
-    marginTop: 10,
-    marginBottom: 7,
-
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    padding: 15,
+    backgroundColor: '#ffffff',
+    marginHorizontal: 18,
+    marginVertical: 8,
+    padding: 16,
     borderRadius: 12,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: -2},
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 10,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
   },
 
   backimage: {
@@ -148,7 +138,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   fastStoreText: {
-    flex: 1,
     paddingHorizontal: 10,
     justifyContent: 'space-between',
   },
@@ -166,7 +155,6 @@ const styles = StyleSheet.create({
     maxWidth: 150,
   },
   fastStorescore: {
-    paddingRight: 10,
     flexDirection: 'row',
     alignItems: 'center',
   },

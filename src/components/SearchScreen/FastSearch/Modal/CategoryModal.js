@@ -10,7 +10,10 @@ const CategoryModal = ({
 
   const handleCategoryPress = (text, category) => {
     setSelectedCategory(category); // 선택된 카테고리 업데이트
-    onPressCategory(text, category); // 외부 콜백 호출
+    setTimeout(() => {
+      onPressCategory(text, category); // 100ms 뒤에 실행
+      setSelectedCategory(null);
+    }, 100);
   };
 
   return (

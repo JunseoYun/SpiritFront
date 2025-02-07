@@ -47,11 +47,6 @@ export const StoreRegister = async data => {
         type: file.mime, // 이미지 타입 (확인 후 필요한 타입 사용)
         name: file.filename, // 파일 이름 (확장자 포함)
       });
-      console.log('이미지 파일 경로:', file.path);
-      console.log('이미지 파일 타입:', file.mime);
-      console.log('이미지 파일 이름:', file.filename);
-    } else {
-      console.error('파일이 없습니다:', file);
     }
   });
 
@@ -91,11 +86,6 @@ export const UpdateStoreImage = async (storeId, data) => {
         type: file.mime, // 이미지 타입
         name: file.filename, // 파일 이름
       });
-      console.log('이미지 파일 경로:', file.path);
-      console.log('이미지 파일 타입:', file.mime);
-      console.log('이미지 파일 이름:', file.filename);
-    } else {
-      console.error('파일이 없습니다:', file);
     }
   });
   try {
@@ -257,6 +247,7 @@ export const Store_getby_business_hours = async (page, latitude, longitude) => {
 
 export const Store_getby_condition_search = async requestData => {
   const {latitude, longitude, page, conditionSearchDto} = requestData;
+
   try {
     const response = await axiosInstance.get(`/store/get-by/condition-search`, {
       params: {

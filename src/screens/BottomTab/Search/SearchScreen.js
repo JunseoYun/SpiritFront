@@ -19,16 +19,13 @@ import CategoryModal from '../../../components/SearchScreen/FastSearch/Modal/Cat
 import PeopleModal from '../../../components/SearchScreen/FastSearch/Modal/PeopleModal';
 import VisitTimeModal from '../../../components/SearchScreen/FastSearch/Modal/VisitTimeModal';
 import NearStoreList from '../../../components/SearchScreen/NearStore/NearStoreList';
-import ResultModal from '../../../components/SearchScreen/FastSearch/Modal/ResultModal';
 import SearchButton from '../../../components/SearchScreen/SearchButton';
-import moment from 'moment';
 
 const SearchScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [peopleModalVisible, setPeopleModalVisible] = useState(false);
   const [timeModalVisible, setTimeModalVisible] = useState(false);
-  const [fastSearchModalVisible, setFastSearchModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedPeople, setSelectedPeople] = useState('');
   const [isGroup, setGroup] = useState(false);
@@ -36,10 +33,6 @@ const SearchScreen = ({navigation}) => {
   const [selectedMinute, setSelectedMinute] = useState('');
   const [selectedEngCategory, setSelectedEngCategory] = useState('');
   const [searchStoreName, setSearchStoreName] = useState('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const [fastSearchStores, setfastSearchStores] = useState([]);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -56,23 +49,6 @@ const SearchScreen = ({navigation}) => {
   }, [selectedCategory, selectedPeople, selectedHour, selectedMinute]);
   //빠른 검색 엔진
 
-  const isVisitTimeInRange = (store, visitTime) => {
-    // 오픈 시간과 클로즈 시간을 Date 객체로 변환
-    const openTime = new Date(`2000-01-01T${store.openHour}`);
-    const closeTime = new Date(`2000-01-01T${store.closeHour}`);
-    let visitDateTime = new Date(`2000-01-01T${visitTime}`);
-
-    // 클로즈 시간이 자정을 넘어서면 다음 날로 간주
-    if (closeTime <= openTime) {
-      closeTime.setDate(closeTime.getDate() + 1);
-      if (visitDateTime < openTime) {
-        visitDateTime.setDate(visitDateTime.getDate() + 1);
-      }
-    }
-
-    return visitDateTime >= openTime && visitDateTime <= closeTime;
-  };
-
   {
     /* 빠른 검색 검색 API 개선 필요, 현재 버전: 가까운 주점 전부 필터링 */
   }
@@ -87,7 +63,7 @@ const SearchScreen = ({navigation}) => {
       console.log('Data Not');
     } else {
       const conditionTime = new Date(
-        `2000-01-01T${selectedHour}:${selectedMinute}:00`,
+        `2025-02-01T${selectedHour}:${selectedMinute}:00`,
       );
       const conditionTimeString = conditionTime.toISOString().slice(0, -1);
       const conditionSearchDto = {
@@ -96,9 +72,26 @@ const SearchScreen = ({navigation}) => {
         conditionTime: conditionTimeString,
       };
 
-      setfastSearchStores(conditionSearchDto);
-      console.log(conditionSearchDto, '??????');
-      setFastSearchModalVisible(true);
+      const fastviewDto = {
+        selectedCategory: selectedCategory,
+        selectedPeople: selectedPeople,
+        timeselectedHour: selectedHour,
+        timeselectedMinute: selectedMinute,
+      };
+
+      navigation.navigate('SearchStack', {
+        screen: 'SearchFastScreen',
+        params: {
+          fastSearchStores: conditionSearchDto,
+          fastviewDto: fastviewDto,
+          location: location,
+        },
+      });
+      setSelectedMinute('');
+      setSelectedHour('');
+      setSelectedCategory('');
+      setSelectedEngCategory('');
+      setSelectedPeople('');
     }
   };
 
@@ -121,6 +114,8 @@ const SearchScreen = ({navigation}) => {
     setModalVisible(true);
   };
   const onPressModalClose = () => {
+    setSelectedCategory('');
+    setSelectedEngCategory('');
     setModalVisible(false);
   };
   const onPressCategory = (text, category) => {
@@ -163,17 +158,6 @@ const SearchScreen = ({navigation}) => {
       onPressTimeModalClose();
     }
   };
-
-  const onPressFastSearchModalClose = () => {
-    setSelectedMinute('');
-    setSelectedHour('');
-    setSelectedCategory('');
-    setSelectedEngCategory('');
-    setSelectedPeople('');
-    setfastSearchStores([]);
-    setFastSearchModalVisible(false);
-  };
-
   const searchOptions = [
     {
       label: selectedCategory || '카테고리',
@@ -194,19 +178,6 @@ const SearchScreen = ({navigation}) => {
       onPress: onPressTimeModalOpen,
     },
   ];
-
-  // const storeNames = [
-  //   '가게 이름1',
-  //   '가게 이름2',
-  //   '가게 이름3',
-  //   '가게 이름4',
-  //   '가게 이름5',
-  //   '가게 이름6',
-  //   '가게 이름7',
-  //   '가게 이름8',
-  //   '가게 이름9',
-  //   '가게 이름10',
-  // ];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -245,20 +216,6 @@ const SearchScreen = ({navigation}) => {
               onPressClose={onPressTimeModalClose}
             />
             <NearStoreList navigation={navigation} location={location} />
-
-            {/* <BestStoreList storeNames={storeNames} /> */}
-
-            <ResultModal
-              visible={fastSearchModalVisible}
-              onClose={onPressFastSearchModalClose}
-              selectedCategory={selectedEngCategory}
-              selectedPeople={selectedPeople}
-              selectedHour={selectedHour}
-              selectedMinute={selectedMinute}
-              location={location}
-              fastSearchStores={fastSearchStores}
-              navigation={navigation}
-            />
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>
