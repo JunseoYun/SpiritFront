@@ -4,7 +4,11 @@ import FastSearchItem from './FastSearchItem';
 
 const FastSearch = ({title, searchOptions}) => {
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        title === '' && styles.fastcontainer,
+        title === '내 주변 빠른 검색' && styles.container, // 선택된 카테고리에 스타일 적용
+      ]}>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>{title}</Text>
       </View>
@@ -27,6 +31,11 @@ const styles = StyleSheet.create({
     marginVertical: 25,
     width: '90%',
     alignSelf: 'center',
+  },
+  fastcontainer: {
+    width: '90%',
+    alignSelf: 'center',
+    marginBottom: 20,
   },
   titleContainer: {
     flexDirection: 'row',
