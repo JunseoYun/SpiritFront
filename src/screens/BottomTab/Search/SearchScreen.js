@@ -184,6 +184,7 @@ const SearchScreen = ({navigation}) => {
             value={searchStoreName}
             onChangeText={setSearchStoreName}
             placeholder="주점 이름을 입력해주세요."
+            onPress={onPressSearch}
           />
           {/* 스크롤 가능한 영역 */}
           <ScrollView contentContainerStyle={styles.scrollViewContent}>
