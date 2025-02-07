@@ -8,6 +8,10 @@ import {
   SafeAreaView,
   Pressable,
   Platform,
+  KeyboardAvoidingView,
+  ScrollView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import {
   DrinkUpdate,
@@ -216,78 +220,90 @@ const AlcoholUpdateScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleCancel}>
-          <Ionicons name="arrow-back-outline" size={25} color="#333" />
-        </TouchableOpacity>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          style={styles.avoidingView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity onPress={handleCancel}>
+              <Ionicons name="arrow-back-outline" size={25} color="#333" />
+            </TouchableOpacity>
 
-        <Text style={styles.modalTitle}>주류 수정</Text>
-        <TouchableOpacity onPress={handleSave}>
-          <Ionicons name="paper-plane-sharp" size={25} color="#333" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.imageContainer}>
-        {alcoholImage ? (
-          <ImageBackground
-            source={{uri: alcoholImage}}
-            style={styles.menuImage}
-            imageStyle={styles.backimagestyle}>
-            {/* ✅ 이미지 안에 아이콘 배치 */}
-            <View style={styles.imageButtonView}>
-              <Pressable
-                style={[styles.imageButton, styles.shadowEffect]}
-                onPress={selectImage}>
-                <MaterialIcons name="photo-library" size={28} color="#fff" />
-              </Pressable>
-              <Pressable
-                style={[styles.deleteButton, styles.shadowEffect]}
-                onPress={handleDeleteImage}>
-                <Ionicons name="trash-outline" size={28} color="#fff" />
-              </Pressable>
-            </View>
-          </ImageBackground>
-        ) : (
-          <View style={styles.placeholderImage}>
-            <Text style={styles.placeholderText}>이미지 추가</Text>
-            <Pressable onPress={selectImage}>
-              <MaterialCommunityIcons
-                name="image-plus"
-                size={40}
-                color="#333"
-              />
-            </Pressable>
+            <Text style={styles.modalTitle}>주류 수정</Text>
+            <TouchableOpacity onPress={handleSave}>
+              <Ionicons name="paper-plane-sharp" size={25} color="#333" />
+            </TouchableOpacity>
           </View>
-        )}
-      </View>
-      <AlcoholInput
-        label="주류 이름*"
-        value={alcoholName}
-        onChangeText={setAlcoholName}
-        placeholder="주류 이름*"
-      />
+          <ScrollView
+            contentContainerStyle={styles.scrollViewContent}
+            keyboardShouldPersistTaps="handled">
+            <View style={styles.imageContainer}>
+              {alcoholImage ? (
+                <ImageBackground
+                  source={{uri: alcoholImage}}
+                  style={styles.menuImage}
+                  imageStyle={styles.backimagestyle}>
+                  {/* ✅ 이미지 안에 아이콘 배치 */}
+                  <View style={styles.imageButtonView}>
+                    <Pressable
+                      style={[styles.imageButton, styles.shadowEffect]}
+                      onPress={selectImage}>
+                      <MaterialIcons
+                        name="photo-library"
+                        size={28}
+                        color="#fff"
+                      />
+                    </Pressable>
+                    <Pressable
+                      style={[styles.deleteButton, styles.shadowEffect]}
+                      onPress={handleDeleteImage}>
+                      <Ionicons name="trash-outline" size={28} color="#fff" />
+                    </Pressable>
+                  </View>
+                </ImageBackground>
+              ) : (
+                <View style={styles.placeholderImage}>
+                  <Text style={styles.placeholderText}>이미지 추가</Text>
+                  <Pressable onPress={selectImage}>
+                    <MaterialCommunityIcons
+                      name="image-plus"
+                      size={40}
+                      color="#333"
+                    />
+                  </Pressable>
+                </View>
+              )}
+            </View>
+            <AlcoholInput
+              label="주류 이름*"
+              value={alcoholName}
+              onChangeText={setAlcoholName}
+              placeholder="주류 이름*"
+            />
 
-      <AlcoholInput
-        label="주류 소개"
-        value={alcoholDescription}
-        onChangeText={setAlcoholDescription}
-        placeholder="주류 소개"
-        isMultiline={true}
-      />
+            <AlcoholInput
+              label="주류 소개"
+              value={alcoholDescription}
+              onChangeText={setAlcoholDescription}
+              placeholder="주류 소개"
+              isMultiline={true}
+            />
 
-      <AlcoholInput
-        label="주류 가격*"
-        value={alcoholPrice}
-        onChangeText={setAlcoholPrice}
-        placeholder="주류 가격*"
-      />
+            <AlcoholInput
+              label="주류 가격*"
+              value={alcoholPrice}
+              onChangeText={setAlcoholPrice}
+              placeholder="주류 가격*"
+            />
 
-      <RptAlcoholPicker
-        selectedType={alcoholType}
-        onTypeChange={setAlcoholType}
-      />
-
-      <AlertComponent />
+            <RptAlcoholPicker
+              selectedType={alcoholType}
+              onTypeChange={setAlcoholType}
+            />
+          </ScrollView>
+          <AlertComponent />
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 };
@@ -318,7 +334,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333', // ✅ 더 진한 색상 적용
   },
-
+  avoidingView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+  },
   imageContainer: {
     alignItems: 'center',
     marginVertical: 15,
