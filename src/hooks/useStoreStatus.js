@@ -10,7 +10,7 @@ const useStoreStatus = (
   useEffect(() => {
     const checkStoreStatus = () => {
       const now = new Date();
-
+      now.setHours(now.getHours() + 9);
       // 현재 시간
       const currentHours = now.getHours();
       const currentMinutes = now.getMinutes();
@@ -36,7 +36,6 @@ const useStoreStatus = (
 
       const end = new Date();
       end.setHours(endHours, endMinutes, 0, 0);
-
       if (
         endHours < startHours ||
         (endHours === startHours && endMinutes < startMinutes)

@@ -23,10 +23,14 @@ const ResultModalItem = ({store, navigation, location}) => {
     store?.businessHoursDto?.closeTime,
     store?.closedDays,
   );
-  const isStoreBreak = useStoreStatus(
-    store?.businessHoursDto?.breakStartTime,
-    store?.businessHoursDto?.breakEndTime,
-  );
+  const isStoreBreak =
+    store?.businessHoursDto?.breakStartTime &&
+    store?.businessHoursDto?.breakEndTime
+      ? useStoreStatus(
+          store.businessHoursDto.breakStartTime,
+          store.businessHoursDto.breakEndTime,
+        )
+      : null;
 
   useEffect(() => {
     const fetchDistance = () => {

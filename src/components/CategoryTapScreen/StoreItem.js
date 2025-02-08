@@ -23,10 +23,14 @@ const StoreItem = ({store, location, navigation}) => {
     store?.businessHoursDto?.closeTime,
     store?.closedDays,
   );
-  const isStoreBreak = useStoreStatus(
-    store?.businessHoursDto?.breakStartTime,
-    store?.businessHoursDto?.breakEndTime,
-  );
+  const isStoreBreak =
+    store.businessHoursDto?.breakStartTime &&
+    store.businessHoursDto?.breakEndTime
+      ? useStoreStatus(
+          store.businessHoursDto.breakStartTime,
+          store.businessHoursDto.breakEndTime,
+        )
+      : null;
 
   return (
     <Pressable
@@ -192,14 +196,17 @@ const StoreItem = ({store, location, navigation}) => {
               영업 중 · {store.businessHoursDto?.closeTime?.slice(0, 5) || ''}
             </Text>
           </View>
-          <View style={Categorystyles.infoView}>
-            <MaterialCommunityIcons name="sleep" size={15} color="#333" />
-            <Text style={Categorystyles.infoText}>
-              {' '}
-              {store.businessHoursDto?.breakStartTime?.slice(0, 5)} ~{' '}
-              {store.businessHoursDto?.breakEndTime?.slice(0, 5)}
-            </Text>
-          </View>
+          {store.businessHoursDto?.breakStartTime &&
+            store.businessHoursDto?.breakEndTime && (
+              <View style={Categorystyles.infoView}>
+                <MaterialCommunityIcons name="sleep" size={15} color="#333" />
+                <Text style={Categorystyles.infoText}>
+                  {' '}
+                  {store.businessHoursDto?.breakStartTime?.slice(0, 5)} ~{' '}
+                  {store.businessHoursDto?.breakEndTime?.slice(0, 5)}
+                </Text>
+              </View>
+            )}
         </View>
       </View>
     </Pressable>

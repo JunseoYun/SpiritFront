@@ -24,10 +24,15 @@ const MapStoreItem = ({
     item?.businessHoursDto?.closeTime,
     item?.closedDays,
   );
-  const isStoreBreak = useStoreStatus(
-    item?.businessHoursDto?.breakStartTime,
-    item?.businessHoursDto?.breakEndTime,
-  );
+
+  const isStoreBreak =
+    item?.businessHoursDto?.breakStartTime &&
+    item?.businessHoursDto?.breakEndTime
+      ? useStoreStatus(
+          item.businessHoursDto.breakStartTime,
+          item.businessHoursDto.breakEndTime,
+        )
+      : null;
 
   const handlePress = () => {
     setSelectedStore(item);
