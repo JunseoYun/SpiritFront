@@ -13,10 +13,15 @@ const OpenStoreItem = ({store, location, navigation}) => {
   const [unit, setUnit] = useState('m');
   const calculateDistance = useDistance();
 
-  const isStoreBreak = useStoreStatus(
-    store?.businessHoursDto?.breakStartTime,
-    store?.businessHoursDto?.breakEndTime,
-  );
+  const isStoreBreak =
+    store?.businessHoursDto?.breakStartTime &&
+    store?.businessHoursDto?.breakEndTime
+      ? useStoreStatus(
+          store.businessHoursDto.breakStartTime,
+          store.businessHoursDto.breakEndTime,
+        )
+      : null;
+
   const calculateWalkingTime = distance => {
     const walkingSpeed = 80; // 평균 보행 속도 (m/min)
     return Math.ceil(distance / walkingSpeed); // 소수점 올림
