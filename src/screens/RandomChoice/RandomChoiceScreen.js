@@ -20,92 +20,52 @@ const innerCategories = [
   {
     source: require('../../assets/category/Izakaya.png'),
     text: '이자카야',
-    value: 'Izakaya',
+    value: 'IZAKAYA',
   },
   {
     source: require('../../assets/category/Koreafood.png'),
-    text: '한식주점',
-    value: 'Koreafood',
+    text: '한식',
+    value: 'KOREAN',
   },
   {
     source: require('../../assets/category/Westernfood.png'),
-    text: '양식주점',
-    value: 'Westernfood',
+    text: '양식',
+    value: 'WESTERN',
   },
   {
     source: require('../../assets/category/Chinesefood.png'),
-    text: '중화주점',
-    value: 'Chinesefood',
+    text: '중식',
+    value: 'CHINESE',
   },
   {
     source: require('../../assets/category/Emotional.png'),
     text: '감성주점',
-    value: 'Emotional',
-  },
-  {
-    source: require('../../assets/category/Jokbal.png'),
-    text: '족발 보쌈',
-    value: 'Jokbal',
-  },
-  {
-    source: require('../../assets/category/Steamedfood.png'),
-    text: '찜 찌개',
-    value: 'Steamedfood',
+    value: 'GAMSEONG',
   },
   {
     source: require('../../assets/category/Grilled.png'),
-    text: '구이',
-    value: 'Grilled',
-  },
-  {
-    source: require('../../assets/category/Chicken.png'),
-    text: '치킨',
-    value: 'Chicken',
-  },
-  {
-    source: require('../../assets/category/Pancake.png'),
-    text: '전 막걸리',
-    value: 'Pancake',
-  },
-  {
-    source: require('../../assets/category/Dried.png'),
-    text: '마른안주',
-    value: 'Dried',
-  },
-  {
-    source: require('../../assets/category/Seafood.png'),
-    text: '해산물',
-    value: 'Seafood',
-  },
-  {
-    source: require('../../assets/category/Yajang.png'),
-    text: '야장',
-    value: 'Yajang',
-  },
-  {
-    source: require('../../assets/category/Pocha.png'),
-    text: '포차',
-    value: 'Pocha',
+    text: '구이 찜',
+    value: 'GRILLED_STEW',
   },
   {
     source: require('../../assets/category/Hope.png'),
-    text: '호프',
-    value: 'Hope',
+    text: '치킨 호프',
+    value: 'CHICKEN_HOF',
   },
   {
-    source: require('../../assets/category/Winebar.png'),
-    text: '와인바',
-    value: 'Winebar',
-  },
-  {
-    source: require('../../assets/category/Cocktail.png'),
-    text: '칵테일',
-    value: 'Cocktail',
+    source: require('../../assets/category/Seafood.png'),
+    text: '회 해산물',
+    value: 'RAW_SEAFOOD',
   },
   {
     source: require('../../assets/category/Pupbar.png'),
     text: '펍 바',
-    value: 'Pupbar',
+    value: 'PUB_BAR',
+  },
+  {
+    source: require('../../assets/category/Pocha.png'),
+    text: '포장마차',
+    value: 'POCHA',
   },
 ];
 

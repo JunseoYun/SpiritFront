@@ -74,39 +74,39 @@ const categories = [
   },
   {
     source: require('../../../assets/category/Koreafood.png'),
-    text: '한식주점',
+    text: '한식',
   },
   {
     source: require('../../../assets/category/Westernfood.png'),
-    text: '양식주점',
+    text: '양식',
   },
   {
     source: require('../../../assets/category/Chinesefood.png'),
-    text: '중화주점',
+    text: '중식',
   },
   {
     source: require('../../../assets/category/Emotional.png'),
     text: '감성주점',
   },
   {
-    source: require('../../../assets/category/Jokbal.png'),
-    text: '족발 보쌈',
-  },
-  {
-    source: require('../../../assets/category/Steamedfood.png'),
-    text: '찜 찌개',
-  },
-  {
     source: require('../../../assets/category/Grilled.png'),
-    text: '구이',
+    text: '구이 찜',
   },
   {
-    source: require('../../../assets/category/Chicken.png'),
-    text: '치킨',
+    source: require('../../../assets/category/Hope.png'),
+    text: '치킨 호프',
   },
   {
-    source: require('../../../assets/category/More.png'),
-    text: '전체보기',
+    source: require('../../../assets/category/Seafood.png'),
+    text: '회 해산물',
+  },
+  {
+    source: require('../../../assets/category/Pupbar.png'),
+    text: '펍 바',
+  },
+  {
+    source: require('../../../assets/category/Pocha.png'),
+    text: '포장마차',
   },
 ];
 
