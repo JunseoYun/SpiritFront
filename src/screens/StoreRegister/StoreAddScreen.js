@@ -145,10 +145,8 @@ const StoreAddScreen = ({navigation, route}) => {
       },
     };
 
-    console.log(data);
     try {
       const response = await StoreRegister(data);
-      console.log(response);
       if (response) {
         showAlert({
           title: '매장 등록이 완료되었습니다.',

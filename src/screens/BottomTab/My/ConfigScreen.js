@@ -38,7 +38,6 @@ const ConfigScreen = ({navigation}) => {
       try {
         const data = await Userdataget();
         setUserdata(data);
-        console.log(data);
       } catch (error) {
         console.error('Error initializing token or fetching user data:', error);
       }

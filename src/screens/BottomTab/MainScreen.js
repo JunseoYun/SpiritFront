@@ -11,7 +11,6 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
 import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
-import InnerCategoryModal from '../../components/MainScreen/Category/InnerCategoryModal';
 import StoreRegister from '../../components/MainScreen/StoreRegister';
 import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
 import RecentStoreList from '../../components/MainScreen/RecentStore/RecentStoreList';
@@ -114,10 +113,6 @@ const MainScreen = ({navigation}) => {
     setIsModalVisible(true);
   };
 
-  // const onPressModalClose = () => {
-  //   setIsModalVisible(false);
-  // };
-
   const catagoryClick = index => {
     if (index >= 0 && index < 10) {
       navigation.navigate('CategoryListTabbar', {
@@ -125,16 +120,6 @@ const MainScreen = ({navigation}) => {
       });
     }
   };
-
-  // const innercatagory = indexinner => {
-  //   if (indexinner >= 0 && indexinner < screens.length) {
-  //     console.log(location);
-  //     navigation.navigate('CategoryListTabbar', {
-  //       screen: screens[indexinner],
-  //     });
-  //   }
-  //   setIsModalVisible(false);
-  // };
 
   const handlestoreItemClick = index => {
     setStoreActiveIndex(index);
@@ -211,11 +196,6 @@ const MainScreen = ({navigation}) => {
         />
 
         <CategoryGrid onPress={catagoryClick} />
-        {/* <InnerCategoryModal
-          isVisible={isModalVisible}
-          onPressInnerCategory={innercatagory}
-          onClose={onPressModalClose}
-        /> */}
         <StoreRegister
           storeactiveIndex={storeactiveIndex}
           handlestoreItemClick={handlestoreItemClick}

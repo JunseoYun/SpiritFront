@@ -13,7 +13,6 @@ import useStoreStatus from '../../../../hooks/useStoreStatus';
 import useDistance from '../../../../hooks/useDistance';
 
 const ResultModalItem = ({store, navigation, location}) => {
-  console.log(store);
   const {translateCategory} = useCategoryTranslation();
   const [distance, setDistance] = useState(0);
   const [unit, setUnit] = useState('m');

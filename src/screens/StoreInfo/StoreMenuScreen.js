@@ -35,7 +35,6 @@ const StoreMenuScreen = ({
   };
 
   const handleDeleteMenu = (id, name) => {
-    console.log(id, 'id값');
     handleCloseAll();
     showAlert({
       title: `${name} 삭제`,
