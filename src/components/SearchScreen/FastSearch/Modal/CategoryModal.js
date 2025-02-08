@@ -87,7 +87,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   selectedCategory: {
-    backgroundColor: 'rgba(22, 187, 255, 0.7)',
+    borderWidth: 1,
+    borderColor: 'rgba(22, 187, 255, 0.7)',
     borderRadius: 10,
     padding: 5,
   },
@@ -124,17 +125,17 @@ const innerCategories = [
   },
   {
     source: require('../../../../assets/category/Koreafood.png'),
-    text: '한식주점',
+    text: '한식',
     category: 'KOREAN',
   },
   {
     source: require('../../../../assets/category/Westernfood.png'),
-    text: '양식주점',
+    text: '양식',
     category: 'WESTERN',
   },
   {
     source: require('../../../../assets/category/Chinesefood.png'),
-    text: '중화주점',
+    text: '중식',
     category: 'CHINESE',
   },
   {
@@ -143,79 +144,29 @@ const innerCategories = [
     category: 'GAMSEONG',
   },
   {
-    source: require('../../../../assets/category/Jokbal.png'),
-    text: '족발 보쌈',
-    category: 'JOGBO',
-  },
-  {
-    source: require('../../../../assets/category/Steamedfood.png'),
-    text: '찜 찌개',
-    category: 'STEW',
-  },
-  {
     source: require('../../../../assets/category/Grilled.png'),
-    text: '구이',
-    category: 'GRILLED',
-  },
-  {
-    source: require('../../../../assets/category/Chicken.png'),
-    text: '치킨',
-    category: 'CHICKEN',
-  },
-  {
-    source: require('../../../../assets/category/Pancake.png'),
-    text: '전 막걸리',
-    category: 'JEONMAK',
-  },
-  {
-    source: require('../../../../assets/category/Dried.png'),
-    text: '마른안주',
-    category: 'DRIED',
-  },
-  {
-    source: require('../../../../assets/category/Seafood.png'),
-    text: '해산물',
-    category: 'SEAFOOD',
-  },
-  {
-    source: require('../../../../assets/category/Room.png'),
-    text: '룸',
-    category: 'ROOM',
-  },
-  {
-    source: require('../../../../assets/category/Group.png'),
-    text: '단체 행사',
-    category: 'GROUP',
-  },
-  {
-    source: require('../../../../assets/category/Yajang.png'),
-    text: '야장',
-    category: 'OUTDOOR',
-  },
-  {
-    source: require('../../../../assets/category/Pocha.png'),
-    text: '포차',
-    category: 'POCHA',
+    text: '구이 찜',
+    category: 'GRILLED_STEW',
   },
   {
     source: require('../../../../assets/category/Hope.png'),
-    text: '호프',
-    category: 'HOF',
+    text: '치킨 호프',
+    category: 'CHICKEN_HOF',
   },
   {
-    source: require('../../../../assets/category/Winebar.png'),
-    text: '와인바',
-    category: 'WINE',
-  },
-  {
-    source: require('../../../../assets/category/Cocktail.png'),
-    text: '칵테일',
-    category: 'COCKTAIL',
+    source: require('../../../../assets/category/Seafood.png'),
+    text: '회 해산물',
+    category: 'RAW_SEAFOOD',
   },
   {
     source: require('../../../../assets/category/Pupbar.png'),
     text: '펍 바',
-    category: 'PUBBAR',
+    category: 'PUB_BAR',
+  },
+  {
+    source: require('../../../../assets/category/Pocha.png'),
+    text: '포장마차',
+    category: 'POCHA',
   },
 ];
 export default CategoryModal;

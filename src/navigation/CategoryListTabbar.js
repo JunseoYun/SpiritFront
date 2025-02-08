@@ -5,26 +5,16 @@ import CategoryTapScreen from '../screens/CategoryTap/CategoryTapScreen';
 import {getLocation} from '../storage/locationStorage';
 
 const categories = [
-  {name: 'Izakaya', title: '이자카야', categoryname: 'IZAKAYA'},
-  {name: 'Koreafood', title: '한식주점', categoryname: 'KOREAN'},
-  {name: 'Westernfood', title: '양식주점', categoryname: 'WESTERN'},
-  {name: 'Chinesefood', title: '중화주점', categoryname: 'CHINESE'},
-  {name: 'Emotional', title: '감성주점', categoryname: 'GAMSEONG'},
-  {name: 'Jokbal', title: '족발 보쌈', categoryname: 'JOGBO'},
-  {name: 'Steamedfood', title: '찜 찌개', categoryname: 'STEW'},
-  {name: 'Grilled', title: '구이 탕', categoryname: 'GRILLED'},
-  {name: 'Chicken', title: '치킨', categoryname: 'CHICKEN'},
-  {name: 'Pancake', title: '전 막걸리', categoryname: 'JEONMAK'},
-  {name: 'Dried', title: '마른안주', categoryname: 'DRIED'},
-  {name: 'Seafood', title: '해산물', categoryname: 'SEAFOOD'},
-  {name: 'Room', title: '룸', categoryname: 'ROOM'},
-  {name: 'Group', title: '단체 행사', categoryname: 'GROUP'},
-  {name: 'Yajang', title: '야장', categoryname: 'OUTDOOR'},
-  {name: 'Pocha', title: '포차', categoryname: 'POCHA'},
-  {name: 'Hope', title: '호프', categoryname: 'HOF'},
-  {name: 'Winebar', title: '와인바', categoryname: 'WINE'},
-  {name: 'Cocktail', title: '칵테일', categoryname: 'COCKTAIL'},
-  {name: 'Pupbar', title: '펍 바', categoryname: 'PUBBAR'},
+  {name: 'IZAKAYA', title: '이자카야', categoryname: 'IZAKAYA'},
+  {name: 'KOREAN', title: '한식', categoryname: 'KOREAN'},
+  {name: 'WESTERN', title: '양식', categoryname: 'WESTERN'},
+  {name: 'CHINESE', title: '중식', categoryname: 'CHINESE'},
+  {name: 'GAMSEONG', title: '감성주점', categoryname: 'GAMSEONG'},
+  {name: 'GRILLED_STEW', title: '구이 찜', categoryname: 'GRILLED_STEW'},
+  {name: 'CHICKEN_HOF', title: '치킨 호프', categoryname: 'CHICKEN_HOF'},
+  {name: 'RAW_SEAFOOD', title: '회 해산물', categoryname: 'RAW_SEAFOOD'},
+  {name: 'PUB_BAR', title: '펍 바', categoryname: 'PUB_BAR'},
+  {name: 'POCHA', title: '포장마차', categoryname: 'POCHA'},
 ];
 
 const Tab = createMaterialTopTabNavigator();

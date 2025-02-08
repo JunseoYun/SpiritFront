@@ -29,7 +29,7 @@ const MainScreen = ({navigation}) => {
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
   const [recommReason, setRecommReason] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  // const [isModalVisible, setIsModalVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [weather, setWeather] = useState({
     temp: 0,
@@ -114,29 +114,27 @@ const MainScreen = ({navigation}) => {
     setIsModalVisible(true);
   };
 
-  const onPressModalClose = () => {
-    setIsModalVisible(false);
-  };
+  // const onPressModalClose = () => {
+  //   setIsModalVisible(false);
+  // };
 
   const catagoryClick = index => {
-    if (index >= 0 && index < 9) {
+    if (index >= 0 && index < 10) {
       navigation.navigate('CategoryListTabbar', {
         screen: screens[index],
       });
-    } else if (index === 9) {
-      onPressModalOpen();
     }
   };
 
-  const innercatagory = indexinner => {
-    if (indexinner >= 0 && indexinner < screens.length) {
-      console.log(location);
-      navigation.navigate('CategoryListTabbar', {
-        screen: screens[indexinner],
-      });
-    }
-    setIsModalVisible(false);
-  };
+  // const innercatagory = indexinner => {
+  //   if (indexinner >= 0 && indexinner < screens.length) {
+  //     console.log(location);
+  //     navigation.navigate('CategoryListTabbar', {
+  //       screen: screens[indexinner],
+  //     });
+  //   }
+  //   setIsModalVisible(false);
+  // };
 
   const handlestoreItemClick = index => {
     setStoreActiveIndex(index);
@@ -213,11 +211,11 @@ const MainScreen = ({navigation}) => {
         />
 
         <CategoryGrid onPress={catagoryClick} />
-        <InnerCategoryModal
+        {/* <InnerCategoryModal
           isVisible={isModalVisible}
           onPressInnerCategory={innercatagory}
           onClose={onPressModalClose}
-        />
+        /> */}
         <StoreRegister
           storeactiveIndex={storeactiveIndex}
           handlestoreItemClick={handlestoreItemClick}
@@ -249,26 +247,16 @@ const MainScreen = ({navigation}) => {
 };
 
 const screens = [
-  'Izakaya',
-  'Koreafood',
-  'Westernfood',
-  'Chinesefood',
-  'Emotional',
-  'Jokbal',
-  'Steamedfood',
-  'Grilled',
-  'Chicken',
-  'Pancake',
-  'Dried',
-  'Seafood',
-  'Room',
-  'Group',
-  'Yajang',
-  'Pocha',
-  'Hope',
-  'Winebar',
-  'Cocktail',
-  'Pupbar',
+  'IZAKAYA',
+  'KOREAN',
+  'WESTERN',
+  'CHINESE',
+  'GAMSEONG',
+  'GRILLED_STEW',
+  'CHICKEN_HOF',
+  'RAW_SEAFOOD',
+  'PUB_BAR',
+  'POCHA',
 ];
 
 const styles = StyleSheet.create({

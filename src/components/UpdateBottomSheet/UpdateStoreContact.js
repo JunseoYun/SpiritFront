@@ -8,15 +8,21 @@ const UpdateStoreContact = ({
   onCancel,
   onSave,
 }) => {
+  const handleInputChange = text => {
+    const numericText = text.replace(/[^0-9]/g, '');
+    setUpdatedValue(numericText);
+  };
+
   return (
     <View style={styles.bottomSheetContent}>
       <Text style={styles.title}>매장 번호</Text>
       <TextInput
         style={styles.input}
-        defaultValue={updatedValue}
-        onChangeText={text => setUpdatedValue(text)}
+        value={updatedValue} // defaultValue 대신 value 사용
+        onChangeText={handleInputChange}
         placeholder="매장 번호 입력"
-        keyboardType="phone-pad"
+        keyboardType="numeric" // 숫자 키패드
+        maxLength={15} // 입력 가능 숫자 길이 제한 (선택 사항)
       />
       <ActionButtons onCancel={onCancel} onSave={onSave} />
     </View>
