@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {Platform} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import MainStack from './src/navigation/MainStack';
 import {AuthProvider, useAuth} from './src/context/AuthContext';
@@ -18,9 +19,11 @@ if (!__DEV__) {
 
 const App = () => {
   useEffect(() => {
-    setTimeout(() => {
-      SplashScreen.hide(); // 0.5초 후에 숨김
-    });
+    if (Platform.OS === 'ios') {
+      setTimeout(() => {
+        SplashScreen.hide();
+      }, 500); // 0.5초 후에 숨김
+    }
   }, []);
   return (
     <PaperProvider>
