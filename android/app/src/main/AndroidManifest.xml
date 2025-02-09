@@ -27,13 +27,13 @@
         </intent-filter>
       </activity>
 
-<activity android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+    <activity android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
       android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:host="oauth" android:scheme="kakaof8b846c356bedec09d06f5795f823cc9" />
+        <data android:host="oauth" android:scheme="@string/KAKAO_APP_SCHEMES" />
         <data android:scheme="kakaomap" />
       </intent-filter>
     </activity>

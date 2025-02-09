@@ -7,11 +7,6 @@ export const getWeatherData = async location => {
 
   const {latitude, longitude} = location;
 
-  console.log(location);
-  // const API_KEY = 'be107a3be29e95b54b2fac69f2a42431';
-  // const apiUrl = `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric`;
-  // OpenWeathermap Api
-
   const API_KEY = '0010951218124cb79f4161946241612';
   const apiUrl = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${latitude},${longitude}&aqi=no`;
   // WeatherAPI Api

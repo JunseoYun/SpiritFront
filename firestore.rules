@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 모든 문서에 대해 읽기 허용, 쓰기 차단
+    match /api_keys/{document=**} {
+      allow read: if true;   // 모든 사용자에게 읽기 허용
+      allow write: if false; // 쓰기는 차단
+    }
+  }
+}
