@@ -21,7 +21,7 @@ DerivedData
 *.ipa
 *.xcuserstate
 **/.xcode.env.local
-
+*.xcconfig
 # Android/IntelliJ
 #
 build/
@@ -72,3 +72,5 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+# Environment files
+.env

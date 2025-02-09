@@ -25,19 +25,17 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.55496276543-acp3mpj3folinp0067iogp03cstubo4r</string>
+				<string>$(GOOGLE_CLIENT_SCHEMES)</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>GIDClientID</key>
-	<string>55496276543-acp3mpj3folinp0067iogp03cstubo4r.apps.googleusercontent.com</string>
 	<key>KAKAO_APP_KEY</key>
-	<string>f8b846c356bedec09d06f5795f823cc9</string>
+	<string>$(KAKAO_APP_KEY)</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>kakaof8b846c356bedec09d06f5795f823cc9</string>
+		<string>$(KAKAO_APP_SCHEMES)</string>
 		<string>kakaolink</string>
 		<string>kakaokompassauth</string>
 		<string>kakaomap</string>
