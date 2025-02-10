@@ -30,7 +30,6 @@ const AlcoholItem = ({
   storeId,
 }) => {
   const translateX = useSharedValue(0);
-  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{translateX: translateX.value}],
@@ -66,11 +65,6 @@ const AlcoholItem = ({
       translateX.value = withSpring(0);
     }
   }, [isOpen]);
-
-  const handleUpdate = () => {
-    setIsModalVisible(true);
-    onClose();
-  };
 
   return (
     <GestureHandlerRootView>

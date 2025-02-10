@@ -3,7 +3,7 @@ import {Pressable, StyleSheet, View, Platform, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
 
-const UpdateHeader = ({navigation, endUpdate}) => {
+const UpdateHeader = ({endUpdate}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const endHandle = () => {

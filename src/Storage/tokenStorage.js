@@ -11,24 +11,6 @@ export const setToken = async (accessToken, refreshToken) => {
   }
 };
 
-export const testSetAccessTokenToken = async accessToken => {
-  try {
-    await AsyncStorage.setItem('accessToken', accessToken);
-    console.log('엑세스 토큰 망가뜨리기.');
-  } catch (error) {
-    console.error('토큰 저장 중 오류가 발생했습니다:', error);
-  }
-};
-
-export const testSetRefreshTokenToken = async refreshToken => {
-  try {
-    await AsyncStorage.setItem('refreshToken', refreshToken);
-    console.log('리프레쉬 토큰 망가뜨리기.');
-  } catch (error) {
-    console.error('토큰 저장 중 오류가 발생했습니다:', error);
-  }
-};
-
 export const getAccessToken = async () => {
   try {
     const token = await AsyncStorage.getItem('accessToken');

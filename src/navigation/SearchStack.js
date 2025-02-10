@@ -1,9 +1,6 @@
 import React from 'react';
-
-import {Pressable} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import SearchScreen from '../screens/BottomTab/Search/SearchScreen';
 import SearchResultScreen from '../screens/BottomTab/Search/SearchResultScreen';
 import SearchFastScreen from '../screens/BottomTab/Search/SearchFastScreen';

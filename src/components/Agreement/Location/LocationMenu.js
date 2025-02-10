@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Menu, Button, Divider} from 'react-native-paper';
+import {Menu, Button} from 'react-native-paper';
 
 const LocationMenu = ({selected, onSelect}) => {
   const [visible, setVisible] = useState(false);

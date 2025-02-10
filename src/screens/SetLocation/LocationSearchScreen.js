@@ -1,5 +1,4 @@
 import React from 'react';
-import {ActivityIndicator, Text, View} from 'react-native';
 import Postcode from '@actbase/react-daum-postcode';
 import {getLatLngFromAddress} from '../../hooks/useLocation';
 

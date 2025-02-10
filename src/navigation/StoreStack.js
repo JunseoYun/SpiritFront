@@ -1,5 +1,5 @@
 import React from 'react';
-import {Alert, Pressable} from 'react-native';
+import {Pressable} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {createStackNavigator} from '@react-navigation/stack';
 

@@ -3,10 +3,8 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import MainScreen from '../screens/BottomTab/MainScreen';
-import SearchScreen from '../screens/BottomTab/Search/SearchScreen';
 import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
-import Logout from '../screens/BottomTab/My/Logout';
 import SearchStack from './SearchStack';
 import MyStack from './MyStack';
 

@@ -1,6 +1,6 @@
 // CategoryTranslator.js
 import React from 'react';
-import {View, Text, FlatList, StyleSheet, Pressable, Image} from 'react-native';
+import {Text} from 'react-native';
 
 // 카테고리 영어 -> 한글 매핑 객체
 const categoryMap = {

@@ -1,23 +1,27 @@
 import React from 'react';
-import { Pressable, StyleSheet, Animated } from 'react-native';
+import {Pressable, StyleSheet, Animated} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const StoreHeader = ({ navigation, headerBackgroundColor, iconColor, titleOpacity, title }) => {
+const StoreHeader = ({
+  navigation,
+  headerBackgroundColor,
+  iconColor,
+  titleOpacity,
+}) => {
   return (
     <Animated.View
-      style={[styles.navigateView, { backgroundColor: headerBackgroundColor }]}
-    >
+      style={[styles.navigateView, {backgroundColor: headerBackgroundColor}]}>
       <Pressable onPress={() => navigation.goBack()}>
-        <Animated.Text style={{ color: iconColor }}>
+        <Animated.Text style={{color: iconColor}}>
           <Ionicons name="arrow-back-outline" size={25} />
         </Animated.Text>
       </Pressable>
-      <Animated.Text style={[styles.headerTitle, { opacity: titleOpacity }]}>
+      <Animated.Text style={[styles.headerTitle, {opacity: titleOpacity}]}>
         {/* {title || '친구포차'} */}
         친구포차
       </Animated.Text>
       <Pressable onPress={() => navigation.navigate('MainBtmbar')}>
-        <Animated.Text style={{ color: iconColor }}>
+        <Animated.Text style={{color: iconColor}}>
           <Ionicons name="home-outline" size={25} />
         </Animated.Text>
       </Pressable>
@@ -38,7 +42,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     zIndex: 1,
     paddingTop: Platform.OS === 'ios' ? 50 : 30,
-
   },
   headerTitle: {
     fontSize: 20,

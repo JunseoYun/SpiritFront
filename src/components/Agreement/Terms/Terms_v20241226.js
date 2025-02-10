@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {Text, SafeAreaView, ScrollView, Pressable} from 'react-native';
 const Terms_v20241226 = ({navigation}) => {
   return (

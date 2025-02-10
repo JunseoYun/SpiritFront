@@ -1,4 +1,3 @@
-// SearchButton.js
 import React from 'react';
 import {Pressable, StyleSheet} from 'react-native';
 

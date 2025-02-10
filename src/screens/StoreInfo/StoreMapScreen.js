@@ -1,32 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Text,
-  SafeAreaView,
-  ScrollView,
-  Pressable,
-  View,
-  StyleSheet
-} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
+import {Text, View, StyleSheet} from 'react-native';
 
-import { WebView } from 'react-native-webview';
-import { getLocation } from '../../storage/locationStorage';
-import { fetchLocation } from '../../hooks/useLocation';
+import {WebView} from 'react-native-webview';
+import {getLocation} from '../../storage/locationStorage';
+import {fetchLocation} from '../../hooks/useLocation';
 import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import StoreMapScript from '../../components/StoreMapScreen/StoreMapScript';
 import StoreMapLocation from '../../components/StoreMapScreen/StoreMapLocation';
 import StoreMapCenter from '../../components/StoreMapScreen/StoreMapCenter';
-import { openKakaoMap } from '../../hooks/openKakaoMap';
+import {openKakaoMap} from '../../hooks/openKakaoMap';
 import StoreMapFoot from '../../components/StoreMapScreen/StoreMapFoot';
 import StoreMapBus from '../../components/StoreMapScreen/StoreMapBus';
 import StoreMapCar from '../../components/StoreMapScreen/StoreMapCar';
 
-const StoreMapScreen = ({ navigation, storeId, storeLatitude, storeLongitude, innerlatitude, innerlongitude }) => {
-
-  const [location, setLocation] = useState({ innerlatitude, innerlongitude });
+const StoreMapScreen = ({
+  storeLatitude,
+  storeLongitude,
+  innerlatitude,
+  innerlongitude,
+}) => {
+  const [location, setLocation] = useState({innerlatitude, innerlongitude});
   const webViewRef = useRef(null);
-  const [isWebModalVisible, setWebModalVisible] = useState(false);
-
-
 
   useEffect(() => {
     fetchSaveLocation();
@@ -51,7 +45,6 @@ const StoreMapScreen = ({ navigation, storeId, storeLatitude, storeLongitude, in
     }
   };
 
-
   const updateNewLocation = async () => {
     try {
       const newLocation = await fetchLocation();
@@ -63,7 +56,12 @@ const StoreMapScreen = ({ navigation, storeId, storeLatitude, storeLongitude, in
         moveCenterMap(newLocation.latitude, newLocation.longitude);
       } else {
         setLocation(newLocation);
-        updateMap(newLocation.latitude, newLocation.longitude, storeLatitude, storeLongitude);
+        updateMap(
+          newLocation.latitude,
+          newLocation.longitude,
+          storeLatitude,
+          storeLongitude,
+        );
       }
     } catch (err) {
       console.error('위치 업데이트 중 오류 발생:', err);
@@ -74,8 +72,14 @@ const StoreMapScreen = ({ navigation, storeId, storeLatitude, storeLongitude, in
     moveCenterMap(storeLatitude, storeLongitude);
   };
 
-  const openMapHandle = (text) => {
-    openKakaoMap(location.latitude, location.longitude, storeLatitude, storeLongitude, text);
+  const openMapHandle = text => {
+    openKakaoMap(
+      location.latitude,
+      location.longitude,
+      storeLatitude,
+      storeLongitude,
+      text,
+    );
   };
 
   const moveCenterMap = (lat, lng) => {
@@ -90,23 +94,21 @@ const StoreMapScreen = ({ navigation, storeId, storeLatitude, storeLongitude, in
 
   const updateMap = (lat, lng, storeLatitude, storeLongitude) => {
     if (webViewRef.current) {
-      webViewRef.current.injectJavaScript(StoreMapScript(lat, lng, storeLatitude, storeLongitude));
+      webViewRef.current.injectJavaScript(
+        StoreMapScript(lat, lng, storeLatitude, storeLongitude),
+      );
     }
   };
 
-
-
   return (
-
     <View style={styles.container}>
       {location ? (
         <WebView
           ref={webViewRef}
           originWhitelist={['*']}
-          source={{ html: KakaoMapHTML() }}
+          source={{html: KakaoMapHTML()}}
           javaScriptEnabled={true}
           domStorageEnabled={true}
-          // onMessage={onMessageHandler} // 메시지 핸들러 추가
           nestedScrollEnabled={true} // 제스처 전달 허용
           onLoadEnd={fetchSaveLocation}
           style={styles.webview}
@@ -119,15 +121,12 @@ const StoreMapScreen = ({ navigation, storeId, storeLatitude, storeLongitude, in
 
       <StoreMapLocation onPress={updateNewLocation} />
       <StoreMapCenter onPress={storeCenter} />
-      <StoreMapFoot onPress={() => openMapHandle("FOOT")} />
-      <StoreMapBus onPress={() => openMapHandle("PUBLICTRANSIT")} />
-      <StoreMapCar onPress={() => openMapHandle("CAR")} />
+      <StoreMapFoot onPress={() => openMapHandle('FOOT')} />
+      <StoreMapBus onPress={() => openMapHandle('PUBLICTRANSIT')} />
+      <StoreMapCar onPress={() => openMapHandle('CAR')} />
     </View>
-
-
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

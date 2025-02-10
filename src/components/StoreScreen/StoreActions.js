@@ -2,8 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, Pressable, Linking, Alert} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
-import {Storelikepost, StoreUnlikepost} from '../../api/storeApi';
-// import styles from '../../styles/StoreMainStyle';
+import {Storelikepost} from '../../api/storeApi';
 
 const StoreActions = ({storeData, navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();

@@ -7,7 +7,6 @@ import {
   Alert,
   View,
   StyleSheet,
-  TextInput,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {

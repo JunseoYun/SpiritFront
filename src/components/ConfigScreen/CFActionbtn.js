@@ -1,10 +1,6 @@
 import React from 'react';
 import {View, Pressable, Text, StyleSheet, Button} from 'react-native';
 import {useAuth} from '../../context/AuthContext';
-import {
-  testSetAccessTokenToken,
-  testSetRefreshTokenToken,
-} from '../../storage/tokenStorage';
 
 const CFActionbtn = ({navigation}) => {
   const {logout} = useAuth();
@@ -17,18 +13,6 @@ const CFActionbtn = ({navigation}) => {
     }
   };
 
-  const handleTestAccessSetToken = async () => {
-    try {
-      await testSetAccessTokenToken('!@#123ddasd123');
-    } catch (error) {}
-  };
-
-  const handleTestRefreshSetToken = async () => {
-    try {
-      await testSetRefreshTokenToken('!@#123ddasd123');
-    } catch (error) {}
-  };
-
   return (
     <>
       <View style={styles.container}>
@@ -38,14 +22,6 @@ const CFActionbtn = ({navigation}) => {
         <View style={styles.line} />
         <Pressable>
           <Text style={styles.label}>회원탈퇴</Text>
-        </Pressable>
-        <View style={styles.line} />
-        <Pressable onPress={handleTestAccessSetToken}>
-          <Text style={styles.label}>엑세스 토큰 X</Text>
-        </Pressable>
-        <View style={styles.line} />
-        <Pressable onPress={handleTestRefreshSetToken}>
-          <Text style={styles.label}>리프레시 토큰 X</Text>
         </Pressable>
       </View>
     </>

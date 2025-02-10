@@ -1,12 +1,5 @@
 import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  StyleSheet,
-  Image,
-} from 'react-native';
+import {View, Text, Pressable, StyleSheet, Image} from 'react-native';
 import RptAlcoholPicker from './RptAlcoholPicker';
 import AlcoholTextInput from './AlcoholTextInput';
 import ImagePicker from 'react-native-image-crop-picker';
