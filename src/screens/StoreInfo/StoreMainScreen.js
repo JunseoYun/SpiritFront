@@ -6,6 +6,7 @@ import {
   Text,
   Platform,
   TouchableWithoutFeedback,
+  StyleSheet,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/ImageSlider';
 import {Pressable, ScrollView} from 'react-native-gesture-handler';
@@ -51,6 +52,8 @@ const StoreMainScreen = ({navigation}) => {
   const [updatedValue, setUpdatedValue] = useState(null);
   const [updatedImgValue, setUpdatedImgValue] = useState([]);
   const scrollViewRef = useRef(null); // ScrollView 참조 추가
+  const [loading, setLoading] = useState(true);
+
   const startUpdate = () => {
     setIsUpdate(true);
   };
@@ -242,6 +245,7 @@ const StoreMainScreen = ({navigation}) => {
         setMenus(Menus);
         const Drinks = await StoreDrinkget(storeId);
         setAlcohols(Drinks);
+        setLoading(false);
       } catch (error) {
         console.error(error);
       }
@@ -428,8 +432,34 @@ const StoreMainScreen = ({navigation}) => {
         />
       </BottomSheet>
       <AlertComponent />
+      {loading && (
+        <View style={styles.footer}>
+          <Text style={styles.emptyText}>Loading...</Text>
+        </View>
+      )}
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  footer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
+  },
+});
 
 export default StoreMainScreen;

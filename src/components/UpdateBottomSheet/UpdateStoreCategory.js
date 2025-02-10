@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   categoryItem: {
-    width: '22%',
+    width: '18%',
     alignItems: 'center',
     marginBottom: 20,
     paddingVertical: 5,

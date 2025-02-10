@@ -208,7 +208,7 @@ const MapScreen = ({navigation}) => {
         />
       ) : (
         <View style={styles.loading}>
-          <Text>Loading Map...</Text>
+          <Text style={styles.loadingtext}>Loading Map...</Text>
         </View>
       )}
       <MapSearchBar buttonText="근처 주점들을 검색해보세요." />
@@ -241,6 +241,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loading: {
+    flex: 1,
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingtext: {
     textAlign: 'center',
     marginVertical: 20,
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
