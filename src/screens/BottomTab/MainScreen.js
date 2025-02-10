@@ -17,7 +17,6 @@ import RecentStoreList from '../../components/MainScreen/RecentStore/RecentStore
 import OptionsSection from '../../components/MainScreen/OptionSection';
 import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
-import {getWeatherData} from '../../api/weather';
 import useRecommendation from '../../hooks/useRecommendation';
 import {Store_getby_category} from '../../api/storeApi';
 
@@ -46,13 +45,7 @@ const MainScreen = ({navigation}) => {
         if (currentLocation) {
           setLocation(currentLocation);
 
-          const weatherData = await getWeatherData(currentLocation);
-          setWeather(weatherData);
-          const {category, reason} = recommendCategory(
-            weatherData.condition,
-            weatherData.temp,
-            weatherData.rain_probability,
-          );
+          const {category, reason} = recommendCategory();
           const recommStoreData = await Store_getby_category(
             0,
             currentLocation.latitude,
@@ -79,13 +72,8 @@ const MainScreen = ({navigation}) => {
       const currentLocation = await getLocation();
       if (currentLocation) {
         setLocation(currentLocation);
-        const weatherData = await getWeatherData(currentLocation);
-        setWeather(weatherData);
-        const {category, reason} = recommendCategory(
-          weatherData.condition,
-          weatherData.temp,
-          weatherData.rain_probability,
-        );
+
+        const {category, reason} = recommendCategory();
         const recommStoreData = await Store_getby_category(
           0,
           currentLocation.latitude,

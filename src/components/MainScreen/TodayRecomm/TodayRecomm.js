@@ -7,7 +7,6 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
-import useWeatherTranslation from '../../../hooks/useWeatherTranslation';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
 
@@ -16,14 +15,12 @@ const ITEM_WIDTH = width * 0.9;
 const SPACING = 10;
 
 const TodayRecomm = ({
-  weather,
   recommCategory,
   recommReason,
   recommStores,
   location,
   navigation,
 }) => {
-  const {translateWeather} = useWeatherTranslation();
   const {translateCategory} = useCategoryTranslation();
   const koreanCategory = translateCategory(recommCategory);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -78,11 +75,10 @@ const TodayRecomm = ({
           horizontal
           keyExtractor={(item, index) => index.toString()}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={
-            recommStores.length < 2
-              ? [styles.scrollContainer, styles.smallListContainer]
-              : styles.scrollContainer
-          }
+          contentContainerStyle={[
+            styles.scrollContainer,
+            recommStores.length < 3 && styles.centeredListContainer,
+          ]}
           snapToAlignment="center"
           snapToInterval={ITEM_WIDTH + SPACING}
           decelerationRate={0.8}
@@ -109,7 +105,7 @@ const TodayRecomm = ({
         />
       )}
       {/* 페이지네이션 점 표시 */}
-      {/* {recommStores && (
+      {recommStores.length > 1 && (
         <View style={styles.pagination}>
           {recommStores.map((_, index) => (
             <View
@@ -121,7 +117,7 @@ const TodayRecomm = ({
             />
           ))}
         </View>
-      )} */}
+      )}
       {recommStores.length === 0 && (
         <View style={styles.noDataView}>
           <Image
@@ -132,26 +128,6 @@ const TodayRecomm = ({
             추천 카테고리에 등록된 주점이 없어요
           </Text>
         </View>
-      )}
-      {weather.condition ? (
-        <View style={styles.topdayweather}>
-          <View style={styles.weatherTemp}>
-            <Image
-              source={{uri: `https:${weather.icon}`}}
-              style={styles.weatherIcon}
-            />
-            <Text style={styles.todayweathertext}>{weather.temp}°C</Text>
-          </View>
-
-          <Text style={styles.todayweathertext}>
-            날씨: {translateWeather(weather.condition)}
-          </Text>
-          <Text style={styles.todayweathertext}>
-            강수량: {weather.rain_probability}mm
-          </Text>
-        </View>
-      ) : (
-        <Text style={styles.notWeathertext}>날씨 정보 가져오는 중...</Text>
       )}
     </>
   );
@@ -175,18 +151,23 @@ const styles = StyleSheet.create({
   scrollContainer: {
     alignItems: 'center',
   },
-  smallListContainer: {marginLeft: 15},
+  centeredListContainer: {
+    justifyContent: 'center', // 리스트 중앙 정렬
+    flexDirection: 'row',
+    paddingHorizontal: 15,
+  },
+  smallListContainer: {marginLeft: 15, marginRight: 15},
   pagination: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 0,
-    marginBottom: -5,
+    marginBottom: 0,
   },
   dot: {
     width: 6,
     height: 6,
-    borderRadius: 4,
+    borderRadius: 10,
     backgroundColor: '#E0E0E0',
     marginHorizontal: 4,
   },
