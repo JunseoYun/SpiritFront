@@ -4,7 +4,6 @@ import React, {useState} from 'react';
 import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
 import TermsMenu from '../../components/Agreement/Terms/TermsMenu';
 import Terms_v20250128 from '../../components/Agreement/Terms/Terms_v20250128';
-import Terms_v20241226 from '../../components/Agreement/Terms/Terms_v20241226';
 
 const TermsAgreeScreen = ({navigation}) => {
   const [selected, setSelected] = useState('[현행] 2025년 1월 28일 시행안'); // 선택된 메뉴

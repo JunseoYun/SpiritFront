@@ -6,7 +6,6 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import MyTabs from '../../../components/MyScreen/MyTabs';
 import MyReview from '../../../components/MyScreen/MyReview';
 import MyLocation from '../../../components/MyScreen/MyLocation';
-import {Reviewget_by_recent} from '../../../api/reviewApi';
 
 const MyScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
@@ -56,7 +55,7 @@ const MyScreen = ({navigation}) => {
     return (
       <SafeAreaView
         style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text>Loading...</Text>
+        <Text style={styles.loadingtext}>Loading...</Text>
       </SafeAreaView>
     );
   }
@@ -94,6 +93,13 @@ const styles = StyleSheet.create({
     color: 'black',
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  loadingtext: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 

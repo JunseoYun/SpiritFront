@@ -1,12 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  SafeAreaView,
-  FlatList,
-  StyleSheet,
-  Text,
-  ActivityIndicator,
-  View,
-} from 'react-native';
+import {SafeAreaView, FlatList, StyleSheet, Text, View} from 'react-native';
 
 import LikedItem from '../../components/LikedScreen/LikedItem';
 import {Store_getby_liked} from '../../api/storeApi';

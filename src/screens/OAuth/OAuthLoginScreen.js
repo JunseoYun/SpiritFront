@@ -7,9 +7,6 @@ import {
   StyleSheet,
   Platform,
   SafeAreaView,
-  Animated,
-  Easing,
-  ImageBackground,
 } from 'react-native';
 import {
   loginWithKakaoAccount,

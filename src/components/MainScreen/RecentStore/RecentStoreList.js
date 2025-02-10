@@ -1,11 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {
-  FlatList,
-  StyleSheet,
-  View,
-  Text,
-  ActivityIndicator,
-} from 'react-native';
+import {FlatList, StyleSheet, View, Text} from 'react-native';
 import RecentStoreItem from './RecentStoreItem';
 import {Store_getby_recent} from '../../../api/storeApi';
 

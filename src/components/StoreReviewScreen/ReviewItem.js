@@ -36,7 +36,6 @@ const ReviewItem = ({item}) => {
             <Text style={styles.reviewInfo}> {item.rate}</Text>
           </View>
         </View>
-        {/* <Text style={styles.reviewDate}>{item.date}</Text> */}
         <Text style={styles.reviewDate}>방문 {formattedVisitedDate}</Text>
       </View>
       <Text style={styles.reviewContent}>{item.content}</Text>

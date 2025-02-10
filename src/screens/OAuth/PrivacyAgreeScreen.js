@@ -3,10 +3,9 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
 import PrivacyMenu from '../../components/Agreement/Privacy/PrivacyMenu';
-import Privacy_v20241226 from '../../components/Agreement/Privacy/Privacy_v20241226';
 import Privacy_v20250128 from '../../components/Agreement/Privacy/Privacy_v20250128';
 
-const PrivacyAgreeScreen = ({navigation}) => {
+const PrivacyAgreeScreen = ({}) => {
   const [selected, setSelected] = useState('[현행] 2025년 1월 28일 시행안'); // 선택된 메뉴
   const [ActiveComponent, setActiveComponent] = useState(<Privacy_v20250128 />); // 표시할 컴포넌트
 

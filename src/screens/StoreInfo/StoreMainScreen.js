@@ -1,7 +1,6 @@
 import React, {useEffect, useState, useRef, useMemo} from 'react';
 import {
   View,
-  Dimensions,
   Animated,
   Text,
   Platform,
@@ -323,7 +322,6 @@ const StoreMainScreen = ({navigation}) => {
                 },
                 isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
               ]}>
-              {/* {imageSliderData.length > 0 ? ( */}
               <ImageSlider
                 images={imageSliderData}
                 interval={4000}
@@ -332,11 +330,6 @@ const StoreMainScreen = ({navigation}) => {
                 onEditKey={handleEditKey}
                 onEditValue={handleEditValue}
               />
-              {/* ) : (
-                <View>
-                  <Text style={{color: 'white'}}>이미지 없음</Text>
-                </View>
-              )} */}
             </View>
 
             <StoreMainInfo

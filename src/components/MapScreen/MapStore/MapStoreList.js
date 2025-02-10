@@ -1,7 +1,6 @@
-import React, {useState, useRef} from 'react';
+import React from 'react';
 import {Animated, FlatList, StyleSheet} from 'react-native';
 import MapStoreItem from './MapStoreItem';
-import BottomSheet from '@gorhom/bottom-sheet';
 
 const MapStoreList = ({
   panHandlers,

@@ -1,16 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Pressable,
-  SafeAreaView,
-  Modal,
-} from 'react-native';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import {Text, StyleSheet, SafeAreaView} from 'react-native';
 import {Userdataget} from '../../../api/userApi';
-import ImagePicker from 'react-native-image-crop-picker';
 import {Userimgpost} from '../../../api/userApi';
 import {Userimgdelete} from '../../../api/userApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';

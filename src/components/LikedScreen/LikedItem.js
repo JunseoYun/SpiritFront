@@ -1,4 +1,3 @@
-// StoreCard.js
 import React from 'react';
 import {Pressable, View, Text, ImageBackground, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';

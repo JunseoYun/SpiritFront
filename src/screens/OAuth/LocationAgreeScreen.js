@@ -3,7 +3,6 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
 import LocationMenu from '../../components/Agreement/Location/LocationMenu';
-import Location_v20241226 from '../../components/Agreement/Location/Location_v20241226';
 import Location_v20250128 from '../../components/Agreement/Location/Location_v20250128';
 
 const LocationAgreeScreen = ({navigation}) => {
