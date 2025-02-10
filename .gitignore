@@ -75,4 +75,4 @@ yarn-error.log
 # Environment files
 .env
 
-/functions
+/firebaseServer
