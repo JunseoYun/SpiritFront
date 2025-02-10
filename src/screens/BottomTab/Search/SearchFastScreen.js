@@ -117,7 +117,7 @@ const SearchFastScreen = ({navigation}) => {
       // Category 선택 시
       if (selectedCategory) {
         updatedSearch.category = selectedEngCategory;
-        updatedSearchinfo.selectedPeople = selectedCategory;
+        updatedSearchinfo.selectedCategory = selectedCategory;
       }
 
       // People 선택 시
