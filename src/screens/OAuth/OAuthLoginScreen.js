@@ -27,8 +27,6 @@ const OAuthLoginScreen = ({navigation}) => {
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId:
-        '55496276543-b5j0de5qpjjpg55874qi4dj6fpdd7srf.apps.googleusercontent.com',
       iosClientId:
         '55496276543-acp3mpj3folinp0067iogp03cstubo4r.apps.googleusercontent.com',
     });
