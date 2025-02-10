@@ -20,6 +20,7 @@ import {appleAuth} from '@invertase/react-native-apple-authentication';
 import {user_login} from '../../api/userApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useAuth} from '../../context/AuthContext';
+import Config from 'react-native-config';
 
 const OAuthLoginScreen = ({navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -27,8 +28,8 @@ const OAuthLoginScreen = ({navigation}) => {
 
   useEffect(() => {
     GoogleSignin.configure({
-      iosClientId:
-        '55496276543-acp3mpj3folinp0067iogp03cstubo4r.apps.googleusercontent.com',
+      webClientId: Config.GOOGLE_WEB_CLIENT_ID,
+      iosClientId: Config.GOOGLE_CLIENT_ID,
     });
   }, []);
 
