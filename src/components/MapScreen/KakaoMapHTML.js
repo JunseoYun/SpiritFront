@@ -1,3 +1,5 @@
+import Config from 'react-native-config';
+
 const KakaoMapHTML = () => `
   <!DOCTYPE html>
   <html>
@@ -5,7 +7,7 @@ const KakaoMapHTML = () => `
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Kakao Map</title>
-    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=f5e6db800b171aa75ab189e0c334c74a"></script>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=${Config.KAKAO_APP_JAVASCRIPT}"></script>
     <style>
       html, body {
         width: 100%;

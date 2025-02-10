@@ -22,7 +22,18 @@ const StoreMapScreen = ({
   const [location, setLocation] = useState({innerlatitude, innerlongitude});
   const webViewRef = useRef(null);
 
+  const [mapHTML, setMapHTML] = useState(null); // Kakao Map HTML 상태
   useEffect(() => {
+    const fetchMapHTML = async () => {
+      try {
+        const html = await KakaoMapHTML(); // KakaoMapHTML 비동기 호출
+        setMapHTML(html);
+      } catch (error) {
+        console.error('Error loading Kakao Map HTML:', error);
+      }
+    };
+
+    fetchMapHTML(); // HTML 로드
     fetchSaveLocation();
   }, []);
 
@@ -106,7 +117,7 @@ const StoreMapScreen = ({
         <WebView
           ref={webViewRef}
           originWhitelist={['*']}
-          source={{html: KakaoMapHTML()}}
+          source={{html: mapHTML}}
           javaScriptEnabled={true}
           domStorageEnabled={true}
           nestedScrollEnabled={true} // 제스처 전달 허용
