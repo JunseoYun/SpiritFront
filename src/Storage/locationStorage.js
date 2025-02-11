@@ -1,12 +1,10 @@
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const fixedLocation = { latitude: 37.2757, longitude: 127.1325};
-const fixedAddress = "강남대학교";
+const fixedLocation = {latitude: 37.496486, longitude: 127.0283};
+const fixedAddress = '강남역';
 let cachedLocation = null; // 캐시된 위치를 저장할 변수
 let error = null;
 let cachedAddress = null;
-
 
 export const saveLocationAddress = async (location, address) => {
   try {
@@ -16,12 +14,11 @@ export const saveLocationAddress = async (location, address) => {
     cachedLocation = location; // 메모리에 캐싱
     cachedAddress = address;
 
-    return { location, address };
+    return {location, address};
   } catch (error) {
     console.log('위치 정보 저장 오류:', error);
   }
 };
-
 
 export const getLocation = async () => {
   if (cachedLocation) return cachedLocation; // 메모리에 캐싱된 위치가 있으면 반환
@@ -54,7 +51,7 @@ export const getAddress = async () => {
 export const clearLocationStorage = async () => {
   try {
     await AsyncStorage.removeItem('location'); // 'location' 키 삭제
-    await AsyncStorage.removeItem('address');  // 'address' 키 삭제
+    await AsyncStorage.removeItem('address'); // 'address' 키 삭제
     cachedLocation = null;
     cachedAddress = null;
   } catch (error) {
