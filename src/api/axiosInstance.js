@@ -1,11 +1,11 @@
 import axios from 'axios';
 import {functionError} from './errorHandler';
+import Config from 'react-native-config';
 
 import {
   getAccessToken,
   getRefreshToken,
   setToken,
-  setAccessToken,
 } from '../storage/tokenStorage';
 import {getGlobalLogout} from '../context/AuthContext';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
@@ -21,7 +21,7 @@ const refreshAccessToken = async () => {
   try {
     // GET 요청으로 x-auth-token 헤더에 refreshToken 전달
     const response = await axios.get(
-      'https://team-spirit.click/api/auth/reissue-token',
+      `https://${Config.BASE_URL}/api/auth/reissue-token`,
       {
         headers: {
           'x-auth-token': refreshToken,
@@ -45,7 +45,7 @@ const refreshAccessToken = async () => {
 
 // Axios 인스턴스 생성
 const axiosInstance = axios.create({
-  baseURL: 'https://team-spirit.click/api', // 공통 URL
+  baseURL: `https://${Config.BASE_URL}/api`, // 공통 URL
   headers: {
     'Content-Type': 'application/json',
   },
