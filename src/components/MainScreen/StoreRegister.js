@@ -68,8 +68,9 @@ const styles = StyleSheet.create({
   StoresubText: {
     fontSize: 12,
     fontWeight: '500',
-    marginTop: 7,
+    marginTop: 5,
     color: '#333',
+    lineHeight: 15,
   },
 });
 

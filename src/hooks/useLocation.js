@@ -1,10 +1,7 @@
-import { Platform, PermissionsAndroid } from 'react-native';
+import {Platform, PermissionsAndroid} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
-import axios from 'axios';
-import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-
-
-
+import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import {get_address, get_coordinate} from '../api/location';
 export const fetchLocationAddress = () => {
   const hasPermission = requestLocationPermission();
   if (!hasPermission) {
@@ -15,14 +12,14 @@ export const fetchLocationAddress = () => {
     Geolocation.getCurrentPosition(
       async position => {
         try {
-          const { latitude, longitude } = position.coords;
-          const newLocation = { latitude, longitude };
+          const {latitude, longitude} = position.coords;
+          const newLocation = {latitude, longitude};
 
           // 주소 정보 가져오기
           const address = await getAddressFromCoordinates(newLocation);
 
           // 위치와 주소 정보 함께 반환
-          resolve({ location: newLocation, address });
+          resolve({location: newLocation, address});
         } catch (err) {
           console.error('위치 또는 주소 가져오기 오류:', err);
           reject(err);
@@ -33,7 +30,7 @@ export const fetchLocationAddress = () => {
         handleLocationError(error);
         reject(error);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
     );
   });
 };
@@ -48,8 +45,8 @@ export const fetchLocation = () => {
     Geolocation.getCurrentPosition(
       async position => {
         try {
-          const { latitude, longitude } = position.coords;
-          const currentLocation = { latitude, longitude };
+          const {latitude, longitude} = position.coords;
+          const currentLocation = {latitude, longitude};
           resolve(currentLocation);
         } catch (err) {
           console.error('위치 또는 주소 가져오기 오류:', err);
@@ -61,11 +58,10 @@ export const fetchLocation = () => {
         handleLocationError(error);
         reject(error);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
     );
   });
 };
-
 
 const handleLocationError = error => {
   if (error.code === 1) {
@@ -108,7 +104,9 @@ export const requestLocationPermission = async () => {
         console.log('iOS 위치 권한이 거부되었습니다.');
         return false;
       } else if (result === RESULTS.BLOCKED) {
-        console.log('iOS 위치 권한이 차단되었습니다. 설정에서 변경이 필요합니다.');
+        console.log(
+          'iOS 위치 권한이 차단되었습니다. 설정에서 변경이 필요합니다.',
+        );
         return false;
       }
     } catch (error) {
@@ -119,20 +117,14 @@ export const requestLocationPermission = async () => {
   return false;
 };
 
-
-
 export const getAddressFromCoordinates = async cachedLocation => {
-  const { latitude, longitude } = cachedLocation;
-  const KAKAO_API_KEY = '9b09512f07cf4d2555413abbedcbcc3a'; // 발급받은 REST API 키
-  const url = `https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${longitude}&y=${latitude}`;
+  const {latitude, longitude} = cachedLocation;
 
   try {
-    const response = await axios.get(url, {
-      headers: { Authorization: `KakaoAK ${KAKAO_API_KEY}` },
-    });
-    if (response.data.documents.length > 0) {
-      const addressDetail = response.data.documents[0].address;
-      return addressDetail.address_name;
+    const response = await get_address(latitude, longitude);
+
+    if (response) {
+      return response.address;
     } else {
       return '주소를 찾을 수 없습니다.';
     }
@@ -142,29 +134,11 @@ export const getAddressFromCoordinates = async cachedLocation => {
   }
 };
 
-
 export const getLatLngFromAddress = async address => {
-  const apiKey = '9b09512f07cf4d2555413abbedcbcc3a'; // 카카오맵 API 키
-  const url = `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(
-    address,
-  )}`;
-
   try {
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `KakaoAK ${apiKey}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-
-    if (data.documents.length > 0) {
-      const {x, y} = data.documents[0].address;
-      return {latitude: y, longitude: x};
+    const response = await get_coordinate(address);
+    if (response) {
+      return {latitude: response.latitude, longitude: response.longitude};
     } else {
       throw new Error('No results found');
     }
