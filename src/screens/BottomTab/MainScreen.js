@@ -132,7 +132,7 @@ const MainScreen = ({navigation}) => {
   };
 
   const formatAddress = address => {
-    if (address === '강남대학교') {
+    if (address === '강남역') {
       return address;
     }
     const parts = address.split(' ');

@@ -1,27 +1,31 @@
-const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
 
-/**
- * Metro configuration
- * https://reactnative.dev/docs/metro
- *
- * @type {import('metro-config').MetroConfig}
- */
+const defaultConfig = getDefaultConfig(__dirname);
+
 const config = {
-  // watchFolders 설정으로 파일 감시 문제 해결
-  watchFolders: [
-    // 현재 프로젝트 디렉터리
-    __dirname,
-  ],
-  server: {
-    // 메트로 서버에서 리스너 제한을 설정하여 오류 방지
-    enhanceMiddleware: (middleware) => {
-      middleware.getMaxListeners = () => 100;
-      return middleware;
+  ...defaultConfig,
+  transformer: {
+    minifierPath: 'metro-minify-terser', // Terser 적용
+    minifierConfig: {
+      keep_classnames: false, // 클래스명 난독화
+      keep_fnames: false, // 함수명 난독화
+      mangle: true, // 변수명 난독화
+      output: {
+        ascii_only: true, // 유니코드 문자 보호
+      },
+      compress: {
+        dead_code: true, // 사용되지 않는 코드 제거
+        drop_console: true, // 콘솔 제거 (보안 강화)
+        drop_debugger: true, // 디버거 제거
+        unused: true, // 사용하지 않는 변수 제거
+        booleans: true, // Boolean 최적화
+        conditionals: true, // 조건문 단순화
+        if_return: true, // if 문 최적화
+        sequences: true, // 코드 압축 최적화
+        passes: 2, // 두 번 압축 실행
+      },
     },
-  },
-  resolver: {
-    // 이곳에 필요한 추가 설정이 있으면 작성
   },
 };
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+module.exports = mergeConfig(defaultConfig, config);
