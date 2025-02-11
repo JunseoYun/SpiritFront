@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#333',
+    marginLeft: 18,
   },
 });
 

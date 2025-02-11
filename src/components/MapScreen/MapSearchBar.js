@@ -3,9 +3,15 @@ import React from 'react';
 import {Pressable, View, Text, StyleSheet, Platform} from 'react-native';
 
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
-const MapSearchBar = ({onPress, buttonText}) => {
+const MapSearchBar = ({navigation, buttonText}) => {
   return (
-    <Pressable style={styles.buttonTop} onPress={onPress}>
+    <Pressable
+      style={styles.buttonTop}
+      onPress={() =>
+        navigation.navigate('SearchStack', {
+          screen: 'SearchScreen',
+        })
+      }>
       <View style={styles.searchBar}>
         <EvilIcons
           //   style={styles.searchIcon}

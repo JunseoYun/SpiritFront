@@ -103,7 +103,9 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
           ) : null
         }
         ListEmptyComponent={
-          !loading ? <Text style={styles.emptyText}>가게가 없어요</Text> : null
+          !loading ? (
+            <Text style={styles.emptyText}>근처에 영업 중인 가게가 없어요</Text>
+          ) : null
         }
       />
     </View>
@@ -146,6 +148,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#333',
+    marginLeft: 18,
   },
 });
 

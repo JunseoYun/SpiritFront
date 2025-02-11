@@ -211,7 +211,10 @@ const MapScreen = ({navigation}) => {
           <Text style={styles.loadingtext}>Loading Map...</Text>
         </View>
       )}
-      <MapSearchBar buttonText="근처 주점들을 검색해보세요." />
+      <MapSearchBar
+        navigation={navigation}
+        buttonText="근처 주점들을 검색해보세요."
+      />
       <MapLocation onPress={updateNewLocation} />
       <MapDirections onPress={openMapHandle} />
 
