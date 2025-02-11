@@ -6,7 +6,6 @@ import {
   View,
   RefreshControl,
   SafeAreaView,
-  Alert,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
@@ -19,7 +18,7 @@ import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
 import {Store_getby_category} from '../../api/storeApi';
-
+import useCustomAlert from '../../hooks/useCustomAlert';
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
@@ -29,11 +28,7 @@ const MainScreen = ({navigation}) => {
   const [recommReason, setRecommReason] = useState(null);
   // const [isModalVisible, setIsModalVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [weather, setWeather] = useState({
-    temp: 0,
-    condition: '',
-    rain_probability: 0,
-  });
+  const {showAlert, AlertComponent} = useCustomAlert();
   const [storeactiveIndex, setStoreActiveIndex] = useState(null);
   const recentRef = useRef(null);
   const {recommendCategory} = useRecommendation();
@@ -115,7 +110,9 @@ const MainScreen = ({navigation}) => {
       navigation.navigate('StoreAddScreen');
     } else if (index === 1) {
       // navigation.navigate('StoreAuthorityScreen');
-      Alert.alert('서비스 준비중 입니다.');
+      showAlert({
+        title: '서비스 준비 중입니다.',
+      });
     } else if (index === 2) {
       navigation.navigate('MapScreen');
     } else if (index === 3) {
@@ -174,7 +171,6 @@ const MainScreen = ({navigation}) => {
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }>
         <TodayRecomm
-          weather={weather}
           recommCategory={recommCategory}
           recommReason={recommReason}
           recommStores={recommStores}
@@ -210,6 +206,7 @@ const MainScreen = ({navigation}) => {
         />
         <AppInfo handleAgreeScreen={handleAgreeScreen} />
       </ScrollView>
+      <AlertComponent />
     </SafeAreaView>
   );
 };
