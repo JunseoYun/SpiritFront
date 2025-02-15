@@ -108,14 +108,6 @@ const StoreAlcoholScreen = ({
     });
   };
 
-  const handleEditAlcohol = updatedAlcohol => {
-    setAlcoholsState(prevAlcohols =>
-      prevAlcohols.map(alcohol =>
-        alcohol.id === updatedAlcohol.id ? updatedAlcohol : alcohol,
-      ),
-    );
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <AlcoholHeader storeId={storeId} navigation={navigation} />
@@ -131,7 +123,6 @@ const StoreAlcoholScreen = ({
               isOpen={openItemId === alcohol.id}
               onOpen={() => handleOpenItem(alcohol.id)}
               onClose={handleCloseAll}
-              onEdit={handleEditAlcohol}
               onDelete={() => handleDeleteAlcohol(alcohol.id, alcohol.name)}
               scrollViewRef={scrollViewRef}
             />

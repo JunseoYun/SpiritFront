@@ -185,7 +185,7 @@ const StoreReviewScreen = ({navigation}) => {
         createReviewDto: {
           content: newReviewContent,
           rate: newrate,
-          visitedAt: visitDate,
+          visitedAt: new Date(visitDate.getTime() + 9 * 60 * 60 * 1000),
           storeId: storeId,
         },
       };
@@ -246,7 +246,7 @@ const StoreReviewScreen = ({navigation}) => {
           </View>
           <ScrollView style={styles.reviewList}>
             {reviewdata.map(item => (
-              <ReviewItem key={item.id} item={item} />
+              <ReviewItem key={item.id} item={item} navigation={navigation} />
             ))}
             {loading && !isEnd ? (
               <View style={styles.footer}>

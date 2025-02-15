@@ -283,6 +283,16 @@ const StoreMainScreen = ({navigation}) => {
     extrapolate: 'clamp',
   });
 
+  const handleReport = () => {
+    navigation.navigate('StoreStack', {
+      screen: 'StoreReportScreen',
+      params: {
+        storeId: storedata.id,
+        storeName: storedata.name,
+      },
+    });
+  };
+
   return (
     <>
       {!isUpdate && (
@@ -397,6 +407,7 @@ const StoreMainScreen = ({navigation}) => {
         storeId={storeId}
         navigation={navigation}
         startUpdate={startUpdate}
+        handleReport={handleReport}
       />
       <BottomSheet
         ref={bottomSheetRef}

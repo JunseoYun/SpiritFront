@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
@@ -24,12 +24,10 @@ const MenuItem = ({
   isOpen,
   onOpen,
   onClose,
-  onDelete,
   scrollViewRef,
   navigation,
 }) => {
   const translateX = useSharedValue(0);
-  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{translateX: translateX.value}],
@@ -73,18 +71,25 @@ const MenuItem = ({
         <View style={[styles.actionsContainer, {width: BUTTON_WIDTH}]}>
           <TouchableOpacity
             style={[styles.actionButton, styles.editButton]}
-            onPress={() =>
+            onPress={() => {
+              onClose();
               navigation.navigate('MenuUpdateScreen', {
                 menu: menu,
                 storeId: storeId,
-              })
-            }>
+              });
+            }}>
             <Text style={styles.actionText}>수정</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionButton, styles.deleteButton]}
-            onPress={() => onDelete(menu.id, menu.name)}>
-            <Text style={styles.actionText}>삭제</Text>
+            onPress={() => {
+              onClose();
+              navigation.navigate('MenuReportScreen', {
+                menuId: menu.id,
+                menuName: menu.name,
+              });
+            }}>
+            <Text style={styles.actionText}>신고</Text>
           </TouchableOpacity>
         </View>
 
