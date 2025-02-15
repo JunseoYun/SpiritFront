@@ -63,7 +63,6 @@ const AlcoholItem = ({
       translateX.value = withSpring(0);
     }
   }, [isOpen]);
-  console.log(alcohol);
   return (
     <GestureHandlerRootView>
       <Pressable style={styles.container} onPress={onClose}>
