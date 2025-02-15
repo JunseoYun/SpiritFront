@@ -58,18 +58,47 @@ const MapScreen = ({navigation}) => {
     }
   };
 
+  const roundToPrecision = (value, precision = 4) => {
+    return parseFloat(value.toFixed(precision)); // 🔥 소수점 5자리까지만 남김
+  };
+
   const updateNewLocation = async () => {
     try {
       const newLocation = await fetchLocation();
+      const roundedCurrentLat = location
+        ? roundToPrecision(location.latitude)
+        : null;
+      const roundedCurrentLng = location
+        ? roundToPrecision(location.longitude)
+        : null;
+      const roundedNewLat = roundToPrecision(newLocation.latitude);
+      const roundedNewLng = roundToPrecision(newLocation.longitude);
+
       if (
-        location &&
-        location.latitude === newLocation.latitude &&
-        location.longitude === newLocation.longitude
+        roundedCurrentLat === roundedNewLat &&
+        roundedCurrentLng === roundedNewLng
       ) {
+        console.log('true');
         moveCenterMap(newLocation.latitude, newLocation.longitude);
       } else {
+        console.log('false');
         setLocation(newLocation);
         updateMap(newLocation.latitude, newLocation.longitude, stores);
+        moveCenterMap(newLocation.latitude, newLocation.longitude);
+        const storesData = await Store_getby_radius(
+          newLocation.latitude,
+          newLocation.longitude,
+        );
+        setStores(storesData);
+        setSelectedStore(storesData[0]);
+        if (webViewRef.current) {
+          const script = generateMapScript(
+            newLocation.latitude,
+            newLocation.longitude,
+            storesData,
+          );
+          webViewRef.current.injectJavaScript(script);
+        }
       }
     } catch (err) {
       console.error('위치 업데이트 중 오류 발생:', err);
