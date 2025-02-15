@@ -1,37 +1,68 @@
-import React from 'react';
-import {View, Text, Pressable, Modal, StyleSheet} from 'react-native';
+import React, {useEffect, useRef} from 'react';
+import {View, Text, Pressable, Modal, StyleSheet, Animated} from 'react-native';
 import {Portal} from 'react-native-paper';
 
-const StoreModal = ({isModalVisible, onPressModalClose, startUpdate}) => {
-  const handlePress = () => {
-    startUpdate();
-    onPressModalClose();
+const StoreModal = ({
+  isModalVisible,
+  onPressModalClose,
+  startUpdate,
+  handleReport,
+}) => {
+  const opacity = useRef(new Animated.Value(0)).current; // opacity 애니메이션 값
+
+  useEffect(() => {
+    if (isModalVisible) {
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isModalVisible]);
+
+  const handleClose = callback => {
+    Animated.timing(opacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      onPressModalClose();
+      if (callback) callback(); // 애니메이션 종료 후 실행
+    });
   };
 
   return (
     <Portal>
       <Modal visible={isModalVisible} animationType="none" transparent={true}>
-        <Pressable style={styles.modalBackground} onPress={onPressModalClose}>
-          <View
-            style={styles.modalContainer}
+        <Pressable style={styles.modalBackground} onPress={() => handleClose()}>
+          <Animated.View
+            style={[styles.modalContainer, {opacity}]}
             onStartShouldSetResponder={() => true}>
             <View style={styles.modalContent}>
               <Pressable
                 style={styles.modalButton}
-                onPress={() => handlePress()}>
+                onPress={() => handleClose(startUpdate)}>
                 <Text style={styles.modalButtonText}>매장 수정</Text>
               </Pressable>
               <Pressable
                 style={styles.reportButton}
-                onPress={() => handlePress()}>
+                onPress={() => handleClose(handleReport)}>
                 <Text style={styles.modalButtonText}>매장 신고</Text>
               </Pressable>
               <View style={styles.line}></View>
-              <Pressable onPress={onPressModalClose} style={styles.closeButton}>
+              <Pressable
+                onPress={() => handleClose()}
+                style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>닫기</Text>
               </Pressable>
             </View>
-          </View>
+          </Animated.View>
         </Pressable>
       </Modal>
     </Portal>
@@ -41,7 +72,7 @@ const StoreModal = ({isModalVisible, onPressModalClose, startUpdate}) => {
 const styles = StyleSheet.create({
   modalBackground: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // 어두운 반투명 배경
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -51,8 +82,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 20,
     paddingHorizontal: 15,
-    elevation: 10, // 안드로이드 그림자
-    shadowColor: '#000', // iOS 그림자
+    elevation: 10,
+    shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.3,
     shadowRadius: 4,

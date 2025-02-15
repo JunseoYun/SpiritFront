@@ -23,8 +23,6 @@ const AlcoholItem = ({
   isOpen,
   onOpen,
   onClose,
-  onEdit,
-  onDelete,
   scrollViewRef,
   navigation,
   storeId,
@@ -65,7 +63,7 @@ const AlcoholItem = ({
       translateX.value = withSpring(0);
     }
   }, [isOpen]);
-
+  console.log(alcohol);
   return (
     <GestureHandlerRootView>
       <Pressable style={styles.container} onPress={onClose}>
@@ -73,18 +71,25 @@ const AlcoholItem = ({
         <View style={[styles.actionsContainer, {width: BUTTON_WIDTH}]}>
           <TouchableOpacity
             style={[styles.actionButton, styles.editButton]}
-            onPress={() =>
+            onPress={() => {
+              onClose();
               navigation.navigate('AlcoholUpdateScreen', {
                 alcohol: alcohol,
                 storeId: storeId,
-              })
-            }>
+              });
+            }}>
             <Text style={styles.actionText}>수정</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionButton, styles.deleteButton]}
-            onPress={() => onDelete(alcohol.id, alcohol.name)}>
-            <Text style={styles.actionText}>삭제</Text>
+            onPress={() => {
+              onClose();
+              navigation.navigate('AlcoholReportScreen', {
+                alcoholId: alcohol.id,
+                alcoholName: alcohol.name,
+              });
+            }}>
+            <Text style={styles.actionText}>신고</Text>
           </TouchableOpacity>
         </View>
 

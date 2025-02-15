@@ -62,7 +62,6 @@ const StoreMenuScreen = ({
           isOpen={openItemId === menu.id}
           onOpen={() => handleOpenItem(menu.id)}
           onClose={handleCloseAll}
-          onDelete={() => handleDeleteMenu(menu.id, menu.name)} // 삭제 함수 전달
           scrollViewRef={scrollViewRef} // 스크롤 참조 전달
           navigation={navigation}
         />
