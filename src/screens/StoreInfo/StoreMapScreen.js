@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {Text, View, StyleSheet} from 'react-native';
+import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
 
 import {WebView} from 'react-native-webview';
 import {getLocation} from '../../storage/locationStorage';
@@ -12,13 +12,19 @@ import {openKakaoMap} from '../../hooks/openKakaoMap';
 import StoreMapFoot from '../../components/StoreMapScreen/StoreMapFoot';
 import StoreMapBus from '../../components/StoreMapScreen/StoreMapBus';
 import StoreMapCar from '../../components/StoreMapScreen/StoreMapCar';
+import {useRoute} from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const StoreMapScreen = ({
-  storeLatitude,
-  storeLongitude,
-  innerlatitude,
-  innerlongitude,
-}) => {
+const StoreMapScreen = ({navigation}) => {
+  const route = useRoute();
+  const {
+    storeId,
+    storeLatitude,
+    storeLongitude,
+    innerlatitude,
+    innerlongitude,
+  } = route.params;
+
   const [location, setLocation] = useState({innerlatitude, innerlongitude});
   const webViewRef = useRef(null);
 
@@ -110,14 +116,27 @@ const StoreMapScreen = ({
       );
     }
   };
+  const handleGoBack = () => {
+    navigation.navigate('StoreMainScreen', {page: 'StoreMenuScreen'});
+  };
 
   return (
     <View style={styles.container}>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <Ionicons name="arrow-back-outline" size={25} color="#333" />
+        </TouchableOpacity>
+
+        <Text style={styles.modalTitle}>{`길찾기`}</Text>
+      </View>
       {location ? (
         <WebView
           ref={webViewRef}
           originWhitelist={['*']}
-          source={{html: mapHTML}}
+          source={{html: KakaoMapHTML()}}
           javaScriptEnabled={true}
           domStorageEnabled={true}
           nestedScrollEnabled={true} // 제스처 전달 허용
@@ -141,7 +160,23 @@ const StoreMapScreen = ({
 
 const styles = StyleSheet.create({
   container: {
-    height: 700,
+    flex: 1,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    paddingTop: Platform.OS === 'ios' ? 0 : 15,
+    paddingHorizontal: 18,
+    borderBottomWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    marginLeft: 15,
+    textAlign: 'center',
+    color: '#333', // ✅ 더 진한 색상 적용
   },
   webview: {
     flex: 1,

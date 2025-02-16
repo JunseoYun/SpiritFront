@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 
 const {width} = Dimensions.get('window'); // 화면 너비
 
-const StoreTabs = ({changePage}) => {
+const StoreTabs = ({changePage, currentPage}) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const animatedValue = useRef(new Animated.Value(0)).current;
 
@@ -19,6 +19,19 @@ const StoreTabs = ({changePage}) => {
     {name: '주류', screen: 'StoreAlcoholScreen'},
     {name: '길찾기', screen: 'StoreMapScreen'},
   ];
+
+  // 🔹 currentPage 변경 시 탭 자동 변경
+  useEffect(() => {
+    const index = tabs.findIndex(tab => tab.screen === currentPage);
+    if (index !== -1) {
+      setSelectedTab(index);
+      Animated.timing(animatedValue, {
+        toValue: index,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [currentPage]);
 
   const handlePress = index => {
     setSelectedTab(index);
