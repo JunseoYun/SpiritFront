@@ -2,10 +2,12 @@ import React from 'react';
 import {Pressable} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {createStackNavigator} from '@react-navigation/stack';
+import Octicons from 'react-native-vector-icons/Octicons';
 
 import StoreMainScreen from '../screens/StoreInfo/StoreMainScreen';
 import MenuAddScreen from '../screens/StoreInfo/Menu/MenuAddScreen';
 import StoreMapScreen from '../screens/StoreInfo/StoreMapScreen';
+import StoreReviewScreen from '../screens/StoreInfo/StoreReviewScreen';
 import AlcoholAddScreen from '../screens/StoreInfo/Alcohol/AlcoholAddScreen';
 import MenuUpdateScreen from '../screens/StoreInfo/Menu/MenuUpdateScreen';
 import AlcoholUpdateScreen from '../screens/StoreInfo/Alcohol/AlcoholUpdateScreen';
@@ -55,7 +57,12 @@ export default function StoreStack() {
       <Stack.Screen
         name="MenuUpdateScreen"
         component={MenuUpdateScreen}
-        options={{headerShown: false}}
+        options={{
+          headerShown: false,
+          resentation: 'modal',
+          gestureDirection: 'vertical',
+          animation: 'slide_from_bottom',
+        }}
       />
 
       <Stack.Screen
@@ -90,13 +97,26 @@ export default function StoreStack() {
       <Stack.Screen
         name="AlcoholUpdateScreen"
         component={AlcoholUpdateScreen}
-        options={{headerShown: false}}
+        options={{
+          headerShown: false,
+          resentation: 'modal',
+          gestureDirection: 'vertical',
+          animation: 'slide_from_bottom',
+        }}
       />
 
       <Stack.Screen
         name="StoreMapScreen"
         component={StoreMapScreen}
         options={{headerShown: false}}
+      />
+
+      <Stack.Screen
+        name="StoreReviewScreen"
+        component={StoreReviewScreen}
+        options={({navigation}) => ({
+          headerShown: false,
+        })}
       />
 
       <Stack.Screen
@@ -109,8 +129,8 @@ export default function StoreStack() {
               onPress={() => {
                 navigation.goBack();
               }}>
-              <Ionicons
-                name="arrow-back-outline"
+              <Octicons
+                name="x"
                 size={25}
                 color="#333"
                 style={{marginLeft: 13, paddingRight: 15}}
@@ -124,14 +144,17 @@ export default function StoreStack() {
         name="ReviewReportScreen"
         component={ReviewReportScreen}
         options={({navigation}) => ({
+          presentation: 'modal',
+          gestureDirection: 'vertical',
+          animation: 'slide_from_bottom',
           title: '리뷰 신고하기',
           headerLeft: () => (
             <Pressable
               onPress={() => {
                 navigation.goBack();
               }}>
-              <Ionicons
-                name="arrow-back-outline"
+              <Octicons
+                name="x"
                 size={25}
                 color="#333"
                 style={{marginLeft: 13, paddingRight: 15}}
