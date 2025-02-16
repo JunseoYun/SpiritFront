@@ -108,12 +108,22 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreMapScreen"
         component={StoreMapScreen}
-        options={{
-          headerShown: false,
-          resentation: 'modal',
+        options={({navigation}) => ({
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="#333"
+                style={{marginLeft: 13, paddingRight: 15}}
+              />
+            </Pressable>
+          ),
+          title: '길찾기',
+          presentation: 'modal',
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
-        }}
+        })}
       />
 
       <Stack.Screen

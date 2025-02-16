@@ -152,17 +152,7 @@ const StoreMapScreen = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.goBack();
-          }}>
-          <Ionicons name="arrow-back-outline" size={25} color="#333" />
-        </TouchableOpacity>
-
-        <Text style={styles.modalTitle}>{`길찾기`}</Text>
-      </View>
+    <>
       {location ? (
         <WebView
           ref={webViewRef}
@@ -185,13 +175,14 @@ const StoreMapScreen = ({navigation}) => {
       <StoreMapFoot onPress={() => openMapHandle('FOOT')} />
       <StoreMapBus onPress={() => openMapHandle('PUBLICTRANSIT')} />
       <StoreMapCar onPress={() => openMapHandle('CAR')} />
-    </SafeAreaView>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
   },
   buttonContainer: {
     flexDirection: 'row',

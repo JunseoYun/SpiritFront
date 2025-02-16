@@ -214,12 +214,14 @@ const MapScreen = ({navigation}) => {
   }, 500);
 
   const openMapHandle = () => {
-    openKakaoMap(
-      location.latitude,
-      location.longitude,
-      selectedStore.locationDto.latitude,
-      selectedStore.locationDto.longitude,
-    );
+    if (selectedStore) {
+      openKakaoMap(
+        location.latitude,
+        location.longitude,
+        selectedStore.locationDto.latitude,
+        selectedStore.locationDto.longitude,
+      );
+    }
   };
 
   return (

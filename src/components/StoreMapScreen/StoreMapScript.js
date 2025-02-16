@@ -1,4 +1,4 @@
-const StoreMapScript = (lat, lng, storeLat, storeLong) => 
+const StoreMapScript = (lat, lng, storeLat, storeLong) =>
   `
 
   if (!window.map) {
