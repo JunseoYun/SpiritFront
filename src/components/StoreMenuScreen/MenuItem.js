@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,7 @@ const MenuItem = ({
   isOpen,
   onOpen,
   onClose,
+  onDelete,
   scrollViewRef,
   navigation,
 }) => {
@@ -84,12 +85,9 @@ const MenuItem = ({
             style={[styles.actionButton, styles.deleteButton]}
             onPress={() => {
               onClose();
-              navigation.navigate('MenuReportScreen', {
-                menuId: menu.id,
-                menuName: menu.name,
-              });
+              onDelete(menu.id, menu.name);
             }}>
-            <Text style={styles.actionText}>신고</Text>
+            <Text style={styles.actionText}>삭제</Text>
           </TouchableOpacity>
         </View>
 

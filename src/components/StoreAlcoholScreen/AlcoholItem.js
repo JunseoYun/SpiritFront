@@ -23,6 +23,7 @@ const AlcoholItem = ({
   isOpen,
   onOpen,
   onClose,
+  onDelete,
   scrollViewRef,
   navigation,
   storeId,
@@ -63,6 +64,7 @@ const AlcoholItem = ({
       translateX.value = withSpring(0);
     }
   }, [isOpen]);
+
   return (
     <GestureHandlerRootView>
       <Pressable style={styles.container} onPress={onClose}>
@@ -83,12 +85,9 @@ const AlcoholItem = ({
             style={[styles.actionButton, styles.deleteButton]}
             onPress={() => {
               onClose();
-              navigation.navigate('AlcoholReportScreen', {
-                alcoholId: alcohol.id,
-                alcoholName: alcohol.name,
-              });
+              onDelete(alcohol.id, alcohol.name);
             }}>
-            <Text style={styles.actionText}>신고</Text>
+            <Text style={styles.actionText}>삭제</Text>
           </TouchableOpacity>
         </View>
 

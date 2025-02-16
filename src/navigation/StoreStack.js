@@ -10,8 +10,6 @@ import AlcoholAddScreen from '../screens/StoreInfo/Alcohol/AlcoholAddScreen';
 import MenuUpdateScreen from '../screens/StoreInfo/Menu/MenuUpdateScreen';
 import AlcoholUpdateScreen from '../screens/StoreInfo/Alcohol/AlcoholUpdateScreen';
 import StoreReportScreen from '../screens/StoreInfo/Report/StoreReportScreen';
-import MenuReportScreen from '../screens/StoreInfo/Report/MenuReportScreen';
-import AlcoholReportScreen from '../screens/StoreInfo/Report/AlcoholReportScreen';
 import ReviewReportScreen from '../screens/StoreInfo/Report/ReviewReportScreen';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 const Stack = createStackNavigator();
@@ -106,48 +104,6 @@ export default function StoreStack() {
         component={StoreReportScreen}
         options={({navigation}) => ({
           title: '매장 신고하기',
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                navigation.goBack();
-              }}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={25}
-                color="#333"
-                style={{marginLeft: 13, paddingRight: 15}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-
-      <Stack.Screen
-        name="MenuReportScreen"
-        component={MenuReportScreen}
-        options={({navigation}) => ({
-          title: '메뉴 신고하기',
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                navigation.goBack();
-              }}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={25}
-                color="#333"
-                style={{marginLeft: 13, paddingRight: 15}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-
-      <Stack.Screen
-        name="AlcoholReportScreen"
-        component={AlcoholReportScreen}
-        options={({navigation}) => ({
-          title: '주류 신고하기',
           headerLeft: () => (
             <Pressable
               onPress={() => {
