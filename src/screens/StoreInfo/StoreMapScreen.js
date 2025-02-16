@@ -34,20 +34,33 @@ const StoreMapScreen = ({navigation}) => {
   const [location, setLocation] = useState({innerlatitude, innerlongitude});
   const webViewRef = useRef(null);
 
-  const [mapHTML, setMapHTML] = useState(null); // Kakao Map HTML 상태
   useEffect(() => {
-    const fetchMapHTML = async () => {
+    let isMounted = true; // ✅ cleanup을 위한 변수 추가
+    const fetchSaveLocation = async () => {
       try {
-        const html = await KakaoMapHTML(); // KakaoMapHTML 비동기 호출
-        setMapHTML(html);
-      } catch (error) {
-        console.error('Error loading Kakao Map HTML:', error);
+        const currentLocation = await getLocation();
+        if (isMounted) {
+          setLocation(currentLocation);
+          if (webViewRef.current) {
+            const script = StoreMapScript(
+              currentLocation.latitude,
+              currentLocation.longitude,
+              storeLatitude,
+              storeLongitude,
+            );
+            webViewRef.current.injectJavaScript(script);
+          }
+        }
+      } catch (err) {
+        console.error('위치 가져오는 중 오류 발생:', err);
       }
     };
-
-    fetchMapHTML(); // HTML 로드
     fetchSaveLocation();
-  }, []);
+
+    return () => {
+      isMounted = false; // ✅ cleanup
+    };
+  }, [storeLatitude, storeLongitude]);
 
   const fetchSaveLocation = async () => {
     try {
@@ -67,17 +80,30 @@ const StoreMapScreen = ({navigation}) => {
       console.error('위치 가져오는 중 오류 발생:', err);
     }
   };
+  const roundToPrecision = (value, precision = 4) => {
+    return parseFloat(value.toFixed(precision)); // 🔥 소수점 5자리까지만 남김
+  };
 
   const updateNewLocation = async () => {
     try {
       const newLocation = await fetchLocation();
+      const roundedCurrentLat = location
+        ? roundToPrecision(location.latitude)
+        : null;
+      const roundedCurrentLng = location
+        ? roundToPrecision(location.longitude)
+        : null;
+      const roundedNewLat = roundToPrecision(newLocation.latitude);
+      const roundedNewLng = roundToPrecision(newLocation.longitude);
+
       if (
-        location &&
-        location.latitude === newLocation.latitude &&
-        location.longitude === newLocation.longitude
+        roundedCurrentLat === roundedNewLat &&
+        roundedCurrentLng === roundedNewLng
       ) {
+        console.log('true');
         moveCenterMap(newLocation.latitude, newLocation.longitude);
       } else {
+        console.log('false');
         setLocation(newLocation);
         updateMap(
           newLocation.latitude,
@@ -85,6 +111,8 @@ const StoreMapScreen = ({navigation}) => {
           storeLatitude,
           storeLongitude,
         );
+
+        moveCenterMap(newLocation.latitude, newLocation.longitude);
       }
     } catch (err) {
       console.error('위치 업데이트 중 오류 발생:', err);
@@ -121,9 +149,6 @@ const StoreMapScreen = ({navigation}) => {
         StoreMapScript(lat, lng, storeLatitude, storeLongitude),
       );
     }
-  };
-  const handleGoBack = () => {
-    navigation.navigate('StoreMainScreen', {page: 'StoreMenuScreen'});
   };
 
   return (

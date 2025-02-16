@@ -59,10 +59,31 @@ const StoreMainScreen = ({navigation}) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      // StoreMainScreen으로 돌아올 때 탭을 'StoreMenuScreen'으로 변경
-      setCurrentPage('StoreMenuScreen');
+      let isActive = true; // ✅ cleanup을 위한 변수 추가
+      setTimeout(() => {
+        if (isActive) {
+          setCurrentPage('StoreMenuScreen'); // ✅ 상태 변경을 안전하게 수행
+        }
+      }, 0);
+      return () => {
+        isActive = false; // ✅ cleanup
+      };
     }, []),
   );
+
+  useEffect(() => {
+    if (currentPage === 'StoreMapScreen') {
+      setTimeout(() => {
+        navigation.navigate('StoreMapScreen', {
+          storeId: storeId,
+          storeLatitude: latitude,
+          storeLongitude: longitude,
+          innerlatitude: innerlatitude,
+          innerlongitude: innerlongitude,
+        });
+      }, 0);
+    }
+  }, [currentPage]);
 
   const startUpdate = () => {
     setIsUpdate(true);
@@ -395,14 +416,6 @@ const StoreMainScreen = ({navigation}) => {
                     onAlcoholDelete={handleAlcoholDelete}
                   />
                 )}
-                {currentPage === 'StoreMapScreen' &&
-                  navigation.navigate('StoreMapScreen', {
-                    storeId: storeId,
-                    storeLatitude: latitude,
-                    storeLongitude: longitude,
-                    innerlatitude: innerlatitude,
-                    innerlongitude: innerlongitude,
-                  })}
               </View>
             )}
           </View>
