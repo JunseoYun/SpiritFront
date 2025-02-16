@@ -53,7 +53,7 @@ const StoreModal = ({
               <Pressable
                 style={styles.reportButton}
                 onPress={() => handleClose(handleReport)}>
-                <Text style={styles.modalButtonText}>매장 신고</Text>
+                <Text style={styles.modalButtonText}>매장 제보·신고</Text>
               </Pressable>
               <View style={styles.line}></View>
               <Pressable
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   reportButton: {
-    backgroundColor: '#FF4D4D',
+    backgroundColor: '#FF6F61',
     borderRadius: 5,
     paddingVertical: 12,
     paddingHorizontal: 20,
