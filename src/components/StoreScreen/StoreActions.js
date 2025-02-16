@@ -4,7 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {Storelikepost} from '../../api/storeApi';
 
-const StoreActions = ({storeData, navigation}) => {
+const StoreActions = ({storeData, navigation, storename}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const storeNumber = storeData?.contact || '000-0000-0000'; // 기본 전화번호
@@ -65,9 +65,19 @@ const StoreActions = ({storeData, navigation}) => {
         </View>
       </Pressable>
       <View style={styles.separator} />
-      <Pressable onPress={openChat} style={styles.View}>
-        <Ionicons name="chatbubble-ellipses-outline" size={20} color="#333" />
-        <Text style={styles.CallViewtext}> 채팅</Text>
+      <Pressable
+        onPress={() => {
+          navigation.navigate('StoreStack', {
+            screen: 'StoreReviewScreen',
+            params: {
+              storeId: storeData.id,
+              storename: storename,
+            },
+          });
+        }}
+        style={styles.View}>
+        <Ionicons name="receipt-outline" size={20} color="#333" />
+        <Text style={styles.CallViewtext}> 리뷰</Text>
       </Pressable>
       <AlertComponent />
     </View>

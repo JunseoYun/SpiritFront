@@ -32,6 +32,7 @@ const StoreMainInfo = ({
   handleBottomOpen,
   onEditKey,
   onEditValue,
+  navigation,
 }) => {
   const handleEdit = (key, value) => {
     onEditKey(key); // 수정 키와 값을 부모 컴포넌트로 전달
@@ -375,7 +376,13 @@ const StoreMainInfo = ({
         </View>
       )}
       {/*필요한 정보만 넘기는 걸로 변경*/}
-      {!isUpdate && <StoreActions storeData={storedata} />}
+      {!isUpdate && (
+        <StoreActions
+          storeData={storedata}
+          navigation={navigation}
+          storename={storedata.name}
+        />
+      )}
 
       {isUpdate && (
         <Pressable onPress={endHandle}>

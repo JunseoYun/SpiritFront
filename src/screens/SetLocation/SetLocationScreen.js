@@ -29,6 +29,7 @@ const SetLocationScreen = ({navigation, route}) => {
   const [currentLocation, setcurrentLocation] = useState(null);
   const [selectAddress, setSelectAddress] = useState('');
   const [selectLocation, setSelectLocation] = useState(null);
+  const [loading, setLoading] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
 
   // 이전 화면에서 전달된 데이터를 처리
@@ -121,10 +122,12 @@ const SetLocationScreen = ({navigation, route}) => {
     }
   };
   const handleGetCurrentLocation = async () => {
+    setLoading(true);
     const hasPermission = await requestLocationPermission();
 
     if (!hasPermission) {
       Alert.alert('위치 권한이 거부되었습니다.');
+      setLoading(false);
       return;
     }
     try {
@@ -132,8 +135,10 @@ const SetLocationScreen = ({navigation, route}) => {
 
       setSelectLocation(location);
       setSelectAddress(address);
+      setLoading(false);
     } catch (error) {
       console.error('위치 데이터를 가져오는 중 오류:', error);
+      setLoading(false);
     }
   };
 
@@ -200,6 +205,11 @@ const SetLocationScreen = ({navigation, route}) => {
         </Pressable>
       </ScrollView>
       <AlertComponent />
+      {loading && (
+        <View style={styles.footer}>
+          <Text style={styles.emptyText}>Loading...</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -297,6 +307,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#16BBFF',
+  },
+  footer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 

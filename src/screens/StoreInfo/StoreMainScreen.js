@@ -379,13 +379,6 @@ const StoreMainScreen = ({navigation}) => {
                     onAlcoholDelete={handleAlcoholDelete}
                   />
                 )}
-                {currentPage === 'StoreReviewScreen' && (
-                  <StoreReviewScreen
-                    navigation={navigation}
-                    storeId={storeId}
-                    scrollViewRef={scrollViewRef}
-                  />
-                )}
                 {currentPage === 'StoreMapScreen' && (
                   <StoreMapScreen
                     navigation={navigation}

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   Pressable,
   SafeAreaView,
   TouchableOpacity,
-  ScrollView,
+  FlatList,
 } from 'react-native';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {ReviewStoreGet} from '../../api/reviewApi';
@@ -17,10 +17,11 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import ImagePicker from 'react-native-image-crop-picker';
 import ReviewForm from '../../components/StoreReviewScreen/ReviewForm';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeId} = route.params;
+  const {storeId, storename} = route.params;
   const [reviewdata, setReviewdata] = useState([]);
   const {showAlert, AlertComponent} = useCustomAlert();
 
@@ -37,6 +38,7 @@ const StoreReviewScreen = ({navigation}) => {
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
   const [totalpage, setTotalpage] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   const getReviewData = async currentPage => {
     setLoading(true);
@@ -61,6 +63,7 @@ const StoreReviewScreen = ({navigation}) => {
       console.error(error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -74,14 +77,20 @@ const StoreReviewScreen = ({navigation}) => {
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setReviewdata([]); // 기존 데이터 초기화
-      setPage(0); // 페이지 초기화
-      setIsEnd(false);
-      getReviewData(0);
-    }, [storeId]),
-  );
+  useEffect(() => {
+    setReviewdata([]); // 기존 데이터 초기화
+    setPage(0); // 페이지 초기화
+    setIsEnd(false);
+    getReviewData(0);
+  }, []);
+
+  const handleRefresh = () => {
+    setReviewdata([]); // 기존 stores 초기화
+    setIsEnd(true); // 추가 데이터 여부 초기화
+    setPage(0);
+    setRefreshing(true); // 새로고침 시작
+    getReviewData(0); // 새로고침
+  };
 
   const hadleIsWrite = () => {
     setIsWriting(true);
@@ -200,12 +209,8 @@ const StoreReviewScreen = ({navigation}) => {
         title: '등록되었습니다',
         message: '리뷰가 정상적으로 등록되었습니다.',
         onConfirm: () => {
-          navigation.replace('StoreStack', {
-            screen: 'StoreMainScreen',
-            params: {
-              storeId: storeId,
-            },
-          });
+          handleRefresh();
+          setIsWriting(false);
         },
       });
     } catch (error) {
@@ -217,8 +222,22 @@ const StoreReviewScreen = ({navigation}) => {
     }
   };
 
+  const renderItem = ({item}) => (
+    <ReviewItem key={item.id} item={item} navigation={navigation} />
+  );
+
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <Ionicons name="arrow-back-outline" size={25} color="#333" />
+        </TouchableOpacity>
+
+        <Text style={styles.modalTitle}>{`${storename} 리뷰`}</Text>
+      </View>
       {isWriting ? (
         <ReviewForm
           onChangeText={onChangeText}
@@ -238,43 +257,39 @@ const StoreReviewScreen = ({navigation}) => {
           hadleNoWrite={hadleNoWrite}
         />
       ) : (
-        <>
+        <View style={{width: '100%'}}>
           <View style={styles.MenuaddView}>
             <Pressable style={styles.addButton} onPress={hadleIsWrite}>
               <Text style={styles.addButtonText}>리뷰 작성하기</Text>
             </Pressable>
           </View>
-          <ScrollView style={styles.reviewList}>
-            {reviewdata.map(item => (
-              <ReviewItem key={item.id} item={item} navigation={navigation} />
-            ))}
-            {loading && !isEnd ? (
+          <FlatList
+            data={reviewdata}
+            renderItem={renderItem}
+            keyExtractor={item => item.id.toString()}
+            showsVerticalScrollIndicator={false}
+            initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
+            maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
+            windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
+            removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
+            onEndReached={loadMoreReviews} // 더 많은 데이터 불러오기
+            onEndReachedThreshold={0.5}
+            onRefresh={handleRefresh} // 새로고침
+            refreshing={refreshing}
+            contentContainerStyle={{paddingBottom: 100}}
+            ListFooterComponent={
               <View style={styles.footer}>
-                <Text style={styles.emptyText}>Loading...</Text>
+                {loading && !isEnd ? (
+                  <Text style={styles.emptyText}>Loading...</Text>
+                ) : reviewdata.length > 0 ? (
+                  <Text style={styles.emptyText}>더 이상 리뷰가 없습니다</Text>
+                ) : (
+                  <Text style={styles.emptyText}>등록된 리뷰가 없습니다</Text>
+                )}
               </View>
-            ) : reviewdata.length > 0 && page === totalpage - 1 ? (
-              <View style={styles.footer}>
-                <Text style={styles.emptyText}>더 이상 리뷰가 없습니다</Text>
-              </View>
-            ) : !loading && reviewdata.length === 0 ? (
-              <View style={styles.footer}>
-                <Text style={styles.emptyText}>등록된 리뷰가 없습니다</Text>
-              </View>
-            ) : (
-              <TouchableOpacity
-                onPress={loadMoreReviews}
-                style={styles.loadMoreButton}>
-                <Text style={styles.loadMoreText}>
-                  {loading ? (
-                    <Text style={styles.emptyText}>Loading...</Text>
-                  ) : (
-                    <Text style={styles.emptyText}>더보기</Text>
-                  )}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </ScrollView>
-        </>
+            }
+          />
+        </View>
       )}
 
       <AlertComponent />
@@ -284,8 +299,26 @@ const StoreReviewScreen = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
     backgroundColor: '#fff',
+    paddingBottom: 10,
+    width: '100%',
+    height: '100%',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    paddingTop: Platform.OS === 'ios' ? 0 : 15,
+    paddingHorizontal: 18,
+    borderBottomWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    marginLeft: 15,
+    textAlign: 'center',
+    color: '#333', // ✅ 더 진한 색상 적용
   },
   MenuaddView: {
     width: '100%',
@@ -321,8 +354,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   footer: {
-    paddingVertical: 20,
+    marginVertical: 20,
     alignItems: 'center',
+    height: 100,
   },
   emptyText: {
     textAlign: 'center',
