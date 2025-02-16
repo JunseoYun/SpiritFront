@@ -74,7 +74,7 @@ const StoreMainScreen = ({navigation}) => {
     if (currentPage === 'StoreMapScreen') {
       setTimeout(() => {
         navigation.navigate('StoreMapScreen', {
-          storeId: storeId,
+          storename: storedata.name,
           storeLatitude: latitude,
           storeLongitude: longitude,
           innerlatitude: innerlatitude,

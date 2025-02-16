@@ -1,23 +1,40 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Pressable} from 'react-native';
+import React, {useState, useEffect, useCallback} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+  RefreshControl,
+} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {getAddress} from '../../storage/locationStorage';
 
 const MyLocation = ({navigation}) => {
   const [address, setAddress] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchLocation = async () => {
+    try {
+      const storageAddress = await getAddress();
+      if (storageAddress) {
+        setAddress(storageAddress);
+      } else {
+        setAddress('저장된 주소가 없습니다.');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
-    const fetchLocation = async () => {
-      try {
-        const storageAddress = await getAddress();
-        if (storageAddress) {
-          setAddress(storageAddress);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
     fetchLocation();
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchLocation(); // 새로고침할 때 주소 다시 가져오기
+    setRefreshing(false);
   }, []);
 
   const searchAddressHandle = () => {
@@ -25,7 +42,11 @@ const MyLocation = ({navigation}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }>
       <View style={styles.infoBox}>
         <Ionicons
           name="location-outline"
@@ -35,15 +56,13 @@ const MyLocation = ({navigation}) => {
         />
         <View>
           <Text style={styles.label}>현재 위치</Text>
-          <Text style={styles.address}>
-            {address || '저장된 주소가 없습니다.'}
-          </Text>
+          <Text style={styles.address}>{address}</Text>
         </View>
       </View>
       <Pressable style={styles.button} onPress={searchAddressHandle}>
         <Text style={styles.buttonText}>위치 설정하기</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 };
 

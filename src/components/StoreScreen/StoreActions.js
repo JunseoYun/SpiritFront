@@ -76,7 +76,7 @@ const StoreActions = ({storeData, navigation, storename}) => {
           });
         }}
         style={styles.View}>
-        <Ionicons name="receipt-outline" size={20} color="#333" />
+        <Ionicons name="reader-outline" size={20} color="#333" />
         <Text style={styles.CallViewtext}> 리뷰</Text>
       </Pressable>
       <AlertComponent />

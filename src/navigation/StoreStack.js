@@ -108,7 +108,7 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreMapScreen"
         component={StoreMapScreen}
-        options={({navigation}) => ({
+        options={({navigation, route}) => ({
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
               <Ionicons
@@ -119,7 +119,7 @@ export default function StoreStack() {
               />
             </Pressable>
           ),
-          title: '길찾기',
+          title: `${route.params?.storename || '매장'} 길찾기`,
           presentation: 'modal',
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
@@ -129,8 +129,20 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreReviewScreen"
         component={StoreReviewScreen}
-        options={({navigation}) => ({
-          headerShown: false,
+        options={({navigation, route}) => ({
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="#333"
+                style={{marginLeft: 13, paddingRight: 15}}
+              />
+            </Pressable>
+          ),
+          title: `${route.params?.storename || '매장'} 리뷰`, // 매장 이름이 없으면 기본값 '매장' 사용
+          gestureDirection: 'vertical',
+          animation: 'slide_from_right',
         })}
       />
 

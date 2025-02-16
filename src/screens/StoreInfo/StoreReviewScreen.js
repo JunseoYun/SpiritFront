@@ -228,16 +228,6 @@ const StoreReviewScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.goBack();
-          }}>
-          <Ionicons name="arrow-back-outline" size={25} color="#333" />
-        </TouchableOpacity>
-
-        <Text style={styles.modalTitle}>{`${storename} 리뷰`}</Text>
-      </View>
       {isWriting ? (
         <ReviewForm
           onChangeText={onChangeText}

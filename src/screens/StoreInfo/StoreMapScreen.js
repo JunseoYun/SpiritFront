@@ -19,17 +19,11 @@ import StoreMapFoot from '../../components/StoreMapScreen/StoreMapFoot';
 import StoreMapBus from '../../components/StoreMapScreen/StoreMapBus';
 import StoreMapCar from '../../components/StoreMapScreen/StoreMapCar';
 import {useRoute} from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const StoreMapScreen = ({navigation}) => {
   const route = useRoute();
-  const {
-    storeId,
-    storeLatitude,
-    storeLongitude,
-    innerlatitude,
-    innerlongitude,
-  } = route.params;
+  const {storeLatitude, storeLongitude, innerlatitude, innerlongitude} =
+    route.params;
 
   const [location, setLocation] = useState({innerlatitude, innerlongitude});
   const webViewRef = useRef(null);
