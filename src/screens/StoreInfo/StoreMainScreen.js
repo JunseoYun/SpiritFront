@@ -70,7 +70,6 @@ const StoreMainScreen = ({navigation}) => {
       };
     }, []),
   );
-
   useEffect(() => {
     if (currentPage === 'StoreMapScreen') {
       setTimeout(() => {
