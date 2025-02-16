@@ -1,5 +1,11 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
 
 import {WebView} from 'react-native-webview';
 import {getLocation} from '../../storage/locationStorage';
@@ -121,7 +127,7 @@ const StoreMapScreen = ({navigation}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           onPress={() => {
@@ -154,7 +160,7 @@ const StoreMapScreen = ({navigation}) => {
       <StoreMapFoot onPress={() => openMapHandle('FOOT')} />
       <StoreMapBus onPress={() => openMapHandle('PUBLICTRANSIT')} />
       <StoreMapCar onPress={() => openMapHandle('CAR')} />
-    </View>
+    </SafeAreaView>
   );
 };
 
