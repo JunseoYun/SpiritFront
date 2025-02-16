@@ -11,7 +11,11 @@ import ImageSlider from '../../components/StoreScreen/ImageSlider';
 import {Pressable, ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
-import {useRoute} from '@react-navigation/native';
+import {
+  useRoute,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import {
   StoreMainget,
   UpdateStore,
@@ -52,6 +56,13 @@ const StoreMainScreen = ({navigation}) => {
   const [updatedImgValue, setUpdatedImgValue] = useState([]);
   const scrollViewRef = useRef(null); // ScrollView 참조 추가
   const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // StoreMainScreen으로 돌아올 때 탭을 'StoreMenuScreen'으로 변경
+      setCurrentPage('StoreMenuScreen');
+    }, []),
+  );
 
   const startUpdate = () => {
     setIsUpdate(true);
@@ -356,7 +367,12 @@ const StoreMainScreen = ({navigation}) => {
               <View style={{backgroundColor: '#F2F2F2', height: 20}} />
             )}
 
-            {!isUpdate && <StoreTabs changePage={setCurrentPage} />}
+            {!isUpdate && (
+              <StoreTabs
+                changePage={setCurrentPage}
+                currentPage={currentPage}
+              />
+            )}
 
             {!isUpdate && (
               <View>
@@ -379,16 +395,14 @@ const StoreMainScreen = ({navigation}) => {
                     onAlcoholDelete={handleAlcoholDelete}
                   />
                 )}
-                {currentPage === 'StoreMapScreen' && (
-                  <StoreMapScreen
-                    navigation={navigation}
-                    storeId={storeId}
-                    storeLatitude={latitude}
-                    storeLongitude={longitude}
-                    innerlatitude={innerlatitude}
-                    innerlongitude={innerlongitude}
-                  />
-                )}
+                {currentPage === 'StoreMapScreen' &&
+                  navigation.navigate('StoreMapScreen', {
+                    storeId: storeId,
+                    storeLatitude: latitude,
+                    storeLongitude: longitude,
+                    innerlatitude: innerlatitude,
+                    innerlongitude: innerlongitude,
+                  })}
               </View>
             )}
           </View>

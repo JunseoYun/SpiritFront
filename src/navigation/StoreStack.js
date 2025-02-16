@@ -108,7 +108,12 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreMapScreen"
         component={StoreMapScreen}
-        options={{headerShown: false}}
+        options={{
+          headerShown: false,
+          resentation: 'modal',
+          gestureDirection: 'vertical',
+          animation: 'slide_from_bottom',
+        }}
       />
 
       <Stack.Screen
