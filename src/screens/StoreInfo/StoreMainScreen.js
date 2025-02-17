@@ -8,14 +8,10 @@ import {
   StyleSheet,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/ImageSlider';
-import {Pressable, ScrollView} from 'react-native-gesture-handler';
+import {ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
-import {
-  useRoute,
-  useFocusEffect,
-  useNavigation,
-} from '@react-navigation/native';
+import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {
   StoreMainget,
   UpdateStore,
@@ -24,8 +20,6 @@ import {
 } from '../../api/storeApi';
 import StoreMenuScreen from './StoreMenuScreen';
 import StoreAlcoholScreen from './StoreAlcoholScreen';
-import StoreReviewScreen from './StoreReviewScreen';
-import StoreMapScreen from './StoreMapScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
 import {StoreMenuget} from '../../api/menuApi';
 import {StoreDrinkget} from '../../api/drinkApi';
@@ -61,14 +55,14 @@ const StoreMainScreen = ({navigation}) => {
     React.useCallback(() => {
       let isActive = true; // ✅ cleanup을 위한 변수 추가
       setTimeout(() => {
-        if (isActive) {
+        if (isActive && currentPage === 'StoreMapScreen') {
           setCurrentPage('StoreMenuScreen'); // ✅ 상태 변경을 안전하게 수행
         }
       }, 0);
       return () => {
         isActive = false; // ✅ cleanup
       };
-    }, []),
+    }, [currentPage]),
   );
   useEffect(() => {
     if (currentPage === 'StoreMapScreen') {
