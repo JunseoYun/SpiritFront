@@ -42,6 +42,9 @@ const MapScreen = ({navigation}) => {
         currentLocation.latitude,
         currentLocation.longitude,
       );
+      storesData.sort((a, b) =>
+        a.locationDto.address.localeCompare(b.locationDto.address),
+      );
       setStores(storesData);
       setSelectedStore(storesData[0]);
 
@@ -88,6 +91,9 @@ const MapScreen = ({navigation}) => {
         const storesData = await Store_getby_radius(
           newLocation.latitude,
           newLocation.longitude,
+        );
+        storesData.sort((a, b) =>
+          a.locationDto.address.localeCompare(b.locationDto.address),
         );
         setStores(storesData);
         setSelectedStore(storesData[0]);
