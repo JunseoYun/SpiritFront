@@ -30,6 +30,7 @@ export default function StoreStack() {
         component={MenuAddScreen}
         options={({navigation}) => ({
           title: '메뉴 등록하기',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -70,6 +71,7 @@ export default function StoreStack() {
         component={AlcoholAddScreen}
         options={({navigation}) => ({
           title: '주류 등록하기',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -120,6 +122,7 @@ export default function StoreStack() {
             </Pressable>
           ),
           title: `${route.params?.storename || '매장'} 길찾기`,
+          headerTitleAlign: 'center',
           presentation: 'modal',
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
@@ -141,6 +144,7 @@ export default function StoreStack() {
             </Pressable>
           ),
           title: `${route.params?.storename || '매장'} 리뷰`, // 매장 이름이 없으면 기본값 '매장' 사용
+          headerTitleAlign: 'center',
           gestureDirection: 'vertical',
           animation: 'slide_from_right',
         })}
@@ -151,6 +155,7 @@ export default function StoreStack() {
         component={StoreReportScreen}
         options={({navigation}) => ({
           title: '매장 신고하기',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -175,6 +180,7 @@ export default function StoreStack() {
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
           title: '리뷰 신고하기',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
               onPress={() => {

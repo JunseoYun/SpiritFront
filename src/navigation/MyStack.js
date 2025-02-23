@@ -18,8 +18,9 @@ const getScreenOptions = title => ({
     color: '#333', // 텍스트 색상
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
   },
-});
 
+  headerTitleAlign: 'center',
+});
 export default function MyStack() {
   return (
     <Stack.Navigator initialRouteName="MyScreen">

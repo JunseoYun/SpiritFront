@@ -70,6 +70,7 @@ const MainBtmbar = () => {
         options={{
           tabBarLabel: '찜',
           headerShown: true,
+          headerTitleAlign: 'center',
           title: '찜',
           headerTitleStyle: {
             fontSize: 20, // 타이틀 크기 설정

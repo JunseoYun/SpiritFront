@@ -1,0 +1,133 @@
+import React, {useState, useEffect, useMemo} from 'react';
+import {FlatList, StyleSheet, Text, View} from 'react-native';
+import StoreResultItem from './StoreResultItem';
+import {Store_getby_keyword} from '../../../api/storeApi';
+
+const StoreResultList = ({trimmedSearchWord, navigation}) => {
+  const [searchingStores, setSearchingStores] = useState([]); // 검색된 가게 목록
+  const [page, setPage] = useState(0); // 페이지 번호
+  const [loading, setLoading] = useState(false); // 로딩 상태
+  const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
+  const [totalpage, setTotalpage] = useState(0);
+
+  const location = useMemo(
+    () => ({
+      latitude: 37.2757,
+      longitude: 127.132,
+    }),
+    [],
+  );
+
+  // 검색된 가게들을 불러오는 함수
+  const filteredStores = async currentPage => {
+    setLoading(true);
+    if (trimmedSearchWord && location) {
+      try {
+        const data = await Store_getby_keyword(
+          currentPage,
+          location.latitude,
+          location.longitude,
+          trimmedSearchWord,
+        );
+
+        setTotalpage(data.totalPages);
+
+        if (data.content.length === 0) {
+          setIsEnd(true);
+        } else {
+          // 기존 데이터와 병합 후 중복 제거
+          setSearchingStores(prevStores => {
+            const mergedStores = [...prevStores, ...data.content];
+            const uniqueStores = Array.from(
+              new Map(mergedStores.map(store => [store.id, store])).values(),
+            );
+            return uniqueStores;
+          });
+        }
+      } catch (err) {
+        console.error('오류 발생:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // trimmedSearchWord나 location이 변경되면 초기 데이터 로딩
+  useEffect(() => {
+    if (trimmedSearchWord && location) {
+      setSearchingStores([]); // 기존 데이터 초기화
+      setPage(0); // 페이지 초기화
+      setIsEnd(false); // 데이터 끝 상태 초기화
+      filteredStores(0);
+    }
+  }, [trimmedSearchWord, location]);
+
+  const renderItem = ({item}) => (
+    <StoreResultItem
+      key={item.id}
+      store={item}
+      navigation={navigation}
+      location={location}
+    />
+  );
+
+  return (
+    <FlatList
+      data={searchingStores}
+      renderItem={renderItem}
+      keyExtractor={item => item.id.toString()}
+      contentContainerStyle={styles.fastSearchModalScrollView}
+      initialNumToRender={10}
+      maxToRenderPerBatch={5}
+      windowSize={5}
+      removeClippedSubviews={true}
+      onEndReached={() => {
+        if (!loading && !isEnd && page < totalpage - 1) {
+          setPage(prevPage => {
+            const nextPage = prevPage + 1;
+            filteredStores(nextPage);
+            return nextPage;
+          });
+        }
+      }}
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={
+        loading && !isEnd ? (
+          <View style={styles.footer}>
+            <Text style={styles.emptyText}>Loading...</Text>
+          </View>
+        ) : searchingStores.length > 0 && page === totalpage - 1 ? (
+          <View style={styles.footer}>
+            <Text style={styles.emptyText}>더 이상 결과가 없습니다</Text>
+          </View>
+        ) : null
+      }
+      ListEmptyComponent={
+        !loading && searchingStores.length === 0 ? (
+          <Text style={styles.emptyText}>검색된 가게가 없습니다</Text>
+        ) : null
+      }
+    />
+  );
+};
+
+const styles = StyleSheet.create({
+  fastSearchModalScrollView: {
+    marginTop: 1,
+    paddingBottom: 50,
+  },
+  footer: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontSize: 20,
+    color: '#333',
+  },
+});
+
+export default StoreResultList;
