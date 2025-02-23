@@ -35,6 +35,7 @@ export default function OAuthStack() {
         component={TermsAgreeScreen}
         options={({navigation}) => ({
           title: '한잔할까 서비스 이용약관',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -55,6 +56,7 @@ export default function OAuthStack() {
         component={PrivacyAgreeScreen}
         options={({navigation}) => ({
           title: '개인정보 처리방침',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -75,6 +77,7 @@ export default function OAuthStack() {
         component={LocationAgreeScreen}
         options={({navigation}) => ({
           title: '위치정보 이용약관',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
               onPress={() => {

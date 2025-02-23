@@ -6,13 +6,15 @@ import SetLocationScreen from '../screens/SetLocation/SetLocationScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
 import StoreAddScreen from '../screens/StoreRegister/StoreAddScreen';
-import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
+import StoreSearchScreen from '../screens/StoreAuthority/StoreSearchScreen';
+import StoreAuthorityScreen from '../screens/StoreAuthority/StoreAuthorityScreen';
 import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
 import CategoryListTabbar from './CategoryListTabbar';
 import RandomChoiceScreen from '../screens/RandomChoice/RandomChoiceScreen';
 import StoreStack from './StoreStack';
 import MyStack from './MyStack';
 import OAuthStack from './OAuthStack';
+import Octicons from 'react-native-vector-icons/Octicons';
 
 const Stack = createStackNavigator();
 
@@ -41,6 +43,7 @@ export default function MainStack() {
         component={SetLocationScreen}
         options={({navigation}) => ({
           title: '위치 설정',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
               <Ionicons
@@ -58,6 +61,7 @@ export default function MainStack() {
         component={LocationSearchScreen}
         options={({navigation}) => ({
           title: '주소 검색',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
               <Ionicons
@@ -75,6 +79,7 @@ export default function MainStack() {
         component={CategoryListTabbar}
         options={({navigation}) => ({
           title: '한잔할까',
+          headerTitleAlign: 'center',
           headerTitleStyle: {
             fontSize: 20, // 타이틀 크기 설정
             color: '#333', // 텍스트 색상 (선택 사항)
@@ -97,6 +102,7 @@ export default function MainStack() {
         component={StoreAddScreen}
         options={({navigation}) => ({
           title: '매장 등록하기',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
               <Ionicons
@@ -114,6 +120,7 @@ export default function MainStack() {
         component={StoreAddressSearch}
         options={({navigation}) => ({
           title: '매장 주소 검색',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
               <Ionicons
@@ -126,11 +133,31 @@ export default function MainStack() {
           ),
         })}
       />
+
+      <Stack.Screen
+        name="StoreSearchScreen"
+        component={StoreSearchScreen}
+        options={({navigation}) => ({
+          title: '매장 조회',
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{marginLeft: 18}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
       <Stack.Screen
         name="StoreAuthorityScreen"
         component={StoreAuthorityScreen}
         options={({navigation}) => ({
           title: '매장 권한 등록하기',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
               <Ionicons
@@ -162,6 +189,7 @@ export default function MainStack() {
         component={RandomChoiceScreen}
         options={({navigation}) => ({
           title: '랜덤 고르기',
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
               <Ionicons

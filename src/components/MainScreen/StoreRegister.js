@@ -1,11 +1,7 @@
 import React from 'react';
 import {View, Pressable, Text, StyleSheet} from 'react-native';
 
-const StoreRegister = ({
-  storeactiveIndex,
-  handlestoreItemClick,
-  handlestoreItemOut,
-}) => {
+const StoreRegister = ({storeactiveIndex, handlestoreItemClick}) => {
   const options = [
     {
       id: 0,
@@ -28,8 +24,7 @@ const StoreRegister = ({
             styles.StorereginnerView,
             storeactiveIndex === option.id && styles.storeactiveBorder,
           ]}
-          onPress={() => handlestoreItemClick(option.id)}
-          onPressOut={handlestoreItemOut}>
+          onPress={() => handlestoreItemClick(option.id)}>
           <Text style={styles.StoreMainText}>{option.title}</Text>
           <Text style={styles.StoresubText}>{option.description}</Text>
         </Pressable>

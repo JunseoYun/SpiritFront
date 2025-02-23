@@ -92,10 +92,6 @@ const MainScreen = ({navigation}) => {
     }
   };
 
-  const onPressModalOpen = () => {
-    setIsModalVisible(true);
-  };
-
   const catagoryClick = index => {
     if (index >= 0 && index < 10) {
       navigation.navigate('CategoryListTabbar', {
@@ -109,19 +105,15 @@ const MainScreen = ({navigation}) => {
     if (index === 0) {
       navigation.navigate('StoreAddScreen');
     } else if (index === 1) {
-      // navigation.navigate('StoreAuthorityScreen');
-      showAlert({
-        title: '서비스 준비 중입니다.',
-      });
+      navigation.navigate('StoreSearchScreen');
+      // showAlert({
+      //   title: '서비스 준비 중입니다.',
+      // });
     } else if (index === 2) {
       navigation.navigate('MapScreen');
     } else if (index === 3) {
       navigation.navigate('RandomChoiceScreen');
     }
-  };
-
-  const handlestoreItemOut = () => {
-    // setStoreActiveIndex(null);
   };
 
   const setLocationHandle = () => {
@@ -183,7 +175,6 @@ const MainScreen = ({navigation}) => {
         <StoreRegister
           storeactiveIndex={storeactiveIndex}
           handlestoreItemClick={handlestoreItemClick}
-          handlestoreItemOut={handlestoreItemOut}
         />
         <OpenStoreList
           location={location}
