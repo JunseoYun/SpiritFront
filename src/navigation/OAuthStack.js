@@ -45,7 +45,7 @@ export default function OAuthStack() {
                 name="close"
                 size={25}
                 color="#333"
-                style={{marginLeft: 13, paddingRight: 15}}
+                style={{marginLeft: 18}}
               />
             </Pressable>
           ),
@@ -66,7 +66,7 @@ export default function OAuthStack() {
                 name="close"
                 size={25}
                 color="#333"
-                style={{marginLeft: 13, paddingRight: 15}}
+                style={{marginLeft: 18}}
               />
             </Pressable>
           ),
@@ -87,7 +87,7 @@ export default function OAuthStack() {
                 name="close"
                 size={25}
                 color="#333"
-                style={{marginLeft: 13, paddingRight: 15}}
+                style={{marginLeft: 18}}
               />
             </Pressable>
           ),

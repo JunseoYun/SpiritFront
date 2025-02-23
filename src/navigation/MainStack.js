@@ -50,7 +50,7 @@ export default function MainStack() {
                 name="arrow-back-outline"
                 size={25}
                 color="black"
-                style={{marginLeft: 13, paddingRight: 15}}
+                style={{marginLeft: 18}}
               />
             </Pressable>
           ),
@@ -68,7 +68,7 @@ export default function MainStack() {
                 name="arrow-back-outline"
                 size={25}
                 color="black"
-                style={{marginLeft: 13, paddingRight: 15}}
+                style={{marginLeft: 18}}
               />
             </Pressable>
           ),
@@ -91,7 +91,7 @@ export default function MainStack() {
                 name="arrow-back-outline"
                 size={25}
                 color="black"
-                style={{marginLeft: 13, paddingRight: 15}}
+                style={{marginLeft: 18}}
               />
             </Pressable>
           ),
@@ -109,7 +109,7 @@ export default function MainStack() {
                 name="arrow-back-outline"
                 size={25}
                 color="black"
-                style={{marginLeft: 13, paddingRight: 15}}
+                style={{marginLeft: 18}}
               />
             </Pressable>
           ),
@@ -127,7 +127,7 @@ export default function MainStack() {
                 name="arrow-back-outline"
                 size={25}
                 color="black"
-                style={{marginLeft: 13, paddingRight: 15}}
+                style={{marginLeft: 18}}
               />
             </Pressable>
           ),
@@ -164,7 +164,7 @@ export default function MainStack() {
                 name="arrow-back-outline"
                 size={25}
                 color="black"
-                style={{marginLeft: 13, paddingRight: 15}}
+                style={{marginLeft: 18}}
               />
             </Pressable>
           ),
@@ -196,7 +196,7 @@ export default function MainStack() {
                 name="arrow-back-outline"
                 size={25}
                 color="black"
-                style={{marginLeft: 13, paddingRight: 15}}
+                style={{marginLeft: 18}}
               />
             </Pressable>
           ),

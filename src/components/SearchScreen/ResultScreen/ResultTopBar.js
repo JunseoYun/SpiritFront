@@ -74,10 +74,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   backButton: {
-    marginLeft: 15,
+    marginLeft: 18,
   },
   homeButton: {
-    marginRight: 15,
+    marginRight: 18,
   },
   search: {
     flexDirection: 'row',
