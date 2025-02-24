@@ -10,8 +10,8 @@ const StoreRegister = ({storeactiveIndex, handlestoreItemClick}) => {
     },
     {
       id: 1,
-      title: '매장 권한 등록',
-      description: '전국의 사장님들은\n권한등록 부탁드려요!',
+      title: '매장 권한 신청',
+      description: '전국의 사장님들은\n권한등록을 부탁드려요!',
     },
   ];
 

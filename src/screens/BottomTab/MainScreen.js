@@ -103,9 +103,9 @@ const MainScreen = ({navigation}) => {
   const handlestoreItemClick = index => {
     setStoreActiveIndex(index);
     if (index === 0) {
-      navigation.navigate('StoreAddScreen');
+      navigation.navigate('StoreSearchScreen', {index: 0});
     } else if (index === 1) {
-      navigation.navigate('StoreSearchScreen');
+      navigation.navigate('StoreSearchScreen', {index: 1});
       // showAlert({
       //   title: '서비스 준비 중입니다.',
       // });

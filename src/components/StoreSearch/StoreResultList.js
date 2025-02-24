@@ -1,34 +1,21 @@
 import React, {useState, useEffect, useMemo} from 'react';
 import {FlatList, StyleSheet, Text, View} from 'react-native';
 import StoreResultItem from './StoreResultItem';
-import {Store_getby_keyword} from '../../../api/storeApi';
+import {Store_getby_store} from '../../api/storeApi';
 
-const StoreResultList = ({trimmedSearchWord, navigation}) => {
+const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
   const [searchingStores, setSearchingStores] = useState([]); // 검색된 가게 목록
   const [page, setPage] = useState(0); // 페이지 번호
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
   const [totalpage, setTotalpage] = useState(0);
 
-  const location = useMemo(
-    () => ({
-      latitude: 37.2757,
-      longitude: 127.132,
-    }),
-    [],
-  );
-
   // 검색된 가게들을 불러오는 함수
   const filteredStores = async currentPage => {
     setLoading(true);
-    if (trimmedSearchWord && location) {
+    if (trimmedSearchWord) {
       try {
-        const data = await Store_getby_keyword(
-          currentPage,
-          location.latitude,
-          location.longitude,
-          trimmedSearchWord,
-        );
+        const data = await Store_getby_store(currentPage, trimmedSearchWord);
 
         setTotalpage(data.totalPages);
 
@@ -54,20 +41,20 @@ const StoreResultList = ({trimmedSearchWord, navigation}) => {
 
   // trimmedSearchWord나 location이 변경되면 초기 데이터 로딩
   useEffect(() => {
-    if (trimmedSearchWord && location) {
+    if (trimmedSearchWord) {
       setSearchingStores([]); // 기존 데이터 초기화
       setPage(0); // 페이지 초기화
       setIsEnd(false); // 데이터 끝 상태 초기화
       filteredStores(0);
     }
-  }, [trimmedSearchWord, location]);
+  }, [trimmedSearchWord]);
 
   const renderItem = ({item}) => (
     <StoreResultItem
       key={item.id}
       store={item}
       navigation={navigation}
-      location={location}
+      index={index}
     />
   );
 
