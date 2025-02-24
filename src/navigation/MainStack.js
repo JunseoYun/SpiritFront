@@ -6,8 +6,9 @@ import SetLocationScreen from '../screens/SetLocation/SetLocationScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
 import StoreAddScreen from '../screens/StoreRegister/StoreAddScreen';
-import StoreSearchScreen from '../screens/StoreAuthority/StoreSearchScreen';
-import StoreAuthorityScreen from '../screens/StoreAuthority/StoreAuthorityScreen';
+import StoreSearchScreen from '../screens/StoreRegister/StoreSearchScreen';
+import StoreCheckScreen from '../screens/StoreRegister/StoreCheckScreen';
+import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
 import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
 import CategoryListTabbar from './CategoryListTabbar';
 import RandomChoiceScreen from '../screens/RandomChoice/RandomChoiceScreen';
@@ -153,10 +154,28 @@ export default function MainStack() {
         })}
       />
       <Stack.Screen
+        name="StoreCheckScreen"
+        component={StoreCheckScreen}
+        options={({navigation}) => ({
+          title: '매장 권한 신청 1/2',
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={25}
+                color="black"
+                style={{marginLeft: 18}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
         name="StoreAuthorityScreen"
         component={StoreAuthorityScreen}
         options={({navigation}) => ({
-          title: '매장 권한 등록하기',
+          title: '매장 권한 신청 2/2',
           headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>

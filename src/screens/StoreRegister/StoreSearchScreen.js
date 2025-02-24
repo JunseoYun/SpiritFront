@@ -1,9 +1,11 @@
 import React, {useState, useLayoutEffect} from 'react';
 import {Text, SafeAreaView, Pressable, StyleSheet, Alert} from 'react-native';
-import StoreSearchBar from '../../components/StoreAuthority/StoreSearch/StoreSearchBar';
-import StoreResultList from '../../components/StoreAuthority/StoreSearch/StoreResultList';
-
+import StoreSearchBar from '../../components/StoreSearch/StoreSearchBar';
+import StoreResultList from '../../components/StoreSearch/StoreResultList';
+import {useRoute} from '@react-navigation/native';
 const StoreSearchScreen = ({navigation}) => {
+  const route = useRoute();
+  const {index} = route.params;
   const [searchStoreName, setSearchStoreName] = useState('');
   const [trimmedSearchWord, setTrimmedSearchWord] = useState('');
 
@@ -42,13 +44,17 @@ const StoreSearchScreen = ({navigation}) => {
         onPress={handleSearch}
       />
       <Text style={styles.infoText}>
-        권한 등록 전 한잔할까에 등록된 매장인지 확인해보세요!
+        {index === 0
+          ? '매장 등록 전 한잔할까에 등록된 매장인지 확인해보세요!'
+          : '권한 신청 전 한잔할까에 등록된 매장인지 확인해보세요!'}
       </Text>
+
       {/* 검색어가 있을 때 결과 리스트 렌더링 */}
       {trimmedSearchWord !== '' && (
         <StoreResultList
           trimmedSearchWord={trimmedSearchWord}
           navigation={navigation}
+          index={index}
         />
       )}
       <Pressable style={styles.storeAddButton} onPress={handleStoreAdd}>

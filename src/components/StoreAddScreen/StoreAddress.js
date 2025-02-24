@@ -14,6 +14,7 @@ const StoreAddress = ({
   setDetailedAddress,
   navigation,
   onAddressSelect,
+  index,
 }) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
   const [error, setError] = useState(null); // 에러 메시지 상태
@@ -34,10 +35,15 @@ const StoreAddress = ({
     setError(null); // 에러 메시지 초기화
     setDetailedAddress(value); // 입력값 업데이트
   };
+  //매장 권한 등록 뷰
+  const inputViewStyle = [
+    styles.storeinputview,
+    index === 1 && {marginTop: 40},
+  ];
 
   return (
     <View>
-      <View style={styles.storeinputview}>
+      <View style={inputViewStyle}>
         <TouchableOpacity
           style={styles.storeinput}
           onPress={() =>
@@ -55,8 +61,7 @@ const StoreAddress = ({
           )}
         </TouchableOpacity>
       </View>
-
-      <View style={styles.storeinputview}>
+      <View style={inputViewStyle}>
         {detailedAddress && (
           <Text style={styles.storeinputtext}>상세 주소</Text>
         )}

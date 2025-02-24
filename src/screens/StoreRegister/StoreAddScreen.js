@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useLayoutEffect} from 'react';
 import {
   ScrollView,
   Text,
@@ -32,6 +32,16 @@ const StoreAddScreen = ({navigation, route}) => {
   const [imageUris, setImageUris] = useState([]); // 이미지 배열 상태
 
   const {showAlert, AlertComponent} = useCustomAlert();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={confirmSubmission}>
+          <Text style={styles.searchButton}>완료</Text>
+        </Pressable>
+      ),
+    });
+  }, [navigation]);
 
   const [storeData, setStoreData] = useState({
     storeName: '',
@@ -170,7 +180,7 @@ const StoreAddScreen = ({navigation, route}) => {
 
   return (
     <>
-      <ScrollView>
+      <ScrollView style={styles.catainer}>
         <SafeAreaView style={styles.storetopview}>
           <StoreInfo storeData={storeData} setStoreData={setStoreData} />
           <StoreAddress
@@ -232,10 +242,19 @@ const StoreAddScreen = ({navigation, route}) => {
 };
 
 const styles = StyleSheet.create({
+  catainer: {
+    backgroundColor: 'white',
+  },
   storetopview: {
     backgroundColor: 'white',
     width: '100%',
     height: '100%',
+  },
+  searchButton: {
+    marginRight: 18,
+    fontSize: 19,
+    fontWeight: '600',
+    color: '#16BBFF',
   },
   savebutton: {
     alignSelf: 'center',
@@ -243,7 +262,7 @@ const styles = StyleSheet.create({
     width: '90%',
     marginVertical: 7,
     backgroundColor: '#16BBFF',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 10,
     marginBottom: 30,
   },

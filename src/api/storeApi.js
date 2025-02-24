@@ -165,7 +165,7 @@ export const Store_getby_liked = async page => {
   }
 };
 
-// 가게 검색(가게명, 메뉴명)리스트 조회 O
+// 가게 검색(가게명, 메뉴명)리스트 조회
 export const Store_getby_keyword = async (
   page,
   latitude,
@@ -179,6 +179,23 @@ export const Store_getby_keyword = async (
         params: {
           longitude,
           latitude,
+          page, // page 값만 전달 초기 : 0
+        },
+      },
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+// 가게 검색(가게명, 메뉴명)리스트 조회
+export const Store_getby_store = async (page, keyword) => {
+  try {
+    const response = await axiosInstance.get(
+      `/store/get-by/keyword/all/${keyword}`,
+      {
+        params: {
           page, // page 값만 전달 초기 : 0
         },
       },
