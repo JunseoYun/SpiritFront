@@ -53,17 +53,24 @@ const StoreAddress = ({
           }>
           {address ? (
             <>
-              <Text style={styles.storeinputtext}>매장 주소*</Text>
+              <Text
+                style={[styles.storeinputtext, index === 1 && {color: '#333'}]}>
+                {index === 1 ? '사업장 소재지*' : '매장 주소*'}
+              </Text>
               <Text style={styles.inputText}>{address}</Text>
             </>
           ) : (
-            <Text style={styles.inputHideText}>매장 주소*</Text>
+            <Text style={styles.inputHideText}>
+              {index === 1 ? '사업장 소재지*' : '매장 주소*'}
+            </Text>
           )}
         </TouchableOpacity>
       </View>
       <View style={inputViewStyle}>
         {detailedAddress && (
-          <Text style={styles.storeinputtext}>상세 주소</Text>
+          <Text style={[styles.storeinputtext, index === 1 && {color: '#333'}]}>
+            상세 주소
+          </Text>
         )}
         <TextInput
           style={[
