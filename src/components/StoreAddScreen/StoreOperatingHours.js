@@ -42,10 +42,10 @@ const StoreOperatingHours = ({operatingHours, setOperatingHours}) => {
             <>
               <Text style={styles.storeinputtext}>영업 시간*</Text>
               <Text style={styles.inputText}>
-                {`${operatingHours.openHour || '--'}:${
-                  operatingHours.openMinute || '--'
-                } - ${operatingHours.closedHour || '--'}:${
-                  operatingHours.closedMinute || '--'
+                {`${operatingHours.openHour || '00'}:${
+                  operatingHours.openMinute || '00'
+                } - ${operatingHours.closedHour || '00'}:${
+                  operatingHours.closedMinute || '00'
                 }`}
               </Text>
             </>
