@@ -11,6 +11,7 @@ import {useRoute} from '@react-navigation/native';
 import StoreAuthorityData from '../../components/StoreAuthority/StoreAuthorityData';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
+import useCustomAlert from '../../hooks/useCustomAlert';
 const StoreCheckScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storeName, storeAddress, storeAddressDetail, storeContact} =
@@ -26,6 +27,8 @@ const StoreCheckScreen = ({navigation}) => {
     storeAddressDetail,
   });
 
+  const {showAlert, AlertComponent} = useCustomAlert();
+
   const handleAddressSelect = ({address, coords}) => {
     setStoreAddressData(prevData => ({
       ...prevData,
@@ -34,7 +37,29 @@ const StoreCheckScreen = ({navigation}) => {
   };
 
   const handleNext = () => {
-    navigation.navigate('StoreAuthorityScreen', {storeData});
+    // 필수 storeData 확인 (예: storeName, storeNumber) 및 주소가 입력되었는지 확인
+    if (!storeData.storeName) {
+      showAlert({
+        title: '매장 이름 미입력',
+        message: '매장 이름을 입력해 주세요.',
+      });
+      return;
+    }
+    if (!storeData.storeNumber) {
+      showAlert({
+        title: '매장 번호 미입력',
+        message: '매장 번호를 입력해 주세요.',
+      });
+      return;
+    }
+    if (!storeAddressData.storeAddress) {
+      showAlert({
+        title: '매장 주소 미입력',
+        message: '매장 주소를 입력해 주세요.',
+      });
+      return;
+    }
+    navigation.navigate('StoreAuthorityScreen', {storeData, storeAddressData});
   };
 
   useLayoutEffect(() => {
@@ -45,7 +70,7 @@ const StoreCheckScreen = ({navigation}) => {
         </Pressable>
       ),
     });
-  }, [navigation]);
+  }, [navigation, storeData, storeAddressData]);
 
   return (
     <SafeAreaView style={styles.storetopview}>
@@ -71,6 +96,8 @@ const StoreCheckScreen = ({navigation}) => {
       <Pressable style={styles.savebutton} onPress={handleNext}>
         <Text style={styles.savebuttontext}>다음</Text>
       </Pressable>
+
+      <AlertComponent />
     </SafeAreaView>
   );
 };
