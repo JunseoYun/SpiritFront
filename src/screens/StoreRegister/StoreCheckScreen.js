@@ -63,9 +63,8 @@ const StoreCheckScreen = ({navigation}) => {
       {/* 진행 바: 50% 진행 */}
       <ProgressBar progress={0} />
 
-      <StoreAuthorityData storeData={storeData} setStoreData={setStoreData} />
-
       <Text style={styles.title}>신청 정보를 확인해주세요.</Text>
+      <StoreAuthorityData storeData={storeData} setStoreData={setStoreData} />
 
       <Pressable style={styles.savebutton} onPress={handleNext}>
         <Text style={styles.savebuttontext}>다음</Text>
@@ -85,9 +84,9 @@ const styles = StyleSheet.create({
   title: {
     marginTop: 30,
     marginHorizontal: 18,
-    color: '#999',
-    fontWeight: '500',
-    fontSize: 16,
+    color: '#333',
+    fontWeight: '600',
+    fontSize: 20,
   },
   searchButton: {
     marginRight: 18,
