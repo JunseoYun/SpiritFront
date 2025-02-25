@@ -97,7 +97,7 @@ const RecentStoreItem = ({store, navigation, location}) => {
             style={styles.storeName}
             numberOfLines={1} // 한 줄로 제한
             ellipsizeMode="tail">
-            {store.name}sdasdasdasdasd
+            {store.name}
           </Text>
           <View style={styles.ratingContainer}>
             <FontAwesomeIcon name="star" size={14} color="#FCC104" />
