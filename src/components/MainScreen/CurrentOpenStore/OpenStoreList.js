@@ -8,6 +8,7 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
   const [distancepage, setDistancepage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [totalpage, setTotalpage] = useState(0);
 
   const fetchdistanceStores = async (currentPage, reset = false) => {
     if (location) {
@@ -23,6 +24,8 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
           location.latitude,
           location.longitude,
         );
+
+        setTotalpage(data.totalPages);
 
         if (data.content && data.content.length > 0) {
           setDistancestores(prevData => {
@@ -86,7 +89,7 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
         windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
         removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
         onEndReached={() => {
-          if (!loading && hasMore) {
+          if (!loading && hasMore && distancepage < totalpage - 1) {
             setDistancepage(prevPage => {
               const nextPage = prevPage + 1; // 다음 페이지 번호
               fetchdistanceStores(nextPage); // 그 페이지 번호로 데이터 요청

@@ -1,4 +1,12 @@
+import {BackHandler} from 'react-native';
+import {
+  getGlobalShowAlert,
+  getNetworkErrorShown,
+  setNetworkErrorShown,
+} from '../context/CustomAlertContext';
+
 export const functionError = error => {
+  const showAlert = getGlobalShowAlert();
   if (error.response) {
     const {status, data, headers} = error.response;
 
@@ -10,6 +18,17 @@ export const functionError = error => {
     } else {
     }
   } else if (error.request) {
+    if (!getNetworkErrorShown()) {
+      setNetworkErrorShown(true); // 에러 발생 상태로 설정
+      showAlert({
+        title: '네트워크에러',
+        message: '인터넷 연결을 확인해 주세요.',
+        onConfirm: () => {
+          setNetworkErrorShown(false); // 에러 상태 초기화
+          BackHandler.exitApp();
+        },
+      });
+    }
   } else {
   }
 

@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   Keyboard,
   TouchableWithoutFeedback,
+  RefreshControl,
 } from 'react-native';
 
 import {getLocation} from '../../../storage/locationStorage';
@@ -32,6 +33,9 @@ const SearchScreen = ({navigation}) => {
   const [selectedEngCategory, setSelectedEngCategory] = useState('');
   const [searchStoreName, setSearchStoreName] = useState('');
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+
   useEffect(() => {
     const fetchLocation = async () => {
       const currentLocation = await getLocation(); // 캐시된 위치 가져오기
@@ -45,6 +49,26 @@ const SearchScreen = ({navigation}) => {
       onPressFastSearch();
     }
   }, [selectedCategory, selectedPeople, selectedHour, selectedMinute]);
+
+  const onRefresh = async () => {
+    setIsRefreshing(true); // 새로 고침 시작
+    setRefresh(true);
+    try {
+      const currentLocation = await getLocation();
+      if (currentLocation) {
+        setLocation(currentLocation);
+      }
+      setSelectedMinute('');
+      setSelectedHour('');
+      setSelectedCategory('');
+      setSelectedEngCategory('');
+      setSelectedPeople('');
+    } catch (error) {
+      console.error('초기 로드 오류:', error);
+    } finally {
+      setIsRefreshing(false); // 새로 고침 종료
+    }
+  };
 
   const onPressFastSearch = async () => {
     var visitTime = `${selectedHour}:${selectedMinute}`;
@@ -179,7 +203,10 @@ const SearchScreen = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View>
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          }>
           <SearchBar
             value={searchStoreName}
             onChangeText={setSearchStoreName}
@@ -187,7 +214,7 @@ const SearchScreen = ({navigation}) => {
             onPress={onPressSearch}
           />
           {/* 스크롤 가능한 영역 */}
-          <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.scrollViewContent}>
             <FastSearch
               title="내 주변 빠른 검색"
               searchOptions={searchOptions}
@@ -214,9 +241,14 @@ const SearchScreen = ({navigation}) => {
               onPressClose={onPressTimeModalClose}
               postbutton={postbutton}
             />
-            <NearStoreList navigation={navigation} location={location} />
-          </ScrollView>
-        </View>
+            <NearStoreList
+              navigation={navigation}
+              location={location}
+              refresh={refresh}
+              setRefresh={setRefresh}
+            />
+          </View>
+        </ScrollView>
       </TouchableWithoutFeedback>
 
       {/* 하단에 고정된 검색 버튼 */}
