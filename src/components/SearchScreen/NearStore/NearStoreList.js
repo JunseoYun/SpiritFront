@@ -3,24 +3,22 @@ import {View, Text, FlatList, StyleSheet} from 'react-native';
 import NearStoreItem from './NearStoreItem';
 import {Store_getby_distance} from '../../../api/storeApi';
 
-const NearStoreList = ({navigation, location}) => {
+const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalpage, setTotalpage] = useState(0);
 
-  useEffect(() => {
-    if (location) {
-      setPage(0);
-      getStoreData(0, true);
-    }
-  }, [location]);
-
   const getStoreData = async (currentPage, reset = false) => {
     if (location) {
       if (loading || (!hasMore && !reset)) return;
       setLoading(true);
+
+      if (reset) {
+        setPage(0);
+      }
+
       try {
         const storesData = await Store_getby_distance(
           currentPage,
@@ -41,7 +39,6 @@ const NearStoreList = ({navigation, location}) => {
             );
             return uniqueData;
           });
-          setHasMore(true); // 데이터가 있으면 계속 로드 가능
         } else {
           setHasMore(false); // 더 이상 데이터가 없으면 false로 설정
         }
@@ -52,6 +49,21 @@ const NearStoreList = ({navigation, location}) => {
       }
     }
   };
+
+  useEffect(() => {
+    if (refresh) {
+      setStores([]); // 데이터 초기화
+      setHasMore(true); // 더 로드할 데이터가 있음을 명시
+      getStoreData(0, true); // 새로고침 시 데이터 리
+      setRefresh(false);
+    }
+  }, [refresh]);
+
+  useEffect(() => {
+    if (location) {
+      getStoreData(0, true);
+    }
+  }, [location]);
 
   const renderStoreItem = ({item}) => {
     return (

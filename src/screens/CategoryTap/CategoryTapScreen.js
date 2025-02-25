@@ -1,12 +1,12 @@
-import React, {useState, useCallback} from 'react';
+import React, {useState, useEffect} from 'react';
+import {useIsFocused} from '@react-navigation/native';
 import {View, Text, FlatList, StyleSheet, SafeAreaView} from 'react-native';
-import {useFocusEffect} from '@react-navigation/native';
 import {Store_getby_category} from '../../api/storeApi';
 import StoreItem from '../../components/CategoryTapScreen/StoreItem';
 
 const CategoryTapScreen = ({navigation, route}) => {
   const {categoryname, location} = route.params;
-
+  const isFocused = useIsFocused();
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false); // 전체 로딩 상태
@@ -14,6 +14,7 @@ const CategoryTapScreen = ({navigation, route}) => {
   const [isEnd, setIsEnd] = useState(false); // 더 이상 데이터가 없는 상태
   const [totalpage, setTotalpage] = useState(0);
 
+  // 🔥 데이터 불러오기 함수
   const fetchStores = async (currentPage, reset = false) => {
     if (loading || isEnd) return; // 로딩 중이거나 데이터가 끝났으면 요청 막기
     setLoading(true); // 로딩 시작
@@ -25,6 +26,7 @@ const CategoryTapScreen = ({navigation, route}) => {
         location.longitude,
         categoryname,
       );
+
       setTotalpage(data.totalPages);
 
       if (reset) {
@@ -50,22 +52,15 @@ const CategoryTapScreen = ({navigation, route}) => {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      const resetAndFetch = async () => {
-        setIsInitialLoading(true); // 초기 로딩 화면을 먼저 보이게 설정
-        setStores([]); // 기존 데이터 초기화
-        setPage(0); // 페이지 초기화
-        setIsEnd(false); // 데이터 끝 상태 초기화
-        await fetchStores(0, true); // 초기화된 상태로 데이터 로드
-      };
-      resetAndFetch();
-    }, [categoryname, location]),
-  );
+  useEffect(() => {
+    if (isFocused && stores.length === 0) {
+      fetchStores(0, true);
+    }
+  }, [isFocused]);
 
   return (
     <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
-      {isInitialLoading ? ( // 초기 로딩 상태일 경우 로딩 화면만 보여줌
+      {isInitialLoading ? ( // 초기 로딩 화면
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingtext}>Loading...</Text>
         </View>
@@ -79,26 +74,26 @@ const CategoryTapScreen = ({navigation, route}) => {
               navigation={navigation}
             />
           )}
-          keyExtractor={item => item.id.toString()}
+          keyExtractor={item => `${categoryname}-${item.id}`} // ✅ 카테고리별 고유 키
           onEndReached={() => {
             if (!loading && !isEnd && page < totalpage - 1) {
               setPage(prevPage => {
-                const nextPage = prevPage + 1; // 다음 페이지 번호
-                fetchStores(nextPage); // 그 페이지 번호로 데이터 요청
-                return nextPage; // 상태를 증가된 페이지 번호로 갱신
+                const nextPage = prevPage + 1;
+                fetchStores(nextPage); // 다음 페이지 요청
+                return nextPage;
               });
             }
           }}
           onEndReachedThreshold={0.5}
-          initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
-          maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
-          windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-          removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={true}
           ListFooterComponent={
             loading ? (
               <Text style={styles.emptyText}>Loading...</Text>
             ) : page === totalpage - 1 && stores.length > 0 ? (
-              <Text style={styles.emptyText}>가게가 더 없습니다</Text>
+              <Text style={styles.emptyText}>가게가 더 없습니다.</Text>
             ) : null
           }
           ListEmptyComponent={
@@ -106,8 +101,8 @@ const CategoryTapScreen = ({navigation, route}) => {
               <Text style={styles.emptyText}>등록된 가게가 없습니다.</Text>
             ) : null
           }
-          refreshing={loading} // 로딩 중일 때 새로 고침 아이콘을 표시
-          onRefresh={() => fetchStores(true)}
+          refreshing={loading}
+          onRefresh={() => fetchStores(0, true)}
         />
       )}
     </SafeAreaView>
@@ -133,4 +128,5 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
+
 export default CategoryTapScreen;
