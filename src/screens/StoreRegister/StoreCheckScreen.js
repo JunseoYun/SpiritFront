@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import StoreAuthorityData from '../../components/StoreAuthority/StoreAuthorityData';
-import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
 import useCustomAlert from '../../hooks/useCustomAlert';
 const StoreCheckScreen = ({navigation}) => {
@@ -21,45 +20,32 @@ const StoreCheckScreen = ({navigation}) => {
     storeId,
     storeName,
     storeNumber: storeContact,
-  });
-  const [storeAddressData, setStoreAddressData] = useState({
-    storeAddress,
-    storeAddressDetail,
+    userName: '',
+    userContact: '',
   });
 
   const {showAlert, AlertComponent} = useCustomAlert();
 
-  const handleAddressSelect = ({address, coords}) => {
-    setStoreAddressData(prevData => ({
-      ...prevData,
-      storeAddress: address,
-    }));
-  };
-
   const handleNext = () => {
     // 필수 storeData 확인 (예: storeName, storeNumber) 및 주소가 입력되었는지 확인
-    if (!storeData.storeName) {
+    if (
+      !storeData.storeName ||
+      !storeData.storeNumber ||
+      !storeData.userName ||
+      !storeData.userContact
+    ) {
       showAlert({
-        title: '매장 이름 미입력',
-        message: '매장 이름을 입력해 주세요.',
+        title: '정보 미입력',
+        message: '모든 정보를 입력해 주세요.',
       });
       return;
     }
-    if (!storeData.storeNumber) {
-      showAlert({
-        title: '매장 번호 미입력',
-        message: '매장 번호를 입력해 주세요.',
-      });
-      return;
-    }
-    if (!storeAddressData.storeAddress) {
-      showAlert({
-        title: '매장 주소 미입력',
-        message: '매장 주소를 입력해 주세요.',
-      });
-      return;
-    }
-    navigation.navigate('StoreAuthorityScreen', {storeData, storeAddressData});
+
+    navigation.navigate('StoreAuthorityScreen', {
+      storeData,
+      storeAddress,
+      storeAddressDetail,
+    });
   };
 
   useLayoutEffect(() => {
@@ -70,7 +56,7 @@ const StoreCheckScreen = ({navigation}) => {
         </Pressable>
       ),
     });
-  }, [navigation, storeData, storeAddressData]);
+  }, [navigation, storeData]);
 
   return (
     <SafeAreaView style={styles.storetopview}>
@@ -78,20 +64,8 @@ const StoreCheckScreen = ({navigation}) => {
       <ProgressBar progress={0} />
 
       <StoreAuthorityData storeData={storeData} setStoreData={setStoreData} />
-      <StoreAddress
-        address={storeAddressData.storeAddress}
-        detailedAddress={storeAddressData.storeAddressDetail}
-        setDetailedAddress={value =>
-          setStoreAddressData(prevData => ({
-            ...prevData,
-            storeAddressDetail: value,
-          }))
-        }
-        navigation={navigation}
-        onAddressSelect={handleAddressSelect}
-        index={1}
-      />
-      <Text style={styles.title}>신청하려는 매장의 정보를 확인해주세요.</Text>
+
+      <Text style={styles.title}>신청 정보를 확인해주세요.</Text>
 
       <Pressable style={styles.savebutton} onPress={handleNext}>
         <Text style={styles.savebuttontext}>다음</Text>

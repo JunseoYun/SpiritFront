@@ -1,0 +1,181 @@
+import React, {useState} from 'react';
+import {View, Text, TextInput, StyleSheet} from 'react-native';
+import forbiddenWords from '../../hooks/forbiddenWords';
+
+// validateDate 함수 정의 (예시)
+const validateDate = dateStr => {
+  // 8자리 숫자 형식인지 체크
+  if (!/^\d{8}$/.test(dateStr)) {
+    return false;
+  }
+  const year = parseInt(dateStr.substring(0, 4), 10);
+  const month = parseInt(dateStr.substring(4, 6), 10);
+  const day = parseInt(dateStr.substring(6, 8), 10);
+
+  // new Date는 월이 0부터 시작하므로 month - 1 사용
+  const date = new Date(year, month - 1, day);
+
+  // 생성된 Date 객체의 년, 월, 일이 실제 입력과 일치하는지 확인
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  );
+};
+
+const StoreBusinessData = ({businessData, setBusinessData}) => {
+  const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
+  const [errors, setErrors] = useState({}); // 각 필드별 에러 메시지 상태
+
+  const handleChange = (key, value) => {
+    // 금지 단어 검사
+    const containsForbiddenWord = forbiddenWords.some(word =>
+      value.includes(word),
+    );
+
+    if (key) {
+      // 숫자만 입력되도록 필터링
+      value = value.replace(/[^0-9]/g, '');
+    }
+
+    // 에러 메시지 업데이트 (비속어 사용 여부)
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [key]: containsForbiddenWord ? '비속어 사용 금지' : null,
+    }));
+
+    // 비속어가 없을 경우에만 데이터 업데이트
+    if (!containsForbiddenWord) {
+      setBusinessData({...businessData, [key]: value});
+    }
+  };
+
+  const handleBlur = () => {
+    if (
+      businessData.openDate.length !== 8 ||
+      !validateDate(businessData.openDate)
+    ) {
+      setErrors(prev => ({
+        ...prev,
+        openDate: '유효한 날짜를 입력해 주세요. (YYYYMMDD 형식)',
+      }));
+    } else {
+      setErrors(prev => ({
+        ...prev,
+        openDate: null,
+      }));
+    }
+  };
+
+  const isFocused = key => focusedInput === key;
+
+  return (
+    <View>
+      {/* 사업자등록번호 입력 */}
+      <View style={styles.storeinputview}>
+        {businessData.businessNumber && (
+          <Text style={styles.storeinputtext}>사업자등록번호*</Text>
+        )}
+        <TextInput
+          style={[
+            styles.storeinput,
+            isFocused('businessNumber') && styles.focusedInput,
+          ]}
+          value={businessData.businessNumber}
+          onChangeText={text => handleChange('businessNumber', text)}
+          keyboardType="numeric"
+          placeholder="사업자등록번호*"
+          placeholderTextColor="#999"
+          onFocus={() => setFocusedInput('businessNumber')}
+          onBlur={() => setFocusedInput(null)}
+        />
+        {errors.businessNumber && (
+          <Text style={styles.errorText}>{errors.businessNumber}</Text>
+        )}
+      </View>
+
+      {/* 개업연월일 입력 */}
+      <View style={styles.storeinputview}>
+        {businessData.openDate && (
+          <Text style={styles.storeinputtext}>개업연월일*</Text>
+        )}
+        <TextInput
+          style={[
+            styles.storeinput,
+            isFocused('openDate') && styles.focusedInput,
+          ]}
+          value={businessData.openDate}
+          onChangeText={text => handleChange('openDate', text)}
+          keyboardType="numeric"
+          placeholder="개업연월일* YYYYMMDD"
+          placeholderTextColor="#999"
+          maxLength={8}
+          onFocus={() => setFocusedInput('openDate')}
+          onBlur={() => {
+            setFocusedInput(null);
+            handleBlur();
+          }}
+        />
+        {errors.openDate && (
+          <Text style={styles.errorText}>{errors.openDate}</Text>
+        )}
+      </View>
+
+      {/* 주류판매신고번호 입력 */}
+      <View style={styles.storeinputview}>
+        {businessData.drink_sales_number && (
+          <Text style={styles.storeinputtext}>주류판매신고번호*</Text>
+        )}
+        <TextInput
+          style={[
+            styles.storeinput,
+            isFocused('drink_sales_number') && styles.focusedInput,
+          ]}
+          value={businessData.drink_sales_number}
+          onChangeText={text => handleChange('drink_sales_number', text)}
+          keyboardType="numeric"
+          placeholder="주류판매신고번호*"
+          placeholderTextColor="#999"
+          onFocus={() => setFocusedInput('drink_sales_number')}
+          onBlur={() => setFocusedInput(null)}
+        />
+        {errors.drink_sales_number && (
+          <Text style={styles.errorText}>{errors.drink_sales_number}</Text>
+        )}
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  storeinputview: {
+    marginTop: 40,
+    marginHorizontal: 20,
+  },
+  storeinputtext: {
+    fontWeight: '500',
+    color: '#333',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  storeinput: {
+    width: '100%',
+    borderBottomColor: '#F2F2F2',
+    borderBottomWidth: 1,
+    fontSize: 22,
+    fontWeight: '500',
+    paddingVertical: 7,
+    paddingLeft: 1,
+  },
+  focusedInput: {
+    borderBottomColor: '#16BBFF',
+    borderBottomWidth: 2,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginTop: 5,
+  },
+});
+
+export default StoreBusinessData;

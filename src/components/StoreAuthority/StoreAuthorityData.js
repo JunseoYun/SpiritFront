@@ -17,6 +17,11 @@ const StoreAuthorityData = ({storeData, setStoreData}) => {
       value = value.replace(/[^0-9]/g, '');
     }
 
+    if (key === 'userContact') {
+      // 숫자만 입력되도록 필터링
+      value = value.replace(/[^0-9]/g, '');
+    }
+
     // 에러 메시지 업데이트
     setErrors(prevErrors => ({
       ...prevErrors,
@@ -36,7 +41,7 @@ const StoreAuthorityData = ({storeData, setStoreData}) => {
       {/* 매장 이름 입력 */}
       <View style={styles.storeinputview}>
         {storeData.storeName && (
-          <Text style={styles.storeinputtext}>매장 이름*</Text>
+          <Text style={styles.storeinputtext}>매장 이름(상호명)</Text>
         )}
         <TextInput
           style={[
@@ -45,7 +50,7 @@ const StoreAuthorityData = ({storeData, setStoreData}) => {
           ]}
           value={storeData.storeName}
           onChangeText={text => handleChange('storeName', text)}
-          placeholder="매장 이름*"
+          placeholder="매장 이름(상호명)"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('storeName')}
           onBlur={() => setFocusedInput(null)}
@@ -58,7 +63,7 @@ const StoreAuthorityData = ({storeData, setStoreData}) => {
       {/* 전화번호 입력 */}
       <View style={styles.storeinputview}>
         {storeData.storeNumber && (
-          <Text style={styles.storeinputtext}>매장 번호*</Text>
+          <Text style={styles.storeinputtext}>매장 연락처</Text>
         )}
         <TextInput
           style={[
@@ -68,13 +73,56 @@ const StoreAuthorityData = ({storeData, setStoreData}) => {
           value={storeData.storeNumber}
           onChangeText={text => handleChange('storeNumber', text)}
           keyboardType="numeric"
-          placeholder="매장 번호*"
+          placeholder="매장 연락처"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('storeNumber')}
           onBlur={() => setFocusedInput(null)}
         />
         {errors.storeNumber && (
           <Text style={styles.errorText}>{errors.storeNumber}</Text>
+        )}
+      </View>
+
+      <View style={styles.storeinputview}>
+        {storeData.userName && (
+          <Text style={styles.storeinputtext}>신청자 성명</Text>
+        )}
+        <TextInput
+          style={[
+            styles.storeinput,
+            isFocused('userName') && styles.focusedInput,
+          ]}
+          value={storeData.userName}
+          onChangeText={text => handleChange('userName', text)}
+          placeholder="신청자 성명"
+          placeholderTextColor="#999"
+          onFocus={() => setFocusedInput('userName')}
+          onBlur={() => setFocusedInput(null)}
+        />
+        {errors.userName && (
+          <Text style={styles.errorText}>{errors.userName}</Text>
+        )}
+      </View>
+
+      <View style={styles.storeinputview}>
+        {storeData.userContact && (
+          <Text style={styles.storeinputtext}>신청자 연락처</Text>
+        )}
+        <TextInput
+          style={[
+            styles.storeinput,
+            isFocused('userContact') && styles.focusedInput,
+          ]}
+          value={storeData.userContact}
+          onChangeText={text => handleChange('userContact', text)}
+          keyboardType="numeric"
+          placeholder="신청자 연락처"
+          placeholderTextColor="#999"
+          onFocus={() => setFocusedInput('userContact')}
+          onBlur={() => setFocusedInput(null)}
+        />
+        {errors.userContact && (
+          <Text style={styles.errorText}>{errors.userContact}</Text>
         )}
       </View>
     </View>

@@ -1,21 +1,17 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
-const StoreInfoCard = ({storeData, storeAddressData}) => {
+const StoreInfoCard = ({storeData}) => {
   return (
     <View style={styles.card}>
-      <Text style={styles.label}>매장 이름</Text>
+      <Text style={styles.label}>매장 이름(상호명)</Text>
       <Text style={styles.value}>{storeData.storeName}</Text>
-
-      <Text style={styles.label}>매장 번호</Text>
+      <Text style={styles.label}>매장 연락처</Text>
       <Text style={styles.value}>{storeData.storeNumber}</Text>
-
-      <Text style={styles.label}>주소</Text>
-      <Text style={styles.value}>
-        {storeAddressData.storeAddress}
-        {storeAddressData.storeAddressDetail &&
-          `, ${storeAddressData.storeAddressDetail}`}
-      </Text>
+      <Text style={styles.label}>신청자 성명</Text>
+      <Text style={styles.value}>{storeData.userName}</Text>
+      <Text style={styles.label}>신청자 연락처</Text>
+      <Text style={styles.value}>{storeData.userContact}</Text>
     </View>
   );
 };

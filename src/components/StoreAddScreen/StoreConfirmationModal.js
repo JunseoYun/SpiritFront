@@ -34,7 +34,9 @@ const StoreConfirmationModal = ({
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>등록 전 매장 정보 확인</Text>
-          <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>매장 이름</Text>
               <Text style={styles.infoValue}>{storeData.storeName}</Text>
