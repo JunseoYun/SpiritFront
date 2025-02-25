@@ -42,10 +42,10 @@ const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
             <>
               <Text style={styles.storeinputtext}>브레이킹 시간</Text>
               <Text style={styles.inputText}>
-                {`${breakingHours.startHour || '--'}:${
-                  breakingHours.startMinute || '--'
-                } - ${breakingHours.endHour || '--'}:${
-                  breakingHours.endMinute || '--'
+                {`${breakingHours.startHour || '00'}:${
+                  breakingHours.startMinute || '00'
+                } - ${breakingHours.endHour || '00'}:${
+                  breakingHours.endMinute || '00'
                 }`}
               </Text>
             </>
