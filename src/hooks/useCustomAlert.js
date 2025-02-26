@@ -91,6 +91,22 @@ const useCustomAlert = () => {
                     </TouchableOpacity>
                   </>
                 )}
+                {type === 'withdraw' && (
+                  <>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onCancel)}>
+                      <Text style={styles.buttonText}>취소</Text>
+                    </TouchableOpacity>
+                    <View style={styles.divider} />
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onConfirm)}>
+                      <Text style={styles.buttonDeleteText}>탈퇴하기</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+
                 {type === 'ok' && (
                   <TouchableOpacity
                     style={styles.button}
