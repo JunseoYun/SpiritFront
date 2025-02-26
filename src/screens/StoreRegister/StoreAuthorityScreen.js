@@ -40,13 +40,7 @@ const StoreAuthorityScreen = ({navigation}) => {
   });
 
   const {showAlert, AlertComponent} = useCustomAlert();
-  console.log(
-    storeData,
-    owners,
-    businessData,
-    business_registration_certificate,
-    storeAddressData,
-  );
+
   const handleNext = useCallback(() => {
     // 1. 사업자등록증 첨부 여부 확인
     if (!business_registration_certificate) {
