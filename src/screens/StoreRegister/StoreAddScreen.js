@@ -33,16 +33,6 @@ const StoreAddScreen = ({navigation, route}) => {
 
   const {showAlert, AlertComponent} = useCustomAlert();
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <Pressable onPress={confirmSubmission}>
-          <Text style={styles.searchButton}>완료</Text>
-        </Pressable>
-      ),
-    });
-  }, [navigation]);
-
   const [storeData, setStoreData] = useState({
     storeName: '',
     storeNumber: '',
@@ -111,6 +101,30 @@ const StoreAddScreen = ({navigation, route}) => {
 
     setIsModalVisible(true); // 모든 값이 유효하면 모달 열기
   };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={confirmSubmission}>
+          <Text style={styles.searchButton}>완료</Text>
+        </Pressable>
+      ),
+    });
+  }, [
+    navigation,
+    storeData,
+    operatingHours,
+    breakingHours,
+    coords,
+    address,
+    detailedAddress,
+    selectedCategory,
+    selectedOption,
+    selectedscreenOption,
+    closedDay,
+    alcohol,
+    imageUris,
+  ]);
 
   const handleAddressSelect = ({address, coords}) => {
     setAddress(address);

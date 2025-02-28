@@ -21,7 +21,27 @@ const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
   };
 
   const handleChange = (key, value) => {
-    setBreakingHours({...breakingHours, [key]: value});
+    // 모든 필드가 빈값인지 확인 (첫 입력 여부)
+    const isInitial =
+      !breakingHours.startHour &&
+      !breakingHours.startMinute &&
+      !breakingHours.endHour &&
+      !breakingHours.endMinute;
+
+    let newState = {...breakingHours};
+
+    if (isInitial) {
+      // 빈 필드들을 '00'으로 채워 넣음
+      newState = {
+        startHour: '00',
+        startMinute: '00',
+        endHour: '00',
+        endMinute: '00',
+      };
+    }
+    // 해당 key는 입력된 값으로 변경
+    newState[key] = value;
+    setBreakingHours(newState);
   };
   const hours = Array.from({length: 24}, (_, i) =>
     i.toString().padStart(2, '0'),
