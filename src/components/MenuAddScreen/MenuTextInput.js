@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import {View, Text, TextInput, StyleSheet} from 'react-native';
 
 const MenuTextInput = ({
   label,
@@ -17,6 +17,7 @@ const MenuTextInput = ({
         style={[styles.input, multiline && styles.textarea, style]}
         value={value}
         onChangeText={onChangeText}
+        keyboardType="numeric"
         placeholder={placeholder}
         placeholderTextColor={placeholderTextColor}
         multiline={multiline}

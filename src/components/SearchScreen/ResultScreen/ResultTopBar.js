@@ -1,5 +1,11 @@
 import React, {useState} from 'react';
-import {View, TextInput, TouchableOpacity, StyleSheet} from 'react-native';
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+} from 'react-native';
 
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -52,7 +58,7 @@ const ResultTopBar = ({searchWord, setSearchWord, navigation, onSearch}) => {
       {/* ✅ 검색 버튼 (검색어 입력 시만 표시) */}
       {isSearching ? (
         <TouchableOpacity style={styles.homeButton} onPress={onSearchPress}>
-          <Ionicons name="paper-plane-sharp" size={25} color="#333" />
+          <Text style={styles.searchButton}>검색</Text>
         </TouchableOpacity>
       ) : (
         <TouchableOpacity
@@ -96,6 +102,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: 'gray',
     flex: 1, // 입력 필드가 남은 공간을 차지하도록 설정
+  },
+  searchButton: {
+    fontSize: 19,
+    fontWeight: '600',
+    color: '#16BBFF',
   },
 });
 

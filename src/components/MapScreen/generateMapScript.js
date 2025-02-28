@@ -7,9 +7,9 @@ const generateMapScript = (lat, lng, stores) => `
     };
     window.map = new kakao.maps.Map(mapContainer, options);
   }
-  
+
   var map = window.map;
-  
+
   if (!window.currentMarker) {
     window.currentMarker = new kakao.maps.Marker({
       position: new kakao.maps.LatLng(${lat}, ${lng}),
@@ -20,12 +20,11 @@ const generateMapScript = (lat, lng, stores) => `
   } else {
     window.currentMarker.setPosition(new kakao.maps.LatLng(${lat}, ${lng}));
   }
-  
+
   if (window.storeMarkers) {
     window.storeMarkers.forEach(marker => marker.setMap(null));
   }
-  
-  // 커스텀 마커 디자인 (SVG를 data URI로, 집 모양 아이콘)
+
   var customMarkerUri = 'data:image/svg+xml;charset=UTF-8,' +
     '<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 32 32">' +
       '<circle cx="16" cy="16" r="16" fill="%2316BBFF"/>' +
@@ -33,14 +32,7 @@ const generateMapScript = (lat, lng, stores) => `
         '<path d="M16 4 L4 14 L4 28 L13 28 L13 18 L19 18 L19 28 L28 28 L28 14 Z" fill="%23ffffff"/>' +
       '</g>' +
     '</svg>';
-  
-  // 커스텀 그림자 디자인 (SVG를 data URI로, 타원형 그림자)
-  var customShadowUri = 'data:image/svg+xml;charset=UTF-8,' +
-    '<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 32 32">' +
-      '<ellipse cx="16" cy="26" rx="10" ry="4" fill="%23000000" fill-opacity="0.3"/>' +
-    '</svg>';
-  
-  // 가게 데이터를 주소별로 그룹화
+
   var storesArray = ${JSON.stringify(stores)};
   var storeGroups = {};
   storesArray.forEach(function(store) {
@@ -50,27 +42,13 @@ const generateMapScript = (lat, lng, stores) => `
     }
     storeGroups[addr].push(store);
   });
-  
+
   window.storeMarkers = [];
-  
-  // 각 그룹별로 마커 생성
+  window.currentOverlay = null;
+
   for (var addr in storeGroups) {
     var group = storeGroups[addr];
-    // 그룹의 첫 번째 가게 위치를 기준으로 마커 생성
     var markerPosition = new kakao.maps.LatLng(group[0].locationDto.latitude, group[0].locationDto.longitude);
-    
-    // 그림자 마커 생성 (마커 뒤에, zIndex 낮게)
-    var shadowMarker = new kakao.maps.Marker({
-      position: markerPosition,
-      map: map,
-      clickable: false,
-      zIndex: 1,
-      image: new kakao.maps.MarkerImage(
-        customShadowUri,
-        new kakao.maps.Size(26, 10),
-        { offset: new kakao.maps.Point(12, 5) }
-      )
-    });
     
     var marker = new kakao.maps.Marker({
       position: markerPosition,
@@ -79,51 +57,118 @@ const generateMapScript = (lat, lng, stores) => `
       zIndex: 2,
       image: new kakao.maps.MarkerImage(
         customMarkerUri,
-        new kakao.maps.Size(26, 26)
+        new kakao.maps.Size(30, 30)
       )
     });
-    
-    // 그룹 마커 클릭 시, 항상 그룹의 첫 번째 가게를 선택하도록 함
-    (function(group) {
-      kakao.maps.event.addListener(marker, 'click', function() {
-        window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'markerClicked', storeId: group[0].id }));
+
+    // ✅ 가게 리스트 오버레이 생성
+    function createStoreListOverlay(group, markerPosition) {
+     window.isStoreListClicked = true;
+      if (window.currentOverlay) {
+        window.currentOverlay.setMap(null);
+      }
+
+      var overlayContent = document.createElement('div');
+      overlayContent.style.cssText = "background:white; padding:10px; border-radius:10px; box-shadow:0px 2px 5px rgba(0,0,0,0.2); font-size:14px; width:auto; border:1px solid #ddd; position:relative; transform:translateY(-120%);";
+      
+      // ✅ 리스트 내부 클릭 시 닫히지 않도록 방지
+      overlayContent.addEventListener("click", function(event) {
+        event.stopPropagation();
+        // ✅ 리스트 내부 클릭 감지
       });
-    })(group);
-    
-    // 그룹 내 가게가 2개 이상이면, 마커의 위쪽(약간 오프셋된 위치)에 개수를 표시하는 오버레이 추가
-if (group.length > 1) {
-  var overlayContent = '<div style="pointer-events:none; position: relative; transform: translate(13px, -6px); background: #16BBFF; color: white; width: 14px; height: 14px; border-radius: 50%; border: 1px solid #ffffff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-family: Arial, sans-serif; font-weight: bold;">' + group.length + '</div>';
-  new kakao.maps.CustomOverlay({
-    position: markerPosition,
-    content: overlayContent,
-    map: map,
-    zIndex: 10
-  });
-}
 
+      group.forEach((store, index) => {
+        var storeItem = document.createElement('div');
+        storeItem.innerHTML = '<div style="display:flex; align-items:center; padding:10px; cursor:pointer;"><div style="width:8px; height:8px; background:#16BBFF; border-radius:50%; margin-right:8px;"></div>' + store.name + '</div>';
 
+        // ✅ 마지막 아이템의 아래 테두리는 없애기
+        if (index !== group.length - 1) {
+          storeItem.style.borderBottom = "1px solid #eee";
+        }
+
+        storeItem.onclick = function(event) {
+          event.stopPropagation(); // ✅ 지도 클릭 이벤트 방지
+          window.isStoreListClicked = true; // ✅ 리스트 내부 클릭 감지
+
+          // ✅ storeId React Native로 전달
+          window.ReactNativeWebView.postMessage(JSON.stringify({ 
+            action: 'markerClicked', 
+            storeId: store.id 
+          }));
+        };
+
+        overlayContent.appendChild(storeItem);
+      });
+
+      var overlay = new kakao.maps.CustomOverlay({
+        content: overlayContent,
+        position: markerPosition,
+        map: map,
+        yAnchor: 0 // ✅ 마커 위쪽에 배치
+      });
+
+      window.currentOverlay = overlay;
+    }
+
+    // ✅ 마커 클릭 시 오버레이 표시 (새로운 리스트 클릭하면 기존 리스트 닫힘)
+    (function(group, markerPosition) {
+      kakao.maps.event.addListener(marker, 'click', function() {
+        if (window.currentOverlay) {
+          window.currentOverlay.setMap(null);
+          window.currentOverlay = null;
+        }
+
+        if (group.length > 1) {
+          createStoreListOverlay(group, markerPosition);
+        } 
+          window.ReactNativeWebView.postMessage(JSON.stringify({ 
+            action: 'markerClicked', 
+            storeId: group[0].id 
+          }));
+        
+      });
+    })(group, markerPosition);
+
+    // 🔹 마커 개수 표시 (그룹이 2개 이상일 경우)
+    if (group.length > 1) {
+      var overlayElement = document.createElement('div');
+      overlayElement.style.cssText = "pointer-events:none; position:relative; transform:translate(13px, -6px); background:#16BBFF; color:white; width:18px; height:18px; border-radius:50%; border:1px solid #ffffff; display:flex; align-items:center; justify-content:center; font-size:10px; font-family:Arial,sans-serif; font-weight:bold;";
+      overlayElement.innerText = group.length;
+      
+      var customOverlay = new kakao.maps.CustomOverlay({
+        position: markerPosition,
+        content: overlayElement,
+        map: map,
+        zIndex: 10
+      });
+    }
     
     window.storeMarkers.push(marker);
   }
-  
-  kakao.maps.event.addListener(map, 'click', function() {
-    window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'hideFlatList' }));
-  });
-  
-  true;
 
-  // 지도 클릭 이벤트 개선 (디바운스 적용)
-if (!window.lastMapClick) {
-  window.lastMapClick = 0;
-}
-kakao.maps.event.addListener(map, 'click', function() {
-  var now = Date.now();
-  if (now - window.lastMapClick > 300) { // 300ms 간격으로만 실행
-    window.lastMapClick = now;
-    window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'hideFlatList' }));
+  // ✅ 지도 클릭 시, 오버레이를 닫는 로직 (리스트 내부 클릭 제외!!)
+  if (!window.lastMapClick) {
+    window.lastMapClick = 0;
+    kakao.maps.event.addListener(map, 'click', function(event) {
+      var now = Date.now();
+      if (now - window.lastMapClick > 300) { 
+        window.lastMapClick = now;
+
+        // ✅ 리스트 내부 클릭이면 닫지 않음
+        if (window.isStoreListClicked) {
+          window.isStoreListClicked = false; // ✅ 플래그 초기화
+          return;
+        }
+
+        if (window.currentOverlay) {
+          window.currentOverlay.setMap(null);
+          window.currentOverlay = null;
+        }
+      }
+    });
   }
-});
 
+  true;
 `;
 
 export default generateMapScript;

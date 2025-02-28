@@ -21,6 +21,7 @@ const MenuInput = ({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
+        keyboardType="numeric"
         multiline={multiline}
         textAlignVertical={multiline ? 'top' : 'center'}
         onFocus={() => setIsFocused(true)}
