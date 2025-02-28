@@ -60,6 +60,15 @@ export const Userdataget = async () => {
     throw error;
   }
 };
+export const user_withdraw = async () => {
+  try {
+    const response = await axiosInstance.delete(`/auth/withdraw`, {});
+    return response.data.data;
+  } catch (error) {
+    functionError(error); // 에러 처리
+    throw error;
+  }
+};
 
 export const Userputnickname = async nickname => {
   try {

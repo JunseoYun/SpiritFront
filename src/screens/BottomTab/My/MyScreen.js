@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, ScrollView, StyleSheet, Text, SafeAreaView} from 'react-native';
+import {StyleSheet, Text, SafeAreaView} from 'react-native';
 import MyPageheader from '../../../components/MyScreen/MyPageheader'; // 위에서 만든 컴포넌트
 import {Userdataget} from '../../../api/userApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
