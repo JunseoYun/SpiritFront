@@ -12,11 +12,6 @@ const StoreInfo = ({storeData, setStoreData}) => {
       value.includes(word),
     );
 
-    if (key === 'storeNumber') {
-      // 숫자만 입력되도록 필터링
-      value = value.replace(/[^0-9]/g, '');
-    }
-
     // 에러 메시지 업데이트
     setErrors(prevErrors => ({
       ...prevErrors,
