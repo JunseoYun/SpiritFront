@@ -19,10 +19,30 @@ const StoreOperatingHours = ({operatingHours, setOperatingHours}) => {
   const closeHandle = () => {
     setVisible(false);
   };
-
   const handleChange = (key, value) => {
-    setOperatingHours({...operatingHours, [key]: value});
+    // 모든 필드가 빈값인지 확인 (첫 입력 여부)
+    const isInitial =
+      !operatingHours.openHour &&
+      !operatingHours.openMinute &&
+      !operatingHours.closedHour &&
+      !operatingHours.closedMinute;
+
+    let newState = {...operatingHours};
+
+    if (isInitial) {
+      // 현재 빈 필드들을 '00'으로 채워넣음
+      newState = {
+        openHour: '00',
+        openMinute: '00',
+        closedHour: '00',
+        closedMinute: '00',
+      };
+    }
+    // 해당 key는 입력값으로 변경 (이미 입력된 값은 그대로 둠)
+    newState[key] = value;
+    setOperatingHours(newState);
   };
+
   const hours = Array.from({length: 24}, (_, i) =>
     i.toString().padStart(2, '0'),
   );

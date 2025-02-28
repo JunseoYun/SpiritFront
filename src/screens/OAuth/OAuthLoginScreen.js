@@ -125,7 +125,7 @@ const OAuthLoginScreen = ({navigation}) => {
 
   const handletempLogin = async () => {
     try {
-      handleLogin({type: 'KAKAO', id: 444, token: 111});
+      handleLogin({type: 'KAKAO', id: 555, token: 555});
     } catch (error) {
       showAlert({
         title: '임시 로그인 오류',
