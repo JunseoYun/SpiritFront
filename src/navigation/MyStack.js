@@ -5,7 +5,9 @@ import {createStackNavigator} from '@react-navigation/stack';
 import ConfigScreen from '../screens/BottomTab/My/ConfigScreen';
 import Mynickchange from '../screens/BottomTab/My/Mynickchange';
 import MyScreen from '../screens/BottomTab/My/MyScreen';
+import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Octicons from 'react-native-vector-icons/Octicons';
 
 const Stack = createStackNavigator();
 
@@ -64,6 +66,31 @@ export default function MyStack() {
         name="MyScreen"
         component={MyScreen}
         options={getScreenOptions('마이프로필')}
+      />
+
+      <Stack.Screen
+        name="WithdrawScreen"
+        component={WithdrawScreen}
+        options={({navigation}) => ({
+          presentation: 'modal',
+          gestureDirection: 'vertical',
+          animation: 'slide_from_bottom',
+          title: '회원탈퇴',
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <Octicons
+                name="x"
+                size={25}
+                color="#333"
+                style={{marginLeft: 18}}
+              />
+            </Pressable>
+          ),
+        })}
       />
     </Stack.Navigator>
   );

@@ -57,7 +57,7 @@ const StoreBusinessData = ({businessData, setBusinessData}) => {
     ) {
       setErrors(prev => ({
         ...prev,
-        openDate: '유효한 날짜를 입력해 주세요. (YYYYMMDD 형식)',
+        openDate: '유효한 날짜를 입력해 주세요. (19000101 형식)',
       }));
     } else {
       setErrors(prev => ({
@@ -107,7 +107,7 @@ const StoreBusinessData = ({businessData, setBusinessData}) => {
           value={businessData.openDate}
           onChangeText={text => handleChange('openDate', text)}
           keyboardType="numeric"
-          placeholder="개업연월일* YYYYMMDD"
+          placeholder="개업연월일* 19000101"
           placeholderTextColor="#999"
           maxLength={8}
           onFocus={() => setFocusedInput('openDate')}
