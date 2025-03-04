@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
   Text,
@@ -20,11 +20,37 @@ const TodayRecomm = ({
   recommStores,
   location,
   navigation,
+  refresh,
 }) => {
   const {translateCategory} = useCategoryTranslation();
   const koreanCategory = translateCategory(recommCategory);
   const [currentIndex, setCurrentIndex] = useState(0);
   const listRef = useRef(null);
+
+  useEffect(() => {
+    if (refresh) {
+      setCurrentIndex(0);
+      setTimeout(() => {
+        if (listRef.current) {
+          listRef.current.scrollToOffset({
+            offset: (ITEM_WIDTH + SPACING / 2) * recommStores.length,
+            animated: false,
+          });
+        }
+      }, 0);
+    }
+    if (recommStores.length > 2) {
+      setCurrentIndex(0);
+      setTimeout(() => {
+        if (listRef.current) {
+          listRef.current.scrollToOffset({
+            offset: (ITEM_WIDTH + SPACING / 2) * recommStores.length,
+            animated: false,
+          });
+        }
+      }, 0);
+    }
+  }, [refresh, recommStores]);
 
   const extendedStores =
     Array.isArray(recommStores) && recommStores.length >= 3
@@ -39,7 +65,7 @@ const TodayRecomm = ({
       Math.round(contentOffsetX / (ITEM_WIDTH + SPACING)) % totalItems;
     setCurrentIndex(index);
   };
-
+  // 마지막을 처음으로 바꾸고 다래 dots를 따로 설정한다면?
   // 스크롤이 멈출 때 위치 자동 보정 (양방향 무한 스크롤)
   const handleScrollEnd = ({nativeEvent}) => {
     const contentOffsetX = nativeEvent.contentOffset.x;
@@ -49,14 +75,14 @@ const TodayRecomm = ({
     if (index === 0) {
       // 왼쪽 끝에서 왼쪽으로 스크롤하면 마지막 아이템으로 이동
       listRef.current.scrollToOffset({
-        offset: (ITEM_WIDTH + SPACING) * totalItems,
+        offset: (ITEM_WIDTH + SPACING / 2) * totalItems,
         animated: false,
       });
       setCurrentIndex(totalItems - 1);
     } else if (index >= totalItems * 2) {
       // 오른쪽 끝에서 오른쪽으로 스크롤하면 첫 번째 아이템으로 이동
       listRef.current.scrollToOffset({
-        offset: (ITEM_WIDTH + SPACING) * totalItems,
+        offset: (ITEM_WIDTH + SPACING / 2) * totalItems,
         animated: false,
       });
       setCurrentIndex(0);
@@ -75,14 +101,19 @@ const TodayRecomm = ({
           horizontal
           keyExtractor={(item, index) => index.toString()}
           showsHorizontalScrollIndicator={false}
+          removeClippedSubviews={false}
           contentContainerStyle={[
             styles.scrollContainer,
             recommStores.length < 3 && styles.centeredListContainer,
           ]}
           snapToAlignment="center"
-          snapToInterval={ITEM_WIDTH + SPACING}
+          snapToInterval={
+            recommStores.length === 2
+              ? ITEM_WIDTH + SPACING + SPACING
+              : ITEM_WIDTH + SPACING
+          }
           decelerationRate={0.8}
-          initialScrollIndex={recommStores.length > 1 ? recommStores.length : 0} // 처음 시작 시 중앙으로 이동
+          initialScrollIndex={0} // 처음 시작 시 중앙으로 이동
           onScroll={handleScroll} // 실시간으로 점 업데이트
           onMomentumScrollEnd={
             recommStores.length >= 3 ? handleScrollEnd : undefined
@@ -93,7 +124,7 @@ const TodayRecomm = ({
             index,
           })}
           renderItem={({item, index}) => (
-            <View key={index} style={styles.slideItem}>
+            <View key={index} style={[styles.slideItem]}>
               <TodayRecommItem
                 store={item}
                 category={koreanCategory}
@@ -152,6 +183,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   centeredListContainer: {
+    alignItems: 'center',
     justifyContent: 'center', // 리스트 중앙 정렬
     flexDirection: 'row',
     paddingHorizontal: 15,
