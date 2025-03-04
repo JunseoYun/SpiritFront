@@ -421,7 +421,6 @@ const styles = StyleSheet.create({
   },
   Storesubtitleview: {
     width: '30%',
-    justifyContent: 'space-between',
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: 10,
@@ -431,6 +430,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#5F5F5F',
     textAlign: 'center',
+    marginRight: 10,
   },
   ReviewView: {
     width: '100%',
