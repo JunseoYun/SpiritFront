@@ -71,9 +71,9 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
   return (
     <View>
       <View style={styles.todayPhrasesView}>
-        <Text style={styles.mylocationlivetext}>현재 영업 중인 주점은?</Text>
+        <Text style={styles.mylocationlivetext}>현재 영업 중인 술집은?</Text>
         <Text style={styles.mylocationlivesubtext}>
-          현재 위치에서 내 근처 영업 중인 주점을 알려드려요
+          현재 위치에서 내 근처 영업 중인 술집을 알려드려요
         </Text>
       </View>
 
@@ -107,7 +107,7 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
         }
         ListEmptyComponent={
           !loading ? (
-            <Text style={styles.emptyText}>근처에 영업 중인 가게가 없어요</Text>
+            <Text style={styles.emptyText}>근처에 영업 중인 술집이 없어요</Text>
           ) : null
         }
       />

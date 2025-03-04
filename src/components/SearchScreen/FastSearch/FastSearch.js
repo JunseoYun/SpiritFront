@@ -7,7 +7,7 @@ const FastSearch = ({title, searchOptions}) => {
     <View
       style={[
         title === '' && styles.fastcontainer,
-        title === '내 주변 빠른 검색' && styles.container, // 선택된 카테고리에 스타일 적용
+        title === '내 주변 술집 빠른 검색' && styles.container, // 선택된 카테고리에 스타일 적용
       ]}>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>{title}</Text>
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#16BBFF',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: 'bold',
   },
   fastContainer: {

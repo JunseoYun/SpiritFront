@@ -76,7 +76,7 @@ const RecentStoreList = ({refresh, setRefresh, navigation, location}) => {
 
   const renderEmptyComponent = () => {
     if (!loading) {
-      return <Text style={styles.emptyText}>최근 방문한 가게가 없습니다.</Text>;
+      return <Text style={styles.emptyText}>최근 방문한 술집이 없습니다.</Text>;
     }
     return null;
   };
@@ -88,9 +88,9 @@ const RecentStoreList = ({refresh, setRefresh, navigation, location}) => {
   return (
     <View>
       <View style={styles.todayPhrasesView}>
-        <Text style={styles.mylocationlivetext}>최근 방문한 장소</Text>
+        <Text style={styles.mylocationlivetext}>최근 방문한 술집</Text>
         <Text style={styles.mylocationlivesubtext}>
-          다시 방문하고 싶은 장소를 확인해보세요
+          다시 방문하고 싶은 술집을 확인해보세요
         </Text>
       </View>
 

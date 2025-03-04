@@ -91,7 +91,7 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
       }
       ListEmptyComponent={
         !loading && searchingStores.length === 0 ? (
-          <Text style={styles.emptyText}>검색된 가게가 없습니다</Text>
+          <Text style={styles.emptyText}>검색된 술집이 없습니다</Text>
         ) : null
       }
     />

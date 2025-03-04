@@ -1,12 +1,12 @@
 import React from 'react';
 import {Text, SafeAreaView, ScrollView, View, StyleSheet} from 'react-native';
-const Privacy_v20250128 = () => {
+const Privacy_v20250401 = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{marginTop: 20}}>
           <Text style={styles.text}>
-            개발팀 SPIRIT(이하 ‘운영자”라 한다)은 정보통신망 이용촉진 및
+            개인사업자 스피릿(이하 ‘운영자”라 한다)은 정보통신망 이용촉진 및
             정보보호 등에 관한 법률, 개인정보보호법 등 관련 법령에 따라 이용자의
             개인정보를 보호하고, 이와 관련한 고충을 신속하고 원활하게 처리할 수
             있도록 하기 위하여 다음과 같이 개인정보처리방침을 수립합니다.
@@ -58,7 +58,7 @@ const Privacy_v20250128 = () => {
               <View style={[styles.col_1_1_3, styles.colText]}>
                 <Text style={styles.colText}>서비스 이용 닉네임</Text>
                 <Text style={styles.colText}>
-                  - 닉네임, 이름, 휴대전화 번호, 생년월일
+                  - 닉네임, 이름, 휴대전화 번호, 생년월일, 성별
                 </Text>
                 <Text style={styles.colText}>SNS 간편가입</Text>
                 <Text style={styles.colText}>
@@ -163,11 +163,11 @@ const Privacy_v20250128 = () => {
               </Text>
               <View style={styles.colDivider} />
               <Text style={[styles.col_1_2_3, styles.colText]}>
-                이름, 휴대전화 번호, CI(연계정보), 회원이 작성한 게시물
+                CI(연계정보)
               </Text>
               <View style={styles.colDivider} />
               <Text style={[styles.col_1_2_4, styles.colText]}>
-                회원탈퇴 후 3년간 보관
+                회원탈퇴 후 6개월간 보관
               </Text>
             </View>
           </View>
@@ -416,7 +416,7 @@ const Privacy_v20250128 = () => {
               <Text style={[styles.col_3_1_3, styles.headerText]}>이메일</Text>
             </View>
             <View style={[styles.row2]}>
-              <Text style={[styles.col_3_1_1, styles.colText]}>윤준서</Text>
+              <Text style={[styles.col_3_1_1, styles.colText]}>김경모</Text>
               <View style={styles.colDivider} />
               <Text style={[styles.col_3_1_2, styles.colText]}>
                 개인정보 보호책임자
@@ -474,11 +474,11 @@ const Privacy_v20250128 = () => {
             공지하고 서비스 초기 화면 팝업 등을 통해 고지할 것입니다.
           </Text>
           <Text style={styles.text}>
-            2) 현 개인정보처리방침은 2025년 2월 1일부터 적용되며, 변경 전의
+            2) 현 개인정보처리방침은 2025년 4월 1일부터 적용되며, 변경 전의
             개인정보처리방침은 공지사항을 통해서 확인하실 수 있습니다.
           </Text>
-          <Text style={styles.numbertext}>- 공고일자: 2025년 1월 25일</Text>
-          <Text style={styles.text}>- 시행일자: 2025년 2월 1일</Text>
+          <Text style={styles.numbertext}>- 공고일자: 2025년 3월 1일</Text>
+          <Text style={styles.text}>- 시행일자: 2025년 4월 1일</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -632,4 +632,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Privacy_v20250128;
+export default Privacy_v20250401;

@@ -210,13 +210,13 @@ const SearchScreen = ({navigation}) => {
           <SearchBar
             value={searchStoreName}
             onChangeText={setSearchStoreName}
-            placeholder="주점 이름을 입력해주세요."
+            placeholder="술집 이름을 입력해주세요."
             onPress={onPressSearch}
           />
           {/* 스크롤 가능한 영역 */}
           <View style={styles.scrollViewContent}>
             <FastSearch
-              title="내 주변 빠른 검색"
+              title="내 주변 술집 빠른 검색"
               searchOptions={searchOptions}
             />
             <CategoryModal

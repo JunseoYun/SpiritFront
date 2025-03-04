@@ -125,7 +125,7 @@ const TodayRecomm = ({
             style={styles.imageStyle}
           />
           <Text style={styles.noDataText}>
-            추천 카테고리에 등록된 주점이 없어요
+            추천 카테고리에 등록된 술집이 없어요
           </Text>
         </View>
       )}

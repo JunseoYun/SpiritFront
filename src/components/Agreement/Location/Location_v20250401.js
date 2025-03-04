@@ -1,16 +1,16 @@
 import React from 'react';
 import {Text, SafeAreaView, ScrollView, View, StyleSheet} from 'react-native';
-const Location_v20250128 = () => {
+const Location_v20250401 = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View>
           <Text style={styles.title}>제 1 조 (목적)</Text>
           <Text style={styles.text}>
-            본 약관은 개발팀 SPIRIT(이하 ‘운영자’라고 합니다)이 운영, 제공하는
-            위치기반서비스(이하 ‘서비스’)를 이용함에 있어 운영자와 고객 및
-            개인위치정보주체의 권리, 의무 및 책임 사항에 따른 이용조건 및 절차
-            등 기본적인 사항을 규정함을 목적으로 합니다.
+            본 약관은 개인사업자 스피릿(이하 ‘운영자’라고 합니다)이 운영,
+            제공하는 위치기반서비스(이하 ‘서비스’)를 이용함에 있어 운영자와 고객
+            및 개인위치정보주체의 권리, 의무 및 책임 사항에 따른 이용조건 및
+            절차 등 기본적인 사항을 규정함을 목적으로 합니다.
           </Text>
         </View>
         <View>
@@ -210,18 +210,19 @@ const Location_v20250128 = () => {
         <View>
           <Text style={styles.title}>제 13 조 (운영자의 연락처)</Text>
           <Text style={styles.text}>운영자의 정보는 아래와 같습니다.</Text>
-          <Text style={styles.text}>1. 명칭: 한잔할까 서비스 운영팀</Text>
+          <Text style={styles.text}>1. 개인 사업자: 스피릿</Text>
+          <Text style={styles.text}>2. 명칭: 한잔할까 서비스 운영팀</Text>
           <Text style={styles.text}>
-            2. 주소: 경기 성남시 중원구 금광동 4769
+            3. 주소: 경기 용인시 기흥구 사은로 126번길 48
           </Text>
           <Text style={styles.text}>
-            3. 이메일 주소: team19spirit@gmail.com
+            4. 이메일 주소: team19spirit@gmail.com
           </Text>
         </View>
         <View>
           <Text style={styles.title}>부칙</Text>
           <Text style={styles.text}>
-            제 1 조 (시행일) 본 약관은 2025년 2월 1일 부터 시행합니다.
+            제 1 조 (시행일) 본 약관은 2025년 4월 1일 부터 시행합니다.
           </Text>
           <Text style={styles.text}>
             제 2 조 위치정보 관리책임자는 아래와 같습니다.
@@ -263,4 +264,4 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
 });
-export default Location_v20250128;
+export default Location_v20250401;

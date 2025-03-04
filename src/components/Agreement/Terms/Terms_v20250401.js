@@ -1,6 +1,6 @@
 import React from 'react';
 import {Text, SafeAreaView, ScrollView, View, StyleSheet} from 'react-native';
-const Terms_v20250128 = () => {
+const Terms_v20250401 = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -9,8 +9,8 @@ const Terms_v20250128 = () => {
           <View>
             <Text style={styles.title}>제 1 조 (목적)</Text>
             <Text style={styles.text}>
-              이 약관은 개발팀 SPIRIT(이하 ‘운영자’)이 제공하는 한잔할까
-              서비스(이하 “서비스”)의 이용과 관련하여, 운영자 와 서비스
+              이 약관은 개인사업자 스피릿(이하 ‘운영자’)이 제공하는 한잔할까
+              서비스(이하 “서비스”)의 이용과 관련하여, 운영자와 서비스
               이용자(이하 “회원”)의 권리, 의무 및 책임사항, 운영자가 제공하는
               “서비스” 이용 절차에 관한 사항을 규정함을 목적으로 합니다.
             </Text>
@@ -18,18 +18,22 @@ const Terms_v20250128 = () => {
           <View>
             <Text style={styles.title}>제 2 조 (정의)</Text>
             <Text style={styles.text}>
-              1. “서비스”란 주점 정보를 제공, 리뷰 작성 및 정보 등록을 포함한
+              1. “술집”이란 주류 판매가 가능한 일반 음식점을 말하며, 이는
+              유흥주점 및 단란주점을 포함하지 않습니다.
+            </Text>
+            <Text style={styles.text}>
+              2. “서비스”란 술집 정보를 제공, 리뷰 작성 및 정보 등록을 포함한
               정보를 제공 및 등록하는 플랫폼을 말합니다. 서비스는 구현되는
               장치나 단말기(PC, TV, 휴대형 단말기 등의 각종 유무선 장치를
               포함하며 이에 한정되지 않 음)와 상관 없이 한잔할까와 관련된 모든
               제반 서비스를 의미합니다.
             </Text>
             <Text style={styles.text}>
-              2. “회원”이란 본 약관 및 서비스 이용에 동의하고 서비스에 가입하여
+              3. “회원”이란 본 약관 및 서비스 이용에 동의하고 서비스에 가입하여
               이용하는 개인을 말합니다.
             </Text>
             <Text style={styles.text}>
-              3. “게시물”이란 회원이 서비스에 등록하는 모든 텍스트, 이미지,
+              4. “게시물”이란 회원이 서비스에 등록하는 모든 텍스트, 이미지,
               동영상, 각종 파일, 링크 등을 의미합니다.
             </Text>
           </View>
@@ -284,13 +288,13 @@ const Terms_v20250128 = () => {
             </Text>
             <View style={{marginTop: 10}} />
             <Text style={styles.subtext}>
-              1) 운영자의 주점 및 메뉴 정보 제공 서비스
+              1) 운영자의 술집 및 메뉴 정보 제공 서비스
             </Text>
             <Text style={styles.subtext}>
-              2) 회원 간의 주점 및 메뉴, 리뷰 등의 정보 제공 서비스
+              2) 회원 간의 술집 및 메뉴, 리뷰 등의 정보 제공 서비스
             </Text>
             <Text style={styles.subtext}>
-              3) 회원의 게시물(주점 및 메뉴, 리뷰 등의 정보) 작성 서비스
+              3) 회원의 게시물(술집 및 메뉴, 리뷰 등의 정보) 작성 서비스
             </Text>
             <Text style={styles.subtext}>
               4) 기타 운영자가 추가 개발하거나 다른 회사(운영자)와의 제휴 계약을
@@ -769,7 +773,7 @@ const Terms_v20250128 = () => {
         <View style={{marginTop: 10}}>
           <Text style={styles.title}>부칙</Text>
           <Text style={styles.text}>
-            본 약관은 2025년 2월 1일부터 적용됩니다.
+            본 약관은 2025년 4월 1일부터 적용됩니다.
           </Text>
           <Text style={styles.text}>
             본 약관에 명시되지 않은 사항은 관계 법령 및 상관례에 따릅니다.
@@ -777,7 +781,7 @@ const Terms_v20250128 = () => {
 
           <View style={{marginTop: 10}} />
           <Text style={styles.text}>[운영자 정보]</Text>
-          <Text style={styles.text}>개발팀: SPIRIT19</Text>
+          <Text style={styles.text}>사업자: 스피릿</Text>
           <Text style={styles.text}>이메일: team19spirit@gmail.com</Text>
 
           <View style={{marginTop: 30}} />
@@ -820,4 +824,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Terms_v20250128;
+export default Terms_v20250401;
