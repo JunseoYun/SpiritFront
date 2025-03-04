@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   openOverlay: {
     position: 'absolute',
-    height: '50%',
+    height: '40%',
     bottom: 0, // 사진 안쪽 하단에 고정
     width: '100%', // 가로 전체 차지
     backgroundColor: 'rgba(0, 0, 0, 0.4)', // ✅ 어두운 반투명 배경으로 가독성 향상
