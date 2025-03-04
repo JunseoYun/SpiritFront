@@ -83,7 +83,7 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
   const renderEmptyComponent = () => {
     if (!loading) {
       return (
-        <Text style={styles.emptyText}>근처에 등록된 가게가 없습니다.</Text>
+        <Text style={styles.emptyText}>근처에 등록된 술집이 없습니다.</Text>
       );
     }
     return null;
@@ -92,9 +92,9 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
   return (
     <View>
       <View style={styles.storeTextView}>
-        <Text style={styles.storeText}>제일 가까운 주점은?</Text>
+        <Text style={styles.storeText}>제일 가까운 술집은?</Text>
         <Text style={styles.storeSubText}>
-          현재 위치에서 가장 가까운 주점을 알려드려요
+          현재 위치에서 가장 가까운 술집을 알려드려요
         </Text>
       </View>
       <FlatList
@@ -138,10 +138,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   storeSubText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: 'gray',
-    marginTop: 7,
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#555',
+    marginTop: 5,
   },
   storeView: {
     marginTop: 1,

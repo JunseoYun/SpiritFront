@@ -250,7 +250,7 @@ const MapScreen = ({navigation}) => {
       )}
       <MapSearchBar
         navigation={navigation}
-        buttonText="근처 주점들을 검색해보세요."
+        buttonText="근처 술집들을 검색해보세요."
       />
       <MapLocation onPress={updateNewLocation} />
       <MapDirections onPress={openMapHandle} />

@@ -99,13 +99,13 @@ const LikeScreen = ({navigation}) => {
             </View>
           ) : !hasMore && stores.length > 0 ? (
             <View style={styles.footer}>
-              <Text style={styles.emptyText}>찜한 가게가 더 없습니다</Text>
+              <Text style={styles.emptyText}>찜한 술집이 더 없습니다</Text>
             </View>
           ) : null
         }
         ListEmptyComponent={
           !loading && stores.length === 0 ? (
-            <Text style={styles.emptyText}>찜한 가게가 없어요</Text>
+            <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
           ) : null
         }
       />

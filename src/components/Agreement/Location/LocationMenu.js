@@ -33,10 +33,10 @@ const LocationMenu = ({selected, onSelect}) => {
       }>
       <Menu.Item
         onPress={() => {
-          onSelect('[현행] 2025년 1월 28일 시행안');
+          onSelect('[현행] 2025년 4월 1일 시행안');
           closeMenu();
         }}
-        title="[현행] 2025년 1월 28일 시행안"
+        title="[현행] 2025년 4월 1일 시행안"
       />
       {/* <Divider style={{backgroundColor: '#cccccc', height: 1}} />
       <Menu.Item
