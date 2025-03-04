@@ -105,10 +105,10 @@ const MainScreen = ({navigation}) => {
     if (index === 0) {
       navigation.navigate('StoreSearchScreen', {index: 0});
     } else if (index === 1) {
-      navigation.navigate('StoreSearchScreen', {index: 1});
-      // showAlert({
-      //   title: '서비스 준비 중입니다.',
-      // });
+      // navigation.navigate('StoreSearchScreen', {index: 1});
+      showAlert({
+        title: '서비스 준비 중입니다.',
+      });
     } else if (index === 2) {
       navigation.navigate('MapScreen');
     } else if (index === 3) {

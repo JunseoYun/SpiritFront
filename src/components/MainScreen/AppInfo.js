@@ -5,10 +5,10 @@ import {Divider} from 'react-native-paper';
 const AppInfo = ({handleAgreeScreen}) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.buttonText}>개발팀 SPIRIT</Text>
+      <Text style={styles.buttonText}>사업자: 스피릿</Text>
       <Text style={styles.buttonText}>대표자: 윤준서</Text>
       <Text style={styles.buttonText}>
-        주소: 경기 성남시 중원구 금광동 4769
+        주소: 경기 용인시 기흥구 사은로 126번길 48
       </Text>
       <Text style={styles.buttonText}>연락처: team19spirit@gmail.com</Text>
 

@@ -67,8 +67,7 @@ const OAuthLoginScreen = ({navigation}) => {
       handleLogin({type, id, socialToken});
     } catch (err) {
       showAlert({
-        title: '카카오 로그인 오류',
-        message: '카카오 로그인 중 오류가 발생했습니다',
+        title: '카카오 로그인 취소',
         onConfirm: null,
         onCancel: null,
         type: 'ok',
@@ -87,8 +86,7 @@ const OAuthLoginScreen = ({navigation}) => {
       handleLogin({type, id, socialToken});
     } catch (error) {
       showAlert({
-        title: '구글 로그인 오류',
-        message: '구글 로그인 중 오류가 발생했습니다',
+        title: '구글 로그인 취소',
         onConfirm: null,
         onCancel: null,
         type: 'ok',
@@ -114,8 +112,7 @@ const OAuthLoginScreen = ({navigation}) => {
       }
     } catch (error) {
       showAlert({
-        title: '애플 로그인 오류',
-        message: '애플 로그인 중 오류가 발생했습니다',
+        title: '애플 로그인 취소',
         onConfirm: null,
         onCancel: null,
         type: 'ok',
@@ -123,15 +120,15 @@ const OAuthLoginScreen = ({navigation}) => {
     }
   };
 
-  const handletempLogin = async () => {
-    try {
-      handleLogin({type: 'KAKAO', id: 555, token: 555});
-    } catch (error) {
-      showAlert({
-        title: '임시 로그인 오류',
-      });
-    }
-  };
+  // const handletempLogin = async () => {
+  //   try {
+  //     handleLogin({type: 'KAKAO', id: 555, token: 555});
+  //   } catch (error) {
+  //     showAlert({
+  //       title: '임시 로그인 오류',
+  //     });
+  //   }
+  // };
 
   return (
     <SafeAreaView style={styles.background}>
@@ -189,7 +186,7 @@ const OAuthLoginScreen = ({navigation}) => {
             </View>
           </TouchableOpacity>
         )}
-
+        {/* 
         <TouchableOpacity
           onPress={handletempLogin}
           style={styles.googleButtonContainer}>
@@ -202,7 +199,7 @@ const OAuthLoginScreen = ({navigation}) => {
             </View>
             <Text style={styles.appleText}>임시 로그인</Text>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <AlertComponent />
