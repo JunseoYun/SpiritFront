@@ -221,14 +221,17 @@ const StoreMainInfo = ({
                 : null
             }>
             <AntDesign name="home" size={20} color="#333" />
-            <Text style={styles.infoHidetext}>
-              {storedata?.locationDto?.address}
-            </Text>
-            {storedata?.locationDto?.addressDetail && (
-              <Text style={styles.addressDetailText}>
-                , {storedata?.locationDto?.addressDetail}
+            <View
+              style={{flexDirection: 'row', flexWrap: 'wrap', width: '100%'}}>
+              <Text style={styles.infoHidetext}>
+                {storedata?.locationDto?.address},
               </Text>
-            )}
+              {storedata?.locationDto?.addressDetail && (
+                <Text style={styles.addressDetailText}>
+                  {storedata?.locationDto?.addressDetail}
+                </Text>
+              )}
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -529,6 +532,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#333',
+    marginLeft: 10,
   },
   closetext: {
     fontSize: 15,

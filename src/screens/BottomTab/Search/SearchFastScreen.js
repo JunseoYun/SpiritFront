@@ -128,11 +128,18 @@ const SearchFastScreen = ({navigation}) => {
 
       // 시간 변경 시
       if (selectedTime) {
-        const conditionTime = new Date(`2025-02-01T${selectedTime}:00`);
-        updatedSearch.conditionTime = conditionTime.toISOString().slice(0, -1);
+        const now = new Date();
+        now.setHours(selectedHour, selectedMinute, 0, 0);
+
+        now.setHours(now.getHours() + 9);
+
+        updatedSearch.conditionTime = now.toISOString().slice(0, -1);
+
         updatedSearchinfo.timeselectedHour = selectedHour;
         updatedSearchinfo.timeselectedMinute = selectedMinute;
       }
+
+      setFasttores([]);
 
       fastgetStores(0, true, updatedSearch); // API 호출
 
