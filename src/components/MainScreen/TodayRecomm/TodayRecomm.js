@@ -12,7 +12,7 @@ import TodayRecommItem from './TodayRecommItem';
 
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
-const SPACING = 10;
+const SPACING = width * 0.03;
 
 const TodayRecomm = ({
   recommCategory,
@@ -44,7 +44,7 @@ const TodayRecomm = ({
       setTimeout(() => {
         if (listRef.current) {
           listRef.current.scrollToOffset({
-            offset: (ITEM_WIDTH + SPACING / 2) * recommStores.length,
+            offset: (ITEM_WIDTH + SPACING) * recommStores.length - SPACING,
             animated: false,
           });
         }
@@ -75,14 +75,14 @@ const TodayRecomm = ({
     if (index === 0) {
       // 왼쪽 끝에서 왼쪽으로 스크롤하면 마지막 아이템으로 이동
       listRef.current.scrollToOffset({
-        offset: (ITEM_WIDTH + SPACING / 2) * totalItems,
+        offset: (ITEM_WIDTH + SPACING) * totalItems - SPACING,
         animated: false,
       });
       setCurrentIndex(totalItems - 1);
     } else if (index >= totalItems * 2) {
       // 오른쪽 끝에서 오른쪽으로 스크롤하면 첫 번째 아이템으로 이동
       listRef.current.scrollToOffset({
-        offset: (ITEM_WIDTH + SPACING / 2) * totalItems,
+        offset: (ITEM_WIDTH + SPACING) * totalItems - SPACING,
         animated: false,
       });
       setCurrentIndex(0);
