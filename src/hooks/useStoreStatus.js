@@ -11,6 +11,7 @@ const useStoreStatus = (
     const checkStoreStatus = () => {
       const now = new Date();
       now.setHours(now.getHours() + 9);
+      console.log(now);
       // 현재 시간
       const currentHours = now.getHours();
       const currentMinutes = now.getMinutes();
@@ -22,6 +23,7 @@ const useStoreStatus = (
 
       // 시작 시간과 끝 시간
       const [startHours, startMinutes] = startTime.split(':').map(Number);
+
       const [endHours, endMinutes] = endTime.split(':').map(Number);
 
       // 요일 조건 확인
@@ -34,8 +36,13 @@ const useStoreStatus = (
       const start = new Date();
       start.setHours(startHours, startMinutes, 0, 0);
 
+      start.setHours(start.getHours() + 9);
+
       const end = new Date();
       end.setHours(endHours, endMinutes, 0, 0);
+
+      end.setHours(end.getHours() + 9);
+
       if (
         endHours < startHours ||
         (endHours === startHours && endMinutes < startMinutes)
