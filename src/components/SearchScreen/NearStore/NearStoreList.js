@@ -103,7 +103,10 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
         keyExtractor={item => item.id.toString()}
         horizontal={true}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.horizontalFlatListContent}
+        contentContainerStyle={[
+          styles.horizontalFlatListContent,
+          {paddingRight: 20},
+        ]} // 오른쪽 여백 추가
         onEndReached={() => {
           if (hasMore && !loading && page < totalpage - 1) {
             setPage(prevPage => {
