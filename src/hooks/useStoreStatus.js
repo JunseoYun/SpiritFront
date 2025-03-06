@@ -11,7 +11,6 @@ const useStoreStatus = (
     const checkStoreStatus = () => {
       const now = new Date();
       now.setHours(now.getHours() + 9);
-      console.log(now);
       // 현재 시간
       const currentHours = now.getHours();
       const currentMinutes = now.getMinutes();
