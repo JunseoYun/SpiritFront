@@ -66,12 +66,12 @@ const OAuthLoginScreen = ({navigation}) => {
       const socialToken = token.accessToken;
       handleLogin({type, id, socialToken});
     } catch (err) {
-      showAlert({
-        title: '카카오 로그인 취소',
-        onConfirm: null,
-        onCancel: null,
-        type: 'ok',
-      });
+      // showAlert({
+      //   title: '카카오 로그인 취소',
+      //   onConfirm: null,
+      //   onCancel: null,
+      //   type: 'ok',
+      // });
     }
   };
 
@@ -85,12 +85,12 @@ const OAuthLoginScreen = ({navigation}) => {
       const socialToken = tokens.accessToken;
       handleLogin({type, id, socialToken});
     } catch (error) {
-      showAlert({
-        title: '구글 로그인 취소',
-        onConfirm: null,
-        onCancel: null,
-        type: 'ok',
-      });
+      // showAlert({
+      //   title: '구글 로그인 취소',
+      //   onConfirm: null,
+      //   onCancel: null,
+      //   type: 'ok',
+      // });
     }
   };
 
@@ -111,12 +111,12 @@ const OAuthLoginScreen = ({navigation}) => {
         handleLogin({type, id, socialToken});
       }
     } catch (error) {
-      showAlert({
-        title: '애플 로그인 취소',
-        onConfirm: null,
-        onCancel: null,
-        type: 'ok',
-      });
+      // showAlert({
+      //   title: '애플 로그인 취소',
+      //   onConfirm: null,
+      //   onCancel: null,
+      //   type: 'ok',
+      // });
     }
   };
 
