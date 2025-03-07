@@ -39,6 +39,10 @@ const MenuUpdateScreen = ({navigation}) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageDeleted, setIsImageDeleted] = useState(false);
 
+  const [menuNamelength, setMenuNamelength] = useState(false);
+  const [menuPricelength, setMenuPricelength] = useState(false);
+  const [menuContentlength, setMenuContentlength] = useState(false);
+
   const {showAlert, AlertComponent} = useCustomAlert();
 
   useEffect(() => {
@@ -51,6 +55,33 @@ const MenuUpdateScreen = ({navigation}) => {
       setMenuImage(menu.imgUrl || '');
     }
   }, [menu]);
+
+  const MenuChange = (text, value) => {
+    if (value == 'menuName') {
+      if (text.length > 20) {
+        setMenuNamelength(true);
+      } else {
+        setMenuNamelength(false);
+        setMenuName(text);
+      }
+    }
+    if (value == 'menuPrice') {
+      if (text.length > 20) {
+        setMenuPricelength(true);
+      } else {
+        setMenuPricelength(false);
+        setMenuPrice(text);
+      }
+    }
+    if (value == 'menuDescription') {
+      if (text.length > 30) {
+        setMenuContentlength(true);
+      } else {
+        setMenuContentlength(false);
+        setMenuDescription(text);
+      }
+    }
+  };
 
   const GotoStoreScreen = () => {
     showAlert({
@@ -153,7 +184,7 @@ const MenuUpdateScreen = ({navigation}) => {
           ...updatedMenu,
           name: menuName,
           description: menuDescription,
-          price: Number(menuPrice),
+          price: menuPrice,
           isMain,
         };
         await MenuUpdate(menu.id, updatedMenu);
@@ -276,22 +307,40 @@ const MenuUpdateScreen = ({navigation}) => {
             <MenuInput
               label="메뉴 이름*"
               value={menuName}
-              onChangeText={setMenuName}
+              onChangeText={text => MenuChange(text, 'menuName')}
               placeholder="메뉴 이름*"
+              maxLength={21}
             />
+            {menuNamelength && (
+              <View style={styles.errorview}>
+                <Text style={styles.errorText}>최대 20자 입니다.</Text>
+              </View>
+            )}
             <MenuInput
               label="메뉴 소개"
               value={menuDescription}
-              onChangeText={setMenuDescription}
+              onChangeText={text => MenuChange(text, 'menuDescription')}
               placeholder="메뉴 소개"
               multiline={true} // 여러 줄 입력 활성화
+              maxLength={31}
             />
+            {menuContentlength && (
+              <View style={styles.errorview}>
+                <Text style={styles.errorText}>최대 30자 입니다.</Text>
+              </View>
+            )}
             <MenuInput
               label="메뉴 가격*"
               value={menuPrice}
-              onChangeText={setMenuPrice}
+              onChangeText={text => MenuChange(text, 'menuPrice')}
               placeholder="메뉴 가격*"
+              maxLength={21}
             />
+            {menuPricelength && (
+              <View style={styles.errorview}>
+                <Text style={styles.errorText}>최대 20자 입니다.</Text>
+              </View>
+            )}
             <View style={styles.storeinputview}>
               <View style={styles.switchContainer}>
                 <Text style={styles.switchLabel}>대표 메뉴 여부</Text>
@@ -346,7 +395,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     alignItems: 'center',
-    marginVertical: 15,
+    marginTop: 15,
     position: 'relative', // ✅ 부모 요소 기준으로 배치
   },
   menuImage: {
@@ -421,6 +470,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#333',
+  },
+  errorview: {
+    width: '100%',
+    paddingHorizontal: 21,
+  },
+  errorText: {
+    color: '#FF0000',
+    fontSize: 14,
   },
 });
 

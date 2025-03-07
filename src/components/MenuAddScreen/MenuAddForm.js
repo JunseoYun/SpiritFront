@@ -15,6 +15,9 @@ const MenuAddForm = ({
 }) => {
   const {showAlert, AlertComponent} = useCustomAlert();
   const [isImageSelected, setIsImageSelected] = useState(false);
+  const [menuNamelength, setMenuNamelength] = useState(false);
+  const [menuPricelength, setMenuPricelength] = useState(false);
+  const [menuContentlength, setMenuContentlength] = useState(false);
 
   const selectImage = () => {
     ImagePicker.openPicker({
@@ -46,6 +49,32 @@ const MenuAddForm = ({
     });
   };
 
+  const MenuChange = (text, index, value) => {
+    if (value == 'menuName') {
+      if (text.length > 20) {
+        setMenuNamelength(true);
+      } else {
+        setMenuNamelength(false);
+        handleMenuChange(text, index, 'menuName');
+      }
+    }
+    if (value == 'price') {
+      if (text.length > 20) {
+        setMenuPricelength(true);
+      } else {
+        setMenuPricelength(false);
+        handleMenuChange(text, index, 'price');
+      }
+    }
+    if (value == 'menuContent') {
+      if (text.length > 30) {
+        setMenuContentlength(true);
+      } else {
+        setMenuContentlength(false);
+        handleMenuChange(text, index, 'menuContent');
+      }
+    }
+  };
   return (
     <View key={index}>
       <View style={styles.menuHeader}>
@@ -57,22 +86,40 @@ const MenuAddForm = ({
       <MenuTextInput
         label="메뉴 이름*"
         value={menu.menuName}
-        onChangeText={text => handleMenuChange(text, index, 'menuName')}
+        onChangeText={text => MenuChange(text, index, 'menuName')}
         placeholder="메뉴 이름*"
+        maxLength={21}
       />
+      {menuNamelength && (
+        <View style={styles.errorview}>
+          <Text style={styles.errorText}>최대 20자 입니다.</Text>
+        </View>
+      )}
       <MenuTextInput
         label="메뉴 가격*"
         value={menu.price}
-        onChangeText={text => handleMenuChange(text, index, 'price')}
+        onChangeText={text => MenuChange(text, index, 'price')}
         placeholder="메뉴 가격*"
+        maxLength={21}
       />
+      {menuPricelength && (
+        <View style={styles.errorview}>
+          <Text style={styles.errorText}>최대 20자 입니다.</Text>
+        </View>
+      )}
       <MenuTextInput
         label="메뉴 소개"
         value={menu.menuContent}
-        onChangeText={text => handleMenuChange(text, index, 'menuContent')}
+        onChangeText={text => MenuChange(text, index, 'menuContent')}
         placeholder="메뉴를 간단하게 소개해주세요."
         multiline
+        maxLength={31}
       />
+      {menuContentlength && (
+        <View style={styles.errorview}>
+          <Text style={styles.errorText}>최대 30자 입니다.</Text>
+        </View>
+      )}
 
       <View style={styles.menuAddImageView}>
         <Text style={styles.menuAddImageText}>메뉴 사진</Text>
@@ -158,6 +205,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingVertical: 4,
     backgroundColor: '#F2F2F2',
+  },
+
+  errorview: {
+    width: '100%',
+    paddingHorizontal: 18,
+  },
+  errorText: {
+    color: '#FF0000',
+    fontSize: 14,
   },
 });
 

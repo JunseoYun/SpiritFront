@@ -25,6 +25,10 @@ const generateMapScript = (lat, lng, stores) => `
     window.storeMarkers.forEach(marker => marker.setMap(null));
   }
 
+if (window.overlayMarkers) {
+  window.overlayMarkers.forEach(customOverlay => customOverlay.setMap(null));
+}
+
   var customMarkerUri = 'data:image/svg+xml;charset=UTF-8,' +
     '<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 32 32">' +
       '<circle cx="16" cy="16" r="16" fill="%2316BBFF"/>' +
@@ -42,7 +46,7 @@ const generateMapScript = (lat, lng, stores) => `
     }
     storeGroups[addr].push(store);
   });
-
+window.overlayMarkers = [];
   window.storeMarkers = [];
   window.currentOverlay = null;
 
@@ -104,6 +108,7 @@ const generateMapScript = (lat, lng, stores) => `
         content: overlayContent,
         position: markerPosition,
         map: map,
+        zIndex:10,
         yAnchor: 0 // ✅ 마커 위쪽에 배치
       });
 
@@ -139,8 +144,9 @@ const generateMapScript = (lat, lng, stores) => `
         position: markerPosition,
         content: overlayElement,
         map: map,
-        zIndex: 10
+        zIndex: 3
       });
+      window.overlayMarkers.push(customOverlay);
     }
     
     window.storeMarkers.push(marker);

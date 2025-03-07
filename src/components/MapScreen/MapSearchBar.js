@@ -1,25 +1,28 @@
 // SearchButton.js
 import React from 'react';
-import {Pressable, View, Text, StyleSheet, Platform} from 'react-native';
+import {
+  Pressable,
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  Dimensions,
+} from 'react-native';
 
-import EvilIcons from 'react-native-vector-icons/EvilIcons';
-const MapSearchBar = ({navigation, buttonText}) => {
+const {width} = Dimensions.get('window');
+
+import Ionicons from 'react-native-vector-icons/Ionicons';
+const MapSearchBar = ({refresh, setRefresh}) => {
   return (
-    <Pressable
-      style={styles.buttonTop}
-      onPress={() =>
-        navigation.navigate('SearchStack', {
-          screen: 'SearchScreen',
-        })
-      }>
+    <Pressable style={styles.buttonTop} onPress={() => setRefresh(true)}>
       <View style={styles.searchBar}>
-        <EvilIcons
-          //   style={styles.searchIcon}
-          name="search"
-          size={27}
-          color={'gray'}
+        <Ionicons
+          style={styles.searchIcon}
+          name="reload-outline"
+          size={20}
+          color={'#228AFA'}
         />
-        <Text style={styles.buttonTextTop}>{buttonText}</Text>
+        <Text style={styles.buttonTextTop}>현 위치로 재검색</Text>
       </View>
     </Pressable>
   );
@@ -28,14 +31,14 @@ const MapSearchBar = ({navigation, buttonText}) => {
 const styles = StyleSheet.create({
   buttonTop: {
     position: 'absolute',
-    left: '5%',
+    left: width * 0.3,
     backgroundColor: '#ffffff',
-    padding: 10,
+    padding: 7,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
-    width: '90%',
-    height: 50,
+    alignContent: 'center',
+    borderRadius: 20,
+    width: width * 0.4,
     shadowColor: '#333',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.8,
@@ -58,16 +61,16 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: width * 0.01,
+    marginLeft: width * 0.025,
   },
   buttonTextTop: {
-    color: 'gray',
+    color: '#228AFA',
     fontSize: 16,
     borderRadius: 100,
     width: '100%',
-    left: '3%',
     textAlign: 'left',
-    marginLeft: 5,
+    fontWeight: '400',
   },
 });
 

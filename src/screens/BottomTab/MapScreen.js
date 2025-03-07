@@ -25,13 +25,21 @@ const MapScreen = ({navigation}) => {
   const [selectedStoreIndex, setSelectedStoreIndex] = useState(0);
   const webViewRef = useRef(null);
   const flatListRef = useRef(null);
+  const [refresh, setRefresh] = useState(false);
 
   const [isFlatListVisible, setIsFlatListVisible] = useState(true); // 플랫리스트 상태
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
 
   useEffect(() => {
     fetchSaveLocation();
-  }, []);
+  }, [location]);
+
+  useEffect(() => {
+    if (refresh) {
+      fetchSaveLocation();
+      setRefresh(false);
+    }
+  }, [refresh]);
 
   const fetchSaveLocation = async () => {
     try {
@@ -47,6 +55,7 @@ const MapScreen = ({navigation}) => {
       );
       setStores(storesData);
       setSelectedStore(storesData[0]);
+      console.log(storesData);
 
       if (webViewRef.current) {
         const script = generateMapScript(
@@ -56,6 +65,7 @@ const MapScreen = ({navigation}) => {
         );
         webViewRef.current.injectJavaScript(script);
       }
+      moveCenterMap(currentLocation.latitude, currentLocation.longitude);
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
     }
@@ -248,10 +258,7 @@ const MapScreen = ({navigation}) => {
           <Text style={styles.loadingtext}>Loading Map...</Text>
         </View>
       )}
-      <MapSearchBar
-        navigation={navigation}
-        buttonText="근처 술집들을 검색해보세요."
-      />
+      <MapSearchBar refresh={refresh} setRefresh={setRefresh} />
       <MapLocation onPress={updateNewLocation} />
       <MapDirections onPress={openMapHandle} />
 
@@ -268,6 +275,11 @@ const MapScreen = ({navigation}) => {
         navigation={navigation}
         location={location}
       />
+      {refresh && (
+        <View style={styles.loading}>
+          <Text style={styles.loadingtext}>Loading...</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -281,10 +293,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loading: {
-    flex: 1,
-    textAlign: 'center',
-    alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
     justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
   loadingtext: {
     textAlign: 'center',

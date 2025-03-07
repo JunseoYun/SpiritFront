@@ -1,6 +1,5 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
-
 const MenuTextInput = ({
   label,
   value,
@@ -9,17 +8,29 @@ const MenuTextInput = ({
   placeholderTextColor = '#999',
   multiline = false,
   style = {},
+  maxLength,
 }) => {
+  const handleTextChange = text => {
+    const lines = text.split('\n'); // 줄바꿈 개수 확인
+    if (lines.length > 2) return; // ✅ 3줄 초과 입력 방지
+
+    if (onChangeText) {
+      onChangeText(text);
+    }
+  };
+
   return (
     <View style={styles.inputContainer}>
       {value && <Text style={styles.label}>{label}</Text>}
       <TextInput
         style={[styles.input, multiline && styles.textarea, style]}
         value={value}
-        onChangeText={onChangeText}
+        onChangeText={handleTextChange}
         placeholder={placeholder}
         placeholderTextColor={placeholderTextColor}
         multiline={multiline}
+        maxLength={maxLength}
+        numberOfLines={3}
       />
     </View>
   );
@@ -47,7 +58,7 @@ const styles = StyleSheet.create({
     paddingLeft: 1,
   },
   textarea: {
-    textAlignVertical: 'top', // multiline에서 내용 정렬
+    textAlignVertical: 'top', // ✅ multiline에서 내용 정렬
   },
 });
 
