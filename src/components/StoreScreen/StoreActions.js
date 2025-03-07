@@ -28,22 +28,27 @@ const StoreActions = ({storeData, navigation, storename}) => {
     }
   };
 
-  const openChat = () => {
-    showAlert({
-      title: '서비스 준비중',
-      message: '서비스를 준비하고 있습니다.\n조금만 기다려주세요.',
-    });
+  const storeNumberHandle = () => {
+    if (storeNumber !== '000-0000-0000') {
+      console.log(storeNumber);
+      Linking.openURL(`tel:${storeNumber}`);
+    } else {
+      showAlert({
+        title: '매장에 등록된 번호가 없습니다.',
+      });
+    }
   };
 
   return (
     <View style={styles.CallView}>
       {/* 핸드폰 전화 넘어가기 ios => `tel://${phoneNumber}`*/}
-      <Pressable onPress={() => Linking.openURL(`tel:${storeNumber}`)}>
+      <Pressable onPress={storeNumberHandle}>
         <View style={styles.View}>
           <Ionicons name="call-outline" size={20} color="#333" />
           <Text style={styles.CallViewtext}> 전화</Text>
         </View>
       </Pressable>
+
       <View style={styles.separator} />
       <Pressable onPress={StoreLike}>
         <View style={styles.View}>

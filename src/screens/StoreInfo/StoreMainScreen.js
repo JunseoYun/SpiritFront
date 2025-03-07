@@ -344,7 +344,10 @@ const StoreMainScreen = ({navigation}) => {
         )}
         scrollEventThrottle={16}
         ref={scrollViewRef}
-        style={{backgroundColor: 'white'}}>
+        style={{backgroundColor: 'white'}}
+        showsVerticalScrollIndicator={true} // ✅ 스크롤바 표시
+        contentContainerStyle={{direction: 'ltr'}} // ✅ 오른쪽 정렬 유지
+      >
         <TouchableWithoutFeedback onPress={handleBottomClose}>
           <View>
             <View
