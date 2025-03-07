@@ -7,6 +7,8 @@ import {
   Image,
   Pressable,
   StyleSheet,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -29,75 +31,82 @@ const ReviewForm = ({
   hadleNoWrite,
 }) => {
   return (
-    <View style={styles.writeContainer}>
-      <Text style={styles.titleText}>리뷰 작성</Text>
-      <TextInput
-        style={[styles.textarea, {color: '#333'}]}
-        multiline
-        onChangeText={onChangeText}
-        value={newReviewContent}
-        placeholder="소중한 리뷰를 남겨주세요."
-        placeholderTextColor="gray"
-      />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.writeContainer}>
+        <Text style={styles.titleText}>리뷰 작성</Text>
+        <TextInput
+          style={[styles.textarea, {color: '#333'}]}
+          multiline
+          onChangeText={onChangeText}
+          value={newReviewContent}
+          placeholder="소중한 리뷰를 남겨주세요."
+          placeholderTextColor="gray"
+        />
 
-      <Text style={styles.titleText}>별점 입력</Text>
-      <View style={styles.starcontainer}>{renderStars()}</View>
+        <Text style={styles.titleText}>별점 입력</Text>
+        <View style={styles.starcontainer}>{renderStars()}</View>
 
-      <Text style={styles.titleText}>방문 날짜</Text>
-      <TouchableOpacity
-        style={styles.dateButton}
-        onPress={() => setIsDatePickerOpen(true)}>
-        <Text style={styles.dateButtonText}>
-          {visitDate.toLocaleDateString()}
-        </Text>
-      </TouchableOpacity>
-      <DatePicker
-        modal
-        open={isDatePickerOpen}
-        date={visitDate}
-        locale="ko"
-        mode="date"
-        onConfirm={date => {
-          setVisitDate(date);
-          setIsDatePickerOpen(false);
-        }}
-        onCancel={() => setIsDatePickerOpen(false)}
-      />
-
-      <Text style={styles.titleText}>리뷰 사진 추가 (최대 5장)</Text>
-      <View style={styles.imageContainer}>
-        {images.map((image, index) => (
-          <Pressable
-            key={index}
-            onPress={() => handleImagePress(index)}
-            style={styles.imagePressable}>
-            <Image
-              source={{uri: `file://${image.path}`}}
-              style={[
-                styles.selectImage,
-                index === selectedImageIndex && styles.selectedEffect,
-              ]}
-            />
-          </Pressable>
-        ))}
-        {images.length < 5 && (
-          <Pressable onPress={selectImage}>
-            <MaterialCommunityIcons name="image-plus" size={40} color="#333" />
-          </Pressable>
-        )}
-      </View>
-
-      <View style={styles.buttonView}>
-        <TouchableOpacity style={styles.cancelbutton} onPress={hadleNoWrite}>
-          <Text style={styles.canceltext}>취소</Text>
-        </TouchableOpacity>
+        <Text style={styles.titleText}>방문 날짜</Text>
         <TouchableOpacity
-          style={styles.savebutton}
-          onPress={handleSubmitReview}>
-          <Text style={styles.savetext}>작성완료</Text>
+          style={styles.dateButton}
+          onPress={() => setIsDatePickerOpen(true)}>
+          <Text style={styles.dateButtonText}>
+            {visitDate.toLocaleDateString()}
+          </Text>
         </TouchableOpacity>
+        <DatePicker
+          modal
+          open={isDatePickerOpen}
+          date={visitDate}
+          locale="ko"
+          mode="date"
+          maximumDate={new Date(new Date().setHours(23, 59, 59, 999))} // 한국 시간 기준 오늘까지 선택 가능
+          onConfirm={date => {
+            setVisitDate(date);
+            setIsDatePickerOpen(false);
+          }}
+          onCancel={() => setIsDatePickerOpen(false)}
+        />
+
+        <Text style={styles.titleText}>리뷰 사진 추가 (최대 5장)</Text>
+        <View style={styles.imageContainer}>
+          {images.map((image, index) => (
+            <Pressable
+              key={index}
+              onPress={() => handleImagePress(index)}
+              style={styles.imagePressable}>
+              <Image
+                source={{uri: `file://${image.path}`}}
+                style={[
+                  styles.selectImage,
+                  index === selectedImageIndex && styles.selectedEffect,
+                ]}
+              />
+            </Pressable>
+          ))}
+          {images.length < 5 && (
+            <Pressable onPress={selectImage}>
+              <MaterialCommunityIcons
+                name="image-plus"
+                size={40}
+                color="#333"
+              />
+            </Pressable>
+          )}
+        </View>
+
+        <View style={styles.buttonView}>
+          <TouchableOpacity style={styles.cancelbutton} onPress={hadleNoWrite}>
+            <Text style={styles.canceltext}>취소</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.savebutton}
+            onPress={handleSubmitReview}>
+            <Text style={styles.savetext}>작성완료</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 

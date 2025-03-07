@@ -1,7 +1,7 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
 import {View, Text, StyleSheet, FlatList} from 'react-native';
 import MyReviewItem from './MyReviewItem';
-import MyReviewEditModdal from './MyReviewEditModdal';
 import {ReviewRecentGet, ReviewDelete} from '../../api/reviewApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 
@@ -41,12 +41,14 @@ const MyReview = ({navigation}) => {
   };
 
   // 초기 로딩 시, 검색어와 위치가 있을 때 데이터를 불러옴
-  useEffect(() => {
-    setMyReview([]); // 기존 데이터 초기화
-    setPage(0); // 페이지 초기화
-    setIsEnd(false); // 데이터 끝 상태 초기화
-    myReviewsget(0); // 데이터 불러오기
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setMyReview([]); // 기존 데이터 초기화
+      setPage(0);
+      setIsEnd(false);
+      myReviewsget(0); // 첫 페이지 불러오기
+    }, []),
+  );
 
   const deleteReview = reviewid => {
     showAlert({
@@ -68,22 +70,16 @@ const MyReview = ({navigation}) => {
     });
   };
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedReview, setSelectedReview] = useState(null);
-
   const updateReview = reviewdata => {
-    setSelectedReview(reviewdata);
-    setModalVisible(true);
-  };
-
-  const handleUpdateReview = () => {
-    if (!selectedReview) return;
-
-    setMyReview([]); // 기존 데이터 초기화
-    setPage(0); // 페이지 초기화
-    setIsEnd(false); // 데이터 끝 상태 초기화
-    myReviewsget(0);
-    setModalVisible(false);
+    navigation.navigate('ReviewEditScreen', {
+      reviewdata,
+      onRefresh: () => {
+        setMyReview([]); // 기존 데이터 초기화
+        setPage(0);
+        setIsEnd(false);
+        myReviewsget(0); // 첫 페이지 불러오기
+      },
+    });
   };
 
   const renderItem = ({item}) => (
@@ -136,12 +132,6 @@ const MyReview = ({navigation}) => {
       />
       <AlertComponent />
       {/* 모달 컴포넌트 사용 */}
-      <MyReviewEditModdal
-        visible={modalVisible}
-        reviewdata={selectedReview}
-        onClose={() => setModalVisible(false)}
-        onSave={handleUpdateReview}
-      />
     </>
   );
 };
