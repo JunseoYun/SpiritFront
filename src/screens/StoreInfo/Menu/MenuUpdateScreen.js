@@ -43,6 +43,8 @@ const MenuUpdateScreen = ({navigation}) => {
   const [menuPricelength, setMenuPricelength] = useState(false);
   const [menuContentlength, setMenuContentlength] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   const {showAlert, AlertComponent} = useCustomAlert();
 
   useEffect(() => {
@@ -169,6 +171,7 @@ const MenuUpdateScreen = ({navigation}) => {
     }
 
     try {
+      setLoading(true);
       let updatedMenu = {...originalMenu};
 
       // 1️⃣ 이미지만 변경된 경우 → 이미지 업데이트 요청
@@ -224,6 +227,8 @@ const MenuUpdateScreen = ({navigation}) => {
         title: '수정 실패',
         message: '잘못된 요청입니다.',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -358,6 +363,11 @@ const MenuUpdateScreen = ({navigation}) => {
           <AlertComponent />
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
+      {loading && (
+        <View style={styles.footer}>
+          <Text style={styles.loadingtext}>Loading...</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -478,6 +488,24 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#FF0000',
     fontSize: 14,
+  },
+  footer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  loadingtext: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 

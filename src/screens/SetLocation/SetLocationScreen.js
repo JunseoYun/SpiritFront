@@ -71,7 +71,10 @@ const SetLocationScreen = ({navigation, route}) => {
   };
 
   const saveLocationHandle = async () => {
-    if (currentLocation === selectLocation) {
+    console.log(currentLocation, 'currentLocation');
+    console.log(selectLocation, 'selectLocation');
+
+    if (JSON.stringify(currentLocation) === JSON.stringify(selectLocation)) {
       showAlert({
         title: '이전에 설정한 위치와 같습니다.',
       });
@@ -88,6 +91,12 @@ const SetLocationScreen = ({navigation, route}) => {
           setcurrentAddress(newLocationAddress.address);
           showAlert({
             title: '주소 설정이 완료 되었습니다.',
+            onConfirm: () => {
+              navigation.reset({
+                index: 0,
+                routes: [{name: 'MainBtmbar', params: {screen: 'MainScreen'}}], // 이동할 화면
+              });
+            },
           });
           setSelectAddress(null);
           setSelectLocation(null);

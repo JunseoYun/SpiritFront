@@ -5,6 +5,7 @@ import {
   Pressable,
   SafeAreaView,
   ScrollView,
+  View,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import MenuAddForm from '../../../components/MenuAddScreen/MenuAddForm';
@@ -15,6 +16,7 @@ import forbiddenWords from '../../../hooks/forbiddenWords';
 const MenuAddScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId} = route.params;
+  const [loading, setLoading] = useState(false);
 
   const {showAlert, AlertComponent} = useCustomAlert();
 
@@ -90,6 +92,7 @@ const MenuAddScreen = ({navigation}) => {
     }
 
     try {
+      setLoading(true);
       // 각 메뉴에 대해 StoreMenucreate를 호출하도록 map 사용
       const promises = menus.map(menu => {
         const data = {
@@ -125,6 +128,8 @@ const MenuAddScreen = ({navigation}) => {
         title: '메뉴 추가 오류',
         message: `메뉴 추가 중 \n오류가 발생하였습니다.`,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -150,6 +155,11 @@ const MenuAddScreen = ({navigation}) => {
         </Pressable>
       </ScrollView>
       <AlertComponent />
+      {loading && (
+        <View style={styles.footer}>
+          <Text style={styles.loadingtext}>Loading...</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -190,6 +200,24 @@ const styles = StyleSheet.create({
     fontSize: 17,
     alignSelf: 'center',
     fontWeight: '600',
+  },
+  footer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  loadingtext: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 
