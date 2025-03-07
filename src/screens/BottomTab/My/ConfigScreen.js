@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Text, StyleSheet, SafeAreaView} from 'react-native';
+import {Text, StyleSheet, SafeAreaView, View} from 'react-native';
 import {Userdataget} from '../../../api/userApi';
 import {Userimgpost} from '../../../api/userApi';
 import {Userimgdelete} from '../../../api/userApi';
@@ -13,6 +13,7 @@ import CFUserinfo from '../../../components/ConfigScreen/CFUserinfo';
 const ConfigScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const [loading, setLoading] = useState(false);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const onPressModalOpen = () => {
@@ -36,6 +37,9 @@ const ConfigScreen = ({navigation}) => {
   }, []);
 
   const UserImagepost = async image => {
+    onPressModalClose();
+    setLoading(true);
+
     try {
       const formData = new FormData();
       formData.append('file', {
@@ -50,33 +54,40 @@ const ConfigScreen = ({navigation}) => {
         title: '프로필 변경 성공',
         message: '프로필이 성공적으로 변경되었습니다!',
         onConfirm: () => {
-          navigation.navigate('MyStack', {
-            screen: 'MyScreen',
+          navigation.reset({
+            index: 0, // 초기 화면 인덱스
+            routes: [{name: 'MyScreen'}], // 이동할 화면
           });
         },
       });
     } catch (error) {
-      onPressModalClose();
       handleError(error, showAlert);
+    } finally {
+      setLoading(false);
     }
   };
 
   const UserImagedelete = async () => {
+    onPressModalClose();
+    setLoading(true);
+
     try {
       await Userimgdelete();
-      onPressModalClose();
+
       showAlert({
         title: '프로필 삭제',
         message: '프로필이 성공적으로 삭제되었습니다!',
         onConfirm: () => {
-          navigation.navigate('MyStack', {
-            screen: 'MyScreen',
+          navigation.reset({
+            index: 0, // 초기 화면 인덱스
+            routes: [{name: 'MyScreen'}], // 이동할 화면
           });
         },
       });
     } catch (error) {
-      onPressModalClose();
       handleError(error, showAlert);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -138,6 +149,11 @@ const ConfigScreen = ({navigation}) => {
         onUpdate={UserImagepost}
         onDelete={UserImagedelete}
       />
+      {loading && (
+        <View style={styles.footer}>
+          <Text style={styles.loadingtext}>Loading...</Text>
+        </View>
+      )}
       <AlertComponent />
     </SafeAreaView>
   );
@@ -147,6 +163,17 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
     height: '100%',
+  },
+  footer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
   loadingtext: {
     textAlign: 'center',
