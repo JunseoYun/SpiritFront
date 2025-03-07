@@ -55,7 +55,6 @@ const MapScreen = ({navigation}) => {
       );
       setStores(storesData);
       setSelectedStore(storesData[0]);
-      console.log(storesData);
 
       if (webViewRef.current) {
         const script = generateMapScript(
