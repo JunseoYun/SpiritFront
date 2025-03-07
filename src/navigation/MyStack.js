@@ -5,6 +5,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import ConfigScreen from '../screens/BottomTab/My/ConfigScreen';
 import Mynickchange from '../screens/BottomTab/My/Mynickchange';
 import MyScreen from '../screens/BottomTab/My/MyScreen';
+import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
 import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Octicons from 'react-native-vector-icons/Octicons';
@@ -66,6 +67,31 @@ export default function MyStack() {
         name="MyScreen"
         component={MyScreen}
         options={getScreenOptions('마이프로필')}
+      />
+
+      <Stack.Screen
+        name="ReviewEditScreen"
+        component={ReviewEditScreen}
+        options={({navigation}) => ({
+          presentation: 'modal',
+          gestureDirection: 'vertical',
+          animation: 'slide_from_bottom',
+          title: '리뷰 수정',
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <Octicons
+                name="x"
+                size={25}
+                color="#333"
+                style={{marginLeft: 18}}
+              />
+            </Pressable>
+          ),
+        })}
       />
 
       <Stack.Screen

@@ -1,6 +1,5 @@
 import React, {useState, useEffect} from 'react';
 import {
-  Modal,
   View,
   Text,
   TextInput,
@@ -8,6 +7,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  SafeAreaView,
+  ScrollView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
@@ -17,13 +20,15 @@ import {
   ReviewEdit,
   ReviewEditImage,
   ReviewDeleteImage,
-} from '../../api/reviewApi';
-import useCustomAlert from '../../hooks/useCustomAlert';
-import forbiddenWords from '../../hooks/forbiddenWords';
+} from '../../../api/reviewApi';
+import useCustomAlert from '../../../hooks/useCustomAlert';
+import forbiddenWords from '../../../hooks/forbiddenWords';
 import ImagePicker from 'react-native-image-crop-picker'; // 이미지 선택 라이브러리
-import {ScrollView} from 'react-native-gesture-handler';
 
-const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
+const ReviewEditScreen = ({route, navigation}) => {
+  // 👉 `params`에서 `reviewdata` 가져오기
+  const {reviewdata} = route.params || {}; // `params`가 없을 경우 대비하여 기본값 처리
+
   const [reviewData, setReviewData] = useState('');
   const [reviewContent, setReviewContent] = useState('');
   const [rate, setRate] = useState(0);
@@ -56,15 +61,11 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
       </TouchableOpacity>
     ));
   };
-
-  const handleCancel = () => {
-    onClose();
-    setReviewContent(reviewdata.content || '');
-    setRate(reviewdata.rate || 0);
-    setVisitedAt(new Date(reviewdata.visitedAt));
-    setAddedImages([]);
-    setDeletedImages([]);
-    return;
+  const onSave = () => {
+    if (route.params?.onRefresh) {
+      route.params.onRefresh(); // MyReview 화면을 갱신하도록 호출
+    }
+    navigation.goBack();
   };
 
   const handleSave = async () => {
@@ -104,105 +105,57 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
     const imageData = {
       files: addedImages,
     };
+
     try {
       //정보만 변경된 경우
       if (isInfoChanged && !isImageChanged && !isdeleteimgchanged) {
         await ReviewEdit(reviewData.id, updatedReview);
-        showAlert({
-          title: `수정 되었습니다.`,
-          onConfirm: () => {
-            onSave();
-            onClose();
-          },
-          onCancel: null,
-          type: 'confirm',
-        });
+
+        onSave();
       }
 
       //이미지 추가만 된 경우
       if (!isInfoChanged && isImageChanged && !isdeleteimgchanged) {
         await ReviewEditImage(reviewData.id, imageData);
-        showAlert({
-          title: `수정 되었습니다.`,
-          onConfirm: () => {
-            onSave();
-            onClose();
-          },
-          onCancel: null,
-          type: 'confirm',
-        });
+
+        onSave();
       }
 
       //이미지 삭제만 된 경우
       if (!isInfoChanged && !isImageChanged && isdeleteimgchanged) {
         await ReviewDeleteImage(reviewData.id, deletedImages);
-        showAlert({
-          title: `수정 되었습니다.`,
-          onConfirm: () => {
-            onSave();
-            onClose();
-          },
-          onCancel: null,
-          type: 'confirm',
-        });
+
+        onSave();
       }
       //정보변경, 이미지추가
       if (isInfoChanged && isImageChanged && !isdeleteimgchanged) {
         await ReviewEdit(reviewData.id, updatedReview);
         await ReviewEditImage(reviewData.id, imageData);
-        showAlert({
-          title: `수정 되었습니다.`,
-          onConfirm: () => {
-            onSave();
-            onClose();
-          },
-          onCancel: null,
-          type: 'confirm',
-        });
+
+        onSave();
       }
       //정보변경 이미지 삭제
       if (isInfoChanged && !isImageChanged && isdeleteimgchanged) {
         await ReviewEdit(reviewData.id, updatedReview);
         await ReviewDeleteImage(reviewData.id, deletedImages);
-        showAlert({
-          title: `수정 되었습니다.`,
-          onConfirm: () => {
-            onSave();
-            onClose();
-          },
-          onCancel: null,
-          type: 'confirm',
-        });
+
+        onSave();
       }
 
       //이미지 추가 및 삭제
       if (!isInfoChanged && isImageChanged && isdeleteimgchanged) {
         await ReviewEditImage(reviewData.id, imageData);
         await ReviewDeleteImage(reviewData.id, deletedImages);
-        showAlert({
-          title: `수정 되었습니다.`,
-          onConfirm: () => {
-            onSave();
-            onClose();
-          },
-          onCancel: null,
-          type: 'confirm',
-        });
+
+        onSave();
       }
       //다 한경우
       if (isInfoChanged && isImageChanged && isdeleteimgchanged) {
         await ReviewEdit(reviewData.id, updatedReview);
         await ReviewEditImage(reviewData.id, imageData);
         await ReviewDeleteImage(reviewData.id, deletedImages);
-        showAlert({
-          title: `수정 되었습니다.`,
-          onConfirm: () => {
-            onSave();
-            onClose();
-          },
-          onCancel: null,
-          type: 'confirm',
-        });
+
+        onSave();
       }
       // 다 안한경우
       if (!isInfoChanged && !isImageChanged && !isdeleteimgchanged) {
@@ -248,9 +201,9 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
       title: `이미지를 삭제하시겠습니까?`,
       onConfirm: async () => {
         setAddedImages(prevImages => prevImages.filter((_, i) => i !== index));
-        showAlert({
-          title: '삭제 되었습니다',
-        });
+        // showAlert({
+        //   title: '삭제 되었습니다',
+        // });
       },
       onCancel: null,
       type: 'delete',
@@ -270,9 +223,9 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
           setServerImages(prevImages =>
             prevImages.filter((_, i) => i !== index),
           );
-          showAlert({
-            title: '삭제 되었습니다',
-          });
+          // showAlert({
+          //   title: '삭제 되었습니다',
+          // });
         } catch (error) {
           showAlert({
             title: '이미지 삭제 실패',
@@ -285,29 +238,51 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
   };
 
   return (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}>
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          {/* 상단 버튼 (취소 & 저장) */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={handleCancel}>
-              <Ionicons name="arrow-back-outline" size={25} color="#333" />
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>리뷰 수정</Text>
-            <TouchableOpacity onPress={handleSave}>
-              <Ionicons name="paper-plane-sharp" size={25} color="#16BBFF" />
-            </TouchableOpacity>
-          </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={styles.inputText}>리뷰 내용</Text>
+          <TextInput
+            style={[
+              styles.input,
+              {borderBottomColor: isFocused ? '#16BBFF' : '#F2F2F2'},
+            ]}
+            value={reviewContent}
+            onChangeText={setReviewContent}
+            placeholder={'리뷰를 입력하세요'}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            multiline
+          />
 
-          {/* 서버에서 받은 이미지들 */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{marginVertical: 15}}>
+          {/* 별점 입력 */}
+          <Text style={styles.inputText}>별점 입력</Text>
+          <View style={styles.starContainer}>{renderStars()}</View>
+
+          {/* 방문 날짜 */}
+          <Text style={styles.inputText}>방문 날짜</Text>
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => setIsDatePickerOpen(true)}>
+            <Text style={styles.dateButtonText}>
+              {visitedAt.toLocaleDateString()}
+            </Text>
+          </TouchableOpacity>
+          <DatePicker
+            modal
+            open={isDatePickerOpen}
+            date={visitedAt}
+            mode="date"
+            locale="ko"
+            maximumDate={new Date(new Date().setHours(23, 59, 59, 999))} // 한국 시간 기준 오늘까지 선택 가능
+            onConfirm={date => {
+              setVisitedAt(date);
+              setIsDatePickerOpen(false);
+            }}
+            onCancel={() => setIsDatePickerOpen(false)}
+          />
+          <Text style={styles.inputText}>리뷰 이미지</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {serverImages.map((image, index) => (
               <Pressable key={index} style={styles.imagePressable}>
                 <Image
@@ -344,9 +319,10 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
               <Pressable
                 onPress={selectImage}
                 style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 80,
+                  justifyContent: 'flex-end',
+
+                  marginLeft: 18,
+                  marginBottom: 5,
                 }}>
                 <MaterialCommunityIcons
                   name="image-plus"
@@ -356,85 +332,38 @@ const MyReviewEditModal = ({visible, onClose, reviewdata, onSave}) => {
               </Pressable>
             )}
           </ScrollView>
-
-          {/* 리뷰 내용 입력 */}
-          <Text style={styles.inputText}>리뷰 내용*</Text>
-          <TextInput
-            style={[
-              styles.input,
-              {borderBottomColor: isFocused ? '#16BBFF' : '#F2F2F2'},
-            ]}
-            value={reviewContent}
-            onChangeText={setReviewContent}
-            placeholder={'리뷰를 입력하세요*'}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            multiline
-          />
-
-          {/* 별점 입력 */}
-          <Text style={styles.inputText}>별점 입력</Text>
-          <View style={styles.starContainer}>{renderStars()}</View>
-
-          {/* 방문 날짜 */}
-          <Text style={styles.inputText}>방문 날짜</Text>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={() => setIsDatePickerOpen(true)}>
-            <Text style={styles.dateButtonText}>
-              {visitedAt.toLocaleDateString()}
-            </Text>
-          </TouchableOpacity>
-          <DatePicker
-            modal
-            open={isDatePickerOpen}
-            date={visitedAt}
-            mode="date"
-            locale="ko"
-            onConfirm={date => {
-              setVisitedAt(date);
-              setIsDatePickerOpen(false);
-            }}
-            onCancel={() => setIsDatePickerOpen(false)}
-          />
-        </View>
-      </View>
-      <AlertComponent />
-    </Modal>
+          <Pressable style={styles.completeButton} onPress={handleSave}>
+            <Text style={styles.completeButtonText}>수정 완료</Text>
+          </Pressable>
+          <AlertComponent />
+        </ScrollView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
-  modalBackground: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  container: {
+    backgroundColor: '#fff',
+    paddingVertical: 20,
   },
-  modalContainer: {
-    width: '85%',
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 15,
-    alignItems: 'flex-start',
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+  inputText: {
+    marginVertical: 5,
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+    marginTop: 30,
+    marginHorizontal: 18,
   },
-  modalTitle: {
+
+  title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
-    color: '#333',
+    marginBottom: 10,
   },
-  imageContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginVertical: 15,
+  reviewText: {
+    fontSize: 16,
+    color: '#333',
   },
   selectImage: {
     width: 120,
@@ -452,6 +381,12 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
   },
+
+  removeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+  },
   shadowEffect: {
     shadowColor: '#000', // 그림자 색상
     shadowOffset: {width: 0, height: 4}, // 그림자 위치 (x, y)
@@ -460,7 +395,6 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   input: {
-    width: '100%',
     borderBottomColor: '#16BBFF',
     borderBottomWidth: 1,
     fontSize: 18,
@@ -468,26 +402,21 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingLeft: 1,
     marginBottom: 20,
+    marginHorizontal: 18,
   },
-  inputText: {
-    marginVertical: 5,
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-    marginTop: 10,
-  },
+
   starContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
     marginVertical: 10,
+    marginHorizontal: 18,
   },
   dateButton: {
     padding: 10,
     backgroundColor: '#E7E7E7',
     borderRadius: 5,
-    width: '100%',
     alignItems: 'center',
     marginVertical: 10,
+    marginHorizontal: 18,
   },
   dateButtonText: {
     fontSize: 16,
@@ -497,8 +426,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginVertical: 20,
+  },
+  completeButton: {
+    backgroundColor: '#16BBFF',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 18,
+    marginTop: 50,
+  },
+  completeButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
 
-export default MyReviewEditModal;
+export default ReviewEditScreen;
