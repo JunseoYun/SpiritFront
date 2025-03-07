@@ -26,8 +26,16 @@ const Mynickchange = () => {
   const [newnickname, setNewnickname] = useState('');
   const [nicknameError, setNicknameError] = useState(false);
   const [nicknameCheck, setNicknameCheck] = useState(false);
+  const [nicknamelength, setNicknamelength] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleNicknameChange = text => {
+    if (text.length > 12) {
+      setNicknamelength(true);
+    } else {
+      setNicknamelength(false);
+    }
+
     setNewnickname(text);
 
     // 비속어가 포함된 경우
@@ -44,7 +52,14 @@ const Mynickchange = () => {
   };
 
   const handlePutnick = async () => {
-    if (nicknameError || !nicknameCheck || !newnickname.trim()) {
+    setLoading(true);
+
+    if (
+      nicknameError ||
+      !nicknameCheck ||
+      !newnickname.trim() ||
+      nicknamelength
+    ) {
       showAlert({
         title: '닉네임 오류',
         message: '유효하지 않은 닉네임입니다.\n다시 시도해주세요.',
@@ -94,6 +109,8 @@ const Mynickchange = () => {
           message: '인터넷 연결을 확인하고 다시 시도해주세요.',
         });
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -119,8 +136,11 @@ const Mynickchange = () => {
               <View
                 style={[
                   styles.nicknameInputView,
-                  nicknameError && styles.errorInputView,
-                  nicknameCheck && !nicknameError && styles.checkInputView,
+                  (nicknameError || nicknamelength) && styles.errorInputView,
+                  nicknameCheck &&
+                    !nicknameError &&
+                    !nicknamelength &&
+                    styles.checkInputView,
                 ]}>
                 <TextInput
                   style={styles.input}
@@ -129,24 +149,43 @@ const Mynickchange = () => {
                   onChangeText={handleNicknameChange}
                   placeholderTextColor="#999"
                 />
-                {nicknameCheck && !nicknameError && (
+                {nicknameCheck && !nicknameError && !nicknamelength && (
                   <Entypo name="check" size={25} color="#16BBFF" />
                 )}
               </View>
-              {nicknameError && (
-                <Text style={styles.errorText}>
-                  비속어 및 이용약관에 위배된 닉네임은 사용할 수 없습니다.
+              <View
+                style={[
+                  styles.lengthview,
+                  (nicknameError || nicknamelength) && styles.errorview,
+                ]}>
+                {nicknameError && (
+                  <Text style={styles.errorText}>
+                    비속어 및 이용약관에 위배된 닉네임은 사용할 수 없습니다.
+                  </Text>
+                )}
+                {nicknamelength && (
+                  <Text style={styles.errorText}>
+                    최대 글자 수는 12글자 입니다.
+                  </Text>
+                )}
+                <Text
+                  style={[
+                    styles.lengthtext,
+                    nicknamelength && styles.errorText,
+                  ]}>
+                  {newnickname.length}/12
                 </Text>
-              )}
+              </View>
             </View>
           </ScrollView>
           <Pressable
             style={[
               styles.completebtn,
-              (!newnickname.trim() || nicknameError) && styles.disabledbtn, // 비활성화 스타일
+              (!newnickname.trim() || nicknameError || nicknamelength) &&
+                styles.disabledbtn, // 비활성화 스타일
             ]}
             onPress={handlePutnick}
-            disabled={!newnickname.trim() || nicknameError} // 비활성화 조건
+            disabled={!newnickname.trim() || nicknameError || nicknamelength} // 비활성화 조건
           >
             <Text style={styles.completebtntext}>완료</Text>
           </Pressable>
@@ -154,6 +193,11 @@ const Mynickchange = () => {
           <AlertComponent />
         </SafeAreaView>
       </TouchableWithoutFeedback>
+      {loading && (
+        <View style={styles.footer}>
+          <Text style={styles.loadingtext}>Loading...</Text>
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 };
@@ -214,12 +258,46 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#FF0000',
-    marginLeft: 10,
-    marginTop: 10,
+    marginTop: 7,
     fontSize: 14,
+  },
+  lengthtext: {
+    marginTop: 7,
+    fontSize: 14,
+    color: '#16BBFF',
+  },
+  lengthview: {
+    flex: 1,
+    alignItems: 'flex-end',
+    padding: 3,
+  },
+  errorview: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 3,
+    flexWrap: 'wrap',
   },
   disabledbtn: {
     backgroundColor: '#CCCCCC', // 비활성화된 버튼 색상
+  },
+  footer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  loadingtext: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 
