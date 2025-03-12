@@ -10,6 +10,7 @@ import StoreSearchScreen from '../screens/StoreRegister/StoreSearchScreen';
 import StoreCheckScreen from '../screens/StoreRegister/StoreCheckScreen';
 import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
 import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
+import StoreAddTimeSetScreen from '../screens/StoreRegister/StoreAddTimeSetScreen';
 import CategoryListTabbar from './CategoryListTabbar';
 import RandomChoiceScreen from '../screens/RandomChoice/RandomChoiceScreen';
 import StoreStack from './StoreStack';
@@ -45,12 +46,16 @@ export default function MainStack() {
         options={({navigation}) => ({
           title: '위치 설정',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons
-                name="arrow-back-outline"
+              <Octicons
+                name="chevron-left"
                 size={25}
-                color="black"
+                color="#333"
                 style={{marginLeft: 18}}
               />
             </Pressable>
@@ -63,12 +68,16 @@ export default function MainStack() {
         options={({navigation}) => ({
           title: '주소 검색',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons
-                name="arrow-back-outline"
+              <Octicons
+                name="chevron-left"
                 size={25}
-                color="black"
+                color="#333"
                 style={{marginLeft: 18}}
               />
             </Pressable>
@@ -82,16 +91,20 @@ export default function MainStack() {
           title: '한잔할까',
           headerTitleAlign: 'center',
           headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
+          headerTitleStyle: {
             fontSize: 20, // 타이틀 크기 설정
             color: '#333', // 텍스트 색상 (선택 사항)
             fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
           },
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons
-                name="arrow-back-outline"
+              <Octicons
+                name="chevron-left"
                 size={25}
-                color="black"
+                color="#333"
                 style={{marginLeft: 18}}
               />
             </Pressable>
@@ -104,12 +117,18 @@ export default function MainStack() {
         options={({navigation}) => ({
           title: '매장 등록하기',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons
-                name="arrow-back-outline"
+              <Octicons
+                name="chevron-left"
                 size={25}
-                color="black"
+                color="#333"
                 style={{marginLeft: 18}}
               />
             </Pressable>
@@ -122,31 +141,60 @@ export default function MainStack() {
         options={({navigation}) => ({
           title: '매장 주소 검색',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons
-                name="arrow-back-outline"
+              <Octicons
+                name="chevron-left"
                 size={25}
-                color="black"
+                color="#333"
                 style={{marginLeft: 18}}
               />
             </Pressable>
           ),
         })}
       />
-
+      <Stack.Screen
+        name="StoreAddTimeSetScreen"
+        component={StoreAddTimeSetScreen}
+        options={({navigation}) => ({
+          title: '영업 시간',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Octicons
+                name="chevron-left"
+                size={25}
+                color="#333"
+                style={{marginLeft: 18}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
       <Stack.Screen
         name="StoreSearchScreen"
         component={StoreSearchScreen}
         options={({navigation}) => ({
           title: '매장 조회',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons
-                name="arrow-back-outline"
+              <Octicons
+                name="chevron-left"
                 size={25}
-                color="black"
+                color="#333"
                 style={{marginLeft: 18}}
               />
             </Pressable>
@@ -159,12 +207,16 @@ export default function MainStack() {
         options={({navigation}) => ({
           title: '매장 권한 신청 1/2',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons
-                name="arrow-back-outline"
+              <Octicons
+                name="chevron-left"
                 size={25}
-                color="black"
+                color="#333"
                 style={{marginLeft: 18}}
               />
             </Pressable>
@@ -177,12 +229,16 @@ export default function MainStack() {
         options={({navigation}) => ({
           title: '매장 권한 신청 2/2',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons
-                name="arrow-back-outline"
+              <Octicons
+                name="chevron-left"
                 size={25}
-                color="black"
+                color="#333"
                 style={{marginLeft: 18}}
               />
             </Pressable>
@@ -209,12 +265,16 @@ export default function MainStack() {
         options={({navigation}) => ({
           title: '랜덤 고르기',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
           headerLeft: () => (
             <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons
-                name="arrow-back-outline"
+              <Octicons
+                name="chevron-left"
                 size={25}
-                color="black"
+                color="#333"
                 style={{marginLeft: 18}}
               />
             </Pressable>
