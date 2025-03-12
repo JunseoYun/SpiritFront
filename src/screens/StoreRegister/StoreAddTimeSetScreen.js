@@ -84,7 +84,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
   const [isEndTime, setIsEndTime] = useState(false);
   const [wrongBreak, setWrongBreak] = useState(false);
   const [isSameOperating, setIsSameOperating] = useState(false);
-
+  console.log(isSameEveryday);
   const handleTimePickerToggle = type => {
     if (wrongBreak) {
       return;
