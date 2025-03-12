@@ -28,6 +28,10 @@ const StoreAddScreen = ({navigation, route}) => {
   const [selectedscreenOption, setselectedscreenOption] = useState(false);
   const [closedDay, setClosedDay] = useState([]);
   const [alcohol, setAlcohol] = useState([{type: '', price: 0}]);
+  const [is24Hours, setIs24Hours] = useState(false);
+  const [isNextStart, setIsNextStart] = useState(false);
+
+  const [isNextBreak, setIsNextBreak] = useState(false);
 
   const [imageUris, setImageUris] = useState([]); // 이미지 배열 상태
 
@@ -40,18 +44,40 @@ const StoreAddScreen = ({navigation, route}) => {
   });
 
   const [operatingHours, setOperatingHours] = useState({
-    openHour: '',
-    openMinute: '',
-    closedHour: '',
-    closedMinute: '',
+    Monday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
+    Tuesday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
+    Wednesday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
+    Thursday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
+    Friday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
+    Saturday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
+    Sunday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
   });
 
   const [breakingHours, setBreakingHours] = useState({
-    startHour: '',
-    startMinute: '',
-    endHour: '',
-    endMinute: '',
+    Monday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+    Tuesday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+    Wednesday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+    Thursday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+    Friday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+    Saturday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+    Sunday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
   });
+  const storeTimeHandle = () => {
+    navigation.navigate('StoreAddTimeSetScreen', {
+      operatingHours,
+      breakingHours,
+      setOperatingHours,
+      setBreakingHours,
+      closedDay,
+      setClosedDay,
+      is24Hours,
+      setIs24Hours,
+      isNextStart,
+      setIsNextStart,
+      isNextBreak,
+      setIsNextBreak,
+    });
+  };
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -204,19 +230,24 @@ const StoreAddScreen = ({navigation, route}) => {
             navigation={navigation}
             onAddressSelect={handleAddressSelect} // 콜백 전달
           />
-          <StoreOperatingHours
-            operatingHours={operatingHours}
-            setOperatingHours={setOperatingHours}
-          />
 
-          <StoreBreakingHours
-            breakingHours={breakingHours}
-            setBreakingHours={setBreakingHours}
-          />
           <StoreCategory
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
           />
+          {/* <StoreOperatingHours
+            operatingHours={operatingHours}
+            setOperatingHours={setOperatingHours}
+          />
+          <StoreBreakingHours
+            breakingHours={breakingHours}
+            setBreakingHours={setBreakingHours}
+          />
+          <StoreClosedDay closedDay={closedDay} setClosedDay={setClosedDay} /> */}
+          <Pressable onPress={storeTimeHandle}>
+            <Text>영업 시간 설정</Text>
+          </Pressable>
+
           <StoreGroup
             selectedOption={selectedOption}
             setSelectedOption={setSelectedOption}
@@ -225,7 +256,7 @@ const StoreAddScreen = ({navigation, route}) => {
             selectedscreenOption={selectedscreenOption}
             setselectedscreenOption={setselectedscreenOption}
           />
-          <StoreClosedDay closedDay={closedDay} setClosedDay={setClosedDay} />
+
           <StoreAlcohol alcohol={alcohol} setAlcohol={setAlcohol} />
           <StoreImage imageUris={imageUris} setImageUris={setImageUris} />
           <Pressable style={styles.savebutton} onPress={confirmSubmission}>
@@ -266,9 +297,9 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     marginRight: 18,
-    fontSize: 19,
-    fontWeight: '600',
-    color: '#16BBFF',
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#333',
   },
   savebutton: {
     alignSelf: 'center',

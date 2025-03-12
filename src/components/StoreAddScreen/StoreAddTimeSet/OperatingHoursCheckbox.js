@@ -1,0 +1,69 @@
+import React from 'react';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
+
+const OperatingHoursCheckbox = ({isSameEveryday, is24, toggle24Hours}) => {
+  return (
+    <View style={styles.checkboxHeader}>
+      <Text style={styles.checkboxLabel}>영업 시간</Text>
+      <Pressable
+        style={[
+          styles.checkboxContainer,
+          isSameEveryday ? styles.enabledCheckbox : styles.disabledCheckbox,
+        ]}
+        onPress={toggle24Hours}
+        disabled={!isSameEveryday}>
+        <View style={is24 ? styles.checkedBox : styles.uncheckedBox} />
+        <Text style={styles.checkboxLabel24}>24시간 영업</Text>
+      </Pressable>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  checkboxHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 18,
+    justifyContent: 'space-between',
+    marginTop: 30,
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  enabledCheckbox: {
+    backgroundColor: '#fff',
+  },
+  disabledCheckbox: {
+    backgroundColor: '#f0f0f0',
+  },
+  checkedBox: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    backgroundColor: '#16BBFF',
+    marginRight: 7,
+  },
+  uncheckedBox: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#16BBFF',
+    marginRight: 7,
+  },
+  checkboxLabel24: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '400',
+    textAlign: 'center',
+  },
+});
+
+export default OperatingHoursCheckbox;
