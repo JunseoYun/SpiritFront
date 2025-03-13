@@ -1,14 +1,23 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 
-const OperatingHoursToggle = ({isSameEveryday, setIsSameEveryday}) => {
+const OperatingHoursToggle = ({
+  isSameEveryday,
+  setIsSameEveryday,
+  setIsSameEveryTime,
+  handleBottomClose,
+}) => {
   return (
     <View>
       <Text style={styles.sectionTitle}>영업 시간을 알려주세요</Text>
       <View style={styles.toggleContainer}>
         <Pressable
           style={[styles.toggleButton, isSameEveryday && styles.selectedToggle]}
-          onPress={() => setIsSameEveryday(true)}>
+          onPress={() => {
+            setIsSameEveryday(true);
+            setIsSameEveryTime(true);
+            handleBottomClose();
+          }}>
           <Text
             style={
               isSameEveryday ? styles.selectedText : styles.unselectedText
@@ -21,7 +30,11 @@ const OperatingHoursToggle = ({isSameEveryday, setIsSameEveryday}) => {
             styles.toggleButton,
             !isSameEveryday && styles.selectedToggle,
           ]}
-          onPress={() => setIsSameEveryday(false)}>
+          onPress={() => {
+            setIsSameEveryday(false);
+            setIsSameEveryTime(false);
+            handleBottomClose();
+          }}>
           <Text
             style={
               !isSameEveryday ? styles.selectedText : styles.unselectedText
