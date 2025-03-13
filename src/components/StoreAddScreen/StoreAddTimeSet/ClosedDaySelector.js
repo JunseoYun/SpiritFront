@@ -16,15 +16,19 @@ const ClosedDaySelector = ({
   setClosedDay,
   setIs24,
   setIs24Hours,
+  handleBottomClose,
 }) => {
   const handleClosedToggle = () => {
+    let isInvalid = !isClosed;
     setIsClosed(prev => !prev);
 
     // 🚨 여기서 'isClosed === true'일 때만 초기화
-    if (!isClosed) {
+    if (isInvalid === true) {
       setIs24(false); // 🚨 24시간 설정 해제
       setIs24Hours(false);
     }
+
+    handleBottomClose();
   };
 
   useEffect(() => {
@@ -46,6 +50,8 @@ const ClosedDaySelector = ({
       setClosedDay(newDays);
       return newDays;
     });
+
+    handleBottomClose();
   };
 
   return (

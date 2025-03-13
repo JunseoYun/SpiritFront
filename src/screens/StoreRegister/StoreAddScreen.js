@@ -30,13 +30,10 @@ const StoreAddScreen = ({navigation, route}) => {
   const [alcohol, setAlcohol] = useState([{type: '', price: 0}]);
   const [is24Hours, setIs24Hours] = useState(false);
   const [isNextStart, setIsNextStart] = useState(false);
-
   const [isNextBreak, setIsNextBreak] = useState(false);
-
   const [imageUris, setImageUris] = useState([]); // 이미지 배열 상태
-
+  const [isSameEveryTime, setIsSameEveryTime] = useState(true);
   const {showAlert, AlertComponent} = useCustomAlert();
-
   const [storeData, setStoreData] = useState({
     storeName: '',
     storeNumber: '',
@@ -76,6 +73,8 @@ const StoreAddScreen = ({navigation, route}) => {
       setIsNextStart,
       isNextBreak,
       setIsNextBreak,
+      isSameEveryTime,
+      setIsSameEveryTime,
     });
   };
 
