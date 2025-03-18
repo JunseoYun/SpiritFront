@@ -12,7 +12,9 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="true"
       android:theme="@style/AppTheme"
+      android:usesCleartextTraffic="true"
       android:supportsRtl="true">
+
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
@@ -27,16 +29,48 @@
         </intent-filter>
       </activity>
 
-    <activity android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+      <!-- Google 로그인 관련 메타데이터 추가 -->
+      <meta-data
+        android:name="com.google.android.gms.auth.api.signin.WebClientId"
+        android:value="@string/GOOGLE_WEB_CLIENT_ID" />
+
+      <activity
+        android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity"
+        android:exported="false"/>
+
+      <activity
+        android:name="com.google.android.gms.common.api.GoogleApiActivity"
+        android:exported="false"
+        android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+      <!-- OAuth 2.0 Redirect URI 설정 -->
+      <activity android:name="com.google.android.gms.auth.api.signin.GoogleSignInActivity"
       android:exported="true">
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:host="oauth" android:scheme="@string/KAKAO_APP_SCHEMES" />
-        <data android:scheme="kakaomap" />
-      </intent-filter>
-    </activity>
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data
+                android:scheme="com.googleusercontent.apps.@string/GOOGLE_WEB_CLIENT_ID"
+                android:host="oauth"
+                android:path="/oauth2redirect/google"/>
+        </intent-filter>
+      </activity>
+
+      <!-- 카카오 로그인 -->
+      <activity 
+        android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+        android:exported="true"
+        android:launchMode="singleTask"
+        android:taskAffinity="com.spiritfront.oauth">
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+          <data android:host="oauth"
+                android:scheme="@string/KAKAO_APP_SCHEMES"  />
+        </intent-filter>
+      </activity>
 
     </application>
 </manifest>
