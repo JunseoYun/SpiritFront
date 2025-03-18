@@ -39,6 +39,7 @@ const ReviewEditScreen = ({route, navigation}) => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
   const [deletedImages, setDeletedImages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (reviewdata) {
@@ -107,6 +108,7 @@ const ReviewEditScreen = ({route, navigation}) => {
     };
 
     try {
+      setLoading(true);
       //정보만 변경된 경우
       if (isInfoChanged && !isImageChanged && !isdeleteimgchanged) {
         await ReviewEdit(reviewData.id, updatedReview);
@@ -171,6 +173,8 @@ const ReviewEditScreen = ({route, navigation}) => {
         title: '수정 실패',
         message: '잘못된 요청입니다.',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -337,6 +341,11 @@ const ReviewEditScreen = ({route, navigation}) => {
           </Pressable>
           <AlertComponent />
         </ScrollView>
+        {loading && (
+          <View style={styles.footerloading}>
+            <Text style={styles.emptyText}>Loading...</Text>
+          </View>
+        )}
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
@@ -440,6 +449,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#fff',
+  },
+  footerloading: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 
