@@ -15,6 +15,7 @@ import {
 import Entypo from 'react-native-vector-icons/Entypo';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import forbiddenWords from '../../../hooks/forbiddenWords';
+import filterWords from '../../../hooks/filterWords';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {Userputnickname} from '../../../api/userApi';
 
@@ -27,27 +28,42 @@ const Mynickchange = () => {
   const [nicknameError, setNicknameError] = useState(false);
   const [nicknameCheck, setNicknameCheck] = useState(false);
   const [nicknamelength, setNicknamelength] = useState(false);
+  const [nicknamefilter, setNicknamefilter] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleNicknameChange = text => {
-    if (text.length > 12) {
+    const filteredText = text.replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣0-9]/g, '');
+
+    // 최대 글자 수 제한
+    if (filteredText.length > 12) {
       setNicknamelength(true);
     } else {
       setNicknamelength(false);
     }
 
-    setNewnickname(text);
+    setNewnickname(filteredText);
 
     // 비속어가 포함된 경우
     const containsForbiddenWord = forbiddenWords.some(word =>
-      text.includes(word),
+      filteredText.includes(word),
     );
     if (containsForbiddenWord) {
       setNicknameError(true);
       setNicknameCheck(false);
     } else {
       setNicknameError(false);
-      setNicknameCheck(true);
+      setNicknameCheck(false);
+    }
+
+    const containsFilterWord = filterWords.some(word =>
+      filteredText.includes(word),
+    );
+    if (containsFilterWord) {
+      setNicknamefilter(true);
+      setNicknameCheck(false);
+    } else {
+      setNicknamefilter(false);
+      setNicknameCheck(false);
     }
   };
 
@@ -136,10 +152,12 @@ const Mynickchange = () => {
               <View
                 style={[
                   styles.nicknameInputView,
-                  (nicknameError || nicknamelength) && styles.errorInputView,
+                  (nicknameError || nicknamelength || nicknamefilter) &&
+                    styles.errorInputView,
                   nicknameCheck &&
                     !nicknameError &&
                     !nicknamelength &&
+                    !nicknamefilter &&
                     styles.checkInputView,
                 ]}>
                 <TextInput
@@ -163,6 +181,11 @@ const Mynickchange = () => {
                     비속어 및 이용약관에 위배된 닉네임은 사용할 수 없습니다.
                   </Text>
                 )}
+                {nicknamefilter && (
+                  <Text style={styles.errorText}>
+                    초성 닉네임은 사용할 수 없습니다.
+                  </Text>
+                )}
                 {nicknamelength && (
                   <Text style={styles.errorText}>
                     최대 글자 수는 12글자 입니다.
@@ -181,11 +204,19 @@ const Mynickchange = () => {
           <Pressable
             style={[
               styles.completebtn,
-              (!newnickname.trim() || nicknameError || nicknamelength) &&
+              (!newnickname.trim() ||
+                nicknameError ||
+                nicknamelength ||
+                nicknamefilter) &&
                 styles.disabledbtn, // 비활성화 스타일
             ]}
             onPress={handlePutnick}
-            disabled={!newnickname.trim() || nicknameError || nicknamelength} // 비활성화 조건
+            disabled={
+              !newnickname.trim() ||
+              nicknameError ||
+              nicknamelength ||
+              nicknamefilter
+            } // 비활성화 조건
           >
             <Text style={styles.completebtntext}>완료</Text>
           </Pressable>

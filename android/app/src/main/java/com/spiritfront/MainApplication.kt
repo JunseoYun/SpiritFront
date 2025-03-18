@@ -1,6 +1,9 @@
 package com.spiritfront
 
 import android.app.Application
+import com.kakao.sdk.common.KakaoSdk  
+import com.kakao.sdk.common.util.Utility
+import android.util.Log
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -36,8 +39,11 @@ class MainApplication : Application(), ReactApplication {
   override fun onCreate() {
     super.onCreate()
     SoLoader.init(this, OpenSourceMergedSoMapping)
+
+    val kakaoKey =  getString(R.string.KAKAO_APP_KEY)
+    KakaoSdk.init(this, kakaoKey)
+
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-      // If you opted-in for the New Architecture, we load the native entry point for this app.
       load()
     }
   }

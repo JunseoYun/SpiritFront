@@ -11,6 +11,7 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import {check_nickName, user_register, user_login} from '../../api/userApi';
 import Entypo from 'react-native-vector-icons/Entypo';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import filterWords from '../../hooks/filterWords';
 import {useAuth} from '../../context/AuthContext';
 
 const RegisterScreen = ({route, navigation}) => {
@@ -19,6 +20,8 @@ const RegisterScreen = ({route, navigation}) => {
   const [nickname, setNickname] = useState('');
   const [nicknameCheck, setNicknameCheck] = useState(false);
   const [nicknameError, setNicknameError] = useState(false); // 비속어 오류 상태
+  const [nicknamelength, setNicknamelength] = useState(false);
+  const [nicknamefilter, setNicknamefilter] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
   const {login} = useAuth();
 
@@ -48,17 +51,38 @@ const RegisterScreen = ({route, navigation}) => {
 
   // 닉네임 입력 변경 시 비속어 확인
   const handleNicknameChange = text => {
-    setNickname(text);
+    // 허용할 문자: 한글, 영문 대소문자, 숫자, `_`, `-` (기타 특수문자 및 이모티콘 차단)
+    const filteredText = text.replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣0-9]/g, '');
+
+    // 최대 글자 수 제한
+    if (filteredText.length > 12) {
+      setNicknamelength(true);
+    } else {
+      setNicknamelength(false);
+    }
+
+    setNickname(filteredText);
 
     // 비속어가 포함된 경우
     const containsForbiddenWord = forbiddenWords.some(word =>
-      text.includes(word),
+      filteredText.includes(word),
     );
     if (containsForbiddenWord) {
       setNicknameError(true);
       setNicknameCheck(false);
     } else {
       setNicknameError(false);
+      setNicknameCheck(false);
+    }
+
+    const containsFilterWord = filterWords.some(word =>
+      filteredText.includes(word),
+    );
+    if (containsFilterWord) {
+      setNicknamefilter(true);
+      setNicknameCheck(false);
+    } else {
+      setNicknamefilter(false);
       setNicknameCheck(false);
     }
   };
@@ -114,8 +138,13 @@ const RegisterScreen = ({route, navigation}) => {
       <View
         style={[
           styles.nicknameInputView,
-          nicknameError && styles.errorInputView, // 비속어 입력 시 빨간 테두리
-          nicknameCheck && !nicknameError && styles.checkInputView,
+          (nicknameError || nicknamefilter || nicknamelength) &&
+            styles.errorInputView, // 비속어 입력 시 빨간 테두리
+          nicknameCheck &&
+            !nicknameError &&
+            !nicknamelength &&
+            !nicknamelength &&
+            styles.checkInputView,
         ]}>
         <TextInput
           style={styles.nicknameInput}
@@ -133,20 +162,36 @@ const RegisterScreen = ({route, navigation}) => {
           비속어 및 이용약관에 위배된 닉네임은 사용할 수 없습니다.
         </Text>
       )}
-
-      {!nicknameCheck && !nicknameError && (
-        <TouchableOpacity
-          style={styles.checkButton}
-          onPress={handleCheckNickname}>
-          <Text style={styles.checkButtonText}>중복 검사</Text>
-        </TouchableOpacity>
+      {nicknamefilter && (
+        <Text style={styles.errorText}>초성 닉네임은 사용할 수 없습니다.</Text>
+      )}
+      {nicknamelength && (
+        <Text style={styles.errorText}>
+          닉네임 최대 글자 수는 12글자 입니다.
+        </Text>
       )}
 
-      {nicknameCheck && !nicknameError && (
-        <TouchableOpacity style={styles.submitButton} onPress={handleRegister}>
-          <Text style={styles.submitButtonText}>시작하기</Text>
-        </TouchableOpacity>
-      )}
+      {!nicknameCheck &&
+        !nicknameError &&
+        !nicknamelength &&
+        !nicknamefilter && (
+          <TouchableOpacity
+            style={styles.checkButton}
+            onPress={handleCheckNickname}>
+            <Text style={styles.checkButtonText}>중복 검사</Text>
+          </TouchableOpacity>
+        )}
+
+      {nicknameCheck &&
+        !nicknameError &&
+        !nicknamelength &&
+        !nicknamefilter && (
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleRegister}>
+            <Text style={styles.submitButtonText}>시작하기</Text>
+          </TouchableOpacity>
+        )}
 
       <AlertComponent />
     </SafeAreaView>
