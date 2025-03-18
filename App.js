@@ -6,6 +6,7 @@ import {AuthProvider, useAuth} from './src/context/AuthContext';
 import OAuthStack from './src/navigation/OAuthStack';
 import {CustomAlertProvider} from './src/context/CustomAlertContext';
 import {Provider as PaperProvider} from 'react-native-paper';
+import {ToastProvider} from './src/context/ToastContext';
 
 import SplashScreen from 'react-native-splash-screen';
 import MySplashScreen from './src/screens/MySplashScreen';
@@ -29,7 +30,9 @@ const App = () => {
     <PaperProvider>
       <AuthProvider>
         <CustomAlertProvider>
-          <AppNavigator />
+          <ToastProvider>
+            <AppNavigator />
+          </ToastProvider>
         </CustomAlertProvider>
       </AuthProvider>
     </PaperProvider>

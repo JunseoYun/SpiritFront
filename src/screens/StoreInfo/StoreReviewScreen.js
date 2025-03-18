@@ -39,6 +39,7 @@ const StoreReviewScreen = ({navigation}) => {
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
   const [totalpage, setTotalpage] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [addloading, setAddloading] = useState(false);
 
   const getReviewData = async currentPage => {
     setLoading(true);
@@ -157,6 +158,7 @@ const StoreReviewScreen = ({navigation}) => {
   };
 
   const handleSubmitReview = async () => {
+    setAddloading(true);
     try {
       // 금지된 단어 확인
       const containsForbiddenWord = forbiddenWords.some(
@@ -219,6 +221,8 @@ const StoreReviewScreen = ({navigation}) => {
         title: '등록 실패',
         message: '리뷰 등록에 실패했습니다. 다시 시도해 주세요.',
       });
+    } finally {
+      setAddloading(false);
     }
   };
 
@@ -283,6 +287,11 @@ const StoreReviewScreen = ({navigation}) => {
       )}
 
       <AlertComponent />
+      {addloading && (
+        <View style={styles.footerloading}>
+          <Text style={styles.emptyText}>Loading...</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -347,6 +356,17 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     alignItems: 'center',
     height: 100,
+  },
+  footerloading: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
   emptyText: {
     textAlign: 'center',

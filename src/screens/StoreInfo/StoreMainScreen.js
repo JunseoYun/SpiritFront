@@ -29,6 +29,7 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import UpdateBottomSheet from '../../components/StoreScreen/UpdateBottomSheet';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import {useToast} from '../../context/ToastContext';
 
 const StoreMainScreen = ({navigation}) => {
   const route = useRoute();
@@ -50,6 +51,7 @@ const StoreMainScreen = ({navigation}) => {
   const [updatedImgValue, setUpdatedImgValue] = useState([]);
   const scrollViewRef = useRef(null); // ScrollView 참조 추가
   const [loading, setLoading] = useState(true);
+  const {showToast} = useToast();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -265,6 +267,10 @@ const StoreMainScreen = ({navigation}) => {
         setStoredata(storeData);
         setLongitude(storeData.locationDto.longitude);
         setLatitude(storeData.locationDto.latitude);
+        if (storeData.isDeleted) {
+          showToast('가게가 삭제되었습니다.'); // 🔥 토스트 메시지 띄우기
+          setTimeout(() => navigation.goBack(), 100); // 1초 후 뒤로 가기
+        }
         const Menus = await StoreMenuget(storeId);
         setMenus(Menus);
         const Drinks = await StoreDrinkget(storeId);
