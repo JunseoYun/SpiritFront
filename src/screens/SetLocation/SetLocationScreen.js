@@ -71,9 +71,6 @@ const SetLocationScreen = ({navigation, route}) => {
   };
 
   const saveLocationHandle = async () => {
-    console.log(currentLocation, 'currentLocation');
-    console.log(selectLocation, 'selectLocation');
-
     if (JSON.stringify(currentLocation) === JSON.stringify(selectLocation)) {
       showAlert({
         title: '이전에 설정한 위치와 같습니다.',
@@ -140,13 +137,13 @@ const SetLocationScreen = ({navigation, route}) => {
       return;
     }
     try {
-      const {location, address} = await fetchLocationAddress();
+      const {newLocation, address} = await fetchLocationAddress();
 
-      setSelectLocation(location);
+      setSelectLocation(newLocation);
       setSelectAddress(address);
-      setLoading(false);
     } catch (error) {
       console.error('위치 데이터를 가져오는 중 오류:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -323,6 +320,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,

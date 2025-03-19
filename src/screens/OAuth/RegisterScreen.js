@@ -13,6 +13,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import filterWords from '../../hooks/filterWords';
 import {useAuth} from '../../context/AuthContext';
+import {useToast} from '../../context/ToastContext';
 
 const RegisterScreen = ({route, navigation}) => {
   // route.params를 통해 전달된 데이터 접근
@@ -24,6 +25,7 @@ const RegisterScreen = ({route, navigation}) => {
   const [nicknamefilter, setNicknamefilter] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
   const {login} = useAuth();
+  const {showToast} = useToast();
 
   const handleCheckNickname = async () => {
     if (!nickname.trim()) {
@@ -36,9 +38,7 @@ const RegisterScreen = ({route, navigation}) => {
     try {
       const isCheck = await check_nickName(nickname);
       if (isCheck) {
-        showAlert({
-          title: '사용 가능한 닉네임입니다',
-        });
+        showToast('사용 가능한 닉네임입니다.');
         setNicknameCheck(true);
       }
     } catch (error) {
@@ -113,14 +113,16 @@ const RegisterScreen = ({route, navigation}) => {
         showAlert({
           title: '로그인 오류',
           message:
-            '로그인 시 오류가 발생하였습니다.\n잠시 후 다시 시도해주세요.',
+            '로그인 시 오류가 발생하였습니다.\n잠시 후 다시 시도해주세요.' +
+            error,
         });
       }
     } catch (error) {
       showAlert({
         title: '회원가입 오류',
         message:
-          '회원가입 시 오류가 발생하였습니다.\n잠시 후 다시 시도해주세요.',
+          '회원가입 시 오류가 발생하였습니다.\n잠시 후 다시 시도해주세요.' +
+          error,
       });
     }
   };

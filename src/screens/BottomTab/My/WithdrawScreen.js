@@ -51,18 +51,19 @@ const WithdrawScreen = () => {
       </Text>
 
       <View style={styles.line} />
-      <View style={styles.checkboxContainer}>
-        <TouchableOpacity onPress={() => setIsChecked(!isChecked)}>
-          <Ionicons
-            name={isChecked ? 'checkbox-outline' : 'square-outline'}
-            size={24}
-            color={isChecked ? '#16BBFF' : '#888'}
-          />
-        </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => setIsChecked(!isChecked)}
+        style={styles.checkboxContainer}>
+        <Ionicons
+          name={isChecked ? 'checkbox-outline' : 'square-outline'}
+          size={24}
+          color={isChecked ? '#16BBFF' : '#888'}
+        />
+
         <Text style={styles.checkboxText}>
           회원탈퇴 안내를 모두 확인하였습니다.
         </Text>
-      </View>
+      </TouchableOpacity>
       {/* 회원탈퇴 버튼 */}
       <TouchableOpacity
         style={[styles.withdrawButton, !isChecked && styles.disabledButton]}

@@ -21,7 +21,7 @@ export const AuthProvider = ({children}) => {
   }, []);
 
   // 로그인 처리
-  const login = async (accessToken, refreshToken) => {
+  const loginauth = async (accessToken, refreshToken) => {
     await setToken(accessToken, refreshToken); // AsyncStorage에 토큰 저장
     setTokenState(accessToken, refreshToken); // 상태 업데이트
   };
@@ -34,7 +34,7 @@ export const AuthProvider = ({children}) => {
   globalAuth.logout = logout;
 
   return (
-    <AuthContext.Provider value={{token, login, logout}}>
+    <AuthContext.Provider value={{token, loginauth, logout}}>
       {children}
     </AuthContext.Provider>
   );

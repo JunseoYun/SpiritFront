@@ -1,11 +1,16 @@
-import {Platform, PermissionsAndroid} from 'react-native';
+import {Platform, PermissionsAndroid, Alert, Linking} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {get_address, get_coordinate} from '../api/location';
+import {getGlobalShowAlert} from '../context/CustomAlertContext';
+const showAlert = getGlobalShowAlert();
+
 export const fetchLocationAddress = () => {
   const hasPermission = requestLocationPermission();
   if (!hasPermission) {
-    Alert.alert('위치 권한이 거부되었습니다.');
+    showAlert({
+      title: '위치 권한이 거부되었습니다.',
+    });
     return;
   }
   return new Promise((resolve, reject) => {
@@ -19,7 +24,7 @@ export const fetchLocationAddress = () => {
           const address = await getAddressFromCoordinates(newLocation);
 
           // 위치와 주소 정보 함께 반환
-          resolve({location: newLocation, address});
+          resolve({newLocation: newLocation, address});
         } catch (err) {
           console.error('위치 또는 주소 가져오기 오류:', err);
           reject(err);
@@ -30,7 +35,7 @@ export const fetchLocationAddress = () => {
         handleLocationError(error);
         reject(error);
       },
-      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+      {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
     );
   });
 };
@@ -38,7 +43,9 @@ export const fetchLocationAddress = () => {
 export const fetchLocation = () => {
   const hasPermission = requestLocationPermission();
   if (!hasPermission) {
-    Alert.alert('위치 권한이 거부되었습니다.');
+    showAlert({
+      title: '위치 권한이 거부되었습니다.',
+    });
     return;
   }
   return new Promise((resolve, reject) => {
@@ -58,22 +65,48 @@ export const fetchLocation = () => {
         handleLocationError(error);
         reject(error);
       },
-      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+      {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
     );
   });
 };
 
 const handleLocationError = error => {
   if (error.code === 1) {
-    error = '위치 권한이 거부되었습니다.';
+    const hasPermission = requestLocationPermission();
+    if (!hasPermission) {
+      showAlert({
+        title: '위치 권한이 거부되었습니다.',
+      });
+      return;
+    }
   } else if (error.code === 2) {
-    error = '위치 정보를 사용할 수 없습니다.';
+    showAlert({
+      title: '위치 서비스 비활성화',
+      message: '위치 서비스를 활성화해야 현재 위치를 사용할 수 있습니다.',
+      onConfirm: () => {
+        openLocationSettings();
+      },
+      onCancel: null,
+      type: 'confirm',
+    });
   } else if (error.code === 3) {
-    error = '위치 요청이 시간 초과되었습니다.';
+    showAlert({
+      title: '위치 요청 시간 초과되었습니다.',
+    });
   } else if (error.code === 4) {
-    error = '위치 서비스가 비활성화되었습니다.';
+    showAlert({
+      title: '위치 서비스가 비활성화되었습니다.',
+    });
   } else {
     error = '알 수 없는 오류가 발생했습니다.';
+  }
+};
+
+const openLocationSettings = () => {
+  if (Platform.OS === 'android') {
+    Linking.sendIntent('android.settings.LOCATION_SOURCE_SETTINGS'); // 안드로이드 설정 화면으로 이동
+  } else {
+    Linking.openURL('App-Prefs:root=LOCATION_SERVICES'); // iOS 위치 설정 화면으로 이동
   }
 };
 
