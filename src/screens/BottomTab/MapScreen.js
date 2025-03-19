@@ -7,8 +7,9 @@ import {
   PanResponder, // PanResponder 추가
 } from 'react-native';
 import {WebView} from 'react-native-webview';
-import {getLocation} from '../../storage/locationStorage';
-import {fetchLocation} from '../../hooks/useLocation';
+import {getLocation, saveLocationAddress} from '../../storage/locationStorage';
+import {fetchLocationAddress} from '../../hooks/useLocation';
+import {useToast} from '../../context/ToastContext';
 import {Store_getby_radius} from '../../api/storeApi';
 import throttle from 'lodash/throttle';
 import MapSearchBar from '../../components/MapScreen/MapSearchBar';
@@ -18,6 +19,7 @@ import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import generateMapScript from '../../components/MapScreen/generateMapScript';
 import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
 import {openKakaoMap} from '../../hooks/openKakaoMap';
+
 const MapScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [stores, setStores] = useState([]);
@@ -26,13 +28,14 @@ const MapScreen = ({navigation}) => {
   const webViewRef = useRef(null);
   const flatListRef = useRef(null);
   const [refresh, setRefresh] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const {showToast} = useToast();
   const [isFlatListVisible, setIsFlatListVisible] = useState(true); // 플랫리스트 상태
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
 
   useEffect(() => {
     fetchSaveLocation();
-  }, [location]);
+  }, []);
 
   useEffect(() => {
     if (refresh) {
@@ -75,8 +78,10 @@ const MapScreen = ({navigation}) => {
   };
 
   const updateNewLocation = async () => {
+    setLoading(true);
     try {
-      const newLocation = await fetchLocation();
+      const {newLocation, address} = await fetchLocationAddress();
+
       const roundedCurrentLat = location
         ? roundToPrecision(location.latitude)
         : null;
@@ -94,29 +99,23 @@ const MapScreen = ({navigation}) => {
         moveCenterMap(newLocation.latitude, newLocation.longitude);
       } else {
         console.log('false');
-        setLocation(newLocation);
-        updateMap(newLocation.latitude, newLocation.longitude, stores);
-        moveCenterMap(newLocation.latitude, newLocation.longitude);
-        const storesData = await Store_getby_radius(
-          newLocation.latitude,
-          newLocation.longitude,
-        );
-        storesData.sort((a, b) =>
-          a.locationDto.address.localeCompare(b.locationDto.address),
-        );
-        setStores(storesData);
-        setSelectedStore(storesData[0]);
-        if (webViewRef.current) {
-          const script = generateMapScript(
-            newLocation.latitude,
-            newLocation.longitude,
-            storesData,
-          );
-          webViewRef.current.injectJavaScript(script);
+        try {
+          if (newLocation && address) {
+            await saveLocationAddress(newLocation, address);
+          }
+        } catch (error) {
+          console.log(error);
         }
+        showToast('현재 위치 입니다.');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'MapScreen'}],
+        });
       }
     } catch (err) {
       console.error('위치 업데이트 중 오류 발생:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -274,7 +273,7 @@ const MapScreen = ({navigation}) => {
         navigation={navigation}
         location={location}
       />
-      {refresh && (
+      {(refresh || loading) && (
         <View style={styles.loading}>
           <Text style={styles.loadingtext}>Loading...</Text>
         </View>
@@ -297,7 +296,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(194, 194, 194, 0.7)',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,

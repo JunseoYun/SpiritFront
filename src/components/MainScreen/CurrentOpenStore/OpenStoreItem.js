@@ -11,14 +11,10 @@ const OpenStoreItem = ({store, location, navigation}) => {
   const [unit, setUnit] = useState('m');
   const calculateDistance = useDistance();
 
-  const isStoreBreak =
-    store?.businessHoursDto?.breakStartTime &&
-    store?.businessHoursDto?.breakEndTime
-      ? useStoreStatus(
-          store.businessHoursDto.breakStartTime,
-          store.businessHoursDto.breakEndTime,
-        )
-      : null;
+  const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
+    useStoreStatus(store?.operationInfoDtos);
+
+  console.log(isOpen, isBreak, store.operationInfoDtos, store.id);
 
   const calculateWalkingTime = distance => {
     const walkingSpeed = 80; // 평균 보행 속도 (m/min)
@@ -68,19 +64,17 @@ const OpenStoreItem = ({store, location, navigation}) => {
             style={styles.backimage}
             imageStyle={styles.backimagestyle}>
             {/* ✅ 브레이크 타임 표시 */}
-            {isStoreBreak && (
+            {isBreak && isOpen && (
               <View style={styles.overlay}>
                 <Text style={styles.overlayText}>
                   브레이크 타임{'\n'}
-                  {store.businessHoursDto?.breakEndTime
-                    ? `${store.businessHoursDto.breakEndTime.slice(0, 5)} 종료`
-                    : ''}
+                  {breakend ? `${breakend} 종료` : ''}
                 </Text>
                 <Text
                   style={styles.overlayNameText}
                   numberOfLines={1}
                   ellipsizeMode="tail">
-                  친구포차
+                  {store.name}
                 </Text>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   {Array.isArray(store.categories) &&
@@ -98,11 +92,9 @@ const OpenStoreItem = ({store, location, navigation}) => {
                 </View>
               </View>
             )}
-            {!isStoreBreak && (
+            {!isOpen && (
               <>
-                <Text style={styles.openOverlayText}>
-                  영업 종료 {store.businessHoursDto.closeTime.slice(0, 5)}{' '}
-                </Text>
+                <Text style={styles.openOverlayText}>영업 종료</Text>
                 <View style={styles.openOverlay}>
                   <Text
                     style={styles.overlayNameOpenText}

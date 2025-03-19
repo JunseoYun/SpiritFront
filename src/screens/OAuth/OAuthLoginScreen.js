@@ -9,8 +9,9 @@ import {
   SafeAreaView,
 } from 'react-native';
 import {
-  loginWithKakaoAccount,
+  login,
   getProfile,
+  loginWithKakaoAccount,
 } from '@react-native-seoul/kakao-login';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {appleAuth} from '@invertase/react-native-apple-authentication';
@@ -21,9 +22,10 @@ import Config from 'react-native-config';
 
 const OAuthLoginScreen = ({navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
-  const {login} = useAuth();
+  const {loginauth} = useAuth();
 
   useEffect(() => {
+    GoogleSignin.revokeAccess();
     GoogleSignin.configure({
       webClientId: Config.GOOGLE_WEB_CLIENT_ID,
       iosClientId: Config.GOOGLE_CLIENT_ID,
@@ -33,7 +35,7 @@ const OAuthLoginScreen = ({navigation}) => {
   const handleLogin = async ({type, id, socialToken}) => {
     try {
       const response = await user_login(type, id, socialToken);
-      await login(response.accessToken, response.refreshToken);
+      await loginauth(response.accessToken, response.refreshToken);
     } catch (error) {
       if (error.response) {
         const {status, data, headers} = error.response;
@@ -58,9 +60,15 @@ const OAuthLoginScreen = ({navigation}) => {
 
   const handleKaKaoLogin = async () => {
     try {
-      const token = await loginWithKakaoAccount();
-      const profile = await getProfile();
+      let token;
 
+      if (Platform.OS === 'android') {
+        token = await login();
+      }
+      if (Platform.OS === 'ios') {
+        token = await loginWithKakaoAccount();
+      }
+      const profile = await getProfile();
       const type = 'KAKAO';
       const id = profile.id;
       const socialToken = token.accessToken;
@@ -85,12 +93,7 @@ const OAuthLoginScreen = ({navigation}) => {
       const socialToken = tokens.accessToken;
       handleLogin({type, id, socialToken});
     } catch (error) {
-      // showAlert({
-      //   title: '구글 로그인 취소',
-      //   onConfirm: null,
-      //   onCancel: null,
-      //   type: 'ok',
-      // });
+      console.log(error);
     }
   };
 

@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, BackHandler} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import CategoryTapScreen from '../screens/CategoryTap/CategoryTapScreen';
 import {getLocation} from '../storage/locationStorage';
@@ -21,7 +22,7 @@ const Tab = createMaterialTopTabNavigator();
 
 const CategoryListTabbar = ({route}) => {
   const [location, setLocation] = useState(null);
-
+  const navigation = useNavigation();
   useEffect(() => {
     const fetchLocation = async () => {
       try {
@@ -33,6 +34,25 @@ const CategoryListTabbar = ({route}) => {
     };
     fetchLocation();
   }, []);
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      const backAction = () => {
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'MainBtmbar'}],
+        });
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+
+      return () => backHandler.remove(); // 컴포넌트 언마운트 시 이벤트 제거
+    }
+  }, [navigation]);
 
   const {screen} = route.params || {}; // 전달받은 screen과 location
 
