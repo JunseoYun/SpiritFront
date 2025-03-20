@@ -1,14 +1,13 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 
-import Entypo from 'react-native-vector-icons/Entypo';
-
 const OperatingHoursPreview = ({
   is24Hours,
   operatingHours,
   breakingHours,
   closedDay,
   storeTimeHandle,
+  error,
 }) => {
   const dayMapping = {
     Monday: '월',
@@ -20,8 +19,6 @@ const OperatingHoursPreview = ({
     Sunday: '일',
   };
 
-  const [isExpanded, setIsExpanded] = useState(true);
-
   // ⏳ 영업 시간이 하나라도 비어있으면 표시 안 함
   const hasValidOperatingHours = Object.values(operatingHours).some(
     ({openHour, openMinute, closedHour, closedMinute}) =>
@@ -31,7 +28,10 @@ const OperatingHoursPreview = ({
   return (
     <>
       <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>영업 시간</Text>
+        <Text style={styles.storeinputtext}>영업 시간*</Text>
+        <Pressable onPress={storeTimeHandle}>
+          <Text style={[styles.storeinputtext, {color: '#16BBFF'}]}>편집</Text>
+        </Pressable>
       </View>
 
       {/* 영업 시간 설정 전 */}
@@ -51,83 +51,66 @@ const OperatingHoursPreview = ({
         <Pressable
           onPress={storeTimeHandle}
           style={styles.operatingHoursContainer}>
-          {Object.entries(operatingHours)
-            .filter(([day]) => isExpanded || day === 'Monday') // 펼친 경우 전체, 접힌 경우 월요일만
-            .map(
-              (
-                [day, {openHour, openMinute, closedHour, closedMinute}],
-                index,
-              ) => {
-                const koreanDay = dayMapping[day];
-                const isClosed = closedDay.includes(day.toUpperCase());
-                const breakTime = breakingHours[day];
+          {Object.entries(operatingHours).map(
+            (
+              [day, {openHour, openMinute, closedHour, closedMinute}],
+              index,
+            ) => {
+              const koreanDay = dayMapping[day];
+              const isClosed = closedDay.includes(day.toUpperCase());
+              const breakTime = breakingHours[day];
 
-                return (
-                  <View key={day} style={styles.dayRow}>
-                    <View
-                      style={[
-                        styles.dayChip,
-                        isClosed && styles.closedDayChip,
-                      ]}>
-                      <Text style={[styles.dayText]}>{koreanDay}</Text>
-                    </View>
-                    {isClosed ? (
-                      <Text style={styles.closedText}>휴무</Text>
-                    ) : (
-                      <View style={styles.timeContainer}>
-                        <Text style={styles.operatingHoursText}>
-                          {`${openHour.padStart(2, '0')}:${openMinute.padStart(
+              return (
+                <View key={day} style={styles.dayRow}>
+                  <View
+                    style={[styles.dayChip, isClosed && styles.closedDayChip]}>
+                    <Text style={[styles.dayText]}>{koreanDay}</Text>
+                  </View>
+                  {isClosed ? (
+                    <Text style={styles.closedText}>휴무</Text>
+                  ) : (
+                    <View style={styles.timeContainer}>
+                      <Text style={styles.operatingHoursText}>
+                        {`${openHour.padStart(2, '0')}:${openMinute.padStart(
+                          2,
+                          '0',
+                        )} ~ `}
+                        <Text>
+                          {closedHour >= 24
+                            ? `다음날 ${String(closedHour - 24).padStart(
+                                2,
+                                '0',
+                              )}`
+                            : String(closedHour).padStart(2, '0')}
+                        </Text>
+                        :{closedMinute.padStart(2, '0')}
+                      </Text>
+                      {breakTime?.startHour && breakTime?.endHour && (
+                        <Text style={styles.breakTimeText}>
+                          {`브레이크타임 ${breakTime.startHour.padStart(
                             2,
                             '0',
-                          )} ~ `}
+                          )}:${breakTime.startMinute.padStart(2, '0')} ~ `}
                           <Text>
-                            {closedHour >= 24
-                              ? `다음날 ${String(closedHour - 24).padStart(
-                                  2,
-                                  '0',
-                                )}`
-                              : String(closedHour).padStart(2, '0')}
+                            {breakTime.endHour >= 24
+                              ? `다음날 ${String(
+                                  breakTime.endHour - 24,
+                                ).padStart(2, '0')}`
+                              : String(breakTime.endHour).padStart(2, '0')}
                           </Text>
-                          :{closedMinute.padStart(2, '0')}
+                          :{breakTime.endMinute.padStart(2, '0')}
                         </Text>
-                        {breakTime?.startHour && breakTime?.endHour && (
-                          <Text style={styles.breakTimeText}>
-                            {`브레이크타임 ${breakTime.startHour.padStart(
-                              2,
-                              '0',
-                            )}:${breakTime.startMinute.padStart(2, '0')} ~ `}
-                            <Text>
-                              {breakTime.endHour >= 24
-                                ? `다음날 ${String(
-                                    breakTime.endHour - 24,
-                                  ).padStart(2, '0')}`
-                                : String(breakTime.endHour).padStart(2, '0')}
-                            </Text>
-                            :{breakTime.endMinute.padStart(2, '0')}
-                          </Text>
-                        )}
-                      </View>
-                    )}
-                    {index === 0 && (
-                      <Pressable
-                        onPress={() => setIsExpanded(!isExpanded)}
-                        style={styles.toggleButton}>
-                        <Entypo
-                          name={
-                            isExpanded
-                              ? 'chevron-small-up'
-                              : 'chevron-small-down'
-                          }
-                          size={25}
-                          color="#5F5F5F"
-                        />
-                      </Pressable>
-                    )}
-                  </View>
-                );
-              },
-            )}
+                      )}
+                    </View>
+                  )}
+                </View>
+              );
+            },
+          )}
         </Pressable>
+      )}
+      {!hasValidOperatingHours && !is24Hours && error === 'StoreOperate' && (
+        <Text style={styles.errorMessage}>매장 영업 시간을 등록해 주세요.</Text>
       )}
     </>
   );
@@ -137,6 +120,8 @@ const styles = StyleSheet.create({
   storeinputview: {
     marginTop: 50,
     marginHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   storeinputtext: {
     fontWeight: '500',
@@ -220,6 +205,12 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     alignSelf: 'flex-end',
+  },
+  errorMessage: {
+    color: '#FF4816',
+    fontSize: 15,
+    marginTop: 5,
+    marginHorizontal: 18,
   },
 });
 

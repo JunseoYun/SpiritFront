@@ -15,9 +15,10 @@ const StoreAddress = ({
   navigation,
   onAddressSelect,
   index,
+  error,
 }) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
-  const [error, setError] = useState(null); // 에러 메시지 상태
+  const [errors, setErrors] = useState(null); // 에러 메시지 상태
 
   const isFocused = key => focusedInput === key;
 
@@ -28,11 +29,11 @@ const StoreAddress = ({
     );
 
     if (containsForbiddenWord) {
-      setError('비속어 사용 금지'); // 에러 메시지 설정
+      setErrors('비속어 사용 금지'); // 에러 메시지 설정
       return; // 입력값 업데이트 중단
     }
 
-    setError(null); // 에러 메시지 초기화
+    setErrors(null); // 에러 메시지 초기화
     setDetailedAddress(value); // 입력값 업데이트
   };
   //매장 권한 등록 뷰
@@ -66,6 +67,9 @@ const StoreAddress = ({
           )}
         </TouchableOpacity>
       </View>
+      {error === 'StoreAddress' && address === '' && (
+        <Text style={styles.errorMessage}>매장주소를 입력해주세요.</Text>
+      )}
       <View style={inputViewStyle}>
         {detailedAddress && (
           <Text style={[styles.storeinputtext, index === 1 && {color: '#333'}]}>
@@ -84,7 +88,7 @@ const StoreAddress = ({
           onFocus={() => setFocusedInput('detailedAddress')} // 활성화 상태 설정
           onBlur={() => setFocusedInput(null)} // 비활성화 상태로 변경
         />
-        {error && <Text style={styles.errorText}>{error}</Text>}
+        {errors && <Text style={styles.errorText}>{errors}</Text>}
       </View>
     </View>
   );
@@ -94,6 +98,12 @@ const styles = StyleSheet.create({
   storeinputview: {
     marginTop: 50,
     marginHorizontal: 20,
+  },
+  errorMessage: {
+    color: '#FF4816',
+    fontSize: 15,
+    marginTop: 5,
+    marginHorizontal: 18,
   },
   storeinputtext: {
     fontWeight: '500',

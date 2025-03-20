@@ -1,11 +1,17 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
 
-const StoreInfo = ({storeData, setStoreData}) => {
+const StoreInfo = ({storeData, setStoreData, error}) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
   const [errors, setErrors] = useState({}); // 각 필드별 에러 메시지 상태
+  const storeNameInputRef = useRef(null); // 매장 이름 입력 필드 ref 생성
 
+  useEffect(() => {
+    if (error === 'StoreName' && storeNameInputRef.current) {
+      storeNameInputRef.current.focus(); // 에러가 있을 경우 포커스 자동 지정
+    }
+  }, [error]);
   const handleChange = (key, value) => {
     // 금지 단어 검사
     const containsForbiddenWord = forbiddenWords.some(word =>
@@ -34,6 +40,7 @@ const StoreInfo = ({storeData, setStoreData}) => {
           <Text style={styles.storeinputtext}>매장 이름*</Text>
         )}
         <TextInput
+          ref={storeNameInputRef}
           style={[
             styles.storeinput,
             isFocused('storeName') && styles.focusedInput,
@@ -49,6 +56,9 @@ const StoreInfo = ({storeData, setStoreData}) => {
           <Text style={styles.errorText}>{errors.storeName}</Text>
         )}
       </View>
+      {error === 'StoreName' && storeData.storeName === '' && (
+        <Text style={styles.errorMessage}>매장이름을 입력해주세요.</Text>
+      )}
 
       {/* 전화번호 입력 */}
       <View style={styles.storeinputview}>
@@ -133,9 +143,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
   },
   errorText: {
-    color: 'red',
+    color: '#FF4816',
     fontSize: 14,
     marginTop: 5,
+  },
+  errorMessage: {
+    color: '#FF4816',
+    fontSize: 15,
+    marginTop: 5,
+    marginHorizontal: 18,
   },
 });
 

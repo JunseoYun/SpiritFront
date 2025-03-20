@@ -11,7 +11,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import useCustomAlert from '../../hooks/useCustomAlert';
 
-const StoreImage = ({imageUris, setImageUris}) => {
+const StoreImage = ({imageUris, setImageUris, error}) => {
   const [images, setImage] = useState([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null); // 선택된 이미지 인덱스 상태
 
@@ -66,6 +66,11 @@ const StoreImage = ({imageUris, setImageUris}) => {
         <Text style={styles.storeinputtext}>
           매장 사진 추가하기* (최대 5장)
         </Text>
+        {error === 'StoreImage' && images.length === 0 && (
+          <Text style={styles.errorMessage}>
+            매장 사진을 최소 1개 이상 업로드해 주세요.
+          </Text>
+        )}
       </View>
       <View style={styles.storeImageView}>
         <ScrollView
@@ -94,6 +99,7 @@ const StoreImage = ({imageUris, setImageUris}) => {
             <MaterialCommunityIcons name="image-plus" size={50} color="#333" />
           </Pressable>
         </ScrollView>
+
         <AlertComponent />
       </View>
     </View>
@@ -116,6 +122,11 @@ const styles = StyleSheet.create({
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
+  },
+  errorMessage: {
+    color: '#FF4816',
+    fontSize: 15,
+    marginTop: 5,
   },
   imageview: {
     flexDirection: 'row',

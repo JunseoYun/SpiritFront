@@ -25,10 +25,22 @@ const StoreConfirmationModal = ({
   alcohol,
   selectedOption,
   selectedscreenOption,
+  is24Hours,
 }) => {
   const {translateCategory} = useCategoryTranslation();
   const {translateDays} = useDayTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
+
+  const dayMapping = {
+    Monday: '월',
+    Tuesday: '화',
+    Wednesday: '수',
+    Thursday: '목',
+    Friday: '금',
+    Saturday: '토',
+    Sunday: '일',
+  };
+
   return (
     <Modal visible={visible} transparent={true} animationType="fade">
       <View style={styles.modalBackground}>
@@ -56,85 +68,89 @@ const StoreConfirmationModal = ({
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>카테고리</Text>
               <Text style={styles.infoValue}>
-                {selectedCategory && selectedCategory.length > 0
+                {selectedCategory.length > 0
                   ? selectedCategory
                       .map(category => translateCategory(category))
                       .join(', ')
                   : '카테고리가 없습니다'}
               </Text>
             </View>
+
+            {/* ✅ 영업 시간 미리보기 개선 */}
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>영업시간</Text>
-              {operatingHours.openHour && operatingHours.closedHour ? (
-                <Text style={styles.infoValue}>
-                  {operatingHours.openHour}:{operatingHours.openMinute || '00'}{' '}
-                  ~ {operatingHours.closedHour}:
-                  {operatingHours.closedMinute || '00'}
-                </Text>
-              ) : (
-                <Text style={styles.infoValue}>미정</Text>
-              )}
+              <Text style={styles.infoLabel}>영업 시간</Text>
             </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>브레이크 타임</Text>
-              {breakingHours.startHour && breakingHours.endHour ? (
-                <Text style={styles.infoValue}>
-                  {breakingHours.startHour}:{breakingHours.startMinute || '00'}{' '}
-                  ~ {breakingHours.endHour}:{breakingHours.endMinute || '00'}
-                </Text>
+            <View style={styles.operatingHoursContainer}>
+              {is24Hours ? (
+                <Text style={styles.allDayText}>24시간 영업</Text>
               ) : (
-                <Text style={styles.infoValue}>미정</Text>
-              )}
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>휴무일</Text>
-              <Text style={styles.infoValue}>
-                {closedDay && closedDay.length > 0
-                  ? translateDays(closedDay) // 중괄호 제거
-                  : '없음'}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>대표 주종</Text>
-              {alcohol && alcohol.length > 0 ? (
-                <Text style={styles.infoValue}>
-                  {alcohol
-                    .map(
-                      item =>
-                        `${translateAlcohol(item.type)} (${item.price}원)`, // 한글 변환 및 가격 표시
-                    )
-                    .join(', ')}
-                </Text>
-              ) : (
-                <Text style={styles.infoValue}>미정</Text>
+                Object.entries(operatingHours).map(
+                  ([day, {openHour, openMinute, closedHour, closedMinute}]) => {
+                    const koreanDay = dayMapping[day];
+                    const isClosed = closedDay.includes(day.toUpperCase());
+                    const breakTime = breakingHours[day];
+
+                    return (
+                      <View key={day} style={styles.dayRow}>
+                        <View
+                          style={[
+                            styles.dayChip,
+                            isClosed && styles.closedDayChip,
+                          ]}>
+                          <Text style={styles.dayText}>{koreanDay}</Text>
+                        </View>
+                        {isClosed ? (
+                          <Text style={styles.closedText}>휴무</Text>
+                        ) : (
+                          <View style={styles.timeContainer}>
+                            <Text style={styles.operatingHoursText}>
+                              {`${openHour.padStart(
+                                2,
+                                '0',
+                              )}:${openMinute.padStart(2, '0')} ~ `}
+                              {closedHour >= 24
+                                ? `다음날 ${String(closedHour - 24).padStart(
+                                    2,
+                                    '0',
+                                  )}`
+                                : String(closedHour).padStart(2, '0')}
+                              :{closedMinute.padStart(2, '0')}
+                            </Text>
+                            {breakTime?.startHour && breakTime?.endHour && (
+                              <Text style={styles.breakTimeText}>
+                                브레이크타임{' '}
+                                {breakTime.startHour.padStart(2, '0')}:
+                                {breakTime.startMinute.padStart(2, '0')} ~{' '}
+                                {breakTime.endHour >= 24
+                                  ? `다음날 ${String(
+                                      breakTime.endHour - 24,
+                                    ).padStart(2, '0')}`
+                                  : String(breakTime.endHour).padStart(2, '0')}
+                                :{breakTime.endMinute.padStart(2, '0')}
+                              </Text>
+                            )}
+                          </View>
+                        )}
+                      </View>
+                    );
+                  },
+                )
               )}
             </View>
 
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>8인 이상 단체 가능 여부</Text>
-              <Text style={styles.infoValue}>
-                {selectedOption ? '가능' : '불가능'}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>매장 내 스크린(TV) 설치 여부</Text>
-              <Text style={styles.infoValue}>
-                {selectedscreenOption ? '설치' : '미설치'}
-              </Text>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={onClose}>
+                <Text style={styles.modalCancelButtonText}>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={onConfirm}>
+                <Text style={styles.modalButtonText}>완료</Text>
+              </TouchableOpacity>
             </View>
           </ScrollView>
-          <View style={styles.modalButtonContainer}>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.cancelButton]}
-              onPress={onClose}>
-              <Text style={styles.modalCancelButtonText}>취소</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.confirmButton]}
-              onPress={onConfirm}>
-              <Text style={styles.modalButtonText}>완료</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     </Modal>
@@ -162,53 +178,63 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     textAlign: 'center',
   },
-  scrollContainer: {
-    paddingBottom: 20,
+  operatingHoursContainer: {
+    backgroundColor: '#FFF',
+    padding: 12,
+    borderRadius: 12,
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  infoRow: {
+  dayRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-    paddingBottom: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 0.5,
+    borderColor: '#E0E0E0',
   },
-  infoLabel: {
+  dayChip: {
+    backgroundColor: '#16BBFF',
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginRight: 10,
+  },
+  closedDayChip: {
+    backgroundColor: '#B0B0B0',
+  },
+  dayText: {
+    fontSize: 14,
+    color: '#FFF',
+    fontWeight: '600',
+  },
+  timeContainer: {
+    flex: 1,
+  },
+  operatingHoursText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#555',
-  },
-  infoValue: {
-    fontSize: 16,
     color: '#333',
   },
-  modalButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
+  breakTimeText: {
+    fontSize: 13,
+    color: '#999',
+    marginTop: 3,
   },
-  modalButton: {
+  closedText: {
+    fontSize: 15,
+    color: '#444',
+    fontWeight: '500',
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginHorizontal: 10,
   },
-  cancelButton: {
-    backgroundColor: '#F2F2F2',
-  },
-  confirmButton: {
-    backgroundColor: '#16BBFF',
-  },
-  modalButtonText: {
+  allDayText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  modalCancelButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#16BBFF',
+    textAlign: 'center',
+    paddingVertical: 10,
   },
 });
 
