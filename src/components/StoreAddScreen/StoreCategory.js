@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 
-const StoreCategory = ({selectedCategory, setSelectedCategory}) => {
+const StoreCategory = ({selectedCategory, setSelectedCategory, error}) => {
   const {translateCategory} = useCategoryTranslation();
 
   const [visible, setVisible] = useState(false);
@@ -54,6 +54,11 @@ const StoreCategory = ({selectedCategory, setSelectedCategory}) => {
             <Text style={styles.inputHideText}>카테고리*</Text>
           )}
         </TouchableOpacity>
+        {error === 'StoreCategory' && selectedCategory.length === 0 && (
+          <Text style={styles.errorMessage}>
+            매장 카테고리를 하나 이상 선택해주세요.
+          </Text>
+        )}
       </View>
 
       <Modal visible={visible} animationType="fade" transparent={true}>
@@ -191,6 +196,11 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     paddingLeft: 1,
     color: '#999',
+  },
+  errorMessage: {
+    color: '#FF4816',
+    fontSize: 15,
+    marginTop: 5,
   },
   modalBackground: {
     flex: 1,

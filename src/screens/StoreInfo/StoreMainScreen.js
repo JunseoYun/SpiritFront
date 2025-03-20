@@ -323,7 +323,7 @@ const StoreMainScreen = ({navigation}) => {
       },
     });
   };
-
+  console.log(storedata);
   return (
     <>
       {!isUpdate && (

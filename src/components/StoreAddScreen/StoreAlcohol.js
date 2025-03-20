@@ -23,7 +23,7 @@ const alcohols = [
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
-const StoreAlcohol = ({alcohol, setAlcohol}) => {
+const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
   const [expandedIndex, setExpandedIndex] = useState(null); // 현재 확장된 항목 인덱스
 
   const handleAlcoholChange = (index, key, value) => {
@@ -40,6 +40,10 @@ const StoreAlcohol = ({alcohol, setAlcohol}) => {
   const toggleExpand = index => {
     setExpandedIndex(expandedIndex === index ? null : index); // 현재 항목만 확장
   };
+
+  const hasValidAlcohol = alcohol.some(
+    item => item.type.trim() && item.price > 0,
+  );
 
   return (
     <View style={styles.container}>
@@ -120,6 +124,11 @@ const StoreAlcohol = ({alcohol, setAlcohol}) => {
           )}
         </View>
       ))}
+      {error === 'StoreDrink' && !hasValidAlcohol && (
+        <Text style={styles.errorMessage}>
+          대표 주종을 입력하고 가격을 설정해 주세요.
+        </Text>
+      )}
     </View>
   );
 };
@@ -222,6 +231,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  errorMessage: {
+    color: '#FF4816',
+    fontSize: 15,
+    marginTop: 5,
   },
 });
 

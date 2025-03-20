@@ -66,7 +66,7 @@ const useCustomAlert = () => {
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonDeleteText}>취소</Text>
+                      <Text style={styles.buttonText}>취소</Text>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity

@@ -1,4 +1,4 @@
-import React, {useState, useLayoutEffect} from 'react';
+import React, {useState, useLayoutEffect, useRef} from 'react';
 import {
   ScrollView,
   Text,
@@ -21,7 +21,16 @@ import StoreInfo from '../../components/StoreAddScreen/StoreInfo';
 import StoreConfirmationModal from '../../components/StoreAddScreen/StoreConfirmationModal';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import OperatingHoursPreview from '../../components/StoreAddScreen/OperatingHoursPreview';
+
 const StoreAddScreen = ({navigation, route}) => {
+  const scrollViewRef = useRef(null); // 스크롤뷰 참조
+  const storeInfoRef = useRef(null);
+  const storeAddressRef = useRef(null);
+  const storeCategoryRef = useRef(null);
+  const storeOperateRef = useRef(null);
+  const storeDrinkRef = useRef(null);
+  const storeImageRef = useRef(null);
+
   const [coords, setCoords] = useState({latitude: 0, longitude: 0});
   const [address, setAddress] = useState('');
   const [detailedAddress, setDetailedAddress] = useState('');
@@ -39,6 +48,7 @@ const StoreAddScreen = ({navigation, route}) => {
     storeNumber: '',
     storeContent: '',
   });
+  const [error, setError] = useState('');
 
   const [operatingHours, setOperatingHours] = useState({
     Monday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
@@ -80,51 +90,68 @@ const StoreAddScreen = ({navigation, route}) => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const scrollToError = ref => {
+    if (ref?.current) {
+      ref.current.measureLayout(
+        scrollViewRef.current,
+        (x, y) => {
+          scrollViewRef.current.scrollTo({y: y - 100, animated: true});
+        },
+        () => console.log('스크롤 이동 실패'),
+      );
+    }
+  };
+
   const confirmSubmission = () => {
     if (!storeData.storeName.trim()) {
-      showAlert({
-        title: '필수 정보 미입력',
-        message: '매장 이름을 입력해 주세요.',
-      });
+      setError('StoreName');
+      scrollToError(storeInfoRef);
       return;
     }
     if (!address.trim()) {
-      showAlert({
-        title: '필수 정보 미입력',
-        message: '매장 주소를 입력해 주세요.',
-      });
-      return;
-    }
-    if (!operatingHours.openHour || !operatingHours.closedHour) {
-      showAlert({
-        title: '필수 정보 미입력',
-        message: '매장 영업 시간을 입력해 주세요.',
-      });
+      setError('StoreAddress');
+      scrollToError(storeAddressRef);
       return;
     }
     if (!selectedCategory.length) {
-      showAlert({
-        title: '필수 정보 미입력',
-        message: '매장 카테고리를 선택해 주세요.',
-      });
+      setError('StoreCategory');
+      scrollToError(storeCategoryRef);
       return;
     }
-    if (alcohol[0].type === '') {
-      showAlert({
-        title: '필수 정보 미입력',
-        message: '대표 주종을 선택해 주세요.',
-      });
-      return;
-    }
-    if (!imageUris.length) {
-      showAlert({
-        title: '필수 정보 미입력',
-        message: '매장 이미지를 최소 1개 이상 \n업로드해 주세요.',
-      });
+    const hasEmptyOperatingHours = Object.values(operatingHours).some(
+      ({openHour, openMinute, closedHour, closedMinute}) =>
+        !openHour || !openMinute || !closedHour || !closedMinute,
+    );
+
+    if (hasEmptyOperatingHours) {
+      setError('StoreOperate');
+      scrollToError(storeOperateRef);
       return;
     }
 
-    setIsModalVisible(true); // 모든 값이 유효하면 모달 열기
+    const hasValidAlcohol = alcohol.some(
+      item => item.type.trim() && item.price > 0,
+    );
+
+    if (!hasValidAlcohol) {
+      setError('StoreDrink');
+      scrollToError(storeDrinkRef);
+      return;
+    }
+
+    if (!imageUris.length) {
+      setError('StoreImage');
+      scrollToError(storeImageRef);
+      return;
+    }
+    showAlert({
+      title: '매장 등록',
+      message: '매장을 등록하시겠습니까?',
+      onConfirm: () => StoreAdd(),
+      onCancel: null,
+      type: 'confirm',
+    });
+    // setIsModalVisible(true); // 모든 값이 유효하면 모달 열기
   };
 
   useLayoutEffect(() => {
@@ -156,17 +183,60 @@ const StoreAddScreen = ({navigation, route}) => {
     setCoords(coords);
   };
 
+  const adjustTime = time => {
+    if (!time) return null; // 값이 없으면 그대로 반환
+
+    const [hour, minute] = time.split(':').map(Number);
+    const adjustedHour = hour >= 24 ? hour - 24 : hour; // 24 이상이면 -24 처리
+    return `${adjustedHour.toString().padStart(2, '0')}:${minute
+      .toString()
+      .padStart(2, '0')}`;
+  };
+
   const StoreAdd = async () => {
     setIsModalVisible(false); // 모달 닫기
     const imageFiles = imageUris.map(uri => ({
       file: uri, // 이미지 URI를 파일로 전달
     }));
+    const operationInfoDtos = Object.keys(operatingHours).map(day => {
+      const upperCaseDay = day.toUpperCase(); // 요일 변환 ("Monday" -> "MONDAY")
+      const isClosed = closedDay.includes(upperCaseDay); // 휴무 여부 확인
+
+      return {
+        dayOfWeek: upperCaseDay,
+        isClosed,
+        openTime: isClosed
+          ? ''
+          : `${operatingHours[day].openHour}:${operatingHours[day].openMinute}`,
+        closeTime: isClosed
+          ? ''
+          : adjustTime(
+              `${operatingHours[day].closedHour}:${operatingHours[day].closedMinute}`,
+            ),
+        breakStartTime:
+          isClosed ||
+          !breakingHours[day].startHour ||
+          !breakingHours[day].startMinute
+            ? ''
+            : `${breakingHours[day].startHour}:${breakingHours[day].startMinute}`,
+        breakEndTime:
+          isClosed ||
+          !breakingHours[day].endHour ||
+          !breakingHours[day].endMinute
+            ? ''
+            : adjustTime(
+                `${breakingHours[day].endHour}:${breakingHours[day].endMinute}`,
+              ),
+      };
+    });
+    console.log(is24Hours);
     var data = {
       files: imageUris,
       createStoreDto: {
         contact: storeData.storeNumber,
-        closedDays: closedDay,
+        isAlwaysOpen: is24Hours,
         hasScreen: selectedscreenOption,
+        ...(!is24Hours && {operationInfoDtos: operationInfoDtos}),
         locationDto: {
           address: address,
           addressDetail: detailedAddress,
@@ -174,19 +244,7 @@ const StoreAddScreen = ({navigation, route}) => {
           longitude: coords.longitude,
         },
         name: storeData.storeName,
-        businessHoursDto: {
-          openTime: `${operatingHours.openHour}:${operatingHours.openMinute}`,
-          closeTime: `${operatingHours.closedHour}:${operatingHours.closedMinute}`,
-          breakStartTime:
-            breakingHours.startHour && breakingHours.startMinute
-              ? `${breakingHours.startHour}:${breakingHours.startMinute}`
-              : '', // 값이 없으면 빈 문자열
-          breakEndTime:
-            breakingHours.endHour && breakingHours.endMinute
-              ? `${breakingHours.endHour}:${breakingHours.endMinute}`
-              : '', // 값이 없으면 빈 문자열
-        },
-        mainDrinkDtos: alcohol,
+        mainDrinkDtos: alcohol.filter(drink => drink.type && drink.price > 0),
         isGroupAvailable: selectedOption,
         categories: selectedCategory.filter(category => category !== '-'),
         description: storeData.storeContent,
@@ -219,108 +277,43 @@ const StoreAddScreen = ({navigation, route}) => {
 
   return (
     <>
-      <ScrollView style={styles.catainer}>
+      <ScrollView ref={scrollViewRef} style={styles.container}>
         <SafeAreaView style={styles.storetopview}>
-          <StoreInfo storeData={storeData} setStoreData={setStoreData} />
-          <StoreAddress
-            address={address}
-            detailedAddress={detailedAddress}
-            setDetailedAddress={setDetailedAddress}
-            navigation={navigation}
-            onAddressSelect={handleAddressSelect} // 콜백 전달
-          />
-
-          <StoreCategory
-            selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
-          />
-          {/* <StoreOperatingHours
-            operatingHours={operatingHours}
-            setOperatingHours={setOperatingHours}
-          />
-          <StoreBreakingHours
-            breakingHours={breakingHours}
-            setBreakingHours={setBreakingHours}
-          />
-          <StoreClosedDay closedDay={closedDay} setClosedDay={setClosedDay} /> */}
-
-          {/* <View style={styles.storeinputview}>
-            <Text style={styles.storeinputtext}>매장 영업 시간</Text>
+          <View ref={storeInfoRef}>
+            <StoreInfo
+              storeData={storeData}
+              setStoreData={setStoreData}
+              error={error}
+            />
           </View>
-          <Pressable onPress={storeTimeHandle}>
-            <Text>영업 시간 설정</Text>
-          </Pressable> */}
-          <OperatingHoursPreview
-            storeTimeHandle={storeTimeHandle}
-            is24Hours={is24Hours}
-            operatingHours={operatingHours}
-            breakingHours={breakingHours}
-            closedDay={closedDay}
-          />
-          {/*          
-          <View style={styles.operatingHoursContainer}>
-            {is24Hours ? (
-              <Text style={styles.operatingHoursText}>24시간 영업</Text>
-            ) : (
-              Object.entries(operatingHours).map(
-                ([day, {openHour, openMinute, closedHour, closedMinute}]) => {
-                  const dayMapping = {
-                    Monday: '월',
-                    Tuesday: '화',
-                    Wednesday: '수',
-                    Thursday: '목',
-                    Friday: '금',
-                    Saturday: '토',
-                    Sunday: '일',
-                  };
-                  const koreanDay = dayMapping[day]; // 요일을 한글로 변환
-                  const isClosed = closedDay.includes(day.toUpperCase());
-                  const breakTime = breakingHours[day];
 
-                  return (
-                    <View key={day} style={styles.dayRow}>
-                      <Text style={styles.dayLabel}>{koreanDay}</Text>
-                      {isClosed ? (
-                        <Text style={styles.closedText}>휴무</Text>
-                      ) : (
-                        <View style={styles.timeContainer}>
-                          <Text style={styles.operatingHoursText}>
-                            {openHour && closedHour
-                              ? `${openHour.padStart(
-                                  2,
-                                  '0',
-                                )}:${openMinute.padStart(2, '0')} ~ ${
-                                  closedHour >= 24
-                                    ? `${String(closedHour - 24).padStart(
-                                        2,
-                                        '0',
-                                      )}`
-                                    : String(closedHour).padStart(2, '0')
-                                }:${closedMinute.padStart(2, '0')}`
-                              : '미설정'}
-                          </Text>
-                          {breakTime?.startHour && breakTime?.endHour ? (
-                            <Text style={styles.breakTimeText}>
-                              브레이크타임{' '}
-                              {breakTime?.startHour.padStart(2, '0')}:
-                              {breakTime?.startMinute.padStart(2, '0')} ~{' '}
-                              {breakTime?.endHour >= 24
-                                ? `${String(breakTime.endHour - 24).padStart(
-                                    2,
-                                    '0',
-                                  )}`
-                                : String(breakTime?.endHour).padStart(2, '0')}
-                              :{breakTime?.endMinute.padStart(2, '0')}
-                            </Text>
-                          ) : null}
-                        </View>
-                      )}
-                    </View>
-                  );
-                },
-              )
-            )}
-          </View> */}
+          <View ref={storeAddressRef}>
+            <StoreAddress
+              address={address}
+              detailedAddress={detailedAddress}
+              setDetailedAddress={setDetailedAddress}
+              navigation={navigation}
+              onAddressSelect={handleAddressSelect} // 콜백 전달
+              error={error}
+            />
+          </View>
+          <View ref={storeCategoryRef}>
+            <StoreCategory
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              error={error}
+            />
+          </View>
+          <View ref={storeOperateRef}>
+            <OperatingHoursPreview
+              storeTimeHandle={storeTimeHandle}
+              is24Hours={is24Hours}
+              operatingHours={operatingHours}
+              breakingHours={breakingHours}
+              closedDay={closedDay}
+              error={error}
+            />
+          </View>
 
           <StoreGroup
             selectedOption={selectedOption}
@@ -330,16 +323,28 @@ const StoreAddScreen = ({navigation, route}) => {
             selectedscreenOption={selectedscreenOption}
             setselectedscreenOption={setselectedscreenOption}
           />
+          <View ref={storeDrinkRef}>
+            <StoreAlcohol
+              alcohol={alcohol}
+              setAlcohol={setAlcohol}
+              error={error}
+            />
+          </View>
+          <View ref={storeImageRef}>
+            <StoreImage
+              imageUris={imageUris}
+              setImageUris={setImageUris}
+              error={error}
+            />
+          </View>
 
-          <StoreAlcohol alcohol={alcohol} setAlcohol={setAlcohol} />
-          <StoreImage imageUris={imageUris} setImageUris={setImageUris} />
           <Pressable style={styles.savebutton} onPress={confirmSubmission}>
             <Text style={styles.savebuttontext}>작성 완료</Text>
           </Pressable>
         </SafeAreaView>
       </ScrollView>
 
-      <StoreConfirmationModal
+      {/* <StoreConfirmationModal
         visible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
         onConfirm={StoreAdd}
@@ -353,7 +358,8 @@ const StoreAddScreen = ({navigation, route}) => {
         alcohol={alcohol}
         selectedOption={selectedOption}
         selectedscreenOption={selectedscreenOption}
-      />
+        is24Hours={is24Hours}
+      /> */}
 
       <AlertComponent />
     </>
@@ -361,7 +367,7 @@ const StoreAddScreen = ({navigation, route}) => {
 };
 
 const styles = StyleSheet.create({
-  catainer: {
+  container: {
     backgroundColor: 'white',
   },
   storetopview: {

@@ -1409,9 +1409,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#EAEAEA',
   },
-  closeButton: {
-    borderRadius: 5,
-  },
+
   closeButtonText: {
     color: '#fff',
     fontWeight: 'bold',
