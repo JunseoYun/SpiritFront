@@ -6,6 +6,7 @@ const OperatingHoursToggle = ({
   setIsSameEveryday,
   setIsSameEveryTime,
   handleBottomClose,
+  setIs24,
 }) => {
   return (
     <View>
@@ -34,6 +35,7 @@ const OperatingHoursToggle = ({
             setIsSameEveryday(false);
             setIsSameEveryTime(false);
             handleBottomClose();
+            setIs24(false);
           }}>
           <Text
             style={

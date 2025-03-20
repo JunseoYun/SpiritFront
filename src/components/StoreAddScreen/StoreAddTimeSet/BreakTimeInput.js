@@ -7,7 +7,6 @@ const BreakTimeInput = ({
   isStartTime,
   isEndTime,
   wrongBreak,
-  isNextBreaking,
   handleTimePickerToggle,
 }) => {
   return (
@@ -30,7 +29,7 @@ const BreakTimeInput = ({
               isStartTime && {color: '#16BBFF'},
               isStartTime && wrongBreak && {color: '#FF4816'},
             ]}>
-            {`${sameStartTime.hour}:${sameStartTime.minute}`}
+            {`${sameStartTime.startHour}:${sameStartTime.startMinute}`}
           </Text>
         </Pressable>
         <Text style={styles.separator}>~</Text>
@@ -42,14 +41,28 @@ const BreakTimeInput = ({
               wrongBreak && {backgroundColor: 'rgba(255, 50, 50, 0.2)'},
           ]}
           onPress={() => handleTimePickerToggle('end')}>
+          {sameEndTime.endHour >= 24 && (
+            <Text
+              style={[
+                styles.nextText,
+                isEndTime &&
+                  wrongBreak && {color: '#FF4816', borderColor: '#FF4816'},
+              ]}>
+              {'다음날'}
+            </Text>
+          )}
+
           <Text
             style={[
               styles.timeText,
               isEndTime && {color: '#16BBFF'},
               isEndTime && wrongBreak && {color: '#FF4816'},
             ]}>
-            {isNextBreaking && '다음날'}{' '}
-            {`${sameEndTime.hour}:${sameEndTime.minute}`}
+            {`${
+              sameEndTime.endHour >= 24
+                ? (sameEndTime.endHour - 24).toString().padStart(2, '0')
+                : sameEndTime.endHour.toString().padStart(2, '0')
+            }:${sameEndTime.endMinute.toString().padStart(2, '0')}`}
           </Text>
         </Pressable>
       </View>
@@ -85,6 +98,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     flex: 1,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  nextText: {
+    fontSize: 12,
+    color: '#16BBFF',
+    fontWeight: 600,
+    borderWidth: 1,
+    borderColor: '#16BBFF',
+    padding: 3,
+    marginRight: 5,
+    borderRadius: 3,
   },
   timeText: {
     fontWeight: '600',
