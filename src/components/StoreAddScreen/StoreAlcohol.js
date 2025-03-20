@@ -43,7 +43,7 @@ const StoreAlcohol = ({alcohol, setAlcohol}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>대표주종*</Text>
+      <Text style={styles.title}>대표주종* (최대 2종)</Text>
       {[0, 1].map((_, index) => (
         <View key={index} style={styles.alcoholRow}>
           {/* 간략 정보 또는 기본 보기 */}

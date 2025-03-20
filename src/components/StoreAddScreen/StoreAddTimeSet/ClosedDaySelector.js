@@ -17,6 +17,7 @@ const ClosedDaySelector = ({
   setIs24,
   setIs24Hours,
   handleBottomClose,
+  setIsAllClosed,
 }) => {
   const handleClosedToggle = () => {
     let isInvalid = !isClosed;
@@ -35,8 +36,9 @@ const ClosedDaySelector = ({
     if (!isClosed) {
       setLocalClosedDay([]);
       setClosedDay([]);
+      setIsAllClosed(false); // 🚨 모든 요일 해제 시 isAllClosed도 false로 초기화
     }
-  }, [isClosed, setLocalClosedDay, setClosedDay]);
+  }, [isClosed, setLocalClosedDay, setClosedDay, setIsAllClosed]);
 
   const toggleDay = dayValue => {
     setLocalClosedDay(prev => {
@@ -47,7 +49,8 @@ const ClosedDaySelector = ({
         newSet.add(dayValue);
       }
       const newDays = Array.from(newSet);
-      setClosedDay(newDays);
+      setIsAllClosed(newDays.length === days.length);
+
       return newDays;
     });
 
@@ -93,6 +96,11 @@ const ClosedDaySelector = ({
             </TouchableOpacity>
           ))}
         </View>
+      )}
+      {isClosed && localClosedDay.length === days.length && (
+        <Text style={styles.wrongText}>
+          모든 요일을 휴일로 설정할 수 없어요
+        </Text>
       )}
     </View>
   );
@@ -155,6 +163,13 @@ const styles = StyleSheet.create({
   },
   selectedDayText: {
     color: '#FFF',
+  },
+  wrongText: {
+    marginHorizontal: 18,
+    marginTop: 5,
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#FF4816',
   },
 });
 

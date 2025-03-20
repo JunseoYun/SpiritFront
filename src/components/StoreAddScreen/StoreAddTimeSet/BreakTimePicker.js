@@ -1,47 +1,42 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import TimePicker from '../../../hooks/TimePicker';
-
+import CloseTimePicker from '../../../hooks/CloseTimePicker';
 const BreakTimePicker = ({
   isStartTime,
   sameStartTime,
   sameEndTime,
   wrongBreak,
-  handleSameBreaking,
+  handleTimeChange,
   handleTimePickerToggle,
+  breakErrorMessage,
 }) => {
   return (
     <View style={styles.pickerTopView}>
       <View style={styles.pickerWrapper}>
-        <TimePicker
-          selectedHour={isStartTime ? sameStartTime.hour : sameEndTime.hour}
-          selectedMinute={
-            isStartTime ? sameStartTime.minute : sameEndTime.minute
-          }
-          onHourChange={value =>
-            isStartTime
-              ? handleSameBreaking('startHour', value)
-              : handleSameBreaking('endHour', value)
-          }
-          onMinuteChange={value =>
-            isStartTime
-              ? handleSameBreaking('startMinute', value)
-              : handleSameBreaking('endMinute', value)
-          }
-        />
-        {wrongBreak && (
-          <Text style={styles.wrongText}>
-            브레이크타임은 영업 시간에 포함되도록 설정해주세요.
-          </Text>
+        {isStartTime ? (
+          <TimePicker
+            selectedHour={sameStartTime.startHour}
+            selectedMinute={sameStartTime.startMinute}
+            onHourChange={value =>
+              handleTimeChange('sameStartTime', 'startHour', value)
+            }
+            onMinuteChange={value =>
+              handleTimeChange('sameStartTime', 'startMinute', value)
+            }
+          />
+        ) : (
+          <CloseTimePicker
+            selectedHour={sameEndTime.endHour}
+            selectedMinute={sameEndTime.endMinute}
+            onHourChange={value =>
+              handleTimeChange('sameEndTime', 'endHour', value)
+            }
+            onMinuteChange={value =>
+              handleTimeChange('sameEndTime', 'endMinute', value)
+            }
+          />
         )}
-        <Pressable
-          style={[
-            styles.pickerOkView,
-            wrongBreak && {backgroundColor: '#F2F2F2'},
-          ]}
-          onPress={() => handleTimePickerToggle(isStartTime ? 'start' : 'end')}>
-          <Text style={styles.pickerOkText}>확인</Text>
-        </Pressable>
       </View>
     </View>
   );

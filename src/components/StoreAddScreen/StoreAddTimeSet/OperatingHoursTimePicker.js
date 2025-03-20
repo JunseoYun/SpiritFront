@@ -1,55 +1,40 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import TimePicker from '../../../hooks/TimePicker';
+import CloseTimePicker from '../../../hooks/CloseTimePicker';
 
 const OperatingHoursTimePicker = ({
   isOpenTime,
   sameOpenTime,
   sameCloseTime,
-  wrongBreak,
-  isSameOperating,
-  handleSameOperating,
-  handleTimePickerToggle,
+  handleTimeChange,
 }) => {
   return (
     <View style={styles.pickerTopView}>
       <View style={styles.pickerWrapper}>
-        <TimePicker
-          selectedHour={isOpenTime ? sameOpenTime.hour : sameCloseTime.hour}
-          selectedMinute={
-            isOpenTime ? sameOpenTime.minute : sameCloseTime.minute
-          }
-          onHourChange={value =>
-            isOpenTime
-              ? handleSameOperating('openHour', value)
-              : handleSameOperating('closedHour', value)
-          }
-          onMinuteChange={value =>
-            isOpenTime
-              ? handleSameOperating('openMinute', value)
-              : handleSameOperating('closedMinute', value)
-          }
-        />
-        {wrongBreak && (
-          <Text style={styles.wrongText}>
-            영업 시간은 브레이크타임을 포함하도록 설정해주세요.
-          </Text>
+        {isOpenTime ? (
+          <TimePicker
+            selectedHour={sameOpenTime.openHour}
+            selectedMinute={sameOpenTime.openMinute}
+            onHourChange={value =>
+              handleTimeChange('sameOpenTime', 'openHour', value)
+            }
+            onMinuteChange={value =>
+              handleTimeChange('sameOpenTime', 'openMinute', value)
+            }
+          />
+        ) : (
+          <CloseTimePicker
+            selectedHour={sameCloseTime.closedHour}
+            selectedMinute={sameCloseTime.closedMinute}
+            onHourChange={value =>
+              handleTimeChange('sameCloseTime', 'closedHour', value)
+            }
+            onMinuteChange={value =>
+              handleTimeChange('sameCloseTime', 'closedMinute', value)
+            }
+          />
         )}
-        {isSameOperating && (
-          <Text style={styles.wrongText}>
-            영업 시작 시간과 종료 시간을 다르게 설정해주세요.
-          </Text>
-        )}
-
-        <Pressable
-          style={[
-            styles.pickerOkView,
-            wrongBreak && {backgroundColor: '#F2F2F2'},
-            isSameOperating && {backgroundColor: '#F2F2F2'},
-          ]}
-          onPress={() => handleTimePickerToggle(isOpenTime ? 'open' : 'close')}>
-          <Text style={styles.pickerOkText}>확인</Text>
-        </Pressable>
       </View>
     </View>
   );

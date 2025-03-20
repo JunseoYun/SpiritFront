@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 
-const StoreGroup = ({ selectedOption, setSelectedOption }) => {
+const StoreGroup = ({selectedOption, setSelectedOption}) => {
   const handleCheckBoxChange = index => {
     if (index === 0 && selectedOption !== true) {
       setSelectedOption(true);

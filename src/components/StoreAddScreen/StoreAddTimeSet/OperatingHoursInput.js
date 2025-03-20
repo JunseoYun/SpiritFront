@@ -8,7 +8,6 @@ const OperatingHoursInput = ({
   isCloseTime,
   wrongBreak,
   isSameOperating,
-  isNextOperating,
   handleTimePickerToggle,
 }) => {
   return (
@@ -30,7 +29,7 @@ const OperatingHoursInput = ({
             isOpenTime && wrongBreak && {color: '#FF4816'},
             isOpenTime && isSameOperating && {color: '#FF4816'},
           ]}>
-          {`${sameOpenTime.hour}:${sameOpenTime.minute}`}
+          {`${sameOpenTime.openHour}:${sameOpenTime.openMinute}`}
         </Text>
       </Pressable>
       <Text style={styles.separator}>~</Text>
@@ -44,6 +43,20 @@ const OperatingHoursInput = ({
             isSameOperating && {backgroundColor: 'rgba(255, 50, 50, 0.2)'},
         ]}
         onPress={() => handleTimePickerToggle('close')}>
+        {sameCloseTime.closedHour >= 24 && (
+          <Text
+            style={[
+              styles.nextText,
+
+              isCloseTime &&
+                wrongBreak && {color: '#FF4816', borderColor: '#FF4816'},
+              isCloseTime &&
+                isSameOperating && {color: '#FF4816', borderColor: '#FF4816'},
+            ]}>
+            {'다음날'}
+          </Text>
+        )}
+
         <Text
           style={[
             styles.timeText,
@@ -51,8 +64,11 @@ const OperatingHoursInput = ({
             isCloseTime && wrongBreak && {color: '#FF4816'},
             isCloseTime && isSameOperating && {color: '#FF4816'},
           ]}>
-          {isNextOperating && '다음날'}{' '}
-          {`${sameCloseTime.hour}:${sameCloseTime.minute}`}
+          {`${
+            sameCloseTime.closedHour >= 24
+              ? (sameCloseTime.closedHour - 24).toString().padStart(2, '0')
+              : sameCloseTime.closedHour.toString().padStart(2, '0')
+          }:${sameCloseTime.closedMinute.toString().padStart(2, '0')}`}
         </Text>
       </Pressable>
     </View>
@@ -75,6 +91,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     flex: 1,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  nextText: {
+    fontSize: 12,
+    color: '#16BBFF',
+    fontWeight: 600,
+    borderWidth: 1,
+    borderColor: '#16BBFF',
+    padding: 3,
+    marginRight: 5,
+    borderRadius: 3,
   },
   timeText: {
     fontWeight: '600',

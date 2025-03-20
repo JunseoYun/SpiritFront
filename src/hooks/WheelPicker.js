@@ -8,6 +8,7 @@ const WheelPicker = ({
   itemHeight = 40,
   visibleCount = 5,
   style,
+  type,
 }) => {
   const scrollRef = useRef(null);
   const isScrollingRef = useRef(false);
@@ -96,8 +97,22 @@ const WheelPicker = ({
                 style={{
                   fontSize: 18,
                   color: idx === selectedIndex ? '#000' : '#999',
+                  textAlign: 'center',
+                  alignItems: 'center',
+                  paddingHorizontal: 5,
                 }}>
-                {item}
+                {type === 'hour' && item >= 24 ? (
+                  idx === selectedIndex ? (
+                    <>
+                      <Text style={styles.nextText}>{'다음날  '}</Text>
+                      {(item - 24).toString().padStart(2, '0')}
+                    </>
+                  ) : (
+                    (item - 24).toString().padStart(2, '0')
+                  )
+                ) : (
+                  item.toString().padStart(2, '0')
+                )}
               </Text>
             </View>
           </Pressable>
@@ -118,5 +133,12 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  nextText: {
+    fontWeight: 500,
+    fontSize: 15,
+    textAlign: 'center',
+    alignSelf: 'center',
+    color: '#4b4b4b',
   },
 });

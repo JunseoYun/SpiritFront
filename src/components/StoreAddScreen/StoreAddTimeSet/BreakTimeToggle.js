@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   addBreakButton: {
     marginTop: 20,
     alignItems: 'center',
-    paddingBottom: 100,
+    marginBottom: 100,
   },
   addBreakText: {
     color: '#0af',

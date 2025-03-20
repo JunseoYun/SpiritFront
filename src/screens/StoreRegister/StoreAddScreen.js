@@ -5,6 +5,7 @@ import {
   Pressable,
   SafeAreaView,
   StyleSheet,
+  View,
 } from 'react-native';
 import {StoreRegister} from '../../api/storeApi';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
@@ -19,6 +20,7 @@ import StoreTV from '../../components/StoreAddScreen/StoreTV';
 import StoreInfo from '../../components/StoreAddScreen/StoreInfo';
 import StoreConfirmationModal from '../../components/StoreAddScreen/StoreConfirmationModal';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import OperatingHoursPreview from '../../components/StoreAddScreen/OperatingHoursPreview';
 const StoreAddScreen = ({navigation, route}) => {
   const [coords, setCoords] = useState({latitude: 0, longitude: 0});
   const [address, setAddress] = useState('');
@@ -29,8 +31,6 @@ const StoreAddScreen = ({navigation, route}) => {
   const [closedDay, setClosedDay] = useState([]);
   const [alcohol, setAlcohol] = useState([{type: '', price: 0}]);
   const [is24Hours, setIs24Hours] = useState(false);
-  const [isNextStart, setIsNextStart] = useState(false);
-  const [isNextBreak, setIsNextBreak] = useState(false);
   const [imageUris, setImageUris] = useState([]); // 이미지 배열 상태
   const [isSameEveryTime, setIsSameEveryTime] = useState(true);
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -59,6 +59,8 @@ const StoreAddScreen = ({navigation, route}) => {
     Saturday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
     Sunday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
   });
+
+  const [hasBreaking, setHasBreaking] = useState(false);
   const storeTimeHandle = () => {
     navigation.navigate('StoreAddTimeSetScreen', {
       operatingHours,
@@ -69,12 +71,10 @@ const StoreAddScreen = ({navigation, route}) => {
       setClosedDay,
       is24Hours,
       setIs24Hours,
-      isNextStart,
-      setIsNextStart,
-      isNextBreak,
-      setIsNextBreak,
       isSameEveryTime,
       setIsSameEveryTime,
+      hasBreaking,
+      setHasBreaking,
     });
   };
 
@@ -243,9 +243,84 @@ const StoreAddScreen = ({navigation, route}) => {
             setBreakingHours={setBreakingHours}
           />
           <StoreClosedDay closedDay={closedDay} setClosedDay={setClosedDay} /> */}
+
+          {/* <View style={styles.storeinputview}>
+            <Text style={styles.storeinputtext}>매장 영업 시간</Text>
+          </View>
           <Pressable onPress={storeTimeHandle}>
             <Text>영업 시간 설정</Text>
-          </Pressable>
+          </Pressable> */}
+          <OperatingHoursPreview
+            storeTimeHandle={storeTimeHandle}
+            is24Hours={is24Hours}
+            operatingHours={operatingHours}
+            breakingHours={breakingHours}
+            closedDay={closedDay}
+          />
+          {/*          
+          <View style={styles.operatingHoursContainer}>
+            {is24Hours ? (
+              <Text style={styles.operatingHoursText}>24시간 영업</Text>
+            ) : (
+              Object.entries(operatingHours).map(
+                ([day, {openHour, openMinute, closedHour, closedMinute}]) => {
+                  const dayMapping = {
+                    Monday: '월',
+                    Tuesday: '화',
+                    Wednesday: '수',
+                    Thursday: '목',
+                    Friday: '금',
+                    Saturday: '토',
+                    Sunday: '일',
+                  };
+                  const koreanDay = dayMapping[day]; // 요일을 한글로 변환
+                  const isClosed = closedDay.includes(day.toUpperCase());
+                  const breakTime = breakingHours[day];
+
+                  return (
+                    <View key={day} style={styles.dayRow}>
+                      <Text style={styles.dayLabel}>{koreanDay}</Text>
+                      {isClosed ? (
+                        <Text style={styles.closedText}>휴무</Text>
+                      ) : (
+                        <View style={styles.timeContainer}>
+                          <Text style={styles.operatingHoursText}>
+                            {openHour && closedHour
+                              ? `${openHour.padStart(
+                                  2,
+                                  '0',
+                                )}:${openMinute.padStart(2, '0')} ~ ${
+                                  closedHour >= 24
+                                    ? `${String(closedHour - 24).padStart(
+                                        2,
+                                        '0',
+                                      )}`
+                                    : String(closedHour).padStart(2, '0')
+                                }:${closedMinute.padStart(2, '0')}`
+                              : '미설정'}
+                          </Text>
+                          {breakTime?.startHour && breakTime?.endHour ? (
+                            <Text style={styles.breakTimeText}>
+                              브레이크타임{' '}
+                              {breakTime?.startHour.padStart(2, '0')}:
+                              {breakTime?.startMinute.padStart(2, '0')} ~{' '}
+                              {breakTime?.endHour >= 24
+                                ? `${String(breakTime.endHour - 24).padStart(
+                                    2,
+                                    '0',
+                                  )}`
+                                : String(breakTime?.endHour).padStart(2, '0')}
+                              :{breakTime?.endMinute.padStart(2, '0')}
+                            </Text>
+                          ) : null}
+                        </View>
+                      )}
+                    </View>
+                  );
+                },
+              )
+            )}
+          </View> */}
 
           <StoreGroup
             selectedOption={selectedOption}
@@ -345,6 +420,44 @@ const styles = StyleSheet.create({
   },
   modalButtonText: {
     color: 'white',
+    fontWeight: 'bold',
+  },
+  operatingHoursContainer: {
+    marginTop: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    backgroundColor: '#f9f9f9',
+    marginHorizontal: 18,
+  },
+  dayRow: {
+    flexDirection: 'row',
+    paddingVertical: 5,
+  },
+  dayLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginRight: 5,
+  },
+  breakLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#666',
+  },
+  operatingHoursText: {
+    fontSize: 16,
+    fontWeight: 500,
+    color: '#333',
+  },
+  breakTimeText: {
+    fontSize: 15,
+    color: '#999',
+  },
+  closedText: {
+    fontSize: 14,
+    color: '#999',
     fontWeight: 'bold',
   },
 });
