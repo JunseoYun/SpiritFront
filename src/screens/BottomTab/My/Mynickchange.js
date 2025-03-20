@@ -69,19 +69,6 @@ const Mynickchange = () => {
 
   const handlePutnick = async () => {
     setLoading(true);
-
-    if (
-      nicknameError ||
-      !nicknameCheck ||
-      !newnickname.trim() ||
-      nicknamelength
-    ) {
-      showAlert({
-        title: '닉네임 오류',
-        message: '유효하지 않은 닉네임입니다.\n다시 시도해주세요.',
-      });
-      return;
-    }
     try {
       await Userputnickname(newnickname);
       showAlert({

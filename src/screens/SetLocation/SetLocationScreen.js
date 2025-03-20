@@ -23,6 +23,7 @@ import {
   requestLocationPermission,
 } from '../../hooks/useLocation';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import {useToast} from '../../context/ToastContext';
 
 const SetLocationScreen = ({navigation, route}) => {
   const [currentAddress, setcurrentAddress] = useState('');
@@ -31,6 +32,7 @@ const SetLocationScreen = ({navigation, route}) => {
   const [selectLocation, setSelectLocation] = useState(null);
   const [loading, setLoading] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const {showToast} = useToast();
 
   // 이전 화면에서 전달된 데이터를 처리
   useEffect(() => {
@@ -86,15 +88,15 @@ const SetLocationScreen = ({navigation, route}) => {
         if (newLocationAddress) {
           setcurrentLocation(newLocationAddress.location);
           setcurrentAddress(newLocationAddress.address);
-          showAlert({
-            title: '주소 설정이 완료 되었습니다.',
-            onConfirm: () => {
+          showToast('주소 설정이 완료 되었습니다.');
+          setTimeout(
+            () =>
               navigation.reset({
                 index: 0,
                 routes: [{name: 'MainBtmbar', params: {screen: 'MainScreen'}}], // 이동할 화면
-              });
-            },
-          });
+              }),
+            100,
+          );
           setSelectAddress(null);
           setSelectLocation(null);
         }

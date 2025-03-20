@@ -29,7 +29,6 @@ const RecentStoreItem = ({store, navigation, location}) => {
     };
     fetchDistance();
   }, [store]);
-
   const {translateCategory} = useCategoryTranslation();
   return (
     <Pressable

@@ -1,5 +1,13 @@
 import React from 'react';
-import {Animated, FlatList, StyleSheet} from 'react-native';
+import {
+  Animated,
+  FlatList,
+  StyleSheet,
+  View,
+  Image,
+  Text,
+  Pressable,
+} from 'react-native';
 import MapStoreItem from './MapStoreItem';
 
 const MapStoreList = ({
@@ -33,38 +41,66 @@ const MapStoreList = ({
   };
 
   return (
-    <Animated.View
-      {...panHandlers} // PanResponder 연결
-      style={[
-        styles.flatListContainer,
-        {transform: [{translateY: flatListAnim}], zIndex: 10}, // 위치 애니메이션
-      ]}>
-      {isFlatListVisible && (
-        <FlatList
-          ref={flatListRef}
-          data={stores}
-          horizontal
-          keyExtractor={item => item.id.toString()}
-          showsHorizontalScrollIndicator={false}
-          snapToAlignment="center"
-          snapToInterval={410} // 아이템 너비(350) + 간격(60)
-          decelerationRate="fast"
-          onScroll={handleScroll}
-          scrollEventThrottle={16} // 스크롤 이벤트 호출 빈도
-          renderItem={({item, index}) => (
-            <MapStoreItem
-              item={item}
-              index={index}
-              selectedStoreIndex={selectedStoreIndex}
-              setSelectedStore={setSelectedStore}
-              moveCenterMap={moveCenterMap}
-              navigation={navigation}
-              location={location}
-            />
-          )}
-        />
+    <>
+      <Animated.View
+        {...panHandlers} // PanResponder 연결
+        style={[
+          styles.flatListContainer,
+          {transform: [{translateY: flatListAnim}], zIndex: 10}, // 위치 애니메이션
+        ]}>
+        {isFlatListVisible && (
+          <FlatList
+            ref={flatListRef}
+            data={stores}
+            horizontal
+            keyExtractor={item => item.id.toString()}
+            showsHorizontalScrollIndicator={false}
+            snapToAlignment="center"
+            snapToInterval={410} // 아이템 너비(350) + 간격(60)
+            decelerationRate="fast"
+            onScroll={handleScroll}
+            scrollEventThrottle={16} // 스크롤 이벤트 호출 빈도
+            renderItem={({item, index}) => (
+              <MapStoreItem
+                item={item}
+                index={index}
+                selectedStoreIndex={selectedStoreIndex}
+                setSelectedStore={setSelectedStore}
+                moveCenterMap={moveCenterMap}
+                navigation={navigation}
+                location={location}
+              />
+            )}
+          />
+        )}
+      </Animated.View>
+      {stores.length === 0 && (
+        <View style={styles.storeInfo}>
+          <View style={styles.titleview}>
+            <Text style={styles.noDataText}>
+              주변에 등록된 술집이 없습니다.
+            </Text>
+          </View>
+
+          <View style={styles.noneView}>
+            <Pressable
+              style={styles.button2}
+              onPress={() => {
+                navigation.navigate('StoreSearchScreen', {index: 0});
+              }}>
+              <Text style={styles.noneText2}>술집 등록하기</Text>
+            </Pressable>
+            <Pressable
+              style={styles.button}
+              onPress={() => {
+                navigation.navigate('SetLocationScreen');
+              }}>
+              <Text style={styles.noneText}>위치 변경하기</Text>
+            </Pressable>
+          </View>
+        </View>
       )}
-    </Animated.View>
+    </>
   );
 };
 
@@ -73,6 +109,67 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 15,
     position: 'absolute',
     bottom: 30,
+  },
+  storeInfo: {
+    position: 'absolute',
+    bottom: 30,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: 370,
+    height: 140,
+    backgroundColor: '#fdfdfd',
+    padding: 15,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  titleview: {
+    marginTop: 5,
+    width: '100%',
+  },
+  noDataText: {
+    alignSelf: 'center',
+    fontSize: 15,
+    color: '#555',
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+  },
+  noneView: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-around',
+  },
+  button: {
+    width: 160,
+    paddingHorizontal: 17,
+    paddingVertical: 17,
+    borderWidth: 2,
+    borderColor: '#80D2F4',
+    borderRadius: 10,
+    backgroundColor: '#80D2F4',
+  },
+  button2: {
+    width: 160,
+    paddingHorizontal: 17,
+    paddingVertical: 17,
+    borderWidth: 2,
+    borderColor: '#80D2F4',
+    borderRadius: 10,
+  },
+  noneText2: {
+    alignSelf: 'center',
+    color: '#80D2F4',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  noneText: {
+    alignSelf: 'center',
+    color: 'white',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
 

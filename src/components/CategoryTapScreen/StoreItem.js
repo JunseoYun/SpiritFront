@@ -16,20 +16,10 @@ import useStoreStatus from '../../hooks/useStoreStatus';
 
 const StoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
-  const isStoreOpen = useStoreStatus(
-    store?.businessHoursDto?.openTime,
-    store?.businessHoursDto?.closeTime,
-    store?.closedDays,
-  );
-  const isStoreBreak =
-    store.businessHoursDto?.breakStartTime &&
-    store.businessHoursDto?.breakEndTime
-      ? useStoreStatus(
-          store.businessHoursDto.breakStartTime,
-          store.businessHoursDto.breakEndTime,
-        )
-      : null;
 
+  const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
+    useStoreStatus(store?.operationInfoDtos);
+  console.log(store?.operationInfoDtos);
   return (
     <Pressable
       style={Categorystyles.itemContainer}
@@ -70,33 +60,23 @@ const StoreItem = ({store, location, navigation}) => {
                   } // ✅ 스타일 조건부 적용
                 >
                   {/* ✅ 영업 종료 표시 */}
-                  {!isStoreOpen && (
+                  {!isOpen && (
                     <View style={Categorystyles.overlay}>
                       {index === 0 && (
                         <Text style={Categorystyles.overlayText}>
                           영업 종료{'\n'}
-                          {store.businessHoursDto?.openTime
-                            ? `${store.businessHoursDto.openTime.slice(
-                                0,
-                                5,
-                              )} 오픈`
-                            : ''}
+                          {starttime ? `${starttime} 오픈` : ''}
                         </Text>
                       )}
                     </View>
                   )}
                   {/* ✅ 브레이크 타임 표시 */}
-                  {isStoreOpen && isStoreBreak && (
+                  {isOpen && isBreak && (
                     <View style={Categorystyles.overlay}>
                       {index === 0 && (
                         <Text style={Categorystyles.overlayText}>
                           브레이크 타임{'\n'}
-                          {store.businessHoursDto?.breakEndTime
-                            ? `${store.businessHoursDto.breakEndTime.slice(
-                                0,
-                                5,
-                              )} 종료`
-                            : ''}
+                          {breakend ? `${breakend} 종료` : ''}
                         </Text>
                       )}
                     </View>
@@ -125,24 +105,20 @@ const StoreItem = ({store, location, navigation}) => {
                 ? Categorystyles.storeMainImg
                 : Categorystyles.menuNoImg
             }>
-            {!isStoreOpen && (
+            {!isOpen && (
               <View style={Categorystyles.overlay}>
                 <Text style={Categorystyles.overlayText}>
                   영업 종료{'\n'}
-                  {store.businessHoursDto?.openTime
-                    ? `${store.businessHoursDto.openTime.slice(0, 5)} 오픈`
-                    : ''}
+                  {starttime ? `${starttime} 오픈` : ''}
                 </Text>
               </View>
             )}
             {/* ✅ 브레이크 타임 표시 */}
-            {isStoreOpen && isStoreBreak && (
+            {isOpen && isBreak && (
               <View style={Categorystyles.overlay}>
                 <Text style={Categorystyles.overlayText}>
                   브레이크 타임{'\n'}
-                  {store.businessHoursDto?.breakEndTime
-                    ? `${store.businessHoursDto.breakEndTime.slice(0, 5)} 종료`
-                    : ''}
+                  {endtime ? `${endtime} 종료` : ''}
                 </Text>
               </View>
             )}
@@ -191,20 +167,18 @@ const StoreItem = ({store, location, navigation}) => {
             <Ionicons name="time-outline" size={15} color="#333" />
             <Text style={Categorystyles.infoText}>
               {' '}
-              영업 중 · {store.businessHoursDto?.closeTime?.slice(0, 5) || ''}
+              영업 중 · {endtime || ''}
             </Text>
           </View>
-          {store.businessHoursDto?.breakStartTime &&
-            store.businessHoursDto?.breakEndTime && (
-              <View style={Categorystyles.infoView}>
-                <MaterialCommunityIcons name="sleep" size={15} color="#333" />
-                <Text style={Categorystyles.infoText}>
-                  {' '}
-                  {store.businessHoursDto?.breakStartTime?.slice(0, 5)} ~{' '}
-                  {store.businessHoursDto?.breakEndTime?.slice(0, 5)}
-                </Text>
-              </View>
-            )}
+          {breakstart && breakend && (
+            <View style={Categorystyles.infoView}>
+              <MaterialCommunityIcons name="sleep" size={15} color="#333" />
+              <Text style={Categorystyles.infoText}>
+                {' '}
+                {breakstart} ~ {breakend}
+              </Text>
+            </View>
+          )}
         </View>
       </View>
     </Pressable>

@@ -12,20 +12,8 @@ const MapStoreItem = ({
   moveCenterMap,
   navigation,
 }) => {
-  const isStoreOpen = useStoreStatus(
-    item?.businessHoursDto?.openTime,
-    item?.businessHoursDto?.closeTime,
-    item?.closedDays,
-  );
-
-  const isStoreBreak =
-    item?.businessHoursDto?.breakStartTime &&
-    item?.businessHoursDto?.breakEndTime
-      ? useStoreStatus(
-          item.businessHoursDto.breakStartTime,
-          item.businessHoursDto.breakEndTime,
-        )
-      : null;
+  const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
+    useStoreStatus(item?.operationInfoDtos);
 
   const handlePress = () => {
     setSelectedStore(item);
@@ -58,24 +46,20 @@ const MapStoreItem = ({
           style={styles.backimage}
           imageStyle={styles.backimagestyle}>
           {/* ✅ 영업 종료 표시 */}
-          {!isStoreOpen && (
+          {!isOpen && (
             <View style={styles.overlay}>
               <Text style={styles.overlayText}>
                 영업 종료{'\n'}
-                {item.businessHoursDto?.openTime
-                  ? `${item.businessHoursDto.openTime.slice(0, 5)} 오픈`
-                  : ''}
+                {starttime ? `${starttime} 오픈` : ''}
               </Text>
             </View>
           )}
           {/* ✅ 브레이크 타임 표시 */}
-          {isStoreOpen && isStoreBreak && (
+          {isOpen && isBreak && (
             <View style={styles.overlay}>
               <Text style={styles.overlayText}>
                 브레이크 타임{'\n'}
-                {item.businessHoursDto?.breakEndTime
-                  ? `${item.businessHoursDto.breakEndTime.slice(0, 5)} 종료`
-                  : ''}
+                {breakend ? `${breakend} 종료` : ''}
               </Text>
             </View>
           )}
@@ -124,8 +108,7 @@ const MapStoreItem = ({
         </Text>
         <View style={styles.timeview}>
           <Text style={styles.timeviewtext}>
-            영업 종료{' '}
-            {item.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
+            영업 종료 {endtime || '정보 없음'}
           </Text>
         </View>
       </View>

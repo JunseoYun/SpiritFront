@@ -14,8 +14,6 @@ const OpenStoreItem = ({store, location, navigation}) => {
   const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
     useStoreStatus(store?.operationInfoDtos);
 
-  console.log(isOpen, isBreak, store.operationInfoDtos, store.id);
-
   const calculateWalkingTime = distance => {
     const walkingSpeed = 80; // 평균 보행 속도 (m/min)
     return Math.ceil(distance / walkingSpeed); // 소수점 올림

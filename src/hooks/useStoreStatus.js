@@ -12,12 +12,14 @@ const useStoreStatus = (operationInfoDtos = []) => {
   useEffect(() => {
     const checkStoreStatus = () => {
       let now = new Date();
-      now.setHours(now.getHours() + 9);
-      let currentHours = now.getHours();
-      let currentMinutes = now.getMinutes();
-      let currentDay = now
-        .toLocaleDateString('en-US', {weekday: 'long'})
+      let currentDay = new Intl.DateTimeFormat('en-US', {
+        weekday: 'long',
+        timeZone: 'Asia/Seoul',
+      })
+        .format(now)
         .toUpperCase();
+
+      now.setHours(now.getHours() + 9);
 
       let todayInfo = operationInfoDtos.find(
         info => info.dayOfWeek === currentDay,
@@ -78,7 +80,7 @@ const useStoreStatus = (operationInfoDtos = []) => {
       }
 
       // 현재 시간이 00:00~closeTime (예: 02:00) 구간이라면, 전날 정보를 유지해야 함
-      if (currentHours < openHours && yesterdayInfo) {
+      if (openHours && yesterdayInfo) {
         let {closeTime: yCloseTime} = yesterdayInfo;
         let [yCloseHours, yCloseMinutes] = yCloseTime.split(':').map(Number);
         let yCloseDate = new Date();
