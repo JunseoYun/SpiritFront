@@ -45,6 +45,7 @@ const MapScreen = ({navigation}) => {
   }, [refresh]);
 
   const fetchSaveLocation = async () => {
+    setLoading(true);
     try {
       const currentLocation = await getLocation();
       setLocation(currentLocation);
@@ -70,6 +71,8 @@ const MapScreen = ({navigation}) => {
       moveCenterMap(currentLocation.latitude, currentLocation.longitude);
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,18 +102,26 @@ const MapScreen = ({navigation}) => {
         moveCenterMap(newLocation.latitude, newLocation.longitude);
       } else {
         console.log('false');
-        try {
-          if (newLocation && address) {
-            await saveLocationAddress(newLocation, address);
-          }
-        } catch (error) {
-          console.log(error);
+        setLocation(newLocation);
+        updateMap(newLocation.latitude, newLocation.longitude, stores);
+        moveCenterMap(newLocation.latitude, newLocation.longitude);
+        const storesData = await Store_getby_radius(
+          newLocation.latitude,
+          newLocation.longitude,
+        );
+        storesData.sort((a, b) =>
+          a.locationDto.address.localeCompare(b.locationDto.address),
+        );
+        setStores(storesData);
+        setSelectedStore(storesData[0]);
+        if (webViewRef.current) {
+          const script = generateMapScript(
+            newLocation.latitude,
+            newLocation.longitude,
+            storesData,
+          );
+          webViewRef.current.injectJavaScript(script);
         }
-        showToast('현재 위치 입니다.');
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'MapScreen'}],
-        });
       }
     } catch (err) {
       console.error('위치 업데이트 중 오류 발생:', err);
@@ -256,9 +267,9 @@ const MapScreen = ({navigation}) => {
           <Text style={styles.loadingtext}>Loading Map...</Text>
         </View>
       )}
-      <MapSearchBar refresh={refresh} setRefresh={setRefresh} />
+      {/* <MapSearchBar refresh={refresh} setRefresh={setRefresh} /> */}
       <MapLocation onPress={updateNewLocation} />
-      <MapDirections onPress={openMapHandle} />
+      <MapDirections onPress={fetchSaveLocation} />
 
       <MapStoreList
         panHandlers={panResponder.panHandlers}

@@ -17,19 +17,8 @@ const ResultModalItem = ({store, navigation, location}) => {
   const [distance, setDistance] = useState(0);
   const [unit, setUnit] = useState('m');
   const calculateDistance = useDistance();
-  const isStoreOpen = useStoreStatus(
-    store?.businessHoursDto?.openTime,
-    store?.businessHoursDto?.closeTime,
-    store?.closedDays,
-  );
-  const isStoreBreak =
-    store?.businessHoursDto?.breakStartTime &&
-    store?.businessHoursDto?.breakEndTime
-      ? useStoreStatus(
-          store.businessHoursDto.breakStartTime,
-          store.businessHoursDto.breakEndTime,
-        )
-      : null;
+  const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
+    useStoreStatus(store?.operationInfoDtos);
 
   useEffect(() => {
     const fetchDistance = () => {
@@ -71,24 +60,18 @@ const ResultModalItem = ({store, navigation, location}) => {
           style={styles.backimage}
           imageStyle={styles.backimagestyle}>
           {/* ✅ 영업 종료 표시 */}
-          {!isStoreOpen && (
+          {!isOpen && (
             <View style={styles.overlay}>
               <Text style={styles.overlayText}>
-                영업 종료{' '}
-                {store.businessHoursDto?.openTime
-                  ? `\n${store.businessHoursDto.openTime.slice(0, 5)} 오픈`
-                  : ''}
+                영업 종료 {starttime ? `\n${starttime} 오픈` : ''}
               </Text>
             </View>
           )}
           {/* ✅ 브레이크 타임 표시 */}
-          {isStoreOpen && isStoreBreak && (
+          {isOpen && isBreak && (
             <View style={styles.overlay}>
               <Text style={styles.overlayText}>
-                브레이크 타임{' '}
-                {store.businessHoursDto?.breakEndTime
-                  ? `\n${store.businessHoursDto.breakEndTime.slice(0, 5)} 종료`
-                  : ''}
+                브레이크 타임 {breakend ? `\n${breakend} 종료` : ''}
               </Text>
             </View>
           )}
@@ -118,8 +101,7 @@ const ResultModalItem = ({store, navigation, location}) => {
 
           <View style={styles.subView}>
             <Text style={styles.StoreClose}>
-              영업 종료{' '}
-              {store.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
+              영업 종료 {endtime || '정보 없음'}
             </Text>
             <Text style={styles.StoreClose}>
               {distance} {unit}
