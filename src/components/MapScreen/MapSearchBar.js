@@ -14,38 +14,19 @@ const {width} = Dimensions.get('window');
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 const MapSearchBar = ({setcenterrefresh}) => {
   return (
-    <Pressable style={styles.buttonTop} onPress={() => setcenterrefresh()}>
-      <View style={styles.searchBar}>
-        <EvilIcons
-          style={styles.searchIcon}
-          name="redo"
-          size={20}
-          color={'#16BBFF'}
-        />
+    <View style={styles.buttonTop}>
+      <Pressable style={styles.searchView} onPress={() => setcenterrefresh()}>
+        <EvilIcons name="redo" size={25} color={'#16BBFF'} />
         <Text style={styles.buttonTextTop}>현 지도에서 재검색</Text>
-      </View>
-    </Pressable>
+      </Pressable>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   buttonTop: {
     position: 'absolute',
-    left: width * 0.3,
-    backgroundColor: '#ffffff',
-    padding: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignContent: 'center',
-    borderRadius: 20,
-    width: width * 0.4,
-    shadowColor: '#333',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    alignSelf: 'center', // 부모 뷰를 기준으로 가로 중앙 정렬
     ...Platform.select({
       ios: {
         top: '9%',
@@ -55,23 +36,23 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  searchBar: {
-    width: '100%',
+  searchView: {
+    backgroundColor: '#ffffff',
     flexDirection: 'row',
-    alignSelf: 'center',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  searchIcon: {
-    marginLeft: width * 0.01,
-    marginRight: width * 0.02,
+    paddingVertical: 7,
+    paddingLeft: 5,
+    paddingRight: 9,
+    borderRadius: 20,
+    shadowColor: '#333',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
+    elevation: 10,
   },
   buttonTextTop: {
     color: '#16BBFF',
-    fontSize: 14,
-    borderRadius: 100,
-    width: '100%',
-    textAlign: 'left',
+    fontSize: 15,
     fontWeight: '400',
   },
 });
