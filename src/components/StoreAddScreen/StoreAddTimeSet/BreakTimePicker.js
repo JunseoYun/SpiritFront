@@ -8,37 +8,39 @@ const BreakTimePicker = ({
   sameEndTime,
   wrongBreak,
   handleTimeChange,
-  handleTimePickerToggle,
   breakErrorMessage,
 }) => {
   return (
-    <View style={styles.pickerTopView}>
-      <View style={styles.pickerWrapper}>
-        {isStartTime ? (
-          <TimePicker
-            selectedHour={sameStartTime.startHour}
-            selectedMinute={sameStartTime.startMinute}
-            onHourChange={value =>
-              handleTimeChange('sameStartTime', 'startHour', value)
-            }
-            onMinuteChange={value =>
-              handleTimeChange('sameStartTime', 'startMinute', value)
-            }
-          />
-        ) : (
-          <CloseTimePicker
-            selectedHour={sameEndTime.endHour}
-            selectedMinute={sameEndTime.endMinute}
-            onHourChange={value =>
-              handleTimeChange('sameEndTime', 'endHour', value)
-            }
-            onMinuteChange={value =>
-              handleTimeChange('sameEndTime', 'endMinute', value)
-            }
-          />
-        )}
+    <>
+      <View style={styles.pickerTopView}>
+        <View style={styles.pickerWrapper}>
+          {isStartTime ? (
+            <TimePicker
+              selectedHour={sameStartTime.startHour}
+              selectedMinute={sameStartTime.startMinute}
+              onHourChange={value =>
+                handleTimeChange('sameStartTime', 'startHour', value)
+              }
+              onMinuteChange={value =>
+                handleTimeChange('sameStartTime', 'startMinute', value)
+              }
+            />
+          ) : (
+            <CloseTimePicker
+              selectedHour={sameEndTime.endHour}
+              selectedMinute={sameEndTime.endMinute}
+              onHourChange={value =>
+                handleTimeChange('sameEndTime', 'endHour', value)
+              }
+              onMinuteChange={value =>
+                handleTimeChange('sameEndTime', 'endMinute', value)
+              }
+            />
+          )}
+        </View>
       </View>
-    </View>
+      {wrongBreak && <Text style={styles.wrongText}>{breakErrorMessage}</Text>}
+    </>
   );
 };
 

@@ -18,8 +18,12 @@ const ClosedDaySelector = ({
   setIs24Hours,
   handleBottomClose,
   setIsAllClosed,
+  isBottomOpen,
 }) => {
   const handleClosedToggle = () => {
+    if (isBottomOpen) {
+      return;
+    }
     let isInvalid = !isClosed;
     setIsClosed(prev => !prev);
 
@@ -41,6 +45,9 @@ const ClosedDaySelector = ({
   }, [isClosed, setLocalClosedDay, setClosedDay, setIsAllClosed]);
 
   const toggleDay = dayValue => {
+    if (isBottomOpen) {
+      return;
+    }
     setLocalClosedDay(prev => {
       const newSet = new Set(prev);
       if (newSet.has(dayValue)) {
