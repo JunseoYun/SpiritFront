@@ -11,18 +11,18 @@ import {
 
 const {width} = Dimensions.get('window');
 
-import Ionicons from 'react-native-vector-icons/Ionicons';
-const MapSearchBar = ({refresh, setRefresh}) => {
+import EvilIcons from 'react-native-vector-icons/EvilIcons';
+const MapSearchBar = ({setcenterrefresh}) => {
   return (
-    <Pressable style={styles.buttonTop} onPress={() => setRefresh(true)}>
+    <Pressable style={styles.buttonTop} onPress={() => setcenterrefresh()}>
       <View style={styles.searchBar}>
-        <Ionicons
+        <EvilIcons
           style={styles.searchIcon}
-          name="reload-outline"
+          name="redo"
           size={20}
-          color={'#228AFA'}
+          color={'#16BBFF'}
         />
-        <Text style={styles.buttonTextTop}>현 위치로 재검색</Text>
+        <Text style={styles.buttonTextTop}>현 지도에서 재검색</Text>
       </View>
     </Pressable>
   );
@@ -59,14 +59,16 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchIcon: {
-    marginRight: width * 0.01,
-    marginLeft: width * 0.025,
+    marginLeft: width * 0.01,
+    marginRight: width * 0.02,
   },
   buttonTextTop: {
-    color: '#228AFA',
-    fontSize: 16,
+    color: '#16BBFF',
+    fontSize: 14,
     borderRadius: 100,
     width: '100%',
     textAlign: 'left',

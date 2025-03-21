@@ -27,22 +27,21 @@ const MapScreen = ({navigation}) => {
   const [selectedStoreIndex, setSelectedStoreIndex] = useState(0);
   const webViewRef = useRef(null);
   const flatListRef = useRef(null);
+  const isProgrammaticPan = useRef(false);
   const [refresh, setRefresh] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [centerLatLng, setCenterLatLng] = useState(null);
+  const [prevCenterLatLng, setPrevCenterLatLng] = useState(null);
   const {showToast} = useToast();
   const [isFlatListVisible, setIsFlatListVisible] = useState(true); // 플랫리스트 상태
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
 
   useEffect(() => {
     fetchSaveLocation();
+    setRefresh(false);
   }, []);
 
-  useEffect(() => {
-    if (refresh) {
-      fetchSaveLocation();
-      setRefresh(false);
-    }
-  }, [refresh]);
+  console.log(refresh);
 
   const fetchSaveLocation = async () => {
     setLoading(true);
@@ -72,6 +71,7 @@ const MapScreen = ({navigation}) => {
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
     } finally {
+      setRefresh(false);
       setLoading(false);
     }
   };
@@ -126,23 +126,80 @@ const MapScreen = ({navigation}) => {
     } catch (err) {
       console.error('위치 업데이트 중 오류 발생:', err);
     } finally {
+      setRefresh(false);
       setLoading(false);
     }
   };
 
   const moveCenterMap = (lat, lng) => {
-    const script = `
-      if (window.map) {
-        window.map.panTo(new kakao.maps.LatLng(${lat}, ${lng}));
-      }
-      true;
-    `;
-    webViewRef.current?.injectJavaScript(script);
+    const roundedPrev = prevCenterLatLng && {
+      latitude: roundToPrecision(prevCenterLatLng.latitude),
+      longitude: roundToPrecision(prevCenterLatLng.longitude),
+    };
+
+    const roundedNew = {
+      latitude: roundToPrecision(lat),
+      longitude: roundToPrecision(lng),
+    };
+
+    const moved =
+      !roundedPrev || isSignificantMovement(roundedPrev, roundedNew);
+
+    if (moved) {
+      isProgrammaticPan.current = true; // 👉 다음 idle은 무시하게 하기
+
+      const script = `
+          if (window.map) {
+            window.map.panTo(new kakao.maps.LatLng(${lat}, ${lng}));
+          }
+          true;
+        `;
+      webViewRef.current?.injectJavaScript(script);
+    } else {
+    }
   };
 
   const updateMap = (lat, lng, stores) => {
     if (webViewRef.current) {
       webViewRef.current.injectJavaScript(generateMapScript(lat, lng, stores));
+    }
+  };
+
+  const isSignificantMovement = (prev, current, threshold = 0.00001) => {
+    if (!prev) return true;
+    const latDiff = Math.abs(prev.latitude - current.latitude);
+    const lngDiff = Math.abs(prev.longitude - current.longitude);
+    return latDiff > threshold || lngDiff > threshold;
+  };
+
+  const setcenterrefresh = async () => {
+    setLoading(true);
+    try {
+      const storesData = await Store_getby_radius(
+        centerLatLng.latitude,
+        centerLatLng.longitude,
+      );
+      storesData.sort((a, b) =>
+        a.locationDto.address.localeCompare(b.locationDto.address),
+      );
+      setStores(storesData);
+      setSelectedStore(storesData[0]);
+
+      if (webViewRef.current) {
+        const script = generateMapScript(
+          centerLatLng.latitude,
+          centerLatLng.longitude,
+          storesData,
+          false,
+        );
+        webViewRef.current.injectJavaScript(script);
+      }
+      moveCenterMap(centerLatLng.latitude, centerLatLng.longitude);
+    } catch (err) {
+      console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
+    } finally {
+      setRefresh(false);
+      setLoading(false);
     }
   };
 
@@ -160,7 +217,25 @@ const MapScreen = ({navigation}) => {
         );
         webViewRef.current?.injectJavaScript(script);
       }
+      if (message.action === 'mapMoved') {
+        if (isProgrammaticPan.current) {
+          console.log('📌 프로그래매틱 이동 → 무시');
+          isProgrammaticPan.current = false;
+          return;
+        }
 
+        const current = {
+          latitude: message.latitude,
+          longitude: message.longitude,
+        };
+
+        if (isSignificantMovement(prevCenterLatLng, current)) {
+          setCenterLatLng(current);
+          setPrevCenterLatLng(current); // 이전 좌표 갱신
+          setRefresh(true);
+        } else {
+        }
+      }
       // 새로운 메시지 처리
       handleWebViewMessage(message); // 새로운 로직 추가
     } catch (error) {
@@ -238,17 +313,6 @@ const MapScreen = ({navigation}) => {
     }
   }, 500);
 
-  const openMapHandle = () => {
-    if (selectedStore) {
-      openKakaoMap(
-        location.latitude,
-        location.longitude,
-        selectedStore.locationDto.latitude,
-        selectedStore.locationDto.longitude,
-      );
-    }
-  };
-
   return (
     <View style={styles.container}>
       {location ? (
@@ -267,7 +331,8 @@ const MapScreen = ({navigation}) => {
           <Text style={styles.loadingtext}>Loading Map...</Text>
         </View>
       )}
-      {/* <MapSearchBar refresh={refresh} setRefresh={setRefresh} /> */}
+      {refresh && <MapSearchBar setcenterrefresh={setcenterrefresh} />}
+
       <MapLocation onPress={updateNewLocation} />
       <MapDirections onPress={fetchSaveLocation} />
 
@@ -284,7 +349,7 @@ const MapScreen = ({navigation}) => {
         navigation={navigation}
         location={location}
       />
-      {(refresh || loading) && (
+      {loading && (
         <View style={styles.loading}>
           <Text style={styles.loadingtext}>Loading...</Text>
         </View>

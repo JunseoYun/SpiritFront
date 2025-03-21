@@ -97,9 +97,11 @@ const StoreMainScreen = ({navigation}) => {
   };
 
   const handleBottomClose = () => {
-    setUpdatedKey(null);
-    setUpdatedValue(null);
     bottomSheetRef.current?.close();
+    setTimeout(() => {
+      setUpdatedKey(null);
+      setUpdatedValue(null);
+    }, 500);
   };
 
   const handleEditKey = key => {
@@ -175,7 +177,6 @@ const StoreMainScreen = ({navigation}) => {
               hasmainImg === true
             ) {
               const response = await UpdateStoreImage(storeId, addedImages);
-              console.log(response);
               await UpdateStore(storeId, {['mainImgUrl']: response[0]});
             }
             //매장 삭제 및 메인 이미지 추가
@@ -323,7 +324,6 @@ const StoreMainScreen = ({navigation}) => {
       },
     });
   };
-  console.log(storedata);
   return (
     <>
       {!isUpdate && (

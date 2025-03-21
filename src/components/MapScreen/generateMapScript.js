@@ -1,4 +1,4 @@
-const generateMapScript = (lat, lng, stores) => `
+const generateMapScript = (lat, lng, stores, showCurrentMarker = true) => `
   if (!window.map) {
     var mapContainer = document.getElementById('map');
     var options = {
@@ -6,19 +6,39 @@ const generateMapScript = (lat, lng, stores) => `
       level: 3
     };
     window.map = new kakao.maps.Map(mapContainer, options);
+
+    kakao.maps.event.addListener(window.map, 'idle', function () {
+      const center = window.map.getCenter();
+      window.ReactNativeWebView.postMessage(JSON.stringify({
+        action: 'mapMoved',
+        latitude: parseFloat(center.getLat().toFixed(5)),
+        longitude: parseFloat(center.getLng().toFixed(5))
+      }));
+    });
   }
 
   var map = window.map;
 
-  if (!window.currentMarker) {
-    window.currentMarker = new kakao.maps.Marker({
-      position: new kakao.maps.LatLng(${lat}, ${lng}),
-      map: map,
-      title: '현재 위치',
-      zIndex: 1
-    });
-  } else {
-    window.currentMarker.setPosition(new kakao.maps.LatLng(${lat}, ${lng}));
+  ${
+    showCurrentMarker
+      ? `
+    if (!window.currentMarker) {
+      window.currentMarker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(${lat}, ${lng}),
+        map: map,
+        title: '현재 위치',
+        zIndex: 1
+      });
+    } else {
+      window.currentMarker.setPosition(new kakao.maps.LatLng(${lat}, ${lng}));
+      window.currentMarker.setMap(map);
+    }
+  `
+      : `
+    if (window.currentMarker) {
+      window.currentMarker.setMap(map); // 👉 마커 제거
+    }
+  `
   }
 
   if (window.storeMarkers) {
