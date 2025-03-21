@@ -7,36 +7,48 @@ const OperatingHoursTimePicker = ({
   isOpenTime,
   sameOpenTime,
   sameCloseTime,
+  wrongBreak,
+  isSameOperating,
   handleTimeChange,
+  operateErrorMessage,
 }) => {
   return (
-    <View style={styles.pickerTopView}>
-      <View style={styles.pickerWrapper}>
-        {isOpenTime ? (
-          <TimePicker
-            selectedHour={sameOpenTime.openHour}
-            selectedMinute={sameOpenTime.openMinute}
-            onHourChange={value =>
-              handleTimeChange('sameOpenTime', 'openHour', value)
-            }
-            onMinuteChange={value =>
-              handleTimeChange('sameOpenTime', 'openMinute', value)
-            }
-          />
-        ) : (
-          <CloseTimePicker
-            selectedHour={sameCloseTime.closedHour}
-            selectedMinute={sameCloseTime.closedMinute}
-            onHourChange={value =>
-              handleTimeChange('sameCloseTime', 'closedHour', value)
-            }
-            onMinuteChange={value =>
-              handleTimeChange('sameCloseTime', 'closedMinute', value)
-            }
-          />
-        )}
+    <>
+      <View style={styles.pickerTopView}>
+        <View style={styles.pickerWrapper}>
+          {isOpenTime ? (
+            <TimePicker
+              selectedHour={sameOpenTime.openHour}
+              selectedMinute={sameOpenTime.openMinute}
+              onHourChange={value =>
+                handleTimeChange('sameOpenTime', 'openHour', value)
+              }
+              onMinuteChange={value =>
+                handleTimeChange('sameOpenTime', 'openMinute', value)
+              }
+            />
+          ) : (
+            <CloseTimePicker
+              selectedHour={sameCloseTime.closedHour}
+              selectedMinute={sameCloseTime.closedMinute}
+              onHourChange={value =>
+                handleTimeChange('sameCloseTime', 'closedHour', value)
+              }
+              onMinuteChange={value =>
+                handleTimeChange('sameCloseTime', 'closedMinute', value)
+              }
+            />
+          )}
+        </View>
       </View>
-    </View>
+      {isSameOperating ? (
+        <Text style={styles.wrongText}>{operateErrorMessage}</Text>
+      ) : wrongBreak ? (
+        <Text style={styles.wrongText}>
+          영업 시간은 브레이크타임을 포함하도록 설정해주세요.
+        </Text>
+      ) : null}
+    </>
   );
 };
 

@@ -4,9 +4,10 @@ import {View, Text, Pressable, StyleSheet} from 'react-native';
 const OperatingHoursToggle = ({
   isSameEveryday,
   setIsSameEveryday,
-  setIsSameEveryTime,
+
   handleBottomClose,
   setIs24,
+  isBottomOpen,
 }) => {
   return (
     <View>
@@ -14,9 +15,10 @@ const OperatingHoursToggle = ({
       <View style={styles.toggleContainer}>
         <Pressable
           style={[styles.toggleButton, isSameEveryday && styles.selectedToggle]}
+          disabled={isBottomOpen} // true일 때 비활성화
           onPress={() => {
             setIsSameEveryday(true);
-            setIsSameEveryTime(true);
+
             handleBottomClose();
           }}>
           <Text
@@ -31,9 +33,9 @@ const OperatingHoursToggle = ({
             styles.toggleButton,
             !isSameEveryday && styles.selectedToggle,
           ]}
+          disabled={isBottomOpen}
           onPress={() => {
             setIsSameEveryday(false);
-            setIsSameEveryTime(false);
             handleBottomClose();
             setIs24(false);
           }}>

@@ -11,17 +11,10 @@ import {
   View,
   Text,
   Pressable,
-  TextInput,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-  TouchableWithoutFeedback,
-  Keyboard,
+  Modal,
 } from 'react-native';
-import Octicons from 'react-native-vector-icons/Octicons';
-
-import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import ClosedDaySelector from '../../components/StoreAddScreen/StoreAddTimeSet/ClosedDaySelector';
 import OperatingHoursToggle from '../../components/StoreAddScreen/StoreAddTimeSet/OperatingHoursToggle';
@@ -32,8 +25,15 @@ import BreakTimeInput from '../../components/StoreAddScreen/StoreAddTimeSet/Brea
 import BreakTimePicker from '../../components/StoreAddScreen/StoreAddTimeSet/BreakTimePicker';
 import BreakTimeToggle from '../../components/StoreAddScreen/StoreAddTimeSet/BreakTimeToggle';
 import BottomSheet from '@gorhom/bottom-sheet';
-import TimePicker from '../../hooks/TimePicker';
-import CloseTimePicker from '../../hooks/CloseTimePicker';
+import OperatingDayItem from '../../components/StoreAddScreen/StoreAddTimeSet/OperatingDayItem';
+import OperateBottomSheetHeader from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomSheetHeader';
+import OperateBottomHoursSelector from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomHoursSelector';
+import OperateBottomOperatingTimePicker from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomOperatingTimePicker';
+import OperateBottomBreakSelector from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomBreakSelector';
+import OperateBottomBreakingTimePicker from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomBreakingTimePicker';
+import OperateBottomBreakToggle from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomBreakToggle';
+import OperateBottomConfirmButton from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomConfirmButton';
+
 const days = [
   {label: '월', value: 'MONDAY'},
   {label: '화', value: 'TUESDAY'},
@@ -98,11 +98,12 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
   const [operateError, setOperateError] = useState(false);
   const [breakError, setBreakError] = useState(false);
   const [isAllClosed, setIsAllClosed] = useState(false);
+  const [isBottomOpen, setIsBottonOpen] = useState(false);
+
   const [tempState, setTempState] = useState({
     tempOperating: {},
     tempBreaking: {},
   });
-
   const [localOperatingHours, setLocalOperatingHours] = useState(() => {
     const hasOperatingHours = Object.values(operatingHours).some(
       ({openHour, closedHour}) => openHour !== '' && closedHour !== '',
@@ -128,10 +129,6 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
   );
 
   const scrollViewRef = useRef(null);
-  const bottomSheetRef = useRef(null);
-
-  const snapPoints = useMemo(() => ['90%'], []);
-  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -168,6 +165,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     if (isAllClosed) {
       return;
     }
+
     if (isSameEveryday) {
       if (isSameOperating || wrongBreak) {
         return;
@@ -208,6 +206,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
       setOperatingHours(updatedOperatingHours);
       setBreakingHours(updatedBreakingHours);
       setIs24Hours(is24);
+      setIsSameEveryTime(isSameEveryday);
     } else {
       if (breakError || operateError) {
         return;
@@ -216,6 +215,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
       setBreakingHours(localBreakingHours);
       setClosedDay(localClosedDay);
       setIs24Hours(is24);
+      setIsSameEveryTime(isSameEveryday);
     }
 
     // 설정 저장 후 이전 화면으로 이동
@@ -305,8 +305,10 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
         '브레이크타임 시작 시간을 종료 시간 이전으로 설정해주세요.';
       setWrongBreak(true);
     } else if (opStart >= brStart || opEnd <= brEnd) {
-      errorMessage = '영업 시간은 브레이크타임을 포함하도록 설정해주세요.';
-      setWrongBreak(true);
+      if (hasLocalBreaking) {
+        errorMessage = '영업 시간은 브레이크타임을 포함하도록 설정해주세요.';
+        setWrongBreak(true);
+      }
     } else {
       setWrongBreak(false);
       errorMessage = '';
@@ -316,18 +318,16 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
 
   const handleBottomOpen = day => {
     setSelectedDay(day);
-    setIsBottomSheetVisible(true);
-    bottomSheetRef.current?.expand();
 
+    setIsBottonOpen(true);
     const formattedDay = day.value.charAt(0) + day.value.slice(1).toLowerCase();
 
-    // 현재 값을 복사해서 임시 저장
     setTempState({
       tempOperating: {...localOperatingHours[formattedDay]},
       tempBreaking: {...(localBreakingHours[formattedDay] || {})},
     });
   };
-
+  console.log('isBottomOpen 상태:', isBottomOpen);
   const handleCancelChanges = () => {
     if (selectedDay) {
       const formattedDay =
@@ -354,12 +354,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
   };
 
   const handleBottomClose = () => {
-    bottomSheetRef.current?.close();
-  };
-
-  // 바텀시트 닫힐 때 상태 업데이트
-  const onBottomSheetClose = () => {
-    setIsBottomSheetVisible(false);
+    setIsBottonOpen(false);
     setIsOpenTime(false);
     setIsCloseTime(false);
     setIsStartTime(false);
@@ -744,590 +739,261 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
   };
 
   return (
-    <TouchableWithoutFeedback>
-      <View style={styles.container}>
-        <ScrollView
-          ref={scrollViewRef}
-          contentContainerStyle={{paddingBottom: 100}}
-          showsVerticalScrollIndicator={false}>
-          <ClosedDaySelector
-            days={days}
-            isClosed={isClosed}
-            setIsClosed={setIsClosed}
-            localClosedDay={localClosedDay}
-            setLocalClosedDay={setLocalClosedDay}
-            setClosedDay={setClosedDay}
-            setIs24={setIs24}
-            setIs24Hours={setIs24Hours}
-            handleBottomClose={handleBottomClose}
-            setIsAllClosed={setIsAllClosed}
-          />
-          <View style={styles.division} />
+    <View style={styles.container}>
+      <ScrollView
+        ref={scrollViewRef}
+        nestedScrollEnabled={true}
+        contentContainerStyle={{paddingBottom: 100, flexGrow: 1}}
+        showsVerticalScrollIndicator={false}>
+        <ClosedDaySelector
+          days={days}
+          isClosed={isClosed}
+          setIsClosed={setIsClosed}
+          localClosedDay={localClosedDay}
+          setLocalClosedDay={setLocalClosedDay}
+          setClosedDay={setClosedDay}
+          setIs24={setIs24}
+          setIs24Hours={setIs24Hours}
+          handleBottomClose={handleBottomClose}
+          setIsAllClosed={setIsAllClosed}
+          isBottomOpen={isBottomOpen}
+        />
+        <View style={styles.division} />
 
-          <OperatingHoursToggle
-            isSameEveryday={isSameEveryday}
-            setIsSameEveryday={setIsSameEveryday}
-            setIsSameEveryTime={setIsSameEveryTime}
-            handleBottomClose={handleBottomClose}
-            setIs24={setIs24}
-          />
-          {isSameEveryday ? (
-            <>
-              <OperatingHoursCheckbox
-                isSameEveryday={isSameEveryday}
-                is24={is24}
-                toggle24Hours={toggle24Hours}
+        <OperatingHoursToggle
+          isSameEveryday={isSameEveryday}
+          setIsSameEveryday={setIsSameEveryday}
+          handleBottomClose={handleBottomClose}
+          setIs24={setIs24}
+          isBottomOpen={isBottomOpen}
+        />
+        {isSameEveryday ? (
+          <>
+            <OperatingHoursCheckbox
+              isSameEveryday={isSameEveryday}
+              is24={is24}
+              toggle24Hours={toggle24Hours}
+            />
+            {/* 간단한 현재 시간 표시 */}
+            {!is24 && (
+              <OperatingHoursInput
+                sameOpenTime={timeState.sameOpenTime}
+                sameCloseTime={timeState.sameCloseTime}
+                isOpenTime={isOpenTime}
+                isCloseTime={isCloseTime}
+                wrongBreak={wrongBreak}
+                isSameOperating={isSameOperating}
+                handleTimePickerToggle={handleTimePickerToggle}
               />
-              {/* 간단한 현재 시간 표시 */}
-              {!is24 && (
-                <OperatingHoursInput
-                  sameOpenTime={timeState.sameOpenTime}
-                  sameCloseTime={timeState.sameCloseTime}
-                  isOpenTime={isOpenTime}
-                  isCloseTime={isCloseTime}
+            )}
+
+            {!is24 && (isOpenTime || isCloseTime) && (
+              <OperatingHoursTimePicker
+                isOpenTime={isOpenTime}
+                sameOpenTime={timeState.sameOpenTime}
+                sameCloseTime={timeState.sameCloseTime}
+                wrongBreak={wrongBreak}
+                isSameOperating={isSameOperating}
+                handleTimeChange={handleTimeChange}
+                operateErrorMessage={operateErrorMessage}
+              />
+            )}
+
+            <View
+              style={{
+                width: '100%',
+                height: 1,
+                backgroundColor: '#EAEAEA',
+                marginTop: 30,
+              }}
+            />
+            {!is24 && hasLocalBreaking && (
+              <>
+                <BreakTimeInput
+                  sameStartTime={timeState.sameStartTime}
+                  sameEndTime={timeState.sameEndTime}
+                  isStartTime={isStartTime}
+                  isEndTime={isEndTime}
                   wrongBreak={wrongBreak}
-                  isSameOperating={isSameOperating}
                   handleTimePickerToggle={handleTimePickerToggle}
                 />
-              )}
 
-              {!is24 && (isOpenTime || isCloseTime) && (
-                <OperatingHoursTimePicker
-                  isOpenTime={isOpenTime}
-                  sameOpenTime={timeState.sameOpenTime}
-                  sameCloseTime={timeState.sameCloseTime}
-                  wrongBreak={wrongBreak}
-                  isSameOperating={isSameOperating}
-                  handleTimeChange={handleTimeChange}
-                  handleTimePickerToggle={handleTimePickerToggle}
-                  operateErrorMessage={operateErrorMessage}
-                />
-              )}
-              {isSameOperating ? (
-                <Text style={styles.wrongText}>{operateErrorMessage}</Text>
-              ) : wrongBreak ? (
-                <Text style={styles.wrongText}>
-                  영업 시간은 브레이크타임을 포함하도록 설정해주세요.
-                </Text>
-              ) : null}
-              <View
-                style={{
-                  width: '100%',
-                  height: 1,
-                  backgroundColor: '#EAEAEA',
-                  marginTop: 30,
-                }}
-              />
-              {!is24 && hasLocalBreaking && (
-                <>
-                  <BreakTimeInput
+                {(isStartTime || isEndTime) && (
+                  <BreakTimePicker
+                    isStartTime={isStartTime}
                     sameStartTime={timeState.sameStartTime}
                     sameEndTime={timeState.sameEndTime}
-                    isStartTime={isStartTime}
-                    isEndTime={isEndTime}
                     wrongBreak={wrongBreak}
-                    handleTimePickerToggle={handleTimePickerToggle}
+                    handleTimeChange={handleTimeChange}
+                    breakErrorMessage={breakErrorMessage}
                   />
+                )}
 
-                  {(isStartTime || isEndTime) && (
-                    <BreakTimePicker
-                      isStartTime={isStartTime}
-                      sameStartTime={timeState.sameStartTime}
-                      sameEndTime={timeState.sameEndTime}
-                      wrongBreak={wrongBreak}
-                      handleTimeChange={handleTimeChange}
-                      handleTimePickerToggle={handleTimePickerToggle}
-                      breakErrorMessage={breakErrorMessage}
-                    />
-                  )}
-                  {wrongBreak && (
-                    <Text style={styles.wrongText}>{breakErrorMessage}</Text>
-                  )}
-                  <View
-                    style={{
-                      width: '100%',
-                      height: 1,
-                      backgroundColor: '#EAEAEA',
-                      marginTop: 30,
-                    }}
-                  />
-                </>
-              )}
-              {!is24 && (
-                <BreakTimeToggle
-                  hasBreaking={hasLocalBreaking}
-                  handleIsBreaking={handleIsBreaking}
+                <View
+                  style={{
+                    width: '100%',
+                    height: 1,
+                    backgroundColor: '#EAEAEA',
+                    marginTop: 30,
+                  }}
                 />
-              )}
-            </>
-          ) : (
-            // 요일마다 다름일 때
-            days.map((day, index, array) => {
-              const isLastItem = index === array.length - 1; // 마지막 요소 확인
-              const isClosedDay = localClosedDay.includes(day.value); // 휴무일 여부 확인
+              </>
+            )}
+            {!is24 && (
+              <BreakTimeToggle
+                hasBreaking={hasLocalBreaking}
+                handleIsBreaking={handleIsBreaking}
+              />
+            )}
+          </>
+        ) : (
+          // 요일마다 다름일 때
+          days.map((day, index, array) => {
+            const isLastItem = index === array.length - 1; // 마지막 요소 확인
+            const isClosedDay = localClosedDay.includes(day.value);
+            const formattedDay =
+              day.value.charAt(0) + day.value.slice(1).toLowerCase();
 
-              const formattedDay =
-                day.value.charAt(0) + day.value.slice(1).toLowerCase();
-              const openHour =
-                localOperatingHours?.[formattedDay]?.openHour || '09';
-              const openMinute =
-                localOperatingHours?.[formattedDay]?.openMinute || '00';
-              const closeHour =
-                localOperatingHours?.[formattedDay]?.closedHour || '18';
-              const closeMinute =
-                localOperatingHours?.[formattedDay]?.closedMinute || '00';
-
-              const breakStartHour =
-                localBreakingHours?.[formattedDay]?.startHour;
-              const breakStartMinute =
-                localBreakingHours?.[formattedDay]?.startMinute;
-              const breakEndHour = localBreakingHours?.[formattedDay]?.endHour;
-              const breakEndMinute =
-                localBreakingHours?.[formattedDay]?.endMinute;
-              return (
-                <Pressable
-                  key={day.value}
-                  onPress={() => !isClosedDay && handleBottomOpen(day)}
-                  style={[
-                    styles.dayContainer,
-                    isLastItem && {borderBottomWidth: 0}, // 마지막 요소 보더 제거
-                    isClosedDay && styles.disabled,
-                    !isClosedDay && breakStartHour && {paddingVertical: 15},
-                  ]}>
-                  <Text style={styles.operateDayText}>{day.label}요일</Text>
-                  <View style={[styles.timeConatainer]}>
-                    <View>
-                      <View style={styles.timeInputView}>
-                        {isClosedDay ? (
-                          <Text style={styles.holidayText}>휴무</Text>
-                        ) : (
-                          <>
-                            <Text style={styles.timeInputTitle}>영업 시간</Text>
-                            <Text style={styles.timeInputText}>
-                              {openHour
-                                ? `${openHour}:${openMinute} ~ ${
-                                    closeHour >= 24
-                                      ? `다음날 ${String(
-                                          closeHour - 24,
-                                        ).padStart(2, '0')}`
-                                      : String(closeHour).padStart(2, '0')
-                                  }:${closeMinute}`
-                                : '미설정'}
-                            </Text>
-                          </>
-                        )}
-                      </View>
-                      {isClosedDay
-                        ? null
-                        : breakStartHour && (
-                            <View style={styles.timeInputView}>
-                              <Text style={styles.timeInputTitle}>
-                                브레이크타임
-                              </Text>
-
-                              <Text style={styles.timeInputText}>
-                                {breakStartHour
-                                  ? `${breakStartHour}:${breakStartMinute} ~ ${
-                                      breakEndHour >= 24
-                                        ? `다음날 ${String(
-                                            breakEndHour - 24,
-                                          ).padStart(2, '0')}`
-                                        : String(breakEndHour).padStart(2, '0')
-                                    }:${breakEndMinute}`
-                                  : '미설정'}
-                              </Text>
-                            </View>
-                          )}
-                    </View>
-                    {!isClosedDay && (
-                      <Octicons
-                        name="chevron-right"
-                        size={20}
-                        color="#4B4B4B"
-                        style={styles.icons}
-                      />
-                    )}
-                  </View>
-                </Pressable>
-              );
-            })
-          )}
-        </ScrollView>
-        {isBottomSheetVisible && selectedDay && (
-          <BottomSheet
-            ref={bottomSheetRef}
-            index={0}
-            snapPoints={snapPoints}
-            // enablePanDownToClose={true}
-            enablePanDownToClose={false}
-            gestureEnabled={false}
-            handleIndicatorStyle={{display: 'none'}}
-            backgroundStyle={{
-              backgroundColor: '#FDFDFD',
-              borderTopLeftRadius: 35,
-              borderTopRightRadius: 35,
-              shadowColor: '#000',
-              shadowOffset: {width: 0, height: -3},
-              shadowOpacity: 0.2,
-              shadowRadius: 5,
-              elevation: 10,
-            }}
-            onClose={onBottomSheetClose} // 바텀시트 닫힐 때 상태 변경
-          >
-            <View style={styles.bottomSheetContent}>
-              {/* <Text style={styles.sheetTitle}>
-                {selectedDay.label}요일 영업 정보
-              </Text> */}
-              <View style={styles.bottomSheetHeader}>
-                <Text style={styles.sheetTitle}>
-                  {selectedDay.label}요일 영업 정보
-                </Text>
-                <Pressable
-                  onPress={handleCancelChanges}
-                  style={styles.closeButton}>
-                  <Ionicons
-                    name="close"
-                    size={25}
-                    color="4B4B4B"
-                    // style={{marginRight: 18}}
-                  />
-                </Pressable>
-              </View>
-
-              {/* 요일 포맷팅 */}
-              {(() => {
-                const formattedDay =
-                  selectedDay.value.charAt(0) +
-                  selectedDay.value.slice(1).toLowerCase();
-                const openHour =
-                  localOperatingHours?.[formattedDay]?.openHour || '09';
-                const openMinute =
-                  localOperatingHours?.[formattedDay]?.openMinute || '00';
-                const closeHour =
-                  localOperatingHours?.[formattedDay]?.closedHour || '18';
-                const closeMinute =
-                  localOperatingHours?.[formattedDay]?.closedMinute || '00';
-
-                const breakStartHour =
-                  localBreakingHours?.[formattedDay]?.startHour;
-                const breakStartMinute =
-                  localBreakingHours?.[formattedDay]?.startMinute;
-                const breakEndHour =
-                  localBreakingHours?.[formattedDay]?.endHour;
-                const breakEndMinute =
-                  localBreakingHours?.[formattedDay]?.endMinute;
-                return (
-                  <>
-                    <Text style={styles.boldText}>영업 시간</Text>
-                    <View style={styles.timeInputContainer}>
-                      <Pressable
-                        style={[
-                          styles.timeInput,
-                          isOpenTime && {
-                            backgroundColor: 'rgba(22, 187, 255, 0.2)',
-                          },
-                          isOpenTime &&
-                            breakError && {
-                              backgroundColor: 'rgba(255, 50, 50, 0.2)',
-                            },
-                          isOpenTime &&
-                            operateError && {
-                              backgroundColor: 'rgba(255, 50, 50, 0.2)',
-                            },
-                        ]}
-                        onPress={() => handleTimePickerToggle('open')}>
-                        <Text
-                          style={[
-                            styles.timeText,
-                            isOpenTime && {color: '#16BBFF'},
-                            isOpenTime && breakError && {color: '#FF4816'},
-                            isOpenTime && operateError && {color: '#FF4816'},
-                          ]}>{`${openHour}:${openMinute}`}</Text>
-                      </Pressable>
-                      <Text style={styles.separator}>~</Text>
-
-                      <Pressable
-                        style={[
-                          styles.timeInput,
-                          isCloseTime && {
-                            backgroundColor: 'rgba(22, 187, 255, 0.2)',
-                          },
-                          isCloseTime &&
-                            breakError && {
-                              backgroundColor: 'rgba(255, 50, 50, 0.2)',
-                            },
-                          isCloseTime &&
-                            operateError && {
-                              backgroundColor: 'rgba(255, 50, 50, 0.2)',
-                            },
-                        ]}
-                        onPress={() => handleTimePickerToggle('close')}>
-                        {closeHour >= 24 && (
-                          <Text
-                            style={[
-                              styles.nextText,
-                              isCloseTime && {color: '#16BBFF'},
-                              isCloseTime &&
-                                breakError && {
-                                  color: '#FF4816',
-                                  borderColor: '#FF4816',
-                                },
-                              isCloseTime &&
-                                operateError && {
-                                  color: '#FF4816',
-                                  borderColor: '#FF4816',
-                                },
-                            ]}>
-                            다음날
-                          </Text>
-                        )}
-
-                        <Text
-                          style={[
-                            styles.timeText,
-                            isCloseTime && {color: '#16BBFF'},
-                            isCloseTime && breakError && {color: '#FF4816'},
-                            isCloseTime && operateError && {color: '#FF4816'},
-                          ]}>
-                          {closeHour >= 24
-                            ? `${String(closeHour - 24).padStart(
-                                2,
-                                '0',
-                              )}:${closeMinute}`
-                            : `${String(closeHour).padStart(
-                                2,
-                                '0',
-                              )}:${closeMinute}`}
-                        </Text>
-                      </Pressable>
-                    </View>
-                    {!is24 && (isOpenTime || isCloseTime) && (
-                      <View style={styles.pickerTopView}>
-                        <View style={styles.pickerWrapper}>
-                          {isOpenTime ? (
-                            <TimePicker
-                              selectedHour={openHour}
-                              selectedMinute={openMinute}
-                              onHourChange={value => {
-                                handleDiffOperating(
-                                  formattedDay,
-                                  'openHour',
-                                  value,
-                                );
-                              }}
-                              onMinuteChange={value => {
-                                handleDiffOperating(
-                                  formattedDay,
-                                  'openMinute',
-                                  value,
-                                );
-                              }}
-                            />
-                          ) : (
-                            <CloseTimePicker
-                              selectedHour={closeHour}
-                              selectedMinute={closeMinute}
-                              onHourChange={value => {
-                                handleDiffOperating(
-                                  formattedDay,
-                                  'closedHour',
-                                  value,
-                                );
-                              }}
-                              onMinuteChange={value => {
-                                handleDiffOperating(
-                                  formattedDay,
-                                  'closedMinute',
-                                  value,
-                                );
-                              }}
-                            />
-                          )}
-                        </View>
-                      </View>
-                    )}
-                    {breakError && (
-                      <Text style={styles.wrongText}>
-                        영업 시간은 브레이크타임을 포함하도록 설정해주세요.
-                      </Text>
-                    )}
-                    {operateError && (
-                      <Text style={styles.wrongText}>
-                        {operateErrorMessage}
-                      </Text>
-                    )}
-
-                    {breakStartHour && (
-                      <>
-                        <Text style={[styles.boldText, {marginTop: 20}]}>
-                          브레이크타임
-                        </Text>
-
-                        <View style={styles.timeInputContainer}>
-                          <Pressable
-                            style={[
-                              styles.timeInput,
-                              isStartTime && {
-                                backgroundColor: 'rgba(22, 187, 255, 0.2)',
-                              },
-                              isStartTime &&
-                                breakError && {
-                                  backgroundColor: 'rgba(255, 50, 50, 0.2)',
-                                },
-                              isStartTime &&
-                                isSameOperating && {
-                                  backgroundColor: 'rgba(255, 50, 50, 0.2)',
-                                },
-                            ]}
-                            onPress={() => handleTimePickerToggle('start')}>
-                            <Text
-                              style={[
-                                styles.timeText,
-                                isStartTime && {color: '#16BBFF'},
-                                isStartTime && breakError && {color: '#FF4816'},
-                              ]}>{`${breakStartHour}:${breakStartMinute}`}</Text>
-                          </Pressable>
-                          <Text style={styles.separator}>~</Text>
-
-                          <Pressable
-                            style={[
-                              styles.timeInput,
-                              isEndTime && {
-                                backgroundColor: 'rgba(22, 187, 255, 0.2)',
-                              },
-                              isEndTime &&
-                                breakError && {
-                                  backgroundColor: 'rgba(255, 50, 50, 0.2)',
-                                },
-                            ]}
-                            onPress={() => handleTimePickerToggle('end')}>
-                            {breakEndHour >= 24 && (
-                              <Text
-                                style={[
-                                  styles.nextText,
-                                  isEndTime && {color: '#16BBFF'},
-                                  isEndTime &&
-                                    breakError && {
-                                      color: '#FF4816',
-                                      borderColor: '#FF4816',
-                                    },
-                                ]}>
-                                다음날
-                              </Text>
-                            )}
-                            <Text
-                              style={[
-                                styles.timeText,
-                                isEndTime && {color: '#16BBFF'},
-                                isEndTime && breakError && {color: '#FF4816'},
-                              ]}>
-                              {breakEndHour >= 24
-                                ? `${String(breakEndHour - 24).padStart(
-                                    2,
-                                    '0',
-                                  )}:${breakEndMinute}`
-                                : `${String(breakEndHour).padStart(
-                                    2,
-                                    '0',
-                                  )}:${breakEndMinute}`}
-                            </Text>
-                          </Pressable>
-                        </View>
-                        {(isStartTime || isEndTime) && (
-                          <View style={styles.pickerTopView}>
-                            <View style={styles.pickerWrapper}>
-                              {isStartTime ? (
-                                <TimePicker
-                                  selectedHour={breakStartHour}
-                                  selectedMinute={breakStartMinute}
-                                  onHourChange={value => {
-                                    handleDiffBreaking(
-                                      formattedDay,
-                                      'startHour',
-                                      value,
-                                    );
-                                  }}
-                                  onMinuteChange={value => {
-                                    handleDiffBreaking(
-                                      formattedDay,
-                                      'startMinute',
-                                      value,
-                                    );
-                                  }}
-                                />
-                              ) : (
-                                <CloseTimePicker
-                                  selectedHour={breakEndHour}
-                                  selectedMinute={breakEndMinute}
-                                  onHourChange={value => {
-                                    handleDiffBreaking(
-                                      formattedDay,
-                                      'endHour',
-                                      value,
-                                    );
-                                  }}
-                                  onMinuteChange={value => {
-                                    handleDiffBreaking(
-                                      formattedDay,
-                                      'endMinute',
-                                      value,
-                                    );
-                                  }}
-                                />
-                              )}
-
-                              {breakError && (
-                                <Text style={styles.wrongText}>
-                                  {/* 브레이크타임은 영업 시간에 포함되도록
-                                  설정해주세요. */}
-                                  {breakErrorMessage}
-                                </Text>
-                              )}
-                            </View>
-                          </View>
-                        )}
-                      </>
-                    )}
-                    <Pressable
-                      onPress={() => handleBreaking(formattedDay)}
-                      style={styles.addBreakButton}>
-                      <Text style={styles.addBreakText}>
-                        {breakStartHour
-                          ? '- 브레이크타임 제거'
-                          : '+ 브레이크타임 추가'}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={handleBottomClose}
-                      disabled={breakError || operateError}
-                      style={[
-                        styles.pickerOkView,
-                        (breakError || operateError) && {
-                          backgroundColor: '#F2F2F2',
-                        },
-                      ]}>
-                      <Text style={styles.pickerOkText}>확인</Text>
-                    </Pressable>
-                  </>
-                );
-              })()}
-            </View>
-          </BottomSheet>
+            return (
+              <OperatingDayItem
+                key={day.value}
+                day={day}
+                isClosedDay={isClosedDay}
+                openHour={localOperatingHours?.[formattedDay]?.openHour}
+                openMinute={localOperatingHours?.[formattedDay]?.openMinute}
+                closeHour={localOperatingHours?.[formattedDay]?.closedHour}
+                closeMinute={localOperatingHours?.[formattedDay]?.closedMinute}
+                breakStartHour={localBreakingHours?.[formattedDay]?.startHour}
+                breakStartMinute={
+                  localBreakingHours?.[formattedDay]?.startMinute
+                }
+                breakEndHour={localBreakingHours?.[formattedDay]?.endHour}
+                breakEndMinute={localBreakingHours?.[formattedDay]?.endMinute}
+                handleBottomOpen={handleBottomOpen}
+                isLastItem={isLastItem}
+              />
+            );
+          })
         )}
-      </View>
-    </TouchableWithoutFeedback>
+      </ScrollView>
+      {isBottomOpen && selectedDay && (
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={isBottomOpen}
+          onRequestClose={handleBottomClose}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.bottomSheetContent}>
+                <OperateBottomSheetHeader
+                  title={`${selectedDay.label}요일 영업 정보`}
+                  onClose={handleCancelChanges}
+                />
+                {/* 요일 포맷팅 */}
+                {(() => {
+                  const formattedDay =
+                    selectedDay.value.charAt(0) +
+                    selectedDay.value.slice(1).toLowerCase();
+                  const openHour =
+                    localOperatingHours?.[formattedDay]?.openHour || '09';
+                  const openMinute =
+                    localOperatingHours?.[formattedDay]?.openMinute || '00';
+                  const closeHour =
+                    localOperatingHours?.[formattedDay]?.closedHour || '18';
+                  const closeMinute =
+                    localOperatingHours?.[formattedDay]?.closedMinute || '00';
+
+                  const breakStartHour =
+                    localBreakingHours?.[formattedDay]?.startHour;
+                  const breakStartMinute =
+                    localBreakingHours?.[formattedDay]?.startMinute;
+                  const breakEndHour =
+                    localBreakingHours?.[formattedDay]?.endHour;
+                  const breakEndMinute =
+                    localBreakingHours?.[formattedDay]?.endMinute;
+                  return (
+                    <>
+                      <OperateBottomHoursSelector
+                        openHour={openHour}
+                        openMinute={openMinute}
+                        closeHour={closeHour}
+                        closeMinute={closeMinute}
+                        isOpenTime={isOpenTime}
+                        isCloseTime={isCloseTime}
+                        breakError={breakError}
+                        operateError={operateError}
+                        handleTimePickerToggle={handleTimePickerToggle}
+                      />
+                      {!is24 && (isOpenTime || isCloseTime) && (
+                        <OperateBottomOperatingTimePicker
+                          isOpenTime={isOpenTime}
+                          openHour={openHour}
+                          openMinute={openMinute}
+                          closeHour={closeHour}
+                          closeMinute={closeMinute}
+                          handleDiffOperating={handleDiffOperating}
+                          formattedDay={formattedDay}
+                          breakError={breakError}
+                          operateError={operateError}
+                          operateErrorMessage={operateErrorMessage}
+                        />
+                      )}
+
+                      {breakStartHour && (
+                        <>
+                          <OperateBottomBreakSelector
+                            isStartTime={isStartTime}
+                            isEndTime={isEndTime}
+                            breakStartHour={breakStartHour}
+                            breakStartMinute={breakStartMinute}
+                            breakEndHour={breakEndHour}
+                            breakEndMinute={breakEndMinute}
+                            breakError={breakError}
+                            handleTimePickerToggle={handleTimePickerToggle}
+                          />
+
+                          {(isStartTime || isEndTime) && (
+                            // OperateBottomBreakingTimePicker
+                            <OperateBottomBreakingTimePicker
+                              isStartTime={isStartTime}
+                              breakStartHour={breakStartHour}
+                              breakStartMinute={breakStartMinute}
+                              breakEndHour={breakEndHour}
+                              breakEndMinute={breakEndMinute}
+                              handleDiffBreaking={handleDiffBreaking}
+                              formattedDay={formattedDay}
+                              breakError={breakError}
+                              breakErrorMessage={breakErrorMessage}
+                            />
+                          )}
+                        </>
+                      )}
+
+                      <OperateBottomBreakToggle
+                        onPress={() => handleBreaking(formattedDay)}
+                        hasBreakTime={!!breakStartHour}
+                      />
+
+                      <OperateBottomConfirmButton
+                        onPress={handleBottomClose}
+                        disabled={breakError || operateError}
+                      />
+                    </>
+                  );
+                })()}
+              </View>
+              {/* </BottomSheet> */}
+            </View>
+          </View>
+        </Modal>
+      )}
+    </View>
   );
 };
 
 export default StoreAddTimeSetScreen;
 
 const styles = StyleSheet.create({
-  searchButton: {
-    marginRight: 18,
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#16BBFF',
-  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -1338,185 +1004,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAEAEA',
     marginTop: 10,
   },
-  dayContainer: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderColor: '#EAEAEA',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingVertical: 20,
-  },
-  operateDayText: {
-    color: '#4B4B4B',
-    fontSize: 16,
-    fontWeight: '600',
-    alignSelf: 'center',
-  },
-
-  timeConatainer: {
+  modalOverlay: {
+    flex: 1,
     justifyContent: 'flex-end',
-    flexDirection: 'row',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
-  disabled: {
-    backgroundColor: '#EFEFEF',
+  modalContent: {
+    backgroundColor: '#fff',
+    paddingTop: 15,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 70,
   },
-
-  timeInputView: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  timeInputTitle: {
-    lineHeight: 30,
-    color: '#999',
-    fontWeight: 500,
-    fontSize: 15,
-    marginRight: 7,
-  },
-  timeInputText: {
-    lineHeight: 30,
-    fontWeight: 400,
-    fontSize: 15,
-    color: '#4B4B4B',
-  },
-  holidayText: {
-    lineHeight: 30,
-    fontWeight: 500,
-    fontSize: 15,
-    color: '#4B4B4B',
+  searchButton: {
     marginRight: 18,
-  },
-  icons: {
-    marginLeft: 15,
-    alignSelf: 'center',
-  },
-  bottomSheetBackground: {
-    backgroundColor: '#F7F7F7',
-    borderTopLeftRadius: 35,
-    borderTopRightRadius: 35,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: -3},
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 10,
-  },
-  bottomSheetContent: {},
-  bottomSheetHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderColor: '#EAEAEA',
-  },
-
-  closeButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  sheetTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 10,
-  },
-  sheetText: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 5,
-  },
-
-  boldText: {
-    marginHorizontal: 18,
-    marginVertical: 10,
-    fontWeight: 500,
-    fontSize: 16,
-  },
-  timeInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 18,
-    marginBottom: 12,
-  },
-  timeInput: {
-    backgroundColor: '#F2F2F2',
-    color: '#333',
-    padding: 10,
-    borderRadius: 5,
-    width: 80,
-    textAlign: 'center',
-    alignItems: 'center',
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nextText: {
-    fontSize: 12,
+    fontWeight: '500',
     color: '#16BBFF',
-    fontWeight: 600,
-    borderWidth: 1,
-    borderColor: '#16BBFF',
-    padding: 3,
-    marginRight: 5,
-    borderRadius: 3,
-  },
-  timeText: {
-    fontWeight: '600',
-    color: '#333',
-    fontSize: 15,
-  },
-  separator: {
-    fontSize: 18,
-    color: '#333',
-    marginHorizontal: 15,
-  },
-  addBreakButton: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  addBreakText: {
-    color: '#0af',
-    fontSize: 16,
-  },
-  pickerTopView: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 20,
-    marginHorizontal: 20,
-  },
-  pickerWrapper: {
-    flex: 1,
-    borderRadius: 8,
-  },
-  // wrongText: {
-  //   paddingHorizontal: 1,
-  //   marginTop: 5,
-  //   fontSize: 15,
-  //   fontWeight: '500',
-  //   color: '#FF4816',
-  // },
-  wrongText: {
-    alignSelf: 'center',
-    marginTop: 5,
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#FF4816',
-  },
-  pickerOkView: {
-    width: '90%',
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-    backgroundColor: '#16BBFF',
-    borderRadius: 7,
-    paddingHorizontal: 18,
-    alignSelf: 'center',
-  },
-  pickerOkText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '500',
   },
 });
