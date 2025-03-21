@@ -14,6 +14,7 @@ import ActionButtons from './ActionButtons';
 import ImagePicker from 'react-native-image-crop-picker';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import {useToast} from '../../context/ToastContext';
 
 const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -22,6 +23,17 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const [addedImages, setAddedImages] = useState([]);
   const [deletedImages, setDeletedImages] = useState([]);
   const [hasmainImg, setHasmainImg] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingimg, setLoadingimg] = useState(false);
+  const {showToast} = useToast();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingimg(true);
+    }, 500); // 0.5초 후 버튼 활성화
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (Array.isArray(images)) {
@@ -50,13 +62,13 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
       deletedImages,
       hasmainImg,
     });
-    setAddedImages([]);
-    setDeletedImages([]);
-    setAllImages([]);
     setHasmainImg(false);
     setTimeout(() => {
       onSave();
     }, 100);
+    setAddedImages([]);
+    setDeletedImages([]);
+    setAllImages([]);
   };
 
   const handleCancel = () => {
@@ -67,59 +79,51 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
     onCancel();
   };
 
-  const selectImage = () => {
-    // 서버에 있는 이미지와 추가된 이미지를 합쳐서 5개 이하로 제한
-    if (addedImages.length + serverImages.length < 5) {
-      ImagePicker.openPicker({
+  const selectImage = async () => {
+    if (addedImages.length + serverImages.length >= 5) {
+      showToast('이미지는 최대 5개까지 추가할 수 있습니다.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const image = await ImagePicker.openPicker({
         width: 400,
         height: 300,
         mediaType: 'photo',
         cropping: true,
-      })
-        .then(images => {
-          setAddedImages([...addedImages, images]); // 기존 이미지 배열에 새 이미지를 추가
-        })
-        .catch(error => {});
-    } else {
-      showAlert({
-        title: '이미지 추가 제한',
-        message: '이미지는 최대 5개까지 추가할 수 있습니다.',
       });
+      setAddedImages(prev => [...prev, image]);
+      showToast('이미지 추가 완료');
+    } catch (error) {
+      if (error.code !== 'E_PICKER_CANCELLED') {
+        showToast('이미지 추가 중 오류 발생');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const removeServerImage = async index => {
+  const removeServerImage = index => {
     if (allImages.length <= 1) {
-      showAlert({
-        title: '이미지는 최소 1개 이상 필요합니다.',
-      });
+      showToast('이미지는 최소 1개 이상 필요합니다.');
       return;
     }
 
     showAlert({
       title: `이미지를 삭제하시겠습니까?`,
       onConfirm: async () => {
+        setLoading(true);
         try {
           const imageToRemove = serverImages[index];
+          setServerImages(prev => prev.filter((_, i) => i !== index));
+          setDeletedImages(prev => [...prev, imageToRemove]);
 
-          // 서버 이미지 목록에서 삭제
-          const newServerImages = serverImages.filter(
-            (image, i) => i !== index,
-          );
-          setServerImages(newServerImages);
-          setDeletedImages(prevDeleted => [...prevDeleted, imageToRemove]);
-
-          if (index === 0) {
-            setHasmainImg(true);
-          }
-
-          showAlert({
-            title: '삭제 되었습니다',
-          });
+          showToast('삭제 되었습니다.');
         } catch (error) {
-          showAlert({
-            title: '이미지 삭제 실패',
-          });
+          showToast('이미지 삭제 실패.');
+        } finally {
+          setLoading(false);
         }
       },
       onCancel: null,
@@ -129,19 +133,23 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
 
   const removeAddedImage = index => {
     if (allImages.length <= 1) {
-      showAlert({
-        title: '이미지는 최소 1개 이상 필요합니다.',
-      });
+      showToast('이미지는 최소 1개 이상 필요합니다.');
       return;
     }
-
     showAlert({
       title: `이미지를 삭제하시겠습니까?`,
       onConfirm: async () => {
-        setAddedImages(prevImages => prevImages.filter((_, i) => i !== index));
-        showAlert({
-          title: '삭제 되었습니다',
-        });
+        setLoading(true);
+        try {
+          setAddedImages(prevImages =>
+            prevImages.filter((_, i) => i !== index),
+          );
+          showToast('삭제 되었습니다.');
+        } catch (err) {
+          showToast('이미지 삭제 실패.');
+        } finally {
+          setLoading(false);
+        }
       },
       onCancel: null,
       type: 'delete',
@@ -188,7 +196,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
             </TouchableOpacity>
           </View>
         ))}
-        {addedImages.length + images.length < 5 && (
+        {loadingimg && addedImages.length + images.length < 5 && (
           <Pressable
             onPress={selectImage}
             style={{
@@ -203,6 +211,11 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
         <AlertComponent />
       </BottomSheetScrollView>
       <ActionButtons onCancel={handleCancel} onSave={handleSave} />
+      {(loading || !loadingimg) && (
+        <View style={styles.footer}>
+          <Text style={styles.emptyText}>Loading...</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -264,5 +277,23 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  footer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });

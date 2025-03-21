@@ -6,7 +6,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const MapDirections = ({onPress}) => {
   return (
     <Pressable style={styles.buttonRoute} onPress={onPress}>
-      <Ionicons name="navigate" size={30} color="#16BBFF" />
+      <Ionicons name="location-outline" size={30} color="#16BBFF" />
     </Pressable>
   );
 };
