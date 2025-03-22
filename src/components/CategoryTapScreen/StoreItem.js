@@ -18,7 +18,7 @@ const StoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
 
   const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
-    useStoreStatus(store?.operationInfoDtos);
+    useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
   console.log(store?.operationInfoDtos);
   return (
     <Pressable

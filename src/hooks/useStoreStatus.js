@@ -1,6 +1,8 @@
 import {useEffect, useState} from 'react';
 
-const useStoreStatus = (operationInfoDtos = []) => {
+// operationSchedule 다음날 새벽까지 영업 및 현재 날짜 요일 한국 맞추기
+
+const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [closed, setClosed] = useState(false);
@@ -8,9 +10,59 @@ const useStoreStatus = (operationInfoDtos = []) => {
   const [breakend, setBreakend] = useState(null);
   const [starttime, setStarttime] = useState(null);
   const [endtime, setEndtime] = useState(null);
+  const [operationSchedule, setOperationSchedule] = useState(null);
+
+  const formatTime = time => (time ? time.slice(0, 5) : null);
+
+  const reorderScheduleByToday = schedules => {
+    const dayOrder = [
+      'SUNDAY',
+      'MONDAY',
+      'TUESDAY',
+      'WEDNESDAY',
+      'THURSDAY',
+      'FRIDAY',
+      'SATURDAY',
+    ];
+
+    const dayKorMap = {
+      SUNDAY: '일',
+      MONDAY: '월',
+      TUESDAY: '화',
+      WEDNESDAY: '수',
+      THURSDAY: '목',
+      FRIDAY: '금',
+      SATURDAY: '토',
+    };
+
+    const todayIndex = new Date().getDay(); // 일=0, 월=1, ..., 토=6
+    const orderedDays = [
+      ...dayOrder.slice(todayIndex),
+      ...dayOrder.slice(0, todayIndex),
+    ];
+
+    const ordered = orderedDays.map(day => {
+      const match = schedules.find(item => item.dayOfWeek === day);
+      return {
+        day: dayKorMap[day], // 👉 한글 요일로 변경
+        open: formatTime(match?.openTime),
+        close: formatTime(match?.closeTime),
+        breakStart: formatTime(match?.breakStartTime),
+        breakEnd: formatTime(match?.breakEndTime),
+        isClosed: match?.isClosed ?? true,
+      };
+    });
+
+    return ordered;
+  };
 
   useEffect(() => {
     const checkStoreStatus = () => {
+      if (isAlwaysOpen == true) {
+        setIsOpen(true);
+        return;
+      }
+
       let now = new Date();
       let currentDay = new Intl.DateTimeFormat('en-US', {
         weekday: 'long',
@@ -115,6 +167,8 @@ const useStoreStatus = (operationInfoDtos = []) => {
       }
     };
 
+    setOperationSchedule(reorderScheduleByToday(operationInfoDtos));
+
     checkStoreStatus();
     const interval = setInterval(checkStoreStatus, 60 * 1000);
     return () => clearInterval(interval);
@@ -128,7 +182,16 @@ const useStoreStatus = (operationInfoDtos = []) => {
   // breakstart => 브레이크 시작 시간
   // breakend => 브레이크 종료 시간
 
-  return {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend};
+  return {
+    isOpen,
+    isBreak,
+    closed,
+    starttime,
+    endtime,
+    breakstart,
+    breakend,
+    operationSchedule,
+  };
 };
 
 export default useStoreStatus;

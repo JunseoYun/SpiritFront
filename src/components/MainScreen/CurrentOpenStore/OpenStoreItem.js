@@ -12,7 +12,7 @@ const OpenStoreItem = ({store, location, navigation}) => {
   const calculateDistance = useDistance();
 
   const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
-    useStoreStatus(store?.operationInfoDtos);
+    useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
 
   const calculateWalkingTime = distance => {
     const walkingSpeed = 80; // 평균 보행 속도 (m/min)

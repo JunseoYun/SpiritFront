@@ -9,7 +9,7 @@ const LikedItem = ({store, navigation}) => {
   const {translateCategory} = useCategoryTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
   const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
-    useStoreStatus(store?.operationInfoDtos);
+    useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
 
   return (
     <Pressable
