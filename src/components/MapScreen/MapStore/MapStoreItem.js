@@ -13,7 +13,7 @@ const MapStoreItem = ({
   navigation,
 }) => {
   const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
-    useStoreStatus(item?.operationInfoDtos);
+    useStoreStatus(item?.operationInfoDtos, item?.isAlwaysOpen);
 
   const handlePress = () => {
     setSelectedStore(item);

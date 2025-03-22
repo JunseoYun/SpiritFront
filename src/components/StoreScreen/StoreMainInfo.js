@@ -21,7 +21,6 @@ import useDistance from '../../hooks/useDistance';
 import useDayTranslation from '../../hooks/useDayTranslation';
 import useStoreStatus from '../../hooks/useStoreStatus';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
-
 import useCustomAlert from '../../hooks/useCustomAlert';
 
 const StoreMainInfo = ({
@@ -42,11 +41,16 @@ const StoreMainInfo = ({
 
   const [isExpanded, setIsExpanded] = useState(false); // 매장 정보 확장 상태
 
-  const isStoreOpen = useStoreStatus(
-    storedata?.businessHoursDto?.openTime,
-    storedata?.businessHoursDto?.closeTime,
-    storedata?.closedDays,
-  );
+  const {
+    isOpen,
+    isBreak,
+    closed,
+    starttime,
+    endtime,
+    breakstart,
+    breakend,
+    operationSchedule,
+  } = useStoreStatus(storedata?.operationInfoDtos, storedata?.isAlwaysOpen);
 
   const [distance, setDistance] = useState(0);
   const [unit, setUnite] = useState('m');
@@ -58,7 +62,7 @@ const StoreMainInfo = ({
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
+    setIsExpanded(prev => !prev);
   };
 
   const endHandle = () => {
@@ -105,6 +109,7 @@ const StoreMainInfo = ({
             <Text style={styles.Storetitle}>{storedata?.name}</Text>
           </View>
         )}
+
         {isUpdate ? (
           <TouchableOpacity
             style={styles.Storesubtitleview}
@@ -202,31 +207,6 @@ const StoreMainInfo = ({
       )}
 
       {!isUpdate && (
-        <View style={styles.timeview}>
-          {isStoreOpen ? (
-            <>
-              <Text style={[styles.timetextnow, {color: 'green'}]}>
-                영업 중
-              </Text>
-              <Text style={styles.timetext}>
-                영업 종료 -{' '}
-                {storedata?.businessHoursDto?.closeTime?.slice(0, 5)}
-              </Text>
-            </>
-          ) : (
-            <>
-              <Text style={[styles.timetextnow, {color: '#F05650'}]}>
-                영업 종료
-              </Text>
-              <Text style={styles.timetext}>
-                영업 시작 - {storedata?.businessHoursDto?.openTime?.slice(0, 5)}
-              </Text>
-            </>
-          )}
-        </View>
-      )}
-
-      {!isUpdate && (
         <View style={styles.locationview}>
           <Ionicons name="location-outline" size={20} color="#333" />
           <Text style={styles.locationtext}>
@@ -235,312 +215,280 @@ const StoreMainInfo = ({
         </View>
       )}
 
-      {!isExpanded && !isUpdate && (
-        <Pressable onPress={toggleExpand} style={styles.introduceMoreview}>
-          <Text style={styles.introduceMoreText}>매장 정보</Text>
-          <Entypo name="chevron-small-down" size={25} color="#5F5F5F" />
-        </Pressable>
-      )}
-
-      {/* 매장 정보 확장 */}
-      {(isExpanded || isUpdate) && (
-        <View style={styles.introduceview}>
-          {isUpdate ? (
-            <TouchableOpacity
-              style={styles.infoHideView}
-              onPress={
-                isUpdate
-                  ? () =>
-                      handleEdit('locationDto', {
-                        address: storedata?.locationDto?.address,
-                        addressDetail: storedata?.locationDto?.addressDetail,
-                        latitude: storedata?.locationDto?.latitude,
-                        longitude: storedata?.locationDto?.longitude,
-                      })
-                  : null
-              }>
-              <AntDesign name="home" size={20} color="#333" />
-              <View
-                style={{flexDirection: 'row', flexWrap: 'wrap', width: '100%'}}>
-                <Text style={styles.infoHidetext}>
-                  {storedata?.locationDto?.address},
-                </Text>
-                {storedata?.locationDto?.addressDetail && (
-                  <Text style={styles.addressDetailText}>
-                    {storedata?.locationDto?.addressDetail}
-                  </Text>
-                )}
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.infoHideView}>
-              <AntDesign name="home" size={20} color="#333" />
-              <View
-                style={{flexDirection: 'row', flexWrap: 'wrap', width: '100%'}}>
-                <Text style={styles.infoHidetext}>
-                  {storedata?.locationDto?.address},
-                </Text>
-                {storedata?.locationDto?.addressDetail && (
-                  <Text style={styles.addressDetailText}>
-                    {storedata?.locationDto?.addressDetail}
-                  </Text>
-                )}
-              </View>
-            </View>
-          )}
-
-          {isUpdate ? (
-            <TouchableOpacity
-              style={styles.infoHideView}
-              onPress={
-                isUpdate
-                  ? () =>
-                      handleEdit('operatingTime', {
-                        openTime: storedata?.businessHoursDto?.openTime,
-                        closeTime: storedata?.businessHoursDto?.closeTime,
-                        breakStartTime:
-                          storedata?.businessHoursDto?.breakStartTime,
-                        breakEndTime: storedata?.businessHoursDto?.breakEndTime,
-                      })
-                  : null
-              }>
-              <Ionicons name="time-outline" size={20} color="#333" />
-              <Text style={styles.infoHidetext}>
-                {storedata?.businessHoursDto?.openTime?.slice(0, 5)} -{' '}
-                {storedata?.businessHoursDto?.closeTime?.slice(0, 5)}
+      {isUpdate ? (
+        <TouchableOpacity
+          style={styles.infoHideView}
+          onPress={
+            isUpdate
+              ? () =>
+                  handleEdit('locationDto', {
+                    address: storedata?.locationDto?.address,
+                    addressDetail: storedata?.locationDto?.addressDetail,
+                    latitude: storedata?.locationDto?.latitude,
+                    longitude: storedata?.locationDto?.longitude,
+                  })
+              : null
+          }>
+          <AntDesign name="home" size={20} color="#333" />
+          <View style={{flexDirection: 'row', flexWrap: 'wrap', width: '100%'}}>
+            <Text style={styles.infoHidetext}>
+              {storedata?.locationDto?.address},
+            </Text>
+            {storedata?.locationDto?.addressDetail && (
+              <Text style={styles.addressDetailText}>
+                {storedata?.locationDto?.addressDetail}
               </Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.infoHideView}>
-              <Ionicons name="time-outline" size={20} color="#333" />
-              <Text style={styles.infoHidetext}>
-                {storedata?.businessHoursDto?.openTime?.slice(0, 5)} -{' '}
-                {storedata?.businessHoursDto?.closeTime?.slice(0, 5)}
+            )}
+          </View>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.locationview}>
+          <AntDesign name="home" size={20} color="#333" />
+          <View style={{flexDirection: 'row', flexWrap: 'wrap', width: '100%'}}>
+            <Text style={styles.infoHidetext}>
+              {storedata?.locationDto?.address},
+            </Text>
+            {storedata?.locationDto?.addressDetail && (
+              <Text style={styles.addressDetailText}>
+                {storedata?.locationDto?.addressDetail}
               </Text>
-            </View>
-          )}
-
-          {isUpdate ? (
-            <TouchableOpacity
-              style={styles.infoHideView}
-              onPress={
-                isUpdate
-                  ? () =>
-                      handleEdit('breakingTime', {
-                        openTime: storedata?.businessHoursDto?.openTime,
-                        closeTime: storedata?.businessHoursDto?.closeTime,
-                        breakStartTime:
-                          storedata?.businessHoursDto?.breakStartTime,
-                        breakEndTime: storedata?.businessHoursDto?.breakEndTime,
-                      })
-                  : null
-              }>
-              <MaterialCommunityIcons name="sleep" size={20} color="#333" />
-
-              {storedata?.businessHoursDto?.breakStartTime ? (
-                <Text style={styles.infoHidetext}>
-                  {storedata?.businessHoursDto?.breakStartTime?.slice(0, 5)} -{' '}
-                  {storedata?.businessHoursDto?.breakEndTime?.slice(0, 5)}{' '}
-                  (브레이크타임)
-                </Text>
-              ) : (
-                <Text style={styles.infoHidetext}>
-                  미설정, 없음 (브레이크타임)
-                </Text>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.infoHideView}>
-              <MaterialCommunityIcons name="sleep" size={20} color="#333" />
-
-              {storedata?.businessHoursDto?.breakStartTime ? (
-                <Text style={styles.infoHidetext}>
-                  {storedata?.businessHoursDto?.breakStartTime?.slice(0, 5)} -{' '}
-                  {storedata?.businessHoursDto?.breakEndTime?.slice(0, 5)}{' '}
-                  (브레이크타임)
-                </Text>
-              ) : (
-                <Text style={styles.infoHidetext}>
-                  미설정, 없음 (브레이크타임)
-                </Text>
-              )}
-            </View>
-          )}
-
-          {isUpdate ? (
-            <TouchableOpacity
-              style={styles.infoHideView}
-              onPress={
-                isUpdate
-                  ? () => handleEdit('closedDays', storedata?.closedDays)
-                  : null
-              }>
-              <AntDesign name="calendar" size={20} color="#333" />
-
-              {storedata?.closedDays && storedata?.closedDays.length > 0 ? (
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={styles.infoHidetext}>매주 </Text>
-                  <Text style={styles.closetext}>
-                    {translateDays(storedata?.closedDays)}
-                  </Text>
-                  <Text style={styles.closetext}> 휴무</Text>
-                </View>
-              ) : (
-                <Text style={styles.infoHidetext}>휴무일 없음</Text>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.infoHideView}>
-              <AntDesign name="calendar" size={20} color="#333" />
-
-              {storedata?.closedDays && storedata?.closedDays.length > 0 ? (
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={styles.infoHidetext}>매주 </Text>
-                  <Text style={styles.closetext}>
-                    {translateDays(storedata?.closedDays)}
-                  </Text>
-                  <Text style={styles.closetext}> 휴무</Text>
-                </View>
-              ) : (
-                <Text style={styles.infoHidetext}>휴무일 없음</Text>
-              )}
-            </View>
-          )}
-
-          {isUpdate ? (
-            <TouchableOpacity
-              style={styles.infoHideView}
-              onPress={
-                isUpdate
-                  ? () => handleEdit('hasScreen', storedata?.hasScreen)
-                  : null
-              }>
-              <Feather name="tv" size={20} color="#333" />
-
-              {storedata?.hasScreen ? (
-                <Text style={styles.infoHidetext}>매장 내 스크린(TV) 설치</Text>
-              ) : (
-                <Text style={styles.infoHidetext}>
-                  매장 내 스크린(TV) 미설치
-                </Text>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.infoHideView}>
-              <Feather name="tv" size={20} color="#333" />
-
-              {storedata?.hasScreen ? (
-                <Text style={styles.infoHidetext}>매장 내 스크린(TV) 설치</Text>
-              ) : (
-                <Text style={styles.infoHidetext}>
-                  매장 내 스크린(TV) 미설치
-                </Text>
-              )}
-            </View>
-          )}
-
-          {isUpdate ? (
-            <TouchableOpacity
-              style={styles.infoHideView}
-              onPress={
-                isUpdate
-                  ? () =>
-                      handleEdit(
-                        'isGroupAvailable',
-                        storedata?.isGroupAvailable,
-                      )
-                  : null
-              }>
-              <MaterialIcons name="group" size={20} color="#333" />
-
-              {storedata?.isGroupAvailable ? (
-                <Text style={styles.infoHidetext}>10인 이상 가능</Text>
-              ) : (
-                <Text style={styles.infoHidetext}>10인 이상 불가능</Text>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.infoHideView}>
-              <MaterialIcons name="group" size={20} color="#333" />
-
-              {storedata?.isGroupAvailable ? (
-                <Text style={styles.infoHidetext}>10인 이상 가능</Text>
-              ) : (
-                <Text style={styles.infoHidetext}>10인 이상 불가능</Text>
-              )}
-            </View>
-          )}
-          {isUpdate ? (
-            <TouchableOpacity
-              style={styles.infoHideView}
-              onPress={
-                isUpdate
-                  ? () => handleEdit('contact', storedata?.contact)
-                  : null
-              }>
-              <SimpleLineIcons name="phone" size={20} color="#333" />
-              {storedata?.contact ? (
-                <Text style={styles.infoHidetext}>{storedata?.contact}</Text>
-              ) : (
-                <Text style={styles.infoHidetext}>
-                  등록된 매장 번호가 없습니다
-                </Text>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.infoHideView}>
-              <SimpleLineIcons name="phone" size={20} color="#333" />
-              {storedata?.contact ? (
-                <Text style={styles.infoHidetext}>{storedata?.contact}</Text>
-              ) : (
-                <Text style={styles.infoHidetext}>
-                  등록된 매장 번호가 없습니다
-                </Text>
-              )}
-            </View>
-          )}
-          {isUpdate ? (
-            <TouchableOpacity
-              style={styles.infoHideView}
-              onPress={
-                isUpdate
-                  ? () => handleEdit('description', storedata?.description)
-                  : null
-              }>
-              <AntDesign name="profile" size={20} color="#333" />
-              {storedata?.description ? (
-                <Text style={styles.infoHidetext}>
-                  {storedata?.description}
-                </Text>
-              ) : (
-                <Text style={styles.infoHidetext}>
-                  등록된 매장 소개가 없습니다
-                </Text>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.infoHideView}>
-              <AntDesign name="profile" size={20} color="#333" />
-              {storedata?.description ? (
-                <Text style={styles.infoHidetext}>
-                  {storedata?.description}
-                </Text>
-              ) : (
-                <Text style={styles.infoHidetext}>
-                  등록된 매장 소개가 없습니다
-                </Text>
-              )}
-            </View>
-          )}
-
-          {!isUpdate && (
-            <Pressable onPress={toggleExpand} style={styles.introduceMoreview}>
-              <Text style={styles.introduceHideText}>매장 정보</Text>
-              <Entypo name="chevron-small-up" size={25} color="#5F5F5F" />
-            </Pressable>
-          )}
+            )}
+          </View>
         </View>
       )}
+
+      <Pressable onPress={toggleExpand}>
+        {!isUpdate && (
+          <View style={styles.timesetview}>
+            {isOpen && !isBreak && storedata?.isAlwaysOpen == false && (
+              <>
+                <Text style={[styles.timetextnow, {color: 'green'}]}>
+                  영업 중
+                </Text>
+                <Text style={styles.timetext}>영업 종료 - {endtime}</Text>
+              </>
+            )}
+            {!isOpen && !isBreak && storedata?.isAlwaysOpen == false && (
+              <>
+                <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+                  영업 종료
+                </Text>
+                <Text style={styles.timetext}>영업 시작 - {starttime}</Text>
+              </>
+            )}
+            {isOpen && isBreak && storedata?.isAlwaysOpen == false && (
+              <>
+                <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+                  브레이크 타임
+                </Text>
+                <Text style={styles.timetext}>영업 시작 - {breakend}</Text>
+              </>
+            )}
+            {closed &&
+              !isOpen &&
+              !isBreak &&
+              storedata?.isAlwaysOpen == false && (
+                <>
+                  <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+                    금일 휴무
+                  </Text>
+                </>
+              )}
+            {storedata?.isAlwaysOpen == true && (
+              <>
+                <Text style={[styles.timetextnow, {color: 'green'}]}>
+                  영업 중
+                </Text>
+                <Text style={styles.timetext}>- 연중무휴</Text>
+              </>
+            )}
+            {!isExpanded && (
+              <Entypo name="chevron-small-down" size={25} color="#5F5F5F" />
+            )}
+          </View>
+        )}
+        <View style={styles.infoHideViewtime}>
+          {operationSchedule &&
+          isExpanded &&
+          storedata?.isAlwaysOpen == false ? (
+            <>
+              <Ionicons name="time-outline" size={20} color="#333" />
+              <View>
+                {operationSchedule.map((dayInfo, index) =>
+                  index === 0 ? (
+                    <View
+                      key={index}
+                      style={{
+                        marginBottom: 4,
+                      }}>
+                      <Text style={[styles.infoHidetext, {fontWeight: 'bold'}]}>
+                        {dayInfo.day}{' '}
+                        {dayInfo.isClosed
+                          ? '휴무일'
+                          : `${dayInfo.open} - ${dayInfo.close}`}
+                      </Text>
+                      {!dayInfo.isClosed &&
+                        dayInfo.breakStart &&
+                        dayInfo.breakEnd && (
+                          <Text style={styles.infoHidetext}>
+                            브레이크 타임 {dayInfo.breakStart} -{' '}
+                            {dayInfo.breakEnd}
+                          </Text>
+                        )}
+                    </View>
+                  ) : (
+                    <View key={index} style={{marginBottom: 4}}>
+                      <Text style={styles.infoHidendaytext}>
+                        {dayInfo.day}{' '}
+                        {dayInfo.isClosed
+                          ? '휴무일'
+                          : `${dayInfo.open} - ${dayInfo.close}`}
+                      </Text>
+                      {!dayInfo.isClosed &&
+                        dayInfo.breakStart &&
+                        dayInfo.breakEnd && (
+                          <Text style={styles.infoHidendaytext}>
+                            브레이크 타임 {dayInfo.breakStart} -{' '}
+                            {dayInfo.breakEnd}
+                          </Text>
+                        )}
+                    </View>
+                  ),
+                )}
+              </View>
+              <View style={{justifyContent: 'flex-end'}}>
+                <Entypo name="chevron-small-up" size={25} color="#5F5F5F" />
+              </View>
+            </>
+          ) : (
+            isExpanded &&
+            storedata?.isAlwaysOpen == true && (
+              <>
+                <Ionicons name="time-outline" size={20} color="#333" />
+                <Text style={styles.infoHidetext}>매일 00:00 - 24:00</Text>
+                <View style={{justifyContent: 'flex-end'}}>
+                  <Entypo name="chevron-small-up" size={25} color="#5F5F5F" />
+                </View>
+              </>
+            )
+          )}
+        </View>
+      </Pressable>
+
+      <View style={styles.introduceview}>
+        {isUpdate ? (
+          <TouchableOpacity
+            style={styles.infoHideView}
+            onPress={
+              isUpdate
+                ? () => handleEdit('hasScreen', storedata?.hasScreen)
+                : null
+            }>
+            <Feather name="tv" size={20} color="#333" />
+
+            {storedata?.hasScreen ? (
+              <Text style={styles.infoHidetext}>매장 내 스크린(TV) 설치</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>매장 내 스크린(TV) 미설치</Text>
+            )}
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.infoHideView}>
+            <Feather name="tv" size={20} color="#333" />
+
+            {storedata?.hasScreen ? (
+              <Text style={styles.infoHidetext}>매장 내 스크린(TV) 설치</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>매장 내 스크린(TV) 미설치</Text>
+            )}
+          </View>
+        )}
+
+        {isUpdate ? (
+          <TouchableOpacity
+            style={styles.infoHideView}
+            onPress={
+              isUpdate
+                ? () =>
+                    handleEdit('isGroupAvailable', storedata?.isGroupAvailable)
+                : null
+            }>
+            <MaterialIcons name="group" size={20} color="#333" />
+
+            {storedata?.isGroupAvailable ? (
+              <Text style={styles.infoHidetext}>10인 이상 가능</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>10인 이상 불가능</Text>
+            )}
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.infoHideView}>
+            <MaterialIcons name="group" size={20} color="#333" />
+
+            {storedata?.isGroupAvailable ? (
+              <Text style={styles.infoHidetext}>10인 이상 가능</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>10인 이상 불가능</Text>
+            )}
+          </View>
+        )}
+        {isUpdate ? (
+          <TouchableOpacity
+            style={styles.infoHideView}
+            onPress={
+              isUpdate ? () => handleEdit('contact', storedata?.contact) : null
+            }>
+            <SimpleLineIcons name="phone" size={20} color="#333" />
+            {storedata?.contact ? (
+              <Text style={styles.infoHidetext}>{storedata?.contact}</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>
+                등록된 매장 번호가 없습니다
+              </Text>
+            )}
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.infoHideView}>
+            <SimpleLineIcons name="phone" size={20} color="#333" />
+            {storedata?.contact ? (
+              <Text style={styles.infoHidetext}>{storedata?.contact}</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>
+                등록된 매장 번호가 없습니다
+              </Text>
+            )}
+          </View>
+        )}
+        {isUpdate ? (
+          <TouchableOpacity
+            style={styles.infoHideView}
+            onPress={
+              isUpdate
+                ? () => handleEdit('description', storedata?.description)
+                : null
+            }>
+            <AntDesign name="profile" size={20} color="#333" />
+            {storedata?.description ? (
+              <Text style={styles.infoHidetext}>{storedata?.description}</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>
+                등록된 매장 소개가 없습니다
+              </Text>
+            )}
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.infoHideView}>
+            <AntDesign name="profile" size={20} color="#333" />
+            {storedata?.description ? (
+              <Text style={styles.infoHidetext}>{storedata?.description}</Text>
+            ) : (
+              <Text style={styles.infoHidetext}>
+                등록된 매장 소개가 없습니다
+              </Text>
+            )}
+          </View>
+        )}
+      </View>
       {/*필요한 정보만 넘기는 걸로 변경*/}
       {!isUpdate && (
         <StoreActions
@@ -567,6 +515,7 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: 'white',
     marginBottom: 10,
+    pointerEvents: 'auto',
   },
   Storetitleview: {
     width: '100%',
@@ -619,16 +568,22 @@ const styles = StyleSheet.create({
   timeview: {
     flexDirection: 'row',
     width: '80%',
+    marginHorizontal: 15,
+    alignItems: 'center',
+  },
+  timesetview: {
+    flexDirection: 'row',
+    width: '80%',
     marginTop: 10,
     marginHorizontal: 15,
     alignItems: 'center',
   },
   timetextnow: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 'bold',
   },
   timetext: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
     color: '#5F5F5F',
     marginLeft: 5,
@@ -640,7 +595,7 @@ const styles = StyleSheet.create({
   locationview: {
     flexDirection: 'row',
     width: '80%',
-    marginTop: 15,
+    marginTop: 10,
     marginHorizontal: 15,
     alignItems: 'center',
   },
@@ -677,7 +632,7 @@ const styles = StyleSheet.create({
   },
   introduceview: {
     marginHorizontal: 15,
-    marginTop: 15,
+    marginTop: 10,
   },
   infoHideView: {
     width: '90%',
@@ -685,10 +640,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 15,
   },
+  infoHideViewtime: {
+    width: '90%',
+    flexDirection: 'row',
+    marginHorizontal: 15,
+    marginTop: 10,
+  },
   infoHidetext: {
     fontSize: 15,
     fontWeight: '500',
     color: '#333',
+    marginLeft: 10,
+  },
+  infoHidendaytext: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#777',
     marginLeft: 10,
   },
   addressDetailText: {

@@ -10,7 +10,7 @@ const NearStoreItem = ({store, navigation, location}) => {
   const [unit, setUnit] = useState('m');
   const calculateDistance = useDistance();
   const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
-    useStoreStatus(store?.operationInfoDtos);
+    useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
 
   useEffect(() => {
     const fetchDistance = () => {

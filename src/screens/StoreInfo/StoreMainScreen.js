@@ -6,6 +6,8 @@ import {
   Platform,
   TouchableWithoutFeedback,
   StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
@@ -342,87 +344,87 @@ const StoreMainScreen = ({navigation}) => {
           handleBottomClose={handleBottomClose}
         />
       )}
-
-      <ScrollView
-        onScroll={Animated.event(
-          [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {useNativeDriver: false},
-        )}
-        scrollEventThrottle={16}
-        ref={scrollViewRef}
-        style={{backgroundColor: 'white'}}
-        showsVerticalScrollIndicator={true} // ✅ 스크롤바 표시
-        contentContainerStyle={{direction: 'ltr'}} // ✅ 오른쪽 정렬 유지
-      >
-        <TouchableWithoutFeedback onPress={handleBottomClose}>
-          <View>
-            <View
-              style={[
-                {
-                  height: 300, // 숫자 값은 따옴표 없이 사용
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'black',
-                },
-                isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
-              ]}>
-              <ImageSlider
-                images={imageSliderData}
-                interval={4000}
+      <KeyboardAvoidingView>
+        <ScrollView
+          onScroll={Animated.event(
+            [{nativeEvent: {contentOffset: {y: scrollY}}}],
+            {useNativeDriver: false},
+          )}
+          scrollEventThrottle={16}
+          ref={scrollViewRef}
+          style={{backgroundColor: 'white'}}
+          keyboardShouldPersistTaps="always"
+          scrollEnabled={true}
+          contentContainerStyle={{flexGrow: 1}}>
+          <TouchableWithoutFeedback onPress={handleBottomClose}>
+            <View>
+              <View
+                style={[
+                  {
+                    height: 300, // 숫자 값은 따옴표 없이 사용
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'black',
+                  },
+                  isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
+                ]}>
+                <ImageSlider
+                  images={imageSliderData}
+                  interval={4000}
+                  isUpdate={isUpdate}
+                  handleBottomOpen={handleBottomOpen}
+                  onEditKey={handleEditKey}
+                  onEditValue={handleEditValue}
+                />
+              </View>
+              <StoreMainInfo
+                storedata={storedata}
+                onModalOpen={() => setIsModalVisible(true)}
+                navigation={navigation}
                 isUpdate={isUpdate}
+                endUpdate={endUpdate}
                 handleBottomOpen={handleBottomOpen}
                 onEditKey={handleEditKey}
                 onEditValue={handleEditValue}
               />
+              {!isUpdate && (
+                <View style={{backgroundColor: '#F2F2F2', height: 20}} />
+              )}
+
+              {!isUpdate && (
+                <StoreTabs
+                  changePage={setCurrentPage}
+                  currentPage={currentPage}
+                />
+              )}
+
+              {!isUpdate && (
+                <View>
+                  {currentPage === 'StoreMenuScreen' && (
+                    <StoreMenuScreen
+                      navigation={navigation}
+                      storeId={storeId}
+                      menus={menus}
+                      scrollViewRef={scrollViewRef} // 스크롤 참조 전달
+                      onMenuDelete={handleMenuDelete}
+                    />
+                  )}
+                  {currentPage === 'StoreAlcoholScreen' && (
+                    <StoreAlcoholScreen
+                      navigation={navigation}
+                      storeId={storeId}
+                      alcohols={alcohols}
+                      mainDrinks={storedata.mainDrinkDtos}
+                      scrollViewRef={scrollViewRef}
+                      onAlcoholDelete={handleAlcoholDelete}
+                    />
+                  )}
+                </View>
+              )}
             </View>
-
-            <StoreMainInfo
-              storedata={storedata}
-              onModalOpen={() => setIsModalVisible(true)}
-              navigation={navigation}
-              isUpdate={isUpdate}
-              endUpdate={endUpdate}
-              handleBottomOpen={handleBottomOpen}
-              onEditKey={handleEditKey}
-              onEditValue={handleEditValue}
-            />
-            {!isUpdate && (
-              <View style={{backgroundColor: '#F2F2F2', height: 20}} />
-            )}
-
-            {!isUpdate && (
-              <StoreTabs
-                changePage={setCurrentPage}
-                currentPage={currentPage}
-              />
-            )}
-
-            {!isUpdate && (
-              <View>
-                {currentPage === 'StoreMenuScreen' && (
-                  <StoreMenuScreen
-                    navigation={navigation}
-                    storeId={storeId}
-                    menus={menus}
-                    scrollViewRef={scrollViewRef} // 스크롤 참조 전달
-                    onMenuDelete={handleMenuDelete}
-                  />
-                )}
-                {currentPage === 'StoreAlcoholScreen' && (
-                  <StoreAlcoholScreen
-                    navigation={navigation}
-                    storeId={storeId}
-                    alcohols={alcohols}
-                    mainDrinks={storedata.mainDrinkDtos}
-                    scrollViewRef={scrollViewRef}
-                    onAlcoholDelete={handleAlcoholDelete}
-                  />
-                )}
-              </View>
-            )}
-          </View>
-        </TouchableWithoutFeedback>
-      </ScrollView>
+          </TouchableWithoutFeedback>
+        </ScrollView>
+      </KeyboardAvoidingView>
       <StoreModal
         isModalVisible={isModalVisible}
         onPressModalClose={onPressModalClose}
