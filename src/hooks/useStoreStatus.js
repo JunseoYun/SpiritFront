@@ -1,7 +1,5 @@
 import {useEffect, useState} from 'react';
 
-// operationSchedule 다음날 새벽까지 영업 및 현재 날짜 요일 한국 맞추기
-
 const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
@@ -35,7 +33,38 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       SATURDAY: '토',
     };
 
-    const todayIndex = new Date().getDay(); // 일=0, 월=1, ..., 토=6
+    const now = new Date();
+    const now22 = new Date();
+    now22.setHours(now22.getHours() + 11);
+    const todayName = new Intl.DateTimeFormat('en-US', {
+      weekday: 'long',
+      timeZone: 'Asia/Seoul',
+    })
+      .format(now)
+      .toUpperCase();
+    now.setHours(now.getHours() + 9);
+
+    let todayIndex = dayOrder.indexOf(todayName);
+
+    // 전날 closeTime이 자정을 넘는 경우 && 현재 시간이 그 이전이면, 배열 시작을 전날로 바꿈
+    const yesterdayIndex = (todayIndex + 6) % 7;
+    const yesterdayInfo = schedules.find(
+      item => item.dayOfWeek === dayOrder[yesterdayIndex],
+    );
+
+    if (yesterdayInfo && yesterdayInfo.closeTime) {
+      const [yCloseH, yCloseM] = yesterdayInfo.closeTime.split(':').map(Number);
+      if (yCloseH < 12) {
+        const yClose = new Date(now);
+        yClose.setHours(yCloseH, yCloseM, 0, 0);
+        yClose.setHours(yClose.getHours() + 9); // KST 보정
+
+        if (now <= yClose) {
+          todayIndex = yesterdayIndex;
+        }
+      }
+    }
+
     const orderedDays = [
       ...dayOrder.slice(todayIndex),
       ...dayOrder.slice(0, todayIndex),
@@ -44,7 +73,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
     const ordered = orderedDays.map(day => {
       const match = schedules.find(item => item.dayOfWeek === day);
       return {
-        day: dayKorMap[day], // 👉 한글 요일로 변경
+        day: dayKorMap[day],
         open: formatTime(match?.openTime),
         close: formatTime(match?.closeTime),
         breakStart: formatTime(match?.breakStartTime),
@@ -64,6 +93,8 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       }
 
       let now = new Date();
+      let now22 = new Date();
+      now22.setHours(now22.getHours() + 21);
       let currentDay = new Intl.DateTimeFormat('en-US', {
         weekday: 'long',
         timeZone: 'Asia/Seoul',
@@ -79,10 +110,26 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       let yesterdayInfo = operationInfoDtos.find((info, index, array) => {
         let yesterday = new Date();
         yesterday.setDate(now.getDate() - 1);
-        let yesterdayDay = yesterday
-          .toLocaleDateString('en-US', {weekday: 'long'})
+        let yesterdayDay = new Intl.DateTimeFormat('en-US', {
+          weekday: 'long',
+          timeZone: 'Asia/Seoul',
+        })
+          .format(yesterday)
           .toUpperCase();
+
         return info.dayOfWeek === yesterdayDay;
+      });
+
+      let nextdayInfo = operationInfoDtos.find((info, index, array) => {
+        let nextday = new Date();
+        nextday.setDate(now.getDate());
+        let nextdayDay = new Intl.DateTimeFormat('en-US', {
+          weekday: 'long',
+          timeZone: 'Asia/Seoul',
+        })
+          .format(nextday)
+          .toUpperCase();
+        return info.dayOfWeek === nextdayDay;
       });
 
       if (!todayInfo) return;
@@ -135,19 +182,31 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       if (openHours && yesterdayInfo) {
         let {closeTime: yCloseTime} = yesterdayInfo;
         let [yCloseHours, yCloseMinutes] = yCloseTime.split(':').map(Number);
-        let yCloseDate = new Date();
+        let yCloseDate = new Date(now);
         yCloseDate.setHours(yCloseHours, yCloseMinutes, 0, 0);
         yCloseDate.setHours(yCloseDate.getHours() + 9);
         if (yCloseHours < 12 && now <= yCloseDate) {
           todayInfo = yesterdayInfo;
-          openTime = todayInfo.openTime;
           closeTime = todayInfo.closeTime;
+
+          openDate = new Date();
+          closeDate = new Date();
+          let [newOpenH, newOpenM] = openTime.split(':').map(Number);
+          let [newCloseH, newCloseM] = closeTime.split(':').map(Number);
+
+          openDate.setHours(newOpenH, newOpenM, 0, 0);
+          closeDate.setHours(newCloseH, newCloseM, 0, 0);
+          openDate.setHours(openDate.getHours() + 9);
+          closeDate.setHours(closeDate.getHours() + 9);
+
+          if (newCloseH < newOpenH) {
+            closeDate.setDate(closeDate.getDate() + 1);
+          }
         }
       }
 
       setStarttime(openTime.slice(0, 5));
       setEndtime(closeTime.slice(0, 5));
-
       if (now >= openDate && now <= closeDate) {
         if (
           breakStartDate &&
@@ -164,6 +223,11 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       } else {
         setIsOpen(false);
         setIsBreak(false);
+        if (yesterdayInfo == todayInfo) {
+          setStarttime(nextdayInfo.openTime.slice(0, 5));
+        } else {
+          setStarttime(todayInfo.openTime.slice(0, 5));
+        }
       }
     };
 

@@ -271,7 +271,7 @@ const StoreMainScreen = ({navigation}) => {
         setLongitude(storeData.locationDto.longitude);
         setLatitude(storeData.locationDto.latitude);
         if (storeData.isDeleted) {
-          showToast('가게가 삭제되었습니다.'); // 🔥 토스트 메시지 띄우기
+          showToast('삭제된 가게입니다.'); // 🔥 토스트 메시지 띄우기
           setTimeout(() => navigation.goBack(), 100); // 1초 후 뒤로 가기
         }
         const Menus = await StoreMenuget(storeId);

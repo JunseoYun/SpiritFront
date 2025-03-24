@@ -20,18 +20,26 @@ const RecentStoreList = ({refresh, setRefresh, navigation, location}) => {
 
     try {
       const data = await Store_getby_recent(currentPage);
-
       setTotalpage(data.totalPages);
 
       if (data.content && data.content.length > 0) {
+        // 👉 isDeleted가 false인 항목만 필터링
+        const filteredContent = data.content.filter(store => !store.isDeleted);
+
         setStores(prevData => {
-          const newData = reset ? data.content : [...prevData, ...data.content];
+          const newData = reset
+            ? filteredContent
+            : [...prevData, ...filteredContent];
+
+          // 👉 중복 제거
           const uniqueData = newData.filter(
             (item, index, self) =>
               index === self.findIndex(existing => existing.id === item.id),
           );
+
           return uniqueData;
         });
+
         setHasMore(true); // 데이터가 있으면 계속 로드 가능
       } else {
         setHasMore(false); // 더 이상 데이터가 없으면 false로 설정

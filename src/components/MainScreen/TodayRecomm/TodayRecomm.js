@@ -37,7 +37,7 @@ const TodayRecomm = ({
             animated: false,
           });
         }
-      }, 0);
+      }, 100);
     }
     if (recommStores.length > 2) {
       setCurrentIndex(0);
@@ -48,7 +48,7 @@ const TodayRecomm = ({
             animated: false,
           });
         }
-      }, 0);
+      }, 100);
     }
   }, [refresh, recommStores]);
 
@@ -97,6 +97,7 @@ const TodayRecomm = ({
       {recommStores && (
         <FlatList
           ref={listRef}
+          key={recommStores.length}
           data={extendedStores}
           horizontal
           keyExtractor={(item, index) => index.toString()}
@@ -113,7 +114,7 @@ const TodayRecomm = ({
               : ITEM_WIDTH + SPACING
           }
           decelerationRate={0.8}
-          initialScrollIndex={0} // 처음 시작 시 중앙으로 이동
+          initialScrollIndex={recommStores.length > 1 ? 0 : undefined}
           onScroll={handleScroll} // 실시간으로 점 업데이트
           onMomentumScrollEnd={
             recommStores.length >= 3 ? handleScrollEnd : undefined
