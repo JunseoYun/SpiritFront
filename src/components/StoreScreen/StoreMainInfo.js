@@ -32,6 +32,7 @@ const StoreMainInfo = ({
   onEditKey,
   onEditValue,
   navigation,
+  storeTimeEditHandle,
 }) => {
   const handleEdit = (key, value) => {
     onEditKey(key); // 수정 키와 값을 부모 컴포넌트로 전달
@@ -62,7 +63,11 @@ const StoreMainInfo = ({
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const toggleExpand = () => {
-    setIsExpanded(prev => !prev);
+    if (isUpdate) {
+      setIsExpanded(true);
+    } else {
+      setIsExpanded(prev => !prev);
+    }
   };
 
   const endHandle = () => {
@@ -74,6 +79,12 @@ const StoreMainInfo = ({
       type: 'confirm',
     });
   };
+
+  useEffect(() => {
+    if (isUpdate) {
+      setIsExpanded(true);
+    }
+  }, [isUpdate]);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -121,7 +132,6 @@ const StoreMainInfo = ({
             {Array.isArray(storedata?.categories) &&
               storedata?.categories.map((category, index) => (
                 <Text key={index} style={styles.Storesubtitle}>
-                  {' '}
                   {translateCategory(category)}
                 </Text>
               ))}
@@ -131,7 +141,6 @@ const StoreMainInfo = ({
             {Array.isArray(storedata?.categories) &&
               storedata?.categories.map((category, index) => (
                 <Text key={index} style={styles.Storesubtitle}>
-                  {' '}
                   {translateCategory(category)}
                 </Text>
               ))}
@@ -217,7 +226,7 @@ const StoreMainInfo = ({
 
       {isUpdate ? (
         <TouchableOpacity
-          style={styles.infoHideView}
+          style={styles.timesetview}
           onPress={
             isUpdate
               ? () =>
@@ -242,7 +251,7 @@ const StoreMainInfo = ({
           </View>
         </TouchableOpacity>
       ) : (
-        <View style={styles.locationview}>
+        <View style={styles.timesetview}>
           <AntDesign name="home" size={20} color="#333" />
           <View style={{flexDirection: 'row', flexWrap: 'wrap', width: '100%'}}>
             <Text style={styles.infoHidetext}>
@@ -257,123 +266,198 @@ const StoreMainInfo = ({
         </View>
       )}
 
-      <Pressable onPress={toggleExpand}>
-        {!isUpdate && (
-          <View style={styles.timesetview}>
-            {isOpen && !isBreak && storedata?.isAlwaysOpen == false && (
-              <>
-                <Text style={[styles.timetextnow, {color: 'green'}]}>
-                  영업 중
-                </Text>
-                <Text style={styles.timetext}>영업 종료 - {endtime}</Text>
-              </>
-            )}
-            {!isOpen && !isBreak && storedata?.isAlwaysOpen == false && (
-              <>
-                <Text style={[styles.timetextnow, {color: '#F05650'}]}>
-                  영업 종료
-                </Text>
-                <Text style={styles.timetext}>영업 시작 - {starttime}</Text>
-              </>
-            )}
-            {isOpen && isBreak && storedata?.isAlwaysOpen == false && (
-              <>
-                <Text style={[styles.timetextnow, {color: '#F05650'}]}>
-                  브레이크 타임
-                </Text>
-                <Text style={styles.timetext}>영업 시작 - {breakend}</Text>
-              </>
-            )}
-            {closed &&
-              !isOpen &&
-              !isBreak &&
-              storedata?.isAlwaysOpen == false && (
-                <>
-                  <Text style={[styles.timetextnow, {color: '#F05650'}]}>
-                    금일 휴무
-                  </Text>
-                </>
-              )}
-            {storedata?.isAlwaysOpen == true && (
-              <>
-                <Text style={[styles.timetextnow, {color: 'green'}]}>
-                  영업 중
-                </Text>
-                <Text style={styles.timetext}>- 연중무휴</Text>
-              </>
-            )}
-            {!isExpanded && (
-              <Entypo name="chevron-small-down" size={25} color="#5F5F5F" />
-            )}
-          </View>
-        )}
-        <View style={styles.infoHideViewtime}>
-          {operationSchedule &&
-          isExpanded &&
-          storedata?.isAlwaysOpen == false ? (
+      {!isUpdate && (
+        <Pressable style={styles.timesetview} onPress={toggleExpand}>
+          {isOpen && !isBreak && storedata?.isAlwaysOpen == false && (
             <>
-              <Ionicons name="time-outline" size={20} color="#333" />
-              <View>
-                {operationSchedule.map((dayInfo, index) =>
-                  index === 0 ? (
-                    <View
-                      key={index}
-                      style={{
-                        marginBottom: 4,
-                      }}>
-                      <Text style={[styles.infoHidetext, {fontWeight: 'bold'}]}>
-                        {dayInfo.day}{' '}
-                        {dayInfo.isClosed
-                          ? '휴무일'
-                          : `${dayInfo.open} - ${dayInfo.close}`}
-                      </Text>
-                      {!dayInfo.isClosed &&
-                        dayInfo.breakStart &&
-                        dayInfo.breakEnd && (
-                          <Text style={styles.infoHidetext}>
-                            브레이크 타임 {dayInfo.breakStart} -{' '}
-                            {dayInfo.breakEnd}
-                          </Text>
-                        )}
-                    </View>
-                  ) : (
-                    <View key={index} style={{marginBottom: 4}}>
-                      <Text style={styles.infoHidendaytext}>
-                        {dayInfo.day}{' '}
-                        {dayInfo.isClosed
-                          ? '휴무일'
-                          : `${dayInfo.open} - ${dayInfo.close}`}
-                      </Text>
-                      {!dayInfo.isClosed &&
-                        dayInfo.breakStart &&
-                        dayInfo.breakEnd && (
-                          <Text style={styles.infoHidendaytext}>
-                            브레이크 타임 {dayInfo.breakStart} -{' '}
-                            {dayInfo.breakEnd}
-                          </Text>
-                        )}
-                    </View>
-                  ),
-                )}
-              </View>
-              <View style={{justifyContent: 'flex-end'}}>
-                <Entypo name="chevron-small-up" size={25} color="#5F5F5F" />
-              </View>
+              <Text style={[styles.timetextnow, {color: 'green'}]}>
+                영업 중
+              </Text>
+              <Text style={styles.timetext}>영업 종료 - {endtime}</Text>
             </>
-          ) : (
-            isExpanded &&
-            storedata?.isAlwaysOpen == true && (
+          )}
+          {!isOpen && !isBreak && storedata?.isAlwaysOpen == false && (
+            <>
+              <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+                영업 종료
+              </Text>
+              <Text style={styles.timetext}>영업 시작 - {starttime}</Text>
+            </>
+          )}
+          {isOpen && isBreak && storedata?.isAlwaysOpen == false && (
+            <>
+              <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+                브레이크 타임
+              </Text>
+              <Text style={styles.timetext}>영업 시작 - {breakend}</Text>
+            </>
+          )}
+          {closed &&
+            !isOpen &&
+            !isBreak &&
+            storedata?.isAlwaysOpen == false && (
+              <>
+                <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+                  금일 휴무
+                </Text>
+              </>
+            )}
+          {storedata?.isAlwaysOpen == true && (
+            <>
+              <Text style={[styles.timetextnow, {color: 'green'}]}>
+                영업 중
+              </Text>
+              <Text style={styles.timetext}>- 연중무휴</Text>
+            </>
+          )}
+          {!isExpanded && (
+            <Entypo name="chevron-small-down" size={20} color="#5F5F5F" />
+          )}
+        </Pressable>
+      )}
+
+      {isExpanded &&
+        (!isUpdate ? (
+          <Pressable style={styles.timeView} onPress={toggleExpand}>
+            {operationSchedule && storedata?.isAlwaysOpen == false ? (
               <>
                 <Ionicons name="time-outline" size={20} color="#333" />
-                <Text style={styles.infoHidetext}>매일 00:00 - 24:00</Text>
-                <View style={{justifyContent: 'flex-end'}}>
-                  <Entypo name="chevron-small-up" size={25} color="#5F5F5F" />
+                <View>
+                  {operationSchedule.map((dayInfo, index) =>
+                    index === 0 ? (
+                      <View key={index} style={{}}>
+                        <Text
+                          style={[styles.infoHidetext, {fontWeight: 'bold'}]}>
+                          {dayInfo.day}{' '}
+                          {dayInfo.isClosed
+                            ? '휴무일'
+                            : `${dayInfo.open} ~ ${dayInfo.close}`}
+                        </Text>
+                        {!dayInfo.isClosed &&
+                          dayInfo.breakStart &&
+                          dayInfo.breakEnd && (
+                            <Text style={styles.infoHidetext}>
+                              브레이크 타임 {dayInfo.breakStart} ~{' '}
+                              {dayInfo.breakEnd}
+                            </Text>
+                          )}
+                      </View>
+                    ) : (
+                      <View key={index} style={{marginTop: 5}}>
+                        <Text style={styles.infoHidendaytext}>
+                          {dayInfo.day}{' '}
+                          {dayInfo.isClosed
+                            ? '휴무일'
+                            : `${dayInfo.open} ~ ${dayInfo.close}`}
+                        </Text>
+                        {!dayInfo.isClosed &&
+                          dayInfo.breakStart &&
+                          dayInfo.breakEnd && (
+                            <Text style={styles.infoHidendaytext}>
+                              브레이크 타임 {dayInfo.breakStart} ~{' '}
+                              {dayInfo.breakEnd}
+                            </Text>
+                          )}
+                      </View>
+                    ),
+                  )}
                 </View>
+                {!isUpdate && (
+                  <View style={{justifyContent: 'flex-end'}}>
+                    <Entypo name="chevron-small-up" size={20} color="#5F5F5F" />
+                  </View>
+                )}
               </>
-            )
-          )}
-        </View>
-      </Pressable>
+            ) : (
+              storedata?.isAlwaysOpen == true && (
+                <>
+                  <Ionicons name="time-outline" size={20} color="#333" />
+                  <Text style={styles.infoHidetext}>매일 00:00 - 24:00</Text>
+                  {!isUpdate && (
+                    <View style={{justifyContent: 'flex-end'}}>
+                      <Entypo
+                        name="chevron-small-up"
+                        size={20}
+                        color="#5F5F5F"
+                      />
+                    </View>
+                  )}
+                </>
+              )
+            )}
+          </Pressable>
+        ) : (
+          <TouchableOpacity
+            style={styles.timeView}
+            onPress={storeTimeEditHandle}>
+            {operationSchedule && storedata?.isAlwaysOpen == false ? (
+              <>
+                <Ionicons name="time-outline" size={20} color="#333" />
+                <View>
+                  {operationSchedule.map((dayInfo, index) =>
+                    index === 0 ? (
+                      <View key={index} style={{}}>
+                        <Text
+                          style={[styles.infoHidetext, {fontWeight: 'bold'}]}>
+                          {dayInfo.day}{' '}
+                          {dayInfo.isClosed
+                            ? '휴무일'
+                            : `${dayInfo.open} ~ ${dayInfo.close}`}
+                        </Text>
+                        {!dayInfo.isClosed &&
+                          dayInfo.breakStart &&
+                          dayInfo.breakEnd && (
+                            <Text style={styles.infoHidetext}>
+                              브레이크 타임 {dayInfo.breakStart} ~{' '}
+                              {dayInfo.breakEnd}
+                            </Text>
+                          )}
+                      </View>
+                    ) : (
+                      <View key={index} style={{marginTop: 5}}>
+                        <Text style={styles.infoHidendaytext}>
+                          {dayInfo.day}{' '}
+                          {dayInfo.isClosed
+                            ? '휴무일'
+                            : `${dayInfo.open} ~ ${dayInfo.close}`}
+                        </Text>
+                        {!dayInfo.isClosed &&
+                          dayInfo.breakStart &&
+                          dayInfo.breakEnd && (
+                            <Text style={styles.infoHidendaytext}>
+                              브레이크 타임 {dayInfo.breakStart} ~{' '}
+                              {dayInfo.breakEnd}
+                            </Text>
+                          )}
+                      </View>
+                    ),
+                  )}
+                </View>
+                {!isUpdate && (
+                  <View style={{justifyContent: 'flex-end'}}>
+                    <Entypo name="chevron-small-up" size={20} color="#5F5F5F" />
+                  </View>
+                )}
+              </>
+            ) : (
+              storedata?.isAlwaysOpen == true && (
+                <>
+                  <Ionicons name="time-outline" size={20} color="#333" />
+                  <Text style={styles.infoHidetext}>매일 00:00 - 24:00</Text>
+                  {!isUpdate && (
+                    <View style={{justifyContent: 'flex-end'}}>
+                      <Entypo
+                        name="chevron-small-up"
+                        size={20}
+                        color="#5F5F5F"
+                      />
+                    </View>
+                  )}
+                </>
+              )
+            )}
+          </TouchableOpacity>
+        ))}
 
       <View style={styles.introduceview}>
         {isUpdate ? (
@@ -545,14 +629,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#5F5F5F',
     textAlign: 'center',
-    marginRight: 10,
+    marginRight: 7,
   },
   ReviewView: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 7,
-    marginHorizontal: 15,
+    marginHorizontal: 18,
   },
   reviewRatetext: {
     fontWeight: 'bold',
@@ -568,15 +652,21 @@ const styles = StyleSheet.create({
   timeview: {
     flexDirection: 'row',
     width: '80%',
-    marginHorizontal: 15,
+    marginHorizontal: 18,
     alignItems: 'center',
   },
   timesetview: {
     flexDirection: 'row',
     width: '80%',
-    marginTop: 10,
-    marginHorizontal: 15,
+    marginTop: 12,
+    marginHorizontal: 18,
     alignItems: 'center',
+  },
+  timeView: {
+    flexDirection: 'row',
+    width: '80%',
+    marginTop: 12,
+    marginHorizontal: 18,
   },
   timetextnow: {
     fontSize: 15,
@@ -595,8 +685,8 @@ const styles = StyleSheet.create({
   locationview: {
     flexDirection: 'row',
     width: '80%',
-    marginTop: 10,
-    marginHorizontal: 15,
+    marginTop: 12,
+    marginHorizontal: 18,
     alignItems: 'center',
   },
   locationtext: {
@@ -631,8 +721,8 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   introduceview: {
-    marginHorizontal: 15,
-    marginTop: 10,
+    marginHorizontal: 18,
+    marginTop: 12,
   },
   infoHideView: {
     width: '90%',
@@ -662,7 +752,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#333',
-    marginLeft: 10,
+    marginLeft: 5,
   },
   closetext: {
     fontSize: 15,
