@@ -1,8 +1,18 @@
 import React, {useState, useLayoutEffect} from 'react';
-import {Text, SafeAreaView, Pressable, StyleSheet, Alert} from 'react-native';
+import {
+  Text,
+  SafeAreaView,
+  Pressable,
+  StyleSheet,
+  Alert,
+  Dimensions,
+  View,
+} from 'react-native';
 import StoreSearchBar from '../../components/StoreSearch/StoreSearchBar';
 import StoreResultList from '../../components/StoreSearch/StoreResultList';
 import {useRoute} from '@react-navigation/native';
+const {width} = Dimensions.get('window');
+
 const StoreSearchScreen = ({navigation}) => {
   const route = useRoute();
   const {index} = route.params;
@@ -57,9 +67,31 @@ const StoreSearchScreen = ({navigation}) => {
           index={index}
         />
       )}
-      <Pressable style={styles.storeAddButton} onPress={handleStoreAdd}>
-        <Text style={styles.storeAddText}>매장{'\n'}등록</Text>
-      </Pressable>
+      {trimmedSearchWord !== '' ? (
+        <View style={styles.storeAddTextview}>
+          <Pressable
+            style={styles.storeAddButtonsearch}
+            onPress={handleStoreAdd}>
+            <Text style={styles.storeAddText}>매장 등록</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <View style={styles.storeAddTextview1}>
+          <Pressable style={styles.storeAddButton} onPress={handleStoreAdd}>
+            <Text style={styles.storeAddText}>매장 등록</Text>
+          </Pressable>
+        </View>
+      )}
+      {/* <View style={styles.storeAddTextview}>
+        <Pressable
+          style={[
+            trimmedSearchWord == '' && styles.storeAddButton,
+            trimmedSearchWord !== '' && styles.storeAddButtonsearch,
+          ]}
+          onPress={handleStoreAdd}>
+          <Text style={styles.storeAddText}>매장 등록</Text>
+        </Pressable>
+      </View> */}
     </SafeAreaView>
   );
 };
@@ -91,16 +123,36 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
-  storeAddButton: {
+  storeAddTextview1: {
+    width: '100%',
+    paddingHorizontal: 18,
     position: 'absolute',
-    width: 70,
-    height: 70,
-    left: 20,
-    bottom: 100,
+    bottom: 10,
+  },
+  storeAddButton: {
+    paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#16BBFF',
-    borderRadius: 100,
+    borderRadius: 10,
+    elevation: 3, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  storeAddTextview: {
+    borderTopWidth: 0.5,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  storeAddButtonsearch: {
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#16BBFF',
+    borderRadius: 10,
     elevation: 3, // Android shadow
     shadowColor: '#000', // iOS shadow
     shadowOffset: {width: 0, height: 2},
@@ -108,10 +160,9 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   storeAddText: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
     color: '#fff',
-    lineHeight: 18,
   },
 });
 

@@ -101,7 +101,7 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
 const styles = StyleSheet.create({
   fastSearchModalScrollView: {
     marginTop: 1,
-    paddingBottom: 50,
+    paddingBottom: 20,
   },
   footer: {
     paddingVertical: 10,
