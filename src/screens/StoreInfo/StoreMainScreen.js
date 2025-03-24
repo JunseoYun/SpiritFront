@@ -82,29 +82,29 @@ const StoreMainScreen = ({navigation}) => {
     }
   }, [currentPage]);
 
-  // const storeTimeEditHandle = () => {
-  //   navigation.navigate('StoreAddTimeSetScreen', {
-  //     //   // operatingHours,
-  //     //   // breakingHours,
-  //     //   // setOperatingHours,
-  //     //   // setBreakingHours,
-  //     //   // closedDay,
-  //     //   // setClosedDay,
-  //     //   // is24Hours,
-  //     //   // setIs24Hours,
-  //     //   // isSameEveryTime,
-  //     //   // setIsSameEveryTime,
-  //     //   // hasBreaking,
-  //     // setHasBreaking,
-  //   });
+  const storeTimeEditHandle = () => {
+    navigation.navigate('StoreAddTimeSetScreen', {
+      //   // operatingHours,
+      //   // breakingHours,
+      //   // setOperatingHours,
+      //   // setBreakingHours,
+      //   // closedDay,
+      //   // setClosedDay,
+      //   // is24Hours,
+      //   // setIs24Hours,
+      //   // isSameEveryTime,
+      //   // setIsSameEveryTime,
+      //   // hasBreaking,
+      // setHasBreaking,
+    });
 
-  //   // navigation.navigate('MainStack', {
-  //   //   screen: 'StoreAddTimeSetScreen',
-  //   //   params: {
-  //   //     // storeId: store.id,
-  //   //   },
-  //   // });
-  // };
+    // navigation.navigate('MainStack', {
+    //   screen: 'StoreAddTimeSetScreen',
+    //   params: {
+    //     // storeId: store.id,
+    //   },
+    // });
+  };
 
   const startUpdate = () => {
     setIsUpdate(true);
