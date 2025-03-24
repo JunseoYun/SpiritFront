@@ -68,6 +68,7 @@ const CloseTimePicker = ({
         visibleCount={5}
         fontSize={20}
         style={styles.minutePicker}
+        selectedHour={selectedHour}
         type={'minute'}
       />
 
