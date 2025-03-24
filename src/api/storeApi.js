@@ -189,7 +189,7 @@ export const Store_getby_keyword = async (
   }
 };
 
-// 가게 검색(가게명, 메뉴명)리스트 조회
+// 가게 검색(가게명)리스트 조회
 export const Store_getby_store = async (page, keyword) => {
   try {
     const response = await axiosInstance.get(
@@ -274,6 +274,20 @@ export const Store_getby_condition_search = async requestData => {
         category: conditionSearchDto.category,
         isGroupAvailable: conditionSearchDto.isGroupAvailable,
         conditionTime: conditionSearchDto.conditionTime,
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const Store_getby_main_banner = async (latitude, longitude) => {
+  try {
+    const response = await axiosInstance.get(`/store/get-by/main-banner`, {
+      params: {
+        longitude,
+        latitude,
       },
     });
     return response.data.data;

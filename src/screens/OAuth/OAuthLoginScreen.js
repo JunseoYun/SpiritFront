@@ -138,9 +138,7 @@ const OAuthLoginScreen = ({navigation}) => {
       <View style={styles.logoView}>
         <Text style={styles.Logo}>한잔할까</Text>
 
-        <Text style={styles.subText}>
-          내 주변 주점을 한눈에!{'\n'}한잔할까에서 쉽고 빠르게 찾으세요.
-        </Text>
+        <Text style={styles.subText}>한잔하고 싶은 당신을 위한 서비스</Text>
       </View>
       <View style={styles.loginView}>
         <View
@@ -156,10 +154,16 @@ const OAuthLoginScreen = ({navigation}) => {
         <TouchableOpacity
           onPress={handleKaKaoLogin}
           style={styles.kakaoButtonContainer}>
-          <Image
-            source={require('../../assets/kakao_login.png')}
-            style={styles.kakaoButton}
-          />
+          <View style={styles.kakaoButton}>
+            <View style={styles.googleLogoContainer}>
+              <Image
+                source={require('../../assets/kakao-symbol.png')}
+                style={styles.googleLogo}
+              />
+            </View>
+            <Text style={styles.googleText}>카카오 로그인</Text>
+            <View style={{width: 30}} />
+          </View>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={handleGoogleSignIn}
@@ -171,10 +175,11 @@ const OAuthLoginScreen = ({navigation}) => {
                 style={styles.googleLogo}
               />
             </View>
-            <Text style={styles.googleText}>Google 계정으로 계속하기</Text>
+            <Text style={styles.googleText}>Google 로그인</Text>
+            <View style={{width: 30}} />
           </View>
         </TouchableOpacity>
-        {Platform.OS === 'ios' && (
+        {Platform.OS === 'ios' ? (
           <TouchableOpacity
             onPress={handleAppleSignIn}
             style={styles.googleButtonContainer}>
@@ -185,9 +190,12 @@ const OAuthLoginScreen = ({navigation}) => {
                   style={styles.appleLogo}
                 />
               </View>
-              <Text style={styles.appleText}>Apple로 로그인</Text>
+              <Text style={styles.appleText}>Apple 로그인</Text>
+              <View style={{width: 30, marginTop: 20}} />
             </View>
           </TouchableOpacity>
+        ) : (
+          <View style={{height: 50, marginTop: 20}} />
         )}
         {/* 
         <TouchableOpacity
@@ -241,7 +249,6 @@ const styles = StyleSheet.create({
   },
   line: {
     width: 100,
-
     marginHorizontal: 1,
     backgroundColor: '#333',
     borderRadius: 10,
@@ -261,37 +268,48 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
+    borderRadius: 10,
+    backgroundColor: '#FEE500',
   },
   kakaoButton: {
-    width: '100%',
-    height: '100%',
+    width: 340,
+    height: 50,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignContent: 'center',
+    textAlign: 'center',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#FEE500',
   },
   googleButtonContainer: {
     width: 340,
     height: 50,
-    marginTop: 40,
+    marginTop: 20,
     shadowColor: '#333',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.8,
     shadowRadius: 2,
+    borderRadius: 10,
     elevation: 5,
   },
-  googleButton: {
-    width: 340,
-    height: 50,
-    borderRadius: 10,
-  },
   googleLogo: {
-    width: 30,
-    height: 30,
-    marginLeft: 3,
+    width: 25,
+    height: 25,
+    paddingLeft: 30,
+    resizeMode: 'contain',
   },
   googleView: {
     width: 340,
     height: 50,
     backgroundColor: 'white',
-    alignContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    alignContent: 'center',
+    textAlign: 'center',
+    alignSelf: 'center',
     flexDirection: 'row',
     padding: 10,
     borderRadius: 10,
@@ -305,7 +323,7 @@ const styles = StyleSheet.create({
   appleLogo: {
     width: 50,
     height: 50,
-    marginLeft: -5,
+    marginLeft: -10,
     borderRadius: 10,
   },
   appleText: {

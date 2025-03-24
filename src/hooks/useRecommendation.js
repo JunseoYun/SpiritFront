@@ -48,17 +48,10 @@ const categoryReasons = {
 };
 
 const useRecommendation = () => {
-  // 통합된 추천 로직
-  const recommendCategory = useCallback(() => {
-    let category = '';
-    let reason = '';
-
-    const randomIndex = Math.floor(Math.random() * allCategories.length);
-    category = allCategories[randomIndex];
-    reason = categoryReasons[category];
-
-    // 카테고리와 추천 이유 반환
-    return {category, reason};
+  const recommendCategory = useCallback(categoryKey => {
+    const reason =
+      categoryReasons[categoryKey] || '추천 문구를 찾을 수 없어요.';
+    return {category: categoryKey, reason};
   }, []);
 
   return {recommendCategory};

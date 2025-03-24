@@ -17,7 +17,7 @@ import OptionsSection from '../../components/MainScreen/OptionSection';
 import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
-import {Store_getby_category} from '../../api/storeApi';
+import {Store_getby_main_banner} from '../../api/storeApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
@@ -40,16 +40,14 @@ const MainScreen = ({navigation}) => {
         if (currentLocation) {
           setLocation(currentLocation);
 
-          const {category, reason} = recommendCategory();
-          const recommStoreData = await Store_getby_category(
-            0,
+          const recommStoreData = await Store_getby_main_banner(
             currentLocation.latitude,
             currentLocation.longitude,
-            category,
           );
-          setRecommCategory(category);
+          const {reason} = recommendCategory(recommStoreData.category);
+          setRecommCategory(recommStoreData.category);
           setRecommReason(reason);
-          setRecommStores(recommStoreData.content);
+          setRecommStores(recommStoreData.mainBannerStoreDtoList);
         }
         const currentAddress = await getAddress();
         if (currentAddress) {
@@ -68,17 +66,14 @@ const MainScreen = ({navigation}) => {
       if (currentLocation) {
         setLocation(currentLocation);
 
-        const {category, reason} = recommendCategory();
-        const recommStoreData = await Store_getby_category(
-          0,
+        const recommStoreData = await Store_getby_main_banner(
           currentLocation.latitude,
           currentLocation.longitude,
-          category,
         );
-        setRecommCategory(category);
+        const {reason} = recommendCategory(recommStoreData.category);
+        setRecommCategory(recommStoreData.category);
         setRecommReason(reason);
-
-        setRecommStores(recommStoreData.content);
+        setRecommStores(recommStoreData.mainBannerStoreDtoList);
       }
 
       const currentAddress = await getAddress();
