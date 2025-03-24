@@ -164,11 +164,17 @@ const StoreItem = ({store, location, navigation}) => {
         </View>
         <View style={Categorystyles.infoTimeView}>
           <View style={Categorystyles.infoView}>
-            <Ionicons name="time-outline" size={15} color="#333" />
-            <Text style={Categorystyles.infoText}>
-              {' '}
-              영업 중 · {endtime || ''}
-            </Text>
+            {store?.isAlwaysOpen ? (
+              <Text style={Categorystyles.infoText}>
+                {' '}
+                영업 중 · 24시간 영업
+              </Text>
+            ) : (
+              <Text style={Categorystyles.infoText}>
+                {' '}
+                영업 중 · {endtime || ''}
+              </Text>
+            )}
           </View>
           {breakstart && breakend && (
             <View style={Categorystyles.infoView}>

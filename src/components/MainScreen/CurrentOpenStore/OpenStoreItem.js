@@ -90,9 +90,17 @@ const OpenStoreItem = ({store, location, navigation}) => {
                 </View>
               </View>
             )}
-            {!isOpen && (
+            {isOpen && !isBreak && (
               <>
-                <Text style={styles.openOverlayText}>영업 종료</Text>
+                {store?.isAlwaysOpen ? (
+                  <Text style={styles.openOverlayText}>
+                    24시간 영업 {endtime}
+                  </Text>
+                ) : (
+                  <Text style={styles.openOverlayText}>
+                    영업 종료 {endtime}
+                  </Text>
+                )}
                 <View style={styles.openOverlay}>
                   <Text
                     style={styles.overlayNameOpenText}
@@ -144,8 +152,8 @@ const OpenStoreItem = ({store, location, navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: 170,
-    height: 170,
+    width: 180,
+    height: 180,
     marginHorizontal: 10,
     marginTop: 15,
     backgroundColor: '#fff',
@@ -158,8 +166,8 @@ const styles = StyleSheet.create({
     elevation: 5, // Android 그림자 효과
   },
   backimageview: {
-    width: 170,
-    height: 170,
+    width: 180,
+    height: 180,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 15,
@@ -248,7 +256,7 @@ const styles = StyleSheet.create({
   },
   openOverlay: {
     position: 'absolute',
-    height: '40%',
+    height: '45%',
     bottom: 0, // 사진 안쪽 하단에 고정
     width: '100%', // 가로 전체 차지
     backgroundColor: 'rgba(0, 0, 0, 0.3)', // ✅ 어두운 반투명 배경으로 가독성 향상

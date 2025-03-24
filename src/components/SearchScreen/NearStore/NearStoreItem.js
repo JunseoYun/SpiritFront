@@ -102,9 +102,14 @@ const NearStoreItem = ({store, navigation, location}) => {
 
         {/* ✅ 영업 종료 시간 & 거리 표시 */}
         <View style={styles.storeViewInfo}>
-          <Text style={styles.storeSubInfo}>
-            영업 종료 {endtime || '정보 없음'}
-          </Text>
+          {store?.isAlwaysOpen ? (
+            <Text style={styles.storeSubInfo}>24시간 영업</Text>
+          ) : (
+            <Text style={styles.storeSubInfo}>
+              영업 종료 {endtime || '정보 없음'}
+            </Text>
+          )}
+
           <Text style={styles.storeSubInfo}>
             {distance} {unit}
           </Text>
