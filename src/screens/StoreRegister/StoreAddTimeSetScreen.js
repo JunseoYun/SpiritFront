@@ -327,7 +327,6 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
       tempBreaking: {...(localBreakingHours[formattedDay] || {})},
     });
   };
-  console.log('isBottomOpen 상태:', isBottomOpen);
   const handleCancelChanges = () => {
     if (selectedDay) {
       const formattedDay =

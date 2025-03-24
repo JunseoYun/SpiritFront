@@ -9,6 +9,7 @@ const WheelPicker = ({
   visibleCount = 5,
   style,
   type,
+  selectedHour,
 }) => {
   const scrollRef = useRef(null);
   const isScrollingRef = useRef(false);
@@ -79,6 +80,12 @@ const WheelPicker = ({
     }
   };
 
+  useEffect(() => {
+    if (type === 'minute' && selectedHour === '33') {
+      onValueChange('00');
+    }
+  }, [selectedHour]);
+
   return (
     <View style={[styles.pickerContainer, {height: containerHeight}]}>
       <ScrollView
@@ -90,33 +97,50 @@ const WheelPicker = ({
         contentContainerStyle={{paddingVertical: paddingHeight}}
         nestedScrollEnabled={true} // ✅ 부모 ScrollView와 함께 동작하도록 설정
       >
-        {data.map((item, idx) => (
-          <Pressable key={idx} onPress={() => handleItemPress(idx)}>
+        {type === 'minute' && selectedHour === '33' ? (
+          <Pressable onPress={() => onValueChange?.('00')}>
             <View style={[styles.itemContainer, style]}>
               <Text
                 style={{
                   fontSize: 18,
-                  color: idx === selectedIndex ? '#000' : '#999',
+                  color: '#000',
                   textAlign: 'center',
                   alignItems: 'center',
                   paddingHorizontal: 5,
                 }}>
-                {type === 'hour' && item >= 24 ? (
-                  idx === selectedIndex ? (
-                    <>
-                      <Text style={styles.nextText}>{'다음날  '}</Text>
-                      {(item - 24).toString().padStart(2, '0')}
-                    </>
-                  ) : (
-                    (item - 24).toString().padStart(2, '0')
-                  )
-                ) : (
-                  item.toString().padStart(2, '0')
-                )}
+                00
               </Text>
             </View>
           </Pressable>
-        ))}
+        ) : (
+          data.map((item, idx) => (
+            <Pressable key={idx} onPress={() => handleItemPress(idx)}>
+              <View style={[styles.itemContainer, style]}>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    color: idx === selectedIndex ? '#000' : '#999',
+                    textAlign: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 5,
+                  }}>
+                  {type === 'hour' && item >= 24 ? (
+                    idx === selectedIndex ? (
+                      <>
+                        <Text style={styles.nextText}>{'다음날  '}</Text>
+                        {(item - 24).toString().padStart(2, '0')}
+                      </>
+                    ) : (
+                      (item - 24).toString().padStart(2, '0')
+                    )
+                  ) : (
+                    item.toString().padStart(2, '0')
+                  )}
+                </Text>
+              </View>
+            </Pressable>
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -135,7 +159,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nextText: {
-    fontWeight: 500,
+    fontWeight: '500',
     fontSize: 15,
     textAlign: 'center',
     alignSelf: 'center',
