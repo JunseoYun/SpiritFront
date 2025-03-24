@@ -1,5 +1,12 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {Text, View, Animated, StyleSheet, Dimensions} from 'react-native';
+import {
+  Text,
+  View,
+  Animated,
+  StyleSheet,
+  Dimensions,
+  Pressable,
+} from 'react-native';
 
 const {width} = Dimensions.get('window');
 
@@ -23,7 +30,7 @@ const Toastmessage = ({message, isShowToast, onDismiss}) => {
         }).start(() => {
           onDismiss(); // `isShowToast` 상태를 false로 변경하는 함수 호출
         });
-      }, 1500);
+      }, 3000);
 
       return () => clearTimeout(timer);
     }
@@ -33,7 +40,9 @@ const Toastmessage = ({message, isShowToast, onDismiss}) => {
 
   return (
     <Animated.View style={[styles.container, {opacity: fadeAnim}]}>
-      <Text style={styles.toastText}>{message}</Text>
+      <Pressable onPress={onDismiss}>
+        <Text style={styles.toastText}>{message}</Text>
+      </Pressable>
     </Animated.View>
   );
 };

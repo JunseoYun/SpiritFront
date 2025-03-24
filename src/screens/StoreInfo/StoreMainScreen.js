@@ -82,6 +82,30 @@ const StoreMainScreen = ({navigation}) => {
     }
   }, [currentPage]);
 
+  // const storeTimeEditHandle = () => {
+  //   navigation.navigate('StoreAddTimeSetScreen', {
+  //     //   // operatingHours,
+  //     //   // breakingHours,
+  //     //   // setOperatingHours,
+  //     //   // setBreakingHours,
+  //     //   // closedDay,
+  //     //   // setClosedDay,
+  //     //   // is24Hours,
+  //     //   // setIs24Hours,
+  //     //   // isSameEveryTime,
+  //     //   // setIsSameEveryTime,
+  //     //   // hasBreaking,
+  //     // setHasBreaking,
+  //   });
+
+  //   // navigation.navigate('MainStack', {
+  //   //   screen: 'StoreAddTimeSetScreen',
+  //   //   params: {
+  //   //     // storeId: store.id,
+  //   //   },
+  //   // });
+  // };
+
   const startUpdate = () => {
     setIsUpdate(true);
   };
@@ -286,6 +310,12 @@ const StoreMainScreen = ({navigation}) => {
     getStoreData();
   }, []);
 
+  useEffect(() => {
+    if (isUpdate) {
+      showToast('원하는 항목을 클릭해 수정하세요!');
+    }
+  }, [isUpdate]);
+
   const handleMenuDelete = id => {
     setMenus(prevMenus => prevMenus.filter(menu => menu.id !== id));
   };
@@ -386,6 +416,7 @@ const StoreMainScreen = ({navigation}) => {
                 handleBottomOpen={handleBottomOpen}
                 onEditKey={handleEditKey}
                 onEditValue={handleEditValue}
+                storeTimeEditHandle={storeTimeEditHandle}
               />
               {!isUpdate && (
                 <View style={{backgroundColor: '#F2F2F2', height: 20}} />

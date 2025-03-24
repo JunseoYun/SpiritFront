@@ -206,7 +206,6 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
       setOperatingHours(updatedOperatingHours);
       setBreakingHours(updatedBreakingHours);
       setIs24Hours(is24);
-      setIsSameEveryTime(isSameEveryday);
     } else {
       if (breakError || operateError) {
         return;
@@ -327,6 +326,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
       tempBreaking: {...(localBreakingHours[formattedDay] || {})},
     });
   };
+  console.log('isBottomOpen 상태:', isBottomOpen);
   const handleCancelChanges = () => {
     if (selectedDay) {
       const formattedDay =
