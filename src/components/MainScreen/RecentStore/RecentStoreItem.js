@@ -96,7 +96,7 @@ const RecentStoreItem = ({store, navigation, location}) => {
         </View>
         <View style={styles.storeViewInfo}>
           {store?.isAlwaysOpen ? (
-            <Text style={styles.storeTimeInfo}>24시간</Text>
+            <Text style={styles.storeTimeInfo}>24시간 영업</Text>
           ) : (
             <Text style={styles.storeTimeInfo}>
               영업 종료 {endtime || '정보 없음'}
