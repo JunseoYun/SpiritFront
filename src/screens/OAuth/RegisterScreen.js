@@ -24,7 +24,7 @@ const RegisterScreen = ({route, navigation}) => {
   const [nicknamelength, setNicknamelength] = useState(false);
   const [nicknamefilter, setNicknamefilter] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
-  const {login} = useAuth();
+  const {loginauth} = useAuth();
   const {showToast} = useToast();
 
   const handleCheckNickname = async () => {
@@ -108,7 +108,7 @@ const RegisterScreen = ({route, navigation}) => {
 
       try {
         const login_data = await user_login(type, id, nickname);
-        await login(login_data.accessToken, login_data.refreshToken);
+        await loginauth(login_data.accessToken, login_data.refreshToken);
       } catch (error) {
         showAlert({
           title: '로그인 오류',
