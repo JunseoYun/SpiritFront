@@ -61,9 +61,34 @@ const StoreMainScreen = ({navigation}) => {
       const operationInfoDtos = convertToOperatingAndBreakingHours(
         storedata.operationInfoDtos,
       );
-      console.log(storedata);
     }
   }, [storedata]);
+  // console.log(storedata);
+  const storeTimeEditHandle = () => {
+    navigation.navigate('StoreTimeEditScreen', {
+      operationInfoDtos: storedata.operationInfoDtos,
+      is24Hours: storedata.isAlwaysOpen,
+      //   // operatingHours,
+      //   // breakingHours,
+      //   // setOperatingHours,
+      //   // setBreakingHours,
+      //   // closedDay,
+      //   // setClosedDay,
+      //   // is24Hours,
+      //   // setIs24Hours,
+      //   // isSameEveryTime,
+      //   // setIsSameEveryTime,
+      //   // hasBreaking,
+      // setHasBreaking,
+    });
+
+    // navigation.navigate('MainStack', {
+    //   screen: 'StoreAddTimeSetScreen',
+    //   params: {
+    //     // storeId: store.id,
+    //   },
+    // });
+  };
   const convertToOperatingAndBreakingHours = operationInfoDtos => {
     const defaultOperatingHours = {
       Monday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
@@ -170,30 +195,6 @@ const StoreMainScreen = ({navigation}) => {
       }, 0);
     }
   }, [currentPage]);
-
-  const storeTimeEditHandle = () => {
-    navigation.navigate('StoreTimeEditScreen', {
-      //   // operatingHours,
-      //   // breakingHours,
-      //   // setOperatingHours,
-      //   // setBreakingHours,
-      //   // closedDay,
-      //   // setClosedDay,
-      //   // is24Hours,
-      //   // setIs24Hours,
-      //   // isSameEveryTime,
-      //   // setIsSameEveryTime,
-      //   // hasBreaking,
-      // setHasBreaking,
-    });
-
-    // navigation.navigate('MainStack', {
-    //   screen: 'StoreAddTimeSetScreen',
-    //   params: {
-    //     // storeId: store.id,
-    //   },
-    // });
-  };
 
   const startUpdate = () => {
     setIsUpdate(true);

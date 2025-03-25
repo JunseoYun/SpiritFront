@@ -24,7 +24,6 @@ import OperatingHoursTimePicker from '../../components/StoreAddScreen/StoreAddTi
 import BreakTimeInput from '../../components/StoreAddScreen/StoreAddTimeSet/BreakTimeInput';
 import BreakTimePicker from '../../components/StoreAddScreen/StoreAddTimeSet/BreakTimePicker';
 import BreakTimeToggle from '../../components/StoreAddScreen/StoreAddTimeSet/BreakTimeToggle';
-import BottomSheet from '@gorhom/bottom-sheet';
 import OperatingDayItem from '../../components/StoreAddScreen/StoreAddTimeSet/OperatingDayItem';
 import OperateBottomSheetHeader from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomSheetHeader';
 import OperateBottomHoursSelector from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomHoursSelector';
@@ -93,13 +92,15 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
   const [hasLocalBreaking, setHasLocalBreaking] = useState(hasBreaking);
   const [isStartTime, setIsStartTime] = useState(false);
   const [isEndTime, setIsEndTime] = useState(false);
-  const [wrongBreak, setWrongBreak] = useState(false);
+  const [isBottomOpen, setIsBottonOpen] = useState(false);
+  const [isAllClosed, setIsAllClosed] = useState(false);
   const [isSameOperating, setIsSameOperating] = useState(false);
+  const [wrongBreak, setWrongBreak] = useState(false);
   const [operateError, setOperateError] = useState(false);
   const [breakError, setBreakError] = useState(false);
-  const [isAllClosed, setIsAllClosed] = useState(false);
-  const [isBottomOpen, setIsBottonOpen] = useState(false);
-
+  const [emptyTime, setEmptyTime] = useState(false);
+  const [breakErrorMessage, setBreakErrorMessage] = useState('');
+  const [operateErrorMessage, setOperateErrorMessage] = useState('');
   const [tempState, setTempState] = useState({
     tempOperating: {},
     tempBreaking: {},
@@ -143,6 +144,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
               (breakError || operateError) &&
                 !isSameEveryday && {color: '#999'},
               isAllClosed && {color: '#999'},
+              !isSameEveryday && emptyTime && {color: '#999'}, // 🔥 운영시간이 없으면 버튼 비활성화
             ]}>
             완료
           </Text>
@@ -160,7 +162,10 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     hasLocalBreaking,
     localClosedDay,
     is24,
+    operateError,
+    emptyTime,
   ]);
+
   const handleComplete = () => {
     if (isAllClosed) {
       return;
@@ -206,12 +211,14 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
       setOperatingHours(updatedOperatingHours);
       setBreakingHours(updatedBreakingHours);
       setIs24Hours(is24);
+      setIsSameEveryTime(isSameEveryday);
     } else {
-      if (breakError || operateError) {
+      if (breakError || operateError || emptyTime) {
         return;
       }
       setOperatingHours(localOperatingHours);
       setBreakingHours(localBreakingHours);
+      setHasBreaking(false);
       setClosedDay(localClosedDay);
       setIs24Hours(is24);
       setIsSameEveryTime(isSameEveryday);
@@ -221,16 +228,27 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     navigation.goBack();
   };
 
+  const hasEmptyOperatingHours = () => {
+    return Object.keys(localOperatingHours).some(day => {
+      if (localClosedDay.includes(day.toUpperCase())) return false; // 휴무일 제외
+
+      const {openHour, closedHour} = localOperatingHours[day];
+      return openHour === '' || closedHour === ''; // 운영시간이 비어있으면 true 반환
+    });
+  };
+
+  // useEffect로 버튼 비활성화 상태 업데이트
+  useEffect(() => {
+    setIsAllClosed(localClosedDay.length === days.length); // 모든 요일이 휴무일인지 확인
+    setEmptyTime(hasEmptyOperatingHours()); // 운영시간이 비어있는 요일이 있으면 에러
+  }, [localClosedDay, localOperatingHours]);
+
   const handleTimePickerToggle = type => {
     setIsOpenTime(type === 'open' ? prev => !prev : false);
     setIsCloseTime(type === 'close' ? prev => !prev : false);
     setIsStartTime(type === 'start' ? prev => !prev : false);
     setIsEndTime(type === 'end' ? prev => !prev : false);
   };
-
-  const [breakErrorMessage, setBreakErrorMessage] = useState('');
-
-  const [operateErrorMessage, setOperateErrorMessage] = useState('');
 
   const handleTimeChange = (category, field, value) => {
     setTimeState(prevState => {
@@ -275,6 +293,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
       return newState;
     });
   };
+
   useEffect(() => {
     const opStart = convertToMinutes(
       timeState.sameOpenTime.openHour,
@@ -321,12 +340,35 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     setIsBottonOpen(true);
     const formattedDay = day.value.charAt(0) + day.value.slice(1).toLowerCase();
 
+    if (
+      !localOperatingHours[formattedDay] ||
+      !localOperatingHours[formattedDay].openHour
+    ) {
+      setLocalOperatingHours(prev => ({
+        ...prev,
+        [formattedDay]: {
+          openHour: '09',
+          openMinute: '00',
+          closedHour: '18',
+          closedMinute: '00',
+        },
+      }));
+    }
+
     setTempState({
       tempOperating: {...localOperatingHours[formattedDay]},
       tempBreaking: {...(localBreakingHours[formattedDay] || {})},
     });
   };
-  console.log('isBottomOpen 상태:', isBottomOpen);
+
+  const handleBottomClose = () => {
+    setIsBottonOpen(false);
+    setIsOpenTime(false);
+    setIsCloseTime(false);
+    setIsStartTime(false);
+    setIsEndTime(false);
+  };
+
   const handleCancelChanges = () => {
     if (selectedDay) {
       const formattedDay =
@@ -350,14 +392,6 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
 
     // 🔹 바텀시트 닫기
     handleBottomClose();
-  };
-
-  const handleBottomClose = () => {
-    setIsBottonOpen(false);
-    setIsOpenTime(false);
-    setIsCloseTime(false);
-    setIsStartTime(false);
-    setIsEndTime(false);
   };
 
   const handleBreaking = useCallback(
@@ -410,6 +444,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     },
     [localOperatingHours, setLocalBreakingHours],
   );
+
   const validateBreakingHours = (day, updatedState) => {
     const brStart = convertToMinutes(
       updatedState[day]?.startHour,
@@ -527,7 +562,6 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
   useEffect(() => {
     if (!isClosed) {
       setLocalClosedDay([]);
-      setClosedDay([]);
     }
   }, [isClosed]);
 
@@ -538,7 +572,6 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     if (!is24) {
       setIsClosed(false);
       setLocalClosedDay([]);
-      setClosedDay([]);
     }
   };
 
@@ -737,6 +770,36 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     setBreakErrorMessage(errorMessage);
   };
 
+  useEffect(() => {
+    setLocalOperatingHours(prevState => {
+      const newState = {...prevState};
+      localClosedDay.forEach(day => {
+        const formattedDay = day.charAt(0) + day.slice(1).toLowerCase(); // "TUESDAY" -> "Tuesday"
+        newState[formattedDay] = {
+          openHour: '',
+          openMinute: '',
+          closedHour: '',
+          closedMinute: '',
+        };
+      });
+      return newState;
+    });
+
+    setLocalBreakingHours(prevState => {
+      const newState = {...prevState};
+      localClosedDay.forEach(day => {
+        const formattedDay = day.charAt(0) + day.slice(1).toLowerCase();
+        newState[formattedDay] = {
+          startHour: '',
+          startMinute: '',
+          endHour: '',
+          endMinute: '',
+        };
+      });
+      return newState;
+    });
+  }, [localClosedDay]);
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -750,9 +813,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
           setIsClosed={setIsClosed}
           localClosedDay={localClosedDay}
           setLocalClosedDay={setLocalClosedDay}
-          setClosedDay={setClosedDay}
           setIs24={setIs24}
-          setIs24Hours={setIs24Hours}
           handleBottomClose={handleBottomClose}
           setIsAllClosed={setIsAllClosed}
           isBottomOpen={isBottomOpen}

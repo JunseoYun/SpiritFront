@@ -13,9 +13,9 @@ const ClosedDaySelector = ({
   setIsClosed,
   localClosedDay,
   setLocalClosedDay,
-  setClosedDay,
+
   setIs24,
-  setIs24Hours,
+
   handleBottomClose,
   setIsAllClosed,
   isBottomOpen,
@@ -30,7 +30,6 @@ const ClosedDaySelector = ({
     // 🚨 여기서 'isClosed === true'일 때만 초기화
     if (isInvalid === true) {
       setIs24(false); // 🚨 24시간 설정 해제
-      setIs24Hours(false);
     }
 
     handleBottomClose();
@@ -39,10 +38,10 @@ const ClosedDaySelector = ({
   useEffect(() => {
     if (!isClosed) {
       setLocalClosedDay([]);
-      setClosedDay([]);
+
       setIsAllClosed(false); // 🚨 모든 요일 해제 시 isAllClosed도 false로 초기화
     }
-  }, [isClosed, setLocalClosedDay, setClosedDay, setIsAllClosed]);
+  }, [isClosed, setLocalClosedDay, setIsAllClosed]);
 
   const toggleDay = dayValue => {
     if (isBottomOpen) {
