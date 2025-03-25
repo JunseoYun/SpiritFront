@@ -4,6 +4,7 @@ import {
   Animated,
   Text,
   Platform,
+  Keyboard,
   TouchableWithoutFeedback,
   StyleSheet,
   TouchableOpacity,
@@ -55,6 +56,94 @@ const StoreMainScreen = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   const {showToast} = useToast();
 
+  useEffect(() => {
+    if (storedata?.operationInfoDtos) {
+      const operationInfoDtos = convertToOperatingAndBreakingHours(
+        storedata.operationInfoDtos,
+      );
+      console.log(storedata);
+    }
+  }, [storedata]);
+  const convertToOperatingAndBreakingHours = operationInfoDtos => {
+    const defaultOperatingHours = {
+      Monday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
+      Tuesday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
+      Wednesday: {
+        openHour: '',
+        openMinute: '',
+        closedHour: '',
+        closedMinute: '',
+      },
+      Thursday: {
+        openHour: '',
+        openMinute: '',
+        closedHour: '',
+        closedMinute: '',
+      },
+      Friday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
+      Saturday: {
+        openHour: '',
+        openMinute: '',
+        closedHour: '',
+        closedMinute: '',
+      },
+      Sunday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
+    };
+
+    const defaultBreakingHours = {
+      Monday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+      Tuesday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+      Wednesday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+      Thursday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+      Friday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+      Saturday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+      Sunday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
+    };
+
+    operationInfoDtos.forEach(
+      ({
+        dayOfWeek,
+        isClosed,
+        openTime,
+        closeTime,
+        breakStartTime,
+        breakEndTime,
+      }) => {
+        const formattedDay =
+          dayOfWeek.charAt(0) + dayOfWeek.slice(1).toLowerCase(); // "TUESDAY" -> "Tuesday"
+
+        if (!isClosed) {
+          if (openTime && closeTime) {
+            const [openHour, openMinute] = openTime.split(':');
+            const [closedHour, closedMinute] = closeTime.split(':');
+            defaultOperatingHours[formattedDay] = {
+              openHour,
+              openMinute,
+              closedHour,
+              closedMinute,
+            };
+          }
+
+          if (breakStartTime && breakEndTime) {
+            const [startHour, startMinute] = breakStartTime.split(':');
+            const [endHour, endMinute] = breakEndTime.split(':');
+            defaultBreakingHours[formattedDay] = {
+              startHour,
+              startMinute,
+              endHour,
+              endMinute,
+            };
+          }
+        }
+      },
+    );
+
+    return {
+      operatingHours: defaultOperatingHours,
+      breakingHours: defaultBreakingHours,
+    };
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       let isActive = true; // ✅ cleanup을 위한 변수 추가
@@ -83,7 +172,7 @@ const StoreMainScreen = ({navigation}) => {
   }, [currentPage]);
 
   const storeTimeEditHandle = () => {
-    navigation.navigate('StoreAddTimeSetScreen', {
+    navigation.navigate('StoreTimeEditScreen', {
       //   // operatingHours,
       //   // breakingHours,
       //   // setOperatingHours,
@@ -124,10 +213,8 @@ const StoreMainScreen = ({navigation}) => {
 
   const handleBottomClose = () => {
     bottomSheetRef.current?.close();
-    setTimeout(() => {
-      setUpdatedKey(null);
-      setUpdatedValue(null);
-    }, 500);
+    setTimeout(() => {}, 500);
+    Keyboard.dismiss();
   };
 
   const handleEditKey = key => {
@@ -239,6 +326,7 @@ const StoreMainScreen = ({navigation}) => {
         } else {
           await UpdateStore(storeId, {[key]: value});
         }
+
         const storeData = await StoreMainget(storeId);
         setStoredata(storeData);
         setLongitude(storeData.locationDto.longitude);
@@ -364,7 +452,7 @@ const StoreMainScreen = ({navigation}) => {
           headerBackgroundColor={headerBackgroundColor}
           iconColor={iconColor}
           titleOpacity={titleOpacity}
-          title={storedata.storeName}
+          title={storedata.name}
         />
       )}
       {isUpdate && (

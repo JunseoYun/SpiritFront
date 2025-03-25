@@ -6,7 +6,7 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
   const [errors, setErrors] = useState({}); // 각 필드별 에러 메시지 상태
   const storeNameInputRef = useRef(null); // 매장 이름 입력 필드 ref 생성
-
+  const [overText, setOverText] = useState(false);
   useEffect(() => {
     if (error === 'StoreName' && storeNameInputRef.current) {
       storeNameInputRef.current.focus(); // 에러가 있을 경우 포커스 자동 지정
@@ -32,6 +32,21 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
 
   const isFocused = key => focusedInput === key;
 
+  const handleContentChange = text => {
+    const lines = text.split('\n'); // 🔥 입력된 줄 개수 확인
+    const maxLines = 5; // 최대 줄 개수
+    const maxChars = 100; // 최대 글자 수
+
+    if (lines.length > maxLines || text.length > maxChars) {
+      setOverText(true);
+      return; // 🔥 5줄 이상이거나 100자 초과하면 입력 차단
+    } else {
+      setOverText(false);
+    }
+
+    handleChange('storeContent', text);
+  };
+
   return (
     <View>
       {/* 매장 이름 입력 */}
@@ -51,6 +66,7 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('storeName')}
           onBlur={() => setFocusedInput(null)}
+          returnKeyType="done"
         />
         {errors.storeName && (
           <Text style={styles.errorText}>{errors.storeName}</Text>
@@ -77,6 +93,7 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('storeNumber')}
           onBlur={() => setFocusedInput(null)}
+          returnKeyType="done"
         />
         {errors.storeNumber && (
           <Text style={styles.errorText}>{errors.storeNumber}</Text>
@@ -94,15 +111,22 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
             isFocused('storeContent') && styles.focusedInput,
           ]}
           multiline
+          // maxLength={100} // 🔥 너무 긴 텍스트 방지 (선택 사항)
           value={storeData.storeContent}
-          onChangeText={text => handleChange('storeContent', text)}
+          onChangeText={handleContentChange}
           placeholder="매장을 간단하게 소개해주세요."
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('storeContent')}
           onBlur={() => setFocusedInput(null)}
+          returnKeyType="done"
         />
         {errors.storeContent && (
           <Text style={styles.errorText}>{errors.storeContent}</Text>
+        )}
+        {overText && (
+          <Text style={styles.errorText}>
+            매장 소개는 최대 5줄, 최대 100자입니다.
+          </Text>
         )}
       </View>
     </View>
@@ -137,6 +161,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     paddingVertical: 5,
     paddingLeft: 1,
+    maxHeight: 120,
   },
   focusedInput: {
     borderBottomColor: '#16BBFF', // 활성화 상태 색상

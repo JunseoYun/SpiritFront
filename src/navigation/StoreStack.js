@@ -13,6 +13,7 @@ import MenuUpdateScreen from '../screens/StoreInfo/Menu/MenuUpdateScreen';
 import AlcoholUpdateScreen from '../screens/StoreInfo/Alcohol/AlcoholUpdateScreen';
 import StoreReportScreen from '../screens/StoreInfo/Report/StoreReportScreen';
 import ReviewReportScreen from '../screens/StoreInfo/Report/ReviewReportScreen';
+import StoreTimeEditScreen from '../screens/StoreInfo/StoreTimeEditScreen';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 const Stack = createStackNavigator();
 
@@ -24,6 +25,28 @@ export default function StoreStack() {
         name="StoreMainScreen"
         component={StoreMainScreen}
         options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="StoreTimeEditScreen"
+        component={StoreTimeEditScreen}
+        options={({navigation}) => ({
+          title: '영업 시간 수정',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.goBack()}>
+              <Octicons
+                name="chevron-left"
+                size={25}
+                color="#333"
+                style={{marginLeft: 18}}
+              />
+            </Pressable>
+          ),
+        })}
       />
       <Stack.Screen
         name="MenuAddScreen"

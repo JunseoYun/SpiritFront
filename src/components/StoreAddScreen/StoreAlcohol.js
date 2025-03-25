@@ -47,8 +47,8 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>대표주종* (최대 2종)</Text>
-      {[0, 1].map((_, index) => (
+      <Text style={styles.title}>대표주종* (최대 3종)</Text>
+      {[0, 1, 2].map((_, index) => (
         <View key={index} style={styles.alcoholRow}>
           {/* 간략 정보 또는 기본 보기 */}
           {expandedIndex !== index && (
