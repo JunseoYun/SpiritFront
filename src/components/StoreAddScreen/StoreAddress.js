@@ -87,6 +87,7 @@ const StoreAddress = ({
           onChangeText={handleDetailedAddressChange} // 상세 주소 업데이트 핸들러 사용
           onFocus={() => setFocusedInput('detailedAddress')} // 활성화 상태 설정
           onBlur={() => setFocusedInput(null)} // 비활성화 상태로 변경
+          returnKeyType="done"
         />
         {errors && <Text style={styles.errorText}>{errors}</Text>}
       </View>

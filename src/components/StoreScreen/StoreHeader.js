@@ -7,6 +7,7 @@ const StoreHeader = ({
   headerBackgroundColor,
   iconColor,
   titleOpacity,
+  title,
 }) => {
   return (
     <Animated.View
@@ -17,8 +18,8 @@ const StoreHeader = ({
         </Animated.Text>
       </Pressable>
       <Animated.Text style={[styles.headerTitle, {opacity: titleOpacity}]}>
-        {/* {title || '친구포차'} */}
-        친구포차
+        {title || '한잔할까'}
+        {/* 친구포차 */}
       </Animated.Text>
       <Pressable onPress={() => navigation.navigate('MainBtmbar')}>
         <Animated.Text style={{color: iconColor}}>
