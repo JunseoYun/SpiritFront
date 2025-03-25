@@ -56,7 +56,7 @@ export default function MainStack() {
                 name="chevron-left"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -78,7 +78,7 @@ export default function MainStack() {
                 name="chevron-left"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -105,7 +105,7 @@ export default function MainStack() {
                 name="chevron-left"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -129,7 +129,7 @@ export default function MainStack() {
                 name="chevron-left"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -151,7 +151,7 @@ export default function MainStack() {
                 name="chevron-left"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -173,7 +173,7 @@ export default function MainStack() {
                 name="chevron-left"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -195,7 +195,7 @@ export default function MainStack() {
                 name="chevron-left"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -217,7 +217,7 @@ export default function MainStack() {
                 name="chevron-left"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -239,7 +239,7 @@ export default function MainStack() {
                 name="chevron-left"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -275,7 +275,7 @@ export default function MainStack() {
                 name="chevron-left"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
