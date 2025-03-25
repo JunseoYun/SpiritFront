@@ -11,6 +11,8 @@ import {
 import StoreSearchBar from '../../components/StoreSearch/StoreSearchBar';
 import StoreResultList from '../../components/StoreSearch/StoreResultList';
 import {useRoute} from '@react-navigation/native';
+import {useToast} from '../../context/ToastContext';
+
 const {width} = Dimensions.get('window');
 
 const StoreSearchScreen = ({navigation}) => {
@@ -18,12 +20,13 @@ const StoreSearchScreen = ({navigation}) => {
   const {index} = route.params;
   const [searchStoreName, setSearchStoreName] = useState('');
   const [trimmedSearchWord, setTrimmedSearchWord] = useState('');
+  const {showToast} = useToast();
 
   // 검색 핸들러: 입력된 검색어가 있다면 공백 제거 후 결과 리스트에 전달
   const handleSearch = () => {
     const trimmed = searchStoreName.trim();
     if (trimmed === '') {
-      Alert.alert('검색어를 입력해주세요.');
+      showToast('검색어를 입력해주세요.');
       setTrimmedSearchWord('');
     } else {
       setTrimmedSearchWord(trimmed);
@@ -59,39 +62,17 @@ const StoreSearchScreen = ({navigation}) => {
           : '권한 신청 전 한잔할까에 등록된 매장인지 확인해보세요!'}
       </Text>
 
-      {/* 검색어가 있을 때 결과 리스트 렌더링 */}
-      {trimmedSearchWord !== '' && (
-        <StoreResultList
-          trimmedSearchWord={trimmedSearchWord}
-          navigation={navigation}
-          index={index}
-        />
-      )}
-      {trimmedSearchWord !== '' ? (
-        <View style={styles.storeAddTextview}>
-          <Pressable
-            style={styles.storeAddButtonsearch}
-            onPress={handleStoreAdd}>
-            <Text style={styles.storeAddText}>매장 등록</Text>
-          </Pressable>
-        </View>
-      ) : (
-        <View style={styles.storeAddTextview1}>
-          <Pressable style={styles.storeAddButton} onPress={handleStoreAdd}>
-            <Text style={styles.storeAddText}>매장 등록</Text>
-          </Pressable>
-        </View>
-      )}
-      {/* <View style={styles.storeAddTextview}>
-        <Pressable
-          style={[
-            trimmedSearchWord == '' && styles.storeAddButton,
-            trimmedSearchWord !== '' && styles.storeAddButtonsearch,
-          ]}
-          onPress={handleStoreAdd}>
+      <StoreResultList
+        trimmedSearchWord={trimmedSearchWord}
+        navigation={navigation}
+        index={index}
+      />
+
+      <View style={styles.storeAddTextview}>
+        <Pressable style={styles.storeAddButtonsearch} onPress={handleStoreAdd}>
           <Text style={styles.storeAddText}>매장 등록</Text>
         </Pressable>
-      </View> */}
+      </View>
     </SafeAreaView>
   );
 };
@@ -122,24 +103,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
-  },
-  storeAddTextview1: {
-    width: '100%',
-    paddingHorizontal: 18,
-    position: 'absolute',
-    bottom: 10,
-  },
-  storeAddButton: {
-    paddingVertical: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#16BBFF',
-    borderRadius: 10,
-    elevation: 3, // Android shadow
-    shadowColor: '#000', // iOS shadow
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
   storeAddTextview: {
     borderTopWidth: 0.5,

@@ -8,6 +8,7 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
   const [page, setPage] = useState(0); // 페이지 번호
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
+  const [isword, setIsword] = useState(false);
   const [totalpage, setTotalpage] = useState(0);
 
   // 검색된 가게들을 불러오는 함수
@@ -34,8 +35,12 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
       } catch (err) {
         console.error('오류 발생:', err.message);
       } finally {
+        setIsword(true);
         setLoading(false);
       }
+    } else {
+      setIsword(false);
+      setLoading(false);
     }
   };
 
@@ -46,6 +51,9 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
       setPage(0); // 페이지 초기화
       setIsEnd(false); // 데이터 끝 상태 초기화
       filteredStores(0);
+      setIsword(true);
+    } else if (!trimmedSearchWord) {
+      setIsword(false);
     }
   }, [trimmedSearchWord]);
 
@@ -90,7 +98,7 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
         ) : null
       }
       ListEmptyComponent={
-        !loading && searchingStores.length === 0 ? (
+        !loading && searchingStores.length === 0 && isword ? (
           <Text style={styles.emptyText}>검색된 술집이 없습니다</Text>
         ) : null
       }

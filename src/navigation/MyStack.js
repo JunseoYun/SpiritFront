@@ -38,7 +38,7 @@ export default function MyStack() {
                 name="arrow-back-outline"
                 size={25}
                 color="black"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -56,7 +56,7 @@ export default function MyStack() {
                 name="arrow-back-outline"
                 size={25}
                 color="black"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -87,7 +87,7 @@ export default function MyStack() {
                 name="x"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
@@ -112,7 +112,7 @@ export default function MyStack() {
                 name="x"
                 size={25}
                 color="#333"
-                style={{marginLeft: 18}}
+                style={{paddingLeft: 22}}
               />
             </Pressable>
           ),
