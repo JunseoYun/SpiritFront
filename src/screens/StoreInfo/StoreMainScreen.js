@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
+import React, {useEffect, useState, useRef, useMemo, useCallback} from 'react';
 import {
   View,
   Animated,
@@ -56,117 +56,12 @@ const StoreMainScreen = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   const {showToast} = useToast();
 
-  useEffect(() => {
-    if (storedata?.operationInfoDtos) {
-      const operationInfoDtos = convertToOperatingAndBreakingHours(
-        storedata.operationInfoDtos,
-      );
-    }
-  }, [storedata]);
-  // console.log(storedata);
   const storeTimeEditHandle = () => {
     navigation.navigate('StoreTimeEditScreen', {
+      storeId: storedata.id,
       operationInfoDtos: storedata.operationInfoDtos,
       is24Hours: storedata.isAlwaysOpen,
-      //   // operatingHours,
-      //   // breakingHours,
-      //   // setOperatingHours,
-      //   // setBreakingHours,
-      //   // closedDay,
-      //   // setClosedDay,
-      //   // is24Hours,
-      //   // setIs24Hours,
-      //   // isSameEveryTime,
-      //   // setIsSameEveryTime,
-      //   // hasBreaking,
-      // setHasBreaking,
     });
-
-    // navigation.navigate('MainStack', {
-    //   screen: 'StoreAddTimeSetScreen',
-    //   params: {
-    //     // storeId: store.id,
-    //   },
-    // });
-  };
-  const convertToOperatingAndBreakingHours = operationInfoDtos => {
-    const defaultOperatingHours = {
-      Monday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
-      Tuesday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
-      Wednesday: {
-        openHour: '',
-        openMinute: '',
-        closedHour: '',
-        closedMinute: '',
-      },
-      Thursday: {
-        openHour: '',
-        openMinute: '',
-        closedHour: '',
-        closedMinute: '',
-      },
-      Friday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
-      Saturday: {
-        openHour: '',
-        openMinute: '',
-        closedHour: '',
-        closedMinute: '',
-      },
-      Sunday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
-    };
-
-    const defaultBreakingHours = {
-      Monday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
-      Tuesday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
-      Wednesday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
-      Thursday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
-      Friday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
-      Saturday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
-      Sunday: {startHour: '', startMinute: '', endHour: '', endMinute: ''},
-    };
-
-    operationInfoDtos.forEach(
-      ({
-        dayOfWeek,
-        isClosed,
-        openTime,
-        closeTime,
-        breakStartTime,
-        breakEndTime,
-      }) => {
-        const formattedDay =
-          dayOfWeek.charAt(0) + dayOfWeek.slice(1).toLowerCase(); // "TUESDAY" -> "Tuesday"
-
-        if (!isClosed) {
-          if (openTime && closeTime) {
-            const [openHour, openMinute] = openTime.split(':');
-            const [closedHour, closedMinute] = closeTime.split(':');
-            defaultOperatingHours[formattedDay] = {
-              openHour,
-              openMinute,
-              closedHour,
-              closedMinute,
-            };
-          }
-
-          if (breakStartTime && breakEndTime) {
-            const [startHour, startMinute] = breakStartTime.split(':');
-            const [endHour, endMinute] = breakEndTime.split(':');
-            defaultBreakingHours[formattedDay] = {
-              startHour,
-              startMinute,
-              endHour,
-              endMinute,
-            };
-          }
-        }
-      },
-    );
-
-    return {
-      operatingHours: defaultOperatingHours,
-      breakingHours: defaultBreakingHours,
-    };
   };
 
   useFocusEffect(
@@ -195,6 +90,58 @@ const StoreMainScreen = ({navigation}) => {
       }, 0);
     }
   }, [currentPage]);
+
+  // 처음 진입 시 전체 fetch
+  const isFirstLoad = useRef(true);
+
+  useEffect(() => {
+    fetchInitialStoreData().finally(() => {
+      isFirstLoad.current = false;
+    });
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      if (!isFirstLoad.current) {
+        fetchStoreDataOnly();
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  const fetchStoreDataOnly = async () => {
+    try {
+      const storeData = await StoreMainget(storeId);
+      setStoredata(storeData);
+      setLongitude(storeData.locationDto.longitude);
+      setLatitude(storeData.locationDto.latitude);
+
+      if (storeData.isDeleted) {
+        showToast('삭제된 가게입니다.');
+        setTimeout(() => navigation.goBack(), 100);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchInitialStoreData = async () => {
+    try {
+      setLoading(true);
+
+      await fetchStoreDataOnly();
+
+      const Menus = await StoreMenuget(storeId);
+      setMenus(Menus);
+      const Drinks = await StoreDrinkget(storeId);
+      setAlcohols(Drinks);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const startUpdate = () => {
     setIsUpdate(true);
@@ -328,20 +275,13 @@ const StoreMainScreen = ({navigation}) => {
           await UpdateStore(storeId, {[key]: value});
         }
 
-        const storeData = await StoreMainget(storeId);
-        setStoredata(storeData);
-        setLongitude(storeData.locationDto.longitude);
-        setLatitude(storeData.locationDto.latitude);
+        await fetchStoreDataOnly();
       } catch (error) {
         handleError();
       }
     };
 
     switch (updatedKey) {
-      case 'operatingTime':
-      case 'breakingTime':
-        await performUpdate('businessHoursDto', updatedValue);
-        break;
       case 'description':
         await performUpdate(updatedKey, removeLineBreaks(updatedValue));
         break;
@@ -375,29 +315,6 @@ const StoreMainScreen = ({navigation}) => {
     }
     return value;
   };
-
-  useEffect(() => {
-    const getStoreData = async () => {
-      try {
-        const storeData = await StoreMainget(storeId);
-        setStoredata(storeData);
-        setLongitude(storeData.locationDto.longitude);
-        setLatitude(storeData.locationDto.latitude);
-        if (storeData.isDeleted) {
-          showToast('삭제된 가게입니다.'); // 🔥 토스트 메시지 띄우기
-          setTimeout(() => navigation.goBack(), 100); // 1초 후 뒤로 가기
-        }
-        const Menus = await StoreMenuget(storeId);
-        setMenus(Menus);
-        const Drinks = await StoreDrinkget(storeId);
-        setAlcohols(Drinks);
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    getStoreData();
-  }, []);
 
   useEffect(() => {
     if (isUpdate) {

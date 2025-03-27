@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   ScrollView,
+  Pressable,
   Modal,
 } from 'react-native';
 
@@ -38,12 +39,7 @@ import OperateBottomBreakingTimePicker from '../../components/StoreAddScreen/Sto
 import OperateBottomBreakToggle from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomBreakToggle';
 import OperateBottomConfirmButton from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomConfirmButton';
 
-import {
-  StoreMainget,
-  UpdateStore,
-  DeleteStoreImage,
-  UpdateStoreImage,
-} from '../../api/storeApi';
+import {UpdateStore} from '../../api/storeApi';
 
 const days = [
   {label: '월', value: 'MONDAY'},
@@ -56,7 +52,7 @@ const days = [
 ];
 
 const StoreTimeEditScreen = ({navigation, route}) => {
-  const {operationInfoDtos, is24Hours} = route.params;
+  const {storeId, operationInfoDtos, is24Hours} = route.params;
 
   const scrollViewRef = useRef(null);
 
@@ -105,6 +101,134 @@ const StoreTimeEditScreen = ({navigation, route}) => {
     tempBreaking: {},
   });
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={handleComplete}>
+          <Text
+            style={[
+              styles.searchButton,
+              (wrongBreak || isSameOperating) &&
+                isSameEveryday && {color: '#999'},
+
+              (breakError || operateError) &&
+                !isSameEveryday && {color: '#999'},
+              isAllClosed && {color: '#999'},
+              !isSameEveryday && emptyTime && {color: '#999'}, // 🔥 운영시간이 없으면 버튼 비활성화
+            ]}>
+            완료
+          </Text>
+        </Pressable>
+      ),
+    });
+  }, [
+    handleComplete, // 최신 handleComplete 함수 반영
+    isSameEveryday,
+    isSameOperating,
+    wrongBreak,
+    timeState,
+    localOperatingHours,
+    localBreakingHours,
+    hasLocalBreaking,
+    localClosedDay,
+    is24,
+    operateError,
+    emptyTime,
+  ]);
+
+  const handleComplete = async () => {
+    if (isAllClosed) return;
+    if (is24) {
+      await UpdateStore(storeId, {isAlwaysOpen: true});
+      navigation.goBack();
+      return;
+    }
+
+    if (
+      (isSameEveryday && (isSameOperating || wrongBreak)) ||
+      (!isSameEveryday && (breakError || operateError || emptyTime))
+    ) {
+      return;
+    }
+
+    const buildTimeMap = isSame => {
+      const result = {};
+      days.forEach(({value: day}) => {
+        const formattedDay = day.charAt(0) + day.slice(1).toLowerCase();
+        if (isSame) {
+          result[formattedDay] = {
+            openHour: timeState.sameOpenTime.openHour,
+            openMinute: timeState.sameOpenTime.openMinute,
+            closedHour: timeState.sameCloseTime.closedHour,
+            closedMinute: timeState.sameCloseTime.closedMinute,
+          };
+        } else {
+          result[formattedDay] = localOperatingHours[formattedDay];
+        }
+      });
+      return result;
+    };
+
+    const buildBreakMap = isSame => {
+      const result = {};
+      days.forEach(({value: day}) => {
+        const formattedDay = day.charAt(0) + day.slice(1).toLowerCase();
+        if (isSame) {
+          result[formattedDay] = hasLocalBreaking
+            ? {
+                startHour: timeState.sameStartTime.startHour,
+                startMinute: timeState.sameStartTime.startMinute,
+                endHour: timeState.sameEndTime.endHour,
+                endMinute: timeState.sameEndTime.endMinute,
+              }
+            : {
+                startHour: '',
+                startMinute: '',
+                endHour: '',
+                endMinute: '',
+              };
+        } else {
+          result[formattedDay] = localBreakingHours[formattedDay] || {};
+        }
+      });
+      return result;
+    };
+
+    const opHours = buildTimeMap(isSameEveryday);
+    const brHours = buildBreakMap(isSameEveryday);
+
+    const operationInfoDtos = Object.keys(opHours).map(day => {
+      const upperCaseDay = day.toUpperCase();
+      const isClosed = localClosedDay.includes(upperCaseDay);
+      const op = opHours[day] || {};
+      const br = brHours[day] || {};
+
+      if (isClosed) {
+        return {dayOfWeek: upperCaseDay, isClosed: true};
+      }
+
+      return {
+        dayOfWeek: upperCaseDay,
+        isClosed: false,
+        openTime: `${op.openHour}:${op.openMinute}`,
+        closeTime: `${op.closedHour}:${op.closedMinute}`,
+        breakStartTime:
+          br.startHour && br.startMinute
+            ? `${br.startHour}:${br.startMinute}`
+            : null,
+        breakEndTime:
+          br.endHour && br.endMinute ? `${br.endHour}:${br.endMinute}` : null,
+      };
+    });
+
+    await UpdateStore(storeId, {
+      isAlwaysOpen: false,
+      operationInfoDtos,
+    });
+
+    navigation.goBack();
+  };
+
   useEffect(() => {
     if (is24Hours) {
       setIs24(is24Hours);
@@ -126,7 +250,7 @@ const StoreTimeEditScreen = ({navigation, route}) => {
       setHasLocalBreaking(
         isOperatingTimeSame === true &&
           isBreakingTimeSame === true &&
-          isEmpty === true,
+          isEmpty === false,
       );
     }
 

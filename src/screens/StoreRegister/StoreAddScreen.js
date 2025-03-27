@@ -118,9 +118,12 @@ const StoreAddScreen = ({navigation, route}) => {
       scrollToError(storeCategoryRef);
       return;
     }
-    const hasEmptyOperatingHours = Object.values(operatingHours).some(
-      ({openHour, openMinute, closedHour, closedMinute}) =>
-        !openHour || !openMinute || !closedHour || !closedMinute,
+    const hasEmptyOperatingHours = Object.entries(operatingHours).some(
+      ([day, {openHour, openMinute, closedHour, closedMinute}]) => {
+        const upperDay = day.toUpperCase();
+        if (closedDay.includes(upperDay)) return false; // 휴무일이면 제외
+        return !openHour || !openMinute || !closedHour || !closedMinute;
+      },
     );
 
     if (hasEmptyOperatingHours) {
@@ -229,7 +232,7 @@ const StoreAddScreen = ({navigation, route}) => {
               ),
       };
     });
-    console.log(is24Hours);
+
     var data = {
       files: imageUris,
       createStoreDto: {
