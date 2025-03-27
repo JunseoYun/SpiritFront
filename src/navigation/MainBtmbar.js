@@ -73,9 +73,9 @@ const MainBtmbar = () => {
           headerTitleAlign: 'center',
           title: '찜',
           headerTitleStyle: {
-            fontSize: 20, // 타이틀 크기 설정
+            fontSize: 19, // 타이틀 크기 설정
             color: '#333', // 텍스트 색상 (선택 사항)
-            fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+            fontWeight: 'bold',
           },
         }}
       />

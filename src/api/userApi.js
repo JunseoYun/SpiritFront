@@ -46,7 +46,7 @@ export const check_nickName = async nickname => {
 
     return response.data.data; // 응답 데이터 반환
   } catch (error) {
-    functionError(error); // 에러 처리
+    // functionError(error); // 에러 처리
     throw error;
   }
 };

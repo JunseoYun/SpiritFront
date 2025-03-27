@@ -365,7 +365,7 @@ const StoreMainScreen = ({navigation}) => {
   };
   return (
     <>
-      <View style={{flex: 1, backgroundColor: 'white'}}>
+      <View style={{backgroundColor: 'white'}}>
         {!isUpdate && (
           <StoreHeader
             navigation={navigation}
@@ -390,7 +390,11 @@ const StoreMainScreen = ({navigation}) => {
             )}
             scrollEventThrottle={16}
             ref={scrollViewRef}
-            style={{backgroundColor: 'white', width: '100%'}}
+            style={{
+              backgroundColor: 'white',
+              width: '100%',
+              paddingBottom: 100,
+            }}
             keyboardShouldPersistTaps="always"
             scrollEnabled={true}
             contentContainerStyle={{flexGrow: 1}}>
@@ -536,11 +540,15 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   endUpdateButton: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
     backgroundColor: 'white',
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingBottom: Platform.OS === 'ios' ? 30 : 10,
+    paddingTop: 10,
   },
   storeAddButtonsearch: {
     paddingVertical: 15,

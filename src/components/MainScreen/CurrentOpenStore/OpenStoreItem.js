@@ -344,6 +344,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     fontWeight: 'bold',
+    lineHeight: 18,
   },
   openOverlay: {
     position: 'absolute',

@@ -186,6 +186,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     marginBottom: 10,
     pointerEvents: 'auto',
+    flex: 1,
   },
 });
 
