@@ -8,19 +8,12 @@ import React, {
 } from 'react';
 import {
   View,
-  Animated,
   Text,
-  Platform,
-  TouchableWithoutFeedback,
   StyleSheet,
-  TouchableOpacity,
-  KeyboardAvoidingView,
   ScrollView,
   Pressable,
   Modal,
 } from 'react-native';
-
-import {useRoute, useFocusEffect} from '@react-navigation/native';
 
 import ClosedDaySelector from '../../components/StoreAddScreen/StoreAddTimeSet/ClosedDaySelector';
 import OperatingHoursToggle from '../../components/StoreAddScreen/StoreAddTimeSet/OperatingHoursToggle';
@@ -96,6 +89,7 @@ const StoreTimeEditScreen = ({navigation, route}) => {
   const [emptyTime, setEmptyTime] = useState(false);
   const [breakErrorMessage, setBreakErrorMessage] = useState('');
   const [operateErrorMessage, setOperateErrorMessage] = useState('');
+
   const [tempState, setTempState] = useState({
     tempOperating: {},
     tempBreaking: {},
@@ -135,6 +129,29 @@ const StoreTimeEditScreen = ({navigation, route}) => {
     operateError,
     emptyTime,
   ]);
+
+  const deepEqual = (a, b) => {
+    return JSON.stringify(a) === JSON.stringify(b);
+  };
+
+  const normalizeDtos = dtos => {
+    const formatTime = time => {
+      if (!time) return null;
+      const [h, m] = time.split(':');
+      return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
+    };
+
+    return dtos
+      .map(dto => ({
+        dayOfWeek: dto.dayOfWeek,
+        isClosed: dto.isClosed,
+        openTime: dto.isClosed ? null : formatTime(dto.openTime),
+        closeTime: dto.isClosed ? null : formatTime(dto.closeTime),
+        breakStartTime: dto.isClosed ? null : formatTime(dto.breakStartTime),
+        breakEndTime: dto.isClosed ? null : formatTime(dto.breakEndTime),
+      }))
+      .sort((a, b) => a.dayOfWeek.localeCompare(b.dayOfWeek));
+  };
 
   const handleComplete = async () => {
     if (isAllClosed) return;
@@ -197,7 +214,7 @@ const StoreTimeEditScreen = ({navigation, route}) => {
     const opHours = buildTimeMap(isSameEveryday);
     const brHours = buildBreakMap(isSameEveryday);
 
-    const operationInfoDtos = Object.keys(opHours).map(day => {
+    const newOperationInfoDtos = Object.keys(opHours).map(day => {
       const upperCaseDay = day.toUpperCase();
       const isClosed = localClosedDay.includes(upperCaseDay);
       const op = opHours[day] || {};
@@ -221,9 +238,17 @@ const StoreTimeEditScreen = ({navigation, route}) => {
       };
     });
 
+    const normalizedOld = normalizeDtos(operationInfoDtos);
+    const normalizedNew = normalizeDtos(newOperationInfoDtos);
+
+    if (deepEqual(normalizedOld, normalizedNew)) {
+      navigation.goBack();
+      return;
+    }
+
     await UpdateStore(storeId, {
       isAlwaysOpen: false,
-      operationInfoDtos,
+      operationInfoDtos: newOperationInfoDtos,
     });
 
     navigation.goBack();
