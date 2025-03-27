@@ -12,8 +12,16 @@ const MapStoreItem = ({
   moveCenterMap,
   navigation,
 }) => {
-  const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
-    useStoreStatus(item?.operationInfoDtos, item?.isAlwaysOpen);
+  const {
+    isOpen,
+    isBreak,
+    closed,
+    nextclosed,
+    starttime,
+    endtime,
+    breakstart,
+    breakend,
+  } = useStoreStatus(item?.operationInfoDtos, item?.isAlwaysOpen);
 
   const handlePress = () => {
     setSelectedStore(item);
@@ -46,12 +54,22 @@ const MapStoreItem = ({
           style={styles.backimage}
           imageStyle={styles.backimagestyle}>
           {/* ✅ 영업 종료 표시 */}
-          {!isOpen && (
+          {!isOpen && !nextclosed && !closed && (
             <View style={styles.overlay}>
               <Text style={styles.overlayText}>
                 영업 종료{'\n'}
                 {starttime ? `${starttime} 오픈` : ''}
               </Text>
+            </View>
+          )}
+          {!isOpen && nextclosed && !closed && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
+            </View>
+          )}
+          {!isOpen && !nextclosed && closed && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>금일 휴무</Text>
             </View>
           )}
           {/* ✅ 브레이크 타임 표시 */}
@@ -107,9 +125,15 @@ const MapStoreItem = ({
             : '메인주류가 없습니다.'}
         </Text>
         <View style={styles.timeview}>
-          <Text style={styles.timeviewtext}>
-            영업 종료 {endtime || '정보 없음'}
-          </Text>
+          {item?.isAlwaysOpen == true ? (
+            <Text style={styles.timeviewtext}>24시간 영업</Text>
+          ) : item?.isAlwaysOpen == false && closed ? (
+            <Text style={styles.timeviewtext}>금일 휴무</Text>
+          ) : (
+            <Text style={styles.timeviewtext}>
+              영업 종료 {endtime || '정보 없음'}
+            </Text>
+          )}
         </View>
       </View>
     </Pressable>

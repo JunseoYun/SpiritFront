@@ -17,8 +17,16 @@ import useStoreStatus from '../../hooks/useStoreStatus';
 const StoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
 
-  const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
-    useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
+  const {
+    isOpen,
+    isBreak,
+    closed,
+    nextclosed,
+    starttime,
+    endtime,
+    breakstart,
+    breakend,
+  } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
   console.log(store?.operationInfoDtos);
   return (
     <Pressable
@@ -60,12 +68,30 @@ const StoreItem = ({store, location, navigation}) => {
                   } // ✅ 스타일 조건부 적용
                 >
                   {/* ✅ 영업 종료 표시 */}
-                  {!isOpen && (
+                  {!isOpen && !nextclosed && !closed && (
                     <View style={Categorystyles.overlay}>
                       {index === 0 && (
                         <Text style={Categorystyles.overlayText}>
                           영업 종료{'\n'}
                           {starttime ? `${starttime} 오픈` : ''}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                  {!isOpen && nextclosed && !closed && (
+                    <View style={Categorystyles.overlay}>
+                      {index === 0 && (
+                        <Text style={Categorystyles.overlayText}>
+                          영업 종료{'\n'}익일 휴무
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                  {!isOpen && !nextclosed && closed && (
+                    <View style={Categorystyles.overlay}>
+                      {index === 0 && (
+                        <Text style={Categorystyles.overlayText}>
+                          금일 휴무
                         </Text>
                       )}
                     </View>
@@ -105,12 +131,24 @@ const StoreItem = ({store, location, navigation}) => {
                 ? Categorystyles.storeMainImg
                 : Categorystyles.menuNoImg
             }>
-            {!isOpen && (
+            {!isOpen && !nextclosed && !closed && (
               <View style={Categorystyles.overlay}>
                 <Text style={Categorystyles.overlayText}>
                   영업 종료{'\n'}
                   {starttime ? `${starttime} 오픈` : ''}
                 </Text>
+              </View>
+            )}
+            {!isOpen && nextclosed && !closed && (
+              <View style={Categorystyles.overlay}>
+                <Text style={Categorystyles.overlayText}>
+                  영업 종료{'\n'}익일 휴무
+                </Text>
+              </View>
+            )}
+            {!isOpen && !nextclosed && closed && (
+              <View style={Categorystyles.overlay}>
+                <Text style={Categorystyles.overlayText}>금일 휴무</Text>
               </View>
             )}
             {/* ✅ 브레이크 타임 표시 */}
@@ -164,15 +202,13 @@ const StoreItem = ({store, location, navigation}) => {
         </View>
         <View style={Categorystyles.infoTimeView}>
           <View style={Categorystyles.infoView}>
-            {store?.isAlwaysOpen ? (
-              <Text style={Categorystyles.infoText}>
-                {' '}
-                영업 중 · 24시간 영업
-              </Text>
+            {store?.isAlwaysOpen == true ? (
+              <Text style={Categorystyles.infoText}>영업 중 · 24시간 영업</Text>
+            ) : store?.isAlwaysOpen == false && closed ? (
+              <Text style={Categorystyles.infoText}>금일 휴무</Text>
             ) : (
               <Text style={Categorystyles.infoText}>
-                {' '}
-                영업 중 · {endtime || ''}
+                영업 종료 · {endtime || '정보 없음'}
               </Text>
             )}
           </View>

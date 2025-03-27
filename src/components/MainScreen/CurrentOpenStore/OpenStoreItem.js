@@ -11,8 +11,16 @@ const OpenStoreItem = ({store, location, navigation}) => {
   const [unit, setUnit] = useState('m');
   const calculateDistance = useDistance();
 
-  const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
-    useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
+  const {
+    isOpen,
+    isBreak,
+    closed,
+    nextclosed,
+    starttime,
+    endtime,
+    breakstart,
+    breakend,
+  } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
 
   const calculateWalkingTime = distance => {
     const walkingSpeed = 80; // 평균 보행 속도 (m/min)
@@ -90,15 +98,98 @@ const OpenStoreItem = ({store, location, navigation}) => {
                 </View>
               </View>
             )}
+
+            {!isBreak && !isOpen && closed && !nextclosed && (
+              <View style={styles.overlay}>
+                <Text style={styles.overlayText}>금일 휴무</Text>
+                <Text
+                  style={styles.overlayNameText}
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  {store.name}
+                </Text>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  {Array.isArray(store.categories) &&
+                  store.categories.length > 0 ? (
+                    store.categories.map((category, index) => (
+                      <Text key={index} style={styles.overlayNameCategory}>
+                        {translateCategory(category)}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text style={styles.overlayNameCategory}>
+                      카테고리 미설정
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
+
+            {!isBreak && !isOpen && !closed && !nextclosed && (
+              <View style={styles.overlay}>
+                <Text style={styles.overlayText}>
+                  영업 종료{'\n'}
+                  {starttime ? `${starttime} 시작` : ''}
+                </Text>
+                <Text
+                  style={styles.overlayNameText}
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  {store.name}
+                </Text>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  {Array.isArray(store.categories) &&
+                  store.categories.length > 0 ? (
+                    store.categories.map((category, index) => (
+                      <Text key={index} style={styles.overlayNameCategory}>
+                        {translateCategory(category)}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text style={styles.overlayNameCategory}>
+                      카테고리 미설정
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
+
+            {!isBreak && !isOpen && !closed && nextclosed && (
+              <View style={styles.overlay}>
+                <Text style={styles.overlayText}>
+                  영업 종료{'\n'}
+                  익일 휴무
+                </Text>
+                <Text
+                  style={styles.overlayNameText}
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  {store.name}
+                </Text>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  {Array.isArray(store.categories) &&
+                  store.categories.length > 0 ? (
+                    store.categories.map((category, index) => (
+                      <Text key={index} style={styles.overlayNameCategory}>
+                        {translateCategory(category)}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text style={styles.overlayNameCategory}>
+                      카테고리 미설정
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
+
             {isOpen && !isBreak && (
               <>
-                {store?.isAlwaysOpen ? (
-                  <Text style={styles.openOverlayText}>
-                    24시간 영업 {endtime}
-                  </Text>
+                {store?.isAlwaysOpen == true ? (
+                  <Text style={styles.openOverlayText}>24시간 영업</Text>
                 ) : (
                   <Text style={styles.openOverlayText}>
-                    영업 종료 {endtime}
+                    영업 종료 {endtime || '정보 없음'}
                   </Text>
                 )}
                 <View style={styles.openOverlay}>

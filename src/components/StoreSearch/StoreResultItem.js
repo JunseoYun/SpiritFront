@@ -1,9 +1,21 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
+import useStoreStatus from '../../hooks/useStoreStatus';
 
 const StoreResultItem = ({store, navigation, index}) => {
   const {translateCategory} = useCategoryTranslation();
+
+  const {
+    isOpen,
+    isBreak,
+    closed,
+    nextclosed,
+    starttime,
+    endtime,
+    breakstart,
+    breakend,
+  } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
 
   return (
     <Pressable
@@ -28,7 +40,31 @@ const StoreResultItem = ({store, navigation, index}) => {
           style={styles.backimage}
           imageStyle={styles.backimagestyle}>
           {/* ✅ 영업 종료 표시 */}
-
+          {!isOpen && !nextclosed && !closed && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>
+                영업 종료 {starttime ? `\n${starttime} 오픈` : ''}
+              </Text>
+            </View>
+          )}
+          {!isOpen && nextclosed && !closed && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
+            </View>
+          )}
+          {!isOpen && !nextclosed && closed && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>금일 휴무</Text>
+            </View>
+          )}
+          {/* ✅ 브레이크 타임 표시 */}
+          {isOpen && isBreak && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>
+                브레이크 타임 {breakend ? `\n${breakend} 종료` : ''}
+              </Text>
+            </View>
+          )}
           {/* ✅ 브레이크 타임 표시 */}
         </ImageBackground>
         <View style={styles.StoreTextView}>
@@ -39,22 +75,20 @@ const StoreResultItem = ({store, navigation, index}) => {
               ellipsizeMode="tail">
               {store.name}
             </Text>
-            {index === 1 && (
-              <Pressable
-                key={store.id}
-                onPress={() => {
-                  navigation.navigate('StoreCheckScreen', {
-                    storeId: store.id,
-                    storeName: store.name,
-                    storeAddress: store.locationDto.address,
-                    storeAddressDetail: store.locationDto.addressDetail,
-                    storeContact: store.contact,
-                  });
-                }}
-                style={styles.badge}>
-                <Text style={styles.badgeText}>권한신청</Text>
-              </Pressable>
-            )}
+            <Pressable
+              key={store.id}
+              onPress={() => {
+                navigation.navigate('StoreCheckScreen', {
+                  storeId: store.id,
+                  storeName: store.name,
+                  storeAddress: store.locationDto.address,
+                  storeAddressDetail: store.locationDto.addressDetail,
+                  storeContact: store.contact,
+                });
+              }}
+              style={styles.badge}>
+              <Text style={styles.badgeText}>권한신청</Text>
+            </Pressable>
           </View>
 
           <View style={styles.StoreCategoryList}>
@@ -68,10 +102,15 @@ const StoreResultItem = ({store, navigation, index}) => {
             {store.locationDto.address}, {store.locationDto.addressDetail}
           </Text>
           <View style={styles.subView}>
-            <Text style={styles.StoreClose}>
-              영업 종료{' '}
-              {store.businessHoursDto?.closeTime?.slice(0, 5) || '정보 없음'}
-            </Text>
+            {store?.isAlwaysOpen == true ? (
+              <Text style={styles.StoreClose}>24시간 영업</Text>
+            ) : store?.isAlwaysOpen == false && closed ? (
+              <Text style={styles.StoreClose}>금일 휴무</Text>
+            ) : (
+              <Text style={styles.StoreClose}>
+                영업 종료 {endtime || '정보 없음'}
+              </Text>
+            )}
           </View>
         </View>
       </View>
@@ -92,7 +131,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   backimage: {
-    width: 90,
+    width: 120,
     height: 120,
     borderRadius: 10,
     borderRadius: 10,
@@ -100,7 +139,20 @@ const styles = StyleSheet.create({
   backimagestyle: {
     borderRadius: 10,
   },
-
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ 반투명 배경 추가
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  overlayText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
   StoreTextView: {
     marginLeft: 10,
     justifyContent: 'space-between',
