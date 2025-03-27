@@ -73,6 +73,7 @@ export const UpdateStore = async (storeId, data) => {
   try {
     await axiosInstance.patch(`/store/update/${storeId}`, data); // 수정: {data}를 제거
   } catch (error) {
+    console.error('PATCH 실패:', error?.response || error.message);
     throw error;
   }
 };
