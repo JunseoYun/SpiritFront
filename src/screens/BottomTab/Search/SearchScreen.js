@@ -110,6 +110,9 @@ const SearchScreen = ({navigation}) => {
       setSelectedCategory('');
       setSelectedEngCategory('');
       setSelectedPeople('');
+      setPeopleModalVisible(false);
+      setTimeModalVisible(false);
+      setModalVisible(false);
     }
   };
 

@@ -3,8 +3,8 @@ import {View, Text, StyleSheet} from 'react-native';
 import WheelPicker from './WheelPicker';
 
 const TimePicker = ({
-  selectedHour,
-  selectedMinute,
+  selectedHour = '00',
+  selectedMinute = '00',
   onHourChange,
   onMinuteChange,
 }) => {
