@@ -17,6 +17,8 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import ImagePicker from 'react-native-image-crop-picker';
 import ReviewForm from '../../components/StoreReviewScreen/ReviewForm';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import filterWords from '../../hooks/filterWords';
+import {useToast} from '../../context/ToastContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const StoreReviewScreen = ({navigation}) => {
@@ -24,6 +26,7 @@ const StoreReviewScreen = ({navigation}) => {
   const {storeId, storename} = route.params;
   const [reviewdata, setReviewdata] = useState([]);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const {showToast} = useToast();
 
   const [isWriting, setIsWriting] = useState(false); // 작성 상태
 
@@ -165,6 +168,7 @@ const StoreReviewScreen = ({navigation}) => {
         word =>
           newReviewContent.includes(word) || newrate.toString().includes(word),
       );
+
       if (containsForbiddenWord) {
         showAlert({
           title: '가이드 위반',
@@ -175,18 +179,12 @@ const StoreReviewScreen = ({navigation}) => {
 
       // 리뷰 내용과 별점이 비어있는지 확인
       if (!newReviewContent.trim()) {
-        showAlert({
-          title: '입력 오류',
-          message: '리뷰 내용을 입력해주세요.',
-        });
+        showToast('리뷰 내용을 적어주세요.');
         return;
       }
 
       if (newrate === 0) {
-        showAlert({
-          title: '입력 오류',
-          message: '별점을 입력해주세요.',
-        });
+        showToast('별점을 입력해주세요.');
         return;
       }
 
@@ -207,14 +205,9 @@ const StoreReviewScreen = ({navigation}) => {
       setNewReviewContent(''); // 리뷰 내용 초기화
       setVisitDate(new Date()); // 방문 날짜 초기화
 
-      showAlert({
-        title: '등록되었습니다',
-        message: '리뷰가 정상적으로 등록되었습니다.',
-        onConfirm: () => {
-          handleRefresh();
-          setIsWriting(false);
-        },
-      });
+      showToast('리뷰가 등록되었습니다.');
+      handleRefresh();
+      setIsWriting(false);
     } catch (error) {
       console.log(error, '리뷰 등록 중 에러');
       showAlert({

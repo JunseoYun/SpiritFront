@@ -6,19 +6,9 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 const UpdateHeader = ({endUpdate}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
 
-  const endHandle = () => {
-    showAlert({
-      title: '매장 수정',
-      message: '매장 수정을 완료하시겠습니까?',
-      onConfirm: () => endUpdate(),
-      onCancel: null,
-      type: 'confirm',
-    });
-  };
-
   return (
     <View style={styles.view}>
-      <Pressable onPress={endHandle}>
+      <Pressable onPress={endUpdate}>
         <Ionicons
           name="arrow-back-outline"
           size={25}

@@ -22,7 +22,6 @@ const StoreMainInfo = ({
   storedata = {},
   onModalOpen,
   isUpdate,
-  endUpdate,
   handleBottomOpen,
   onEditKey,
   onEditValue,
@@ -73,16 +72,6 @@ const StoreMainInfo = ({
     } else {
       setDescripexpanded(prev => !prev);
     }
-  };
-
-  const endHandle = () => {
-    showAlert({
-      title: '매장 수정',
-      message: '매장 수정을 완료하시겠습니까?',
-      onConfirm: () => endUpdate(),
-      onCancel: null,
-      type: 'confirm',
-    });
   };
 
   useEffect(() => {
@@ -186,14 +175,6 @@ const StoreMainInfo = ({
           storename={storedata.name}
         />
       )}
-
-      {isUpdate && (
-        <Pressable onPress={endHandle}>
-          <View style={styles.endUpdateButton}>
-            <Text style={styles.endUpdateText}>완료</Text>
-          </View>
-        </Pressable>
-      )}
       <AlertComponent />
     </View>
   );
@@ -205,20 +186,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     marginBottom: 10,
     pointerEvents: 'auto',
-  },
-  endUpdateButton: {
-    marginHorizontal: 18,
-    backgroundColor: '#10BEFB',
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 50,
-  },
-  endUpdateText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: '500',
-    paddingVertical: 10,
   },
 });
 
