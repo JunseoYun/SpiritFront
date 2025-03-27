@@ -4,6 +4,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [closed, setClosed] = useState(false);
+  const [nextclosed, setNextclosed] = useState(false);
   const [breakstart, setBreakstart] = useState(null);
   const [breakend, setBreakend] = useState(null);
   const [starttime, setStarttime] = useState(null);
@@ -11,8 +12,6 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
   const [operationSchedule, setOperationSchedule] = useState(null);
 
   const formatTime = time => (time ? time.slice(0, 5) : null);
-
-  console.log(operationInfoDtos);
 
   const reorderScheduleByToday = schedules => {
     const dayOrder = [
@@ -96,7 +95,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
 
       let now = new Date();
       let now22 = new Date();
-      now22.setHours(now22.getHours() + 21);
+      now22.setHours(now22.getHours() + 10);
       let currentDay = new Intl.DateTimeFormat('en-US', {
         weekday: 'long',
         timeZone: 'Asia/Seoul',
@@ -222,18 +221,22 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         ) {
           setIsBreak(true);
           setIsOpen(true);
+          setClosed(false);
         } else {
           setIsBreak(false);
           setIsOpen(true);
+          setClosed(false);
         }
       } else {
         setIsOpen(false);
         setIsBreak(false);
+        setClosed(false);
+
         if (yesterdayInfo == todayInfo) {
           if (!nextdayInfo.isClosed) {
             setStarttime(nextdayInfo.openTime.slice(0, 5));
           } else {
-            //추가
+            setNextclosed(true);
           }
         } else {
           setStarttime(todayInfo.openTime.slice(0, 5));
@@ -260,6 +263,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
     isOpen,
     isBreak,
     closed,
+    nextclosed,
     starttime,
     endtime,
     breakstart,

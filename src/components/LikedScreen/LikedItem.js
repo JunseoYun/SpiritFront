@@ -8,8 +8,16 @@ import useStoreStatus from '../../hooks/useStoreStatus';
 const LikedItem = ({store, navigation}) => {
   const {translateCategory} = useCategoryTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
-  const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
-    useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
+  const {
+    isOpen,
+    isBreak,
+    closed,
+    nextclosed,
+    starttime,
+    endtime,
+    breakstart,
+    breakend,
+  } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
 
   return (
     <Pressable
@@ -33,11 +41,21 @@ const LikedItem = ({store, navigation}) => {
           style={styles.backimage}
           imageStyle={styles.backimagestyle}>
           {/* ✅ 영업 종료 표시 */}
-          {!isOpen && (
+          {!isOpen && !nextclosed && !closed && (
             <View style={styles.overlay}>
               <Text style={styles.overlayText}>
                 영업 종료 {starttime ? `\n${starttime} 오픈` : ''}
               </Text>
+            </View>
+          )}
+          {!isOpen && nextclosed && !closed && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
+            </View>
+          )}
+          {!isOpen && !nextclosed && closed && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>금일 휴무</Text>
             </View>
           )}
           {/* ✅ 브레이크 타임 표시 */}

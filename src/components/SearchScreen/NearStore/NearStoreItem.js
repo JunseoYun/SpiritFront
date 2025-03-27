@@ -9,8 +9,16 @@ const NearStoreItem = ({store, navigation, location}) => {
   const [distance, setDistance] = useState(0);
   const [unit, setUnit] = useState('m');
   const calculateDistance = useDistance();
-  const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
-    useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
+  const {
+    isOpen,
+    isBreak,
+    closed,
+    nextclosed,
+    starttime,
+    endtime,
+    breakstart,
+    breakend,
+  } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
 
   useEffect(() => {
     const fetchDistance = () => {
@@ -57,11 +65,21 @@ const NearStoreItem = ({store, navigation, location}) => {
             style={styles.backimage}
             imageStyle={styles.backimagestyle}>
             {/* ✅ 영업 종료 표시 */}
-            {!isOpen && (
+            {!isOpen && !nextclosed && !closed && (
               <View style={styles.overlay}>
                 <Text style={styles.overlayText}>
                   영업 종료 {starttime ? `${starttime} 오픈` : ''}
                 </Text>
+              </View>
+            )}
+            {!isOpen && nextclosed && !closed && (
+              <View style={styles.overlay}>
+                <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
+              </View>
+            )}
+            {!isOpen && !nextclosed && closed && (
+              <View style={styles.overlay}>
+                <Text style={styles.overlayText}>금일 휴무</Text>
               </View>
             )}
             {/* ✅ 브레이크 타임 표시 */}
@@ -102,8 +120,10 @@ const NearStoreItem = ({store, navigation, location}) => {
 
         {/* ✅ 영업 종료 시간 & 거리 표시 */}
         <View style={styles.storeViewInfo}>
-          {store?.isAlwaysOpen ? (
+          {store?.isAlwaysOpen == true ? (
             <Text style={styles.storeSubInfo}>24시간 영업</Text>
+          ) : store?.isAlwaysOpen == false && closed ? (
+            <Text style={styles.storeSubInfo}>금일 휴무</Text>
           ) : (
             <Text style={styles.storeSubInfo}>
               영업 종료 {endtime || '정보 없음'}

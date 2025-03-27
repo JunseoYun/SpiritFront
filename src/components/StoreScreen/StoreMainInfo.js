@@ -39,6 +39,7 @@ const StoreMainInfo = ({
     isOpen,
     isBreak,
     closed,
+    nextclosed,
     starttime,
     endtime,
     breakstart,
@@ -154,6 +155,7 @@ const StoreMainInfo = ({
         isOpen={isOpen}
         isBreak={isBreak}
         closed={closed}
+        nextclosed={nextclosed}
         starttime={starttime}
         endtime={endtime}
         breakend={breakend}

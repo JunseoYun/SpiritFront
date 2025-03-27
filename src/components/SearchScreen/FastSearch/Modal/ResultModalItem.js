@@ -17,8 +17,16 @@ const ResultModalItem = ({store, navigation, location}) => {
   const [distance, setDistance] = useState(0);
   const [unit, setUnit] = useState('m');
   const calculateDistance = useDistance();
-  const {isOpen, isBreak, closed, starttime, endtime, breakstart, breakend} =
-    useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
+  const {
+    isOpen,
+    isBreak,
+    closed,
+    nextclosed,
+    starttime,
+    endtime,
+    breakstart,
+    breakend,
+  } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
 
   useEffect(() => {
     const fetchDistance = () => {
@@ -60,11 +68,21 @@ const ResultModalItem = ({store, navigation, location}) => {
           style={styles.backimage}
           imageStyle={styles.backimagestyle}>
           {/* ✅ 영업 종료 표시 */}
-          {!isOpen && (
+          {!isOpen && !nextclosed && !closed && (
             <View style={styles.overlay}>
               <Text style={styles.overlayText}>
                 영업 종료 {starttime ? `\n${starttime} 오픈` : ''}
               </Text>
+            </View>
+          )}
+          {!isOpen && nextclosed && !closed && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
+            </View>
+          )}
+          {!isOpen && !nextclosed && closed && (
+            <View style={styles.overlay}>
+              <Text style={styles.overlayText}>금일 휴무</Text>
             </View>
           )}
           {/* ✅ 브레이크 타임 표시 */}
@@ -100,9 +118,15 @@ const ResultModalItem = ({store, navigation, location}) => {
           </View>
 
           <View style={styles.subView}>
-            <Text style={styles.StoreClose}>
-              영업 종료 {endtime || '정보 없음'}
-            </Text>
+            {store?.isAlwaysOpen == true ? (
+              <Text style={styles.StoreClose}>24시간 영업</Text>
+            ) : store?.isAlwaysOpen == false && closed ? (
+              <Text style={styles.StoreClose}>금일 휴무</Text>
+            ) : (
+              <Text style={styles.StoreClose}>
+                영업 종료 {endtime || '정보 없음'}
+              </Text>
+            )}
             <Text style={styles.StoreClose}>
               {distance} {unit}
             </Text>

@@ -12,6 +12,7 @@ const OperationSchedule = ({
   isOpen,
   isBreak,
   closed,
+  nextclosed,
   starttime,
   endtime,
   breakend,
@@ -31,12 +32,25 @@ const OperationSchedule = ({
           {!isOpen &&
             !isBreak &&
             storedata?.isAlwaysOpen == false &&
-            !closed && (
+            !closed &&
+            !nextclosed && (
               <>
                 <Text style={[styles.timetextnow, {color: '#F05650'}]}>
                   영업 종료
                 </Text>
                 <Text style={styles.timetext}>영업 시작 - {starttime}</Text>
+              </>
+            )}
+          {!isOpen &&
+            !isBreak &&
+            storedata?.isAlwaysOpen == false &&
+            !closed &&
+            nextclosed && (
+              <>
+                <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+                  영업 종료
+                </Text>
+                <Text style={styles.timetext}>익일 휴무</Text>
               </>
             )}
           {isOpen && isBreak && storedata?.isAlwaysOpen == false && (
