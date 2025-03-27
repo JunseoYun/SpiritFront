@@ -1,116 +1,139 @@
-import React from 'react';
-import {Modal, View, Text, Pressable, StyleSheet, Platform} from 'react-native';
-import {Picker} from '@react-native-picker/picker';
+import React, {useRef, useEffect} from 'react';
+import {Modal, View, Text, Pressable, StyleSheet, FlatList} from 'react-native';
+
+const ITEM_HEIGHT = 40;
+const VISIBLE_ITEMS = 5;
+const CENTER_INDEX = Math.floor(VISIBLE_ITEMS / 2);
+const hours = Array.from({length: 24}, (_, i) => i.toString().padStart(2, '0'));
+const minutes = ['00', '10', '20', '30', '40', '50'];
 
 const VisitTimeModal = ({
   visible,
-  selectedHour,
-  selectedMinute,
+  selectedHour = '00', // ✅ 기본값 '00'
+  selectedMinute = '00',
   onHourChange,
   onMinuteChange,
   onPressClose,
   postbutton,
 }) => {
-  const TimeHour = [
-    {label: '-', value: null},
-    {label: '00', value: '00'},
-    {label: '01', value: '01'},
-    {label: '02', value: '02'},
-    {label: '03', value: '03'},
-    {label: '04', value: '04'},
-    {label: '05', value: '05'},
-    {label: '06', value: '06'},
-    {label: '07', value: '07'},
-    {label: '08', value: '08'},
-    {label: '09', value: '09'},
-    {label: '10', value: '10'},
-    {label: '11', value: '11'},
-    {label: '12', value: '12'},
-    {label: '13', value: '13'},
-    {label: '14', value: '14'},
-    {label: '15', value: '15'},
-    {label: '16', value: '16'},
-    {label: '17', value: '17'},
-    {label: '18', value: '18'},
-    {label: '19', value: '19'},
-    {label: '20', value: '20'},
-    {label: '21', value: '21'},
-    {label: '22', value: '22'},
-    {label: '23', value: '23'},
-  ];
+  const hourRef = useRef(null);
+  const minuteRef = useRef(null);
 
-  const TimeMinute = [
-    {label: '-', value: null},
-    {label: '00', value: '00'},
-    {label: '10', value: '10'},
-    {label: '20', value: '20'},
-    {label: '30', value: '30'},
-    {label: '40', value: '40'},
-    {label: '50', value: '50'},
-  ];
+  const getIndex = (list, value) => Math.max(0, list.indexOf(value));
+
+  const scrollToSelected = () => {
+    const hourIndex = getIndex(hours, selectedHour);
+    const minuteIndex = getIndex(minutes, selectedMinute);
+
+    setTimeout(() => {
+      if (hourRef.current) {
+        hourRef.current.scrollToIndex({index: hourIndex, animated: false});
+      }
+      if (minuteRef.current) {
+        minuteRef.current.scrollToIndex({index: minuteIndex, animated: false});
+      }
+    }, 100); // 모달 열릴 때 스크롤이 부드럽게 보이도록 딜레이
+  };
+
+  useEffect(() => {
+    if (visible) {
+      onHourChange('00');
+      onMinuteChange('00');
+      scrollToSelected();
+    }
+  }, [visible]);
+
+  const handleScrollEnd = (event, type) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const index = Math.round(offsetY / ITEM_HEIGHT);
+
+    if (type === 'hour') {
+      onHourChange(hours[index]);
+    } else {
+      onMinuteChange(minutes[index]);
+    }
+  };
+
+  const renderItem = (item, selected) => (
+    <View style={styles.item}>
+      <Text
+        style={[
+          styles.itemText,
+          selected && styles.selectedText,
+          {paddingHorizontal: 0},
+        ]}>
+        {item}
+      </Text>
+    </View>
+  );
 
   return (
-    <Modal visible={visible} animationType="fade" transparent={true}>
-      <Pressable style={styles.modalBackground} onPress={onPressClose}>
-        <View
-          style={styles.modalContainer}
-          onStartShouldSetResponder={() => true}>
-          <Text style={styles.topText}>방문 예정 시간</Text>
+    <Modal visible={visible} transparent animationType="fade">
+      <View style={styles.modalBackground}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.title}>방문 예정 시간</Text>
 
-          <View style={styles.timeView}>
-            <View style={styles.hourView}>
-              <View style={styles.pickerView}>
-                <Picker
-                  selectedValue={selectedHour}
-                  onValueChange={itemValue => onHourChange(itemValue)}
-                  mode="dropdown"
-                  itemStyle={styles.pickerItem}
-                  style={styles.pickerItems}>
-                  {TimeHour.map((item, index) => (
-                    <Picker.Item
-                      key={index}
-                      label={item.label}
-                      value={item.value}
-                      style={styles.pickerItems}
-                    />
-                  ))}
-                </Picker>
-              </View>
-              <Text style={styles.pickerText}>시</Text>
+          <View style={styles.scrollArea}>
+            <View style={styles.selectionOverlay} pointerEvents="none" />
+
+            {/* 시 */}
+            <FlatList
+              ref={hourRef}
+              data={hours}
+              keyExtractor={item => item}
+              style={styles.flatList}
+              showsVerticalScrollIndicator={false}
+              snapToInterval={ITEM_HEIGHT}
+              decelerationRate="fast"
+              getItemLayout={(_, index) => ({
+                length: ITEM_HEIGHT,
+                offset: ITEM_HEIGHT * index,
+                index,
+              })}
+              onMomentumScrollEnd={e => handleScrollEnd(e, 'hour')}
+              contentContainerStyle={{
+                paddingVertical: ITEM_HEIGHT * CENTER_INDEX,
+              }}
+              renderItem={({item}) => renderItem(item, item === selectedHour)}
+            />
+
+            {/* 콜론 */}
+            <View style={styles.colonContainer}>
+              <Text style={styles.colonText}>:</Text>
             </View>
 
-            <View style={styles.minuteView}>
-              <View style={styles.pickerView}>
-                <Picker
-                  selectedValue={selectedMinute}
-                  onValueChange={itemValue => onMinuteChange(itemValue)}
-                  mode="dropdown"
-                  itemStyle={styles.pickerItem}
-                  style={styles.pickerItems}>
-                  {TimeMinute.map((item, index) => (
-                    <Picker.Item
-                      key={index}
-                      label={item.label}
-                      value={item.value}
-                      style={styles.pickerItems}
-                    />
-                  ))}
-                </Picker>
-              </View>
-              <Text style={styles.pickerText}>분</Text>
-            </View>
+            {/* 분 */}
+            <FlatList
+              ref={minuteRef}
+              data={minutes}
+              keyExtractor={item => item}
+              style={styles.flatList}
+              showsVerticalScrollIndicator={false}
+              snapToInterval={ITEM_HEIGHT}
+              decelerationRate="fast"
+              getItemLayout={(_, index) => ({
+                length: ITEM_HEIGHT,
+                offset: ITEM_HEIGHT * index,
+                index,
+              })}
+              onMomentumScrollEnd={e => handleScrollEnd(e, 'minute')}
+              contentContainerStyle={{
+                paddingVertical: ITEM_HEIGHT * CENTER_INDEX,
+              }}
+              renderItem={({item}) => renderItem(item, item === selectedMinute)}
+            />
           </View>
 
-          <View style={{flexDirection: 'row'}}>
-            <Pressable onPress={postbutton} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>확인</Text>
+          <View style={styles.buttonArea}>
+            <Pressable style={styles.button} onPress={postbutton}>
+              <Text style={styles.buttonText}>확인</Text>
             </Pressable>
-            <Pressable onPress={onPressClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>닫기</Text>
+            <Pressable style={styles.button} onPress={onPressClose}>
+              <Text style={styles.buttonText}>닫기</Text>
             </Pressable>
           </View>
         </View>
-      </Pressable>
+      </View>
     </Modal>
   );
 };
@@ -120,80 +143,83 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   modalContainer: {
-    width: '90%',
-    paddingVertical: 5,
-    paddingTop: 5,
-    backgroundColor: 'white',
-    borderRadius: 10,
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 20,
     alignItems: 'center',
   },
-  topText: {
-    color: 'black',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 20,
+  title: {
+    fontSize: 18,
+    fontWeight: '700',
     marginBottom: 20,
+    color: '#000',
   },
-  timeView: {
-    width: '90%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  hourView: {
-    width: '50%',
+  scrollArea: {
+    width: 180,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    height: ITEM_HEIGHT * VISIBLE_ITEMS,
+    marginBottom: 20,
+    position: 'relative',
   },
-  minuteView: {
-    width: '50%',
-    flexDirection: 'row',
+  selectionOverlay: {
+    position: 'absolute',
+    top: ITEM_HEIGHT * CENTER_INDEX,
+    height: ITEM_HEIGHT,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    zIndex: 1,
+    pointerEvents: 'none',
+  },
+  flatList: {
+    flex: 1,
+    zIndex: 0,
+  },
+  colonContainer: {
+    width: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pickerView: {
-    width: 90,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#DDD',
-    overflow: 'hidden', // iOS 겹침 방지
-    justifyContent: 'center',
-    height: Platform.OS === 'ios' ? 120 : 60, // OS별 높이 설정
-    alignSelf: 'center',
-  },
-  pickerItems: {
+  colonText: {
+    fontSize: 22,
     color: '#333',
+    fontWeight: '600',
   },
-  pickerItem: {
-    color: '#333', // 텍스트 색상을 검은색으로 고정
-    fontSize: 18, // 텍스트 크기
-    fontWeight: '400', // 텍스트 두께
+  item: {
+    height: ITEM_HEIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  pickerText: {
-    fontWeight: 'bold',
-    fontSize: 17,
-    color: 'black',
-    paddingHorizontal: 10,
+  itemText: {
+    fontSize: 18,
+    color: '#999',
   },
-  closeButton: {
-    marginTop: 10,
-    marginBottom: 20,
+  selectedText: {
+    color: '#000',
+    fontWeight: '600',
+    fontSize: 20,
+  },
+  buttonArea: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  button: {
+    backgroundColor: '#16BBFF',
     paddingVertical: 10,
-    paddingHorizontal: 30,
-    backgroundColor: 'rgba(22, 187, 255, 0.9)',
+    paddingHorizontal: 24,
     borderRadius: 5,
-    marginHorizontal: 8,
+    marginHorizontal: 5,
   },
-  closeButtonText: {
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
     fontSize: 16,
-    color: '#FFF',
   },
 });
 

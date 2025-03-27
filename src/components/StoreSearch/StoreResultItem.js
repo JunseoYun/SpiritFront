@@ -75,20 +75,22 @@ const StoreResultItem = ({store, navigation, index}) => {
               ellipsizeMode="tail">
               {store.name}
             </Text>
-            <Pressable
-              key={store.id}
-              onPress={() => {
-                navigation.navigate('StoreCheckScreen', {
-                  storeId: store.id,
-                  storeName: store.name,
-                  storeAddress: store.locationDto.address,
-                  storeAddressDetail: store.locationDto.addressDetail,
-                  storeContact: store.contact,
-                });
-              }}
-              style={styles.badge}>
-              <Text style={styles.badgeText}>권한신청</Text>
-            </Pressable>
+            {index === 1 && (
+              <Pressable
+                key={store.id}
+                onPress={() => {
+                  navigation.navigate('StoreCheckScreen', {
+                    storeId: store.id,
+                    storeName: store.name,
+                    storeAddress: store.locationDto.address,
+                    storeAddressDetail: store.locationDto.addressDetail,
+                    storeContact: store.contact,
+                  });
+                }}
+                style={styles.badge}>
+                <Text style={styles.badgeText}>권한신청</Text>
+              </Pressable>
+            )}
           </View>
 
           <View style={styles.StoreCategoryList}>

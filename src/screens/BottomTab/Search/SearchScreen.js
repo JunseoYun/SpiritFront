@@ -169,15 +169,9 @@ const SearchScreen = ({navigation}) => {
   };
   const changeHour = text => {
     setSelectedHour(text);
-    if (text && selectedMinute) {
-      onPressTimeModalClose();
-    }
   };
   const changeMinute = text => {
     setSelectedMinute(text);
-    if (text && selectedHour) {
-      onPressTimeModalClose();
-    }
   };
   const searchOptions = [
     {

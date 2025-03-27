@@ -39,7 +39,7 @@ const CFActionbtn = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 330,
+    top: '40%',
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'center',
