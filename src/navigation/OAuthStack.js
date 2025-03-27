@@ -36,16 +36,21 @@ export default function OAuthStack() {
         options={({navigation}) => ({
           title: '한잔할까 서비스 이용약관',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
           headerLeft: () => (
             <Pressable
               onPress={() => {
                 navigation.goBack();
-              }}>
+              }}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
               <Ionicons
                 name="close"
-                size={25}
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -57,16 +62,21 @@ export default function OAuthStack() {
         options={({navigation}) => ({
           title: '개인정보 처리방침',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
           headerLeft: () => (
             <Pressable
               onPress={() => {
                 navigation.goBack();
-              }}>
+              }}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
               <Ionicons
                 name="close"
-                size={25}
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -78,16 +88,21 @@ export default function OAuthStack() {
         options={({navigation}) => ({
           title: '위치정보 이용약관',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
           headerLeft: () => (
             <Pressable
               onPress={() => {
                 navigation.goBack();
-              }}>
+              }}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
               <Ionicons
                 name="close"
-                size={25}
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),

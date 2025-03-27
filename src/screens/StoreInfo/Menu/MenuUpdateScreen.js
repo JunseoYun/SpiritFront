@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback, useLayoutEffect} from 'react';
 import {
   View,
   Text,
@@ -46,6 +46,16 @@ const MenuUpdateScreen = ({navigation}) => {
   const [loading, setLoading] = useState(false);
 
   const {showAlert, AlertComponent} = useCustomAlert();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={handleSave}>
+          <Text style={[styles.searchButton]}>완료</Text>
+        </Pressable>
+      ),
+    });
+  }, [handleSave, menuName, menuDescription, menuImage, menuPrice, isMain]);
 
   useEffect(() => {
     if (menu) {
@@ -233,25 +243,7 @@ const MenuUpdateScreen = ({navigation}) => {
   };
 
   // ✅ 취소 버튼 클릭 시 원래 데이터로 초기화
-  const handleCancel = () => {
-    showAlert({
-      title: '작성한 내용이 저장되지 않았습니다',
-      message: '뒤로 가시겠습니까?',
-      onConfirm: () => {
-        setMenuName('');
-        setMenuDescription('');
-        setMenuPrice('');
-        setIsMain(false);
-        setMenuImage('');
-        setSelectedImage(null);
-        setIsImageDeleted(false);
-        navigation.goBack();
-      },
-      onCancel: null,
-      type: 'confirm',
-    });
-    // ✅ 삭제 상태 초기화
-  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* ✅ 키보드 외 영역을 터치하면 키보드를 닫도록 설정 */}
@@ -259,16 +251,6 @@ const MenuUpdateScreen = ({navigation}) => {
         <KeyboardAvoidingView
           style={styles.avoidingView}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={handleCancel}>
-              <Ionicons name="arrow-back-outline" size={25} color="#333" />
-            </TouchableOpacity>
-
-            <Text style={styles.modalTitle}>메뉴 수정</Text>
-            <TouchableOpacity onPress={handleSave}>
-              <Ionicons name="paper-plane-sharp" size={25} color="#333" />
-            </TouchableOpacity>
-          </View>
           <ScrollView
             contentContainerStyle={styles.scrollViewContent}
             keyboardShouldPersistTaps="handled">
@@ -380,26 +362,6 @@ const styles = StyleSheet.create({
   avoidingView: {
     flex: 1,
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 0 : 15,
-    paddingHorizontal: 18,
-    borderBottomWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
-    color: '#333', // ✅ 더 진한 색상 적용
-  },
   scrollViewContent: {
     flexGrow: 1,
   },
@@ -506,6 +468,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#333',
+  },
+  searchButton: {
+    marginRight: 18,
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#16BBFF',
   },
 });
 

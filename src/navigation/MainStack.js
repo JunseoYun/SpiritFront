@@ -30,8 +30,8 @@ export default function MainStack() {
           elevation: 0, // Android: 헤더 하단 선 없애기
         },
         headerTitleStyle: {
-          fontSize: 20,
-          fontWeight: 'bold',
+          fontWeight: '600',
+          fontSize: 18,
           color: '#333', // 헤더 제목 색상
         },
       }}>
@@ -51,12 +51,14 @@ export default function MainStack() {
             fontSize: 18,
           },
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Octicons
-                name="chevron-left"
-                size={25}
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -73,12 +75,14 @@ export default function MainStack() {
             fontSize: 18,
           },
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Octicons
-                name="chevron-left"
-                size={25}
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -100,12 +104,14 @@ export default function MainStack() {
             fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
           },
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Octicons
-                name="chevron-left"
-                size={25}
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -124,12 +130,14 @@ export default function MainStack() {
             justifyContent: 'center',
           },
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Octicons
-                name="chevron-left"
-                size={25}
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -146,12 +154,14 @@ export default function MainStack() {
             fontSize: 18,
           },
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Octicons
-                name="chevron-left"
-                size={25}
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -168,12 +178,14 @@ export default function MainStack() {
             fontSize: 18,
           },
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Octicons
-                name="chevron-left"
-                size={25}
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -190,12 +202,14 @@ export default function MainStack() {
             fontSize: 18,
           },
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Octicons
-                name="chevron-left"
-                size={25}
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -212,12 +226,14 @@ export default function MainStack() {
             fontSize: 18,
           },
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Octicons
-                name="chevron-left"
-                size={25}
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -234,12 +250,14 @@ export default function MainStack() {
             fontSize: 18,
           },
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Octicons
-                name="chevron-left"
-                size={25}
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -270,12 +288,14 @@ export default function MainStack() {
             fontSize: 18,
           },
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Octicons
-                name="chevron-left"
-                size={25}
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),

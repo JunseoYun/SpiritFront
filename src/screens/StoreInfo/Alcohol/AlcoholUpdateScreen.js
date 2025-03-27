@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useLayoutEffect} from 'react';
 import {
   View,
   Text,
@@ -40,6 +40,23 @@ const AlcoholUpdateScreen = ({navigation}) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageDeleted, setIsImageDeleted] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={handleSave}>
+          <Text style={[styles.searchButton]}>완료</Text>
+        </Pressable>
+      ),
+    });
+  }, [
+    handleSave,
+    alcoholName,
+    alcoholDescription,
+    alcoholImage,
+    alcoholPrice,
+    alcoholType,
+  ]);
 
   useEffect(() => {
     if (alcohol) {
@@ -224,16 +241,6 @@ const AlcoholUpdateScreen = ({navigation}) => {
         <KeyboardAvoidingView
           style={styles.avoidingView}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={handleCancel}>
-              <Ionicons name="arrow-back-outline" size={25} color="#333" />
-            </TouchableOpacity>
-
-            <Text style={styles.modalTitle}>주류 수정</Text>
-            <TouchableOpacity onPress={handleSave}>
-              <Ionicons name="paper-plane-sharp" size={25} color="#333" />
-            </TouchableOpacity>
-          </View>
           <ScrollView
             contentContainerStyle={styles.scrollViewContent}
             keyboardShouldPersistTaps="handled">
@@ -313,26 +320,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     backgroundColor: 'white',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 0 : 15,
-    paddingHorizontal: 18,
-    borderBottomWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
-    color: '#333', // ✅ 더 진한 색상 적용
   },
   avoidingView: {
     flex: 1,
@@ -444,10 +431,11 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
+  searchButton: {
+    marginRight: 18,
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#16BBFF',
   },
 });
 

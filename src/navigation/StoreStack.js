@@ -35,14 +35,17 @@ export default function StoreStack() {
           headerTitleStyle: {
             fontWeight: '600',
             fontSize: 18,
+            color: '#333',
           },
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
-              <Octicons
-                name="chevron-left"
-                size={25}
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -54,6 +57,11 @@ export default function StoreStack() {
         options={({navigation}) => ({
           title: '메뉴 등록하기',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+            color: '#333',
+          },
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -69,9 +77,9 @@ export default function StoreStack() {
               }}>
               <Ionicons
                 name="arrow-back-outline"
-                size={25}
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -81,20 +89,17 @@ export default function StoreStack() {
       <Stack.Screen
         name="MenuUpdateScreen"
         component={MenuUpdateScreen}
-        options={{
-          headerShown: false,
-          resentation: 'modal',
-          gestureDirection: 'vertical',
-          animation: 'slide_from_bottom',
-        }}
-      />
-
-      <Stack.Screen
-        name="AlcoholAddScreen"
-        component={AlcoholAddScreen}
         options={({navigation}) => ({
-          title: '주류 등록하기',
+          title: '메뉴 수정하기',
           headerTitleAlign: 'center',
+          gestureDirection: 'vertical',
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+            color: '#333',
+          },
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -110,9 +115,44 @@ export default function StoreStack() {
               }}>
               <Ionicons
                 name="arrow-back-outline"
-                size={25}
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="AlcoholAddScreen"
+        component={AlcoholAddScreen}
+        options={({navigation}) => ({
+          title: '주류 등록하기',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+            color: '#333',
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                showAlert({
+                  title: '작성한 내용이 저장되지 않았습니다',
+                  message: '뒤로 가시겠습니까?',
+                  onConfirm: () => {
+                    navigation.goBack();
+                  },
+                  onCancel: null,
+                  type: 'confirm',
+                });
+              }}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -122,12 +162,39 @@ export default function StoreStack() {
       <Stack.Screen
         name="AlcoholUpdateScreen"
         component={AlcoholUpdateScreen}
-        options={{
-          headerShown: false,
-          resentation: 'modal',
+        options={({navigation}) => ({
+          title: '주류 수정하기',
+          headerTitleAlign: 'center',
           gestureDirection: 'vertical',
+          presentation: 'modal',
           animation: 'slide_from_bottom',
-        }}
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+            color: '#333',
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                showAlert({
+                  title: '작성한 내용이 저장되지 않았습니다',
+                  message: '뒤로 가시겠습니까?',
+                  onConfirm: () => {
+                    navigation.goBack();
+                  },
+                  onCancel: null,
+                  type: 'confirm',
+                });
+              }}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
       />
 
       <Stack.Screen
@@ -135,12 +202,14 @@ export default function StoreStack() {
         component={StoreMapScreen}
         options={({navigation, route}) => ({
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
               <Ionicons
                 name="arrow-back-outline"
-                size={25}
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -157,12 +226,14 @@ export default function StoreStack() {
         component={StoreReviewScreen}
         options={({navigation, route}) => ({
           headerLeft: () => (
-            <Pressable onPress={() => navigation.goBack()}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
               <Ionicons
                 name="arrow-back-outline"
-                size={25}
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -178,16 +249,22 @@ export default function StoreStack() {
         options={({navigation}) => ({
           title: '매장 신고하기',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+            color: '#333',
+          },
           headerLeft: () => (
             <Pressable
               onPress={() => {
                 navigation.goBack();
-              }}>
-              <Octicons
-                name="x"
-                size={25}
+              }}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="close"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),
@@ -198,21 +275,26 @@ export default function StoreStack() {
         name="ReviewReportScreen"
         component={ReviewReportScreen}
         options={({navigation}) => ({
-          presentation: 'modal',
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
           title: '리뷰 신고하기',
           headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+            color: '#333',
+          },
           headerLeft: () => (
             <Pressable
               onPress={() => {
                 navigation.goBack();
-              }}>
-              <Octicons
-                name="x"
-                size={25}
+              }}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="close"
+                size={23}
                 color="#333"
-                style={{paddingLeft: 22}}
+                style={{paddingLeft: 12}}
               />
             </Pressable>
           ),

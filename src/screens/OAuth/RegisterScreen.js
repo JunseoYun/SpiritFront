@@ -20,6 +20,7 @@ const RegisterScreen = ({route, navigation}) => {
   const {type, id, socialToken} = route.params;
   const [nickname, setNickname] = useState('');
   const [nicknameCheck, setNicknameCheck] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [nicknameError, setNicknameError] = useState(false); // 비속어 오류 상태
   const [nicknamelength, setNicknamelength] = useState(false);
   const [nicknamefilter, setNicknamefilter] = useState(false);
@@ -42,15 +43,14 @@ const RegisterScreen = ({route, navigation}) => {
         setNicknameCheck(true);
       }
     } catch (error) {
-      showAlert({
-        title: '오류 발생',
-        message: '닉네임 중복 검사 중 문제가 발생했습니다.',
-      });
+      showToast('중복된 닉네임입니다.');
+      setChecking(true);
     }
   };
 
   // 닉네임 입력 변경 시 비속어 확인
   const handleNicknameChange = text => {
+    setChecking(false);
     // 허용할 문자: 한글, 영문 대소문자, 숫자, `_`, `-` (기타 특수문자 및 이모티콘 차단)
     const filteredText = text.replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣0-9]/g, '');
 
@@ -170,6 +170,11 @@ const RegisterScreen = ({route, navigation}) => {
       {nicknamelength && (
         <Text style={styles.errorText}>
           닉네임 최대 글자 수는 12글자 입니다.
+        </Text>
+      )}
+      {checking && (
+        <Text style={[styles.errorText, {color: '#333'}]}>
+          이미 등록된 닉네임입니다.
         </Text>
       )}
 
