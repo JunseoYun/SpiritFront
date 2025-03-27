@@ -7,8 +7,14 @@ import {
   Image,
   Text,
   Pressable,
+  Dimensions,
 } from 'react-native';
 import MapStoreItem from './MapStoreItem';
+
+const {width} = Dimensions.get('window');
+const ITEM_WIDTH = width * 0.9;
+const BUTON_WIDTH = width * 0.4;
+const SPACING = width * 0.05;
 
 const MapStoreList = ({
   panHandlers,
@@ -25,7 +31,7 @@ const MapStoreList = ({
 }) => {
   const handleScroll = event => {
     const offsetX = event.nativeEvent.contentOffset.x; // 스크롤 위치
-    const index = Math.round(offsetX / 410); // 현재 중앙 아이템 인덱스 계산
+    const index = Math.round(offsetX / width); // 현재 중앙 아이템 인덱스 계산
 
     // 중앙 아이템이 바뀌었을 때만 처리
     if (index !== selectedStoreIndex) {
@@ -56,7 +62,7 @@ const MapStoreList = ({
             keyExtractor={item => item.id.toString()}
             showsHorizontalScrollIndicator={false}
             snapToAlignment="center"
-            snapToInterval={410} // 아이템 너비(350) + 간격(60)
+            snapToInterval={width} // 아이템 너비(350) + 간격(60)
             decelerationRate="fast"
             onScroll={handleScroll}
             scrollEventThrottle={16} // 스크롤 이벤트 호출 빈도
@@ -108,16 +114,16 @@ const styles = StyleSheet.create({
   flatListContainer: {
     borderTopLeftRadius: 15,
     position: 'absolute',
-    bottom: 30,
+    bottom: '3%',
   },
   storeInfo: {
     position: 'absolute',
-    bottom: 30,
+    bottom: '3%',
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: 370,
-    height: 140,
+    width: ITEM_WIDTH,
+    height: '20%',
     backgroundColor: '#fdfdfd',
     padding: 15,
     borderRadius: 12,
@@ -143,7 +149,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   button: {
-    width: 160,
+    width: BUTON_WIDTH,
     paddingHorizontal: 17,
     paddingVertical: 17,
     borderWidth: 2,
@@ -152,7 +158,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#80D2F4',
   },
   button2: {
-    width: 160,
+    width: BUTON_WIDTH,
     paddingHorizontal: 17,
     paddingVertical: 17,
     borderWidth: 2,

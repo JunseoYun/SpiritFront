@@ -5,6 +5,7 @@ import {
   View,
   Animated, // Animated 추가
   PanResponder, // PanResponder 추가
+  Dimensions,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
 import {getLocation, saveLocationAddress} from '../../storage/locationStorage';
@@ -19,6 +20,8 @@ import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import generateMapScript from '../../components/MapScreen/generateMapScript';
 import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
 import {openKakaoMap} from '../../hooks/openKakaoMap';
+
+const {width} = Dimensions.get('window');
 
 const MapScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
@@ -40,8 +43,6 @@ const MapScreen = ({navigation}) => {
     fetchSaveLocation();
     setRefresh(false);
   }, []);
-
-  console.log(refresh);
 
   const fetchSaveLocation = async () => {
     setLoading(true);
@@ -98,10 +99,8 @@ const MapScreen = ({navigation}) => {
         roundedCurrentLat === roundedNewLat &&
         roundedCurrentLng === roundedNewLng
       ) {
-        console.log('true');
         moveCenterMap(newLocation.latitude, newLocation.longitude);
       } else {
-        console.log('false');
         setLocation(newLocation);
         updateMap(newLocation.latitude, newLocation.longitude, stores);
         moveCenterMap(newLocation.latitude, newLocation.longitude);
@@ -219,7 +218,6 @@ const MapScreen = ({navigation}) => {
       }
       if (message.action === 'mapMoved') {
         if (isProgrammaticPan.current) {
-          console.log('📌 프로그래매틱 이동 → 무시');
           isProgrammaticPan.current = false;
           return;
         }
@@ -284,10 +282,8 @@ const MapScreen = ({navigation}) => {
 
   const handleWebViewMessage = throttle(message => {
     if (message.action === 'hideFlatList') {
-      console.log('Hiding FlatList');
       hideFlatList();
     } else if (message.action === 'markerClicked' && message.storeId) {
-      console.log('Marker clicked:', message.storeId);
       showFlatList();
 
       const index = stores.findIndex(store => store.id === message.storeId);
@@ -297,7 +293,7 @@ const MapScreen = ({navigation}) => {
         // flatListRef가 유효한 경우에만 scrollToOffset 호출
         if (flatListRef.current) {
           flatListRef.current.scrollToOffset({
-            offset: index * 410,
+            offset: width * index,
             animated: true,
           });
         }

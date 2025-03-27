@@ -1,9 +1,20 @@
 import React from 'react';
-import {View, Text, Pressable, StyleSheet, ImageBackground} from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  ImageBackground,
+  Dimensions,
+} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../../hooks/useStoreStatus';
+const {width} = Dimensions.get('window');
+const ITEM_WIDTH = width * 0.9;
+const IMG_WIDTH = width * 0.3;
+const SPACING = width * 0.05;
 const MapStoreItem = ({
   item,
   index,
@@ -143,15 +154,15 @@ const MapStoreItem = ({
 const styles = StyleSheet.create({
   storeInfo: {
     flexDirection: 'row',
-    width: 370, // 아이템 너비
+    width: ITEM_WIDTH, // 아이템 너비
     backgroundColor: '#fff',
     padding: 15,
     borderRadius: 12,
-    marginHorizontal: 20, // 아이템 간 간격
+    marginHorizontal: SPACING, // 아이템 간 간격
   },
   backimageview: {
-    width: 110,
-    height: 110,
+    width: IMG_WIDTH,
+    height: IMG_WIDTH,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',

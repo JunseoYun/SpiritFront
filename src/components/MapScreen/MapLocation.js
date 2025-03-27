@@ -14,7 +14,7 @@ const MapLocation = ({onPress}) => {
 const styles = StyleSheet.create({
   buttonBottom: {
     position: 'absolute',
-    bottom: '23%',
+    bottom: '25%',
     left: '7%',
     borderRadius: 50,
     alignItems: 'center',
