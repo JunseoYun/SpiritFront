@@ -12,6 +12,8 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
 
   const formatTime = time => (time ? time.slice(0, 5) : null);
 
+  console.log(operationInfoDtos);
+
   const reorderScheduleByToday = schedules => {
     const dayOrder = [
       'SUNDAY',
@@ -107,6 +109,19 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       let todayInfo = operationInfoDtos.find(
         info => info.dayOfWeek === currentDay,
       );
+
+      if (
+        !todayInfo ||
+        todayInfo.isClosed ||
+        !todayInfo.openTime ||
+        !todayInfo.closeTime
+      ) {
+        setClosed(true);
+        setIsOpen(false);
+        setIsBreak(false);
+        return;
+      }
+
       let yesterdayInfo = operationInfoDtos.find((info, index, array) => {
         let yesterday = new Date();
         yesterday.setDate(now.getDate() - 1);
@@ -132,17 +147,8 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         return info.dayOfWeek === nextdayDay;
       });
 
-      if (!todayInfo) return;
-
       let {openTime, closeTime, breakStartTime, breakEndTime, isClosed} =
         todayInfo;
-
-      if (isClosed) {
-        setIsOpen(false);
-        setIsBreak(false);
-        setClosed(true);
-        return;
-      }
 
       let [openHours, openMinutes] = openTime.split(':').map(Number);
       let [closeHours, closeMinutes] = closeTime.split(':').map(Number);
@@ -179,7 +185,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       }
 
       // 현재 시간이 00:00~closeTime (예: 02:00) 구간이라면, 전날 정보를 유지해야 함
-      if (openHours && yesterdayInfo) {
+      if (openHours && yesterdayInfo && !yesterdayInfo.isClosed) {
         let {closeTime: yCloseTime} = yesterdayInfo;
         let [yCloseHours, yCloseMinutes] = yCloseTime.split(':').map(Number);
         let yCloseDate = new Date(now);
@@ -224,7 +230,11 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         setIsOpen(false);
         setIsBreak(false);
         if (yesterdayInfo == todayInfo) {
-          setStarttime(nextdayInfo.openTime.slice(0, 5));
+          if (!nextdayInfo.isClosed) {
+            setStarttime(nextdayInfo.openTime.slice(0, 5));
+          } else {
+            //추가
+          }
         } else {
           setStarttime(todayInfo.openTime.slice(0, 5));
         }

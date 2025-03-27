@@ -33,7 +33,7 @@ const TodayRecomm = ({
       setTimeout(() => {
         if (listRef.current) {
           listRef.current.scrollToOffset({
-            offset: (ITEM_WIDTH + SPACING / 2) * recommStores.length,
+            offset: (ITEM_WIDTH + SPACING) * recommStores.length - SPACING,
             animated: false,
           });
         }
@@ -114,7 +114,7 @@ const TodayRecomm = ({
               : ITEM_WIDTH + SPACING
           }
           decelerationRate={0.8}
-          initialScrollIndex={recommStores.length > 1 ? 0 : undefined}
+          initialScrollIndex={0}
           onScroll={handleScroll} // 실시간으로 점 업데이트
           onMomentumScrollEnd={
             recommStores.length >= 3 ? handleScrollEnd : undefined
