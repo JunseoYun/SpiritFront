@@ -27,7 +27,6 @@ const StoreItem = ({store, location, navigation}) => {
     breakstart,
     breakend,
   } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
-  console.log(store?.operationInfoDtos);
   return (
     <Pressable
       style={Categorystyles.itemContainer}

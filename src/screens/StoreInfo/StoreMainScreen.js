@@ -7,8 +7,9 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   KeyboardAvoidingView,
+  SafeAreaView,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
@@ -364,112 +365,121 @@ const StoreMainScreen = ({navigation}) => {
   };
   return (
     <>
-      {!isUpdate && (
-        <StoreHeader
-          navigation={navigation}
-          headerBackgroundColor={headerBackgroundColor}
-          iconColor={iconColor}
-          titleOpacity={titleOpacity}
-          title={storedata.name}
-        />
-      )}
-      {isUpdate && (
-        <UpdateHeader
-          navigation={navigation}
-          endUpdate={endUpdate}
-          handleBottomClose={handleBottomClose}
-        />
-      )}
-      <KeyboardAvoidingView>
-        <ScrollView
-          onScroll={Animated.event(
-            [{nativeEvent: {contentOffset: {y: scrollY}}}],
-            {useNativeDriver: false},
-          )}
-          scrollEventThrottle={16}
-          ref={scrollViewRef}
-          style={{backgroundColor: 'white'}}
-          keyboardShouldPersistTaps="always"
-          scrollEnabled={true}
-          contentContainerStyle={{flexGrow: 1}}>
-          <TouchableWithoutFeedback onPress={handleBottomClose}>
-            <View>
-              <View
-                style={[
-                  {
-                    height: 300, // 숫자 값은 따옴표 없이 사용
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'black',
-                  },
-                  isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
-                ]}>
-                <ImageSlider
-                  images={imageSliderData}
-                  interval={4000}
+      <View style={{flex: 1, backgroundColor: 'white'}}>
+        {!isUpdate && (
+          <StoreHeader
+            navigation={navigation}
+            headerBackgroundColor={headerBackgroundColor}
+            iconColor={iconColor}
+            titleOpacity={titleOpacity}
+            title={storedata.name}
+          />
+        )}
+        {isUpdate && (
+          <UpdateHeader
+            navigation={navigation}
+            endUpdate={endUpdate}
+            handleBottomClose={handleBottomClose}
+          />
+        )}
+        <KeyboardAvoidingView>
+          <ScrollView
+            onScroll={Animated.event(
+              [{nativeEvent: {contentOffset: {y: scrollY}}}],
+              {useNativeDriver: false},
+            )}
+            scrollEventThrottle={16}
+            ref={scrollViewRef}
+            style={{backgroundColor: 'white', width: '100%'}}
+            keyboardShouldPersistTaps="always"
+            scrollEnabled={true}
+            contentContainerStyle={{flexGrow: 1}}>
+            <TouchableWithoutFeedback onPress={handleBottomClose}>
+              <View>
+                <View
+                  style={[
+                    {
+                      height: 300, // 숫자 값은 따옴표 없이 사용
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'black',
+                    },
+                    isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
+                  ]}>
+                  <ImageSlider
+                    images={imageSliderData}
+                    interval={4000}
+                    isUpdate={isUpdate}
+                    handleBottomOpen={handleBottomOpen}
+                    onEditKey={handleEditKey}
+                    onEditValue={handleEditValue}
+                  />
+                </View>
+                <StoreMainInfo
+                  storedata={storedata}
+                  onModalOpen={() => setIsModalVisible(true)}
+                  navigation={navigation}
                   isUpdate={isUpdate}
+                  endUpdate={endUpdate}
                   handleBottomOpen={handleBottomOpen}
                   onEditKey={handleEditKey}
                   onEditValue={handleEditValue}
+                  storeTimeEditHandle={storeTimeEditHandle}
                 />
+                {!isUpdate && (
+                  <View style={{backgroundColor: '#F2F2F2', height: 20}} />
+                )}
+
+                {!isUpdate && (
+                  <StoreTabs
+                    changePage={setCurrentPage}
+                    currentPage={currentPage}
+                  />
+                )}
+
+                {!isUpdate && (
+                  <View>
+                    {currentPage === 'StoreMenuScreen' && (
+                      <StoreMenuScreen
+                        navigation={navigation}
+                        storeId={storeId}
+                        menus={menus}
+                        scrollViewRef={scrollViewRef} // 스크롤 참조 전달
+                        onMenuDelete={handleMenuDelete}
+                      />
+                    )}
+                    {currentPage === 'StoreAlcoholScreen' && (
+                      <StoreAlcoholScreen
+                        navigation={navigation}
+                        storeId={storeId}
+                        alcohols={alcohols}
+                        mainDrinks={storedata.mainDrinkDtos}
+                        scrollViewRef={scrollViewRef}
+                        onAlcoholDelete={handleAlcoholDelete}
+                      />
+                    )}
+                  </View>
+                )}
               </View>
-              <StoreMainInfo
-                storedata={storedata}
-                onModalOpen={() => setIsModalVisible(true)}
-                navigation={navigation}
-                isUpdate={isUpdate}
-                endUpdate={endUpdate}
-                handleBottomOpen={handleBottomOpen}
-                onEditKey={handleEditKey}
-                onEditValue={handleEditValue}
-                storeTimeEditHandle={storeTimeEditHandle}
-              />
-              {!isUpdate && (
-                <View style={{backgroundColor: '#F2F2F2', height: 20}} />
-              )}
-
-              {!isUpdate && (
-                <StoreTabs
-                  changePage={setCurrentPage}
-                  currentPage={currentPage}
-                />
-              )}
-
-              {!isUpdate && (
-                <View>
-                  {currentPage === 'StoreMenuScreen' && (
-                    <StoreMenuScreen
-                      navigation={navigation}
-                      storeId={storeId}
-                      menus={menus}
-                      scrollViewRef={scrollViewRef} // 스크롤 참조 전달
-                      onMenuDelete={handleMenuDelete}
-                    />
-                  )}
-                  {currentPage === 'StoreAlcoholScreen' && (
-                    <StoreAlcoholScreen
-                      navigation={navigation}
-                      storeId={storeId}
-                      alcohols={alcohols}
-                      mainDrinks={storedata.mainDrinkDtos}
-                      scrollViewRef={scrollViewRef}
-                      onAlcoholDelete={handleAlcoholDelete}
-                    />
-                  )}
-                </View>
-              )}
-            </View>
-          </TouchableWithoutFeedback>
-        </ScrollView>
-      </KeyboardAvoidingView>
-      <StoreModal
-        isModalVisible={isModalVisible}
-        onPressModalClose={onPressModalClose}
-        storeId={storeId}
-        navigation={navigation}
-        startUpdate={startUpdate}
-        handleReport={handleReport}
-      />
+            </TouchableWithoutFeedback>
+          </ScrollView>
+        </KeyboardAvoidingView>
+        <StoreModal
+          isModalVisible={isModalVisible}
+          onPressModalClose={onPressModalClose}
+          storeId={storeId}
+          navigation={navigation}
+          startUpdate={startUpdate}
+          handleReport={handleReport}
+        />
+      </View>
+      {isUpdate && (
+        <View style={styles.endUpdateButton}>
+          <Pressable onPress={endUpdate} style={styles.storeAddButtonsearch}>
+            <Text style={styles.endUpdateText}>완료</Text>
+          </Pressable>
+        </View>
+      )}
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
@@ -524,6 +534,30 @@ const styles = StyleSheet.create({
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#333',
+  },
+  endUpdateButton: {
+    backgroundColor: 'white',
+    borderTopWidth: 0.5,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  storeAddButtonsearch: {
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#16BBFF',
+    borderRadius: 10,
+    elevation: 3, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  endUpdateText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
 
