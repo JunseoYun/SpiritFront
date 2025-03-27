@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Modal, View, Text, Pressable, Image, StyleSheet} from 'react-native';
 
 const CategoryModal = ({
@@ -6,7 +6,7 @@ const CategoryModal = ({
   onPressCategory,
   onPressModalClose,
 }) => {
-  const [selectedCategory, setSelectedCategory] = React.useState(null); // 단일 선택 상태
+  const [selectedCategory, setSelectedCategory] = useState(''); // 단일 선택 상태
 
   const handleCategoryPress = (text, category) => {
     setSelectedCategory(category); // 선택된 카테고리 업데이트

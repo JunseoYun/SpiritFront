@@ -1,6 +1,6 @@
 import React, {useRef, useEffect} from 'react';
 import {Modal, View, Text, Pressable, StyleSheet, FlatList} from 'react-native';
-
+import WheelPicker from '../../../../hooks/WheelPicker';
 const ITEM_HEIGHT = 40;
 const VISIBLE_ITEMS = 5;
 const CENTER_INDEX = Math.floor(VISIBLE_ITEMS / 2);
@@ -19,54 +19,6 @@ const VisitTimeModal = ({
   const hourRef = useRef(null);
   const minuteRef = useRef(null);
 
-  const getIndex = (list, value) => Math.max(0, list.indexOf(value));
-
-  const scrollToSelected = () => {
-    const hourIndex = getIndex(hours, selectedHour);
-    const minuteIndex = getIndex(minutes, selectedMinute);
-
-    setTimeout(() => {
-      if (hourRef.current) {
-        hourRef.current.scrollToIndex({index: hourIndex, animated: false});
-      }
-      if (minuteRef.current) {
-        minuteRef.current.scrollToIndex({index: minuteIndex, animated: false});
-      }
-    }, 100); // 모달 열릴 때 스크롤이 부드럽게 보이도록 딜레이
-  };
-
-  useEffect(() => {
-    if (visible) {
-      onHourChange('00');
-      onMinuteChange('00');
-      scrollToSelected();
-    }
-  }, [visible]);
-
-  const handleScrollEnd = (event, type) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const index = Math.round(offsetY / ITEM_HEIGHT);
-
-    if (type === 'hour') {
-      onHourChange(hours[index]);
-    } else {
-      onMinuteChange(minutes[index]);
-    }
-  };
-
-  const renderItem = (item, selected) => (
-    <View style={styles.item}>
-      <Text
-        style={[
-          styles.itemText,
-          selected && styles.selectedText,
-          {paddingHorizontal: 0},
-        ]}>
-        {item}
-      </Text>
-    </View>
-  );
-
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.modalBackground}>
@@ -76,60 +28,38 @@ const VisitTimeModal = ({
           <View style={styles.scrollArea}>
             <View style={styles.selectionOverlay} pointerEvents="none" />
 
-            {/* 시 */}
-            <FlatList
-              ref={hourRef}
+            <WheelPicker
               data={hours}
-              keyExtractor={item => item}
-              style={styles.flatList}
-              showsVerticalScrollIndicator={false}
-              snapToInterval={ITEM_HEIGHT}
-              decelerationRate="fast"
-              getItemLayout={(_, index) => ({
-                length: ITEM_HEIGHT,
-                offset: ITEM_HEIGHT * index,
-                index,
-              })}
-              onMomentumScrollEnd={e => handleScrollEnd(e, 'hour')}
-              contentContainerStyle={{
-                paddingVertical: ITEM_HEIGHT * CENTER_INDEX,
-              }}
-              renderItem={({item}) => renderItem(item, item === selectedHour)}
+              selectedValue={selectedHour}
+              onValueChange={onHourChange}
+              scrollRef={hourRef}
+              visibleCount={5}
+              fontSize={20}
+              style={styles.hourPicker}
             />
-
             {/* 콜론 */}
             <View style={styles.colonContainer}>
               <Text style={styles.colonText}>:</Text>
             </View>
-
-            {/* 분 */}
-            <FlatList
-              ref={minuteRef}
+            <WheelPicker
               data={minutes}
-              keyExtractor={item => item}
-              style={styles.flatList}
-              showsVerticalScrollIndicator={false}
-              snapToInterval={ITEM_HEIGHT}
-              decelerationRate="fast"
-              getItemLayout={(_, index) => ({
-                length: ITEM_HEIGHT,
-                offset: ITEM_HEIGHT * index,
-                index,
-              })}
-              onMomentumScrollEnd={e => handleScrollEnd(e, 'minute')}
-              contentContainerStyle={{
-                paddingVertical: ITEM_HEIGHT * CENTER_INDEX,
-              }}
-              renderItem={({item}) => renderItem(item, item === selectedMinute)}
+              selectedValue={selectedMinute}
+              onValueChange={onMinuteChange}
+              scrollRef={minuteRef}
+              visibleCount={5}
+              fontSize={20}
+              style={styles.minutePicker}
             />
           </View>
 
           <View style={styles.buttonArea}>
+            <Pressable
+              style={[styles.button, {backgroundColor: '#fff'}]}
+              onPress={onPressClose}>
+              <Text style={[styles.buttonText, {color: '#16BBFF'}]}>닫기</Text>
+            </Pressable>
             <Pressable style={styles.button} onPress={postbutton}>
               <Text style={styles.buttonText}>확인</Text>
-            </Pressable>
-            <Pressable style={styles.button} onPress={onPressClose}>
-              <Text style={styles.buttonText}>닫기</Text>
             </Pressable>
           </View>
         </View>
@@ -154,12 +84,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '500',
     marginBottom: 20,
     color: '#000',
   },
   scrollArea: {
-    width: 180,
+    width: 270,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -176,6 +106,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
     zIndex: 1,
     pointerEvents: 'none',
+    borderRadius: 12,
   },
   flatList: {
     flex: 1,
@@ -189,7 +120,7 @@ const styles = StyleSheet.create({
   colonText: {
     fontSize: 22,
     color: '#333',
-    fontWeight: '600',
+    fontWeight: '400',
   },
   item: {
     height: ITEM_HEIGHT,
@@ -207,19 +138,30 @@ const styles = StyleSheet.create({
   },
   buttonArea: {
     flexDirection: 'row',
-    gap: 10,
+    marginHorizontal: 12,
   },
   button: {
     backgroundColor: '#16BBFF',
     paddingVertical: 10,
     paddingHorizontal: 24,
-    borderRadius: 5,
+    borderRadius: 7,
     marginHorizontal: 5,
+    flex: 1,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#16BBFF',
   },
   buttonText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: 16,
+    padding: 3,
+  },
+  hourPicker: {
+    alignItems: 'flex-end',
+  },
+  minutePicker: {
+    alignItems: 'flex-start',
   },
 });
 

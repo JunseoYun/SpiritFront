@@ -63,9 +63,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   topText: {
-    color: 'black',
+    color: '#333',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '500',
     marginTop: 20,
     marginBottom: 20,
   },

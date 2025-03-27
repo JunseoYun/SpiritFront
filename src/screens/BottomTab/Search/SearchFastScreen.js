@@ -259,14 +259,20 @@ const SearchFastScreen = ({navigation}) => {
       />
       <PeopleModal
         visible={peopleModalVisible}
-        selectedPeople={selectedPeople}
+        selectedPeople={
+          selectedPeople ? selectedPeople : fastviewDto.selectedPeople
+        }
         onSelectPeople={onSelectPeople}
         onPressClose={onPressPeopleModalClose}
       />
       <VisitTimeModal
         visible={timeModalVisible}
-        selectedHour={selectedHour}
-        selectedMinute={selectedMinute}
+        selectedHour={
+          selectedHour ? selectedHour : fastviewDto.timeselectedHour
+        }
+        selectedMinute={
+          selectedMinute ? selectedMinute : fastviewDto.timeselectedMinute
+        }
         onHourChange={changeHour}
         onMinuteChange={changeMinute}
         onPressClose={onPressTimeModalClose}
