@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Pressable, Text, StyleSheet, Button} from 'react-native';
+import {View, Pressable, Text, StyleSheet, Platform} from 'react-native';
 import {useAuth} from '../../context/AuthContext';
 import useCustomAlert from '../../hooks/useCustomAlert';
 
@@ -39,7 +39,7 @@ const CFActionbtn = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    top: '40%',
+    top: Platform.OS === 'ios' ? '50%' : '40%',
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'center',

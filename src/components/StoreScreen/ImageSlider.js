@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import FastImage from 'react-native-fast-image';
 
 const {width} = Dimensions.get('window');
 
@@ -106,13 +107,27 @@ const ImageSlider = ({
               scrollEventThrottle={16}>
               {imagesWithLoop.map((item, index) => (
                 <View key={index} style={styles.imageContainer}>
-                  <Image source={{uri: item.imageUrl}} style={styles.image} />
+                  <FastImage
+                    source={{
+                      uri: item.imageUrl,
+                      priority: FastImage.priority.normal,
+                    }}
+                    style={styles.image}
+                    resizeMode={FastImage.resizeMode.cover}
+                  />
                 </View>
               ))}
             </ScrollView>
           ) : (
             <View style={styles.imageContainer}>
-              <Image source={{uri: images[0].imageUrl}} style={styles.image} />
+              <FastImage
+                source={{
+                  uri: images[0].imageUrl,
+                  priority: FastImage.priority.normal,
+                }}
+                style={styles.image}
+                resizeMode={FastImage.resizeMode.cover}
+              />
             </View>
           )}
 
@@ -145,7 +160,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: width,
-    height: 300,
+    height: 270,
   },
   icon: {
     position: 'absolute',

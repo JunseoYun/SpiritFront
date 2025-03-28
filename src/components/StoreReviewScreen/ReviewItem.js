@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-
+import FastImage from 'react-native-fast-image';
 const ReviewItem = ({item, navigation}) => {
   const [isExpanded, setIsExpanded] = useState(false); // 더보기 상태 관리
 
@@ -39,13 +39,17 @@ const ReviewItem = ({item, navigation}) => {
   return (
     <View key={item.reviewId} style={styles.reviewContainer}>
       <View style={styles.reviewHeader}>
-        <Image
+        <FastImage
           source={
-            item.writerAvatar
-              ? {uri: item.writerAvatar}
+            item.writerImgUrl
+              ? {
+                  uri: item.writerImgUrl,
+                  priority: FastImage.priority.normal,
+                }
               : require('../../assets/default_profile.png')
           }
           style={styles.avatar}
+          resizeMode={FastImage.resizeMode.cover}
         />
         <View style={styles.reviewHeaderText}>
           <Text style={styles.writerName}>{item.writerNickname}</Text>
@@ -73,10 +77,14 @@ const ReviewItem = ({item, navigation}) => {
           style={styles.imageScrollView}
           contentContainerStyle={styles.imageContainer}>
           {item.imgUrlList.map((image, index) => (
-            <Image
+            <FastImage
               key={image || index}
-              source={image ? {uri: image} : null}
+              source={{
+                uri: image,
+                priority: FastImage.priority.normal,
+              }}
               style={styles.reviewImage}
+              resizeMode={FastImage.resizeMode.cover}
             />
           ))}
         </ScrollView>

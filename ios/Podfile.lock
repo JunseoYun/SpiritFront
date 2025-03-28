@@ -67,6 +67,18 @@ PODS:
     - KakaoSDKCommon/Common (= 2.22.0)
   - KakaoSDKUser (2.22.0):
     - KakaoSDKAuth (= 2.22.0)
+  - libwebp (1.5.0):
+    - libwebp/demux (= 1.5.0)
+    - libwebp/mux (= 1.5.0)
+    - libwebp/sharpyuv (= 1.5.0)
+    - libwebp/webp (= 1.5.0)
+  - libwebp/demux (1.5.0):
+    - libwebp/webp
+  - libwebp/mux (1.5.0):
+    - libwebp/demux
+  - libwebp/sharpyuv (1.5.0)
+  - libwebp/webp (1.5.0):
+    - libwebp/sharpyuv
   - RCT-Folly (2024.01.01.00):
     - boost
     - DoubleConversion
@@ -1774,6 +1786,10 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNFastImage (8.6.3):
+    - React-Core
+    - SDWebImage (~> 5.11.1)
+    - SDWebImageWebPCoder (~> 0.8.4)
   - RNGestureHandler (2.21.2):
     - DoubleConversion
     - glog
@@ -2000,6 +2016,12 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - SDWebImage (5.11.1):
+    - SDWebImage/Core (= 5.11.1)
+  - SDWebImage/Core (5.11.1)
+  - SDWebImageWebPCoder (0.8.5):
+    - libwebp (~> 1.0)
+    - SDWebImage/Core (~> 5.10)
   - SocketRocket (0.7.1)
   - TOCropViewController (2.7.4)
   - Yoga (0.0.0)
@@ -2086,6 +2108,7 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCCheckbox (from `../node_modules/@react-native-community/checkbox`)"
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
+  - RNFastImage (from `../node_modules/react-native-fast-image`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
   - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
@@ -2115,6 +2138,9 @@ SPEC REPOS:
     - KakaoSDKTalk
     - KakaoSDKTemplate
     - KakaoSDKUser
+    - libwebp
+    - SDWebImage
+    - SDWebImageWebPCoder
     - SocketRocket
     - TOCropViewController
 
@@ -2270,6 +2296,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/checkbox"
   RNCPicker:
     :path: "../node_modules/@react-native-picker/picker"
+  RNFastImage:
+    :path: "../node_modules/react-native-fast-image"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNGoogleSignin:
@@ -2313,6 +2341,7 @@ SPEC CHECKSUMS:
   KakaoSDKTalk: cf2af6650bc7d77aa6cc8dab1bd464f4fda0618d
   KakaoSDKTemplate: 2b518d4875fb9b3e832d39e957e4e33cb27a9d36
   KakaoSDKUser: 043bcd7e91454ebf3bf64f150c430e6f65f0a08d
+  libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   RCT-Folly: bf5c0376ffe4dd2cf438dcf86db385df9fdce648
   RCTDeprecation: fb7d408617e25d7f537940000d766d60149c5fea
   RCTRequired: 9aaf0ffcc1f41f0c671af863970ef25c422a9920
@@ -2381,6 +2410,7 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: fe98f1b459a87b80f12207da80c50b3a3abb6081
   RNCCheckbox: a3ca9978cb0846b981d28da4e9914bd437403d77
   RNCPicker: f4d6da1949185a8c46e5ee26eab241ce8794e4dd
+  RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
   RNGestureHandler: 0e5ae8d72ef4afb855e98dcdbe60f27d938abe13
   RNGoogleSignin: edec18754ff4af2cfee46072609ec5a7a754291a
   RNImageCropPicker: 8e39c01f205e00d739c31e682f068aac315587bf
@@ -2388,6 +2418,8 @@ SPEC CHECKSUMS:
   RNReanimated: 9ee6347ca0aa3cf78cae715455e781728ae142e2
   RNScreens: d022507f2b6d76c73335e9e35aedcf7bb2f791b0
   RNVectorIcons: 07792a9538e8577c1263fcad187712e90d65d8fb
+  SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
+  SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: fcc198acd4a55599b3468cfb6ebc526baff5f06e
