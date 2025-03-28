@@ -130,23 +130,14 @@ const SetLocationScreen = ({navigation, route}) => {
     }
   };
   const handleGetCurrentLocation = async () => {
-    setLoading(true);
-    const hasPermission = await requestLocationPermission();
-
-    if (!hasPermission) {
-      Alert.alert('위치 권한이 거부되었습니다.');
-      setLoading(false);
-      return;
-    }
     try {
-      const {newLocation, address} = await fetchLocationAddress();
-
-      setSelectLocation(newLocation);
-      setSelectAddress(address);
+      const location = await getLocation();
+      navigation.navigate('StoreAddMapScreen', {
+        location,
+        onAddressSelect,
+      });
     } catch (error) {
-      console.error('위치 데이터를 가져오는 중 오류:', error);
-    } finally {
-      setLoading(false);
+      console.log(error);
     }
   };
 

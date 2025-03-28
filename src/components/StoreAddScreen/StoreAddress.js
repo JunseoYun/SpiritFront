@@ -5,8 +5,11 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
+
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const StoreAddress = ({
   address,
@@ -16,6 +19,7 @@ const StoreAddress = ({
   onAddressSelect,
   index,
   error,
+  location,
 }) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
   const [errors, setErrors] = useState(null); // 에러 메시지 상태
@@ -45,28 +49,44 @@ const StoreAddress = ({
   return (
     <View>
       <View style={inputViewStyle}>
-        <TouchableOpacity
-          style={styles.storeinput}
-          onPress={() =>
-            navigation.navigate('StoreAddressSearch', {
-              onAddressSelect,
-            })
-          }>
-          {address ? (
-            <>
-              <Text
-                style={[styles.storeinputtext, index === 1 && {color: '#333'}]}>
+        <View style={styles.storeinput}>
+          <TouchableOpacity
+            style={styles.addressTouchable}
+            onPress={() =>
+              navigation.navigate('StoreAddressSearch', {onAddressSelect})
+            }>
+            {address ? (
+              <>
+                <Text
+                  style={[
+                    styles.storeinputtext,
+                    index === 1 && {color: '#333'},
+                  ]}>
+                  {index === 1 ? '사업장 소재지*' : '매장 주소*'}
+                </Text>
+                <Text style={styles.inputText}>{address}</Text>
+              </>
+            ) : (
+              <Text style={styles.inputHideText}>
                 {index === 1 ? '사업장 소재지*' : '매장 주소*'}
               </Text>
-              <Text style={styles.inputText}>{address}</Text>
-            </>
-          ) : (
-            <Text style={styles.inputHideText}>
-              {index === 1 ? '사업장 소재지*' : '매장 주소*'}
-            </Text>
-          )}
-        </TouchableOpacity>
+            )}
+          </TouchableOpacity>
+
+          {/* 지도 아이콘 버튼 */}
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('StoreAddMapScreen', {
+                location,
+                onAddressSelect,
+              })
+            }
+            style={styles.mapIconButton}>
+            <Ionicons name="map-outline" size={30} color="#999" />
+          </TouchableOpacity>
+        </View>
       </View>
+
       {error === 'StoreAddress' && address === '' && (
         <Text style={styles.errorMessage}>매장주소를 입력해주세요.</Text>
       )}
@@ -112,8 +132,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
   },
+  addressTouchable: {
+    flex: 1,
+  },
   storeinput: {
     width: '100%',
+    flexDirection: 'row',
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
@@ -142,6 +166,11 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 14,
     marginTop: 5,
+  },
+  mapIconButton: {
+    alignSelf: 'flex-end',
+    paddingVertical: 1, // 상하 간격 조절
+    paddingLeft: 1,
   },
 });
 

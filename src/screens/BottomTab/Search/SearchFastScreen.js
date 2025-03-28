@@ -135,8 +135,12 @@ const SearchFastScreen = ({navigation}) => {
 
         updatedSearch.conditionTime = now.toISOString().slice(0, -1);
 
-        updatedSearchinfo.timeselectedHour = selectedHour;
-        updatedSearchinfo.timeselectedMinute = selectedMinute;
+        if (selectedHour !== '') {
+          updatedSearchinfo.timeselectedHour = selectedHour;
+        }
+        if (selectedMinute !== '') {
+          updatedSearchinfo.timeselectedMinute = selectedMinute;
+        }
       }
 
       setFasttores([]);

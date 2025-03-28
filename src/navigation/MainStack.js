@@ -17,6 +17,7 @@ import StoreStack from './StoreStack';
 import MyStack from './MyStack';
 import OAuthStack from './OAuthStack';
 import Octicons from 'react-native-vector-icons/Octicons';
+import StoreAddMapScreen from '../screens/StoreRegister/StoreAddMapScreen';
 
 const Stack = createStackNavigator();
 
@@ -282,6 +283,30 @@ export default function MainStack() {
         component={RandomChoiceScreen}
         options={({navigation}) => ({
           title: '랜덤 고르기',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="StoreAddMapScreen"
+        component={StoreAddMapScreen}
+        options={({navigation}) => ({
+          title: '주소 설정',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontWeight: '600',

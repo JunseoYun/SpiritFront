@@ -23,6 +23,8 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import OperatingHoursPreview from '../../components/StoreAddScreen/OperatingHoursPreview';
 
 const StoreAddScreen = ({navigation, route}) => {
+  const {location} = route.params;
+
   const scrollViewRef = useRef(null); // 스크롤뷰 참조
   const storeInfoRef = useRef(null);
   const storeAddressRef = useRef(null);
@@ -298,6 +300,7 @@ const StoreAddScreen = ({navigation, route}) => {
               navigation={navigation}
               onAddressSelect={handleAddressSelect} // 콜백 전달
               error={error}
+              location={location}
             />
           </View>
           <View ref={storeCategoryRef}>
