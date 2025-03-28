@@ -9,7 +9,7 @@ import {
   StyleSheet,
   Pressable,
   KeyboardAvoidingView,
-  SafeAreaView,
+  Dimensions,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
@@ -34,6 +34,8 @@ import UpdateBottomSheet from '../../components/StoreScreen/UpdateBottomSheet';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import {useToast} from '../../context/ToastContext';
+
+const {width} = Dimensions.get('window');
 
 const StoreMainScreen = ({navigation}) => {
   const route = useRoute();
@@ -403,7 +405,7 @@ const StoreMainScreen = ({navigation}) => {
                 <View
                   style={[
                     {
-                      height: 300, // 숫자 값은 따옴표 없이 사용
+                      height: 270, // 숫자 값은 따옴표 없이 사용
                       alignItems: 'center',
                       justifyContent: 'center',
                       backgroundColor: 'black',

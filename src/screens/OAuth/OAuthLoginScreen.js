@@ -19,6 +19,7 @@ import {user_login} from '../../api/userApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useAuth} from '../../context/AuthContext';
 import Config from 'react-native-config';
+import FastImage from 'react-native-fast-image';
 
 const OAuthLoginScreen = ({navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -156,9 +157,10 @@ const OAuthLoginScreen = ({navigation}) => {
           style={styles.kakaoButtonContainer}>
           <View style={styles.kakaoButton}>
             <View style={styles.googleLogoContainer}>
-              <Image
+              <FastImage
                 source={require('../../assets/kakao-symbol.png')}
                 style={styles.googleLogo}
+                resizeMode={FastImage.resizeMode.contain}
               />
             </View>
             <Text style={styles.googleText}>카카오 로그인</Text>
@@ -170,9 +172,10 @@ const OAuthLoginScreen = ({navigation}) => {
           style={styles.googleButtonContainer}>
           <View style={styles.googleView}>
             <View style={styles.googleLogoContainer}>
-              <Image
+              <FastImage
                 source={require('../../assets/g-logo.png')}
                 style={styles.googleLogo}
+                resizeMode={FastImage.resizeMode.contain}
               />
             </View>
             <Text style={styles.googleText}>Google 로그인</Text>
@@ -185,9 +188,10 @@ const OAuthLoginScreen = ({navigation}) => {
             style={styles.googleButtonContainer}>
             <View style={styles.googleView}>
               <View style={styles.googleLogoContainer}>
-                <Image
+                <FastImage
                   source={require('../../assets/appleLogo.png')}
                   style={styles.appleLogo}
+                  resizeMode={FastImage.resizeMode.contain}
                 />
               </View>
               <Text style={styles.appleText}>Apple 로그인</Text>
@@ -296,9 +300,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   googleLogo: {
-    width: 25,
-    height: 25,
-    paddingLeft: 30,
+    width: 23,
+    height: 23,
     resizeMode: 'contain',
   },
   googleView: {
@@ -330,7 +333,8 @@ const styles = StyleSheet.create({
     color: '#333',
     fontSize: 16,
     fontWeight: '600',
-    marginHorizontal: 70,
+
+    paddingRight: 10,
   },
 });
 
