@@ -161,6 +161,8 @@ const SearchScreen = ({navigation}) => {
   };
 
   const postbutton = () => {
+    if (!selectedHour) setSelectedHour('00');
+    if (!selectedMinute) setSelectedMinute('00');
     setTimeModalVisible(false);
   };
 

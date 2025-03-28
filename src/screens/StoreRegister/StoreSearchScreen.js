@@ -17,7 +17,7 @@ const {width} = Dimensions.get('window');
 
 const StoreSearchScreen = ({navigation}) => {
   const route = useRoute();
-  const {index} = route.params;
+  const {index, location} = route.params;
   const [searchStoreName, setSearchStoreName] = useState('');
   const [trimmedSearchWord, setTrimmedSearchWord] = useState('');
   const {showToast} = useToast();
@@ -34,7 +34,9 @@ const StoreSearchScreen = ({navigation}) => {
   };
 
   const handleStoreAdd = () => {
-    navigation.navigate('StoreAddScreen');
+    navigation.navigate('StoreAddScreen', {
+      location: location,
+    });
   };
 
   // 헤더 오른쪽에 검색 버튼 추가

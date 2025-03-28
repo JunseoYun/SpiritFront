@@ -98,7 +98,7 @@ const MainScreen = ({navigation}) => {
   const handlestoreItemClick = index => {
     setStoreActiveIndex(index);
     if (index === 0) {
-      navigation.navigate('StoreSearchScreen', {index: 0});
+      navigation.navigate('StoreSearchScreen', {index: 0, location: location});
     } else if (index === 1) {
       // navigation.navigate('StoreSearchScreen', {index: 1});
       showAlert({
