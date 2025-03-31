@@ -60,7 +60,7 @@ axiosInstance.interceptors.request.use(
       const token = await getAccessToken();
       if (token) {
         // 'x-auth-token' 헤더에 토큰 설정
-        console.log(token);
+
         config.headers['x-auth-token'] = token;
       }
     } catch (error) {
