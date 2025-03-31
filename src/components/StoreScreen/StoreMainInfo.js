@@ -23,11 +23,7 @@ import Address from './StoreMainInfo/Address';
 import OperationSchedule from './StoreMainInfo/OperationSchedule';
 import InnerOperation from './StoreMainInfo/InnerOperation';
 import Introduce from './StoreMainInfo/Introduce';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import Feather from 'react-native-vector-icons/Feather';
-import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 import Entypo from 'react-native-vector-icons/Entypo';
 import StoreExtraInfo from './StoreMainInfo/StoreExtraInfo';
 const StoreMainInfo = ({
@@ -222,17 +218,17 @@ const StoreMainInfo = ({
       {!isUpdate && (
         <StoreExtraInfo
           navigation={navigation}
-          storeData={storedata}
+          storeData={{
+            contact: storedata?.contact,
+            isStoreLiked: storedata?.isStoreLiked,
+            likeCount: storedata?.likeCount,
+            id: storedata?.id,
+            reviewCount: storedata?.reviewCount,
+            isGroupAvailable: storedata?.isGroupAvailable,
+            hasScreen: storedata?.hasScreen,
+          }}
           distance={distance}
           unit={unit}
-        />
-      )}
-
-      {!isUpdate && (
-        <StoreActions
-          storeData={storedata}
-          navigation={navigation}
-          storename={storedata.name}
         />
       )}
 
@@ -249,8 +245,6 @@ const StoreMainInfo = ({
           />
         </>
       )}
-
-      {/*필요한 정보만 넘기는 걸로 변경*/}
 
       <AlertComponent />
     </View>
