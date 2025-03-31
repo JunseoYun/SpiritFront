@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     width: '95%',
     textAlign: 'center',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     marginTop: 15,
   },
   overlayNameOpenText: {
@@ -308,12 +308,12 @@ const styles = StyleSheet.create({
     width: '95%',
     textAlign: 'center',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
   },
   overlayNameCategory: {
     color: 'white',
     fontSize: 13,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     marginHorizontal: 3,
     marginTop: 5,
     textAlign: 'center',
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   overlayNameOpenCategory: {
     color: 'white',
     fontSize: 13,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     marginHorizontal: 3,
     marginTop: 5,
     textAlign: 'center',
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   overlayNameOpenDrink: {
     color: 'white',
     fontSize: 13,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Medium',
     marginHorizontal: 3,
     marginTop: 5,
     textAlign: 'center',
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 15,
     textAlign: 'center',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     lineHeight: 18,
   },
   openOverlay: {
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   openOverlayText: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     alignSelf: 'flex-end',
     marginTop: 7,
     marginRight: 5,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
 
   distanceText: {
     fontSize: 13,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     color: '#333',
     alignSelf: 'flex-end',
     marginRight: 15,
