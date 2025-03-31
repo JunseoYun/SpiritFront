@@ -12,7 +12,7 @@ const StoreExtraInfo = ({storeData, navigation, distance, unit}) => {
 
   const storeNumber = storeData?.contact || '000-0000-0000'; // 기본 전화번호
   const [storeLike, setStoreLike] = useState(storeData?.isStoreLiked);
-
+  const [storeLikeCount, setStoreLikeCount] = useState(storeData?.likeCount);
   useEffect(() => {
     if (storeData?.isStoreLiked !== undefined) {
       setStoreLike(storeData.isStoreLiked); // storeData가 변경될 때 상태 업데이트
@@ -23,6 +23,7 @@ const StoreExtraInfo = ({storeData, navigation, distance, unit}) => {
     try {
       await Storelikepost(storeData.id);
       setStoreLike(!storeLike);
+      setStoreLikeCount(prev => prev + (storeLike ? -1 : 1));
     } catch (error) {
       showAlert({
         title: '찜 실패하였습니다',
@@ -30,7 +31,11 @@ const StoreExtraInfo = ({storeData, navigation, distance, unit}) => {
       });
     }
   };
-
+  useEffect(() => {
+    if (storeData?.likeCount !== undefined) {
+      setStoreLikeCount(storeData.likeCount);
+    }
+  }, [storeData]);
   const storeNumberHandle = () => {
     if (storeNumber !== '000-0000-0000') {
       console.log(storeNumber);
@@ -50,16 +55,38 @@ const StoreExtraInfo = ({storeData, navigation, distance, unit}) => {
           <Text style={styles.locationtext}>전화</Text>
         </Pressable>
 
-        <View style={styles.infoCol}>
+        <Pressable style={styles.infoCol} onPress={StoreLike}>
           {/* 좋아요 상태 임시로 true */}
-          <Ionicons name="heart" size={20} color="red" />
-          <Text style={styles.locationtext}>{storeData?.likeCount}</Text>
-        </View>
+          {storeLike ? (
+            <Ionicons
+              name="heart"
+              size={20}
+              color={'red'} // Conditional color change
+            />
+          ) : (
+            <Ionicons
+              name="heart-outline"
+              size={20}
+              color={'#333'} // Conditional color change
+            />
+          )}
+          <Text style={styles.locationtext}>{storeLikeCount}</Text>
+        </Pressable>
 
-        <View style={styles.infoCol}>
+        <Pressable
+          onPress={() => {
+            navigation.navigate('StoreStack', {
+              screen: 'StoreReviewScreen',
+              params: {
+                storeId: storeData.id,
+                storename: storeData.name,
+              },
+            });
+          }}
+          style={styles.infoCol}>
           <Ionicons name="reader-outline" size={20} color="#333" />
-          <Text style={styles.locationtext}>3</Text>
-        </View>
+          <Text style={styles.locationtext}>{storeData?.reviewCount}</Text>
+        </Pressable>
       </View>
 
       <View style={styles.infoRow}>
@@ -71,14 +98,20 @@ const StoreExtraInfo = ({storeData, navigation, distance, unit}) => {
         </View>
         <View style={styles.infoCol}>
           <MaterialIcons name="group" size={23} color="#181A1A" />
-          <Text style={styles.locationtext}>단체 가능</Text>
+          <Text style={styles.locationtext}>
+            {storeData?.isGroupAvailable ? '10인 이상 가능' : '10인 이상 불가'}
+          </Text>
         </View>
 
         <View style={styles.infoCol}>
           <Feather name="tv" size={23} color="#181A1A" />
-          <Text style={styles.locationtext}>스크린 설치</Text>
+          <Text style={styles.locationtext}>
+            {' '}
+            {storeData?.hasScreen ? '스크린 설치' : '스크린 미설치'}
+          </Text>
         </View>
       </View>
+      <AlertComponent />
     </View>
   );
 };
