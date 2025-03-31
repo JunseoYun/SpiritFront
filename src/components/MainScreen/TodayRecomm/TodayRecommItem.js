@@ -19,7 +19,6 @@ const drinkColors = {
 };
 
 const TodayRecommItem = ({store, navigation}) => {
-  console.log(store);
   const {translateAlcohol} = useTranslateAlcohol();
   return (
     <Pressable

@@ -60,6 +60,7 @@ axiosInstance.interceptors.request.use(
       const token = await getAccessToken();
       if (token) {
         // 'x-auth-token' 헤더에 토큰 설정
+        console.log(token);
         config.headers['x-auth-token'] = token;
       }
     } catch (error) {
@@ -88,23 +89,20 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         // Refresh Token도 만료된 경우 로그아웃
-        if (refreshError.response?.status === 401) {
-          const {logout} = getGlobalLogout();
-          const showAlert = getGlobalShowAlert();
 
-          if (logout) {
-            try {
-              await logout(); // 로그아웃 먼저 실행
-            } catch (error) {}
-          }
+        const {logout} = getGlobalLogout();
+        const showAlert = getGlobalShowAlert();
 
-          showAlert({
-            title: '세션 만료',
-            message: '다시 로그인해주세요.',
-          });
-
-          return Promise.reject(refreshError);
+        if (logout) {
+          try {
+            await logout(); // 로그아웃 먼저 실행
+          } catch (error) {}
         }
+
+        showAlert({
+          title: '세션 만료',
+          message: '다시 로그인해주세요.',
+        });
       }
     }
 
