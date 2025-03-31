@@ -1,9 +1,26 @@
 import React from 'react';
 import {View, StyleSheet, Text, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
+
+const drinkColors = {
+  SOJU: '#43A047',
+  BEER: '#F9A825',
+  MAKGEOLLI: '#616161',
+  WINE: '#8E0038',
+  COCKTAIL: '#D84315',
+  SAKE: '#455A64',
+  KAOLIANG: '#5D4037',
+  WHISKEY: '#6D4C41',
+  VODKA: '#3949AB',
+  GIN: '#2E7D32',
+  RUM: '#3E2723',
+  TEQUILA: '#EF6C00',
+};
 
 const TodayRecommItem = ({store, navigation}) => {
-  // console.log(store);
+  console.log(store);
+  const {translateAlcohol} = useTranslateAlcohol();
   return (
     <Pressable
       onPress={() =>
@@ -14,30 +31,21 @@ const TodayRecommItem = ({store, navigation}) => {
       }
       style={styles.container}>
       <View style={styles.drinkView}>
-        <Text
-          style={[
-            styles.drinkText,
-            {color: '#43A047', borderColor: '#43A047'},
-          ]}>
-          소주 5000
-        </Text>
-        <View style={styles.division} />
-        <Text
-          style={[
-            styles.drinkText,
-            {color: '#F9A825', borderColor: '#F9A825'},
-          ]}>
-          맥주 5000
-        </Text>
-        <View style={styles.division} />
-        <Text
-          style={[
-            styles.drinkText,
-            {color: '#616161', borderColor: '#616161'},
-          ]}>
-          막걸리 5000
-        </Text>
+        {store.mainDrinkDtos?.map((drink, index) => {
+          const color = drinkColors[drink.type] || '#333';
+          return (
+            <React.Fragment key={index}>
+              <Text style={[styles.drinkText, {color, borderColor: color}]}>
+                {translateAlcohol(drink.type)} {drink.price}
+              </Text>
+              {index !== store.mainDrinkDtos.length - 1 && (
+                <View style={styles.division} />
+              )}
+            </React.Fragment>
+          );
+        })}
       </View>
+
       <FastImage
         style={styles.imageBackground}
         source={
