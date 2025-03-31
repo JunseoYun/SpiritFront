@@ -1,23 +1,45 @@
 import React from 'react';
 
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Pressable} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import Entypo from 'react-native-vector-icons/Entypo';
 
-const Review = ({isUpdate, storedata}) => {
+const Review = ({navigation, isUpdate, storeData}) => {
   return (
     <>
       {!isUpdate && (
-        <View style={styles.ReviewView}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Entypo name="star" size={20} color="#FCC104" />
-            <Text style={styles.reviewRatetext}> {storedata?.storeRate}</Text>
+        <Pressable
+          onPress={() => {
+            navigation.navigate('StoreStack', {
+              screen: 'StoreReviewScreen',
+              params: {
+                storeId: storeData.id,
+                storename: storeData.name,
+              },
+            });
+          }}
+          style={styles.ReviewView}>
+          <View style={styles.reviewView}>
+            <FastImage
+              style={styles.iconStar}
+              source={require('../../../assets/icon-star.png')}
+              resizeMode={FastImage.resizeMode.cover}></FastImage>
+            <Text style={styles.reviewRatetext}> {storeData?.rate}</Text>
+            <Text style={styles.reviewDotText}>•</Text>
+            <Text style={styles.reviewtext}>
+              리뷰 {storeData?.reviewCount}개
+            </Text>
+            <Entypo
+              name="chevron-right"
+              size={17}
+              color="#333"
+              style={styles.reviewIcon}
+            />
           </View>
-          <Text style={styles.reviewtext}>
-            고객 리뷰 {storedata?.reviewCount}
-          </Text>
-          <Text style={styles.reviewtext}>찜 {storedata?.likeCount}</Text>
-        </View>
+          {/* <Text style={styles.reviewtext}>고객 리뷰</Text>
+          <Text style={styles.reviewtext}>찜 {storedata?.likeCount}</Text> */}
+        </Pressable>
       )}
     </>
   );
@@ -28,19 +50,39 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 7,
+    marginVertical: 10,
     marginHorizontal: 18,
   },
+  iconStar: {
+    justifyContent: 'space-between',
+    padding: 10,
+    height: 20,
+    width: 20,
+  },
+  reviewView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
   reviewRatetext: {
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 16,
-    color: '#333',
+    color: '#181A1A',
+  },
+  reviewDotText: {
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 16,
+    color: '#E0E0E0',
+    marginHorizontal: 3,
   },
   reviewtext: {
-    fontWeight: '400',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 16,
-    color: '#5F5F5F',
-    marginLeft: 10,
+    color: '#181A1A',
+  },
+  reviewIcon: {
+    marginLeft: 3,
   },
 });
 

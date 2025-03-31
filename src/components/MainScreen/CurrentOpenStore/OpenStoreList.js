@@ -127,14 +127,14 @@ const styles = StyleSheet.create({
   },
   mylocationlivetext: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: 'black',
+    fontFamily: 'Pretendard-Bold',
+    color: '#181a1a',
     marginTop: 10,
   },
   mylocationlivesubtext: {
     fontSize: 15,
-    fontWeight: '500',
-    color: '#555',
+    fontFamily: 'Pretendard-Medium',
+    color: '#777',
     marginTop: 5,
   },
   storeContainer: {

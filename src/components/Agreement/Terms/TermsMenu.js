@@ -24,9 +24,9 @@ const TermsMenu = ({selected, onSelect}) => {
             marginTop: 20,
           }}
           labelStyle={{
-            color: '#333',
+            color: '#181a1a',
             fontSize: 14,
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Regular',
           }}>
           {selected}
         </Button>

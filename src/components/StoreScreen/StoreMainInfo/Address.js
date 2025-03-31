@@ -42,13 +42,11 @@ const Address = ({isUpdate, storedata, handleEdit}) => {
           <AntDesign name="home" size={20} color="#333" />
           <View style={{flexDirection: 'row', flexWrap: 'wrap', width: '100%'}}>
             <Text style={styles.infoHidetext}>
-              {storedata?.locationDto?.address},
+              {storedata?.locationDto?.address}
+              {storedata?.locationDto?.addressDetail
+                ? `, ${storedata?.locationDto?.addressDetail}`
+                : ''}
             </Text>
-            {storedata?.locationDto?.addressDetail && (
-              <Text style={styles.infoHidetext}>
-                {storedata?.locationDto?.addressDetail}
-              </Text>
-            )}
           </View>
         </View>
       )}
@@ -67,9 +65,10 @@ const styles = StyleSheet.create({
   },
   infoHidetext: {
     fontSize: 15,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#333',
     paddingLeft: 10,
+    width: '80%',
   },
 });
 

@@ -19,13 +19,13 @@ const AgreementItem = ({onPress, checked, text, onInfoPress}) => {
         <Entypo
           name="check"
           size={25}
-          color={checked ? '#16BBFF' : '#E7E7E7'}
+          color={checked ? '#5CCEFF' : '#E7E7E7'}
         />
         <Text
           style={{
             fontSize: 15,
-            color: '#333',
-            fontWeight: '600',
+            color: '#181A1A',
+            fontFamily: 'Pretendard-Medium',
             marginLeft: 10,
           }}>
           {text}

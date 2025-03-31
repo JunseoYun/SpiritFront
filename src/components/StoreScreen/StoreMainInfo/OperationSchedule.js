@@ -3,7 +3,7 @@ import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 
 import Entypo from 'react-native-vector-icons/Entypo';
-
+import Ionicons from 'react-native-vector-icons/Ionicons';
 const OperationSchedule = ({
   toggleExpand,
   isExpanded,
@@ -21,6 +21,7 @@ const OperationSchedule = ({
     <>
       {!isUpdate && (
         <TouchableOpacity style={styles.timesetview} onPress={toggleExpand}>
+          <Ionicons name="time-outline" size={20} color="#333" />
           {isOpen && !isBreak && storedata?.isAlwaysOpen == false && (
             <>
               <Text style={[styles.timetextnow, {color: 'green'}]}>
@@ -104,6 +105,7 @@ const styles = StyleSheet.create({
   timetextnow: {
     fontSize: 15,
     fontWeight: 'bold',
+    marginLeft: 7,
   },
   timetext: {
     fontSize: 15,

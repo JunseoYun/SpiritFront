@@ -19,13 +19,16 @@ const InnerOperation = ({
           <TouchableOpacity style={styles.timeView} onPress={toggleExpand}>
             {operationSchedule && storedata?.isAlwaysOpen == false ? (
               <>
-                <Ionicons name="time-outline" size={20} color="#333" />
-                <View>
+                {/* <Ionicons name="time-outline" size={20} color="#333" /> */}
+                <View style={styles.openView}>
                   {operationSchedule.map((dayInfo, index) =>
                     index === 0 ? (
                       <View key={index} style={{}}>
                         <Text
-                          style={[styles.infoHidetext, {fontWeight: 'bold'}]}>
+                          style={[
+                            styles.infoHidetext,
+                            {fontFamily: 'Pretendard-Bold'},
+                          ]}>
                           {dayInfo.day}{' '}
                           {dayInfo.isClosed
                             ? '휴무일'
@@ -64,7 +67,7 @@ const InnerOperation = ({
             ) : (
               storedata?.isAlwaysOpen == true && (
                 <>
-                  <Ionicons name="time-outline" size={20} color="#333" />
+                  {/* <Ionicons name="time-outline" size={20} color="#333" /> */}
                   <Text style={styles.infoHidetext}>매일 00:00 - 24:00</Text>
                 </>
               )
@@ -82,7 +85,10 @@ const InnerOperation = ({
                     index === 0 ? (
                       <View key={index} style={{}}>
                         <Text
-                          style={[styles.infoHidetext, {fontWeight: 'bold'}]}>
+                          style={[
+                            styles.infoHidetext,
+                            {fontFamily: 'Pretendard-Bold', paddingLeft: 10},
+                          ]}>
                           {dayInfo.day}{' '}
                           {dayInfo.isClosed
                             ? '휴무일'
@@ -91,7 +97,8 @@ const InnerOperation = ({
                         {!dayInfo.isClosed &&
                           dayInfo.breakStart &&
                           dayInfo.breakEnd && (
-                            <Text style={styles.infoHidetext}>
+                            <Text
+                              style={[styles.infoHidetext, {paddingLeft: 10}]}>
                               브레이크 타임 {dayInfo.breakStart} ~{' '}
                               {dayInfo.breakEnd}
                             </Text>
@@ -99,7 +106,8 @@ const InnerOperation = ({
                       </View>
                     ) : (
                       <View key={index} style={{marginTop: 5}}>
-                        <Text style={styles.infoHidendaytext}>
+                        <Text
+                          style={[styles.infoHidendaytext, {paddingLeft: 10}]}>
                           {dayInfo.day}{' '}
                           {dayInfo.isClosed
                             ? '휴무일'
@@ -108,7 +116,11 @@ const InnerOperation = ({
                         {!dayInfo.isClosed &&
                           dayInfo.breakStart &&
                           dayInfo.breakEnd && (
-                            <Text style={styles.infoHidendaytext}>
+                            <Text
+                              style={[
+                                styles.infoHidendaytext,
+                                {paddingLeft: 10},
+                              ]}>
                               브레이크 타임 {dayInfo.breakStart} ~{' '}
                               {dayInfo.breakEnd}
                             </Text>
@@ -122,7 +134,9 @@ const InnerOperation = ({
               storedata?.isAlwaysOpen == true && (
                 <>
                   <Ionicons name="time-outline" size={20} color="#333" />
-                  <Text style={styles.infoHidetext}>매일 00:00 - 24:00</Text>
+                  <Text style={[styles.infoHidetext, {paddingLeft: 10}]}>
+                    매일 00:00 - 24:00
+                  </Text>
                 </>
               )
             )}
@@ -145,15 +159,16 @@ const styles = StyleSheet.create({
   },
   infoHidendaytext: {
     fontSize: 15,
-    fontWeight: '500',
-    color: '#777',
-    marginLeft: 10,
+    fontFamily: 'Pretendard-Medium',
+    color: '#767676',
+  },
+  openView: {
+    marginLeft: 27,
   },
   infoHidetext: {
     fontSize: 15,
-    fontWeight: '500',
-    color: '#333',
-    paddingLeft: 10,
+    fontFamily: 'Pretendard-Medium',
+    color: '#181A1A',
   },
 });
 

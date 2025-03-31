@@ -6,6 +6,7 @@ import {
   View,
   RefreshControl,
   SafeAreaView,
+  Pressable,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
@@ -119,8 +120,7 @@ const MainScreen = ({navigation}) => {
     if (address === '강남역') {
       return address;
     }
-    const parts = address.split(' ');
-    return parts.slice(1, 4).join(' ');
+    return address;
   };
 
   const handleAgreeScreen = screen => {
@@ -142,15 +142,15 @@ const MainScreen = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topView}>
-        <Text style={styles.todayAddress}>
-          오늘은 {formatAddress(address)}{' '}
+        <Text
+          style={styles.todayAddress}
+          numberOfLines={1}
+          ellipsizeMode="tail">
+          {formatAddress(address)}
         </Text>
-        <Feather
-          onPress={setLocationHandle}
-          name="crosshair"
-          size={25}
-          color="black"
-        />
+        <Pressable onPress={setLocationHandle}>
+          <Feather name="chevron-right" size={23} color="#181a1a" />
+        </Pressable>
       </View>
       <ScrollView
         scrollEventThrottle={16}
@@ -167,10 +167,12 @@ const MainScreen = ({navigation}) => {
         />
 
         <CategoryGrid onPress={catagoryClick} />
+
         <StoreRegister
           storeactiveIndex={storeactiveIndex}
           handlestoreItemClick={handlestoreItemClick}
         />
+
         <OpenStoreList
           location={location}
           navigation={navigation}
@@ -223,9 +225,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   todayAddress: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontFamily: 'Pretendard-SemiBold',
     color: '#333',
+    paddingLeft: 4,
+    width: '90%',
   },
   topbar: {
     flexDirection: 'row',
@@ -238,6 +242,12 @@ const styles = StyleSheet.create({
     width: 120,
     resizeMode: 'contain',
     height: 70,
+  },
+  division: {
+    width: '100%',
+    height: 8,
+    backgroundColor: '#F0F0F0',
+    marginVertical: 10,
   },
 });
 
