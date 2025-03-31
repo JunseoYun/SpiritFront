@@ -6,24 +6,46 @@ import {
   ScrollView,
   Pressable,
   StyleSheet,
+  Modal,
+  TouchableOpacity,
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import {
+  requestPhotoPermission,
+  requestCameraPermission,
+} from '../../hooks/usePhotopermis';
+import ImagePickermodal from '../../hooks/ImagePickermodal';
 
 const StoreImage = ({imageUris, setImageUris, error}) => {
   const [images, setImage] = useState([]);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null); // 선택된 이미지 인덱스 상태
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false); // 바텀시트 상태
 
   const {showAlert, AlertComponent} = useCustomAlert();
-  const selectImage = () => {
-    if (imageUris.length >= 5) {
-      showAlert({
-        title: '매장 이미지',
-        message: '이미지는 최대 5개까지 선택할 수 있습니다.',
+
+  const handleCameraPick = async () => {
+    const hasCamera = await requestCameraPermission();
+    if (!hasCamera) return;
+    ImagePicker.openCamera({
+      width: 400,
+      height: 300,
+      cropping: true,
+      mediaType: 'photo',
+    })
+      .then(image => {
+        setImage([...images, image.path]);
+        setImageUris([...imageUris, image]);
+      })
+      .catch(error => {
+        console.log('Camera Error: ', error);
       });
-      return; // 5개 이상일 경우 선택하지 않도록 함
-    }
+  };
+
+  const handleGalleryPick = async () => {
+    const hasCamera = await requestPhotoPermission();
+    if (!hasCamera) return;
 
     ImagePicker.openPicker({
       width: 400,
@@ -33,16 +55,26 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
     })
       .then(image => {
         setImage([...images, image.path]);
-        setImageUris([...imageUris, image]); // 이미지 추가
+        setImageUris([...imageUris, image]);
       })
       .catch(error => {
-        console.log('ImagePicker Error: ', error);
+        console.log('Picker Error: ', error);
       });
   };
 
-  const handleImagePress = index => {
-    setSelectedImageIndex(index); // 선택된 이미지 인덱스 설정
+  const selectImage = () => {
+    if (imageUris.length >= 5) {
+      showAlert({
+        title: '매장 이미지',
+        message: '이미지는 최대 5개까지 선택할 수 있습니다.',
+      });
+      return;
+    }
+    setBottomSheetVisible(true); // 바텀시트 열기
+  };
 
+  const handleImagePress = index => {
+    setSelectedImageIndex(index);
     showAlert({
       title: '이미지 삭제',
       message: '이미지를 삭제하시겠습니까?',
@@ -57,7 +89,7 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
     const newImageUris = imageUris.filter((_, i) => i !== index);
     setImage(newImages);
     setImageUris(newImageUris);
-    setSelectedImageIndex(null); // 선택 초기화
+    setSelectedImageIndex(null);
   };
 
   return (
@@ -84,7 +116,7 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
                   source={{uri: `file://${uri}`}}
                   style={[
                     styles.selectimage,
-                    selectedImageIndex === index && styles.selectedImage, // 선택된 이미지 스타일 추가
+                    selectedImageIndex === index && styles.selectedImage,
                   ]}
                 />
                 {index === 0 && (
@@ -95,12 +127,18 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
               </View>
             </Pressable>
           ))}
-          <Pressable onPress={selectImage}>
+          <Pressable style={{alignSelf: 'center'}} onPress={selectImage}>
             <MaterialCommunityIcons name="image-plus" size={50} color="#333" />
           </Pressable>
         </ScrollView>
 
         <AlertComponent />
+        <ImagePickermodal
+          isBottomSheetVisible={isBottomSheetVisible}
+          setBottomSheetVisible={setBottomSheetVisible}
+          handleCameraPick={handleCameraPick}
+          handleGalleryPick={handleGalleryPick}
+        />
       </View>
     </View>
   );

@@ -273,6 +273,7 @@ const StoreAddScreen = ({navigation, route}) => {
         });
       }
     } catch (error) {
+      console.log(error);
       showAlert({
         title: '등록 실패',
         message: '로그인 상태를 확인해주세요.',

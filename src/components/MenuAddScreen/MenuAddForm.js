@@ -5,6 +5,11 @@ import MenuTextInput from './MenuTextInput';
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import {
+  requestPhotoPermission,
+  requestCameraPermission,
+} from '../../hooks/usePhotopermis';
+import ImagePickermodal from '../../hooks/ImagePickermodal';
 
 const MenuAddForm = ({
   menu,
@@ -14,12 +19,41 @@ const MenuAddForm = ({
   onDelete, // 삭제 함수
 }) => {
   const {showAlert, AlertComponent} = useCustomAlert();
+
   const [isImageSelected, setIsImageSelected] = useState(false);
   const [menuNamelength, setMenuNamelength] = useState(false);
   const [menuPricelength, setMenuPricelength] = useState(false);
   const [menuContentlength, setMenuContentlength] = useState(false);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
   const selectImage = () => {
+    setBottomSheetVisible(true); // 바텀시트 열기
+  };
+
+  const handleCameraPick = async () => {
+    const hasCamera = await requestCameraPermission();
+    if (!hasCamera) {
+      return;
+    }
+    ImagePicker.openCamera({
+      width: 500,
+      height: 500,
+      cropping: true,
+      mediaType: 'photo',
+    })
+      .then(image => {
+        handleMenuChange(image, index, 'imageUri');
+      })
+      .catch(error => {
+        console.log('ImagePicker Error: ', error);
+      });
+  };
+
+  const handleGalleryPick = async () => {
+    const hasCamera = await requestPhotoPermission();
+    if (!hasCamera) {
+      return;
+    }
     ImagePicker.openPicker({
       width: 500,
       height: 500,
@@ -146,6 +180,12 @@ const MenuAddForm = ({
 
       <View style={styles.line}></View>
       <AlertComponent />
+      <ImagePickermodal
+        isBottomSheetVisible={isBottomSheetVisible}
+        setBottomSheetVisible={setBottomSheetVisible}
+        handleCameraPick={handleCameraPick}
+        handleGalleryPick={handleGalleryPick}
+      />
     </View>
   );
 };

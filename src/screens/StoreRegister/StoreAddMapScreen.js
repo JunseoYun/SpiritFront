@@ -16,6 +16,10 @@ import StoreMapAddScript from '../../components/StoreAddScreen/StoreAddMap/Store
 import {useRoute} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
 import {useToast} from '../../context/ToastContext';
+import {
+  requestLocationPermission,
+  handleLocationError,
+} from '../../hooks/useLocation';
 
 const StoreAddMapScreen = ({navigation}) => {
   const route = useRoute();
@@ -23,6 +27,7 @@ const StoreAddMapScreen = ({navigation}) => {
   const {location, onAddressSelect} = route.params;
   const [centerLatLng, setCenterLatLng] = useState(null);
   const [prevCenterLatLng, setPrevCenterLatLng] = useState(null);
+  const [currentloacation, setCurrentloacation] = useState(null);
   const isProgrammaticPan = useRef(false);
   const {showToast} = useToast();
   const webViewRef = useRef(null);
@@ -32,6 +37,7 @@ const StoreAddMapScreen = ({navigation}) => {
     const fetchSaveLocation = async () => {
       try {
         const currentLocation = await getLocation();
+        setCurrentloacation(currentLocation);
         if (isMounted) {
           if (webViewRef.current) {
             const script = StoreMapAddScript(
@@ -110,23 +116,32 @@ const StoreAddMapScreen = ({navigation}) => {
   const setcenterrefresh = async () => {
     setLoading(true);
     try {
-      if (centerLatLng) {
-        const addressObj = await get_address(
-          centerLatLng.latitude,
-          centerLatLng.longitude,
-        );
+      const hasPermission = requestLocationPermission();
+      if (!hasPermission) {
+        showToast('위치 권한이 거부되었습니다.');
+        return;
+      }
+      const targetCoords = centerLatLng || currentloacation;
 
+      if (targetCoords) {
+        const addressObj = await get_address(
+          targetCoords.latitude,
+          targetCoords.longitude,
+        );
         const addressText = addressObj?.address || '';
+
         if (route.params?.onAddressSelect) {
           route.params.onAddressSelect({
             address: addressText,
-            coords: centerLatLng,
+            coords: targetCoords,
           });
         }
+
         showToast('주소 설정이 완료 되었습니다.');
         navigation.goBack();
       }
     } catch (err) {
+      handleLocationError(err);
       console.error('지도 재설정 중 오류:', err);
     } finally {
       setLoading(false);

@@ -81,6 +81,11 @@ def keystoreProperties = new Properties()
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
+project.ext.envConfigFiles = [
+  devdebug: ".env",
+  prodrelease: ".env.prod",
+  proddebug: ".env.prod"
+]
 
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -92,7 +97,7 @@ android {
         applicationId "com.spiritfront"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 12
+        versionCode 13
         versionName "1"
         resValue "string", "KAKAO_APP_KEY", project.env.get("KAKAO_APP_KEY")
         resValue "string", "KAKAO_APP_SCHEMES", project.env.get("KAKAO_APP_SCHEMES")
@@ -113,18 +118,30 @@ android {
 }
     }
     buildTypes {
-        debug {
-            signingConfig signingConfigs.debug
-        }
-        release {
-            shrinkResources true   // ✅ 리소스 축소 활성화
-            minifyEnabled true 
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.release
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-        }
+    debug {
+        signingConfig signingConfigs.debug
     }
+    release {
+        signingConfig signingConfigs.release
+        shrinkResources true
+        minifyEnabled true
+        proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+    }
+}
+flavorDimensions "version"
+
+  productFlavors {
+    dev {
+        dimension "version"
+        // applicationIdSuffix ".dev"
+        resValue "string", "app_name", "한잔할까_dev"
+  }
+    prod {
+        dimension "version"
+        // applicationIdSuffix ".prod"
+        resValue "string", "app_name", "한잔할까"
+  }
+}
 }
 
 dependencies {
@@ -133,6 +150,7 @@ dependencies {
     implementation "com.kakao.sdk:v2-user:2.20.1"
     implementation "com.kakao.sdk:v2-auth:2.20.1"
     implementation("com.facebook.react:react-android")
+    implementation project(':react-native-config')
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

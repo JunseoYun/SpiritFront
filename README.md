@@ -2,11 +2,12 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 # Getting Started
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+> **Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
 
 ## Version Controll
+
 ```bash
-#node 
+#node
 18.20.2
 
 #npm
@@ -38,7 +39,6 @@ Build version 16C5032a
 1.15.2
 
 ```
-
 
 ## Step 1: Start the Metro Server
 
@@ -113,3 +113,24 @@ To learn more about React Native, take a look at the following resources:
 - [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
 - [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
 - [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+
+  개발 서버 빌드 (debug)
+  npm run android => "react-native run-android --mode=devDebug"
+
+  개발 서버 빌드 (release)
+  npm run android-release => "react-native run-android --mode=release",
+
+  운영 서버 빌드 (debug)
+  npm run android-prod-debug => "set ENVFILE=.env.prod && cd android && gradlew.bat installProdDebug && cd .. && adb shell monkey -p com. spiritfront -c android.intent.category.LAUNCHER 1",
+
+  운영 서버 빌드 (release)
+  npm run android-prod-release => "set ENVFILE=.env.prod && cd android && gradlew.bat installProdRelease && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
+
+  운영 서버 빌드 APK(debug)
+  npm run build-android-prod-debug => "cd ./android && set ENVFILE=.env.prod && gradlew.bat assembleProdDebug && cd ../",
+
+  운영 서버 빌드 APK(release)
+  npm run build-android-prod-release => "cd ./android && set ENVFILE=.env.prod && gradlew.bat assembleProdRelease && cd ../",
+
+  운영 서버 App bundle (.abb)
+  npm run bundle-prod-release => "cd android && set ENVFILE=.env.prod && gradlew.bat bundleProdRelease && cd ../"
