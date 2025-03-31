@@ -9,6 +9,8 @@
     "test": "jest",
     "android": "react-native run-android --mode=devDebug",
     "android-release": "react-native run-android --mode=release",
+    "android-release=mac": "cd android && ./gradlew installProdRelease && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
+    "android-prod-debug-mac": "ENVFILE=.env.prod && cd android && ./gradlew installProdDebug && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
     "android-prod-debug": "set ENVFILE=.env.prod && cd android && gradlew.bat installProdDebug && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
     "android-prod-release": "set ENVFILE=.env.prod && cd android && gradlew.bat installProdRelease && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
     "build-android-prod-debug": "cd ./android && set ENVFILE=.env.prod && gradlew.bat assembleProdDebug && cd ../",

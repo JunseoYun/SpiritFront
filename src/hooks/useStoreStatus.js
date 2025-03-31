@@ -95,7 +95,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
 
       let now = new Date();
       let now22 = new Date();
-      now22.setHours(now22.getHours() + 10);
+      now22.setHours(now22.getHours() + 13);
       let currentDay = new Intl.DateTimeFormat('en-US', {
         weekday: 'long',
         timeZone: 'Asia/Seoul',
@@ -122,8 +122,9 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       }
 
       let yesterdayInfo = operationInfoDtos.find((info, index, array) => {
-        let yesterday = new Date();
+        let yesterday = new Date(now);
         yesterday.setDate(now.getDate() - 1);
+        yesterday.setHours(yesterday.getHours() - 9);
         let yesterdayDay = new Intl.DateTimeFormat('en-US', {
           weekday: 'long',
           timeZone: 'Asia/Seoul',
@@ -135,8 +136,9 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       });
 
       let nextdayInfo = operationInfoDtos.find((info, index, array) => {
-        let nextday = new Date();
-        nextday.setDate(now.getDate());
+        let nextday = new Date(now);
+        nextday.setDate(now.getDate() + 1);
+        nextday.setHours(nextday.getHours() - 9);
         let nextdayDay = new Intl.DateTimeFormat('en-US', {
           weekday: 'long',
           timeZone: 'Asia/Seoul',
@@ -182,7 +184,6 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         breakEndDate.setHours(breakEndDate.getHours() + 9);
         setBreakend(breakEndTime.slice(0, 5));
       }
-
       // 현재 시간이 00:00~closeTime (예: 02:00) 구간이라면, 전날 정보를 유지해야 함
       if (openHours && yesterdayInfo && !yesterdayInfo.isClosed) {
         let {closeTime: yCloseTime} = yesterdayInfo;
@@ -212,6 +213,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
 
       setStarttime(openTime.slice(0, 5));
       setEndtime(closeTime.slice(0, 5));
+
       if (now >= openDate && now <= closeDate) {
         if (
           breakStartDate &&
@@ -232,14 +234,18 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         setIsBreak(false);
         setClosed(false);
 
-        if (yesterdayInfo == todayInfo) {
+        if (yesterdayInfo == todayInfo || yesterdayInfo !== todayInfo) {
           if (!nextdayInfo.isClosed) {
             setStarttime(nextdayInfo.openTime.slice(0, 5));
           } else {
             setNextclosed(true);
           }
         } else {
-          setStarttime(todayInfo.openTime.slice(0, 5));
+          if (!nextdayInfo.isClosed) {
+            setStarttime(todayInfo.openTime.slice(0, 5));
+          } else {
+            setNextclosed(true);
+          }
         }
       }
     };
