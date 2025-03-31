@@ -27,6 +27,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useRoute} from '@react-navigation/native';
 import AlcoholInput from '../../../components/StoreAlcoholScreen/AlcoholInput';
 import RptAlcoholPicker from '../../../components/AlcoholAddScreen/RptAlcoholPicker';
+import {
+  requestPhotoPermission,
+  requestCameraPermission,
+} from '../../../hooks/usePhotopermis';
+import ImagePickermodal from '../../../hooks/ImagePickermodal';
 
 const AlcoholUpdateScreen = ({navigation}) => {
   const route = useRoute();
@@ -40,6 +45,7 @@ const AlcoholUpdateScreen = ({navigation}) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageDeleted, setIsImageDeleted] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -86,16 +92,45 @@ const AlcoholUpdateScreen = ({navigation}) => {
   };
 
   const selectImage = () => {
+    setBottomSheetVisible(true); // 바텀시트 열기
+  };
+
+  const handleCameraPick = async () => {
+    const hasCamera = await requestCameraPermission();
+    if (!hasCamera) {
+      return;
+    }
+    ImagePicker.openCamera({
+      width: 500,
+      height: 500,
+      cropping: true,
+      mediaType: 'photo',
+    })
+      .then(image => {
+        setSelectedImage(image);
+        setAlcoholImage(image.path);
+        setIsImageDeleted(false);
+      })
+      .catch(error => {});
+  };
+
+  const handleGalleryPick = async () => {
+    const hasCamera = await requestPhotoPermission();
+    if (!hasCamera) {
+      return;
+    }
     ImagePicker.openPicker({
       width: 500,
       height: 500,
       cropping: true,
       mediaType: 'photo',
-    }).then(image => {
-      setSelectedImage(image);
-      setAlcoholImage(image.path);
-      setIsImageDeleted(false);
-    });
+    })
+      .then(image => {
+        setSelectedImage(image);
+        setAlcoholImage(image.path);
+        setIsImageDeleted(false);
+      })
+      .catch(error => {});
   };
 
   const handleDeleteImage = () => {
@@ -308,6 +343,12 @@ const AlcoholUpdateScreen = ({navigation}) => {
               onTypeChange={setAlcoholType}
             />
           </ScrollView>
+          <ImagePickermodal
+            isBottomSheetVisible={isBottomSheetVisible}
+            setBottomSheetVisible={setBottomSheetVisible}
+            handleCameraPick={handleCameraPick}
+            handleGalleryPick={handleGalleryPick}
+          />
           <AlertComponent />
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>

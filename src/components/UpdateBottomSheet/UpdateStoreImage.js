@@ -15,6 +15,11 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
+import {
+  requestPhotoPermission,
+  requestCameraPermission,
+} from '../../hooks/usePhotopermis';
+import ImagePickermodal from '../../hooks/ImagePickermodal';
 
 const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -25,6 +30,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const [hasmainImg, setHasmainImg] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingimg, setLoadingimg] = useState(false);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const {showToast} = useToast();
 
   useEffect(() => {
@@ -79,29 +85,56 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
     onCancel();
   };
 
-  const selectImage = async () => {
-    if (addedImages.length + serverImages.length >= 5) {
-      showToast('이미지는 최대 5개까지 추가할 수 있습니다.');
+  const handleCameraPick = async () => {
+    const hasCamera = await requestCameraPermission();
+    if (!hasCamera) {
       return;
     }
+    setLoading(true);
+    try {
+      const image = await ImagePicker.openCamera({
+        width: 400,
+        height: 300,
+        cropping: true,
+        mediaType: 'photo',
+      });
+      setAddedImages(prev => [...prev, image]);
+      showToast('이미지 추가 완료');
+    } catch (er) {
+      console.log('Picker Error: ', er);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleGalleryPick = async () => {
+    const hasCamera = await requestPhotoPermission();
+    if (!hasCamera) {
+      return;
+    }
     setLoading(true);
     try {
       const image = await ImagePicker.openPicker({
         width: 400,
         height: 300,
-        mediaType: 'photo',
         cropping: true,
+        mediaType: 'photo',
       });
       setAddedImages(prev => [...prev, image]);
       showToast('이미지 추가 완료');
-    } catch (error) {
-      if (error.code !== 'E_PICKER_CANCELLED') {
-        showToast('이미지 추가 중 오류 발생');
-      }
+    } catch (er) {
+      console.log('Picker Error: ', er);
     } finally {
       setLoading(false);
     }
+  };
+
+  const selectImage = () => {
+    if (addedImages.length + serverImages.length >= 5) {
+      showToast('이미지는 최대 5개까지 추가할 수 있습니다.');
+      return;
+    }
+    setBottomSheetVisible(true); // 바텀시트 열기
   };
 
   const removeServerImage = index => {
@@ -209,6 +242,12 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
           </Pressable>
         )}
         <AlertComponent />
+        <ImagePickermodal
+          isBottomSheetVisible={isBottomSheetVisible}
+          setBottomSheetVisible={setBottomSheetVisible}
+          handleCameraPick={handleCameraPick}
+          handleGalleryPick={handleGalleryPick}
+        />
       </BottomSheetScrollView>
       <ActionButtons onCancel={handleCancel} onSave={handleSave} />
       {(loading || !loadingimg) && (

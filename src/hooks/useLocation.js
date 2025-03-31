@@ -70,7 +70,7 @@ export const fetchLocation = () => {
   });
 };
 
-const handleLocationError = error => {
+export const handleLocationError = error => {
   if (error.code === 1) {
     const hasPermission = requestLocationPermission();
     if (!hasPermission) {

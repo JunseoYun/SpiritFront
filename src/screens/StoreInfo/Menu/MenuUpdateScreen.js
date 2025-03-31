@@ -27,6 +27,12 @@ import forbiddenWords from '../../../hooks/forbiddenWords';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useRoute} from '@react-navigation/native';
 import MenuInput from '../../../components/StoreMenuScreen/MenuInput';
+import {
+  requestPhotoPermission,
+  requestCameraPermission,
+} from '../../../hooks/usePhotopermis';
+import ImagePickermodal from '../../../hooks/ImagePickermodal';
+
 const MenuUpdateScreen = ({navigation}) => {
   const route = useRoute();
   const {menu, storeId} = route.params;
@@ -42,6 +48,7 @@ const MenuUpdateScreen = ({navigation}) => {
   const [menuNamelength, setMenuNamelength] = useState(false);
   const [menuPricelength, setMenuPricelength] = useState(false);
   const [menuContentlength, setMenuContentlength] = useState(false);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
@@ -112,6 +119,33 @@ const MenuUpdateScreen = ({navigation}) => {
   };
 
   const selectImage = () => {
+    setBottomSheetVisible(true); // 바텀시트 열기
+  };
+
+  const handleCameraPick = async () => {
+    const hasCamera = await requestCameraPermission();
+    if (!hasCamera) {
+      return;
+    }
+    ImagePicker.openCamera({
+      width: 500,
+      height: 500,
+      cropping: true,
+      mediaType: 'photo',
+    })
+      .then(image => {
+        setSelectedImage(image);
+        setMenuImage(image.path); // ✅ UI 미리보기 즉시 반영
+        setIsImageDeleted(false); // ✅ 삭제 상태 해제
+      })
+      .catch(error => {});
+  };
+
+  const handleGalleryPick = async () => {
+    const hasCamera = await requestPhotoPermission();
+    if (!hasCamera) {
+      return;
+    }
     ImagePicker.openPicker({
       width: 500,
       height: 500,
@@ -340,7 +374,12 @@ const MenuUpdateScreen = ({navigation}) => {
               </View>
             </View>
           </ScrollView>
-
+          <ImagePickermodal
+            isBottomSheetVisible={isBottomSheetVisible}
+            setBottomSheetVisible={setBottomSheetVisible}
+            handleCameraPick={handleCameraPick}
+            handleGalleryPick={handleGalleryPick}
+          />
           {/* 알림창 */}
           <AlertComponent />
         </KeyboardAvoidingView>

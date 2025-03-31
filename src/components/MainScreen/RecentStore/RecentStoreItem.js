@@ -114,7 +114,7 @@ const RecentStoreItem = ({store, navigation, location}) => {
         </View>
         <View style={styles.storeViewInfo}>
           {store?.isAlwaysOpen == true ? (
-            <Text style={styles.storeTimeInfo}>24시간 영업</Text>
+            <Text style={styles.store24TimeInfo}>24시간 영업</Text>
           ) : store?.isAlwaysOpen == false && closed ? (
             <Text style={styles.storeTimeInfo}>금일 휴무</Text>
           ) : (
@@ -217,6 +217,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontSize: 13,
     color: '#BA5554',
+    fontWeight: 'bold',
+  },
+  store24TimeInfo: {
+    marginTop: 5,
+    fontSize: 13,
+    color: 'green',
     fontWeight: 'bold',
   },
   storeSubInfo: {

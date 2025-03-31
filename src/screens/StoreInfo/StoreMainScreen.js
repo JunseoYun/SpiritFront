@@ -281,6 +281,7 @@ const StoreMainScreen = ({navigation}) => {
         await fetchStoreDataOnly();
       } catch (error) {
         handleError();
+        console.log(error);
       }
     };
 
