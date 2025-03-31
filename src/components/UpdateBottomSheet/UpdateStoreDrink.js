@@ -7,6 +7,7 @@ import {
   Pressable,
   TouchableOpacity,
   ScrollView,
+  FlatList,
 } from 'react-native';
 import ActionButtons from './ActionButtons';
 
@@ -34,7 +35,7 @@ const UpdateStoreDrink = ({
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const ensureTwoOptions = () => {
-    if (updatedValue.length < 2) {
+    if (updatedValue.length < 3) {
       const additionalValue = {type: '', price: 0};
       setUpdatedValue([...updatedValue, additionalValue]);
     }
@@ -51,7 +52,7 @@ const UpdateStoreDrink = ({
   return (
     <View style={styles.bottomSheetContent}>
       <Text style={styles.title}>대표 주종</Text>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false} style={{flex: 1}}>
         {updatedValue.map((drink, index) => (
           <View key={index} style={styles.alcoholRow}>
             {/* 축소 상태 */}
@@ -133,9 +134,12 @@ const UpdateStoreDrink = ({
                 </View>
 
                 <TouchableOpacity
-                  style={styles.saveButton}
+                  style={[
+                    styles.saveButton,
+                    // updatedValue.length - 1 === index && {marginBottom: 100},
+                  ]}
                   onPress={() => toggleExpand(index)}>
-                  <Text style={styles.saveButtonText}>완료</Text>
+                  <Text style={[styles.saveButtonText]}>완료</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -156,11 +160,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F7F7',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: 50,
+    paddingBottom: 100,
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     marginBottom: 20,
     textAlign: 'center',
     color: '#333',
@@ -173,8 +177,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#181A1A',
     marginBottom: 10,
   },
   alcoholList: {
@@ -182,26 +186,30 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 12,
     justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 14,
   },
   alcoholButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#F2F2F2',
-    borderRadius: 8,
-    minWidth: '30%',
+
+    borderRadius: 7,
+    minWidth: '23%',
     alignItems: 'center',
   },
   alcoholText: {
-    color: '#888',
+    // color: '#888',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-Regular',
+    color: '#767676',
   },
   selectedAlcohol: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#80D2F4',
   },
   selectedAlcoholText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Medium',
   },
   priceContainer: {
     marginTop: 20,
@@ -243,7 +251,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginTop: 20,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#5CCEFF',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,

@@ -18,7 +18,11 @@ const UpdateStoreCategory = ({
 }) => {
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>카테고리* 최대 3개</Text>
+      <View style={{flexDirection: 'row', alignItems: 'flex-end'}}>
+        <Text style={styles.title}>카테고리* </Text>
+
+        <Text style={styles.subTitle}>최대 3개</Text>
+      </View>
       <ScrollView>
         <View style={styles.categoryContainer}>
           {innerCategories.map((category, index) => (
@@ -58,14 +62,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F7F7',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+
     paddingBottom: 50,
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     marginBottom: 20,
+    color: '#181A1A',
+  },
+  subTitle: {
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    marginBottom: 20,
+    color: '#999',
   },
   categoryContainer: {
+    marginTop: 5,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
@@ -74,12 +87,14 @@ const styles = StyleSheet.create({
     width: '18%',
     alignItems: 'center',
     marginBottom: 20,
-    paddingVertical: 5,
+    paddingVertical: 7,
   },
   selectedCategory: {
-    borderWidth: 2,
-    borderColor: '#10BEFB',
-    borderRadius: 10,
+    // borderWidth: 2,
+    // // borderColor: '#10BEFB',
+    borderRadius: 12,
+
+    backgroundColor: '#ABE3FA',
   },
   categoryImage: {
     width: 40,

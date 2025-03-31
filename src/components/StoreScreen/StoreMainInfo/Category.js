@@ -16,9 +16,14 @@ const Category = ({handleEdit, storedata, isUpdate, translateCategory}) => {
           }>
           {Array.isArray(storedata?.categories) &&
             storedata?.categories.map((category, index) => (
-              <Text key={index} style={styles.Storesubtitle}>
-                {translateCategory(category)}
-              </Text>
+              <View key={index} style={styles.categoryWrapper}>
+                <Text style={styles.Storesubtitle}>
+                  {translateCategory(category)}
+                </Text>
+                {index < storedata.categories.length - 1 && (
+                  <View style={styles.verticalLine} />
+                )}
+              </View>
             ))}
           <View style={{right: 30, position: 'absolute', alignSelf: 'center'}}>
             <Entypo name="chevron-small-right" size={25} color="#333" />
@@ -44,13 +49,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 18,
+    marginTop: 20,
   },
   Storesubtitle: {
     fontSize: 15,
-    fontWeight: '500',
-    color: '#5F5F5F',
+    color: '#999',
     textAlign: 'center',
     marginRight: 7,
+    fontFamily: 'Pretendard-Regular',
   },
 });
 

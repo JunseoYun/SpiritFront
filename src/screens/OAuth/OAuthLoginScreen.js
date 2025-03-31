@@ -235,13 +235,13 @@ const styles = StyleSheet.create({
   Logo: {
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 60,
-    color: '#16BBFF',
+    color: '#5CCEFF',
   },
   subText: {
     fontSize: 18,
-    color: '#333',
-    fontWeight: 'bold',
+    color: '#181A1A',
     textAlign: 'center',
+    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
     marginTop: 10,
     lineHeight: 30,
   },
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#333',
     marginHorizontal: 3,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-SemiBold', // 커스텀 폰트 적용
   },
   kakaoButtonContainer: {
     width: 340,
@@ -320,8 +320,9 @@ const styles = StyleSheet.create({
   googleText: {
     color: '#333',
     fontSize: 16,
-    fontWeight: '600',
     marginHorizontal: 50,
+
+    fontFamily: 'Pretendard-SemiBold', // 커스텀 폰트 적용
   },
   appleLogo: {
     width: 50,
@@ -332,9 +333,8 @@ const styles = StyleSheet.create({
   appleText: {
     color: '#333',
     fontSize: 16,
-    fontWeight: '600',
-
     paddingRight: 10,
+    fontFamily: 'Pretendard-SemiBold', // 커스텀 폰트 적용
   },
 });
 

@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 16,
-    fontWeight: 500,
+    fontFamily: 'Pretendard-SemiBold',
     marginTop: 10,
     marginBottom: 3,
   },
@@ -253,12 +253,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 3,
-    color: '#999',
+    color: '#888',
+    fontFamily: 'Pretendard-Regular',
+    lineHeight: 18,
   },
   subtext: {
     width: '95%',
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Regular',
     marginBottom: 3,
     color: '#999',
     alignSelf: 'flex-end',

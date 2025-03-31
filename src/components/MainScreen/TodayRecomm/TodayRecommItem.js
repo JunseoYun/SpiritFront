@@ -1,8 +1,9 @@
 import React from 'react';
-import {View, ImageBackground, StyleSheet, Text, Pressable} from 'react-native';
+import {View, StyleSheet, Text, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-const TodayRecommItem = ({store, category, location, navigation}) => {
+const TodayRecommItem = ({store, navigation}) => {
+  // console.log(store);
   return (
     <Pressable
       onPress={() =>
@@ -12,6 +13,31 @@ const TodayRecommItem = ({store, category, location, navigation}) => {
         })
       }
       style={styles.container}>
+      <View style={styles.drinkView}>
+        <Text
+          style={[
+            styles.drinkText,
+            {color: '#43A047', borderColor: '#43A047'},
+          ]}>
+          소주 5000
+        </Text>
+        <View style={styles.division} />
+        <Text
+          style={[
+            styles.drinkText,
+            {color: '#F9A825', borderColor: '#F9A825'},
+          ]}>
+          맥주 5000
+        </Text>
+        <View style={styles.division} />
+        <Text
+          style={[
+            styles.drinkText,
+            {color: '#616161', borderColor: '#616161'},
+          ]}>
+          막걸리 5000
+        </Text>
+      </View>
       <FastImage
         style={styles.imageBackground}
         source={
@@ -22,14 +48,12 @@ const TodayRecommItem = ({store, category, location, navigation}) => {
         resizeMode={FastImage.resizeMode.cover}>
         <View style={styles.overlay}>
           <View style={styles.storeContainer}>
-            <View style={styles.storeNameView}>
-              <Text
-                style={styles.storeName}
-                numberOfLines={1}
-                ellipsizeMode="tail">
-                {store.name}
-              </Text>
-            </View>
+            <Text
+              style={styles.storeName}
+              numberOfLines={3}
+              ellipsizeMode="tail">
+              {store.name}
+            </Text>
           </View>
         </View>
       </FastImage>
@@ -40,49 +64,63 @@ const TodayRecommItem = ({store, category, location, navigation}) => {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: 200,
+    height: 230,
     marginVertical: 10,
-    borderRadius: 10,
+    // borderRadius: 10,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   imageBackground: {
     flex: 1,
     justifyContent: 'space-between',
+    padding: 10,
+    borderRadius: 10,
   },
-  imageStyle: {
-    resizeMode: 'cover',
-  },
+
   overlay: {
     flex: 1,
-    flexDirection: 'row',
-  },
-  storeContainer: {
     width: '100%',
-    borderRadius: 10,
-    alignSelf: 'flex-end',
+    justifyContent: 'space-between',
+    position: 'relative', // 🔹 기준 위치로 사용
   },
+  storeContainer: {},
   storeNameView: {
-    backgroundColor: '#fff',
-    alignSelf: 'flex-end',
-    borderRadius: 10,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    marginBottom: 10,
-    marginRight: 10,
-    shadowColor: '#000',
-    shadowOffset: {width: 2, height: 2},
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 3,
+    backgroundColor: '#333',
   },
   storeName: {
+    color: '#fff',
+    fontSize: 24,
+    fontFamily: 'Pretendard-Bold',
+    lineHeight: 26,
+  },
+  likeView: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+
+    padding: 7,
+    borderRadius: 30,
+  },
+  likeIcon: {
+    alignSelf: 'flex-end',
+  },
+  drinkView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 7,
+    marginBottom: 3,
+  },
+  drinkText: {
     color: '#333',
-    fontSize: 15,
-    fontWeight: 'bold',
-    paddingVertical: 7,
-    paddingHorizontal: 10,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    borderWidth: 1,
+    padding: 4,
+    borderRadius: 7,
+  },
+  division: {
+    height: 12,
+    width: 1.5,
+
+    marginHorizontal: 2,
   },
 });
 

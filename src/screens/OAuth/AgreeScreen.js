@@ -145,24 +145,26 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   titleNameText: {
-    color: '#16BBFF',
+    color: '#5CCEFF',
     fontSize: 30,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 3,
     marginRight: 1,
   },
   titleText: {
     color: '#333',
     fontSize: 28,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 3,
   },
   subText: {
-    color: '#999',
+    color: '#888',
     fontSize: 15,
     marginBottom: 3,
     marginTop: 10,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+
+    fontFamily: 'Pretendard-Medium',
   },
   allAgreeView: {
     marginTop: 30,
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
   allAgreeText: {
     fontSize: 20,
     color: '#333',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   agreeView: {
     marginTop: 20,
@@ -203,13 +205,13 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   checkedBox: {
-    backgroundColor: '#16BBFF',
-    borderColor: '#16BBFF',
+    backgroundColor: '#5CCEFF',
+    borderColor: '#5CCEFF',
   },
   nextButton: {
     marginTop: 40,
     marginHorizontal: 20,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#39C4FF',
     borderRadius: 5,
     paddingVertical: 15,
     alignItems: 'center',
@@ -220,7 +222,7 @@ const styles = StyleSheet.create({
   nextButtonText: {
     color: '#FFF',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

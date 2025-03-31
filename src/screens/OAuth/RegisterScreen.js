@@ -155,7 +155,7 @@ const RegisterScreen = ({route, navigation}) => {
           placeholder="닉네임을 입력하세요"
           placeholderTextColor="#999"
         />
-        {nicknameCheck && <Entypo name="check" size={25} color="#16BBFF" />}
+        {nicknameCheck && <Entypo name="check" size={25} color="#5CCEFF" />}
       </View>
 
       {/* 비속어 경고 메시지 */}
@@ -215,16 +215,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   titleNameText: {
-    color: '#16BBFF',
+    color: '#5CCEFF',
     fontSize: 30,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontFamily: 'Pretendard-Medium',
     marginBottom: 3,
     marginRight: 1,
   },
   titleText: {
     color: '#333',
     fontSize: 28,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontFamily: 'Pretendard-Medium',
     marginBottom: 3,
   },
   nicknameInputView: {
@@ -243,6 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     height: 50,
     color: '#333',
+    fontFamily: 'Pretendard-Regular',
     flex: 1,
   },
   errorInputView: {
@@ -254,13 +255,15 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#FF0000',
     marginHorizontal: 20,
+    fontFamily: 'Pretendard-Regular',
     marginTop: 10,
     fontSize: 14,
+    paddingLeft: 4,
   },
   checkButton: {
     marginTop: 30,
     marginHorizontal: 20,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#39C4FF',
     borderRadius: 8,
     paddingVertical: 15,
     alignItems: 'center',
@@ -273,7 +276,7 @@ const styles = StyleSheet.create({
   submitButton: {
     marginTop: 30,
     marginHorizontal: 20,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#39C4FF',
     borderRadius: 8,
     paddingVertical: 15,
     alignItems: 'center',

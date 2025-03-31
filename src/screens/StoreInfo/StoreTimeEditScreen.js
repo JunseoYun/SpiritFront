@@ -186,6 +186,13 @@ const StoreTimeEditScreen = ({navigation, route}) => {
       return result;
     };
 
+    const formatHourMinute = (hour, minute) => {
+      const h = parseInt(hour, 10);
+      const adjustedHour =
+        h >= 24 ? (h - 24).toString().padStart(2, '0') : hour.padStart(2, '0');
+      return `${adjustedHour}:${minute.padStart(2, '0')}`;
+    };
+
     const buildBreakMap = isSame => {
       const result = {};
       days.forEach(({value: day}) => {
@@ -227,14 +234,16 @@ const StoreTimeEditScreen = ({navigation, route}) => {
       return {
         dayOfWeek: upperCaseDay,
         isClosed: false,
-        openTime: `${op.openHour}:${op.openMinute}`,
-        closeTime: `${op.closedHour}:${op.closedMinute}`,
+        openTime: formatHourMinute(op.openHour, op.openMinute),
+        closeTime: formatHourMinute(op.closedHour, op.closedMinute),
         breakStartTime:
           br.startHour && br.startMinute
-            ? `${br.startHour}:${br.startMinute}`
+            ? formatHourMinute(br.startHour, br.startMinute)
             : null,
         breakEndTime:
-          br.endHour && br.endMinute ? `${br.endHour}:${br.endMinute}` : null,
+          br.endHour && br.endMinute
+            ? formatHourMinute(br.endHour, br.endMinute)
+            : null,
       };
     });
 

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
+import FastImage from 'react-native-fast-image';
 
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
@@ -105,6 +106,7 @@ const TodayRecomm = ({
       <View style={styles.todayPhrasesView}>
         <Text style={styles.todayReason}>{recommReason}</Text>
       </View>
+
       {recommStores && (
         <FlatList
           ref={listRef}
@@ -147,7 +149,7 @@ const TodayRecomm = ({
         />
       )}
       {/* 페이지네이션 점 표시 */}
-      {recommStores.length > 1 && (
+      {recommStores.length > 1 ? (
         <View style={styles.pagination}>
           {recommStores.map((_, index) => (
             <View
@@ -159,12 +161,15 @@ const TodayRecomm = ({
             />
           ))}
         </View>
+      ) : (
+        <View style={styles.pagination} />
       )}
       {recommStores.length === 0 && (
         <View style={styles.noDataView}>
-          <Image
+          <FastImage
             source={require('../../../assets/AppLogoNoback.png')}
             style={styles.imageStyle}
+            resizeMode={FastImage.resizeMode.contain}
           />
           <Text style={styles.noDataText}>
             추천 카테고리에 등록된 술집이 없어요
@@ -179,12 +184,14 @@ const styles = StyleSheet.create({
   todayPhrasesView: {
     marginLeft: 20,
     alignContent: 'center',
+    marginTop: 10,
   },
   todayReason: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#555',
-    marginTop: 5,
+    fontSize: 16,
+    fontFamily: 'Pretendard-Medium',
+    color: '#888',
+
+    paddingLeft: 4,
   },
   slideItem: {
     width: ITEM_WIDTH,
@@ -204,19 +211,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 0,
-    marginBottom: 0,
+    marginTop: -25,
+    marginBottom: 20,
   },
   dot: {
     width: 6,
     height: 6,
-    borderRadius: 10,
-    backgroundColor: '#E0E0E0',
+    borderRadius: 30,
+    backgroundColor: '#BDBDBD',
     marginHorizontal: 4,
   },
   activeDot: {
-    backgroundColor: '#999',
-    width: 6,
+    backgroundColor: '#fff',
+    width: 12,
     height: 6,
   },
   noDataView: {
@@ -235,7 +242,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#777',
     marginTop: 10,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Regular',
   },
   imageStyle: {
     width: '100%',

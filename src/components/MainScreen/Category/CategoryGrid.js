@@ -4,33 +4,38 @@ import {View, Pressable, Image, Text, StyleSheet} from 'react-native';
 const CategoryGrid = ({onPress, style}) => {
   return (
     <>
-      {categories
-        .reduce((acc, {source, text}, index) => {
-          const rowIndex = Math.floor(index / 5);
-          if (!acc[rowIndex]) acc[rowIndex] = [];
-          acc[rowIndex].push(
-            <Pressable
-              key={text}
-              onPress={() => onPress(index)}
-              style={styles.categoryItem}>
-              <View style={styles.iconWrapper}>
-                <Image source={source} style={styles.icon} />
-              </View>
-              <Text style={styles.text}>{text}</Text>
-            </Pressable>,
-          );
-          return acc;
-        }, [])
-        .map((row, rowIndex) => (
-          <View key={rowIndex} style={[styles.categoryRow, style]}>
-            {row}
-          </View>
-        ))}
+      <View style={styles.contanier}>
+        {categories
+          .reduce((acc, {source, text}, index) => {
+            const rowIndex = Math.floor(index / 5);
+            if (!acc[rowIndex]) acc[rowIndex] = [];
+            acc[rowIndex].push(
+              <Pressable
+                key={text}
+                onPress={() => onPress(index)}
+                style={styles.categoryItem}>
+                <View style={styles.iconWrapper}>
+                  <Image source={source} style={styles.icon} />
+                </View>
+                <Text style={styles.text}>{text}</Text>
+              </Pressable>,
+            );
+            return acc;
+          }, [])
+          .map((row, rowIndex) => (
+            <View key={rowIndex} style={[styles.categoryRow, style]}>
+              {row}
+            </View>
+          ))}
+      </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
+  contanier: {
+    paddingHorizontal: 8,
+  },
   categoryItem: {
     alignItems: 'center',
     marginHorizontal: 8,
@@ -38,15 +43,15 @@ const styles = StyleSheet.create({
   iconWrapper: {
     width: 50,
     height: 50,
-    borderRadius: 25, // 완전한 원형
+    borderRadius: 17, // 완전한 원형
     backgroundColor: '#f5f5f5', // 부드러운 배경색
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3, // Android 그림자
+    // shadowColor: '#000',
+    // shadowOffset: {width: 0, height: 2},
+    // shadowOpacity: 0.1,
+    // shadowRadius: 5,
+    // elevation: 1, // Android 그림자
   },
   icon: {
     width: 30,
@@ -54,11 +59,12 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   text: {
-    marginTop: 8,
+    marginTop: 5,
     fontSize: 12,
-    fontWeight: '500',
-    color: '#333',
+    color: '#181a1a',
     textAlign: 'center',
+    fontFamily: 'Pretendard-Medium',
+    marginHorizontal: 2,
   },
   categoryRow: {
     flexDirection: 'row',

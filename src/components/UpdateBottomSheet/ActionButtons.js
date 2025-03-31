@@ -24,17 +24,17 @@ const styles = StyleSheet.create({
     width: '49%',
     borderRadius: 7,
     alignItems: 'center',
-    backgroundColor: '#E5E5E5',
+    backgroundColor: '#EDEDED',
   },
   saveButton: {
     width: '49%',
     borderRadius: 7,
-    backgroundColor: '#10BEFB',
+    backgroundColor: '#5CCEFF',
     alignItems: 'center',
   },
   buttonText: {
     fontSize: 20,
     padding: 12,
-    color: '#10BEFB',
+    color: '#39C4FF',
   },
 });
