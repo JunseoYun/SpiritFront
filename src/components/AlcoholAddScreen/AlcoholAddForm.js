@@ -31,10 +31,11 @@ const AlcoholAddForm = ({
       return;
     }
     ImagePicker.openCamera({
-      width: 500,
-      height: 500,
+      width: 1024,
+      height: 1024,
       cropping: true,
       mediaType: 'photo',
+      quality: 1,
     })
       .then(image => {
         handleAlcoholChange(image, index, 'imageUri');
@@ -50,10 +51,11 @@ const AlcoholAddForm = ({
       return;
     }
     ImagePicker.openPicker({
-      width: 500,
-      height: 500,
+      width: 1024,
+      height: 1024,
       cropping: true,
       mediaType: 'photo',
+      quality: 1,
     })
       .then(image => {
         handleAlcoholChange(image, index, 'imageUri');

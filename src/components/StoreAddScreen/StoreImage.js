@@ -29,10 +29,11 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
     const hasCamera = await requestCameraPermission();
     if (!hasCamera) return;
     ImagePicker.openCamera({
-      width: 400,
-      height: 300,
+      width: 1024,
+      height: 768,
       cropping: true,
       mediaType: 'photo',
+      quality: 1,
     })
       .then(image => {
         setImage([...images, image.path]);
@@ -48,12 +49,14 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
     if (!hasCamera) return;
 
     ImagePicker.openPicker({
-      width: 400,
-      height: 300,
+      width: 1024,
+      height: 768,
       cropping: true,
       mediaType: 'photo',
+      quality: 1,
     })
       .then(image => {
+        console.log(image);
         setImage([...images, image.path]);
         setImageUris([...imageUris, image]);
       })

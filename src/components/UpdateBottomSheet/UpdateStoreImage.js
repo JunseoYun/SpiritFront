@@ -93,10 +93,11 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
     setLoading(true);
     try {
       const image = await ImagePicker.openCamera({
-        width: 400,
-        height: 300,
+        width: 1024,
+        height: 768,
         cropping: true,
         mediaType: 'photo',
+        quality: 1,
       });
       setAddedImages(prev => [...prev, image]);
       showToast('이미지 추가 완료');
@@ -115,10 +116,11 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
     setLoading(true);
     try {
       const image = await ImagePicker.openPicker({
-        width: 400,
-        height: 300,
+        width: 1024,
+        height: 768,
         cropping: true,
         mediaType: 'photo',
+        quality: 1,
       });
       setAddedImages(prev => [...prev, image]);
       showToast('이미지 추가 완료');
