@@ -27,7 +27,6 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const [serverImages, setServerImages] = useState([]);
   const [addedImages, setAddedImages] = useState([]);
   const [deletedImages, setDeletedImages] = useState([]);
-  const [hasmainImg, setHasmainImg] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingimg, setLoadingimg] = useState(false);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
@@ -58,17 +57,14 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
     setUpdatedImgValue({
       addedImages,
       deletedImages,
-      hasmainImg,
     });
-  }, [addedImages, deletedImages, hasmainImg]);
+  }, [addedImages, deletedImages]);
 
   const handleSave = () => {
     setUpdatedImgValue({
       addedImages,
       deletedImages,
-      hasmainImg,
     });
-    setHasmainImg(false);
     setTimeout(() => {
       onSave();
     }, 100);
@@ -81,7 +77,6 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
     setAddedImages([]);
     setDeletedImages([]);
     setAllImages([]);
-    setHasmainImg(false);
     onCancel();
   };
 

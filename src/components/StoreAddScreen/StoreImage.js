@@ -56,7 +56,6 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
       quality: 1,
     })
       .then(image => {
-        console.log(image);
         setImage([...images, image.path]);
         setImageUris([...imageUris, image]);
       })
