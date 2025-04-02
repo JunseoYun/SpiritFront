@@ -75,6 +75,7 @@ yarn-error.log
 # Environment files
 .env
 .env.prod
+.env.dev
 
 releasekey.pem
 

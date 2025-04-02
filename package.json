@@ -9,13 +9,15 @@
     "test": "jest",
     "android": "react-native run-android --mode=devDebug",
     "android-release": "react-native run-android --mode=release",
-    "android-release=mac": "cd android && ./gradlew installProdRelease && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
-    "android-prod-debug-mac": "ENVFILE=.env.prod && cd android && ./gradlew installProdDebug && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
+    "android-release-mac": "cd android && ./gradlew installProdRelease && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
+    "android-prod-debug-mac": "sh -c 'ENVFILE=.env.prod ./android/gradlew -p android installProdDebug && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1'",
     "android-prod-debug": "set ENVFILE=.env.prod && cd android && gradlew.bat installProdDebug && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
     "android-prod-release": "set ENVFILE=.env.prod && cd android && gradlew.bat installProdRelease && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
     "build-android-prod-debug": "cd ./android && set ENVFILE=.env.prod && gradlew.bat assembleProdDebug && cd ../",
     "build-android-prod-release": "cd ./android && set ENVFILE=.env.prod && gradlew.bat assembleProdRelease && cd ../",
-    "bundle-prod-release": "cd android && set ENVFILE=.env.prod && gradlew.bat bundleProdRelease && cd ../"
+    "bundle-prod-release": "cd android && set ENVFILE=.env.prod && gradlew.bat bundleProdRelease && cd ../",
+    "ios-dev": "ENVFILE=.env.dev npx react-native run-ios",
+    "ios-prod": "ENVFILE=.env.prod npx react-native run-ios"
   },
   "dependencies": {
     "@actbase/react-daum-postcode": "^1.0.4",

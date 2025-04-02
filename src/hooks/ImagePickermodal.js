@@ -11,7 +11,7 @@ const ImagePickermodal = ({
     <Modal
       visible={isBottomSheetVisible}
       transparent
-      animationType="fade"
+      animationType="none"
       onRequestClose={() => setBottomSheetVisible(false)}>
       <TouchableOpacity
         style={styles.modalOverlay}
@@ -22,7 +22,9 @@ const ImagePickermodal = ({
             style={styles.sheetButton}
             onPress={() => {
               setBottomSheetVisible(false);
-              handleCameraPick();
+              setTimeout(() => {
+                handleCameraPick();
+              }, 100); // 모달 닫히는 애니메이션 시간만큼 지연
             }}>
             <Text style={styles.sheetButtonText}>카메라로 촬영</Text>
           </TouchableOpacity>
@@ -30,7 +32,9 @@ const ImagePickermodal = ({
             style={styles.sheetButton}
             onPress={() => {
               setBottomSheetVisible(false);
-              handleGalleryPick();
+              setTimeout(() => {
+                handleGalleryPick();
+              }, 100); // 모달 닫히는 애니메이션 시간만큼 지연
             }}>
             <Text style={styles.sheetButtonText}>앨범에서 선택</Text>
           </TouchableOpacity>
