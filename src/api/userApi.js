@@ -74,7 +74,6 @@ export const Userputnickname = async nickname => {
   try {
     await axiosInstance.put(`/auth/update-nickname?nickname=${nickname}`);
   } catch (error) {
-    functionError(error); // 에러 처리
     throw error;
   }
 };
