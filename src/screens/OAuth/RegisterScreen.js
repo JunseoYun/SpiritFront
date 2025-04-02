@@ -27,6 +27,7 @@ const RegisterScreen = ({route, navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
   const {loginauth} = useAuth();
   const {showToast} = useToast();
+  const [isSameNick, setIsSameNick] = useState(false);
 
   const handleCheckNickname = async () => {
     if (!nickname.trim()) {
@@ -38,9 +39,15 @@ const RegisterScreen = ({route, navigation}) => {
     }
     try {
       const isCheck = await check_nickName(nickname);
-      if (isCheck) {
+
+      if (isCheck.isAvailable) {
         showToast('사용 가능한 닉네임입니다.');
         setNicknameCheck(true);
+        setIsSameNick(false);
+      } else if (!isCheck.isAvailable) {
+        setIsSameNick(true);
+
+        setChecking(false);
       }
     } catch (error) {
       showToast('중복된 닉네임입니다.');
@@ -50,6 +57,7 @@ const RegisterScreen = ({route, navigation}) => {
 
   // 닉네임 입력 변경 시 비속어 확인
   const handleNicknameChange = text => {
+    setIsSameNick(false);
     setChecking(false);
     // 허용할 문자: 한글, 영문 대소문자, 숫자, `_`, `-` (기타 특수문자 및 이모티콘 차단)
     const filteredText = text.replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣0-9]/g, '');
@@ -166,6 +174,9 @@ const RegisterScreen = ({route, navigation}) => {
       )}
       {nicknamefilter && (
         <Text style={styles.errorText}>초성 닉네임은 사용할 수 없습니다.</Text>
+      )}
+      {isSameNick && (
+        <Text style={styles.errorText}>중복된 닉네임 입니다.</Text>
       )}
       {nicknamelength && (
         <Text style={styles.errorText}>

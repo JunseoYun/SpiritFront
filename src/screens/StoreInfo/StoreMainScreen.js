@@ -67,14 +67,6 @@ const StoreMainScreen = ({navigation}) => {
     });
   };
 
-  useEffect(() => {
-    if (Platform.OS === 'ios') {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollTo({y: 0, animated: false});
-      }, 200); // 렌더링 후 살짝 지연 적용
-    }
-  }, []);
-
   useFocusEffect(
     React.useCallback(() => {
       let isActive = true; // ✅ cleanup을 위한 변수 추가
@@ -364,6 +356,8 @@ const StoreMainScreen = ({navigation}) => {
             )}
             scrollEventThrottle={16}
             ref={scrollViewRef}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
             style={{
               backgroundColor: 'white',
               width: '100%',

@@ -105,14 +105,6 @@ const StoreAddScreen = ({navigation, route}) => {
     }
   };
 
-  useEffect(() => {
-    if (Platform.OS === 'ios') {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollTo({y: 0, animated: false});
-      }, 200); // 렌더링 후 살짝 지연 적용
-    }
-  }, []);
-
   const confirmSubmission = () => {
     if (!storeData.storeName.trim()) {
       setError('StoreName');
@@ -292,7 +284,11 @@ const StoreAddScreen = ({navigation, route}) => {
 
   return (
     <>
-      <ScrollView ref={scrollViewRef} style={styles.container}>
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}>
         <SafeAreaView style={styles.storetopview}>
           <View ref={storeInfoRef}>
             <StoreInfo
