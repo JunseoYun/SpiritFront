@@ -257,6 +257,12 @@ const StoreMainScreen = ({navigation}) => {
       case 'images':
         await performUpdate(updatedKey, updatedImgValue);
         break;
+      case 'mainDrinkDtos':
+        const filteredDrinks = updatedValue.filter(
+          item => item.type !== '' && item.price > 0,
+        );
+        await performUpdate(updatedKey, filteredDrinks);
+        break;
       default:
         await performUpdate(updatedKey, updatedValue);
         break;
@@ -457,7 +463,9 @@ const StoreMainScreen = ({navigation}) => {
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose={true}
-        gestureEnabled={false}
+        gestureEnabled={true}
+        keyboardBehavior="extend"
+        keyboardBlurBehavior="restore"
         backgroundStyle={{
           backgroundColor: '#F7F7F7',
           borderTopLeftRadius: 35,

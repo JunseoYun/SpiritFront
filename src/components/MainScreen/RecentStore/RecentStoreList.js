@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20, // 리스트 끝에 여유 공간 추가
   },
   todayPhrasesView: {
-    marginTop: 30,
+    marginTop: 10,
     marginLeft: 25,
   },
   mylocationlivetext: {

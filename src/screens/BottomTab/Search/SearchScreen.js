@@ -16,6 +16,7 @@ import CategoryModal from '../../../components/SearchScreen/FastSearch/Modal/Cat
 import PeopleModal from '../../../components/SearchScreen/FastSearch/Modal/PeopleModal';
 import VisitTimeModal from '../../../components/SearchScreen/FastSearch/Modal/VisitTimeModal';
 import NearStoreList from '../../../components/SearchScreen/NearStore/NearStoreList';
+import RecentStoreList from '../../../components/MainScreen/RecentStore/RecentStoreList';
 import SearchButton from '../../../components/SearchScreen/SearchButton';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 const SearchScreen = ({navigation}) => {
@@ -240,11 +241,11 @@ const SearchScreen = ({navigation}) => {
               onPressClose={onPressTimeModalClose}
               postbutton={postbutton}
             />
-            <NearStoreList
-              navigation={navigation}
-              location={location}
+            <RecentStoreList
               refresh={refresh}
               setRefresh={setRefresh}
+              navigation={navigation}
+              location={location}
             />
           </View>
         </ScrollView>

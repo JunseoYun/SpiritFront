@@ -24,7 +24,7 @@ const alcohols = [
 ];
 
 const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
-  const [expandedIndex, setExpandedIndex] = useState(null); // 현재 확장된 항목 인덱스
+  const [expandedIndex, setExpandedIndex] = useState(null);
 
   const handleAlcoholChange = (index, key, value) => {
     setAlcohol(prev => {
@@ -38,7 +38,7 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
   };
 
   const toggleExpand = index => {
-    setExpandedIndex(expandedIndex === index ? null : index); // 현재 항목만 확장
+    setExpandedIndex(expandedIndex === index ? null : index);
   };
 
   const hasValidAlcohol = alcohol.some(
@@ -48,82 +48,109 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>대표주종* (최대 3종)</Text>
-      {[0, 1, 2].map((_, index) => (
-        <View key={index} style={styles.alcoholRow}>
-          {/* 간략 정보 또는 기본 보기 */}
-          {expandedIndex !== index && (
-            <TouchableOpacity
-              style={styles.collapsedInfo}
-              onPress={() => toggleExpand(index)}>
-              <Text style={styles.collapsedText}>
-                {alcohol[index]?.type
-                  ? alcohols.find(a => a.value === alcohol[index]?.type)
-                      ?.label || '선택'
-                  : '주종 선택'}
-              </Text>
-              <Text style={styles.collapsedText}>
-                {alcohol[index]?.price
-                  ? `${alcohol[index]?.price} 원`
-                  : '가격 입력'}
-              </Text>
-            </TouchableOpacity>
-          )}
+      {[0, 1, 2].map((_, index) => {
+        const itemPerRow = 3;
+        const selectedTypes = alcohol
+          .filter((_, i) => i !== index)
+          .map(d => d?.type);
 
-          {/* 상세 입력 */}
-          {expandedIndex === index && (
-            <>
-              <View style={styles.pickerContainer}>
-                <Text style={styles.sectionTitle}>주종 선택</Text>
-                <View style={styles.alcoholList}>
-                  {alcohols.map(alcoholItem => (
-                    <Pressable
-                      key={alcoholItem.value}
-                      style={[
-                        styles.alcoholButton,
-                        alcoholItem.value === alcohol[index]?.type &&
-                          styles.selectedAlcohol,
-                      ]}
-                      onPress={() =>
-                        handleAlcoholChange(index, 'type', alcoholItem.value)
-                      }>
-                      <Text
-                        style={[
-                          styles.alcoholText,
-                          alcoholItem.value === alcohol[index]?.type &&
-                            styles.selectedAlcoholText,
-                        ]}>
-                        {alcoholItem.label}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
+        const currentType = alcohol[index]?.type;
+        const filteredAlcohols = alcohols.filter(
+          a => !selectedTypes.includes(a.value) || a.value === currentType,
+        );
 
-              <View style={styles.priceContainer}>
-                <Text style={styles.sectionTitle}>가격 입력</Text>
-                <View style={styles.priceInputWrapper}>
-                  <TextInput
-                    style={styles.priceInput}
-                    keyboardType="numeric"
-                    placeholder="0"
-                    placeholderTextColor="#aaa"
-                    value={alcohol[index]?.price?.toString() || ''}
-                    onChangeText={value =>
-                      handleAlcoholChange(index, 'price', parseInt(value) || 0)
-                    }
-                  />
-                  <Text style={styles.unit}>원</Text>
-                </View>
-              </View>
+        const remainder = filteredAlcohols.length % itemPerRow;
+        const paddingCount = remainder === 0 ? 0 : itemPerRow - remainder;
+        const paddedAlcohols = [
+          ...filteredAlcohols,
+          ...Array(paddingCount).fill(null),
+        ];
+
+        return (
+          <View key={index} style={styles.alcoholRow}>
+            {expandedIndex !== index ? (
               <TouchableOpacity
-                style={styles.saveButton}
+                style={styles.collapsedInfo}
                 onPress={() => toggleExpand(index)}>
-                <Text style={styles.saveButtonText}>완료</Text>
+                <Text style={styles.collapsedText}>
+                  {alcohol[index]?.type
+                    ? alcohols.find(a => a.value === alcohol[index]?.type)
+                        ?.label || '선택'
+                    : '주종 선택'}
+                </Text>
+                <Text style={styles.collapsedText}>
+                  {alcohol[index]?.price
+                    ? `${alcohol[index]?.price} 원`
+                    : '가격 입력'}
+                </Text>
               </TouchableOpacity>
-            </>
-          )}
-        </View>
-      ))}
+            ) : (
+              <>
+                <View style={styles.pickerContainer}>
+                  <Text style={styles.sectionTitle}>주종 선택</Text>
+                  <View style={styles.alcoholList}>
+                    {paddedAlcohols.map((alcoholItem, i) =>
+                      alcoholItem ? (
+                        <Pressable
+                          key={alcoholItem.value}
+                          style={[
+                            styles.alcoholButton,
+                            alcoholItem.value === alcohol[index]?.type &&
+                              styles.selectedAlcohol,
+                          ]}
+                          onPress={() =>
+                            handleAlcoholChange(
+                              index,
+                              'type',
+                              alcoholItem.value,
+                            )
+                          }>
+                          <Text
+                            style={[
+                              styles.alcoholText,
+                              alcoholItem.value === alcohol[index]?.type &&
+                                styles.selectedAlcoholText,
+                            ]}>
+                            {alcoholItem.label}
+                          </Text>
+                        </Pressable>
+                      ) : (
+                        <View key={`dummy-${i}`} style={styles.alcoholButton} />
+                      ),
+                    )}
+                  </View>
+                </View>
+
+                <View style={styles.priceContainer}>
+                  <Text style={styles.sectionTitle}>가격 입력</Text>
+                  <View style={styles.priceInputWrapper}>
+                    <TextInput
+                      style={styles.priceInput}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      placeholderTextColor="#aaa"
+                      value={alcohol[index]?.price?.toString() || ''}
+                      onChangeText={value =>
+                        handleAlcoholChange(
+                          index,
+                          'price',
+                          parseInt(value) || 0,
+                        )
+                      }
+                    />
+                    <Text style={styles.unit}>원</Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={() => toggleExpand(index)}>
+                  <Text style={styles.saveButtonText}>완료</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        );
+      })}
       {error === 'StoreDrink' && !hasValidAlcohol && (
         <Text style={styles.errorMessage}>
           대표 주종을 입력하고 가격을 설정해 주세요.
@@ -161,27 +188,30 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 12,
     justifyContent: 'space-between',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 16,
+    padding: 14,
   },
   alcoholButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#F2F2F2',
-    borderRadius: 8,
-    minWidth: '30%',
+    borderRadius: 7,
+    minWidth: '25%',
     alignItems: 'center',
   },
   alcoholText: {
-    color: '#333',
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#767676',
   },
   selectedAlcohol: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#80D2F4',
   },
   selectedAlcoholText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
+
   priceContainer: {
     marginTop: 20,
   },

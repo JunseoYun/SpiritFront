@@ -13,7 +13,7 @@ import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
 import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
 import StoreRegister from '../../components/MainScreen/StoreRegister';
 import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
-import RecentStoreList from '../../components/MainScreen/RecentStore/RecentStoreList';
+import NearStoreList from '../../components/SearchScreen/NearStore/NearStoreList';
 import OptionsSection from '../../components/MainScreen/OptionSection';
 import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
@@ -181,11 +181,11 @@ const MainScreen = ({navigation}) => {
         />
         <View
           onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
-          <RecentStoreList
-            refresh={isRefreshing}
-            setRefresh={onRefresh}
+          <NearStoreList
             navigation={navigation}
             location={location}
+            refresh={isRefreshing}
+            setRefresh={onRefresh}
           />
         </View>
         <OptionsSection
