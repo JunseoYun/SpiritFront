@@ -41,19 +41,24 @@ const OAuthLoginScreen = ({navigation}) => {
       if (error.response) {
         const {status, data, headers} = error.response;
         if (status === 404) {
-          showAlert({
-            title: '등록된 회원 정보가 없습니다.',
-            message: '해당 소셜 계정으로 \n회원가입을 진행하시겠습니까?',
-            onConfirm: () => {
-              navigation.navigate('AgreeScreen', {
-                type: type,
-                id: id,
-                socialToken: socialToken,
-              });
-            }, // 함수 참조 전달
-            onCancel: null,
-            type: 'confirm',
+          navigation.navigate('AgreeScreen', {
+            type: type,
+            id: id,
+            socialToken: socialToken,
           });
+          // showAlert({
+          //   title: '등록된 회원 정보가 없습니다.',
+          //   message: '해당 소셜 계정으로 \n회원가입을 진행하시겠습니까?',
+          //   onConfirm: () => {
+          //     navigation.navigate('AgreeScreen', {
+          //       type: type,
+          //       id: id,
+          //       socialToken: socialToken,
+          //     });
+          //   }, // 함수 참조 전달
+          //   onCancel: null,
+          //   type: 'confirm',
+          // });
         }
       }
     }
@@ -65,9 +70,12 @@ const OAuthLoginScreen = ({navigation}) => {
 
       if (Platform.OS === 'android') {
         token = await login();
-      }
-      if (Platform.OS === 'ios') {
-        token = await loginWithKakaoAccount();
+      } else if (Platform.OS === 'ios') {
+        try {
+          token = await login(); // 앱 로그인 시도
+        } catch (e) {
+          token = await loginWithKakaoAccount(); // 앱 로그인 실패 시, 웹 로그인 fallback
+        }
       }
       const profile = await getProfile();
       const type = 'KAKAO';

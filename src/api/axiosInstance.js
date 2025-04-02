@@ -46,6 +46,7 @@ const refreshAccessToken = async () => {
 // Axios 인스턴스 생성
 const axiosInstance = axios.create({
   baseURL: `https://${Config.BASE_URL}/api`, // 공통 URL
+
   headers: {
     'Content-Type': 'application/json',
   },
@@ -103,6 +104,26 @@ axiosInstance.interceptors.response.use(
           title: '세션 만료',
           message: '다시 로그인해주세요.',
         });
+      }
+    } else if (error.response?.status === 404 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const newAccessToken = await refreshAccessToken();
+        originalRequest.headers['x-auth-token'] = newAccessToken;
+
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        // Refresh Token도 만료된 경우 로그아웃
+
+        const {logout} = getGlobalLogout();
+        const showAlert = getGlobalShowAlert();
+
+        if (logout) {
+          try {
+            await logout(); // 로그아웃 먼저 실행
+          } catch (error) {}
+        }
       }
     }
 

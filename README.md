@@ -134,3 +134,9 @@ To learn more about React Native, take a look at the following resources:
 
   운영 서버 App bundle (.abb)
   npm run bundle-prod-release => "cd android && set ENVFILE=.env.prod && gradlew.bat bundleProdRelease && cd ../"
+
+ios 운영 서버 빌드
+npm run ios-prod
+
+ios 개발 서버 빌드
+npm run ios-dev
