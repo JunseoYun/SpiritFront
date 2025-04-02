@@ -44,7 +44,7 @@ const RegisterScreen = ({route, navigation}) => {
       }
     } catch (error) {
       showToast('중복된 닉네임입니다.');
-      setChecking(true);
+      setChecking(false);
     }
   };
 

@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   StyleSheet,
   View,
+  Platform,
 } from 'react-native';
 import {StoreRegister} from '../../api/storeApi';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
@@ -103,6 +104,14 @@ const StoreAddScreen = ({navigation, route}) => {
       );
     }
   };
+
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({y: 0, animated: false});
+      }, 200); // 렌더링 후 살짝 지연 적용
+    }
+  }, []);
 
   const confirmSubmission = () => {
     if (!storeData.storeName.trim()) {

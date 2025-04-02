@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useMemo, useCallback} from 'react';
+import React, {useEffect, useState, useRef, useMemo} from 'react';
 import {
   View,
   Animated,
@@ -66,6 +66,14 @@ const StoreMainScreen = ({navigation}) => {
       is24Hours: storedata.isAlwaysOpen,
     });
   };
+
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({y: 0, animated: false});
+      }, 200); // 렌더링 후 살짝 지연 적용
+    }
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -347,7 +355,8 @@ const StoreMainScreen = ({navigation}) => {
             handleBottomClose={handleBottomClose}
           />
         )}
-        <KeyboardAvoidingView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView
             onScroll={Animated.event(
               [{nativeEvent: {contentOffset: {y: scrollY}}}],

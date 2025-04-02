@@ -11,6 +11,7 @@
     "android-release": "react-native run-android --mode=release",
     "android-release-mac": "cd android && ./gradlew installProdRelease && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
     "android-prod-debug-mac": "sh -c 'ENVFILE=.env.prod ./android/gradlew -p android installProdDebug && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1'",
+    "android-dev-debug-mac": "sh -c 'ENVFILE=.env.dev ./android/gradlew -p android installProdDebug && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1'",
     "android-prod-debug": "set ENVFILE=.env.prod && cd android && gradlew.bat installProdDebug && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
     "android-prod-release": "set ENVFILE=.env.prod && cd android && gradlew.bat installProdRelease && cd .. && adb shell monkey -p com.spiritfront -c android.intent.category.LAUNCHER 1",
     "build-android-prod-debug": "cd ./android && set ENVFILE=.env.prod && gradlew.bat assembleProdDebug && cd ../",
