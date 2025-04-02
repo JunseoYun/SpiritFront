@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const UpdateStoreLocation = ({
   updatedValue,
@@ -18,25 +19,46 @@ const UpdateStoreLocation = ({
   return (
     <View style={styles.bottomSheetContent}>
       <Text style={styles.title}>매장 주소</Text>
-      <TouchableOpacity
-        style={styles.storeinput}
-        onPress={() =>
-          navigation.navigate('StoreAddressSearch', {
-            onAddressSelect: selectedData =>
-              setUpdatedValue(prev => ({
-                ...prev,
-                address: selectedData.address,
-                latitude: selectedData.coords.latitude,
-                longitude: selectedData.coords.longitude,
-              })),
-          })
-        }>
-        {updatedValue.address ? (
-          <Text style={styles.inputText}>{updatedValue.address}</Text>
-        ) : (
-          <Text style={styles.inputHideText}>매장 주소*</Text>
-        )}
-      </TouchableOpacity>
+      <View style={styles.storeinputmap}>
+        <TouchableOpacity
+          style={styles.addressTouchable}
+          onPress={() =>
+            navigation.navigate('StoreAddressSearch', {
+              onAddressSelect: selectedData =>
+                setUpdatedValue(prev => ({
+                  ...prev,
+                  address: selectedData.address,
+                  latitude: selectedData.coords.latitude,
+                  longitude: selectedData.coords.longitude,
+                })),
+            })
+          }>
+          {updatedValue.address ? (
+            <Text style={styles.inputText}>{updatedValue.address}</Text>
+          ) : (
+            <Text style={styles.inputHideText}>매장 주소*</Text>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('StoreAddMapScreen', {
+              location: {
+                latitude: updatedValue.latitude,
+                longitude: updatedValue.longitude,
+              },
+              onAddressSelect: selectedData =>
+                setUpdatedValue(prev => ({
+                  ...prev,
+                  address: selectedData.address,
+                  latitude: selectedData.coords.latitude,
+                  longitude: selectedData.coords.longitude,
+                })),
+            })
+          }
+          style={styles.mapIconButton}>
+          <Ionicons name="map-outline" size={30} color="#999" />
+        </TouchableOpacity>
+      </View>
       <View style={styles.storeinputview}>
         {updatedValue.addressDetail && (
           <Text style={styles.storeinputtext}>상세 주소</Text>
@@ -74,6 +96,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 20,
+  },
+  storeinputmap: {
+    width: '100%',
+    flexDirection: 'row',
+    borderBottomColor: '#F2F2F2',
+    borderBottomWidth: 1,
+    fontSize: 22,
+    fontWeight: '500',
+    paddingVertical: 7, // 상하 간격 조절
+    paddingLeft: 1,
+  },
+  addressTouchable: {
+    flex: 1,
+  },
+  mapIconButton: {
+    alignSelf: 'flex-end',
+    paddingVertical: 1, // 상하 간격 조절
+    paddingLeft: 2,
   },
   storeinput: {
     width: '100%',

@@ -132,10 +132,9 @@ const styles = StyleSheet.create({
   storeTextView: {
     width: '100%',
     marginLeft: 20,
-    marginTop: 10,
+    marginTop: 30,
   },
   storeText: {
-    marginTop: 10,
     fontSize: 17,
     color: 'black',
     fontWeight: 'bold',
