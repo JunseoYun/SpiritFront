@@ -1,14 +1,14 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
 
-const MenuHeader = ({ storeId, navigation }) => {
+const MenuHeader = ({storeId, navigation}) => {
   return (
-    <View style={{ width: '100%', alignItems: 'center' }}>
+    <View style={{width: '100%', alignItems: 'center'}}>
       <View style={styles.MenuaddView}>
         <Pressable
           style={styles.MenuaddButton}
           onPress={() =>
-            navigation.navigate('MenuAddScreen', { storeId: storeId })
+            navigation.navigate('MenuAddScreen', {storeId: storeId})
           }>
           <Text style={styles.MenuaddButtonText}>메뉴 추가하기</Text>
         </Pressable>
@@ -27,16 +27,14 @@ const styles = StyleSheet.create({
   MenuaddButton: {
     width: '100%',
     alignItems: 'center',
-    borderWidth: 2,
     borderRadius: 10,
-    borderColor: 'rgba(16, 190, 251, 0.7)',
-    paddingVertical: 6,
+    backgroundColor: '#45C9FF',
   },
   MenuaddButtonText: {
-    color: '#333',
+    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-Bold',
+    padding: 16,
   },
-
 });
 export default MenuHeader;

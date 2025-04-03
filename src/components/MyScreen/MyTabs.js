@@ -74,7 +74,6 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    alignItems: 'center',
   },
   tabButton: {
     flex: 1,
@@ -84,12 +83,12 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 18,
-    color: 'gray',
-    fontWeight: '600',
+    color: '#999',
+    fontFamily: 'Pretendard-SemiBold',
   },
   selectedTabText: {
-    fontWeight: '700',
-    color: 'rgba(16, 190, 251, 0.7)',
+    fontFamily: 'Pretendard-Bold',
+    color: '#45C9FF',
   },
   defaultUnderline: {
     height: 3,
@@ -101,7 +100,7 @@ const styles = StyleSheet.create({
   animatedUnderline: {
     height: 3,
     width: width / 2 - 40, // 탭 2개 기준 너비에서 양쪽 20씩 줄임
-    backgroundColor: 'rgba(16, 190, 251, 0.7)',
+    backgroundColor: '#45C9FF',
     position: 'absolute',
     bottom: 0,
     marginHorizontal: 20, // 양쪽 여백 추가

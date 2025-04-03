@@ -61,7 +61,7 @@ const MyScreen = ({navigation}) => {
   }
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: '#FAFAFA'}}>
+    <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
       <MyPageheader
         nickname={userdata.nickname}
         imageuri={userdata.imgUrl}

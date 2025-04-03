@@ -92,9 +92,10 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+
     paddingHorizontal: 16,
     paddingVertical: 8,
+    marginVertical: 5,
   },
   reviewCard: {
     backgroundColor: '#FFFFFF',
@@ -102,8 +103,8 @@ const styles = StyleSheet.create({
     padding: 16,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
     elevation: 3, // Android 그림자
   },
   header: {
@@ -113,25 +114,29 @@ const styles = StyleSheet.create({
   },
   storeName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#181A1A',
   },
   category: {
     fontSize: 14,
-    color: '#888',
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
     marginTop: 4,
   },
   date: {
-    fontSize: 12,
-    color: '#AAA',
+    fontSize: 14,
+    color: '#767676',
+    fontFamily: 'Pretendard-Medium',
+    paddingBottom: 16,
   },
   rating: {
     flexDirection: 'row',
     marginBottom: 10,
   },
   reviewText: {
-    fontSize: 14,
-    color: '#555',
+    fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
+    color: '#181A1A',
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -157,11 +162,11 @@ const styles = StyleSheet.create({
   },
   deleteText: {
     borderRadius: 10,
-    borderColor: 'gray',
+
     paddingHorizontal: 8,
     paddingVertical: 2,
     color: '#5F5F5F',
-    fontWeight: '300',
+    fontFamily: 'Pretendard-Regular',
     backgroundColor: '#EFEFEF',
     paddingVertical: 5,
   },

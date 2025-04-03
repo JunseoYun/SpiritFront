@@ -267,7 +267,7 @@ const StoreReviewScreen = ({navigation}) => {
             onEndReachedThreshold={0.5}
             onRefresh={handleRefresh} // 새로고침
             refreshing={refreshing}
-            contentContainerStyle={{paddingBottom: 100}}
+            contentContainerStyle={{paddingBottom: 0}}
             ListFooterComponent={
               <View style={styles.footer}>
                 {loading && !isEnd ? (
@@ -294,8 +294,9 @@ const StoreReviewScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    paddingBottom: 10,
+
     width: '100%',
+    height: '100%',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -315,22 +316,25 @@ const styles = StyleSheet.create({
   },
   MenuaddView: {
     width: '100%',
-    marginTop: 30,
-    marginBottom: 20,
+    marginTop: 10,
+
     paddingHorizontal: 18,
+    paddingBottom: 10,
+
+    borderBottomWidth: 0.5,
+    borderColor: '#E5E5E5',
   },
   addButton: {
     width: '100%',
     alignItems: 'center',
-    borderWidth: 2,
     borderRadius: 10,
-    borderColor: 'rgba(16, 190, 251, 0.7)',
-    paddingVertical: 6,
+    backgroundColor: '#45C9FF',
   },
   addButtonText: {
-    color: '#333',
+    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-Bold',
+    padding: 16,
   },
   star: {
     marginHorizontal: 3, // 별 사이 간격

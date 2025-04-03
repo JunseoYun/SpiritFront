@@ -10,7 +10,12 @@ import {
 
 const {width} = Dimensions.get('window');
 
-const Toastmessage = ({message, isShowToast, onDismiss}) => {
+const Toastmessage = ({
+  message,
+  isShowToast,
+  onDismiss,
+  position = 'bottom',
+}) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -28,9 +33,9 @@ const Toastmessage = ({message, isShowToast, onDismiss}) => {
           duration: 500,
           useNativeDriver: true,
         }).start(() => {
-          onDismiss(); // `isShowToast` 상태를 false로 변경하는 함수 호출
+          onDismiss();
         });
-      }, 3000);
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
@@ -38,8 +43,19 @@ const Toastmessage = ({message, isShowToast, onDismiss}) => {
 
   if (!isShowToast) return null;
 
+  const positionStyle = {
+    bottom: position === 'bottom' ? 40 : undefined,
+    top:
+      position === 'top'
+        ? 40
+        : position === 'center'
+        ? Dimensions.get('window').height / 2 - 40
+        : undefined,
+  };
+
   return (
-    <Animated.View style={[styles.container, {opacity: fadeAnim}]}>
+    <Animated.View
+      style={[styles.container, positionStyle, {opacity: fadeAnim}]}>
       <Pressable onPress={onDismiss}>
         <Text style={styles.toastText}>{message}</Text>
       </Pressable>
@@ -57,7 +73,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     left: width * 0.15,
     backgroundColor: 'rgba(81, 80, 80, 0.7)',
-    bottom: 40,
     padding: 10,
   },
   toastText: {

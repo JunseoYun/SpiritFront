@@ -21,8 +21,8 @@ const MainBtmbar = () => {
           alignContent: 'center',
           justifyContent: 'center',
         },
-        tabBarActiveTintColor: '#16BBFF', // 선택된 탭의 텍스트/아이콘 색상
-        tabBarInactiveTintColor: 'gray', // 비활성 탭의 텍스트/아이콘 색상
+        tabBarActiveTintColor: '#45C9FF', // 선택된 탭의 텍스트/아이콘 색상
+        tabBarInactiveTintColor: '#999', // 비활성 탭의 텍스트/아이콘 색상
         tabBarIcon: ({focused, color, size}) => {
           let iconName;
 
@@ -44,6 +44,7 @@ const MainBtmbar = () => {
         },
         tabBarLabelStyle: {
           fontSize: 12,
+          fontFamily: 'Pretendard-Medium',
         },
       })}>
       <Tab.Screen
@@ -75,7 +76,7 @@ const MainBtmbar = () => {
           headerTitleStyle: {
             fontSize: 19, // 타이틀 크기 설정
             color: '#333', // 텍스트 색상 (선택 사항)
-            fontWeight: 'bold',
+            fontFamily: 'Pretendard-Bold',
           },
         }}
       />

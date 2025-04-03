@@ -99,7 +99,6 @@ const ResultItem = ({store, navigation, location}) => {
             <View style={styles.StoreScore}>
               <FontAwesomeIcon name="star" size={15} color="#FCC104" />
               <Text style={styles.Scoretext}>
-                {' '}
                 {store.storeRate}
                 {' ('}
                 {store.reviewCount}

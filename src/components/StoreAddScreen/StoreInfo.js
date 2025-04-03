@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   storeinputtext: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 7,
     paddingLeft: 1,
   },
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 18,
-    fontWeight: '400',
+    fontFamily: 'Pretendard-SemiBold',
     paddingVertical: 5,
     paddingLeft: 1,
     maxHeight: 120,
@@ -171,12 +171,14 @@ const styles = StyleSheet.create({
     color: '#FF4816',
     fontSize: 14,
     marginTop: 5,
+    fontFamily: 'Pretendard-Medium',
   },
   errorMessage: {
     color: '#FF4816',
     fontSize: 15,
     marginTop: 5,
     marginHorizontal: 18,
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

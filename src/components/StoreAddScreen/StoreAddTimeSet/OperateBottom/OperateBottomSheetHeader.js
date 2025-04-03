@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     marginVertical: 10,
   },
   closeButton: {

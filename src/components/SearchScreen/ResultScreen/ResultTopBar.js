@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Text,
+  Keyboard,
 } from 'react-native';
 
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
@@ -20,6 +21,7 @@ const ResultTopBar = ({searchWord, setSearchWord, navigation, onSearch}) => {
     if (tempSearchWord.trim()) {
       onSearch(tempSearchWord.trim()); // 새로운 검색 실행
       setIsSearching(false); // 검색 후 버튼 숨기기
+      Keyboard.dismiss();
     }
   };
 
@@ -28,21 +30,15 @@ const ResultTopBar = ({searchWord, setSearchWord, navigation, onSearch}) => {
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         style={styles.backButton}>
-        <AntDesign name="arrowleft" size={25} color={'black'} />
+        <AntDesign name="arrowleft" size={25} color={'#333'} />
       </TouchableOpacity>
 
       {/* ✅ 검색창 */}
       <View style={styles.search}>
-        <EvilIcons
-          style={styles.searchIcon}
-          name="search"
-          size={30}
-          color={'gray'}
-        />
         <TextInput
           style={styles.searchTextInput}
           placeholder="검색어를 입력하세요"
-          placeholderTextColor="gray"
+          placeholderTextColor="#999"
           value={tempSearchWord}
           onChangeText={text => {
             setTempSearchWord(text); // 입력 값만 변경 (검색 실행 X)
@@ -73,8 +69,7 @@ const ResultTopBar = ({searchWord, setSearchWord, navigation, onSearch}) => {
 
 const styles = StyleSheet.create({
   topView: {
-    marginTop: 10,
-    marginBottom: 20,
+    marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -87,26 +82,23 @@ const styles = StyleSheet.create({
   },
   search: {
     flexDirection: 'row',
-    backgroundColor: '#F2F2F2',
-    width: '70%', // 검색 버튼 공간 확보
+    // backgroundColor: '#333',
+    flex: 1,
     borderRadius: 7,
     alignItems: 'center',
+    height: 50,
+    marginHorizontal: 12,
   },
-  searchIcon: {
-    color: 'gray',
-    marginTop: 12,
-    marginBottom: 12,
-    marginLeft: 10,
-  },
+
   searchTextInput: {
-    fontSize: 15,
-    color: 'gray',
+    fontSize: 18,
+    color: '#181A1A',
     flex: 1, // 입력 필드가 남은 공간을 차지하도록 설정
   },
   searchButton: {
-    fontSize: 19,
-    fontWeight: '600',
-    color: '#16BBFF',
+    fontSize: 18,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#45C9FF',
   },
 });
 

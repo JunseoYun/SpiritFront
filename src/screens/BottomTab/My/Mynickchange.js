@@ -232,14 +232,14 @@ const styles = StyleSheet.create({
   nickname: {
     fontSize: 18,
     color: '#333',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     marginLeft: 3,
   },
   input: {
     flex: 1,
     paddingVertical: 10,
     fontSize: 18,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#333',
   },
   completebtn: {
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   completebtntext: {
     color: 'white',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
   },
   nicknameInputView: {
     flexDirection: 'row',
@@ -272,21 +272,24 @@ const styles = StyleSheet.create({
     borderColor: '#FF0000',
   },
   checkInputView: {
-    borderColor: '#16BBFF',
+    borderColor: '#45C9FF',
   },
   errorText: {
     color: '#FF0000',
     marginTop: 7,
+    fontFamily: 'Pretendard-Medium',
     fontSize: 14,
   },
   lengthtext: {
     marginTop: 7,
     fontSize: 14,
-    color: '#16BBFF',
+    fontFamily: 'Pretendard-Medium',
+    color: '#45C9FF',
+    alignSelf: 'flex-end',
   },
   lengthview: {
     flex: 1,
-    alignItems: 'flex-end',
+
     padding: 3,
   },
   errorview: {

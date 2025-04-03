@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginVertical: 40,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 20,
     color: '#333',
   },

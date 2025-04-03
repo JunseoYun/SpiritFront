@@ -56,7 +56,7 @@ const VisitTimeModal = ({
             <Pressable
               style={[styles.button, {backgroundColor: '#fff'}]}
               onPress={onPressClose}>
-              <Text style={[styles.buttonText, {color: '#16BBFF'}]}>닫기</Text>
+              <Text style={[styles.buttonText, {color: '#45C9FF'}]}>닫기</Text>
             </Pressable>
             <Pressable style={styles.button} onPress={postbutton}>
               <Text style={styles.buttonText}>확인</Text>
@@ -84,7 +84,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '500',
+
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 20,
     color: '#000',
   },
@@ -141,19 +142,19 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   button: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 7,
     marginHorizontal: 5,
     flex: 1,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#16BBFF',
+    borderWidth: 1.5,
+    borderColor: '#45C9FF',
   },
   buttonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 16,
     padding: 3,
   },

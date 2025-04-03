@@ -27,15 +27,14 @@ const styles = StyleSheet.create({
   MenuaddButton: {
     width: '100%',
     alignItems: 'center',
-    borderWidth: 2,
     borderRadius: 10,
-    borderColor: 'rgba(16, 190, 251, 0.7)',
-    paddingVertical: 6,
+    backgroundColor: '#45C9FF',
   },
   MenuaddButtonText: {
-    color: '#333',
+    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-Bold',
+    padding: 16,
   },
 });
 export default AlcoholHeader;

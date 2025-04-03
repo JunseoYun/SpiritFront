@@ -29,8 +29,8 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
+    color: '#181A1A',
+    fontFamily: 'Pretendard-Medium',
   },
   checkboxContainer: {
     flexDirection: 'row',
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 4,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     marginRight: 7,
   },
   uncheckedBox: {
@@ -55,13 +55,13 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#16BBFF',
+    borderColor: '#45C9FF',
     marginRight: 7,
   },
   checkboxLabel24: {
     fontSize: 15,
     color: '#333',
-    fontWeight: '400',
+    fontFamily: 'Pretendard-Medium',
     textAlign: 'center',
   },
 });

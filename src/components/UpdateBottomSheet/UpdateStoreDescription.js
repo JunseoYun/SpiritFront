@@ -59,12 +59,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 20,
   },
   input: {
     fontSize: 15,
-    fontWeight: '500',
+    fontSize: 16,
+    fontFamily: 'Pretendard-Medium',
     borderWidth: 1,
     borderRadius: 7,
     borderColor: '#999',

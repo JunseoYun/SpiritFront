@@ -40,7 +40,7 @@ const ReviewForm = ({
           onChangeText={onChangeText}
           value={newReviewContent}
           placeholder="소중한 리뷰를 남겨주세요."
-          placeholderTextColor="gray"
+          placeholderTextColor="#999"
         />
 
         <Text style={styles.titleText}>별점 입력</Text>
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
   },
   titleText: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
@@ -132,6 +132,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     height: 100,
     padding: 10,
+    fontFamily: 'Pretendard-Medium',
   },
   starcontainer: {
     alignItems: 'flex-start',
@@ -146,13 +147,13 @@ const styles = StyleSheet.create({
   savebutton: {
     alignItems: 'center',
     borderRadius: 7,
-    backgroundColor: '#80def4',
+    backgroundColor: '#45C9FF',
     paddingVertical: 10,
     width: '48%',
   },
   savetext: {
     color: 'white',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 18,
   },
   cancelbutton: {
@@ -162,11 +163,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     width: '48%',
     borderWidth: 2,
-    borderColor: '#80def4',
+    borderColor: '#45C9FF',
   },
   canceltext: {
-    color: '#80def4',
-    fontWeight: 'bold',
+    color: '#45C9FF',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 18,
   },
   imageContainer: {

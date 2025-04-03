@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   },
   Nickname: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     color: '#333',
     marginLeft: 30,
   },

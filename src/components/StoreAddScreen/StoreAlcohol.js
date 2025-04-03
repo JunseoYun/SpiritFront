@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   title: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 20,
@@ -179,8 +179,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#181A1A',
     marginBottom: 10,
   },
   alcoholList: {
@@ -201,15 +201,15 @@ const styles = StyleSheet.create({
   },
   alcoholText: {
     fontSize: 16,
-    fontWeight: '400',
-    color: '#767676',
+    fontFamily: 'Pretendard-Medium',
+    color: '#999',
   },
   selectedAlcohol: {
     backgroundColor: '#80D2F4',
   },
   selectedAlcoholText: {
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
 
   priceContainer: {
@@ -228,7 +228,8 @@ const styles = StyleSheet.create({
   priceInput: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: '#181A1A',
+    fontFamily: 'Pretendard-Medium',
     textAlign: 'center',
   },
   unit: {
@@ -247,12 +248,12 @@ const styles = StyleSheet.create({
   },
   collapsedText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#333',
   },
   saveButton: {
     marginTop: 20,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,
@@ -260,11 +261,12 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   errorMessage: {
     color: '#FF4816',
     fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
     marginTop: 5,
   },
 });

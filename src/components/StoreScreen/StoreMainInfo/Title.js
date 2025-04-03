@@ -30,7 +30,9 @@ const Title = ({handleEdit, storeName, isUpdate, onModalOpen}) => {
           <View>
             <Text style={styles.Storetitle}>{storeName}</Text>
           </View>
-          <Pressable onPress={onModalOpen}>
+          <Pressable
+            onPress={onModalOpen}
+            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
             <Entypo name="dots-three-vertical" size={20} color="#333" />
           </Pressable>
         </View>

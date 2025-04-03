@@ -165,7 +165,7 @@ const SetLocationScreen = ({navigation, route}) => {
           <Ionicons
             name="location"
             size={25}
-            color={selectAddress ? '#16BBFF' : '#999'}
+            color={selectAddress ? '#45C9FF' : '#999'}
           />
           <View style={styles.infoBoxText}>
             <Text style={selectAddress ? styles.currentLabel : styles.label}>
@@ -237,6 +237,7 @@ const styles = StyleSheet.create({
     color: '#999',
     fontSize: 16,
     padding: 3,
+    fontFamily: 'Pretendard-Medium',
   },
   selectButton: {
     flexDirection: 'row',
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
 
   clearButtonText: {
@@ -293,19 +294,19 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 16,
+    fontFamily: 'Pretendard-Medium',
     marginBottom: 3,
   },
   infoText: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#181A1A',
   },
   infoSelectText: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#16BBFF',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#45C9FF',
   },
   footer: {
     position: 'absolute',

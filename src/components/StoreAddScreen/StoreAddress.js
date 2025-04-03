@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginTop: 5,
     marginHorizontal: 18,
+    fontFamily: 'Pretendard-Medium',
   },
   storeinputtext: {
     fontWeight: '500',
@@ -141,20 +142,20 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 7, // 상하 간격 조절
     paddingLeft: 1,
   },
   inputHideText: {
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 1,
     paddingLeft: 1,
     color: '#999',
   },
   inputText: {
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 1,
     paddingLeft: 1,
   },
@@ -166,6 +167,7 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 14,
     marginTop: 5,
+    fontFamily: 'Pretendard-Medium',
   },
   mapIconButton: {
     alignSelf: 'flex-end',

@@ -290,7 +290,7 @@ const StoreMainScreen = ({navigation}) => {
 
   useEffect(() => {
     if (isUpdate) {
-      showToast('원하는 항목을 클릭해 수정하세요!');
+      showToast('원하는 항목을 클릭해 수정하세요!', 'center');
     }
   }, [isUpdate]);
 

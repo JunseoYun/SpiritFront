@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 20,
   },
   storeinputmap: {
@@ -120,20 +120,20 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 7,
     paddingLeft: 1,
   },
   inputHideText: {
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 1,
     paddingLeft: 1,
     color: '#999',
   },
   inputText: {
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 1,
     paddingLeft: 1,
   },
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   storeinputtext: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,

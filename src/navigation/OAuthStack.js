@@ -37,7 +37,7 @@ export default function OAuthStack() {
           title: '한잔할까 서비스 이용약관',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (
@@ -63,7 +63,7 @@ export default function OAuthStack() {
           title: '개인정보 처리방침',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (
@@ -89,7 +89,7 @@ export default function OAuthStack() {
           title: '위치정보 이용약관',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (

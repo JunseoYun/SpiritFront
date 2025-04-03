@@ -167,32 +167,26 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 7,
     paddingLeft: 1,
   },
   storeinputtext: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
   },
   inputText: {
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 1,
     paddingLeft: 1,
   },
-  storetext: {
-    fontWeight: '400',
-    color: 'black',
-    fontSize: 14,
-    marginVertical: 5,
-    marginBottom: 5,
-  },
+
   inputHideText: {
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 1,
     paddingLeft: 1,
     color: '#999',
@@ -200,6 +194,7 @@ const styles = StyleSheet.create({
   errorMessage: {
     color: '#FF4816',
     fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
     marginTop: 5,
   },
   modalBackground: {
@@ -224,9 +219,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   selectedCategory: {
-    // backgroundColor: 'rgba(22, 187, 255, 0.7)', // 선택된 경우 배경색 및 투명도 (50%)
-    borderColor: 'rgba(22, 187, 255, 0.7)',
-    borderWidth: 3,
+    backgroundColor: 'rgba(22, 187, 255, 0.4)', // 선택된 경우 배경색 및 투명도 (50%)
+    // borderColor: 'rgba(22, 187, 255, 0.7)',
+
     borderRadius: 10,
   },
   catagoryimgs: {
@@ -236,7 +231,7 @@ const styles = StyleSheet.create({
   },
   catagorytext: {
     color: 'black',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 12,
     marginTop: 7,
   },
@@ -253,12 +248,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingVertical: 10,
     paddingHorizontal: 30,
-    backgroundColor: 'rgba(22, 187, 255, 0.9)',
+    backgroundColor: '#45C9FF',
     borderRadius: 5,
   },
   closeButtonText: {
     fontSize: 16,
     color: '#FFF',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

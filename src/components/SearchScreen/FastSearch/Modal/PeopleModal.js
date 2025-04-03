@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   topText: {
     color: '#333',
     fontSize: 20,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-SemiBold',
     marginTop: 20,
     marginBottom: 20,
   },
@@ -82,23 +82,24 @@ const styles = StyleSheet.create({
   },
   radioText: {
     fontSize: 18,
-    color: 'gray',
+    color: '#999',
   },
   selectedRadioText: {
-    fontWeight: 'bold',
-    color: '#16BBFF',
+    fontFamily: 'Pretendard-Bold',
+    color: '#45C9FF',
   },
   closeButton: {
     marginTop: 10,
     marginBottom: 20,
     paddingVertical: 10,
     paddingHorizontal: 30,
-    backgroundColor: 'rgba(22, 187, 255, 0.9)',
+    backgroundColor: '#45C9FF',
     borderRadius: 5,
   },
   closeButtonText: {
     fontSize: 16,
     color: '#FFF',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

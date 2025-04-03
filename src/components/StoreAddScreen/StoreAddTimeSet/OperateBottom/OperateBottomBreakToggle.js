@@ -17,8 +17,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addBreakText: {
-    color: '#0af',
+    color: '#45C9FF',
     fontSize: 16,
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

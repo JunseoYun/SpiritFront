@@ -240,6 +240,7 @@ export default function StoreStack() {
           title: `${route.params?.storename || '매장'} 리뷰`, // 매장 이름이 없으면 기본값 '매장' 사용
           headerTitleAlign: 'center',
           animation: 'slide_from_right',
+          headerShadowVisible: false,
         })}
       />
 

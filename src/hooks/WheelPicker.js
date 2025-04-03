@@ -159,10 +159,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nextText: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     fontSize: 15,
     textAlign: 'center',
     alignSelf: 'center',
-    color: '#4b4b4b',
+    color: '#181ㅁ1ㅁ',
   },
 });
