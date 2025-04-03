@@ -132,17 +132,17 @@ const styles = StyleSheet.create({
   storeTextView: {
     width: '100%',
     marginLeft: 20,
-    marginTop: 30,
+    marginTop: 10,
   },
   storeText: {
-    fontSize: 17,
-    color: 'black',
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontFamily: 'Pretendard-Bold',
+    color: '#181a1a',
   },
   storeSubText: {
     fontSize: 15,
-    fontWeight: '500',
-    color: '#555',
+    fontFamily: 'Pretendard-Medium',
+    color: '#777',
     marginTop: 5,
   },
   storeView: {

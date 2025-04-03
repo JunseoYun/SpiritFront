@@ -17,7 +17,23 @@ const drinkColors = {
   RUM: '#3E2723',
   TEQUILA: '#EF6C00',
 };
+const hexToRGBA = (hex, opacity = 0.3) => {
+  let col = hex.replace('#', '');
 
+  if (col.length === 3) {
+    col = col
+      .split('')
+      .map(c => c + c)
+      .join('');
+  }
+
+  const num = parseInt(col, 16);
+  const r = (num >> 16) & 0xff;
+  const g = (num >> 8) & 0xff;
+  const b = num & 0xff;
+
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
 const TodayRecommItem = ({store, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
   return (
@@ -31,10 +47,15 @@ const TodayRecommItem = ({store, navigation}) => {
       style={styles.container}>
       <View style={styles.drinkView}>
         {store.mainDrinkDtos?.map((drink, index) => {
-          const color = drinkColors[drink.type] || '#333';
+          const baseColor = drinkColors[drink.type] || '#333';
+          const borderColor = hexToRGBA(baseColor, 0.5); // 살짝 연한 컬러
           return (
             <React.Fragment key={index}>
-              <Text style={[styles.drinkText, {color, borderColor: color}]}>
+              <Text
+                style={[
+                  styles.drinkText,
+                  {color: baseColor, borderColor: borderColor},
+                ]}>
                 {translateAlcohol(drink.type)} {drink.price}
               </Text>
               {index !== store.mainDrinkDtos.length - 1 && (
