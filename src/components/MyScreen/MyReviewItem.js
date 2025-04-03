@@ -95,7 +95,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    paddingBottom: 20,
   },
   reviewCard: {
     backgroundColor: '#FFFFFF',
