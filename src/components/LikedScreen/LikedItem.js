@@ -64,6 +64,7 @@ const LikedItem = ({store, navigation}) => {
 
   return (
     <Pressable
+      style={{marginBottom: 10}}
       onPress={() =>
         navigation.navigate('StoreStack', {
           screen: 'StoreMainScreen',
@@ -188,7 +189,6 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     alignSelf: 'center',
     borderRadius: 12,
-    paddingBottom: 20,
   },
   backimage: {
     width: imageWidth,
