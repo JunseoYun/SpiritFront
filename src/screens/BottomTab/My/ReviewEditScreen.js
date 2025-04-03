@@ -24,6 +24,7 @@ import {
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import ImagePicker from 'react-native-image-crop-picker'; // 이미지 선택 라이브러리
+import {requestPhotoPermission} from '../../../hooks/usePhotopermis';
 
 const ReviewEditScreen = ({route, navigation}) => {
   // 👉 `params`에서 `reviewdata` 가져오기
@@ -178,12 +179,15 @@ const ReviewEditScreen = ({route, navigation}) => {
     }
   };
 
-  const selectImage = () => {
+  const selectImage = async () => {
+    const hasCamera = await requestPhotoPermission();
+    if (!hasCamera) return;
     // 서버에 있는 이미지와 추가된 이미지를 합쳐서 5개 이하로 제한
     if (addedImages.length + serverImages.length < 5) {
       ImagePicker.openPicker({
-        width: 500,
-        height: 500,
+        width: 1024,
+        height: 1024,
+        quality: 1,
         mediaType: 'photo',
         cropping: true,
       })

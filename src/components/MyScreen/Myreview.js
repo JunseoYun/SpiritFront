@@ -4,6 +4,7 @@ import {View, Text, StyleSheet, FlatList} from 'react-native';
 import MyReviewItem from './MyReviewItem';
 import {ReviewRecentGet, ReviewDelete} from '../../api/reviewApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import {useToast} from '../../context/ToastContext';
 
 const MyReview = ({navigation}) => {
   const [myReview, setMyReview] = useState([]); // 검색된 가게 목록
@@ -12,6 +13,7 @@ const MyReview = ({navigation}) => {
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
   const [totalpage, setTotalpage] = useState(0);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const {showToast} = useToast();
 
   // 검색된 가게들을 필터링하는 함수
   const myReviewsget = async currentPage => {
@@ -60,9 +62,7 @@ const MyReview = ({navigation}) => {
           setMyReview(prevReviews =>
             prevReviews.filter(review => review.id !== reviewid),
           );
-          showAlert({
-            title: '삭제 되었습니다',
-          });
+          showToast('삭제 되었습니다.');
         } catch (error) {}
       },
       onCancel: null,

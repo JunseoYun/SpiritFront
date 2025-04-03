@@ -20,6 +20,7 @@ import forbiddenWords from '../../hooks/forbiddenWords';
 import filterWords from '../../hooks/filterWords';
 import {useToast} from '../../context/ToastContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {requestPhotoPermission} from '../../hooks/usePhotopermis';
 
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
@@ -117,7 +118,7 @@ const StoreReviewScreen = ({navigation}) => {
           <FontAwesomeIcon
             name="star"
             size={30}
-            color={starIndex <= newrate ? '#FFD700' : '#D3D3D3'} // 노란색(#FFD700) 또는 회색(#D3D3D3)
+            color={starIndex <= newrate ? '#FFD700' : '#F0F0F0'} // 노란색(#FFD700) 또는 회색(#D3D3D3)
             style={styles.star}
           />
         </TouchableOpacity>
@@ -129,10 +130,13 @@ const StoreReviewScreen = ({navigation}) => {
     setNewReviewContent(inputText);
   };
 
-  const selectImage = () => {
+  const selectImage = async () => {
+    const hasCamera = await requestPhotoPermission();
+    if (!hasCamera) return;
     ImagePicker.openPicker({
-      width: 500,
-      height: 500,
+      width: 1024,
+      height: 1024,
+      quality: 1,
       cropping: true,
       mediaType: 'photo',
     })
