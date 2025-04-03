@@ -188,6 +188,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     alignSelf: 'center',
     borderRadius: 12,
+    paddingBottom: 20,
   },
   backimage: {
     width: imageWidth,

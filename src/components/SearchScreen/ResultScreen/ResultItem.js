@@ -144,7 +144,6 @@ const styles = StyleSheet.create({
   StoreInfo: {
     width: '100%',
     marginTop: 10,
-    marginBottom: 7,
     flexDirection: 'row',
     backgroundColor: '#fff',
     alignSelf: 'center',
@@ -231,7 +230,7 @@ const styles = StyleSheet.create({
   horizontalDivider: {
     height: 1,
     backgroundColor: '#E0E0E0',
-    marginVertical: 10,
+    marginTop: 10,
     width: '100%',
     alignSelf: 'center',
   },

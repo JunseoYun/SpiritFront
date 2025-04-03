@@ -141,7 +141,6 @@ const styles = StyleSheet.create({
   fastSearchStoreInfo: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-
     marginVertical: 10,
     marginHorizontal: 18,
     padding: 10,
