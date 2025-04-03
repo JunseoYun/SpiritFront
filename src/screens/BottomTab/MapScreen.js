@@ -44,6 +44,14 @@ const MapScreen = ({navigation}) => {
     setRefresh(false);
   }, []);
 
+  const closeStoreListOverlayScript = `
+  if (window.currentOverlay && typeof window.currentOverlay.setMap === 'function') {
+    window.currentOverlay.setMap(null);
+    window.currentOverlay = null;
+  }
+  true;
+`;
+
   const fetchSaveLocation = async () => {
     setLoading(true);
     try {
@@ -60,7 +68,9 @@ const MapScreen = ({navigation}) => {
       setStores(storesData);
       setSelectedStore(storesData[0]);
 
-      if (webViewRef.current) {
+      if (webViewRef.current)
+        webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
+      {
         const script = generateMapScript(
           currentLocation.latitude,
           currentLocation.longitude,
@@ -114,6 +124,7 @@ const MapScreen = ({navigation}) => {
         setStores(storesData);
         setSelectedStore(storesData[0]);
         if (webViewRef.current) {
+          webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
           const script = generateMapScript(
             newLocation.latitude,
             newLocation.longitude,
@@ -185,6 +196,7 @@ const MapScreen = ({navigation}) => {
       setSelectedStore(storesData[0]);
 
       if (webViewRef.current) {
+        webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
         const script = generateMapScript(
           centerLatLng.latitude,
           centerLatLng.longitude,
