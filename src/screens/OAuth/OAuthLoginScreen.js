@@ -77,7 +77,7 @@ const OAuthLoginScreen = ({navigation}) => {
 
       const type = 'GOOGLE';
       const id = userInfo.data.user.id;
-      const socialToken = tokens.accessToken;
+      const socialToken = userInfo.data.idToken;
       handleLogin({type, id, socialToken});
     } catch (error) {
       console.log(error);
@@ -97,7 +97,7 @@ const OAuthLoginScreen = ({navigation}) => {
       if (credentialState === appleAuth.State.AUTHORIZED) {
         const type = 'APPLE';
         const id = appleAuthRequestResponse.user;
-        const socialToken = appleAuthRequestResponse.authorizationCode;
+        const socialToken = appleAuthRequestResponse.identityToken;
         handleLogin({type, id, socialToken});
       }
     } catch (error) {}
