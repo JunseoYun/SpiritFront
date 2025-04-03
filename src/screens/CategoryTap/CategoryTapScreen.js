@@ -59,7 +59,8 @@ const CategoryTapScreen = ({navigation, route}) => {
   }, [isFocused]);
 
   return (
-    <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
+    <SafeAreaView
+      style={{backgroundColor: 'white', height: '100%', paddingBottom: 20}}>
       {isInitialLoading ? ( // 초기 로딩 화면
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingtext}>Loading...</Text>
