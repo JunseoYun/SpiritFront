@@ -95,17 +95,17 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 16,
-    color: 'gray',
-    fontWeight: '600',
+    color: '#999',
+    fontFamily: 'Pretendard-SemiBold',
   },
   selectedTabText: {
-    fontWeight: '700',
-    color: 'rgba(16, 190, 251, 0.7)',
+    fontFamily: 'Pretendard-Bold',
+    color: '#45C9FF',
   },
   underline: {
     height: 3,
     width: width / 3 - 60, // ✅ 각 탭에 맞는 밑줄 너비 설정
-    backgroundColor: 'rgba(16, 190, 251, 0.7)',
+    backgroundColor: '#45C9FF',
     position: 'absolute',
     bottom: 0,
     left: 30,

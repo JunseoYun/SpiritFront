@@ -390,93 +390,23 @@ const styles = StyleSheet.create({
   searchButton: {
     marginRight: 18,
     fontSize: 18,
-    fontWeight: '500',
-    color: '#333',
+    fontFamily: 'Pretendard-Medium',
+    color: '#181A1A',
   },
   savebutton: {
     alignSelf: 'center',
     alignItems: 'center',
     width: '90%',
     marginVertical: 7,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     paddingVertical: 12,
     borderRadius: 10,
     marginBottom: 30,
   },
   savebuttontext: {
     color: 'white',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     fontSize: 18,
-  },
-  modalBackground: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContainer: {
-    width: '90%',
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  modalButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  modalButton: {
-    backgroundColor: '#16BBFF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-  },
-  modalButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  operatingHoursContainer: {
-    marginTop: 10,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    backgroundColor: '#f9f9f9',
-    marginHorizontal: 18,
-  },
-  dayRow: {
-    flexDirection: 'row',
-    paddingVertical: 5,
-  },
-  dayLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginRight: 5,
-  },
-  breakLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#666',
-  },
-  operatingHoursText: {
-    fontSize: 16,
-    fontWeight: 500,
-    color: '#333',
-  },
-  breakTimeText: {
-    fontSize: 15,
-    color: '#999',
-  },
-  closedText: {
-    fontSize: 14,
-    color: '#999',
-    fontWeight: 'bold',
   },
 });
 

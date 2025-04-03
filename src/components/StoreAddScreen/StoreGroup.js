@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   storeinputtext: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
@@ -75,12 +75,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
   },
   checkboxText: {
-    color: '#16BBFF',
+    color: '#45C9FF',
     fontSize: 18,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     padding: 3,
   },
   checkboxTextSelected: {

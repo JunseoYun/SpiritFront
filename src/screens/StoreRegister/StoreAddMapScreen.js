@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '90%',
     height: '8%',
-    backgroundColor: '#80D2F4',
+    backgroundColor: '#45C9FF',
     borderRadius: 12,
   },
   locationbtntext: {

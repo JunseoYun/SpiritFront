@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 
-const StoreTV = ({ selectedscreenOption, setselectedscreenOption }) => {
+const StoreTV = ({selectedscreenOption, setselectedscreenOption}) => {
   const handleCheckBoxscreenChange = index => {
     if (index === 0 && selectedscreenOption !== true) {
       setselectedscreenOption(true);
@@ -44,12 +44,10 @@ const StoreTV = ({ selectedscreenOption, setselectedscreenOption }) => {
             미설치
           </Text>
         </TouchableOpacity>
-
       </View>
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   storeinputview: {
@@ -57,7 +55,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   storeinputtext: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
@@ -77,12 +75,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
   },
   checkboxText: {
-    color: '#16BBFF',
+    color: '#45C9FF',
     fontSize: 18,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     padding: 3,
   },
   checkboxTextSelected: {

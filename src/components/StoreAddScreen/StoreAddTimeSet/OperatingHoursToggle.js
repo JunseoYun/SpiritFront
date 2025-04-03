@@ -54,7 +54,7 @@ const OperatingHoursToggle = ({
 const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#333',
     marginTop: 25,
     marginHorizontal: 18,
@@ -74,16 +74,18 @@ const styles = StyleSheet.create({
     marginRight: 7,
   },
   selectedToggle: {
-    backgroundColor: '#16BBFF',
-    borderColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
+    borderColor: '#45C9FF',
   },
   selectedText: {
     color: '#fff',
-    fontWeight: '600',
+    fontSize: 15,
+    fontFamily: 'Pretendard-SemiBold',
   },
   unselectedText: {
     color: '#aaa',
-    fontWeight: '600',
+    fontSize: 15,
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

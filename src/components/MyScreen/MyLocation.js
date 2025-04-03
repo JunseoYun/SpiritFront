@@ -51,7 +51,7 @@ const MyLocation = ({navigation}) => {
         <Ionicons
           name="location-outline"
           size={25}
-          color="#16BBFF"
+          color="#45C9FF"
           style={styles.icon}
         />
         <View>
@@ -69,7 +69,7 @@ const MyLocation = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FC',
+    backgroundColor: '#fff',
     padding: 16,
   },
   infoBox: {
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3, // Android 그림자
     marginBottom: 20,
@@ -89,18 +89,18 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#16BBFF',
+    fontSize: 16,
+    fontFamily: 'Pretendard-Medium',
+    color: '#45C9FF',
     marginBottom: 4,
   },
   address: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '400',
+    fontSize: 18,
+    color: '#181A1A',
+    fontFamily: 'Pretendard-SemiBold',
   },
   button: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

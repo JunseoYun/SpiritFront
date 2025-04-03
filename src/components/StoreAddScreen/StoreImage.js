@@ -130,7 +130,11 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
             </Pressable>
           ))}
           <Pressable style={{alignSelf: 'center'}} onPress={selectImage}>
-            <MaterialCommunityIcons name="image-plus" size={50} color="#333" />
+            <MaterialCommunityIcons
+              name="image-plus"
+              size={50}
+              color="#181A1A"
+            />
           </Pressable>
         </ScrollView>
 
@@ -158,13 +162,14 @@ const styles = StyleSheet.create({
     height: 100,
   },
   storeinputtext: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
   },
   errorMessage: {
     color: '#FF4816',
+    fontFamily: 'Pretendard-Medium',
     fontSize: 15,
     marginTop: 5,
   },
@@ -190,7 +195,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 5,
     left: 5,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     paddingVertical: 2,
     paddingHorizontal: 8,
     borderRadius: 5,

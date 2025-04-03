@@ -31,7 +31,7 @@ export default function MainStack() {
           elevation: 0, // Android: 헤더 하단 선 없애기
         },
         headerTitleStyle: {
-          fontWeight: '600',
+          fontFamily: 'Pretendard-Bold',
           fontSize: 18,
           color: '#333', // 헤더 제목 색상
         },
@@ -48,7 +48,7 @@ export default function MainStack() {
           title: '위치 설정',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (
@@ -72,7 +72,7 @@ export default function MainStack() {
           title: '주소 검색',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (
@@ -125,7 +125,7 @@ export default function MainStack() {
           title: '매장 등록하기',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
             alignItems: 'center',
             justifyContent: 'center',
@@ -151,7 +151,7 @@ export default function MainStack() {
           title: '매장 주소 검색',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (
@@ -175,7 +175,7 @@ export default function MainStack() {
           title: '영업 시간',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (
@@ -199,7 +199,7 @@ export default function MainStack() {
           title: '매장 조회',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (
@@ -223,7 +223,7 @@ export default function MainStack() {
           title: '매장 권한 신청 1/2',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (
@@ -247,7 +247,7 @@ export default function MainStack() {
           title: '매장 권한 신청 2/2',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (
@@ -285,7 +285,7 @@ export default function MainStack() {
           title: '랜덤 고르기',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (
@@ -309,7 +309,7 @@ export default function MainStack() {
           title: '주소 설정',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
           headerLeft: () => (

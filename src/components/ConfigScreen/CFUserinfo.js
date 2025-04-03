@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-Medium',
   },
   info: {
     flexDirection: 'row',
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   value: {
     color: '#999',
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     marginRight: 15,
   },
 });

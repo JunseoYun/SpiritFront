@@ -1079,7 +1079,7 @@ const styles = StyleSheet.create({
   searchButton: {
     marginRight: 18,
     fontSize: 18,
-    fontWeight: '500',
-    color: '#16BBFF',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#45C9FF',
   },
 });

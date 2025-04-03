@@ -55,7 +55,7 @@ const StoreModal = ({
                 onPress={() => handleClose(handleReport)}>
                 <Text style={styles.modalButtonText}>매장 제보·신고</Text>
               </Pressable> */}
-              <View style={styles.line}></View>
+              {/* <View style={styles.line}></View> */}
               <Pressable
                 onPress={() => handleClose()}
                 style={styles.closeButton}>
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalButton: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     borderRadius: 5,
     paddingVertical: 12,
     paddingHorizontal: 20,
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   closeButton: {
     backgroundColor: '#E7E7E7',
@@ -121,11 +121,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     width: '100%',
     alignItems: 'center',
+    marginTop: 10,
   },
   closeButtonText: {
     color: '#333',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   line: {
     height: 1,

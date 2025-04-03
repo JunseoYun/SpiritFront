@@ -5,11 +5,14 @@ const ToastContext = createContext(); // Context 생성
 
 export const ToastProvider = ({children}) => {
   const [toastMessage, setToastMessage] = useState(null);
+
+  const [position, setPosition] = useState(null);
   const [isShowToast, setIsShowToast] = useState(false);
 
   // 토스트 메시지를 보여주는 함수
-  const showToast = message => {
+  const showToast = (message, position) => {
     setToastMessage(message);
+    setPosition(position);
     setIsShowToast(true);
   };
 
@@ -21,6 +24,7 @@ export const ToastProvider = ({children}) => {
         message={toastMessage}
         isShowToast={isShowToast}
         onDismiss={() => setIsShowToast(false)}
+        position={position}
       />
     </ToastContext.Provider>
   );

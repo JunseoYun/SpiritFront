@@ -15,13 +15,13 @@ import FastSearch from '../../../components/SearchScreen/FastSearch/FastSearch';
 import CategoryModal from '../../../components/SearchScreen/FastSearch/Modal/CategoryModal';
 import PeopleModal from '../../../components/SearchScreen/FastSearch/Modal/PeopleModal';
 import VisitTimeModal from '../../../components/SearchScreen/FastSearch/Modal/VisitTimeModal';
-import NearStoreList from '../../../components/SearchScreen/NearStore/NearStoreList';
+
 import RecentStoreList from '../../../components/MainScreen/RecentStore/RecentStoreList';
 import SearchButton from '../../../components/SearchScreen/SearchButton';
-import useCustomAlert from '../../../hooks/useCustomAlert';
-const SearchScreen = ({navigation}) => {
-  const {showAlert, AlertComponent} = useCustomAlert();
 
+import {useToast} from '../../../context/ToastContext';
+const SearchScreen = ({navigation}) => {
+  const {showToast} = useToast();
   const [location, setLocation] = useState(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [peopleModalVisible, setPeopleModalVisible] = useState(false);
@@ -125,9 +125,7 @@ const SearchScreen = ({navigation}) => {
         location: location,
       });
     } else {
-      showAlert({
-        title: '검색어를 입력하세요.',
-      });
+      showToast('검색어를 입력하세요.', 'center');
     }
   };
 
@@ -253,8 +251,6 @@ const SearchScreen = ({navigation}) => {
 
       {/* 하단에 고정된 검색 버튼 */}
       <SearchButton onPress={onPressSearch} title="검색" />
-
-      <AlertComponent />
     </SafeAreaView>
   );
 };

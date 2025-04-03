@@ -30,12 +30,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 20,
   },
   input: {
     fontSize: 20,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     borderWidth: 1,
     borderRadius: 7,
     borderColor: '#999',

@@ -19,7 +19,7 @@ const getScreenOptions = title => ({
   headerTitleStyle: {
     fontSize: 18,
     color: '#333',
-    fontWeight: '600',
+    fontFamily: 'Pretendard-Bold',
   },
 
   headerTitleAlign: 'center',
@@ -77,7 +77,7 @@ export default function MyStack() {
           headerTitleStyle: {
             fontSize: 19, // 타이틀 크기 설정
             color: '#333', // 텍스트 색상 (선택 사항)
-            fontWeight: 'bold',
+            fontFamily: 'Pretendard-Bold',
           },
         }}
       />

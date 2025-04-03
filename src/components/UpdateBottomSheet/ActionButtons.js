@@ -29,12 +29,12 @@ const styles = StyleSheet.create({
   saveButton: {
     width: '49%',
     borderRadius: 7,
-    backgroundColor: '#5CCEFF',
+    backgroundColor: '#45C9FF',
     alignItems: 'center',
   },
   buttonText: {
     fontSize: 20,
     padding: 12,
-    color: '#39C4FF',
+    color: '#45C9FF',
   },
 });

@@ -269,12 +269,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 14,
-    fontWeight: '400',
+    fontFamily: 'Pretendard-Medium',
     marginBottom: 20,
   },
   imageWrapper: {
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 5,
     left: 5,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     paddingVertical: 2,
     paddingHorizontal: 8,
     borderRadius: 5,
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   representativeText: {
     color: 'white',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   footer: {
     position: 'absolute',

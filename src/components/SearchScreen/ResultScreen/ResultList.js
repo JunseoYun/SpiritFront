@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-SemiBold', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#333',
   },

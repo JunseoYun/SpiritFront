@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontFamily: 'Pretendard-Bold',
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 20,
     textAlign: 'center',
     color: '#333',
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   },
   alcoholText: {
     fontSize: 16,
-    fontFamily: 'Pretendard-Regular',
+    fontFamily: 'Pretendard-Medium',
     color: '#767676',
   },
   selectedAlcohol: {
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   selectedAlcoholText: {
     color: '#fff',
-    fontFamily: 'Pretendard-Medium',
+    fontFamily: 'Pretendard-SemiBold',
   },
   priceContainer: {
     marginTop: 20,

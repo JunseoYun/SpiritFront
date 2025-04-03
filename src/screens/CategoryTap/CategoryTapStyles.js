@@ -45,12 +45,12 @@ const Categorystyles = StyleSheet.create({
   },
   menuName: {
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#333',
   },
   menuPrice: {
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     marginTop: -5,
     color: '#333',
   },
@@ -80,7 +80,7 @@ const Categorystyles = StyleSheet.create({
   overlayText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     lineHeight: 22,
     textAlign: 'center',
   },
@@ -99,14 +99,14 @@ const Categorystyles = StyleSheet.create({
   },
   storeName: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#333',
     width: '50%',
   },
   alcoholText: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#16BBFF',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#45C9FF',
     width: '50%',
     textAlign: 'right',
   },
@@ -116,7 +116,7 @@ const Categorystyles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#333',
   },
   infoTimeView: {

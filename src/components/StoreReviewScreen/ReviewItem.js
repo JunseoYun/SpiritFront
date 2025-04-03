@@ -91,14 +91,14 @@ const ReviewItem = ({item, navigation}) => {
       )}
       <View style={styles.bottomView}>
         <Text style={styles.datetimeText}>작성 {formattedCreatedDate}</Text>
-        <Pressable
+        {/* <Pressable
           onPress={() => {
             navigation.navigate('ReviewReportScreen', {
               reviewId: item.id,
             });
           }}>
           <Text style={styles.datetimeText}>신고하기</Text>
-        </Pressable>
+        </Pressable> */}
       </View>
     </View>
   );
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 25,
     borderBottomWidth: 1,
-    borderColor: '#E7E7E7',
+    borderColor: '#E5E5E5',
   },
   reviewHeader: {
     flexDirection: 'row',
@@ -130,9 +130,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   writerName: {
-    fontWeight: '600',
-    fontSize: 17,
-    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 18,
+    color: '#181A1A',
   },
   infoView: {
     flexDirection: 'row',
@@ -141,13 +141,13 @@ const styles = StyleSheet.create({
   },
   reviewInfo: {
     fontSize: 15,
-    color: '#616161',
-    fontWeight: '500',
+    color: '#181A1A',
+    fontFamily: 'Pretendard-Medium',
   },
   reviewDate: {
     fontSize: 14,
-    color: '#828282',
-    fontWeight: '500',
+    color: '#767676',
+    fontFamily: 'Pretendard-Medium',
     paddingBottom: 16,
   },
   contentView: {
@@ -157,10 +157,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginVertical: 15,
     marginLeft: 3,
-    color: '#333',
+    color: '#181A1A',
     textAlign: 'left',
     alignSelf: 'flex-start',
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     lineHeight: 22, // 가독성을 위해 줄 간격 추가
   },
   moreText: {
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   datetimeText: {
     color: '#999',
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Regular',
     marginTop: 10,
     marginLeft: 3,
   },

@@ -59,22 +59,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 5,
     fontSize: 15,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#FF4816',
-  },
-  pickerOkView: {
-    width: '100%',
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-    backgroundColor: '#16BBFF',
-    borderRadius: 7,
-  },
-  pickerOkText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '500',
   },
 });
 

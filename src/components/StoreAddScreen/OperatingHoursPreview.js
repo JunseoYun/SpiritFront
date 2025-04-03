@@ -124,15 +124,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   storeinputtext: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
   },
   editButton: {
     fontSize: 15,
-    color: '#16BBFF',
-    fontWeight: '500',
+    color: '#45C9FF',
+    fontFamily: 'Pretendard-Medium',
   },
   emptyContainer: {
     backgroundColor: '#F7F8FA',
@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 15,
     color: '#999',
+    fontFamily: 'Pretendard-Medium',
   },
   operatingHoursContainer: {
     marginHorizontal: 20,
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5E5',
   },
   dayChip: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 14,
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
   dayText: {
     fontSize: 14,
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
 
   timeContainer: {
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
   },
   operatingHoursText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#333',
   },
   breakTimeText: {
@@ -189,17 +190,14 @@ const styles = StyleSheet.create({
   closedText: {
     fontSize: 15,
     color: '#4b4b4b',
-    fontWeight: '500',
+    fontFamily: 'Pretendard-SemiBold',
     flex: 1,
   },
-  nextDayHighlight: {
-    color: '#FF5733', // 강조 색상
-    fontWeight: '600',
-  },
+
   allDayText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#16BBFF',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#45C9FF',
     textAlign: 'center',
     paddingVertical: 10,
   },

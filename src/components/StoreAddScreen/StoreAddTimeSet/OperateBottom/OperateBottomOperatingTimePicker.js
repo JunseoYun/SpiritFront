@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 5,
     fontSize: 15,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#FF4816',
   },
 });

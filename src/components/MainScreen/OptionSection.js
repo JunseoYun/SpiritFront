@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 16, // 텍스트 크기 축소
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     color: '#333',
   },
   optionsContainer: {
@@ -95,8 +95,8 @@ const styles = StyleSheet.create({
     elevation: 3, // Android 그림자 축소
   },
   activeButton: {
-    backgroundColor: '#10BEFB',
-    shadowColor: '#10BEFB',
+    backgroundColor: '#45C9FF',
+    shadowColor: '#45C9FF',
     shadowOpacity: 0.25,
     elevation: 6,
   },
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   },
   optionTitle: {
     fontSize: 14, // 텍스트 크기 축소
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     color: '#333',
     marginBottom: 4, // 간격 축소
   },
@@ -117,6 +117,7 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     lineHeight: 16, // 줄 간격 축소
+    fontFamily: 'Pretendard-Medium',
   },
   activeText: {
     color: '#FFFFFF',

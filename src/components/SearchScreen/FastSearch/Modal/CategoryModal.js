@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     color: 'black',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 12,
     marginTop: 7,
   },
@@ -108,12 +108,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingVertical: 10,
     paddingHorizontal: 30,
-    backgroundColor: 'rgba(22, 187, 255, 0.9)',
+    backgroundColor: '#45C9FF',
     borderRadius: 5,
   },
   closeButtonText: {
     fontSize: 16,
     color: '#FFF',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

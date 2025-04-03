@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     borderRadius: 7,
     paddingHorizontal: 18,
     alignSelf: 'center',
@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
   pickerOkText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

@@ -89,9 +89,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   operateDayText: {
-    color: '#4B4B4B',
+    color: '#181A1A',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     alignSelf: 'center',
   },
   timeContainer: {
@@ -108,21 +108,21 @@ const styles = StyleSheet.create({
   timeInputTitle: {
     lineHeight: 30,
     color: '#999',
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Regular',
     fontSize: 15,
     marginRight: 7,
   },
   timeInputText: {
     lineHeight: 30,
-    fontWeight: '400',
+    fontFamily: 'Pretendard-Medium',
     fontSize: 15,
-    color: '#4B4B4B',
+    color: '#181A1A',
   },
   holidayText: {
     lineHeight: 30,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     fontSize: 15,
-    color: '#4B4B4B',
+    color: '#181A1A',
     marginRight: 18,
   },
   icons: {

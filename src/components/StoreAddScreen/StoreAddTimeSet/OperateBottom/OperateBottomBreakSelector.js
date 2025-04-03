@@ -26,7 +26,7 @@ const OperateBottomBreakSelector = ({
           <Text
             style={[
               styles.timeText,
-              isStartTime && {color: '#16BBFF'},
+              isStartTime && {color: '#45C9FF'},
               breakError && {color: '#FF4816'},
             ]}>
             {`${breakStartHour}:${breakStartMinute}`}
@@ -45,7 +45,7 @@ const OperateBottomBreakSelector = ({
             <Text
               style={[
                 styles.nextText,
-                isEndTime && {color: '#16BBFF'},
+                isEndTime && {color: '#45C9FF'},
                 breakError && {color: '#FF4816', borderColor: '#FF4816'},
               ]}>
               다음날
@@ -54,7 +54,7 @@ const OperateBottomBreakSelector = ({
           <Text
             style={[
               styles.timeText,
-              isEndTime && {color: '#16BBFF'},
+              isEndTime && {color: '#45C9FF'},
               breakError && {color: '#FF4816'},
             ]}>
             {breakEndHour >= 24
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   boldText: {
     marginHorizontal: 18,
     marginVertical: 10,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     fontSize: 16,
   },
   timeInputContainer: {
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   },
   timeInput: {
     backgroundColor: '#F2F2F2',
-    color: '#333',
+    color: '#181A1A',
     padding: 10,
     borderRadius: 5,
     width: 80,
@@ -97,22 +97,22 @@ const styles = StyleSheet.create({
   },
   nextText: {
     fontSize: 12,
-    color: '#16BBFF',
-    fontWeight: '600',
+    color: '#45C9FF',
+    fontFamily: 'Pretendard-SemiBold',
     borderWidth: 1,
-    borderColor: '#16BBFF',
+    borderColor: '#45C9FF',
     padding: 3,
     marginRight: 5,
     borderRadius: 3,
   },
   timeText: {
-    fontWeight: '600',
-    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#181A1A',
     fontSize: 15,
   },
   separator: {
     fontSize: 18,
-    color: '#333',
+    color: '#181A1A',
     marginHorizontal: 15,
   },
 });

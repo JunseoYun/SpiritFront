@@ -115,7 +115,7 @@ const ClosedDaySelector = ({
 const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#333',
     marginTop: 25,
     marginHorizontal: 18,
@@ -135,16 +135,16 @@ const styles = StyleSheet.create({
     marginRight: 7,
   },
   selectedToggle: {
-    backgroundColor: '#16BBFF',
-    borderColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
+    borderColor: '#45C9FF',
   },
   selectedText: {
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
   unselectedText: {
     color: '#aaa',
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
   daysContainer: {
     flexDirection: 'row',
@@ -161,11 +161,12 @@ const styles = StyleSheet.create({
     marginTop: -10,
   },
   selectedDayButton: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
   },
   dayText: {
     fontSize: 15,
     color: '#333',
+    fontFamily: 'Pretendard-Medium',
   },
   selectedDayText: {
     color: '#FFF',
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
     marginTop: 5,
     fontSize: 15,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Regular',
     color: '#FF4816',
   },
 });

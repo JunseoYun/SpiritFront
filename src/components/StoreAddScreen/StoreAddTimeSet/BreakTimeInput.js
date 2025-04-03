@@ -26,7 +26,7 @@ const BreakTimeInput = ({
           <Text
             style={[
               styles.timeText,
-              isStartTime && {color: '#16BBFF'},
+              isStartTime && {color: '#45C9FF'},
               isStartTime && wrongBreak && {color: '#FF4816'},
             ]}>
             {`${sameStartTime.startHour}:${sameStartTime.startMinute}`}
@@ -55,7 +55,7 @@ const BreakTimeInput = ({
           <Text
             style={[
               styles.timeText,
-              isEndTime && {color: '#16BBFF'},
+              isEndTime && {color: '#45C9FF'},
               isEndTime && wrongBreak && {color: '#FF4816'},
             ]}>
             {`${
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   checkboxLabel: {
     fontSize: 16,
     color: '#333',
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
   },
   timeInputContainer: {
     flexDirection: 'row',
@@ -103,22 +103,22 @@ const styles = StyleSheet.create({
   },
   nextText: {
     fontSize: 12,
-    color: '#16BBFF',
-    fontWeight: 600,
+    color: '#45C9FF',
+    fontFamily: 'Pretendard-SemiBold',
     borderWidth: 1,
-    borderColor: '#16BBFF',
+    borderColor: '#45C9FF',
     padding: 3,
     marginRight: 5,
     borderRadius: 3,
   },
   timeText: {
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#333',
     fontSize: 15,
   },
   separator: {
     fontSize: 18,
-    color: '#333',
+    color: '#181A1A',
     marginHorizontal: 15,
   },
 });

@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 20,
   },
   storeCheckView: {
@@ -66,18 +66,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F2',
     borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#16BBFF',
+    borderColor: '#45C9FF',
     padding: 10,
     margin: 5,
     alignItems: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
   },
   checkboxText: {
     color: '#333',
     fontSize: 18,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     padding: 3,
   },
 });

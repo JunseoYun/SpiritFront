@@ -57,10 +57,11 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 17,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
   deleteText: {
     color: '#F05650',
+    fontFamily: 'Pretendard-Medium',
   },
   separator: {
     width: '100%',

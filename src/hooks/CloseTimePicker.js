@@ -96,7 +96,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   colon: {
-    color: '#333',
+    color: '#181A1A',
+    fontFamily: 'Pretendard-Medium',
     fontSize: 20,
   },
   selectView: {
