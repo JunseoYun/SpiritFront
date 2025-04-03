@@ -68,7 +68,17 @@ const StoreResultItem = ({store, navigation, index}) => {
           {/* ✅ 브레이크 타임 표시 */}
         </ImageBackground>
         <View style={styles.StoreTextView}>
-          <View style={styles.StoreTitleView}>
+          <View>
+            <Text
+              style={styles.StoreCategory}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {store.categories
+                .slice(0, 3)
+                .map(category => translateCategory(category))
+                .join(' ')}
+            </Text>
+
             <Text
               style={styles.StoreTitle}
               numberOfLines={1}
@@ -93,16 +103,16 @@ const StoreResultItem = ({store, navigation, index}) => {
             )}
           </View>
 
-          <View style={styles.StoreCategoryList}>
-            {store.categories.slice(0, 3).map((category, index) => (
-              <Text key={index} style={styles.StoreCategory}>
-                {translateCategory(category)}
-              </Text>
-            ))}
-          </View>
-          <Text style={styles.StoreAddressText}>
-            {store.locationDto.address}, {store.locationDto.addressDetail}
+          <Text
+            style={styles.StoreAddressText}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {store.locationDto.address}
+            {store.locationDto.addressDetail
+              ? `, ${store.locationDto.addressDetail}`
+              : ''}
           </Text>
+
           <View style={styles.subView}>
             {store?.isAlwaysOpen == true ? (
               <Text style={styles.StoreClose}>24시간 영업</Text>
@@ -125,7 +135,7 @@ const StoreResultItem = ({store, navigation, index}) => {
 const styles = StyleSheet.create({
   StoreInfo: {
     width: '100%',
-    marginTop: 10,
+    marginTop: 20,
     marginBottom: 7,
     flexDirection: 'row',
     backgroundColor: '#fff',
@@ -133,8 +143,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   backimage: {
-    width: 120,
-    height: 120,
+    width: 110,
+    height: 110,
     borderRadius: 10,
     borderRadius: 10,
   },
@@ -151,7 +161,7 @@ const styles = StyleSheet.create({
   overlayText: {
     color: 'white',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -161,16 +171,12 @@ const styles = StyleSheet.create({
     marginVertical: 3,
     flex: 1,
   },
-  StoreTitleView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginRight: 5,
-  },
+
   StoreTitle: {
-    fontWeight: 'bold',
-    fontSize: 17,
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 18,
     color: '#333',
-    maxWidth: 190,
+    width: '100%',
   },
   badge: {
     backgroundColor: '#16BBFF',
@@ -181,24 +187,27 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
   StoreCategoryList: {
     flexDirection: 'row',
     marginRight: 5,
     alignItems: 'center',
+    width: '100%',
   },
 
   StoreAddressText: {
-    color: '#999',
-    fontSize: 14,
-    fontWeight: 600,
+    color: '#181A1A',
+    fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
+    width: '100%',
   },
   StoreCategory: {
-    fontWeight: '500',
-    fontSize: 15,
-    color: '#333',
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    color: '#767676',
     marginRight: 5,
+    marginBottom: 3,
   },
   subView: {
     flexDirection: 'row',
@@ -207,14 +216,14 @@ const styles = StyleSheet.create({
   },
   StoreClose: {
     fontSize: 13,
-    color: '#333',
+    color: '#767676',
     marginRight: 5,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Regular',
   },
   horizontalDivider: {
     height: 1,
     backgroundColor: '#E0E0E0',
-    marginVertical: 10,
+    marginTop: 10,
     width: '100%',
     alignSelf: 'center',
   },
