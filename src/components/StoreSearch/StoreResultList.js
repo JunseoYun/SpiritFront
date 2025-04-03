@@ -87,15 +87,16 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
       }}
       onEndReachedThreshold={0.5}
       ListFooterComponent={
-        loading && !isEnd ? (
+        loading &&
+        !isEnd && (
           <View style={styles.footer}>
             <Text style={styles.emptyText}>Loading...</Text>
           </View>
-        ) : searchingStores.length > 0 && page === totalpage - 1 ? (
-          <View style={styles.footer}>
-            <Text style={styles.emptyText}>더 이상 결과가 없습니다</Text>
-          </View>
-        ) : null
+        ) // searchingStores.length > 0 && page === totalpage - 1 ? (
+        //   <View style={styles.footer}>
+        //     <Text style={styles.emptyText}>더 이상 결과가 없습니다</Text>
+        //   </View>
+        // ) :
       }
       ListEmptyComponent={
         !loading && searchingStores.length === 0 && isword ? (
@@ -109,17 +110,15 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
 const styles = StyleSheet.create({
   fastSearchModalScrollView: {
     marginTop: 1,
-    paddingBottom: 20,
   },
   footer: {
-    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
   },
   emptyText: {
     textAlign: 'center',
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontFamily: 'Pretendard-Bold',
     fontSize: 20,
     color: '#333',
   },

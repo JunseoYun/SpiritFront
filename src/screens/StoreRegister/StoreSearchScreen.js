@@ -85,19 +85,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    paddingBottom: 100,
     paddingTop: 16,
   },
   searchButton: {
     marginRight: 18,
-    fontSize: 19,
-    fontWeight: '600',
-    color: '#16BBFF',
+    fontSize: 18,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#45C9FF',
   },
   infoText: {
     marginHorizontal: 20,
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     marginVertical: 5,
   },
@@ -116,7 +115,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     borderRadius: 10,
     elevation: 3, // Android shadow
     shadowColor: '#000', // iOS shadow
