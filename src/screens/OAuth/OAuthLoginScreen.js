@@ -16,13 +16,11 @@ import {
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {appleAuth} from '@invertase/react-native-apple-authentication';
 import {user_login} from '../../api/userApi';
-import useCustomAlert from '../../hooks/useCustomAlert';
 import {useAuth} from '../../context/AuthContext';
 import Config from 'react-native-config';
 import FastImage from 'react-native-fast-image';
 
 const OAuthLoginScreen = ({navigation}) => {
-  const {showAlert, AlertComponent} = useCustomAlert();
   const {loginauth} = useAuth();
 
   useEffect(() => {
@@ -46,19 +44,6 @@ const OAuthLoginScreen = ({navigation}) => {
             id: id,
             socialToken: socialToken,
           });
-          // showAlert({
-          //   title: '등록된 회원 정보가 없습니다.',
-          //   message: '해당 소셜 계정으로 \n회원가입을 진행하시겠습니까?',
-          //   onConfirm: () => {
-          //     navigation.navigate('AgreeScreen', {
-          //       type: type,
-          //       id: id,
-          //       socialToken: socialToken,
-          //     });
-          //   }, // 함수 참조 전달
-          //   onCancel: null,
-          //   type: 'confirm',
-          // });
         }
       }
     }
@@ -82,14 +67,7 @@ const OAuthLoginScreen = ({navigation}) => {
       const id = profile.id;
       const socialToken = token.accessToken;
       handleLogin({type, id, socialToken});
-    } catch (err) {
-      // showAlert({
-      //   title: '카카오 로그인 취소',
-      //   onConfirm: null,
-      //   onCancel: null,
-      //   type: 'ok',
-      // });
-    }
+    } catch (err) {}
   };
 
   const handleGoogleSignIn = async () => {
@@ -122,25 +100,8 @@ const OAuthLoginScreen = ({navigation}) => {
         const socialToken = appleAuthRequestResponse.authorizationCode;
         handleLogin({type, id, socialToken});
       }
-    } catch (error) {
-      // showAlert({
-      //   title: '애플 로그인 취소',
-      //   onConfirm: null,
-      //   onCancel: null,
-      //   type: 'ok',
-      // });
-    }
+    } catch (error) {}
   };
-
-  // const handletempLogin = async () => {
-  //   try {
-  //     handleLogin({type: 'KAKAO', id: 555, token: 555});
-  //   } catch (error) {
-  //     showAlert({
-  //       title: '임시 로그인 오류',
-  //     });
-  //   }
-  // };
 
   return (
     <SafeAreaView style={styles.background}>
@@ -209,23 +170,7 @@ const OAuthLoginScreen = ({navigation}) => {
         ) : (
           <View style={{height: 50, marginTop: 20}} />
         )}
-        {/* 
-        <TouchableOpacity
-          onPress={handletempLogin}
-          style={styles.googleButtonContainer}>
-          <View style={styles.googleView}>
-            <View style={styles.googleLogoContainer}>
-              <Image
-                source={require('../../assets/appleLogo.png')}
-                style={styles.appleLogo}
-              />
-            </View>
-            <Text style={styles.appleText}>임시 로그인</Text>
-          </View>
-        </TouchableOpacity> */}
       </View>
-
-      <AlertComponent />
     </SafeAreaView>
   );
 };
