@@ -65,6 +65,7 @@ const ReviewForm = ({
             setVisitDate(date);
             setIsDatePickerOpen(false);
           }}
+          style={{backgroundColor: 'blue', color: 'blue'}}
           onCancel={() => setIsDatePickerOpen(false)}
         />
 
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
     marginLeft: 3,
   },
   textarea: {
-    backgroundColor: '#E9E9E9',
+    backgroundColor: '#F5F5F5',
     borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 30,
@@ -136,6 +137,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     flexDirection: 'row',
     marginBottom: 30,
+    color: '#F5F5F5',
   },
   buttonView: {
     flexDirection: 'row',
@@ -144,7 +146,7 @@ const styles = StyleSheet.create({
   savebutton: {
     alignItems: 'center',
     borderRadius: 7,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#80def4',
     paddingVertical: 10,
     width: '48%',
   },
@@ -160,10 +162,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     width: '48%',
     borderWidth: 2,
-    borderColor: '#16BBFF',
+    borderColor: '#80def4',
   },
   canceltext: {
-    color: '#16BBFF',
+    color: '#80def4',
     fontWeight: 'bold',
     fontSize: 18,
   },
@@ -183,7 +185,7 @@ const styles = StyleSheet.create({
     borderColor: '#FF6B6B', // 선택된 이미지를 강조
   },
   dateButton: {
-    backgroundColor: '#E9E9E9',
+    backgroundColor: '#F5F5F5',
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',

@@ -1,13 +1,17 @@
 import React from 'react';
 import {Modal, View, Pressable, Text, StyleSheet} from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
+import {requestPhotoPermission} from '../../hooks/usePhotopermis';
 
 const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
   const handleImagePick = async () => {
+    const hasCamera = await requestPhotoPermission();
+    if (!hasCamera) return;
     try {
       const image = await ImagePicker.openPicker({
-        width: 500,
-        height: 500,
+        width: 1024,
+        height: 1024,
+        quality: 1,
         cropping: true,
         mediaType: 'photo',
       });
