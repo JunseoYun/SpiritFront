@@ -268,8 +268,6 @@ const StoreReviewScreen = ({navigation}) => {
               <View style={styles.footer}>
                 {loading && !isEnd ? (
                   <Text style={styles.emptyText}>Loading...</Text>
-                ) : reviewdata.length > 0 ? (
-                  <Text style={styles.emptyText}>더 이상 리뷰가 없습니다</Text>
                 ) : (
                   <Text style={styles.emptyText}>등록된 리뷰가 없습니다</Text>
                 )}

@@ -116,10 +116,6 @@ const MyReview = ({navigation}) => {
             <View style={styles.footer}>
               <Text style={styles.emptyText}>Loading...</Text>
             </View>
-          ) : !isEnd && myReview.length > 0 && page === totalpage - 1 ? (
-            <View style={styles.footer}>
-              <Text style={styles.emptyText}>더 이상 리뷰가 없습니다</Text>
-            </View>
           ) : null
         }
         ListEmptyComponent={

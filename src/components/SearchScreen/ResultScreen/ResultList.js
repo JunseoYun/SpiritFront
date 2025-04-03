@@ -95,10 +95,6 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
           <View style={styles.footer}>
             <Text style={styles.emptyText}>Loading...</Text>
           </View>
-        ) : searchingStores.length > 0 && page === totalpage - 1 ? (
-          <View style={styles.footer}>
-            <Text style={styles.emptyText}>더 이상 결과가 없습니다</Text>
-          </View>
         ) : null
       }
       ListEmptyComponent={

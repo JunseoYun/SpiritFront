@@ -93,10 +93,6 @@ const LikeScreen = ({navigation}) => {
             <View style={styles.loadingContainer}>
               <Text style={styles.emptyText}>Loading...</Text>
             </View>
-          ) : !hasMore && stores.length > 0 ? (
-            <View style={styles.footer}>
-              <Text style={styles.emptyText}>찜한 술집이 더 없습니다</Text>
-            </View>
           ) : null
         }
         ListEmptyComponent={
