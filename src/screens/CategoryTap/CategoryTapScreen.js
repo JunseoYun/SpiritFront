@@ -90,11 +90,7 @@ const CategoryTapScreen = ({navigation, route}) => {
           windowSize={5}
           removeClippedSubviews={true}
           ListFooterComponent={
-            loading ? (
-              <Text style={styles.emptyText}>Loading...</Text>
-            ) : page === totalpage - 1 && stores.length > 0 ? (
-              <Text style={styles.emptyText}>가게가 더 없습니다.</Text>
-            ) : null
+            loading ? <Text style={styles.emptyText}>Loading...</Text> : null
           }
           ListEmptyComponent={
             !loading && stores.length === 0 ? (
