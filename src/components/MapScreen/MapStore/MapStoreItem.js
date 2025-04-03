@@ -96,21 +96,6 @@ const MapStoreItem = ({
       </View>
       <View style={styles.titletopview}>
         <View>
-          <View style={styles.titleview}>
-            <Text
-              style={styles.storeName}
-              numberOfLines={1} // 한 줄로 제한
-              ellipsizeMode="tail">
-              {item.name}
-            </Text>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <FontAwesomeIcon name="star" size={15} color="#FCC104" />
-              <Text style={styles.storeAddress}>
-                {' '}
-                {item.storeRate} ({item.reviewCount})
-              </Text>
-            </View>
-          </View>
           <View style={styles.category}>
             {Array.isArray(item.categories) && item.categories.length > 0 ? (
               item.categories.map((category, index) => (
@@ -121,6 +106,14 @@ const MapStoreItem = ({
             ) : (
               <Text style={styles.StoreCategory}>카테고리 미설정</Text>
             )}
+          </View>
+          <View style={styles.titleview}>
+            <Text
+              style={styles.storeName}
+              numberOfLines={1} // 한 줄로 제한
+              ellipsizeMode="tail">
+              {item.name}
+            </Text>
           </View>
         </View>
         <Text style={styles.menutext} numberOfLines={1} ellipsizeMode="tail">
@@ -145,6 +138,13 @@ const MapStoreItem = ({
               영업 종료 {endtime || '정보 없음'}
             </Text>
           )}
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <FontAwesomeIcon name="star" size={15} color="#FCC104" />
+            <Text style={styles.storeAddress}>
+              {' '}
+              {item.storeRate} ({item.reviewCount})
+            </Text>
+          </View>
         </View>
       </View>
     </Pressable>
@@ -211,13 +211,13 @@ const styles = StyleSheet.create({
   },
   storeName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     color: '#333',
     width: '60%',
   },
   storeAddress: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Pretendard-Medium',
     color: '#666',
     marginRight: 5,
   },
@@ -230,20 +230,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     marginRight: 5,
-    fontWeight: '700',
+    fontFamily: 'Pretendard-Medium',
     marginTop: 2,
   },
   timeview: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   timeviewtext: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
   },
   menutext: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },
 });

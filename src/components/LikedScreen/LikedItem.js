@@ -1,9 +1,52 @@
 import React from 'react';
-import {Pressable, View, Text, ImageBackground, StyleSheet} from 'react-native';
+import {
+  Pressable,
+  View,
+  Text,
+  ImageBackground,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
+const drinkColors = {
+  SOJU: '#43A047',
+  BEER: '#F9A825',
+  MAKGEOLLI: '#616161',
+  WINE: '#8E0038',
+  COCKTAIL: '#D84315',
+  SAKE: '#455A64',
+  KAOLIANG: '#5D4037',
+  WHISKEY: '#6D4C41',
+  VODKA: '#3949AB',
+  GIN: '#2E7D32',
+  RUM: '#3E2723',
+  TEQUILA: '#EF6C00',
+};
+// utils/colorUtils.js (또는 상단에 직접 추가해도 됨)
+const hexToRGBA = (hex, opacity = 0.3) => {
+  let col = hex.replace('#', '');
+
+  if (col.length === 3) {
+    col = col
+      .split('')
+      .map(c => c + c)
+      .join('');
+  }
+
+  const num = parseInt(col, 16);
+  const r = (num >> 16) & 0xff;
+  const g = (num >> 8) & 0xff;
+  const b = num & 0xff;
+
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
+
+const windowWidth = Dimensions.get('window').width;
+const imageWidth = windowWidth - 36;
+const imageHeight = imageWidth * (4.2 / 8);
 
 const LikedItem = ({store, navigation}) => {
   const {translateCategory} = useCategoryTranslation();
@@ -67,61 +110,70 @@ const LikedItem = ({store, navigation}) => {
             </View>
           )}
         </ImageBackground>
-        <View style={styles.textContainer}>
-          <View style={styles.headerRow}>
-            <Text
-              style={styles.storeTitle}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              {store.name}
-            </Text>
-            <View style={styles.scoreContainer}>
-              <FontAwesomeIcon name="star" size={15} color="#FCC104" />
-              <Text style={styles.scoreText}>{store.storeRate}</Text>
-            </View>
+      </View>
+      <View style={styles.textContainer}>
+        <View style={styles.infoRow}>
+          <View style={styles.drinkView}>
+            {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
+              ? store.mainDrinkDtos?.map((drink, index) => {
+                  const baseColor = drinkColors[drink.type] || '#333';
+                  const borderColor = hexToRGBA(baseColor, 0.5); // 살짝 연한 컬러
+                  return (
+                    <React.Fragment key={index}>
+                      <Text
+                        style={[
+                          styles.drinkText,
+                          {color: baseColor, borderColor: borderColor},
+                        ]}>
+                        {translateAlcohol(drink.type)} {drink.price}
+                      </Text>
+                      {index !== store.mainDrinkDtos.length - 1 && (
+                        <View style={styles.division} />
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              : '메인주류가 없습니다.'}
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoItem} ellipsizeMode="tail">
-              {Array.isArray(store.categories) && store.categories.length > 0
-                ? store.categories
-                    .map(category => translateCategory(category))
-                    .join(' ')
-                : '카테고리 미설정'}
-            </Text>
-          </View>
+        </View>
+        <View style={styles.headerRow}>
+          <Text
+            style={styles.storeTitle}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {store.name}
+          </Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoItem} ellipsizeMode="tail">
+            {Array.isArray(store.categories) && store.categories.length > 0
+              ? store.categories
+                  .map(category => translateCategory(category))
+                  .join(' ')
+              : '카테고리 미설정'}
+          </Text>
+        </View>
 
+        {store.menuList && store.menuList.length > 0 && (
           <View style={styles.infoRow}>
             <Text
               style={styles.infoItem}
               numberOfLines={1}
               ellipsizeMode="tail">
-              {store.menuList && store.menuList.length > 0
-                ? store.menuList
-                    .map(
-                      menu => `${menu.name}`, // 메뉴 항목 형식화
-                    )
-                    .join('  ') // 항목 간 간격 추가
-                : '대표 메뉴 미등록'}
+              {
+                store.menuList
+                  .map(
+                    menu => `${menu.name}`, // 메뉴 항목 형식화
+                  )
+                  .join('  ') // 항목 간 간격 추가
+              }
             </Text>
           </View>
-
-          <View style={styles.infoRow}>
-            <Text
-              style={styles.highlightText}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
-                ? store.mainDrinkDtos
-                    .map(
-                      drink =>
-                        `${translateAlcohol(
-                          drink.type,
-                        )} ${drink.price.toLocaleString()}원`,
-                    ) // 데이터 형식화
-                    .join('  ') // 아이템 간 간격 추가
-                : '메인주류가 없습니다.'}
-            </Text>
-          </View>
+        )}
+        <View style={styles.scoreContainer}>
+          <FontAwesomeIcon name="star" size={15} color="#FCC104" />
+          <Text style={styles.scoreText}>{store.storeRate}</Text>
+          <Text style={styles.scoreCountText}>({store.reviewCount})</Text>
         </View>
       </View>
     </Pressable>
@@ -132,22 +184,17 @@ const styles = StyleSheet.create({
   storeInfo: {
     flexDirection: 'row',
     backgroundColor: '#ffffff',
-    marginHorizontal: 18,
+    marginTop: 20,
     marginVertical: 8,
-    padding: 16,
+    alignSelf: 'center',
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 5,
   },
   backimage: {
-    width: 100,
-    height: 120,
+    width: imageWidth,
+    height: imageHeight,
     borderRadius: 10,
-    marginRight: 12,
-    borderRadius: 10,
+
+    alignSelf: 'center',
   },
   backimagestyle: {
     borderRadius: 10,
@@ -162,26 +209,27 @@ const styles = StyleSheet.create({
   },
   overlayText: {
     color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontFamily: 'Pretendard-Bold',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 26,
   },
   textContainer: {
     flex: 1,
     justifyContent: 'space-between',
+    marginHorizontal: 22,
+    marginBottom: 20,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
   },
   storeTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 19,
+    fontFamily: 'Pretendard-Bold',
     color: '#333',
-    maxWidth: '80%',
+    maxWidth: '90%',
   },
   scoreContainer: {
     flexDirection: 'row',
@@ -190,16 +238,38 @@ const styles = StyleSheet.create({
   scoreText: {
     marginLeft: 4,
     fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
     color: '#555',
+  },
+  scoreCountText: {
+    marginLeft: 4,
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
+    color: '#999',
   },
   infoRow: {
     flexDirection: 'row',
     marginVertical: 6,
   },
-  infoItem: {
+  drinkView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+
+    marginBottom: 3,
+  },
+  drinkText: {
+    color: '#333',
+    fontFamily: 'Pretendard-Medium',
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#444',
+    borderWidth: 1,
+    padding: 4,
+    borderRadius: 7,
+    marginRight: 7,
+  },
+  infoItem: {
+    fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
+    color: '#767676',
     marginRight: 8,
     maxWidth: '100%',
   },
@@ -208,7 +278,6 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   highlightText: {
-    marginRight: 8,
     fontWeight: 'bold',
     color: '#16BBFF',
   },

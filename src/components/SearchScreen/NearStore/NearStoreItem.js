@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   overlayText: {
     color: 'white',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
   },
   storeViewInfo: {
     flexDirection: 'row',
@@ -189,13 +189,13 @@ const styles = StyleSheet.create({
   },
   storMainInfo: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     color: '#333',
     width: 110,
   },
   storRate: {
     fontSize: 13,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Medium',
     color: '#FCC104',
   },
   storRateInfo: {
@@ -205,14 +205,14 @@ const styles = StyleSheet.create({
   },
 
   StoreCategory: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#999',
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
   },
   storeSubInfo: {
     fontSize: 14,
     color: '#999',
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 
