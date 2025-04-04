@@ -4,9 +4,11 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import useDistance from '../../../hooks/useDistance';
+import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 
 const ResultItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();
+  const {translateAlcohol} = useTranslateAlcohol();
   const [distance, setDistance] = useState(0);
   const [unit, setUnit] = useState('m');
   const calculateDistance = useDistance();
@@ -20,7 +22,7 @@ const ResultItem = ({store, navigation, location}) => {
     breakstart,
     breakend,
   } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
-
+  console.log(store);
   useEffect(() => {
     const fetchDistance = () => {
       let tempDistance = calculateDistance(
@@ -89,34 +91,39 @@ const ResultItem = ({store, navigation, location}) => {
           )}
         </ImageBackground>
         <View style={styles.StoreTextView}>
-          <View style={styles.StoreTitleView}>
-            <Text
-              style={styles.StoreTitle}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              {store.name}
-            </Text>
-            <View style={styles.StoreScore}>
-              <FontAwesomeIcon name="star" size={15} color="#FCC104" />
-              <Text style={styles.Scoretext}>
-                {store.storeRate}
-                {' ('}
-                {store.reviewCount}
-                {')'}
+          <View>
+            <View style={styles.StoreTitleView}>
+              <Text
+                style={styles.StoreTitle}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {store.name}
               </Text>
+            </View>
+            <View style={styles.StoreScore}>
+              {store.categories.slice(0, 3).map((category, index) => (
+                <Text key={index} style={styles.StoreCategory}>
+                  {translateCategory(category)}
+                </Text>
+              ))}
             </View>
           </View>
 
-          <View style={styles.StoreCategoryList}>
-            {store.categories.slice(0, 3).map((category, index) => (
-              <Text key={index} style={styles.StoreCategory}>
-                {translateCategory(category)}
-              </Text>
-            ))}
+          <View style={styles.StoreAlcoholList}>
+            <Text
+              style={styles.StoreAlcohol}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
+                ? store.mainDrinkDtos
+                    .map(
+                      drink => `${translateAlcohol(drink.type)} ${drink.price}`,
+                    ) // 데이터 형식화
+                    .join('  ') // 아이템 간 간격 추가
+                : '메인주류가 없습니다.'}
+            </Text>
           </View>
-          <Text style={styles.StoreAddressText}>
-            {store.locationDto.address}, {store.locationDto.addressDetail}
-          </Text>
+
           <View style={styles.subView}>
             {store?.isAlwaysOpen == true ? (
               <Text style={styles.StoreClose}>24시간 영업</Text>
@@ -134,23 +141,29 @@ const ResultItem = ({store, navigation, location}) => {
         </View>
       </View>
 
-      <View style={styles.horizontalDivider} />
+      {/* <View style={styles.horizontalDivider} /> */}
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
   StoreInfo: {
-    width: '100%',
-    marginTop: 10,
     flexDirection: 'row',
     backgroundColor: '#fff',
     alignSelf: 'center',
-    paddingHorizontal: 18,
+    borderRadius: 16,
+    marginHorizontal: 18,
+    marginVertical: 7,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
   },
   backimage: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 100,
     borderRadius: 10,
     borderRadius: 10,
   },
@@ -168,7 +181,7 @@ const styles = StyleSheet.create({
   overlayText: {
     color: 'white',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -179,26 +192,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   StoreTitleView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     marginRight: 5,
   },
   StoreTitle: {
-    fontWeight: 'bold',
-    fontSize: 17,
-    color: '#333',
-    maxWidth: 150,
+    fontFamily: 'Pretendard-Bold',
+    fontSize: 16,
+    color: '#111',
+    width: '100%',
   },
   StoreScore: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 3,
+  },
+  StoreAlcohol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 3,
+    fontFamily: 'Pretendard-Medium',
   },
   Scoretext: {
     marginLeft: 3,
     fontSize: 15,
     color: '#333',
   },
-  StoreCategoryList: {
+  StoreAlcoholList: {
     flexDirection: 'row',
     marginRight: 5,
     alignItems: 'center',
@@ -210,9 +228,9 @@ const styles = StyleSheet.create({
     fontWeight: 600,
   },
   StoreCategory: {
-    fontWeight: '600',
-    fontSize: 15,
-    color: '#333',
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 14,
+    color: '#767676',
     marginRight: 5,
   },
   subView: {
@@ -222,9 +240,9 @@ const styles = StyleSheet.create({
   },
   StoreClose: {
     fontSize: 13,
-    color: '#333',
+    color: '#999',
     marginRight: 5,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
   },
   horizontalDivider: {
     height: 1,

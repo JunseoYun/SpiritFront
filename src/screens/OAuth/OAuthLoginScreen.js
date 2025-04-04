@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   Logo: {
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 60,
-    color: '#5CCEFF',
+    color: '#45C9FF',
   },
   subText: {
     fontSize: 18,

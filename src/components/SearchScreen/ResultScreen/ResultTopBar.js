@@ -30,7 +30,7 @@ const ResultTopBar = ({searchWord, setSearchWord, navigation, onSearch}) => {
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         style={styles.backButton}>
-        <AntDesign name="arrowleft" size={25} color={'#333'} />
+        <AntDesign name="arrowleft" size={25} color={'#111'} />
       </TouchableOpacity>
 
       {/* ✅ 검색창 */}
@@ -50,29 +50,21 @@ const ResultTopBar = ({searchWord, setSearchWord, navigation, onSearch}) => {
           onSubmitEditing={onSearchPress}
         />
       </View>
-
-      {/* ✅ 검색 버튼 (검색어 입력 시만 표시) */}
-      {isSearching ? (
-        <TouchableOpacity style={styles.homeButton} onPress={onSearchPress}>
-          <Text style={styles.searchButton}>검색</Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity
-          style={styles.homeButton}
-          onPress={() => navigation.navigate('MainScreen')}>
-          <Ionicons name={'home-outline'} size={25} color={'#333'} />
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity style={styles.homeButton} onPress={onSearchPress}>
+        <AntDesign name="search1" size={25} color={'#111'} />
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   topView: {
-    marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderColor: '#E5E5E5',
+    backgroundColor: '#fff',
   },
   backButton: {
     marginLeft: 18,

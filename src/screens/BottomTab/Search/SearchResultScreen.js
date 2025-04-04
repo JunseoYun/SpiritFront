@@ -35,7 +35,7 @@ const SearchResultScreen = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     flex: 1,
   },
 });
