@@ -48,6 +48,7 @@ const AlcoholUpdateScreen = ({navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [isVariable, setIsVariable] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -204,6 +205,7 @@ const AlcoholUpdateScreen = ({navigation}) => {
     }
 
     try {
+      setLoading(true);
       let updatedAlcohol = {...originalAlcohol};
 
       // 1️⃣ 이미지만 변경된 경우 → 이미지 업데이트 요청
@@ -258,6 +260,8 @@ const AlcoholUpdateScreen = ({navigation}) => {
       showAlert({
         title: '업데이트 오류',
       });
+    } finally {
+      setLoading(false);
     }
   };
   const handleCancel = () => {
@@ -369,6 +373,11 @@ const AlcoholUpdateScreen = ({navigation}) => {
           <AlertComponent />
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
+      {loading && (
+        <View style={styles.footer}>
+          <Text style={styles.loadingtext}>Loading...</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -494,6 +503,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#16BBFF',
+  },
+  footer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  loadingtext: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });
 
