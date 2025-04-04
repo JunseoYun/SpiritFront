@@ -88,7 +88,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
 
   useEffect(() => {
     const checkStoreStatus = () => {
-      if (isAlwaysOpen == true) {
+      if (isAlwaysOpen) {
         setIsOpen(true);
         return;
       }
@@ -234,18 +234,10 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         setIsBreak(false);
         setClosed(false);
 
-        if (yesterdayInfo == todayInfo || yesterdayInfo !== todayInfo) {
-          if (!nextdayInfo.isClosed) {
-            setStarttime(nextdayInfo.openTime.slice(0, 5));
-          } else {
-            setNextclosed(true);
-          }
+        if (!nextdayInfo.isClosed) {
+          setStarttime(nextdayInfo.openTime.slice(0, 5));
         } else {
-          if (!nextdayInfo.isClosed) {
-            setStarttime(todayInfo.openTime.slice(0, 5));
-          } else {
-            setNextclosed(true);
-          }
+          setNextclosed(true);
         }
       }
     };

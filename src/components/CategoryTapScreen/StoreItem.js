@@ -21,31 +21,33 @@ const StoreItem = ({store, location, navigation}) => {
     breakstart,
     breakend,
   } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
+
+  const handleStorePress = () => {
+    navigation.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {
+        storeId: store.id,
+        innerlatitude: location.latitude,
+        innerlongitude: location.longitude,
+      },
+    });
+  };
+
   return (
-    <Pressable
-      style={Categorystyles.itemContainer}
-      onPress={() =>
-        navigation.navigate('StoreStack', {
-          screen: 'StoreMainScreen',
-          params: {
-            storeId: store.id,
-            innerlatitude: location.latitude,
-            innerlongitude: location.longitude,
-          },
-        })
-      }>
+    <View style={Categorystyles.itemContainer}>
       <View style={Categorystyles.imageView}>
         <ScrollView
           horizontal
           nestedScrollEnabled={true}
           showsHorizontalScrollIndicator={false}
-          directionalLockEnabled={true} // 👈 추가
-          // onStartShouldSetResponder={() => true}
+          onStartShouldSetResponder={() => true}
           contentContainerStyle={{
             paddingHorizontal: 18,
             gap: 18,
           }}>
-          <View style={Categorystyles.menuItemView}>
+          <Pressable
+            onPress={handleStorePress}
+            style={Categorystyles.menuItemView}>
             <ImageBackground
               source={
                 store.mainImgUrl
@@ -84,12 +86,15 @@ const StoreItem = ({store, location, navigation}) => {
                 </View>
               )}
             </ImageBackground>
-          </View>
+          </Pressable>
           {store.menuList?.length > 0 &&
             store.menuList
               .filter(menu => !!menu.imgUrl)
               .map((menu, index) => (
-                <View key={index} style={Categorystyles.menuItemView}>
+                <Pressable
+                  onPress={handleStorePress}
+                  key={index}
+                  style={Categorystyles.menuItemView}>
                   <ImageBackground
                     source={
                       {uri: menu.imgUrl} // ✅ 네트워크 이미지
@@ -124,22 +129,24 @@ const StoreItem = ({store, location, navigation}) => {
                       </View>
                     )}
                   </ImageBackground>
-                </View>
+                </Pressable>
               ))}
           {store.menuList?.filter(menu => !!menu.imgUrl).length <= 1 && (
-            <View style={Categorystyles.menuItemView}>
+            <Pressable
+              onPress={handleStorePress}
+              style={Categorystyles.menuItemView}>
               <ImageBackground
                 source={require('../../assets/PorkBack.png')}
                 style={Categorystyles.menuImageView2}
                 imageStyle={Categorystyles.menuNoImg}>
                 <Text style={Categorystyles.moreText}>메뉴 더보기 {'>'}</Text>
               </ImageBackground>
-            </View>
+            </Pressable>
           )}
         </ScrollView>
       </View>
 
-      <View style={Categorystyles.infoTopView}>
+      <Pressable onPress={handleStorePress} style={Categorystyles.infoTopView}>
         <View style={Categorystyles.drinkView}>
           {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
             ? store.mainDrinkDtos?.map((drink, index) => {
@@ -204,8 +211,8 @@ const StoreItem = ({store, location, navigation}) => {
             </View>
           )}
         </View>
-      </View>
-    </Pressable>
+      </Pressable>
+    </View>
   );
 };
 
