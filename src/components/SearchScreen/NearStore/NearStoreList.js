@@ -105,7 +105,7 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={[
           styles.horizontalFlatListContent,
-          {paddingHorizontal: 18},
+          {paddingRight: 18, paddingLeft: 10},
         ]} // 오른쪽 여백 추가
         onEndReached={() => {
           if (hasMore && !loading && page < totalpage - 1) {

@@ -117,7 +117,8 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
 
 const styles = StyleSheet.create({
   scrollViewContent: {
-    paddingHorizontal: 18,
+    paddingRight: 18,
+    paddingLeft: 10,
     alignItems: 'center',
     paddingBottom: 20,
   },
