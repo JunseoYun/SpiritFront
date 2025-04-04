@@ -165,7 +165,7 @@ const LikedItem = ({store, navigation}) => {
               {
                 store.menuList
                   .map(
-                    menu => `${menu.name}`, // 메뉴 항목 형식화
+                    menu => `#${menu.name}`, // 메뉴 항목 형식화
                   )
                   .join('  ') // 항목 간 간격 추가
               }

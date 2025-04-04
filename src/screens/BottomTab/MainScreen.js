@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -7,7 +7,10 @@ import {
   RefreshControl,
   SafeAreaView,
   Pressable,
+  BackHandler,
+  ToastAndroid,
 } from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
 import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
@@ -33,6 +36,31 @@ const MainScreen = ({navigation}) => {
   const [storeactiveIndex, setStoreActiveIndex] = useState(null);
   const recentRef = useRef(null);
   const {recommendCategory} = useRecommendation();
+
+  useFocusEffect(
+    useCallback(() => {
+      let lastBackPressed = 0;
+
+      const onBackPress = () => {
+        const now = Date.now();
+        if (now - lastBackPressed < 2000) {
+          BackHandler.exitApp(); // 앱 종료
+          return true;
+        }
+
+        lastBackPressed = now;
+        ToastAndroid.show('한 번 더 누르면 종료됩니다.', ToastAndroid.SHORT);
+        return true; // 기본 동작 막기
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove(); // cleanup
+    }, []),
+  );
 
   useEffect(() => {
     const fetchLocation = async () => {

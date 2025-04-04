@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,8 +6,10 @@ import {
   Animated, // Animated 추가
   PanResponder, // PanResponder 추가
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
+import {useFocusEffect} from '@react-navigation/native';
 import {getLocation, saveLocationAddress} from '../../storage/locationStorage';
 import {fetchLocationAddress} from '../../hooks/useLocation';
 import {useToast} from '../../context/ToastContext';
@@ -20,7 +22,6 @@ import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import generateMapScript from '../../components/MapScreen/generateMapScript';
 import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
 import MapRadius from '../../components/MapScreen/MapRadius';
-import {openKakaoMap} from '../../hooks/openKakaoMap';
 
 const {width} = Dimensions.get('window');
 
@@ -41,6 +42,22 @@ const MapScreen = ({navigation}) => {
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
   const [radius, setRadiusint] = useState(2);
   const prevRadiusRef = useRef(radius);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('MainScreen'); // MainScreen 탭으로 전환
+        return true; // 기본 뒤로가기 방지
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove();
+    }, [navigation]),
+  );
 
   useEffect(() => {
     fetchSaveLocation(radius);
@@ -318,9 +335,9 @@ const MapScreen = ({navigation}) => {
 
         // flatListRef가 유효한 경우에만 scrollToOffset 호출
         if (flatListRef.current) {
-          flatListRef.current.scrollToOffset({
-            offset: width * index,
-            animated: true,
+          flatListRef.current.scrollToIndex({
+            index,
+            animated: false, // ❗️즉시 점프
           });
         }
 
