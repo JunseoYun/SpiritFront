@@ -100,8 +100,8 @@ const Categorystyles = StyleSheet.create({
   },
   moreText: {
     fontSize: 16,
-
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
   },
   infoTopView: {
     width: '100%',

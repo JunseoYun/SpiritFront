@@ -147,10 +147,10 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Medium',
     fontSize: 20,
-    color: '#333',
-    marginLeft: 18,
+    color: '#999',
+    marginLeft: 12,
   },
 });
 

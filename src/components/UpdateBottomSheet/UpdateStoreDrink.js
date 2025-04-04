@@ -105,9 +105,11 @@ const UpdateStoreDrink = ({
                             onPress={() =>
                               setUpdatedValue(prev => {
                                 const updatedDrinks = [...prev];
+                                const current = updatedDrinks[index]?.type;
+                                const selected = alcohol.value;
                                 updatedDrinks[index] = {
                                   ...updatedDrinks[index],
-                                  type: alcohol.value,
+                                  type: current === selected ? '' : selected,
                                 };
                                 return updatedDrinks;
                               })

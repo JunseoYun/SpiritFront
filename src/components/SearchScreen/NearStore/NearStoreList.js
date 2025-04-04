@@ -82,9 +82,7 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
 
   const renderEmptyComponent = () => {
     if (!loading) {
-      return (
-        <Text style={styles.emptyText}>근처에 등록된 술집이 없습니다.</Text>
-      );
+      return <Text style={styles.emptyText}>근처에 등록된 술집이 없어요</Text>;
     }
     return null;
   };
@@ -160,10 +158,10 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Medium',
     fontSize: 20,
-    color: '#333',
-    marginLeft: 18,
+    color: '#999',
+    marginLeft: 12,
   },
 });
 
