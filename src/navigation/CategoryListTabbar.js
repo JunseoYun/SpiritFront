@@ -1,4 +1,5 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
 import {View, Text, BackHandler} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
@@ -35,24 +36,21 @@ const CategoryListTabbar = ({route}) => {
     fetchLocation();
   }, []);
 
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      const backAction = () => {
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'MainBtmbar'}],
-        });
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.goBack(); // 이전 화면으로 돌아가기
         return true;
       };
 
       const backHandler = BackHandler.addEventListener(
         'hardwareBackPress',
-        backAction,
+        onBackPress,
       );
 
-      return () => backHandler.remove(); // 컴포넌트 언마운트 시 이벤트 제거
-    }
-  }, [navigation]);
+      return () => backHandler.remove();
+    }, [navigation]),
+  );
 
   const {screen} = route.params || {}; // 전달받은 screen과 location
 

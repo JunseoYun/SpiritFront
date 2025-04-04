@@ -1,5 +1,6 @@
-import React, {useState, useEffect} from 'react';
-import {StyleSheet, Text, SafeAreaView} from 'react-native';
+import React, {useState, useEffect, useCallback} from 'react';
+import {StyleSheet, Text, SafeAreaView, BackHandler} from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import MyPageheader from '../../../components/MyScreen/MyPageheader'; // 위에서 만든 컴포넌트
 import {Userdataget} from '../../../api/userApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
@@ -12,6 +13,21 @@ const MyScreen = ({navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const [currentPage, setCurrentPage] = useState('MyReview');
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('MainScreen'); // MainScreen 탭으로 전환
+        return true; // 기본 뒤로가기 방지
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove();
+    }, [navigation]),
+  );
 
   useEffect(() => {
     const fetchUserData = async () => {

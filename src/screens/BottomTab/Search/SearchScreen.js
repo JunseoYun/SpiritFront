@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   StyleSheet,
@@ -7,8 +7,9 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   RefreshControl,
+  BackHandler,
 } from 'react-native';
-
+import {useFocusEffect} from '@react-navigation/native';
 import {getLocation} from '../../../storage/locationStorage';
 import SearchBar from '../../../components/SearchScreen/SearchBar';
 import FastSearch from '../../../components/SearchScreen/FastSearch/FastSearch';
@@ -36,6 +37,22 @@ const SearchScreen = ({navigation}) => {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refresh, setRefresh] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('MainScreen'); // MainScreen 탭으로 전환
+        return true; // 기본 뒤로가기 방지
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove();
+    }, [navigation]),
+  );
 
   useEffect(() => {
     const fetchLocation = async () => {

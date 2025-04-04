@@ -1,6 +1,13 @@
 import React, {useEffect, useState, useCallback} from 'react';
-import {SafeAreaView, FlatList, StyleSheet, Text, View} from 'react-native';
-import {useFocusEffect} from '@react-navigation/native'; // 추가
+import {
+  SafeAreaView,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+  BackHandler,
+} from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 
 import LikedItem from '../../components/LikedScreen/LikedItem';
 import {Store_getby_liked} from '../../api/storeApi';
@@ -42,6 +49,22 @@ const LikeScreen = ({navigation}) => {
       setRefreshing(false);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('MainScreen'); // MainScreen 탭으로 전환
+        return true; // 기본 뒤로가기 방지
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove();
+    }, [navigation]),
+  );
 
   useFocusEffect(
     useCallback(() => {
