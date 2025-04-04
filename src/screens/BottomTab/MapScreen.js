@@ -196,12 +196,16 @@ const MapScreen = ({navigation}) => {
 
   const setcenterrefresh = async radius => {
     setLoading(true);
+
     try {
-      const storesData = await Store_getby_radius(
-        centerLatLng.latitude,
-        centerLatLng.longitude,
-        radius,
-      );
+      const lat = centerLatLng?.latitude ?? location?.latitude;
+      const lng = centerLatLng?.longitude ?? location?.longitude;
+
+      if (!lat || !lng) {
+        return;
+      }
+
+      const storesData = await Store_getby_radius(lat, lng, radius);
       storesData.sort((a, b) =>
         a.locationDto.address.localeCompare(b.locationDto.address),
       );
@@ -210,15 +214,12 @@ const MapScreen = ({navigation}) => {
 
       if (webViewRef.current) {
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-        const script = generateMapScript(
-          centerLatLng.latitude,
-          centerLatLng.longitude,
-          storesData,
-          false,
-        );
+
+        const script = generateMapScript(lat, lng, storesData, false);
         webViewRef.current.injectJavaScript(script);
       }
-      moveCenterMap(centerLatLng.latitude, centerLatLng.longitude);
+
+      moveCenterMap(lat, lng);
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
     } finally {

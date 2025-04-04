@@ -1,7 +1,8 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, Pressable, StyleSheet, Image} from 'react-native';
 import MainMenuCheck from './MainMenuCheck';
 import MenuTextInput from './MenuTextInput';
+import MenuPrice from './MenuPrice';
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import useCustomAlert from '../../hooks/useCustomAlert';
@@ -111,6 +112,34 @@ const MenuAddForm = ({
       }
     }
   };
+
+  const [isVariable, setIsVariable] = useState(false);
+  const [purePrice, setPurePrice] = useState(
+    menu.price?.replace('변동', '') || '',
+  );
+
+  useEffect(() => {
+    if (menu.price === '변동') {
+      setIsVariable(true);
+      setPurePrice('');
+    }
+  }, [menu.price]);
+
+  const handlePriceChange = text => {
+    const cleaned = text.replace(/[^0-9]/g, '');
+    setPurePrice(cleaned);
+    MenuChange(cleaned, index, 'price');
+  };
+
+  const handleToggleVariable = () => {
+    const newChecked = !isVariable;
+    setIsVariable(newChecked);
+
+    // 상태 저장
+    const value = newChecked ? '변동' : purePrice;
+    MenuChange(value, index, 'price');
+  };
+
   return (
     <View key={index}>
       <View style={styles.menuHeader}>
@@ -131,11 +160,13 @@ const MenuAddForm = ({
           <Text style={styles.errorText}>최대 20자 입니다.</Text>
         </View>
       )}
-      <MenuTextInput
+      <MenuPrice
         label="메뉴 가격*"
         value={menu.price}
-        onChangeText={text => MenuChange(text, index, 'price')}
+        onChangeText={handlePriceChange}
         placeholder="메뉴 가격*"
+        isVariable={isVariable}
+        onToggleVariable={handleToggleVariable}
         maxLength={21}
       />
       {menuPricelength && (
@@ -177,6 +208,7 @@ const MenuAddForm = ({
       </View>
       <MainMenuCheck
         isChecked={menu.main}
+        imagecheck={menu.imageUri?.path}
         onToggle={() => handleCheckBoxChange(index)} // index를 전달
       />
 

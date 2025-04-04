@@ -1,7 +1,8 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, Pressable, StyleSheet, Image} from 'react-native';
 import RptAlcoholPicker from './RptAlcoholPicker';
 import AlcoholTextInput from './AlcoholTextInput';
+import AlcoholPrice from './AlcoholPrice';
 import ImagePicker from 'react-native-image-crop-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import useCustomAlert from '../../hooks/useCustomAlert';
@@ -80,6 +81,33 @@ const AlcoholAddForm = ({
     });
   };
 
+  const [isVariable, setIsVariable] = useState(false);
+  const [purePrice, setPurePrice] = useState(
+    alcohol.price?.replace('변동', '') || '',
+  );
+
+  useEffect(() => {
+    if (alcohol.price === '변동') {
+      setIsVariable(true);
+      setPurePrice('');
+    }
+  }, [alcohol.price]);
+
+  const handlePriceChange = text => {
+    const cleaned = text.replace(/[^0-9]/g, '');
+    setPurePrice(cleaned);
+    handleAlcoholChange(cleaned, index, 'price');
+  };
+
+  const handleToggleVariable = () => {
+    const newChecked = !isVariable;
+    setIsVariable(newChecked);
+
+    // 상태 저장
+    const value = newChecked ? '변동' : purePrice;
+    handleAlcoholChange(value, index, 'price');
+  };
+
   return (
     <View key={index}>
       <View style={styles.menuHeader}>
@@ -94,14 +122,13 @@ const AlcoholAddForm = ({
         onChangeText={text => handleAlcoholChange(text, index, 'alcoholName')}
         placeholder="주류 이름*"
       />
-      <AlcoholTextInput
+      <AlcoholPrice
         label="주류 가격*"
-        value={alcohol.price}
-        onChangeText={text => {
-          handleAlcoholChange(text, index, 'price');
-        }}
+        value={purePrice}
+        onChangeText={handlePriceChange}
         placeholder="주류 가격*"
-        keyboardType="numeric"
+        isVariable={isVariable}
+        onToggleVariable={handleToggleVariable}
       />
       <AlcoholTextInput
         label="주류 소개"

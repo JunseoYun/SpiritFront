@@ -27,6 +27,8 @@ import forbiddenWords from '../../../hooks/forbiddenWords';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useRoute} from '@react-navigation/native';
 import MenuInput from '../../../components/StoreMenuScreen/MenuInput';
+import MenupriceInput from '../../../components/StoreMenuScreen/MenupriceInput';
+
 import {
   requestPhotoPermission,
   requestCameraPermission,
@@ -49,7 +51,7 @@ const MenuUpdateScreen = ({navigation}) => {
   const [menuPricelength, setMenuPricelength] = useState(false);
   const [menuContentlength, setMenuContentlength] = useState(false);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
-
+  const [isVariable, setIsVariable] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -69,10 +71,15 @@ const MenuUpdateScreen = ({navigation}) => {
       setOriginalMenu(menu);
       setMenuName(menu.name || '');
       setMenuDescription(menu.description || '');
-      setMenuPrice(menu.price || '');
       setIsMain(menu.isMain || false);
       setMenuImage(menu.imgUrl || '');
     }
+  }, [menu]);
+
+  useEffect(() => {
+    const isVar = menu.price === '변동';
+    setIsVariable(isVar);
+    setMenuPrice(isVar ? '변동' : menu.price || '');
   }, [menu]);
 
   const MenuChange = (text, value) => {
@@ -128,10 +135,11 @@ const MenuUpdateScreen = ({navigation}) => {
       return;
     }
     ImagePicker.openCamera({
-      width: 500,
-      height: 500,
+      width: 1024,
+      height: 1024,
       cropping: true,
       mediaType: 'photo',
+      quality: 1,
     })
       .then(image => {
         setSelectedImage(image);
@@ -147,10 +155,11 @@ const MenuUpdateScreen = ({navigation}) => {
       return;
     }
     ImagePicker.openPicker({
-      width: 500,
-      height: 500,
+      width: 1024,
+      height: 1024,
       cropping: true,
       mediaType: 'photo',
+      quality: 1,
     })
       .then(image => {
         setSelectedImage(image);
@@ -350,11 +359,17 @@ const MenuUpdateScreen = ({navigation}) => {
                 <Text style={styles.errorText}>최대 30자 입니다.</Text>
               </View>
             )}
-            <MenuInput
+            <MenupriceInput
               label="메뉴 가격*"
               value={menuPrice}
-              onChangeText={text => MenuChange(text, 'menuPrice')}
+              onChangeText={setMenuPrice}
               placeholder="메뉴 가격*"
+              isVariable={isVariable}
+              onToggleVariable={() => {
+                setIsVariable(prev => !prev);
+                if (!isVariable) setMenuPrice('변동'); // 체크 시 '변동' 값 세팅
+                else setMenuPrice(''); // 체크 해제 시 초기화
+              }}
               maxLength={21}
             />
             {menuPricelength && (

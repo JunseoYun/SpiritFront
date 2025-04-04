@@ -101,10 +101,6 @@ const NearStoreItem = ({store, navigation, location}) => {
             ellipsizeMode="tail">
             {store.name}
           </Text>
-          <View style={styles.storeViewInfo}>
-            <FontAwesomeIcon name="star" size={15} color="#FCC104" />
-            <Text style={styles.storRate}> {store.storeRate}</Text>
-          </View>
         </View>
 
         {/* ✅ 가게 카테고리 */}
@@ -141,16 +137,16 @@ const NearStoreItem = ({store, navigation, location}) => {
 
 const styles = StyleSheet.create({
   storeInfoView: {
-    paddingLeft: 18,
+    paddingHorizontal: 8,
   },
   backimageview: {
-    width: 170,
-    height: 120,
+    width: 150,
+    height: 150,
     marginTop: 15,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
-    borderRadius: 15,
+    borderRadius: 7,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.1,
@@ -164,7 +160,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   backimagestyle: {
-    borderRadius: 12,
+    borderRadius: 7,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -181,17 +177,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 3,
-    marginBottom: 2,
+    marginTop: 2,
     marginLeft: 3,
     marginRight: 3,
-    paddingHorizontal: 1,
   },
   storMainInfo: {
     fontSize: 16,
     fontFamily: 'Pretendard-Bold',
     color: '#333',
-    width: 110,
+    width: 140,
   },
   storRate: {
     fontSize: 13,

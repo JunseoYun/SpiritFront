@@ -12,7 +12,7 @@ const alcoholMapping = {
   WHISKEY: '위스키',
   VODKA: '보드카',
   GIN: '진',
-  RUM: '럼',
+  HIGHBALL: '하이볼',
   TEQUILA: '데킬라',
 };
 

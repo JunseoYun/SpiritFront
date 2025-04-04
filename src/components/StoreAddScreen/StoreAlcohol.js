@@ -19,7 +19,7 @@ const alcohols = [
   {label: '위스키', value: 'WHISKEY'},
   {label: '보드카', value: 'VODKA'},
   {label: '진', value: 'GIN'},
-  {label: '럼', value: 'RUM'},
+  {label: '하이볼', value: 'HIGHBALL'},
   {label: '데킬라', value: 'TEQUILA'},
 ];
 

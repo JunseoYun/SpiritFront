@@ -26,6 +26,7 @@ import forbiddenWords from '../../../hooks/forbiddenWords';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useRoute} from '@react-navigation/native';
 import AlcoholInput from '../../../components/StoreAlcoholScreen/AlcoholInput';
+import Alcoholpriceinput from '../../../components/StoreAlcoholScreen/Alcoholpriceinput';
 import RptAlcoholPicker from '../../../components/AlcoholAddScreen/RptAlcoholPicker';
 import {
   requestPhotoPermission,
@@ -46,6 +47,7 @@ const AlcoholUpdateScreen = ({navigation}) => {
   const [isImageDeleted, setIsImageDeleted] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [isVariable, setIsVariable] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -69,10 +71,16 @@ const AlcoholUpdateScreen = ({navigation}) => {
       setOriginalAlcohol(alcohol);
       setAlcoholName(alcohol.name || '');
       setAlcoholDescription(alcohol.description || '');
-      setAlcoholPrice(alcohol.price || '');
+
       setAlcoholType(alcohol.type || '');
       setAlcoholImage(alcohol.imgUrl || '');
     }
+  }, [alcohol]);
+
+  useEffect(() => {
+    const isVar = alcohol.price === '변동';
+    setIsVariable(isVar);
+    setAlcoholPrice(isVar ? '변동' : alcohol.price || '');
   }, [alcohol]);
 
   const GotoStoreScreen = () => {
@@ -101,10 +109,11 @@ const AlcoholUpdateScreen = ({navigation}) => {
       return;
     }
     ImagePicker.openCamera({
-      width: 500,
-      height: 500,
+      width: 1024,
+      height: 1024,
       cropping: true,
       mediaType: 'photo',
+      quality: 1,
     })
       .then(image => {
         setSelectedImage(image);
@@ -120,10 +129,11 @@ const AlcoholUpdateScreen = ({navigation}) => {
       return;
     }
     ImagePicker.openPicker({
-      width: 500,
-      height: 500,
+      width: 1024,
+      height: 1024,
       cropping: true,
       mediaType: 'photo',
+      quality: 1,
     })
       .then(image => {
         setSelectedImage(image);
@@ -209,7 +219,7 @@ const AlcoholUpdateScreen = ({navigation}) => {
           ...updatedAlcohol,
           name: alcoholName,
           description: alcoholDescription,
-          price: Number(alcoholPrice),
+          price: alcoholPrice,
           type: alcoholType,
         };
         await DrinkUpdate(alcohol.id, updatedAlcohol);
@@ -225,7 +235,7 @@ const AlcoholUpdateScreen = ({navigation}) => {
           ...updatedAlcohol,
           name: alcoholName,
           description: alcoholDescription,
-          price: Number(alcoholPrice),
+          price: alcoholPrice,
           type: alcoholType,
         };
         await DrinkUpdate(alcohol.id, updatedAlcohol);
@@ -331,11 +341,18 @@ const AlcoholUpdateScreen = ({navigation}) => {
               isMultiline={true}
             />
 
-            <AlcoholInput
+            <Alcoholpriceinput
               label="주류 가격*"
               value={alcoholPrice}
               onChangeText={setAlcoholPrice}
               placeholder="주류 가격*"
+              isVariable={isVariable}
+              onToggleVariable={() => {
+                setIsVariable(prev => !prev);
+                if (!isVariable)
+                  setAlcoholPrice('변동'); // 체크 시 '변동' 값 세팅
+                else setAlcoholPrice(''); // 체크 해제 시 초기화
+              }}
             />
 
             <RptAlcoholPicker
