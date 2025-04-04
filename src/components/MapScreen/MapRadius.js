@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#16BBFF22',
   },
   selectedOptionText: {
-    color: '#16BBFF',
+    color: '#45c9ff',
     fontWeight: 'bold',
   },
   overlay: {
