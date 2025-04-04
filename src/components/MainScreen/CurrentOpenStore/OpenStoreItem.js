@@ -4,6 +4,7 @@ import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 const OpenStoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
@@ -69,199 +70,64 @@ const OpenStoreItem = ({store, location, navigation}) => {
             }
             style={styles.backimage}
             imageStyle={styles.backimagestyle}>
-            {/* ✅ 브레이크 타임 표시 */}
-            {isBreak && isOpen && (
+            {isOpen && isBreak && (
               <View style={styles.overlay}>
                 <Text style={styles.overlayText}>
-                  브레이크 타임{'\n'}
-                  {breakend ? `${breakend} 종료` : ''}
+                  브레이크 타임 {breakend ? `${breakend} 종료` : ''}
                 </Text>
-                <Text
-                  style={styles.overlayNameText}
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
-                  {store.name}
-                </Text>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  {Array.isArray(store.categories) &&
-                  store.categories.length > 0 ? (
-                    store.categories.map((category, index) => (
-                      <Text key={index} style={styles.overlayNameCategory}>
-                        {translateCategory(category)}
-                      </Text>
-                    ))
-                  ) : (
-                    <Text style={styles.overlayNameCategory}>
-                      카테고리 미설정
-                    </Text>
-                  )}
-                </View>
               </View>
-            )}
-
-            {!isBreak && !isOpen && closed && !nextclosed && (
-              <View style={styles.overlay}>
-                <Text style={styles.overlayText}>금일 휴무</Text>
-                <Text
-                  style={styles.overlayNameText}
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
-                  {store.name}
-                </Text>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  {Array.isArray(store.categories) &&
-                  store.categories.length > 0 ? (
-                    store.categories.map((category, index) => (
-                      <Text key={index} style={styles.overlayNameCategory}>
-                        {translateCategory(category)}
-                      </Text>
-                    ))
-                  ) : (
-                    <Text style={styles.overlayNameCategory}>
-                      카테고리 미설정
-                    </Text>
-                  )}
-                </View>
-              </View>
-            )}
-
-            {!isBreak && !isOpen && !closed && !nextclosed && (
-              <View style={styles.overlay}>
-                <Text style={styles.overlayText}>
-                  영업 종료{'\n'}
-                  {starttime ? `${starttime} 시작` : ''}
-                </Text>
-                <Text
-                  style={styles.overlayNameText}
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
-                  {store.name}
-                </Text>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  {Array.isArray(store.categories) &&
-                  store.categories.length > 0 ? (
-                    store.categories.map((category, index) => (
-                      <Text key={index} style={styles.overlayNameCategory}>
-                        {translateCategory(category)}
-                      </Text>
-                    ))
-                  ) : (
-                    <Text style={styles.overlayNameCategory}>
-                      카테고리 미설정
-                    </Text>
-                  )}
-                </View>
-              </View>
-            )}
-
-            {!isBreak && !isOpen && !closed && nextclosed && (
-              <View style={styles.overlay}>
-                <Text style={styles.overlayText}>
-                  영업 종료{'\n'}
-                  익일 휴무
-                </Text>
-                <Text
-                  style={styles.overlayNameText}
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
-                  {store.name}
-                </Text>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  {Array.isArray(store.categories) &&
-                  store.categories.length > 0 ? (
-                    store.categories.map((category, index) => (
-                      <Text key={index} style={styles.overlayNameCategory}>
-                        {translateCategory(category)}
-                      </Text>
-                    ))
-                  ) : (
-                    <Text style={styles.overlayNameCategory}>
-                      카테고리 미설정
-                    </Text>
-                  )}
-                </View>
-              </View>
-            )}
-
-            {isOpen && !isBreak && (
-              <>
-                {store?.isAlwaysOpen == true ? (
-                  <Text style={styles.openOverlayText}>24시간 영업</Text>
-                ) : (
-                  <Text style={styles.openOverlayText}>
-                    영업 종료 {endtime || '정보 없음'}
-                  </Text>
-                )}
-                <View style={styles.openOverlay}>
-                  <Text
-                    style={styles.overlayNameOpenText}
-                    numberOfLines={1}
-                    ellipsizeMode="tail">
-                    {store.name}
-                  </Text>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    {Array.isArray(store.categories) &&
-                    store.categories.length > 0 ? (
-                      store.categories.map((category, index) => (
-                        <Text
-                          key={index}
-                          style={styles.overlayNameOpenCategory}>
-                          {translateCategory(category)}
-                        </Text>
-                      ))
-                    ) : (
-                      <Text style={styles.overlayNameOpenCategory}>
-                        카테고리 미설정
-                      </Text>
-                    )}
-                  </View>
-                  <Text
-                    style={styles.overlayNameOpenDrink}
-                    numberOfLines={1}
-                    ellipsizeMode="tail">
-                    {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
-                      ? store.mainDrinkDtos
-                          .map(drink => `#${translateAlcohol(drink.type)}`)
-                          .join(' ')
-                      : '메인주류 미설정'}
-                  </Text>
-                </View>
-              </>
             )}
           </ImageBackground>
         </View>
+        <View style={styles.storeViewInfo}>
+          <Text
+            style={styles.storMainInfo}
+            numberOfLines={1} // 한 줄로 제한
+            ellipsizeMode="tail">
+            {store.name}
+          </Text>
+        </View>
+        {/* ✅ 가게 카테고리 */}
+        <View style={styles.storeViewInfo}>
+          <Text style={styles.StoreCategory}>
+            {store.categories && store.categories.length > 0
+              ? store.categories
+                  .map(category => translateCategory(category))
+                  .join('  ')
+              : '카테고리 미설정'}
+          </Text>
+        </View>
+        <View style={styles.storeViewInfo}>
+          <Text
+            style={styles.storeSubInfo}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
+              ? store.mainDrinkDtos
+                  .map(drink => `${translateAlcohol(drink.type)}`)
+                  .join(' ')
+              : '메인주류 미설정'}
+          </Text>
+          <Text style={styles.storeSubInfo}>
+            {distance} {unit}
+          </Text>
+        </View>
       </Pressable>
-      <View style={styles.distanceContainer}>
-        <Text style={styles.distanceText}>
-          {distance}
-          {unit}
-        </Text>
-      </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: 180,
-    height: 180,
-    marginHorizontal: 10,
+    paddingHorizontal: 8,
     marginTop: 15,
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    borderRadius: 15,
-    elevation: 5, // Android 그림자 효과
   },
   backimageview: {
-    width: 180,
-    height: 180,
+    width: 150,
+    height: 150,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 15,
+    borderRadius: 7,
     backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
@@ -276,106 +142,54 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   backimagestyle: {
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
+    borderRadius: 7,
   },
-  breakView: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-  },
-
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // ✅ 반투명 배경 추가
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ 반투명 배경 추가
     justifyContent: 'center',
     alignItems: 'center',
   },
-  overlayNameText: {
-    color: 'white',
-    width: '95%',
-    textAlign: 'center',
-    fontSize: 16,
-    fontFamily: 'Pretendard-Bold',
-    marginTop: 15,
-  },
-  overlayNameOpenText: {
-    color: 'white',
-    width: '95%',
-    textAlign: 'center',
-    fontSize: 16,
-    fontFamily: 'Pretendard-Bold',
-  },
-  overlayNameCategory: {
-    color: 'white',
-    fontSize: 13,
-    fontFamily: 'Pretendard-Bold',
-    marginHorizontal: 3,
-    marginTop: 5,
-    textAlign: 'center',
-    alignItems: 'center',
-  },
-  overlayNameOpenCategory: {
-    color: 'white',
-    fontSize: 13,
-    fontFamily: 'Pretendard-Bold',
-    marginHorizontal: 3,
-    marginTop: 5,
-    textAlign: 'center',
-    alignItems: 'center',
-  },
-  overlayNameOpenDrink: {
-    color: 'white',
-    fontSize: 13,
-    fontFamily: 'Pretendard-Medium',
-    marginHorizontal: 3,
-    marginTop: 5,
-    textAlign: 'center',
-    alignItems: 'center',
-    width: '90%',
-  },
-
   overlayText: {
     color: 'white',
-    fontSize: 15,
-    textAlign: 'center',
+    fontSize: 14,
     fontFamily: 'Pretendard-Bold',
-    lineHeight: 18,
   },
-  openOverlay: {
-    position: 'absolute',
-    height: '45%',
-    bottom: 0, // 사진 안쪽 하단에 고정
-    width: '100%', // 가로 전체 차지
-    backgroundColor: 'rgba(0, 0, 0, 0.3)', // ✅ 어두운 반투명 배경으로 가독성 향상
-    paddingVertical: 5,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    alignItems: 'center',
+
+  storeViewInfo: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+    marginLeft: 3,
+    marginRight: 3,
   },
-
-  openOverlayText: {
-    color: '#fff',
-    fontSize: 12,
-    fontFamily: 'Pretendard-Bold',
-    alignSelf: 'flex-end',
-    marginTop: 7,
-    marginRight: 5,
-  },
-
-  distanceText: {
-    fontSize: 13,
+  storMainInfo: {
+    fontSize: 16,
     fontFamily: 'Pretendard-Bold',
     color: '#333',
-    alignSelf: 'flex-end',
-    marginRight: 15,
-    marginTop: 7,
-    marginBottom: 15,
+    width: 140,
+  },
+  storRate: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    color: '#FCC104',
+  },
+  storRateInfo: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#999',
+  },
+
+  StoreCategory: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
+  },
+  storeSubInfo: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

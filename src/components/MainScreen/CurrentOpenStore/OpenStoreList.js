@@ -73,7 +73,7 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
       <View style={styles.todayPhrasesView}>
         <Text style={styles.mylocationlivetext}>현재 영업 중인 술집은?</Text>
         <Text style={styles.mylocationlivesubtext}>
-          내 근처 영업 중인 술집을 알려드려요
+          내 주변 늦게까지 영업하는 술집을 알려드려요
         </Text>
       </View>
 
@@ -117,13 +117,14 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
 
 const styles = StyleSheet.create({
   scrollViewContent: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 18,
     alignItems: 'center',
     paddingBottom: 20,
   },
   todayPhrasesView: {
+    width: '100%',
     marginTop: 20,
-    marginLeft: 25,
+    marginLeft: 20,
   },
   mylocationlivetext: {
     fontSize: 18,
@@ -136,9 +137,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     color: '#777',
     marginTop: 5,
-  },
-  storeContainer: {
-    marginHorizontal: 3,
   },
   footer: {
     paddingVertical: 20,

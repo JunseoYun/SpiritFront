@@ -99,10 +99,10 @@ const styles = StyleSheet.create({
   buttonTextTop: {
     color: 'black',
     fontSize: 15,
-    fontWeight: '400',
     paddingRight: 7,
     borderRightWidth: 0.5,
     borderColor: 'gray',
+    fontFamily: 'Pretendard-Medium',
   },
   dropdown: {
     marginTop: 5,
@@ -121,13 +121,11 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-  },
-  selectedOption: {
-    backgroundColor: '#16BBFF22',
+    fontFamily: 'Pretendard-Medium',
   },
   selectedOptionText: {
     color: '#45c9ff',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
   },
   overlay: {
     position: 'absolute',
