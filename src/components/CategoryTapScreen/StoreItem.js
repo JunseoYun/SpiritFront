@@ -6,7 +6,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Categorystyles from '../../screens/CategoryTap/CategoryTapStyles';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
-import {PanGestureHandler} from 'react-native-gesture-handler';
+import {FlatList} from 'react-native';
 
 const StoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
@@ -40,6 +40,7 @@ const StoreItem = ({store, location, navigation}) => {
           nestedScrollEnabled={true}
           showsHorizontalScrollIndicator={false}
           directionalLockEnabled={true} // 👈 추가
+          // onStartShouldSetResponder={() => true}
           contentContainerStyle={{
             paddingHorizontal: 18,
             gap: 18,
@@ -84,53 +85,51 @@ const StoreItem = ({store, location, navigation}) => {
               )}
             </ImageBackground>
           </View>
-          {store.menuList.length > 0 &&
-            store.menuList.map(
-              (menu, index) =>
-                menu.imgUrl && (
-                  <View key={index} style={Categorystyles.menuItemView}>
-                    <ImageBackground
-                      source={
-                        {uri: menu.imgUrl} // ✅ 네트워크 이미지
-                        // ✅ 로컬 이미지
-                      }
-                      style={Categorystyles.menuImageView}
-                      imageStyle={Categorystyles.menuImg} // ✅ 스타일 조건부 적용
-                    >
-                      {(!isOpen && !nextclosed && !closed) ||
-                      (!isOpen && nextclosed && !closed) ||
-                      (!isOpen && !nextclosed && closed) ||
-                      (isOpen && isBreak) ? (
-                        // 오버레이만 표시 (내용 없음)
-                        <View style={Categorystyles.overlay}></View>
-                      ) : (
-                        // 메뉴 정보가 포함된 오버레이
-                        <View style={Categorystyles.semiOverlay}>
-                          <Text
-                            style={Categorystyles.menuName}
-                            numberOfLines={1}
-                            ellipsizeMode="tail">
-                            {menu.name}
-                          </Text>
-                          <Text
-                            style={Categorystyles.menuPrice}
-                            numberOfLines={1}
-                            ellipsizeMode="tail">
-                            {/^\d+$/.test(menu?.price)
-                              ? Number(menu.price).toLocaleString() + '원'
-                              : menu?.price}
-                          </Text>
-                        </View>
-                      )}
-                    </ImageBackground>
-                  </View>
-                ),
-            )}
-          {store.menuList?.length === 1 && (
+          {store.menuList?.length > 0 &&
+            store.menuList
+              .filter(menu => !!menu.imgUrl)
+              .map((menu, index) => (
+                <View key={index} style={Categorystyles.menuItemView}>
+                  <ImageBackground
+                    source={
+                      {uri: menu.imgUrl} // ✅ 네트워크 이미지
+                      // ✅ 로컬 이미지
+                    }
+                    style={Categorystyles.menuImageView}
+                    imageStyle={Categorystyles.menuImg} // ✅ 스타일 조건부 적용
+                  >
+                    {(!isOpen && !nextclosed && !closed) ||
+                    (!isOpen && nextclosed && !closed) ||
+                    (!isOpen && !nextclosed && closed) ||
+                    (isOpen && isBreak) ? (
+                      // 오버레이만 표시 (내용 없음)
+                      <View style={Categorystyles.overlay}></View>
+                    ) : (
+                      // 메뉴 정보가 포함된 오버레이
+                      <View style={Categorystyles.semiOverlay}>
+                        <Text
+                          style={Categorystyles.menuName}
+                          numberOfLines={1}
+                          ellipsizeMode="tail">
+                          {menu.name}
+                        </Text>
+                        <Text
+                          style={Categorystyles.menuPrice}
+                          numberOfLines={1}
+                          ellipsizeMode="tail">
+                          {/^\d+$/.test(menu?.price)
+                            ? Number(menu.price).toLocaleString() + '원'
+                            : menu?.price}
+                        </Text>
+                      </View>
+                    )}
+                  </ImageBackground>
+                </View>
+              ))}
+          {store.menuList?.filter(menu => !!menu.imgUrl).length <= 1 && (
             <View style={Categorystyles.menuItemView}>
               <ImageBackground
                 source={require('../../assets/PorkBack.png')}
-                // ✅ 로컬 "메뉴 더보기" 이미지
                 style={Categorystyles.menuImageView2}
                 imageStyle={Categorystyles.menuNoImg}>
                 <Text style={Categorystyles.moreText}>메뉴 더보기 {'>'}</Text>
