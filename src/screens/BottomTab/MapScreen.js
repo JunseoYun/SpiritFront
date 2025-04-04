@@ -19,6 +19,7 @@ import MapDirections from '../../components/MapScreen/MapDirections';
 import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import generateMapScript from '../../components/MapScreen/generateMapScript';
 import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
+import MapRadius from '../../components/MapScreen/MapRadius';
 import {openKakaoMap} from '../../hooks/openKakaoMap';
 
 const {width} = Dimensions.get('window');
@@ -38,11 +39,20 @@ const MapScreen = ({navigation}) => {
   const {showToast} = useToast();
   const [isFlatListVisible, setIsFlatListVisible] = useState(true); // 플랫리스트 상태
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
+  const [radius, setRadiusint] = useState(2);
+  const prevRadiusRef = useRef(radius);
 
   useEffect(() => {
-    fetchSaveLocation();
+    fetchSaveLocation(radius);
     setRefresh(false);
   }, []);
+
+  useEffect(() => {
+    if (prevRadiusRef.current !== radius) {
+      prevRadiusRef.current = radius; // 변경된 값을 저장
+      setRefresh(true);
+    }
+  }, [radius]);
 
   const closeStoreListOverlayScript = `
   if (window.currentOverlay && typeof window.currentOverlay.setMap === 'function') {
@@ -52,7 +62,7 @@ const MapScreen = ({navigation}) => {
   true;
 `;
 
-  const fetchSaveLocation = async () => {
+  const fetchSaveLocation = async radius => {
     setLoading(true);
     try {
       const currentLocation = await getLocation();
@@ -61,6 +71,7 @@ const MapScreen = ({navigation}) => {
       const storesData = await Store_getby_radius(
         currentLocation.latitude,
         currentLocation.longitude,
+        radius,
       );
       storesData.sort((a, b) =>
         a.locationDto.address.localeCompare(b.locationDto.address),
@@ -91,7 +102,7 @@ const MapScreen = ({navigation}) => {
     return parseFloat(value.toFixed(precision)); // 🔥 소수점 5자리까지만 남김
   };
 
-  const updateNewLocation = async () => {
+  const updateNewLocation = async radius => {
     setLoading(true);
     try {
       const {newLocation, address} = await fetchLocationAddress();
@@ -117,6 +128,7 @@ const MapScreen = ({navigation}) => {
         const storesData = await Store_getby_radius(
           newLocation.latitude,
           newLocation.longitude,
+          radius,
         );
         storesData.sort((a, b) =>
           a.locationDto.address.localeCompare(b.locationDto.address),
@@ -182,12 +194,13 @@ const MapScreen = ({navigation}) => {
     return latDiff > threshold || lngDiff > threshold;
   };
 
-  const setcenterrefresh = async () => {
+  const setcenterrefresh = async radius => {
     setLoading(true);
     try {
       const storesData = await Store_getby_radius(
         centerLatLng.latitude,
         centerLatLng.longitude,
+        radius,
       );
       storesData.sort((a, b) =>
         a.locationDto.address.localeCompare(b.locationDto.address),
@@ -339,10 +352,11 @@ const MapScreen = ({navigation}) => {
           <Text style={styles.loadingtext}>Loading Map...</Text>
         </View>
       )}
-      {refresh && <MapSearchBar setcenterrefresh={setcenterrefresh} />}
+      {refresh && <MapSearchBar onPress={() => setcenterrefresh(radius)} />}
+      <MapRadius setRadiusint={setRadiusint} />
 
-      <MapLocation onPress={updateNewLocation} />
-      <MapDirections onPress={fetchSaveLocation} />
+      <MapLocation onPress={() => updateNewLocation(radius)} />
+      <MapDirections onPress={() => fetchSaveLocation(radius)} />
 
       <MapStoreList
         panHandlers={panResponder.panHandlers}

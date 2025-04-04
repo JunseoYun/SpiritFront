@@ -138,12 +138,13 @@ export const Store_getby_recent = async page => {
 };
 
 // 반경 내 가게 리스트 조회 O  - 요청시간 조금 걸림
-export const Store_getby_radius = async (latitude, longitude) => {
+export const Store_getby_radius = async (latitude, longitude, radius) => {
   try {
     const response = await axiosInstance.get(`/store/get-by/radius`, {
       params: {
         longitude,
         latitude,
+        radius,
       },
     });
     return response.data.data;

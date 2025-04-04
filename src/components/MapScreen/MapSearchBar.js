@@ -12,10 +12,10 @@ import {
 const {width} = Dimensions.get('window');
 
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
-const MapSearchBar = ({setcenterrefresh}) => {
+const MapSearchBar = ({onPress}) => {
   return (
     <View style={styles.buttonTop}>
-      <Pressable style={styles.searchView} onPress={() => setcenterrefresh()}>
+      <Pressable style={styles.searchView} onPress={onPress}>
         <EvilIcons name="redo" size={25} color={'#16BBFF'} />
         <Text style={styles.buttonTextTop}>현 지도에서 재검색</Text>
       </Pressable>
