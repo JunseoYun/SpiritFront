@@ -77,8 +77,8 @@ const CategoryListTabbar = ({route}) => {
         lazyPreloadDistance: 0,
         tabBarScrollEnabled: true,
         tabBarItemStyle: {width: 100},
-        // swipeEnabled: true,
-        swipeEnabled: false,
+
+        swipeEnabled: true,
         unmountOnBlur: false,
         tabBarActiveTintColor: '#80D2F4', // 선택된 탭 글자 색상
         tabBarIndicatorStyle: {
