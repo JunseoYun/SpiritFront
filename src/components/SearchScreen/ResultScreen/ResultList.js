@@ -71,42 +71,50 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
   );
 
   return (
-    <FlatList
-      data={searchingStores}
-      renderItem={renderItem}
-      keyExtractor={item => item.id.toString()}
-      contentContainerStyle={styles.fastSearchModalScrollView}
-      initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
-      maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
-      windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-      removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
-      onEndReached={() => {
-        if (!loading && !isEnd && page < totalpage - 1) {
-          setPage(prevPage => {
-            const nextPage = prevPage + 1; // 다음 페이지 번호
-            filteredStores(nextPage); // 그 페이지 번호로 데이터 요청
-            return nextPage; // 상태를 증가된 페이지 번호로 갱신
-          });
+    <View style={styles.container}>
+      <FlatList
+        data={searchingStores}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        contentContainerStyle={styles.fastSearchModalScrollView}
+        initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
+        maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
+        windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
+        removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
+        onEndReached={() => {
+          if (!loading && !isEnd && page < totalpage - 1) {
+            setPage(prevPage => {
+              const nextPage = prevPage + 1; // 다음 페이지 번호
+              filteredStores(nextPage); // 그 페이지 번호로 데이터 요청
+              return nextPage; // 상태를 증가된 페이지 번호로 갱신
+            });
+          }
+        }} // 끝에 도달하면 데이터 불러오기
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loading && !isEnd ? (
+            <View style={styles.footer}>
+              <Text style={styles.emptyText}>Loading...</Text>
+            </View>
+          ) : null
         }
-      }} // 끝에 도달하면 데이터 불러오기
-      onEndReachedThreshold={0.5}
-      ListFooterComponent={
-        loading && !isEnd ? (
-          <View style={styles.footer}>
-            <Text style={styles.emptyText}>Loading...</Text>
-          </View>
-        ) : null
-      }
-      ListEmptyComponent={
-        !loading && searchingStores.length === 0 ? (
-          <Text style={styles.emptyText}>검색된 술집이 없습니다</Text>
-        ) : null
-      }
-    />
+        ListEmptyComponent={
+          !loading && searchingStores.length === 0 ? (
+            <Text style={styles.emptyText}>검색된 술집이 없습니다</Text>
+          ) : null
+        }
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#F8FDFF',
+    height: '100%',
+
+    paddingBottom: 50,
+  },
   footer: {
     paddingVertical: 10,
     alignItems: 'center',
