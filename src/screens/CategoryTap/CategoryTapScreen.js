@@ -94,7 +94,7 @@ const CategoryTapScreen = ({navigation, route}) => {
           }
           ListEmptyComponent={
             !loading && stores.length === 0 ? (
-              <Text style={styles.emptyText}>등록된 가게가 없습니다.</Text>
+              <Text style={styles.emptyText}>등록된 가게가 없어요</Text>
             ) : null
           }
           refreshing={loading}

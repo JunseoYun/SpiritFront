@@ -98,13 +98,15 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
                             alcoholItem.value === alcohol[index]?.type &&
                               styles.selectedAlcohol,
                           ]}
-                          onPress={() =>
+                          onPress={() => {
+                            const current = alcohol[index]?.type;
+                            const selected = alcoholItem.value;
                             handleAlcoholChange(
                               index,
                               'type',
-                              alcoholItem.value,
-                            )
-                          }>
+                              current === selected ? '' : selected, // 동일하면 해제, 아니면 선택
+                            );
+                          }}>
                           <Text
                             style={[
                               styles.alcoholText,

@@ -134,12 +134,15 @@ const StoreItem = ({store, location, navigation}) => {
           {store.menuList?.filter(menu => !!menu.imgUrl).length <= 1 && (
             <Pressable
               onPress={handleStorePress}
-              style={Categorystyles.menuItemView}>
+              style={[Categorystyles.menuItemView]}>
               <ImageBackground
                 source={require('../../assets/PorkBack.png')}
                 style={Categorystyles.menuImageView2}
                 imageStyle={Categorystyles.menuNoImg}>
-                <Text style={Categorystyles.moreText}>메뉴 더보기 {'>'}</Text>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text style={Categorystyles.moreText}>메뉴 더보기</Text>
+                  <Ionicons name="chevron-forward" size={16} color={'#333'} />
+                </View>
               </ImageBackground>
             </Pressable>
           )}
