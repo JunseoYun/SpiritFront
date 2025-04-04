@@ -3,56 +3,50 @@ import {StyleSheet} from 'react-native';
 const Categorystyles = StyleSheet.create({
   itemContainer: {
     width: '100%',
-    borderColor: '#E7E7E7',
-    borderBottomWidth: 2,
+    borderColor: '#EDEDED',
+    borderBottomWidth: 1.5,
     backgroundColor: 'white',
-    alignItems: 'center',
-    paddingTop: 20,
+
+    paddingVertical: 15,
+    // paddingBottom: 10,
   },
-  menuView: {
+  imageView: {
     width: '100%',
     flexDirection: 'row',
   },
   menuItemView: {
     width: 120,
-    height: 180,
+    height: 140,
     alignItems: 'center',
-    justifyContent: 'space-evenly',
+    justifyContent: 'center',
     marginRight: -3,
   },
   menuImageView: {
     width: 130,
     height: 130,
-    borderRadius: 10,
-    backgroundColor: '#EEEEEE',
-    alignContent: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
   },
+
   menuImg: {
     width: 130,
     height: 130,
-    borderRadius: 10,
+    borderRadius: 9,
     resizeMode: 'cover',
   },
-  menuNoImg: {
-    width: '100%',
-    height: 70, // 추가
-    borderRadius: 10,
-    resizeMode: 'contain',
-    justifyContent: 'center',
-    position: 'absolute',
-    top: '25%',
-  },
+
   menuName: {
-    fontSize: 15,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
+    fontSize: 16,
+    fontFamily: 'Pretendard-Medium',
+    color: '#fff',
+    lineHeight: 22,
+    marginTop: 3,
   },
   menuPrice: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: 'Pretendard-Medium',
-    marginTop: -5,
-    color: '#333',
+    color: '#fff',
+    lineHeight: 20,
+    marginBottom: 3,
   },
   storeMainView: {
     width: 130,
@@ -75,7 +69,12 @@ const Categorystyles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.3)', // ✅ 반투명 배경 추가
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: 9,
+  },
+  semiOverlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.1)', // ✅ 반투명 배경 추가
+    alignItems: 'center',
+    borderRadius: 9,
   },
   overlayText: {
     color: 'white',
@@ -84,24 +83,41 @@ const Categorystyles = StyleSheet.create({
     lineHeight: 22,
     textAlign: 'center',
   },
+  menuImageView2: {
+    width: 130,
+    height: 130,
+    justifyContent: 'center',
+    backgroundColor: '#F4F5F7',
+    alignItems: 'center',
+    borderRadius: 9,
+  },
+  menuNoImg: {
+    width: '100%',
+    borderRadius: 9,
+    resizeMode: 'contain',
+    justifyContent: 'center',
+    position: 'absolute',
+  },
+  moreText: {
+    fontSize: 16,
+
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+  },
   infoTopView: {
     width: '100%',
-    height: 90,
-    justifyContent: 'space-between',
-    padding: 10,
-    marginTop: -3,
+    marginTop: 1,
+
     paddingHorizontal: 18,
   },
   infoTitleView: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
   storeName: {
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    width: '50%',
+    marginRight: 7,
   },
   alcoholText: {
     fontSize: 14,
@@ -110,25 +126,57 @@ const Categorystyles = StyleSheet.create({
     width: '50%',
     textAlign: 'right',
   },
+  infoReviewView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
   infoView: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   infoText: {
     fontSize: 14,
-    fontFamily: 'Pretendard-Medium',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#333',
+    textAlign: 'center',
   },
   infoTimeView: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  subInfoText: {
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
+    color: '#999',
+    textAlign: 'center',
+  },
+  iconStar: {
+    justifyContent: 'space-between',
+
+    height: 16,
+    width: 16,
   },
 
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  drinkView: {
+    flexDirection: 'row',
+  },
+  drinkText: {
+    fontSize: 14,
+    paddingVertical: 3,
+
+    borderRadius: 5,
+    marginRight: 10,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#767676',
   },
 });
 

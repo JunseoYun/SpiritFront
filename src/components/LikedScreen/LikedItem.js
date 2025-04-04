@@ -23,6 +23,7 @@ const drinkColors = {
   VODKA: '#3949AB',
   GIN: '#2E7D32',
   RUM: '#3E2723',
+  HIGHBALL: '#20B2AA',
   TEQUILA: '#EF6C00',
 };
 // utils/colorUtils.js (또는 상단에 직접 추가해도 됨)
@@ -262,9 +263,9 @@ const styles = StyleSheet.create({
     color: '#333',
     fontFamily: 'Pretendard-Medium',
     fontSize: 14,
-    borderWidth: 1,
+    borderWidth: 1.2,
     padding: 4,
-    borderRadius: 7,
+    borderRadius: 5,
     marginRight: 7,
   },
   infoItem: {

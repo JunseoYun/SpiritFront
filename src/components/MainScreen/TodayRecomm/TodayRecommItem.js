@@ -14,7 +14,7 @@ const drinkColors = {
   WHISKEY: '#6D4C41',
   VODKA: '#3949AB',
   GIN: '#2E7D32',
-  RUM: '#3E2723',
+  HIGHBALL: '#20B2AA',
   TEQUILA: '#EF6C00',
 };
 const hexToRGBA = (hex, opacity = 0.3) => {
@@ -133,16 +133,16 @@ const styles = StyleSheet.create({
   drinkView: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 7,
+    marginLeft: 3,
     marginBottom: 3,
   },
   drinkText: {
     color: '#333',
     fontFamily: 'Pretendard-Medium',
     fontSize: 14,
-    borderWidth: 1,
+    borderWidth: 1.2,
     padding: 4,
-    borderRadius: 7,
+    borderRadius: 5,
   },
   division: {
     height: 12,
