@@ -90,7 +90,7 @@ const CategoryTapScreen = ({navigation, route}) => {
           windowSize={5}
           removeClippedSubviews={true}
           ListFooterComponent={
-            loading ? <Text style={styles.emptyText}>Loading...</Text> : null
+            loading ? <Text style={styles.loadingtext}>Loading...</Text> : null
           }
           ListEmptyComponent={
             !loading && stores.length === 0 ? (
@@ -113,16 +113,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingtext: {
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 20,
     color: '#333',
+    marginVertical: 40,
+    textAlign: 'center',
   },
   emptyText: {
     textAlign: 'center',
     marginVertical: 40,
-    fontFamily: 'Pretendard-SemiBold',
-    fontSize: 20,
-    color: '#333',
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 18,
+    color: '#c0c0c0',
   },
 });
 

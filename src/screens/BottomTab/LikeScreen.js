@@ -114,7 +114,7 @@ const LikeScreen = ({navigation}) => {
         ListFooterComponent={
           loading ? (
             <View style={styles.loadingContainer}>
-              <Text style={styles.emptyText}>Loading...</Text>
+              <Text style={styles.loadingText}>Loading...</Text>
             </View>
           ) : null
         }
@@ -145,12 +145,21 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     alignItems: 'center',
   },
-  emptyText: {
+  loadingText: {
     textAlign: 'center',
     marginVertical: 20,
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
     fontSize: 20,
     color: '#333',
+  },
+
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 60,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 17,
+    color: '#c0c0c0',
+    alignSelf: 'center',
   },
 });
 

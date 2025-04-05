@@ -82,7 +82,11 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
 
   const renderEmptyComponent = () => {
     if (!loading) {
-      return <Text style={styles.emptyText}>근처에 등록된 술집이 없어요</Text>;
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>근처에 등록된 술집이 없어요</Text>
+        </View>
+      );
     }
     return null;
   };
@@ -120,8 +124,12 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
         removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
         onEndReachedThreshold={0.5} // 리스트 끝에 가까워지면 데이터를 추가로 가져옵니다.
         ListFooterComponent={renderFooter} // 로딩 인디케이터
-        ListEmptyComponent={renderEmptyComponent}
       />
+      {stores.length === 0 && !loading && (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>근처에 등록된 술집이 없어요</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -155,13 +163,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  emptyContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    marginTop: 10,
+  },
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
     fontFamily: 'Pretendard-Medium',
-    fontSize: 20,
-    color: '#999',
-    marginLeft: 12,
+    fontSize: 15,
+    color: '#c0c0c0',
+    alignSelf: 'center',
   },
 });
 

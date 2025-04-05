@@ -116,8 +116,12 @@ const RecentStoreList = ({refresh, setRefresh, navigation, location}) => {
         windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
         removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
         ListFooterComponent={renderFooter} // 로딩 인디케이터
-        ListEmptyComponent={renderEmptyComponent} // 빈 상태 처리
       />
+      {stores.length === 0 && !loading && (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>최근 방문한 술집이 없어요</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -148,13 +152,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  emptyContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    marginTop: 10,
+  },
   emptyText: {
     textAlign: 'center',
-    marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
-    fontSize: 20,
-    color: '#333',
-    marginLeft: 18,
+
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 15,
+    color: '#c0c0c0',
+    alignSelf: 'center',
   },
 });
 

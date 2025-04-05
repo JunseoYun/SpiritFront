@@ -83,9 +83,7 @@ const MapStoreList = ({
       {stores.length === 0 && (
         <View style={styles.storeInfo}>
           <View style={styles.titleview}>
-            <Text style={styles.noDataText}>
-              주변에 등록된 술집이 없습니다.
-            </Text>
+            <Text style={styles.noDataText}>주변에 등록된 술집이 없어요</Text>
           </View>
 
           <View style={styles.noneView}>
@@ -139,9 +137,9 @@ const styles = StyleSheet.create({
   },
   noDataText: {
     alignSelf: 'center',
-    fontSize: 15,
-    color: '#555',
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 16,
+    color: '#c9c9c9',
+    fontFamily: 'Pretendard-Medium',
   },
   noneView: {
     flexDirection: 'row',
@@ -169,13 +167,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     color: '#45c9ff',
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
   noneText: {
     alignSelf: 'center',
     color: 'white',
-    fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 
