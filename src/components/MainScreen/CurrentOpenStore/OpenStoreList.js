@@ -105,12 +105,12 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
             </View>
           ) : null
         }
-        ListEmptyComponent={
-          !loading ? (
-            <Text style={styles.emptyText}>근처에 영업 중인 술집이 없어요</Text>
-          ) : null
-        }
       />
+      {distancestores.length === 0 && !loading && (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>근처에 영업 중인 술집이 없어요</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -144,13 +144,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  emptyContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    marginTop: -10,
+  },
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
     fontFamily: 'Pretendard-Medium',
-    fontSize: 20,
-    color: '#999',
-    marginLeft: 12,
+    fontSize: 15,
+    color: '#c0c0c0',
+    alignSelf: 'center',
   },
 });
 

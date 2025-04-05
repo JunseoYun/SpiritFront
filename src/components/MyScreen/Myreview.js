@@ -121,7 +121,7 @@ const MyReview = ({navigation}) => {
         ListEmptyComponent={
           !loading && myReview.length === 0 ? (
             <View style={styles.footer}>
-              <Text style={styles.emptyText}>리뷰가 없습니다</Text>
+              <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
             </View>
           ) : null
         }
@@ -141,9 +141,11 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
-    fontSize: 20,
-    color: '#333',
+    marginVertical: 60,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 17,
+    color: '#c0c0c0',
+    alignSelf: 'center',
   },
 });
 
