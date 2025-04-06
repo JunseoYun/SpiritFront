@@ -28,6 +28,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   checkboxLabel: {
+    flex: 1,
     fontSize: 16,
     color: '#181A1A',
     fontFamily: 'Pretendard-Medium',
