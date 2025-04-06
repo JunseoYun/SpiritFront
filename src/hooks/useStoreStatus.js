@@ -35,8 +35,6 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
     };
 
     const now = new Date();
-    const now22 = new Date();
-    now22.setHours(now22.getHours() + 11);
     const todayName = new Intl.DateTimeFormat('en-US', {
       weekday: 'long',
       timeZone: 'Asia/Seoul',
@@ -46,20 +44,17 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
     now.setHours(now.getHours() + 9);
 
     let todayIndex = dayOrder.indexOf(todayName);
-
     // 전날 closeTime이 자정을 넘는 경우 && 현재 시간이 그 이전이면, 배열 시작을 전날로 바꿈
     const yesterdayIndex = (todayIndex + 6) % 7;
     const yesterdayInfo = schedules.find(
       item => item.dayOfWeek === dayOrder[yesterdayIndex],
     );
-
     if (yesterdayInfo && yesterdayInfo.closeTime) {
       const [yCloseH, yCloseM] = yesterdayInfo.closeTime.split(':').map(Number);
       if (yCloseH < 12) {
-        const yClose = new Date(now);
+        const yClose = new Date();
         yClose.setHours(yCloseH, yCloseM, 0, 0);
         yClose.setHours(yClose.getHours() + 9); // KST 보정
-
         if (now <= yClose) {
           todayIndex = yesterdayIndex;
         }
@@ -94,8 +89,6 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       }
 
       let now = new Date();
-      let now22 = new Date();
-      now22.setHours(now22.getHours() + 13);
       let currentDay = new Intl.DateTimeFormat('en-US', {
         weekday: 'long',
         timeZone: 'Asia/Seoul',
@@ -109,6 +102,54 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         info => info.dayOfWeek === currentDay,
       );
 
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayDay = new Intl.DateTimeFormat('en-US', {
+        weekday: 'long',
+        timeZone: 'Asia/Seoul',
+      })
+        .format(yesterday)
+        .toUpperCase();
+
+      const yesterdayInfo = operationInfoDtos.find(
+        info => info.dayOfWeek === yesterdayDay,
+      );
+
+      if (
+        yesterdayInfo &&
+        !yesterdayInfo.isClosed &&
+        yesterdayInfo.closeTime &&
+        yesterdayInfo.openTime
+      ) {
+        const [yCloseH, yCloseM] = yesterdayInfo.closeTime
+          .split(':')
+          .map(Number);
+        if (yCloseH < 12) {
+          const yCloseDate = new Date();
+          yCloseDate.setHours(yCloseH, yCloseM, 0, 0);
+          yCloseDate.setHours(yCloseDate.getHours() + 9); // KST
+
+          if (now <= yCloseDate) {
+            // 전날 기준으로 오늘 새벽까지 영업중
+            const [yOpenH, yOpenM] = yesterdayInfo.openTime
+              .split(':')
+              .map(Number);
+            const yOpenDate = new Date();
+            yOpenDate.setDate(yOpenDate.getDate() - 1);
+            yOpenDate.setHours(yOpenH, yOpenM, 0, 0);
+            yOpenDate.setHours(yOpenDate.getHours() + 9);
+
+            setIsOpen(true);
+            setIsBreak(false);
+            setClosed(false);
+            setStarttime(yesterdayInfo.openTime.slice(0, 5));
+            setEndtime(yesterdayInfo.closeTime.slice(0, 5));
+            return;
+          }
+        }
+      }
+
+      // 여기서 오늘 정보 기준으로 체크
       if (
         !todayInfo ||
         todayInfo.isClosed ||
@@ -120,20 +161,6 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         setIsBreak(false);
         return;
       }
-
-      let yesterdayInfo = operationInfoDtos.find((info, index, array) => {
-        let yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-        yesterday.setHours(yesterday.getHours() - 9);
-        let yesterdayDay = new Intl.DateTimeFormat('en-US', {
-          weekday: 'long',
-          timeZone: 'Asia/Seoul',
-        })
-          .format(yesterday)
-          .toUpperCase();
-
-        return info.dayOfWeek === yesterdayDay;
-      });
 
       let nextdayInfo = operationInfoDtos.find((info, index, array) => {
         let nextday = new Date(now);
@@ -193,27 +220,25 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         yCloseDate.setHours(yCloseDate.getHours() + 9);
         if (yCloseHours < 12 && now <= yCloseDate) {
           todayInfo = yesterdayInfo;
+          openTime = todayInfo.openTime;
           closeTime = todayInfo.closeTime;
 
           openDate = new Date();
+          openDate.setDate(openDate.getDate() - 1);
           closeDate = new Date();
           let [newOpenH, newOpenM] = openTime.split(':').map(Number);
           let [newCloseH, newCloseM] = closeTime.split(':').map(Number);
 
           openDate.setHours(newOpenH, newOpenM, 0, 0);
+
           closeDate.setHours(newCloseH, newCloseM, 0, 0);
           openDate.setHours(openDate.getHours() + 9);
           closeDate.setHours(closeDate.getHours() + 9);
-
-          if (newCloseH < newOpenH) {
-            closeDate.setDate(closeDate.getDate() + 1);
-          }
         }
       }
 
       setStarttime(openTime.slice(0, 5));
       setEndtime(closeTime.slice(0, 5));
-
       if (now >= openDate && now <= closeDate) {
         if (
           breakStartDate &&
@@ -234,10 +259,17 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         setIsBreak(false);
         setClosed(false);
 
-        if (!nextdayInfo.isClosed) {
-          setStarttime(nextdayInfo.openTime.slice(0, 5));
+        if (todayInfo !== yesterdayInfo) {
+          setStarttime(todayInfo.openTime.slice(0, 5));
+          console.log(starttime, 'starttime');
+          setEndtime(todayInfo.closeTime.slice(0, 5));
+          console.log(endtime, 'endtime');
         } else {
-          setNextclosed(true);
+          if (nextdayInfo && !nextdayInfo.isClosed) {
+            setStarttime(nextdayInfo.openTime.slice(0, 5));
+          } else {
+            setNextclosed(true);
+          }
         }
       }
     };

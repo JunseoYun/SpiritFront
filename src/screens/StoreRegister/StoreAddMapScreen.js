@@ -34,23 +34,7 @@ const StoreAddMapScreen = ({navigation}) => {
 
   useEffect(() => {
     let isMounted = true; // ✅ cleanup을 위한 변수 추가
-    const fetchSaveLocation = async () => {
-      try {
-        const currentLocation = await getLocation();
-        setCurrentloacation(currentLocation);
-        if (isMounted) {
-          if (webViewRef.current) {
-            const script = StoreMapAddScript(
-              currentLocation.latitude,
-              currentLocation.longitude,
-            );
-            webViewRef.current.injectJavaScript(script);
-          }
-        }
-      } catch (err) {
-        console.error('위치 가져오는 중 오류 발생:', err);
-      }
-    };
+
     fetchSaveLocation();
     return () => {
       isMounted = false; // ✅ cleanup
@@ -203,11 +187,7 @@ const StoreAddMapScreen = ({navigation}) => {
           style={styles.webview}
           onMessage={onMessageHandler}
         />
-      ) : (
-        <View style={styles.loading}>
-          <Text>Loading Map...</Text>
-        </View>
-      )}
+      ) : null}
 
       <TouchableOpacity style={styles.buttonRoute} onPress={updateNewLocation}>
         <Feather name="crosshair" size={30} color="#16BBFF" />
@@ -275,9 +255,9 @@ const styles = StyleSheet.create({
   loadingtext: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
     fontSize: 20,
-    color: '#333',
+    color: '#c0c0c0',
   },
 });
 

@@ -365,11 +365,7 @@ const MapScreen = ({navigation}) => {
           nestedScrollEnabled={true} // 제스처 전달 허용
           style={styles.webview}
         />
-      ) : (
-        <View style={styles.loading}>
-          <Text style={styles.loadingtext}>Loading Map...</Text>
-        </View>
-      )}
+      ) : null}
       {refresh && <MapSearchBar onPress={() => setcenterrefresh(radius)} />}
       <MapRadius setRadiusint={setRadiusint} />
 
@@ -420,9 +416,9 @@ const styles = StyleSheet.create({
   loadingtext: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
     fontSize: 20,
-    color: '#333',
+    color: '#c0c0c0',
   },
 });
 
