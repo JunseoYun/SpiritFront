@@ -46,6 +46,7 @@ const days = [
 
 const StoreTimeEditScreen = ({navigation, route}) => {
   const {storeId, operationInfoDtos, is24Hours} = route.params;
+  console.log(operationInfoDtos);
 
   const scrollViewRef = useRef(null);
 
@@ -377,7 +378,12 @@ const StoreTimeEditScreen = ({navigation, route}) => {
         } else {
           if (openTime && closeTime) {
             const [openHour, openMinute] = openTime.split(':');
-            const [closedHour, closedMinute] = closeTime.split(':');
+            const [closedHourRaw, closedMinute] = closeTime.split(':');
+            const closedHour =
+              parseInt(closedHourRaw, 10) < 9
+                ? String(parseInt(closedHourRaw, 10) + 24).padStart(2, '0')
+                : closedHourRaw;
+
             defaultOperatingHours[formattedDay] = {
               openHour,
               openMinute,
