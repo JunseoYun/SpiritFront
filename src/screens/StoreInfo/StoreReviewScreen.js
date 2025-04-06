@@ -273,7 +273,7 @@ const StoreReviewScreen = ({navigation}) => {
                 {loading && !isEnd ? (
                   <Text style={styles.emptyText}>Loading...</Text>
                 ) : !loading && reviewdata.length === 0 ? (
-                  <Text style={styles.emptyText}>등록된 리뷰가 없습니다</Text>
+                  <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
                 ) : null}
               </View>
             }
@@ -369,9 +369,9 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
     fontSize: 20,
-    color: '#333',
+    color: '#c0c0c0',
   },
 });
 

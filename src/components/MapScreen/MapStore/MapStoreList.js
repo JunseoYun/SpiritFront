@@ -90,7 +90,10 @@ const MapStoreList = ({
             <Pressable
               style={styles.button2}
               onPress={() => {
-                navigation.navigate('StoreSearchScreen', {index: 0});
+                navigation.navigate('StoreSearchScreen', {
+                  index: 0,
+                  location: location,
+                });
               }}>
               <Text style={styles.noneText2}>술집 등록하기</Text>
             </Pressable>

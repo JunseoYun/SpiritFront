@@ -69,7 +69,7 @@ const StoreMenuScreen = ({
       ))}
       {menuList?.length === 0 && (
         <View style={styles.footer}>
-          <Text style={styles.emptyText}>등록된 메뉴가 없습니다</Text>
+          <Text style={styles.emptyText}>등록된 메뉴가 없어요</Text>
         </View>
       )}
       <Portal>
@@ -91,9 +91,9 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
     fontSize: 20,
-    color: '#333',
+    color: '#c0c0c0',
   },
 });
 

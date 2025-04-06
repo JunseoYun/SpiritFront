@@ -100,7 +100,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
         }
         ListEmptyComponent={
           !loading && searchingStores.length === 0 ? (
-            <Text style={styles.emptyText}>검색된 술집이 없습니다</Text>
+            <Text style={styles.emptyText}>검색된 술집이 없어요</Text>
           ) : null
         }
       />
@@ -123,9 +123,9 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    fontFamily: 'Pretendard-SemiBold', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Medium',
     fontSize: 20,
-    color: '#333',
+    color: '#c0c0c0',
   },
 });
 
