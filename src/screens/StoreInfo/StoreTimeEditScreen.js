@@ -398,7 +398,18 @@ const StoreTimeEditScreen = ({navigation, route}) => {
 
           if (breakStartTime && breakEndTime) {
             const [startHour, startMinute] = breakStartTime.split(':');
-            const [endHour, endMinute] = breakEndTime.split(':');
+            const [endHourRaw, endMinute] = breakEndTime.split(':');
+
+            const startTotalMinutes =
+              parseInt(startHour, 10) * 60 + parseInt(startMinute, 10);
+            const endTotalMinutes =
+              parseInt(endHourRaw, 10) * 60 + parseInt(endMinute, 10);
+
+            const endHour =
+              endTotalMinutes < startTotalMinutes
+                ? String(parseInt(endHourRaw, 10) + 24).padStart(2, '0')
+                : endHourRaw;
+
             defaultBreakingHours[formattedDay] = {
               startHour,
               startMinute,
