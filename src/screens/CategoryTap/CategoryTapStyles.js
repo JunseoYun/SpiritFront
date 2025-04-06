@@ -99,7 +99,7 @@ const Categorystyles = StyleSheet.create({
     position: 'absolute',
   },
   moreText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
   },

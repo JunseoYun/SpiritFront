@@ -8,7 +8,6 @@ import {
   BackHandler,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
-
 import LikedItem from '../../components/LikedScreen/LikedItem';
 import {Store_getby_liked} from '../../api/storeApi';
 
@@ -26,14 +25,11 @@ const LikeScreen = ({navigation}) => {
 
     try {
       const storesData = await Store_getby_liked(currentPage);
-
       if (storesData && storesData.length > 0) {
         setStores(prevStores => {
           const newStores = refresh
             ? storesData
             : [...prevStores, ...storesData];
-
-          // 중복 제거
           const uniqueStores = Array.from(
             new Map(newStores.map(store => [store.id, store])).values(),
           );
@@ -72,7 +68,6 @@ const LikeScreen = ({navigation}) => {
     }, []),
   );
 
-  // 다음 페이지 데이터 로드
   const loadMoreStores = () => {
     if (!loading && hasMore) {
       setPage(prevPage => {
@@ -83,7 +78,6 @@ const LikeScreen = ({navigation}) => {
     }
   };
 
-  // 새로고침 동작
   const handleRefresh = () => {
     setStores([]);
     setHasMore(true);
@@ -152,7 +146,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#333',
   },
-
   emptyText: {
     textAlign: 'center',
     marginVertical: 60,

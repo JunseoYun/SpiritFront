@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   },
   indicatorContainer: {
     position: 'absolute',
-    top: 280,
+    top: 250,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -189,6 +189,8 @@ const styles = StyleSheet.create({
   },
   activeIndicator: {
     backgroundColor: 'rgb(16, 188, 251)',
+    width: 14,
+    height: 7,
   },
   emptyContainer: {
     justifyContent: 'center',
