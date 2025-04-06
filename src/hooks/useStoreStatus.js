@@ -50,8 +50,13 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       item => item.dayOfWeek === dayOrder[yesterdayIndex],
     );
     if (yesterdayInfo && yesterdayInfo.closeTime) {
+      const [yOpenH, yOpenM] = yesterdayInfo.openTime.split(':').map(Number);
       const [yCloseH, yCloseM] = yesterdayInfo.closeTime.split(':').map(Number);
-      if (yCloseH < 12) {
+
+      const yOpenMinutes = yOpenH * 60 + yOpenM;
+      const yCloseMinutes = yCloseH * 60 + yCloseM;
+
+      if (yCloseH < 12 && yCloseMinutes < yOpenMinutes) {
         const yClose = new Date();
         yClose.setHours(yCloseH, yCloseM, 0, 0);
         yClose.setHours(yClose.getHours() + 9); // KST 보정
@@ -121,11 +126,15 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         yesterdayInfo.closeTime &&
         yesterdayInfo.openTime
       ) {
+        const [yOpenH, yOpenM] = yesterdayInfo.openTime.split(':').map(Number);
         const [yCloseH, yCloseM] = yesterdayInfo.closeTime
           .split(':')
           .map(Number);
 
-        if (yCloseH < 12) {
+        const yOpenMinutes = yOpenH * 60 + yOpenM;
+        const yCloseMinutes = yCloseH * 60 + yCloseM;
+
+        if (yCloseH < 12 && yCloseMinutes < yOpenMinutes) {
           const [breakStartHours, breakStartMinutes] =
             yesterdayInfo.breakStartTime
               ? yesterdayInfo.breakStartTime.split(':').map(Number)
