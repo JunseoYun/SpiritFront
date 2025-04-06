@@ -124,13 +124,34 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         const [yCloseH, yCloseM] = yesterdayInfo.closeTime
           .split(':')
           .map(Number);
+
         if (yCloseH < 12) {
+          const [breakStartHours, breakStartMinutes] =
+            yesterdayInfo.breakStartTime
+              ? yesterdayInfo.breakStartTime.split(':').map(Number)
+              : [null, null];
+          const [breakEndHours, breakEndMinutes] = yesterdayInfo.breakEndTime
+            ? yesterdayInfo.breakEndTime.split(':').map(Number)
+            : [null, null];
+
+          let breakStartDate = yesterdayInfo.breakStartTime ? new Date() : null;
+          let breakEndDate = yesterdayInfo.breakEndTime ? new Date() : null;
+
+          if (breakStartDate && breakEndDate) {
+            breakStartDate.setHours(breakStartHours, breakStartMinutes, 0, 0);
+            breakStartDate.setHours(breakStartDate.getHours() + 9); // KST 보정
+
+            breakEndDate.setHours(breakEndHours, breakEndMinutes, 0, 0);
+            breakEndDate.setHours(breakEndDate.getHours() + 9); // KST 보정
+
+            setBreakstart(yesterdayInfo.breakStartTime.slice(0, 5));
+            setBreakend(yesterdayInfo.breakEndTime.slice(0, 5));
+          }
           const yCloseDate = new Date();
           yCloseDate.setHours(yCloseH, yCloseM, 0, 0);
           yCloseDate.setHours(yCloseDate.getHours() + 9); // KST
 
           if (now <= yCloseDate) {
-            // 전날 기준으로 오늘 새벽까지 영업중
             const [yOpenH, yOpenM] = yesterdayInfo.openTime
               .split(':')
               .map(Number);
@@ -142,8 +163,15 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
             setIsOpen(true);
             setIsBreak(false);
             setClosed(false);
+
+            // 🔥 브레이크 타임 체크
+            if (now <= breakEndDate) {
+              setIsBreak(true);
+            }
+
             setStarttime(yesterdayInfo.openTime.slice(0, 5));
             setEndtime(yesterdayInfo.closeTime.slice(0, 5));
+
             return;
           }
         }
@@ -198,17 +226,21 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         closeDate.setDate(closeDate.getDate() + 1); // 영업 종료가 다음 날인 경우
       }
 
-      let breakStartDate = breakStartTime ? new Date() : null;
-      if (breakStartDate) {
-        breakStartDate.setHours(breakStartHours, breakStartMinutes, 0, 0);
-        breakStartDate.setHours(breakStartDate.getHours() + 9);
-        setBreakstart(breakStartTime.slice(0, 5));
-      }
+      let breakStartDate = breakStartTime ? new Date(now) : null;
+      let breakEndDate = breakEndTime ? new Date(now) : null;
 
-      let breakEndDate = breakEndTime ? new Date() : null;
-      if (breakEndDate) {
+      if (breakStartDate && breakEndDate) {
+        breakStartDate.setHours(breakStartHours, breakStartMinutes, 0, 0);
+        breakStartDate.setHours(breakStartDate.getHours() + 9); // KST 보정
+
         breakEndDate.setHours(breakEndHours, breakEndMinutes, 0, 0);
-        breakEndDate.setHours(breakEndDate.getHours() + 9);
+        breakEndDate.setHours(breakEndDate.getHours() + 9); // KST 보정
+
+        if (breakEndDate <= breakStartDate) {
+          breakEndDate.setDate(breakEndDate.getDate() + 1);
+        }
+
+        setBreakstart(breakStartTime.slice(0, 5));
         setBreakend(breakEndTime.slice(0, 5));
       }
       // 현재 시간이 00:00~closeTime (예: 02:00) 구간이라면, 전날 정보를 유지해야 함
@@ -261,9 +293,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
 
         if (todayInfo !== yesterdayInfo) {
           setStarttime(todayInfo.openTime.slice(0, 5));
-          console.log(starttime, 'starttime');
           setEndtime(todayInfo.closeTime.slice(0, 5));
-          console.log(endtime, 'endtime');
         } else {
           if (nextdayInfo && !nextdayInfo.isClosed) {
             setStarttime(nextdayInfo.openTime.slice(0, 5));
