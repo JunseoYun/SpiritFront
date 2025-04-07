@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Pretendard-Bold',
     color: '#333',
-    width: '60%',
+    width: '90%',
   },
   storeAddress: {
     fontSize: 14,
