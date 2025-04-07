@@ -2,17 +2,16 @@ import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
-  ScrollView,
   Image,
   StyleSheet,
   Pressable,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ActionButtons from './ActionButtons';
 import ImagePicker from 'react-native-image-crop-picker';
-import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
 import {
@@ -35,8 +34,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoadingimg(true);
-    }, 500); // 0.5초 후 버튼 활성화
-
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -61,10 +59,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   }, [addedImages, deletedImages]);
 
   const handleSave = () => {
-    setUpdatedImgValue({
-      addedImages,
-      deletedImages,
-    });
+    setUpdatedImgValue({addedImages, deletedImages});
     setTimeout(() => {
       onSave();
     }, 100);
@@ -82,9 +77,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
 
   const handleCameraPick = async () => {
     const hasCamera = await requestCameraPermission();
-    if (!hasCamera) {
-      return;
-    }
+    if (!hasCamera) return;
     setLoading(true);
     try {
       const image = await ImagePicker.openCamera({
@@ -104,10 +97,8 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   };
 
   const handleGalleryPick = async () => {
-    const hasCamera = await requestPhotoPermission();
-    if (!hasCamera) {
-      return;
-    }
+    const hasPermission = await requestPhotoPermission();
+    if (!hasPermission) return;
     setLoading(true);
     try {
       const image = await ImagePicker.openPicker({
@@ -131,7 +122,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
       showToast('이미지는 최대 5개까지 추가할 수 있습니다.');
       return;
     }
-    setBottomSheetVisible(true); // 바텀시트 열기
+    setBottomSheetVisible(true);
   };
 
   const removeServerImage = index => {
@@ -139,24 +130,14 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
       showToast('이미지는 최소 1개 이상 필요합니다.');
       return;
     }
-
     showAlert({
-      title: `이미지를 삭제하시겠습니까?`,
-      onConfirm: async () => {
-        setLoading(true);
-        try {
-          const imageToRemove = serverImages[index];
-          setServerImages(prev => prev.filter((_, i) => i !== index));
-          setDeletedImages(prev => [...prev, imageToRemove]);
-
-          showToast('삭제 되었습니다.');
-        } catch (error) {
-          showToast('이미지 삭제 실패.');
-        } finally {
-          setLoading(false);
-        }
+      title: '이미지를 삭제하시겠습니까?',
+      onConfirm: () => {
+        const imageToRemove = serverImages[index];
+        setServerImages(prev => prev.filter((_, i) => i !== index));
+        setDeletedImages(prev => [...prev, imageToRemove]);
+        showToast('삭제 되었습니다.');
       },
-      onCancel: null,
       type: 'delete',
     });
   };
@@ -167,49 +148,28 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
       return;
     }
     showAlert({
-      title: `이미지를 삭제하시겠습니까?`,
-      onConfirm: async () => {
-        setLoading(true);
-        try {
-          setAddedImages(prevImages =>
-            prevImages.filter((_, i) => i !== index),
-          );
-          showToast('삭제 되었습니다.');
-        } catch (err) {
-          showToast('이미지 삭제 실패.');
-        } finally {
-          setLoading(false);
-        }
+      title: '이미지를 삭제하시겠습니까?',
+      onConfirm: () => {
+        setAddedImages(prev => prev.filter((_, i) => i !== index));
+        showToast('삭제 되었습니다.');
       },
-      onCancel: null,
       type: 'delete',
     });
   };
 
   return (
-    <View style={styles.bottomSheetContent}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>매장 이미지</Text>
       <Text style={styles.subtitle}>*최대 5장</Text>
-      <BottomSheetScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.horizontalScrollContainer}
-        gestureHandlerProps={{
-          // 가로 스와이프 감지 범위 설정
-          activeOffsetX: [0, 10],
-          // 세로로 스와이프할 때, 바텀시트가 내려가지 않도록 방지
-          activeOffsetY: [-100, 0], // Y 방향 스와이프를 무시하도록 범위를 설정
-        }}
-        style={styles.scrollView}>
+      <View style={styles.imageContainer}>
         {allImages.map((image, index) => (
           <View key={index} style={styles.imageWrapper}>
             <Image
               source={{
                 uri: image.imageUrl ? image.imageUrl : image.path || image,
-              }} // URL 또는 path로 전달
+              }}
               style={[styles.image, {borderColor: '#E7E7E7', borderWidth: 2}]}
             />
-            {/* 첫 번째 이미지에 '대표' 태그 추가 */}
             {index === 0 && (
               <View style={styles.representativeBadge}>
                 <Text style={styles.representativeText}>대표 사진</Text>
@@ -226,46 +186,36 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
             </TouchableOpacity>
           </View>
         ))}
-        {loadingimg && addedImages.length + images.length < 5 && (
-          <Pressable
-            onPress={selectImage}
-            style={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 80,
-              height: 100,
-            }}>
+        {loadingimg && addedImages.length + serverImages.length < 5 && (
+          <Pressable onPress={selectImage} style={styles.addButton}>
             <MaterialCommunityIcons name="image-plus" size={40} color="#333" />
           </Pressable>
         )}
-        <AlertComponent />
-        <ImagePickermodal
-          isBottomSheetVisible={isBottomSheetVisible}
-          setBottomSheetVisible={setBottomSheetVisible}
-          handleCameraPick={handleCameraPick}
-          handleGalleryPick={handleGalleryPick}
-        />
-      </BottomSheetScrollView>
+      </View>
+
+      <ImagePickermodal
+        isBottomSheetVisible={isBottomSheetVisible}
+        setBottomSheetVisible={setBottomSheetVisible}
+        handleCameraPick={handleCameraPick}
+        handleGalleryPick={handleGalleryPick}
+      />
+
       <ActionButtons onCancel={handleCancel} onSave={handleSave} />
+
       {(loading || !loadingimg) && (
         <View style={styles.footer}>
           <Text style={styles.emptyText}>Loading...</Text>
         </View>
       )}
-    </View>
+      <AlertComponent />
+    </ScrollView>
   );
 };
 
-export default UpdateStoreImage;
-
 const styles = StyleSheet.create({
-  bottomSheetContent: {
-    flex: 1,
+  container: {
     padding: 18,
     backgroundColor: '#F7F7F7',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 50,
   },
   title: {
     fontSize: 18,
@@ -277,8 +227,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     marginBottom: 20,
   },
+  imageContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
   imageWrapper: {
-    marginRight: 10,
+    position: 'relative',
   },
   image: {
     width: 160,
@@ -291,14 +246,11 @@ const styles = StyleSheet.create({
     right: 5,
   },
   shadowEffect: {
-    shadowColor: '#000', // 그림자 색상
-    shadowOffset: {width: 0, height: 4}, // 그림자 위치 (x, y)
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
-  },
-  scrollView: {
-    flexGrow: 1, // 부모 요소가 자식 요소의 크기에 맞게 조정되도록
   },
   representativeBadge: {
     position: 'absolute',
@@ -314,6 +266,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Pretendard-SemiBold',
   },
+  addButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 80,
+    height: 100,
+    marginTop: 10,
+  },
   footer: {
     position: 'absolute',
     top: 0,
@@ -328,8 +287,10 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
     fontSize: 20,
     color: '#333',
   },
 });
+
+export default UpdateStoreImage;
