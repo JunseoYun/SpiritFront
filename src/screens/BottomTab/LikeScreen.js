@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   loadingText: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontFamily: 'Pretendard-Bold',
     fontSize: 20,
     color: '#333',
   },
