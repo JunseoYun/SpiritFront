@@ -120,6 +120,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       const yesterdayInfo = operationInfoDtos.find(
         info => info.dayOfWeek === yesterdayDay,
       );
+
       if (
         yesterdayInfo &&
         !yesterdayInfo.isClosed &&
@@ -148,10 +149,16 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
 
           if (breakStartDate && breakEndDate) {
             breakStartDate.setHours(breakStartHours, breakStartMinutes, 0, 0);
+            breakStartDate?.setDate(breakStartDate.getDate() - 1);
             breakStartDate.setHours(breakStartDate.getHours() + 9); // KST 보정
 
             breakEndDate.setHours(breakEndHours, breakEndMinutes, 0, 0);
+            breakEndDate?.setDate(breakEndDate.getDate() - 1);
             breakEndDate.setHours(breakEndDate.getHours() + 9); // KST 보정
+
+            if (breakEndDate <= breakStartDate) {
+              breakEndDate.setDate(breakEndDate.getDate() + 1);
+            }
 
             setBreakstart(yesterdayInfo.breakStartTime.slice(0, 5));
             setBreakend(yesterdayInfo.breakEndTime.slice(0, 5));
@@ -172,7 +179,6 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
             setIsOpen(true);
             setIsBreak(false);
             setClosed(false);
-
             // 🔥 브레이크 타임 체크
             if (now <= breakEndDate) {
               setIsBreak(true);
@@ -186,7 +192,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         }
       }
 
-      // 여기서 오늘 정보 기준으로 체크
+      // 여기서 오늘 정보 기준으로 낮 운영시간 체크
       if (
         !todayInfo ||
         todayInfo.isClosed ||
