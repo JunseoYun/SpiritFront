@@ -163,9 +163,10 @@ const StoreMainScreen = ({navigation}) => {
   };
 
   const handleBottomClose = () => {
-    bottomSheetRef.current?.close();
-    setTimeout(() => {}, 500);
     Keyboard.dismiss();
+    setTimeout(() => {
+      bottomSheetRef.current?.close();
+    }, 300);
   };
 
   const handleEditKey = key => {
@@ -215,6 +216,7 @@ const StoreMainScreen = ({navigation}) => {
 
     const performUpdate = async (key, value) => {
       try {
+        Keyboard.dismiss();
         setLoading(true);
         if (key === 'images') {
           const {addedImages, deletedImages} = value;
@@ -267,6 +269,7 @@ const StoreMainScreen = ({navigation}) => {
         await performUpdate(updatedKey, updatedValue);
         break;
     }
+
     handleBottomClose();
   };
 

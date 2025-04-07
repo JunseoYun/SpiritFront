@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Pressable,
   SafeAreaView,
+  View,
   ScrollView,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
