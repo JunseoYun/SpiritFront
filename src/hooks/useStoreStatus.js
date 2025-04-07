@@ -109,6 +109,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
 
       const yesterday = new Date(now);
       yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(yesterday.getHours() - 9);
       const yesterdayDay = new Intl.DateTimeFormat('en-US', {
         weekday: 'long',
         timeZone: 'Asia/Seoul',
@@ -119,7 +120,6 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       const yesterdayInfo = operationInfoDtos.find(
         info => info.dayOfWeek === yesterdayDay,
       );
-
       if (
         yesterdayInfo &&
         !yesterdayInfo.isClosed &&
@@ -235,8 +235,8 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         closeDate.setDate(closeDate.getDate() + 1); // 영업 종료가 다음 날인 경우
       }
 
-      let breakStartDate = breakStartTime ? new Date(now) : null;
-      let breakEndDate = breakEndTime ? new Date(now) : null;
+      let breakStartDate = breakStartTime ? new Date() : null;
+      let breakEndDate = breakEndTime ? new Date() : null;
 
       if (breakStartDate && breakEndDate) {
         breakStartDate.setHours(breakStartHours, breakStartMinutes, 0, 0);
@@ -254,41 +254,46 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       }
       // 현재 시간이 00:00~closeTime (예: 02:00) 구간이라면, 전날 정보를 유지해야 함
       if (openHours && yesterdayInfo && !yesterdayInfo.isClosed) {
-        let {closeTime: yCloseTime} = yesterdayInfo;
-        let [yCloseHours, yCloseMinutes] = yCloseTime.split(':').map(Number);
-        let yCloseDate = new Date(now);
-        yCloseDate.setHours(yCloseHours, yCloseMinutes, 0, 0);
+        const [yOpenH, yOpenM] = yesterdayInfo.openTime.split(':').map(Number);
+        const [yCloseH, yCloseM] = yesterdayInfo.closeTime
+          .split(':')
+          .map(Number);
+
+        const yCloseDate = new Date();
+        yCloseDate.setHours(yCloseH, yCloseM, 0, 0);
         yCloseDate.setHours(yCloseDate.getHours() + 9);
 
-        const [yOpenH, yOpenM] = yesterdayInfo.openTime.split(':').map(Number);
-
-        const yOpenMinute = yOpenH * 60 + yOpenM;
-        const yCloseMinute = yCloseHours * 60 + yCloseMinutes;
+        const yOpenMinutes = yOpenH * 60 + yOpenM;
+        const yCloseMinutes = yCloseH * 60 + yCloseM;
         if (
-          yCloseHours < 12 &&
+          yCloseMinutes < 12 &&
           now <= yCloseDate &&
-          yCloseMinute < yOpenMinute
+          yCloseMinutes < yOpenMinutes
         ) {
-          todayInfo = yesterdayInfo;
-          openTime = todayInfo.openTime;
-          closeTime = todayInfo.closeTime;
+          const yOpenDate = new Date();
+          yOpenDate.setDate(yOpenDate.getDate() - 1);
+          yOpenDate.setHours(yOpenH, yOpenM, 0, 0);
+          yOpenDate.setHours(yOpenDate.getHours() + 9);
 
-          openDate = new Date();
-          openDate.setDate(openDate.getDate() - 1);
-          closeDate = new Date();
-          let [newOpenH, newOpenM] = openTime.split(':').map(Number);
-          let [newCloseH, newCloseM] = closeTime.split(':').map(Number);
+          setIsOpen(true);
+          setIsBreak(false);
+          setClosed(false);
 
-          openDate.setHours(newOpenH, newOpenM, 0, 0);
+          // 🔥 브레이크 타임 체크
+          if (now <= breakEndDate) {
+            setIsBreak(true);
+          }
 
-          closeDate.setHours(newCloseH, newCloseM, 0, 0);
-          openDate.setHours(openDate.getHours() + 9);
-          closeDate.setHours(closeDate.getHours() + 9);
+          setStarttime(yesterdayInfo.openTime.slice(0, 5));
+          setEndtime(yesterdayInfo.closeTime.slice(0, 5));
+
+          return;
         }
       }
 
       setStarttime(openTime.slice(0, 5));
       setEndtime(closeTime.slice(0, 5));
+
       if (now >= openDate && now <= closeDate) {
         if (
           breakStartDate &&
@@ -309,11 +314,11 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         setIsBreak(false);
         setClosed(false);
 
-        if (todayInfo === yesterdayInfo) {
-          setStarttime(todayInfo.openTime.slice(0, 5));
-          setEndtime(todayInfo.closeTime.slice(0, 5));
-        } else {
-          if (nextdayInfo && !nextdayInfo.isClosed) {
+        if (todayInfo !== yesterdayInfo) {
+          if (now <= openDate) {
+            setStarttime(todayInfo.openTime.slice(0, 5));
+          }
+          if (nextdayInfo && !nextdayInfo.isClosed && now >= closeDate) {
             setStarttime(nextdayInfo.openTime.slice(0, 5));
           } else {
             setNextclosed(true);
