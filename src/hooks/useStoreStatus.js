@@ -259,7 +259,16 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         let yCloseDate = new Date(now);
         yCloseDate.setHours(yCloseHours, yCloseMinutes, 0, 0);
         yCloseDate.setHours(yCloseDate.getHours() + 9);
-        if (yCloseHours < 12 && now <= yCloseDate) {
+
+        const [yOpenH, yOpenM] = yesterdayInfo.openTime.split(':').map(Number);
+
+        const yOpenMinute = yOpenH * 60 + yOpenM;
+        const yCloseMinute = yCloseHours * 60 + yCloseMinutes;
+        if (
+          yCloseHours < 12 &&
+          now <= yCloseDate &&
+          yCloseMinute < yOpenMinute
+        ) {
           todayInfo = yesterdayInfo;
           openTime = todayInfo.openTime;
           closeTime = todayInfo.closeTime;
@@ -300,7 +309,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         setIsBreak(false);
         setClosed(false);
 
-        if (todayInfo !== yesterdayInfo) {
+        if (todayInfo === yesterdayInfo) {
           setStarttime(todayInfo.openTime.slice(0, 5));
           setEndtime(todayInfo.closeTime.slice(0, 5));
         } else {
