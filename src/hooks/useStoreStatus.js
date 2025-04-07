@@ -252,44 +252,6 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         setBreakstart(breakStartTime.slice(0, 5));
         setBreakend(breakEndTime.slice(0, 5));
       }
-      // 현재 시간이 00:00~closeTime (예: 02:00) 구간이라면, 전날 정보를 유지해야 함
-      if (openHours && yesterdayInfo && !yesterdayInfo.isClosed) {
-        const [yOpenH, yOpenM] = yesterdayInfo.openTime.split(':').map(Number);
-        const [yCloseH, yCloseM] = yesterdayInfo.closeTime
-          .split(':')
-          .map(Number);
-
-        const yCloseDate = new Date();
-        yCloseDate.setHours(yCloseH, yCloseM, 0, 0);
-        yCloseDate.setHours(yCloseDate.getHours() + 9);
-
-        const yOpenMinutes = yOpenH * 60 + yOpenM;
-        const yCloseMinutes = yCloseH * 60 + yCloseM;
-        if (
-          yCloseMinutes < 12 &&
-          now <= yCloseDate &&
-          yCloseMinutes < yOpenMinutes
-        ) {
-          const yOpenDate = new Date();
-          yOpenDate.setDate(yOpenDate.getDate() - 1);
-          yOpenDate.setHours(yOpenH, yOpenM, 0, 0);
-          yOpenDate.setHours(yOpenDate.getHours() + 9);
-
-          setIsOpen(true);
-          setIsBreak(false);
-          setClosed(false);
-
-          // 🔥 브레이크 타임 체크
-          if (now <= breakEndDate) {
-            setIsBreak(true);
-          }
-
-          setStarttime(yesterdayInfo.openTime.slice(0, 5));
-          setEndtime(yesterdayInfo.closeTime.slice(0, 5));
-
-          return;
-        }
-      }
 
       setStarttime(openTime.slice(0, 5));
       setEndtime(closeTime.slice(0, 5));
@@ -317,10 +279,10 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         if (now <= openDate && !nextdayInfo.isClosed) {
           setStarttime(todayInfo.openTime.slice(0, 5));
         }
-        if (nextdayInfo && !nextdayInfo.isClosed && now >= openDate) {
+        if (nextdayInfo && !nextdayInfo.isClosed && now >= closeDate) {
           setStarttime(nextdayInfo.openTime.slice(0, 5));
         }
-        if (nextdayInfo && nextdayInfo.isClosed) {
+        if (nextdayInfo && nextdayInfo.isClosed && now >= closeDate) {
           setNextclosed(true);
         }
       }
