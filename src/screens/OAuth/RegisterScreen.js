@@ -115,7 +115,7 @@ const RegisterScreen = ({route, navigation}) => {
       await user_register(type, id, nickname);
 
       try {
-        const login_data = await user_login(type, id, nickname);
+        const login_data = await user_login(type, id, socialToken);
         await loginauth(login_data.accessToken, login_data.refreshToken);
       } catch (error) {
         showAlert({
