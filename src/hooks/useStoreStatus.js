@@ -314,15 +314,14 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         setIsBreak(false);
         setClosed(false);
 
-        if (todayInfo !== yesterdayInfo) {
-          if (now <= openDate) {
-            setStarttime(todayInfo.openTime.slice(0, 5));
-          }
-          if (nextdayInfo && !nextdayInfo.isClosed && now >= closeDate) {
-            setStarttime(nextdayInfo.openTime.slice(0, 5));
-          } else {
-            setNextclosed(true);
-          }
+        if (now <= openDate && !nextdayInfo.isClosed) {
+          setStarttime(todayInfo.openTime.slice(0, 5));
+        }
+        if (nextdayInfo && !nextdayInfo.isClosed && now >= openDate) {
+          setStarttime(nextdayInfo.openTime.slice(0, 5));
+        }
+        if (nextdayInfo && nextdayInfo.isClosed) {
+          setNextclosed(true);
         }
       }
     };
@@ -341,7 +340,6 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
   // endtime => 영업 종료 시간
   // breakstart => 브레이크 시작 시간
   // breakend => 브레이크 종료 시간
-
   return {
     isOpen,
     isBreak,
