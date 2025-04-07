@@ -17,7 +17,8 @@ import {useRoute, useNavigation} from '@react-navigation/native';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import filterWords from '../../../hooks/filterWords';
 import useCustomAlert from '../../../hooks/useCustomAlert';
-import {Userputnickname} from '../../../api/userApi';
+import {Userputnickname, check_nickName} from '../../../api/userApi';
+import {useToast} from '../../../context/ToastContext';
 
 const Mynickchange = () => {
   const route = useRoute();
@@ -30,29 +31,38 @@ const Mynickchange = () => {
   const [nicknamelength, setNicknamelength] = useState(false);
   const [nicknamefilter, setNicknamefilter] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const {showToast} = useToast();
   const handleNicknameChange = text => {
-    const filteredText = text.replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣0-9]/g, '');
+    setNewnickname(text);
+    setNicknameError(false);
+    setNicknamelength(false);
+    setNicknamefilter(false);
+    setNicknameCheck(false); // 입력 시 중복 검사 초기화
+  };
 
-    // 최대 글자 수 제한
-    if (filteredText.length > 12) {
-      setNicknamelength(true);
-    } else {
-      setNicknamelength(false);
-    }
-
+  const handleCheckNickname = async () => {
+    const filteredText = newnickname.replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣0-9]/g, '');
     setNewnickname(filteredText);
 
-    // 비속어가 포함된 경우
+    if (!filteredText.trim()) {
+      showAlert({
+        title: '닉네임 미입력',
+        message: '닉네임을 입력해주세요.',
+      });
+      return;
+    }
+
+    if (filteredText.length > 12) {
+      setNicknamelength(true);
+      return;
+    }
+
     const containsForbiddenWord = forbiddenWords.some(word =>
       filteredText.includes(word),
     );
     if (containsForbiddenWord) {
       setNicknameError(true);
-      setNicknameCheck(false);
-    } else {
-      setNicknameError(false);
-      setNicknameCheck(false);
+      return;
     }
 
     const containsFilterWord = filterWords.some(word =>
@@ -60,9 +70,27 @@ const Mynickchange = () => {
     );
     if (containsFilterWord) {
       setNicknamefilter(true);
-      setNicknameCheck(false);
-    } else {
-      setNicknamefilter(false);
+      return;
+    }
+
+    try {
+      const isCheck = await check_nickName(filteredText);
+      console.log(isCheck);
+      if (isCheck.isAvailable) {
+        showToast('사용 가능한 닉네임입니다.', 'center');
+        setNicknameCheck(true);
+      } else {
+        showAlert({
+          title: '중복 닉네임',
+          message: '이미 사용 중인 닉네임입니다.',
+        });
+        setNicknameCheck(false);
+      }
+    } catch (error) {
+      showAlert({
+        title: '오류',
+        message: '닉네임 중복 검사 중 오류가 발생했습니다.',
+      });
       setNicknameCheck(false);
     }
   };
@@ -71,16 +99,12 @@ const Mynickchange = () => {
     setLoading(true);
     try {
       await Userputnickname(newnickname);
-      showAlert({
-        title: '닉네임 변경 성공',
-        message: '닉네임이 성공적으로 변경되었습니다!',
-        onConfirm: () => {
-          navigation.reset({
-            index: 0, // 초기 화면 인덱스
-            routes: [{name: 'MyScreen'}], // 이동할 화면
-          });
-        },
+
+      navigation.reset({
+        index: 0, // 초기 화면 인덱스
+        routes: [{name: 'MyScreen'}], // 이동할 화면
       });
+      showToast('닉네임 변경 완료', 'center');
     } catch (error) {
       if (error.response) {
         const statusCode = error.response.status;
@@ -195,17 +219,18 @@ const Mynickchange = () => {
                 nicknameError ||
                 nicknamelength ||
                 nicknamefilter) &&
-                styles.disabledbtn, // 비활성화 스타일
+                styles.disabledbtn,
             ]}
-            onPress={handlePutnick}
             disabled={
               !newnickname.trim() ||
               nicknameError ||
               nicknamelength ||
               nicknamefilter
-            } // 비활성화 조건
-          >
-            <Text style={styles.completebtntext}>완료</Text>
+            }
+            onPress={nicknameCheck ? handlePutnick : handleCheckNickname}>
+            <Text style={styles.completebtntext}>
+              {nicknameCheck ? '완료' : '중복 검사'}
+            </Text>
           </Pressable>
 
           <AlertComponent />
@@ -245,17 +270,17 @@ const styles = StyleSheet.create({
   completebtn: {
     width: '90%',
     backgroundColor: '#16BBFF',
-    borderRadius: 10,
+    borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 15,
+    paddingVertical: 14,
     alignSelf: 'center',
     marginBottom: 10, // 여유 공간 추가
   },
   completebtntext: {
     color: 'white',
-    fontSize: 20,
-    fontFamily: 'Pretendard-Bold',
+    fontSize: 18,
+    fontFamily: 'Pretendard-SemiBold',
   },
   nicknameInputView: {
     flexDirection: 'row',

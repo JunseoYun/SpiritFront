@@ -30,23 +30,56 @@ const RegisterScreen = ({route, navigation}) => {
   const [isSameNick, setIsSameNick] = useState(false);
 
   const handleCheckNickname = async () => {
-    if (!nickname.trim()) {
+    const filteredText = nickname.replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣0-9]/g, '');
+
+    setNickname(filteredText); // 필터링된 값 반영 (선택적)
+
+    if (!filteredText.trim()) {
       showAlert({
         title: '닉네임 미입력',
         message: '닉네임을 입력해주세요.',
       });
       return;
     }
-    try {
-      const isCheck = await check_nickName(nickname);
 
+    if (filteredText.length > 12) {
+      setNicknamelength(true);
+      setNicknameCheck(false);
+      return;
+    } else {
+      setNicknamelength(false);
+    }
+
+    const containsForbiddenWord = forbiddenWords.some(word =>
+      filteredText.includes(word),
+    );
+    if (containsForbiddenWord) {
+      setNicknameError(true);
+      setNicknameCheck(false);
+      return;
+    } else {
+      setNicknameError(false);
+    }
+
+    const containsFilterWord = filterWords.some(word =>
+      filteredText.includes(word),
+    );
+    if (containsFilterWord) {
+      setNicknamefilter(true);
+      setNicknameCheck(false);
+      return;
+    } else {
+      setNicknamefilter(false);
+    }
+
+    try {
+      const isCheck = await check_nickName(filteredText);
       if (isCheck.isAvailable) {
         showToast('사용 가능한 닉네임입니다.');
         setNicknameCheck(true);
         setIsSameNick(false);
-      } else if (!isCheck.isAvailable) {
+      } else {
         setIsSameNick(true);
-
         setChecking(false);
       }
     } catch (error) {
@@ -57,42 +90,12 @@ const RegisterScreen = ({route, navigation}) => {
 
   // 닉네임 입력 변경 시 비속어 확인
   const handleNicknameChange = text => {
+    setNickname(text); // 원본 그대로 저장
     setIsSameNick(false);
     setChecking(false);
-    // 허용할 문자: 한글, 영문 대소문자, 숫자, `_`, `-` (기타 특수문자 및 이모티콘 차단)
-    const filteredText = text.replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣0-9]/g, '');
-
-    // 최대 글자 수 제한
-    if (filteredText.length > 12) {
-      setNicknamelength(true);
-    } else {
-      setNicknamelength(false);
-    }
-
-    setNickname(filteredText);
-
-    // 비속어가 포함된 경우
-    const containsForbiddenWord = forbiddenWords.some(word =>
-      filteredText.includes(word),
-    );
-    if (containsForbiddenWord) {
-      setNicknameError(true);
-      setNicknameCheck(false);
-    } else {
-      setNicknameError(false);
-      setNicknameCheck(false);
-    }
-
-    const containsFilterWord = filterWords.some(word =>
-      filteredText.includes(word),
-    );
-    if (containsFilterWord) {
-      setNicknamefilter(true);
-      setNicknameCheck(false);
-    } else {
-      setNicknamefilter(false);
-      setNicknameCheck(false);
-    }
+    setNicknameError(false);
+    setNicknamefilter(false);
+    setNicknameCheck(false); // <-- 이거 추가!
   };
 
   const handleRegister = async () => {
@@ -189,27 +192,20 @@ const RegisterScreen = ({route, navigation}) => {
         </Text>
       )}
 
-      {!nicknameCheck &&
-        !nicknameError &&
-        !nicknamelength &&
-        !nicknamefilter && (
-          <TouchableOpacity
-            style={styles.checkButton}
-            onPress={handleCheckNickname}>
-            <Text style={styles.checkButtonText}>중복 검사</Text>
-          </TouchableOpacity>
-        )}
-
-      {nicknameCheck &&
-        !nicknameError &&
-        !nicknamelength &&
-        !nicknamefilter && (
-          <TouchableOpacity
-            style={styles.submitButton}
-            onPress={handleRegister}>
-            <Text style={styles.submitButtonText}>시작하기</Text>
-          </TouchableOpacity>
-        )}
+      <TouchableOpacity
+        style={[
+          styles.checkButton,
+          (!nickname || nicknameError || nicknamefilter || nicknamelength) &&
+            styles.disabledButton,
+        ]}
+        disabled={
+          !nickname || nicknameError || nicknamefilter || nicknamelength
+        }
+        onPress={nicknameCheck ? handleRegister : handleCheckNickname}>
+        <Text style={styles.checkButtonText}>
+          {nicknameCheck ? '시작하기' : '중복 검사'}
+        </Text>
+      </TouchableOpacity>
 
       <AlertComponent />
     </SafeAreaView>
@@ -217,6 +213,9 @@ const RegisterScreen = ({route, navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  disabledButton: {
+    backgroundColor: '#CCC',
+  },
   container: {
     flex: 1,
     backgroundColor: '#FFF',
@@ -275,14 +274,14 @@ const styles = StyleSheet.create({
     marginTop: 30,
     marginHorizontal: 20,
     backgroundColor: '#39C4FF',
-    borderRadius: 8,
-    paddingVertical: 15,
+    borderRadius: 7,
+    paddingVertical: 14,
     alignItems: 'center',
   },
   checkButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: 'white',
+    fontSize: 18,
+    fontFamily: 'Pretendard-SemiBold',
   },
   submitButton: {
     marginTop: 30,
