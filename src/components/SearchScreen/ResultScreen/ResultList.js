@@ -94,7 +94,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
         ListFooterComponent={
           loading && !isEnd ? (
             <View style={styles.footer}>
-              <Text style={styles.emptyText}>Loading...</Text>
+              <Text style={styles.loadingText}>Loading...</Text>
             </View>
           ) : null
         }
@@ -121,11 +121,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     textAlign: 'center',
   },
+  loadingText: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
+    fontSize: 20,
+    color: '#333',
+  },
   emptyText: {
     textAlign: 'center',
+    marginVertical: 40,
     fontFamily: 'Pretendard-Medium',
-    fontSize: 20,
+    fontSize: 17,
     color: '#c0c0c0',
+    alignSelf: 'center',
   },
 });
 
