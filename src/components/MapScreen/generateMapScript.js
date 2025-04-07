@@ -93,7 +93,7 @@ window.overlayMarkers = [];
       }
 
       var overlayContent = document.createElement('div');
-      overlayContent.style.cssText = "background:white; padding:10px; border-radius:10px; box-shadow:0px 2px 5px rgba(0,0,0,0.2); font-size:14px; width:auto; border:1px solid #ddd; position:relative; transform:translateY(-120%);";
+      overlayContent.style.cssText = "background:white; padding:10px; border-radius:10px; box-shadow:0px 2px 5px rgba(0,0,0,0.2); font-size:14px; width:60vw; border:1px solid #ddd; position:relative; transform:translateY(-120%);";
       
       // ✅ 리스트 내부 클릭 시 닫히지 않도록 방지
       overlayContent.addEventListener("click", function(event) {
@@ -103,7 +103,7 @@ window.overlayMarkers = [];
 
       group.forEach((store, index) => {
         var storeItem = document.createElement('div');
-        storeItem.innerHTML = '<div style="display:flex; align-items:center; padding:10px; cursor:pointer;"><div style="width:8px; height:8px; background:#16BBFF; border-radius:50%; margin-right:8px;"></div>' + store.name + '</div>';
+        storeItem.innerHTML = '<div style="display:flex; align-items:center; padding:10px; cursor:pointer;"><div style="width:8px; height:8px; background:#16BBFF; border-radius:50%; margin-right:8px;"></div>' +'<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;">' +store.name +'</span>' + '</div>';
 
         // ✅ 마지막 아이템의 아래 테두리는 없애기
         if (index !== group.length - 1) {
