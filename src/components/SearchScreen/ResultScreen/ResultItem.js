@@ -22,7 +22,6 @@ const ResultItem = ({store, navigation, location}) => {
     breakstart,
     breakend,
   } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
-  console.log(store);
   useEffect(() => {
     const fetchDistance = () => {
       let tempDistance = calculateDistance(
