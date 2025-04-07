@@ -77,6 +77,16 @@ const MapStoreList = ({
                 location={location}
               />
             )}
+            getItemLayout={(data, index) => ({
+              length: width,
+              offset: width * index,
+              index,
+            })}
+            onScrollToIndexFailed={({index}) => {
+              setTimeout(() => {
+                flatListRef.current?.scrollToIndex({index, animated: true});
+              }, 300);
+            }}
           />
         )}
       </Animated.View>
