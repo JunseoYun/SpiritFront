@@ -15,7 +15,6 @@ import StoreReportScreen from '../screens/StoreInfo/Report/StoreReportScreen';
 import ReviewReportScreen from '../screens/StoreInfo/Report/ReviewReportScreen';
 import StoreTimeEditScreen from '../screens/StoreInfo/StoreTimeEditScreen';
 import UpdateStoreDrink from '../components/UpdateBottomSheet/UpdateStoreDrink';
-import UpdateStoreImage from '../components/UpdateBottomSheet/UpdateStoreImage';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 const Stack = createStackNavigator();
 
