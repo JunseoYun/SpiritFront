@@ -46,7 +46,6 @@ const UpdateStoreDrink = ({navigation, route}) => {
     if (mainDrinkDtos) {
       setUpdatedValue(mainDrinkDtos);
     }
-    console.log(mainDrinkDtos);
   }, []);
 
   useLayoutEffect(() => {
@@ -62,8 +61,6 @@ const UpdateStoreDrink = ({navigation, route}) => {
   }, [handleComplete, updatedValue, selectnull]);
 
   useEffect(() => {
-    console.log(updatedValue);
-
     const hasInvalidDrink = updatedValue.some(item => {
       const isEmpty = item.type === '' && (!item.price || item.price === 0);
       if (isEmpty) return false; // 완전 빈 항목은 무시
@@ -78,7 +75,6 @@ const UpdateStoreDrink = ({navigation, route}) => {
       return isMissingTypeOrPrice;
     });
 
-    console.log(hasInvalidDrink, 'hasInvalidDrink');
     setSelectnull(hasInvalidDrink);
   }, [updatedValue]);
 
