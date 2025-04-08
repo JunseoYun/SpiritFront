@@ -269,9 +269,9 @@ const styles = StyleSheet.create({
   addButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 80,
-    height: 100,
-    marginTop: 10,
+    alignSelf: 'center',
+    width: 160,
+    height: 120,
   },
   footer: {
     position: 'absolute',
