@@ -15,6 +15,7 @@ import StoreReportScreen from '../screens/StoreInfo/Report/StoreReportScreen';
 import ReviewReportScreen from '../screens/StoreInfo/Report/ReviewReportScreen';
 import StoreTimeEditScreen from '../screens/StoreInfo/StoreTimeEditScreen';
 import UpdateStoreDrink from '../components/UpdateBottomSheet/UpdateStoreDrink';
+import UpdateStoreImage from '../components/UpdateBottomSheet/UpdateStoreImage';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 const Stack = createStackNavigator();
 
@@ -34,7 +35,7 @@ export default function StoreStack() {
           title: '영업 시간 수정',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
           },
@@ -59,7 +60,7 @@ export default function StoreStack() {
           title: '대표 주류 수정',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
           },
@@ -77,6 +78,7 @@ export default function StoreStack() {
           ),
         })}
       />
+
       <Stack.Screen
         name="MenuAddScreen"
         component={MenuAddScreen}
@@ -84,7 +86,7 @@ export default function StoreStack() {
           title: '메뉴 등록하기',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
           },
@@ -119,10 +121,10 @@ export default function StoreStack() {
           title: '메뉴 수정하기',
           headerTitleAlign: 'center',
           gestureDirection: 'vertical',
-          presentation: 'modal',
+
           animation: 'slide_from_bottom',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
           },
@@ -157,7 +159,7 @@ export default function StoreStack() {
           title: '주류 등록하기',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
           },
@@ -192,10 +194,10 @@ export default function StoreStack() {
           title: '주류 수정하기',
           headerTitleAlign: 'center',
           gestureDirection: 'vertical',
-          presentation: 'modal',
+
           animation: 'slide_from_bottom',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-Bold',
             fontSize: 18,
             color: '#333',
           },
@@ -241,7 +243,7 @@ export default function StoreStack() {
           ),
           title: `${route.params?.storename || '매장'} 길찾기`,
           headerTitleAlign: 'center',
-          presentation: 'modal',
+
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
         })}
@@ -277,7 +279,7 @@ export default function StoreStack() {
           title: '매장 신고하기',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
           },
@@ -307,7 +309,7 @@ export default function StoreStack() {
           title: '리뷰 신고하기',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
           },

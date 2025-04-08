@@ -41,7 +41,7 @@ const StoreMainScreen = ({navigation}) => {
   const route = useRoute();
   const {showAlert, AlertComponent} = useCustomAlert();
   const bottomSheetRef = useRef(null);
-  const snapPoints = useMemo(() => ['25%', '50%', '80%'], []);
+  const snapPoints = useMemo(() => ['50%', '70%', '85%'], []);
   const {storeId, innerlatitude, innerlongitude} = route.params;
   const [menus, setMenus] = useState([]);
   const [alcohols, setAlcohols] = useState([]);
