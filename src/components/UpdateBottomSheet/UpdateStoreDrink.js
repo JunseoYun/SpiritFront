@@ -33,6 +33,7 @@ const UpdateStoreDrink = ({navigation, route}) => {
   const [updatedValue, setUpdatedValue] = useState(mainDrinkDtos || []);
   const [selectnull, setSelectnull] = useState(false);
   const [loading, setLoading] = useState(false);
+  const {showToast} = useToast();
 
   const ensureTwoOptions = () => {
     if (updatedValue.length < 3) {
@@ -61,14 +62,29 @@ const UpdateStoreDrink = ({navigation, route}) => {
   }, [handleComplete, updatedValue, selectnull]);
 
   useEffect(() => {
-    const hasDrinkWithoutPrice = updatedValue.some(
-      item => item.type !== '' && (!item.price || item.price <= 0),
-    );
-    setSelectnull(hasDrinkWithoutPrice);
+    console.log(updatedValue);
+
+    const hasInvalidDrink = updatedValue.some(item => {
+      const isEmpty = item.type === '' && (!item.price || item.price === 0);
+      if (isEmpty) return false; // 완전 빈 항목은 무시
+
+      const isMissingTypeOrPrice =
+        item.type === '' ||
+        item.price === undefined ||
+        item.price === null ||
+        item.price === 0 ||
+        isNaN(item.price);
+
+      return isMissingTypeOrPrice;
+    });
+
+    console.log(hasInvalidDrink, 'hasInvalidDrink');
+    setSelectnull(hasInvalidDrink);
   }, [updatedValue]);
 
   const handleComplete = async () => {
     if (selectnull) {
+      showToast('정보를 모두 입력해 주세요.', 'center');
       return;
     }
 
@@ -81,7 +97,6 @@ const UpdateStoreDrink = ({navigation, route}) => {
       await UpdateStore(storeId, {mainDrinkDtos: filteredDrinks});
       navigation.goBack();
     } catch (err) {
-      console.log(err);
     } finally {
       setLoading(false);
     }
