@@ -14,6 +14,7 @@ import AlcoholUpdateScreen from '../screens/StoreInfo/Alcohol/AlcoholUpdateScree
 import StoreReportScreen from '../screens/StoreInfo/Report/StoreReportScreen';
 import ReviewReportScreen from '../screens/StoreInfo/Report/ReviewReportScreen';
 import StoreTimeEditScreen from '../screens/StoreInfo/StoreTimeEditScreen';
+import UpdateStoreDrink from '../components/UpdateBottomSheet/UpdateStoreDrink';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 const Stack = createStackNavigator();
 
@@ -31,6 +32,31 @@ export default function StoreStack() {
         component={StoreTimeEditScreen}
         options={({navigation}) => ({
           title: '영업 시간 수정',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+            color: '#333',
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="UpdateStoreDrink"
+        component={UpdateStoreDrink}
+        options={({navigation}) => ({
+          title: '대표 주류 수정',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontWeight: '600',

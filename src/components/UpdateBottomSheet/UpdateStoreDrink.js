@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useLayoutEffect} from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,11 @@ import {
   StyleSheet,
   Pressable,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
-import ActionButtons from './ActionButtons';
-import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+
+import {UpdateStore} from '../../api/storeApi';
+import {useToast} from '../../context/ToastContext';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -25,18 +27,63 @@ const alcoholTypes = [
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
-const UpdateStoreDrink = ({
-  updatedValue,
-  setUpdatedValue,
-  onCancel,
-  onSave,
-}) => {
+const UpdateStoreDrink = ({navigation, route}) => {
+  const {storeId, mainDrinkDtos} = route.params;
   const [expandedIndex, setExpandedIndex] = useState(null);
+  const [updatedValue, setUpdatedValue] = useState(mainDrinkDtos || []);
+  const [selectnull, setSelectnull] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const ensureTwoOptions = () => {
     if (updatedValue.length < 3) {
       const additionalValue = {type: '', price: 0};
       setUpdatedValue([...updatedValue, additionalValue]);
+    }
+  };
+
+  useEffect(() => {
+    if (mainDrinkDtos) {
+      setUpdatedValue(mainDrinkDtos);
+    }
+    console.log(mainDrinkDtos);
+  }, []);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={handleComplete}>
+          <Text style={[styles.searchButton, selectnull && {color: '#999'}]}>
+            완료
+          </Text>
+        </Pressable>
+      ),
+    });
+  }, [handleComplete, updatedValue, selectnull]);
+
+  useEffect(() => {
+    const hasDrinkWithoutPrice = updatedValue.some(
+      item => item.type !== '' && (!item.price || item.price <= 0),
+    );
+    setSelectnull(hasDrinkWithoutPrice);
+  }, [updatedValue]);
+
+  const handleComplete = async () => {
+    if (selectnull) {
+      return;
+    }
+
+    const filteredDrinks = updatedValue.filter(
+      item => item.type !== '' && item.price > 0,
+    );
+
+    try {
+      setLoading(true);
+      await UpdateStore(storeId, {mainDrinkDtos: filteredDrinks});
+      navigation.goBack();
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,11 +97,9 @@ const UpdateStoreDrink = ({
 
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>대표 주종</Text>
-      <BottomSheetScrollView
-        contentContainerStyle={{paddingBottom: 120, flexGrow: 1}}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive">
+      <ScrollView
+        contentContainerStyle={{paddingBottom: 60, paddingTop: 30}}
+        keyboardShouldPersistTaps="handled">
         {updatedValue.map((drink, index) => {
           const itemPerRow = 3;
           const selectedTypes = updatedValue
@@ -142,7 +187,7 @@ const UpdateStoreDrink = ({
                         placeholder="0"
                         placeholderTextColor="#aaa"
                         value={drink.price?.toString() || ''}
-                        onChangeText={value =>
+                        onChangeText={value => {
                           setUpdatedValue(prev => {
                             const updatedDrinks = [...prev];
                             updatedDrinks[index] = {
@@ -150,8 +195,8 @@ const UpdateStoreDrink = ({
                               price: parseInt(value) || 0,
                             };
                             return updatedDrinks;
-                          })
-                        }
+                          });
+                        }}
                       />
                       <Text style={styles.unit}>원</Text>
                     </View>
@@ -167,8 +212,12 @@ const UpdateStoreDrink = ({
             </View>
           );
         })}
-        <ActionButtons onCancel={onCancel} onSave={onSave} />
-      </BottomSheetScrollView>
+      </ScrollView>
+      {loading && (
+        <View style={styles.footer}>
+          <Text style={styles.emptyText}>Loading...</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -179,9 +228,7 @@ const styles = StyleSheet.create({
   bottomSheetContent: {
     flex: 1,
     padding: 18,
-    backgroundColor: '#F7F7F7',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: 'white',
   },
   title: {
     fontSize: 20,
@@ -280,5 +327,29 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  searchButton: {
+    marginRight: 18,
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#16BBFF',
+  },
+  footer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(194, 194, 194, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 20,
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontSize: 20,
+    color: '#333',
   },
 });

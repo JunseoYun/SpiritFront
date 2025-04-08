@@ -4,7 +4,12 @@ import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 
 import Entypo from 'react-native-vector-icons/Entypo';
 
-const Alcohol = ({isUpdate, storeDrinkDtos, handleEdit, translateAlcohol}) => {
+const Alcohol = ({
+  isUpdate,
+  storeDrinkDtos,
+  translateAlcohol,
+  storeupdatedrink,
+}) => {
   const drinkText =
     storeDrinkDtos && storeDrinkDtos.length > 0
       ? storeDrinkDtos
@@ -22,7 +27,7 @@ const Alcohol = ({isUpdate, storeDrinkDtos, handleEdit, translateAlcohol}) => {
       {isUpdate ? (
         <TouchableOpacity
           style={[styles.timeview, {marginTop: 12}]}
-          onPress={() => handleEdit('mainDrinkDtos', storeDrinkDtos)}>
+          onPress={storeupdatedrink}>
           <Text style={[styles.timetextnow, {color: '#333'}]}>
             {drinkText || '대표 주종 미설정'}
           </Text>

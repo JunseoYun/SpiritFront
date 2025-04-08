@@ -2,7 +2,6 @@ import React from 'react';
 import UpdateStoreImage from '../UpdateBottomSheet/UpdateStoreImage';
 import UpdateStoreName from '../UpdateBottomSheet/UpdateStoreName';
 import UpdateStoreCategory from '../UpdateBottomSheet/UpdateStoreCategory';
-import UpdateStoreDrink from '../UpdateBottomSheet/UpdateStoreDrink';
 import UpdateStoreLocation from '../UpdateBottomSheet/UpdateStoreLocation';
 import UpdateStoreOperatingTime from '../UpdateBottomSheet/UpdateStoreOperatingTime';
 import UpdateStoreBreakingTime from '../UpdateBottomSheet/UpdateStoreBreakingTime';
@@ -29,8 +28,6 @@ const UpdateBottomSheet = ({
         return renderName();
       case 'categories':
         return renderCategories();
-      case 'mainDrinkDtos':
-        return renderMainDrinks();
       case 'locationDto':
         return renderLocation();
       case 'operatingTime':
@@ -73,16 +70,6 @@ const UpdateBottomSheet = ({
   const renderCategories = () => (
     <UpdateStoreCategory
       innerCategories={innerCategories}
-      updatedValue={updatedValue}
-      setUpdatedValue={setUpdatedValue}
-      onCancel={handleBottomClose}
-      onSave={handleUpdate}
-    />
-  );
-
-  const renderMainDrinks = () => (
-    <UpdateStoreDrink
-      alcohols={alcohols}
       updatedValue={updatedValue}
       setUpdatedValue={setUpdatedValue}
       onCancel={handleBottomClose}
