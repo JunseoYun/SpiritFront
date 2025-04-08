@@ -113,7 +113,9 @@ const UpdateStoreDrink = ({navigation, route}) => {
   return (
     <View style={styles.bottomSheetContent}>
       <ScrollView
-        contentContainerStyle={{paddingBottom: 60, paddingTop: 30}}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{paddingTop: 10}}
         keyboardShouldPersistTaps="handled">
         {updatedValue.map((drink, index) => {
           const itemPerRow = 3;
