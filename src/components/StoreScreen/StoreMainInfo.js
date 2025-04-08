@@ -35,6 +35,7 @@ const StoreMainInfo = ({
   onEditValue,
   navigation,
   storeTimeEditHandle,
+  storeupdatedrink,
 }) => {
   const handleEdit = (key, value) => {
     onEditKey(key); // 수정 키와 값을 부모 컴포넌트로 전달
@@ -147,6 +148,7 @@ const StoreMainInfo = ({
         storeDrinkDtos={storedata?.mainDrinkDtos}
         handleEdit={handleEdit}
         translateAlcohol={translateAlcohol}
+        storeupdatedrink={storeupdatedrink}
       />
       {!isUpdate && storedata?.description && (
         <Pressable onPress={toggleDescription} style={styles.infoView}>

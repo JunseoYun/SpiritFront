@@ -67,6 +67,13 @@ const StoreMainScreen = ({navigation}) => {
     });
   };
 
+  const storeupdatedrink = () => {
+    navigation.navigate('UpdateStoreDrink', {
+      storeId: storedata.id,
+      mainDrinkDtos: storedata.mainDrinkDtos,
+    });
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       let isActive = true; // ✅ cleanup을 위한 변수 추가
@@ -259,12 +266,7 @@ const StoreMainScreen = ({navigation}) => {
       case 'images':
         await performUpdate(updatedKey, updatedImgValue);
         break;
-      case 'mainDrinkDtos':
-        const filteredDrinks = updatedValue.filter(
-          item => item.type !== '' && item.price > 0,
-        );
-        await performUpdate(updatedKey, filteredDrinks);
-        break;
+
       default:
         await performUpdate(updatedKey, updatedValue);
         break;
@@ -406,6 +408,7 @@ const StoreMainScreen = ({navigation}) => {
                   onEditKey={handleEditKey}
                   onEditValue={handleEditValue}
                   storeTimeEditHandle={storeTimeEditHandle}
+                  storeupdatedrink={storeupdatedrink}
                 />
                 {!isUpdate && (
                   <View style={{backgroundColor: '#F2F2F2', height: 20}} />
@@ -467,7 +470,8 @@ const StoreMainScreen = ({navigation}) => {
         snapPoints={snapPoints}
         enablePanDownToClose={true}
         gestureEnabled={true}
-        keyboardBehavior="extend"
+        keyboardShouldPersistTaps="handled"
+        keyboardBehavior={Platform.OS === 'ios' ? 'interactive' : 'extend'}
         keyboardBlurBehavior="restore"
         backgroundStyle={{
           backgroundColor: '#F7F7F7',
