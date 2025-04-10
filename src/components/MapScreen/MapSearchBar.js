@@ -8,13 +8,15 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 const MapSearchBar = ({onPress}) => {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.buttonTop}>
+    <View style={[styles.buttonTop, {paddingTop: insets.top + 10}]}>
       <Pressable style={styles.searchView} onPress={onPress}>
         <EvilIcons name="redo" size={25} color={'#16BBFF'} />
         <Text style={styles.buttonTextTop}>현 지도에서 재검색</Text>
@@ -27,14 +29,6 @@ const styles = StyleSheet.create({
   buttonTop: {
     position: 'absolute',
     alignSelf: 'center', // 부모 뷰를 기준으로 가로 중앙 정렬
-    ...Platform.select({
-      ios: {
-        top: '9%',
-      },
-      android: {
-        top: '5%',
-      },
-    }),
   },
   searchView: {
     backgroundColor: '#ffffff',

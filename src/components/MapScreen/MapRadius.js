@@ -9,12 +9,14 @@ import {
 } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
 const {width} = Dimensions.get('window');
 
 const MapRadius = ({setRadiusint}) => {
   const [selectedDistance, setSelectedDistance] = useState(2);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-
+  const insets = useSafeAreaInsets();
   const distanceOptions = [1, 2, 3, 5];
 
   const handleSelect = distance => {
@@ -33,7 +35,7 @@ const MapRadius = ({setRadiusint}) => {
         />
       )}
 
-      <View style={styles.buttonTop}>
+      <View style={[styles.buttonTop, {paddingTop: insets.top + 10}]}>
         <Pressable
           style={styles.searchView}
           onPress={() => setDropdownVisible(prev => !prev)}>
@@ -74,14 +76,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     marginLeft: '3%',
     zIndex: 101,
-    ...Platform.select({
-      ios: {
-        top: '9%',
-      },
-      android: {
-        top: '5%',
-      },
-    }),
   },
   searchView: {
     backgroundColor: '#ffffff',

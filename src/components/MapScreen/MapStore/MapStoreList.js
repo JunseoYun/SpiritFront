@@ -10,13 +10,16 @@ import {
   Dimensions,
 } from 'react-native';
 import MapStoreItem from './MapStoreItem';
-
+import MapLocation from '../MapLocation';
+import MapDirections from '../MapDirections';
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
 const BUTON_WIDTH = width * 0.4;
 const SPACING = width * 0.05;
 
 const MapStoreList = ({
+  updateNewLocation,
+  fetchSaveLocation,
   panHandlers,
   flatListAnim,
   isFlatListVisible,
@@ -54,6 +57,12 @@ const MapStoreList = ({
           styles.flatListContainer,
           {transform: [{translateY: flatListAnim}], zIndex: 10}, // 위치 애니메이션
         ]}>
+        {stores.length > 0 && (
+          <View style={styles.buttonView}>
+            <MapLocation onPress={updateNewLocation} />
+            <MapDirections onPress={fetchSaveLocation} />
+          </View>
+        )}
         {isFlatListVisible && (
           <FlatList
             ref={flatListRef}
@@ -91,29 +100,35 @@ const MapStoreList = ({
         )}
       </Animated.View>
       {stores.length === 0 && (
-        <View style={styles.storeInfo}>
-          <View style={styles.titleview}>
-            <Text style={styles.noDataText}>주변에 등록된 술집이 없어요</Text>
+        <View style={styles.noneView}>
+          <View style={[styles.buttonView, {marginHorizontal: 0}]}>
+            <MapLocation onPress={updateNewLocation} />
+            <MapDirections onPress={fetchSaveLocation} />
           </View>
+          <View style={styles.storeInfo}>
+            <View style={styles.titleview}>
+              <Text style={styles.noDataText}>주변에 등록된 술집이 없어요</Text>
+            </View>
 
-          <View style={styles.noneView}>
-            <Pressable
-              style={styles.button2}
-              onPress={() => {
-                navigation.navigate('StoreSearchScreen', {
-                  index: 0,
-                  location: location,
-                });
-              }}>
-              <Text style={styles.noneText2}>술집 등록하기</Text>
-            </Pressable>
-            <Pressable
-              style={styles.button}
-              onPress={() => {
-                navigation.navigate('SetLocationScreen');
-              }}>
-              <Text style={styles.noneText}>위치 변경하기</Text>
-            </Pressable>
+            <View style={styles.noneView2}>
+              <Pressable
+                style={styles.button2}
+                onPress={() => {
+                  navigation.navigate('StoreSearchScreen', {
+                    index: 0,
+                    location: location,
+                  });
+                }}>
+                <Text style={styles.noneText2}>술집 등록하기</Text>
+              </Pressable>
+              <Pressable
+                style={styles.button}
+                onPress={() => {
+                  navigation.navigate('SetLocationScreen');
+                }}>
+                <Text style={styles.noneText}>위치 변경하기</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       )}
@@ -127,14 +142,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: '3%',
   },
-  storeInfo: {
+  buttonView: {
+    flexDirection: 'row',
+    marginHorizontal: 18,
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  noneView: {
     position: 'absolute',
     bottom: '3%',
     alignSelf: 'center',
-    alignItems: 'center',
+  },
+  storeInfo: {
     justifyContent: 'space-between',
     width: ITEM_WIDTH,
-    height: '20%',
+    height: 130,
     backgroundColor: '#fdfdfd',
     padding: 15,
     borderRadius: 12,
@@ -154,7 +176,7 @@ const styles = StyleSheet.create({
     color: '#c9c9c9',
     fontFamily: 'Pretendard-Medium',
   },
-  noneView: {
+  noneView2: {
     flexDirection: 'row',
     width: '100%',
     justifyContent: 'space-around',

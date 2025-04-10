@@ -369,10 +369,9 @@ const MapScreen = ({navigation}) => {
       {refresh && <MapSearchBar onPress={() => setcenterrefresh(radius)} />}
       <MapRadius setRadiusint={setRadiusint} />
 
-      <MapLocation onPress={() => updateNewLocation(radius)} />
-      <MapDirections onPress={() => fetchSaveLocation(radius)} />
-
       <MapStoreList
+        updateNewLocation={() => updateNewLocation(radius)}
+        fetchSaveLocation={() => fetchSaveLocation(radius)}
         panHandlers={panResponder.panHandlers}
         flatListAnim={flatListAnim}
         isFlatListVisible={isFlatListVisible}
