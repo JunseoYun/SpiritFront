@@ -124,17 +124,15 @@ const RegisterScreen = ({route, navigation}) => {
         showAlert({
           title: '로그인 오류',
           message:
-            '로그인 시 오류가 발생하였습니다.\n잠시 후 다시 시도해주세요.' +
-            error,
+            '로그인 시 오류가 발생하였습니다.\n잠시 후 다시 시도해주세요.',
         });
       }
     } catch (error) {
       showAlert({
-        title: '회원가입 오류',
-        message:
-          '회원가입 시 오류가 발생하였습니다.\n잠시 후 다시 시도해주세요.' +
-          error,
+        title: '중복된 닉네임',
+        message: '닉네임 변경 후\n중복검사를 다시 시도해주세요.',
       });
+      setNicknameCheck(false);
     }
   };
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import {Pressable, StyleSheet, Animated} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const StoreHeader = ({
   navigation,
@@ -9,9 +10,13 @@ const StoreHeader = ({
   titleOpacity,
   title,
 }) => {
+  const insets = useSafeAreaInsets();
   return (
     <Animated.View
-      style={[styles.navigateView, {backgroundColor: headerBackgroundColor}]}>
+      style={[
+        styles.navigateView,
+        {backgroundColor: headerBackgroundColor, paddingTop: insets.top + 10},
+      ]}>
       <Pressable onPress={() => navigation.goBack()}>
         <Animated.Text style={{color: iconColor}}>
           <Ionicons name="arrow-back-outline" size={25} />
@@ -36,7 +41,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: Platform.OS === 'ios' ? 100 : 70,
+
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

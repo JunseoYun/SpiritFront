@@ -8,10 +8,11 @@ import {
 } from 'react-native';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import AgreementItem from '../../components/OAuthRegister/AgreementItem';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const AgreeScreen = ({route, navigation}) => {
   const {type, id, socialToken} = route.params;
-
+  const insets = useSafeAreaInsets();
   const {showAlert, AlertComponent} = useCustomAlert();
 
   // 체크박스 상태 관리
@@ -73,7 +74,7 @@ const AgreeScreen = ({route, navigation}) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, {paddingTop: insets.top}]}>
       <View style={styles.titleView}>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <Text style={styles.titleNameText}>한잔할까</Text>
@@ -117,21 +118,23 @@ const AgreeScreen = ({route, navigation}) => {
         onInfoPress={() => handleAgreeScreen('location')} // 약관 보기 모달 열기
       />
 
-      <TouchableOpacity
-        style={[
-          styles.nextButton,
-          !(agreements.terms && agreements.privacy && agreements.location) &&
-            styles.disabledButton,
-        ]}
-        onPress={handleNext}
-        disabled={
-          !(agreements.terms && agreements.privacy && agreements.location)
-        }>
-        <Text style={styles.nextButtonText}>다음</Text>
-      </TouchableOpacity>
+      <View style={{marginTop: 'auto', paddingBottom: insets.bottom + 10}}>
+        <TouchableOpacity
+          style={[
+            styles.nextButton,
+            !(agreements.terms && agreements.privacy && agreements.location) &&
+              styles.disabledButton,
+          ]}
+          onPress={handleNext}
+          disabled={
+            !(agreements.terms && agreements.privacy && agreements.location)
+          }>
+          <Text style={styles.nextButtonText}>다음</Text>
+        </TouchableOpacity>
+      </View>
 
       <AlertComponent />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -141,7 +144,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   titleView: {
-    marginTop: 180,
+    marginTop: '30%',
     marginHorizontal: 20,
   },
   titleNameText: {
@@ -209,7 +212,6 @@ const styles = StyleSheet.create({
     borderColor: '#5CCEFF',
   },
   nextButton: {
-    marginTop: 40,
     marginHorizontal: 20,
     backgroundColor: '#39C4FF',
     borderRadius: 5,

@@ -13,9 +13,7 @@ const MapDirections = ({onPress}) => {
 
 const styles = StyleSheet.create({
   buttonRoute: {
-    position: 'absolute',
-    bottom: '25%',
-    right: '7%',
+    width: 50,
     borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
