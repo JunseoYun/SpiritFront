@@ -97,7 +97,7 @@ android {
         applicationId "com.spiritfront"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 19
+        versionCode 21
         versionName "1"
         resValue "string", "KAKAO_APP_KEY", project.env.get("KAKAO_APP_KEY")
         resValue "string", "KAKAO_APP_SCHEMES", project.env.get("KAKAO_APP_SCHEMES")

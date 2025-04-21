@@ -8,6 +8,7 @@ import {
   View,
   Platform,
 } from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import {StoreRegister} from '../../api/storeApi';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import StoreCategory from '../../components/StoreAddScreen/StoreCategory';
@@ -22,8 +23,20 @@ import StoreInfo from '../../components/StoreAddScreen/StoreInfo';
 import StoreConfirmationModal from '../../components/StoreAddScreen/StoreConfirmationModal';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import OperatingHoursPreview from '../../components/StoreAddScreen/OperatingHoursPreview';
+import {useAuth} from '../../context/AuthContext';
+import {useToast} from '../../context/ToastContext';
 
 const StoreAddScreen = ({navigation, route}) => {
+  const {token} = useAuth();
+  const {showToast} = useToast();
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!token) {
+        showToast('로그인 후 이용해주세요', 'center');
+        navigation.goBack();
+      }
+    }, [token]),
+  );
   const {location} = route.params;
 
   const scrollViewRef = useRef(null); // 스크롤뷰 참조

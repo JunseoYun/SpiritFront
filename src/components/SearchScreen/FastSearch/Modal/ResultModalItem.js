@@ -11,7 +11,8 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../../hooks/useCategoryTranslation';
 import useStoreStatus from '../../../../hooks/useStoreStatus';
 import useDistance from '../../../../hooks/useDistance';
-
+import {useAuth} from '../../../../context/AuthContext';
+import {useToast} from '../../../../context/ToastContext';
 const ResultModalItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();
   const [distance, setDistance] = useState(0);
@@ -27,6 +28,20 @@ const ResultModalItem = ({store, navigation, location}) => {
     breakstart,
     breakend,
   } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
+
+  const {token} = useAuth();
+  const {showToast} = useToast();
+  const handlePress = () => {
+    if (!token) {
+      showToast('로그인 후 이용할 수 있어요!', 'center');
+      return;
+    }
+
+    navigation.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {storeId: store.id},
+    });
+  };
 
   useEffect(() => {
     const fetchDistance = () => {
@@ -47,17 +62,7 @@ const ResultModalItem = ({store, navigation, location}) => {
     fetchDistance();
   }, [store]);
   return (
-    <Pressable
-      onPress={() => {
-        navigation.navigate('StoreStack', {
-          screen: 'StoreMainScreen',
-          params: {
-            storeId: store.id,
-            innerlatitude: store.locationDto.latitude,
-            innerlongitude: store.locationDto.longitude,
-          },
-        });
-      }}>
+    <Pressable onPress={handlePress}>
       <View style={styles.fastSearchStoreInfo}>
         <ImageBackground
           source={

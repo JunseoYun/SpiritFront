@@ -58,6 +58,9 @@ axiosInstance.interceptors.request.use(
   async config => {
     try {
       // AsyncStorage에서 토큰 가져오기
+      if (config.auth === false) {
+        return config;
+      }
       const token = await getAccessToken();
       if (token) {
         // 'x-auth-token' 헤더에 토큰 설정
@@ -80,7 +83,11 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config;
 
     // Access Token이 만료된 경우 처리
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      originalRequest.auth !== false
+    ) {
       originalRequest._retry = true;
 
       try {

@@ -4,8 +4,8 @@ import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-
+import {useAuth} from '../../../context/AuthContext';
+import {useToast} from '../../../context/ToastContext';
 const OpenStoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
   const [distance, setDistance] = useState(0);
@@ -26,6 +26,19 @@ const OpenStoreItem = ({store, location, navigation}) => {
   const calculateWalkingTime = distance => {
     const walkingSpeed = 80; // 평균 보행 속도 (m/min)
     return Math.ceil(distance / walkingSpeed); // 소수점 올림
+  };
+  const {token} = useAuth();
+  const {showToast} = useToast();
+  const handlePress = () => {
+    if (!token) {
+      showToast('로그인 후 이용할 수 있어요!', 'center');
+      return;
+    }
+
+    navigation.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {storeId: store.id},
+    });
   };
   useEffect(() => {
     const fetchDistance = () => {
@@ -49,18 +62,7 @@ const OpenStoreItem = ({store, location, navigation}) => {
   const {translateCategory} = useCategoryTranslation();
   return (
     <>
-      <Pressable
-        onPress={() =>
-          navigation.navigate('StoreStack', {
-            screen: 'StoreMainScreen',
-            params: {
-              storeId: store.id,
-              innerlatitude: store.locationDto.latitude,
-              innerlongitude: store.locationDto.longitude,
-            },
-          })
-        }
-        style={styles.container}>
+      <Pressable onPress={handlePress} style={styles.container}>
         <View style={styles.backimageview}>
           <ImageBackground
             source={
@@ -79,6 +81,43 @@ const OpenStoreItem = ({store, location, navigation}) => {
             )}
           </ImageBackground>
         </View>
+        {/* {endtime && !store?.isAlwaysOpen && (
+          <View style={styles.storeViewInfo}>
+            <Text
+              style={[
+                styles.storeSubInfo,
+                {
+                  backgroundColor: '#80D2F4',
+                  color: '#fff',
+                  fontFamily: 'Pretendard-Regular',
+                  fontSize: 12,
+                  padding: 3,
+                  borderRadius: 5,
+                },
+              ]}>
+              ~ {endtime}
+            </Text>
+          </View>
+        )}
+        {store?.isAlwaysOpen && !endtime && (
+          <View style={[styles.storeViewInfo]}>
+            <Text
+              style={[
+                styles.storeSubInfo,
+                {
+                  backgroundColor: '#80D2F4',
+                  color: '#fff',
+                  fontFamily: 'Pretendard-Regular',
+                  fontSize: 12,
+                  padding: 3,
+                  borderRadius: 5,
+                },
+              ]}>
+              24시간
+            </Text>
+          </View>
+        )} */}
+
         <View style={styles.storeViewInfo}>
           <Text
             style={styles.storMainInfo}
@@ -89,7 +128,10 @@ const OpenStoreItem = ({store, location, navigation}) => {
         </View>
         {/* ✅ 가게 카테고리 */}
         <View style={styles.storeViewInfo}>
-          <Text style={styles.StoreCategory}>
+          <Text
+            style={styles.StoreCategory}
+            numberOfLines={1}
+            ellipsizeMode="tail">
             {store.categories && store.categories.length > 0
               ? store.categories
                   .map(category => translateCategory(category))
@@ -98,7 +140,7 @@ const OpenStoreItem = ({store, location, navigation}) => {
           </Text>
         </View>
         <View style={styles.storeViewInfo}>
-          <Text
+          {/* <Text
             style={styles.storeSubInfo}
             numberOfLines={1}
             ellipsizeMode="tail">
@@ -107,7 +149,26 @@ const OpenStoreItem = ({store, location, navigation}) => {
                   .map(drink => `${translateAlcohol(drink.type)}`)
                   .join(' ')
               : '메인주류 미설정'}
-          </Text>
+            {endtime}
+          </Text> */}
+          {endtime && !store.isAlwaysOpen && (
+            <Text
+              style={styles.storeSubInfo}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {endtime || '정보 없음'} 종료
+            </Text>
+          )}
+
+          {!endtime && store.isAlwaysOpen && (
+            <Text
+              style={styles.storeSubInfo}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              24시간
+            </Text>
+          )}
+
           <Text style={styles.storeSubInfo}>
             {distance} {unit}
           </Text>
@@ -123,8 +184,8 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   backimageview: {
-    width: 150,
-    height: 150,
+    width: 160,
+    height: 160,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 7,
@@ -160,14 +221,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 2,
-    marginLeft: 3,
-    marginRight: 3,
+    marginTop: 3,
+    paddingHorizontal: 1,
+    maxWidth: 160,
   },
   storMainInfo: {
     fontSize: 16,
-    fontFamily: 'Pretendard-Bold',
-    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#181A1A',
     width: 140,
   },
   storRate: {

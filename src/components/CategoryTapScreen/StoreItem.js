@@ -6,7 +6,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Categorystyles from '../../screens/CategoryTap/CategoryTapStyles';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
-import {FlatList} from 'react-native';
+import {useAuth} from '../../context/AuthContext';
+import {useToast} from '../../context/ToastContext';
 
 const StoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
@@ -22,14 +23,17 @@ const StoreItem = ({store, location, navigation}) => {
     breakend,
   } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
 
+  const {token} = useAuth();
+  const {showToast} = useToast();
   const handleStorePress = () => {
+    if (!token) {
+      showToast('로그인 후 이용할 수 있어요!', 'center');
+      return;
+    }
+
     navigation.navigate('StoreStack', {
       screen: 'StoreMainScreen',
-      params: {
-        storeId: store.id,
-        innerlatitude: location.latitude,
-        innerlongitude: location.longitude,
-      },
+      params: {storeId: store.id},
     });
   };
 

@@ -10,6 +10,7 @@ import {ToastProvider} from './src/context/ToastContext';
 
 import SplashScreen from 'react-native-splash-screen';
 import MySplashScreen from './src/screens/MySplashScreen';
+
 import './reanimatedConfig';
 
 if (!__DEV__) {
@@ -40,7 +41,8 @@ const App = () => {
 };
 
 const AppNavigator = () => {
-  const {token} = useAuth(); // 인증 상태를 가져옴
+  const {token, unToken} = useAuth(); // 인증 상태를 가져옴
+
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
   useEffect(() => {
@@ -56,7 +58,7 @@ const AppNavigator = () => {
   }
   return (
     <NavigationContainer>
-      {token ? <MainStack /> : <OAuthStack />}
+      {token || unToken ? <MainStack /> : <OAuthStack />}
     </NavigationContainer>
   );
 };

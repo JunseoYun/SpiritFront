@@ -13,7 +13,8 @@ const MyPageheader = ({nickname, onProfilePress, imageuri}) => (
       style={styles.profileimg}
     />
     <Pressable style={styles.pressView} onPress={onProfilePress}>
-      <Text style={styles.Nickname}>{nickname}</Text>
+      <Text style={[styles.Nickname]}>{nickname}</Text>
+
       <FontAwesomeIcon
         name={'angle-right'}
         size={30}
@@ -35,15 +36,15 @@ const styles = StyleSheet.create({
   },
   profileimg: {
     resizeMode: 'cover',
-    width: 70,
-    height: 70,
+    width: 60,
+    height: 60,
     borderRadius: 90,
   },
   Nickname: {
     fontSize: 20,
     fontFamily: 'Pretendard-Bold',
     color: '#333',
-    marginLeft: 30,
+    marginLeft: 20,
   },
   changenick: {
     marginLeft: 10,

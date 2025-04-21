@@ -18,9 +18,9 @@ import {user_login} from '../../api/userApi';
 import {useAuth} from '../../context/AuthContext';
 import Config from 'react-native-config';
 import FastImage from 'react-native-fast-image';
-
+import {setUnLogin, clearUnLogin} from '../../storage/tokenStorage';
 const OAuthLoginScreen = ({navigation}) => {
-  const {loginauth} = useAuth();
+  const {loginauth, clearUnLogout, unLogin} = useAuth();
 
   useEffect(() => {
     GoogleSignin.revokeAccess();
@@ -34,6 +34,7 @@ const OAuthLoginScreen = ({navigation}) => {
     try {
       const response = await user_login(type, id, socialToken);
       await loginauth(response.accessToken, response.refreshToken);
+      clearUnLogout();
     } catch (error) {
       if (error.response) {
         const {status, data, headers} = error.response;
@@ -100,6 +101,10 @@ const OAuthLoginScreen = ({navigation}) => {
         handleLogin({type, id, socialToken});
       }
     } catch (error) {}
+  };
+
+  const unLoginHandle = async () => {
+    await unLogin();
   };
 
   return (
@@ -169,6 +174,9 @@ const OAuthLoginScreen = ({navigation}) => {
         ) : (
           <View style={{height: 50, marginTop: 20}} />
         )}
+        <TouchableOpacity onPress={unLoginHandle}>
+          <Text style={styles.unLoginText}>비로그인으로 시작하기</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -199,7 +207,7 @@ const styles = StyleSheet.create({
   },
   loginView: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 100 : 150, // OS별 높이 설정
+    bottom: Platform.OS === 'ios' ? 70 : 120, // OS별 높이 설정
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
@@ -287,6 +295,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingRight: 10,
     fontFamily: 'Pretendard-SemiBold', // 커스텀 폰트 적용
+  },
+  unLoginText: {
+    color: '#999',
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
+    marginTop: 30,
   },
 });
 

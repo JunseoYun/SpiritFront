@@ -4,6 +4,8 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
+import {useAuth} from '../../../context/AuthContext';
+import {useToast} from '../../../context/ToastContext';
 
 const NearStoreItem = ({store, navigation, location}) => {
   const [distance, setDistance] = useState(0);
@@ -19,7 +21,19 @@ const NearStoreItem = ({store, navigation, location}) => {
     breakstart,
     breakend,
   } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
+  const {token} = useAuth();
+  const {showToast} = useToast();
+  const handlePress = () => {
+    if (!token) {
+      showToast('로그인 후 이용할 수 있어요!', 'center');
+      return;
+    }
 
+    navigation.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {storeId: store.id},
+    });
+  };
   useEffect(() => {
     const fetchDistance = () => {
       let tempDistance = calculateDistance(
@@ -42,17 +56,7 @@ const NearStoreItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();
 
   return (
-    <Pressable
-      onPress={() =>
-        navigation.navigate('StoreStack', {
-          screen: 'StoreMainScreen',
-          params: {
-            storeId: store.id,
-            innerlatitude: store.locationDto.latitude,
-            innerlongitude: store.locationDto.longitude,
-          },
-        })
-      }>
+    <Pressable onPress={handlePress}>
       <View style={styles.storeInfoView}>
         {/* ✅ 가게 이미지 (영업 상태에 따라 안내 문구 추가) */}
         <View style={styles.backimageview}>
@@ -105,7 +109,10 @@ const NearStoreItem = ({store, navigation, location}) => {
 
         {/* ✅ 가게 카테고리 */}
         <View style={styles.storeViewInfo}>
-          <Text style={styles.StoreCategory}>
+          <Text
+            style={styles.StoreCategory}
+            numberOfLines={1} // 한 줄로 제한
+            ellipsizeMode="tail">
             {store.categories && store.categories.length > 0
               ? store.categories
                   .map(category => translateCategory(category))
@@ -117,12 +124,12 @@ const NearStoreItem = ({store, navigation, location}) => {
         {/* ✅ 영업 종료 시간 & 거리 표시 */}
         <View style={styles.storeViewInfo}>
           {store?.isAlwaysOpen == true ? (
-            <Text style={styles.storeSubInfo}>24시간 영업</Text>
+            <Text style={styles.storeSubInfo}>24시간</Text>
           ) : store?.isAlwaysOpen == false && closed ? (
             <Text style={styles.storeSubInfo}>금일 휴무</Text>
           ) : (
             <Text style={styles.storeSubInfo}>
-              영업 종료 {endtime || '정보 없음'}
+              {endtime || '정보 없음'} 종료
             </Text>
           )}
 
@@ -140,8 +147,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   backimageview: {
-    width: 150,
-    height: 150,
+    width: 160,
+    height: 160,
     marginTop: 15,
     alignItems: 'center',
     justifyContent: 'center',
@@ -177,14 +184,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 2,
-    marginLeft: 3,
-    marginRight: 3,
+    marginTop: 3,
+    paddingHorizontal: 1,
+    maxWidth: 160,
   },
   storMainInfo: {
     fontSize: 16,
-    fontFamily: 'Pretendard-Bold',
-    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#181A1A',
     width: 140,
   },
   storRate: {

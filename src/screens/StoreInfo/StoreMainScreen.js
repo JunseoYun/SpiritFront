@@ -34,10 +34,12 @@ import UpdateBottomSheet from '../../components/StoreScreen/UpdateBottomSheet';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import {useToast} from '../../context/ToastContext';
+import {useAuth} from '../../context/AuthContext';
 
 const {width} = Dimensions.get('window');
 
 const StoreMainScreen = ({navigation}) => {
+  const {token} = useAuth();
   const route = useRoute();
   const {showAlert, AlertComponent} = useCustomAlert();
   const bottomSheetRef = useRef(null);
@@ -59,6 +61,15 @@ const StoreMainScreen = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   const {showToast} = useToast();
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!token) {
+        showToast('로그인 후 이용해주세요', 'center');
+        navigation.goBack();
+      }
+    }, [token]),
+  );
+
   const storeTimeEditHandle = () => {
     navigation.navigate('StoreTimeEditScreen', {
       storeId: storedata.id,
@@ -76,6 +87,7 @@ const StoreMainScreen = ({navigation}) => {
 
   useFocusEffect(
     React.useCallback(() => {
+      if (!token) return;
       let isActive = true; // ✅ cleanup을 위한 변수 추가
       setTimeout(() => {
         if (isActive && currentPage === 'StoreMapScreen') {
@@ -88,6 +100,7 @@ const StoreMainScreen = ({navigation}) => {
     }, [currentPage]),
   );
   useEffect(() => {
+    if (!token) return;
     if (currentPage === 'StoreMapScreen') {
       setTimeout(() => {
         navigation.navigate('StoreMapScreen', {
@@ -105,12 +118,14 @@ const StoreMainScreen = ({navigation}) => {
   const isFirstLoad = useRef(true);
 
   useEffect(() => {
+    if (!token) return;
     fetchInitialStoreData().finally(() => {
       isFirstLoad.current = false;
     });
   }, []);
 
   useEffect(() => {
+    if (!token) return;
     const unsubscribe = navigation.addListener('focus', () => {
       if (!isFirstLoad.current) {
         fetchStoreDataOnly();
@@ -121,6 +136,7 @@ const StoreMainScreen = ({navigation}) => {
   }, [navigation]);
 
   const fetchStoreDataOnly = async () => {
+    if (!token) return;
     try {
       const storeData = await StoreMainget(storeId);
       setStoredata(storeData);
@@ -137,6 +153,7 @@ const StoreMainScreen = ({navigation}) => {
   };
 
   const fetchInitialStoreData = async () => {
+    if (!token) return;
     try {
       setLoading(true);
 
@@ -294,6 +311,7 @@ const StoreMainScreen = ({navigation}) => {
   };
 
   useEffect(() => {
+    if (!token) return;
     if (isUpdate) {
       showToast('원하는 항목을 클릭해 수정하세요!', 'center');
     }
