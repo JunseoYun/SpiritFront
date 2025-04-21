@@ -120,6 +120,19 @@ const RegisterScreen = ({route, navigation}) => {
       try {
         const login_data = await user_login(type, id, socialToken);
         await loginauth(login_data.accessToken, login_data.refreshToken);
+        navigation.reset({
+          index: 0,
+          routes: [
+            // {
+            //   name: 'MainBtmbar',
+            //   state: {
+            //     index: 2, // 'MainScreen' 탭 인덱스 (0: 검색, 1: 지역, 2: 홈)
+            //     routes: [{name: 'MainScreen'}],
+            //   },
+            // },
+            {name: 'MainBtmbar', state: {routes: [{name: 'MainScreen'}]}},
+          ],
+        });
       } catch (error) {
         showAlert({
           title: '로그인 오류',

@@ -11,6 +11,8 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../../hooks/useStoreStatus';
+import {useAuth} from '../../../context/AuthContext';
+import {useToast} from '../../../context/ToastContext';
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
 const IMG_WIDTH = width * 0.3;
@@ -34,10 +36,17 @@ const MapStoreItem = ({
     breakend,
   } = useStoreStatus(item?.operationInfoDtos, item?.isAlwaysOpen);
 
+  const {token} = useAuth();
+  const {showToast} = useToast();
+
   const handlePress = () => {
     setSelectedStore(item);
     moveCenterMap(item.locationDto.latitude, item.locationDto.longitude);
 
+    if (!token) {
+      showToast('로그인 후 이용할 수 있어요!', 'center');
+      return;
+    }
     navigation.navigate('StoreStack', {
       screen: 'StoreMainScreen',
       params: {

@@ -141,6 +141,7 @@ export const Store_getby_recent = async page => {
 export const Store_getby_radius = async (latitude, longitude, radius) => {
   try {
     const response = await axiosInstance.get(`/store/get-by/radius`, {
+      // auth: false,
       params: {
         longitude,
         latitude,
@@ -177,7 +178,9 @@ export const Store_getby_keyword = async (
   try {
     const response = await axiosInstance.get(
       `/store/get-by/keyword/${keyword}`,
+
       {
+        // auth: false,
         params: {
           longitude,
           latitude,
@@ -197,6 +200,7 @@ export const Store_getby_store = async (page, keyword) => {
     const response = await axiosInstance.get(
       `/store/get-by/keyword/all/${keyword}`,
       {
+        // auth: false,
         params: {
           page, // page 값만 전달 초기 : 0
         },
@@ -212,6 +216,7 @@ export const Store_getby_store = async (page, keyword) => {
 export const Store_getby_distance = async (page, latitude, longitude) => {
   try {
     const response = await axiosInstance.get(`/store/get-by/distance`, {
+      // auth: false,
       params: {
         page,
         latitude,
@@ -235,6 +240,8 @@ export const Store_getby_category = async (
     const response = await axiosInstance.get(
       `/store/get-by/category/${category}`,
       {
+        // auth: false,
+
         params: {
           longitude,
           latitude,
@@ -252,6 +259,8 @@ export const Store_getby_category = async (
 export const Store_getby_business_hours = async (page, latitude, longitude) => {
   try {
     const response = await axiosInstance.get(`/store/get-by/business-hours`, {
+      // auth: false,
+
       params: {
         longitude,
         latitude,
@@ -287,6 +296,7 @@ export const Store_getby_condition_search = async requestData => {
 export const Store_getby_main_banner = async (latitude, longitude) => {
   try {
     const response = await axiosInstance.get(`/store/get-by/main-banner`, {
+      // auth: false,
       params: {
         longitude,
         latitude,

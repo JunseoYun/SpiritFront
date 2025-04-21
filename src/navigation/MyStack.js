@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {Pressable} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 
@@ -8,8 +8,10 @@ import MyScreen from '../screens/BottomTab/My/MyScreen';
 import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
 import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MyLoginScreen from '../screens/BottomTab/My/MyLoginScreen';
 import Octicons from 'react-native-vector-icons/Octicons';
-
+import {getUnLogin} from '../storage/tokenStorage';
+import {useAuth} from '../context/AuthContext';
 const Stack = createStackNavigator();
 
 // 재사용 가능한 옵션 컴포넌트
@@ -25,8 +27,43 @@ const getScreenOptions = title => ({
   headerTitleAlign: 'center',
 });
 export default function MyStack() {
+  const {token, unToken} = useAuth();
+
   return (
-    <Stack.Navigator initialRouteName="MyScreen">
+    <Stack.Navigator
+      initialRouteName={!token && unToken ? 'MyLoginScreen' : 'MyScreen'}>
+      {!token && unToken ? (
+        <Stack.Screen
+          name="MyLoginScreen"
+          component={MyLoginScreen}
+          options={{
+            headerShown: true,
+            headerTitleAlign: 'center',
+            title: '로그인',
+            headerTitleStyle: {
+              fontSize: 19, // 타이틀 크기 설정
+              color: '#333', // 텍스트 색상 (선택 사항)
+              fontFamily: 'Pretendard-Bold',
+            },
+          }}
+        />
+      ) : (
+        <Stack.Screen
+          name="MyScreen"
+          component={MyScreen}
+          options={{
+            headerShown: true,
+            headerTitleAlign: 'center',
+            title: '마이프로필',
+            headerTitleStyle: {
+              fontSize: 19, // 타이틀 크기 설정
+              color: '#333', // 텍스트 색상 (선택 사항)
+              fontFamily: 'Pretendard-Bold',
+            },
+          }}
+        />
+      )}
+
       <Stack.Screen
         name="ConfigScreen"
         component={ConfigScreen}
@@ -65,21 +102,6 @@ export default function MyStack() {
             </Pressable>
           ),
         })}
-      />
-
-      <Stack.Screen
-        name="MyScreen"
-        component={MyScreen}
-        options={{
-          headerShown: true,
-          headerTitleAlign: 'center',
-          title: '마이프로필',
-          headerTitleStyle: {
-            fontSize: 19, // 타이틀 크기 설정
-            color: '#333', // 텍스트 색상 (선택 사항)
-            fontFamily: 'Pretendard-Bold',
-          },
-        }}
       />
 
       <Stack.Screen

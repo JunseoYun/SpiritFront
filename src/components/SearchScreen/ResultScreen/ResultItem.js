@@ -5,6 +5,8 @@ import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import useDistance from '../../../hooks/useDistance';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
+import {useAuth} from '../../../context/AuthContext';
+import {useToast} from '../../../context/ToastContext';
 
 const ResultItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();
@@ -22,6 +24,20 @@ const ResultItem = ({store, navigation, location}) => {
     breakstart,
     breakend,
   } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
+  const {token} = useAuth();
+  const {showToast} = useToast();
+  const handlePress = () => {
+    if (!token) {
+      showToast('로그인 후 이용할 수 있어요!', 'center');
+      return;
+    }
+
+    navigation.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {storeId: store.id},
+    });
+  };
+
   useEffect(() => {
     const fetchDistance = () => {
       let tempDistance = calculateDistance(
@@ -41,18 +57,7 @@ const ResultItem = ({store, navigation, location}) => {
     fetchDistance();
   }, [store]);
   return (
-    <Pressable
-      key={store.id}
-      onPress={() => {
-        navigation.navigate('StoreStack', {
-          screen: 'StoreMainScreen',
-          params: {
-            storeId: store.id,
-            innerlatitude: store.locationDto.latitude,
-            innerlongitude: store.locationDto.longitude,
-          },
-        });
-      }}>
+    <Pressable onPress={handlePress}>
       <View style={styles.StoreInfo}>
         <ImageBackground
           source={

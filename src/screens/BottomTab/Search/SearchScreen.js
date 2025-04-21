@@ -17,9 +17,8 @@ import CategoryModal from '../../../components/SearchScreen/FastSearch/Modal/Cat
 import PeopleModal from '../../../components/SearchScreen/FastSearch/Modal/PeopleModal';
 import VisitTimeModal from '../../../components/SearchScreen/FastSearch/Modal/VisitTimeModal';
 
-import RecentStoreList from '../../../components/MainScreen/RecentStore/RecentStoreList';
 import SearchButton from '../../../components/SearchScreen/SearchButton';
-
+import RecentStoreList from '../../../components/SearchScreen/RecentStore/RecentStoreList';
 import {useToast} from '../../../context/ToastContext';
 const SearchScreen = ({navigation}) => {
   const {showToast} = useToast();

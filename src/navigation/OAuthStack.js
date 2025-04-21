@@ -10,6 +10,7 @@ import TermsAgreeScreen from '../screens/OAuth/TermsAgreeScreen';
 import PrivacyAgreeScreen from '../screens/OAuth/PrivacyAgreeScreen';
 import LocationAgreeScreen from '../screens/OAuth/LocationAgreeScreen';
 
+import MainBtmbar from './MainBtmbar';
 const Stack = createStackNavigator();
 
 export default function OAuthStack() {
@@ -19,6 +20,11 @@ export default function OAuthStack() {
         name="OAuthLoginScreen"
         options={{headerShown: false}}
         component={OAuthLoginScreen}
+      />
+      <Stack.Screen
+        name="MainBtmbar"
+        component={MainBtmbar}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="RegisterScreen"

@@ -37,7 +37,14 @@ const WithdrawScreen = () => {
 
   const withdraw = async () => {
     await user_withdraw();
+    navigation.reset({
+      index: 0,
+      routes: [
+        {name: 'OAuthStack', state: {routes: [{name: 'OAuthLoginScreen'}]}},
+      ],
+    });
     await logout(); // 로그아웃 완료될 때까지 대기
+    await unLogin();
   };
 
   return (

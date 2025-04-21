@@ -10,8 +10,10 @@ import {
 import {useFocusEffect} from '@react-navigation/native';
 import LikedItem from '../../components/LikedScreen/LikedItem';
 import {Store_getby_liked} from '../../api/storeApi';
+import {useAuth} from '../../context/AuthContext';
 
 const LikeScreen = ({navigation}) => {
+  const {token} = useAuth();
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -49,6 +51,9 @@ const LikeScreen = ({navigation}) => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
+        if (!token) {
+          return;
+        }
         navigation.navigate('MainScreen'); // MainScreen 탭으로 전환
         return true; // 기본 뒤로가기 방지
       };
@@ -64,6 +69,9 @@ const LikeScreen = ({navigation}) => {
 
   useFocusEffect(
     useCallback(() => {
+      if (!token) {
+        return;
+      }
       fetchStores(0, true);
     }, []),
   );
@@ -92,32 +100,35 @@ const LikeScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        data={stores}
-        renderItem={renderItem}
-        keyExtractor={item => item.id.toString()}
-        showsVerticalScrollIndicator={false}
-        initialNumToRender={10}
-        maxToRenderPerBatch={5}
-        windowSize={5}
-        removeClippedSubviews={true}
-        onEndReached={loadMoreStores}
-        onEndReachedThreshold={0.5}
-        onRefresh={handleRefresh}
-        refreshing={refreshing}
-        ListFooterComponent={
-          loading ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>Loading...</Text>
-            </View>
-          ) : null
-        }
-        ListEmptyComponent={
-          !loading && stores.length === 0 ? (
-            <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
-          ) : null
-        }
-      />
+      {token && (
+        <FlatList
+          data={stores}
+          renderItem={renderItem}
+          keyExtractor={item => item.id.toString()}
+          showsVerticalScrollIndicator={false}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={true}
+          onEndReached={loadMoreStores}
+          onEndReachedThreshold={0.5}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
+          ListFooterComponent={
+            loading ? (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingText}>Loading...</Text>
+              </View>
+            ) : null
+          }
+          ListEmptyComponent={
+            !loading && stores.length === 0 ? (
+              <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
+            ) : null
+          }
+        />
+      )}
+      {!token && <Text style={styles.emptyText}>로그인 후 이용해주세요</Text>}
     </SafeAreaView>
   );
 };

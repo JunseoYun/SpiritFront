@@ -16,13 +16,15 @@ import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
 import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
 import StoreRegister from '../../components/MainScreen/StoreRegister';
 import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
-import NearStoreList from '../../components/SearchScreen/NearStore/NearStoreList';
+import NearStoreList from '../../components/MainScreen/NearStore/NearStoreList';
 import OptionsSection from '../../components/MainScreen/OptionSection';
 import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
 import {Store_getby_main_banner} from '../../api/storeApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import {useAuth} from '../../context/AuthContext';
+import {useToast} from '../../context/ToastContext';
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
@@ -36,6 +38,8 @@ const MainScreen = ({navigation}) => {
   const [storeactiveIndex, setStoreActiveIndex] = useState(null);
   const recentRef = useRef(null);
   const {recommendCategory} = useRecommendation();
+  const {token} = useAuth();
+  const {showToast} = useToast();
 
   useFocusEffect(
     useCallback(() => {
@@ -127,6 +131,10 @@ const MainScreen = ({navigation}) => {
   const handlestoreItemClick = index => {
     setStoreActiveIndex(index);
     if (index === 0) {
+      if (!token) {
+        showToast('로그인 후 이용할 수 있어요!', 'center');
+        return;
+      }
       navigation.navigate('StoreSearchScreen', {index: 0, location: location});
     } else if (index === 1) {
       // navigation.navigate('StoreSearchScreen', {index: 1});

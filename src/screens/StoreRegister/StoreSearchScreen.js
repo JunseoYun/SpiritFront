@@ -10,8 +10,9 @@ import {
 } from 'react-native';
 import StoreSearchBar from '../../components/StoreSearch/StoreSearchBar';
 import StoreResultList from '../../components/StoreSearch/StoreResultList';
-import {useRoute} from '@react-navigation/native';
+import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {useToast} from '../../context/ToastContext';
+import {useAuth} from '../../context/AuthContext';
 
 const {width} = Dimensions.get('window');
 
@@ -20,7 +21,17 @@ const StoreSearchScreen = ({navigation}) => {
   const {index, location} = route.params;
   const [searchStoreName, setSearchStoreName] = useState('');
   const [trimmedSearchWord, setTrimmedSearchWord] = useState('');
+  const {token} = useAuth();
   const {showToast} = useToast();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!token) {
+        showToast('로그인 후 이용해주세요', 'center');
+        navigation.goBack();
+      }
+    }, [token]),
+  );
 
   // 검색 핸들러: 입력된 검색어가 있다면 공백 제거 후 결과 리스트에 전달
   const handleSearch = () => {

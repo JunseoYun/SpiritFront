@@ -1,5 +1,12 @@
 import React, {createContext, useState, useContext, useEffect} from 'react';
-import {getAccessToken, setToken, removeToken} from '../storage/tokenStorage';
+import {
+  getAccessToken,
+  setToken,
+  removeToken,
+  getUnLogin,
+  setUnLogin,
+  clearUnLogin,
+} from '../storage/tokenStorage';
 const AuthContext = createContext();
 
 let globalAuth = {
@@ -8,13 +15,19 @@ let globalAuth = {
 
 export const AuthProvider = ({children}) => {
   const [token, setTokenState] = useState(null);
+  const [unToken, setUnTokenState] = useState(null);
 
   // 처음 렌더링 시 토큰을 가져와 상태를 업데이트
   useEffect(() => {
     const fetchToken = async () => {
       const storedToken = await getAccessToken();
+      const storedUnToken = await getUnLogin();
+      console.log('storedUnToken: ', storedUnToken);
       if (storedToken) {
         setTokenState(storedToken); // 토큰이 있으면 상태에 저장
+      }
+      if (storedUnToken) {
+        setUnTokenState(storedToken); // 토큰이 있으면 상태에 저장
       }
     };
     fetchToken();
@@ -26,15 +39,28 @@ export const AuthProvider = ({children}) => {
     setTokenState(accessToken, refreshToken); // 상태 업데이트
   };
 
+  const unLogin = async () => {
+    await setUnLogin(true);
+    setUnTokenState(true);
+  };
+
   // 로그아웃 처리
   const logout = async () => {
     await removeToken(); // AsyncStorage에서 토큰 삭제
     setTokenState(null); // 상태 초기화
   };
+
+  const clearUnLogout = async () => {
+    await clearUnLogin();
+    setUnTokenState(false);
+  };
+
   globalAuth.logout = logout;
+  globalAuth.clearUnLogout = clearUnLogout;
 
   return (
-    <AuthContext.Provider value={{token, loginauth, logout}}>
+    <AuthContext.Provider
+      value={{token, unToken, loginauth, logout, unLogin, clearUnLogout}}>
       {children}
     </AuthContext.Provider>
   );

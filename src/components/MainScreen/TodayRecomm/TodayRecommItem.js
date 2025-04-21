@@ -2,7 +2,8 @@ import React from 'react';
 import {View, StyleSheet, Text, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
-
+import {useAuth} from '../../../context/AuthContext';
+import {useToast} from '../../../context/ToastContext';
 const drinkColors = {
   SOJU: '#43A047',
   BEER: '#F9A825',
@@ -36,15 +37,23 @@ const hexToRGBA = (hex, opacity = 0.3) => {
 };
 const TodayRecommItem = ({store, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
+
+  const {token} = useAuth();
+  const {showToast} = useToast();
+  const handlePress = () => {
+    if (!token) {
+      showToast('로그인 후 이용할 수 있어요!', 'center');
+      return;
+    }
+
+    navigation.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {storeId: store.id},
+    });
+  };
+
   return (
-    <Pressable
-      onPress={() =>
-        navigation.navigate('StoreStack', {
-          screen: 'StoreMainScreen',
-          params: {storeId: store.id},
-        })
-      }
-      style={styles.container}>
+    <Pressable onPress={handlePress} style={styles.container}>
       <View style={styles.drinkView}>
         {store.mainDrinkDtos?.map((drink, index) => {
           const baseColor = drinkColors[drink.type] || '#333';
