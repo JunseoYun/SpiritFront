@@ -24,6 +24,7 @@ import {
 } from '../../hooks/useLocation';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
+import Loading from '../../hooks/Loading';
 
 const SetLocationScreen = ({navigation, route}) => {
   const [currentAddress, setcurrentAddress] = useState('');
@@ -80,6 +81,7 @@ const SetLocationScreen = ({navigation, route}) => {
       return;
     }
     try {
+      setLoading(true);
       if (selectLocation && selectAddress) {
         const newLocationAddress = await saveLocationAddress(
           selectLocation,
@@ -107,6 +109,8 @@ const SetLocationScreen = ({navigation, route}) => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -204,11 +208,8 @@ const SetLocationScreen = ({navigation, route}) => {
         </Pressable>
       </ScrollView>
       <AlertComponent />
-      {loading && (
-        <View style={styles.footer}>
-          <Text style={styles.emptyText}>Loading...</Text>
-        </View>
-      )}
+
+      <Loading loading={loading} />
     </SafeAreaView>
   );
 };

@@ -7,6 +7,7 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import MyTabs from '../../../components/MyScreen/MyTabs';
 import MyReview from '../../../components/MyScreen/MyReview';
 import MyLocation from '../../../components/MyScreen/MyLocation';
+import Loading from '../../../hooks/Loading';
 
 const MyScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
@@ -68,12 +69,7 @@ const MyScreen = ({navigation}) => {
   }, []);
 
   if (!userdata) {
-    return (
-      <SafeAreaView
-        style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text style={styles.loadingtext}>Loading...</Text>
-      </SafeAreaView>
-    );
+    return <Loading loading={true} />;
   }
 
   return (

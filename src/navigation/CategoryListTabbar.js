@@ -5,6 +5,7 @@ import {useNavigation} from '@react-navigation/native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import CategoryTapScreen from '../screens/CategoryTap/CategoryTapScreen';
 import {getLocation} from '../storage/locationStorage';
+import Loading from '../hooks/Loading';
 
 const categories = [
   {name: 'IZAKAYA', title: '이자카야', categoryname: 'IZAKAYA'},
@@ -55,18 +56,7 @@ const CategoryListTabbar = ({route}) => {
   const {screen} = route.params || {}; // 전달받은 screen과 location
 
   if (!location) {
-    return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text
-          style={{
-            fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
-            fontSize: 20,
-            color: '#333',
-          }}>
-          Loading...
-        </Text>
-      </View>
-    );
+    return <Loading loading={true} />;
   }
 
   return (

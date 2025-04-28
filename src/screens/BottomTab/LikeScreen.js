@@ -11,6 +11,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import LikedItem from '../../components/LikedScreen/LikedItem';
 import {Store_getby_liked} from '../../api/storeApi';
 import {useAuth} from '../../context/AuthContext';
+import Loading from '../../hooks/Loading';
 
 const LikeScreen = ({navigation}) => {
   const {token} = useAuth();
@@ -114,13 +115,6 @@ const LikeScreen = ({navigation}) => {
           onEndReachedThreshold={0.5}
           onRefresh={handleRefresh}
           refreshing={refreshing}
-          ListFooterComponent={
-            loading ? (
-              <View style={styles.loadingContainer}>
-                <Text style={styles.loadingText}>Loading...</Text>
-              </View>
-            ) : null
-          }
           ListEmptyComponent={
             !loading && stores.length === 0 ? (
               <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
@@ -129,6 +123,7 @@ const LikeScreen = ({navigation}) => {
         />
       )}
       {!token && <Text style={styles.emptyText}>로그인 후 이용해주세요</Text>}
+      <Loading loading={refreshing || loading} />
     </SafeAreaView>
   );
 };

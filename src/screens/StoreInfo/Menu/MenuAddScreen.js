@@ -12,6 +12,7 @@ import MenuAddForm from '../../../components/MenuAddScreen/MenuAddForm';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {StoreMenucreate} from '../../../api/menuApi';
 import forbiddenWords from '../../../hooks/forbiddenWords';
+import Loading from '../../../hooks/Loading';
 
 const MenuAddScreen = ({navigation}) => {
   const route = useRoute();
@@ -155,11 +156,8 @@ const MenuAddScreen = ({navigation}) => {
         </Pressable>
       </ScrollView>
       <AlertComponent />
-      {loading && (
-        <View style={styles.footer}>
-          <Text style={styles.loadingtext}>Loading...</Text>
-        </View>
-      )}
+
+      <Loading loading={loading} />
     </SafeAreaView>
   );
 };

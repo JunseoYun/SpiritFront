@@ -9,6 +9,7 @@ import CFImage from '../../../components/ConfigScreen/CFImage';
 import CFModal from '../../../components/ConfigScreen/CFModal';
 import CFActionbtn from '../../../components/ConfigScreen/CFActionbtn';
 import CFUserinfo from '../../../components/ConfigScreen/CFUserinfo';
+import Loading from '../../../hooks/Loading';
 
 const ConfigScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
@@ -26,11 +27,14 @@ const ConfigScreen = ({navigation}) => {
 
   useEffect(() => {
     const fetchUserData = async () => {
+      setLoading(true);
       try {
         const data = await Userdataget();
         setUserdata(data);
       } catch (error) {
         console.error('Error initializing token or fetching user data:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchUserData();
@@ -127,12 +131,7 @@ const ConfigScreen = ({navigation}) => {
   };
 
   if (!userdata) {
-    return (
-      <SafeAreaView
-        style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text style={styles.loadingtext}>Loading...</Text>
-      </SafeAreaView>
-    );
+    return <Loading loading={true} />;
   }
 
   return (
@@ -149,11 +148,8 @@ const ConfigScreen = ({navigation}) => {
         onUpdate={UserImagepost}
         onDelete={UserImagedelete}
       />
-      {loading && (
-        <View style={styles.footer}>
-          <Text style={styles.loadingtext}>Loading...</Text>
-        </View>
-      )}
+
+      <Loading loading={loading} />
       <AlertComponent />
     </SafeAreaView>
   );

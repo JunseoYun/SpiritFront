@@ -34,6 +34,7 @@ import {
   requestCameraPermission,
 } from '../../../hooks/usePhotopermis';
 import ImagePickermodal from '../../../hooks/ImagePickermodal';
+import Loading from '../../../hooks/Loading';
 
 const MenuUpdateScreen = ({navigation}) => {
   const route = useRoute();
@@ -399,11 +400,8 @@ const MenuUpdateScreen = ({navigation}) => {
           <AlertComponent />
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
-      {loading && (
-        <View style={styles.footer}>
-          <Text style={styles.loadingtext}>Loading...</Text>
-        </View>
-      )}
+
+      <Loading loading={loading} />
     </SafeAreaView>
   );
 };

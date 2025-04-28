@@ -11,6 +11,7 @@ import {
 
 import {UpdateStore} from '../../api/storeApi';
 import {useToast} from '../../context/ToastContext';
+import Loading from '../../hooks/Loading';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -226,11 +227,8 @@ const UpdateStoreDrink = ({navigation, route}) => {
           );
         })}
       </ScrollView>
-      {loading && (
-        <View style={styles.footer}>
-          <Text style={styles.emptyText}>Loading...</Text>
-        </View>
-      )}
+
+      <Loading loading={loading} />
     </View>
   );
 };
