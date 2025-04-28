@@ -34,7 +34,7 @@ const SearchScreen = ({navigation}) => {
   const [selectedMinute, setSelectedMinute] = useState('');
   const [selectedEngCategory, setSelectedEngCategory] = useState('');
   const [searchStoreName, setSearchStoreName] = useState('');
-
+  const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useFocusEffect(
@@ -55,8 +55,14 @@ const SearchScreen = ({navigation}) => {
 
   useEffect(() => {
     const fetchLocation = async () => {
-      const currentLocation = await getLocation(); // 캐시된 위치 가져오기
-      setLocation(currentLocation);
+      setLoading(true);
+      try {
+        const currentLocation = await getLocation(); // 캐시된 위치 가져오기
+        setLocation(currentLocation);
+      } catch (er) {
+      } finally {
+        setLoading(false);
+      }
     };
     fetchLocation();
   }, []);
@@ -68,7 +74,7 @@ const SearchScreen = ({navigation}) => {
   }, [selectedCategory, selectedPeople, selectedHour, selectedMinute]);
 
   const onRefresh = async () => {
-    setIsRefreshing(true); // 새로 고침 시작
+    setIsRefreshing(true);
     try {
       const currentLocation = await getLocation();
       if (currentLocation) {
@@ -79,6 +85,7 @@ const SearchScreen = ({navigation}) => {
       setSelectedCategory('');
       setSelectedEngCategory('');
       setSelectedPeople('');
+      await new Promise(resolve => setTimeout(resolve, 300));
     } catch (error) {
       console.error('초기 로드 오류:', error);
     } finally {
@@ -215,7 +222,7 @@ const SearchScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Loading loading={isRefreshing} />
+      <Loading loading={isRefreshing || loading} />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
           refreshControl={
@@ -258,13 +265,14 @@ const SearchScreen = ({navigation}) => {
             <RecentStoreList
               refresh={isRefreshing}
               setRefresh={setIsRefreshing}
+              loading={loading}
+              setLoading={setLoading}
               navigation={navigation}
               location={location}
             />
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
-
       {/* 하단에 고정된 검색 버튼 */}
       <SearchButton onPress={onPressSearch} title="검색" />
     </SafeAreaView>
