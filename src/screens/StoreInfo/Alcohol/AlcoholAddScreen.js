@@ -12,6 +12,7 @@ import AlcoholAddForm from '../../../components/AlcoholAddScreen/AlcoholAddForm'
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {StoreDrinkcreate} from '../../../api/drinkApi';
 import forbiddenWords from '../../../hooks/forbiddenWords';
+import Loading from '../../../hooks/Loading';
 
 const AlcoholAddScreen = ({navigation}) => {
   const [loading, setLoading] = useState(false);
@@ -160,11 +161,8 @@ const AlcoholAddScreen = ({navigation}) => {
         </Pressable>
       </ScrollView>
       <AlertComponent />
-      {loading && (
-        <View style={styles.footer}>
-          <Text style={styles.loadingtext}>Loading...</Text>
-        </View>
-      )}
+
+      <Loading loading={loading} />
     </SafeAreaView>
   );
 };

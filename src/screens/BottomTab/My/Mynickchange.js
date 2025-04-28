@@ -19,6 +19,7 @@ import filterWords from '../../../hooks/filterWords';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {Userputnickname, check_nickName} from '../../../api/userApi';
 import {useToast} from '../../../context/ToastContext';
+import Loading from '../../../hooks/Loading';
 
 const Mynickchange = () => {
   const route = useRoute();
@@ -142,12 +143,7 @@ const Mynickchange = () => {
   };
 
   if (!userdata) {
-    return (
-      <SafeAreaView
-        style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text>Loading...</Text>
-      </SafeAreaView>
-    );
+    return <Loading loading={true} />;
   }
 
   return (
@@ -236,11 +232,8 @@ const Mynickchange = () => {
           <AlertComponent />
         </SafeAreaView>
       </TouchableWithoutFeedback>
-      {loading && (
-        <View style={styles.footer}>
-          <Text style={styles.loadingtext}>Loading...</Text>
-        </View>
-      )}
+
+      <Loading loading={loading} />
     </KeyboardAvoidingView>
   );
 };

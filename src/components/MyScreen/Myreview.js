@@ -5,6 +5,7 @@ import MyReviewItem from './MyReviewItem';
 import {ReviewRecentGet, ReviewDelete} from '../../api/reviewApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
+import Loading from '../../hooks/Loading';
 
 const MyReview = ({navigation}) => {
   const [myReview, setMyReview] = useState([]); // 검색된 가게 목록
@@ -111,13 +112,14 @@ const MyReview = ({navigation}) => {
           }
         }} // 끝에 도달하면 데이터 불러오기
         onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          loading && !isEnd ? (
-            <View style={styles.footer}>
-              <Text style={styles.emptyText}>Loading...</Text>
-            </View>
-          ) : null
-        }
+        // ListFooterComponent={
+        //   loading && !isEnd ? (
+        //     <View style={styles.footer}>
+        //       <Text style={styles.emptyText}>Loading...</Text>
+        //     </View>
+        //   ) : //aa
+        //   null
+        // }
         ListEmptyComponent={
           !loading && myReview.length === 0 ? (
             <View style={styles.footer}>
@@ -126,6 +128,7 @@ const MyReview = ({navigation}) => {
           ) : null
         }
       />
+      <Loading loading={loading} />
       <AlertComponent />
       {/* 모달 컴포넌트 사용 */}
     </>

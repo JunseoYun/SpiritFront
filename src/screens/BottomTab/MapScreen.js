@@ -22,6 +22,7 @@ import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import generateMapScript from '../../components/MapScreen/generateMapScript';
 import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
 import MapRadius from '../../components/MapScreen/MapRadius';
+import Loading from '../../hooks/Loading';
 
 const {width} = Dimensions.get('window');
 
@@ -384,11 +385,8 @@ const MapScreen = ({navigation}) => {
         navigation={navigation}
         location={location}
       />
-      {loading && (
-        <View style={styles.loading}>
-          <Text style={styles.loadingtext}>Loading...</Text>
-        </View>
-      )}
+
+      <Loading loading={loading} />
     </View>
   );
 };

@@ -22,6 +22,7 @@ import {
   requestCameraPermission,
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
+import Loading from '../../hooks/Loading';
 
 const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -250,11 +251,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
       </BottomSheetScrollView>
 
       <ActionButtons onCancel={handleCancel} onSave={handleSave} />
-      {(loading || !loadingimg) && (
-        <View style={styles.footer}>
-          <Text style={styles.emptyText}>Loading...</Text>
-        </View>
-      )}
+      {(loading || !loadingimg) && <Loading loading={true} />}
     </View>
   );
 };

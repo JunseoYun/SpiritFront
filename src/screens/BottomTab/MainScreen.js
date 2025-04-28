@@ -25,6 +25,7 @@ import {Store_getby_main_banner} from '../../api/storeApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
+import Loading from '../../hooks/Loading';
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
@@ -34,6 +35,7 @@ const MainScreen = ({navigation}) => {
   const [recommReason, setRecommReason] = useState(null);
   // const [isModalVisible, setIsModalVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
   const [storeactiveIndex, setStoreActiveIndex] = useState(null);
   const recentRef = useRef(null);
@@ -69,6 +71,7 @@ const MainScreen = ({navigation}) => {
   useEffect(() => {
     const fetchLocation = async () => {
       try {
+        setLoading(true);
         const currentLocation = await getLocation();
         if (currentLocation) {
           setLocation(currentLocation);
@@ -86,7 +89,10 @@ const MainScreen = ({navigation}) => {
         if (currentAddress) {
           setAddress(currentAddress);
         }
-      } catch (error) {}
+      } catch (error) {
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchLocation();
@@ -94,6 +100,7 @@ const MainScreen = ({navigation}) => {
 
   const onRefresh = async () => {
     setIsRefreshing(true); // 새로 고침 시작
+
     try {
       const currentLocation = await getLocation();
       if (currentLocation) {
@@ -116,7 +123,7 @@ const MainScreen = ({navigation}) => {
     } catch (error) {
       console.error('초기 로드 오류:', error);
     } finally {
-      setIsRefreshing(false); // 새로 고침 종료
+      setIsRefreshing(false); // 5초 끝나고 로딩 종료
     }
   };
 
@@ -177,6 +184,7 @@ const MainScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Loading loading={isRefreshing || loading} />
       <View style={styles.topView}>
         <Text
           style={styles.todayAddress}
@@ -213,7 +221,7 @@ const MainScreen = ({navigation}) => {
           location={location}
           navigation={navigation}
           refresh={isRefreshing}
-          setRefresh={onRefresh}
+          setRefresh={setIsRefreshing}
         />
         <View
           onLayout={event => (recentRef.current = event.nativeEvent.layout)}>

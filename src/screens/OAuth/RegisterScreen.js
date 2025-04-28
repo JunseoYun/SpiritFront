@@ -14,6 +14,7 @@ import forbiddenWords from '../../hooks/forbiddenWords';
 import filterWords from '../../hooks/filterWords';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
+import Loading from '../../hooks/Loading';
 
 const RegisterScreen = ({route, navigation}) => {
   // route.params를 통해 전달된 데이터 접근
@@ -28,6 +29,7 @@ const RegisterScreen = ({route, navigation}) => {
   const {loginauth} = useAuth();
   const {showToast} = useToast();
   const [isSameNick, setIsSameNick] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleCheckNickname = async () => {
     const filteredText = nickname.replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣0-9]/g, '');
@@ -73,6 +75,7 @@ const RegisterScreen = ({route, navigation}) => {
     }
 
     try {
+      setLoading(true);
       const isCheck = await check_nickName(filteredText);
       if (isCheck.isAvailable) {
         showToast('사용 가능한 닉네임입니다.');
@@ -85,6 +88,8 @@ const RegisterScreen = ({route, navigation}) => {
     } catch (error) {
       showToast('중복된 닉네임입니다.');
       setChecking(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -114,6 +119,7 @@ const RegisterScreen = ({route, navigation}) => {
     }
 
     try {
+      setLoading(true);
       // 회원가입이 완료될 때까지 기다림
       await user_register(type, id, nickname);
 
@@ -123,13 +129,6 @@ const RegisterScreen = ({route, navigation}) => {
         navigation.reset({
           index: 0,
           routes: [
-            // {
-            //   name: 'MainBtmbar',
-            //   state: {
-            //     index: 2, // 'MainScreen' 탭 인덱스 (0: 검색, 1: 지역, 2: 홈)
-            //     routes: [{name: 'MainScreen'}],
-            //   },
-            // },
             {name: 'MainBtmbar', state: {routes: [{name: 'MainScreen'}]}},
           ],
         });
@@ -146,6 +145,8 @@ const RegisterScreen = ({route, navigation}) => {
         message: '닉네임 변경 후\n중복검사를 다시 시도해주세요.',
       });
       setNicknameCheck(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -153,10 +154,16 @@ const RegisterScreen = ({route, navigation}) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.titleView}>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Text style={styles.titleNameText}>한잔할까</Text>
-          <Text style={styles.titleText}>에서 활동할</Text>
+          <Text style={styles.titleNameText} allowFontScaling={false}>
+            한잔할까
+          </Text>
+          <Text style={styles.titleText} allowFontScaling={false}>
+            에서 활동할
+          </Text>
         </View>
-        <Text style={styles.titleText}>닉네임을 입력해 주세요</Text>
+        <Text style={styles.titleText} allowFontScaling={false}>
+          닉네임을 입력해 주세요
+        </Text>
       </View>
 
       <View
@@ -219,6 +226,7 @@ const RegisterScreen = ({route, navigation}) => {
       </TouchableOpacity>
 
       <AlertComponent />
+      <Loading loading={loading} />
     </SafeAreaView>
   );
 };

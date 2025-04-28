@@ -2,6 +2,7 @@ import React, {useState, useEffect, useMemo} from 'react';
 import {FlatList, StyleSheet, Text, View} from 'react-native';
 import StoreResultItem from './StoreResultItem';
 import {Store_getby_store} from '../../api/storeApi';
+import Loading from '../../hooks/Loading';
 
 const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
   const [searchingStores, setSearchingStores] = useState([]); // 검색된 가게 목록
@@ -67,43 +68,34 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
   );
 
   return (
-    <FlatList
-      data={searchingStores}
-      renderItem={renderItem}
-      keyExtractor={item => item.id.toString()}
-      contentContainerStyle={styles.fastSearchModalScrollView}
-      initialNumToRender={10}
-      maxToRenderPerBatch={5}
-      windowSize={5}
-      removeClippedSubviews={true}
-      onEndReached={() => {
-        if (!loading && !isEnd && page < totalpage - 1) {
-          setPage(prevPage => {
-            const nextPage = prevPage + 1;
-            filteredStores(nextPage);
-            return nextPage;
-          });
+    <>
+      <FlatList
+        data={searchingStores}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        contentContainerStyle={styles.fastSearchModalScrollView}
+        initialNumToRender={10}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={true}
+        onEndReached={() => {
+          if (!loading && !isEnd && page < totalpage - 1) {
+            setPage(prevPage => {
+              const nextPage = prevPage + 1;
+              filteredStores(nextPage);
+              return nextPage;
+            });
+          }
+        }}
+        onEndReachedThreshold={0.5}
+        ListEmptyComponent={
+          !loading && searchingStores.length === 0 && isword ? (
+            <Text style={styles.emptyText}>검색된 술집이 없습니다</Text>
+          ) : null
         }
-      }}
-      onEndReachedThreshold={0.5}
-      ListFooterComponent={
-        loading &&
-        !isEnd && (
-          <View style={styles.footer}>
-            <Text style={styles.loadingText}>Loading...</Text>
-          </View>
-        ) // searchingStores.length > 0 && page === totalpage - 1 ? (
-        //   <View style={styles.footer}>
-        //     <Text style={styles.emptyText}>더 이상 결과가 없습니다</Text>
-        //   </View>
-        // ) :
-      }
-      ListEmptyComponent={
-        !loading && searchingStores.length === 0 && isword ? (
-          <Text style={styles.emptyText}>검색된 술집이 없습니다</Text>
-        ) : null
-      }
-    />
+      />
+      <Loading loading={loading} />
+    </>
   );
 };
 

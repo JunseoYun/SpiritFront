@@ -21,6 +21,7 @@ import filterWords from '../../hooks/filterWords';
 import {useToast} from '../../context/ToastContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {requestPhotoPermission} from '../../hooks/usePhotopermis';
+import Loading from '../../hooks/Loading';
 
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
@@ -282,11 +283,8 @@ const StoreReviewScreen = ({navigation}) => {
       )}
 
       <AlertComponent />
-      {addloading && (
-        <View style={styles.footerloading}>
-          <Text style={styles.emptyText}>Loading...</Text>
-        </View>
-      )}
+
+      <Loading loading={addloading} />
     </SafeAreaView>
   );
 };

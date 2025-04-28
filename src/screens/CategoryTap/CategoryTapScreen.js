@@ -3,6 +3,7 @@ import {useIsFocused} from '@react-navigation/native';
 import {View, Text, FlatList, StyleSheet, SafeAreaView} from 'react-native';
 import {Store_getby_category} from '../../api/storeApi';
 import StoreItem from '../../components/CategoryTapScreen/StoreItem';
+import Loading from '../../hooks/Loading';
 
 const CategoryTapScreen = ({navigation, route}) => {
   const {categoryname, location} = route.params;
@@ -60,10 +61,8 @@ const CategoryTapScreen = ({navigation, route}) => {
 
   return (
     <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
-      {isInitialLoading ? ( // 초기 로딩 화면
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingtext}>Loading...</Text>
-        </View>
+      {isInitialLoading ? (
+        <Loading loading={isInitialLoading} />
       ) : (
         <FlatList
           data={stores}
@@ -89,9 +88,6 @@ const CategoryTapScreen = ({navigation, route}) => {
           maxToRenderPerBatch={5}
           windowSize={5}
           removeClippedSubviews={true}
-          ListFooterComponent={
-            loading ? <Text style={styles.loadingtext}>Loading...</Text> : null
-          }
           ListEmptyComponent={
             !loading && stores.length === 0 ? (
               <Text style={styles.emptyText}>등록된 가게가 없어요</Text>

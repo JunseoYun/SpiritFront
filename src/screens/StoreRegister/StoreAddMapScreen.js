@@ -20,6 +20,7 @@ import {
   requestLocationPermission,
   handleLocationError,
 } from '../../hooks/useLocation';
+import Loading from '../../hooks/Loading';
 
 const StoreAddMapScreen = ({navigation}) => {
   const route = useRoute();
@@ -196,11 +197,7 @@ const StoreAddMapScreen = ({navigation}) => {
         <Text style={styles.locationbtntext}>이 위치로 주소 설정</Text>
       </TouchableOpacity>
 
-      {loading && (
-        <View style={styles.loading}>
-          <Text style={styles.loadingtext}>Loading...</Text>
-        </View>
-      )}
+      <Loading loading={loading} />
     </>
   );
 };
@@ -240,24 +237,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 10,
     backgroundColor: 'rgba(22, 187, 255, 0.2)',
-  },
-  loading: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  loadingtext: {
-    textAlign: 'center',
-    marginVertical: 20,
-    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
-    fontSize: 20,
-    color: '#c0c0c0',
   },
 });
 

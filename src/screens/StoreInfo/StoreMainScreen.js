@@ -35,6 +35,7 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import {useToast} from '../../context/ToastContext';
 import {useAuth} from '../../context/AuthContext';
+import Loading from '../../hooks/Loading';
 
 const {width} = Dimensions.get('window');
 
@@ -512,11 +513,8 @@ const StoreMainScreen = ({navigation}) => {
         />
       </BottomSheet>
       <AlertComponent />
-      {loading && (
-        <View style={styles.footer}>
-          <Text style={styles.emptyText}>Loading...</Text>
-        </View>
-      )}
+
+      <Loading loading={loading} />
     </>
   );
 };

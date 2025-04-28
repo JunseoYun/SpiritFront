@@ -20,6 +20,7 @@ import VisitTimeModal from '../../../components/SearchScreen/FastSearch/Modal/Vi
 import SearchButton from '../../../components/SearchScreen/SearchButton';
 import RecentStoreList from '../../../components/SearchScreen/RecentStore/RecentStoreList';
 import {useToast} from '../../../context/ToastContext';
+import Loading from '../../../hooks/Loading';
 const SearchScreen = ({navigation}) => {
   const {showToast} = useToast();
   const [location, setLocation] = useState(null);
@@ -35,7 +36,6 @@ const SearchScreen = ({navigation}) => {
   const [searchStoreName, setSearchStoreName] = useState('');
 
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [refresh, setRefresh] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -69,7 +69,6 @@ const SearchScreen = ({navigation}) => {
 
   const onRefresh = async () => {
     setIsRefreshing(true); // 새로 고침 시작
-    setRefresh(true);
     try {
       const currentLocation = await getLocation();
       if (currentLocation) {
@@ -216,6 +215,7 @@ const SearchScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Loading loading={isRefreshing} />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
           refreshControl={
@@ -256,8 +256,8 @@ const SearchScreen = ({navigation}) => {
               postbutton={postbutton}
             />
             <RecentStoreList
-              refresh={refresh}
-              setRefresh={setRefresh}
+              refresh={isRefreshing}
+              setRefresh={setIsRefreshing}
               navigation={navigation}
               location={location}
             />

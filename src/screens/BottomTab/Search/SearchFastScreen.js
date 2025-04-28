@@ -19,6 +19,7 @@ import FastSearch from '../../../components/SearchScreen/FastSearch/FastSearch';
 import CategoryModal from '../../../components/SearchScreen/FastSearch/Modal/CategoryModal';
 import PeopleModal from '../../../components/SearchScreen/FastSearch/Modal/PeopleModal';
 import VisitTimeModal from '../../../components/SearchScreen/FastSearch/Modal/VisitTimeModal';
+import Loading from '../../../hooks/Loading';
 
 const SearchFastScreen = ({navigation}) => {
   const route = useRoute();
@@ -194,15 +195,6 @@ const SearchFastScreen = ({navigation}) => {
     }
   };
 
-  const renderFooter = () => {
-    if (!loading) return null;
-    return (
-      <View style={styles.footer}>
-        <Text style={styles.emptyText}>Loading...</Text>
-      </View>
-    );
-  };
-
   const renderEmptyComponent = () => {
     if (!loading) {
       return <Text style={styles.emptyText}>가게가 없습니다.</Text>;
@@ -253,7 +245,6 @@ const SearchFastScreen = ({navigation}) => {
         windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
         removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
         onEndReachedThreshold={0.5} // 리스트 끝에 가까워지면 데이터를 추가로 가져옵니다.
-        ListFooterComponent={renderFooter} // 로딩 인디케이터
         ListEmptyComponent={renderEmptyComponent}
       />
       <CategoryModal
@@ -282,6 +273,7 @@ const SearchFastScreen = ({navigation}) => {
         onPressClose={onPressTimeModalClose}
         postbutton={postbutton}
       />
+      <Loading loading={loading} />
     </SafeAreaView>
   );
 };
