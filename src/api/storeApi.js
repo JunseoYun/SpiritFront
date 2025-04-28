@@ -126,7 +126,6 @@ export const DeleteStoreImage = async (storeId, image) => {
 // 최근 방문(리뷰) 가게 조회 O
 export const Store_getby_recent = async page => {
   try {
-    console.log('여기인데');
     const response = await axiosInstance.get(`/store/get-by/recent`, {
       params: {
         page, // page 값만 전달 초기 : 0

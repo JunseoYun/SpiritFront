@@ -3,11 +3,18 @@ import {FlatList, StyleSheet, View, Text} from 'react-native';
 import RecentStoreItem from './RecentStoreItem';
 import {Store_getby_recent} from '../../../api/storeApi';
 import {useAuth} from '../../../context/AuthContext';
-const RecentStoreList = ({refresh, setRefresh, navigation, location}) => {
+const RecentStoreList = ({
+  refresh,
+  setRefresh,
+  navigation,
+  location,
+  loading,
+  setLoading,
+}) => {
   const {token} = useAuth();
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalpage, setTotalpage] = useState(0);
 
@@ -75,15 +82,6 @@ const RecentStoreList = ({refresh, setRefresh, navigation, location}) => {
     fetchStores(0, true);
   }, []);
 
-  const renderFooter = () => {
-    if (!loading) return null;
-    return (
-      <View style={styles.footer}>
-        <Text style={styles.emptyText}>Loading...</Text>
-      </View>
-    );
-  };
-
   const renderEmptyComponent = () => {
     if (!loading) {
       return <Text style={styles.emptyText}>최근 방문한 술집이 없습니다.</Text>;
@@ -117,7 +115,6 @@ const RecentStoreList = ({refresh, setRefresh, navigation, location}) => {
           maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
           windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
           removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
-          ListFooterComponent={renderFooter} // 로딩 인디케이터
         />
       )}
 
