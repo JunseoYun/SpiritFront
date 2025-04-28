@@ -25,6 +25,7 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import OperatingHoursPreview from '../../components/StoreAddScreen/OperatingHoursPreview';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
+import Loading from '../../hooks/Loading';
 
 const StoreAddScreen = ({navigation, route}) => {
   const {token} = useAuth();
@@ -47,6 +48,7 @@ const StoreAddScreen = ({navigation, route}) => {
   const storeDrinkRef = useRef(null);
   const storeImageRef = useRef(null);
 
+  const [loading, setLoading] = useState(false);
   const [coords, setCoords] = useState({latitude: 0, longitude: 0});
   const [address, setAddress] = useState('');
   const [detailedAddress, setDetailedAddress] = useState('');
@@ -271,6 +273,7 @@ const StoreAddScreen = ({navigation, route}) => {
     };
 
     try {
+      setLoading(true);
       const response = await StoreRegister(data);
       if (response) {
         showAlert({
@@ -292,6 +295,8 @@ const StoreAddScreen = ({navigation, route}) => {
         title: '등록 실패',
         message: '로그인 상태를 확인해주세요.',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -385,7 +390,7 @@ const StoreAddScreen = ({navigation, route}) => {
         selectedscreenOption={selectedscreenOption}
         is24Hours={is24Hours}
       /> */}
-
+      <Loading loading={loading} />
       <AlertComponent />
     </>
   );
