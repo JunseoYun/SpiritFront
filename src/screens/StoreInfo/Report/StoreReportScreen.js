@@ -10,30 +10,48 @@ import {
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import StoreReportModal from '../../../components/ReportScreen/StoreReportModal';
+import {report_create} from '../../../api/reportApi';
+import {useToast} from '../../../context/ToastContext';
+import Loading from '../../../hooks/Loading';
+
 const StoreReportScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storeName} = route.params;
 
   // 신고 사유 목록
   const proposeReasons = [
-    '잘못된 메뉴 정보 (가격 오류, 허위 정보 등)',
-    '잘못된 주류 정보 (가격 오류, 허위 정보 등)',
+    '잘못된 가게 정보',
+    '잘못된 메뉴 정보',
+    '잘못된 주류 정보',
     '폐업 또는 존재하지 않음',
     '중복된 매장',
-    '기타 제보 사항',
   ];
   const reportReasons = [
-    '부적절한 언어 사용 (음란성, 욕설, 비방 등)',
-    '플랫폼 가이드라인 위반 (허위 정보, 광고 등)',
+    '부적절한 언어 사용',
+    '부적절한 사진 게시',
+    '플랫폼 가이드라인 위반',
     '기타 신고 문제',
   ];
 
+  const reasonMap = {
+    '잘못된 가게 정보': 'INCORRECT_STORE_INFO',
+    '잘못된 메뉴 정보': 'INCORRECT_MENU_INFO',
+    '잘못된 주류 정보': 'INCORRECT_DRINK_INFO',
+    '폐업 또는 존재하지 않음': 'NON_EXISTENT_STORE',
+    '중복된 매장': 'DUPLICATE_STORE',
+    '부적절한 언어 사용': 'INAPPROPRIATE_LANGUAGE',
+    '부적절한 사진 게시': 'INAPPROPRIATE_PHOTO',
+    '플랫폼 가이드라인 위반': 'VIOLATION_OF_GUIDELINES',
+    '기타 신고 문제': 'ETC',
+  };
+  const {showToast} = useToast();
   const [selectedProposeReason, setSelectedProposeReason] = useState(null);
   const [selectedReportReason, setSelectedReportReason] = useState(null);
   const [customReason, setCustomReason] = useState(''); // 기타 문제 입력 상태
   const [customProposeReason, setCustomProposeReason] = useState(''); // 기타 제보 입력 상태
 
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // 제보 사유 선택
   const handleSelectProposeReason = reason => {
@@ -59,18 +77,45 @@ const StoreReportScreen = ({navigation}) => {
   };
 
   // 신고 제출 처리
-  const handleSubmitReport = () => {
+  const handleSubmitReport = async () => {
     setIsModalVisible(false);
-    const finalReason =
-      selectedReportReason === '기타 신고 문제'
-        ? customReason
-        : selectedProposeReason === '기타 제보 사항'
-        ? customProposeReason
-        : selectedReportReason || selectedProposeReason;
+    setLoading(true);
 
-    console.log(`매장 ID: ${storeId}, 제보·신고 사유: ${finalReason}`);
-    alert('제보·신고가 접수되었습니다.');
-    navigation.goBack(); // 신고 후 이전 화면으로 이동
+    let reportReasonCode = '';
+    let descriptionText = '';
+
+    if (selectedReportReason) {
+      if (selectedReportReason === '기타 신고 문제') {
+        reportReasonCode = 'ETC';
+        descriptionText = customReason; // 직접 입력한 기타 신고 내용
+      } else {
+        reportReasonCode = reasonMap[selectedReportReason];
+        descriptionText = selectedReportReason; // 한글 그대로
+      }
+    } else if (selectedProposeReason) {
+      if (selectedProposeReason === '기타 제보 사항') {
+        reportReasonCode = 'ETC';
+        descriptionText = customProposeReason; // 직접 입력한 기타 제보 내용
+      } else {
+        reportReasonCode = reasonMap[selectedProposeReason];
+        descriptionText = selectedProposeReason; // 한글 그대로
+      }
+    }
+
+    const payloadData = {
+      reportTarget: 'STORE',
+      targetId: storeId,
+      reportReason: reportReasonCode,
+      description: descriptionText,
+    };
+    try {
+      await report_create(payloadData);
+      navigation.goBack();
+    } catch (error) {
+      showToast('잠시 후 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isSubmitDisabled =
@@ -108,7 +153,7 @@ const StoreReportScreen = ({navigation}) => {
             </Pressable>
           ))}
         </View>
-        {selectedProposeReason === '기타 제보 사항' && (
+        {/* {selectedProposeReason === '기타 제보 사항' && (
           <TextInput
             style={styles.textInput}
             placeholder="제보 내용을 입력하세요"
@@ -117,7 +162,7 @@ const StoreReportScreen = ({navigation}) => {
             onChangeText={setCustomProposeReason}
             multiline
           />
-        )}
+        )} */}
         {/* 신고 */}
         <View style={styles.reasonView}>
           <Text style={styles.reasonTitle}>신고</Text>
@@ -195,6 +240,7 @@ const StoreReportScreen = ({navigation}) => {
         startUpdate={handleSubmitReport}
         isPropose={!!selectedProposeReason} // 제보인지 여부 전달
       />
+      <Loading loading={loading} />
     </SafeAreaView>
   );
 };

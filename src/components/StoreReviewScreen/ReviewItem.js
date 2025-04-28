@@ -52,7 +52,13 @@ const ReviewItem = ({item, navigation}) => {
           resizeMode={FastImage.resizeMode.cover}
         />
         <View style={styles.reviewHeaderText}>
-          <Text style={styles.writerName}>{item.writerNickname}</Text>
+          <Text
+            style={[
+              styles.writerName,
+              item.writerNickname === '탈퇴한 사용자' && {color: '#999'}, // 추가
+            ]}>
+            {item.writerNickname}
+          </Text>
           <View style={styles.infoView}>
             <FontAwesomeIcon name="star" size={17} color="#FCC104" />
             <Text style={styles.reviewInfo}> {item.rate}</Text>
@@ -91,14 +97,14 @@ const ReviewItem = ({item, navigation}) => {
       )}
       <View style={styles.bottomView}>
         <Text style={styles.datetimeText}>작성 {formattedCreatedDate}</Text>
-        {/* <Pressable
+        <Pressable
           onPress={() => {
             navigation.navigate('ReviewReportScreen', {
               reviewId: item.id,
             });
           }}>
           <Text style={styles.datetimeText}>신고하기</Text>
-        </Pressable> */}
+        </Pressable>
       </View>
     </View>
   );
@@ -131,7 +137,7 @@ const styles = StyleSheet.create({
   },
   writerName: {
     fontFamily: 'Pretendard-SemiBold',
-    fontSize: 18,
+    fontSize: 17,
     color: '#181A1A',
   },
   infoView: {
