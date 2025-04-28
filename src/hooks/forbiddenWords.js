@@ -329,6 +329,9 @@ const forbiddenWords = [
   's*x',
   'g0chu',
   'b0ji',
+
+  //기타
+  '탈퇴한 사용자',
 ];
 
 export default forbiddenWords;

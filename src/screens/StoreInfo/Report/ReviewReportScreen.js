@@ -10,6 +10,9 @@ import {
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import ReportModal from '../../../components/ReportScreen/ReportModal';
+import {useToast} from '../../../context/ToastContext';
+import Loading from '../../../hooks/Loading';
+import {report_create} from '../../../api/reportApi';
 
 const ReviewReportScreen = ({navigation}) => {
   const route = useRoute();
@@ -17,17 +20,22 @@ const ReviewReportScreen = ({navigation}) => {
 
   // 신고 사유 목록
   const reasons = [
-    '허위 정보',
-    '부적절한 언어 사용 (음란성, 욕설, 비방 등)',
-    '플랫폼 가이드라인 위반 (허위 정보, 광고 등)',
-    '광고 및 스팸',
-    '개인정보 유출',
+    '부적절한 언어 사용',
+    '부적절한 사진 게시',
+    '플랫폼 가이드라인 위반',
     '기타 문제',
   ];
-
+  const reasonMap = {
+    '부적절한 언어 사용': 'INAPPROPRIATE_LANGUAGE',
+    '부적절한 사진 게시': 'INAPPROPRIATE_PHOTO',
+    '플랫폼 가이드라인 위반': 'VIOLATION_OF_GUIDELINES',
+    '기타 신고 문제': 'ETC',
+  };
+  const {showToast} = useToast();
   const [selectedReason, setSelectedReason] = useState(null);
   const [customReason, setCustomReason] = useState(''); // 기타 문제 입력 상태
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // 신고 사유 선택
   const handleSelectReason = reason => {
@@ -51,13 +59,37 @@ const ReviewReportScreen = ({navigation}) => {
   };
 
   // 신고 제출 처리
-  const handleSubmitReport = () => {
+  const handleSubmitReport = async () => {
     setIsModalVisible(false);
-    const finalReason =
-      selectedReason === '기타 문제' ? customReason : selectedReason;
-    console.log(`리뷰 ID: ${reviewId}, 신고 사유: ${finalReason}`);
-    alert('신고가 접수되었습니다.');
-    navigation.goBack(); // 신고 후 이전 화면으로 이동
+    setLoading(true);
+
+    let reportReasonCode = '';
+    let descriptionText = '';
+
+    if (selectedReason) {
+      if (selectedReason === '기타 신고 문제') {
+        reportReasonCode = 'ETC';
+        descriptionText = customReason; // 직접 입력한 기타 신고 내용
+      } else {
+        reportReasonCode = reasonMap[selectedReason];
+        descriptionText = selectedReason; // 한글 그대로
+      }
+    }
+    const payloadData = {
+      reportTarget: 'REVIEW',
+      targetId: reviewId,
+      reportReason: reportReasonCode,
+      description: descriptionText,
+    };
+
+    try {
+      await report_create(payloadData);
+      navigation.goBack();
+    } catch (error) {
+      showToast('잠시 후 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -130,6 +162,7 @@ const ReviewReportScreen = ({navigation}) => {
         onPressModalClose={() => setIsModalVisible(false)}
         startUpdate={handleSubmitReport} // 🚀 모달 확인 버튼 클릭 시 신고 제출
       />
+      <Loading loading={loading} />
     </SafeAreaView>
   );
 };

@@ -50,12 +50,12 @@ const StoreModal = ({
                 onPress={() => handleClose(startUpdate)}>
                 <Text style={styles.modalButtonText}>매장 수정</Text>
               </Pressable>
-              {/* <Pressable
+              <Pressable
                 style={styles.reportButton}
                 onPress={() => handleClose(handleReport)}>
                 <Text style={styles.modalButtonText}>매장 제보·신고</Text>
-              </Pressable> */}
-              {/* <View style={styles.line}></View> */}
+              </Pressable>
+              <View style={styles.line}></View>
               <Pressable
                 onPress={() => handleClose()}
                 style={styles.closeButton}>
