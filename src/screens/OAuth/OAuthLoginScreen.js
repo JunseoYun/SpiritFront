@@ -110,9 +110,13 @@ const OAuthLoginScreen = ({navigation}) => {
   return (
     <SafeAreaView style={styles.background}>
       <View style={styles.logoView}>
-        <Text style={styles.Logo}>한잔할까</Text>
+        <Text style={styles.Logo} allowFontScaling={false}>
+          한잔할까
+        </Text>
 
-        <Text style={styles.subText}>한잔하고 싶은 당신을 위한 서비스</Text>
+        <Text style={styles.subText} allowFontScaling={false}>
+          한잔하고 싶은 당신을 위한 서비스
+        </Text>
       </View>
       <View style={styles.loginView}>
         <View
@@ -122,7 +126,9 @@ const OAuthLoginScreen = ({navigation}) => {
             marginBottom: 10,
           }}>
           <View style={styles.line} />
-          <Text style={styles.loginText}>다음으로 시작하기</Text>
+          <Text style={styles.loginText} allowFontScaling={false}>
+            다음으로 시작하기
+          </Text>
           <View style={styles.line} />
         </View>
         <TouchableOpacity
@@ -136,7 +142,9 @@ const OAuthLoginScreen = ({navigation}) => {
                 resizeMode={FastImage.resizeMode.contain}
               />
             </View>
-            <Text style={styles.googleText}>카카오 로그인</Text>
+            <Text style={styles.googleText} allowFontScaling={false}>
+              카카오 로그인
+            </Text>
             <View style={{width: 30}} />
           </View>
         </TouchableOpacity>
@@ -151,7 +159,9 @@ const OAuthLoginScreen = ({navigation}) => {
                 resizeMode={FastImage.resizeMode.contain}
               />
             </View>
-            <Text style={styles.googleText}>Google 로그인</Text>
+            <Text style={styles.googleText} allowFontScaling={false}>
+              Google 로그인
+            </Text>
             <View style={{width: 30}} />
           </View>
         </TouchableOpacity>
@@ -167,7 +177,9 @@ const OAuthLoginScreen = ({navigation}) => {
                   resizeMode={FastImage.resizeMode.contain}
                 />
               </View>
-              <Text style={styles.appleText}>Apple 로그인</Text>
+              <Text style={styles.appleText} allowFontScaling={false}>
+                Apple 로그인
+              </Text>
               <View style={{width: 30, marginTop: 20}} />
             </View>
           </TouchableOpacity>
@@ -175,7 +187,9 @@ const OAuthLoginScreen = ({navigation}) => {
           <View style={{height: 50, marginTop: 20}} />
         )}
         <TouchableOpacity onPress={unLoginHandle}>
-          <Text style={styles.unLoginText}>비로그인으로 시작하기</Text>
+          <Text style={styles.unLoginText} allowFontScaling={false}>
+            비로그인으로 시작하기
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
