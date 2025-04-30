@@ -9,7 +9,7 @@ export const get_address = async (latitude, longitude) => {
     return response.data.data;
   } catch (error) {
     functionError(error);
-    return null; // 에러 발생 시 null 반환
+    return null;
   }
 };
 
