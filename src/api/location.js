@@ -4,7 +4,7 @@ import {functionError} from './errorHandler';
 export const get_address = async (latitude, longitude) => {
   try {
     const response = await axiosInstance.get('/location/get-address', {
-      params: {latitude, longitude}, // ✅ GET 요청에서는 params 사용
+      params: {latitude, longitude},
     });
     return response.data.data;
   } catch (error) {
