@@ -40,7 +40,7 @@ const CategoryListTabbar = ({route}) => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        navigation.goBack(); // 이전 화면으로 돌아가기
+        navigation.goBack();
         return true;
       };
 
