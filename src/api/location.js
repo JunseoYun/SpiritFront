@@ -9,19 +9,21 @@ export const get_address = async (latitude, longitude) => {
     return response.data.data;
   } catch (error) {
     functionError(error);
-    return null; // 에러 발생 시 null 반환
+    return null;
   }
 };
 
 export const get_coordinate = async address => {
   try {
     const response = await axiosInstance.get('/location/get-coordinate', {
-      params: {address}, // ✅ GET 요청에서는 params 사용
+      params: {
+        address,
+      },
     });
     console.log(response.data.data);
     return response.data.data;
   } catch (error) {
     functionError(error);
-    return null; // 에러 발생 시 null 반환
+    return null;
   }
 };
