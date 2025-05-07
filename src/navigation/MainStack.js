@@ -195,8 +195,10 @@ export default function MainStack() {
       <Stack.Screen
         name="StoreSearchScreen"
         component={StoreSearchScreen}
-        options={({navigation}) => ({
-          title: '매장 조회',
+        options={({navigation, route}) => ({
+          title: `${
+            route.params?.index === 0 ? '매장 등록 조회' : '사장님 인증 조회'
+          }`,
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -220,7 +222,7 @@ export default function MainStack() {
         name="StoreCheckScreen"
         component={StoreCheckScreen}
         options={({navigation}) => ({
-          title: '매장 권한 신청 1/2',
+          title: '사장님 인증 신청 1/2',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -244,7 +246,7 @@ export default function MainStack() {
         name="StoreAuthorityScreen"
         component={StoreAuthorityScreen}
         options={({navigation}) => ({
-          title: '매장 권한 신청 2/2',
+          title: '사장님 인증 신청 2/2',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',

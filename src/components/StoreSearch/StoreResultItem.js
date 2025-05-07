@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useStoreStatus from '../../hooks/useStoreStatus';
-
+import Feather from 'react-native-vector-icons/Feather';
 const StoreResultItem = ({store, navigation, index}) => {
   const {translateCategory} = useCategoryTranslation();
 
@@ -85,22 +85,6 @@ const StoreResultItem = ({store, navigation, index}) => {
               ellipsizeMode="tail">
               {store.name}
             </Text>
-            {index === 1 && (
-              <Pressable
-                key={store.id}
-                onPress={() => {
-                  navigation.navigate('StoreCheckScreen', {
-                    storeId: store.id,
-                    storeName: store.name,
-                    storeAddress: store.locationDto.address,
-                    storeAddressDetail: store.locationDto.addressDetail,
-                    storeContact: store.contact,
-                  });
-                }}
-                style={styles.badge}>
-                <Text style={styles.badgeText}>권한신청</Text>
-              </Pressable>
-            )}
           </View>
 
           <Text
@@ -126,8 +110,26 @@ const StoreResultItem = ({store, navigation, index}) => {
           </View>
         </View>
       </View>
+      {index === 1 && (
+        <Pressable
+          onPress={() => {
+            navigation.navigate('StoreCheckScreen', {
+              storeId: store.id,
+              storeName: store.name,
+              storeAddress: store.locationDto.address,
+              storeAddressDetail: store.locationDto.addressDetail,
+              storeContact: store.contact,
+            });
+          }}
+          style={styles.applyButton}>
+          <Text style={styles.applyButtonText}>사장님 인증하기</Text>
+          <View style={{marginRight: 18}}>
+            <Feather name="chevron-right" size={23} color="#45C9FF" />
+          </View>
+        </Pressable>
+      )}
 
-      <View style={styles.horizontalDivider} />
+      {/* <View style={styles.horizontalDivider} /> */}
     </Pressable>
   );
 };
@@ -178,16 +180,30 @@ const styles = StyleSheet.create({
     color: '#333',
     width: '100%',
   },
-  badge: {
-    backgroundColor: '#16BBFF',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 5,
+  applyButton: {
+    alignSelf: 'center', // 가운데 정렬
+    marginTop: 10,
+    width: '90%', // 넓게
+    paddingVertical: 14, // 버튼 높이 증가
+    backgroundColor: '#fff', // 진한 파랑 (iOS 스타일)
+    borderRadius: 12, // 라운드 크게
+    elevation: 2,
+    shadowColor: '#0D6C8C',
+    shadowOpacity: 0.15,
+    shadowOffset: {width: 0, height: 2},
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#45C9FF',
   },
-  badgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontFamily: 'Pretendard-SemiBold',
+
+  applyButtonText: {
+    color: '#45C9FF',
+    fontSize: 16, // ✅ 글씨 크게
+    fontFamily: 'Pretendard-Bold',
+    textAlign: 'left',
+    marginLeft: 18,
   },
   StoreCategoryList: {
     flexDirection: 'row',

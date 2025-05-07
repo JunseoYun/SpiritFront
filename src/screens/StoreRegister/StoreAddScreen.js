@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   StyleSheet,
   View,
+  KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
@@ -160,11 +161,11 @@ const StoreAddScreen = ({navigation, route}) => {
       return;
     }
 
-    if (!imageUris.length) {
-      setError('StoreImage');
-      scrollToError(storeImageRef);
-      return;
-    }
+    // if (!imageUris.length) {
+    //   setError('StoreImage');
+    //   scrollToError(storeImageRef);
+    //   return;
+    // }
     showAlert({
       title: '매장 등록',
       message: '매장을 등록하시겠습니까?',
@@ -301,7 +302,11 @@ const StoreAddScreen = ({navigation, route}) => {
   };
 
   return (
-    <>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{flex: 1}}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 0} // iOS의 경우 적절한 offset 설정
+    >
       <ScrollView
         ref={scrollViewRef}
         style={styles.container}
@@ -392,7 +397,7 @@ const StoreAddScreen = ({navigation, route}) => {
       /> */}
       <Loading loading={loading} />
       <AlertComponent />
-    </>
+    </KeyboardAvoidingView>
   );
 };
 

@@ -146,8 +146,12 @@ const ImageSlider = ({
           )}
         </View>
       ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>이미지 없음</Text>
+        <View style={styles.noneImageContainer}>
+          <FastImage
+            style={[styles.noneImage, {opacity: 0.7}]} // ✅ 불투명도 추가
+            source={require('../../assets/store.png')}
+            resizeMode={FastImage.resizeMode.cover}
+          />
         </View>
       )}
     </View>
@@ -162,6 +166,12 @@ const styles = StyleSheet.create({
     width: width,
     height: 270,
   },
+  noneImageContainer: {
+    width: width,
+    height: 270,
+    justifyContent: 'center',
+    backgroundColor: '#F9FAFB',
+  },
   icon: {
     position: 'absolute',
     top: 120,
@@ -172,6 +182,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+  },
+  noneImage: {
+    width: 197,
+    height: 155,
+    alignSelf: 'center',
   },
   indicatorContainer: {
     position: 'absolute',

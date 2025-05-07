@@ -22,6 +22,8 @@ import {
   DeleteStoreImage,
   UpdateStoreImage,
 } from '../../api/storeApi';
+
+import Feather from 'react-native-vector-icons/Feather';
 import StoreMenuScreen from './StoreMenuScreen';
 import StoreAlcoholScreen from './StoreAlcoholScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
@@ -36,6 +38,7 @@ import forbiddenWords from '../../hooks/forbiddenWords';
 import {useToast} from '../../context/ToastContext';
 import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
+import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
 
 const {width} = Dimensions.get('window');
 
@@ -327,7 +330,6 @@ const StoreMainScreen = ({navigation}) => {
       prevAlcohols.filter(alcohol => alcohol.id !== id),
     );
   };
-
   const imageSliderData =
     storedata.imgUrlList?.map(url => ({imageUrl: url})) || [];
 
@@ -361,7 +363,7 @@ const StoreMainScreen = ({navigation}) => {
   return (
     <>
       <View style={{backgroundColor: 'white'}}>
-        {!isUpdate && (
+        {!isUpdate && storedata?.imgUrlList && (
           <StoreHeader
             navigation={navigation}
             headerBackgroundColor={headerBackgroundColor}
@@ -377,6 +379,16 @@ const StoreMainScreen = ({navigation}) => {
             handleBottomClose={handleBottomClose}
           />
         )}
+        {(!storedata?.imgUrlList || storedata.imgUrlList.length === 0) &&
+          !isUpdate && (
+            <NonImageHeader
+              navigation={navigation}
+              headerBackgroundColor={'#fff'}
+              iconColor={'#333'}
+              title={storedata.name}
+            />
+          )}
+
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView
@@ -392,31 +404,54 @@ const StoreMainScreen = ({navigation}) => {
               backgroundColor: 'white',
               width: '100%',
               paddingBottom: 100,
+              paddingTop:
+                !storedata?.imgUrlList?.length > 0
+                  ? Platform.OS === 'ios'
+                    ? 80
+                    : 30
+                  : undefined,
             }}
             keyboardShouldPersistTaps="always"
             scrollEnabled={true}
             contentContainerStyle={{flexGrow: 1}}>
             <TouchableWithoutFeedback onPress={handleBottomClose}>
               <View>
-                <View
-                  style={[
-                    {
-                      height: 270, // 숫자 값은 따옴표 없이 사용
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'black',
-                    },
-                    isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
-                  ]}>
-                  <ImageSlider
-                    images={imageSliderData}
-                    interval={4000}
-                    isUpdate={isUpdate}
-                    handleBottomOpen={handleBottomOpen}
-                    onEditKey={handleEditKey}
-                    onEditValue={handleEditValue}
-                  />
-                </View>
+                {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
+                  <View
+                    style={[
+                      {
+                        height: 270, // 숫자 값은 따옴표 없이 사용
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'black',
+                      },
+                      isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
+                      isUpdate &&
+                        !storedata?.imgUrlList?.length > 0 && {
+                          marginTop: Platform.OS === 'ios' ? 20 : 30,
+                        },
+                    ]}>
+                    <ImageSlider
+                      images={imageSliderData}
+                      interval={4000}
+                      isUpdate={isUpdate}
+                      handleBottomOpen={handleBottomOpen}
+                      onEditKey={handleEditKey}
+                      onEditValue={handleEditValue}
+                    />
+                  </View>
+                )}
+                {!storedata?.imgUrlList?.length > 0 && !isUpdate && (
+                  <Pressable
+                    style={styles.addImageButton}
+                    onPress={startUpdate}>
+                    <Text style={styles.addImageText}>
+                      매장 이미지 추가하기
+                    </Text>
+                    <Feather name="chevron-right" size={23} color="#999" />
+                  </Pressable>
+                )}
+
                 <StoreMainInfo
                   storedata={storedata}
                   onModalOpen={() => setIsModalVisible(true)}
@@ -553,7 +588,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     borderRadius: 10,
     elevation: 3, // Android shadow
     shadowColor: '#000', // iOS shadow
@@ -565,6 +600,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#fff',
+  },
+  addImageButton: {
+    marginTop: 20,
+    marginHorizontal: 18,
+    paddingTop: 10,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  addImageText: {
+    color: '#999',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

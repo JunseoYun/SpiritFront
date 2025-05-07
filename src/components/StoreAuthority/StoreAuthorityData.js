@@ -2,9 +2,9 @@ import React, {useState} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
 
-const StoreAuthorityData = ({storeData, setStoreData}) => {
+const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
-  const [errors, setErrors] = useState({}); // 각 필드별 에러 메시지 상태
+  // const [errors, setErrors] = useState({}); // 각 필드별 에러 메시지 상태
 
   const handleChange = (key, value) => {
     // 금지 단어 검사
@@ -25,7 +25,7 @@ const StoreAuthorityData = ({storeData, setStoreData}) => {
     // 에러 메시지 업데이트
     setErrors(prevErrors => ({
       ...prevErrors,
-      [key]: containsForbiddenWord ? '비속어 사용 금지' : null,
+      [key]: containsForbiddenWord ? '가이드라인 위반' : null,
     }));
 
     // 비속어가 없을 경우에만 데이터 업데이트

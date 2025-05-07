@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181A1A',
-    width: 140,
+    width: '100%',
   },
   storRate: {
     fontSize: 13,

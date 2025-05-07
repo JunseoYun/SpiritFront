@@ -7,6 +7,8 @@ import {
   View,
   ScrollView,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
@@ -163,8 +165,8 @@ const StoreAuthorityScreen = ({navigation}) => {
   // 이미지 선택 함수: 갤러리에서 이미지 선택 후 state 업데이트
   const handlePickCertificate = () => {
     ImagePicker.openPicker({
-      width: 800,
-      height: 600,
+      width: 768,
+      height: 1024,
       mediaType: 'photo',
       cropping: true,
       freeStyleCropEnabled: true,
@@ -186,86 +188,98 @@ const StoreAuthorityScreen = ({navigation}) => {
   }, [navigation, handleNext]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ProgressBar progress={1} />
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        {/* 진행 바: 100% 진행 */}
-        <StoreInfoCard storeData={storeData} />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{flex: 1}}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
+    >
+      <SafeAreaView style={styles.container}>
+        <ProgressBar progress={1} />
+        <ScrollView contentContainerStyle={styles.contentContainer}>
+          {/* 진행 바: 100% 진행 */}
+          <StoreInfoCard storeData={storeData} />
 
-        {/* 사업자등록증 첨부 */}
-        <Text style={styles.sectionTitle}>사업자등록증 첨부*</Text>
-        <View style={styles.certificateContainer}>
-          <Pressable
-            style={styles.certificateButton}
-            onPress={handlePickCertificate}>
-            <Text style={styles.certificateButtonText}>이미지 선택하기</Text>
-          </Pressable>
-          {business_registration_certificate && (
-            <Image
-              source={{uri: business_registration_certificate}}
-              style={styles.certificateImage}
-              resizeMode="contain"
-            />
-          )}
-        </View>
+          {/* 사업자등록증 첨부 */}
+          <Text style={styles.sectionTitle}>사업자등록증 첨부*</Text>
+          <View style={styles.certificateContainer}>
+            <Pressable
+              style={styles.certificateButton}
+              onPress={handlePickCertificate}>
+              <Text style={styles.certificateButtonText}>이미지 선택하기</Text>
+            </Pressable>
+            {business_registration_certificate && (
+              <Image
+                source={{uri: business_registration_certificate}}
+                style={styles.certificateImage}
+                resizeMode="contain"
+              />
+            )}
+          </View>
 
-        <StoreOwnerInput
-          owners={owners}
-          hasCoRepresentative={hasCoRepresentative}
-          setHasCoRepresentative={setHasCoRepresentative}
-          addOwner={addOwner}
-          updateOwnerName={updateOwnerName}
-          removeOwner={removeOwner}
-        />
+          <StoreOwnerInput
+            owners={owners}
+            hasCoRepresentative={hasCoRepresentative}
+            setHasCoRepresentative={setHasCoRepresentative}
+            addOwner={addOwner}
+            updateOwnerName={updateOwnerName}
+            removeOwner={removeOwner}
+          />
 
-        <StoreBusinessData
-          businessData={businessData}
-          setBusinessData={setBusinessData}
-        />
-        <StoreAddress
-          address={storeAddressData.storeAddress}
-          detailedAddress={storeAddressData.storeAddressDetail}
-          setDetailedAddress={value =>
-            setStoreAddressData(prevData => ({
-              ...prevData,
-              storeAddressDetail: value,
-            }))
-          }
-          navigation={navigation}
-          onAddressSelect={handleAddressSelect}
-          index={1}
-        />
-        <Pressable style={styles.savebutton} onPress={handleNext}>
+          <StoreBusinessData
+            businessData={businessData}
+            setBusinessData={setBusinessData}
+          />
+          <StoreAddress
+            address={storeAddressData.storeAddress}
+            detailedAddress={storeAddressData.storeAddressDetail}
+            setDetailedAddress={value =>
+              setStoreAddressData(prevData => ({
+                ...prevData,
+                storeAddressDetail: value,
+              }))
+            }
+            navigation={navigation}
+            onAddressSelect={handleAddressSelect}
+            index={1}
+          />
+          {/* <Pressable style={styles.savebutton} onPress={handleNext}>
           <Text style={styles.savebuttontext}>신청</Text>
-        </Pressable>
-        {/* 안내 멘트 */}
-        <View style={styles.instructionsContainer}>
-          <Text style={styles.instructions}>
-            정확한 신청자 정보를 입력해 주세요.{'\n'}
-            입력된 정보는 매장 정보 확인에만 사용됩니다.{'\n'}
-            무차별적인 신청은 엄격히 금지되며, 부정확한 정보나 타인의 정보를
-            기재할 경우 서비스 이용에 제한을 받을 수 있습니다.{'\n'}
-            모든 정보는 철저히 검토되며, 부정확한 정보가 확인될 경우 신청이
-            반려될 수 있습니다.
-          </Text>
-        </View>
-      </ScrollView>
+        </Pressable> */}
+          {/* 안내 멘트 */}
+          <View style={styles.instructionsContainer}>
+            <Text style={styles.instructions}>
+              정확한 신청자 정보를 입력해 주세요.{'\n'}
+              입력된 정보는 매장 정보 확인에만 사용됩니다.{'\n'}
+              무차별적인 신청은 엄격히 금지되며, 부정확한 정보나 타인의 정보를
+              기재할 경우 서비스 이용에 제한을 받을 수 있습니다.{'\n'}
+              모든 정보는 철저히 검토되며, 부정확한 정보가 확인될 경우 신청이
+              반려될 수 있습니다.
+            </Text>
+          </View>
+        </ScrollView>
 
-      <AlertComponent />
-      <StoreAuthorityModal
-        visible={isModalVisible}
-        onClose={() => setModalVisible(false)}
-        onSubmit={handleSubmit}
-        data={{
-          storeData,
-          owners,
-          hasCoRepresentative,
-          businessData,
-          business_certificate: business_registration_certificate,
-          storeAddressData,
-        }}
-      />
-    </SafeAreaView>
+        <AlertComponent />
+        <StoreAuthorityModal
+          visible={isModalVisible}
+          onClose={() => setModalVisible(false)}
+          onSubmit={handleSubmit}
+          data={{
+            storeData,
+            owners,
+            hasCoRepresentative,
+            businessData,
+            business_certificate: business_registration_certificate,
+            storeAddressData,
+          }}
+        />
+
+        <View style={styles.storeAddTextview}>
+          <Pressable style={styles.storeAddButtonsearch} onPress={handleNext}>
+            <Text style={styles.storeAddText}>신청하기</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -298,29 +312,37 @@ const styles = StyleSheet.create({
   },
   certificateButtonText: {color: '#fff', fontSize: 16, fontWeight: '600'},
   certificateImage: {width: '100%', height: 200, marginTop: 10},
-  savebutton: {
-    marginTop: 50,
-    alignSelf: 'center',
-    alignItems: 'center',
-    width: '90%',
-    marginVertical: 7,
-    backgroundColor: '#16BBFF',
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginBottom: 30,
-  },
-  savebuttontext: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
   instructionsContainer: {
     backgroundColor: '#f1f1f1',
     borderRadius: 8,
     padding: 16,
     marginHorizontal: 18,
+    marginTop: 30,
   },
   instructions: {fontSize: 15, color: '#999', lineHeight: 24},
+  storeAddTextview: {
+    borderTopWidth: 0.5,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  storeAddButtonsearch: {
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#45C9FF',
+    borderRadius: 10,
+    elevation: 3, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  storeAddText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+  },
 });
 
 export default StoreAuthorityScreen;

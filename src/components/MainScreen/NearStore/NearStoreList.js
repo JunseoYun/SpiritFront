@@ -107,7 +107,7 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={[
           styles.horizontalFlatListContent,
-          {paddingRight: 18, paddingLeft: 10},
+          {paddingRight: 18, paddingLeft: 10, paddingBottom: 10},
         ]} // 오른쪽 여백 추가
         onEndReached={() => {
           if (hasMore && !loading && page < totalpage - 1) {
@@ -138,12 +138,14 @@ const styles = StyleSheet.create({
   storeTextView: {
     width: '100%',
     marginLeft: 20,
-    marginTop: 15,
+
+    marginTop: 20,
   },
   storeText: {
     fontSize: 18,
-    fontFamily: 'Pretendard-Bold',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#181a1a',
+    marginTop: 10,
   },
   storeSubText: {
     fontSize: 15,

@@ -70,9 +70,7 @@ const StoreSearchScreen = ({navigation}) => {
         onPress={handleSearch}
       />
       <Text style={styles.infoText}>
-        {index === 0
-          ? '매장 등록 전 한잔할까에 등록된 매장인지 확인해보세요!'
-          : '권한 신청 전 한잔할까에 등록된 매장인지 확인해보세요!'}
+        한잔할까에 등록된 매장인지 확인해보세요!
       </Text>
 
       <StoreResultList
