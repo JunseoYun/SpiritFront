@@ -63,10 +63,9 @@ const CategoryListTabbar = ({route}) => {
     <Tab.Navigator
       initialRouteName={screen}
       screenOptions={{
-        lazy: true,
-        lazyPreloadDistance: 0,
+        lazy: false,
         tabBarScrollEnabled: true,
-        tabBarItemStyle: {width: 100},
+        tabBarItemStyle: {width: 90},
 
         swipeEnabled: true,
         unmountOnBlur: false,

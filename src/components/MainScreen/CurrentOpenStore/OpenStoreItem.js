@@ -81,42 +81,6 @@ const OpenStoreItem = ({store, location, navigation}) => {
             )}
           </ImageBackground>
         </View>
-        {/* {endtime && !store?.isAlwaysOpen && (
-          <View style={styles.storeViewInfo}>
-            <Text
-              style={[
-                styles.storeSubInfo,
-                {
-                  backgroundColor: '#80D2F4',
-                  color: '#fff',
-                  fontFamily: 'Pretendard-Regular',
-                  fontSize: 12,
-                  padding: 3,
-                  borderRadius: 5,
-                },
-              ]}>
-              ~ {endtime}
-            </Text>
-          </View>
-        )}
-        {store?.isAlwaysOpen && !endtime && (
-          <View style={[styles.storeViewInfo]}>
-            <Text
-              style={[
-                styles.storeSubInfo,
-                {
-                  backgroundColor: '#80D2F4',
-                  color: '#fff',
-                  fontFamily: 'Pretendard-Regular',
-                  fontSize: 12,
-                  padding: 3,
-                  borderRadius: 5,
-                },
-              ]}>
-              24시간
-            </Text>
-          </View>
-        )} */}
 
         <View style={styles.storeViewInfo}>
           <Text
@@ -229,7 +193,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181A1A',
-    width: 140,
+    width: '100%',
   },
   storRate: {
     fontSize: 13,

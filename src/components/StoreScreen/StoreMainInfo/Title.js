@@ -18,7 +18,9 @@ const Title = ({handleEdit, storeName, isUpdate, onModalOpen}) => {
           <TouchableOpacity
             onPress={() => handleEdit('name', storeName)}
             style={styles.titlebtn}>
-            <Text style={styles.Storetitle}>{storeName}</Text>
+            <View style={styles.titleView2}>
+              <Text style={styles.Storetitle}>{storeName}</Text>
+            </View>
             <View
               style={{right: 30, position: 'absolute', alignSelf: 'center'}}>
               <Entypo name="chevron-small-right" size={25} color="#333" />
@@ -27,7 +29,7 @@ const Title = ({handleEdit, storeName, isUpdate, onModalOpen}) => {
         </View>
       ) : (
         <View style={styles.Storetitleview}>
-          <View>
+          <View style={styles.titleView2}>
             <Text style={styles.Storetitle}>{storeName}</Text>
           </View>
           <Pressable
@@ -59,13 +61,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginHorizontal: 18,
   },
+  titleView2: {
+    width: '85%',
+  },
   titlebtn: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
   },
   Storetitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontFamily: 'Pretendard-Bold',
     color: '#333',
   },

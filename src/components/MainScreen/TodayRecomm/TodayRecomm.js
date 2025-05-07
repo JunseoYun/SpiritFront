@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   },
   activeDot: {
     backgroundColor: '#fff',
-    width: 12,
+    width: 6,
     height: 6,
   },
   noDataView: {

@@ -6,9 +6,7 @@ const Categorystyles = StyleSheet.create({
     borderColor: '#EDEDED',
     borderBottomWidth: 1.5,
     backgroundColor: 'white',
-
     paddingVertical: 15,
-    // paddingBottom: 10,
   },
   imageView: {
     width: '100%',
@@ -25,13 +23,32 @@ const Categorystyles = StyleSheet.create({
     width: 130,
     height: 130,
     justifyContent: 'flex-end',
+    borderRadius: 10,
+    justifyContent: 'center',
   },
-
   menuImg: {
     width: 130,
     height: 130,
     borderRadius: 9,
     resizeMode: 'cover',
+  },
+  noneImageView: {
+    width: 130,
+    height: 130,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    alignItems: 'center', // 가로 중앙
+    justifyContent: 'center', // 세로 중앙
+    alignSelf: 'center', // 부모 기준 중앙 (ScrollView 내에서)
+  },
+  noneImg: {
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+    // 아래 세 줄은 삭제하세요 👇
+    // alignContent: 'center',
+    // alignItems: 'center',
+    // justifyContent: 'center',
   },
 
   menuName: {
