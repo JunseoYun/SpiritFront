@@ -18,6 +18,9 @@ import MyStack from './MyStack';
 import OAuthStack from './OAuthStack';
 import Octicons from 'react-native-vector-icons/Octicons';
 import StoreAddMapScreen from '../screens/StoreRegister/StoreAddMapScreen';
+import StoreAddCheckScreen from '../screens/StoreRegister/StoreAddList/StoreAddCheckScreen';
+import StoreAddPhotoScreen from '../screens/StoreRegister/StoreAddList/StoreAddPhotoScreen';
+import StoreAddInfoScreen from '../screens/StoreRegister/StoreAddList/StoreAddInfoScreen';
 
 const Stack = createStackNavigator();
 
@@ -129,6 +132,79 @@ export default function MainStack() {
             fontSize: 18,
             alignItems: 'center',
             justifyContent: 'center',
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="StoreAddCheckScreen"
+        component={StoreAddCheckScreen}
+        options={({navigation}) => ({
+          title: '매장 제보 1/3',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="StoreAddPhotoScreen"
+        component={StoreAddPhotoScreen}
+        options={({navigation}) => ({
+          title: '매장 제보 2/3',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="StoreAddInfoScreen"
+        component={StoreAddInfoScreen}
+        options={({navigation}) => ({
+          title: '매장 제보 3/3',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
           },
           headerLeft: () => (
             <Pressable
