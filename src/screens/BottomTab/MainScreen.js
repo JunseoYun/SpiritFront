@@ -219,11 +219,6 @@ const MainScreen = ({navigation}) => {
 
   return (
     <>
-      <StatusBar
-        barStyle={showTopView2 ? 'dark-content' : 'light-content'}
-        backgroundColor={showTopView2 ? '#fff' : '#45C9FF'}
-      />
-
       <View
         style={[
           styles.absoluteTop,
