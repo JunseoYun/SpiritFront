@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useLayoutEffect, useRef} from 'react';
 import {
   Text,
   StyleSheet,
@@ -16,6 +16,7 @@ import Loading from '../../../hooks/Loading';
 
 const MenuAddScreen = ({navigation}) => {
   const route = useRoute();
+  const scrollViewRef = useRef(null);
   const {storeId} = route.params;
   const [loading, setLoading] = useState(false);
 
@@ -36,6 +37,9 @@ const MenuAddScreen = ({navigation}) => {
       ...menus,
       {menuName: '', price: '', menuContent: '', main: false, imageUri: ''},
     ]);
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({animated: true});
+    }, 100); // 0~100ms 사이의 짧은 delay 필요
   };
   const handleCheckBoxChange = index => {
     const updatedMenus = menus.map((menu, i) => ({
@@ -134,9 +138,21 @@ const MenuAddScreen = ({navigation}) => {
     }
   };
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={MenuAdd}>
+          <Text style={styles.headerButton}>완료</Text>
+        </Pressable>
+      ),
+    });
+  }, [navigation, MenuAdd]);
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={styles.scrollContainer}>
         {menus.map((menu, index) => (
           <MenuAddForm
             key={index}
@@ -147,16 +163,14 @@ const MenuAddScreen = ({navigation}) => {
             onDelete={handleDeleteMenu}
           />
         ))}
-
-        <Pressable style={styles.menuAddButton} onPress={handleAddMenu}>
-          <Text style={styles.menuAddText}>메뉴 추가</Text>
-        </Pressable>
-        <Pressable style={styles.saveButton} onPress={MenuAdd}>
-          <Text style={styles.saveButtonText}>작성 완료</Text>
-        </Pressable>
       </ScrollView>
       <AlertComponent />
 
+      <View style={styles.menuAddTextview}>
+        <Pressable style={styles.menuAddButton} onPress={handleAddMenu}>
+          <Text style={styles.menuAddText}>메뉴 추가</Text>
+        </Pressable>
+      </View>
       <Loading loading={loading} />
     </SafeAreaView>
   );
@@ -167,7 +181,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-
+  headerButton: {
+    marginRight: 18,
+    fontSize: 18,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#16BBFF',
+  },
   saveButton: {
     width: '90%',
     marginVertical: 50,
@@ -182,22 +201,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 18,
   },
+  menuAddTextview: {
+    borderTopWidth: 0.5,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
   menuAddButton: {
-    marginTop: 30,
-    color: 'white',
-    width: 120,
-    height: 50,
-    fontSize: 12,
-    borderWidth: 1,
-    borderRadius: 10,
-    alignSelf: 'center',
+    paddingVertical: 15,
+    alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#45C9FF',
+    borderRadius: 10,
   },
   menuAddText: {
-    color: '#333',
-    fontSize: 17,
-    alignSelf: 'center',
+    fontSize: 18,
     fontWeight: '600',
+    color: '#fff',
   },
   footer: {
     position: 'absolute',

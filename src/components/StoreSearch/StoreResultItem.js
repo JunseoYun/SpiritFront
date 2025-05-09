@@ -187,10 +187,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14, // 버튼 높이 증가
     backgroundColor: '#fff', // 진한 파랑 (iOS 스타일)
     borderRadius: 12, // 라운드 크게
-    elevation: 2,
-    shadowColor: '#0D6C8C',
-    shadowOpacity: 0.15,
-    shadowOffset: {width: 0, height: 2},
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

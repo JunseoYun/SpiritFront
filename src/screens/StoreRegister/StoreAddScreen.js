@@ -304,7 +304,7 @@ const StoreAddScreen = ({navigation, route}) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{flex: 1}}
+      style={{flex: 1, backgroundColor: '#fff'}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 0} // iOS의 경우 적절한 offset 설정
     >
       <ScrollView
