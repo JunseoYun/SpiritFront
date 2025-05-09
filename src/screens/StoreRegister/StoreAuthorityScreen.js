@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   contentContainer: {paddingBottom: 120},
   headerButton: {
     marginRight: 18,
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: '600',
     color: '#16BBFF',
   },
@@ -332,11 +332,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#45C9FF',
     borderRadius: 10,
-    elevation: 3, // Android shadow
-    shadowColor: '#000', // iOS shadow
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
   storeAddText: {
     fontSize: 18,
