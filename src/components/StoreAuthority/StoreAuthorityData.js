@@ -84,27 +84,6 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
       </View>
 
       <View style={styles.storeinputview}>
-        {storeData.userName && (
-          <Text style={styles.storeinputtext}>신청자 성명</Text>
-        )}
-        <TextInput
-          style={[
-            styles.storeinput,
-            isFocused('userName') && styles.focusedInput,
-          ]}
-          value={storeData.userName}
-          onChangeText={text => handleChange('userName', text)}
-          placeholder="신청자 성명"
-          placeholderTextColor="#999"
-          onFocus={() => setFocusedInput('userName')}
-          onBlur={() => setFocusedInput(null)}
-        />
-        {errors.userName && (
-          <Text style={styles.errorText}>{errors.userName}</Text>
-        )}
-      </View>
-
-      <View style={styles.storeinputview}>
         {storeData.userContact && (
           <Text style={styles.storeinputtext}>신청자 연락처</Text>
         )}

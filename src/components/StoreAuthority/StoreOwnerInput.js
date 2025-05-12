@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, TextInput, StyleSheet} from 'react-native';
 
+import AntDesign from 'react-native-vector-icons/AntDesign';
 const StoreOwnerInput = ({
   owners,
   hasCoRepresentative,
@@ -51,22 +52,24 @@ const StoreOwnerInput = ({
               <View style={styles.inputHeaderContainer}>
                 <View style={styles.labelContainer}>
                   {owner.name ? (
-                    <Text style={styles.inputLabel}>{`대표자 ${
-                      index + 1
-                    }`}</Text>
+                    <Text style={styles.inputLabel}>
+                      {index === 0 ? '대표자' : `공동 대표 ${index}`}
+                    </Text>
                   ) : null}
                 </View>
                 {owners.length > 1 && (
                   <Pressable
                     onPress={() => removeOwner(index)}
+                    hitSlop={10}
                     style={styles.deleteButton}>
-                    <Text style={styles.deleteButtonText}>삭제</Text>
+                    {/* <Text style={styles.deleteButtonText}>삭제</Text> */}
+                    <AntDesign name="minuscircleo" size={16} color="#ff4d4d" />
                   </Pressable>
                 )}
               </View>
               <TextInput
                 style={styles.input}
-                placeholder="대표자 성명"
+                placeholder={index === 0 ? '대표자 성명' : '공동 대표 성명'}
                 placeholderTextColor="#999"
                 value={owner.name}
                 onChangeText={text => updateOwnerName(index, text)}
