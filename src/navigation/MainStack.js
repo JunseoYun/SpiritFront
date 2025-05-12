@@ -176,7 +176,7 @@ export default function MainStack() {
         name="StoreAddPhotoScreen"
         component={StoreAddPhotoScreen}
         options={({navigation}) => ({
-          title: '매장 제보 2/3',
+          title: '매장 등록 1/2',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -200,24 +200,12 @@ export default function MainStack() {
         name="StoreAddInfoScreen"
         component={StoreAddInfoScreen}
         options={({navigation}) => ({
-          title: '매장 제보 3/3',
+          title: '매장 등록 2/2',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
         })}
       />
       <Stack.Screen

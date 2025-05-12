@@ -319,16 +319,15 @@ const AlcoholUpdateScreen = ({navigation}) => {
                   </View>
                 </ImageBackground>
               ) : (
-                <View style={styles.placeholderImage}>
-                  <Text style={styles.placeholderText}>이미지 추가</Text>
-                  <Pressable onPress={selectImage}>
+                <Pressable onPress={selectImage}>
+                  <View style={styles.placeholderImage}>
                     <MaterialCommunityIcons
-                      name="image-plus"
-                      size={40}
-                      color="#333"
+                      name="plus"
+                      size={30}
+                      color="#999"
                     />
-                  </Pressable>
-                </View>
+                  </View>
+                </Pressable>
               )}
             </View>
             <AlcoholInput
@@ -442,7 +441,7 @@ const styles = StyleSheet.create({
   placeholderImage: {
     width: 200,
     height: 200,
-    backgroundColor: '#F2F2F2',
+    backgroundColor: '#f2f2f2',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,

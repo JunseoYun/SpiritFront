@@ -45,7 +45,7 @@ const StoreSearchScreen = ({navigation}) => {
   };
 
   const handleStoreAdd = () => {
-    navigation.navigate('StoreAddScreen', {
+    navigation.navigate('StoreAddPhotoScreen', {
       location: location,
     });
   };
