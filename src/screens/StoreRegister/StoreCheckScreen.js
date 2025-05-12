@@ -22,7 +22,6 @@ const StoreCheckScreen = ({navigation}) => {
     storeId,
     storeName,
     storeNumber: storeContact,
-    userName: '',
     userContact: '',
   });
 
@@ -52,9 +51,7 @@ const StoreCheckScreen = ({navigation}) => {
     if (!storeData.storeNumber) {
       newErrors.storeNumber = '매장 연락처를 입력해주세요.';
     }
-    if (!storeData.userName) {
-      newErrors.userName = '신청자 성명을 입력해주세요.';
-    }
+
     if (!storeData.userContact) {
       newErrors.userContact = '신청자 연락처를 입력해주세요.';
     }
