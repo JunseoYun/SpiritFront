@@ -1,4 +1,4 @@
-import React, {useState, useLayoutEffect, useEffect} from 'react';
+import React, {useState, useLayoutEffect, useEffect, useRef} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -9,97 +9,104 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import {useRoute} from '@react-navigation/native';
+import {useRoute, useFocusEffect} from '@react-navigation/native';
 import StoreAddProgressbar from '../../../components/StoreAddScreen/StoreAddProgressbar';
 import StoreImage from '../../../components/StoreAddScreen/StoreImage';
 import ReceiptImage from '../../../components/StoreAddScreen/ReceiptImage';
-import StoreInfo from '../../../components/StoreAddScreen/StoreInfo';
+import StoreAddname from '../../../components/StoreAddScreen/StoreAddname';
 import StoreAddress from '../../../components/StoreAddScreen/StoreAddress';
 import useCustomAlert from '../../../hooks/useCustomAlert';
+import {useAuth} from '../../../context/AuthContext';
+import {useToast} from '../../../context/ToastContext';
+
 const StoreAddPhotoScreen = ({navigation}) => {
+  const {token} = useAuth();
+  const {showToast} = useToast();
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!token) {
+        showToast('로그인 후 이용해주세요', 'center');
+        navigation.goBack();
+      }
+    }, [token]),
+  );
+
   const route = useRoute();
   const {index, location} = route.params;
   const [phototoggle, setPhototoggle] = useState(false);
   const [imageUris, setImageUris] = useState([]);
   const [receiptimageUris, setReceiptimageUris] = useState([]);
-  const [storeData, setStoreData] = useState('');
+  const [storename, setStorename] = useState('');
   const [coords, setCoords] = useState({latitude: 0, longitude: 0});
   const [address, setAddress] = useState('');
   const [detailedAddress, setDetailedAddress] = useState('');
 
-  useEffect(() => {
-    if (index == 0) {
-      setPhototoggle(false);
-    } else if (index == 1) {
-      setPhototoggle(true);
-    }
-  }, [index]);
+  const scrollViewRef = useRef(null); // 스크롤뷰 참조
+  const storeInfoRef = useRef(null);
+  const storeAddressRef = useRef(null);
+  const storeImageRef = useRef(null);
+
+  // useEffect(() => {
+  //   if (index == 0) {
+  //     setPhototoggle(false);
+  //   } else if (index == 1) {
+  //     setPhototoggle(true);
+  //   }
+  // }, [index]);
 
   const handleAddressSelect = ({address, coords}) => {
     setAddress(address);
     setCoords(coords);
   };
 
-  // const [storeData, setStoreData] = useState({
-  //   storeId,
-  //   storeName,
-  //   storeNumber: storeContact,
-  //   userName: '',
-  //   userContact: '',
-  // });
-
   const {showAlert, AlertComponent} = useCustomAlert();
-  // const [errors, setErrors] = useState({});
+  const [error, setError] = useState('');
+
+  const scrollToError = ref => {
+    if (ref?.current) {
+      ref.current.measureLayout(
+        scrollViewRef.current,
+        (x, y) => {
+          scrollViewRef.current.scrollTo({y: y - 100, animated: true});
+        },
+        () => console.log('스크롤 이동 실패'),
+      );
+    }
+  };
 
   const handleNext = () => {
+    if (!storename.trim()) {
+      setError('storename');
+      scrollToError(storeInfoRef);
+      return;
+    }
+    if (!address.trim()) {
+      setError('StoreAddress');
+      scrollToError(storeAddressRef);
+      return;
+    }
+    if (!imageUris.length) {
+      setError('StoreImage');
+      scrollToError(storeImageRef);
+      return;
+    }
     navigation.navigate('StoreAddInfoScreen', {
-      storeData,
+      storename,
       address,
       detailedAddress,
       imageUris,
       receiptimageUris,
+      coords,
     });
-    // 필수 storeData 확인 (예: storeName, storeNumber) 및 주소가 입력되었는지 확인
-    // if (
-    //   !storeData.storeName ||
-    //   !storeData.storeNumber ||
-    //   !storeData.userName ||
-    //   !storeData.userContact
-    // ) {
-    //   showAlert({
-    //     title: '정보 미입력',
-    //     message: '모든 정보를 입력해 주세요.',
-    //   });
-    //   return;
-    // }
-    // const newErrors = {};
-    // if (!storeData.storeName) {
-    //   newErrors.storeName = '매장 이름을 입력해주세요.';
-    // }
-    // if (!storeData.storeNumber) {
-    //   newErrors.storeNumber = '매장 연락처를 입력해주세요.';
-    // }
-    // if (!storeData.userName) {
-    //   newErrors.userName = '신청자 성명을 입력해주세요.';
-    // }
-    // if (!storeData.userContact) {
-    //   newErrors.userContact = '신청자 연락처를 입력해주세요.';
-    // }
-    // if (Object.keys(newErrors).length > 0) {
-    //   setErrors(newErrors); // 🚨 여기서 errors 상태를 업데이트
-    //   return;
-    // }
-    // navigation.navigate('StoreAuthorityScreen', {
-    //   storeData,
-    //   storeAddress,
-    //   storeAddressDetail,
-    // });
   };
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Pressable onPress={handleNext}>
+        <Pressable
+          onPress={() => {
+            handleNext();
+          }}>
           <Text style={styles.nextButton}>다음</Text>
         </Pressable>
       ),
@@ -114,29 +121,36 @@ const StoreAddPhotoScreen = ({navigation}) => {
     >
       <SafeAreaView style={styles.storetopview}>
         {/* 진행 바: 50% 진행 */}
-        <StoreAddProgressbar progress={1} />
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <StoreAddProgressbar progress={0} />
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          ref={scrollViewRef}>
           <Text style={styles.title}>
             {phototoggle
               ? '사진을 등록 해주세요.'
               : '사진및 매장 내용을 등록 해주세요.'}
           </Text>
-
-          <StoreImage
-            imageUris={imageUris}
-            setImageUris={setImageUris}
-            // error={error}
-          />
-          {phototoggle && (
-            <ReceiptImage
+          <View ref={storeImageRef}>
+            <StoreImage
+              imageUris={imageUris}
+              setImageUris={setImageUris}
+              error={error}
+            />
+          </View>
+          {/* <ReceiptImage
               receiptimageUris={receiptimageUris}
               setReceiptimageUris={setReceiptimageUris}
-            />
-          )}
-          {!phototoggle && (
-            <>
-              {/* 추후에매장 명만 받게 하기 */}
-              <StoreInfo storeData={storeData} setStoreData={setStoreData} />
+              error={error}
+            /> */}
+          <>
+            <View ref={storeInfoRef}>
+              <StoreAddname
+                storename={storename}
+                setStorename={setStorename}
+                error={error}
+              />
+            </View>
+            <View ref={storeAddressRef}>
               <StoreAddress
                 address={address}
                 detailedAddress={detailedAddress}
@@ -144,9 +158,10 @@ const StoreAddPhotoScreen = ({navigation}) => {
                 navigation={navigation}
                 onAddressSelect={handleAddressSelect} // 콜백 전달
                 location={location}
+                error={error}
               />
-            </>
-          )}
+            </View>
+          </>
         </ScrollView>
         <View style={styles.storeAddTextview}>
           <Pressable

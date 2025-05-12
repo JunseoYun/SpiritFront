@@ -230,15 +230,24 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
         ))}
         {loadingimg && addedImages.length < 5 && (
           <Pressable
-            onPress={selectImage}
             style={{
-              alignItems: 'center',
+              width: ('100%' / 4) * 3,
+              height: ((windowWidth - 36) * 9) / 16,
               justifyContent: 'center',
-              width: 80,
-              height: 100,
-              alignSelf: 'center',
-            }}>
-            <MaterialCommunityIcons name="image-plus" size={40} color="#333" />
+              alignItems: 'center',
+              backgroundColor: '#ededed',
+              borderRadius: 10,
+            }}
+            onPress={selectImage}>
+            <View
+              style={{
+                width: 30,
+                height: 30,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <MaterialCommunityIcons name="plus" size={30} color="#999" />
+            </View>
           </Pressable>
         )}
         <AlertComponent />

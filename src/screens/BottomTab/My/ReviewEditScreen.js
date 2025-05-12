@@ -291,7 +291,10 @@ const ReviewEditScreen = ({route, navigation}) => {
             onCancel={() => setIsDatePickerOpen(false)}
           />
           <Text style={styles.inputText}>리뷰 이미지</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{marginHorizontal: 18}}>
             {serverImages.map((image, index) => (
               <Pressable key={index} style={styles.imagePressable}>
                 <Image
@@ -326,18 +329,24 @@ const ReviewEditScreen = ({route, navigation}) => {
             ))}
             {addedImages.length + serverImages.length < 5 && (
               <Pressable
-                onPress={selectImage}
                 style={{
-                  justifyContent: 'flex-end',
-
-                  marginLeft: 18,
-                  marginBottom: 5,
-                }}>
-                <MaterialCommunityIcons
-                  name="image-plus"
-                  size={40}
-                  color="#333"
-                />
+                  width: 120,
+                  height: 120,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: '#f2f2f2',
+                  borderRadius: 10,
+                }}
+                onPress={selectImage}>
+                <View
+                  style={{
+                    width: 30,
+                    height: 30,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <MaterialCommunityIcons name="plus" size={30} color="#999" />
+                </View>
               </Pressable>
             )}
           </ScrollView>
@@ -379,12 +388,11 @@ const styles = StyleSheet.create({
   selectImage: {
     width: 120,
     height: 120,
-    margin: 5,
+    marginRight: 7,
     borderRadius: 10,
     resizeMode: 'cover',
   },
   imagePressable: {
-    margin: 5,
     position: 'relative',
   },
   removeButton: {

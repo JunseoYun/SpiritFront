@@ -281,8 +281,6 @@ const MainScreen = ({navigation}) => {
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }>
         <View style={styles.innerContainer}>
-          <Loading loading={isRefreshing || loading} />
-
           <TodayRecomm
             recommCategory={recommCategory}
             recommReason={recommReason}
@@ -327,6 +325,7 @@ const MainScreen = ({navigation}) => {
           <AppInfo handleAgreeScreen={handleAgreeScreen} />
         </View>
       </Animated.ScrollView>
+      <Loading loading={isRefreshing || loading} />
       <AlertComponent />
     </>
   );

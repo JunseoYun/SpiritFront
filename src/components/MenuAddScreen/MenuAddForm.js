@@ -201,8 +201,25 @@ const MenuAddForm = ({
             />
           </Pressable>
         ) : (
-          <Pressable onPress={selectImage}>
-            <MaterialCommunityIcons name="image-plus" size={40} color="#333" />
+          <Pressable
+            style={{
+              width: 100,
+              height: 100,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: '#f2f2f2',
+              borderRadius: 10,
+            }}
+            onPress={selectImage}>
+            <View
+              style={{
+                width: 30,
+                height: 30,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <MaterialCommunityIcons name="plus" size={30} color="#999" />
+            </View>
           </Pressable>
         )}
       </View>

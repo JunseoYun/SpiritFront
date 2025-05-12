@@ -26,8 +26,8 @@ const StoreAddProgressbar = ({progress}) => {
   );
 
   const widthInterpolated = animatedValue.interpolate({
-    inputRange: [0, 1, 2],
-    outputRange: ['33%', '66%', '100%'],
+    inputRange: [0, 1],
+    outputRange: ['50%', '100%'],
   });
 
   return (
