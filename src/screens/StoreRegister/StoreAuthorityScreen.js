@@ -42,7 +42,7 @@ const StoreAuthorityScreen = ({navigation}) => {
     latitude: storeLocationDto.latitude,
     longitude: storeLocationDto.longitude,
   });
-  console.log(storeAddressData);
+
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const handleNext = useCallback(() => {
