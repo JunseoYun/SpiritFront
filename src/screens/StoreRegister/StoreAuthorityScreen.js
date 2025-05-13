@@ -22,7 +22,7 @@ import StoreAuthorityModal from '../../components/StoreAuthority/StoreAuthorityM
 
 const StoreAuthorityScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeData, storeAddress, storeAddressDetail} = route.params;
+  const {storeData, storeLocationDto} = route.params;
   const [owners, setOwners] = useState([{name: ''}]);
   const [hasCoRepresentative, setHasCoRepresentative] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -37,10 +37,12 @@ const StoreAuthorityScreen = ({navigation}) => {
     setBusiness_registration_certificate,
   ] = useState(null);
   const [storeAddressData, setStoreAddressData] = useState({
-    storeAddress,
-    storeAddressDetail,
+    storeAddress: storeLocationDto.address || '',
+    storeAddressDetail: storeLocationDto.addressDetail || '',
+    latitude: storeLocationDto.latitude,
+    longitude: storeLocationDto.longitude,
   });
-
+  console.log(storeAddressData);
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const handleNext = useCallback(() => {
@@ -159,6 +161,8 @@ const StoreAuthorityScreen = ({navigation}) => {
     setStoreAddressData(prevData => ({
       ...prevData,
       storeAddress: address,
+      latitude: coords.latitude,
+      longitude: coords.longitude,
     }));
   };
 
@@ -241,6 +245,10 @@ const StoreAuthorityScreen = ({navigation}) => {
             navigation={navigation}
             onAddressSelect={handleAddressSelect}
             index={1}
+            location={{
+              latitude: storeAddressData.latitude,
+              longitude: storeAddressData.longitude,
+            }}
           />
           {/* <Pressable style={styles.savebutton} onPress={handleNext}>
           <Text style={styles.savebuttontext}>신청</Text>

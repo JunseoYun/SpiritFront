@@ -15,8 +15,7 @@ import ProgressBar from '../../components/StoreAuthority/ProgressBar';
 import useCustomAlert from '../../hooks/useCustomAlert';
 const StoreCheckScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeId, storeName, storeAddress, storeAddressDetail, storeContact} =
-    route.params;
+  const {storeId, storeName, storeLocationDto, storeContact} = route.params;
 
   const [storeData, setStoreData] = useState({
     storeId,
@@ -63,8 +62,7 @@ const StoreCheckScreen = ({navigation}) => {
 
     navigation.navigate('StoreAuthorityScreen', {
       storeData,
-      storeAddress,
-      storeAddressDetail,
+      storeLocationDto,
     });
   };
 
