@@ -116,8 +116,7 @@ const StoreResultItem = ({store, navigation, index}) => {
             navigation.navigate('StoreCheckScreen', {
               storeId: store.id,
               storeName: store.name,
-              storeAddress: store.locationDto.address,
-              storeAddressDetail: store.locationDto.addressDetail,
+              storeLocationDto: store.locationDto,
               storeContact: store.contact,
             });
           }}
