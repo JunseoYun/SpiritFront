@@ -64,6 +64,39 @@ export const StoreRegister = async data => {
       },
     });
     return response.data.data;
+  } catch (error) {}
+};
+
+export const CreateOwnership = async data => {
+  const formData = new FormData();
+
+  if (data.file) {
+    formData.append('file', {
+      uri: data.file.path,
+      type: data.file.mime,
+      name: data.file.filename,
+    });
+  }
+
+  const createOwnershipRqDto = JSON.stringify(data.createOwnershipRqDto);
+
+  formData.append('createOwnershipRqDto', {
+    string: createOwnershipRqDto,
+    type: 'application/json',
+  });
+
+  try {
+    const response = await axiosInstance.post(
+      '/store/ownership/create',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data', // 파일 업로드는 multipart/form-data
+        },
+      },
+    );
+
+    return response;
   } catch (error) {
     functionError(error);
   }

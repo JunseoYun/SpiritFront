@@ -19,6 +19,42 @@ import StoreBusinessData from '../../components/StoreAuthority/StoreBusinessData
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import StoreAuthorityModal from '../../components/StoreAuthority/StoreAuthorityModal';
+import {CreateOwnership} from '../../api/storeApi';
+
+import Loading from '../../hooks/Loading';
+
+const getErrorMessage = code => {
+  switch (code) {
+    case 22013:
+      return '매장 이름이 비어 있습니다.';
+    case 22014:
+      return '매장 연락처가 비어 있습니다.';
+    case 22015:
+      return '사용자 연락처가 비어 있습니다.';
+    case 22016:
+      return '사업자등록번호가 비어 있습니다.';
+    case 22017:
+      return '개업일이 비어 있습니다.';
+    case 22018:
+      return '주류판매신고번호가 비어 있습니다.';
+    case 22019:
+      return '대표자가 1명 이상 지정되어야 합니다.';
+    case 22020:
+      return '사업자등록번호, 대표자 이름 또는 \n개업일이 일치하지 않습니다.';
+    case 22021:
+      return '이미 인증 요청 중인 매장입니다.';
+    case 22022:
+      return '인증 요청을 찾을 수 없습니다.';
+    case 22023:
+      return '이미 인증된 매장입니다.';
+    case 22024:
+      return '이미 인증이 승인된 매장입니다.';
+    case 22025:
+      return '매장 인증은 대표자 또는 \n공동 대표만 신청할 수 있습니다.';
+    default:
+      return '로그인 상태를 확인해주세요.';
+  }
+};
 
 const StoreAuthorityScreen = ({navigation}) => {
   const route = useRoute();
@@ -26,6 +62,7 @@ const StoreAuthorityScreen = ({navigation}) => {
   const [owners, setOwners] = useState([{name: ''}]);
   const [hasCoRepresentative, setHasCoRepresentative] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [businessData, setBusinessData] = useState({
     businessNumber: '',
@@ -114,13 +151,6 @@ const StoreAuthorityScreen = ({navigation}) => {
       });
       return;
     }
-    if (!storeAddressData.storeAddressDetail.trim()) {
-      showAlert({
-        title: '정보 미입력',
-        message: '상세 주소를 입력해주세요.',
-      });
-      return;
-    }
 
     // 5. 모든 필수 정보가 입력되었을 경우
     setModalVisible(true);
@@ -135,11 +165,64 @@ const StoreAuthorityScreen = ({navigation}) => {
     showAlert,
   ]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setModalVisible(false);
-    showAlert({title: '신청 완료', message: '신청이 완료되었습니다!'});
+    // showAlert({title: '신청 완료', message: '신청이 완료되었습니다!'});
 
     // TODO: API 요청 및 다음 단계 이동
+    var data = {
+      file: business_registration_certificate,
+      createOwnershipRqDto: {
+        receivedStoreContact: storeData.storeNumber,
+        liquorReportNumber: businessData.drink_sales_number,
+        businessRegistrationNumber: businessData.businessNumber,
+        openingDate: businessData.openDate,
+        representativeInfoList: owners.map((owner, idx) => ({
+          name: owner.name,
+          isMainRep: hasCoRepresentative ? idx === 0 : true, // 첫 번째 대표를 대표자로 처리
+        })),
+
+        receivedStoreName: storeData.storeName,
+        receivedUserContact: storeData.userContact,
+        businessLocation: {
+          address: storeAddressData.storeAddress,
+          addressDetail: storeAddressData.storeAddressDetail,
+          latitude: storeAddressData.latitude,
+          longitude: storeAddressData.longitude,
+        },
+        storeId: storeData.storeId,
+      },
+    };
+
+    try {
+      setLoading(true);
+      await CreateOwnership(data);
+      showAlert({
+        title: '매장 인증 신청 완료',
+        onConfirm: () => {
+          navigation.replace('StoreStack', {
+            screen: 'StoreMainScreen',
+            params: {
+              storeId: storeData.storeId,
+            },
+          });
+        },
+      });
+    } catch (error) {
+      const responseData = error?.response?.data;
+      const errorCode = responseData?.code;
+      const errorMessage = getErrorMessage(errorCode);
+
+      console.error('에러 코드:', errorCode);
+      console.error('에러 메시지:', responseData?.message);
+
+      showAlert({
+        title: '신청 실패',
+        message: errorMessage,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
   const addOwner = () => {
     setOwners(prev => [...prev, {name: ''}]);
@@ -176,7 +259,7 @@ const StoreAuthorityScreen = ({navigation}) => {
       freeStyleCropEnabled: true,
     })
       .then(image => {
-        setBusiness_registration_certificate(image.path);
+        setBusiness_registration_certificate(image);
       })
       .catch(error => {});
   };
@@ -213,7 +296,7 @@ const StoreAuthorityScreen = ({navigation}) => {
             </Pressable>
             {business_registration_certificate && (
               <Image
-                source={{uri: business_registration_certificate}}
+                source={{uri: business_registration_certificate.path}}
                 style={styles.certificateImage}
                 resizeMode="contain"
               />
@@ -250,9 +333,7 @@ const StoreAuthorityScreen = ({navigation}) => {
               longitude: storeAddressData.longitude,
             }}
           />
-          {/* <Pressable style={styles.savebutton} onPress={handleNext}>
-          <Text style={styles.savebuttontext}>신청</Text>
-        </Pressable> */}
+
           {/* 안내 멘트 */}
           <View style={styles.instructionsContainer}>
             <Text style={styles.instructions}>
@@ -286,6 +367,8 @@ const StoreAuthorityScreen = ({navigation}) => {
             <Text style={styles.storeAddText}>신청하기</Text>
           </Pressable>
         </View>
+
+        <Loading loading={loading} />
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
@@ -293,7 +376,7 @@ const StoreAuthorityScreen = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: '#fff'},
-  contentContainer: {paddingBottom: 120},
+  contentContainer: {paddingBottom: 30},
   headerButton: {
     marginRight: 18,
     fontSize: 18,

@@ -42,10 +42,7 @@ const StoreAuthorityModal = ({visible, onClose, onSubmit, data}) => {
             </View>
 
             {/* 신청자 정보 */}
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>신청자 성명</Text>
-              <Text style={styles.infoValue}>{storeData.userName}</Text>
-            </View>
+
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>신청자 연락처</Text>
               <Text style={styles.infoValue}>{storeData.userContact}</Text>
@@ -102,29 +99,28 @@ const StoreAuthorityModal = ({visible, onClose, onSubmit, data}) => {
                 <Text style={styles.sectionTitle}>사업자등록증</Text>
                 <View style={styles.imageContainer}>
                   <Image
-                    source={{uri: business_certificate}}
+                    source={{uri: business_certificate.path}}
                     style={styles.certificateImage}
                     resizeMode="contain"
                   />
                 </View>
               </>
             )}
-
-            {/* 버튼 영역 */}
-            <View style={styles.modalButtonContainer}>
-              <Pressable
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={onClose}>
-                <Text style={styles.modalCancelButtonText}>취소</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.modalButton, styles.confirmButton]}
-                onPress={onSubmit}>
-                <Text style={styles.modalButtonText}>제출</Text>
-              </Pressable>
-            </View>
           </ScrollView>
+          <View style={styles.modalButtonContainer}>
+            <Pressable
+              style={[styles.modalButton, styles.cancelButton]}
+              onPress={onClose}>
+              <Text style={styles.modalCancelButtonText}>취소</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.modalButton, styles.confirmButton]}
+              onPress={onSubmit}>
+              <Text style={styles.modalButtonText}>제출</Text>
+            </Pressable>
+          </View>
         </View>
+        {/* 버튼 영역 */}
       </View>
     </Modal>
   );
@@ -140,10 +136,10 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: '90%',
     height: '80%',
-    padding: 20,
     backgroundColor: 'white',
     borderRadius: 15,
     elevation: 5,
+    paddingTop: 20,
   },
   modalTitle: {
     fontSize: 20,
@@ -153,7 +149,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   scrollContainer: {
-    paddingBottom: 20,
+    paddingBottom: 40,
+    paddingTop: 20,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontSize: 16,
@@ -167,8 +165,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 15,
     paddingBottom: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
   },
   infoLabel: {
     fontSize: 16,
@@ -192,7 +188,10 @@ const styles = StyleSheet.create({
   modalButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 30,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderTopWidth: 0.5,
+    borderColor: '#E0E0E0',
   },
   modalButton: {
     flex: 1,
