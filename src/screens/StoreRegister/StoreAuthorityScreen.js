@@ -213,9 +213,6 @@ const StoreAuthorityScreen = ({navigation}) => {
       const errorCode = responseData?.code;
       const errorMessage = getErrorMessage(errorCode);
 
-      console.error('에러 코드:', errorCode);
-      console.error('에러 메시지:', responseData?.message);
-
       showAlert({
         title: '신청 실패',
         message: errorMessage,
