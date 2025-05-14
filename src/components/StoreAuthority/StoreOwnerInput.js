@@ -53,7 +53,7 @@ const StoreOwnerInput = ({
                 <View style={styles.labelContainer}>
                   {owner.name ? (
                     <Text style={styles.inputLabel}>
-                      {index === 0 ? '대표자' : `공동 대표 ${index}`}
+                      {index === 0 ? '대표자' : `공동 대표`}
                     </Text>
                   ) : null}
                 </View>
