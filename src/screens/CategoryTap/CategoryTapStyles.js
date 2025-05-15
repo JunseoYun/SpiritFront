@@ -134,7 +134,7 @@ const Categorystyles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    marginRight: 7,
+    maxWidth: '95%',
   },
   alcoholText: {
     fontSize: 14,
@@ -194,6 +194,12 @@ const Categorystyles = StyleSheet.create({
     marginRight: 10,
     fontFamily: 'Pretendard-SemiBold',
     color: '#767676',
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 15,
+    height: 15,
+    marginRight: 5,
   },
 });
 

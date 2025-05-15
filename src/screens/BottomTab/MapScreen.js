@@ -97,9 +97,9 @@ const MapScreen = ({navigation}) => {
       setStores(storesData);
       setSelectedStore(storesData[0]);
 
-      if (webViewRef.current)
+      if (webViewRef.current) {
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-      {
+
         const script = generateMapScript(
           currentLocation.latitude,
           currentLocation.longitude,
@@ -107,6 +107,7 @@ const MapScreen = ({navigation}) => {
         );
         webViewRef.current.injectJavaScript(script);
       }
+
       moveCenterMap(currentLocation.latitude, currentLocation.longitude);
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
@@ -253,12 +254,6 @@ const MapScreen = ({navigation}) => {
       // 기존 메시지 처리
       if (message.action === 'mapLoaded') {
         console.log('Kakao Maps API가 로드되었습니다.');
-        const script = generateMapScript(
-          location.latitude,
-          location.longitude,
-          stores,
-        );
-        webViewRef.current?.injectJavaScript(script);
       }
       if (message.action === 'mapMoved') {
         if (isProgrammaticPan.current) {

@@ -7,10 +7,11 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import Entypo from 'react-native-vector-icons/Entypo';
 
-const Title = ({handleEdit, storeName, isUpdate, onModalOpen}) => {
+const Title = ({handleEdit, storeName, isOwner, isUpdate, onModalOpen}) => {
   return (
     <>
       {isUpdate ? (
@@ -30,7 +31,13 @@ const Title = ({handleEdit, storeName, isUpdate, onModalOpen}) => {
       ) : (
         <View style={styles.Storetitleview}>
           <View style={styles.titleView2}>
-            <Text style={styles.Storetitle}>{storeName}</Text>
+            <Text style={styles.Storetitle}>{storeName} </Text>
+            {isOwner != null && (
+              <FastImage
+                source={require('../../../assets/verifyMaker.png')}
+                style={styles.imageStyle}
+              />
+            )}
           </View>
           <Pressable
             onPress={onModalOpen}
@@ -62,7 +69,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
   },
   titleView2: {
-    width: '85%',
+    flexDirection: 'row',
+    flex: 1,
   },
   titlebtn: {
     width: '100%',
@@ -70,11 +78,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   Storetitle: {
+    maxWidth: '85%',
     fontSize: 22,
     fontFamily: 'Pretendard-Bold',
     color: '#333',
   },
   updateicons: {},
+  imageStyle: {
+    marginLeft: 7,
+    alignSelf: 'center',
+    width: 20,
+    height: 20,
+  },
 });
 
 export default Title;

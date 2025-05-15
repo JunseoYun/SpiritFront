@@ -509,6 +509,7 @@ const StoreMainScreen = ({navigation}) => {
           navigation={navigation}
           startUpdate={startUpdate}
           handleReport={handleReport}
+          isOwner={storedata.isOwner}
         />
       </View>
       {isUpdate && (

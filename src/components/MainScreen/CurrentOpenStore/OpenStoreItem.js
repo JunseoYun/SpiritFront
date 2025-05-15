@@ -6,6 +6,7 @@ import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
+import FastImage from 'react-native-fast-image';
 const OpenStoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
   const [distance, setDistance] = useState(0);
@@ -83,6 +84,12 @@ const OpenStoreItem = ({store, location, navigation}) => {
         </View>
 
         <View style={styles.storeViewInfo}>
+          {store.isCertified == true && (
+            <FastImage
+              source={require('../../../assets/verifyMaker.png')}
+              style={styles.imageStyle}
+            />
+          )}
           <Text
             style={styles.storMainInfo}
             numberOfLines={1} // 한 줄로 제한
@@ -189,11 +196,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 1,
     maxWidth: 160,
   },
+
   storMainInfo: {
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181A1A',
-    width: '100%',
+    flex: 1,
   },
   storRate: {
     fontSize: 13,
@@ -215,6 +223,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     fontFamily: 'Pretendard-Medium',
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 15,
+    height: 15,
+    marginRight: 3,
   },
 });
 

@@ -24,16 +24,6 @@ const StoreMapAddScript = (lat, lng) => `
     { offset: new kakao.maps.Point(14, 42) }
   );
 
-  if (!window.currentMarker) {
-    window.currentMarker = new kakao.maps.Marker({
-      position: new kakao.maps.LatLng(${lat}, ${lng}),
-      map: map,
-      title: '현재 위치',
-      zIndex: 1
-    });
-  } else {
-    window.currentMarker.setPosition(new kakao.maps.LatLng(${lat}, ${lng}));
-  }
 
   if (!window.centerMarker) {
     window.centerMarker = new kakao.maps.Marker({
