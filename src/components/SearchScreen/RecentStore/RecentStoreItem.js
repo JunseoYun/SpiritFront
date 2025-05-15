@@ -4,6 +4,7 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
+import FastImage from 'react-native-fast-image';
 
 const RecentStoreItem = ({store, navigation, location}) => {
   const [distance, setDistance] = useState(0);
@@ -92,16 +93,18 @@ const RecentStoreItem = ({store, navigation, location}) => {
       {/* 매장 정보 */}
       <View style={styles.infoContainer}>
         <View style={styles.headerView}>
+          {store.isCertified == true && (
+            <FastImage
+              source={require('../../../assets/verifyMaker.png')}
+              style={styles.imageStyle}
+            />
+          )}
           <Text
             style={styles.storeName}
             numberOfLines={1} // 한 줄로 제한
             ellipsizeMode="tail">
             {store.name}
           </Text>
-          <View style={styles.ratingContainer}>
-            <FontAwesomeIcon name="star" size={14} color="#FCC104" />
-            <Text style={styles.ratingText}>{store.storeRate}</Text>
-          </View>
         </View>
         <View style={styles.storeViewInfo}>
           <Text style={styles.StoreCategory}>
@@ -181,20 +184,17 @@ const styles = StyleSheet.create({
   },
   headerView: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   storeName: {
     fontSize: 18,
     fontWeight: '700',
     color: '#333',
-    marginBottom: 4,
-    width: '70%',
+    flex: 1,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
   },
   ratingText: {
     fontSize: 14,
@@ -230,6 +230,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#999',
     fontWeight: 'bold',
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 15,
+    height: 15,
+    marginRight: 3,
   },
 });
 

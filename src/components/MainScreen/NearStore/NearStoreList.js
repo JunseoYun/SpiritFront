@@ -25,7 +25,6 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
           location.latitude,
           location.longitude,
         );
-
         setTotalpage(storesData.totalPages);
 
         if (storesData.content && storesData.content.length > 0) {

@@ -11,6 +11,7 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
+import FastImage from 'react-native-fast-image';
 const drinkColors = {
   SOJU: '#43A047',
   BEER: '#F9A825',
@@ -139,6 +140,12 @@ const LikedItem = ({store, navigation}) => {
           </View>
         </View>
         <View style={styles.headerRow}>
+          {store.isCertified == true && (
+            <FastImage
+              source={require('../../assets/verifyMaker.png')}
+              style={styles.imageStyle}
+            />
+          )}
           <Text
             style={styles.storeTitle}
             numberOfLines={1}
@@ -224,7 +231,6 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
   storeTitle: {
@@ -232,6 +238,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Bold',
     color: '#333',
     maxWidth: '90%',
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 15,
+    height: 15,
+    marginRight: 4,
   },
   scoreContainer: {
     flexDirection: 'row',

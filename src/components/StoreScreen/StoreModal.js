@@ -6,6 +6,7 @@ const StoreModal = ({
   isModalVisible,
   onPressModalClose,
   startUpdate,
+  isOwner,
   handleReport,
 }) => {
   const opacity = useRef(new Animated.Value(0)).current; // opacity 애니메이션 값
@@ -45,11 +46,13 @@ const StoreModal = ({
             style={[styles.modalContainer, {opacity}]}
             onStartShouldSetResponder={() => true}>
             <View style={styles.modalContent}>
-              <Pressable
-                style={styles.modalButton}
-                onPress={() => handleClose(startUpdate)}>
-                <Text style={styles.modalButtonText}>매장 수정</Text>
-              </Pressable>
+              {isOwner == true || isOwner == null ? (
+                <Pressable
+                  style={styles.modalButton}
+                  onPress={() => handleClose(startUpdate)}>
+                  <Text style={styles.modalButtonText}>매장 수정</Text>
+                </Pressable>
+              ) : isOwner == false ? null : null}
               <Pressable
                 style={styles.reportButton}
                 onPress={() => handleClose(handleReport)}>

@@ -13,6 +13,7 @@ import useStoreStatus from '../../../../hooks/useStoreStatus';
 import useDistance from '../../../../hooks/useDistance';
 import {useAuth} from '../../../../context/AuthContext';
 import {useToast} from '../../../../context/ToastContext';
+import FastImage from 'react-native-fast-image';
 const ResultModalItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();
   const [distance, setDistance] = useState(0);
@@ -101,12 +102,21 @@ const ResultModalItem = ({store, navigation, location}) => {
         </ImageBackground>
         <View style={styles.fastStoreText}>
           <View style={styles.fastSearchStoreView}>
-            <Text
-              style={styles.fastStoreTitle}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              {store.name}
-            </Text>
+            <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
+              {store.isCertified === true && (
+                <FastImage
+                  source={require('../../../../assets/verifyMaker.png')}
+                  style={styles.imageStyle}
+                />
+              )}
+              <Text
+                style={styles.fastStoreTitle}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {store.name}
+              </Text>
+            </View>
+
             <View style={styles.fastStorescore}>
               <FontAwesomeIcon name="star" size={15} color="#FCC104" />
               <Text style={styles.fastScoretext}>{store.storeRate}</Text>
@@ -197,7 +207,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 17,
     color: 'black',
-    maxWidth: 150,
+    maxWidth: '85%',
   },
   fastStorescore: {
     flexDirection: 'row',
@@ -228,6 +238,12 @@ const styles = StyleSheet.create({
     color: '#333',
     marginRight: 5,
     fontWeight: '500',
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 15,
+    height: 15,
+    marginRight: 3,
   },
 });
 

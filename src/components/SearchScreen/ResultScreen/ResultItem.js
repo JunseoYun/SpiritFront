@@ -7,6 +7,7 @@ import useDistance from '../../../hooks/useDistance';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
+import FastImage from 'react-native-fast-image';
 
 const ResultItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();
@@ -97,6 +98,12 @@ const ResultItem = ({store, navigation, location}) => {
         <View style={styles.StoreTextView}>
           <View>
             <View style={styles.StoreTitleView}>
+              {store.isCertified == true && (
+                <FastImage
+                  source={require('../../../assets/verifyMaker.png')}
+                  style={styles.imageStyle}
+                />
+              )}
               <Text
                 style={styles.StoreTitle}
                 numberOfLines={1}
@@ -196,13 +203,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   StoreTitleView: {
-    marginRight: 5,
+    flexDirection: 'row',
   },
   StoreTitle: {
+    maxWidth: '90%',
     fontFamily: 'Pretendard-Bold',
     fontSize: 16,
     color: '#111',
-    width: '100%',
   },
   StoreScore: {
     flexDirection: 'row',
@@ -254,6 +261,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     width: '100%',
     alignSelf: 'center',
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 15,
+    height: 15,
+    marginRight: 3,
   },
 });
 

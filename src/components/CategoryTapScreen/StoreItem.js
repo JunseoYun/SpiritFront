@@ -217,6 +217,12 @@ const StoreItem = ({store, location, navigation}) => {
             : '메인주류가 없습니다.'}
         </View>
         <View style={Categorystyles.infoTitleView}>
+          {store.isCertified == true && (
+            <FastImage
+              source={require('../../assets/verifyMaker.png')}
+              style={Categorystyles.imageStyle}
+            />
+          )}
           <Text
             style={Categorystyles.storeName}
             numberOfLines={1}
