@@ -136,7 +136,7 @@ const SetLocationScreen = ({navigation, route}) => {
   const handleGetCurrentLocation = async () => {
     try {
       const location = await getLocation();
-      navigation.navigate('StoreAddMapScreen', {
+      navigation.navigate('LocataionMapScreen', {
         location,
         onAddressSelect,
       });

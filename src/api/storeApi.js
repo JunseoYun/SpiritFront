@@ -340,3 +340,17 @@ export const Store_getby_main_banner = async (latitude, longitude) => {
     functionError(error);
   }
 };
+
+//관리 중인 매장 리스트 조회
+export const Store_getby_managed = async page => {
+  try {
+    const response = await axiosInstance.get(`/store/get-by/managed`, {
+      params: {
+        page: page,
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
