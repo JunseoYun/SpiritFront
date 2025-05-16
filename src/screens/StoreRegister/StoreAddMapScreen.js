@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import {WebView} from 'react-native-webview';
-import {getLocation, saveLocationAddress} from '../../storage/locationStorage';
+import {getLocation} from '../../storage/locationStorage';
 import {fetchLocationAddress} from '../../hooks/useLocation';
 import {get_address} from '../../api/location';
 import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
@@ -32,15 +32,21 @@ const StoreAddMapScreen = ({navigation}) => {
   const isProgrammaticPan = useRef(false);
   const {showToast} = useToast();
   const webViewRef = useRef(null);
-  const [sameloaction, setSameloaction] = useState(false);
 
   useEffect(() => {
-    updateNewLocation();
+    let isMounted = true; // ✅ cleanup을 위한 변수 추가
+
+    fetchSaveLocation();
+    return () => {
+      isMounted = false; // ✅ cleanup
+    };
   }, [location]);
 
   const fetchSaveLocation = async () => {
     setLoading(true);
     try {
+      const currentLocation = await getLocation();
+      setCurrentloacation(currentLocation);
       if (webViewRef.current) {
         const script = StoreMapAddScript(
           currentLocation.latitude,
@@ -62,7 +68,6 @@ const StoreAddMapScreen = ({navigation}) => {
     setLoading(true);
     try {
       const {newLocation, address} = await fetchLocationAddress();
-      setCurrentloacation(newLocation);
       const roundedCurrentLat = location
         ? roundToPrecision(location.latitude)
         : null;
@@ -72,23 +77,20 @@ const StoreAddMapScreen = ({navigation}) => {
       const roundedNewLat = roundToPrecision(newLocation.latitude);
       const roundedNewLng = roundToPrecision(newLocation.longitude);
 
-      if (webViewRef.current) {
-        const script = StoreMapAddScript(
-          newLocation.latitude,
-          newLocation.longitude,
-        );
-        webViewRef.current.injectJavaScript(script);
-      }
-
       if (
         roundedCurrentLat === roundedNewLat &&
         roundedCurrentLng === roundedNewLng
       ) {
-        setSameloaction(true);
         moveCenterMap(newLocation.latitude, newLocation.longitude);
       } else {
-        setSameloaction(false);
         moveCenterMap(newLocation.latitude, newLocation.longitude);
+        if (webViewRef.current) {
+          const script = StoreMapAddScript(
+            newLocation.latitude,
+            newLocation.longitude,
+          );
+          webViewRef.current.injectJavaScript(script);
+        }
       }
     } catch (err) {
       console.error('위치 업데이트 중 오류 발생:', err);
@@ -105,11 +107,6 @@ const StoreAddMapScreen = ({navigation}) => {
         showToast('위치 권한이 거부되었습니다.');
         return;
       }
-      if (sameloaction) {
-        showToast('이전에 설정한 위치와 같습니다.', 'center');
-        return;
-      }
-
       const targetCoords = centerLatLng || currentloacation;
 
       if (targetCoords) {
@@ -119,27 +116,21 @@ const StoreAddMapScreen = ({navigation}) => {
         );
         const addressText = addressObj?.address || '';
 
-        if (addressObj) {
-          await saveLocationAddress(targetCoords, addressText);
-
-          showToast('주소 설정이 완료 되었습니다.');
-          setTimeout(() => {
-            navigation.reset({
-              index: 1,
-              routes: [{name: 'MainBtmbar'}, {name: 'SetLocationScreen'}],
-            });
-          }, 100);
-        } else {
-          showToast('주소 설정 오류.');
-          return;
+        if (route.params?.onAddressSelect) {
+          route.params.onAddressSelect({
+            address: addressText,
+            coords: targetCoords,
+          });
         }
+
+        showToast('주소 설정이 완료 되었습니다.');
+        navigation.goBack();
       }
     } catch (err) {
       handleLocationError(err);
       console.error('지도 재설정 중 오류:', err);
     } finally {
       setLoading(false);
-      setSameloaction(false);
     }
   };
 
@@ -193,7 +184,8 @@ const StoreAddMapScreen = ({navigation}) => {
           source={{html: KakaoMapHTML()}}
           javaScriptEnabled={true}
           domStorageEnabled={true}
-          nestedScrollEnabled={true}
+          nestedScrollEnabled={true} // 제스처 전달 허용
+          onLoadEnd={fetchSaveLocation}
           style={styles.webview}
           onMessage={onMessageHandler}
         />

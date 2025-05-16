@@ -7,6 +7,7 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import MyTabs from '../../../components/MyScreen/MyTabs';
 import MyReview from '../../../components/MyScreen/MyReview';
 import MyLocation from '../../../components/MyScreen/MyLocation';
+import MyManager from '../../../components/MyScreen/MyManager';
 import Loading from '../../../hooks/Loading';
 
 const MyScreen = ({navigation}) => {
@@ -35,6 +36,7 @@ const MyScreen = ({navigation}) => {
       try {
         const data = await Userdataget();
         setUserdata(data);
+        console.log(data.isManager);
       } catch (error) {
         if (error.response) {
           const statusCode = error.response.status; // 에러 코드 가져오기
@@ -83,11 +85,14 @@ const MyScreen = ({navigation}) => {
           })
         }
       />
-      <MyTabs changePage={setCurrentPage} />
+      <MyTabs changePage={setCurrentPage} isManager={userdata?.isManager} />
       <>
         {/* Myreview 값 가져오기 */}
         {currentPage === 'MyReview' && <MyReview navigation={navigation} />}
         {currentPage === 'MyLocation' && <MyLocation navigation={navigation} />}
+        {currentPage === 'MyManager' && userdata?.isManager === true && (
+          <MyManager navigation={navigation} />
+        )}
       </>
 
       <AlertComponent />

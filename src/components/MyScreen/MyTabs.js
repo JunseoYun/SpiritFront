@@ -10,7 +10,7 @@ import {
 
 const {width} = Dimensions.get('window'); // 화면 너비
 
-const MyTabs = ({changePage}) => {
+const MyTabs = ({changePage, isManager}) => {
   const [selectedTab, setSelectedTab] = useState(0); // 현재 선택된 탭의 인덱스
   const animatedValue = useRef(new Animated.Value(0)).current; // 애니메이션 값 초기화
 
@@ -18,6 +18,10 @@ const MyTabs = ({changePage}) => {
     {name: '나의 리뷰', screen: 'MyReview'},
     {name: '위치 설정', screen: 'MyLocation'},
   ];
+
+  if (isManager) {
+    tabs.push({name: '나의 매장', screen: 'MyManager'});
+  }
 
   // 탭 전환 시 애니메이션 효과
   const handlePress = index => {
@@ -32,8 +36,8 @@ const MyTabs = ({changePage}) => {
 
   // 애니메이션 값으로 밑줄 위치 계산
   const underlinePosition = animatedValue.interpolate({
-    inputRange: [0, 1], // 탭 인덱스
-    outputRange: [0, width / 2], // 각 탭의 밑줄 위치
+    inputRange: tabs.map((_, i) => i),
+    outputRange: tabs.map((_, i) => (width / tabs.length) * i),
   });
 
   return (
@@ -60,7 +64,10 @@ const MyTabs = ({changePage}) => {
       <Animated.View
         style={[
           styles.animatedUnderline,
-          {transform: [{translateX: underlinePosition}]},
+          {
+            width: width / tabs.length - 30,
+            transform: [{translateX: underlinePosition}],
+          },
         ]}
       />
     </View>
@@ -99,11 +106,11 @@ const styles = StyleSheet.create({
   },
   animatedUnderline: {
     height: 3,
-    width: width / 2 - 40, // 탭 2개 기준 너비에서 양쪽 20씩 줄임
+    width: width / 3 - 30, // 탭 2개 기준 너비에서 양쪽 20씩 줄임
     backgroundColor: '#45C9FF',
     position: 'absolute',
     bottom: 0,
-    marginHorizontal: 20, // 양쪽 여백 추가
+    marginHorizontal: 15, // 양쪽 여백 추가
   },
 });
 

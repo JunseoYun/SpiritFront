@@ -111,7 +111,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
         </Pressable>
       ),
     });
-  }, [navigation]);
+  }, [navigation, storename, address, imageUris]);
 
   return (
     <KeyboardAvoidingView
