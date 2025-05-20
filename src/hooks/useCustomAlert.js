@@ -76,6 +76,21 @@ const useCustomAlert = () => {
                     </TouchableOpacity>
                   </>
                 )}
+                {type === 'marketingConsent' && (
+                  <>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onCancel)}>
+                      <Text style={styles.buttonText}>거절</Text>
+                    </TouchableOpacity>
+                    <View style={styles.divider} />
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onConfirm)}>
+                      <Text style={styles.buttonText}>동의하기</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
                 {type === 'delete' && (
                   <>
                     <TouchableOpacity

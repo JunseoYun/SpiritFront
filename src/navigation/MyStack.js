@@ -27,12 +27,13 @@ const getScreenOptions = title => ({
   headerTitleAlign: 'center',
 });
 export default function MyStack() {
-  const {token, unToken} = useAuth();
+  // const {token, unToken} = useAuth();
 
   return (
     <Stack.Navigator
-      initialRouteName={!token && unToken ? 'MyLoginScreen' : 'MyScreen'}>
-      {!token && unToken ? (
+      // initialRouteName={!token && unToken ? 'MyLoginScreen' : 'MyScreen'}>
+      initialRouteName={'MyScreen'}>
+      {/* {!token && unToken ? (
         <Stack.Screen
           name="MyLoginScreen"
           component={MyLoginScreen}
@@ -47,22 +48,21 @@ export default function MyStack() {
             },
           }}
         />
-      ) : (
-        <Stack.Screen
-          name="MyScreen"
-          component={MyScreen}
-          options={{
-            headerShown: true,
-            headerTitleAlign: 'center',
-            title: '마이프로필',
-            headerTitleStyle: {
-              fontSize: 19, // 타이틀 크기 설정
-              color: '#333', // 텍스트 색상 (선택 사항)
-              fontFamily: 'Pretendard-Bold',
-            },
-          }}
-        />
-      )}
+      ) :  */}
+      <Stack.Screen
+        name="MyScreen"
+        component={MyScreen}
+        options={{
+          headerShown: true,
+          headerTitleAlign: 'center',
+          title: '마이프로필',
+          headerTitleStyle: {
+            fontSize: 19, // 타이틀 크기 설정
+            color: '#333', // 텍스트 색상 (선택 사항)
+            fontFamily: 'Pretendard-Bold',
+          },
+        }}
+      />
 
       <Stack.Screen
         name="ConfigScreen"
@@ -83,7 +83,6 @@ export default function MyStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="Mynickchange"
         component={Mynickchange}
@@ -103,7 +102,6 @@ export default function MyStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="ReviewEditScreen"
         component={ReviewEditScreen}
@@ -126,7 +124,6 @@ export default function MyStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="WithdrawScreen"
         component={WithdrawScreen}

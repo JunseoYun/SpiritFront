@@ -15,6 +15,7 @@ import filterWords from '../../hooks/filterWords';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
+import {getFcmToken} from '../../hooks/useNotificationPermission';
 
 const RegisterScreen = ({route, navigation}) => {
   // route.params를 통해 전달된 데이터 접근
@@ -124,8 +125,11 @@ const RegisterScreen = ({route, navigation}) => {
       await user_register(type, id, nickname);
 
       try {
+        const fcmToken = await getFcmToken();
+        console.log('🔥 FCM Token:', fcmToken);
         const login_data = await user_login(type, id, socialToken);
-        await loginauth(login_data.accessToken, login_data.refreshToken);
+        await loginauth(login_data.accessToken, login_data.refreshToken, null);
+        // await loginauth(login_data.accessToken, login_data.refreshToken, 마케팅 알림 수신 여부);
         navigation.reset({
           index: 0,
           routes: [

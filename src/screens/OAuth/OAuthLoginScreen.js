@@ -18,9 +18,13 @@ import {user_login} from '../../api/userApi';
 import {useAuth} from '../../context/AuthContext';
 import Config from 'react-native-config';
 import FastImage from 'react-native-fast-image';
-import {setUnLogin, clearUnLogin} from '../../storage/tokenStorage';
+import useCustomAlert from '../../hooks/useCustomAlert';
+// import {setUnLogin, clearUnLogin} from '../../storage/tokenStorage';
+import {getFcmToken} from '../../hooks/useNotificationPermission';
 const OAuthLoginScreen = ({navigation}) => {
-  const {loginauth, clearUnLogout, unLogin} = useAuth();
+  // const {loginauth, clearUnLogout, unLogin} = useAuth();
+  const {loginauth} = useAuth();
+  const {showAlert, AlertComponent} = useCustomAlert();
 
   useEffect(() => {
     GoogleSignin.revokeAccess();
@@ -31,10 +35,12 @@ const OAuthLoginScreen = ({navigation}) => {
   }, []);
 
   const handleLogin = async ({type, id, socialToken}) => {
+    const fcmToken = await getFcmToken();
+    console.log('🔥 FCM Token:', fcmToken);
     try {
       const response = await user_login(type, id, socialToken);
-      await loginauth(response.accessToken, response.refreshToken);
-      clearUnLogout();
+      await loginauth(response.accessToken, response.refreshToken, null);
+      // await loginauth(response.accessToken, response.refreshToken, 마케팅 알림 수신 여부);
     } catch (error) {
       if (error.response) {
         const {status, data, headers} = error.response;
@@ -101,10 +107,6 @@ const OAuthLoginScreen = ({navigation}) => {
         handleLogin({type, id, socialToken});
       }
     } catch (error) {}
-  };
-
-  const unLoginHandle = async () => {
-    await unLogin();
   };
 
   return (
@@ -186,12 +188,13 @@ const OAuthLoginScreen = ({navigation}) => {
         ) : (
           <View style={{height: 50, marginTop: 20}} />
         )}
-        <TouchableOpacity onPress={unLoginHandle}>
+        {/* <TouchableOpacity onPress={unLoginHandle}>
           <Text style={styles.unLoginText} allowFontScaling={false}>
             비로그인으로 시작하기
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
+      <AlertComponent />
     </SafeAreaView>
   );
 };

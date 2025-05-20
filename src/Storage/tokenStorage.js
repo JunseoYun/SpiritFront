@@ -52,31 +52,31 @@ export const removeToken = async () => {
   }
 };
 
-export const setUnLogin = async () => {
-  try {
-    await AsyncStorage.setItem('unLogin', 'true');
+// export const setUnLogin = async () => {
+//   try {
+//     await AsyncStorage.setItem('unLogin', 'true');
 
-    unLogin = 'true';
-    console.log(unLogin);
-  } catch (error) {
-    console.log('unLogin 오류:', error);
-  }
-  return 'true';
-};
+//     unLogin = 'true';
+//     console.log(unLogin);
+//   } catch (error) {
+//     console.log('unLogin 오류:', error);
+//   }
+//   return 'true';
+// };
 
-export const getUnLogin = async () => {
-  if (unLogin) return unLogin; // 메모리에 캐싱된 위치가 있으면 반환
-  try {
-    const unLoginStatus = await AsyncStorage.getItem('unLogin');
-    unLogin = unLoginStatus;
-    console.log('getItem: ', unLogin);
-    return unLogin;
-  } catch (error) {
-    console.log('unLogin 정보 가져오기 오류:', error);
-  }
-};
+// export const getUnLogin = async () => {
+//   if (unLogin) return unLogin; // 메모리에 캐싱된 위치가 있으면 반환
+//   try {
+//     const unLoginStatus = await AsyncStorage.getItem('unLogin');
+//     unLogin = unLoginStatus;
+//     console.log('getItem: ', unLogin);
+//     return unLogin;
+//   } catch (error) {
+//     console.log('unLogin 정보 가져오기 오류:', error);
+//   }
+// };
 
-export const clearUnLogin = async () => {
-  await AsyncStorage.removeItem('unLogin');
-  console.log('clear');
-};
+// export const clearUnLogin = async () => {
+//   await AsyncStorage.removeItem('unLogin');
+//   console.log('clear');
+// };
