@@ -128,13 +128,10 @@ const IdentityScreen = ({route, navigation}) => {
   };
 
   const handleNameStepComplete = () => {
-    console.log('handleNameStepComplete 들어옴');
     if (!nameStepDone && name.trim().length > 0) {
       setNameStepDone(true);
-      console.log('!nameStepDone && name.trim().length > 0 들어옴');
     }
     if (rrnFront == '') {
-      console.log('rrnFront == ');
       setTimeout(() => rrnFrontRef.current?.focus(), 100);
     }
   };
