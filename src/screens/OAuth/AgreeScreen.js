@@ -66,7 +66,7 @@ const AgreeScreen = ({route, navigation}) => {
       return;
     }
 
-    navigation.navigate('RegisterScreen', {
+    navigation.navigate('IdentityScreen', {
       type: type,
       id: id,
       socialToken: socialToken,
