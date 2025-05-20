@@ -8,10 +8,14 @@ import MyScreen from '../screens/BottomTab/My/MyScreen';
 import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
 import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import NotificationScreen from '../screens/BottomTab/My/Notification/NotificationScreen';
+import NotificationSetScreen from '../screens/BottomTab/My/Notification/NotificationSetScreen';
 import MyLoginScreen from '../screens/BottomTab/My/MyLoginScreen';
 import Octicons from 'react-native-vector-icons/Octicons';
 import {getUnLogin} from '../storage/tokenStorage';
 import {useAuth} from '../context/AuthContext';
+//AntDesign bells
 const Stack = createStackNavigator();
 
 // 재사용 가능한 옵션 컴포넌트
@@ -52,18 +56,29 @@ export default function MyStack() {
       <Stack.Screen
         name="MyScreen"
         component={MyScreen}
-        options={{
+        options={({navigation}) => ({
           headerShown: true,
           headerTitleAlign: 'center',
           title: '마이프로필',
           headerTitleStyle: {
-            fontSize: 19, // 타이틀 크기 설정
-            color: '#333', // 텍스트 색상 (선택 사항)
+            fontSize: 19,
+            color: '#333',
             fontFamily: 'Pretendard-Bold',
           },
-        }}
+          headerRight: () => (
+            <Pressable
+              onPress={() => navigation.navigate('NotificationScreen')}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <AntDesign
+                name="bells"
+                size={22}
+                color="#333"
+                style={{paddingRight: 14}}
+              />
+            </Pressable>
+          ),
+        })}
       />
-
       <Stack.Screen
         name="ConfigScreen"
         component={ConfigScreen}
@@ -138,6 +153,57 @@ export default function MyStack() {
               hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
               <Ionicons
                 name="close"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+        options={({navigation}) => ({
+          ...getScreenOptions('알림'), // getScreenOptions 객체를 펼쳐 병합
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+          headerRight: () => (
+            <Pressable
+              onPress={() => navigation.navigate('NotificationSetScreen')}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <AntDesign
+                name="setting"
+                size={23}
+                color="#333"
+                style={{paddingRight: 14}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="NotificationSetScreen"
+        component={NotificationSetScreen}
+        options={({navigation}) => ({
+          ...getScreenOptions('알림 설정'), // getScreenOptions 객체를 펼쳐 병합
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
                 size={23}
                 color="#333"
                 style={{paddingLeft: 12}}

@@ -10,6 +10,10 @@ import {ToastProvider} from './src/context/ToastContext';
 import SplashScreen from 'react-native-splash-screen';
 import MySplashScreen from './src/screens/MySplashScreen';
 import {iniBasictNotification} from './src/hooks/useNotificationPermission';
+import messaging from '@react-native-firebase/messaging';
+import notifee, {AndroidImportance} from '@notifee/react-native';
+import {useNotificationSetup} from './src/hooks/useNotificationSetup';
+
 import './reanimatedConfig';
 
 if (!__DEV__) {
@@ -19,6 +23,8 @@ if (!__DEV__) {
 }
 
 const App = () => {
+  useNotificationSetup();
+
   useEffect(() => {
     if (Platform.OS === 'ios') {
       setTimeout(() => {
@@ -26,7 +32,6 @@ const App = () => {
       }, 500); // 0.5초 후에 숨김
     }
   }, []);
-
   return (
     <PaperProvider>
       <AuthProvider>
