@@ -19,6 +19,10 @@ import {useAuth} from '../../../context/AuthContext';
 import Config from 'react-native-config';
 import FastImage from 'react-native-fast-image';
 import {setUnLogin, clearUnLogin} from '../../../storage/tokenStorage';
+import {
+  requestNotificationPermission,
+  getFcmToken,
+} from '../../../hooks/useNotificationPermission';
 const MyLoginScreen = ({navigation}) => {
   const {loginauth, clearUnLogout} = useAuth();
 
@@ -31,6 +35,7 @@ const MyLoginScreen = ({navigation}) => {
   }, []);
 
   const handleLogin = async ({type, id, socialToken}) => {
+    await getFcmToken();
     try {
       const response = await user_login(type, id, socialToken);
       await loginauth(response.accessToken, response.refreshToken);

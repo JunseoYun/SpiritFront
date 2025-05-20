@@ -17,7 +17,7 @@ const MyPageheader = ({nickname, onProfilePress, imageuri}) => (
 
       <FontAwesomeIcon
         name={'angle-right'}
-        size={30}
+        size={28}
         color={'#999'}
         style={styles.changenick}
       />
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   },
   Nickname: {
     fontSize: 20,
-    fontFamily: 'Pretendard-Bold',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#333',
     marginLeft: 20,
   },

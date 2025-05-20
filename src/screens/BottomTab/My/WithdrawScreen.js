@@ -11,6 +11,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useAuth} from '../../../context/AuthContext';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {user_withdraw} from '../../../api/userApi';
+import {removeNotification} from '../../../storage/notificationStorage';
 const WithdrawScreen = () => {
   const navigation = useNavigation();
   const {logout} = useAuth();
@@ -44,7 +45,7 @@ const WithdrawScreen = () => {
       ],
     });
     await logout(); // 로그아웃 완료될 때까지 대기
-    await unLogin();
+    await removeNotification();
   };
 
   return (
