@@ -70,6 +70,7 @@ const AgreeScreen = ({route, navigation}) => {
       type: type,
       id: id,
       socialToken: socialToken,
+      index: 0,
     });
   };
 
