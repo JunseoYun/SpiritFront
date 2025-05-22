@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
   View,
   Text,
@@ -11,12 +11,14 @@ import {
   Modal,
   ScrollView,
   InteractionManager,
+  BackHandler,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import filterWords from '../../hooks/filterWords';
 import {useToast} from '../../context/ToastContext';
+import {useFocusEffect} from '@react-navigation/native';
 
 const CARRIER_OPTIONS = [
   'SKT',
@@ -28,7 +30,8 @@ const CARRIER_OPTIONS = [
 ];
 
 const IdentityScreen = ({route, navigation}) => {
-  const {type, id, socialToken} = route.params;
+  const {type, id, socialToken, index} = route?.params ?? {};
+
   const insets = useSafeAreaInsets();
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
@@ -227,11 +230,30 @@ const IdentityScreen = ({route, navigation}) => {
     if (sendToMsg) {
       if (otpcode.length == 6) {
         if (verificationcode === otpcode) {
-          navigation.navigate('RegisterScreen', {
-            type: type,
-            id: id,
-            socialToken: socialToken,
-          });
+          if (index == 0) {
+            navigation.navigate('RegisterScreen', {
+              type: type,
+              id: id,
+              socialToken: socialToken,
+            });
+          }
+          if (index == 1) {
+            navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: 'MainBtmbar',
+                  state: {
+                    routes: [
+                      {
+                        name: 'MyStack',
+                      },
+                    ],
+                  },
+                },
+              ],
+            });
+          }
           showToast('인증 되었습니다.');
         } else {
           setError('otpcode');
@@ -272,7 +294,7 @@ const IdentityScreen = ({route, navigation}) => {
           <ScrollView
             ref={scrollViewRef}
             contentContainerStyle={{
-              paddingTop: '30%',
+              paddingTop: '20%',
               paddingBottom: 120,
             }}
             keyboardShouldPersistTaps="handled"
@@ -420,8 +442,12 @@ const IdentityScreen = ({route, navigation}) => {
                           flex: 4,
                           textAlign: 'center',
                           paddingHorizontal: 5,
+                          textAlignVertical: 'center',
+                          fontSize: 12,
                         }}
-                        allowFontScaling={false}>
+                        allowFontScaling={false}
+                        numberOfLines={1}
+                        ellipsizeMode="clip">
                         ● ● ● ● ● ●
                       </Text>
                     </View>

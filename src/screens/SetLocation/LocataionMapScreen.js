@@ -34,7 +34,9 @@ const LocataionMapScreen = ({navigation}) => {
   const webViewRef = useRef(null);
 
   useEffect(() => {
-    updateNewLocation();
+    if (location) {
+      updateNewLocation();
+    }
   }, [location]);
 
   const roundToPrecision = (value, precision = 4) => {
@@ -75,15 +77,14 @@ const LocataionMapScreen = ({navigation}) => {
       const roundedNewLat = roundToPrecision(location.latitude);
       const roundedNewLng = roundToPrecision(location.longitude);
 
-      const centerLat = centerLatLng.latitude
-        ? roundToPrecision(centerLatLng.latitude)
-        : roundToPrecision(currentloacation.latitude);
+      const centerLat = roundToPrecision(
+        centerLatLng?.latitude ?? currentloacation.latitude,
+      );
+      const centerLng = roundToPrecision(
+        centerLatLng?.longitude ?? currentloacation.longitude,
+      );
 
-      const centerLng = centerLatLng.longitude
-        ? roundToPrecision(centerLatLng.longitude)
-        : roundToPrecision(currentloacation.longitude);
-
-      if (roundedNewLat == centerLat && roundedNewLng === centerLng) {
+      if (roundedNewLat === centerLat && roundedNewLng === centerLng) {
         showToast('이전에 설정한 위치와 같습니다.', 'center');
         return;
       }

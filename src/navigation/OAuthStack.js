@@ -2,7 +2,6 @@ import React from 'react';
 import {Pressable} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {createStackNavigator} from '@react-navigation/stack';
-
 import OAuthLoginScreen from '../screens/OAuth/OAuthLoginScreen';
 import RegisterScreen from '../screens/OAuth/RegisterScreen';
 import AgreeScreen from '../screens/OAuth/AgreeScreen';
@@ -29,8 +28,32 @@ export default function OAuthStack() {
       />
       <Stack.Screen
         name="IdentityScreen"
-        options={{headerShown: false}}
         component={IdentityScreen}
+        options={({navigation}) => ({
+          animation: 'default',
+          headerShown: true, // 명시적으로 표시
+          title: '',
+          headerStyle: {
+            elevation: 0, // Android 그림자 제거
+            shadowOpacity: 0, // iOS 그림자 제거
+            borderBottomWidth: 0, // border 제거
+            backgroundColor: '#fff', // 배경색 명시
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                navigation.goBack();
+              }}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="close"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
       />
       <Stack.Screen
         name="RegisterScreen"
