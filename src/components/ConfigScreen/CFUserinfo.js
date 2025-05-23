@@ -4,6 +4,7 @@ import FastImage from 'react-native-fast-image';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 const CFUserinfo = ({userdata, navigation}) => {
+  console.log(userdata);
   return (
     <>
       <View style={styles.topcontainer}>
@@ -63,24 +64,42 @@ const CFUserinfo = ({userdata, navigation}) => {
           <Text style={styles.label}>연동된 소셜 계정</Text>
           <View style={styles.info}>
             <FastImage
-              style={[
-                styles.socialimg,
-                userdata.socialInfoDto?.type === 'GOOGLE' && {
-                  marginRight: 10,
-                },
-              ]}
-              source={
-                userdata.socialInfoDto?.type === 'GOOGLE'
-                  ? require('../../assets/g-logo.png')
-                  : userdata.socialInfoDto?.type === 'APPLE'
-                  ? require('../../assets/AppleLogozmek.png')
-                  : require('../../assets/kakao_symbol_yellow.png') // 기본값 또는 KAKAO
-              }
+              style={[styles.socialimg, {marginRight: 20}]}
+              source={require('../../assets/kakao_symbol_yellow.png')}
               resizeMode={FastImage.resizeMode.contain}
             />
-            {/* <View>
-              <FontAwesomeIcon name="angle-right" size={25} color="#999" />
-            </View> */}
+            <FastImage
+              style={[styles.socialimg]}
+              source={require('../../assets/g-logo.png')}
+              resizeMode={FastImage.resizeMode.contain}
+            />
+            <FastImage
+              style={[styles.socialAppleimg]}
+              source={require('../../assets/appleLogo3.png')}
+              resizeMode={FastImage.resizeMode.contain}
+            />
+
+            {/* {userdata.socialInfoDto?.type === 'KAKAO' && (
+             <FastImage
+              style={[styles.socialimg, {marginRight: 20}]}
+              source={require('../../assets/kakao_symbol_yellow.png')}
+              resizeMode={FastImage.resizeMode.contain}
+            />
+            )}
+            {userdata.socialInfoDto?.type === 'GOOGLE' && (
+           <FastImage
+              style={[styles.socialimg]}
+              source={require('../../assets/g-logo.png')}
+              resizeMode={FastImage.resizeMode.contain}
+            />
+            )}
+            {userdata.socialInfoDto?.type === 'APPLE' && (
+             <FastImage
+              style={[styles.socialAppleimg]}
+              source={require('../../assets/appleLogo3.png')}
+              resizeMode={FastImage.resizeMode.contain}
+            />
+            )} */}
           </View>
         </View>
       </View>
@@ -143,6 +162,13 @@ const styles = StyleSheet.create({
     height: 18,
     resizeMode: 'contain',
     marginRight: 5,
+  },
+  socialAppleimg: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
+    borderRadius: 50,
+    marginVertical: -10,
   },
 });
 

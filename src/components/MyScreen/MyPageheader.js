@@ -17,7 +17,7 @@ const MyPageheader = ({nickname, onProfilePress, imageuri}) => (
 
       <FontAwesomeIcon
         name={'angle-right'}
-        size={28}
+        size={22}
         color={'#999'}
         style={styles.changenick}
       />

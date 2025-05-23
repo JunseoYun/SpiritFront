@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
   label: {
     color: '#999',
     fontFamily: 'Pretendard-Medium',
+    fontSize: 12,
   },
 });
 
