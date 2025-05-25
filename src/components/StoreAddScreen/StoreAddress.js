@@ -1,11 +1,12 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  Pressable,
+  Animated,
+  Easing,
 } from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
 
@@ -23,6 +24,18 @@ const StoreAddress = ({
 }) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
   const [errors, setErrors] = useState(null); // 에러 메시지 상태
+
+  const labelAnim = useRef(new Animated.Value(detailedAddress ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(labelAnim, {
+      toValue:
+        focusedInput === 'detailedAddress' || detailedAddress !== '' ? 1 : 0,
+      duration: 200,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  }, [focusedInput, detailedAddress]);
 
   const isFocused = key => focusedInput === key;
 
@@ -45,6 +58,21 @@ const StoreAddress = ({
     styles.storeinputview,
     index === 1 && {marginTop: 40},
   ];
+
+  const labelStyle = {
+    position: 'absolute',
+    left: 1,
+    top: labelAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [16, -8],
+    }),
+    fontSize: labelAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [22, 16],
+    }),
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
+  };
 
   return (
     <View>
@@ -91,17 +119,16 @@ const StoreAddress = ({
         <Text style={styles.errorMessage}>매장주소를 입력해주세요.</Text>
       )}
       <View style={inputViewStyle}>
-        {detailedAddress && (
-          <Text style={[styles.storeinputtext, index === 1 && {color: '#333'}]}>
-            상세 주소
-          </Text>
-        )}
+        <Animated.Text style={labelStyle}>
+          상세 주소, 건물 층수, 호수 등
+        </Animated.Text>
         <TextInput
           style={[
             styles.storeinput,
-            isFocused('detailedAddress') && styles.focusedInput, // 활성화 상태 스타일
+            isFocused('detailedAddress') && styles.focusedInput,
+            {paddingBottom: 7, paddingTop: 20, paddingLeft: 1}, // 활성화 상태 스타일
           ]}
-          placeholder="상세 주소, 건물 층수, 호수 등"
+          placeholder=""
           placeholderTextColor="#999"
           value={detailedAddress}
           onChangeText={handleDetailedAddressChange} // 상세 주소 업데이트 핸들러 사용
@@ -128,7 +155,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   storeinputtext: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
