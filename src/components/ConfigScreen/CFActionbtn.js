@@ -17,7 +17,7 @@ const CFActionbtn = ({navigation}) => {
     });
     try {
       // await unLogin();
-      logout();
+      await logout();
     } catch (error) {
       console.error('Log-Out Error:', error);
       showAlert({

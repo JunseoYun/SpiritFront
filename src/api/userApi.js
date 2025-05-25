@@ -1,6 +1,8 @@
 import axiosInstance from './axiosInstance';
 import {functionError} from './errorHandler';
+import {getRefreshToken} from '../storage/tokenStorage';
 import axios from 'axios';
+import Config from 'react-native-config';
 
 export const user_login = async (type, id, accessToken) => {
   const data = {
@@ -17,6 +19,28 @@ export const user_login = async (type, id, accessToken) => {
     return response.data.data; // 응답 데이터 반환
   } catch (error) {
     functionError(error); // 에러 처리
+    throw error;
+  }
+};
+
+export const user_logout = async () => {
+  try {
+    const refreshToken = await getRefreshToken();
+    console.log('🔐 refreshToken:', refreshToken);
+
+    const response = await axios.post(
+      `https://${Config.BASE_URL}/api/auth/logout`,
+      {}, // 👈 body는 비우고
+      {
+        headers: {
+          'x-auth-token': refreshToken, // 👈 헤더는 세 번째 인자에!
+        },
+      },
+    );
+    console.log('✅ logout response', response.data);
+  } catch (error) {
+    console.error('❌ logout error:', error.response?.data || error.message);
+    functionError(error);
     throw error;
   }
 };
