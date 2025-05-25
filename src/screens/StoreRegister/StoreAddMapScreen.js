@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  InteractionManager,
 } from 'react-native';
 
 import {WebView} from 'react-native-webview';
@@ -33,20 +34,13 @@ const StoreAddMapScreen = ({navigation}) => {
   const {showToast} = useToast();
   const webViewRef = useRef(null);
 
-  useEffect(() => {
-    let isMounted = true; // ✅ cleanup을 위한 변수 추가
-
-    fetchSaveLocation();
-    return () => {
-      isMounted = false; // ✅ cleanup
-    };
-  }, [location]);
-
   const fetchSaveLocation = async () => {
     setLoading(true);
+
     try {
       const currentLocation = await getLocation();
       setCurrentloacation(currentLocation);
+
       if (webViewRef.current) {
         const script = StoreMapAddScript(
           currentLocation.latitude,
@@ -55,11 +49,11 @@ const StoreAddMapScreen = ({navigation}) => {
         webViewRef.current.injectJavaScript(script);
       }
     } catch (err) {
-      console.error('위치 가져오는 중 오류 발생:', err);
     } finally {
       setLoading(false);
     }
   };
+
   const roundToPrecision = (value, precision = 4) => {
     return parseFloat(value.toFixed(precision)); // 🔥 소수점 5자리까지만 남김
   };
@@ -93,7 +87,7 @@ const StoreAddMapScreen = ({navigation}) => {
         }
       }
     } catch (err) {
-      console.error('위치 업데이트 중 오류 발생:', err);
+      console.error('🔴 위치 가져오는 중 오류 발생:', err);
     } finally {
       setLoading(false);
     }
@@ -147,6 +141,15 @@ const StoreAddMapScreen = ({navigation}) => {
   const onMessageHandler = event => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
+      console.log('💬 WebView message:', message);
+
+      if (message.action === 'mapLoaded') {
+        console.log('✅ mapLoaded 수신됨');
+
+        fetchSaveLocation();
+        return;
+      }
+
       if (message.action === 'mapMoved') {
         if (isProgrammaticPan.current) {
           isProgrammaticPan.current = false;
@@ -185,7 +188,6 @@ const StoreAddMapScreen = ({navigation}) => {
           javaScriptEnabled={true}
           domStorageEnabled={true}
           nestedScrollEnabled={true} // 제스처 전달 허용
-          onLoadEnd={fetchSaveLocation}
           style={styles.webview}
           onMessage={onMessageHandler}
         />
