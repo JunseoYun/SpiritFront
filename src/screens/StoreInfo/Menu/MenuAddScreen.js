@@ -13,12 +13,14 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import {StoreMenucreate} from '../../../api/menuApi';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import Loading from '../../../hooks/Loading';
+import {useToast} from '../../../context/ToastContext';
 
 const MenuAddScreen = ({navigation}) => {
   const route = useRoute();
   const scrollViewRef = useRef(null);
   const {storeId} = route.params;
   const [loading, setLoading] = useState(false);
+  const {showToast} = useToast();
 
   const {showAlert, AlertComponent} = useCustomAlert();
 
@@ -50,6 +52,10 @@ const MenuAddScreen = ({navigation}) => {
   };
 
   const handleDeleteMenu = index => {
+    if (menus.length === 1) {
+      showToast('메뉴는 최소 1개 이상 등록되어야 합니다.', 'center');
+      return;
+    }
     showAlert({
       title: '메뉴 삭제',
       message: '해당 메뉴를 삭제하시겠습니까?',

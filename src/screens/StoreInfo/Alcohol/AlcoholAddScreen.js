@@ -13,13 +13,14 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import {StoreDrinkcreate} from '../../../api/drinkApi';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import Loading from '../../../hooks/Loading';
+import {useToast} from '../../../context/ToastContext';
 
 const AlcoholAddScreen = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const route = useRoute();
   const scrollViewRef = useRef(null);
   const {storeId} = route.params;
-
+  const {showToast} = useToast();
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const [alcohols, setAlcohols] = useState([
@@ -48,6 +49,10 @@ const AlcoholAddScreen = ({navigation}) => {
   };
 
   const handleDeleteAlcohol = index => {
+    if (alcohols.length === 1) {
+      showToast('주류는 최소 1개 이상 등록되어야 합니다.', 'center');
+      return;
+    }
     showAlert({
       title: '주류 삭제',
       message: '해당 주류를 삭제하시겠습니까?',
