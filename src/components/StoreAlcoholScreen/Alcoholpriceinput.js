@@ -47,7 +47,8 @@ const Alcoholpriceinput = ({
           onChangeText={onChangeText}
           placeholder={placeholder}
           multiline={isMultiline}
-          keyboardType="numeric"
+          keyboardType="number-pad"
+          placeholderTextColor="#999"
           textAlignVertical={isMultiline ? 'top' : 'auto'}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
@@ -66,6 +67,7 @@ const styles = StyleSheet.create({
     paddingLeft: 1,
     marginBottom: 40,
     marginHorizontal: 18,
+    color: 'black',
   },
   inputMultiline: {
     minHeight: 30,
@@ -75,6 +77,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     marginBottom: 20,
     marginHorizontal: 18,
+    color: 'black',
   },
   inputText: {
     marginVertical: 5,

@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     paddingVertical: 7,
     paddingLeft: 1,
+    color: 'black',
   },
   textarea: {
     textAlignVertical: 'top', // multiline에서 내용 정렬

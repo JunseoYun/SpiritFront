@@ -82,18 +82,7 @@ const IdentityScreen = ({route, navigation}) => {
   const otpcodeRef = useRef(null);
 
   const handlenamechange = value => {
-    const containsForbiddenWord = forbiddenWords.some(word =>
-      value.includes(word),
-    );
-
-    setNameerror(prev => ({
-      ...prev,
-      name: containsForbiddenWord ? '비속어 사용 금지' : null,
-    }));
-
-    if (!containsForbiddenWord) {
-      setName(value);
-    }
+    setName(value);
   };
 
   useEffect(() => {
@@ -146,6 +135,19 @@ const IdentityScreen = ({route, navigation}) => {
       filterWords.some(word => name.includes(word))
     ) {
       setError('name');
+      setTimeout(() => {
+        nameRef.current?.focus();
+      }, 100);
+      scrollToError(nameRef);
+      return;
+    }
+    if (forbiddenWords.some(word => name.includes(word))) {
+      setNameerror(prev => ({
+        ...prev,
+        name: forbiddenWords.some(word => name.includes(word))
+          ? '비속어 사용 금지'
+          : null,
+      }));
       setTimeout(() => {
         nameRef.current?.focus();
       }, 100);
@@ -351,6 +353,7 @@ const IdentityScreen = ({route, navigation}) => {
                         error === 'phoneNumber' && styles.errorFocused,
                       ]}
                       placeholder={phoneplaceholder}
+                      placeholderTextColor="#999"
                       keyboardType="number-pad"
                       value={phoneNumber}
                       onChangeText={text => {
@@ -395,6 +398,7 @@ const IdentityScreen = ({route, navigation}) => {
                             error === 'rrnFront' && styles.errorFocused,
                           ]}
                           placeholder={rrnfplaceholder}
+                          placeholderTextColor="#999"
                           keyboardType="number-pad"
                           value={rrnFront}
                           onChangeText={text => {
@@ -480,6 +484,7 @@ const IdentityScreen = ({route, navigation}) => {
                         styles.errorFocused,
                     ]}
                     placeholder={nameplaceholder}
+                    placeholderTextColor="#999"
                     value={name}
                     onChangeText={handlenamechange}
                     onSubmitEditing={handleNameStepComplete}
@@ -529,6 +534,7 @@ const IdentityScreen = ({route, navigation}) => {
                       error === 'otpcode' && styles.errorFocused,
                     ]}
                     placeholder={'6자리 입력'}
+                    placeholderTextColor="#999"
                     keyboardType="number-pad"
                     value={otpcode}
                     onChangeText={text => {

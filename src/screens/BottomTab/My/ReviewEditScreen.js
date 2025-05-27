@@ -259,6 +259,7 @@ const ReviewEditScreen = ({route, navigation}) => {
             value={reviewContent}
             onChangeText={setReviewContent}
             placeholder={'리뷰를 입력하세요'}
+            placeholderTextColor={'#999'}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             multiline

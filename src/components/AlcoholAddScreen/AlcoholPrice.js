@@ -41,7 +41,7 @@ const AlcoholPrice = ({
           placeholder={placeholder}
           placeholderTextColor={placeholderTextColor}
           multiline={multiline}
-          keyboardType="numeric"
+          keyboardType="number-pad"
         />
       )}
     </View>
@@ -82,6 +82,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     paddingVertical: 7,
     paddingLeft: 1,
+    color: 'black',
   },
   textarea: {
     textAlignVertical: 'top',
