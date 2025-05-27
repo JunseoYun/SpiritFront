@@ -35,6 +35,7 @@ const UpdateStoreDescription = ({
         onChangeText={handleContentChange}
         placeholder="매장 소개를 입력하세요"
         textAlignVertical="top" // 🔥 입력 시 텍스트가 위쪽 정렬되도록 설정
+        placeholderTextColor="#999"
       />
       {overText && (
         <Text style={styles.errorText}>
@@ -74,6 +75,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     textAlignVertical: 'top', // 🔥 다중 줄 입력 시 텍스트 정렬 (위쪽 정렬)
     maxHeight: 150, // 🔥 5줄까지 표시할 수 있도록 설정
+    color: 'black',
   },
   errorText: {
     color: '#FF4816',

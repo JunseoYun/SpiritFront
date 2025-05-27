@@ -1,12 +1,10 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  Animated,
-  Easing,
-} from 'react-native';
+import {View, Text, TextInput, StyleSheet} from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 import forbiddenWords from '../../hooks/forbiddenWords';
 
 const StoreAddname = ({storename, setStorename, error}) => {
@@ -14,17 +12,13 @@ const StoreAddname = ({storename, setStorename, error}) => {
   const [errors, setErrors] = useState({});
   const storeNameInputRef = useRef(null);
 
-  // Animated 값
-  const labelAnim = useRef(new Animated.Value(storename ? 1 : 0)).current;
+  // reanimated shared value
+  const labelAnim = useSharedValue(storename !== '' ? 1 : 0);
 
-  // 애니메이션 트리거
   useEffect(() => {
-    Animated.timing(labelAnim, {
-      toValue: focusedInput || storename !== '' ? 1 : 0,
-      duration: 200,
-      easing: Easing.out(Easing.ease),
-      useNativeDriver: false,
-    }).start();
+    labelAnim.value = withTiming(focusedInput || storename !== '' ? 1 : 0, {
+      duration: 120,
+    });
   }, [focusedInput, storename]);
 
   useEffect(() => {
@@ -47,33 +41,38 @@ const StoreAddname = ({storename, setStorename, error}) => {
     }
   };
 
-  // 라벨 애니메이션 스타일
-  const labelStyle = {
-    position: 'absolute',
-    left: 1,
-    top: labelAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [16, -8],
-    }),
-    fontSize: labelAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [22, 16],
-    }),
-    color: '#999',
-    fontFamily: 'Pretendard-Medium',
-  };
+  const animatedLabelStyle = useAnimatedStyle(() => {
+    const isFocused = labelAnim.value === 1;
+
+    return {
+      position: 'absolute',
+      left: 1, // 텍스트 정렬
+      transform: [
+        {
+          translateY: withTiming(isFocused ? -8 : 16, {
+            duration: 120,
+          }),
+        },
+      ],
+      fontSize: withTiming(isFocused ? 16 : 22, {
+        duration: 120,
+      }),
+    };
+  });
 
   return (
     <View>
       <View style={styles.storeinputview}>
-        <View style={{position: 'relative'}}>
-          <Animated.Text style={labelStyle}>매장 이름*</Animated.Text>
+        <View style={styles.inputWrapper}>
+          <Animated.Text style={[styles.animatedLabel, animatedLabelStyle]}>
+            매장 이름*
+          </Animated.Text>
           <TextInput
             ref={storeNameInputRef}
             style={[styles.storeinput, focusedInput && styles.focusedInput]}
             value={storename}
             onChangeText={handleChange}
-            placeholder="" // placeholder 제거
+            placeholder=""
             onFocus={() => setFocusedInput(true)}
             onBlur={() => setFocusedInput(false)}
             returnKeyType="done"
@@ -95,6 +94,9 @@ const styles = StyleSheet.create({
     marginTop: 50,
     marginHorizontal: 20,
   },
+  inputWrapper: {
+    position: 'relative',
+  },
   storeinput: {
     width: '100%',
     borderBottomColor: '#F2F2F2',
@@ -104,10 +106,16 @@ const styles = StyleSheet.create({
     paddingBottom: 7,
     paddingTop: 20,
     paddingLeft: 1,
+    color: 'black',
   },
   focusedInput: {
     borderBottomColor: '#16BBFF',
     borderBottomWidth: 2,
+  },
+  animatedLabel: {
+    fontSize: 22,
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
   },
   errorText: {
     color: '#FF4816',

@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     paddingVertical: 7,
     paddingLeft: 1,
+    color: 'black',
   },
   addButton: {
     backgroundColor: '#16BBFF',

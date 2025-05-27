@@ -72,7 +72,7 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
           ]}
           value={storeData.storeNumber}
           onChangeText={text => handleChange('storeNumber', text)}
-          keyboardType="numeric"
+          keyboardType="number-pad"
           placeholder="매장 연락처"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('storeNumber')}
@@ -94,7 +94,7 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
           ]}
           value={storeData.userContact}
           onChangeText={text => handleChange('userContact', text)}
-          keyboardType="numeric"
+          keyboardType="number-pad"
           placeholder="신청자 연락처"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('userContact')}
@@ -127,6 +127,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     paddingVertical: 7,
     paddingLeft: 1,
+    color: 'black',
   },
   focusedInput: {
     borderBottomColor: '#16BBFF', // 활성화 상태 색상

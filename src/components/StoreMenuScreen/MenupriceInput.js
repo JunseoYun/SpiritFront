@@ -60,7 +60,8 @@ const MenupriceInput = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           maxLength={maxLength}
-          keyboardType="numeric"
+          keyboardType="number-pad"
+          placeholderTextColor="#999"
         />
       )}
     </View>
@@ -82,6 +83,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingLeft: 1,
     marginBottom: 20,
+    color: 'black',
   },
   inputMultiline: {
     width: '100%',
@@ -92,6 +94,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlignVertical: 'top',
     marginBottom: 20,
+    color: 'black',
   },
   labelRow: {
     flexDirection: 'row',

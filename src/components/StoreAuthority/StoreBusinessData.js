@@ -83,7 +83,7 @@ const StoreBusinessData = ({businessData, setBusinessData}) => {
           ]}
           value={businessData.businessNumber}
           onChangeText={text => handleChange('businessNumber', text)}
-          keyboardType="numeric"
+          keyboardType="number-pad"
           placeholder="사업자등록번호*"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('businessNumber')}
@@ -106,7 +106,7 @@ const StoreBusinessData = ({businessData, setBusinessData}) => {
           ]}
           value={businessData.openDate}
           onChangeText={text => handleChange('openDate', text)}
-          keyboardType="numeric"
+          keyboardType="number-pad"
           placeholder="개업연월일* 19000101"
           placeholderTextColor="#999"
           maxLength={8}
@@ -133,7 +133,7 @@ const StoreBusinessData = ({businessData, setBusinessData}) => {
           ]}
           value={businessData.drink_sales_number}
           onChangeText={text => handleChange('drink_sales_number', text)}
-          keyboardType="numeric"
+          keyboardType="number-pad"
           placeholder="주류판매신고번호*"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('drink_sales_number')}
@@ -166,6 +166,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     paddingVertical: 7,
     paddingLeft: 1,
+    color: 'black',
   },
   focusedInput: {
     borderBottomColor: '#16BBFF',

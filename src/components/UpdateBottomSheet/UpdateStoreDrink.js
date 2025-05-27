@@ -205,7 +205,7 @@ const UpdateStoreDrink = ({navigation, route}) => {
                       <View style={styles.priceInputWrapper}>
                         <TextInput
                           style={styles.priceInput}
-                          keyboardType="numeric"
+                          keyboardType="number-pad"
                           placeholder="0"
                           placeholderTextColor="#aaa"
                           value={drink.price?.toString() || ''}
