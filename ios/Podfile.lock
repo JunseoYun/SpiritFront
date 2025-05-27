@@ -10,11 +10,25 @@ PODS:
   - boost (1.84.0)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.76.5)
+  - Firebase/Auth (11.12.0):
+    - Firebase/CoreOnly
+    - FirebaseAuth (~> 11.12.0)
   - Firebase/CoreOnly (11.12.0):
     - FirebaseCore (~> 11.12.0)
   - Firebase/Messaging (11.12.0):
     - Firebase/CoreOnly
     - FirebaseMessaging (~> 11.12.0)
+  - FirebaseAppCheckInterop (11.12.0)
+  - FirebaseAuth (11.12.0):
+    - FirebaseAppCheckInterop (~> 11.0)
+    - FirebaseAuthInterop (~> 11.0)
+    - FirebaseCore (~> 11.12.0)
+    - FirebaseCoreExtension (~> 11.12.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/Environment (~> 8.0)
+    - GTMSessionFetcher/Core (< 5.0, >= 3.4)
+    - RecaptchaInterop (~> 101.0)
+  - FirebaseAuthInterop (11.12.0)
   - FirebaseCore (11.12.0):
     - FirebaseCoreInternal (~> 11.12.0)
     - GoogleUtilities/Environment (~> 8.0)
@@ -1838,6 +1852,7 @@ PODS:
     - React-logger (= 0.76.5)
     - React-perflogger (= 0.76.5)
     - React-utils (= 0.76.5)
+  - RecaptchaInterop (101.0.0)
   - RNAppleAuthentication (2.4.0):
     - React-Core
   - RNCAsyncStorage (2.1.0):
@@ -1892,6 +1907,10 @@ PODS:
   - RNFBApp (22.2.0):
     - Firebase/CoreOnly (= 11.12.0)
     - React-Core
+  - RNFBAuth (22.2.0):
+    - Firebase/Auth (= 11.12.0)
+    - React-Core
+    - RNFBApp
   - RNFBMessaging (22.2.0):
     - Firebase/Messaging (= 11.12.0)
     - FirebaseCoreExtension
@@ -2224,6 +2243,7 @@ DEPENDENCIES:
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - RNFastImage (from `../node_modules/react-native-fast-image`)
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
+  - "RNFBAuth (from `../node_modules/@react-native-firebase/auth`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
@@ -2241,6 +2261,9 @@ SPEC REPOS:
     - AppAuth
     - BEMCheckBox
     - Firebase
+    - FirebaseAppCheckInterop
+    - FirebaseAuth
+    - FirebaseAuthInterop
     - FirebaseCore
     - FirebaseCoreExtension
     - FirebaseCoreInternal
@@ -2267,6 +2290,7 @@ SPEC REPOS:
     - lottie-ios
     - nanopb
     - PromisesObjC
+    - RecaptchaInterop
     - SDWebImage
     - SDWebImageWebPCoder
     - SocketRocket
@@ -2430,6 +2454,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-fast-image"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
+  RNFBAuth:
+    :path: "../node_modules/@react-native-firebase/auth"
   RNFBMessaging:
     :path: "../node_modules/@react-native-firebase/messaging"
   RNGestureHandler:
@@ -2459,6 +2485,9 @@ SPEC CHECKSUMS:
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   FBLazyVector: 1bf99bb46c6af9a2712592e707347315f23947aa
   Firebase: 735108d2d0b67827cd929bfe8254983907c4479f
+  FirebaseAppCheckInterop: 73b173e5ec45192e2d522ad43f526a82ad10b852
+  FirebaseAuth: 4ce97ceb271fce2b6cec6c53021930841442b15a
+  FirebaseAuthInterop: b583210c039a60ed3f1e48865e1f3da44a796595
   FirebaseCore: 9d7a0caf39ec7317fbe13b3c7864c8c2acc60da8
   FirebaseCoreExtension: 5e42645fd3f7c2c59ea5ed7641dd58f02bc565d1
   FirebaseCoreInternal: 480d23e21f699cc7bcbc3d8eaa301f15d1e3ffaf
@@ -2554,12 +2583,14 @@ SPEC CHECKSUMS:
   React-utils: 36d56297591ca4a32b3f83d0ab9900aa4599c4c0
   ReactCodegen: 8d7f9f05befdeb108948bbaa18d149b25a964f72
   ReactCommon: 858d61cce81635d57be89348568b603e838b3cac
+  RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   RNAppleAuthentication: e00c76acb03351f5544373c78fa7f359bef6d5d3
   RNCAsyncStorage: d494bdee892cc6a4d790c960afb7b5dd1d91abb1
   RNCCheckbox: a3ca9978cb0846b981d28da4e9914bd437403d77
   RNCPicker: d8b2d2dfded7fa0b2a1ca57cd16250aa771aaa21
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
   RNFBApp: fa5825b36d8362ce9b993cac8bf070d116848640
+  RNFBAuth: bf22c2f78d993e990642f4ec32cd45147407d9df
   RNFBMessaging: 32a107c0463048f1c03df06ab235bf56e976299a
   RNGestureHandler: 15ee1ab573a954c92641877ca946e2680f2e58da
   RNGoogleSignin: 27c2199f487ee08cc692d8d2c035bc9c154ddc22
