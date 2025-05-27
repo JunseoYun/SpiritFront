@@ -91,22 +91,26 @@ const OAuthLoginScreen = ({navigation}) => {
   };
 
   const handleAppleSignIn = async () => {
-    try {
-      const appleAuthRequestResponse = await appleAuth.performRequest({
-        requestedOperation: appleAuth.Operation.LOGIN,
-        requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
-      });
-      const credentialState = await appleAuth.getCredentialStateForUser(
-        appleAuthRequestResponse.user,
-      );
-      // Check if the user is authorized
-      if (credentialState === appleAuth.State.AUTHORIZED) {
-        const type = 'APPLE';
-        const id = appleAuthRequestResponse.user;
-        const socialToken = appleAuthRequestResponse.identityToken;
-        handleLogin({type, id, socialToken});
-      }
-    } catch (error) {}
+    if (Platform.OS === 'ios') {
+      try {
+        const appleAuthRequestResponse = await appleAuth.performRequest({
+          requestedOperation: appleAuth.Operation.LOGIN,
+          requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+        });
+        const credentialState = await appleAuth.getCredentialStateForUser(
+          appleAuthRequestResponse.user,
+        );
+        // Check if the user is authorized
+        if (credentialState === appleAuth.State.AUTHORIZED) {
+          const type = 'APPLE';
+          const id = appleAuthRequestResponse.user;
+          const socialToken = appleAuthRequestResponse.identityToken;
+          handleLogin({type, id, socialToken});
+        }
+      } catch (error) {}
+    } else {
+      //Android apple Login
+    }
   };
 
   return (
