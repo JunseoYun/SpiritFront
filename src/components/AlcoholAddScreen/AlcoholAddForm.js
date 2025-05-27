@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, Pressable, StyleSheet, Image} from 'react-native';
 import RptAlcoholPicker from './RptAlcoholPicker';
 import AlcoholTextInput from './AlcoholTextInput';
@@ -106,10 +106,20 @@ const AlcoholAddForm = ({
     // 상태 저장
     const value = newChecked ? '변동' : purePrice;
     handleAlcoholChange(value, index, 'price');
+    if (newChecked) {
+      if (alcohol.alcoholContent === '') {
+        alcoholcontentRef.current?.focus();
+      }
+    }
   };
 
+  const scrollViewRef = useRef(null);
+  const alcoholnameRef = useRef(null);
+  const priceRef = useRef(null);
+  const alcoholcontentRef = useRef(null);
+
   return (
-    <View key={index}>
+    <View key={index} ref={scrollViewRef}>
       <View style={styles.menuHeader}>
         <Text style={styles.menuHeaderText}>주류 {index + 1}</Text>
         <Pressable style={styles.deleteButton} onPress={() => onDelete(index)}>
@@ -121,6 +131,13 @@ const AlcoholAddForm = ({
         value={alcohol.alcoholName}
         onChangeText={text => handleAlcoholChange(text, index, 'alcoholName')}
         placeholder="주류 이름*"
+        ref={alcoholnameRef}
+        returnKeyType="next"
+        onSubmitEditing={() => {
+          if (purePrice === '') {
+            priceRef.current?.focus();
+          }
+        }}
       />
       <AlcoholPrice
         label="주류 가격*"
@@ -129,6 +146,13 @@ const AlcoholAddForm = ({
         placeholder="주류 가격*"
         isVariable={isVariable}
         onToggleVariable={handleToggleVariable}
+        ref={priceRef}
+        returnKeyType="next"
+        onSubmitEditing={() => {
+          if (alcohol.alcoholContent === '') {
+            alcoholcontentRef.current?.focus();
+          }
+        }}
       />
       <AlcoholTextInput
         label="주류 소개"
@@ -138,6 +162,7 @@ const AlcoholAddForm = ({
         }
         placeholder="주류를 간단하게 소개해주세요."
         multiline
+        ref={alcoholcontentRef}
       />
 
       <RptAlcoholPicker

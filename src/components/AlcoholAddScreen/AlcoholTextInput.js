@@ -1,29 +1,39 @@
-import React from 'react';
+import React, {forwardRef} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 
-const AlcoholTextInput = ({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  placeholderTextColor = '#999',
-  multiline = false,
-  style = {},
-}) => {
-  return (
-    <View style={styles.inputContainer}>
-      {value && <Text style={styles.label}>{label}</Text>}
-      <TextInput
-        style={[styles.input, multiline && styles.textarea, style]}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={placeholderTextColor}
-        multiline={multiline}
-      />
-    </View>
-  );
-};
+const AlcoholTextInput = forwardRef(
+  (
+    {
+      label,
+      value,
+      onChangeText,
+      placeholder,
+      placeholderTextColor = '#999',
+      multiline = false,
+      style = {},
+      onSubmitEditing,
+      returnKeyType = 'next',
+    },
+    ref,
+  ) => {
+    return (
+      <View style={styles.inputContainer}>
+        {value && <Text style={styles.label}>{label}</Text>}
+        <TextInput
+          style={[styles.input, multiline && styles.textarea, style]}
+          value={value}
+          ref={ref}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={placeholderTextColor}
+          multiline={multiline}
+          returnKeyType={returnKeyType}
+          onSubmitEditing={onSubmitEditing}
+        />
+      </View>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   inputContainer: {

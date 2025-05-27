@@ -1,40 +1,50 @@
-import React, {useState} from 'react';
+import React, {useState, forwardRef} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
-const MenuTextInput = ({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  placeholderTextColor = '#999',
-  multiline = false,
-  style = {},
-  maxLength,
-}) => {
-  const handleTextChange = text => {
-    const lines = text.split('\n'); // 줄바꿈 개수 확인
-    if (lines.length > 2) return; // ✅ 3줄 초과 입력 방지
+const MenuTextInput = forwardRef(
+  (
+    {
+      label,
+      value,
+      onChangeText,
+      placeholder,
+      placeholderTextColor = '#999',
+      multiline = false,
+      style = {},
+      maxLength,
+      onSubmitEditing,
+      returnKeyType = 'next',
+    },
+    ref,
+  ) => {
+    const handleTextChange = text => {
+      const lines = text.split('\n'); // 줄바꿈 개수 확인
+      if (lines.length > 2) return; // ✅ 3줄 초과 입력 방지
 
-    if (onChangeText) {
-      onChangeText(text);
-    }
-  };
+      if (onChangeText) {
+        onChangeText(text);
+      }
+    };
 
-  return (
-    <View style={styles.inputContainer}>
-      {value && <Text style={styles.label}>{label}</Text>}
-      <TextInput
-        style={[styles.input, multiline && styles.textarea, style]}
-        value={value}
-        onChangeText={handleTextChange}
-        placeholder={placeholder}
-        placeholderTextColor={placeholderTextColor}
-        multiline={multiline}
-        maxLength={maxLength}
-        numberOfLines={3}
-      />
-    </View>
-  );
-};
+    return (
+      <View style={styles.inputContainer}>
+        {value && <Text style={styles.label}>{label}</Text>}
+        <TextInput
+          style={[styles.input, multiline && styles.textarea, style]}
+          value={value}
+          ref={ref}
+          onChangeText={handleTextChange}
+          placeholder={placeholder}
+          placeholderTextColor={placeholderTextColor}
+          multiline={multiline}
+          maxLength={maxLength}
+          numberOfLines={3}
+          returnKeyType={returnKeyType}
+          onSubmitEditing={onSubmitEditing}
+        />
+      </View>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   inputContainer: {

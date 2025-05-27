@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {View, Text, Pressable, StyleSheet, Image} from 'react-native';
 import MainMenuCheck from './MainMenuCheck';
 import MenuTextInput from './MenuTextInput';
@@ -138,10 +138,21 @@ const MenuAddForm = ({
     // 상태 저장
     const value = newChecked ? '변동' : purePrice;
     MenuChange(value, index, 'price');
+
+    if (newChecked) {
+      if (menu.menuContent === '') {
+        menucontentRef.current?.focus();
+      }
+    }
   };
 
+  const scrollViewRef = useRef(null);
+  const menunameRef = useRef(null);
+  const priceRef = useRef(null);
+  const menucontentRef = useRef(null);
+
   return (
-    <View key={index}>
+    <View key={index} ref={scrollViewRef}>
       <View style={styles.menuHeader}>
         <Text style={styles.menuHeaderText}>메뉴 {index + 1}</Text>
         <Pressable style={styles.deleteButton} onPress={() => onDelete(index)}>
@@ -154,6 +165,13 @@ const MenuAddForm = ({
         onChangeText={text => MenuChange(text, index, 'menuName')}
         placeholder="메뉴 이름*"
         maxLength={21}
+        ref={menunameRef}
+        returnKeyType="next"
+        onSubmitEditing={() => {
+          if (menu.price === '') {
+            priceRef.current?.focus();
+          }
+        }}
       />
       {menuNamelength && (
         <View style={styles.errorview}>
@@ -168,6 +186,13 @@ const MenuAddForm = ({
         isVariable={isVariable}
         onToggleVariable={handleToggleVariable}
         maxLength={21}
+        ref={priceRef}
+        returnKeyType="next" // ✅ 추가
+        onSubmitEditing={() => {
+          if (menu.menuContent === '') {
+            menucontentRef.current?.focus();
+          }
+        }}
       />
       {menuPricelength && (
         <View style={styles.errorview}>
@@ -181,6 +206,7 @@ const MenuAddForm = ({
         placeholder="메뉴를 간단하게 소개해주세요."
         multiline
         maxLength={31}
+        ref={menucontentRef}
       />
       {menuContentlength && (
         <View style={styles.errorview}>
