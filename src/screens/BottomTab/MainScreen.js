@@ -230,9 +230,7 @@ const MainScreen = ({navigation}) => {
         ]}>
         <MainHeader />
 
-        <Pressable
-          style={[styles.topView, {zIndex: 1, position: 'relative'}]}
-          onPress={setLocationHandle}>
+        <View style={styles.topView}>
           <Text
             style={styles.todayAddress}
             numberOfLines={1}
@@ -240,11 +238,14 @@ const MainScreen = ({navigation}) => {
             {formatAddress(address)}
           </Text>
           {!showLocation && (
-            <View>
+            <Pressable
+              hitSlop={15}
+              style={{zIndex: 1, position: 'relative'}}
+              onPress={setLocationHandle}>
               <Feather name="chevron-right" size={23} color="#fff" />
-            </View>
+            </Pressable>
           )}
-        </Pressable>
+        </View>
       </View>
 
       {showTopView2 && (
