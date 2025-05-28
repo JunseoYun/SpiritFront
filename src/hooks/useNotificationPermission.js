@@ -1,8 +1,13 @@
-import {Platform, PermissionsAndroid, Alert, Linking} from 'react-native';
-import messaging from '@react-native-firebase/messaging';
+import {Platform, PermissionsAndroid} from 'react-native';
+import {
+  getMessaging,
+  requestPermission,
+  registerDeviceForRemoteMessages,
+  getToken,
+  AuthorizationStatus,
+} from '@react-native-firebase/messaging';
 import {setNotification, getNotification} from '../storage/notificationStorage';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
-import {getAccessToken} from '@react-native-seoul/kakao-login';
 
 export const requestNotificationPermission = async () => {
   try {
@@ -19,10 +24,10 @@ export const requestNotificationPermission = async () => {
     }
 
     // FCM 권한 요청 (iOS 또는 공통)
-    const authStatus = await messaging().requestPermission();
+    const authStatus = await requestPermission(getMessaging());
     const isAuthorized =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      authStatus === AuthorizationStatus.AUTHORIZED ||
+      authStatus === AuthorizationStatus.PROVISIONAL;
 
     console.log('isAuthorized:', isAuthorized);
     return isAuthorized;
@@ -34,8 +39,8 @@ export const requestNotificationPermission = async () => {
 
 export const getFcmToken = async () => {
   try {
-    await messaging().registerDeviceForRemoteMessages(); // 필수
-    const fcmToken = await messaging().getToken();
+    await registerDeviceForRemoteMessages(getMessaging()); // 필수
+    const fcmToken = await getToken(getMessaging());
     if (fcmToken) {
       return fcmToken;
     } else {
@@ -72,12 +77,10 @@ export const showMarketingConsentAlert = () => {
       message:
         '취향 저격 한잔 정보, 놓치지 마세요!\n알림으로 바로 알려드려요.\n(알림 > 알림 설정에서 변경 가능)',
       onConfirm: async () => {
-        // await setNotification('marketingNotification', JSON.stringify(true));
         console.log('✅ 마케팅 알림 수신 동의');
         resolve(true);
       },
       onCancel: async () => {
-        // await setNotification('marketingNotification', JSON.stringify(false));
         console.log('❌ 마케팅 알림 수신 거부');
         resolve(false);
       },

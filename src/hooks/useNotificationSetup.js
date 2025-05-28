@@ -1,14 +1,12 @@
-// src/hooks/useNotificationSetup.js
 import {useEffect} from 'react';
 import {Platform} from 'react-native';
-import messaging from '@react-native-firebase/messaging';
+import {getMessaging, onMessage} from '@react-native-firebase/messaging';
 import notifee, {AndroidImportance} from '@notifee/react-native';
 
 export const useNotificationSetup = () => {
   useEffect(() => {
     const requestUserPermission = async () => {
       const settings = await notifee.requestPermission();
-
       if (settings.authorizationStatus >= 1) {
         console.log('✅ 알림 권한 허용됨');
       } else {
@@ -34,7 +32,7 @@ export const useNotificationSetup = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
+    const unsubscribe = onMessage(getMessaging(), async remoteMessage => {
       const platform = Platform.OS;
       console.log(
         `🔥 [${platform.toUpperCase()}] 포그라운드 메시지 수신:`,

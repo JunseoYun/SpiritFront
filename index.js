@@ -1,11 +1,16 @@
-/**
- * @format
- */
-import 'react-native-gesture-handler'; // ✅ 가장 위에 있어야 함
+import 'react-native-gesture-handler'; // ✅ 항상 맨 위
 
-import {AppRegistry, Platform} from 'react-native';
+import {AppRegistry} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
-import messaging from '@react-native-firebase/messaging';
-messaging().setBackgroundMessageHandler(async msg => {});
+
+import {
+  getMessaging,
+  setBackgroundMessageHandler,
+} from '@react-native-firebase/messaging';
+
+setBackgroundMessageHandler(getMessaging(), async remoteMessage => {
+  console.log('📩 백그라운드 메시지 수신:', remoteMessage);
+});
+
 AppRegistry.registerComponent(appName, () => App);

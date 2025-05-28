@@ -10,7 +10,8 @@ import {
 import {user_logout} from '../api/userApi';
 
 const AuthContext = createContext();
-import messaging from '@react-native-firebase/messaging';
+import {getMessaging, deleteToken} from '@react-native-firebase/messaging';
+
 import {getNotification} from '../storage/notificationStorage';
 
 import {showMarketingConsentAlert} from '../hooks/useNotificationPermission';
@@ -69,7 +70,7 @@ export const AuthProvider = ({children}) => {
       await user_logout(); // 실패하더라도
       await removeToken(); // 토큰 제거
       setTokenState(null); // 상태 초기화
-      await messaging().deleteToken(); // FCM 토큰 삭제
+      await deleteToken(getMessaging());
     } catch (error) {
       // 로그아웃 요청 실패 시도 무시하고 계속 진행
       console.warn('user_logout 실패:', error.message);
