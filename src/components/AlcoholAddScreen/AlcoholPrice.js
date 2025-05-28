@@ -1,6 +1,5 @@
 import React, {forwardRef} from 'react';
-import {View, Text, TextInput, StyleSheet, Pressable} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {View, Text, TextInput, StyleSheet, Switch} from 'react-native';
 
 const AlcoholPrice = forwardRef(
   (
@@ -21,38 +20,39 @@ const AlcoholPrice = forwardRef(
   ) => {
     return (
       <View style={styles.inputContainer}>
-        <View style={styles.labelRow}>
-          {(isVariable || value) && <Text style={styles.label}>{label}</Text>}
-
-          <Pressable onPress={onToggleVariable} style={styles.checkRow}>
-            <Icon
-              name={isVariable ? 'checkbox-marked' : 'checkbox-blank-outline'}
-              size={18}
-              color={isVariable ? '#45C9FF' : '#999'}
-            />
-            <Text
-              style={[
-                styles.checkLabel,
-                {color: isVariable ? '#45C9FF' : '#999'},
-              ]}>
-              변동
-            </Text>
-          </Pressable>
-        </View>
-        {!isVariable && (
-          <TextInput
-            style={[styles.input, multiline && styles.textarea, style]}
-            value={value}
-            ref={ref}
-            onChangeText={onChangeText}
-            placeholder={placeholder}
-            placeholderTextColor={placeholderTextColor}
-            multiline={multiline}
-            keyboardType="number-pad"
-            returnKeyType={returnKeyType} // ✅ 전달받아 그대로 적용
-            onSubmitEditing={onSubmitEditing}
+        <View style={styles.checkRow}>
+          <Text
+            style={[
+              styles.checkLabel,
+              {color: isVariable ? '#45C9FF' : '#999'},
+            ]}>
+            변동
+          </Text>
+          <Switch
+            value={isVariable}
+            onValueChange={onToggleVariable}
+            trackColor={{false: '#ccc', true: '#16BBFF'}}
+            thumbColor={'#fff'}
           />
-        )}
+        </View>
+        {(isVariable || value) && <Text style={styles.label}>{label}</Text>}
+
+        <View style={[styles.inputRow, isVariable && null]}>
+          {!isVariable && (
+            <TextInput
+              style={[styles.input, multiline && styles.textarea, style]}
+              value={value}
+              ref={ref}
+              onChangeText={onChangeText}
+              placeholder={placeholder}
+              placeholderTextColor={placeholderTextColor}
+              multiline={multiline}
+              keyboardType="number-pad"
+              returnKeyType={returnKeyType} // ✅ 전달받아 그대로 적용
+              onSubmitEditing={onSubmitEditing}
+            />
+          )}
+        </View>
       </View>
     );
   },
@@ -61,31 +61,21 @@ const AlcoholPrice = forwardRef(
 const styles = StyleSheet.create({
   inputContainer: {
     marginVertical: 20,
-    width: '100%',
-    paddingHorizontal: 18,
-  },
-  labelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
+    flex: 1,
+    paddingLeft: 18,
   },
   label: {
     fontWeight: '500',
     color: '#999',
     fontSize: 16,
-    marginRight: 10,
   },
-  checkRow: {
+  inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  checkLabel: {
-    fontSize: 15,
-    marginLeft: 4,
-    fontFamily: 'Pretendard-Medium',
+    justifyContent: 'space-between', // ✅ 좌우로 정렬
   },
   input: {
-    width: '100%',
+    flex: 1, // ✅ 남는 공간 채우기
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
@@ -96,6 +86,16 @@ const styles = StyleSheet.create({
   },
   textarea: {
     textAlignVertical: 'top',
+  },
+  checkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  checkLabel: {
+    fontSize: 15,
+
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

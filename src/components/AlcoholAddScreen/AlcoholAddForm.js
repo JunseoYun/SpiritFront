@@ -11,6 +11,7 @@ import {
   requestCameraPermission,
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const AlcoholAddForm = ({
   alcohol,
@@ -123,7 +124,7 @@ const AlcoholAddForm = ({
       <View style={styles.menuHeader}>
         <Text style={styles.menuHeaderText}>주류 {index + 1}</Text>
         <Pressable style={styles.deleteButton} onPress={() => onDelete(index)}>
-          <Text style={styles.deleteButtonText}>삭제</Text>
+          <Ionicons name="close" size={25} color="#333" />
         </Pressable>
       </View>
       <AlcoholTextInput
@@ -244,10 +245,8 @@ const styles = StyleSheet.create({
     marginRight: 7,
   },
   deleteButton: {
-    paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: '#FF6B6B',
-    borderRadius: 5,
+    paddingLeft: 20,
   },
   deleteButtonText: {
     color: 'white',

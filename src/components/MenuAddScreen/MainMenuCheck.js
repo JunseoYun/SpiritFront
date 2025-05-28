@@ -1,18 +1,23 @@
 import React from 'react';
-import {View, Text, Pressable, StyleSheet} from 'react-native';
+import {View, Text, Pressable, StyleSheet, Switch} from 'react-native';
 
 const MainMenuCheck = ({isChecked, onToggle, imagecheck}) => {
   return (
     <>
-      <Pressable style={styles.container} onPress={onToggle}>
-        <View
-          style={[
-            styles.checkBoxIndicator,
-            isChecked && {backgroundColor: '#16BBFF'}, // 활성화된 상태 스타일
-          ]}
-        />
+      <View
+        style={{
+          flexDirection: 'row',
+          marginLeft: 18,
+          alignItems: 'center',
+        }}>
         <Text style={styles.checkBoxText}>대표 메뉴로 설정</Text>
-      </Pressable>
+        <Switch
+          value={isChecked}
+          onValueChange={onToggle}
+          trackColor={{false: '#ccc', true: '#16BBFF'}}
+          thumbColor={'#fff'}
+        />
+      </View>
       {!imagecheck && isChecked && (
         <Text style={styles.textinfo}>
           대표 메뉴는 사진을 등록하지 않으면 카테고리 탭에 노출되지 않아요.
@@ -42,6 +47,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: '500',
+    marginRight: 3,
   },
   textinfo: {
     fontFamily: 'Pretendard-Medium',

@@ -116,7 +116,7 @@ const SetLocationScreen = ({navigation, route}) => {
 
   const clearLocationHandle = async () => {
     if (currentAddress === '강남역') {
-      Alert.alert('현재 기본 주소입니다.');
+      showToast('현재 기본 주소입니다.');
     } else {
       try {
         const newLocationAddress = await clearLocationStorage();
