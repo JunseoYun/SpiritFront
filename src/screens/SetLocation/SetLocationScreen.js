@@ -183,28 +183,24 @@ const SetLocationScreen = ({navigation, route}) => {
 
         <Pressable
           onPress={handleGetCurrentLocation}
-          style={styles.selectButton}>
+          style={styles.outlinedButton}>
           <Feather
             name="crosshair"
-            size={25}
-            color="#444"
+            size={20}
+            color="#16BBFF"
             style={styles.selectButtonIcon}
           />
-          <Text style={[styles.buttonText, styles.selectButtonText]}>
-            현재 위치로 선택
+          <Text style={styles.outlinedButtonText}>현재 위치로 선택</Text>
+        </Pressable>
+
+        <Pressable onPress={saveLocationHandle} style={styles.primaryButton}>
+          <Text style={styles.primaryButtonText}>
+            선택된 주소로 위치 설정하기
           </Text>
         </Pressable>
 
-        <Pressable onPress={saveLocationHandle} style={styles.button}>
-          <Text style={styles.buttonText}>선택된 주소로 위치 설정하기</Text>
-        </Pressable>
-
-        <Pressable
-          onPress={clearLocationHandle}
-          style={[styles.button, styles.clearButton]}>
-          <Text style={[styles.buttonText, styles.clearButtonText]}>
-            현재 주소 삭제
-          </Text>
+        <Pressable onPress={clearLocationHandle} style={styles.deleteButton}>
+          <Text style={styles.deleteButtonText}>현재 주소 삭제</Text>
         </Pressable>
       </ScrollView>
       <AlertComponent />
@@ -253,31 +249,6 @@ const styles = StyleSheet.create({
   selectButtonIcon: {
     marginRight: 8, // 아이콘과 텍스트 간격
   },
-  selectButtonText: {
-    color: '#444',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  button: {
-    backgroundColor: '#16BBFF',
-    padding: 16,
-    borderRadius: 8,
-    marginVertical: 10,
-    alignItems: 'center',
-  },
-  clearButton: {
-    backgroundColor: '#999',
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-  },
-
-  clearButtonText: {
-    color: '#FFF',
-  },
   infoBox: {
     flexDirection: 'row',
     backgroundColor: '#FFF',
@@ -304,28 +275,42 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
     color: '#181A1A',
   },
-  infoSelectText: {
-    fontSize: 18,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#45C9FF',
-  },
-  footer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(194, 194, 194, 0.7)',
-    justifyContent: 'center',
+  outlinedButton: {
+    flexDirection: 'row',
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
-    zIndex: 10,
+    borderWidth: 1,
+    borderColor: '#16BBFF',
+    justifyContent: 'center',
+    marginTop: 8,
   },
-  emptyText: {
-    textAlign: 'center',
-    marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
-    fontSize: 20,
-    color: '#333',
+  outlinedButtonText: {
+    fontSize: 16,
+    color: '#16BBFF',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  primaryButton: {
+    backgroundColor: '#16BBFF',
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  deleteButton: {
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  deleteButtonText: {
+    color: '#999',
+    fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
   },
 });
 
