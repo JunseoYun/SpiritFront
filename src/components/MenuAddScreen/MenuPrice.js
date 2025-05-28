@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   },
   checkLabel: {
     fontSize: 15,
-
+    marginRight: 5,
     fontFamily: 'Pretendard-Medium',
   },
 });
