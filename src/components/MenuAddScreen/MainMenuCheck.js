@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: '500',
-    marginRight: 3,
+    marginRight: 5,
   },
   textinfo: {
     fontFamily: 'Pretendard-Medium',
