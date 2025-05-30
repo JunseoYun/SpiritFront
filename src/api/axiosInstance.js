@@ -21,7 +21,7 @@ const refreshAccessToken = async () => {
   try {
     // GET 요청으로 x-auth-token 헤더에 refreshToken 전달
     const response = await axios.get(
-      `https://${Config.BASE_URL}/api/auth/reissue-token`,
+      `https://${Config.AUTH_URL}/api/auth/reissue-token`,
       {
         headers: {
           'x-auth-token': refreshToken,
@@ -53,8 +53,40 @@ const axiosInstance = axios.create({
   timeout: 30000, // 10초 타임아웃
 });
 
+export const userAxiosInstance = axios.create({
+  baseURL: `https://${Config.AUTH_URL}/api`, // 공통 URL
+
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 30000, // 10초 타임아웃
+});
+
 // 요청 인터셉터 설정
 axiosInstance.interceptors.request.use(
+  async config => {
+    try {
+      // AsyncStorage에서 토큰 가져오기
+      if (config.auth === false) {
+        return config;
+      }
+      const token = await getAccessToken();
+      if (token) {
+        // 'x-auth-token' 헤더에 토큰 설정
+
+        config.headers['x-auth-token'] = token;
+      }
+    } catch (error) {
+      functionError(error); // 에러 처리
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  },
+);
+
+userAxiosInstance.interceptors.request.use(
   async config => {
     try {
       // AsyncStorage에서 토큰 가져오기
@@ -103,7 +135,7 @@ axiosInstance.interceptors.response.use(
 
         if (logout) {
           try {
-            await logout(); // 로그아웃 먼저 실행
+            await logout(1); // 로그아웃 먼저 실행
           } catch (error) {}
         }
 
@@ -126,7 +158,66 @@ axiosInstance.interceptors.response.use(
 
         if (logout) {
           try {
-            await logout(); // 로그아웃 먼저 실행
+            await logout(1); // 로그아웃 먼저 실행
+          } catch (error) {}
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
+
+userAxiosInstance.interceptors.response.use(
+  response => response, // 성공 응답은 그대로 반환
+  async error => {
+    const originalRequest = error.config;
+
+    // Access Token이 만료된 경우 처리
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      originalRequest.auth !== false
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        const newAccessToken = await refreshAccessToken();
+        originalRequest.headers['x-auth-token'] = newAccessToken;
+
+        return userAxiosInstance(originalRequest);
+      } catch (refreshError) {
+        // Refresh Token도 만료된 경우 로그아웃
+
+        const {logout} = getGlobalLogout();
+        const showAlert = getGlobalShowAlert();
+
+        if (logout) {
+          try {
+            await logout(1); // 로그아웃 먼저 실행
+          } catch (error) {}
+        }
+
+        // showAlert({
+        //   title: '세션 만료',
+        //   message: '다시 로그인해주세요.',
+        // });
+      }
+    } else if (error.response?.status === 404 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const newAccessToken = await refreshAccessToken();
+        originalRequest.headers['x-auth-token'] = newAccessToken;
+
+        return userAxiosInstance(originalRequest);
+      } catch (refreshError) {
+        const {logout} = getGlobalLogout();
+        const showAlert = getGlobalShowAlert();
+
+        if (logout) {
+          try {
+            await logout(1); // 로그아웃 먼저 실행
           } catch (error) {}
         }
       }

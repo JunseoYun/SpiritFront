@@ -19,7 +19,7 @@ import {getFcmToken} from '../../hooks/useNotificationPermission';
 
 const RegisterScreen = ({route, navigation}) => {
   // route.params를 통해 전달된 데이터 접근
-  const {type, id, socialToken} = route.params;
+  const {socialType, socialId, socialToken, mokDataId} = route.params;
   const [nickname, setNickname] = useState('');
   const [nicknameCheck, setNicknameCheck] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -122,12 +122,13 @@ const RegisterScreen = ({route, navigation}) => {
     try {
       setLoading(true);
       // 회원가입이 완료될 때까지 기다림
-      await user_register(type, id, nickname);
+
+      await user_register(socialType, socialId, nickname, mokDataId);
 
       try {
         const fcmToken = await getFcmToken();
         console.log('🔥 FCM Token:', fcmToken);
-        const login_data = await user_login(type, id, socialToken);
+        const login_data = await user_login(socialType, socialId, socialToken);
         await loginauth(login_data.accessToken, login_data.refreshToken, null);
         // await loginauth(login_data.accessToken, login_data.refreshToken, 마케팅 알림 수신 여부);
         navigation.reset({

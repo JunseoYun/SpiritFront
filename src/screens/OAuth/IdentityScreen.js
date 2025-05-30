@@ -19,7 +19,9 @@ import forbiddenWords from '../../hooks/forbiddenWords';
 import filterWords from '../../hooks/filterWords';
 import {useToast} from '../../context/ToastContext';
 import {useFocusEffect} from '@react-navigation/native';
-
+import {useAuth} from '../../context/AuthContext';
+import {get_mokToken, request_mok, confirm_request} from '../../api/mokApi';
+import {user_merge, user_login} from '../../api/userApi';
 const CARRIER_OPTIONS = [
   'SKT',
   'KT',
@@ -29,9 +31,18 @@ const CARRIER_OPTIONS = [
   'LG U+ 알뜰폰',
 ];
 
-const IdentityScreen = ({route, navigation}) => {
-  const {type, id, socialToken, index} = route?.params ?? {};
+const CARRIER_PROVIDER_MAP = {
+  SKT: 'SKT',
+  KT: 'KT',
+  'LG U+': 'LGU',
+  'SKT 알뜰폰': 'SKTMVNO',
+  'KT 알뜰폰': 'KTMVNO',
+  'LG U+ 알뜰폰': 'LGUMVNO',
+};
 
+const IdentityScreen = ({route, navigation}) => {
+  const {socialType, socialId, socialToken, index, token} = route?.params ?? {};
+  const {loginauth} = useAuth();
   const insets = useSafeAreaInsets();
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
@@ -72,6 +83,8 @@ const IdentityScreen = ({route, navigation}) => {
 
   const [otpcode, setOTPCode] = useState('');
   const [isotpcodeFocused, setIsOTPcodeFocused] = useState(false);
+  const [otpFailCount, setOtpFailCount] = useState(0);
+  const [resendCount, setResendCount] = useState(0); // 재전송 횟수 제한
 
   const scrollViewRef = useRef(null);
   const nameRef = useRef(null);
@@ -80,6 +93,8 @@ const IdentityScreen = ({route, navigation}) => {
   const phoneRef = useRef(null);
   const carrierRef = useRef(null);
   const otpcodeRef = useRef(null);
+
+  const [localMokTokenId, setLocalMokTokenId] = useState('');
 
   const handlenamechange = value => {
     setName(value);
@@ -96,6 +111,25 @@ const IdentityScreen = ({route, navigation}) => {
       setIsPhoneStepVisible(true);
     }
   }, [phoneNumber]);
+
+  const MOK_ERROR_MESSAGES = {
+    22020: '본인인증을 실패했습니다. \n다시 확인 후 시도해주세요.',
+    22021: '입력한 정보에 문제가 있어요. \n다시 확인해주세요.',
+    22022: '인증 정보가 만료되었어요. \n처음부터 다시 해주세요.',
+    22023: '인증번호를 입력해주세요.',
+    22024: '인증번호가 맞지 않아요.\n 다시 입력해주세요.',
+    22025: '오류가 발생했어요. \n처음부터 다시 시도해주세요.',
+    22026: '인증 시간이 초과되었어요. \n다시 시도해주세요.',
+    21019: '인증 시도를 너무 많이 했어요. \n나중에 다시 시도해주세요.',
+    21012: '인증 정보를 찾을 수 없어요. \n다시 시도해주세요.',
+    21014: '인증 준비 중 문제가 발생했어요. \n잠시 후 다시 시도해주세요.',
+    21015: '보안 인증 중 오류가 발생했어요.',
+    21016: '인증 토큰을 받지 못했어요. \n다시 시도해주세요.',
+    21017: '인증 연결에 문제가 있어요.',
+    21018: '서버 요청에 실패했어요. \n다시 시도해주세요.',
+    21027: '보안 처리 중 오류가 발생했어요.',
+    21028: '날짜 정보 처리에 실패했어요. \n다시 시도해주세요.',
+  };
 
   useEffect(() => {
     if (selectedCarrier) {
@@ -128,7 +162,7 @@ const IdentityScreen = ({route, navigation}) => {
     }
   };
 
-  const handleAuth = () => {
+  const handleAuth = async () => {
     if (
       !name.trim() ||
       name.trim().length < 2 ||
@@ -197,11 +231,28 @@ const IdentityScreen = ({route, navigation}) => {
       if (rrnBack == 3 || rrnBack == 4 || rrnBack == 7 || rrnBack == 8) {
         birthday = '20' + rrnFront;
       }
-      console.log({name, birthday, rrnBack, phoneNumber, selectedCarrier});
-    } catch (er) {
-      er;
-    } finally {
+
+      const mokDataId = await get_mokToken();
+      setLocalMokTokenId(mokDataId);
+
+      const mokData = {
+        mokDataId: mokDataId,
+        providerId: CARRIER_PROVIDER_MAP[selectedCarrier],
+        userName: name,
+        userPhone: phoneNumber,
+        userBirthDay: birthday,
+        userRegistSingleNumber: rrnBack,
+      };
+      await request_mok(mokData);
+
       setSendToMsg(true);
+    } catch (error) {
+      const code = error?.response?.data?.code;
+      const message =
+        MOK_ERROR_MESSAGES[code] || '알 수 없는 오류가 발생했습니다.';
+      showToast(message, 'center');
+      console.error('MOK 에러 응답:', error?.response?.data);
+    } finally {
     }
   };
 
@@ -223,49 +274,144 @@ const IdentityScreen = ({route, navigation}) => {
     return `${m}:${s}`;
   };
 
-  const handleResend = () => {
-    setTimeLeft(180);
-    showToast('인증번호를 다시 보냈습니다.');
+  const handleResend = async () => {
+    if (resendCount >= 3) {
+      showToast(
+        '인증번호 재전송 횟수를 초과했습니다. 다시 시도해주세요.',
+        'center',
+      );
+      setSendToMsg(false);
+      setOTPCode('');
+      setOtpFailCount(0);
+      setResendCount(0);
+      setTimeLeft(180);
+      return;
+    }
+
+    try {
+      const responseMokDataId = await get_mokToken();
+      setLocalMokTokenId(responseMokDataId);
+      const mokData = {
+        mokDataId: responseMokDataId,
+        providerId: CARRIER_PROVIDER_MAP[selectedCarrier],
+        userName: name,
+        userPhone: phoneNumber,
+        userBirthDay:
+          rrnBack === '1' ||
+          rrnBack === '2' ||
+          rrnBack === '5' ||
+          rrnBack === '6'
+            ? '19' + rrnFront
+            : '20' + rrnFront,
+        userRegistSingleNumber: rrnBack,
+      };
+      console.log(mokData);
+      await request_mok(mokData); // 재요청
+      setResendCount(prev => prev + 1); // 횟수 증가
+      setTimeLeft(180);
+      showToast('인증번호를 다시 보냈습니다.');
+    } catch (error) {
+      const code = error?.response?.data?.code;
+      const message =
+        MOK_ERROR_MESSAGES[code] || '인증번호 재전송에 실패했어요.';
+      showToast(message, 'center');
+      console.error('재전송 실패:', error?.response?.data);
+    }
   };
 
   useEffect(() => {
-    if (sendToMsg) {
-      if (otpcode.length == 6) {
-        if (verificationcode === otpcode) {
-          if (index == 0) {
-            navigation.navigate('RegisterScreen', {
-              type: type,
-              id: id,
-              socialToken: socialToken,
-            });
-          }
-          if (index == 1) {
-            navigation.reset({
-              index: 0,
-              routes: [
-                {
-                  name: 'MainBtmbar',
-                  state: {
-                    routes: [
-                      {
-                        name: 'MyStack',
-                      },
-                    ],
-                  },
-                },
-              ],
-            });
-          }
-          showToast('인증 되었습니다.');
+    if (sendToMsg && otpcode.length === 6) {
+      verifyOtp();
+    }
+  }, [otpcode]);
+
+  const verifyOtp = useCallback(async () => {
+    const data = {
+      mokDataId: localMokTokenId,
+      authNumber: otpcode,
+    };
+    console.log(token);
+    try {
+      const response = await confirm_request(data);
+      console.log(response);
+      if (response.isRegistered) {
+        try {
+          const originalSocialInfoDto = {
+            socialType: response.registeredSocialInfoDto.socialType,
+            socialId: response.registeredSocialInfoDto.socialId,
+          };
+          const newSocialInfoDto = {
+            socialType: socialType,
+            socialId: socialId,
+          };
+          await user_merge(
+            originalSocialInfoDto,
+            newSocialInfoDto,
+            token.accessToken,
+          );
+          loginauth(token.accessToken, token.refreshToken, null);
+          navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: 'MainBtmbar',
+                state: {routes: [{name: 'MainScreen'}]},
+              },
+            ],
+          });
+        } catch (error) {}
+      }
+      // if (response) {
+      //   showToast('인증 되었습니다.');
+
+      //   if (index === 0) {
+      //     navigation.navigate('RegisterScreen', {
+      //       socialType,
+      //       socialId,
+      //       socialToken,
+      //     });
+      //   } else if (index === 1) {
+      //     loginauth(token.accessToken, token.refreshToken, null);
+      //     navigation.reset({
+      //       index: 0,
+      //       routes: [
+      //         {
+      //           name: 'MainBtmbar',
+      //           state: {routes: [{name: 'MainScreen'}]},
+      //         },
+      //       ],
+      //     });
+      //   }
+      // }
+    } catch (err) {
+      setOtpFailCount(prev => {
+        const next = prev + 1;
+        if (next >= 3) {
+          showToast(
+            '인증번호 입력 횟수를 초과했습니다.\n다시 시도해주세요.',
+            'center',
+          );
+          setSendToMsg(false);
+          setOTPCode('');
+          setOtpFailCount(0);
+          setTimeLeft(180);
         } else {
           setError('otpcode');
           scrollToError(otpcodeRef);
           setOTPCode('');
-          return;
         }
-      }
+        return next;
+      });
     }
-  }, [otpcode]);
+  }, [
+    otpcode,
+    localMokTokenId,
+    index,
+    socialType,
+    socialId,
+    socialToken,
+    token,
+  ]);
 
   useEffect(() => {
     if (sendToMsg) {
