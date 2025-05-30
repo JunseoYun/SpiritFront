@@ -35,6 +35,8 @@ const MyScreen = ({navigation}) => {
     const fetchUserData = async () => {
       try {
         const data = await Userdataget();
+
+        console.log(data);
         setUserdata(data);
         console.log(data.isManager);
       } catch (error) {

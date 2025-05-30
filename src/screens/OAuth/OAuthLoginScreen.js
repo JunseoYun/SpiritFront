@@ -34,20 +34,32 @@ const OAuthLoginScreen = ({navigation}) => {
     });
   }, []);
 
-  const handleLogin = async ({type, id, socialToken}) => {
+  const handleLogin = async ({socialType, socialId, socialToken}) => {
     const fcmToken = await getFcmToken();
     console.log('🔥 FCM Token:', fcmToken);
     try {
-      const response = await user_login(type, id, socialToken);
-      await loginauth(response.accessToken, response.refreshToken, null);
+      console.log(socialType, socialId, socialToken);
+      const response = await user_login(socialType, socialId, socialToken);
+      console.log(response);
+      if (response.isVerified === false) {
+        navigation.navigate('IdentityScreen', {
+          socialType: socialType,
+          socialId: socialId,
+          socialToken: socialToken,
+          index: 1,
+          token: response,
+        });
+      } else {
+        await loginauth(response.accessToken, response.refreshToken, null);
+      }
       // await loginauth(response.accessToken, response.refreshToken, 마케팅 알림 수신 여부);
     } catch (error) {
       if (error.response) {
         const {status, data, headers} = error.response;
         if (status === 404) {
           navigation.navigate('AgreeScreen', {
-            type: type,
-            id: id,
+            socialType: socialType,
+            socialId: socialId,
             socialToken: socialToken,
           });
         }
@@ -69,10 +81,10 @@ const OAuthLoginScreen = ({navigation}) => {
         }
       }
       const profile = await getProfile();
-      const type = 'KAKAO';
-      const id = profile.id;
+      const socialType = 'KAKAO';
+      const socialId = profile.id;
       const socialToken = token.accessToken;
-      handleLogin({type, id, socialToken});
+      handleLogin({socialType, socialId, socialToken});
     } catch (err) {}
   };
 
@@ -81,10 +93,10 @@ const OAuthLoginScreen = ({navigation}) => {
       const userInfo = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
 
-      const type = 'GOOGLE';
-      const id = userInfo.data.user.id;
+      const socialType = 'GOOGLE';
+      const socialId = userInfo.data.user.id;
       const socialToken = userInfo.data.idToken;
-      handleLogin({type, id, socialToken});
+      handleLogin({socialType, socialId, socialToken});
     } catch (error) {
       console.log(error);
     }
@@ -102,10 +114,10 @@ const OAuthLoginScreen = ({navigation}) => {
         );
         // Check if the user is authorized
         if (credentialState === appleAuth.State.AUTHORIZED) {
-          const type = 'APPLE';
-          const id = appleAuthRequestResponse.user;
+          const socialType = 'APPLE';
+          const socialId = appleAuthRequestResponse.user;
           const socialToken = appleAuthRequestResponse.identityToken;
-          handleLogin({type, id, socialToken});
+          handleLogin({socialType, socialId, socialToken});
         }
       } catch (error) {}
     } else {
