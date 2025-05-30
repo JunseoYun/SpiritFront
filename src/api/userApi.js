@@ -136,11 +136,7 @@ export const Userimgdelete = async () => {
   }
 };
 
-export const user_merge = async (
-  originalSocialInfoDto,
-  newSocialInfoDto,
-  accessToken,
-) => {
+export const user_merge = async (originalSocialInfoDto, newSocialInfoDto) => {
   console.log(originalSocialInfoDto, newSocialInfoDto);
   const data = {
     originalSocialInfoDto,
@@ -148,18 +144,11 @@ export const user_merge = async (
   };
 
   try {
-    const refreshToken = await getRefreshToken();
-    console.log('🔐 refreshToken:', refreshToken);
-
     const response = await axios.post(
       `https://${Config.BASE_URL}/api/auth/merge`,
-      data, // ✅ 여기서 바로 data 전달
-      {
-        headers: {
-          'x-auth-token': accessToken,
-        },
-      },
+      data, // ✅ body를 그대로 전달
     );
+    console.log(response);
   } catch (error) {
     console.error(error.response);
     functionError(error);

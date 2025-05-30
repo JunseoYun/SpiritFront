@@ -333,8 +333,11 @@ const IdentityScreen = ({route, navigation}) => {
     console.log(token);
     try {
       const response = await confirm_request(data);
+      showToast('인증 되었습니다.');
       console.log(response);
       if (response.isRegistered) {
+        console.log(response.isRegistered);
+        console.log(token);
         try {
           const originalSocialInfoDto = {
             socialType: response.registeredSocialInfoDto.socialType,
@@ -344,11 +347,33 @@ const IdentityScreen = ({route, navigation}) => {
             socialType: socialType,
             socialId: socialId,
           };
-          await user_merge(
-            originalSocialInfoDto,
-            newSocialInfoDto,
-            token.accessToken,
+
+          await user_merge(originalSocialInfoDto, newSocialInfoDto);
+          const login_data = await user_login(
+            socialType,
+            socialId,
+            socialToken,
           );
+          loginauth(login_data.accessToken, login_data.refreshToken, null);
+          // navigation.reset({
+          //   index: 0,
+          //   routes: [
+          //     {
+          //       name: 'MainBtmbar',
+          //       state: {routes: [{name: 'MainScreen'}]},
+          //     },
+          //   ],
+          // });
+        } catch (error) {}
+      } else {
+        if (index === 0) {
+          navigation.navigate('RegisterScreen', {
+            socialType,
+            socialId,
+            socialToken,
+            mokDataId: localMokTokenId,
+          });
+        } else if (index === 1) {
           loginauth(token.accessToken, token.refreshToken, null);
           navigation.reset({
             index: 0,
@@ -359,30 +384,8 @@ const IdentityScreen = ({route, navigation}) => {
               },
             ],
           });
-        } catch (error) {}
+        }
       }
-      // if (response) {
-      //   showToast('인증 되었습니다.');
-
-      //   if (index === 0) {
-      //     navigation.navigate('RegisterScreen', {
-      //       socialType,
-      //       socialId,
-      //       socialToken,
-      //     });
-      //   } else if (index === 1) {
-      //     loginauth(token.accessToken, token.refreshToken, null);
-      //     navigation.reset({
-      //       index: 0,
-      //       routes: [
-      //         {
-      //           name: 'MainBtmbar',
-      //           state: {routes: [{name: 'MainScreen'}]},
-      //         },
-      //       ],
-      //     });
-      //   }
-      // }
     } catch (err) {
       setOtpFailCount(prev => {
         const next = prev + 1;
