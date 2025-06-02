@@ -83,7 +83,7 @@ export const AuthProvider = ({children}) => {
         await deleteToken(getMessaging());
       } catch (error) {
         // 로그아웃 요청 실패 시도 무시하고 계속 진행
-        console.warn('user_logout 실패:', error.message);
+        console.warn('user_logout accessToken 실패:', error.message);
       }
     }
   };

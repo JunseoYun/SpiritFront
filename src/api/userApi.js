@@ -39,7 +39,7 @@ export const user_logout = async () => {
     );
     console.log('✅ logout response', response.data);
   } catch (error) {
-    console.error('❌ logout error:', error.response?.data || error.message);
+    console.error('❌ logout error:', error.response);
     functionError(error);
     throw error;
   }

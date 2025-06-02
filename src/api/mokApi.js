@@ -45,7 +45,6 @@ export const confirm_request = async data => {
       `/mok/confirm-request`,
       confirmData,
     ); // 요청 본문 전달
-    console.log('response: ', response);
     return response.data.data;
   } catch (error) {
     functionError(error); // 에러 처리
