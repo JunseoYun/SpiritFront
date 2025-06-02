@@ -7,6 +7,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import filterWords from '../../hooks/filterWords';
@@ -445,7 +446,7 @@ const IdentityScreen = ({route, navigation}) => {
   };
 
   return (
-    <>
+    <SafeAreaView style={{flex: 1}}>
       <TouchableWithoutFeedback
         onPress={() => {
           Keyboard.dismiss();
@@ -558,10 +559,9 @@ const IdentityScreen = ({route, navigation}) => {
             handleAuth={handleAuth}
           />
           {loading && <Loading loading={true} />}
-          <AlertComponent />
         </View>
       </TouchableWithoutFeedback>
-    </>
+    </SafeAreaView>
   );
 };
 
@@ -570,6 +570,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFF',
     paddingHorizontal: 20,
+    paddingTop: '15%',
   },
   titleText: {
     fontSize: 18,
