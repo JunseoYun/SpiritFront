@@ -2,23 +2,15 @@ import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Keyboard,
   TouchableWithoutFeedback,
-  FlatList,
-  Modal,
   ScrollView,
-  InteractionManager,
-  BackHandler,
 } from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import useCustomAlert from '../../hooks/useCustomAlert';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import filterWords from '../../hooks/filterWords';
 import {useToast} from '../../context/ToastContext';
-import {useFocusEffect} from '@react-navigation/native';
 import {useAuth} from '../../context/AuthContext';
 import {get_mokToken, request_mok, confirm_request} from '../../api/mokApi';
 import {user_merge, user_login, user_personalInfo_add} from '../../api/userApi';
@@ -52,7 +44,6 @@ const IdentityScreen = ({route, navigation}) => {
   const {socialType, socialId, socialToken, beforeScreen, token} =
     route?.params ?? {};
   const {loginauth} = useAuth();
-  const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
 
   const [sendToMsg, setSendToMsg] = useState(false);
