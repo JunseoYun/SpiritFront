@@ -136,6 +136,25 @@ export const Userimgdelete = async () => {
   }
 };
 
+export const user_personalInfo_add = async (mokDataId, accessToken) => {
+  try {
+    const response = await axios.post(
+      `https://${Config.AUTH_URL}/api/auth/personal-info/add?mokDataId=${mokDataId}`,
+      {}, // ✅ body 비우고
+      {
+        headers: {
+          'x-auth-token': accessToken,
+        },
+      },
+    );
+    console.log('✅ personal-info-add response', response.data);
+  } catch (error) {
+    console.error('❌ personal-info-add error:', error.response);
+    functionError(error);
+    throw error;
+  }
+};
+
 export const user_merge = async (originalSocialInfoDto, newSocialInfoDto) => {
   console.log(originalSocialInfoDto, newSocialInfoDto);
   const data = {

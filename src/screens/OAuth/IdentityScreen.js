@@ -21,7 +21,7 @@ import {useToast} from '../../context/ToastContext';
 import {useFocusEffect} from '@react-navigation/native';
 import {useAuth} from '../../context/AuthContext';
 import {get_mokToken, request_mok, confirm_request} from '../../api/mokApi';
-import {user_merge, user_login} from '../../api/userApi';
+import {user_merge, user_login, user_personalInfo_add} from '../../api/userApi';
 import Loading from '../../hooks/Loading';
 import NameInput from '../../components/IdentityScreen/NameInput';
 import RRNInput from '../../components/IdentityScreen/RRNInput';
@@ -49,14 +49,13 @@ const CARRIER_PROVIDER_MAP = {
 };
 
 const IdentityScreen = ({route, navigation}) => {
-  const {socialType, socialId, socialToken, index, token} = route?.params ?? {};
+  const {socialType, socialId, socialToken, beforeScreen, token} =
+    route?.params ?? {};
   const {loginauth} = useAuth();
-  const insets = useSafeAreaInsets();
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
 
   const [sendToMsg, setSendToMsg] = useState(false);
-  const [verificationcode, setVerificationcode] = useState('777777');
 
   const [name, setName] = useState('');
   const [nameerror, setNameerror] = useState({});
@@ -382,14 +381,17 @@ const IdentityScreen = ({route, navigation}) => {
           // });
         } catch (error) {}
       } else {
-        if (index === 0) {
+        if (beforeScreen === 'Agree') {
           navigation.navigate('RegisterScreen', {
             socialType,
             socialId,
             socialToken,
             mokDataId: localMokTokenId,
           });
-        } else if (index === 1) {
+        } else if (beforeScreen === 'Login') {
+          try {
+            await user_personalInfo_add(localMokTokenId, token.accessToken);
+          } catch (error) {}
           loginauth(token.accessToken, token.refreshToken, null);
           navigation.reset({
             index: 0,
@@ -427,7 +429,7 @@ const IdentityScreen = ({route, navigation}) => {
   }, [
     otpcode,
     localMokTokenId,
-    index,
+    beforeScreen,
     socialType,
     socialId,
     socialToken,

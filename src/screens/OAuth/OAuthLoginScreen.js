@@ -49,7 +49,7 @@ const OAuthLoginScreen = ({navigation}) => {
           socialType: socialType,
           socialId: socialId,
           socialToken: socialToken,
-          index: 1,
+          beforeScreen: 'Login',
           token: response,
         });
       } else {

@@ -71,7 +71,7 @@ const AgreeScreen = ({route, navigation}) => {
       socialType: socialType,
       socialId: socialId,
       socialToken: socialToken,
-      index: 0,
+      beforeScreen: 'Agree',
     });
   };
 
