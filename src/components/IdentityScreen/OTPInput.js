@@ -5,13 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Keyboard,
-  TouchableWithoutFeedback,
-  FlatList,
-  Modal,
-  ScrollView,
-  InteractionManager,
-  BackHandler,
 } from 'react-native';
 
 const OTPInput = ({

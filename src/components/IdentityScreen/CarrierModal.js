@@ -2,16 +2,11 @@ import React from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
-  Keyboard,
   TouchableWithoutFeedback,
   FlatList,
   Modal,
-  ScrollView,
-  InteractionManager,
-  BackHandler,
 } from 'react-native';
 
 const CarrierModal = ({
