@@ -47,7 +47,7 @@ const CFUserinfo = ({userdata, navigation}) => {
             navigation.navigate('OAuthStack', {
               screen: 'IdentityScreen',
               params: {
-                index: 1,
+                beforeScreen: 'UserInfo',
               },
             })
           }>
