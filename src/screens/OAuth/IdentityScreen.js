@@ -370,15 +370,6 @@ const IdentityScreen = ({route, navigation}) => {
             socialToken,
           );
           loginauth(login_data.accessToken, login_data.refreshToken, null);
-          // navigation.reset({
-          //   index: 0,
-          //   routes: [
-          //     {
-          //       name: 'MainBtmbar',
-          //       state: {routes: [{name: 'MainScreen'}]},
-          //     },
-          //   ],
-          // });
         } catch (error) {}
       } else {
         if (beforeScreen === 'Agree') {
@@ -402,6 +393,10 @@ const IdentityScreen = ({route, navigation}) => {
               },
             ],
           });
+        } else if (beforeScreen === 'UserInfo') {
+          try {
+            // TODO 유저 정보 변경
+          } catch (error) {}
         }
       }
     } catch (err) {
