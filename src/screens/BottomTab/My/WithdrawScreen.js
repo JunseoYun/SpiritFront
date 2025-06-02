@@ -44,7 +44,7 @@ const WithdrawScreen = () => {
         {name: 'OAuthStack', state: {routes: [{name: 'OAuthLoginScreen'}]}},
       ],
     });
-    await logout(); // 로그아웃 완료될 때까지 대기
+    await logout(1); // 로그아웃 완료될 때까지 대기
     await removeNotification();
   };
 
