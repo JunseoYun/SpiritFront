@@ -29,6 +29,7 @@ import PhoneInput from '../../components/IdentityScreen/PhoneInput';
 import CarrierModal from '../../components/IdentityScreen/CarrierModal';
 import CarrierInput from '../../components/IdentityScreen/CarrierInput';
 import OTPInput from '../../components/IdentityScreen/OTPInput';
+import PolicyModal from '../../components/IdentityScreen/PolicyModal';
 
 const CARRIER_OPTIONS = [
   'SKT',
@@ -80,6 +81,7 @@ const IdentityScreen = ({route, navigation}) => {
 
   const [selectedCarrier, setSelectedCarrier] = useState('');
   const [isCarrierModalVisible, setIsCarrierModalVisible] = useState(false);
+  const [isPolicyModalVisible, setIsPolicyModalVisible] = useState(false);
   const [isRRNStepDone, setIsRRNStepDone] = useState(false);
 
   const [isPhoneStepVisible, setIsPhoneStepVisible] = useState(false);
@@ -172,6 +174,7 @@ const IdentityScreen = ({route, navigation}) => {
   };
 
   const handleAuth = async () => {
+    setIsPolicyModalVisible(false);
     if (
       !name.trim() ||
       name.trim().length < 2 ||
@@ -537,7 +540,7 @@ const IdentityScreen = ({route, navigation}) => {
                   isCarrierStepVisible && (
                     <TouchableOpacity
                       style={styles.authButton}
-                      onPress={handleAuth}>
+                      onPress={() => setIsPolicyModalVisible(true)}>
                       <Text style={styles.authButtonText}>본인 인증하기</Text>
                     </TouchableOpacity>
                   )}
@@ -561,6 +564,12 @@ const IdentityScreen = ({route, navigation}) => {
             setIsCarrierModalVisible={setIsCarrierModalVisible}
             CARRIER_OPTIONS={CARRIER_OPTIONS}
             setSelectedCarrier={setSelectedCarrier}
+          />
+          <PolicyModal
+            isPolicyModalVisible={isPolicyModalVisible}
+            setIsPolicyModalVisible={setIsPolicyModalVisible}
+            navigation={navigation}
+            handleAuth={handleAuth}
           />
           {loading && <Loading loading={true} />}
           <AlertComponent />
