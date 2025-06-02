@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -21,10 +21,12 @@ import FastImage from 'react-native-fast-image';
 import useCustomAlert from '../../hooks/useCustomAlert';
 // import {setUnLogin, clearUnLogin} from '../../storage/tokenStorage';
 import {getFcmToken} from '../../hooks/useNotificationPermission';
+import Loading from '../../hooks/Loading';
 const OAuthLoginScreen = ({navigation}) => {
   // const {loginauth, clearUnLogout, unLogin} = useAuth();
   const {loginauth} = useAuth();
   const {showAlert, AlertComponent} = useCustomAlert();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     GoogleSignin.revokeAccess();
@@ -35,6 +37,7 @@ const OAuthLoginScreen = ({navigation}) => {
   }, []);
 
   const handleLogin = async ({socialType, socialId, socialToken}) => {
+    setLoading(true);
     const fcmToken = await getFcmToken();
     console.log('🔥 FCM Token:', fcmToken);
     try {
@@ -64,6 +67,8 @@ const OAuthLoginScreen = ({navigation}) => {
           });
         }
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -210,6 +215,7 @@ const OAuthLoginScreen = ({navigation}) => {
           </Text>
         </TouchableOpacity> */}
       </View>
+      {loading && <Loading loading={true} />}
       <AlertComponent />
     </SafeAreaView>
   );
