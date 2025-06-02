@@ -30,6 +30,7 @@ const OAuthLoginScreen = ({navigation}) => {
 
   useEffect(() => {
     GoogleSignin.revokeAccess();
+    GoogleSignin.signOut();
     GoogleSignin.configure({
       webClientId: Config.GOOGLE_WEB_CLIENT_ID,
       iosClientId: Config.GOOGLE_CLIENT_ID,
