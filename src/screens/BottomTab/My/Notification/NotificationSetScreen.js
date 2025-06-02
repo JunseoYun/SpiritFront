@@ -79,10 +79,11 @@ const NotificationSetScreen = ({navigation}) => {
         <Text style={styles.guide}>
           시스템 알림은 휴대폰의 알림 설정에서 변경할 수 있어요.
         </Text>
-
-        <Pressable onPress={handleGoToSettings}>
-          <Text style={styles.underlineButton}>설정으로 이동</Text>
-        </Pressable>
+        {!notificationEnabled && (
+          <Pressable onPress={handleGoToSettings}>
+            <Text style={styles.underlineButton}>설정으로 이동</Text>
+          </Pressable>
+        )}
       </View>
 
       {notificationEnabled && (

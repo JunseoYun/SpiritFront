@@ -33,7 +33,7 @@ const CFUserinfo = ({userdata, navigation}) => {
           }>
           <Text style={styles.label}>이름</Text>
           <View style={styles.info}>
-            <Text style={styles.value}>{userdata.nickname}</Text>
+            <Text style={styles.value}>{userdata.name}</Text>
             <View>
               <FontAwesomeIcon name="angle-right" size={18} color="#999" />
             </View>
@@ -63,43 +63,39 @@ const CFUserinfo = ({userdata, navigation}) => {
         <View style={styles.row}>
           <Text style={styles.label}>연동된 소셜 계정</Text>
           <View style={styles.info}>
-            <FastImage
-              style={[styles.socialimg, {marginRight: 20}]}
-              source={require('../../assets/kakao_symbol_yellow.png')}
-              resizeMode={FastImage.resizeMode.contain}
-            />
-            <FastImage
-              style={[styles.socialimg]}
-              source={require('../../assets/g-logo.png')}
-              resizeMode={FastImage.resizeMode.contain}
-            />
-            <FastImage
-              style={[styles.socialAppleimg]}
-              source={require('../../assets/appleLogo3.png')}
-              resizeMode={FastImage.resizeMode.contain}
-            />
-
-            {/* {userdata.socialInfoDto?.type === 'KAKAO' && (
-             <FastImage
-              style={[styles.socialimg, {marginRight: 20}]}
-              source={require('../../assets/kakao_symbol_yellow.png')}
-              resizeMode={FastImage.resizeMode.contain}
-            />
-            )}
-            {userdata.socialInfoDto?.type === 'GOOGLE' && (
-           <FastImage
-              style={[styles.socialimg]}
-              source={require('../../assets/g-logo.png')}
-              resizeMode={FastImage.resizeMode.contain}
-            />
-            )}
-            {userdata.socialInfoDto?.type === 'APPLE' && (
-             <FastImage
-              style={[styles.socialAppleimg]}
-              source={require('../../assets/appleLogo3.png')}
-              resizeMode={FastImage.resizeMode.contain}
-            />
-            )} */}
+            {userdata.socialInfoDtoList?.map(info => {
+              if (info.socialType === 'KAKAO') {
+                return (
+                  <FastImage
+                    key={info.socialId}
+                    style={[styles.socialimg, {marginRight: 20}]}
+                    source={require('../../assets/kakao_symbol_yellow.png')}
+                    resizeMode={FastImage.resizeMode.contain}
+                  />
+                );
+              }
+              if (info.socialType === 'GOOGLE') {
+                return (
+                  <FastImage
+                    key={info.socialId}
+                    style={styles.socialimg}
+                    source={require('../../assets/g-logo.png')}
+                    resizeMode={FastImage.resizeMode.contain}
+                  />
+                );
+              }
+              if (info.socialType === 'APPLE') {
+                return (
+                  <FastImage
+                    key={info.socialId}
+                    style={styles.socialAppleimg}
+                    source={require('../../assets/appleLogo3.png')}
+                    resizeMode={FastImage.resizeMode.contain}
+                  />
+                );
+              }
+              return null;
+            })}
           </View>
         </View>
       </View>
