@@ -14,7 +14,12 @@ import filterWords from '../../hooks/filterWords';
 import {useToast} from '../../context/ToastContext';
 import {useAuth} from '../../context/AuthContext';
 import {get_mokToken, request_mok, confirm_request} from '../../api/mokApi';
-import {user_merge, user_login, user_personalInfo_add} from '../../api/userApi';
+import {
+  user_merge,
+  user_login,
+  user_personalInfo_add,
+  user_personalInfo_update,
+} from '../../api/userApi';
 import Loading from '../../hooks/Loading';
 import NameInput from '../../components/IdentityScreen/NameInput';
 import RRNInput from '../../components/IdentityScreen/RRNInput';
@@ -342,10 +347,15 @@ const IdentityScreen = ({route, navigation}) => {
     console.log(token);
     try {
       setLoading(true);
-      const response = await confirm_request(data);
+      let response;
+      if (beforeScreen === 'UserInfo') {
+        response = await confirm_request(data, true);
+      } else {
+        response = await confirm_request(data);
+      }
       showToast('인증 되었습니다.');
       console.log(response);
-      if (response.isRegistered) {
+      if (response.isRegistered && beforeScreen !== 'UserInfo') {
         console.log(response.isRegistered);
         console.log(token);
         try {
@@ -390,7 +400,9 @@ const IdentityScreen = ({route, navigation}) => {
           });
         } else if (beforeScreen === 'UserInfo') {
           try {
-            // TODO 유저 정보 변경
+            console.log(localMokTokenId);
+            await user_personalInfo_update(localMokTokenId);
+            navigation.goBack();
           } catch (error) {}
         }
       }
@@ -446,122 +458,121 @@ const IdentityScreen = ({route, navigation}) => {
   };
 
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <TouchableWithoutFeedback
-        onPress={() => {
-          Keyboard.dismiss();
-        }}>
-        <View style={[styles.container]}>
-          <ScrollView
-            ref={scrollViewRef}
-            contentContainerStyle={{
-              paddingTop: '20%',
-              paddingBottom: 120,
-            }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}>
-            <Text style={styles.titleText}>{getTitleText()}</Text>
-            {!sendToMsg ? (
-              <>
-                {nameStepDone && isRRNStepDone && isPhoneStepVisible && (
-                  <CarrierInput
-                    carrierRef={carrierRef}
-                    error={error}
-                    selectedCarrier={selectedCarrier}
-                    setIsCarrierModalVisible={setIsCarrierModalVisible}
-                  />
-                )}
-
-                {nameStepDone && isRRNStepDone && (
-                  <PhoneInput
-                    showphoneLabel={showphoneLabel}
-                    isphoneFocused={isphoneFocused}
-                    phoneRef={phoneRef}
-                    error={error}
-                    phoneplaceholder={phoneplaceholder}
-                    phoneNumber={phoneNumber}
-                    setPhoneNumber={setPhoneNumber}
-                    selectedCarrier={selectedCarrier}
-                    setIsCarrierModalVisible={setIsCarrierModalVisible}
-                    setIsphoneFocused={setIsphoneFocused}
-                  />
-                )}
-
-                {nameStepDone && (
-                  <RRNInput
-                    showrrfLabel={showrrfLabel}
-                    rrnFrontRef={rrnFrontRef}
-                    rrnfplaceholder={rrnfplaceholder}
-                    rrnFront={rrnFront}
-                    setRrnFront={setRrnFront}
-                    isrrnfFocused={isrrnfFocused}
-                    setIsrrnfFocused={setIsrrnfFocused}
-                    rrnBackRef={rrnBackRef}
-                    isrrnbFocused={isrrnbFocused}
-                    rrnBack={rrnBack}
-                    setRrnBack={setRrnBack}
-                    setIsrrnbFocused={setIsrrnbFocused}
-                    error={error}
-                    phoneRef={phoneRef}
-                    phoneNumber={phoneNumber}
-                  />
-                )}
-
-                <NameInput
-                  name={name}
-                  setName={setName}
-                  nameRef={nameRef}
-                  isFocused={isnameFocused}
+    <TouchableWithoutFeedback
+      onPress={() => {
+        Keyboard.dismiss();
+      }}>
+      <View style={[styles.container]}>
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={{
+            paddingTop: '20%',
+            paddingBottom: 120,
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          <Text style={styles.titleText}>{getTitleText()}</Text>
+          {!sendToMsg ? (
+            <>
+              {nameStepDone && isRRNStepDone && isPhoneStepVisible && (
+                <CarrierInput
+                  carrierRef={carrierRef}
                   error={error}
-                  nameplaceholder={nameplaceholder}
-                  nameerror={nameerror}
-                  shownameLabel={shownameLabel}
-                  handlenamechange={handlenamechange}
-                  handleNameStepComplete={handleNameStepComplete}
-                  setIsnameFocused={setIsnameFocused}
+                  selectedCarrier={selectedCarrier}
+                  setIsCarrierModalVisible={setIsCarrierModalVisible}
                 />
+              )}
 
-                {nameStepDone &&
-                  isRRNStepDone &&
-                  isPhoneStepVisible &&
-                  isCarrierStepVisible && (
-                    <TouchableOpacity
-                      style={styles.authButton}
-                      onPress={() => setIsPolicyModalVisible(true)}>
-                      <Text style={styles.authButtonText}>본인 인증하기</Text>
-                    </TouchableOpacity>
-                  )}
-              </>
-            ) : (
-              <OTPInput
-                isotpcodeFocused={isotpcodeFocused}
-                otpcodeRef={otpcodeRef}
+              {nameStepDone && isRRNStepDone && (
+                <PhoneInput
+                  showphoneLabel={showphoneLabel}
+                  isphoneFocused={isphoneFocused}
+                  phoneRef={phoneRef}
+                  error={error}
+                  phoneplaceholder={phoneplaceholder}
+                  phoneNumber={phoneNumber}
+                  setPhoneNumber={setPhoneNumber}
+                  selectedCarrier={selectedCarrier}
+                  setIsCarrierModalVisible={setIsCarrierModalVisible}
+                  setIsphoneFocused={setIsphoneFocused}
+                />
+              )}
+
+              {nameStepDone && (
+                <RRNInput
+                  showrrfLabel={showrrfLabel}
+                  rrnFrontRef={rrnFrontRef}
+                  rrnfplaceholder={rrnfplaceholder}
+                  rrnFront={rrnFront}
+                  setRrnFront={setRrnFront}
+                  isrrnfFocused={isrrnfFocused}
+                  setIsrrnfFocused={setIsrrnfFocused}
+                  rrnBackRef={rrnBackRef}
+                  isrrnbFocused={isrrnbFocused}
+                  rrnBack={rrnBack}
+                  setRrnBack={setRrnBack}
+                  setIsrrnbFocused={setIsrrnbFocused}
+                  error={error}
+                  phoneRef={phoneRef}
+                  phoneNumber={phoneNumber}
+                />
+              )}
+
+              <NameInput
+                name={name}
+                setName={setName}
+                nameRef={nameRef}
+                isFocused={isnameFocused}
                 error={error}
-                otpcode={otpcode}
-                setOTPCode={setOTPCode}
-                setIsOTPcodeFocused={setIsOTPcodeFocused}
-                formatTimeLeft={formatTimeLeft}
-                handleResend={handleResend}
-                timeLeft={timeLeft}
+                nameplaceholder={nameplaceholder}
+                nameerror={nameerror}
+                shownameLabel={shownameLabel}
+                handlenamechange={handlenamechange}
+                handleNameStepComplete={handleNameStepComplete}
+                setIsnameFocused={setIsnameFocused}
               />
-            )}
-          </ScrollView>
-          <CarrierModal
-            isCarrierModalVisible={isCarrierModalVisible}
-            setIsCarrierModalVisible={setIsCarrierModalVisible}
-            CARRIER_OPTIONS={CARRIER_OPTIONS}
-            setSelectedCarrier={setSelectedCarrier}
-          />
-          <PolicyModal
-            isPolicyModalVisible={isPolicyModalVisible}
-            setIsPolicyModalVisible={setIsPolicyModalVisible}
-            navigation={navigation}
-            handleAuth={handleAuth}
-          />
-          {loading && <Loading loading={true} />}
-        </View>
-      </TouchableWithoutFeedback>
-    </SafeAreaView>
+
+              {nameStepDone &&
+                isRRNStepDone &&
+                isPhoneStepVisible &&
+                isCarrierStepVisible && (
+                  <TouchableOpacity
+                    style={styles.authButton}
+                    onPress={() => setIsPolicyModalVisible(true)}>
+                    <Text style={styles.authButtonText}>본인 인증하기</Text>
+                  </TouchableOpacity>
+                )}
+            </>
+          ) : (
+            <OTPInput
+              isotpcodeFocused={isotpcodeFocused}
+              otpcodeRef={otpcodeRef}
+              error={error}
+              otpcode={otpcode}
+              setOTPCode={setOTPCode}
+              setIsOTPcodeFocused={setIsOTPcodeFocused}
+              formatTimeLeft={formatTimeLeft}
+              handleResend={handleResend}
+              timeLeft={timeLeft}
+            />
+          )}
+        </ScrollView>
+        <CarrierModal
+          isCarrierModalVisible={isCarrierModalVisible}
+          setIsCarrierModalVisible={setIsCarrierModalVisible}
+          CARRIER_OPTIONS={CARRIER_OPTIONS}
+          setSelectedCarrier={setSelectedCarrier}
+        />
+        <PolicyModal
+          isPolicyModalVisible={isPolicyModalVisible}
+          setIsPolicyModalVisible={setIsPolicyModalVisible}
+          navigation={navigation}
+          handleAuth={handleAuth}
+          selectedCarrier={selectedCarrier}
+        />
+        {loading && <Loading loading={true} />}
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -570,7 +581,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFF',
     paddingHorizontal: 20,
-    paddingTop: '15%',
+    paddingTop: '20%',
   },
   titleText: {
     fontSize: 18,

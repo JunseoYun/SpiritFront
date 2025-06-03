@@ -13,6 +13,7 @@ import Service from '../components/IdentityScreen/Policy/Service';
 import CarrierUse from '../components/IdentityScreen/Policy/CarrierUse';
 import PersonalInfo from '../components/IdentityScreen/Policy/PersonalInfo';
 import UniqueNumber from '../components/IdentityScreen/Policy/UniqueNumber';
+import ThirdPartyInfo from '../components/IdentityScreen/Policy/ThirdPartyInfo';
 
 import MainBtmbar from './MainBtmbar';
 const Stack = createStackNavigator();
@@ -234,6 +235,34 @@ export default function OAuthStack() {
         component={Service}
         options={({navigation}) => ({
           title: '서비스 이용약관 동의',
+          headerTitleAlign: 'center',
+          animation: 'slide_from_bottom',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                navigation.goBack();
+              }}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="close"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="ThirdPartyInfo"
+        component={ThirdPartyInfo}
+        options={({navigation}) => ({
+          title: '개인정보 제3자 제공 동의',
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
           headerTitleStyle: {

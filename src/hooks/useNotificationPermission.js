@@ -8,6 +8,7 @@ import {
 } from '@react-native-firebase/messaging';
 import {setNotification, getNotification} from '../storage/notificationStorage';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
+import {user_push_consent, user_marketing_consent} from '../api/userApi';
 
 export const requestNotificationPermission = async () => {
   try {
@@ -60,12 +61,17 @@ export const iniBasictNotification = async token => {
   console.log('비교 여부 :', isAuthorized.toString() === isBasicNotification);
   if (isAuthorized.toString() === isBasicNotification || !token) {
     console.log('🔔반환🔔');
-    return;
+    return isAuthorized;
   }
 
   if (token) {
-    console.log('🔔알림 변경 api 호출🔔');
-    await setNotification('basicNotification', isAuthorized.toString());
+    try {
+      await user_push_consent(isAuthorized);
+      await setNotification('basicNotification', isAuthorized.toString());
+    } catch (error) {
+      console.error(error);
+    }
+    return isAuthorized;
   }
 };
 
@@ -78,10 +84,23 @@ export const showMarketingConsentAlert = () => {
         '취향 저격 한잔 정보, 놓치지 마세요!\n알림으로 바로 알려드려요.\n(알림 > 알림 설정에서 변경 가능)',
       onConfirm: async () => {
         console.log('✅ 마케팅 알림 수신 동의');
+        try {
+          await user_marketing_consent(true);
+          console.log('✅ 서버 동의 상태 업데이트 성공');
+        } catch (error) {
+          console.error('💥 서버 동의 상태 업데이트 실패:', error);
+        }
+
         resolve(true);
       },
       onCancel: async () => {
-        console.log('❌ 마케팅 알림 수신 거부');
+        try {
+          await user_marketing_consent(false);
+          console.log('✅ 서버 동의 상태 업데이트 성공');
+        } catch (error) {
+          console.error('💥 서버 동의 상태 업데이트 실패:', error);
+        }
+
         resolve(false);
       },
       type: 'marketingConsent',

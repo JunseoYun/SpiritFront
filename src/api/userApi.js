@@ -4,14 +4,20 @@ import {functionError} from './errorHandler';
 import {getRefreshToken} from '../storage/tokenStorage';
 import axios from 'axios';
 import Config from 'react-native-config';
-
-export const user_login = async (socialType, socialId, accessToken) => {
+import {getGlobalShowAlert} from '../context/CustomAlertContext';
+export const user_login = async (
+  socialType,
+  socialId,
+  accessToken,
+  fcmToken,
+) => {
   const data = {
     socialInfoDto: {
       socialType: socialType, // 소셜 로그인 타입 (예: KAKAO)
       socialId: socialId, // 소셜 로그인 ID
     },
     socialToken: accessToken, // 소셜 액세스 토큰
+    fcmToken: fcmToken,
   };
 
   try {
@@ -171,6 +177,61 @@ export const user_merge = async (originalSocialInfoDto, newSocialInfoDto) => {
   } catch (error) {
     console.error(error.response);
     functionError(error);
+    throw error;
+  }
+};
+
+export const user_push_consent = async isAgreed => {
+  try {
+    await userAxiosInstance.put(`/auth/push-consent/update/${isAgreed}`);
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const user_marketing_consent = async isAgreed => {
+  const showAlert = getGlobalShowAlert();
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hour = String(date.getHours()).padStart(2, '0');
+  const minute = String(date.getMinutes()).padStart(2, '0');
+
+  const nowDate = `${year}년 ${month}월 ${day}일 ${hour}시 ${minute}분`;
+
+  try {
+    await userAxiosInstance.put(`/auth/marketing-consent/update/${isAgreed}`);
+    if (isAgreed) {
+      // 수신 동의 시
+      showAlert({
+        title: '마케팅정보 앱 푸시 알림 수신 동의 안내',
+        message: `전송자: 한잔할까\n동의 일시: ${nowDate}\n처리내용: 수신동의 처리 완료`,
+      });
+    } else {
+      // 수신 거부(철회) 시
+      showAlert({
+        title: '마케팅정보 앱 푸시 알림 수신 거부 안내',
+        message: `전송자: 한잔할까\n거부 일시: ${nowDate}\n처리내용: 수신거부 처리 완료`,
+      });
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const user_personalInfo_update = async mokDataId => {
+  try {
+    const response = await userAxiosInstance.put(
+      `/auth/personal-info/update`,
+      null,
+      {
+        params: {mokDataId},
+      },
+    );
+    console.log(response);
+  } catch (error) {
+    console.error('UserInfo:', error.response);
     throw error;
   }
 };

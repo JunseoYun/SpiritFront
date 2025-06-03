@@ -27,7 +27,7 @@ const CFUserinfo = ({userdata, navigation}) => {
             navigation.navigate('OAuthStack', {
               screen: 'IdentityScreen',
               params: {
-                index: 1,
+                beforeScreen: 'UserInfo',
               },
             })
           }>
@@ -63,39 +63,50 @@ const CFUserinfo = ({userdata, navigation}) => {
         <View style={styles.row}>
           <Text style={styles.label}>연동된 소셜 계정</Text>
           <View style={styles.info}>
-            {userdata.socialInfoDtoList?.map(info => {
-              if (info.socialType === 'KAKAO') {
-                return (
-                  <FastImage
-                    key={info.socialId}
-                    style={[styles.socialimg, {marginRight: 20}]}
-                    source={require('../../assets/kakao_symbol_yellow.png')}
-                    resizeMode={FastImage.resizeMode.contain}
-                  />
-                );
-              }
-              if (info.socialType === 'GOOGLE') {
-                return (
-                  <FastImage
-                    key={info.socialId}
-                    style={styles.socialimg}
-                    source={require('../../assets/g-logo.png')}
-                    resizeMode={FastImage.resizeMode.contain}
-                  />
-                );
-              }
-              if (info.socialType === 'APPLE') {
-                return (
-                  <FastImage
-                    key={info.socialId}
-                    style={styles.socialAppleimg}
-                    source={require('../../assets/appleLogo3.png')}
-                    resizeMode={FastImage.resizeMode.contain}
-                  />
-                );
-              }
-              return null;
-            })}
+            {(() => {
+              const SOCIAL_ORDER = ['KAKAO', 'GOOGLE', 'APPLE'];
+              const sortedSocialList = [
+                ...(userdata.socialInfoDtoList || []),
+              ].sort(
+                (a, b) =>
+                  SOCIAL_ORDER.indexOf(a.socialType) -
+                  SOCIAL_ORDER.indexOf(b.socialType),
+              );
+
+              return sortedSocialList.map(info => {
+                if (info.socialType === 'KAKAO') {
+                  return (
+                    <FastImage
+                      key={info.socialId}
+                      style={[styles.socialimg, {marginRight: 20}]}
+                      source={require('../../assets/kakao_symbol_yellow.png')}
+                      resizeMode={FastImage.resizeMode.contain}
+                    />
+                  );
+                }
+                if (info.socialType === 'GOOGLE') {
+                  return (
+                    <FastImage
+                      key={info.socialId}
+                      style={styles.socialimg}
+                      source={require('../../assets/g-logo.png')}
+                      resizeMode={FastImage.resizeMode.contain}
+                    />
+                  );
+                }
+                if (info.socialType === 'APPLE') {
+                  return (
+                    <FastImage
+                      key={info.socialId}
+                      style={styles.socialAppleimg}
+                      source={require('../../assets/appleLogo3.png')}
+                      resizeMode={FastImage.resizeMode.contain}
+                    />
+                  );
+                }
+                return null;
+              });
+            })()}
           </View>
         </View>
       </View>
