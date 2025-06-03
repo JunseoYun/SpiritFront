@@ -121,6 +121,21 @@ const useCustomAlert = () => {
                     </TouchableOpacity>
                   </>
                 )}
+                {type === 'notificationSetting' && (
+                  <>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onCancel)}>
+                      <Text style={styles.buttonText}>취소</Text>
+                    </TouchableOpacity>
+                    <View style={styles.divider} />
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onConfirm)}>
+                      <Text style={styles.buttonText}>설정 이동</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
 
                 {type === 'ok' && (
                   <TouchableOpacity

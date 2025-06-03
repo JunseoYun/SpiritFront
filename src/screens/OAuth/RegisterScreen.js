@@ -128,8 +128,17 @@ const RegisterScreen = ({route, navigation}) => {
       try {
         const fcmToken = await getFcmToken();
         console.log('🔥 FCM Token:', fcmToken);
-        const login_data = await user_login(socialType, socialId, socialToken);
-        await loginauth(login_data.accessToken, login_data.refreshToken, null);
+        const login_data = await user_login(
+          socialType,
+          socialId,
+          socialToken,
+          fcmToken,
+        );
+        await loginauth(
+          login_data.accessToken,
+          login_data.refreshToken,
+          login_data.marketingConsent,
+        );
         // await loginauth(login_data.accessToken, login_data.refreshToken, 마케팅 알림 수신 여부);
         navigation.reset({
           index: 0,

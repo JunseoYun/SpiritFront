@@ -1,8 +1,11 @@
 import React from 'react';
 import {View, Pressable, Text, StyleSheet} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-
+import {iniBasictNotification} from '../../hooks/useNotificationPermission';
+import useCustomAlert from '../../hooks/useCustomAlert';
+import {openSettings} from 'react-native-permissions';
 const StoreRegister = ({storeactiveIndex, handlestoreItemClick}) => {
+  const {showAlert, AlertComponent} = useCustomAlert();
   const options = [
     {
       id: 0,
@@ -16,13 +19,39 @@ const StoreRegister = ({storeactiveIndex, handlestoreItemClick}) => {
     },
   ];
 
+  const handlePress = async id => {
+    if (id === 1) {
+      const isAuthorized = await iniBasictNotification(1);
+      if (isAuthorized) {
+        handlestoreItemClick(id);
+      } else {
+        showAlert({
+          title: '알림 미설정',
+          message: '사장님 인증 결과를 받기 위해\n알림 권한이 필요해요',
+          type: 'notificationSetting',
+          onConfirm: handleGoToSettings,
+          onCancel: () => {
+            console.log('취소 눌림');
+          },
+        });
+      }
+    } else {
+      handlestoreItemClick(id);
+    }
+  };
+
+  const handleGoToSettings = () => {
+    openSettings().catch(() => {
+      console.warn('설정 열기에 실패했습니다.');
+    });
+  };
   return (
     <View style={styles.StoreregView}>
       {options.map(option => (
         <Pressable
           key={option.id}
           style={[styles.StorereginnerView]}
-          onPress={() => handlestoreItemClick(option.id)}>
+          onPress={() => handlePress(option.id)}>
           <View style={styles.iconCircle}>
             <Feather name={option.icon} size={24} color={'#16BBFF'} />
           </View>
@@ -31,6 +60,7 @@ const StoreRegister = ({storeactiveIndex, handlestoreItemClick}) => {
           </View>
         </Pressable>
       ))}
+      <AlertComponent />
     </View>
   );
 };

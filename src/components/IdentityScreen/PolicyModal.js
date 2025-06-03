@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const policyList = [
+const basePolicyList = [
   '[필수] 개인정보 수집/이용 동의',
   '[필수] 고유식별정보 처리 동의',
   '[필수] 통신사 이용약관 동의',
@@ -22,10 +22,13 @@ const PolicyModal = ({
   setIsPolicyModalVisible,
   navigation,
   handleAuth,
+  selectedCarrier,
 }) => {
   const [shouldRender, setShouldRender] = useState(false);
   const translateY = useRef(new Animated.Value(500)).current;
-
+  const policyList = selectedCarrier?.includes('알뜰폰')
+    ? [...basePolicyList, '[필수] 개인정보 제3자 제공 동의']
+    : basePolicyList;
   useEffect(() => {
     if (isPolicyModalVisible) {
       setShouldRender(true);
@@ -61,6 +64,8 @@ const PolicyModal = ({
         return 'CarrierUse';
       case 3:
         return 'Service';
+      case 4:
+        return 'ThirdPartyInfo';
       default:
         return 'PersonalInfo';
     }
@@ -89,7 +94,11 @@ const PolicyModal = ({
             <Text style={styles.policyText}>{item}</Text>
             <TouchableOpacity
               style={styles.viewButton}
-              onPress={() => navigation.navigate(getPolicyScreen(index))}>
+              onPress={() =>
+                navigation.navigate(getPolicyScreen(index), {
+                  carrier: selectedCarrier, // ⭐️ carrier를 route param으로 같이 전달
+                })
+              }>
               <Text style={styles.viewButtonText}>보기</Text>
             </TouchableOpacity>
           </View>

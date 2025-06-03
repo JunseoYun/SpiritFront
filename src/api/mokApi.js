@@ -34,12 +34,13 @@ export const request_mok = async data => {
   }
 };
 
-export const confirm_request = async data => {
+export const confirm_request = async (data, isUpdate = false) => {
   const confirmData = {
     mokDataId: data.mokDataId,
     authNumber: data.authNumber,
+    isUpdate: isUpdate, // isUpdate 값 그대로 전달
   };
-
+  console.log(confirmData);
   try {
     const response = await userAxiosInstance.post(
       `/mok/confirm-request`,
