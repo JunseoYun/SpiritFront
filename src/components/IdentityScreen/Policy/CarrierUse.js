@@ -9,16 +9,32 @@ const CarrierUse = ({route}) => {
 
   // ⭐️ SKT 또는 SKT 알뜰폰일 때 carrier만 보여주기
   if (carrier === 'SKT' || carrier === 'SKT 알뜰폰') {
-    return <SKTcarrieruse />;
+    return (
+      <View style={styles.conatiner}>
+        <SKTcarrieruse />
+      </View>
+    );
   }
   if (carrier === 'KT' || carrier === 'KT 알뜰폰') {
-    return <KTcarrieruse />;
+    return (
+      <View style={styles.conatiner}>
+        <KTcarrieruse />
+      </View>
+    );
   }
   if (carrier === 'LG U+' || carrier === 'LG U+ 알뜰폰') {
-    return <LGUcarrieruse />;
+    return (
+      <View style={styles.conatiner}>
+        <LGUcarrieruse />
+      </View>
+    );
   }
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  conatiner: {
+    backgroundColor: '#FFF',
+  },
+});
 
 export default CarrierUse;

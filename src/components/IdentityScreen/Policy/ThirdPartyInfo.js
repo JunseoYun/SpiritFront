@@ -8,16 +8,33 @@ const ThirdPartyInfo = ({route}) => {
   const {carrier} = route.params || {}; // ⭐️ carrier를 route에서 받아오기
 
   if (carrier === 'SKT 알뜰폰') {
-    return <SKTthirdpartyinfo />;
+    return (
+      <View style={styles.conatiner}>
+        <SKTthirdpartyinfo />
+      </View>
+    );
   }
   if (carrier === 'KT 알뜰폰') {
-    return <KTthirdpartyinfo />;
+    return (
+      <View style={styles.conatiner}>
+        <KTthirdpartyinfo />
+      </View>
+    );
   }
   if (carrier === 'LG U+ 알뜰폰') {
-    return <LGUthirdpartyinfo />;
+    return (
+      <View style={styles.conatiner}>
+        <LGUthirdpartyinfo />
+      </View>
+    );
   }
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  conatiner: {
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
+});
 
 export default ThirdPartyInfo;
