@@ -9,11 +9,12 @@ const PersonalInfo = ({route}) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {carrier === 'SKT' || (carrier === 'SKT 알뜰폰' && <SKTpersonalinfo />)}
-      {carrier === 'KT' || (carrier === 'KT 알뜰폰' && <KTpersonalinfo />)}
-      {carrier === 'LG U+' ||
-        (carrier === 'LG U+ 알뜰폰' && <LGUpersonalinfo />)}
       <Text style={styles.title}>개인정보 수집 및 이용 동의</Text>
+      {(carrier === 'SKT' || carrier === 'SKT 알뜰폰') && <SKTpersonalinfo />}
+      {(carrier === 'KT' || carrier === 'KT 알뜰폰') && <KTpersonalinfo />}
+      {(carrier === 'LG U+' || carrier === 'LG U+ 알뜰폰') && (
+        <LGUpersonalinfo />
+      )}
       <Text style={styles.text}>
         ㈜드림시큐리티는 휴대폰본인확인 서비스 이용과 관련하여, 본인의
         개인정보를 수집, 이용하고자 하는 경우에는 개인정보 보호법 제15조 및
