@@ -9,6 +9,7 @@ import StoreAddScreen from '../screens/StoreRegister/StoreAddScreen';
 import StoreSearchScreen from '../screens/StoreRegister/StoreSearchScreen';
 import StoreCheckScreen from '../screens/StoreRegister/StoreCheckScreen';
 import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
+import StoreAuthConfirm from '../screens/StoreRegister/StoreAuthConfirm';
 import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
 import StoreAddTimeSetScreen from '../screens/StoreRegister/StoreAddTimeSetScreen';
 import CategoryListTabbar from './CategoryListTabbar';
@@ -287,7 +288,7 @@ export default function MainStack() {
         name="StoreCheckScreen"
         component={StoreCheckScreen}
         options={({navigation}) => ({
-          title: '사장님 인증 신청 1/2',
+          title: '사장님 인증 신청 1/3',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -311,7 +312,31 @@ export default function MainStack() {
         name="StoreAuthorityScreen"
         component={StoreAuthorityScreen}
         options={({navigation}) => ({
-          title: '사장님 인증 신청 2/2',
+          title: '사장님 인증 신청 2/3',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="StoreAuthConfirm"
+        component={StoreAuthConfirm}
+        options={({navigation}) => ({
+          title: '사장님 인증 신청 3/3',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
