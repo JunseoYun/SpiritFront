@@ -22,7 +22,7 @@ import {setUnLogin, clearUnLogin} from '../../../storage/tokenStorage';
 import {
   requestNotificationPermission,
   getFcmToken,
-} from '../../../hooks/useNotificationPermission';
+} from '../../../hooks/notification/useNotificationPermission';
 const MyLoginScreen = ({navigation}) => {
   const {loginauth, clearUnLogout} = useAuth();
 

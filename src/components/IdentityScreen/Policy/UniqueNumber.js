@@ -8,16 +8,33 @@ const UniqueNumber = ({route}) => {
   const {carrier} = route.params || {}; // ⭐️ carrier를 route에서 받아오기
 
   if (carrier === 'SKT' || carrier === 'SKT 알뜰폰') {
-    return <SKTuniquenumber />;
+    return (
+      <View style={styles.conatiner}>
+        <SKTuniquenumber />
+      </View>
+    );
   }
   if (carrier === 'KT' || carrier === 'KT 알뜰폰') {
-    return <KTuniquenumber />;
+    return (
+      <View style={styles.conatiner}>
+        <KTuniquenumber />
+      </View>
+    );
   }
   if (carrier === 'LG U+' || carrier === 'LG U+ 알뜰폰') {
-    return <LGUunipuenumber />;
+    return (
+      <View style={styles.conatiner}>
+        <LGUunipuenumber />
+      </View>
+    );
   }
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  conatiner: {
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
+});
 
 export default UniqueNumber;

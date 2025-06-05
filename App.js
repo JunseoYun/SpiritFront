@@ -9,11 +9,13 @@ import {Provider as PaperProvider} from 'react-native-paper';
 import {ToastProvider} from './src/context/ToastContext';
 import SplashScreen from 'react-native-splash-screen';
 import MySplashScreen from './src/screens/MySplashScreen';
-import {iniBasictNotification} from './src/hooks/useNotificationPermission';
-import messaging from '@react-native-firebase/messaging';
-import notifee, {AndroidImportance} from '@notifee/react-native';
-import {useNotificationSetup} from './src/hooks/useNotificationSetup';
-
+import {iniBasictNotification} from './src/hooks/notification/useNotificationPermission';
+import {useNotificationSetup} from './src/hooks/notification/useNotificationSetup';
+import {useNotificationClickHandler} from './src/hooks/notification/useNotificationClickHandler';
+import {navigationRef} from './src/navigation/NavigationService';
+import {NotificationProvider} from './src/context/NotificationContext';
+import {useNotification} from './src/context/NotificationContext';
+import useHandlePendingNotification from './src/hooks/notification/useHandlePendingNotification';
 import './reanimatedConfig';
 
 if (!__DEV__) {
@@ -24,6 +26,7 @@ if (!__DEV__) {
 
 const App = () => {
   useNotificationSetup();
+  // useNotificationClickHandler();
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
@@ -37,7 +40,9 @@ const App = () => {
       <AuthProvider>
         <CustomAlertProvider>
           <ToastProvider>
-            <AppNavigator />
+            <NotificationProvider>
+              <AppNavigator />
+            </NotificationProvider>
           </ToastProvider>
         </CustomAlertProvider>
       </AuthProvider>
@@ -49,9 +54,14 @@ const AppNavigator = () => {
   const {token} = useAuth(); // 인증 상태를 가져옴
 
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
+  const {pendingNotification, setPendingNotification} = useNotification();
+
+  useNotificationClickHandler();
+  useHandlePendingNotification(loading, pendingNotification, () =>
+    setPendingNotification(null),
+  );
 
   useEffect(() => {
-    // 2초 후 로딩 완료 (실제로는 API 호출 후 처리)
     setTimeout(() => {
       setLoading(false);
     }, 2500);
@@ -65,7 +75,7 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       {token ? <MainStack /> : <OAuthStack />}
     </NavigationContainer>
   );

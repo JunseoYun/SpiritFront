@@ -6,9 +6,12 @@ import {
   getToken,
   AuthorizationStatus,
 } from '@react-native-firebase/messaging';
-import {setNotification, getNotification} from '../storage/notificationStorage';
-import {getGlobalShowAlert} from '../context/CustomAlertContext';
-import {user_push_consent, user_marketing_consent} from '../api/userApi';
+import {
+  setNotification,
+  getNotification,
+} from '../../storage/notificationStorage';
+import {getGlobalShowAlert} from '../../context/CustomAlertContext';
+import {user_push_consent, user_marketing_consent} from '../../api/userApi';
 
 export const requestNotificationPermission = async () => {
   try {
