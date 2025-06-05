@@ -9,6 +9,10 @@ const StoreOwnerInput = ({
   addOwner,
   updateOwnerName,
   removeOwner,
+  nameRef,
+  ownerRefs,
+  businessNumberRef,
+  businessData,
 }) => {
   return (
     <View style={styles.container}>
@@ -68,11 +72,24 @@ const StoreOwnerInput = ({
                 )}
               </View>
               <TextInput
+                ref={ref => (ownerRefs.current[index] = ref)}
                 style={styles.input}
                 placeholder={index === 0 ? '대표자 성명' : '공동 대표 성명'}
                 placeholderTextColor="#999"
                 value={owner.name}
                 onChangeText={text => updateOwnerName(index, text)}
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  const nextRef = ownerRefs.current[index + 1];
+                  if (nextRef) {
+                    nextRef.focus();
+                  }
+                  if (!nextRef) {
+                    if (!businessData.businessNumber) {
+                      businessNumberRef.current?.focus();
+                    }
+                  }
+                }}
               />
             </View>
           ))}
@@ -89,10 +106,17 @@ const StoreOwnerInput = ({
           </View>
           <TextInput
             style={styles.input}
+            ref={nameRef}
             placeholder="성명"
             placeholderTextColor="#999"
             value={owners[0].name}
             onChangeText={text => updateOwnerName(0, text)}
+            returnKeyType="next"
+            onSubmitEditing={() => {
+              if (!businessData.businessNumber) {
+                businessNumberRef.current?.focus();
+              }
+            }}
           />
         </View>
       )}

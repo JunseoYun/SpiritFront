@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
 
@@ -36,8 +36,13 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
 
   const isFocused = key => focusedInput === key;
 
+  const storecheckscreenRef = useRef(null);
+  const storenameRef = useRef(null);
+  const stroenumberRef = useRef(null);
+  const phonenumberRef = useRef(null);
+
   return (
-    <View>
+    <View ref={storecheckscreenRef}>
       {/* 매장 이름 입력 */}
       <View style={styles.storeinputview}>
         {storeData.storeName && (
@@ -48,12 +53,24 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
             styles.storeinput,
             isFocused('storeName') && styles.focusedInput,
           ]}
+          ref={storenameRef}
           value={storeData.storeName}
           onChangeText={text => handleChange('storeName', text)}
           placeholder="매장 이름(상호명)"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('storeName')}
-          onBlur={() => setFocusedInput(null)}
+          onBlur={() => {
+            setFocusedInput(null);
+          }}
+          returnKeyType="next"
+          onSubmitEditing={() => {
+            if (!storeData.storeNumber) {
+              stroenumberRef.current?.focus();
+            }
+            if (storeData.storeNumber && !storeData.userContact) {
+              phonenumberRef.current?.focus();
+            }
+          }}
         />
         {errors.storeName && (
           <Text style={styles.errorText}>{errors.storeName}</Text>
@@ -70,13 +87,22 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
             styles.storeinput,
             isFocused('storeNumber') && styles.focusedInput,
           ]}
+          ref={stroenumberRef}
+          returnKeyType="next"
           value={storeData.storeNumber}
           onChangeText={text => handleChange('storeNumber', text)}
           keyboardType="number-pad"
           placeholder="매장 연락처"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('storeNumber')}
-          onBlur={() => setFocusedInput(null)}
+          onBlur={() => {
+            setFocusedInput(null);
+          }}
+          onSubmitEditing={() => {
+            if (!storeData.userContact) {
+              phonenumberRef.current?.focus();
+            }
+          }}
         />
         {errors.storeNumber && (
           <Text style={styles.errorText}>{errors.storeNumber}</Text>
@@ -92,6 +118,7 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
             styles.storeinput,
             isFocused('userContact') && styles.focusedInput,
           ]}
+          ref={phonenumberRef}
           value={storeData.userContact}
           onChangeText={text => handleChange('userContact', text)}
           keyboardType="number-pad"
