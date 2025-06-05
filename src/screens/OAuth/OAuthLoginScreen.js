@@ -20,7 +20,7 @@ import Config from 'react-native-config';
 import FastImage from 'react-native-fast-image';
 import useCustomAlert from '../../hooks/useCustomAlert';
 // import {setUnLogin, clearUnLogin} from '../../storage/tokenStorage';
-import {getFcmToken} from '../../hooks/useNotificationPermission';
+import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
 import Loading from '../../hooks/Loading';
 const OAuthLoginScreen = ({navigation}) => {
   // const {loginauth, clearUnLogout, unLogin} = useAuth();

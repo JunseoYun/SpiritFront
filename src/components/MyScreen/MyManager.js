@@ -25,8 +25,9 @@ const MyManager = ({navigation}) => {
     else setLoading(true);
 
     try {
-      const data = await Store_getby_managed();
-      console.log(data.content);
+      const data = await Store_getby_managed(page);
+
+      console.log(data.content.map(item => item.id));
       if (page === 0) {
         setMystoredata(data.content); // 새로고침 시 기존 데이터 덮어씀
       } else {
@@ -51,7 +52,7 @@ const MyManager = ({navigation}) => {
   }, []);
 
   const renderItem = ({item}) => (
-    <MyManagerItem key={item.id} sotreInfo={item} navigation={navigation} />
+    <MyManagerItem sotreInfo={item} navigation={navigation} />
   );
 
   return (

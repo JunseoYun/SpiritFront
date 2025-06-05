@@ -3,6 +3,8 @@ import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useStoreStatus from '../../hooks/useStoreStatus';
 import Feather from 'react-native-vector-icons/Feather';
+import FastImage from 'react-native-fast-image';
+
 const StoreResultItem = ({store, navigation, index}) => {
   const {translateCategory} = useCategoryTranslation();
 
@@ -110,23 +112,36 @@ const StoreResultItem = ({store, navigation, index}) => {
           </View>
         </View>
       </View>
-      {index === 1 && (
-        <Pressable
-          onPress={() => {
-            navigation.navigate('StoreCheckScreen', {
-              storeId: store.id,
-              storeName: store.name,
-              storeLocationDto: store.locationDto,
-              storeContact: store.contact,
-            });
-          }}
-          style={styles.applyButton}>
-          <Text style={styles.applyButtonText}>사장님 인증하기</Text>
-          <View style={{marginRight: 18}}>
-            <Feather name="chevron-right" size={23} color="#45C9FF" />
+      {index === 1 &&
+        (store?.isCertified ? (
+          // 이미 완료된 매장일 때
+          <View style={styles.completeView}>
+            <FastImage
+              source={require('../../assets/verifyMaker.png')}
+              style={styles.imageStyle}
+            />
+            <Text style={styles.completeText}>
+              사장님 인증 완료된 매장이에요
+            </Text>
           </View>
-        </Pressable>
-      )}
+        ) : (
+          // 버튼으로 사장님 인증하기
+          <Pressable
+            onPress={() => {
+              navigation.navigate('StoreCheckScreen', {
+                storeId: store.id,
+                storeName: store.name,
+                storeLocationDto: store.locationDto,
+                storeContact: store.contact,
+              });
+            }}
+            style={styles.applyButton}>
+            <Text style={styles.applyButtonText}>사장님 인증하기</Text>
+            {/* <View style={{marginRight: 18}}>
+              <Feather name="chevron-right" size={23} color="#45C9FF" />
+            </View> */}
+          </Pressable>
+        ))}
 
       {/* <View style={styles.horizontalDivider} /> */}
     </Pressable>
@@ -172,7 +187,6 @@ const styles = StyleSheet.create({
     marginVertical: 3,
     flex: 1,
   },
-
   StoreTitle: {
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 18,
@@ -187,18 +201,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', // 진한 파랑 (iOS 스타일)
     borderRadius: 12, // 라운드 크게
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#45C9FF',
+    justifyContent: 'center',
+    backgroundColor: '#E9F5FB',
   },
-
+  completeView: {
+    flexDirection: 'row',
+    paddingHorizontal: 18,
+    marginTop: 7,
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 17,
+    height: 17,
+    marginRight: 3,
+  },
+  completeText: {
+    color: '#999',
+    fontSize: 16, // ✅ 글씨 크게
+    fontFamily: 'Pretendard-Medium',
+    textAlign: 'left',
+    marginLeft: 3,
+  },
   applyButtonText: {
     color: '#45C9FF',
     fontSize: 16, // ✅ 글씨 크게
     fontFamily: 'Pretendard-Bold',
-    textAlign: 'left',
-    marginLeft: 18,
+    textAlign: 'center',
   },
   StoreCategoryList: {
     flexDirection: 'row',

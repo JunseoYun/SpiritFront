@@ -54,6 +54,7 @@ export const useNotificationSetup = () => {
             sound: true,
           },
         },
+        data: remoteMessage.data,
       });
     });
 
