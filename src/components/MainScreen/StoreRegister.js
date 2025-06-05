@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Pressable, Text, StyleSheet} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import {iniBasictNotification} from '../../hooks/useNotificationPermission';
+import {iniBasictNotification} from '../../hooks/notification/useNotificationPermission';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {openSettings} from 'react-native-permissions';
 const StoreRegister = ({storeactiveIndex, handlestoreItemClick}) => {

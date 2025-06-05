@@ -14,7 +14,7 @@ import {getMessaging, deleteToken} from '@react-native-firebase/messaging';
 
 import {getNotification} from '../storage/notificationStorage';
 
-import {showMarketingConsentAlert} from '../hooks/useNotificationPermission';
+import {showMarketingConsentAlert} from '../hooks/notification/useNotificationPermission';
 let globalAuth = {
   logout: async () => {}, // 기본값으로 빈 함수 할당
 };

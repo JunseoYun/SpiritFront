@@ -57,7 +57,7 @@ const StoreOwnerInput = ({
                 <View style={styles.labelContainer}>
                   {owner.name ? (
                     <Text style={styles.inputLabel}>
-                      {index === 0 ? '대표자' : `공동 대표`}
+                      {index === 0 ? '주 대표자' : `공동 대표`}
                     </Text>
                   ) : null}
                 </View>
@@ -74,7 +74,7 @@ const StoreOwnerInput = ({
               <TextInput
                 ref={ref => (ownerRefs.current[index] = ref)}
                 style={styles.input}
-                placeholder={index === 0 ? '대표자 성명' : '공동 대표 성명'}
+                placeholder={index === 0 ? '주 대표자 성명' : '공동 대표 성명'}
                 placeholderTextColor="#999"
                 value={owner.name}
                 onChangeText={text => updateOwnerName(index, text)}
