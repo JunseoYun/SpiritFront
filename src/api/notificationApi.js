@@ -2,6 +2,7 @@ import axiosInstance from './axiosInstance';
 import {functionError} from './errorHandler';
 
 export const NotifiGet = async page => {
+  console.log(page);
   try {
     const response = await axiosInstance.get(`/notification/get-received`, {
       params: {page},
