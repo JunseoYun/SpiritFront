@@ -4,16 +4,17 @@ import {useRoute} from '@react-navigation/native';
 import {useToast} from '../../../context/ToastContext';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {ReportMainget, completeReport} from '../../../api/reportApi';
+import Loading from '../../../hooks/Loading';
 
 const REPORT_TYPES = {
   report: [
-    'DUPLICATE_STORE',
     'INAPPROPRIATE_LANGUAGE',
     'INAPPROPRIATE_PHOTO',
     'VIOLATION_OF_GUIDELINES',
     'ETC',
   ],
   suggestion: [
+    'DUPLICATE_STORE',
     'INCORRECT_STORE_INFO',
     'INCORRECT_MENU_INFO',
     'INCORRECT_DRINK_INFO',
@@ -23,10 +24,11 @@ const REPORT_TYPES = {
 
 const StoreReportList = () => {
   const route = useRoute();
-  const {storeId, storeName} = route.params;
+  const {storeId} = route.params;
   const [storeReport, setStoreReport] = useState([]);
   const {showToast} = useToast();
   const {showAlert, AlertComponent} = useCustomAlert();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (storeId) fetchReports(storeId);
@@ -34,16 +36,18 @@ const StoreReportList = () => {
 
   const formatDate = isoString => {
     const d = new Date(isoString);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const hh = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+      2,
+      '0',
+    )}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(
+      2,
+      '0',
+    )}:${String(d.getMinutes()).padStart(2, '0')}`;
   };
 
   const fetchReports = async id => {
     try {
+      setLoading(true);
       const response = await ReportMainget('STORE', id);
       if (response) {
         const reports = response.map(item => ({
@@ -52,33 +56,30 @@ const StoreReportList = () => {
           description: item.description,
           reporterNickname: item.reporterNickname,
           reason: item.reportReason,
-          status:
-            item.reportStatus === 'PENDING'
-              ? '접수됨'
-              : item.reportStatus === 'COMPLETED'
-              ? '처리 완료'
-              : item.reportStatus === 'ARCHIVED'
-              ? '보관됨'
-              : '알수없음',
           date: formatDate(item.reportedAt),
         }));
         setStoreReport(reports);
       }
     } catch (error) {
       console.error('신고 조회 실패:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleComplete = async reportId => {
+  const handleComplete = reportId => {
     showAlert({
       title: '처리 완료하시겠습니까?',
       onConfirm: async () => {
         try {
+          setLoading(true);
           await completeReport(reportId, 'COMPLETED');
           showToast('완료되었습니다.', 'center');
           fetchReports(storeId);
         } catch (error) {
           showToast('다시 시도해주세요.', 'center');
+        } finally {
+          setLoading(false);
         }
       },
       onCancel: null,
@@ -95,27 +96,24 @@ const StoreReportList = () => {
     <View style={styles.root}>
       <ScrollView contentContainerStyle={styles.container}>
         {['신고', '제보'].map(type => (
-          <View key={type} style={{marginTop: 32}}>
+          <View key={type} style={styles.section}>
             <Text style={styles.sectionTitle}>{type} 내역</Text>
             {reportsByType[type].length === 0 ? (
-              <Text style={styles.noItemText}>내역 없음</Text>
+              <Text style={styles.noItemText}>{type} 내역이 없습니다.</Text>
             ) : (
               reportsByType[type].map(report => (
                 <View key={report.reportId} style={styles.card}>
-                  <Text style={styles.description}>{report.description}</Text>
-                  <View style={styles.metaRow}>
-                    <Text style={styles.metaText}>
-                      신고자: {report.reporterNickname}
-                    </Text>
-                    <Text style={styles.metaText}>날짜: {report.date}</Text>
-                  </View>
-                  <View style={styles.bottomRow}>
-                    <Text
-                      style={[styles.status, getStatusStyle(report.status)]}>
-                      {report.status}
-                    </Text>
+                  <Text style={styles.descriptionTitle}>{type} 사유</Text>
+                  <Text style={styles.descriptionText}>
+                    {report.description}
+                  </Text>
+                  <View style={styles.metaContainer}>
+                    <Text style={styles.metaText}>{report.date}</Text>
                     <Pressable
-                      style={styles.button}
+                      style={({pressed}) => [
+                        styles.button,
+                        pressed && styles.buttonPressed,
+                      ]}
                       onPress={() => handleComplete(report.reportId)}>
                       <Text style={styles.buttonText}>처리 완료</Text>
                     </Pressable>
@@ -127,45 +125,34 @@ const StoreReportList = () => {
         ))}
       </ScrollView>
       <AlertComponent />
+      <Loading loading={loading} />
     </View>
   );
 };
 
-const getStatusStyle = status => ({
-  color:
-    status === '접수됨'
-      ? '#DC3545'
-      : status === '처리 완료'
-      ? '#45C9FF'
-      : '#6c757d',
-});
-
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f0f2f5',
   },
   container: {
-    paddingTop: 8,
-    paddingHorizontal: 16,
+    padding: 16,
     paddingBottom: 40,
   },
-  storeName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#222',
-    textAlign: 'center',
-    marginBottom: 8,
+  section: {
+    marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: '#333',
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111',
+    marginBottom: 16,
   },
   noItemText: {
+    textAlign: 'center',
     fontSize: 14,
-    color: '#999',
+    color: '#aaa',
+    paddingVertical: 20,
   },
   card: {
     backgroundColor: '#fff',
@@ -178,40 +165,52 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  description: {
+  tagContainer: {
+    marginBottom: 6,
+  },
+  tag: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#e6f0ff',
+    color: '#3a86ff',
+    fontSize: 12,
+    fontWeight: '600',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  descriptionTitle: {
+    fontSize: 13,
+    color: '#888',
+    marginBottom: 4,
+  },
+  descriptionText: {
     fontSize: 15,
     fontWeight: '500',
     color: '#333',
     marginBottom: 12,
   },
-  metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  metaText: {
-    fontSize: 12,
-    color: '#777',
-  },
-  bottomRow: {
+  metaContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  status: {
-    fontSize: 13,
-    fontWeight: '600',
+  metaText: {
+    fontSize: 12,
+    color: '#666',
   },
   button: {
     backgroundColor: '#45C9FF',
+    borderRadius: 8,
     paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 6,
+    paddingHorizontal: 16,
+  },
+  buttonPressed: {
+    opacity: 0.9,
   },
   buttonText: {
-    color: '#fff',
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#fff',
   },
 });
 
