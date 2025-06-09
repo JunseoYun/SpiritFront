@@ -11,18 +11,24 @@ export const useNotificationClickHandler = () => {
     const unsubscribeForeground = notifee.onForegroundEvent(
       ({type, detail}) => {
         if (type === EventType.PRESS) {
-          const data = detail.notification?.data;
-          console.log('✅ Foreground 알림 클릭', data);
+          const data = {
+            ...detail.notification?.data,
+            body: detail.notification?.body,
+          };
           setPendingNotification(data);
+          console.log('✅ Foreground 알림 클릭', data);
         }
       },
     );
 
     const unsubscribeOpenedApp = messaging().onNotificationOpenedApp(
       remoteMessage => {
-        const data = remoteMessage?.data;
-        console.log('✅ Background 알림 클릭', data);
+        const data = {
+          ...remoteMessage?.data,
+          body: remoteMessage?.notification?.body,
+        };
         setPendingNotification(data);
+        console.log('✅ Background 알림 클릭', data, remoteMessage);
       },
     );
 
@@ -30,9 +36,12 @@ export const useNotificationClickHandler = () => {
       .getInitialNotification()
       .then(remoteMessage => {
         if (remoteMessage) {
-          const data = remoteMessage?.data;
-          console.log('✅ Cold start 알림 클릭', data);
+          const data = {
+            ...remoteMessage?.data,
+            body: remoteMessage?.notification?.body,
+          };
           setPendingNotification(data);
+          console.log('✅ Cold start 알림 클릭', data, remoteMessage);
         }
       });
 

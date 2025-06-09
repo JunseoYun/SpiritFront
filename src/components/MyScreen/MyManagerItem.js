@@ -7,6 +7,7 @@ import {
   Pressable,
   TouchableOpacity,
 } from 'react-native';
+import StoreInfo from '../StoreAddScreen/StoreInfo';
 
 const exampleStoreInfo = {
   id: 8,
@@ -37,19 +38,21 @@ const exampleStoreInfo = {
   ],
 };
 
-const MyManagerItem = ({navigation}) => {
-  const sotreInfo = exampleStoreInfo;
+const MyManagerItem = ({navigation, sotreInfo}) => {
+  // const sotreInfo = exampleStoreInfo;
 
-  const today = new Date()
-    .toLocaleDateString('en-US', {weekday: 'long'})
-    .toUpperCase();
-  const todayInfo = sotreInfo.operationInfoDtos.find(
-    info => info.dayOfWeek === today,
-  );
-  const openStatus =
-    todayInfo && !todayInfo.isClosed
-      ? `영업중 (${todayInfo.openTime} ~ ${todayInfo.closeTime})`
-      : '휴무';
+  console.log(sotreInfo, 'sotreInfo');
+
+  // const today = new Date()
+  //   .toLocaleDateString('en-US', {weekday: 'long'})
+  //   .toUpperCase();
+  // const todayInfo = sotreInfo.operationInfoDtos.find(
+  //   info => info.dayOfWeek === today,
+  // );
+  // const openStatus =
+  //   todayInfo && !todayInfo.isClosed
+  //     ? `영업중 (${todayInfo.openTime} ~ ${todayInfo.closeTime})`
+  //     : '휴무';
 
   const [showReports, setShowReports] = useState(false);
 
@@ -69,11 +72,18 @@ const MyManagerItem = ({navigation}) => {
               params: {storeId: sotreInfo.storeId},
             });
         }}>
-        <Image source={{uri: sotreInfo.mainImgUrl}} style={styles.image} />
+        <Image
+          source={
+            sotreInfo?.mainImgUrl
+              ? {uri: sotreInfo.mainImgUrl}
+              : require('../../assets/store.png')
+          }
+          style={styles.image}
+        />
         <View style={styles.content}>
           <Text style={styles.storeName}>{sotreInfo.storeName}</Text>
           <Text style={styles.address}>{sotreInfo.locationDto.address}</Text>
-          <Text style={styles.openStatus}>{openStatus}</Text>
+          {/* <Text style={styles.openStatus}>{openStatus}</Text> */}
           <Text style={styles.rating}>
             ⭐ {sotreInfo.storeRate} ({sotreInfo.reviewCount} 리뷰)
           </Text>
@@ -81,13 +91,14 @@ const MyManagerItem = ({navigation}) => {
       </Pressable>
 
       <TouchableOpacity
-        onPress={() => setShowReports(!showReports)}
+        // onPress={() => setShowReports(!showReports)}
         style={styles.reportToggle}>
         <Text style={styles.reportToggleText}>
-          🚨 신고 {sotreInfo.reportCount}건 {showReports ? '▲' : '▼'}
+          🚨 신고 {sotreInfo.normalReportCount + sotreInfo.priorityReportCount}
+          건 {showReports ? '▲' : '▼'}
         </Text>
       </TouchableOpacity>
-
+      {/* 
       {showReports && (
         <View style={styles.reportList}>
           {sotreInfo.reportDetails.map(report => (
@@ -104,7 +115,7 @@ const MyManagerItem = ({navigation}) => {
             </View>
           ))}
         </View>
-      )}
+      )} */}
     </View>
   );
 };
@@ -114,21 +125,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     overflow: 'hidden',
-    marginVertical: 6,
+    marginVertical: 12,
     marginHorizontal: 10,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 1},
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    borderWidth: 1,
+    borderColor: '#D6F3FF',
   },
   card: {
     flexDirection: 'row',
-    backgroundColor: '#f5fbef',
+    backgroundColor: 'white',
   },
   image: {
     width: 90,
     height: 90,
+    resizeMode: 'center',
+    margin: 10,
   },
   content: {
     flex: 1,
@@ -153,10 +168,10 @@ const styles = StyleSheet.create({
     color: '#FF9900',
   },
   reportToggle: {
-    padding: 8,
-    backgroundColor: '#f0f0f0',
+    paddingVertical: 12,
+    backgroundColor: 'white',
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
+    borderTopColor: '#D6F3FF',
   },
   reportToggleText: {
     fontSize: 12,

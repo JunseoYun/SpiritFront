@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, Text, SafeAreaView, View, FlatList} from 'react-native';
+import {NotifiGet} from '../../../../api/notificationApi';
 
 const mockNotifications = [
   {
@@ -31,6 +32,17 @@ const NotificationCard = ({title, message, date}) => (
 );
 
 const NotificationScreen = ({navigation}) => {
+  useEffect(() => {
+    Notifigetall();
+  }, []);
+
+  const Notifigetall = async () => {
+    try {
+      const data = await NotifiGet(0);
+      console.log(data);
+    } catch (error) {}
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <FlatList

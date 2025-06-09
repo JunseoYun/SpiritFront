@@ -15,6 +15,7 @@ import {
 import {Userdataget, user_marketing_consent} from '../../../../api/userApi';
 import Loading from '../../../../hooks/Loading';
 import useCustomAlert from '../../../../hooks/useCustomAlert';
+import {NotifiReadAll} from '../../../../api/notificationApi';
 
 const Toggle = ({value, onToggle}) => {
   const translateX = useState(new Animated.Value(value ? 22 : 2))[0];
@@ -100,6 +101,17 @@ const NotificationSetScreen = ({navigation}) => {
     setLoading(false);
   };
 
+  const readallnotifi = async () => {
+    try {
+      setLoading(true);
+      await NotifiReadAll();
+    } catch (err) {
+      console.error('모두 읽기 실패', err.response);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.section}>
@@ -123,6 +135,13 @@ const NotificationSetScreen = ({navigation}) => {
             <Text style={styles.underlineButton}>설정으로 이동</Text>
           </Pressable>
         )}
+      </View>
+      <View style={styles.section}>
+        <View style={styles.row}>
+          <Text style={styles.label}>알람 모두 읽기</Text>
+
+          <Toggle value={marketingEnabled} onToggle={readallnotifi} />
+        </View>
       </View>
       {notificationEnabled && (
         <View style={styles.section}>

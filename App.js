@@ -75,9 +75,11 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer ref={navigationRef}>
-      {token ? <MainStack /> : <OAuthStack />}
-    </NavigationContainer>
+    <>
+      <NavigationContainer ref={navigationRef}>
+        {token ? <MainStack /> : <OAuthStack />}
+      </NavigationContainer>
+    </>
   );
 };
 
