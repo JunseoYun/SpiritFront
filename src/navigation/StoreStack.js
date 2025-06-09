@@ -1,5 +1,5 @@
 import React from 'react';
-import {Pressable} from 'react-native';
+import {Pressable, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {createStackNavigator} from '@react-navigation/stack';
 import Octicons from 'react-native-vector-icons/Octicons';
@@ -276,13 +276,34 @@ export default function StoreStack() {
         name="StoreReportList"
         component={StoreReportList}
         options={({navigation, route}) => ({
-          title: `${route.params?.storeName || '매장'}`,
+          title: `${
+            route.params?.storeName
+              ? route.params.storeName + ' 신고·제보'
+              : '매장'
+          }`,
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
           },
+          headerTitle: props => (
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={[
+                props.style,
+                {
+                  fontFamily: 'Pretendard-SemiBold',
+                  fontSize: 18,
+                  color: '#333',
+                  textAlign: 'center',
+                },
+              ]}>
+              {props.children}
+            </Text>
+          ),
+
           headerLeft: () => (
             <Pressable
               onPress={() => {
