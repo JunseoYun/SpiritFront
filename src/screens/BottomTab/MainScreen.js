@@ -245,7 +245,6 @@ const MainScreen = ({navigation}) => {
     };
 
     checkStoredNotification();
-    setTimeout(() => setLoading(false), 2500);
   }, []);
 
   return (
