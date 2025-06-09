@@ -8,6 +8,7 @@ const StoreModal = ({
   startUpdate,
   isOwner,
   handleReport,
+  handleReportList,
 }) => {
   const opacity = useRef(new Animated.Value(0)).current; // opacity 애니메이션 값
 
@@ -53,11 +54,19 @@ const StoreModal = ({
                   <Text style={styles.modalButtonText}>매장 수정</Text>
                 </Pressable>
               ) : isOwner == false ? null : null}
-              <Pressable
-                style={styles.reportButton}
-                onPress={() => handleClose(handleReport)}>
-                <Text style={styles.modalButtonText}>매장 제보·신고</Text>
-              </Pressable>
+              {isOwner == false || isOwner == null ? (
+                <Pressable
+                  style={styles.reportButton}
+                  onPress={() => handleClose(handleReport)}>
+                  <Text style={styles.modalButtonText}>매장 제보·신고</Text>
+                </Pressable>
+              ) : isOwner == true ? (
+                <Pressable
+                  style={styles.reportButton}
+                  onPress={() => handleClose(handleReportList)}>
+                  <Text style={styles.modalButtonText}>매장 신고 조회</Text>
+                </Pressable>
+              ) : null}
               <View style={styles.line}></View>
               <Pressable
                 onPress={() => handleClose()}

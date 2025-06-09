@@ -360,6 +360,17 @@ const StoreMainScreen = ({navigation}) => {
       },
     });
   };
+
+  const handleReportList = () => {
+    navigation.navigate('StoreStack', {
+      screen: 'StoreReportList',
+      params: {
+        storeId: storedata.id,
+        storeName: storedata.name,
+      },
+    });
+  };
+
   return (
     <>
       <View style={{backgroundColor: 'white'}}>
@@ -509,6 +520,7 @@ const StoreMainScreen = ({navigation}) => {
           navigation={navigation}
           startUpdate={startUpdate}
           handleReport={handleReport}
+          handleReportList={handleReportList}
           isOwner={storedata.isOwner}
         />
       </View>
