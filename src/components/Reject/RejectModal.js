@@ -27,7 +27,9 @@ const RejectModal = ({data, onClose}) => {
 
           {/* 줄바꿈 후 거절 사유 */}
           {secondLine !== '' && <Text style={styles.reason}>{secondLine}</Text>}
-
+          <Text style={{color: '#999', paddingVertical: 4}}>
+            스피릿에 문의{'\n'}team19spirit@gmail.com
+          </Text>
           <Pressable style={styles.button} onPress={onClose}>
             <Text style={styles.buttonText}>확인</Text>
           </Pressable>
