@@ -13,3 +13,34 @@ export const report_create = async data => {
     functionError(error);
   }
 };
+
+export const ReportMainget = async (target, targetId) => {
+  try {
+    const response = await axiosInstance.get(
+      `/report/get-by/target/${targetId}`, // 경로 수정
+      {
+        params: {
+          target: target, // query로 target 보내기
+        },
+      },
+    );
+    return response.data.data;
+  } catch (error) {
+    console.log(error);
+    console.error('❌ status error: ', error);
+    throw error;
+  }
+};
+
+export const completeReport = async reportId => {
+  try {
+    const response = await axiosInstance.patch(
+      `/report/complete/${reportId}`,
+      {},
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error('❌ status error: ', error);
+    throw error;
+  }
+};
