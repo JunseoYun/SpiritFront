@@ -347,11 +347,11 @@ const MainScreen = ({navigation}) => {
               setRefresh={onRefresh}
             />
           </View>
-          <View style={styles.division} />
+          {/* <View style={styles.division} />
           <OptionsSection
             storeactiveIndex={storeactiveIndex}
             handlestoreItemClick={handlestoreItemClick}
-          />
+          /> */}
           <AppInfo handleAgreeScreen={handleAgreeScreen} />
         </View>
       </Animated.ScrollView>
