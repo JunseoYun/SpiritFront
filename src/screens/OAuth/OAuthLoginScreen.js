@@ -105,6 +105,8 @@ const OAuthLoginScreen = ({navigation}) => {
 
   const handleGoogleSignIn = async () => {
     try {
+      await GoogleSignin.signOut();
+
       const userInfo = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
 
