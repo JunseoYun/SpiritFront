@@ -35,6 +35,9 @@ import MainHeader from '../../components/MainScreen/Header/MainHeader';
 import LottieView from 'lottie-react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Dimensions} from 'react-native';
+import RejectModal from '../../components/Reject/RejectModal';
+import useHandlePendingNotification from '../../hooks/notification/useHandlePendingNotification';
+import {useNotification} from '../../context/NotificationContext';
 const screenHeight = Dimensions.get('window').height;
 
 const MainScreen = ({navigation}) => {
@@ -217,6 +220,34 @@ const MainScreen = ({navigation}) => {
     }
   };
 
+  const [rejectModalData, setRejectModalData] = useState(null);
+  const {pendingNotification, setPendingNotification} = useNotification();
+  useHandlePendingNotification(
+    loading,
+    pendingNotification,
+    () => setPendingNotification(null),
+    data => setRejectModalData(data), // 모달 데이터 설정
+  );
+
+  // ✅ Cold Start 시 AsyncStorage에 저장된 알림 처리
+  useEffect(() => {
+    const checkStoredNotification = async () => {
+      const stored = await AsyncStorage.getItem('PENDING_NOTIFICATION');
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          setPendingNotification(data);
+          await AsyncStorage.removeItem('PENDING_NOTIFICATION'); // 사용 후 삭제
+        } catch (e) {
+          console.warn('⚠️ 저장된 알림 파싱 실패', e);
+        }
+      }
+    };
+
+    checkStoredNotification();
+    setTimeout(() => setLoading(false), 2500);
+  }, []);
+
   return (
     <>
       <View
@@ -325,6 +356,12 @@ const MainScreen = ({navigation}) => {
           <AppInfo handleAgreeScreen={handleAgreeScreen} />
         </View>
       </Animated.ScrollView>
+      {rejectModalData && !loading && (
+        <RejectModal
+          data={rejectModalData}
+          onClose={() => setRejectModalData(null)}
+        />
+      )}
       <Loading loading={isRefreshing || loading} />
       <AlertComponent />
     </>
