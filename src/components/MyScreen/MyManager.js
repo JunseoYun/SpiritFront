@@ -26,13 +26,10 @@ const MyManager = ({navigation}) => {
 
     try {
       const data = await Store_getby_managed(page);
-<<<<<<< HEAD
+
       console.log(data, '???');
       console.log(data.content.map(item => item.id));
-=======
 
-      console.log(data.content);
->>>>>>> 09b13791a72429ccc116af86f4c8ed11ae7b5b5e
       if (page === 0) {
         setMystoredata(data.content); // 새로고침 시 기존 데이터 덮어씀
       } else {
