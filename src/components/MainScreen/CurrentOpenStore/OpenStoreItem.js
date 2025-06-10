@@ -111,17 +111,6 @@ const OpenStoreItem = ({store, location, navigation}) => {
           </Text>
         </View>
         <View style={styles.storeViewInfo}>
-          {/* <Text
-            style={styles.storeSubInfo}
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
-              ? store.mainDrinkDtos
-                  .map(drink => `${translateAlcohol(drink.type)}`)
-                  .join(' ')
-              : '메인주류 미설정'}
-            {endtime}
-          </Text> */}
           {endtime && !store.isAlwaysOpen && (
             <Text
               style={styles.storeSubInfo}

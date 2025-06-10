@@ -353,11 +353,6 @@ const StoreAddInfoScreen = ({navigation}) => {
           ref={scrollViewRef}>
           <Text style={styles.title}>상세정보를 입력해주세요.</Text>
 
-          <StoreInfo
-            storeData={storeData}
-            setStoreData={setStoreData}
-            error={error}
-          />
           <View ref={storeCategoryRef}>
             <StoreCategory
               selectedCategory={selectedCategory}
@@ -390,6 +385,11 @@ const StoreAddInfoScreen = ({navigation}) => {
               error={error}
             />
           </View>
+          <StoreInfo
+            storeData={storeData}
+            setStoreData={setStoreData}
+            error={error}
+          />
         </ScrollView>
         <View style={styles.storeAddTextview}>
           <Pressable

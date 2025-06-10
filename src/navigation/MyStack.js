@@ -11,10 +11,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import NotificationScreen from '../screens/BottomTab/My/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/BottomTab/My/Notification/NotificationSetScreen';
-import MyLoginScreen from '../screens/BottomTab/My/MyLoginScreen';
-import Octicons from 'react-native-vector-icons/Octicons';
-import {getUnLogin} from '../storage/tokenStorage';
-import {useAuth} from '../context/AuthContext';
 //AntDesign bells
 const Stack = createStackNavigator();
 
@@ -34,25 +30,7 @@ export default function MyStack() {
   // const {token, unToken} = useAuth();
 
   return (
-    <Stack.Navigator
-      // initialRouteName={!token && unToken ? 'MyLoginScreen' : 'MyScreen'}>
-      initialRouteName={'MyScreen'}>
-      {/* {!token && unToken ? (
-        <Stack.Screen
-          name="MyLoginScreen"
-          component={MyLoginScreen}
-          options={{
-            headerShown: true,
-            headerTitleAlign: 'center',
-            title: '로그인',
-            headerTitleStyle: {
-              fontSize: 19, // 타이틀 크기 설정
-              color: '#333', // 텍스트 색상 (선택 사항)
-              fontFamily: 'Pretendard-Bold',
-            },
-          }}
-        />
-      ) :  */}
+    <Stack.Navigator initialRouteName={'MyScreen'}>
       <Stack.Screen
         name="MyScreen"
         component={MyScreen}

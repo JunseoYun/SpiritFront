@@ -115,7 +115,7 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
       </View>
 
       {/* 매장 소개 입력 */}
-      <View style={styles.storeinputview}>
+      <View style={[styles.storeinputview, {marginTop: 50}]}>
         <View style={{position: 'relative'}}>
           <Animated.Text style={[styles.animatedLabel, storeContentLabelStyle]}>
             매장을 간단하게 소개해주세요.
@@ -151,7 +151,7 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
 
 const styles = StyleSheet.create({
   storeinputview: {
-    marginTop: 50,
+    marginTop: 10,
     marginHorizontal: 20,
   },
   storeinput: {

@@ -111,6 +111,7 @@ const ResultItem = ({store, navigation, location}) => {
                 {store.name}
               </Text>
             </View>
+
             <View style={styles.StoreScore}>
               {store.categories.slice(0, 3).map((category, index) => (
                 <Text key={index} style={styles.StoreCategory}>

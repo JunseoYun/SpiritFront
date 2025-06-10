@@ -138,11 +138,6 @@ axiosInstance.interceptors.response.use(
             await logout(1); // 로그아웃 먼저 실행
           } catch (error) {}
         }
-
-        // showAlert({
-        //   title: '세션 만료',
-        //   message: '다시 로그인해주세요.',
-        // });
       }
     } else if (error.response?.status === 404 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -197,11 +192,6 @@ userAxiosInstance.interceptors.response.use(
             await logout(1); // 로그아웃 먼저 실행
           } catch (error) {}
         }
-
-        // showAlert({
-        //   title: '세션 만료',
-        //   message: '다시 로그인해주세요.',
-        // });
       }
     } else if (error.response?.status === 404 && !originalRequest._retry) {
       originalRequest._retry = true;

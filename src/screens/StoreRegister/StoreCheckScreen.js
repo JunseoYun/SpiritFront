@@ -12,7 +12,7 @@ import {
 import {useRoute} from '@react-navigation/native';
 import StoreAuthorityData from '../../components/StoreAuthority/StoreAuthorityData';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
-import useCustomAlert from '../../hooks/useCustomAlert';
+
 const StoreCheckScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storeName, storeLocationDto, storeContact} = route.params;
@@ -24,24 +24,9 @@ const StoreCheckScreen = ({navigation}) => {
     userContact: '',
   });
 
-  const {showAlert, AlertComponent} = useCustomAlert();
   const [errors, setErrors] = useState({});
 
   const handleNext = () => {
-    // 필수 storeData 확인 (예: storeName, storeNumber) 및 주소가 입력되었는지 확인
-    // if (
-    //   !storeData.storeName ||
-    //   !storeData.storeNumber ||
-    //   !storeData.userName ||
-    //   !storeData.userContact
-    // ) {
-    //   showAlert({
-    //     title: '정보 미입력',
-    //     message: '모든 정보를 입력해 주세요.',
-    //   });
-    //   return;
-    // }
-
     const newErrors = {};
 
     if (!storeData.storeName) {
@@ -99,7 +84,6 @@ const StoreCheckScreen = ({navigation}) => {
             <Text style={styles.storeAddText}>다음</Text>
           </Pressable>
         </View>
-        <AlertComponent />
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
