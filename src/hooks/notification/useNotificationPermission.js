@@ -33,7 +33,6 @@ export const requestNotificationPermission = async () => {
       authStatus === AuthorizationStatus.AUTHORIZED ||
       authStatus === AuthorizationStatus.PROVISIONAL;
 
-    console.log('isAuthorized:', isAuthorized);
     return isAuthorized;
   } catch (err) {
     console.error('💥 알림 권한 요청 중 오류:', err);
@@ -60,10 +59,7 @@ export const getFcmToken = async () => {
 export const iniBasictNotification = async token => {
   const isAuthorized = await requestNotificationPermission();
   const isBasicNotification = await getNotification('basicNotification');
-  console.log('🔔 저장된 알림 허용 상태:', isBasicNotification);
-  console.log('비교 여부 :', isAuthorized.toString() === isBasicNotification);
   if (isAuthorized.toString() === isBasicNotification || !token) {
-    console.log('🔔반환🔔');
     return isAuthorized;
   }
 

@@ -48,11 +48,11 @@ const CARRIER_PROVIDER_MAP = {
 };
 
 const IdentityScreen = ({route, navigation}) => {
-  const {socialType, socialId, socialToken, beforeScreen, token} =
+  const {socialType, socialId, socialToken, beforeScreen, token, fcmToken} =
     route?.params ?? {};
   const {loginauth} = useAuth();
   const {showToast} = useToast();
-
+  console.log(fcmToken);
   const [sendToMsg, setSendToMsg] = useState(false);
 
   const [name, setName] = useState('');
@@ -373,6 +373,7 @@ const IdentityScreen = ({route, navigation}) => {
             socialType,
             socialId,
             socialToken,
+            fcmToken,
           );
           loginauth(login_data.accessToken, login_data.refreshToken, null);
         } catch (error) {}

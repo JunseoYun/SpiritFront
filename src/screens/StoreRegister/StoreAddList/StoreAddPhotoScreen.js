@@ -128,7 +128,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
           <Text style={styles.title}>
             {phototoggle
               ? '사진을 등록 해주세요.'
-              : '사진및 매장 내용을 등록 해주세요.'}
+              : '사진 및 매장 내용을 등록 해주세요.'}
           </Text>
           <View ref={storeImageRef}>
             <StoreImage

@@ -333,6 +333,7 @@ const forbiddenWords = [
 
   //기타
   '탈퇴한 사용자',
+  '탈퇴한사용자',
 ];
 
 export default forbiddenWords;

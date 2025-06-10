@@ -5,7 +5,7 @@ import MainBtmbar from './MainBtmbar';
 import SetLocationScreen from '../screens/SetLocation/SetLocationScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
-import StoreAddScreen from '../screens/StoreRegister/StoreAddScreen';
+
 import StoreSearchScreen from '../screens/StoreRegister/StoreSearchScreen';
 import StoreCheckScreen from '../screens/StoreRegister/StoreCheckScreen';
 import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
@@ -17,7 +17,6 @@ import RandomChoiceScreen from '../screens/RandomChoice/RandomChoiceScreen';
 import StoreStack from './StoreStack';
 import MyStack from './MyStack';
 import OAuthStack from './OAuthStack';
-import Octicons from 'react-native-vector-icons/Octicons';
 import StoreAddMapScreen from '../screens/StoreRegister/StoreAddMapScreen';
 import StoreAddCheckScreen from '../screens/StoreRegister/StoreAddList/StoreAddCheckScreen';
 import StoreAddPhotoScreen from '../screens/StoreRegister/StoreAddList/StoreAddPhotoScreen';
@@ -108,32 +107,6 @@ export default function MainStack() {
             fontSize: 20, // 타이틀 크기 설정
             color: '#333', // 텍스트 색상 (선택 사항)
             fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-      <Stack.Screen
-        name="StoreAddScreen"
-        component={StoreAddScreen}
-        options={({navigation}) => ({
-          title: '매장 등록하기',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-            alignItems: 'center',
-            justifyContent: 'center',
           },
           headerLeft: () => (
             <Pressable

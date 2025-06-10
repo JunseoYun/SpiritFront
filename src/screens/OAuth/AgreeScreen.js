@@ -11,7 +11,7 @@ import AgreementItem from '../../components/OAuthRegister/AgreementItem';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const AgreeScreen = ({route, navigation}) => {
-  const {socialType, socialId, socialToken} = route.params;
+  const {socialType, socialId, socialToken, fcmToken} = route.params;
 
   const insets = useSafeAreaInsets();
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -72,6 +72,7 @@ const AgreeScreen = ({route, navigation}) => {
       socialId: socialId,
       socialToken: socialToken,
       beforeScreen: 'Agree',
+      fcmToken: fcmToken,
     });
   };
 

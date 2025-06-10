@@ -373,7 +373,7 @@ const StoreMainScreen = ({navigation}) => {
 
   return (
     <>
-      <View style={{backgroundColor: 'white'}}>
+      <View style={{backgroundColor: 'white', flex: 1}}>
         {!isUpdate && storedata?.imgUrlList && (
           <StoreHeader
             navigation={navigation}
@@ -452,16 +452,19 @@ const StoreMainScreen = ({navigation}) => {
                     />
                   </View>
                 )}
-                {!storedata?.imgUrlList?.length > 0 && !isUpdate && (
-                  <Pressable
-                    style={styles.addImageButton}
-                    onPress={startUpdate}>
-                    <Text style={styles.addImageText}>
-                      매장 이미지 추가하기
-                    </Text>
-                    <Feather name="chevron-right" size={23} color="#999" />
-                  </Pressable>
-                )}
+                {!storedata?.imgUrlList?.length > 0 &&
+                  !isUpdate &&
+                  (storedata?.isOwner === true ||
+                    storedata?.isOwner === null) && (
+                    <Pressable
+                      style={styles.addImageButton}
+                      onPress={startUpdate}>
+                      <Text style={styles.addImageText}>
+                        매장 이미지 추가하기
+                      </Text>
+                      <Feather name="chevron-right" size={23} color="#999" />
+                    </Pressable>
+                  )}
 
                 <StoreMainInfo
                   storedata={storedata}
@@ -495,6 +498,7 @@ const StoreMainScreen = ({navigation}) => {
                         menus={menus}
                         scrollViewRef={scrollViewRef} // 스크롤 참조 전달
                         onMenuDelete={handleMenuDelete}
+                        isOwner={storedata?.isOwner}
                       />
                     )}
                     {currentPage === 'StoreAlcoholScreen' && (
@@ -505,6 +509,7 @@ const StoreMainScreen = ({navigation}) => {
                         mainDrinks={storedata.mainDrinkDtos}
                         scrollViewRef={scrollViewRef}
                         onAlcoholDelete={handleAlcoholDelete}
+                        isOwner={storedata?.isOwner}
                       />
                     )}
                   </View>

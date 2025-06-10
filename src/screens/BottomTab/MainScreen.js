@@ -22,7 +22,7 @@ import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
 import StoreRegister from '../../components/MainScreen/StoreRegister';
 import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
 import NearStoreList from '../../components/MainScreen/NearStore/NearStoreList';
-import OptionsSection from '../../components/MainScreen/OptionSection';
+
 import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
@@ -32,7 +32,6 @@ import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
 import MainHeader from '../../components/MainScreen/Header/MainHeader';
-import LottieView from 'lottie-react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Dimensions} from 'react-native';
 import RejectModal from '../../components/Reject/RejectModal';
@@ -186,10 +185,6 @@ const MainScreen = ({navigation}) => {
       navigation.navigate('StoreSearchScreen', {index: 0, location: location});
     } else if (index === 1) {
       navigation.navigate('StoreSearchScreen', {index: 1});
-    } else if (index === 2) {
-      navigation.navigate('MapScreen');
-    } else if (index === 3) {
-      navigation.navigate('RandomChoiceScreen');
     }
   };
 
@@ -347,11 +342,7 @@ const MainScreen = ({navigation}) => {
               setRefresh={onRefresh}
             />
           </View>
-          {/* <View style={styles.division} />
-          <OptionsSection
-            storeactiveIndex={storeactiveIndex}
-            handlestoreItemClick={handlestoreItemClick}
-          /> */}
+
           <AppInfo handleAgreeScreen={handleAgreeScreen} />
         </View>
       </Animated.ScrollView>

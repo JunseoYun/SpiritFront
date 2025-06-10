@@ -13,14 +13,10 @@ const useHandlePendingNotification = (
   const NotificationRead = async notificationId => {
     try {
       await NotifiRead(notificationId);
-    } catch (err) {
-      console.log('읽기 실패');
-    }
+    } catch (err) {}
   };
   useEffect(() => {
     if (!loading && pendingNotification) {
-      console.log('🔵 로딩 끝! 알림 클릭 데이터 처리 중...');
-
       const {redirectType, notificationType, redirectId, notificationId} =
         pendingNotification;
 

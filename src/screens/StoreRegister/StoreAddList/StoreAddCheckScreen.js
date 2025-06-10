@@ -17,14 +17,6 @@ const StoreAddCheckScreen = ({navigation}) => {
   const route = useRoute();
   const {location} = route.params;
 
-  // const [storeData, setStoreData] = useState({
-  //   storeId,
-  //   storeName,
-  //   storeNumber: storeContact,
-  //   userName: '',
-  //   userContact: '',
-  // });
-
   const {showAlert, AlertComponent} = useCustomAlert();
   // const [errors, setErrors] = useState({});
 
@@ -33,41 +25,6 @@ const StoreAddCheckScreen = ({navigation}) => {
       index,
       location,
     });
-    // 필수 storeData 확인 (예: storeName, storeNumber) 및 주소가 입력되었는지 확인
-    // if (
-    //   !storeData.storeName ||
-    //   !storeData.storeNumber ||
-    //   !storeData.userName ||
-    //   !storeData.userContact
-    // ) {
-    //   showAlert({
-    //     title: '정보 미입력',
-    //     message: '모든 정보를 입력해 주세요.',
-    //   });
-    //   return;
-    // }
-    // const newErrors = {};
-    // if (!storeData.storeName) {
-    //   newErrors.storeName = '매장 이름을 입력해주세요.';
-    // }
-    // if (!storeData.storeNumber) {
-    //   newErrors.storeNumber = '매장 연락처를 입력해주세요.';
-    // }
-    // if (!storeData.userName) {
-    //   newErrors.userName = '신청자 성명을 입력해주세요.';
-    // }
-    // if (!storeData.userContact) {
-    //   newErrors.userContact = '신청자 연락처를 입력해주세요.';
-    // }
-    // if (Object.keys(newErrors).length > 0) {
-    //   setErrors(newErrors); // 🚨 여기서 errors 상태를 업데이트
-    //   return;
-    // }
-    // navigation.navigate('StoreAuthorityScreen', {
-    //   storeData,
-    //   storeAddress,
-    //   storeAddressDetail,
-    // });
   };
 
   useLayoutEffect(() => {

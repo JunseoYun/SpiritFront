@@ -64,6 +64,12 @@ const TodayRecommItem = ({store, navigation}) => {
         resizeMode={FastImage.resizeMode.cover}>
         <View style={styles.overlay}>
           <View style={styles.storeContainer}>
+            {store.isCertified && (
+              <FastImage
+                source={require('../../../assets/verifyMaker.png')}
+                style={styles.imageStyle}
+              />
+            )}
             <Text
               style={[
                 styles.storeName,
@@ -121,7 +127,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     position: 'relative', // 🔹 기준 위치로 사용
   },
-  storeContainer: {},
+  storeContainer: {
+    flexDirection: 'row',
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 20,
+    height: 20,
+    marginRight: 5,
+  },
   storeNameView: {
     backgroundColor: '#333',
   },

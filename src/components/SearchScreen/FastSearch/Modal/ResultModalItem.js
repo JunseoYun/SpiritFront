@@ -13,9 +13,11 @@ import useStoreStatus from '../../../../hooks/useStoreStatus';
 import useDistance from '../../../../hooks/useDistance';
 import {useAuth} from '../../../../context/AuthContext';
 import {useToast} from '../../../../context/ToastContext';
+import useTranslateAlcohol from '../../../../hooks/useTranslateAlcohol';
 import FastImage from 'react-native-fast-image';
 const ResultModalItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();
+  const {translateAlcohol} = useTranslateAlcohol();
   const [distance, setDistance] = useState(0);
   const [unit, setUnit] = useState('m');
   const calculateDistance = useDistance();
@@ -29,7 +31,7 @@ const ResultModalItem = ({store, navigation, location}) => {
     breakstart,
     breakend,
   } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
-
+  console.log(store);
   const {token} = useAuth();
   const {showToast} = useToast();
   const handlePress = () => {
@@ -101,37 +103,53 @@ const ResultModalItem = ({store, navigation, location}) => {
           )}
         </ImageBackground>
         <View style={styles.fastStoreText}>
-          <View style={styles.fastSearchStoreView}>
-            <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
-              {store.isCertified === true && (
-                <FastImage
-                  source={require('../../../../assets/verifyMaker.png')}
-                  style={styles.imageStyle}
-                />
-              )}
-              <Text
-                style={styles.fastStoreTitle}
-                numberOfLines={1}
-                ellipsizeMode="tail">
-                {store.name}
-              </Text>
+          <View>
+            <View style={styles.fastSearchStoreView}>
+              <View
+                style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
+                {store.isCertified === true && (
+                  <FastImage
+                    source={require('../../../../assets/verifyMaker.png')}
+                    style={styles.imageStyle}
+                  />
+                )}
+                <Text
+                  style={styles.fastStoreTitle}
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  {store.name}
+                </Text>
+              </View>
+
+              <View style={styles.fastStorescore}>
+                <FontAwesomeIcon name="star" size={15} color="#FCC104" />
+                <Text style={styles.fastScoretext}>{store.storeRate}</Text>
+              </View>
             </View>
 
-            <View style={styles.fastStorescore}>
-              <FontAwesomeIcon name="star" size={15} color="#FCC104" />
-              <Text style={styles.fastScoretext}>{store.storeRate}</Text>
+            <View style={styles.StoreScore}>
+              {store.categories.slice(0, 3).map((category, index) => (
+                <Text key={index} style={styles.StoreCategory}>
+                  {translateCategory(category)}
+                </Text>
+              ))}
             </View>
           </View>
-          <View style={styles.fastStoreCategoryList}>
-            <Text style={styles.fastStoreCategory} ellipsizeMode="tail">
-              {Array.isArray(store.categories) && store.categories.length > 0
-                ? store.categories
-                    .map(category => translateCategory(category))
-                    .join(' ')
-                : '카테고리 미설정'}
+
+          <View style={styles.StoreAlcoholList}>
+            <Text
+              style={styles.StoreAlcohol}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
+                ? store.mainDrinkDtos
+                    .map(
+                      drink => `${translateAlcohol(drink.type)} ${drink.price}`,
+                    ) // 데이터 형식화
+                    .join('  ') // 아이템 간 간격 추가
+                : '메인주류가 없습니다.'}
             </Text>
           </View>
-
           <View style={styles.subView}>
             {store?.isAlwaysOpen == true ? (
               <Text style={styles.StoreClose}>24시간 영업</Text>
@@ -156,21 +174,21 @@ const styles = StyleSheet.create({
   fastSearchStoreInfo: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    marginVertical: 10,
+    alignSelf: 'center',
+    borderRadius: 16,
     marginHorizontal: 18,
-    padding: 10,
-    borderRadius: 12,
+    marginVertical: 7,
+    padding: 12,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 5,
-    alignSelf: 'flex-start',
+    shadowRadius: 5,
+    elevation: 2,
   },
 
   backimage: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 100,
     borderRadius: 10,
     borderRadius: 10,
   },
@@ -187,7 +205,7 @@ const styles = StyleSheet.create({
   overlayText: {
     color: 'white',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -204,10 +222,10 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   fastStoreTitle: {
-    fontWeight: 'bold',
-    fontSize: 17,
-    color: 'black',
-    maxWidth: '85%',
+    maxWidth: '90%',
+    fontFamily: 'Pretendard-Bold',
+    fontSize: 16,
+    color: '#111',
   },
   fastStorescore: {
     flexDirection: 'row',
@@ -216,17 +234,30 @@ const styles = StyleSheet.create({
   fastScoretext: {
     marginLeft: 3,
     fontSize: 15,
-    color: 'black',
+    color: '333',
+    fontFamily: 'Pretendard-Regular',
   },
-  fastStoreCategoryList: {
+  StoreScore: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 3,
+  },
+  StoreCategory: {
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 14,
+    color: '#767676',
+    marginRight: 5,
+  },
+  StoreAlcoholList: {
     flexDirection: 'row',
     marginRight: 5,
+    alignItems: 'center',
   },
-  fastStoreCategory: {
-    fontWeight: 'bold',
-    fontSize: 14,
-    color: 'black',
-    marginRight: 5,
+  StoreAlcohol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 3,
+    fontFamily: 'Pretendard-Medium',
   },
   subView: {
     flexDirection: 'row',
@@ -235,9 +266,9 @@ const styles = StyleSheet.create({
   },
   StoreClose: {
     fontSize: 13,
-    color: '#333',
+    color: '#999',
     marginRight: 5,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
   },
   imageStyle: {
     alignSelf: 'center',

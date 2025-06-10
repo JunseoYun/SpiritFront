@@ -202,7 +202,7 @@ const NotificationScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F8FDFF',
   },
   listContent: {
     padding: 16,
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowOffset: {width: 0, height: 2},
     shadowRadius: 6,
     elevation: 2,

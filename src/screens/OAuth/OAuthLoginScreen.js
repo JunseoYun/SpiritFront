@@ -57,6 +57,7 @@ const OAuthLoginScreen = ({navigation}) => {
           socialToken: socialToken,
           beforeScreen: 'Login',
           token: response,
+          fcmToken: fcmToken,
         });
       } else {
         await loginauth(
@@ -74,6 +75,7 @@ const OAuthLoginScreen = ({navigation}) => {
             socialType: socialType,
             socialId: socialId,
             socialToken: socialToken,
+            fcmToken: fcmToken,
           });
         }
       }
@@ -221,11 +223,6 @@ const OAuthLoginScreen = ({navigation}) => {
         ) : (
           <View style={{height: 50, marginTop: 20}} />
         )}
-        {/* <TouchableOpacity onPress={unLoginHandle}>
-          <Text style={styles.unLoginText} allowFontScaling={false}>
-            비로그인으로 시작하기
-          </Text>
-        </TouchableOpacity> */}
       </View>
       {loading && <Loading loading={true} />}
       <AlertComponent />
