@@ -1,4 +1,4 @@
-import React, {useState, useLayoutEffect, useCallback} from 'react';
+import React, {useState, useLayoutEffect, useCallback, useRef} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -7,6 +7,8 @@ import {
   View,
   ScrollView,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
@@ -16,14 +18,15 @@ import StoreOwnerInput from '../../components/StoreAuthority/StoreOwnerInput';
 import StoreBusinessData from '../../components/StoreAuthority/StoreBusinessData';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import useCustomAlert from '../../hooks/useCustomAlert';
-import StoreAuthorityModal from '../../components/StoreAuthority/StoreAuthorityModal';
+
+import Loading from '../../hooks/Loading';
 
 const StoreAuthorityScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeData, storeAddress, storeAddressDetail} = route.params;
+  const {storeData, storeLocationDto} = route.params;
   const [owners, setOwners] = useState([{name: ''}]);
   const [hasCoRepresentative, setHasCoRepresentative] = useState(false);
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [businessData, setBusinessData] = useState({
     businessNumber: '',
@@ -35,8 +38,10 @@ const StoreAuthorityScreen = ({navigation}) => {
     setBusiness_registration_certificate,
   ] = useState(null);
   const [storeAddressData, setStoreAddressData] = useState({
-    storeAddress,
-    storeAddressDetail,
+    storeAddress: storeLocationDto.address || '',
+    storeAddressDetail: storeLocationDto.addressDetail || '',
+    latitude: storeLocationDto.latitude,
+    longitude: storeLocationDto.longitude,
   });
 
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -110,17 +115,17 @@ const StoreAuthorityScreen = ({navigation}) => {
       });
       return;
     }
-    if (!storeAddressData.storeAddressDetail.trim()) {
-      showAlert({
-        title: '정보 미입력',
-        message: '상세 주소를 입력해주세요.',
-      });
-      return;
-    }
 
-    // 5. 모든 필수 정보가 입력되었을 경우
-    setModalVisible(true);
-
+    navigation.navigate('StoreAuthConfirm', {
+      data: {
+        storeData,
+        owners,
+        hasCoRepresentative,
+        businessData,
+        business_certificate: business_registration_certificate,
+        storeAddressData,
+      },
+    });
     // TODO: 다음 단계 처리 (ex. API 요청 또는 다음 화면 이동)
   }, [
     owners,
@@ -131,12 +136,6 @@ const StoreAuthorityScreen = ({navigation}) => {
     showAlert,
   ]);
 
-  const handleSubmit = () => {
-    setModalVisible(false);
-    showAlert({title: '신청 완료', message: '신청이 완료되었습니다!'});
-
-    // TODO: API 요청 및 다음 단계 이동
-  };
   const addOwner = () => {
     setOwners(prev => [...prev, {name: ''}]);
   };
@@ -157,20 +156,22 @@ const StoreAuthorityScreen = ({navigation}) => {
     setStoreAddressData(prevData => ({
       ...prevData,
       storeAddress: address,
+      latitude: coords.latitude,
+      longitude: coords.longitude,
     }));
   };
 
   // 이미지 선택 함수: 갤러리에서 이미지 선택 후 state 업데이트
   const handlePickCertificate = () => {
     ImagePicker.openPicker({
-      width: 800,
-      height: 600,
+      width: 768,
+      height: 1024,
       mediaType: 'photo',
       cropping: true,
       freeStyleCropEnabled: true,
     })
       .then(image => {
-        setBusiness_registration_certificate(image.path);
+        setBusiness_registration_certificate(image);
       })
       .catch(error => {});
   };
@@ -179,102 +180,122 @@ const StoreAuthorityScreen = ({navigation}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleNext}>
-          <Text style={styles.headerButton}>신청</Text>
+          <Text style={styles.headerButton}>다음</Text>
         </Pressable>
       ),
     });
   }, [navigation, handleNext]);
 
+  const scrollViewRef = useRef(null);
+  const nameRef = useRef(null);
+  const ownerRefs = useRef([]);
+  const businessNumberRef = useRef(null);
+  const openDateRef = useRef(null);
+  const drink_sales_numberRef = useRef(null);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <ProgressBar progress={1} />
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        {/* 진행 바: 100% 진행 */}
-        <StoreInfoCard storeData={storeData} />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{flex: 1}}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
+    >
+      <SafeAreaView style={styles.container}>
+        <ProgressBar progress={1} />
+        <ScrollView
+          contentContainerStyle={styles.contentContainer}
+          keyboardShouldPersistTaps="handled"
+          ref={scrollViewRef}>
+          {/* 진행 바: 100% 진행 */}
+          <StoreInfoCard storeData={storeData} />
 
-        {/* 사업자등록증 첨부 */}
-        <Text style={styles.sectionTitle}>사업자등록증 첨부*</Text>
-        <View style={styles.certificateContainer}>
-          <Pressable
-            style={styles.certificateButton}
-            onPress={handlePickCertificate}>
-            <Text style={styles.certificateButtonText}>이미지 선택하기</Text>
+          {/* 사업자등록증 첨부 */}
+          <Text style={styles.sectionTitle}>사업자등록증 첨부*</Text>
+          <View style={styles.certificateContainer}>
+            <Pressable
+              style={styles.certificateButton}
+              onPress={handlePickCertificate}>
+              <Text style={styles.certificateButtonText}>이미지 선택하기</Text>
+            </Pressable>
+            {business_registration_certificate && (
+              <Image
+                source={{uri: business_registration_certificate.path}}
+                style={styles.certificateImage}
+                resizeMode="contain"
+              />
+            )}
+          </View>
+
+          <StoreOwnerInput
+            owners={owners}
+            hasCoRepresentative={hasCoRepresentative}
+            setHasCoRepresentative={setHasCoRepresentative}
+            addOwner={addOwner}
+            updateOwnerName={updateOwnerName}
+            removeOwner={removeOwner}
+            nameRef={nameRef}
+            ownerRefs={ownerRefs}
+            businessNumberRef={businessNumberRef}
+            businessData={businessData}
+          />
+
+          <StoreBusinessData
+            businessData={businessData}
+            setBusinessData={setBusinessData}
+            businessNumberRef={businessNumberRef}
+            openDateRef={openDateRef}
+            drink_sales_numberRef={drink_sales_numberRef}
+          />
+          <StoreAddress
+            address={storeAddressData.storeAddress}
+            detailedAddress={storeAddressData.storeAddressDetail}
+            setDetailedAddress={value =>
+              setStoreAddressData(prevData => ({
+                ...prevData,
+                storeAddressDetail: value,
+              }))
+            }
+            navigation={navigation}
+            onAddressSelect={handleAddressSelect}
+            index={1}
+            location={{
+              latitude: storeAddressData.latitude,
+              longitude: storeAddressData.longitude,
+            }}
+          />
+
+          {/* 안내 멘트 */}
+          <View style={styles.instructionsContainer}>
+            <Text style={styles.instructions}>
+              정확한 신청자 정보를 입력해 주세요.{'\n'}
+              입력된 정보는 매장 정보 확인에만 사용됩니다.{'\n'}
+              무차별적인 신청은 엄격히 금지되며, 부정확한 정보나 타인의 정보를
+              기재할 경우 서비스 이용에 제한을 받을 수 있습니다.{'\n'}
+              모든 정보는 철저히 검토되며, 부정확한 정보가 확인될 경우 신청이
+              반려될 수 있습니다.
+            </Text>
+          </View>
+        </ScrollView>
+
+        <AlertComponent />
+
+        <View style={styles.storeAddTextview}>
+          <Pressable style={styles.storeAddButtonsearch} onPress={handleNext}>
+            <Text style={styles.storeAddText}>다음</Text>
           </Pressable>
-          {business_registration_certificate && (
-            <Image
-              source={{uri: business_registration_certificate}}
-              style={styles.certificateImage}
-              resizeMode="contain"
-            />
-          )}
         </View>
 
-        <StoreOwnerInput
-          owners={owners}
-          hasCoRepresentative={hasCoRepresentative}
-          setHasCoRepresentative={setHasCoRepresentative}
-          addOwner={addOwner}
-          updateOwnerName={updateOwnerName}
-          removeOwner={removeOwner}
-        />
-
-        <StoreBusinessData
-          businessData={businessData}
-          setBusinessData={setBusinessData}
-        />
-        <StoreAddress
-          address={storeAddressData.storeAddress}
-          detailedAddress={storeAddressData.storeAddressDetail}
-          setDetailedAddress={value =>
-            setStoreAddressData(prevData => ({
-              ...prevData,
-              storeAddressDetail: value,
-            }))
-          }
-          navigation={navigation}
-          onAddressSelect={handleAddressSelect}
-          index={1}
-        />
-        <Pressable style={styles.savebutton} onPress={handleNext}>
-          <Text style={styles.savebuttontext}>신청</Text>
-        </Pressable>
-        {/* 안내 멘트 */}
-        <View style={styles.instructionsContainer}>
-          <Text style={styles.instructions}>
-            정확한 신청자 정보를 입력해 주세요.{'\n'}
-            입력된 정보는 매장 정보 확인에만 사용됩니다.{'\n'}
-            무차별적인 신청은 엄격히 금지되며, 부정확한 정보나 타인의 정보를
-            기재할 경우 서비스 이용에 제한을 받을 수 있습니다.{'\n'}
-            모든 정보는 철저히 검토되며, 부정확한 정보가 확인될 경우 신청이
-            반려될 수 있습니다.
-          </Text>
-        </View>
-      </ScrollView>
-
-      <AlertComponent />
-      <StoreAuthorityModal
-        visible={isModalVisible}
-        onClose={() => setModalVisible(false)}
-        onSubmit={handleSubmit}
-        data={{
-          storeData,
-          owners,
-          hasCoRepresentative,
-          businessData,
-          business_certificate: business_registration_certificate,
-          storeAddressData,
-        }}
-      />
-    </SafeAreaView>
+        <Loading loading={loading} />
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: '#fff'},
-  contentContainer: {paddingBottom: 120},
+  contentContainer: {paddingBottom: 30},
   headerButton: {
     marginRight: 18,
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: '600',
     color: '#16BBFF',
   },
@@ -298,29 +319,32 @@ const styles = StyleSheet.create({
   },
   certificateButtonText: {color: '#fff', fontSize: 16, fontWeight: '600'},
   certificateImage: {width: '100%', height: 200, marginTop: 10},
-  savebutton: {
-    marginTop: 50,
-    alignSelf: 'center',
-    alignItems: 'center',
-    width: '90%',
-    marginVertical: 7,
-    backgroundColor: '#16BBFF',
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginBottom: 30,
-  },
-  savebuttontext: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
   instructionsContainer: {
     backgroundColor: '#f1f1f1',
     borderRadius: 8,
     padding: 16,
     marginHorizontal: 18,
+    marginTop: 30,
   },
   instructions: {fontSize: 15, color: '#999', lineHeight: 24},
+  storeAddTextview: {
+    borderTopWidth: 0.5,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  storeAddButtonsearch: {
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#45C9FF',
+    borderRadius: 10,
+  },
+  storeAddText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+  },
 });
 
 export default StoreAuthorityScreen;

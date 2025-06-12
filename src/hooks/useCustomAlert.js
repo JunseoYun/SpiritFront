@@ -76,6 +76,21 @@ const useCustomAlert = () => {
                     </TouchableOpacity>
                   </>
                 )}
+                {type === 'marketingConsent' && (
+                  <>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onCancel)}>
+                      <Text style={styles.buttonText}>거절</Text>
+                    </TouchableOpacity>
+                    <View style={styles.divider} />
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onConfirm)}>
+                      <Text style={styles.buttonText}>동의하기</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
                 {type === 'delete' && (
                   <>
                     <TouchableOpacity
@@ -103,6 +118,21 @@ const useCustomAlert = () => {
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
                       <Text style={styles.buttonDeleteText}>탈퇴하기</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+                {type === 'notificationSetting' && (
+                  <>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onCancel)}>
+                      <Text style={styles.buttonText}>취소</Text>
+                    </TouchableOpacity>
+                    <View style={styles.divider} />
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onConfirm)}>
+                      <Text style={styles.buttonText}>설정 이동</Text>
                     </TouchableOpacity>
                   </>
                 )}

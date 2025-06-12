@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.spiritfront">
+  xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
@@ -48,6 +48,24 @@
         android:name="com.google.android.gms.common.api.GoogleApiActivity"
         android:exported="false"
         android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+  <!-- Firebase Messaging Service -->
+  <service
+    android:name="io.invertase.firebase.messaging.ReactNativeFirebaseMessagingService"
+    android:exported="true"
+    tools:replace="android:exported" />
+
+  <!-- Firebase Headless Service -->
+  <service
+    android:name="io.invertase.firebase.messaging.ReactNativeFirebaseMessagingHeadlessService"
+    android:exported="true"
+    tools:replace="android:exported" />
+
+  <!-- Firebase 알림 채널 -->
+  <meta-data
+    android:name="com.google.firebase.messaging.default_notification_channel_id"
+    android:value="default_channel_id"
+    tools:replace="android:value" />
 
       <!-- OAuth 2.0 Redirect URI 설정 -->
       <activity android:name="com.google.android.gms.auth.api.signin.GoogleSignInActivity"

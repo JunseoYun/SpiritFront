@@ -20,7 +20,6 @@ export const get_coordinate = async address => {
         address,
       },
     });
-    console.log(response.data.data);
     return response.data.data;
   } catch (error) {
     functionError(error);

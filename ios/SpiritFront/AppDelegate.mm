@@ -3,11 +3,17 @@
 #import <RNKakaoLogins.h>
 #import <GoogleSignIn/GoogleSignIn.h>
 #import "RNSplashScreen.h"
+#import <Firebase.h>
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  
+  if ([FIRApp defaultApp] == nil) {
+      [FIRApp configure];
+  }
+ 
   self.moduleName = @"SpiritFront";
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.

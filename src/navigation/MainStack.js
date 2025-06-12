@@ -5,19 +5,22 @@ import MainBtmbar from './MainBtmbar';
 import SetLocationScreen from '../screens/SetLocation/SetLocationScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
-import StoreAddScreen from '../screens/StoreRegister/StoreAddScreen';
+
 import StoreSearchScreen from '../screens/StoreRegister/StoreSearchScreen';
 import StoreCheckScreen from '../screens/StoreRegister/StoreCheckScreen';
 import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
+import StoreAuthConfirm from '../screens/StoreRegister/StoreAuthConfirm';
 import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
 import StoreAddTimeSetScreen from '../screens/StoreRegister/StoreAddTimeSetScreen';
 import CategoryListTabbar from './CategoryListTabbar';
-import RandomChoiceScreen from '../screens/RandomChoice/RandomChoiceScreen';
 import StoreStack from './StoreStack';
 import MyStack from './MyStack';
 import OAuthStack from './OAuthStack';
-import Octicons from 'react-native-vector-icons/Octicons';
 import StoreAddMapScreen from '../screens/StoreRegister/StoreAddMapScreen';
+import StoreAddCheckScreen from '../screens/StoreRegister/StoreAddList/StoreAddCheckScreen';
+import StoreAddPhotoScreen from '../screens/StoreRegister/StoreAddList/StoreAddPhotoScreen';
+import StoreAddInfoScreen from '../screens/StoreRegister/StoreAddList/StoreAddInfoScreen';
+import LocataionMapScreen from '../screens/SetLocation/LocataionMapScreen';
 
 const Stack = createStackNavigator();
 
@@ -118,17 +121,16 @@ export default function MainStack() {
           ),
         })}
       />
+
       <Stack.Screen
-        name="StoreAddScreen"
-        component={StoreAddScreen}
+        name="StoreAddCheckScreen"
+        component={StoreAddCheckScreen}
         options={({navigation}) => ({
-          title: '매장 등록하기',
+          title: '매장 제보 1/3',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
             fontSize: 18,
-            alignItems: 'center',
-            justifyContent: 'center',
           },
           headerLeft: () => (
             <Pressable
@@ -142,6 +144,42 @@ export default function MainStack() {
               />
             </Pressable>
           ),
+        })}
+      />
+      <Stack.Screen
+        name="StoreAddPhotoScreen"
+        component={StoreAddPhotoScreen}
+        options={({navigation}) => ({
+          title: '매장 등록 1/2',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="StoreAddInfoScreen"
+        component={StoreAddInfoScreen}
+        options={({navigation}) => ({
+          title: '매장 등록 2/2',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
         })}
       />
       <Stack.Screen
@@ -195,8 +233,10 @@ export default function MainStack() {
       <Stack.Screen
         name="StoreSearchScreen"
         component={StoreSearchScreen}
-        options={({navigation}) => ({
-          title: '매장 조회',
+        options={({navigation, route}) => ({
+          title: `${
+            route.params?.index === 0 ? '매장 등록 조회' : '사장님 인증 조회'
+          }`,
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -220,7 +260,7 @@ export default function MainStack() {
         name="StoreCheckScreen"
         component={StoreCheckScreen}
         options={({navigation}) => ({
-          title: '매장 권한 신청 1/2',
+          title: '사장님 인증 신청 1/3',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -244,7 +284,31 @@ export default function MainStack() {
         name="StoreAuthorityScreen"
         component={StoreAuthorityScreen}
         options={({navigation}) => ({
-          title: '매장 권한 신청 2/2',
+          title: '사장님 인증 신청 2/3',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="StoreAuthConfirm"
+        component={StoreAuthConfirm}
+        options={({navigation}) => ({
+          title: '사장님 인증 신청 3/3',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -278,11 +342,12 @@ export default function MainStack() {
           headerShown: false,
         }}
       />
+
       <Stack.Screen
-        name="RandomChoiceScreen"
-        component={RandomChoiceScreen}
+        name="StoreAddMapScreen"
+        component={StoreAddMapScreen}
         options={({navigation}) => ({
-          title: '랜덤 고르기',
+          title: '주소 설정',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -303,8 +368,8 @@ export default function MainStack() {
         })}
       />
       <Stack.Screen
-        name="StoreAddMapScreen"
-        component={StoreAddMapScreen}
+        name="LocataionMapScreen"
+        component={LocataionMapScreen}
         options={({navigation}) => ({
           title: '주소 설정',
           headerTitleAlign: 'center',

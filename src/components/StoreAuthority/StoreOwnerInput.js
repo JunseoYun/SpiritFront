@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, TextInput, StyleSheet} from 'react-native';
 
+import AntDesign from 'react-native-vector-icons/AntDesign';
 const StoreOwnerInput = ({
   owners,
   hasCoRepresentative,
@@ -8,6 +9,10 @@ const StoreOwnerInput = ({
   addOwner,
   updateOwnerName,
   removeOwner,
+  nameRef,
+  ownerRefs,
+  businessNumberRef,
+  businessData,
 }) => {
   return (
     <View style={styles.container}>
@@ -51,25 +56,40 @@ const StoreOwnerInput = ({
               <View style={styles.inputHeaderContainer}>
                 <View style={styles.labelContainer}>
                   {owner.name ? (
-                    <Text style={styles.inputLabel}>{`대표자 ${
-                      index + 1
-                    }`}</Text>
+                    <Text style={styles.inputLabel}>
+                      {index === 0 ? '주 대표자' : `공동 대표`}
+                    </Text>
                   ) : null}
                 </View>
                 {owners.length > 1 && (
                   <Pressable
                     onPress={() => removeOwner(index)}
+                    hitSlop={10}
                     style={styles.deleteButton}>
-                    <Text style={styles.deleteButtonText}>삭제</Text>
+                    {/* <Text style={styles.deleteButtonText}>삭제</Text> */}
+                    <AntDesign name="minuscircleo" size={16} color="#ff4d4d" />
                   </Pressable>
                 )}
               </View>
               <TextInput
+                ref={ref => (ownerRefs.current[index] = ref)}
                 style={styles.input}
-                placeholder="대표자 성명"
+                placeholder={index === 0 ? '주 대표자 성명' : '공동 대표 성명'}
                 placeholderTextColor="#999"
                 value={owner.name}
                 onChangeText={text => updateOwnerName(index, text)}
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  const nextRef = ownerRefs.current[index + 1];
+                  if (nextRef) {
+                    nextRef.focus();
+                  }
+                  if (!nextRef) {
+                    if (!businessData.businessNumber) {
+                      businessNumberRef.current?.focus();
+                    }
+                  }
+                }}
               />
             </View>
           ))}
@@ -86,10 +106,17 @@ const StoreOwnerInput = ({
           </View>
           <TextInput
             style={styles.input}
+            ref={nameRef}
             placeholder="성명"
             placeholderTextColor="#999"
             value={owners[0].name}
             onChangeText={text => updateOwnerName(0, text)}
+            returnKeyType="next"
+            onSubmitEditing={() => {
+              if (!businessData.businessNumber) {
+                businessNumberRef.current?.focus();
+              }
+            }}
           />
         </View>
       )}
@@ -156,6 +183,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     paddingVertical: 7,
     paddingLeft: 1,
+    color: 'black',
   },
   addButton: {
     backgroundColor: '#16BBFF',

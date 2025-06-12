@@ -7,10 +7,11 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import Entypo from 'react-native-vector-icons/Entypo';
 
-const Title = ({handleEdit, storeName, isUpdate, onModalOpen}) => {
+const Title = ({handleEdit, storeName, isOwner, isUpdate, onModalOpen}) => {
   return (
     <>
       {isUpdate ? (
@@ -18,7 +19,9 @@ const Title = ({handleEdit, storeName, isUpdate, onModalOpen}) => {
           <TouchableOpacity
             onPress={() => handleEdit('name', storeName)}
             style={styles.titlebtn}>
-            <Text style={styles.Storetitle}>{storeName}</Text>
+            <View style={styles.titleView2}>
+              <Text style={styles.Storetitle}>{storeName}</Text>
+            </View>
             <View
               style={{right: 30, position: 'absolute', alignSelf: 'center'}}>
               <Entypo name="chevron-small-right" size={25} color="#333" />
@@ -27,8 +30,14 @@ const Title = ({handleEdit, storeName, isUpdate, onModalOpen}) => {
         </View>
       ) : (
         <View style={styles.Storetitleview}>
-          <View>
-            <Text style={styles.Storetitle}>{storeName}</Text>
+          <View style={styles.titleView2}>
+            <Text style={styles.Storetitle}>{storeName} </Text>
+            {isOwner != null && (
+              <FastImage
+                source={require('../../../assets/verifyMaker.png')}
+                style={styles.imageStyle}
+              />
+            )}
           </View>
           <Pressable
             onPress={onModalOpen}
@@ -59,17 +68,28 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginHorizontal: 18,
   },
+  titleView2: {
+    flexDirection: 'row',
+    flex: 1,
+  },
   titlebtn: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
   },
   Storetitle: {
-    fontSize: 24,
+    maxWidth: '85%',
+    fontSize: 22,
     fontFamily: 'Pretendard-Bold',
     color: '#333',
   },
   updateicons: {},
+  imageStyle: {
+    marginLeft: 7,
+    alignSelf: 'center',
+    width: 20,
+    height: 20,
+  },
 });
 
 export default Title;
