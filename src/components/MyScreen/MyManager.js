@@ -161,42 +161,77 @@ const MyManager = ({navigation}) => {
       />
 
       {/* 가게 이름 탭 */}
-      <FlatList
-        ref={tabFlatListRef}
-        data={mysotredata}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={item => item.id.toString()}
-        contentContainerStyle={{
-          paddingHorizontal: 200,
-          marginTop: 12,
-        }}
-        renderItem={({item, index}) => (
+      {mysotredata.length === 1 ? (
+        // 아이템이 하나일 때 중앙 정렬된 단일 탭
+        <View style={{alignItems: 'center'}}>
           <Pressable
             disabled={nameTabDisabled}
             onPress={() => {
-              const offset = CARD_WIDTH * index;
               flatListRef.current?.scrollToOffset({
-                offset,
+                offset: 0,
                 animated: true,
               });
             }}
             style={[
               styles.nameTab,
-              currentIndex === index && styles.activeTab,
+              currentIndex === 0 && styles.activeTab,
+              {
+                paddingVertical: 10,
+              },
             ]}>
             <Text
               style={[
                 styles.nameTabText,
-                currentIndex === index && styles.activeTabText,
+                currentIndex === 0 && styles.activeTabText,
                 {maxWidth: width * 0.5},
               ]}
               numberOfLines={1}>
-              {item.storeName}
+              {mysotredata[0].storeName}
             </Text>
           </Pressable>
-        )}
-      />
+        </View>
+      ) : (
+        // 아이템이 여러 개일 때는 기존 FlatList 사용
+        <FlatList
+          ref={tabFlatListRef}
+          data={mysotredata}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={{
+            paddingHorizontal: 200,
+            marginTop: 10,
+          }}
+          renderItem={({item, index}) => (
+            <Pressable
+              disabled={nameTabDisabled}
+              onPress={() => {
+                const offset = CARD_WIDTH * index;
+                flatListRef.current?.scrollToOffset({
+                  offset,
+                  animated: true,
+                });
+              }}
+              style={[
+                styles.nameTab,
+                currentIndex === index && styles.activeTab,
+                {
+                  paddingVertical: 6,
+                },
+              ]}>
+              <Text
+                style={[
+                  styles.nameTabText,
+                  currentIndex === index && styles.activeTabText,
+                  {maxWidth: width * 0.5},
+                ]}
+                numberOfLines={1}>
+                {item.storeName}
+              </Text>
+            </Pressable>
+          )}
+        />
+      )}
 
       <Loading loading={loading} />
     </View>
@@ -208,7 +243,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 100,
   },
   nameTab: {
-    paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
     textAlign: 'center',
