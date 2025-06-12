@@ -16,7 +16,6 @@ export const get_mokToken = async () => {
 };
 
 export const request_mok = async data => {
-  console.log(mokData);
   const mokData = {
     mokDataId: data.mokDataId,
     providerId: data.providerId,
@@ -40,7 +39,7 @@ export const confirm_request = async (data, isUpdate = false) => {
     authNumber: data.authNumber,
     isUpdate: isUpdate, // isUpdate 값 그대로 전달
   };
-  console.log(confirmData);
+
   try {
     const response = await userAxiosInstance.post(
       `/mok/confirm-request`,

@@ -18,7 +18,7 @@ const StoreMenuScreen = ({
   const [menuList, setMenuList] = useState(menus);
 
   const {showAlert, AlertComponent} = useCustomAlert();
-  console.log('isOwner: ', isOwner);
+
   const sortedMenus = menuList
     ? [...menuList].sort((a, b) => b.isMain - a.isMain)
     : [];

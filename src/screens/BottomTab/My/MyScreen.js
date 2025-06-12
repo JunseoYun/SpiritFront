@@ -36,9 +36,7 @@ const MyScreen = ({navigation}) => {
       try {
         const data = await Userdataget();
 
-        console.log(data);
         setUserdata(data);
-        console.log(data.isManager);
       } catch (error) {
         if (error.response) {
           const statusCode = error.response.status; // 에러 코드 가져오기
