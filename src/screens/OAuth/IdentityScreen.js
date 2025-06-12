@@ -52,7 +52,6 @@ const IdentityScreen = ({route, navigation}) => {
     route?.params ?? {};
   const {loginauth} = useAuth();
   const {showToast} = useToast();
-  console.log(fcmToken);
   const [sendToMsg, setSendToMsg] = useState(false);
 
   const [name, setName] = useState('');
@@ -198,7 +197,6 @@ const IdentityScreen = ({route, navigation}) => {
       return;
     }
     if (!rrnFront.trim() || rrnFront.trim().length < 6) {
-      console.log('?');
       setError('rrnFront');
       setTimeout(() => {
         rrnFrontRef.current?.focus();
@@ -317,7 +315,7 @@ const IdentityScreen = ({route, navigation}) => {
             : '20' + rrnFront,
         userRegistSingleNumber: rrnBack,
       };
-      console.log(mokData);
+
       await request_mok(mokData); // 재요청
       setResendCount(prev => prev + 1); // 횟수 증가
       setTimeLeft(180);
@@ -344,7 +342,7 @@ const IdentityScreen = ({route, navigation}) => {
       mokDataId: localMokTokenId,
       authNumber: otpcode,
     };
-    console.log(token);
+
     try {
       setLoading(true);
       let response;
@@ -354,10 +352,8 @@ const IdentityScreen = ({route, navigation}) => {
         response = await confirm_request(data);
       }
       showToast('인증 되었습니다.');
-      console.log(response);
+
       if (response.isRegistered && beforeScreen !== 'UserInfo') {
-        console.log(response.isRegistered);
-        console.log(token);
         try {
           const originalSocialInfoDto = {
             socialType: response.registeredSocialInfoDto.socialType,
@@ -401,7 +397,6 @@ const IdentityScreen = ({route, navigation}) => {
           });
         } else if (beforeScreen === 'UserInfo') {
           try {
-            console.log(localMokTokenId);
             await user_personalInfo_update(localMokTokenId);
             navigation.goBack();
           } catch (error) {}
