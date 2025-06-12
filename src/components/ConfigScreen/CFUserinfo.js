@@ -4,7 +4,6 @@ import FastImage from 'react-native-fast-image';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 const CFUserinfo = ({userdata, navigation}) => {
-  console.log(userdata);
   return (
     <>
       <View style={styles.topcontainer}>

@@ -40,16 +40,15 @@ const OAuthLoginScreen = ({navigation}) => {
   const handleLogin = async ({socialType, socialId, socialToken}) => {
     setLoading(true);
     const fcmToken = await getFcmToken();
-    console.log('🔥 FCM Token:', fcmToken);
+
     try {
-      console.log(socialType, socialId, socialToken);
       const response = await user_login(
         socialType,
         socialId,
         socialToken,
         fcmToken,
       );
-      console.log('Logined:', response);
+
       if (response.isVerified === false) {
         navigation.navigate('IdentityScreen', {
           socialType: socialType,
@@ -66,7 +65,6 @@ const OAuthLoginScreen = ({navigation}) => {
           response.marketingConsent,
         );
       }
-      // await loginauth(response.accessToken, response.refreshToken, 마케팅 알림 수신 여부);
     } catch (error) {
       if (error.response) {
         const {status, data, headers} = error.response;
