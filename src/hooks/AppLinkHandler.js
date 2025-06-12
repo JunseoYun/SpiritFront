@@ -7,6 +7,8 @@ import {useNavigation} from '@react-navigation/native';
 const AppLinkHandler = () => {
   const navigation = useNavigation();
 
+  console.log('asd');
+
   const handleUrl = url => {
     if (!url) return;
 
