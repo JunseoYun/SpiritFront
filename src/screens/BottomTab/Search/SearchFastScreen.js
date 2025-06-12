@@ -197,7 +197,9 @@ const SearchFastScreen = ({navigation}) => {
 
   const renderEmptyComponent = () => {
     if (!loading) {
-      return <Text style={styles.emptyText}>가게가 없습니다.</Text>;
+      return (
+        <Text style={styles.emptyText}>내 주변 조건에 맞는 가게가 없어요</Text>
+      );
     }
     return null;
   };
@@ -222,7 +224,7 @@ const SearchFastScreen = ({navigation}) => {
           }}>
           <AntDesign name="arrowleft" size={25} color={'black'} />
         </Pressable>
-        <Text style={styles.TitleText}>한잔할까</Text>
+        <Text style={styles.TitleText}>내 주변 빠른 검색</Text>
       </View>
       <FastSearch title={''} searchOptions={searchOptions} />
       <FlatList
@@ -281,7 +283,7 @@ const SearchFastScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   fastSearchModalContainer: {
     height: '100%',
-    backgroundColor: 'white',
+    backgroundColor: '#F8FDFF',
     justifyContent: 'center',
   },
   searchModaltopview: {
@@ -293,9 +295,9 @@ const styles = StyleSheet.create({
   },
   TitleText: {
     textAlign: 'center',
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
-    fontSize: 25,
-    color: '#15B3FA',
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 19,
+    color: '#333',
   },
   fastSearchModalcloseButton: {
     alignItems: 'center',
@@ -312,9 +314,9 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
-    fontSize: 20,
-    color: '#333',
+    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
+    fontSize: 17,
+    color: '#c0c0c0',
   },
 });
 

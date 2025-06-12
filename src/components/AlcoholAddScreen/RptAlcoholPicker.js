@@ -1,5 +1,6 @@
 import React from 'react';
-import {View, Text, StyleSheet, Pressable} from 'react-native';
+import {View, Text, StyleSheet, Pressable, Dimensions} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -16,28 +17,31 @@ const alcoholTypes = [
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
+const screenWidth = Dimensions.get('window').width;
+const buttonWidth = (screenWidth - 40 - 10 * 3) / 4; // 양 옆 20px 마진 + 3개 간격
+
 const RptAlcoholPicker = ({selectedType, onTypeChange}) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>주종*</Text>
-      <View style={styles.alcoholList}>
-        {alcoholTypes.map(alcohol => (
-          <Pressable
-            key={alcohol.value}
-            style={[
-              styles.alcoholButton,
-              selectedType === alcohol.value && styles.selectedAlcohol,
-            ]}
-            onPress={() => onTypeChange(alcohol.value)}>
-            <Text
+      <View style={styles.grid}>
+        {alcoholTypes.map(alcohol => {
+          const isSelected = selectedType === alcohol.value;
+          return (
+            <Pressable
+              key={alcohol.value}
               style={[
-                styles.alcoholText,
-                selectedType === alcohol.value && styles.selectedAlcoholText,
-              ]}>
-              {alcohol.label}
-            </Text>
-          </Pressable>
-        ))}
+                styles.item,
+                {width: buttonWidth},
+                isSelected && styles.itemSelected,
+              ]}
+              onPress={() => onTypeChange(alcohol.value)}>
+              <Text style={[styles.label, isSelected && styles.labelSelected]}>
+                {alcohol.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -47,36 +51,44 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
     marginTop: 10,
-    marginBottom: 20,
+    marginBottom: 25,
   },
   title: {
-    fontWeight: '500',
-    color: '#999',
+    fontWeight: '600',
+    color: '#666',
     fontSize: 16,
-    marginBottom: 10,
+    marginBottom: 12,
   },
-  alcoholList: {
+  grid: {
     flexDirection: 'row',
-    flexWrap: 'wrap', // 버튼 여러 줄 정렬
+    flexWrap: 'wrap',
     gap: 10,
   },
-  alcoholButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    backgroundColor: '#F2F2F2',
-    borderRadius: 10,
+  item: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#F5F5F5',
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
-  alcoholText: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  selectedAlcohol: {
+  itemSelected: {
     backgroundColor: '#16BBFF',
   },
-  selectedAlcoholText: {
+  label: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  labelSelected: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  checkIcon: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
   },
 });
 

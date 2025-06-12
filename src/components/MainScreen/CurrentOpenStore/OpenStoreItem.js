@@ -6,6 +6,7 @@ import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
+import FastImage from 'react-native-fast-image';
 const OpenStoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
   const [distance, setDistance] = useState(0);
@@ -81,44 +82,14 @@ const OpenStoreItem = ({store, location, navigation}) => {
             )}
           </ImageBackground>
         </View>
-        {/* {endtime && !store?.isAlwaysOpen && (
-          <View style={styles.storeViewInfo}>
-            <Text
-              style={[
-                styles.storeSubInfo,
-                {
-                  backgroundColor: '#80D2F4',
-                  color: '#fff',
-                  fontFamily: 'Pretendard-Regular',
-                  fontSize: 12,
-                  padding: 3,
-                  borderRadius: 5,
-                },
-              ]}>
-              ~ {endtime}
-            </Text>
-          </View>
-        )}
-        {store?.isAlwaysOpen && !endtime && (
-          <View style={[styles.storeViewInfo]}>
-            <Text
-              style={[
-                styles.storeSubInfo,
-                {
-                  backgroundColor: '#80D2F4',
-                  color: '#fff',
-                  fontFamily: 'Pretendard-Regular',
-                  fontSize: 12,
-                  padding: 3,
-                  borderRadius: 5,
-                },
-              ]}>
-              24시간
-            </Text>
-          </View>
-        )} */}
 
         <View style={styles.storeViewInfo}>
+          {store.isCertified == true && (
+            <FastImage
+              source={require('../../../assets/verifyMaker.png')}
+              style={styles.imageStyle}
+            />
+          )}
           <Text
             style={styles.storMainInfo}
             numberOfLines={1} // 한 줄로 제한
@@ -140,17 +111,6 @@ const OpenStoreItem = ({store, location, navigation}) => {
           </Text>
         </View>
         <View style={styles.storeViewInfo}>
-          {/* <Text
-            style={styles.storeSubInfo}
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
-              ? store.mainDrinkDtos
-                  .map(drink => `${translateAlcohol(drink.type)}`)
-                  .join(' ')
-              : '메인주류 미설정'}
-            {endtime}
-          </Text> */}
           {endtime && !store.isAlwaysOpen && (
             <Text
               style={styles.storeSubInfo}
@@ -225,11 +185,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 1,
     maxWidth: 160,
   },
+
   storMainInfo: {
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181A1A',
-    width: 140,
+    flex: 1,
   },
   storRate: {
     fontSize: 13,
@@ -251,6 +212,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     fontFamily: 'Pretendard-Medium',
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 15,
+    height: 15,
+    marginRight: 3,
   },
 });
 

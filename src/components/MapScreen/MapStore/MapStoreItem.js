@@ -13,6 +13,7 @@ import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
+import FastImage from 'react-native-fast-image';
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
 const IMG_WIDTH = width * 0.3;
@@ -117,6 +118,12 @@ const MapStoreItem = ({
             )}
           </View>
           <View style={styles.titleview}>
+            {item.isCertified == true && (
+              <FastImage
+                source={require('../../../assets/verifyMaker.png')}
+                style={styles.imageStyle}
+              />
+            )}
             <Text
               style={styles.storeName}
               numberOfLines={1} // 한 줄로 제한
@@ -214,9 +221,14 @@ const styles = StyleSheet.create({
   },
   titleview: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 3,
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 15,
+    height: 15,
+    marginRight: 4,
   },
   storeName: {
     fontSize: 18,

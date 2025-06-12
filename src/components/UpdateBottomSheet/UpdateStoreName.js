@@ -11,6 +11,7 @@ const UpdateStoreName = ({updatedValue, setUpdatedValue, onCancel, onSave}) => {
         defaultValue={updatedValue}
         onChangeText={text => setUpdatedValue(text)}
         placeholder="매장 이름*"
+        placeholderTextColor="#999"
       />
       <ActionButtons onCancel={onCancel} onSave={onSave} />
     </View>
@@ -41,5 +42,6 @@ const styles = StyleSheet.create({
     borderColor: '#999',
     padding: 10,
     paddingVertical: 15,
+    color: 'black',
   },
 });

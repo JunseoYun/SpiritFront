@@ -7,6 +7,9 @@ import {
   Pressable,
   TouchableOpacity,
   ScrollView,
+  KeyboardAvoidingView,
+  Dimensions,
+  SafeAreaView,
 } from 'react-native';
 
 import {UpdateStore} from '../../api/storeApi';
@@ -108,128 +111,134 @@ const UpdateStoreDrink = ({navigation, route}) => {
   };
 
   return (
-    <View style={styles.bottomSheetContent}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{paddingTop: 10}}
-        keyboardShouldPersistTaps="handled">
-        {updatedValue.map((drink, index) => {
-          const itemPerRow = 3;
-          const selectedTypes = updatedValue
-            .filter((_, i) => i !== index)
-            .map(d => d.type);
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{flex: 1}}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 0} // iOS의 경우 적절한 offset 설정
+    >
+      <SafeAreaView style={styles.bottomSheetContent}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{paddingTop: 10}}
+          keyboardShouldPersistTaps="handled">
+          {updatedValue.map((drink, index) => {
+            const itemPerRow = 3;
+            const selectedTypes = updatedValue
+              .filter((_, i) => i !== index)
+              .map(d => d.type);
 
-          const filteredAlcohols = alcoholTypes.filter(
-            a => !selectedTypes.includes(a.value) || a.value === drink.type,
-          );
+            const filteredAlcohols = alcoholTypes.filter(
+              a => !selectedTypes.includes(a.value) || a.value === drink.type,
+            );
 
-          const remainder = filteredAlcohols.length % itemPerRow;
-          const paddingCount = remainder === 0 ? 0 : itemPerRow - remainder;
-          const paddedAlcohols = [
-            ...filteredAlcohols,
-            ...Array(paddingCount).fill(null),
-          ];
+            const remainder = filteredAlcohols.length % itemPerRow;
+            const paddingCount = remainder === 0 ? 0 : itemPerRow - remainder;
+            const paddedAlcohols = [
+              ...filteredAlcohols,
+              ...Array(paddingCount).fill(null),
+            ];
 
-          return (
-            <View key={index} style={styles.alcoholRow}>
-              {expandedIndex !== index ? (
-                <TouchableOpacity
-                  style={styles.collapsedInfo}
-                  onPress={() => toggleExpand(index)}>
-                  <Text style={styles.collapsedText}>
-                    {drink.type
-                      ? alcoholTypes.find(a => a.value === drink.type)?.label ||
-                        '주종 선택'
-                      : '주종 선택'}
-                  </Text>
-                  <Text style={styles.collapsedText}>
-                    {drink.price ? `${drink.price} 원` : '가격 입력'}
-                  </Text>
-                </TouchableOpacity>
-              ) : (
-                <>
-                  <View style={styles.pickerContainer}>
-                    <Text style={styles.sectionTitle}>주종 선택</Text>
-                    <View style={styles.alcoholList}>
-                      {paddedAlcohols.map((alcohol, i) =>
-                        alcohol ? (
-                          <Pressable
-                            key={alcohol.value}
-                            style={[
-                              styles.alcoholButton,
-                              drink.type === alcohol.value &&
-                                styles.selectedAlcohol,
-                            ]}
-                            onPress={() =>
-                              setUpdatedValue(prev => {
-                                const updatedDrinks = [...prev];
-                                const current = updatedDrinks[index]?.type;
-                                const selected = alcohol.value;
-                                updatedDrinks[index] = {
-                                  ...updatedDrinks[index],
-                                  type: current === selected ? '' : selected,
-                                };
-                                return updatedDrinks;
-                              })
-                            }>
-                            <Text
-                              style={[
-                                styles.alcoholText,
-                                drink.type === alcohol.value &&
-                                  styles.selectedAlcoholText,
-                              ]}>
-                              {alcohol.label}
-                            </Text>
-                          </Pressable>
-                        ) : (
-                          <View
-                            key={`dummy-${i}`}
-                            style={styles.alcoholButton}
-                          />
-                        ),
-                      )}
-                    </View>
-                  </View>
-
-                  <View style={styles.priceContainer}>
-                    <Text style={styles.sectionTitle}>가격 입력</Text>
-                    <View style={styles.priceInputWrapper}>
-                      <TextInput
-                        style={styles.priceInput}
-                        keyboardType="numeric"
-                        placeholder="0"
-                        placeholderTextColor="#aaa"
-                        value={drink.price?.toString() || ''}
-                        onChangeText={value => {
-                          setUpdatedValue(prev => {
-                            const updatedDrinks = [...prev];
-                            updatedDrinks[index] = {
-                              ...updatedDrinks[index],
-                              price: parseInt(value) || 0,
-                            };
-                            return updatedDrinks;
-                          });
-                        }}
-                      />
-                      <Text style={styles.unit}>원</Text>
-                    </View>
-                  </View>
-
+            return (
+              <View key={index} style={styles.alcoholRow}>
+                {expandedIndex !== index ? (
                   <TouchableOpacity
-                    style={styles.saveButton}
+                    style={styles.collapsedInfo}
                     onPress={() => toggleExpand(index)}>
-                    <Text style={styles.saveButtonText}>완료</Text>
+                    <Text style={styles.collapsedText}>
+                      {drink.type
+                        ? alcoholTypes.find(a => a.value === drink.type)
+                            ?.label || '주종 선택'
+                        : '주종 선택'}
+                    </Text>
+                    <Text style={styles.collapsedText}>
+                      {drink.price ? `${drink.price} 원` : '가격 입력'}
+                    </Text>
                   </TouchableOpacity>
-                </>
-              )}
-            </View>
-          );
-        })}
-      </ScrollView>
+                ) : (
+                  <>
+                    <View style={styles.pickerContainer}>
+                      <Text style={styles.sectionTitle}>주종 선택</Text>
+                      <View style={styles.alcoholList}>
+                        {paddedAlcohols.map((alcohol, i) =>
+                          alcohol ? (
+                            <Pressable
+                              key={alcohol.value}
+                              style={[
+                                styles.alcoholButton,
+                                drink.type === alcohol.value &&
+                                  styles.selectedAlcohol,
+                              ]}
+                              onPress={() =>
+                                setUpdatedValue(prev => {
+                                  const updatedDrinks = [...prev];
+                                  const current = updatedDrinks[index]?.type;
+                                  const selected = alcohol.value;
+                                  updatedDrinks[index] = {
+                                    ...updatedDrinks[index],
+                                    type: current === selected ? '' : selected,
+                                  };
+                                  return updatedDrinks;
+                                })
+                              }>
+                              <Text
+                                style={[
+                                  styles.alcoholText,
+                                  drink.type === alcohol.value &&
+                                    styles.selectedAlcoholText,
+                                ]}>
+                                {alcohol.label}
+                              </Text>
+                            </Pressable>
+                          ) : (
+                            <View
+                              key={`dummy-${i}`}
+                              style={styles.alcoholButton}
+                            />
+                          ),
+                        )}
+                      </View>
+                    </View>
 
-      <Loading loading={loading} />
-    </View>
+                    <View style={styles.priceContainer}>
+                      <Text style={styles.sectionTitle}>가격 입력</Text>
+                      <View style={styles.priceInputWrapper}>
+                        <TextInput
+                          style={styles.priceInput}
+                          keyboardType="number-pad"
+                          placeholder="0"
+                          placeholderTextColor="#aaa"
+                          value={drink.price?.toString() || ''}
+                          onChangeText={value => {
+                            setUpdatedValue(prev => {
+                              const updatedDrinks = [...prev];
+                              updatedDrinks[index] = {
+                                ...updatedDrinks[index],
+                                price: parseInt(value) || 0,
+                              };
+                              return updatedDrinks;
+                            });
+                          }}
+                        />
+                        <Text style={styles.unit}>원</Text>
+                      </View>
+                    </View>
+
+                    <TouchableOpacity
+                      style={styles.saveButton}
+                      onPress={() => toggleExpand(index)}>
+                      <Text style={styles.saveButtonText}>완료</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+            );
+          })}
+        </ScrollView>
+
+        <Loading loading={loading} />
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -238,7 +247,6 @@ export default UpdateStoreDrink;
 const styles = StyleSheet.create({
   bottomSheetContent: {
     flex: 1,
-    padding: 18,
     backgroundColor: 'white',
   },
   title: {
@@ -249,7 +257,8 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   alcoholRow: {
-    marginBottom: 30,
+    marginVertical: 15,
+    marginHorizontal: 18,
   },
   pickerContainer: {
     marginBottom: 20,

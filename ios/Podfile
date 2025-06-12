@@ -12,13 +12,17 @@ node_require('react-native-permissions/scripts/setup.rb')
 
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
+use_frameworks! :linkage => :static
+use_modular_headers!
+
 
 setup_permissions([
   'Camera', 
   'Microphone', 
   'PhotoLibrary',
   'LocationAlways',
-  'LocationWhenInUse'
+  'LocationWhenInUse',
+  'Notifications'
 ])
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -36,7 +40,8 @@ target 'SpiritFront' do
   pod 'KakaoSDKCommon'
   pod 'KakaoSDKAuth'
   pod 'KakaoSDKUser'
-  
+
+  pod 'GoogleUtilities', :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],

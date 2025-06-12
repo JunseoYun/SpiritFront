@@ -128,7 +128,7 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
                   <View style={styles.priceInputWrapper}>
                     <TextInput
                       style={styles.priceInput}
-                      keyboardType="numeric"
+                      keyboardType="number-pad"
                       placeholder="0"
                       placeholderTextColor="#aaa"
                       value={alcohol[index]?.price?.toString() || ''}

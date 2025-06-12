@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet, Modal, TouchableOpacity} from 'react-native';
+import Entypo from 'react-native-vector-icons/Entypo';
 
 const ImagePickermodal = ({
   isBottomSheetVisible,
@@ -7,6 +8,8 @@ const ImagePickermodal = ({
   handleCameraPick,
   handleGalleryPick,
 }) => {
+  const close = () => setBottomSheetVisible(false);
+
   return (
     <Modal
       visible={isBottomSheetVisible}
@@ -16,7 +19,7 @@ const ImagePickermodal = ({
       <TouchableOpacity
         style={styles.modalOverlay}
         activeOpacity={1}
-        onPressOut={() => setBottomSheetVisible(false)}>
+        onPressOut={close}>
         <View style={styles.bottomSheet}>
           <TouchableOpacity
             style={styles.sheetButton}
@@ -26,6 +29,12 @@ const ImagePickermodal = ({
                 handleCameraPick();
               }, 100); // 모달 닫히는 애니메이션 시간만큼 지연
             }}>
+            <Entypo
+              name="camera"
+              size={23}
+              color="#333"
+              style={{paddingRight: 7}}
+            />
             <Text style={styles.sheetButtonText}>카메라로 촬영</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -36,15 +45,20 @@ const ImagePickermodal = ({
                 handleGalleryPick();
               }, 100); // 모달 닫히는 애니메이션 시간만큼 지연
             }}>
+            <Entypo
+              name="image"
+              size={23}
+              color="#333"
+              style={{paddingRight: 7}}
+            />
             <Text style={styles.sheetButtonText}>앨범에서 선택</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.sheetButton,
-              {borderTopWidth: 1, borderColor: '#ddd'},
-            ]}
-            onPress={() => setBottomSheetVisible(false)}>
-            <Text style={[styles.sheetButtonText]}>닫기</Text>
+            style={[styles.sheetButton, styles.cancelButton]}
+            onPress={close}>
+            <Text style={[styles.sheetButtonText, styles.cancelText]}>
+              닫기
+            </Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -56,28 +70,38 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
-
   bottomSheet: {
-    width: '100%',
-    paddingHorizontal: 20,
-    paddingBottom: 10,
-  },
-
-  sheetButton: {
     backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: -4},
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  sheetButton: {
+    backgroundColor: '#F8F8F8',
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
+    flexDirection: 'row',
   },
-
   sheetButtonText: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
+    color: '#333',
+  },
+  cancelButton: {
+    backgroundColor: '#fff',
+  },
+  cancelText: {
     color: '#007AFF',
   },
 });

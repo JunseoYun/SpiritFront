@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useLayoutEffect, useRef} from 'react';
 import {
   Text,
   StyleSheet,
@@ -13,12 +13,14 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import {StoreDrinkcreate} from '../../../api/drinkApi';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import Loading from '../../../hooks/Loading';
+import {useToast} from '../../../context/ToastContext';
 
 const AlcoholAddScreen = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const route = useRoute();
+  const scrollViewRef = useRef(null);
   const {storeId} = route.params;
-
+  const {showToast} = useToast();
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const [alcohols, setAlcohols] = useState([
@@ -41,9 +43,16 @@ const AlcoholAddScreen = ({navigation}) => {
         imageUri: '',
       },
     ]);
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({animated: true});
+    }, 100); // 0~100ms 사이의 짧은 delay 필요
   };
 
   const handleDeleteAlcohol = index => {
+    if (alcohols.length === 1) {
+      showToast('주류는 최소 1개 이상 등록되어야 합니다.', 'center');
+      return;
+    }
     showAlert({
       title: '주류 삭제',
       message: '해당 주류를 삭제하시겠습니까?',
@@ -140,9 +149,21 @@ const AlcoholAddScreen = ({navigation}) => {
     }
   };
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={AlcoholAdd}>
+          <Text style={styles.headerButton}>완료</Text>
+        </Pressable>
+      ),
+    });
+  }, [navigation, AlcoholAdd]);
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={styles.scrollContainer}>
         {alcohols.map((alcohol, index) => (
           <AlcoholAddForm
             key={index}
@@ -152,16 +173,13 @@ const AlcoholAddScreen = ({navigation}) => {
             onDelete={handleDeleteAlcohol}
           />
         ))}
-
+      </ScrollView>
+      <AlertComponent />
+      <View style={styles.menuAddTextview}>
         <Pressable style={styles.menuAddButton} onPress={handleAddAlcohol}>
           <Text style={styles.menuAddText}>주류 추가</Text>
         </Pressable>
-        <Pressable style={styles.saveButton} onPress={AlcoholAdd}>
-          <Text style={styles.saveButtonText}>작성 완료</Text>
-        </Pressable>
-      </ScrollView>
-      <AlertComponent />
-
+      </View>
       <Loading loading={loading} />
     </SafeAreaView>
   );
@@ -172,7 +190,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-
+  headerButton: {
+    marginRight: 18,
+    fontSize: 18,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#16BBFF',
+  },
   saveButton: {
     width: '90%',
     marginVertical: 50,
@@ -187,22 +210,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 18,
   },
+  menuAddTextview: {
+    borderTopWidth: 0.5,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
   menuAddButton: {
-    marginTop: 30,
-    color: 'white',
-    width: 120,
-    height: 50,
-    fontSize: 12,
-    borderWidth: 1,
-    borderRadius: 10,
-    alignSelf: 'center',
+    paddingVertical: 15,
+    alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#45C9FF',
+    borderRadius: 10,
   },
   menuAddText: {
-    color: '#333',
-    fontSize: 17,
-    alignSelf: 'center',
+    fontSize: 18,
     fontWeight: '600',
+    color: '#fff',
   },
   footer: {
     position: 'absolute',

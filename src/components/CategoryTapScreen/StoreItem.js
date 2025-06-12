@@ -8,6 +8,7 @@ import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
+import FastImage from 'react-native-fast-image';
 
 const StoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
@@ -52,44 +53,89 @@ const StoreItem = ({store, location, navigation}) => {
           <Pressable
             onPress={handleStorePress}
             style={Categorystyles.menuItemView}>
-            <ImageBackground
-              source={
-                store.mainImgUrl
-                  ? {uri: store.mainImgUrl} // ✅ 네트워크 이미지
-                  : require('../../assets/AppLogoNoback.png') // ✅ 로컬 이미지
-              }
-              style={Categorystyles.menuImageView}
-              imageStyle={Categorystyles.menuImg}>
-              {!isOpen && !nextclosed && !closed && (
-                <View style={Categorystyles.overlay}>
-                  <Text style={Categorystyles.overlayText}>
-                    영업 종료{'\n'}
-                    {starttime ? `${starttime} 오픈` : ''}
-                  </Text>
+            {store.mainImgUrl ? (
+              <ImageBackground
+                resizeMode={FastImage.resizeMode.cover}
+                source={
+                  {uri: store.mainImgUrl} // ✅ 네트워크 이미지
+                }
+                style={Categorystyles.menuImageView}
+                imageStyle={Categorystyles.menuImg}>
+                {!isOpen && !nextclosed && !closed && (
+                  <View style={Categorystyles.overlay}>
+                    <Text style={Categorystyles.overlayText}>
+                      영업 종료{'\n'}
+                      {starttime ? `${starttime} 오픈` : ''}
+                    </Text>
+                  </View>
+                )}
+                {!isOpen && nextclosed && !closed && (
+                  <View style={Categorystyles.overlay}>
+                    <Text style={Categorystyles.overlayText}>
+                      영업 종료{'\n'}익일 휴무
+                    </Text>
+                  </View>
+                )}
+                {!isOpen && !nextclosed && closed && (
+                  <View style={Categorystyles.overlay}>
+                    <Text style={Categorystyles.overlayText}>금일 휴무</Text>
+                  </View>
+                )}
+
+                {isOpen && isBreak && (
+                  <View style={Categorystyles.overlay}>
+                    <Text style={Categorystyles.overlayText}>
+                      브레이크 타임{'\n'}
+                      {breakend ? `${breakend} 종료` : ''}
+                    </Text>
+                  </View>
+                )}
+              </ImageBackground>
+            ) : (
+              <ImageBackground style={Categorystyles.noneImageView}>
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <FastImage
+                    source={require('../../assets/store.png')}
+                    style={Categorystyles.noneImg}
+                    resizeMode={FastImage.resizeMode.contain}
+                  />
                 </View>
-              )}
-              {!isOpen && nextclosed && !closed && (
-                <View style={Categorystyles.overlay}>
-                  <Text style={Categorystyles.overlayText}>
-                    영업 종료{'\n'}익일 휴무
-                  </Text>
-                </View>
-              )}
-              {!isOpen && !nextclosed && closed && (
-                <View style={Categorystyles.overlay}>
-                  <Text style={Categorystyles.overlayText}>금일 휴무</Text>
-                </View>
-              )}
-              {/* ✅ 브레이크 타임 표시 */}
-              {isOpen && isBreak && (
-                <View style={Categorystyles.overlay}>
-                  <Text style={Categorystyles.overlayText}>
-                    브레이크 타임{'\n'}
-                    {breakend ? `${breakend} 종료` : ''}
-                  </Text>
-                </View>
-              )}
-            </ImageBackground>
+                {!isOpen && !nextclosed && !closed && (
+                  <View style={Categorystyles.overlay}>
+                    <Text style={Categorystyles.overlayText}>
+                      영업 종료{'\n'}
+                      {starttime ? `${starttime} 오픈` : ''}
+                    </Text>
+                  </View>
+                )}
+                {!isOpen && nextclosed && !closed && (
+                  <View style={Categorystyles.overlay}>
+                    <Text style={Categorystyles.overlayText}>
+                      영업 종료{'\n'}익일 휴무
+                    </Text>
+                  </View>
+                )}
+                {!isOpen && !nextclosed && closed && (
+                  <View style={Categorystyles.overlay}>
+                    <Text style={Categorystyles.overlayText}>금일 휴무</Text>
+                  </View>
+                )}
+
+                {isOpen && isBreak && (
+                  <View style={Categorystyles.overlay}>
+                    <Text style={Categorystyles.overlayText}>
+                      브레이크 타임{'\n'}
+                      {breakend ? `${breakend} 종료` : ''}
+                    </Text>
+                  </View>
+                )}
+              </ImageBackground>
+            )}
           </Pressable>
           {store.menuList?.length > 0 &&
             store.menuList
@@ -135,21 +181,6 @@ const StoreItem = ({store, location, navigation}) => {
                   </ImageBackground>
                 </Pressable>
               ))}
-          {store.menuList?.filter(menu => !!menu.imgUrl).length <= 1 && (
-            <Pressable
-              onPress={handleStorePress}
-              style={[Categorystyles.menuItemView]}>
-              <ImageBackground
-                source={require('../../assets/PorkBack.png')}
-                style={Categorystyles.menuImageView2}
-                imageStyle={Categorystyles.menuNoImg}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={Categorystyles.moreText}>메뉴 더보기</Text>
-                  <Ionicons name="chevron-forward" size={16} color={'#333'} />
-                </View>
-              </ImageBackground>
-            </Pressable>
-          )}
         </ScrollView>
       </View>
 
@@ -171,6 +202,12 @@ const StoreItem = ({store, location, navigation}) => {
             : '메인주류가 없습니다.'}
         </View>
         <View style={Categorystyles.infoTitleView}>
+          {store.isCertified == true && (
+            <FastImage
+              source={require('../../assets/verifyMaker.png')}
+              style={Categorystyles.imageStyle}
+            />
+          )}
           <Text
             style={Categorystyles.storeName}
             numberOfLines={1}
