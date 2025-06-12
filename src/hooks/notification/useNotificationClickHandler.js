@@ -16,7 +16,6 @@ export const useNotificationClickHandler = () => {
             body: detail.notification?.body,
           };
           setPendingNotification(data);
-          console.log('✅ Foreground 알림 클릭', data);
         }
       },
     );
@@ -28,7 +27,6 @@ export const useNotificationClickHandler = () => {
           body: remoteMessage?.notification?.body,
         };
         setPendingNotification(data);
-        console.log('✅ Background 알림 클릭', data, remoteMessage);
       },
     );
 
@@ -41,7 +39,6 @@ export const useNotificationClickHandler = () => {
             body: remoteMessage?.notification?.body,
           };
           setPendingNotification(data);
-          console.log('✅ Cold start 알림 클릭', data, remoteMessage);
         }
       });
 

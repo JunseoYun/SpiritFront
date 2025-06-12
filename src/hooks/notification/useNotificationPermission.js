@@ -21,10 +21,8 @@ export const requestNotificationPermission = async () => {
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
       );
       if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('🚫 Android 알림 권한 거부됨');
         return false;
       }
-      console.log('✅ Android 알림 권한 허용됨');
     }
 
     // FCM 권한 요청 (iOS 또는 공통)
@@ -47,7 +45,6 @@ export const getFcmToken = async () => {
     if (fcmToken) {
       return fcmToken;
     } else {
-      console.log('❌ FCM Token not retrieved');
       return null;
     }
   } catch (err) {
@@ -82,23 +79,16 @@ export const showMarketingConsentAlert = () => {
       message:
         '취향 저격 한잔 정보, 놓치지 마세요!\n알림으로 바로 알려드려요.\n(알림 > 알림 설정에서 변경 가능)',
       onConfirm: async () => {
-        console.log('✅ 마케팅 알림 수신 동의');
         try {
           await user_marketing_consent(true);
-          console.log('✅ 서버 동의 상태 업데이트 성공');
-        } catch (error) {
-          console.error('💥 서버 동의 상태 업데이트 실패:', error);
-        }
+        } catch (error) {}
 
         resolve(true);
       },
       onCancel: async () => {
         try {
           await user_marketing_consent(false);
-          console.log('✅ 서버 동의 상태 업데이트 성공');
-        } catch (error) {
-          console.error('💥 서버 동의 상태 업데이트 실패:', error);
-        }
+        } catch (error) {}
 
         resolve(false);
       },

@@ -8,9 +8,7 @@ export const useNotificationSetup = () => {
     const requestUserPermission = async () => {
       const settings = await notifee.requestPermission();
       if (settings.authorizationStatus >= 1) {
-        console.log('✅ 알림 권한 허용됨');
       } else {
-        console.log('❌ 알림 권한 거부됨');
       }
     };
 

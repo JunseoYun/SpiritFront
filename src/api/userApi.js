@@ -32,7 +32,6 @@ export const user_login = async (
 export const user_logout = async () => {
   try {
     const refreshToken = await getRefreshToken();
-    console.log('🔐 refreshToken:', refreshToken);
 
     const response = await axios.post(
       `https://${Config.AUTH_URL}/api/auth/logout`,
@@ -43,7 +42,6 @@ export const user_logout = async () => {
         },
       },
     );
-    console.log('✅ logout response', response.data);
   } catch (error) {
     console.error('❌ logout error:', error.response);
     functionError(error);
@@ -57,7 +55,6 @@ export const user_register = async (
   nickname,
   mokDataId,
 ) => {
-  console.log(socialType, socialId, nickname, mokDataId);
   const data = {
     socialInfoDto: {
       socialType: socialType, // 소셜 로그인 타입 (예: KAKAO)
@@ -153,7 +150,6 @@ export const user_personalInfo_add = async (mokDataId, accessToken) => {
         },
       },
     );
-    console.log('✅ personal-info-add response', response.data);
   } catch (error) {
     console.error('❌ personal-info-add error:', error.response);
     functionError(error);
@@ -162,7 +158,6 @@ export const user_personalInfo_add = async (mokDataId, accessToken) => {
 };
 
 export const user_merge = async (originalSocialInfoDto, newSocialInfoDto) => {
-  console.log(originalSocialInfoDto, newSocialInfoDto);
   const data = {
     originalSocialInfoDto,
     newSocialInfoDto,
@@ -173,7 +168,6 @@ export const user_merge = async (originalSocialInfoDto, newSocialInfoDto) => {
       `https://${Config.BASE_URL}/api/auth/merge`,
       data, // ✅ body를 그대로 전달
     );
-    console.log(response);
   } catch (error) {
     console.error(error.response);
     functionError(error);
@@ -229,7 +223,6 @@ export const user_personalInfo_update = async mokDataId => {
         params: {mokDataId},
       },
     );
-    console.log(response);
   } catch (error) {
     console.error('UserInfo:', error.response);
     throw error;
