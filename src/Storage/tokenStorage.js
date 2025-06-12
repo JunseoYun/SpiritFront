@@ -5,7 +5,6 @@ export const setToken = async (accessToken, refreshToken) => {
   try {
     await AsyncStorage.setItem('accessToken', accessToken);
     await AsyncStorage.setItem('refreshToken', refreshToken);
-    console.log('토큰이 성공적으로 저장되었습니다.');
   } catch (error) {
     console.error('토큰 저장 중 오류가 발생했습니다:', error);
   }
@@ -17,7 +16,6 @@ export const getAccessToken = async () => {
     if (token !== null) {
       return token;
     } else {
-      console.log('저장된 토큰이 없습니다.');
       return null;
     }
   } catch (error) {
@@ -32,7 +30,6 @@ export const getRefreshToken = async () => {
     if (token !== null) {
       return token;
     } else {
-      console.log('저장된 토큰이 없습니다.');
       return null;
     }
   } catch (error) {
@@ -45,7 +42,6 @@ export const removeToken = async () => {
   try {
     await AsyncStorage.removeItem('accessToken');
     await AsyncStorage.removeItem('refreshToken');
-    console.log('토큰이 성공적으로 삭제되었습니다.');
   } catch (error) {
     console.error('토큰 삭제 중 오류가 발생했습니다:', error);
   }
