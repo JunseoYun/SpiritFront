@@ -248,11 +248,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     justifyContent: 'center',
     marginBottom: 10,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: 'rgba(0,0,0,0.03)',
     marginHorizontal: 5,
   },
   activeTab: {
-    backgroundColor: '#333',
+    backgroundColor: '#E9F5FB',
   },
   nameTabText: {
     fontSize: 13,
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   activeTabText: {
-    color: '#fff',
+    color: '#45C9FF',
     fontFamily: 'Pretendard-Bold',
   },
 });
