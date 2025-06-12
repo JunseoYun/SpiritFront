@@ -33,6 +33,17 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
+
+          <!-- ✅ App Link를 위한 설정 -->
+        <intent-filter android:autoVerify="true">
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+         <data
+          android:scheme="https"
+          android:host="dev.team-spirit.click"
+          android:pathPrefix="/link/store" />
+        </intent-filter>
       </activity>
 
       <!-- Google 로그인 관련 메타데이터 추가 -->
