@@ -13,7 +13,6 @@ import StoreAuthConfirm from '../screens/StoreRegister/StoreAuthConfirm';
 import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
 import StoreAddTimeSetScreen from '../screens/StoreRegister/StoreAddTimeSetScreen';
 import CategoryListTabbar from './CategoryListTabbar';
-import RandomChoiceScreen from '../screens/RandomChoice/RandomChoiceScreen';
 import StoreStack from './StoreStack';
 import MyStack from './MyStack';
 import OAuthStack from './OAuthStack';
@@ -343,30 +342,7 @@ export default function MainStack() {
           headerShown: false,
         }}
       />
-      <Stack.Screen
-        name="RandomChoiceScreen"
-        component={RandomChoiceScreen}
-        options={({navigation}) => ({
-          title: '랜덤 고르기',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
+
       <Stack.Screen
         name="StoreAddMapScreen"
         component={StoreAddMapScreen}
