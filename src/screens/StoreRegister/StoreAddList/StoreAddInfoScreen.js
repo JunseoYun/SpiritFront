@@ -1,72 +1,59 @@
-import React, {useState, useLayoutEffect, useRef, useEffect} from 'react';
+import React, {useState, useLayoutEffect, useRef, useCallback} from 'react';
 import {
-  ScrollView,
   Text,
-  Pressable,
   SafeAreaView,
+  ScrollView,
+  Pressable,
   StyleSheet,
   View,
+  KeyboardAvoidingView,
   Platform,
+  BackHandler,
+  ToastAndroid,
 } from 'react-native';
-import {useFocusEffect} from '@react-navigation/native';
-import {StoreRegister} from '../../api/storeApi';
-import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
-import StoreCategory from '../../components/StoreAddScreen/StoreCategory';
-import StoreClosedDay from '../../components/StoreAddScreen/StoreClosedDay';
-import StoreGroup from '../../components/StoreAddScreen/StoreGroup';
-import StoreOperatingHours from '../../components/StoreAddScreen/StoreOperatingHours';
-import StoreBreakingHours from '../../components/StoreAddScreen/StoreBreakingTime';
-import StoreImage from '../../components/StoreAddScreen/StoreImage';
-import StoreAlcohol from '../../components/StoreAddScreen/StoreAlcohol';
-import StoreTV from '../../components/StoreAddScreen/StoreTV';
-import StoreInfo from '../../components/StoreAddScreen/StoreInfo';
-import StoreConfirmationModal from '../../components/StoreAddScreen/StoreConfirmationModal';
-import useCustomAlert from '../../hooks/useCustomAlert';
-import OperatingHoursPreview from '../../components/StoreAddScreen/OperatingHoursPreview';
-import {useAuth} from '../../context/AuthContext';
-import {useToast} from '../../context/ToastContext';
-import Loading from '../../hooks/Loading';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {StoreRegister} from '../../../api/storeApi';
+import {useRoute, useFocusEffect} from '@react-navigation/native';
+import StoreAddProgressbar from '../../../components/StoreAddScreen/StoreAddProgressbar';
+import StoreCategory from '../../../components/StoreAddScreen/StoreCategory';
+import OperatingHoursPreview from '../../../components/StoreAddScreen/OperatingHoursPreview';
+import StoreGroup from '../../../components/StoreAddScreen/StoreGroup';
+import StoreTV from '../../../components/StoreAddScreen/StoreTV';
+import StoreAlcohol from '../../../components/StoreAddScreen/StoreAlcohol';
+import StoreInfo from '../../../components/StoreAddScreen/StoreInfo';
+import useCustomAlert from '../../../hooks/useCustomAlert';
+import Loading from '../../../hooks/Loading';
 
-const StoreAddScreen = ({navigation, route}) => {
-  const {token} = useAuth();
-  const {showToast} = useToast();
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!token) {
-        showToast('로그인 후 이용해주세요', 'center');
-        navigation.goBack();
-      }
-    }, [token]),
-  );
-  const {location} = route.params;
-
-  const scrollViewRef = useRef(null); // 스크롤뷰 참조
-  const storeInfoRef = useRef(null);
-  const storeAddressRef = useRef(null);
-  const storeCategoryRef = useRef(null);
-  const storeOperateRef = useRef(null);
-  const storeDrinkRef = useRef(null);
-  const storeImageRef = useRef(null);
+const StoreAddInfoScreen = ({navigation}) => {
+  const route = useRoute();
+  const {
+    storename,
+    address,
+    detailedAddress,
+    imageUris,
+    receiptimageUris,
+    coords,
+  } = route.params;
 
   const [loading, setLoading] = useState(false);
-  const [coords, setCoords] = useState({latitude: 0, longitude: 0});
-  const [address, setAddress] = useState('');
-  const [detailedAddress, setDetailedAddress] = useState('');
+  const [storeData, setStoreData] = useState({
+    storeNumber: '',
+    storeContent: '',
+  });
   const [selectedCategory, setSelectedCategory] = useState([]);
   const [selectedOption, setSelectedOption] = useState(false);
   const [selectedscreenOption, setselectedscreenOption] = useState(false);
   const [closedDay, setClosedDay] = useState([]);
   const [alcohol, setAlcohol] = useState([{type: '', price: 0}]);
   const [is24Hours, setIs24Hours] = useState(false);
-  const [imageUris, setImageUris] = useState([]); // 이미지 배열 상태
   const [isSameEveryTime, setIsSameEveryTime] = useState(true);
-  const {showAlert, AlertComponent} = useCustomAlert();
-  const [storeData, setStoreData] = useState({
-    storeName: '',
-    storeNumber: '',
-    storeContent: '',
-  });
   const [error, setError] = useState('');
+
+  const scrollViewRef = useRef(null);
+  const storeCategoryRef = useRef(null);
+  const storeOperateRef = useRef(null);
+  const storeDrinkRef = useRef(null);
+  const {showAlert, AlertComponent} = useCustomAlert();
 
   const [operatingHours, setOperatingHours] = useState({
     Monday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
@@ -106,8 +93,6 @@ const StoreAddScreen = ({navigation, route}) => {
     });
   };
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
-
   const scrollToError = ref => {
     if (ref?.current) {
       ref.current.measureLayout(
@@ -121,16 +106,6 @@ const StoreAddScreen = ({navigation, route}) => {
   };
 
   const confirmSubmission = () => {
-    if (!storeData.storeName.trim()) {
-      setError('StoreName');
-      scrollToError(storeInfoRef);
-      return;
-    }
-    if (!address.trim()) {
-      setError('StoreAddress');
-      scrollToError(storeAddressRef);
-      return;
-    }
     if (!selectedCategory.length) {
       setError('StoreCategory');
       scrollToError(storeCategoryRef);
@@ -160,11 +135,11 @@ const StoreAddScreen = ({navigation, route}) => {
       return;
     }
 
-    if (!imageUris.length) {
-      setError('StoreImage');
-      scrollToError(storeImageRef);
-      return;
-    }
+    // if (!imageUris.length) {
+    //   setError('StoreImage');
+    //   scrollToError(storeImageRef);
+    //   return;
+    // }
     showAlert({
       title: '매장 등록',
       message: '매장을 등록하시겠습니까?',
@@ -179,12 +154,13 @@ const StoreAddScreen = ({navigation, route}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={confirmSubmission}>
-          <Text style={styles.searchButton}>완료</Text>
+          <Text style={styles.nextButton}>완료</Text>
         </Pressable>
       ),
     });
   }, [
     navigation,
+    storename,
     storeData,
     operatingHours,
     breakingHours,
@@ -199,11 +175,6 @@ const StoreAddScreen = ({navigation, route}) => {
     imageUris,
   ]);
 
-  const handleAddressSelect = ({address, coords}) => {
-    setAddress(address);
-    setCoords(coords);
-  };
-
   const adjustTime = time => {
     if (!time) return null; // 값이 없으면 그대로 반환
 
@@ -215,7 +186,7 @@ const StoreAddScreen = ({navigation, route}) => {
   };
 
   const StoreAdd = async () => {
-    setIsModalVisible(false); // 모달 닫기
+    console.log('??');
     const imageFiles = imageUris.map(uri => ({
       file: uri, // 이미지 URI를 파일로 전달
     }));
@@ -264,13 +235,15 @@ const StoreAddScreen = ({navigation, route}) => {
           latitude: coords.latitude,
           longitude: coords.longitude,
         },
-        name: storeData.storeName,
+        name: storename,
         mainDrinkDtos: alcohol.filter(drink => drink.type && drink.price > 0),
         isGroupAvailable: selectedOption,
         categories: selectedCategory.filter(category => category !== '-'),
         description: storeData.storeContent,
       },
     };
+
+    console.log(data);
 
     try {
       setLoading(true);
@@ -280,11 +253,22 @@ const StoreAddScreen = ({navigation, route}) => {
           title: '매장 등록이 완료되었습니다.',
           message: '다른 분들을 위해 \n매장 등록을 해주셔서 감사합니다.',
           onConfirm: () => {
-            navigation.replace('StoreStack', {
-              screen: 'StoreMainScreen',
-              params: {
-                storeId: response.id,
-              },
+            navigation.reset({
+              index: 1,
+              routes: [
+                {name: 'MainBtmbar'},
+                {
+                  name: 'StoreStack',
+                  state: {
+                    routes: [
+                      {
+                        name: 'StoreMainScreen',
+                        params: {storeId: response.id},
+                      },
+                    ],
+                  },
+                },
+              ],
             });
           },
         });
@@ -299,34 +283,76 @@ const StoreAddScreen = ({navigation, route}) => {
       setLoading(false);
     }
   };
+  const lastBackPressed = useRef(0);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <Pressable
+          onPress={() => {
+            const now = Date.now();
+            if (now - lastBackPressed.current < 2000) {
+              navigation.goBack();
+            } else {
+              lastBackPressed.current = now;
+              ToastAndroid.show(
+                '한 번 더 누르면 작성한 내용이 사라집니다.',
+                ToastAndroid.SHORT,
+              );
+            }
+          }}
+          hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+          <Ionicons
+            name="arrow-back-outline"
+            size={23}
+            color="#333"
+            style={{paddingLeft: 12}}
+          />
+        </Pressable>
+      ),
+    });
+  }, [navigation]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        const now = Date.now();
+
+        if (now - lastBackPressed.current < 2000) {
+          navigation.goBack();
+          return true;
+        }
+
+        lastBackPressed.current = now;
+        ToastAndroid.show(
+          '한 번 더 누르면 작성한 내용이 사라집니다.',
+          ToastAndroid.SHORT,
+        );
+        return true; // 기본 동작 막기
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove(); // cleanup
+    }, [navigation]),
+  );
 
   return (
-    <>
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}>
-        <SafeAreaView style={styles.storetopview}>
-          <View ref={storeInfoRef}>
-            <StoreInfo
-              storeData={storeData}
-              setStoreData={setStoreData}
-              error={error}
-            />
-          </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{flex: 1}}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
+    >
+      <SafeAreaView style={styles.storetopview}>
+        <StoreAddProgressbar progress={1} />
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          ref={scrollViewRef}>
+          <Text style={styles.title}>상세정보를 입력해주세요.</Text>
 
-          <View ref={storeAddressRef}>
-            <StoreAddress
-              address={address}
-              detailedAddress={detailedAddress}
-              setDetailedAddress={setDetailedAddress}
-              navigation={navigation}
-              onAddressSelect={handleAddressSelect} // 콜백 전달
-              error={error}
-              location={location}
-            />
-          </View>
           <View ref={storeCategoryRef}>
             <StoreCategory
               selectedCategory={selectedCategory}
@@ -344,7 +370,6 @@ const StoreAddScreen = ({navigation, route}) => {
               error={error}
             />
           </View>
-
           <StoreGroup
             selectedOption={selectedOption}
             setSelectedOption={setSelectedOption}
@@ -360,72 +385,73 @@ const StoreAddScreen = ({navigation, route}) => {
               error={error}
             />
           </View>
-          <View ref={storeImageRef}>
-            <StoreImage
-              imageUris={imageUris}
-              setImageUris={setImageUris}
-              error={error}
-            />
-          </View>
-
-          <Pressable style={styles.savebutton} onPress={confirmSubmission}>
-            <Text style={styles.savebuttontext}>작성 완료</Text>
+          <StoreInfo
+            storeData={storeData}
+            setStoreData={setStoreData}
+            error={error}
+          />
+        </ScrollView>
+        <View style={styles.storeAddTextview}>
+          <Pressable
+            style={styles.storeAddButtonsearch}
+            onPress={confirmSubmission}>
+            <Text style={styles.storeAddText}>매장 등록</Text>
           </Pressable>
-        </SafeAreaView>
-      </ScrollView>
-
-      {/* <StoreConfirmationModal
-        visible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-        onConfirm={StoreAdd}
-        storeData={storeData}
-        selectedCategory={selectedCategory}
-        address={address}
-        detailedAddress={detailedAddress}
-        operatingHours={operatingHours}
-        breakingHours={breakingHours}
-        closedDay={closedDay}
-        alcohol={alcohol}
-        selectedOption={selectedOption}
-        selectedscreenOption={selectedscreenOption}
-        is24Hours={is24Hours}
-      /> */}
-      <Loading loading={loading} />
-      <AlertComponent />
-    </>
+        </View>
+        <AlertComponent />
+        <Loading loading={loading} />
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-  },
   storetopview: {
     backgroundColor: 'white',
-    width: '100%',
-    height: '100%',
+    flex: 1,
   },
-  searchButton: {
+  scrollContent: {
+    paddingBottom: 100, // 하단 버튼 영역 확보
+  },
+
+  title: {
+    marginTop: 30,
+    marginHorizontal: 18,
+    color: '#333',
+    fontWeight: '600',
+    fontSize: 20,
+  },
+  nextButton: {
     marginRight: 18,
-    fontSize: 18,
-    fontFamily: 'Pretendard-Medium',
-    color: '#181A1A',
+    fontSize: 19,
+    fontWeight: '600',
+    color: '#16BBFF',
   },
-  savebutton: {
-    alignSelf: 'center',
+
+  storeAddTextview: {
+    borderTopWidth: 0.5,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    justifyContent: 'space-between',
+  },
+  storeAddButtonsearch: {
+    paddingVertical: 15,
     alignItems: 'center',
-    width: '90%',
-    marginVertical: 7,
+    justifyContent: 'center',
     backgroundColor: '#45C9FF',
-    paddingVertical: 12,
     borderRadius: 10,
-    marginBottom: 30,
+    elevation: 3, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  savebuttontext: {
-    color: 'white',
-    fontFamily: 'Pretendard-Bold',
+  storeAddText: {
     fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
 
-export default StoreAddScreen;
+export default StoreAddInfoScreen;

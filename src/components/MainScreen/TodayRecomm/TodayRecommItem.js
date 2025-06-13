@@ -54,27 +54,6 @@ const TodayRecommItem = ({store, navigation}) => {
 
   return (
     <Pressable onPress={handlePress} style={styles.container}>
-      <View style={styles.drinkView}>
-        {store.mainDrinkDtos?.map((drink, index) => {
-          const baseColor = drinkColors[drink.type] || '#333';
-          const borderColor = hexToRGBA(baseColor, 0.5); // 살짝 연한 컬러
-          return (
-            <React.Fragment key={index}>
-              <Text
-                style={[
-                  styles.drinkText,
-                  {color: baseColor, borderColor: borderColor},
-                ]}>
-                {translateAlcohol(drink.type)} {drink.price}
-              </Text>
-              {index !== store.mainDrinkDtos.length - 1 && (
-                <View style={styles.division} />
-              )}
-            </React.Fragment>
-          );
-        })}
-      </View>
-
       <FastImage
         style={styles.imageBackground}
         source={
@@ -85,13 +64,42 @@ const TodayRecommItem = ({store, navigation}) => {
         resizeMode={FastImage.resizeMode.cover}>
         <View style={styles.overlay}>
           <View style={styles.storeContainer}>
+            {store.isCertified && (
+              <FastImage
+                source={require('../../../assets/verifyMaker.png')}
+                style={styles.imageStyle}
+              />
+            )}
             <Text
-              style={styles.storeName}
+              style={[
+                styles.storeName,
+                !store.mainImgUrl && {color: '#696E6F'},
+              ]}
               numberOfLines={3}
               ellipsizeMode="tail">
               {store.name}
             </Text>
           </View>
+        </View>
+        <View style={styles.drinkView}>
+          {store.mainDrinkDtos?.map((drink, index) => {
+            const baseColor = drinkColors[drink.type] || '#333';
+            const borderColor = hexToRGBA(baseColor, 0.5); // 살짝 연한 컬러
+            return (
+              <React.Fragment key={index}>
+                <Text
+                  style={[
+                    styles.drinkText,
+                    {color: '#fff', backgroundColor: borderColor},
+                  ]}>
+                  {translateAlcohol(drink.type)} {drink.price}
+                </Text>
+                {index !== store.mainDrinkDtos.length - 1 && (
+                  <View style={styles.division} />
+                )}
+              </React.Fragment>
+            );
+          })}
         </View>
       </FastImage>
     </Pressable>
@@ -119,7 +127,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     position: 'relative', // 🔹 기준 위치로 사용
   },
-  storeContainer: {},
+  storeContainer: {
+    flexDirection: 'row',
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 20,
+    height: 20,
+    marginRight: 5,
+  },
   storeNameView: {
     backgroundColor: '#333',
   },
@@ -128,6 +144,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: 'Pretendard-Bold',
     lineHeight: 26,
+    marginTop: 3,
   },
   likeView: {
     alignSelf: 'flex-end',
@@ -142,14 +159,14 @@ const styles = StyleSheet.create({
   drinkView: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 3,
-    marginBottom: 3,
+
+    marginBottom: 12,
   },
   drinkText: {
     color: '#333',
     fontFamily: 'Pretendard-Medium',
     fontSize: 14,
-    borderWidth: 1.2,
+
     padding: 4,
     borderRadius: 5,
   },

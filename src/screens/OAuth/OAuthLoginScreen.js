@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -18,34 +18,69 @@ import {user_login} from '../../api/userApi';
 import {useAuth} from '../../context/AuthContext';
 import Config from 'react-native-config';
 import FastImage from 'react-native-fast-image';
-import {setUnLogin, clearUnLogin} from '../../storage/tokenStorage';
+import useCustomAlert from '../../hooks/useCustomAlert';
+// import {setUnLogin, clearUnLogin} from '../../storage/tokenStorage';
+import {useToast} from '../../context/ToastContext';
+import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
+import Loading from '../../hooks/Loading';
 const OAuthLoginScreen = ({navigation}) => {
-  const {loginauth, clearUnLogout, unLogin} = useAuth();
+  // const {loginauth, clearUnLogout, unLogin} = useAuth();
+  const {loginauth} = useAuth();
+  const {showAlert, AlertComponent} = useCustomAlert();
+  const {showToast} = useToast();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     GoogleSignin.revokeAccess();
+    GoogleSignin.signOut();
     GoogleSignin.configure({
       webClientId: Config.GOOGLE_WEB_CLIENT_ID,
       iosClientId: Config.GOOGLE_CLIENT_ID,
     });
   }, []);
 
-  const handleLogin = async ({type, id, socialToken}) => {
+  const handleLogin = async ({socialType, socialId, socialToken}) => {
+    setLoading(true);
+    const fcmToken = await getFcmToken();
+
     try {
-      const response = await user_login(type, id, socialToken);
-      await loginauth(response.accessToken, response.refreshToken);
-      clearUnLogout();
+      const response = await user_login(
+        socialType,
+        socialId,
+        socialToken,
+        fcmToken,
+      );
+
+      if (response.isVerified === false) {
+        navigation.navigate('IdentityScreen', {
+          socialType: socialType,
+          socialId: socialId,
+          socialToken: socialToken,
+          beforeScreen: 'Login',
+          token: response,
+          fcmToken: fcmToken,
+        });
+      } else {
+        await loginauth(
+          response.accessToken,
+          response.refreshToken,
+          response.marketingConsent,
+        );
+      }
     } catch (error) {
       if (error.response) {
         const {status, data, headers} = error.response;
         if (status === 404) {
           navigation.navigate('AgreeScreen', {
-            type: type,
-            id: id,
+            socialType: socialType,
+            socialId: socialId,
             socialToken: socialToken,
+            fcmToken: fcmToken,
           });
         }
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,48 +98,56 @@ const OAuthLoginScreen = ({navigation}) => {
         }
       }
       const profile = await getProfile();
-      const type = 'KAKAO';
-      const id = profile.id;
+      const socialType = 'KAKAO';
+      const socialId = profile.id;
       const socialToken = token.accessToken;
-      handleLogin({type, id, socialToken});
+      handleLogin({socialType, socialId, socialToken});
     } catch (err) {}
   };
 
   const handleGoogleSignIn = async () => {
     try {
+      await GoogleSignin.signOut();
+
       const userInfo = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
 
-      const type = 'GOOGLE';
-      const id = userInfo.data.user.id;
+      const socialType = 'GOOGLE';
+      const socialId = userInfo.data.user.id;
       const socialToken = userInfo.data.idToken;
-      handleLogin({type, id, socialToken});
+      handleLogin({socialType, socialId, socialToken});
     } catch (error) {
       console.log(error);
+      if (error.code === '7') {
+        showToast('인터넷 연결을 확인해 주세요.', 'center');
+      } else {
+        console.log('Google SignIn Error:', error);
+        showToast('로그인 중 문제가 발생했어요.', 'center');
+      }
     }
   };
 
   const handleAppleSignIn = async () => {
-    try {
-      const appleAuthRequestResponse = await appleAuth.performRequest({
-        requestedOperation: appleAuth.Operation.LOGIN,
-        requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
-      });
-      const credentialState = await appleAuth.getCredentialStateForUser(
-        appleAuthRequestResponse.user,
-      );
-      // Check if the user is authorized
-      if (credentialState === appleAuth.State.AUTHORIZED) {
-        const type = 'APPLE';
-        const id = appleAuthRequestResponse.user;
-        const socialToken = appleAuthRequestResponse.identityToken;
-        handleLogin({type, id, socialToken});
-      }
-    } catch (error) {}
-  };
-
-  const unLoginHandle = async () => {
-    await unLogin();
+    if (Platform.OS === 'ios') {
+      try {
+        const appleAuthRequestResponse = await appleAuth.performRequest({
+          requestedOperation: appleAuth.Operation.LOGIN,
+          requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+        });
+        const credentialState = await appleAuth.getCredentialStateForUser(
+          appleAuthRequestResponse.user,
+        );
+        // Check if the user is authorized
+        if (credentialState === appleAuth.State.AUTHORIZED) {
+          const socialType = 'APPLE';
+          const socialId = appleAuthRequestResponse.user;
+          const socialToken = appleAuthRequestResponse.identityToken;
+          handleLogin({socialType, socialId, socialToken});
+        }
+      } catch (error) {}
+    } else {
+      //Android apple Login
+    }
   };
 
   return (
@@ -186,12 +229,9 @@ const OAuthLoginScreen = ({navigation}) => {
         ) : (
           <View style={{height: 50, marginTop: 20}} />
         )}
-        <TouchableOpacity onPress={unLoginHandle}>
-          <Text style={styles.unLoginText} allowFontScaling={false}>
-            비로그인으로 시작하기
-          </Text>
-        </TouchableOpacity>
       </View>
+      {loading && <Loading loading={true} />}
+      <AlertComponent />
     </SafeAreaView>
   );
 };

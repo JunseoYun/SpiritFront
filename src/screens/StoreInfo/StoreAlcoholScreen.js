@@ -29,6 +29,7 @@ const StoreAlcoholScreen = ({
   mainDrinks = [],
   scrollViewRef,
   onAlcoholDelete,
+  isOwner,
 }) => {
   const [openItemId, setOpenItemId] = useState(null);
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
@@ -110,7 +111,10 @@ const StoreAlcoholScreen = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      <AlcoholHeader storeId={storeId} navigation={navigation} />
+      {(isOwner === true || isOwner === null) && (
+        <AlcoholHeader storeId={storeId} navigation={navigation} />
+      )}
+
       {Object.keys(groupedAlcohols).map(type => (
         <View key={type}>
           <Text style={styles.typeLabel}>{type}</Text>
@@ -125,6 +129,7 @@ const StoreAlcoholScreen = ({
               onClose={handleCloseAll}
               onDelete={() => handleDeleteAlcohol(alcohol.id, alcohol.name)}
               scrollViewRef={scrollViewRef}
+              isOwner={isOwner}
             />
           ))}
           <View style={styles.line} />

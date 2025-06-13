@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     paddingRight: 18,
     paddingLeft: 10,
     alignItems: 'center',
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
   todayPhrasesView: {
     width: '100%',
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   },
   mylocationlivetext: {
     fontSize: 18,
-    fontFamily: 'Pretendard-Bold',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#181a1a',
     marginTop: 10,
   },

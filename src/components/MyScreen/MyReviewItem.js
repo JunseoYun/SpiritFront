@@ -32,20 +32,33 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
             });
           }}>
           <View style={styles.header}>
-            <View>
-              <Text style={styles.storeName}>{review.storeName}</Text>
-              <View>
-                <Text style={styles.category} ellipsizeMode="tail">
-                  {Array.isArray(review.categories) &&
-                  review.categories.length > 0
-                    ? review.categories
-                        .map(category => translateCategory(category))
-                        .join(' ')
-                    : '카테고리 미설정'}
-                </Text>
-              </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                flex: 1,
+                alignItems: 'center',
+                paddingBottom: 8,
+              }}>
+              <Text
+                style={styles.storeName}
+                ellipsizeMode="tail"
+                numberOfLines={1}>
+                {review.storeName}
+              </Text>
+              <Text style={styles.date}>{formattedCreatedDate}방문</Text>
             </View>
-            <Text style={styles.date}>{formattedCreatedDate} 방문</Text>
+
+            <View>
+              <Text style={styles.category} ellipsizeMode="tail">
+                {Array.isArray(review.categories) &&
+                review.categories.length > 0
+                  ? review.categories
+                      .map(category => translateCategory(category))
+                      .join(' ')
+                  : '카테고리 미설정'}
+              </Text>
+            </View>
           </View>
           <View style={styles.rating}>
             {[...Array(5)].map((_, index) => (
@@ -108,14 +121,14 @@ const styles = StyleSheet.create({
     elevation: 3, // Android 그림자
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
     marginBottom: 8,
   },
   storeName: {
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181A1A',
+    width: '80%',
   },
   category: {
     fontSize: 14,
@@ -127,7 +140,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#767676',
     fontFamily: 'Pretendard-Medium',
-    paddingBottom: 16,
   },
   rating: {
     flexDirection: 'row',

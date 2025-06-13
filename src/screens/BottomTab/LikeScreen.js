@@ -130,8 +130,6 @@ const LikeScreen = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 10,
-    paddingBottom: 10,
     width: '100%',
     height: '100%',
     backgroundColor: 'white',

@@ -81,7 +81,7 @@ window.overlayMarkers = [];
       zIndex: 2,
       image: new kakao.maps.MarkerImage(
         customMarkerUri,
-        new kakao.maps.Size(30, 30)
+        new kakao.maps.Size(24, 24)
       )
     });
 
@@ -157,7 +157,7 @@ window.overlayMarkers = [];
     // 🔹 마커 개수 표시 (그룹이 2개 이상일 경우)
     if (group.length > 1) {
       var overlayElement = document.createElement('div');
-      overlayElement.style.cssText = "pointer-events:none; position:relative; transform:translate(13px, -6px); background:#16BBFF; color:white; width:18px; height:18px; border-radius:50%; border:1px solid #ffffff; display:flex; align-items:center; justify-content:center; font-size:10px; font-family:Arial,sans-serif; font-weight:bold;";
+      overlayElement.style.cssText = "pointer-events:none; position:relative; transform:translate(12px, -4px); background:#16BBFF; color:white; width:14px; height:14px; border-radius:50%; border:0.5px solid #ffffff; display:flex; align-items:center; justify-content:center; font-size:10px; font-family:Arial,sans-serif; font-weight:bold;";
       overlayElement.innerText = group.length;
       
       var customOverlay = new kakao.maps.CustomOverlay({

@@ -1,45 +1,47 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 import forbiddenWords from '../../hooks/forbiddenWords';
 
 const StoreInfo = ({storeData, setStoreData, error}) => {
-  const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
-  const [errors, setErrors] = useState({}); // 각 필드별 에러 메시지 상태
-  const storeNameInputRef = useRef(null); // 매장 이름 입력 필드 ref 생성
+  const [focusedInput, setFocusedInput] = useState(null);
+  const [errors, setErrors] = useState({});
   const [overText, setOverText] = useState(false);
-  useEffect(() => {
-    if (error === 'StoreName' && storeNameInputRef.current) {
-      storeNameInputRef.current.focus(); // 에러가 있을 경우 포커스 자동 지정
-    }
-  }, [error]);
+
+  const storeNumberLabelAnim = useSharedValue(
+    storeData.storeNumber !== '' ? 1 : 0,
+  );
+  const storeContentLabelAnim = useSharedValue(
+    storeData.storeContent !== '' ? 1 : 0,
+  );
+
+  const isFocused = key => focusedInput === key;
+
   const handleChange = (key, value) => {
-    // 금지 단어 검사
     const containsForbiddenWord = forbiddenWords.some(word =>
       value.includes(word),
     );
 
-    // 에러 메시지 업데이트
     setErrors(prevErrors => ({
       ...prevErrors,
-      [key]: containsForbiddenWord ? '비속어 사용 금지' : null,
+      [key]: containsForbiddenWord && '비속어 사용 금지',
     }));
 
-    // 비속어가 없을 경우에만 데이터 업데이트
-    if (!containsForbiddenWord) {
-      setStoreData({...storeData, [key]: value});
-    }
+    setStoreData({...storeData, [key]: value});
   };
 
-  const isFocused = key => focusedInput === key;
-
   const handleContentChange = text => {
-    const lines = text.split('\n'); // 🔥 입력된 줄 개수 확인
-    const maxLines = 5; // 최대 줄 개수
-    const maxChars = 100; // 최대 글자 수
+    const lines = text.split('\n');
+    const maxLines = 5;
+    const maxChars = 100;
 
     if (lines.length > maxLines || text.length > maxChars) {
       setOverText(true);
-      return; // 🔥 5줄 이상이거나 100자 초과하면 입력 차단
+      return;
     } else {
       setOverText(false);
     }
@@ -47,79 +49,93 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
     handleChange('storeContent', text);
   };
 
+  useEffect(() => {
+    storeNumberLabelAnim.value = withTiming(
+      isFocused('storeNumber') || storeData.storeNumber !== '' ? 1 : 0,
+      {duration: 120},
+    );
+  }, [focusedInput, storeData.storeNumber]);
+
+  useEffect(() => {
+    storeContentLabelAnim.value = withTiming(
+      isFocused('storeContent') || storeData.storeContent !== '' ? 1 : 0,
+      {duration: 120},
+    );
+  }, [focusedInput, storeData.storeContent]);
+
+  const animatedLabelStyle = sharedValue =>
+    useAnimatedStyle(() => {
+      const isFocused = sharedValue.value === 1;
+      return {
+        position: 'absolute',
+        left: 1,
+        transform: [
+          {
+            translateY: withTiming(isFocused ? -8 : 16, {
+              duration: 120,
+            }),
+          },
+        ],
+        fontSize: withTiming(isFocused ? 16 : 22, {
+          duration: 120,
+        }),
+      };
+    });
+
+  const storeNumberLabelStyle = animatedLabelStyle(storeNumberLabelAnim);
+  const storeContentLabelStyle = animatedLabelStyle(storeContentLabelAnim);
+
   return (
     <View>
-      {/* 매장 이름 입력 */}
-      <View style={styles.storeinputview}>
-        {storeData.storeName && (
-          <Text style={styles.storeinputtext}>매장 이름*</Text>
-        )}
-        <TextInput
-          ref={storeNameInputRef}
-          style={[
-            styles.storeinput,
-            isFocused('storeName') && styles.focusedInput,
-          ]}
-          value={storeData.storeName}
-          onChangeText={text => handleChange('storeName', text)}
-          placeholder="매장 이름*"
-          placeholderTextColor="#999"
-          onFocus={() => setFocusedInput('storeName')}
-          onBlur={() => setFocusedInput(null)}
-          returnKeyType="done"
-        />
-        {errors.storeName && (
-          <Text style={styles.errorText}>{errors.storeName}</Text>
-        )}
-      </View>
-      {error === 'StoreName' && storeData.storeName === '' && (
-        <Text style={styles.errorMessage}>매장이름을 입력해주세요.</Text>
-      )}
-
       {/* 전화번호 입력 */}
       <View style={styles.storeinputview}>
-        {storeData.storeNumber && (
-          <Text style={styles.storeinputtext}>전화번호</Text>
-        )}
-        <TextInput
-          style={[
-            styles.storeinput,
-            isFocused('storeNumber') && styles.focusedInput,
-          ]}
-          value={storeData.storeNumber}
-          onChangeText={text => handleChange('storeNumber', text)}
-          keyboardType="numeric"
-          placeholder="전화번호"
-          placeholderTextColor="#999"
-          onFocus={() => setFocusedInput('storeNumber')}
-          onBlur={() => setFocusedInput(null)}
-          returnKeyType="done"
-        />
+        <View style={{position: 'relative'}}>
+          <Animated.Text style={[styles.animatedLabel, storeNumberLabelStyle]}>
+            전화번호
+          </Animated.Text>
+          <TextInput
+            style={[
+              styles.storeinput,
+              isFocused('storeNumber') && styles.focusedInput,
+              {paddingBottom: 7, paddingTop: 20, paddingLeft: 1},
+            ]}
+            value={storeData.storeNumber}
+            onChangeText={text => handleChange('storeNumber', text)}
+            keyboardType="number-pad"
+            placeholder=""
+            placeholderTextColor="#999"
+            onFocus={() => setFocusedInput('storeNumber')}
+            onBlur={() => setFocusedInput(null)}
+            returnKeyType="done"
+          />
+        </View>
         {errors.storeNumber && (
           <Text style={styles.errorText}>{errors.storeNumber}</Text>
         )}
       </View>
 
       {/* 매장 소개 입력 */}
-      <View style={styles.storeinputview}>
-        {storeData.storeContent && (
-          <Text style={styles.storeinputtext}>매장 소개</Text>
-        )}
-        <TextInput
-          style={[
-            styles.textarea,
-            isFocused('storeContent') && styles.focusedInput,
-          ]}
-          multiline
-          // maxLength={100} // 🔥 너무 긴 텍스트 방지 (선택 사항)
-          value={storeData.storeContent}
-          onChangeText={handleContentChange}
-          placeholder="매장을 간단하게 소개해주세요."
-          placeholderTextColor="#999"
-          onFocus={() => setFocusedInput('storeContent')}
-          onBlur={() => setFocusedInput(null)}
-          returnKeyType="done"
-        />
+      <View style={[styles.storeinputview, {marginTop: 50}]}>
+        <View style={{position: 'relative'}}>
+          <Animated.Text style={[styles.animatedLabel, storeContentLabelStyle]}>
+            매장을 간단하게 소개해주세요.
+          </Animated.Text>
+          <TextInput
+            style={[
+              styles.textarea,
+              isFocused('storeContent') && styles.focusedInput,
+              {paddingBottom: 7, paddingTop: 20, paddingLeft: 1},
+            ]}
+            multiline
+            value={storeData.storeContent}
+            onChangeText={handleContentChange}
+            placeholder=""
+            placeholderTextColor="#999"
+            onFocus={() => setFocusedInput('storeContent')}
+            onBlur={() => setFocusedInput(null)}
+            returnKeyType="done"
+          />
+        </View>
         {errors.storeContent && (
           <Text style={styles.errorText}>{errors.storeContent}</Text>
         )}
@@ -135,14 +151,8 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
 
 const styles = StyleSheet.create({
   storeinputview: {
-    marginTop: 50,
+    marginTop: 10,
     marginHorizontal: 20,
-  },
-  storeinputtext: {
-    fontFamily: 'Pretendard-Medium',
-    color: '#999',
-    fontSize: 16,
-    marginBottom: 10,
   },
   storeinput: {
     width: '100%',
@@ -150,22 +160,26 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     fontSize: 22,
     fontFamily: 'Pretendard-Medium',
-    paddingVertical: 7,
-    paddingLeft: 1,
+    color: 'black',
   },
   textarea: {
     width: '100%',
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
-    fontSize: 18,
+    fontSize: 22,
     fontFamily: 'Pretendard-SemiBold',
     paddingVertical: 5,
     paddingLeft: 1,
     maxHeight: 120,
+    color: 'black',
   },
   focusedInput: {
-    borderBottomColor: '#16BBFF', // 활성화 상태 색상
+    borderBottomColor: '#16BBFF',
     borderBottomWidth: 2,
+  },
+  animatedLabel: {
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
   },
   errorText: {
     color: '#FF4816',

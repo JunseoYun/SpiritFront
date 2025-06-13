@@ -128,6 +128,7 @@ const StoreMainInfo = ({
       <Title
         handleEdit={handleEdit}
         storeName={storedata?.name}
+        isOwner={storedata?.isOwner}
         isUpdate={isUpdate}
         onModalOpen={onModalOpen}
       />

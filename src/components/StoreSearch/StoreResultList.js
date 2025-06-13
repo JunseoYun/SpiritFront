@@ -58,13 +58,18 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
     }
   }, [trimmedSearchWord]);
 
-  const renderItem = ({item}) => (
-    <StoreResultItem
-      key={item.id}
-      store={item}
-      navigation={navigation}
-      index={index}
-    />
+  const renderItem = ({item, index: itemIndex}) => (
+    <>
+      <StoreResultItem
+        key={item.id}
+        store={item}
+        navigation={navigation}
+        index={index}
+      />
+      {itemIndex !== searchingStores.length - 1 && (
+        <View style={styles.horizontalDivider} />
+      )}
+    </>
   );
 
   return (
@@ -102,6 +107,7 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
 const styles = StyleSheet.create({
   fastSearchModalScrollView: {
     marginTop: 1,
+    paddingBottom: 100,
   },
   footer: {
     alignItems: 'center',
@@ -121,6 +127,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     fontSize: 17,
     color: '#c0c0c0',
+    alignSelf: 'center',
+  },
+  horizontalDivider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginTop: 20,
+    width: '100%',
     alignSelf: 'center',
   },
 });

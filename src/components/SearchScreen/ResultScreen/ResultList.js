@@ -9,10 +9,16 @@ import {
 import ResultItem from './ResultItem';
 import {Store_getby_keyword} from '../../../api/storeApi';
 
-const ResultList = ({trimmedSearchWord, location, navigation}) => {
+const ResultList = ({
+  trimmedSearchWord,
+  location,
+  navigation,
+  loading,
+  setLoading,
+}) => {
   const [searchingStores, setSearchingStores] = useState([]); // 검색된 가게 목록
   const [page, setPage] = useState(0); // 페이지 번호
-  const [loading, setLoading] = useState(false); // 로딩 상태
+  //const [loading, setLoading] = useState(false); // 로딩 상태
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
   const [totalpage, setTotalpage] = useState(0);
 
@@ -91,13 +97,6 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
           }
         }} // 끝에 도달하면 데이터 불러오기
         onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          loading && !isEnd ? (
-            <View style={styles.footer}>
-              <Text style={styles.loadingText}>Loading...</Text>
-            </View>
-          ) : null
-        }
         ListEmptyComponent={
           !loading && searchingStores.length === 0 ? (
             <Text style={styles.emptyText}>검색된 술집이 없어요</Text>
