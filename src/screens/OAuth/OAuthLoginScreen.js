@@ -20,12 +20,14 @@ import Config from 'react-native-config';
 import FastImage from 'react-native-fast-image';
 import useCustomAlert from '../../hooks/useCustomAlert';
 // import {setUnLogin, clearUnLogin} from '../../storage/tokenStorage';
+import {useToast} from '../../context/ToastContext';
 import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
 import Loading from '../../hooks/Loading';
 const OAuthLoginScreen = ({navigation}) => {
   // const {loginauth, clearUnLogout, unLogin} = useAuth();
   const {loginauth} = useAuth();
   const {showAlert, AlertComponent} = useCustomAlert();
+  const {showToast} = useToast();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -116,6 +118,12 @@ const OAuthLoginScreen = ({navigation}) => {
       handleLogin({socialType, socialId, socialToken});
     } catch (error) {
       console.log(error);
+      if (error.code === '7') {
+        showToast('인터넷 연결을 확인해 주세요.', 'center');
+      } else {
+        console.log('Google SignIn Error:', error);
+        showToast('로그인 중 문제가 발생했어요.', 'center');
+      }
     }
   };
 
