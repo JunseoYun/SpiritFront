@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {View, Text, Pressable, StyleSheet, Image} from 'react-native';
 import MainMenuCheck from './MainMenuCheck';
 import MenuTextInput from './MenuTextInput';
@@ -11,6 +11,7 @@ import {
   requestCameraPermission,
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const MenuAddForm = ({
   menu,
@@ -138,14 +139,25 @@ const MenuAddForm = ({
     // 상태 저장
     const value = newChecked ? '변동' : purePrice;
     MenuChange(value, index, 'price');
+
+    if (newChecked) {
+      if (menu.menuContent === '') {
+        menucontentRef.current?.focus();
+      }
+    }
   };
 
+  const scrollViewRef = useRef(null);
+  const menunameRef = useRef(null);
+  const priceRef = useRef(null);
+  const menucontentRef = useRef(null);
+
   return (
-    <View key={index}>
+    <View key={index} ref={scrollViewRef}>
       <View style={styles.menuHeader}>
         <Text style={styles.menuHeaderText}>메뉴 {index + 1}</Text>
         <Pressable style={styles.deleteButton} onPress={() => onDelete(index)}>
-          <Text style={styles.deleteButtonText}>삭제</Text>
+          <Ionicons name="close" size={25} color="#333" />
         </Pressable>
       </View>
       <MenuTextInput
@@ -154,6 +166,13 @@ const MenuAddForm = ({
         onChangeText={text => MenuChange(text, index, 'menuName')}
         placeholder="메뉴 이름*"
         maxLength={21}
+        ref={menunameRef}
+        returnKeyType="next"
+        onSubmitEditing={() => {
+          if (menu.price === '') {
+            priceRef.current?.focus();
+          }
+        }}
       />
       {menuNamelength && (
         <View style={styles.errorview}>
@@ -168,6 +187,13 @@ const MenuAddForm = ({
         isVariable={isVariable}
         onToggleVariable={handleToggleVariable}
         maxLength={21}
+        ref={priceRef}
+        returnKeyType="next" // ✅ 추가
+        onSubmitEditing={() => {
+          if (menu.menuContent === '') {
+            menucontentRef.current?.focus();
+          }
+        }}
       />
       {menuPricelength && (
         <View style={styles.errorview}>
@@ -181,6 +207,7 @@ const MenuAddForm = ({
         placeholder="메뉴를 간단하게 소개해주세요."
         multiline
         maxLength={31}
+        ref={menucontentRef}
       />
       {menuContentlength && (
         <View style={styles.errorview}>
@@ -201,8 +228,25 @@ const MenuAddForm = ({
             />
           </Pressable>
         ) : (
-          <Pressable onPress={selectImage}>
-            <MaterialCommunityIcons name="image-plus" size={40} color="#333" />
+          <Pressable
+            style={{
+              width: 100,
+              height: 100,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: '#f2f2f2',
+              borderRadius: 10,
+            }}
+            onPress={selectImage}>
+            <View
+              style={{
+                width: 30,
+                height: 30,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <MaterialCommunityIcons name="plus" size={30} color="#999" />
+            </View>
           </Pressable>
         )}
       </View>
@@ -252,10 +296,8 @@ const styles = StyleSheet.create({
     marginRight: 7,
   },
   deleteButton: {
-    paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: '#FF6B6B',
-    borderRadius: 5,
+    paddingLeft: 20,
   },
   deleteButtonText: {
     color: 'white',

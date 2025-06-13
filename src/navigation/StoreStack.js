@@ -1,5 +1,5 @@
 import React from 'react';
-import {Pressable} from 'react-native';
+import {Pressable, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {createStackNavigator} from '@react-navigation/stack';
 import Octicons from 'react-native-vector-icons/Octicons';
@@ -13,6 +13,7 @@ import MenuUpdateScreen from '../screens/StoreInfo/Menu/MenuUpdateScreen';
 import AlcoholUpdateScreen from '../screens/StoreInfo/Alcohol/AlcoholUpdateScreen';
 import StoreReportScreen from '../screens/StoreInfo/Report/StoreReportScreen';
 import ReviewReportScreen from '../screens/StoreInfo/Report/ReviewReportScreen';
+import StoreReportList from '../screens/StoreInfo/Report/StoreReportList';
 import StoreTimeEditScreen from '../screens/StoreInfo/StoreTimeEditScreen';
 import UpdateStoreDrink from '../components/UpdateBottomSheet/UpdateStoreDrink';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
@@ -268,6 +269,55 @@ export default function StoreStack() {
           headerTitleAlign: 'center',
           animation: 'slide_from_right',
           headerShadowVisible: false,
+        })}
+      />
+
+      <Stack.Screen
+        name="StoreReportList"
+        component={StoreReportList}
+        options={({navigation, route}) => ({
+          title: `${
+            route.params?.storeName
+              ? route.params.storeName + ' 신고·제보'
+              : '매장'
+          }`,
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-SemiBold',
+            fontSize: 18,
+            color: '#333',
+          },
+          headerTitle: props => (
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={[
+                props.style,
+                {
+                  fontFamily: 'Pretendard-SemiBold',
+                  fontSize: 18,
+                  color: '#333',
+                  textAlign: 'center',
+                },
+              ]}>
+              {props.children}
+            </Text>
+          ),
+
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                navigation.goBack();
+              }}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
         })}
       />
 

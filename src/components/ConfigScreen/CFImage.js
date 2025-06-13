@@ -17,8 +17,8 @@ const CFImage = ({imageUrl, onPress}) => {
         <View style={styles.cameraButton}>
           <FontAwesomeIcon
             name="camera"
-            size={20}
-            color="black"
+            size={15}
+            color="#fff"
             style={styles.cameraicon}
           />
         </View>
@@ -34,13 +34,13 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
   },
   image: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     resizeMode: 'cover',
   },
   cameraButton: {
@@ -52,7 +52,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20,
-    backgroundColor: 'white',
+    backgroundColor: '#d8d8d8',
+    borderWidth: 2.5,
+    borderColor: 'white',
   },
   cameraicon: {},
 });

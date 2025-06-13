@@ -9,15 +9,20 @@ import {
   Pressable,
   BackHandler,
   ToastAndroid,
+  Animated,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
+// import Feather from 'react-native-vector-icons/Feather';
+
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
 import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
 import StoreRegister from '../../components/MainScreen/StoreRegister';
 import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
 import NearStoreList from '../../components/MainScreen/NearStore/NearStoreList';
-import OptionsSection from '../../components/MainScreen/OptionSection';
+
 import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
@@ -26,9 +31,21 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
+import MainHeader from '../../components/MainScreen/Header/MainHeader';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Dimensions} from 'react-native';
+import RejectModal from '../../components/Reject/RejectModal';
+import useHandlePendingNotification from '../../hooks/notification/useHandlePendingNotification';
+import {useNotification} from '../../context/NotificationContext';
+const screenHeight = Dimensions.get('window').height;
+
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
+  const insets = useSafeAreaInsets();
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [showTopView2, setShowTopView2] = useState(false);
+  const [showLocation, setShowLocation] = useState(false);
 
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
@@ -42,6 +59,29 @@ const MainScreen = ({navigation}) => {
   const {recommendCategory} = useRecommendation();
   const {token} = useAuth();
   const {showToast} = useToast();
+  useEffect(() => {
+    const listener = scrollY.addListener(({value}) => {
+      const iosThreshold = insets.top + 30;
+      const androidThreshold = insets.top + 90; // 좀 더 스크롤해야 보이게
+
+      const threshold = Platform.OS === 'ios' ? iosThreshold : androidThreshold;
+
+      if (value >= threshold && !showTopView2) {
+        setShowTopView2(true);
+      } else if (value < threshold && showTopView2) {
+        setShowTopView2(false);
+      }
+      const locationHhreshold =
+        Platform.OS === 'ios' ? insets.top - 20 : insets.top + 40;
+      if (value >= locationHhreshold && !showLocation) {
+        setShowLocation(true);
+      } else if (value < locationHhreshold && showLocation) {
+        setShowLocation(false);
+      }
+    });
+
+    return () => scrollY.removeListener(listener);
+  }, [insets.top, showTopView2, showLocation]);
 
   useFocusEffect(
     useCallback(() => {
@@ -144,14 +184,7 @@ const MainScreen = ({navigation}) => {
       }
       navigation.navigate('StoreSearchScreen', {index: 0, location: location});
     } else if (index === 1) {
-      // navigation.navigate('StoreSearchScreen', {index: 1});
-      showAlert({
-        title: '서비스 준비 중입니다.',
-      });
-    } else if (index === 2) {
-      navigation.navigate('MapScreen');
-    } else if (index === 3) {
-      navigation.navigate('RandomChoiceScreen');
+      navigation.navigate('StoreSearchScreen', {index: 1});
     }
   };
 
@@ -182,64 +215,146 @@ const MainScreen = ({navigation}) => {
     }
   };
 
+  const [rejectModalData, setRejectModalData] = useState(null);
+  const {pendingNotification, setPendingNotification} = useNotification();
+  useHandlePendingNotification(
+    loading,
+    pendingNotification,
+    () => setPendingNotification(null),
+    data => setRejectModalData(data), // 모달 데이터 설정
+  );
+
+  // ✅ Cold Start 시 AsyncStorage에 저장된 알림 처리
+  useEffect(() => {
+    const checkStoredNotification = async () => {
+      const stored = await AsyncStorage.getItem('PENDING_NOTIFICATION');
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          setPendingNotification(data);
+          await AsyncStorage.removeItem('PENDING_NOTIFICATION'); // 사용 후 삭제
+        } catch (e) {
+          console.warn('⚠️ 저장된 알림 파싱 실패', e);
+        }
+      }
+    };
+
+    checkStoredNotification();
+  }, []);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Loading loading={isRefreshing || loading} />
-      <View style={styles.topView}>
-        <Text
-          style={styles.todayAddress}
-          numberOfLines={1}
-          ellipsizeMode="tail">
-          {formatAddress(address)}
-        </Text>
-        <Pressable onPress={setLocationHandle}>
-          <Feather name="chevron-right" size={23} color="#181a1a" />
-        </Pressable>
+    <>
+      <View
+        style={[
+          styles.absoluteTop,
+          {
+            paddingTop:
+              Platform.OS === 'android' ? insets.top + 10 : insets.top,
+            backgroundColor: showTopView2 ? '#F5F5F5' : '#45C9FF', // 🎯 여기 조건부 배경색 추가
+          },
+        ]}>
+        <MainHeader />
+
+        <View style={styles.topView}>
+          <Text
+            style={styles.todayAddress}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {formatAddress(address)}
+          </Text>
+          {!showLocation && (
+            <Pressable
+              hitSlop={15}
+              style={{zIndex: 1, position: 'relative'}}
+              onPress={setLocationHandle}>
+              <Feather name="chevron-right" size={23} color="#fff" />
+            </Pressable>
+          )}
+        </View>
       </View>
-      <ScrollView
+
+      {showTopView2 && (
+        <View style={[styles.topView2, {paddingTop: insets.top}]}>
+          <Pressable hitSlop={10} onPress={setLocationHandle}>
+            <Text
+              style={[styles.todayAddress2, {color: '#333', marginTop: 10}]}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {formatAddress(address)}
+            </Text>
+          </Pressable>
+          <Pressable
+            hitSlop={10}
+            style={{marginTop: 10, marginLeft: 5}}
+            onPress={setLocationHandle}>
+            <Feather name="chevron-right" size={23} color="#181a1a" />
+          </Pressable>
+        </View>
+      )}
+      <Animated.ScrollView
+        onScroll={Animated.event(
+          [{nativeEvent: {contentOffset: {y: scrollY}}}],
+          {useNativeDriver: false},
+        )}
         scrollEventThrottle={16}
+        contentContainerStyle={{
+          marginTop:
+            Platform.OS === 'android' ? insets.top + 120 : insets.top + 110,
+          paddingBottom: Platform.OS === 'ios' ? 30 : 120,
+        }}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }>
-        <TodayRecomm
-          recommCategory={recommCategory}
-          recommReason={recommReason}
-          recommStores={recommStores}
-          location={location}
-          refresh={isRefreshing}
-          navigation={navigation}
-        />
-
-        <CategoryGrid onPress={catagoryClick} />
-
-        <StoreRegister
-          storeactiveIndex={storeactiveIndex}
-          handlestoreItemClick={handlestoreItemClick}
-        />
-
-        <OpenStoreList
-          location={location}
-          navigation={navigation}
-          refresh={isRefreshing}
-          setRefresh={setIsRefreshing}
-        />
-        <View
-          onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
-          <NearStoreList
-            navigation={navigation}
+        <View style={styles.innerContainer}>
+          <TodayRecomm
+            recommCategory={recommCategory}
+            recommReason={recommReason}
+            recommStores={recommStores}
             location={location}
             refresh={isRefreshing}
-            setRefresh={onRefresh}
+            navigation={navigation}
           />
+
+          <CategoryGrid onPress={catagoryClick} />
+
+          <StoreRegister
+            storeactiveIndex={storeactiveIndex}
+            handlestoreItemClick={handlestoreItemClick}
+          />
+
+          <View style={styles.division} />
+
+          <OpenStoreList
+            location={location}
+            navigation={navigation}
+            refresh={isRefreshing}
+            setRefresh={setIsRefreshing}
+          />
+
+          <View style={styles.division} />
+
+          <View
+            onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
+            <NearStoreList
+              navigation={navigation}
+              location={location}
+              refresh={isRefreshing}
+              setRefresh={onRefresh}
+            />
+          </View>
+
+          <AppInfo handleAgreeScreen={handleAgreeScreen} />
         </View>
-        <OptionsSection
-          storeactiveIndex={storeactiveIndex}
-          handlestoreItemClick={handlestoreItemClick}
+      </Animated.ScrollView>
+      {rejectModalData && !loading && (
+        <RejectModal
+          data={rejectModalData}
+          onClose={() => setRejectModalData(null)}
         />
-        <AppInfo handleAgreeScreen={handleAgreeScreen} />
-      </ScrollView>
+      )}
+      <Loading loading={isRefreshing || loading} />
       <AlertComponent />
-    </SafeAreaView>
+    </>
   );
 };
 
@@ -257,23 +372,54 @@ const screens = [
 ];
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    marginBottom: 30,
+  absoluteTop: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: screenHeight,
+    paddingHorizontal: 14,
+  },
+  innerContainer: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 27,
+    borderTopRightRadius: 27,
+    paddingTop: 24,
   },
   topView: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignSelf: 'center',
-    width: '90%',
-    paddingVertical: 10,
+    alignItems: 'center',
+    marginVertical: 15,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    marginHorizontal: 18,
+    borderRadius: 14,
+    width: '100%',
+    justifyContent: 'space-between',
   },
   todayAddress: {
     fontSize: 17,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
+    color: '#fff',
+  },
+  topView2: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    zIndex: 20,
+    flexDirection: 'row',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    justifyContent: 'space-between',
+  },
+  todayAddress2: {
+    fontSize: 17,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#fff',
     paddingLeft: 4,
-    width: '90%',
   },
   topbar: {
     flexDirection: 'row',
@@ -289,9 +435,9 @@ const styles = StyleSheet.create({
   },
   division: {
     width: '100%',
-    height: 8,
-    backgroundColor: '#F0F0F0',
-    marginVertical: 10,
+    height: 10,
+    backgroundColor: '#F5F5F5',
+    marginTop: 30,
   },
 });
 

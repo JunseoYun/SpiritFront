@@ -45,7 +45,7 @@ const StoreSearchScreen = ({navigation}) => {
   };
 
   const handleStoreAdd = () => {
-    navigation.navigate('StoreAddScreen', {
+    navigation.navigate('StoreAddPhotoScreen', {
       location: location,
     });
   };
@@ -70,9 +70,7 @@ const StoreSearchScreen = ({navigation}) => {
         onPress={handleSearch}
       />
       <Text style={styles.infoText}>
-        {index === 0
-          ? '매장 등록 전 한잔할까에 등록된 매장인지 확인해보세요!'
-          : '권한 신청 전 한잔할까에 등록된 매장인지 확인해보세요!'}
+        한잔할까에 등록된 매장인지 확인해보세요!
       </Text>
 
       <StoreResultList
@@ -128,11 +126,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#45C9FF',
     borderRadius: 10,
-    elevation: 3, // Android shadow
-    shadowColor: '#000', // iOS shadow
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
   storeAddText: {
     fontSize: 18,

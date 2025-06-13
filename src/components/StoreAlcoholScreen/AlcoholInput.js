@@ -21,6 +21,7 @@ const AlcoholInput = ({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
+        placeholderTextColor="#999"
         multiline={isMultiline}
         textAlignVertical={isMultiline ? 'top' : 'auto'}
         onFocus={() => setIsFocused(true)}
@@ -39,6 +40,7 @@ const styles = StyleSheet.create({
     paddingLeft: 1,
     marginBottom: 40,
     marginHorizontal: 18,
+    color: 'black',
   },
   inputMultiline: {
     minHeight: 30,
@@ -48,6 +50,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     marginBottom: 20,
     marginHorizontal: 18,
+    color: 'black',
   },
   inputText: {
     marginVertical: 5,

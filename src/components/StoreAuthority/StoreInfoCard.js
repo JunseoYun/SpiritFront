@@ -8,8 +8,6 @@ const StoreInfoCard = ({storeData}) => {
       <Text style={styles.value}>{storeData.storeName}</Text>
       <Text style={styles.label}>매장 연락처</Text>
       <Text style={styles.value}>{storeData.storeNumber}</Text>
-      <Text style={styles.label}>신청자 성명</Text>
-      <Text style={styles.value}>{storeData.userName}</Text>
       <Text style={styles.label}>신청자 연락처</Text>
       <Text style={styles.value}>{storeData.userContact}</Text>
     </View>

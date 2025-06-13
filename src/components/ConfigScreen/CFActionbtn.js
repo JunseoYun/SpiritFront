@@ -5,15 +5,19 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 
 const CFActionbtn = ({navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
-  const {logout, unLogin} = useAuth();
+  const {logout} = useAuth();
+  // const {logout, unLogin} = useAuth();
+
   const handleLogout = async () => {
     navigation.reset({
       index: 0,
-      routes: [{name: 'MyStack', state: {routes: [{name: 'MyLoginScreen'}]}}],
+      routes: [
+        {name: 'OAuthStack', state: {routes: [{name: 'OAuthLoginScreen'}]}},
+      ],
     });
     try {
-      await unLogin();
-      logout();
+      // await unLogin();
+      await logout();
     } catch (error) {
       console.error('Log-Out Error:', error);
       showAlert({
@@ -59,6 +63,7 @@ const styles = StyleSheet.create({
   label: {
     color: '#999',
     fontFamily: 'Pretendard-Medium',
+    fontSize: 12,
   },
 });
 

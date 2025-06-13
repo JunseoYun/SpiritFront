@@ -6,7 +6,7 @@ const AppInfo = ({handleAgreeScreen}) => {
   return (
     <View style={styles.container}>
       <Text style={styles.buttonText}>사업자: 스피릿</Text>
-      <Text style={styles.buttonText}>대표자: 윤준서</Text>
+      <Text style={styles.buttonText}>대표자: 윤준서 김경모 김민</Text>
       <Text style={styles.buttonText}>
         주소: 경기 용인시 기흥구 사은로 126번길 48
       </Text>
@@ -36,7 +36,6 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'space-between',
     marginTop: 30,
-    paddingBottom: 50,
     backgroundColor: '#F5F5F5',
     paddingHorizontal: 18,
     paddingTop: 20,

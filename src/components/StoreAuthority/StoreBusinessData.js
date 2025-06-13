@@ -23,7 +23,13 @@ const validateDate = dateStr => {
   );
 };
 
-const StoreBusinessData = ({businessData, setBusinessData}) => {
+const StoreBusinessData = ({
+  businessData,
+  setBusinessData,
+  businessNumberRef,
+  openDateRef,
+  drink_sales_numberRef,
+}) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
   const [errors, setErrors] = useState({}); // 각 필드별 에러 메시지 상태
 
@@ -81,13 +87,20 @@ const StoreBusinessData = ({businessData, setBusinessData}) => {
             styles.storeinput,
             isFocused('businessNumber') && styles.focusedInput,
           ]}
+          ref={businessNumberRef}
           value={businessData.businessNumber}
           onChangeText={text => handleChange('businessNumber', text)}
-          keyboardType="numeric"
+          keyboardType="number-pad"
           placeholder="사업자등록번호*"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('businessNumber')}
           onBlur={() => setFocusedInput(null)}
+          returnKeyType="next"
+          onSubmitEditing={() => {
+            if (!businessData.openDate) {
+              openDateRef.current?.focus();
+            }
+          }}
         />
         {errors.businessNumber && (
           <Text style={styles.errorText}>{errors.businessNumber}</Text>
@@ -104,9 +117,10 @@ const StoreBusinessData = ({businessData, setBusinessData}) => {
             styles.storeinput,
             isFocused('openDate') && styles.focusedInput,
           ]}
+          ref={openDateRef}
           value={businessData.openDate}
           onChangeText={text => handleChange('openDate', text)}
-          keyboardType="numeric"
+          keyboardType="number-pad"
           placeholder="개업연월일* 19000101"
           placeholderTextColor="#999"
           maxLength={8}
@@ -114,6 +128,12 @@ const StoreBusinessData = ({businessData, setBusinessData}) => {
           onBlur={() => {
             setFocusedInput(null);
             handleBlur();
+          }}
+          returnKeyType="next"
+          onSubmitEditing={() => {
+            if (!businessData.drink_sales_number) {
+              drink_sales_numberRef.current?.focus();
+            }
           }}
         />
         {errors.openDate && (
@@ -131,9 +151,10 @@ const StoreBusinessData = ({businessData, setBusinessData}) => {
             styles.storeinput,
             isFocused('drink_sales_number') && styles.focusedInput,
           ]}
+          ref={drink_sales_numberRef}
           value={businessData.drink_sales_number}
           onChangeText={text => handleChange('drink_sales_number', text)}
-          keyboardType="numeric"
+          keyboardType="number-pad"
           placeholder="주류판매신고번호*"
           placeholderTextColor="#999"
           onFocus={() => setFocusedInput('drink_sales_number')}
@@ -166,6 +187,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     paddingVertical: 7,
     paddingLeft: 1,
+    color: 'black',
   },
   focusedInput: {
     borderBottomColor: '#16BBFF',

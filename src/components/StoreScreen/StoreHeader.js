@@ -1,5 +1,5 @@
 import React from 'react';
-import {Pressable, StyleSheet, Animated} from 'react-native';
+import {Pressable, StyleSheet, Animated, Platform} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -15,14 +15,20 @@ const StoreHeader = ({
     <Animated.View
       style={[
         styles.navigateView,
-        {backgroundColor: headerBackgroundColor, paddingTop: insets.top + 10},
+        {
+          backgroundColor: headerBackgroundColor,
+          paddingTop: Platform.OS === 'android' ? insets.top + 10 : insets.top,
+        },
       ]}>
       <Pressable onPress={() => navigation.goBack()}>
         <Animated.Text style={{color: iconColor}}>
           <Ionicons name="arrow-back-outline" size={25} />
         </Animated.Text>
       </Pressable>
-      <Animated.Text style={[styles.headerTitle, {opacity: titleOpacity}]}>
+      <Animated.Text
+        style={[styles.headerTitle, {opacity: titleOpacity}]}
+        numberOfLines={1}
+        ellipsizeMode="tail">
         {title || '한잔할까'}
         {/* 친구포차 */}
       </Animated.Text>
@@ -60,12 +66,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 18,
     zIndex: 1,
-    paddingTop: Platform.OS === 'ios' ? 50 : 0,
+    paddingBottom: 10,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#333',
+    width: '82%',
+    textAlign: 'center',
   },
 });
 

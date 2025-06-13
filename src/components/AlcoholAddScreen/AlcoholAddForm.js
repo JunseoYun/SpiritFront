@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, Pressable, StyleSheet, Image} from 'react-native';
 import RptAlcoholPicker from './RptAlcoholPicker';
 import AlcoholTextInput from './AlcoholTextInput';
@@ -11,6 +11,7 @@ import {
   requestCameraPermission,
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const AlcoholAddForm = ({
   alcohol,
@@ -106,14 +107,24 @@ const AlcoholAddForm = ({
     // 상태 저장
     const value = newChecked ? '변동' : purePrice;
     handleAlcoholChange(value, index, 'price');
+    if (newChecked) {
+      if (alcohol.alcoholContent === '') {
+        alcoholcontentRef.current?.focus();
+      }
+    }
   };
 
+  const scrollViewRef = useRef(null);
+  const alcoholnameRef = useRef(null);
+  const priceRef = useRef(null);
+  const alcoholcontentRef = useRef(null);
+
   return (
-    <View key={index}>
+    <View key={index} ref={scrollViewRef}>
       <View style={styles.menuHeader}>
         <Text style={styles.menuHeaderText}>주류 {index + 1}</Text>
         <Pressable style={styles.deleteButton} onPress={() => onDelete(index)}>
-          <Text style={styles.deleteButtonText}>삭제</Text>
+          <Ionicons name="close" size={25} color="#333" />
         </Pressable>
       </View>
       <AlcoholTextInput
@@ -121,6 +132,13 @@ const AlcoholAddForm = ({
         value={alcohol.alcoholName}
         onChangeText={text => handleAlcoholChange(text, index, 'alcoholName')}
         placeholder="주류 이름*"
+        ref={alcoholnameRef}
+        returnKeyType="next"
+        onSubmitEditing={() => {
+          if (purePrice === '') {
+            priceRef.current?.focus();
+          }
+        }}
       />
       <AlcoholPrice
         label="주류 가격*"
@@ -129,6 +147,13 @@ const AlcoholAddForm = ({
         placeholder="주류 가격*"
         isVariable={isVariable}
         onToggleVariable={handleToggleVariable}
+        ref={priceRef}
+        returnKeyType="next"
+        onSubmitEditing={() => {
+          if (alcohol.alcoholContent === '') {
+            alcoholcontentRef.current?.focus();
+          }
+        }}
       />
       <AlcoholTextInput
         label="주류 소개"
@@ -138,6 +163,7 @@ const AlcoholAddForm = ({
         }
         placeholder="주류를 간단하게 소개해주세요."
         multiline
+        ref={alcoholcontentRef}
       />
 
       <RptAlcoholPicker
@@ -157,8 +183,25 @@ const AlcoholAddForm = ({
             />
           </Pressable>
         ) : (
-          <Pressable onPress={selectImage}>
-            <MaterialCommunityIcons name="image-plus" size={40} color="#333" />
+          <Pressable
+            style={{
+              width: 100,
+              height: 100,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: '#f2f2f2',
+              borderRadius: 10,
+            }}
+            onPress={selectImage}>
+            <View
+              style={{
+                width: 30,
+                height: 30,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <MaterialCommunityIcons name="plus" size={30} color="#999" />
+            </View>
           </Pressable>
         )}
       </View>
@@ -202,10 +245,8 @@ const styles = StyleSheet.create({
     marginRight: 7,
   },
   deleteButton: {
-    paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: '#FF6B6B',
-    borderRadius: 5,
+    paddingLeft: 20,
   },
   deleteButtonText: {
     color: 'white',

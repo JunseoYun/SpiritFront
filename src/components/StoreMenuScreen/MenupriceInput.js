@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, TextInput, StyleSheet, Pressable} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {View, Text, TextInput, StyleSheet, Switch} from 'react-native';
 
 const MenupriceInput = ({
   label, // 입력 필드의 라벨
@@ -24,64 +23,64 @@ const MenupriceInput = ({
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.labelRow}>
-        {(isVariable || value) && <Text style={styles.label}>{label}</Text>}
-        <Pressable
-          onPress={() => {
-            onToggleVariable?.();
-          }}
-          style={styles.checkRow}>
-          <Icon
-            name={isVariable ? 'checkbox-marked' : 'checkbox-blank-outline'}
-            size={18}
-            color={isVariable ? '#45C9FF' : '#999'}
-          />
-          <Text
-            style={[
-              styles.checkLabel,
-              {color: isVariable ? '#45C9FF' : '#999'},
-            ]}>
-            변동
-          </Text>
-        </Pressable>
-      </View>
-      {!isVariable && (
-        <TextInput
-          style={[
-            multiline ? styles.inputMultiline : styles.input,
-            {borderBottomColor: isFocused ? '#16BBFF' : '#F2F2F2'},
-          ]}
-          value={value}
-          onChangeText={handleTextChange}
-          placeholder={placeholder}
-          multiline={multiline}
-          textAlignVertical={multiline ? 'top' : 'center'}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          maxLength={maxLength}
-          keyboardType="numeric"
+    <View style={styles.inputContainer}>
+      <View style={styles.checkRow}>
+        <Text
+          style={[styles.checkLabel, {color: isVariable ? '#45C9FF' : '#999'}]}>
+          변동
+        </Text>
+        <Switch
+          value={isVariable}
+          onValueChange={onToggleVariable}
+          trackColor={{false: '#ccc', true: '#16BBFF'}}
+          thumbColor={'#fff'}
         />
-      )}
+      </View>
+      {(isVariable || value) && <Text style={styles.label}>{label}</Text>}
+
+      <View style={[styles.inputRow, isVariable && null]}>
+        {!isVariable && (
+          <TextInput
+            style={[
+              multiline ? styles.inputMultiline : styles.input,
+              {borderBottomColor: isFocused ? '#16BBFF' : '#F2F2F2'},
+            ]}
+            value={value}
+            onChangeText={handleTextChange}
+            placeholder={placeholder}
+            multiline={multiline}
+            textAlignVertical={multiline ? 'top' : 'center'}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            maxLength={maxLength}
+            keyboardType="number-pad"
+            placeholderTextColor="#999"
+          />
+        )}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  inputContainer: {
+    marginVertical: 20,
+    paddingHorizontal: 20,
+  },
   label: {
     fontSize: 16,
     color: '#999',
     fontWeight: '500',
   },
   input: {
-    marginHorizontal: 20,
-    width: '100%',
+    flex: 1, // ✅ 남는 공간 채우기
+    borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '500',
-    paddingVertical: 5,
+    paddingVertical: 7,
     paddingLeft: 1,
-    marginBottom: 20,
+    color: 'black',
   },
   inputMultiline: {
     width: '100%',
@@ -92,6 +91,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlignVertical: 'top',
     marginBottom: 20,
+    color: 'black',
   },
   labelRow: {
     flexDirection: 'row',
@@ -110,11 +110,17 @@ const styles = StyleSheet.create({
   checkRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 10,
   },
   checkLabel: {
     fontSize: 15,
-    marginLeft: 4,
+    marginRight: 5,
     fontFamily: 'Pretendard-Medium',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', // ✅ 좌우로 정렬
   },
 });
 

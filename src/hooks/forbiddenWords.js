@@ -125,6 +125,7 @@ const forbiddenWords = [
   '잡년',
   '쌍년',
   '쌍놈',
+  '병시나',
 
   // 기호로 대체된 형태
   '@발',
@@ -332,6 +333,7 @@ const forbiddenWords = [
 
   //기타
   '탈퇴한 사용자',
+  '탈퇴한사용자',
 ];
 
 export default forbiddenWords;

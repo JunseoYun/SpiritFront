@@ -129,12 +129,25 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
               </View>
             </Pressable>
           ))}
-          <Pressable style={{alignSelf: 'center'}} onPress={selectImage}>
-            <MaterialCommunityIcons
-              name="image-plus"
-              size={50}
-              color="#181A1A"
-            />
+          <Pressable
+            style={{
+              width: 120,
+              height: 120,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: '#f2f2f2',
+              borderRadius: 7,
+            }}
+            onPress={selectImage}>
+            <View
+              style={{
+                width: 30,
+                height: 30,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <MaterialCommunityIcons name="plus" size={30} color="#999" />
+            </View>
           </Pressable>
         </ScrollView>
 
@@ -158,8 +171,7 @@ const styles = StyleSheet.create({
   storeImageView: {
     marginTop: 10,
     marginHorizontal: 20,
-    marginBottom: 40,
-    height: 100,
+    height: 120,
   },
   storeinputtext: {
     fontFamily: 'Pretendard-Medium',
@@ -175,15 +187,14 @@ const styles = StyleSheet.create({
   },
   imageview: {
     flexDirection: 'row',
-    height: 80,
   },
   imageWrapper: {
     position: 'relative', // 배지 위치를 조정하기 위해 부모 요소를 상대 위치로 설정
   },
   selectimage: {
-    width: 100,
-    height: 100,
-    borderRadius: 5,
+    width: 120,
+    height: 120,
+    borderRadius: 7,
     marginRight: 10,
   },
   selectedImage: {
