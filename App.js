@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Linking, Platform, PermissionsAndroid} from 'react-native';
+import {Linking, Platform, View, Text, Pressable} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import MainStack from './src/navigation/MainStack';
 import {AuthProvider, useAuth} from './src/context/AuthContext';
@@ -17,8 +17,7 @@ import {NotificationProvider} from './src/context/NotificationContext';
 import {useNotification} from './src/context/NotificationContext';
 import useHandlePendingNotification from './src/hooks/notification/useHandlePendingNotification';
 import './reanimatedConfig';
-import {Versioncheck} from './src/api/versioncheckApi';
-
+import useVersionCheck from './src/hooks/useVersionCheck';
 if (!__DEV__) {
   console.log = () => {};
   console.warn = () => {};
@@ -27,7 +26,6 @@ if (!__DEV__) {
 
 const App = () => {
   useNotificationSetup();
-  // useNotificationClickHandler();
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
@@ -62,21 +60,7 @@ const AppNavigator = () => {
     setPendingNotification(null),
   );
 
-  useEffect(async () => {
-    const storeUrl =
-      Platform.OS === 'android'
-        ? 'https://play.google.com/store/apps/details?id=com.spiritfront'
-        : 'https://apps.apple.com/kr/app/%ED%95%9C%EC%9E%94%ED%95%A0%EA%B9%8C/id6740095371';
-    try {
-      const response = await Versioncheck();
-      if (
-        response.data.isVersionMatched == false &&
-        response.data.isUpdateRequired == true
-      ) {
-        Linking.openURL(storeUrl);
-      }
-    } catch (error) {}
-  }, []);
+  const isVersionValid = useVersionCheck();
 
   useEffect(() => {
     setTimeout(() => {
@@ -85,8 +69,8 @@ const AppNavigator = () => {
   }, []);
 
   // 로딩 중이면 스플래시 화면 표시
-  if (loading) {
-    return <MySplashScreen />;
+  if (loading || !isVersionValid) {
+    return <MySplashScreen isVersionValid={isVersionValid} />;
   } else {
     iniBasictNotification(token);
   }
