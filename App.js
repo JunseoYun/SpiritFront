@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Platform, PermissionsAndroid} from 'react-native';
+import {Linking, Platform, View, Text, Pressable} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import MainStack from './src/navigation/MainStack';
 import {AuthProvider, useAuth} from './src/context/AuthContext';
@@ -17,7 +17,7 @@ import {NotificationProvider} from './src/context/NotificationContext';
 import {useNotification} from './src/context/NotificationContext';
 import useHandlePendingNotification from './src/hooks/notification/useHandlePendingNotification';
 import './reanimatedConfig';
-
+import useVersionCheck from './src/hooks/useVersionCheck';
 if (!__DEV__) {
   console.log = () => {};
   console.warn = () => {};
@@ -26,7 +26,6 @@ if (!__DEV__) {
 
 const App = () => {
   useNotificationSetup();
-  // useNotificationClickHandler();
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
@@ -61,6 +60,8 @@ const AppNavigator = () => {
     setPendingNotification(null),
   );
 
+  const isVersionValid = useVersionCheck();
+
   useEffect(() => {
     setTimeout(() => {
       setLoading(false);
@@ -68,8 +69,8 @@ const AppNavigator = () => {
   }, []);
 
   // 로딩 중이면 스플래시 화면 표시
-  if (loading) {
-    return <MySplashScreen />;
+  if (loading || !isVersionValid) {
+    return <MySplashScreen isVersionValid={isVersionValid} />;
   } else {
     iniBasictNotification(token);
   }
