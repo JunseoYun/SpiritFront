@@ -477,6 +477,8 @@ const StoreMainScreen = ({navigation}) => {
                   onEditValue={handleEditValue}
                   storeTimeEditHandle={storeTimeEditHandle}
                   storeupdatedrink={storeupdatedrink}
+                  setLoading={setLoading}
+                  loading={loading}
                 />
                 {!isUpdate && (
                   <View style={{backgroundColor: '#F2F2F2', height: 20}} />
