@@ -1,4 +1,4 @@
-const generateMapScript = (lat, lng, stores, showCurrentMarker = true) => `
+const generateMapScript = (lat, lng, stores) => `
   if (!window.map) {
     var mapContainer = document.getElementById('map');
     var options = {
@@ -19,27 +19,33 @@ const generateMapScript = (lat, lng, stores, showCurrentMarker = true) => `
 
   var map = window.map;
 
-  ${
-    showCurrentMarker
-      ? `
+   var markerImageUrl = "data:image/svg+xml;charset=UTF-8," +
+      encodeURIComponent(\`
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
+  <path d="M14 0C6.27 0 0 6.8 0 15.2C0 24.2 14 42 14 42C14 42 28 24.2 28 15.2C28 6.8 21.73 0 14 0Z" fill="#16bbff"/>
+  <circle cx="14" cy="15" r="8" fill="white"/>
+  <path d="M14 18 l-3 -4 h6 z" fill="#16bbff"/>
+</svg>\`);
+
+ var markerImage = new kakao.maps.MarkerImage(
+    markerImageUrl,
+    new kakao.maps.Size(28, 42),
+    { offset: new kakao.maps.Point(14, 42) }
+  );
+
+
     if (!window.currentMarker) {
       window.currentMarker = new kakao.maps.Marker({
         position: new kakao.maps.LatLng(${lat}, ${lng}),
         map: map,
         title: '현재 위치',
+        image: markerImage,
         zIndex: 1
       });
     } else {
       window.currentMarker.setPosition(new kakao.maps.LatLng(${lat}, ${lng}));
       window.currentMarker.setMap(map);
     }
-  `
-      : `
-    if (window.currentMarker) {
-      window.currentMarker.setMap(map); // 👉 마커 제거
-    }
-  `
-  }
 
   if (window.storeMarkers) {
     window.storeMarkers.forEach(marker => marker.setMap(null));
@@ -51,7 +57,7 @@ if (window.overlayMarkers) {
 
   var customMarkerUri = 'data:image/svg+xml;charset=UTF-8,' +
     '<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 32 32">' +
-      '<circle cx="16" cy="16" r="16" fill="%2316BBFF"/>' +
+      '<circle cx="16" cy="16" r="16" fill="%235cceff"/>' +
       '<g transform="translate(16,16) scale(0.70) translate(-16,-16)">' +
         '<path d="M16 4 L4 14 L4 28 L13 28 L13 18 L19 18 L19 28 L28 28 L28 14 Z" fill="%23ffffff"/>' +
       '</g>' +
@@ -103,7 +109,7 @@ window.overlayMarkers = [];
 
       group.forEach((store, index) => {
         var storeItem = document.createElement('div');
-        storeItem.innerHTML = '<div style="display:flex; align-items:center; padding:10px; cursor:pointer;"><div style="width:8px; height:8px; background:#16BBFF; border-radius:50%; margin-right:8px;"></div>' +'<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;">' +store.name +'</span>' + '</div>';
+        storeItem.innerHTML = '<div style="display:flex; align-items:center; padding:10px; cursor:pointer;"><div style="width:8px; height:8px; background:#5cceff; border-radius:50%; margin-right:8px;"></div>' +'<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;">' +store.name +'</span>' + '</div>';
 
         // ✅ 마지막 아이템의 아래 테두리는 없애기
         if (index !== group.length - 1) {
@@ -157,7 +163,7 @@ window.overlayMarkers = [];
     // 🔹 마커 개수 표시 (그룹이 2개 이상일 경우)
     if (group.length > 1) {
       var overlayElement = document.createElement('div');
-      overlayElement.style.cssText = "pointer-events:none; position:relative; transform:translate(12px, -4px); background:#16BBFF; color:white; width:14px; height:14px; border-radius:50%; border:0.5px solid #ffffff; display:flex; align-items:center; justify-content:center; font-size:10px; font-family:Arial,sans-serif; font-weight:bold;";
+      overlayElement.style.cssText = "pointer-events:none; position:relative; transform:translate(12px, -4px); background:#5cceff; color:white; width:14px; height:14px; border-radius:50%; border:0.5px solid #ffffff; display:flex; align-items:center; justify-content:center; font-size:10px; font-family:Arial,sans-serif; font-weight:bold;";
       overlayElement.innerText = group.length;
       
       var customOverlay = new kakao.maps.CustomOverlay({
