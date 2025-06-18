@@ -9,7 +9,7 @@ const StoreRegister = ({storeactiveIndex, handlestoreItemClick}) => {
   const options = [
     {
       id: 0,
-      title: '매장 등록',
+      title: '매장 제보',
       icon: 'plus-square',
     },
     {

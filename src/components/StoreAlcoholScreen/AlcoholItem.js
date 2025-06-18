@@ -27,7 +27,7 @@ const AlcoholItem = ({
   scrollViewRef,
   navigation,
   storeId,
-  isOwner,
+  isUpdatable,
 }) => {
   const translateX = useSharedValue(0);
 
@@ -94,7 +94,7 @@ const AlcoholItem = ({
 
         {/* 메뉴 아이템 */}
         <PanGestureHandler
-          enabled={isOwner || isOwner === null}
+          enabled={isUpdatable === true}
           simultaneousHandlers={scrollViewRef}
           onGestureEvent={handleGestureEvent}
           onEnded={handleGestureEnd}

@@ -35,7 +35,6 @@ const StoreAddPhotoScreen = ({navigation}) => {
   const {index, location} = route.params;
   const [phototoggle, setPhototoggle] = useState(false);
   const [imageUris, setImageUris] = useState([]);
-  const [receiptimageUris, setReceiptimageUris] = useState([]);
   const [storename, setStorename] = useState('');
   const [coords, setCoords] = useState({latitude: 0, longitude: 0});
   const [address, setAddress] = useState('');
@@ -45,14 +44,6 @@ const StoreAddPhotoScreen = ({navigation}) => {
   const storeInfoRef = useRef(null);
   const storeAddressRef = useRef(null);
   const storeImageRef = useRef(null);
-
-  // useEffect(() => {
-  //   if (index == 0) {
-  //     setPhototoggle(false);
-  //   } else if (index == 1) {
-  //     setPhototoggle(true);
-  //   }
-  // }, [index]);
 
   const handleAddressSelect = ({address, coords}) => {
     setAddress(address);
@@ -95,7 +86,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
       address,
       detailedAddress,
       imageUris,
-      receiptimageUris,
+      index,
       coords,
     });
   };
@@ -137,11 +128,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
               error={error}
             />
           </View>
-          {/* <ReceiptImage
-              receiptimageUris={receiptimageUris}
-              setReceiptimageUris={setReceiptimageUris}
-              error={error}
-            /> */}
+
           <>
             <View ref={storeInfoRef}>
               <StoreAddname

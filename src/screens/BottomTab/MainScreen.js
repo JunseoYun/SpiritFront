@@ -184,7 +184,7 @@ const MainScreen = ({navigation}) => {
       }
       navigation.navigate('StoreSearchScreen', {index: 0, location: location});
     } else if (index === 1) {
-      navigation.navigate('StoreSearchScreen', {index: 1});
+      navigation.navigate('StoreSearchScreen', {index: 1, location: location});
     }
   };
 

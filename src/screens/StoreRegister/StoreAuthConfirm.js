@@ -11,7 +11,7 @@ import {
 import {useRoute} from '@react-navigation/native';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
 import useCustomAlert from '../../hooks/useCustomAlert';
-import {CreateOwnership} from '../../api/storeApi';
+import {CreateOwnership, Create_store_with_ownership} from '../../api/storeApi';
 import Loading from '../../hooks/Loading';
 
 const getErrorMessage = code => {
@@ -49,6 +49,7 @@ const StoreAuthConfirm = ({navigation}) => {
     businessData,
     business_certificate,
     storeAddressData,
+    storeSuggestionData,
   } = data;
   const [loading, setLoading] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -56,54 +57,91 @@ const StoreAuthConfirm = ({navigation}) => {
   const displayedOwners = hasCoRepresentative ? owners : [owners[0]];
 
   const handleSubmit = async () => {
-    const payload = {
-      file: business_certificate,
-      createOwnershipRqDto: {
-        receivedStoreContact: storeData.storeNumber,
-        liquorReportNumber: businessData.drink_sales_number,
-        businessRegistrationNumber: businessData.businessNumber,
-        openingDate: businessData.openDate,
-        representativeInfoList: owners.map((owner, idx) => ({
-          name: owner.name,
-          isMainRep: hasCoRepresentative ? idx === 0 : true,
-        })),
-        receivedStoreName: storeData.storeName,
-        receivedUserContact: storeData.userContact,
-        businessLocation: {
-          address: storeAddressData.storeAddress,
-          addressDetail: storeAddressData.storeAddressDetail,
-          latitude: storeAddressData.latitude,
-          longitude: storeAddressData.longitude,
-        },
-        storeId: storeData.storeId,
+    const baseOwnershipDto = {
+      receivedStoreContact: storeData.storeNumber,
+      liquorReportNumber: businessData.drink_sales_number,
+      businessRegistrationNumber: businessData.businessNumber,
+      openingDate: businessData.openDate,
+      representativeInfoList: owners.map((owner, idx) => ({
+        name: owner.name,
+        isMainRep: hasCoRepresentative ? idx === 0 : true,
+      })),
+      receivedStoreName: storeData.storeName,
+      receivedUserContact: storeData.userContact,
+      businessLocation: {
+        address: storeAddressData.storeAddress,
+        addressDetail: storeAddressData.storeAddressDetail,
+        latitude: storeAddressData.latitude,
+        longitude: storeAddressData.longitude,
       },
     };
 
+    let payload;
+
+    if (storeSuggestionData) {
+      payload = {
+        businessRegistrationCertificateImage: business_certificate,
+        storeImages: storeSuggestionData.files,
+        createStoreRqDto: storeSuggestionData.createStoreDto,
+        createOwnershipRqDto: baseOwnershipDto,
+      };
+    } else {
+      payload = {
+        file: business_certificate,
+        createOwnershipRqDto: {
+          ...baseOwnershipDto,
+          storeId: storeData.storeId,
+        },
+      };
+    }
+
     try {
       setLoading(true);
-      await CreateOwnership(payload);
-      showAlert({
-        title: '매장 인증 신청 완료',
-        onConfirm: () => {
-          navigation.reset({
-            index: 1,
-            routes: [
-              {name: 'MainBtmbar'},
-              {
-                name: 'StoreStack',
-                state: {
-                  routes: [
-                    {
-                      name: 'StoreMainScreen',
-                      params: {storeId: storeData.storeId},
-                    },
-                  ],
-                },
-              },
-            ],
+      if (storeSuggestionData) {
+        const response = await Create_store_with_ownership(payload);
+        if (response.status === 200) {
+          showAlert({
+            title: '매장 등록 및 인증 신청 완료',
+            message:
+              '신청 내용을 확인한 후, 빠른 시일 내에 \n알림으로 안내드릴 예정입니다.',
+            onConfirm: () => {
+              navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: 'MainBtmbar',
+                    state: {routes: [{name: 'MainScreen'}]},
+                  },
+                ],
+              });
+            },
           });
-        },
-      });
+        }
+      } else {
+        await CreateOwnership(payload);
+        showAlert({
+          title: '매장 인증 신청 완료',
+          onConfirm: () => {
+            navigation.reset({
+              index: 1,
+              routes: [
+                {name: 'MainBtmbar'},
+                {
+                  name: 'StoreStack',
+                  state: {
+                    routes: [
+                      {
+                        name: 'StoreMainScreen',
+                        params: {storeId: storeData.storeId},
+                      },
+                    ],
+                  },
+                },
+              ],
+            });
+          },
+        });
+      }
     } catch (error) {
       const errorCode = error?.response?.data?.code;
       showAlert({
