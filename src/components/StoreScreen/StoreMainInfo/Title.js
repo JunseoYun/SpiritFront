@@ -85,7 +85,6 @@ const styles = StyleSheet.create({
   },
   updateicons: {},
   imageStyle: {
-    marginLeft: 7,
     alignSelf: 'center',
     width: 20,
     height: 20,

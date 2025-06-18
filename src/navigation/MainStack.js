@@ -149,8 +149,10 @@ export default function MainStack() {
       <Stack.Screen
         name="StoreAddPhotoScreen"
         component={StoreAddPhotoScreen}
-        options={({navigation}) => ({
-          title: '매장 등록 1/2',
+        options={({navigation, route}) => ({
+          title: `${
+            route.params?.index === 0 ? '매장 제보 1/2' : '매장 등록 1/2'
+          }`,
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -173,8 +175,10 @@ export default function MainStack() {
       <Stack.Screen
         name="StoreAddInfoScreen"
         component={StoreAddInfoScreen}
-        options={({navigation}) => ({
-          title: '매장 등록 2/2',
+        options={({navigation, route}) => ({
+          title: `${
+            route.params?.index === 0 ? '매장 제보 2/2' : '매장 등록 2/2'
+          }`,
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -235,7 +239,7 @@ export default function MainStack() {
         component={StoreSearchScreen}
         options={({navigation, route}) => ({
           title: `${
-            route.params?.index === 0 ? '매장 등록 조회' : '사장님 인증 조회'
+            route.params?.index === 0 ? '매장 제보 조회' : '사장님 인증 조회'
           }`,
           headerTitleAlign: 'center',
           headerTitleStyle: {

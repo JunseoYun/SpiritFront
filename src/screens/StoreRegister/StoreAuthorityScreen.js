@@ -23,7 +23,7 @@ import Loading from '../../hooks/Loading';
 
 const StoreAuthorityScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeData, storeLocationDto} = route.params;
+  const {storeData, storeLocationDto, storeSuggestionData} = route.params;
   const [owners, setOwners] = useState([{name: ''}]);
   const [hasCoRepresentative, setHasCoRepresentative] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -124,6 +124,7 @@ const StoreAuthorityScreen = ({navigation}) => {
         businessData,
         business_certificate: business_registration_certificate,
         storeAddressData,
+        storeSuggestionData,
       },
     });
     // TODO: 다음 단계 처리 (ex. API 요청 또는 다음 화면 이동)
