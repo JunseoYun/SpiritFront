@@ -12,7 +12,7 @@ import {
   ToastAndroid,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {StoreRegister} from '../../../api/storeApi';
+import {StoreRegister, StoreSuggestion} from '../../../api/storeApi';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import StoreAddProgressbar from '../../../components/StoreAddScreen/StoreAddProgressbar';
 import StoreCategory from '../../../components/StoreAddScreen/StoreCategory';
@@ -26,15 +26,8 @@ import Loading from '../../../hooks/Loading';
 
 const StoreAddInfoScreen = ({navigation}) => {
   const route = useRoute();
-  const {
-    storename,
-    address,
-    detailedAddress,
-    imageUris,
-    receiptimageUris,
-    coords,
-  } = route.params;
-
+  const {storename, address, detailedAddress, imageUris, index, coords} =
+    route.params;
   const [loading, setLoading] = useState(false);
   const [storeData, setStoreData] = useState({
     storeNumber: '',
@@ -45,7 +38,7 @@ const StoreAddInfoScreen = ({navigation}) => {
   const [selectedscreenOption, setselectedscreenOption] = useState(false);
   const [closedDay, setClosedDay] = useState([]);
   const [alcohol, setAlcohol] = useState([{type: '', price: 0}]);
-  const [is24Hours, setIs24Hours] = useState(false);
+  const [is24Hours, setIs24Hours] = useState(null);
   const [isSameEveryTime, setIsSameEveryTime] = useState(true);
   const [error, setError] = useState('');
 
@@ -106,7 +99,7 @@ const StoreAddInfoScreen = ({navigation}) => {
   };
 
   const confirmSubmission = () => {
-    if (!selectedCategory.length) {
+    if (!selectedCategory.length && index) {
       setError('StoreCategory');
       scrollToError(storeCategoryRef);
       return;
@@ -119,7 +112,7 @@ const StoreAddInfoScreen = ({navigation}) => {
       },
     );
 
-    if (hasEmptyOperatingHours) {
+    if (hasEmptyOperatingHours && index) {
       setError('StoreOperate');
       scrollToError(storeOperateRef);
       return;
@@ -129,24 +122,23 @@ const StoreAddInfoScreen = ({navigation}) => {
       item => item.type.trim() && item.price > 0,
     );
 
-    if (!hasValidAlcohol) {
+    if (!hasValidAlcohol && index) {
       setError('StoreDrink');
       scrollToError(storeDrinkRef);
       return;
     }
+    const isRegister = !!index;
 
-    // if (!imageUris.length) {
-    //   setError('StoreImage');
-    //   scrollToError(storeImageRef);
-    //   return;
-    // }
     showAlert({
-      title: '매장 등록',
-      message: '매장을 등록하시겠습니까?',
+      title: isRegister ? '매장 등록' : '매장 제보',
+      message: isRegister
+        ? '매장을 등록하시겠습니까?'
+        : '매장을 제보하시겠습니까?',
       onConfirm: () => StoreAdd(),
       onCancel: null,
       type: 'confirm',
     });
+
     // setIsModalVisible(true); // 모든 값이 유효하면 모달 열기
   };
 
@@ -154,7 +146,7 @@ const StoreAddInfoScreen = ({navigation}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={confirmSubmission}>
-          <Text style={styles.nextButton}>완료</Text>
+          <Text style={styles.nextButton}>{index ? '등록' : '제보'}</Text>
         </Pressable>
       ),
     });
@@ -186,10 +178,10 @@ const StoreAddInfoScreen = ({navigation}) => {
   };
 
   const StoreAdd = async () => {
-    console.log('??');
     const imageFiles = imageUris.map(uri => ({
       file: uri, // 이미지 URI를 파일로 전달
     }));
+
     const operationInfoDtos = Object.keys(operatingHours).map(day => {
       const upperCaseDay = day.toUpperCase(); // 요일 변환 ("Monday" -> "MONDAY")
       const isClosed = closedDay.includes(upperCaseDay); // 휴무 여부 확인
@@ -221,60 +213,128 @@ const StoreAddInfoScreen = ({navigation}) => {
               ),
       };
     });
+    let data;
 
-    var data = {
-      files: imageUris,
-      createStoreDto: {
-        contact: storeData.storeNumber,
-        isAlwaysOpen: is24Hours,
-        hasScreen: selectedscreenOption,
-        ...(!is24Hours && {operationInfoDtos: operationInfoDtos}),
-        locationDto: {
-          address: address,
+    const createStoreDto = {
+      name: storename,
+    };
+
+    if (index) {
+      // ⭐ 매장 등록 - 전체 필드
+      data = {
+        files: imageUris,
+        createStoreDto: {
+          contact: storeData.storeNumber,
+          isAlwaysOpen: is24Hours,
+          hasScreen: selectedscreenOption,
+          ...(!is24Hours && {operationInfoDtos}),
+          locationDto: {
+            address,
+            addressDetail: detailedAddress,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          },
+          name: storename,
+          mainDrinkDtos: alcohol.filter(d => d.type && d.price > 0),
+          isGroupAvailable: selectedOption,
+          categories: selectedCategory.filter(c => c !== '-'),
+          description: storeData.storeContent,
+        },
+      };
+    } else {
+      // ⭐ 매장 제보 - 값이 있는 것만 넣기
+
+      // contact
+      if (storeData.storeNumber) createStoreDto.contact = storeData.storeNumber;
+      if (is24Hours !== null) createStoreDto.isAlwaysOpen = is24Hours;
+      if (!is24Hours) {
+        const hasValidTime = Object.entries(operatingHours).some(
+          ([day, time]) => {
+            const isClosed = closedDay.includes(day.toUpperCase());
+            if (isClosed) return false;
+            return (
+              time.openHour &&
+              time.openMinute &&
+              time.closedHour &&
+              time.closedMinute
+            );
+          },
+        );
+        if (hasValidTime) {
+          createStoreDto.operationInfoDtos = operationInfoDtos;
+        }
+      }
+      const hasLocation =
+        address || detailedAddress || coords?.latitude || coords?.longitude;
+      if (hasLocation) {
+        createStoreDto.locationDto = {};
+        if (address) createStoreDto.locationDto.address = address;
+        if (detailedAddress)
+          createStoreDto.locationDto.addressDetail = detailedAddress;
+        if (coords?.latitude)
+          createStoreDto.locationDto.latitude = coords.latitude;
+        if (coords?.longitude)
+          createStoreDto.locationDto.longitude = coords.longitude;
+      }
+      const validDrinks = alcohol.filter(d => d.type && d.price > 0);
+      if (validDrinks.length > 0) {
+        createStoreDto.mainDrinkDtos = validDrinks;
+      }
+      createStoreDto.isGroupAvailable = selectedOption;
+      createStoreDto.hasScreen = selectedscreenOption;
+      const filteredCategories = selectedCategory.filter(c => c !== '-');
+      if (filteredCategories.length > 0) {
+        createStoreDto.categories = filteredCategories;
+      }
+      if (storeData.storeContent)
+        createStoreDto.description = storeData.storeContent;
+
+      data = {
+        files: imageUris,
+        createStoreDto,
+      };
+    }
+
+    try {
+      let response;
+      if (index) {
+        // response = await StoreRegister(data);
+        const locationDto = {
+          address,
           addressDetail: detailedAddress,
           latitude: coords.latitude,
           longitude: coords.longitude,
-        },
-        name: storename,
-        mainDrinkDtos: alcohol.filter(drink => drink.type && drink.price > 0),
-        isGroupAvailable: selectedOption,
-        categories: selectedCategory.filter(category => category !== '-'),
-        description: storeData.storeContent,
-      },
-    };
+        };
 
-    console.log(data);
-
-    try {
-      setLoading(true);
-      const response = await StoreRegister(data);
-      if (response) {
-        showAlert({
-          title: '매장 등록이 완료되었습니다.',
-          message: '다른 분들을 위해 \n매장 등록을 해주셔서 감사합니다.',
-          onConfirm: () => {
-            navigation.reset({
-              index: 1,
-              routes: [
-                {name: 'MainBtmbar'},
-                {
-                  name: 'StoreStack',
-                  state: {
-                    routes: [
-                      {
-                        name: 'StoreMainScreen',
-                        params: {storeId: response.id},
-                      },
-                    ],
-                  },
-                },
-              ],
-            });
-          },
+        navigation.navigate('StoreCheckScreen', {
+          storeName: storename,
+          storeLocationDto: locationDto,
+          storeContact: storeData.storeNumber,
+          storeSuggestionData: data,
         });
+      } else {
+        setLoading(true);
+        response = await StoreSuggestion(data);
+        if (response.status === 200) {
+          showAlert({
+            title: '매장 제보가 완료되었습니다.',
+            message: '다른 분들을 위해 \n매장 제보를 해주셔서 감사합니다.',
+            onConfirm: () => {
+              navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: 'MainBtmbar',
+                    state: {routes: [{name: 'MainScreen'}]},
+                  },
+                ],
+              });
+            },
+          });
+        }
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       showAlert({
         title: '등록 실패',
         message: '로그인 상태를 확인해주세요.',
@@ -351,13 +411,18 @@ const StoreAddInfoScreen = ({navigation}) => {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           ref={scrollViewRef}>
-          <Text style={styles.title}>상세정보를 입력해주세요.</Text>
+          <Text style={styles.title}>
+            {index
+              ? '상세정보를 입력해주세요*'
+              : '상세정보를 입력해주세요 (선택)'}
+          </Text>
 
           <View ref={storeCategoryRef}>
             <StoreCategory
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
               error={error}
+              index={index}
             />
           </View>
           <View ref={storeOperateRef}>
@@ -368,6 +433,7 @@ const StoreAddInfoScreen = ({navigation}) => {
               breakingHours={breakingHours}
               closedDay={closedDay}
               error={error}
+              index={index}
             />
           </View>
           <StoreGroup
@@ -383,6 +449,7 @@ const StoreAddInfoScreen = ({navigation}) => {
               alcohol={alcohol}
               setAlcohol={setAlcohol}
               error={error}
+              index={index}
             />
           </View>
           <StoreInfo
@@ -395,7 +462,9 @@ const StoreAddInfoScreen = ({navigation}) => {
           <Pressable
             style={styles.storeAddButtonsearch}
             onPress={confirmSubmission}>
-            <Text style={styles.storeAddText}>매장 등록</Text>
+            <Text style={styles.storeAddText}>
+              {index ? '매장 등록' : '매장 제보'}
+            </Text>
           </Pressable>
         </View>
         <AlertComponent />

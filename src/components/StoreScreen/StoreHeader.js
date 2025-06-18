@@ -2,6 +2,7 @@ import React from 'react';
 import {Pressable, StyleSheet, Animated, Platform} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import FastImage from 'react-native-fast-image';
 
 const StoreHeader = ({
   navigation,
@@ -9,6 +10,7 @@ const StoreHeader = ({
   iconColor,
   titleOpacity,
   title,
+  isOwner,
 }) => {
   const insets = useSafeAreaInsets();
   return (
@@ -25,13 +27,27 @@ const StoreHeader = ({
           <Ionicons name="arrow-back-outline" size={25} />
         </Animated.Text>
       </Pressable>
-      <Animated.Text
-        style={[styles.headerTitle, {opacity: titleOpacity}]}
-        numberOfLines={1}
-        ellipsizeMode="tail">
-        {title || '한잔할까'}
-        {/* 친구포차 */}
-      </Animated.Text>
+      <Animated.View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          maxWidth: '70%',
+          opacity: titleOpacity, // ✅ 제목과 마커에 동일한 opacity 애니메이션
+        }}>
+        <Animated.Text
+          style={styles.headerTitle}
+          numberOfLines={1}
+          ellipsizeMode="tail">
+          {title || '한잔할까'}
+        </Animated.Text>
+        {isOwner !== null && (
+          <FastImage
+            source={require('../../assets/verifyMaker.png')}
+            style={styles.imageStyle}
+          />
+        )}
+      </Animated.View>
+
       <Pressable
         onPress={() =>
           navigation.reset({
@@ -72,8 +88,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    width: '82%',
     textAlign: 'center',
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 20,
+    height: 20,
+    marginLeft: 3,
   },
 });
 

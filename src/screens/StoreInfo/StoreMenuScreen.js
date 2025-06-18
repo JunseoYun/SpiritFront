@@ -12,7 +12,7 @@ const StoreMenuScreen = ({
   menus,
   scrollViewRef,
   onMenuDelete,
-  isOwner,
+  isUpdatable,
 }) => {
   const [openItemId, setOpenItemId] = useState(null); // 열려 있는 메뉴 ID 관리
   const [menuList, setMenuList] = useState(menus);
@@ -53,7 +53,7 @@ const StoreMenuScreen = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      {(isOwner === true || isOwner === null) && (
+      {isUpdatable === true && (
         <MenuHeader storeId={storeId} navigation={navigation} />
       )}
 
@@ -68,7 +68,7 @@ const StoreMenuScreen = ({
           onClose={handleCloseAll}
           scrollViewRef={scrollViewRef} // 스크롤 참조 전달
           navigation={navigation}
-          isOwner={isOwner}
+          isUpdatable={isUpdatable}
         />
       ))}
       {menuList?.length === 0 && (
