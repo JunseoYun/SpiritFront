@@ -143,6 +143,7 @@ const StoreMainScreen = ({navigation}) => {
     if (!token) return;
     try {
       const storeData = await StoreMainget(storeId);
+
       setStoredata(storeData);
       setLongitude(storeData.locationDto.longitude);
       setLatitude(storeData.locationDto.latitude);
@@ -381,6 +382,7 @@ const StoreMainScreen = ({navigation}) => {
             iconColor={iconColor}
             titleOpacity={titleOpacity}
             title={storedata.name}
+            isOwner={storedata?.isOwner}
           />
         )}
         {isUpdate && (
@@ -397,6 +399,7 @@ const StoreMainScreen = ({navigation}) => {
               headerBackgroundColor={'#fff'}
               iconColor={'#333'}
               title={storedata.name}
+              isOwner={storedata.isOwner}
             />
           )}
 
@@ -454,8 +457,7 @@ const StoreMainScreen = ({navigation}) => {
                 )}
                 {!storedata?.imgUrlList?.length > 0 &&
                   !isUpdate &&
-                  (storedata?.isOwner === true ||
-                    storedata?.isOwner === null) && (
+                  storedata?.isUpdatable === true && (
                     <Pressable
                       style={styles.addImageButton}
                       onPress={startUpdate}>
@@ -477,6 +479,8 @@ const StoreMainScreen = ({navigation}) => {
                   onEditValue={handleEditValue}
                   storeTimeEditHandle={storeTimeEditHandle}
                   storeupdatedrink={storeupdatedrink}
+                  setLoading={setLoading}
+                  loading={loading}
                 />
                 {!isUpdate && (
                   <View style={{backgroundColor: '#F2F2F2', height: 20}} />
@@ -498,7 +502,7 @@ const StoreMainScreen = ({navigation}) => {
                         menus={menus}
                         scrollViewRef={scrollViewRef} // 스크롤 참조 전달
                         onMenuDelete={handleMenuDelete}
-                        isOwner={storedata?.isOwner}
+                        isUpdatable={storedata?.isUpdatable}
                       />
                     )}
                     {currentPage === 'StoreAlcoholScreen' && (
@@ -509,7 +513,7 @@ const StoreMainScreen = ({navigation}) => {
                         mainDrinks={storedata.mainDrinkDtos}
                         scrollViewRef={scrollViewRef}
                         onAlcoholDelete={handleAlcoholDelete}
-                        isOwner={storedata?.isOwner}
+                        isUpdatable={storedata?.isUpdatable}
                       />
                     )}
                   </View>
@@ -526,7 +530,7 @@ const StoreMainScreen = ({navigation}) => {
           startUpdate={startUpdate}
           handleReport={handleReport}
           handleReportList={handleReportList}
-          isOwner={storedata.isOwner}
+          isUpdatable={storedata?.isUpdatable}
         />
       </View>
       {isUpdate && (

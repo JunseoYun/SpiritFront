@@ -67,6 +67,41 @@ export const StoreRegister = async data => {
   } catch (error) {}
 };
 
+export const StoreSuggestion = async data => {
+  const formData = new FormData();
+
+  data.files.forEach(file => {
+    if (file) {
+      formData.append('files', {
+        uri: file.path, // 이미지 URI
+        type: file.mime, // 이미지 타입 (확인 후 필요한 타입 사용)
+        name: file.filename, // 파일 이름 (확장자 포함)
+      });
+    }
+  });
+
+  const createStoreDto = JSON.stringify(data.createStoreDto);
+
+  formData.append('suggestStoreDto', {
+    string: createStoreDto,
+    type: 'application/json',
+  });
+  try {
+    const response = await axiosInstance.post(
+      '/store/suggestion/create',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data', // 파일 업로드는 multipart/form-data
+        },
+      },
+    );
+    return response;
+  } catch (error) {
+    console.error(error.response);
+  }
+};
+
 export const CreateOwnership = async data => {
   const formData = new FormData();
 
@@ -88,6 +123,52 @@ export const CreateOwnership = async data => {
   try {
     const response = await axiosInstance.post(
       '/store/ownership/create',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data', // 파일 업로드는 multipart/form-data
+        },
+      },
+    );
+
+    return response;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const Create_store_with_ownership = async data => {
+  const formData = new FormData();
+
+  if (data.businessRegistrationCertificateImage) {
+    formData.append('businessRegistrationCertificateImage', {
+      uri: data.businessRegistrationCertificateImage.path,
+      type: data.businessRegistrationCertificateImage.mime,
+      name: data.businessRegistrationCertificateImage.filename,
+    });
+  }
+
+  data.storeImages.forEach(storeImage => {
+    if (storeImage) {
+      formData.append('storeImages', {
+        uri: storeImage.path, // 이미지 URI
+        type: storeImage.mime, // 이미지 타입 (확인 후 필요한 타입 사용)
+        name: storeImage.filename, // 파일 이름 (확장자 포함)
+      });
+    }
+  });
+
+  formData.append('createStoreWithOwnershipRqDto', {
+    string: JSON.stringify({
+      createStoreRqDto: data.createStoreRqDto,
+      createOwnershipRqDto: data.createOwnershipRqDto,
+    }),
+    type: 'application/json',
+  });
+
+  try {
+    const response = await axiosInstance.post(
+      '/store/create/with-ownership',
       formData,
       {
         headers: {

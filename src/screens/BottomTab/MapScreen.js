@@ -139,10 +139,10 @@ const MapScreen = ({navigation}) => {
         roundedCurrentLat === roundedNewLat &&
         roundedCurrentLng === roundedNewLng
       ) {
+        webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
         moveCenterMap(newLocation.latitude, newLocation.longitude);
       } else {
         setLocation(newLocation);
-        updateMap(newLocation.latitude, newLocation.longitude, stores);
         moveCenterMap(newLocation.latitude, newLocation.longitude);
         const storesData = await Store_getby_radius(
           newLocation.latitude,
@@ -200,12 +200,6 @@ const MapScreen = ({navigation}) => {
     }
   };
 
-  const updateMap = (lat, lng, stores) => {
-    if (webViewRef.current) {
-      webViewRef.current.injectJavaScript(generateMapScript(lat, lng, stores));
-    }
-  };
-
   const isSignificantMovement = (prev, current, threshold = 0.00001) => {
     if (!prev) return true;
     const latDiff = Math.abs(prev.latitude - current.latitude);
@@ -219,6 +213,10 @@ const MapScreen = ({navigation}) => {
     try {
       const lat = centerLatLng?.latitude ?? location?.latitude;
       const lng = centerLatLng?.longitude ?? location?.longitude;
+
+      const centerLocation = {latitude: lat, longitude: lng};
+
+      setLocation(centerLocation);
 
       if (!lat || !lng) {
         return;
@@ -234,7 +232,7 @@ const MapScreen = ({navigation}) => {
       if (webViewRef.current) {
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
 
-        const script = generateMapScript(lat, lng, storesData, false);
+        const script = generateMapScript(lat, lng, storesData);
         webViewRef.current.injectJavaScript(script);
       }
 

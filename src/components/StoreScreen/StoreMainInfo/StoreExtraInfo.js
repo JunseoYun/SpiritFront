@@ -7,19 +7,25 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {Storelikepost} from '../../../api/storeApi';
 
-const StoreExtraInfo = ({storeData, navigation, distance, unit}) => {
+const StoreExtraInfo = ({
+  storeData,
+  navigation,
+  distance,
+  unit,
+  setLoading,
+  loading,
+}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
-
   const storeNumber = storeData?.contact || '000-0000-0000'; // 기본 전화번호
   const [storeLike, setStoreLike] = useState(storeData?.isStoreLiked);
   const [storeLikeCount, setStoreLikeCount] = useState(storeData?.likeCount);
   useEffect(() => {
-    if (storeData?.isStoreLiked !== undefined) {
-      setStoreLike(storeData.isStoreLiked); // storeData가 변경될 때 상태 업데이트
-    }
-  }, [storeData]);
+    // storeData가 변경되었고, 좋아요 값도 바뀐 경우에만 반영
+    setStoreLike(storeData?.isStoreLiked);
+  }, [storeData?.id]);
 
   const StoreLike = async () => {
+    setLoading(true);
     try {
       await Storelikepost(storeData.id);
       setStoreLike(!storeLike);
@@ -29,13 +35,15 @@ const StoreExtraInfo = ({storeData, navigation, distance, unit}) => {
         title: '찜 실패하였습니다',
         message: '잠시 후 다시 시도해주세요.',
       });
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
     if (storeData?.likeCount !== undefined) {
       setStoreLikeCount(storeData.likeCount);
     }
-  }, [storeData]);
+  }, [storeData.id]);
   const storeNumberHandle = () => {
     if (storeNumber !== '000-0000-0000') {
       console.log(storeNumber);

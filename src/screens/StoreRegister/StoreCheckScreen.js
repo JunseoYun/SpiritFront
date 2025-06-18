@@ -15,7 +15,13 @@ import ProgressBar from '../../components/StoreAuthority/ProgressBar';
 
 const StoreCheckScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeId, storeName, storeLocationDto, storeContact} = route.params;
+  const {
+    storeId,
+    storeName,
+    storeLocationDto,
+    storeContact,
+    storeSuggestionData,
+  } = route.params;
 
   const [storeData, setStoreData] = useState({
     storeId,
@@ -48,6 +54,7 @@ const StoreCheckScreen = ({navigation}) => {
     navigation.navigate('StoreAuthorityScreen', {
       storeData,
       storeLocationDto,
+      storeSuggestionData,
     });
   };
 

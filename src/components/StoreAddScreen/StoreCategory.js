@@ -10,7 +10,12 @@ import {
 } from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 
-const StoreCategory = ({selectedCategory, setSelectedCategory, error}) => {
+const StoreCategory = ({
+  selectedCategory,
+  setSelectedCategory,
+  error,
+  index,
+}) => {
   const {translateCategory} = useCategoryTranslation();
 
   const [visible, setVisible] = useState(false);
@@ -43,7 +48,10 @@ const StoreCategory = ({selectedCategory, setSelectedCategory, error}) => {
         <TouchableOpacity style={styles.storeinput} onPress={openHandle}>
           {selectedCategory && selectedCategory.length > 0 ? (
             <>
-              <Text style={styles.storeinputtext}>카테고리* (최대 3개)</Text>
+              <Text style={styles.storeinputtext}>
+                {index ? '카테고리* (최대 3개)' : '카테고리 (최대 3개)'}
+              </Text>
+
               <Text style={styles.inputText}>
                 {selectedCategory
                   .map(item => translateCategory(item))
@@ -51,7 +59,9 @@ const StoreCategory = ({selectedCategory, setSelectedCategory, error}) => {
               </Text>
             </>
           ) : (
-            <Text style={styles.inputHideText}>카테고리*</Text>
+            <Text style={styles.inputHideText}>
+              {index ? '카테고리*' : '카테고리'}
+            </Text>
           )}
         </TouchableOpacity>
         {error === 'StoreCategory' && selectedCategory.length === 0 && (
