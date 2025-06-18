@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -17,7 +17,8 @@ import Loading from '../../../hooks/Loading';
 const StoreReportScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storeName} = route.params;
-
+  const scrollRef = useRef(null);
+  const [proposeInputY, setProposeInputY] = useState(0);
   // 신고 사유 목록
   const proposeReasons = [
     '잘못된 가게 정보',
@@ -93,13 +94,15 @@ const StoreReportScreen = ({navigation}) => {
         descriptionText = selectedReportReason; // 한글 그대로
       }
     } else if (selectedProposeReason) {
-      if (selectedProposeReason === '기타 제보 사항') {
-        reportReasonCode = 'ETC';
-        descriptionText = customProposeReason; // 직접 입력한 기타 제보 내용
-      } else {
-        reportReasonCode = reasonMap[selectedProposeReason];
-        descriptionText = selectedProposeReason; // 한글 그대로
-      }
+      reportReasonCode =
+        selectedProposeReason === '기타 제보 사항'
+          ? 'ETC'
+          : reasonMap[selectedProposeReason];
+
+      descriptionText =
+        customProposeReason.trim() !== ''
+          ? customProposeReason.trim()
+          : selectedProposeReason; // 입력이 있으면 입력 사용, 없으면 선택한 한글 그대로
     }
 
     const payloadData = {
@@ -117,7 +120,20 @@ const StoreReportScreen = ({navigation}) => {
       setLoading(false);
     }
   };
-
+  useEffect(() => {
+    if (
+      selectedProposeReason === '기타 제보 사항' &&
+      proposeInputY > 0 &&
+      scrollRef.current
+    ) {
+      setTimeout(() => {
+        scrollRef.current.scrollTo({
+          y: proposeInputY - 100,
+          animated: true,
+        });
+      }, 100); // 약간의 렌더링 시간 확보
+    }
+  }, [selectedProposeReason, proposeInputY]);
   const isSubmitDisabled =
     (!selectedProposeReason && !selectedReportReason) || // 선택된 항목이 없거나
     (selectedProposeReason === '기타 제보 사항' &&
@@ -126,7 +142,7 @@ const StoreReportScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.storeInfo}>매장명</Text>
           <Text style={styles.title}>{storeName}</Text>
@@ -141,7 +157,17 @@ const StoreReportScreen = ({navigation}) => {
             <Pressable
               key={index}
               style={[styles.reasonButton]}
-              onPress={() => handleSelectProposeReason(reason)}>
+              onPress={() => {
+                handleSelectProposeReason(reason);
+                setTimeout(() => {
+                  if (scrollRef.current) {
+                    scrollRef.current.scrollTo({
+                      y: proposeInputY - 270,
+                      animated: true,
+                    });
+                  }
+                }, 100); // 렌더링 여유
+              }}>
               <Text
                 style={[
                   styles.reasonText,
@@ -153,17 +179,27 @@ const StoreReportScreen = ({navigation}) => {
             </Pressable>
           ))}
         </View>
-        {/* {selectedProposeReason === '기타 제보 사항' && (
+        {selectedProposeReason && (
           <TextInput
-            style={styles.textInput}
-            placeholder="제보 내용을 입력하세요"
+            style={[styles.textInput]}
+            placeholder="상세 제보 내용을 입력하세요 (선택)"
             placeholderTextColor="#aaa"
             value={customProposeReason}
             onChangeText={setCustomProposeReason}
             multiline
+            onLayout={e => {
+              const y = e.nativeEvent.layout.y;
+              setProposeInputY(y);
+
+              // onLayout이 보장된 시점에 스크롤 실행
+              setTimeout(() => {
+                if (scrollRef.current) {
+                  scrollRef.current.scrollTo({y: y - 270, animated: true});
+                }
+              }, 100);
+            }}
           />
-        )} */}
-        {/* 신고 */}
+        )}
         <View style={styles.reasonView}>
           <Text style={styles.reasonTitle}>신고</Text>
         </View>

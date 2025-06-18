@@ -8,6 +8,7 @@ const OperatingHoursPreview = ({
   closedDay,
   storeTimeHandle,
   error,
+  index,
 }) => {
   const dayMapping = {
     Monday: '월',
@@ -28,7 +29,9 @@ const OperatingHoursPreview = ({
   return (
     <>
       <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>영업 시간*</Text>
+        <Text style={styles.storeinputtext}>
+          {index ? '영업시간*' : '영업시간'}
+        </Text>
         <Pressable onPress={storeTimeHandle}>
           <Text style={[styles.storeinputtext, {color: '#16BBFF'}]}>편집</Text>
         </Pressable>

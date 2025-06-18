@@ -46,6 +46,7 @@ const StoreSearchScreen = ({navigation}) => {
 
   const handleStoreAdd = () => {
     navigation.navigate('StoreAddPhotoScreen', {
+      index: index,
       location: location,
     });
   };
@@ -81,7 +82,9 @@ const StoreSearchScreen = ({navigation}) => {
 
       <View style={styles.storeAddTextview}>
         <Pressable style={styles.storeAddButtonsearch} onPress={handleStoreAdd}>
-          <Text style={styles.storeAddText}>매장 등록</Text>
+          <Text style={styles.storeAddText}>
+            {index ? '매장 등록 및 사장님 인증' : '매장 제보'}
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>
