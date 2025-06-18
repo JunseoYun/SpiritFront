@@ -29,7 +29,7 @@ const StoreAlcoholScreen = ({
   mainDrinks = [],
   scrollViewRef,
   onAlcoholDelete,
-  isOwner,
+  isUpdatable,
 }) => {
   const [openItemId, setOpenItemId] = useState(null);
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
@@ -111,7 +111,7 @@ const StoreAlcoholScreen = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      {(isOwner === true || isOwner === null) && (
+      {isUpdatable === true && (
         <AlcoholHeader storeId={storeId} navigation={navigation} />
       )}
 
@@ -129,7 +129,7 @@ const StoreAlcoholScreen = ({
               onClose={handleCloseAll}
               onDelete={() => handleDeleteAlcohol(alcohol.id, alcohol.name)}
               scrollViewRef={scrollViewRef}
-              isOwner={isOwner}
+              isUpdatable={isUpdatable}
             />
           ))}
           <View style={styles.line} />

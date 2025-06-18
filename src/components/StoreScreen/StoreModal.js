@@ -6,7 +6,7 @@ const StoreModal = ({
   isModalVisible,
   onPressModalClose,
   startUpdate,
-  isOwner,
+  isUpdatable,
   handleReport,
   handleReportList,
 }) => {
@@ -47,20 +47,20 @@ const StoreModal = ({
             style={[styles.modalContainer, {opacity}]}
             onStartShouldSetResponder={() => true}>
             <View style={styles.modalContent}>
-              {isOwner == true || isOwner == null ? (
+              {isUpdatable === true ? (
                 <Pressable
                   style={styles.modalButton}
                   onPress={() => handleClose(startUpdate)}>
                   <Text style={styles.modalButtonText}>매장 수정</Text>
                 </Pressable>
-              ) : isOwner == false ? null : null}
-              {isOwner == false || isOwner == null ? (
+              ) : isUpdatable === false ? null : null}
+              {!isUpdatable ? (
                 <Pressable
                   style={styles.reportButton}
                   onPress={() => handleClose(handleReport)}>
                   <Text style={styles.modalButtonText}>매장 제보·신고</Text>
                 </Pressable>
-              ) : isOwner == true ? (
+              ) : isUpdatable === true ? (
                 <Pressable
                   style={styles.reportButton}
                   onPress={() => handleClose(handleReportList)}>

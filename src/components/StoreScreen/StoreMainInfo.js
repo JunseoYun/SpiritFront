@@ -36,6 +36,8 @@ const StoreMainInfo = ({
   navigation,
   storeTimeEditHandle,
   storeupdatedrink,
+  setLoading,
+  loading,
 }) => {
   const handleEdit = (key, value) => {
     onEditKey(key); // 수정 키와 값을 부모 컴포넌트로 전달
@@ -232,6 +234,8 @@ const StoreMainInfo = ({
           }}
           distance={distance}
           unit={unit}
+          setLoading={setLoading}
+          loading={loading}
         />
       )}
 
