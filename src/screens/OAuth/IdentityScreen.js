@@ -372,7 +372,11 @@ const IdentityScreen = ({route, navigation}) => {
             socialToken,
             fcmToken,
           );
-          loginauth(login_data.accessToken, login_data.refreshToken, null);
+          loginauth(
+            login_data.accessToken,
+            login_data.refreshToken,
+            login_data.marketingConsent,
+          );
         } catch (error) {}
       } else {
         if (beforeScreen === 'Agree') {
@@ -386,7 +390,11 @@ const IdentityScreen = ({route, navigation}) => {
           try {
             await user_personalInfo_add(localMokTokenId, token.accessToken);
           } catch (error) {}
-          loginauth(token.accessToken, token.refreshToken, null);
+          loginauth(
+            token.accessToken,
+            token.refreshToken,
+            token.marketingConsent,
+          );
           navigation.reset({
             index: 0,
             routes: [
