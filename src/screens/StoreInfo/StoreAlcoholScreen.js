@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#999',
     marginLeft: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     marginTop: 10,
     marginBottom: 5,
   },

@@ -294,75 +294,77 @@ const AlcoholUpdateScreen = ({navigation}) => {
           <ScrollView
             contentContainerStyle={styles.scrollViewContent}
             keyboardShouldPersistTaps="handled">
-            <View style={styles.imageContainer}>
-              {alcoholImage ? (
-                <ImageBackground
-                  source={{uri: alcoholImage}}
-                  style={styles.menuImage}
-                  imageStyle={styles.backimagestyle}>
-                  {/* ✅ 이미지 안에 아이콘 배치 */}
-                  <View style={styles.imageButtonView}>
-                    <Pressable
-                      style={[styles.imageButton, styles.shadowEffect]}
-                      onPress={selectImage}>
-                      <MaterialIcons
-                        name="photo-library"
-                        size={28}
-                        color="#fff"
+            <View style={styles.innerView}>
+              <View style={styles.imageContainer}>
+                {alcoholImage ? (
+                  <ImageBackground
+                    source={{uri: alcoholImage}}
+                    style={styles.menuImage}
+                    imageStyle={styles.backimagestyle}>
+                    {/* ✅ 이미지 안에 아이콘 배치 */}
+                    <View style={styles.imageButtonView}>
+                      <Pressable
+                        style={[styles.imageButton, styles.shadowEffect]}
+                        onPress={selectImage}>
+                        <MaterialIcons
+                          name="photo-library"
+                          size={28}
+                          color="#fff"
+                        />
+                      </Pressable>
+                      <Pressable
+                        style={[styles.deleteButton, styles.shadowEffect]}
+                        onPress={handleDeleteImage}>
+                        <Ionicons name="trash-outline" size={28} color="#fff" />
+                      </Pressable>
+                    </View>
+                  </ImageBackground>
+                ) : (
+                  <Pressable onPress={selectImage}>
+                    <View style={styles.placeholderImage}>
+                      <MaterialCommunityIcons
+                        name="plus"
+                        size={30}
+                        color="#999"
                       />
-                    </Pressable>
-                    <Pressable
-                      style={[styles.deleteButton, styles.shadowEffect]}
-                      onPress={handleDeleteImage}>
-                      <Ionicons name="trash-outline" size={28} color="#fff" />
-                    </Pressable>
-                  </View>
-                </ImageBackground>
-              ) : (
-                <Pressable onPress={selectImage}>
-                  <View style={styles.placeholderImage}>
-                    <MaterialCommunityIcons
-                      name="plus"
-                      size={30}
-                      color="#999"
-                    />
-                  </View>
-                </Pressable>
-              )}
+                    </View>
+                  </Pressable>
+                )}
+              </View>
+              <AlcoholInput
+                label="주류 이름*"
+                value={alcoholName}
+                onChangeText={setAlcoholName}
+                placeholder="주류 이름*"
+              />
+
+              <AlcoholInput
+                label="주류 소개"
+                value={alcoholDescription}
+                onChangeText={setAlcoholDescription}
+                placeholder="주류 소개"
+                isMultiline={true}
+              />
+
+              <Alcoholpriceinput
+                label="주류 가격*"
+                value={alcoholPrice}
+                onChangeText={setAlcoholPrice}
+                placeholder="주류 가격*"
+                isVariable={isVariable}
+                onToggleVariable={() => {
+                  setIsVariable(prev => !prev);
+                  if (!isVariable)
+                    setAlcoholPrice('변동'); // 체크 시 '변동' 값 세팅
+                  else setAlcoholPrice(''); // 체크 해제 시 초기화
+                }}
+              />
+
+              <RptAlcoholPicker
+                selectedType={alcoholType}
+                onTypeChange={setAlcoholType}
+              />
             </View>
-            <AlcoholInput
-              label="주류 이름*"
-              value={alcoholName}
-              onChangeText={setAlcoholName}
-              placeholder="주류 이름*"
-            />
-
-            <AlcoholInput
-              label="주류 소개"
-              value={alcoholDescription}
-              onChangeText={setAlcoholDescription}
-              placeholder="주류 소개"
-              isMultiline={true}
-            />
-
-            <Alcoholpriceinput
-              label="주류 가격*"
-              value={alcoholPrice}
-              onChangeText={setAlcoholPrice}
-              placeholder="주류 가격*"
-              isVariable={isVariable}
-              onToggleVariable={() => {
-                setIsVariable(prev => !prev);
-                if (!isVariable)
-                  setAlcoholPrice('변동'); // 체크 시 '변동' 값 세팅
-                else setAlcoholPrice(''); // 체크 해제 시 초기화
-              }}
-            />
-
-            <RptAlcoholPicker
-              selectedType={alcoholType}
-              onTypeChange={setAlcoholType}
-            />
           </ScrollView>
           <ImagePickermodal
             isBottomSheetVisible={isBottomSheetVisible}
@@ -518,6 +520,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#333',
+  },
+  innerView: {
+    flexGrow: 1,
+    paddingBottom: 100, // 키보드가 입력창 가리는 것 방지
   },
 });
 

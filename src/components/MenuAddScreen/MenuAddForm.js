@@ -12,12 +12,12 @@ import {
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {ScrollView} from 'react-native-gesture-handler';
 
 const MenuAddForm = ({
   menu,
   index,
   handleMenuChange,
-  handleCheckBoxChange,
   onDelete, // 삭제 함수
 }) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -153,13 +153,18 @@ const MenuAddForm = ({
   const menucontentRef = useRef(null);
 
   return (
-    <View key={index} ref={scrollViewRef}>
+    <ScrollView key={index} ref={scrollViewRef} style={styles.container}>
       <View style={styles.menuHeader}>
         <Text style={styles.menuHeaderText}>메뉴 {index + 1}</Text>
         <Pressable style={styles.deleteButton} onPress={() => onDelete(index)}>
-          <Ionicons name="close" size={25} color="#333" />
+          <Ionicons name="close" size={25} color="#999" />
         </Pressable>
       </View>
+      <MainMenuCheck
+        selectedType={menu.type}
+        imagecheck={menu.imageUri?.path}
+        onChangeType={type => handleMenuChange(type, index, 'type')}
+      />
       <MenuTextInput
         label="메뉴 이름*"
         value={menu.menuName}
@@ -250,13 +255,7 @@ const MenuAddForm = ({
           </Pressable>
         )}
       </View>
-      <MainMenuCheck
-        isChecked={menu.main}
-        imagecheck={menu.imageUri?.path}
-        onToggle={() => handleCheckBoxChange(index)} // index를 전달
-      />
 
-      <View style={styles.line}></View>
       <AlertComponent />
       <ImagePickermodal
         isBottomSheetVisible={isBottomSheetVisible}
@@ -264,18 +263,31 @@ const MenuAddForm = ({
         handleCameraPick={handleCameraPick}
         handleGalleryPick={handleGalleryPick}
       />
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginTop: 20,
+    marginBottom: 10,
+    paddingBottom: 20,
+  },
   menuAddImageView: {
     marginVertical: 20,
     width: '100%',
     paddingHorizontal: 18,
   },
   menuAddImageText: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
@@ -283,26 +295,21 @@ const styles = StyleSheet.create({
   menuHeader: {
     width: '100%',
     paddingHorizontal: 18,
-    marginTop: 30,
+    marginTop: 20,
     marginBottom: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   menuHeaderText: {
-    fontWeight: '500',
-    color: '#333',
+    fontFamily: 'Pretendard-Medium',
+    color: '#999',
     fontSize: 17,
     marginRight: 7,
   },
   deleteButton: {
     paddingVertical: 5,
     paddingLeft: 20,
-  },
-  deleteButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
   },
   selectImage: {
     width: 100,
@@ -313,14 +320,6 @@ const styles = StyleSheet.create({
   selectedEffect: {
     borderWidth: 3,
     borderColor: '#FF6B6B',
-  },
-
-  line: {
-    width: '100%',
-    marginVertical: 20,
-    marginBottom: 10,
-    paddingVertical: 4,
-    backgroundColor: '#F2F2F2',
   },
 
   errorview: {

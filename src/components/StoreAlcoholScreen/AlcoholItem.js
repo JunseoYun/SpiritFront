@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   menuContainer: {
     width: '100%',
@@ -200,33 +200,23 @@ const styles = StyleSheet.create({
   Signaturetitle: {
     fontSize: 18,
     color: '#333',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
-  mainMenu: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginLeft: 7,
-    backgroundColor: 'rgba(16, 190, 251, 0.7)',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 5,
-    alignSelf: 'center',
-  },
+
   Signaturecontent: {
     paddingVertical: 5,
     width: '90%',
-    fontSize: 13,
+    fontSize: 14,
     color: '#999',
-    fontWeight: '400',
+    fontFamily: 'Pretendard-Medium',
     marginTop: 1,
     fontSize: 15,
   },
   Signatureprice: {
     marginTop: 5,
-    fontSize: 15,
+    fontSize: 16,
     color: '#333',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

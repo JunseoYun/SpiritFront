@@ -28,6 +28,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useRoute} from '@react-navigation/native';
 import MenuInput from '../../../components/StoreMenuScreen/MenuInput';
 import MenupriceInput from '../../../components/StoreMenuScreen/MenupriceInput';
+import MainMenuCheck from '../../../components/MenuAddScreen/MainMenuCheck';
 
 import {
   requestPhotoPermission,
@@ -43,7 +44,7 @@ const MenuUpdateScreen = ({navigation}) => {
   const [menuName, setMenuName] = useState('');
   const [menuDescription, setMenuDescription] = useState('');
   const [menuPrice, setMenuPrice] = useState('');
-  const [isMain, setIsMain] = useState(false);
+  const [menuType, setMenuType] = useState('NORMAL');
   const [menuImage, setMenuImage] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageDeleted, setIsImageDeleted] = useState(false);
@@ -65,14 +66,14 @@ const MenuUpdateScreen = ({navigation}) => {
         </Pressable>
       ),
     });
-  }, [handleSave, menuName, menuDescription, menuImage, menuPrice, isMain]);
+  }, [handleSave, menuName, menuDescription, menuImage, menuPrice, menuType]);
 
   useEffect(() => {
     if (menu) {
       setOriginalMenu(menu);
       setMenuName(menu.name || '');
       setMenuDescription(menu.description || '');
-      setIsMain(menu.isMain || false);
+      setMenuType(menu.menuType || 'NORMAL');
       setMenuImage(menu.imgUrl || '');
     }
   }, [menu]);
@@ -106,6 +107,11 @@ const MenuUpdateScreen = ({navigation}) => {
       } else {
         setMenuContentlength(false);
         setMenuDescription(text);
+      }
+    }
+    if (value == 'menuType') {
+      if (text) {
+        setMenuType(text);
       }
     }
   };
@@ -191,7 +197,7 @@ const MenuUpdateScreen = ({navigation}) => {
       menuName !== originalMenu.name ||
       menuDescription !== originalMenu.description ||
       menuPrice !== originalMenu.price ||
-      isMain !== originalMenu.isMain;
+      menuType !== originalMenu.menuType;
 
     if (!menuName.trim()) {
       showAlert({
@@ -242,7 +248,7 @@ const MenuUpdateScreen = ({navigation}) => {
           name: menuName,
           description: menuDescription,
           price: menuPrice,
-          isMain,
+          menuType,
         };
         await MenuUpdate(menu.id, updatedMenu);
         GotoStoreScreen();
@@ -258,7 +264,7 @@ const MenuUpdateScreen = ({navigation}) => {
           name: menuName,
           description: menuDescription,
           price: Number(menuPrice),
-          isMain,
+          menuType,
         };
         await MenuUpdate(menu.id, updatedMenu);
         GotoStoreScreen();
@@ -290,105 +296,102 @@ const MenuUpdateScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* ✅ 키보드 외 영역을 터치하면 키보드를 닫도록 설정 */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           style={styles.avoidingView}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView
             contentContainerStyle={styles.scrollViewContent}
-            keyboardShouldPersistTaps="handled">
-            <View style={styles.imageContainer}>
-              {menuImage ? (
-                <ImageBackground
-                  source={{uri: menuImage}}
-                  style={styles.menuImage}
-                  imageStyle={styles.backimagestyle}>
-                  {/* ✅ 이미지 안에 아이콘 배치 */}
-                  <View style={styles.imageButtonView}>
-                    <Pressable
-                      style={[styles.imageButton, styles.shadowEffect]}
-                      onPress={selectImage}>
-                      <MaterialIcons
-                        name="photo-library"
-                        size={28}
-                        color="#fff"
-                      />
-                    </Pressable>
-                    <Pressable
-                      style={[styles.deleteButton, styles.shadowEffect]}
-                      onPress={handleDeleteImage}>
-                      <Ionicons name="trash-outline" size={28} color="#fff" />
-                    </Pressable>
-                  </View>
-                </ImageBackground>
-              ) : (
-                <Pressable onPress={selectImage}>
-                  <View style={styles.placeholderImage}>
-                    {/* <Text style={styles.placeholderText}>이미지 추가</Text> */}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}>
+            <View style={styles.innerView}>
+              <View style={styles.imageContainer}>
+                {menuImage ? (
+                  <ImageBackground
+                    source={{uri: menuImage}}
+                    style={styles.menuImage}
+                    imageStyle={styles.backimagestyle}>
+                    {/* ✅ 이미지 안에 아이콘 배치 */}
+                    <View style={styles.imageButtonView}>
+                      <Pressable
+                        style={[styles.imageButton, styles.shadowEffect]}
+                        onPress={selectImage}>
+                        <MaterialIcons
+                          name="photo-library"
+                          size={28}
+                          color="#fff"
+                        />
+                      </Pressable>
+                      <Pressable
+                        style={[styles.deleteButton, styles.shadowEffect]}
+                        onPress={handleDeleteImage}>
+                        <Ionicons name="trash-outline" size={28} color="#fff" />
+                      </Pressable>
+                    </View>
+                  </ImageBackground>
+                ) : (
+                  <Pressable onPress={selectImage}>
+                    <View style={styles.placeholderImage}>
+                      {/* <Text style={styles.placeholderText}>이미지 추가</Text> */}
 
-                    <MaterialCommunityIcons
-                      name="plus"
-                      size={30}
-                      color="#999"
-                    />
-                  </View>
-                </Pressable>
+                      <MaterialCommunityIcons
+                        name="plus"
+                        size={30}
+                        color="#999"
+                      />
+                    </View>
+                  </Pressable>
+                )}
+              </View>
+              <MainMenuCheck
+                selectedType={menuType}
+                imagecheck={!!menuImage}
+                onChangeType={value => MenuChange(value, 'menuType')}
+              />
+              <MenuInput
+                label="메뉴 이름*"
+                value={menuName}
+                onChangeText={text => MenuChange(text, 'menuName')}
+                placeholder="메뉴 이름*"
+                maxLength={21}
+              />
+              {menuNamelength && (
+                <View style={styles.errorview}>
+                  <Text style={styles.errorText}>최대 20자 입니다.</Text>
+                </View>
               )}
-            </View>
-            <MenuInput
-              label="메뉴 이름*"
-              value={menuName}
-              onChangeText={text => MenuChange(text, 'menuName')}
-              placeholder="메뉴 이름*"
-              maxLength={21}
-            />
-            {menuNamelength && (
-              <View style={styles.errorview}>
-                <Text style={styles.errorText}>최대 20자 입니다.</Text>
-              </View>
-            )}
-            <MenuInput
-              label="메뉴 소개"
-              value={menuDescription}
-              onChangeText={text => MenuChange(text, 'menuDescription')}
-              placeholder="메뉴 소개"
-              multiline={true} // 여러 줄 입력 활성화
-              maxLength={31}
-            />
-            {menuContentlength && (
-              <View style={styles.errorview}>
-                <Text style={styles.errorText}>최대 30자 입니다.</Text>
-              </View>
-            )}
-            <MenupriceInput
-              label="메뉴 가격*"
-              value={menuPrice}
-              onChangeText={setMenuPrice}
-              placeholder="메뉴 가격*"
-              isVariable={isVariable}
-              onToggleVariable={() => {
-                setIsVariable(prev => !prev);
-                if (!isVariable) setMenuPrice('변동'); // 체크 시 '변동' 값 세팅
-                else setMenuPrice(''); // 체크 해제 시 초기화
-              }}
-              maxLength={21}
-            />
-            {menuPricelength && (
-              <View style={styles.errorview}>
-                <Text style={styles.errorText}>최대 20자 입니다.</Text>
-              </View>
-            )}
-            <View style={styles.storeinputview}>
-              <View style={styles.switchContainer}>
-                <Text style={styles.switchLabel}>대표 메뉴 여부</Text>
-                <Switch
-                  value={isMain}
-                  onValueChange={setIsMain}
-                  trackColor={{false: '#ccc', true: '#16BBFF'}} // ✅ 배경 색상 변경
-                  thumbColor={'#fff'}
-                />
-              </View>
+              <MenuInput
+                label="메뉴 소개"
+                value={menuDescription}
+                onChangeText={text => MenuChange(text, 'menuDescription')}
+                placeholder="메뉴 소개"
+                multiline={true} // 여러 줄 입력 활성화
+                maxLength={31}
+              />
+              {menuContentlength && (
+                <View style={styles.errorview}>
+                  <Text style={styles.errorText}>최대 30자 입니다.</Text>
+                </View>
+              )}
+              <MenupriceInput
+                label="메뉴 가격*"
+                value={menuPrice}
+                onChangeText={setMenuPrice}
+                placeholder="메뉴 가격*"
+                isVariable={isVariable}
+                onToggleVariable={() => {
+                  setIsVariable(prev => !prev);
+                  if (!isVariable)
+                    setMenuPrice('변동'); // 체크 시 '변동' 값 세팅
+                  else setMenuPrice(''); // 체크 해제 시 초기화
+                }}
+                maxLength={21}
+              />
+              {menuPricelength && (
+                <View style={styles.errorview}>
+                  <Text style={styles.errorText}>최대 20자 입니다.</Text>
+                </View>
+              )}
             </View>
           </ScrollView>
           <ImagePickermodal
@@ -527,6 +530,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#16BBFF',
+  },
+  innerView: {
+    flexGrow: 1,
+    paddingBottom: 100, // 키보드가 입력창 가리는 것 방지
   },
 });
 
