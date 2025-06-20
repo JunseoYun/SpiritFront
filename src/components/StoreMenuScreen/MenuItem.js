@@ -28,6 +28,7 @@ const MenuItem = ({
   scrollViewRef,
   navigation,
   isUpdatable,
+  isLast,
 }) => {
   const translateX = useSharedValue(0);
 
@@ -100,13 +101,20 @@ const MenuItem = ({
           onEnded={handleGestureEnd}
           activeOffsetX={[-20, 20]} // ✅ 너무 작은 움직임을 무시
         >
-          <Animated.View style={[styles.menuContainer, animatedStyle]}>
+          <Animated.View
+            style={[
+              styles.menuContainer,
+              animatedStyle,
+              isLast && {borderBottomWidth: 0},
+            ]}>
             {/* 메뉴 컨텐츠 */}
             <View style={styles.SignatureMenuTextsview}>
               <View>
                 <View style={styles.menuTitleRow}>
                   <Text style={styles.Signaturetitle}>{menu?.name}</Text>
-                  {menu?.isMain && <Text style={styles.mainMenu}>대표</Text>}
+                  {menu?.menuType === 'MAIN' && (
+                    <Text style={styles.mainMenu}>대표</Text>
+                  )}
                 </View>
                 <Text
                   style={styles.Signaturecontent}
@@ -165,7 +173,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   menuContainer: {
     width: '100%',
@@ -201,11 +209,11 @@ const styles = StyleSheet.create({
   Signaturetitle: {
     fontSize: 18,
     color: '#333',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   mainMenu: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
     marginLeft: 7,
     backgroundColor: 'rgba(16, 190, 251, 0.7)',
@@ -217,17 +225,17 @@ const styles = StyleSheet.create({
   Signaturecontent: {
     paddingVertical: 5,
     width: '90%',
-    fontSize: 13,
+    fontSize: 14,
     color: '#999',
-    fontWeight: '400',
+    fontFamily: 'Pretendard-Medium',
     marginTop: 1,
     fontSize: 15,
   },
   Signatureprice: {
     marginTop: 5,
-    fontSize: 15,
+    fontSize: 16,
     color: '#333',
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

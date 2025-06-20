@@ -1,6 +1,5 @@
 import React from 'react';
 import {View, Text, StyleSheet, Pressable, Dimensions} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -18,7 +17,7 @@ const alcoholTypes = [
 ];
 
 const screenWidth = Dimensions.get('window').width;
-const buttonWidth = (screenWidth - 40 - 10 * 3) / 4; // 양 옆 20px 마진 + 3개 간격
+const buttonWidth = (screenWidth - 32 - 36) / 4 - 10; // 4개 버튼 기준
 
 const RptAlcoholPicker = ({selectedType, onTypeChange}) => {
   return (
@@ -32,11 +31,15 @@ const RptAlcoholPicker = ({selectedType, onTypeChange}) => {
               key={alcohol.value}
               style={[
                 styles.item,
-                {width: buttonWidth},
-                isSelected && styles.itemSelected,
+                {width: buttonWidth, marginHorizontal: 5},
+                isSelected ? styles.itemSelected : styles.itemUnselected,
               ]}
               onPress={() => onTypeChange(alcohol.value)}>
-              <Text style={[styles.label, isSelected && styles.labelSelected]}>
+              <Text
+                style={[
+                  styles.label,
+                  isSelected ? styles.labelSelected : styles.labelUnselected,
+                ]}>
                 {alcohol.label}
               </Text>
             </Pressable>
@@ -49,46 +52,46 @@ const RptAlcoholPicker = ({selectedType, onTypeChange}) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
     marginTop: 10,
-    marginBottom: 25,
   },
   title: {
-    fontWeight: '600',
-    color: '#666',
+    fontFamily: 'Pretendard-Medium',
+    color: '#999',
     fontSize: 16,
     marginBottom: 12,
+    marginLeft: 18,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    marginHorizontal: 18,
   },
   item: {
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: '#F5F5F5',
     marginBottom: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
+    borderWidth: 1,
   },
   itemSelected: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#E8F7FF',
+    borderColor: '#16BBFF',
+  },
+  itemUnselected: {
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
   },
   label: {
     fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
   },
   labelSelected: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: '#16BBFF',
+    fontWeight: '600',
   },
-  checkIcon: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
+  labelUnselected: {
+    color: '#999',
   },
 });
 

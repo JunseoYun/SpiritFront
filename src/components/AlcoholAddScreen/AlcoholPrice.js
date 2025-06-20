@@ -1,5 +1,6 @@
 import React, {forwardRef} from 'react';
-import {View, Text, TextInput, StyleSheet, Switch} from 'react-native';
+import {View, Text, TextInput, StyleSheet, Pressable} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const AlcoholPrice = forwardRef(
   (
@@ -13,46 +14,43 @@ const AlcoholPrice = forwardRef(
       style = {},
       isVariable,
       onToggleVariable,
-      returnKeyType = 'done', // 기본값 설정
+      returnKeyType = 'done',
       onSubmitEditing,
     },
     ref,
   ) => {
     return (
       <View style={styles.inputContainer}>
-        <View style={styles.checkRow}>
+        {(isVariable || value) && <Text style={styles.label}>{label}</Text>}
+
+        {!isVariable && (
+          <TextInput
+            style={[styles.input, multiline && styles.textarea, style]}
+            value={value}
+            ref={ref}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
+            placeholderTextColor={placeholderTextColor}
+            multiline={multiline}
+            keyboardType="number-pad"
+            returnKeyType={returnKeyType}
+            onSubmitEditing={onSubmitEditing}
+          />
+        )}
+
+        <Pressable style={styles.checkboxRow} onPress={onToggleVariable}>
+          <View
+            style={[styles.checkboxIcon, isVariable && styles.checkboxChecked]}>
+            {isVariable && <Icon name="check" size={14} color="#fff" />}
+          </View>
           <Text
             style={[
-              styles.checkLabel,
-              {color: isVariable ? '#45C9FF' : '#999'},
+              styles.checkboxLabel,
+              isVariable && styles.checkboxLabelActive,
             ]}>
             변동
           </Text>
-          <Switch
-            value={isVariable}
-            onValueChange={onToggleVariable}
-            trackColor={{false: '#ccc', true: '#16BBFF'}}
-            thumbColor={'#fff'}
-          />
-        </View>
-        {(isVariable || value) && <Text style={styles.label}>{label}</Text>}
-
-        <View style={[styles.inputRow, isVariable && null]}>
-          {!isVariable && (
-            <TextInput
-              style={[styles.input, multiline && styles.textarea, style]}
-              value={value}
-              ref={ref}
-              onChangeText={onChangeText}
-              placeholder={placeholder}
-              placeholderTextColor={placeholderTextColor}
-              multiline={multiline}
-              keyboardType="number-pad"
-              returnKeyType={returnKeyType} // ✅ 전달받아 그대로 적용
-              onSubmitEditing={onSubmitEditing}
-            />
-          )}
-        </View>
+        </Pressable>
       </View>
     );
   },
@@ -61,41 +59,52 @@ const AlcoholPrice = forwardRef(
 const styles = StyleSheet.create({
   inputContainer: {
     marginVertical: 20,
-    flex: 1,
-    paddingLeft: 18,
+    paddingHorizontal: 18,
   },
   label: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between', // ✅ 좌우로 정렬
+    marginBottom: 8,
   },
   input: {
-    flex: 1, // ✅ 남는 공간 채우기
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
     fontWeight: '500',
     paddingVertical: 7,
-    paddingLeft: 1,
     color: 'black',
   },
   textarea: {
     textAlignVertical: 'top',
   },
-  checkRow: {
+  checkboxRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginTop: 12,
   },
-  checkLabel: {
+  checkboxIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  checkboxChecked: {
+    backgroundColor: '#16BBFF',
+    borderColor: '#16BBFF',
+  },
+  checkboxLabel: {
     fontSize: 15,
-    marginRight: 5,
+    color: '#666',
     fontFamily: 'Pretendard-Medium',
+  },
+  checkboxLabelActive: {
+    color: '#16BBFF',
   },
 });
 

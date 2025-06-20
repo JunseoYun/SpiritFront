@@ -12,6 +12,7 @@ import {
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {ScrollView} from 'react-native-gesture-handler';
 
 const AlcoholAddForm = ({
   alcohol,
@@ -120,18 +121,18 @@ const AlcoholAddForm = ({
   const alcoholcontentRef = useRef(null);
 
   return (
-    <View key={index} ref={scrollViewRef}>
+    <ScrollView key={index} ref={scrollViewRef} style={styles.container}>
       <View style={styles.menuHeader}>
         <Text style={styles.menuHeaderText}>주류 {index + 1}</Text>
         <Pressable style={styles.deleteButton} onPress={() => onDelete(index)}>
-          <Ionicons name="close" size={25} color="#333" />
+          <Ionicons name="close" size={25} color="#999" />
         </Pressable>
       </View>
       <AlcoholTextInput
-        label="주류 이름*"
+        label="주류 이름 *"
         value={alcohol.alcoholName}
         onChangeText={text => handleAlcoholChange(text, index, 'alcoholName')}
-        placeholder="주류 이름*"
+        placeholder="주류 이름 *"
         ref={alcoholnameRef}
         returnKeyType="next"
         onSubmitEditing={() => {
@@ -141,10 +142,10 @@ const AlcoholAddForm = ({
         }}
       />
       <AlcoholPrice
-        label="주류 가격*"
+        label="주류 가격 *"
         value={purePrice}
         onChangeText={handlePriceChange}
-        placeholder="주류 가격*"
+        placeholder="주류 가격 *"
         isVariable={isVariable}
         onToggleVariable={handleToggleVariable}
         ref={priceRef}
@@ -205,7 +206,6 @@ const AlcoholAddForm = ({
           </Pressable>
         )}
       </View>
-      <View style={styles.line}></View>
       <AlertComponent />
       <ImagePickermodal
         isBottomSheetVisible={isBottomSheetVisible}
@@ -213,18 +213,30 @@ const AlcoholAddForm = ({
         handleCameraPick={handleCameraPick}
         handleGalleryPick={handleGalleryPick}
       />
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginTop: 20,
+    marginBottom: 10,
+  },
   menuAddImageView: {
     marginVertical: 20,
     width: '100%',
     paddingHorizontal: 18,
   },
   menuAddImageText: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 10,
@@ -232,15 +244,15 @@ const styles = StyleSheet.create({
   menuHeader: {
     width: '100%',
     paddingHorizontal: 18,
-    marginTop: 30,
+    marginTop: 20,
     marginBottom: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   menuHeaderText: {
-    fontWeight: '500',
-    color: '#333',
+    fontFamily: 'Pretendard-Medium',
+    color: '#999',
     fontSize: 17,
     marginRight: 7,
   },
@@ -251,7 +263,7 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     color: 'white',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-Medium',
   },
   selectImage: {
     width: 100,
