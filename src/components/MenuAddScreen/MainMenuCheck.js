@@ -7,10 +7,14 @@ const MENU_TYPES = [
   {label: '사이드', value: 'SIDE'},
 ];
 
-const MainMenuCheck = ({selectedType, imagecheck, onChangeType}) => {
+const MainMenuCheck = ({selectedType, imagecheck, onChangeType, isUpdate}) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.labelText}>메뉴 구분</Text>
+    <View
+      style={[
+        styles.container,
+        isUpdate && {marginHorizontal: 0, marginTop: 10},
+      ]}>
+      {!isUpdate && <Text style={styles.labelText}>메뉴 구분</Text>}
       <View style={styles.typeView}>
         {MENU_TYPES.map(type => {
           const isSelected = selectedType === type.value;

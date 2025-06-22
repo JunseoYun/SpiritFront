@@ -5,6 +5,7 @@ const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
   {label: '맥주', value: 'BEER'},
   {label: '막걸리', value: 'MAKGEOLLI'},
+  {label: '하이볼', value: 'HIGHBALL'},
   {label: '와인', value: 'WINE'},
   {label: '칵테일', value: 'COCKTAIL'},
   {label: '사케', value: 'SAKE'},
@@ -12,18 +13,21 @@ const alcoholTypes = [
   {label: '위스키', value: 'WHISKEY'},
   {label: '보드카', value: 'VODKA'},
   {label: '진', value: 'GIN'},
-  {label: '하이볼', value: 'HIGHBALL'},
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
 const screenWidth = Dimensions.get('window').width;
 const buttonWidth = (screenWidth - 32 - 36) / 4 - 10; // 4개 버튼 기준
 
-const RptAlcoholPicker = ({selectedType, onTypeChange}) => {
+const RptAlcoholPicker = ({selectedType, onTypeChange, isUpdate}) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>주종*</Text>
-      <View style={styles.grid}>
+    <View style={[styles.container, isUpdate && {marginTop: 0}]}>
+      {!isUpdate && <Text style={styles.title}>주종*</Text>}
+      <View
+        style={[
+          styles.grid,
+          isUpdate && {marginHorizontal: 0, justifyContent: 'flex-start'},
+        ]}>
         {alcoholTypes.map(alcohol => {
           const isSelected = selectedType === alcohol.value;
           return (
@@ -31,7 +35,9 @@ const RptAlcoholPicker = ({selectedType, onTypeChange}) => {
               key={alcohol.value}
               style={[
                 styles.item,
-                {width: buttonWidth, marginHorizontal: 5},
+                isUpdate
+                  ? styles.updateItem
+                  : {width: buttonWidth, marginHorizontal: 5},
                 isSelected ? styles.itemSelected : styles.itemUnselected,
               ]}
               onPress={() => onTypeChange(alcohol.value)}>
@@ -73,6 +79,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
+  },
+  updateItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginRight: 8,
   },
   itemSelected: {
     backgroundColor: '#E8F7FF',

@@ -82,6 +82,24 @@ const StoreMainScreen = ({navigation}) => {
     });
   };
 
+  const refreshMenus = async () => {
+    try {
+      const Menus = await StoreMenuget(storeId);
+      setMenus(Menus);
+    } catch (error) {
+      console.error('메뉴 다시 불러오기 실패', error);
+    }
+  };
+
+  const refresAlcohols = async () => {
+    try {
+      const Drinks = await StoreDrinkget(storeId);
+      setAlcohols(Drinks);
+    } catch (error) {
+      console.error('메뉴 다시 불러오기 실패', error);
+    }
+  };
+
   const storeupdatedrink = () => {
     navigation.navigate('UpdateStoreDrink', {
       storeId: storedata.id,
@@ -500,9 +518,9 @@ const StoreMainScreen = ({navigation}) => {
                         navigation={navigation}
                         storeId={storeId}
                         menus={menus}
-                        scrollViewRef={scrollViewRef} // 스크롤 참조 전달
                         onMenuDelete={handleMenuDelete}
-                        isUpdatable={storedata?.isUpdatable}
+                        isUpdatable={!storedata?.isUpdatable}
+                        onMenuUpdateComplete={refreshMenus}
                       />
                     )}
                     {currentPage === 'StoreAlcoholScreen' && (
@@ -513,7 +531,8 @@ const StoreMainScreen = ({navigation}) => {
                         mainDrinks={storedata.mainDrinkDtos}
                         scrollViewRef={scrollViewRef}
                         onAlcoholDelete={handleAlcoholDelete}
-                        isUpdatable={storedata?.isUpdatable}
+                        isUpdatable={!storedata?.isUpdatable}
+                        onAlcoholUpdateComplete={refresAlcohols}
                       />
                     )}
                   </View>
@@ -530,7 +549,7 @@ const StoreMainScreen = ({navigation}) => {
           startUpdate={startUpdate}
           handleReport={handleReport}
           handleReportList={handleReportList}
-          isUpdatable={storedata?.isUpdatable}
+          isUpdatable={!storedata?.isUpdatable}
         />
       </View>
       {isUpdate && (

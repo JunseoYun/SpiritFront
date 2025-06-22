@@ -92,6 +92,10 @@ const Categorystyles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.1)', // ✅ 반투명 배경 추가
     alignItems: 'center',
     borderRadius: 9,
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   overlayText: {
     color: 'white',

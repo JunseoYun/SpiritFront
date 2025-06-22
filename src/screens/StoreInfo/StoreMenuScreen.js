@@ -1,51 +1,20 @@
 import React, {useEffect, useState} from 'react';
-import {SafeAreaView, StyleSheet, View, Text} from 'react-native';
-import MenuHeader from '../../components/StoreMenuScreen/MenuHeader';
+import {SafeAreaView, StyleSheet, View, Text, Pressable} from 'react-native';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
-import {StoreMenudelete} from '../../api/menuApi';
-import useCustomAlert from '../../hooks/useCustomAlert';
-import {Portal} from 'react-native-paper';
 
 const StoreMenuScreen = ({
   navigation,
   storeId,
   menus,
-  scrollViewRef,
   onMenuDelete,
   isUpdatable,
+  onMenuUpdateComplete,
 }) => {
-  const [openItemId, setOpenItemId] = useState(null);
   const [menuList, setMenuList] = useState(menus);
-  const {showAlert, AlertComponent} = useCustomAlert();
-  console.log(menus, storeId);
 
   useEffect(() => {
     setMenuList(menus);
   }, [menus]);
-
-  const handleOpenItem = id => {
-    setOpenItemId(id);
-  };
-
-  const handleCloseAll = () => {
-    setOpenItemId(null);
-  };
-
-  const handleDeleteMenu = (id, name) => {
-    handleCloseAll();
-    showAlert({
-      title: `${name} 삭제`,
-      message: `메뉴를 삭제하시겠습니까?`,
-      onConfirm: async () => {
-        try {
-          await StoreMenudelete(id);
-          onMenuDelete(id);
-        } catch (error) {}
-      },
-      onCancel: null,
-      type: 'delete',
-    });
-  };
 
   const renderGroupedMenus = () => {
     const mainAndNormal = menuList
@@ -66,14 +35,6 @@ const StoreMenuScreen = ({
               <MenuItem
                 key={menu.id}
                 menu={menu}
-                storeId={storeId}
-                isOpen={openItemId === menu.id}
-                onOpen={() => handleOpenItem(menu.id)}
-                onDelete={handleDeleteMenu}
-                onClose={handleCloseAll}
-                scrollViewRef={scrollViewRef}
-                navigation={navigation}
-                isUpdatable={isUpdatable}
                 isLast={idx === mainAndNormal.length - 1} // ✅ 추가
               />
             ))}
@@ -88,14 +49,6 @@ const StoreMenuScreen = ({
               <MenuItem
                 key={menu.id}
                 menu={menu}
-                storeId={storeId}
-                isOpen={openItemId === menu.id}
-                onOpen={() => handleOpenItem(menu.id)}
-                onDelete={handleDeleteMenu}
-                onClose={handleCloseAll}
-                scrollViewRef={scrollViewRef}
-                navigation={navigation}
-                isUpdatable={isUpdatable}
                 isLast={idx === sideMenus.length - 1} // ✅ 추가
               />
             ))}
@@ -109,7 +62,20 @@ const StoreMenuScreen = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      {isUpdatable && <MenuHeader storeId={storeId} navigation={navigation} />}
+      {isUpdatable && (
+        <Pressable
+          style={styles.reorderButton}
+          onPress={() =>
+            navigation.navigate('MenuEditScreen', {
+              storeId,
+              menus,
+              onMenuUpdateComplete, // ✅ 메뉴 다시 불러오는 콜백 전달
+              onMenuDelete,
+            })
+          }>
+          <Text style={styles.menuAddButtonText}>메뉴 편집</Text>
+        </Pressable>
+      )}
 
       {menuList?.length > 0 ? (
         renderGroupedMenus()
@@ -118,10 +84,6 @@ const StoreMenuScreen = ({
           <Text style={styles.emptyText}>등록된 메뉴가 없어요</Text>
         </View>
       )}
-
-      <Portal>
-        <AlertComponent />
-      </Portal>
     </SafeAreaView>
   );
 };
@@ -129,6 +91,21 @@ const StoreMenuScreen = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
+  },
+  reorderButton: {
+    marginTop: 30,
+    marginBottom: 20,
+    marginHorizontal: 18,
+    marginTop: 20,
+    alignItems: 'center',
+    borderRadius: 10,
+    backgroundColor: '#E9F5FB',
+  },
+  menuAddButtonText: {
+    color: '#45C9FF',
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    padding: 16,
   },
   section: {
     marginBottom: 10,
