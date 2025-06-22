@@ -9,13 +9,13 @@ import MenuAddScreen from '../screens/StoreInfo/Menu/MenuAddScreen';
 import StoreMapScreen from '../screens/StoreInfo/StoreMapScreen';
 import StoreReviewScreen from '../screens/StoreInfo/StoreReviewScreen';
 import AlcoholAddScreen from '../screens/StoreInfo/Alcohol/AlcoholAddScreen';
-import MenuUpdateScreen from '../screens/StoreInfo/Menu/MenuUpdateScreen';
-import AlcoholUpdateScreen from '../screens/StoreInfo/Alcohol/AlcoholUpdateScreen';
 import StoreReportScreen from '../screens/StoreInfo/Report/StoreReportScreen';
 import ReviewReportScreen from '../screens/StoreInfo/Report/ReviewReportScreen';
 import StoreReportList from '../screens/StoreInfo/Report/StoreReportList';
 import StoreTimeEditScreen from '../screens/StoreInfo/StoreTimeEditScreen';
+import AlcoholEditScreen from '../screens/StoreInfo/Alcohol/AlcohoEditScreen';
 import UpdateStoreDrink from '../components/UpdateBottomSheet/UpdateStoreDrink';
+import MenuEditScreen from '../screens/StoreInfo/Menu/MenuEditScreen';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 const Stack = createStackNavigator();
 
@@ -115,44 +115,6 @@ export default function StoreStack() {
       />
 
       <Stack.Screen
-        name="MenuUpdateScreen"
-        component={MenuUpdateScreen}
-        options={({navigation}) => ({
-          title: '메뉴 수정하기',
-          headerTitleAlign: 'center',
-          gestureDirection: 'vertical',
-
-          animation: 'slide_from_bottom',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                showAlert({
-                  title: '작성한 내용이 저장되지 않았습니다',
-                  message: '뒤로 가시겠습니까?',
-                  onConfirm: () => {
-                    navigation.goBack();
-                  },
-                  onCancel: null,
-                  type: 'confirm',
-                });
-              }}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-
-      <Stack.Screen
         name="AlcoholAddScreen"
         component={AlcoholAddScreen}
         options={({navigation}) => ({
@@ -188,16 +150,48 @@ export default function StoreStack() {
       />
 
       <Stack.Screen
-        name="AlcoholUpdateScreen"
-        component={AlcoholUpdateScreen}
+        name="MenuEditScreen"
+        component={MenuEditScreen}
         options={({navigation}) => ({
-          title: '주류 수정하기',
+          title: '메뉴 편집',
           headerTitleAlign: 'center',
-          gestureDirection: 'vertical',
-
-          animation: 'slide_from_bottom',
           headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
+            fontFamily: 'Pretendard-SemiBold',
+            fontSize: 18,
+            color: '#333',
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                showAlert({
+                  title: '작성한 내용이 저장되지 않았습니다',
+                  message: '뒤로 가시겠습니까?',
+                  onConfirm: () => {
+                    navigation.goBack();
+                  },
+                  onCancel: null,
+                  type: 'confirm',
+                });
+              }}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="AlcoholEditScreen"
+        component={AlcoholEditScreen}
+        options={({navigation}) => ({
+          title: '주류 편집',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
           },
