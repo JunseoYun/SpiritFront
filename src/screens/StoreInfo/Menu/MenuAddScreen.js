@@ -6,6 +6,10 @@ import {
   SafeAreaView,
   ScrollView,
   View,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import MenuAddForm from '../../../components/MenuAddScreen/MenuAddForm';
@@ -25,7 +29,7 @@ const MenuAddScreen = ({navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
 
   const [menus, setMenus] = useState([
-    {menuName: '', price: '', menuContent: '', main: false, imageUri: ''},
+    {menuName: '', price: '', menuContent: '', type: 'NORMAL', imageUri: ''},
   ]);
 
   const handleMenuChange = (text, index, field) => {
@@ -37,18 +41,11 @@ const MenuAddScreen = ({navigation}) => {
   const handleAddMenu = () => {
     setMenus([
       ...menus,
-      {menuName: '', price: '', menuContent: '', main: false, imageUri: ''},
+      {menuName: '', price: '', menuContent: '', type: 'NORMAL', imageUri: ''},
     ]);
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({animated: true});
     }, 100); // 0~100ms 사이의 짧은 delay 필요
-  };
-  const handleCheckBoxChange = index => {
-    const updatedMenus = menus.map((menu, i) => ({
-      ...menu,
-      main: i === index ? !menu.main : menu.main, // 해당 메뉴의 main 값을 토글
-    }));
-    setMenus(updatedMenus);
   };
 
   const handleDeleteMenu = index => {
@@ -113,7 +110,7 @@ const MenuAddScreen = ({navigation}) => {
             description: menu.menuContent,
             price: menu.price,
             storeId: storeId,
-            isMain: menu.main,
+            menuType: menu.type,
           },
         };
 
@@ -156,27 +153,37 @@ const MenuAddScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        ref={scrollViewRef}
-        contentContainerStyle={styles.scrollContainer}>
-        {menus.map((menu, index) => (
-          <MenuAddForm
-            key={index}
-            menu={menu}
-            index={index}
-            handleMenuChange={handleMenuChange}
-            handleCheckBoxChange={handleCheckBoxChange}
-            onDelete={handleDeleteMenu}
-          />
-        ))}
-      </ScrollView>
-      <AlertComponent />
+      <KeyboardAvoidingView
+        style={{flex: 1, backgroundColor: '#F7F8FA'}}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{flex: 1}}>
+            <ScrollView
+              ref={scrollViewRef}
+              contentContainerStyle={styles.scrollContainer}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}>
+              {menus.map((menu, index) => (
+                <MenuAddForm
+                  key={index}
+                  menu={menu}
+                  index={index}
+                  handleMenuChange={handleMenuChange}
+                  onDelete={handleDeleteMenu}
+                />
+              ))}
+            </ScrollView>
 
-      <View style={styles.menuAddTextview}>
-        <Pressable style={styles.menuAddButton} onPress={handleAddMenu}>
-          <Text style={styles.menuAddText}>메뉴 추가</Text>
-        </Pressable>
-      </View>
+            <View style={styles.menuAddTextview}>
+              <Pressable style={styles.menuAddButton} onPress={handleAddMenu}>
+                <Text style={styles.menuAddText}>메뉴 추가</Text>
+              </Pressable>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+
+      <AlertComponent />
       <Loading loading={loading} />
     </SafeAreaView>
   );
@@ -185,7 +192,7 @@ const MenuAddScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
   },
   headerButton: {
     marginRight: 18,
@@ -212,6 +219,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
     paddingVertical: 10,
+    backgroundColor: '#fff',
   },
   menuAddButton: {
     paddingVertical: 15,
