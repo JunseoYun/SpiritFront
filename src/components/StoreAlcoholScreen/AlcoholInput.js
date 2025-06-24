@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   input: {
     borderBottomWidth: 1,
     fontSize: 18,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 7,
     paddingLeft: 1,
     marginBottom: 40,
@@ -51,12 +51,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginHorizontal: 18,
     color: 'black',
+    fontFamily: 'Pretendard-Medium',
   },
   inputText: {
     marginVertical: 5,
     fontSize: 16,
     color: '#999',
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     marginTop: 10,
     marginHorizontal: 18,
   },

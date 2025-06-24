@@ -1,92 +1,128 @@
 import React, {useEffect, useState} from 'react';
-import {SafeAreaView, StyleSheet, View, Text} from 'react-native';
-import MenuHeader from '../../components/StoreMenuScreen/MenuHeader';
+import {SafeAreaView, StyleSheet, View, Text, Pressable} from 'react-native';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
-import {StoreMenudelete} from '../../api/menuApi';
-import useCustomAlert from '../../hooks/useCustomAlert';
-import {Portal} from 'react-native-paper';
 
 const StoreMenuScreen = ({
   navigation,
   storeId,
   menus,
-  scrollViewRef,
   onMenuDelete,
   isUpdatable,
+  onMenuUpdateComplete,
 }) => {
-  const [openItemId, setOpenItemId] = useState(null); // 열려 있는 메뉴 ID 관리
   const [menuList, setMenuList] = useState(menus);
-
-  const {showAlert, AlertComponent} = useCustomAlert();
-
-  const sortedMenus = menuList
-    ? [...menuList].sort((a, b) => b.isMain - a.isMain)
-    : [];
 
   useEffect(() => {
     setMenuList(menus);
   }, [menus]);
 
-  const handleOpenItem = id => {
-    setOpenItemId(id); // 현재 열려 있는 항목의 ID 설정
-  };
+  const renderGroupedMenus = () => {
+    const mainAndNormal = menuList
+      ?.filter(menu => menu.menuType === 'MAIN' || menu.menuType === 'NORMAL')
+      ?.sort((a, b) => {
+        const order = {MAIN: 0, NORMAL: 1};
+        return order[a.menuType] - order[b.menuType];
+      });
 
-  const handleCloseAll = () => {
-    setOpenItemId(null); // 모든 항목 닫기
-  };
+    const sideMenus = menuList?.filter(menu => menu.menuType === 'SIDE');
 
-  const handleDeleteMenu = (id, name) => {
-    handleCloseAll();
-    showAlert({
-      title: `${name} 삭제`,
-      message: `메뉴를 삭제하시겠습니까?`,
-      onConfirm: async () => {
-        try {
-          await StoreMenudelete(id);
-          onMenuDelete(id); // 부모에게 메뉴 삭제 알리기
-        } catch (error) {}
-      },
-      onCancel: null,
-      type: 'delete',
-    });
+    return (
+      <>
+        {mainAndNormal.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>주 메뉴</Text>
+            {mainAndNormal.map((menu, idx) => (
+              <MenuItem
+                key={menu.id}
+                menu={menu}
+                isLast={idx === mainAndNormal.length - 1} // ✅ 추가
+              />
+            ))}
+            <View style={styles.line} />
+          </View>
+        )}
+
+        {sideMenus.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>사이드 메뉴</Text>
+            {sideMenus.map((menu, idx) => (
+              <MenuItem
+                key={menu.id}
+                menu={menu}
+                isLast={idx === sideMenus.length - 1} // ✅ 추가
+              />
+            ))}
+
+            <View style={styles.line} />
+          </View>
+        )}
+      </>
+    );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {isUpdatable === true && (
-        <MenuHeader storeId={storeId} navigation={navigation} />
+      {isUpdatable && (
+        <Pressable
+          style={styles.reorderButton}
+          onPress={() =>
+            navigation.navigate('MenuEditScreen', {
+              storeId,
+              menus,
+              onMenuUpdateComplete, // ✅ 메뉴 다시 불러오는 콜백 전달
+              onMenuDelete,
+            })
+          }>
+          <Text style={styles.menuAddButtonText}>메뉴 편집</Text>
+        </Pressable>
       )}
 
-      {sortedMenus.map(menu => (
-        <MenuItem
-          key={menu.id}
-          menu={menu}
-          storeId={storeId}
-          isOpen={openItemId === menu.id}
-          onOpen={() => handleOpenItem(menu.id)}
-          onDelete={handleDeleteMenu}
-          onClose={handleCloseAll}
-          scrollViewRef={scrollViewRef} // 스크롤 참조 전달
-          navigation={navigation}
-          isUpdatable={isUpdatable}
-        />
-      ))}
-      {menuList?.length === 0 && (
+      {menuList?.length > 0 ? (
+        renderGroupedMenus()
+      ) : (
         <View style={styles.footer}>
           <Text style={styles.emptyText}>등록된 메뉴가 없어요</Text>
         </View>
       )}
-      <Portal>
-        <AlertComponent />
-      </Portal>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 20,
     backgroundColor: '#fff',
+  },
+  reorderButton: {
+    marginTop: 30,
+    marginBottom: 20,
+    marginHorizontal: 18,
+    marginTop: 20,
+    alignItems: 'center',
+    borderRadius: 10,
+    backgroundColor: '#E9F5FB',
+  },
+  menuAddButtonText: {
+    color: '#45C9FF',
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    padding: 16,
+  },
+  section: {
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    color: '#999',
+    marginLeft: 18,
+    fontFamily: 'Pretendard-SemiBold',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  line: {
+    height: 7,
+    backgroundColor: '#F2F2F2',
+    marginTop: 10,
+    marginBottom: 10,
   },
   footer: {
     paddingVertical: 20,
@@ -95,7 +131,7 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Medium',
     fontSize: 20,
     color: '#c0c0c0',
   },

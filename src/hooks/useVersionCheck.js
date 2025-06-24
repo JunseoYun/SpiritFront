@@ -8,9 +8,9 @@ const useVersionCheck = () => {
     const checkVersion = async () => {
       try {
         const response = await Versioncheck();
-        const {isVersionMatched, isUpdateRequired} = response.data.data;
+        const isUpdateRequired = response.data.data.isUpdateRequired;
 
-        if (!isVersionMatched && isUpdateRequired) {
+        if (isUpdateRequired) {
           setIsVersionValid(false);
         }
       } catch (error) {

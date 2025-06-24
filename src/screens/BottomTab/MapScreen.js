@@ -61,7 +61,7 @@ const MapScreen = ({navigation}) => {
   );
 
   useEffect(() => {
-    fetchSaveLocation(radius);
+    Location();
     setRefresh(false);
   }, []);
 
@@ -79,6 +79,11 @@ const MapScreen = ({navigation}) => {
   }
   true;
 `;
+
+  const Location = async () => {
+    const currentLocation = await getLocation();
+    setLocation(currentLocation);
+  };
 
   const fetchSaveLocation = async radius => {
     setLoading(true);
@@ -252,6 +257,9 @@ const MapScreen = ({navigation}) => {
       // 기존 메시지 처리
       if (message.action === 'mapLoaded') {
         console.log('Kakao Maps API가 로드되었습니다.');
+        fetchSaveLocation(radius);
+        setRefresh(false);
+        return;
       }
       if (message.action === 'mapMoved') {
         if (isProgrammaticPan.current) {
@@ -347,7 +355,7 @@ const MapScreen = ({navigation}) => {
   }, 500);
 
   return (
-    <View style={styles.container}>
+    <>
       {location ? (
         <WebView
           ref={webViewRef}
@@ -380,15 +388,11 @@ const MapScreen = ({navigation}) => {
       />
 
       <Loading loading={loading} />
-    </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
   webview: {
     flex: 1,
   },
