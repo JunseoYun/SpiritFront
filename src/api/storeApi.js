@@ -435,3 +435,19 @@ export const Store_getby_managed = async page => {
     functionError(error);
   }
 };
+
+export const StoreImageUpdateSort = async (
+  storeId,
+  storeImageUrlInOrderList,
+) => {
+  console.log(storeId, storeImageUrlInOrderList);
+  try {
+    const response = await axiosInstance.put(`/store/update-image/sort-order`, {
+      storeId,
+      storeImageUrlInOrderList,
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};

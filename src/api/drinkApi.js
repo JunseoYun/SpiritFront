@@ -95,6 +95,18 @@ export const DrinkDeleteImage = async drinkId => {
   }
 };
 
+export const DrinkUpdateSort = async (storeId, drinkIdInOrderList) => {
+  try {
+    const response = await axiosInstance.put(`/drink/update/sort-order`, {
+      storeId,
+      drinkIdInOrderList,
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 export const StoreDrinkdelete = async drinkId => {
   try {
     const response = await axiosInstance.delete(`/drink/delete/${drinkId}`, {});

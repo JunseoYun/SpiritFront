@@ -11,7 +11,7 @@ import {
   KeyboardAvoidingView,
   Dimensions,
 } from 'react-native';
-import ImageSlider from '../../components/StoreScreen/ImageSlider';
+import ImageSlider from '../../components/StoreScreen/StoreImage/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
@@ -80,6 +80,24 @@ const StoreMainScreen = ({navigation}) => {
       operationInfoDtos: storedata.operationInfoDtos,
       is24Hours: storedata.isAlwaysOpen,
     });
+  };
+
+  const refreshMenus = async () => {
+    try {
+      const Menus = await StoreMenuget(storeId);
+      setMenus(Menus);
+    } catch (error) {
+      console.error('메뉴 다시 불러오기 실패', error);
+    }
+  };
+
+  const refresAlcohols = async () => {
+    try {
+      const Drinks = await StoreDrinkget(storeId);
+      setAlcohols(Drinks);
+    } catch (error) {
+      console.error('메뉴 다시 불러오기 실패', error);
+    }
   };
 
   const storeupdatedrink = () => {
@@ -446,12 +464,14 @@ const StoreMainScreen = ({navigation}) => {
                         },
                     ]}>
                     <ImageSlider
+                      storeId={storeId}
                       images={imageSliderData}
                       interval={4000}
                       isUpdate={isUpdate}
                       handleBottomOpen={handleBottomOpen}
                       onEditKey={handleEditKey}
                       onEditValue={handleEditValue}
+                      navigation={navigation}
                     />
                   </View>
                 )}
@@ -500,9 +520,9 @@ const StoreMainScreen = ({navigation}) => {
                         navigation={navigation}
                         storeId={storeId}
                         menus={menus}
-                        scrollViewRef={scrollViewRef} // 스크롤 참조 전달
                         onMenuDelete={handleMenuDelete}
                         isUpdatable={storedata?.isUpdatable}
+                        onMenuUpdateComplete={refreshMenus}
                       />
                     )}
                     {currentPage === 'StoreAlcoholScreen' && (
@@ -514,6 +534,7 @@ const StoreMainScreen = ({navigation}) => {
                         scrollViewRef={scrollViewRef}
                         onAlcoholDelete={handleAlcoholDelete}
                         isUpdatable={storedata?.isUpdatable}
+                        onAlcoholUpdateComplete={refresAlcohols}
                       />
                     )}
                   </View>
@@ -620,7 +641,7 @@ const styles = StyleSheet.create({
   },
   endUpdateText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
   addImageButton: {

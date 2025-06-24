@@ -11,7 +11,7 @@ import {
 import {WebView} from 'react-native-webview';
 import {getLocation} from '../../storage/locationStorage';
 import {fetchLocationAddress} from '../../hooks/useLocation';
-import {get_address} from '../../api/location';
+import {get_road} from '../../api/location';
 import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import StoreMapAddScript from '../../components/StoreAddScreen/StoreAddMap/StoreMapAddScript';
 import {useRoute} from '@react-navigation/native';
@@ -104,16 +104,17 @@ const StoreAddMapScreen = ({navigation}) => {
       const targetCoords = centerLatLng || currentloacation;
 
       if (targetCoords) {
-        const addressObj = await get_address(
+        const addressObj = await get_road(
           targetCoords.latitude,
           targetCoords.longitude,
         );
-        const addressText = addressObj?.address || '';
-
+        const addressText = addressObj?.getAddressDto.address || '';
+        const coordinate = addressObj?.getCoordinateDto;
+        console.log(addressText, coordinate);
         if (route.params?.onAddressSelect) {
           route.params.onAddressSelect({
             address: addressText,
-            coords: targetCoords,
+            coords: coordinate,
           });
         }
 

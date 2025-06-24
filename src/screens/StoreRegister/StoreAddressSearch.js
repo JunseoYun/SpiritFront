@@ -6,7 +6,7 @@ const StoreAddressSearch = ({navigation, route}) => {
   // `route` 추가
   const handleAddressSelect = async data => {
     try {
-      const {address} = data;
+      const address = data.roadAddress || data.autoRoadAddress;
       const coords = await getLatLngFromAddress(address);
 
       // `route.params?.onAddressSelect`가 있을 경우에만 호출
@@ -24,7 +24,10 @@ const StoreAddressSearch = ({navigation, route}) => {
   return (
     <Postcode
       style={{flex: 1, width: '100%', zIndex: 999}}
-      jsOptions={{animation: true}}
+      jsOptions={{
+        animation: true,
+        autoMapping: true, // ✅ 자동 도로명 매핑 활성화
+      }}
       onSelected={handleAddressSelect}
     />
   );

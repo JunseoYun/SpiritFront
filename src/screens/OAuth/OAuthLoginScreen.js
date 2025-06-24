@@ -153,9 +153,11 @@ const OAuthLoginScreen = ({navigation}) => {
   return (
     <SafeAreaView style={styles.background}>
       <View style={styles.logoView}>
-        <Text style={styles.Logo} allowFontScaling={false}>
-          한잔할까
-        </Text>
+        <FastImage
+          source={require('../../assets/AppName.png')}
+          style={styles.LogoName}
+          resizeMode={FastImage.resizeMode.contain}
+        />
 
         <Text style={styles.subText} allowFontScaling={false}>
           한잔하고 싶은 당신을 위한 서비스
@@ -208,10 +210,10 @@ const OAuthLoginScreen = ({navigation}) => {
             <View style={{width: 30}} />
           </View>
         </TouchableOpacity>
-        {Platform.OS === 'ios' ? (
+        {Platform.OS === 'ios' && (
           <TouchableOpacity
             onPress={handleAppleSignIn}
-            style={styles.googleButtonContainer}>
+            style={[styles.googleButtonContainer, {marginBottom: 20}]}>
             <View style={styles.googleView}>
               <View style={styles.googleLogoContainer}>
                 <FastImage
@@ -226,8 +228,6 @@ const OAuthLoginScreen = ({navigation}) => {
               <View style={{width: 30, marginTop: 20}} />
             </View>
           </TouchableOpacity>
-        ) : (
-          <View style={{height: 50, marginTop: 20}} />
         )}
       </View>
       {loading && <Loading loading={true} />}
@@ -242,15 +242,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FAFAFA',
   },
+  LogoName: {
+    width: 210,
+    height: 70,
+  },
   logoView: {
     marginTop: 130,
     alignItems: 'center',
   },
-  Logo: {
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
-    fontSize: 60,
-    color: '#45C9FF',
-  },
+
   subText: {
     fontSize: 18,
     color: '#181A1A',
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     shadowColor: '#333',
     shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.8,
+    shadowOpacity: 0.4,
     shadowRadius: 2,
     elevation: 5,
     borderRadius: 10,
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     shadowColor: '#333',
     shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.8,
+    shadowOpacity: 0.4,
     shadowRadius: 2,
     borderRadius: 10,
     elevation: 5,

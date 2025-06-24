@@ -1,11 +1,11 @@
 import React from 'react';
 import {View, Text, StyleSheet, Pressable, Dimensions} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
   {label: '맥주', value: 'BEER'},
   {label: '막걸리', value: 'MAKGEOLLI'},
+  {label: '하이볼', value: 'HIGHBALL'},
   {label: '와인', value: 'WINE'},
   {label: '칵테일', value: 'COCKTAIL'},
   {label: '사케', value: 'SAKE'},
@@ -13,18 +13,21 @@ const alcoholTypes = [
   {label: '위스키', value: 'WHISKEY'},
   {label: '보드카', value: 'VODKA'},
   {label: '진', value: 'GIN'},
-  {label: '하이볼', value: 'HIGHBALL'},
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
 const screenWidth = Dimensions.get('window').width;
-const buttonWidth = (screenWidth - 40 - 10 * 3) / 4; // 양 옆 20px 마진 + 3개 간격
+const buttonWidth = (screenWidth - 32 - 36) / 4 - 10; // 4개 버튼 기준
 
-const RptAlcoholPicker = ({selectedType, onTypeChange}) => {
+const RptAlcoholPicker = ({selectedType, onTypeChange, isUpdate}) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>주종*</Text>
-      <View style={styles.grid}>
+    <View style={[styles.container, isUpdate && {marginTop: 0}]}>
+      {!isUpdate && <Text style={styles.title}>주종*</Text>}
+      <View
+        style={[
+          styles.grid,
+          isUpdate && {marginHorizontal: 0, justifyContent: 'flex-start'},
+        ]}>
         {alcoholTypes.map(alcohol => {
           const isSelected = selectedType === alcohol.value;
           return (
@@ -32,11 +35,17 @@ const RptAlcoholPicker = ({selectedType, onTypeChange}) => {
               key={alcohol.value}
               style={[
                 styles.item,
-                {width: buttonWidth},
-                isSelected && styles.itemSelected,
+                isUpdate
+                  ? styles.updateItem
+                  : {width: buttonWidth, marginHorizontal: 5},
+                isSelected ? styles.itemSelected : styles.itemUnselected,
               ]}
               onPress={() => onTypeChange(alcohol.value)}>
-              <Text style={[styles.label, isSelected && styles.labelSelected]}>
+              <Text
+                style={[
+                  styles.label,
+                  isSelected ? styles.labelSelected : styles.labelUnselected,
+                ]}>
                 {alcohol.label}
               </Text>
             </Pressable>
@@ -49,46 +58,52 @@ const RptAlcoholPicker = ({selectedType, onTypeChange}) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
     marginTop: 10,
-    marginBottom: 25,
   },
   title: {
-    fontWeight: '600',
-    color: '#666',
+    fontFamily: 'Pretendard-Medium',
+    color: '#999',
     fontSize: 16,
     marginBottom: 12,
+    marginLeft: 18,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    marginHorizontal: 18,
   },
   item: {
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: '#F5F5F5',
     marginBottom: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
+    borderWidth: 1,
+  },
+  updateItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginRight: 8,
   },
   itemSelected: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#E8F7FF',
+    borderColor: '#16BBFF',
+  },
+  itemUnselected: {
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
   },
   label: {
     fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
   },
   labelSelected: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: '#16BBFF',
+    fontWeight: '600',
   },
-  checkIcon: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
+  labelUnselected: {
+    color: '#999',
   },
 });
 

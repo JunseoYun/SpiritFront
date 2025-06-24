@@ -44,6 +44,18 @@ export const MenuUpdate = async (menuId, data) => {
   }
 };
 
+export const MenuUpdateSort = async (storeId, menuIdInOrderList) => {
+  try {
+    const response = await axiosInstance.put(`/menu/update/sort-order`, {
+      storeId,
+      menuIdInOrderList,
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 export const MenuUpdateImage = async (menuId, file) => {
   const formData = new FormData();
 

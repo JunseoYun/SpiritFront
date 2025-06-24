@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   storeAddText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
 });
