@@ -1,52 +1,46 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {
-  View,
-  ScrollView,
-  Image,
-  StyleSheet,
-  Dimensions,
-  Text,
-} from 'react-native';
-
+import {View, ScrollView, StyleSheet, Dimensions, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
+import ImageActionModal from './ImageActionModal';
 
 const {width} = Dimensions.get('window');
 
 const ImageSlider = ({
+  storeId,
   images,
   interval = 3000,
   isUpdate = false,
   handleBottomOpen,
   onEditKey,
   onEditValue,
+  navigation,
 }) => {
-  const scrollRef = useRef(null); // ScrollView 참조
-  const [currentIndex, setCurrentIndex] = useState(1); // 현재 페이지 (첫 번째 실제 이미지로 초기화)
+  const scrollRef = useRef(null);
+  const [currentIndex, setCurrentIndex] = useState(1);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [localImages, setLocalImages] = useState(images); // 내부 상태로 복사
 
-  const handleEdit = (key, value) => {
-    onEditKey(key); // 수정 키와 값을 부모 컴포넌트로 전달
-    onEditValue(value);
-    handleBottomOpen(); // 바텀 시트 열기
-  };
+  // 외부에서 images 변경되면 내부 반영
+  useEffect(() => {
+    setLocalImages(images);
+  }, [images]);
 
-  // 이미지 배열 확장: 첫 번째와 마지막 이미지를 복제
-  const imagesWithLoop = [
-    images[images.length - 1], // 마지막 이미지
-    ...images, // 원본 이미지
-    images[0], // 첫 번째 이미지
-  ];
+  // 무한루프용 이미지 배열
+  const imagesWithLoop =
+    localImages.length > 1
+      ? [localImages[localImages.length - 1], ...localImages, localImages[0]]
+      : localImages;
 
   // 초기 위치 설정
   useEffect(() => {
-    if (scrollRef.current && images.length > 1) {
-      scrollRef.current.scrollTo({x: width, animated: false}); // 두 번째 이미지(실제 첫 번째 이미지)로 이동
+    if (scrollRef.current && localImages.length > 1) {
+      scrollRef.current.scrollTo({x: width, animated: false});
     }
-  }, [images]);
-
-  // 자동 슬라이드 구현
+  }, [localImages]);
+  // 자동 슬라이드
   useEffect(() => {
-    if (images.length > 1) {
+    if (localImages.length > 1) {
       const autoSlide = setInterval(() => {
         if (scrollRef.current) {
           const nextIndex = currentIndex + 1;
@@ -56,26 +50,23 @@ const ImageSlider = ({
           });
           setCurrentIndex(nextIndex);
         }
-      }, interval); // 사용자 정의 간격 (기본값: 3000ms)
-
-      return () => clearInterval(autoSlide); // 컴포넌트 언마운트 시 인터벌 제거
+      }, interval);
+      return () => clearInterval(autoSlide);
     }
-  }, [currentIndex, interval, images]);
+  }, [currentIndex, interval, localImages]);
 
-  // 스크롤이 끝날 때 실행 (무한 슬라이드 처리)
+  // 무한 슬라이드 처리
   const handleScrollEnd = event => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const index = Math.round(offsetX / width);
 
     if (index === 0) {
-      // 마지막 이미지에서 실제 마지막으로 점프
       scrollRef.current.scrollTo({
         x: width * (imagesWithLoop.length - 2),
         animated: false,
       });
       setCurrentIndex(imagesWithLoop.length - 2);
     } else if (index === imagesWithLoop.length - 1) {
-      // 첫 번째 이미지에서 실제 첫 번째로 점프
       scrollRef.current.scrollTo({x: width, animated: false});
       setCurrentIndex(1);
     } else {
@@ -91,13 +82,34 @@ const ImageSlider = ({
           size={50}
           color="#fff"
           style={styles.icon}
-          onPress={() => handleEdit('images', images)}
+          onPress={() => setModalVisible(true)}
         />
       )}
+      <ImageActionModal
+        visible={isModalVisible}
+        navigation={navigation}
+        onClose={() => setModalVisible(false)}
+        onEdit={() => {
+          setModalVisible(false);
+          handleBottomOpen();
+          onEditKey('images');
+          onEditValue(localImages);
+        }}
+        onSort={() => {
+          setModalVisible(false);
+          navigation.navigate('ImageReorderScreen', {
+            images: localImages,
+            storeId,
+            onSave: updatedImages => {
+              setLocalImages(updatedImages); // ✅ 슬라이더 즉시 반영
+            },
+          });
+        }}
+      />
 
-      {images.length > 0 ? (
+      {localImages.length > 0 ? (
         <View style={styles.sliderContainer}>
-          {images.length > 1 ? (
+          {localImages.length > 1 ? (
             <ScrollView
               ref={scrollRef}
               pagingEnabled
@@ -122,7 +134,7 @@ const ImageSlider = ({
             <View style={styles.imageContainer}>
               <FastImage
                 source={{
-                  uri: images[0].imageUrl,
+                  uri: localImages[0]?.imageUrl,
                   priority: FastImage.priority.normal,
                 }}
                 style={styles.image}
@@ -131,9 +143,9 @@ const ImageSlider = ({
             </View>
           )}
 
-          {images.length > 1 && (
+          {localImages.length > 1 && (
             <View style={styles.indicatorContainer}>
-              {images.map((_, index) => (
+              {localImages.map((_, index) => (
                 <View
                   key={index}
                   style={[
@@ -148,8 +160,8 @@ const ImageSlider = ({
       ) : (
         <View style={styles.noneImageContainer}>
           <FastImage
-            style={[styles.noneImage, {opacity: 0.7}]} // ✅ 불투명도 추가
-            source={require('../../assets/store.png')}
+            style={[styles.noneImage, {opacity: 0.7}]}
+            source={require('../../../assets/store.png')}
             resizeMode={FastImage.resizeMode.cover}
           />
         </View>
@@ -175,8 +187,8 @@ const styles = StyleSheet.create({
   icon: {
     position: 'absolute',
     top: 120,
-    left: (width - 50) / 2, // 아이콘 크기를 고려한 가운데 정렬
-    zIndex: 10, // 다른 요소 위에 표시
+    left: (width - 50) / 2,
+    zIndex: 10,
   },
   image: {
     width: '100%',
@@ -206,16 +218,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(16, 188, 251)',
     width: 14,
     height: 7,
-  },
-  emptyContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: width,
-    height: 300,
-  },
-  emptyText: {
-    color: 'white',
-    fontSize: 16,
   },
 });
 

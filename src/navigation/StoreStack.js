@@ -16,7 +16,9 @@ import StoreTimeEditScreen from '../screens/StoreInfo/StoreTimeEditScreen';
 import AlcoholEditScreen from '../screens/StoreInfo/Alcohol/AlcohoEditScreen';
 import UpdateStoreDrink from '../components/UpdateBottomSheet/UpdateStoreDrink';
 import MenuEditScreen from '../screens/StoreInfo/Menu/MenuEditScreen';
+import ImageReorderScreen from '../components/StoreScreen/StoreImage/ImageReorderScreen';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
+
 const Stack = createStackNavigator();
 
 export default function StoreStack() {
@@ -189,6 +191,41 @@ export default function StoreStack() {
         component={AlcoholEditScreen}
         options={({navigation}) => ({
           title: '주류 편집',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-SemiBold',
+            fontSize: 18,
+            color: '#333',
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                showAlert({
+                  title: '작성한 내용이 저장되지 않았습니다',
+                  message: '뒤로 가시겠습니까?',
+                  onConfirm: () => {
+                    navigation.goBack();
+                  },
+                  onCancel: null,
+                  type: 'confirm',
+                });
+              }}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="ImageReorderScreen"
+        component={ImageReorderScreen}
+        options={({navigation}) => ({
+          title: '매장 이미지 순서 변경',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-SemiBold',

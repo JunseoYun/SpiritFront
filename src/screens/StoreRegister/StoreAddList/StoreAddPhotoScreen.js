@@ -44,6 +44,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
   const storeInfoRef = useRef(null);
   const storeAddressRef = useRef(null);
   const storeImageRef = useRef(null);
+  console.log(address, coords);
 
   const handleAddressSelect = ({address, coords}) => {
     setAddress(address);

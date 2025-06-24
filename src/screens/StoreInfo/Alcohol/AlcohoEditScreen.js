@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#555',
   },
   activeTabText: {
@@ -308,11 +308,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   footer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    backgroundColor: 'white',
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingVertical: 10,
-    justifyContent: 'space-between',
+    paddingBottom: Platform.OS === 'ios' ? 30 : 10,
+    paddingTop: 10,
   },
   saveButton: {
     paddingVertical: 15,
@@ -328,7 +332,7 @@ const styles = StyleSheet.create({
   },
   saveText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
 });

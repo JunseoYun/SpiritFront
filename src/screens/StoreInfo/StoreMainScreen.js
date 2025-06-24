@@ -11,7 +11,7 @@ import {
   KeyboardAvoidingView,
   Dimensions,
 } from 'react-native';
-import ImageSlider from '../../components/StoreScreen/ImageSlider';
+import ImageSlider from '../../components/StoreScreen/StoreImage/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
@@ -464,12 +464,14 @@ const StoreMainScreen = ({navigation}) => {
                         },
                     ]}>
                     <ImageSlider
+                      storeId={storeId}
                       images={imageSliderData}
                       interval={4000}
                       isUpdate={isUpdate}
                       handleBottomOpen={handleBottomOpen}
                       onEditKey={handleEditKey}
                       onEditValue={handleEditValue}
+                      navigation={navigation}
                     />
                   </View>
                 )}
@@ -519,7 +521,7 @@ const StoreMainScreen = ({navigation}) => {
                         storeId={storeId}
                         menus={menus}
                         onMenuDelete={handleMenuDelete}
-                        isUpdatable={!storedata?.isUpdatable}
+                        isUpdatable={storedata?.isUpdatable}
                         onMenuUpdateComplete={refreshMenus}
                       />
                     )}
@@ -531,7 +533,7 @@ const StoreMainScreen = ({navigation}) => {
                         mainDrinks={storedata.mainDrinkDtos}
                         scrollViewRef={scrollViewRef}
                         onAlcoholDelete={handleAlcoholDelete}
-                        isUpdatable={!storedata?.isUpdatable}
+                        isUpdatable={storedata?.isUpdatable}
                         onAlcoholUpdateComplete={refresAlcohols}
                       />
                     )}
@@ -549,7 +551,7 @@ const StoreMainScreen = ({navigation}) => {
           startUpdate={startUpdate}
           handleReport={handleReport}
           handleReportList={handleReportList}
-          isUpdatable={!storedata?.isUpdatable}
+          isUpdatable={storedata?.isUpdatable}
         />
       </View>
       {isUpdate && (
@@ -639,7 +641,7 @@ const styles = StyleSheet.create({
   },
   endUpdateText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
   addImageButton: {
