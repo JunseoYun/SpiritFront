@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useLayoutEffect} from 'react';
+import React, {useState, useMemo, useLayoutEffect, useEffect} from 'react';
 import {
   View,
   Text,
@@ -192,29 +192,31 @@ const MenuEditScreen = ({route, navigation}) => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={styles.container}>
           <View pointerEvents={isDragging ? 'none' : 'auto'}>
-            <View style={styles.tabContainer}>
-              {['MAIN', 'NORMAL', 'SIDE'].map(type => (
-                <TouchableOpacity
-                  key={type}
-                  style={[
-                    styles.tabButton,
-                    activeTab === type && styles.activeTabButton,
-                  ]}
-                  onPress={() => setActiveTab(type)}>
-                  <Text
+            {menus.length > 0 && (
+              <View style={styles.tabContainer}>
+                {['MAIN', 'NORMAL', 'SIDE'].map(type => (
+                  <TouchableOpacity
+                    key={type}
                     style={[
-                      styles.tabText,
-                      activeTab === type && styles.activeTabText,
-                    ]}>
-                    {type === 'MAIN'
-                      ? '대표 메뉴'
-                      : type === 'NORMAL'
-                      ? '일반 메뉴'
-                      : '사이드 메뉴'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                      styles.tabButton,
+                      activeTab === type && styles.activeTabButton,
+                    ]}
+                    onPress={() => setActiveTab(type)}>
+                    <Text
+                      style={[
+                        styles.tabText,
+                        activeTab === type && styles.activeTabText,
+                      ]}>
+                      {type === 'MAIN'
+                        ? '대표 메뉴'
+                        : type === 'NORMAL'
+                        ? '일반 메뉴'
+                        : '사이드 메뉴'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
             {menus.length === 0 && (
               <TouchableOpacity
                 style={styles.MenuaddButton}
@@ -273,12 +275,13 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#555',
   },
   MenuaddButton: {
     alignItems: 'center',
     marginBottom: 20,
+    paddingTop: 25,
   },
   MenuaddButtonText: {
     color: '#45C9FF',
@@ -311,11 +314,15 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   storeAddTextview: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    backgroundColor: 'white',
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingVertical: 10,
-    justifyContent: 'space-between',
+    paddingBottom: Platform.OS === 'ios' ? 30 : 10,
+    paddingTop: 10,
   },
   saveButton: {
     paddingVertical: 15,
@@ -331,7 +338,7 @@ const styles = StyleSheet.create({
   },
   saveText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
 });
