@@ -1,12 +1,13 @@
 import React, {useState} from 'react';
-import {View, Text, TextInput, StyleSheet, Switch} from 'react-native';
+import {View, Text, TextInput, StyleSheet, Pressable} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const MenupriceInput = ({
-  label, // 입력 필드의 라벨
-  value, // 입력 값
-  onChangeText, // 값 변경 핸들러
-  placeholder, // 플레이스홀더
-  multiline = false, // 여러 줄 입력 여부
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  multiline = false,
   maxLength,
   onToggleVariable,
   isVariable,
@@ -14,8 +15,8 @@ const MenupriceInput = ({
   const [isFocused, setIsFocused] = useState(false);
 
   const handleTextChange = text => {
-    const lines = text.split('\n'); // 줄바꿈 개수 확인
-    if (lines.length > 2) return; // ✅ 3줄 초과 입력 방지
+    const lines = text.split('\n');
+    if (lines.length > 2) return;
 
     if (onChangeText) {
       onChangeText(text);
@@ -24,21 +25,9 @@ const MenupriceInput = ({
 
   return (
     <View style={styles.inputContainer}>
-      <View style={styles.checkRow}>
-        <Text
-          style={[styles.checkLabel, {color: isVariable ? '#45C9FF' : '#999'}]}>
-          변동
-        </Text>
-        <Switch
-          value={isVariable}
-          onValueChange={onToggleVariable}
-          trackColor={{false: '#ccc', true: '#16BBFF'}}
-          thumbColor={'#fff'}
-        />
-      </View>
       {(isVariable || value) && <Text style={styles.label}>{label}</Text>}
 
-      <View style={[styles.inputRow, isVariable && null]}>
+      <View style={styles.inputRow}>
         {!isVariable && (
           <TextInput
             style={[
@@ -58,6 +47,16 @@ const MenupriceInput = ({
           />
         )}
       </View>
+
+      <Pressable style={styles.checkRow} onPress={onToggleVariable}>
+        <View style={[styles.checkBox, isVariable && styles.checkBoxChecked]}>
+          {isVariable && <Icon name="check" size={16} color="#fff" />}
+        </View>
+        <Text
+          style={[styles.checkLabel, isVariable && styles.checkLabelActive]}>
+          변동
+        </Text>
+      </Pressable>
     </View>
   );
 };
@@ -70,14 +69,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     color: '#999',
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
   },
   input: {
-    flex: 1, // ✅ 남는 공간 채우기
+    flex: 1,
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 7,
     paddingLeft: 1,
     color: 'black',
@@ -88,39 +87,44 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 1,
     fontSize: 20,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     textAlignVertical: 'top',
     marginBottom: 20,
     color: 'black',
   },
-  labelRow: {
+  inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
-    marginVertical: 5,
-    marginLeft: 20,
-    marginTop: 10,
-  },
-  labelText: {
-    fontSize: 16,
-    color: '#999',
-    fontWeight: '500',
-    marginRight: 10,
+    justifyContent: 'space-between',
   },
   checkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginTop: 12,
+  },
+  checkBox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkBoxChecked: {
+    backgroundColor: '#16BBFF',
+    borderColor: '#16BBFF',
   },
   checkLabel: {
     fontSize: 15,
-    marginRight: 5,
+    color: '#999',
     fontFamily: 'Pretendard-Medium',
   },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between', // ✅ 좌우로 정렬
+  checkLabelActive: {
+    color: '#16BBFF',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

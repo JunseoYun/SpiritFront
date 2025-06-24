@@ -6,6 +6,10 @@ import {
   SafeAreaView,
   View,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import AlcoholAddForm from '../../../components/AlcoholAddScreen/AlcoholAddForm';
@@ -161,26 +165,34 @@ const AlcoholAddScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        ref={scrollViewRef}
-        contentContainerStyle={styles.scrollContainer}>
-        {alcohols.map((alcohol, index) => (
-          <AlcoholAddForm
-            key={index}
-            alcohol={alcohol}
-            index={index}
-            handleAlcoholChange={handleAlcoholChange}
-            onDelete={handleDeleteAlcohol}
-          />
-        ))}
-      </ScrollView>
-      <AlertComponent />
-      <View style={styles.menuAddTextview}>
-        <Pressable style={styles.menuAddButton} onPress={handleAddAlcohol}>
-          <Text style={styles.menuAddText}>주류 추가</Text>
-        </Pressable>
-      </View>
-      <Loading loading={loading} />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          style={{flex: 1, backgroundColor: '#F7F8FA'}}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <ScrollView
+            ref={scrollViewRef}
+            contentContainerStyle={{flexGrow: 1, paddingBottom: 40}} // 👈 핵심
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}>
+            {alcohols.map((alcohol, index) => (
+              <AlcoholAddForm
+                key={index}
+                alcohol={alcohol}
+                index={index}
+                handleAlcoholChange={handleAlcoholChange}
+                onDelete={handleDeleteAlcohol}
+              />
+            ))}
+          </ScrollView>
+          <AlertComponent />
+          <View style={styles.menuAddTextview}>
+            <Pressable style={styles.menuAddButton} onPress={handleAddAlcohol}>
+              <Text style={styles.menuAddText}>주류 추가</Text>
+            </Pressable>
+          </View>
+          <Loading loading={loading} />
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 };
@@ -188,7 +200,7 @@ const AlcoholAddScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
   },
   headerButton: {
     marginRight: 18,
@@ -215,6 +227,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
     paddingVertical: 10,
+    backgroundColor: '#fff',
   },
   menuAddButton: {
     paddingVertical: 15,

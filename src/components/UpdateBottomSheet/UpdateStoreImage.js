@@ -131,7 +131,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
 
   const selectImage = () => {
     if (addedImages.length + serverImages.length >= 5) {
-      showToast('이미지는 최대 5개까지 추가할 수 있습니다.');
+      showToast('이미지는 최대 5개 입니다.');
       return;
     }
     setBottomSheetVisible(true); // 바텀시트 열기
@@ -142,26 +142,14 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
       showToast('이미지는 최소 1개 이상 필요합니다.');
       return;
     }
+    setLoading(true);
+    const imageToRemove = serverImages[index];
+    setServerImages(prev => prev.filter((_, i) => i !== index));
+    setDeletedImages(prev => [...prev, imageToRemove]);
 
-    showAlert({
-      title: '이미지를 삭제하시겠습니까?',
-      onConfirm: async () => {
-        setLoading(true);
-        try {
-          const imageToRemove = serverImages[index];
-          setServerImages(prev => prev.filter((_, i) => i !== index));
-          setDeletedImages(prev => [...prev, imageToRemove]);
+    showToast('이미지가 삭제 되었습니다.');
 
-          showToast('삭제 되었습니다.');
-        } catch (error) {
-          showToast('이미지 삭제 실패.');
-        } finally {
-          setLoading(false);
-        }
-      },
-      onCancel: null,
-      type: 'delete',
-    });
+    setLoading(false);
   };
 
   const removeAddedImage = index => {
@@ -169,24 +157,11 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
       showToast('이미지는 최소 1개 이상 필요합니다.');
       return;
     }
-    showAlert({
-      title: '이미지를 삭제하시겠습니까?',
-      onConfirm: async () => {
-        setLoading(true);
-        try {
-          setAddedImages(prevImages =>
-            prevImages.filter((_, i) => i !== index),
-          );
-          showToast('삭제 되었습니다.');
-        } catch (err) {
-          showToast('이미지 삭제 실패.');
-        } finally {
-          setLoading(false);
-        }
-      },
-      onCancel: null,
-      type: 'delete',
-    });
+    setLoading(true);
+    setAddedImages(prevImages => prevImages.filter((_, i) => i !== index));
+    showToast('이미지가 삭제 되었습니다.');
+
+    setLoading(false);
   };
 
   return (

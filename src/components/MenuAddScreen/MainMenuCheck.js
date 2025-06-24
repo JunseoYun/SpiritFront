@@ -1,60 +1,88 @@
 import React from 'react';
-import {View, Text, Pressable, StyleSheet, Switch} from 'react-native';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
 
-const MainMenuCheck = ({isChecked, onToggle, imagecheck}) => {
+const MENU_TYPES = [
+  {label: '일반', value: 'NORMAL'},
+  {label: '대표', value: 'MAIN'},
+  {label: '사이드', value: 'SIDE'},
+];
+
+const MainMenuCheck = ({selectedType, imagecheck, onChangeType, isUpdate}) => {
   return (
-    <>
-      <View
-        style={{
-          flexDirection: 'row',
-          marginLeft: 18,
-          alignItems: 'center',
-        }}>
-        <Text style={styles.checkBoxText}>대표 메뉴로 설정</Text>
-        <Switch
-          value={isChecked}
-          onValueChange={onToggle}
-          trackColor={{false: '#ccc', true: '#16BBFF'}}
-          thumbColor={'#fff'}
-        />
+    <View
+      style={[
+        styles.container,
+        isUpdate && {marginHorizontal: 0, marginTop: 10},
+      ]}>
+      {!isUpdate && <Text style={styles.labelText}>메뉴 구분</Text>}
+      <View style={styles.typeView}>
+        {MENU_TYPES.map(type => {
+          const isSelected = selectedType === type.value;
+          return (
+            <Pressable
+              key={type.value}
+              style={[styles.button, isSelected && styles.buttonSelected]}
+              onPress={() => onChangeType(type.value)}>
+              <Text style={[styles.text, isSelected && styles.textSelected]}>
+                {type.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
-      {!imagecheck && isChecked && (
+
+      {!imagecheck && selectedType === 'MAIN' && (
         <Text style={styles.textinfo}>
-          대표 메뉴는 사진을 등록하지 않으면 카테고리 탭에 노출되지 않아요.
+          대표 메뉴는 사진이 없으면 카테고리 탭에 표시되지 않아요.
         </Text>
       )}
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: '40%',
     marginHorizontal: 18,
-    flexDirection: 'row',
-    paddingTop: 10,
     marginTop: 20,
   },
-  checkBoxIndicator: {
-    width: 20,
-    height: 20,
-    borderRadius: 3,
-    borderWidth: 1,
-    borderColor: '#999',
-    marginRight: 10,
-  },
-  checkBoxText: {
+  labelText: {
     fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-    marginRight: 5,
+    marginBottom: 8,
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
+  },
+  typeView: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  button: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonSelected: {
+    backgroundColor: '#E8F7FF',
+    borderColor: '#16BBFF',
+  },
+  text: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
+  },
+  textSelected: {
+    color: '#16BBFF',
+    fontWeight: '600',
   },
   textinfo: {
-    fontFamily: 'Pretendard-Medium',
     fontSize: 14,
-    marginHorizontal: 18,
-    marginVertical: 10,
     color: '#999',
+    marginTop: 8,
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

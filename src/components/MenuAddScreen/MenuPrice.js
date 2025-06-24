@@ -1,12 +1,5 @@
 import React, {useState, forwardRef} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  Pressable,
-  Switch,
-} from 'react-native';
+import {View, Text, TextInput, StyleSheet, Pressable} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const MenuPrice = forwardRef(
@@ -22,14 +15,14 @@ const MenuPrice = forwardRef(
       maxLength,
       isVariable,
       onToggleVariable,
-      returnKeyType = 'done', // 기본값 설정
+      returnKeyType = 'done',
       onSubmitEditing,
     },
     ref,
   ) => {
     const handleTextChange = text => {
-      const lines = text.split('\n'); // 줄바꿈 개수 확인
-      if (lines.length > 2) return; // ✅ 3줄 초과 입력 방지
+      const lines = text.split('\n');
+      if (lines.length > 2) return;
 
       if (onChangeText) {
         onChangeText(text);
@@ -37,41 +30,39 @@ const MenuPrice = forwardRef(
     };
 
     return (
-      <View style={[styles.inputContainer]}>
-        <View style={styles.checkRow}>
+      <View style={styles.inputContainer}>
+        {(isVariable || value) && <Text style={styles.label}>{label}</Text>}
+
+        {!isVariable && (
+          <TextInput
+            style={[styles.input, multiline && styles.textarea, style]}
+            value={value}
+            ref={ref}
+            onChangeText={handleTextChange}
+            placeholder={placeholder}
+            placeholderTextColor={placeholderTextColor}
+            multiline={multiline}
+            maxLength={maxLength}
+            numberOfLines={3}
+            keyboardType="number-pad"
+            returnKeyType={returnKeyType}
+            onSubmitEditing={onSubmitEditing}
+          />
+        )}
+
+        <Pressable style={styles.checkboxRow} onPress={onToggleVariable}>
+          <View
+            style={[styles.checkboxIcon, isVariable && styles.checkboxChecked]}>
+            {isVariable && <Icon name="check" size={14} color="#fff" />}
+          </View>
           <Text
             style={[
-              styles.checkLabel,
-              {color: isVariable ? '#45C9FF' : '#999'},
+              styles.checkboxLabel,
+              isVariable && styles.checkboxLabelActive,
             ]}>
             변동
           </Text>
-          <Switch
-            value={isVariable}
-            onValueChange={onToggleVariable}
-            trackColor={{false: '#ccc', true: '#16BBFF'}}
-            thumbColor={'#fff'}
-          />
-        </View>
-        {(isVariable || value) && <Text style={styles.label}>{label}</Text>}
-        <View style={[styles.inputRow, isVariable && null]}>
-          {!isVariable && (
-            <TextInput
-              style={[styles.input, multiline && styles.textarea, style]}
-              value={value}
-              ref={ref}
-              onChangeText={handleTextChange}
-              placeholder={placeholder}
-              placeholderTextColor={placeholderTextColor}
-              multiline={multiline}
-              maxLength={maxLength}
-              numberOfLines={3}
-              keyboardType="number-pad"
-              returnKeyType={returnKeyType}
-              onSubmitEditing={onSubmitEditing}
-            />
-          )}
-        </View>
+        </Pressable>
       </View>
     );
   },
@@ -82,39 +73,53 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     flex: 1,
     paddingLeft: 18,
+    paddingRight: 18,
   },
   label: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between', // ✅ 좌우로 정렬
+    marginBottom: 8,
   },
   input: {
-    flex: 1, // ✅ 남는 공간 채우기
+    flex: 1,
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 7,
-    paddingLeft: 1,
     color: 'black',
   },
   textarea: {
     textAlignVertical: 'top',
   },
-  checkRow: {
+  checkboxRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginTop: 12,
   },
-  checkLabel: {
+  checkboxIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  checkboxChecked: {
+    backgroundColor: '#16BBFF',
+    borderColor: '#16BBFF',
+  },
+  checkboxLabel: {
     fontSize: 15,
-    marginRight: 5,
     fontFamily: 'Pretendard-Medium',
+    color: '#666',
+  },
+  checkboxLabelActive: {
+    color: '#16BBFF',
   },
 });
 
