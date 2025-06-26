@@ -41,7 +41,7 @@ const MapScreen = ({navigation}) => {
   const {showToast} = useToast();
   const [isFlatListVisible, setIsFlatListVisible] = useState(true); // 플랫리스트 상태
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
-  const [radius, setRadiusint] = useState(2);
+  const [radius, setRadiusint] = useState(0.5);
   const prevRadiusRef = useRef(radius);
 
   useFocusEffect(
