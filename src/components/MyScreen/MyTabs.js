@@ -16,7 +16,7 @@ const MyTabs = ({changePage, isManager}) => {
 
   const tabs = [
     {name: '나의 리뷰', screen: 'MyReview'},
-    {name: '위치 설정', screen: 'MyLocation'},
+    {name: '현재 위치', screen: 'MyLocation'},
   ];
 
   if (isManager) {

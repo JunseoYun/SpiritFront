@@ -5,14 +5,14 @@ const alcoholMapping = {
   SOJU: '소주',
   BEER: '맥주',
   MAKGEOLLI: '막걸리',
+  TRADITIONAL: '전통주',
+  HIGHBALL: '하이볼',
   WINE: '와인',
   COCKTAIL: '칵테일',
   SAKE: '사케',
   KAOLIANG: '고량주',
   WHISKEY: '위스키',
   VODKA: '보드카',
-  GIN: '진',
-  HIGHBALL: '하이볼',
   TEQUILA: '데킬라',
 };
 
