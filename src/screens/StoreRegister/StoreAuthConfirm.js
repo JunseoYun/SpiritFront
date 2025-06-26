@@ -53,6 +53,7 @@ const StoreAuthConfirm = ({navigation}) => {
   } = data;
   const [loading, setLoading] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const [confirm, setConfirm] = useState(false);
 
   const displayedOwners = hasCoRepresentative ? owners : [owners[0]];
 
@@ -97,6 +98,7 @@ const StoreAuthConfirm = ({navigation}) => {
 
     try {
       setLoading(true);
+      setConfirm(true);
       if (storeSuggestionData) {
         const response = await Create_store_with_ownership(payload);
         if (response.status === 200) {
@@ -105,6 +107,7 @@ const StoreAuthConfirm = ({navigation}) => {
             message:
               '신청 내용을 확인한 후, 빠른 시일 내에 \n알림으로 안내드릴 예정입니다.',
             onConfirm: () => {
+              setConfirm(false);
               navigation.reset({
                 index: 0,
                 routes: [
@@ -122,6 +125,7 @@ const StoreAuthConfirm = ({navigation}) => {
         showAlert({
           title: '매장 인증 신청 완료',
           onConfirm: () => {
+            setConfirm(false);
             navigation.reset({
               index: 1,
               routes: [
@@ -144,6 +148,7 @@ const StoreAuthConfirm = ({navigation}) => {
       }
     } catch (error) {
       const errorCode = error?.response?.data?.code;
+      setConfirm(false);
       showAlert({
         title: '신청 실패',
         message: getErrorMessage(errorCode),
@@ -157,12 +162,14 @@ const StoreAuthConfirm = ({navigation}) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Pressable onPress={handleSubmit}>
-          <Text style={styles.headerButton}>제출</Text>
+        <Pressable
+          onPress={loading || confirm ? null : handleSubmit}
+          disabled={loading || confirm}>
+          <Text style={[styles.headerButton]}>제출</Text>
         </Pressable>
       ),
     });
-  }, [navigation, handleSubmit]);
+  }, [navigation, handleSubmit, loading, confirm]);
 
   return (
     <SafeAreaView style={styles.container}>

@@ -24,6 +24,7 @@ const MenuAddScreen = ({navigation}) => {
   const scrollViewRef = useRef(null);
   const {storeId} = route.params;
   const [loading, setLoading] = useState(false);
+  const [confirm, setConfirm] = useState(false);
   const {showToast} = useToast();
 
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -100,6 +101,7 @@ const MenuAddScreen = ({navigation}) => {
     }
 
     try {
+      setConfirm(true);
       setLoading(true);
       // 각 메뉴에 대해 StoreMenucreate를 호출하도록 map 사용
       const promises = menus.map(menu => {
@@ -123,6 +125,7 @@ const MenuAddScreen = ({navigation}) => {
       showAlert({
         title: '메뉴 등록이 완료되었습니다.',
         onConfirm: () => {
+          setConfirm(false);
           navigation.replace('StoreStack', {
             screen: 'StoreMainScreen',
             params: {
@@ -132,6 +135,7 @@ const MenuAddScreen = ({navigation}) => {
         },
       });
     } catch (error) {
+      setConfirm(false);
       showAlert({
         title: '메뉴 추가 오류',
         message: `메뉴 추가 중 \n오류가 발생하였습니다.`,
@@ -144,12 +148,14 @@ const MenuAddScreen = ({navigation}) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Pressable onPress={MenuAdd}>
-          <Text style={styles.headerButton}>완료</Text>
+        <Pressable
+          onPress={loading || confirm ? null : MenuAdd}
+          disabled={loading || confirm}>
+          <Text style={[styles.headerButton]}>완료</Text>
         </Pressable>
       ),
     });
-  }, [navigation, MenuAdd]);
+  }, [navigation, MenuAdd, loading, confirm]);
 
   return (
     <SafeAreaView style={styles.container}>
