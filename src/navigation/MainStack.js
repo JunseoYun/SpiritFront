@@ -48,7 +48,7 @@ export default function MainStack() {
         name="SetLocationScreen"
         component={SetLocationScreen}
         options={({navigation}) => ({
-          title: '위치 설정',
+          title: '내 위치 변경',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
