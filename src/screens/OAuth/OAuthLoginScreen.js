@@ -19,12 +19,10 @@ import {useAuth} from '../../context/AuthContext';
 import Config from 'react-native-config';
 import FastImage from 'react-native-fast-image';
 import useCustomAlert from '../../hooks/useCustomAlert';
-// import {setUnLogin, clearUnLogin} from '../../storage/tokenStorage';
 import {useToast} from '../../context/ToastContext';
 import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
 import Loading from '../../hooks/Loading';
 const OAuthLoginScreen = ({navigation}) => {
-  // const {loginauth, clearUnLogout, unLogin} = useAuth();
   const {loginauth} = useAuth();
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
