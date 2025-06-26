@@ -14,10 +14,10 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 const {width} = Dimensions.get('window');
 
 const MapRadius = ({setRadiusint}) => {
-  const [selectedDistance, setSelectedDistance] = useState(2);
+  const [selectedDistance, setSelectedDistance] = useState(0.5);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const insets = useSafeAreaInsets();
-  const distanceOptions = [1, 2, 3, 5];
+  const distanceOptions = [0.5, 1, 2];
 
   const handleSelect = distance => {
     setSelectedDistance(distance);
@@ -39,7 +39,10 @@ const MapRadius = ({setRadiusint}) => {
         <Pressable
           style={styles.searchView}
           onPress={() => setDropdownVisible(prev => !prev)}>
-          <Text style={styles.buttonTextTop}>{selectedDistance}km</Text>
+          <Text style={styles.buttonTextTop}>
+            {' '}
+            {selectedDistance == 0.5 ? '500m' : `${selectedDistance}km`}
+          </Text>
           <Entypo
             name="chevron-small-down"
             size={20}
@@ -60,7 +63,7 @@ const MapRadius = ({setRadiusint}) => {
                     styles.optionText,
                     item === selectedDistance && styles.selectedOptionText,
                   ]}>
-                  {item}km
+                  {item == 0.5 ? '500m' : `${item}km`}
                 </Text>
               </Pressable>
             ))}
@@ -82,7 +85,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 7,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     borderRadius: 5,
     shadowColor: '#333',
     shadowOffset: {width: 0, height: 2},

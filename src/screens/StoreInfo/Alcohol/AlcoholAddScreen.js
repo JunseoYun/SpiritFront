@@ -21,6 +21,7 @@ import {useToast} from '../../../context/ToastContext';
 
 const AlcoholAddScreen = ({navigation}) => {
   const [loading, setLoading] = useState(false);
+  const [confirm, setConfirm] = useState(false);
   const route = useRoute();
   const scrollViewRef = useRef(null);
   const {storeId} = route.params;
@@ -112,6 +113,7 @@ const AlcoholAddScreen = ({navigation}) => {
     }
 
     try {
+      setConfirm(true);
       setLoading(true);
       // 각 메뉴에 대해 StoreMenucreate를 호출하도록 map 사용
       const promises = alcohols.map(alcohol => {
@@ -135,6 +137,7 @@ const AlcoholAddScreen = ({navigation}) => {
       showAlert({
         title: '주류 등록이 완료되었습니다.',
         onConfirm: () => {
+          setConfirm(false);
           navigation.replace('StoreStack', {
             screen: 'StoreMainScreen',
             params: {
@@ -144,6 +147,7 @@ const AlcoholAddScreen = ({navigation}) => {
         },
       });
     } catch (error) {
+      setConfirm(false);
       showAlert({
         title: '주류 추가 오류',
         message: `주류 추가 중 \n오류가 발생하였습니다.`,
@@ -156,12 +160,14 @@ const AlcoholAddScreen = ({navigation}) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Pressable onPress={AlcoholAdd}>
-          <Text style={styles.headerButton}>완료</Text>
+        <Pressable
+          onPress={loading || confirm ? null : AlcoholAdd}
+          disabled={loading || confirm}>
+          <Text style={[styles.headerButton]}>완료</Text>
         </Pressable>
       ),
     });
-  }, [navigation, AlcoholAdd]);
+  }, [navigation, AlcoholAdd, loading, confirm]);
 
   return (
     <SafeAreaView style={styles.container}>
