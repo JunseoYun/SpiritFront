@@ -60,7 +60,7 @@ const MyLocation = ({navigation}) => {
         </View>
       </View>
       <Pressable style={styles.button} onPress={searchAddressHandle}>
-        <Text style={styles.buttonText}>위치 설정하기</Text>
+        <Text style={styles.buttonText}>내 위치 변경하기</Text>
       </Pressable>
     </ScrollView>
   );

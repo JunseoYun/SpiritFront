@@ -1,21 +1,18 @@
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
-  ScrollView,
   StyleSheet,
   Text,
   View,
   RefreshControl,
-  SafeAreaView,
   Pressable,
   BackHandler,
   ToastAndroid,
   Animated,
   Platform,
-  StatusBar,
+  Dimensions,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
-// import Feather from 'react-native-vector-icons/Feather';
 
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
 import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
@@ -33,12 +30,11 @@ import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
 import MainHeader from '../../components/MainScreen/Header/MainHeader';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {Dimensions} from 'react-native';
 import RejectModal from '../../components/Reject/RejectModal';
 import useHandlePendingNotification from '../../hooks/notification/useHandlePendingNotification';
 import {useNotification} from '../../context/NotificationContext';
 const screenHeight = Dimensions.get('window').height;
-
+const screenWidth = Dimensions.get('window').width;
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
@@ -264,7 +260,7 @@ const MainScreen = ({navigation}) => {
           </Text>
           {!showLocation && (
             <Pressable
-              hitSlop={15}
+              hitSlop={{left: screenWidth, right: 15, top: 15, bottom: 15}}
               style={{zIndex: 1, position: 'relative'}}
               onPress={setLocationHandle}>
               <Feather name="chevron-right" size={23} color="#fff" />

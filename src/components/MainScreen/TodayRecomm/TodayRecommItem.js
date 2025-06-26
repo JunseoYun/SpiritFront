@@ -14,7 +14,7 @@ const drinkColors = {
   KAOLIANG: '#5D4037',
   WHISKEY: '#6D4C41',
   VODKA: '#3949AB',
-  GIN: '#2E7D32',
+  TRADITIONAL: '#C8A85E',
   HIGHBALL: '#20B2AA',
   TEQUILA: '#EF6C00',
 };
