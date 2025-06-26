@@ -184,8 +184,8 @@ const AlcoholEditScreen = ({route, navigation}) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       style={{flex: 1}}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View pointerEvents={isDragging ? 'none' : 'auto'}>
             <View style={styles.tabContainer}>
               {Object.entries(alcoholMapping)
@@ -216,23 +216,23 @@ const AlcoholEditScreen = ({route, navigation}) => {
               </TouchableOpacity>
             )}
           </View>
+        </TouchableWithoutFeedback>
 
-          <View style={styles.listWrapper}>
-            {renderList(currentData, setCurrentData)}
-          </View>
+        <View style={styles.listWrapper}>
+          {renderList(currentData, setCurrentData)}
+        </View>
 
-          <View
-            style={styles.footer}
-            pointerEvents={isDragging ? 'none' : 'auto'}>
-            <Pressable onPress={handleSave} style={styles.saveButton}>
-              <Text style={styles.saveText}>편집 완료</Text>
-            </Pressable>
-          </View>
+        <View
+          style={styles.footer}
+          pointerEvents={isDragging ? 'none' : 'auto'}>
+          <Pressable onPress={handleSave} style={styles.saveButton}>
+            <Text style={styles.saveText}>편집 완료</Text>
+          </Pressable>
+        </View>
 
-          <AlertComponent />
-          <Loading loading={loading} />
-        </SafeAreaView>
-      </TouchableWithoutFeedback>
+        <AlertComponent />
+        <Loading loading={loading} />
+      </SafeAreaView>
     </KeyboardAvoidingView>
   );
 };

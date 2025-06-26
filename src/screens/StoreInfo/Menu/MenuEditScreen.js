@@ -189,8 +189,8 @@ const MenuEditScreen = ({route, navigation}) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       style={{flex: 1}}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View pointerEvents={isDragging ? 'none' : 'auto'}>
             {menus.length > 0 && (
               <View style={styles.tabContainer}>
@@ -225,22 +225,22 @@ const MenuEditScreen = ({route, navigation}) => {
               </TouchableOpacity>
             )}
           </View>
+        </TouchableWithoutFeedback>
 
-          <View style={styles.listWrapper}>
-            {renderList(currentData, setCurrentData)}
-          </View>
+        <View style={styles.listWrapper}>
+          {renderList(currentData, setCurrentData)}
+        </View>
 
-          <View
-            style={styles.storeAddTextview}
-            pointerEvents={isDragging ? 'none' : 'auto'}>
-            <Pressable onPress={handleSave} style={styles.saveButton}>
-              <Text style={styles.saveText}>편집 완료</Text>
-            </Pressable>
-          </View>
-          <Loading loading={loading} />
-          <AlertComponent />
-        </SafeAreaView>
-      </TouchableWithoutFeedback>
+        <View
+          style={styles.storeAddTextview}
+          pointerEvents={isDragging ? 'none' : 'auto'}>
+          <Pressable onPress={handleSave} style={styles.saveButton}>
+            <Text style={styles.saveText}>편집 완료</Text>
+          </Pressable>
+        </View>
+        <Loading loading={loading} />
+        <AlertComponent />
+      </SafeAreaView>
     </KeyboardAvoidingView>
   );
 };

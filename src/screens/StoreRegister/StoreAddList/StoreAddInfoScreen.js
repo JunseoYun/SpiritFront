@@ -47,6 +47,7 @@ const StoreAddInfoScreen = ({navigation}) => {
   const storeOperateRef = useRef(null);
   const storeDrinkRef = useRef(null);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const [confirm, setConfirm] = useState(false);
 
   const [operatingHours, setOperatingHours] = useState({
     Monday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
@@ -128,7 +129,6 @@ const StoreAddInfoScreen = ({navigation}) => {
       return;
     }
     const isRegister = !!index;
-
     showAlert({
       title: isRegister ? '매장 등록' : '매장 제보',
       message: isRegister
@@ -145,8 +145,10 @@ const StoreAddInfoScreen = ({navigation}) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Pressable onPress={confirmSubmission}>
-          <Text style={styles.nextButton}>{index ? '등록' : '제보'}</Text>
+        <Pressable
+          onPress={loading || confirm ? null : confirmSubmission}
+          disabled={loading || confirm}>
+          <Text style={[styles.nextButton]}>{index ? '등록' : '제보'}</Text>
         </Pressable>
       ),
     });
@@ -165,6 +167,8 @@ const StoreAddInfoScreen = ({navigation}) => {
     closedDay,
     alcohol,
     imageUris,
+    confirm,
+    loading,
   ]);
 
   const adjustTime = time => {
@@ -313,6 +317,7 @@ const StoreAddInfoScreen = ({navigation}) => {
           storeSuggestionData: data,
         });
       } else {
+        setConfirm(true);
         setLoading(true);
         response = await StoreSuggestion(data);
         if (response.status === 200) {
@@ -320,6 +325,7 @@ const StoreAddInfoScreen = ({navigation}) => {
             title: '매장 제보가 완료되었습니다.',
             message: '다른 분들을 위해 \n매장 제보를 해주셔서 감사합니다.',
             onConfirm: () => {
+              setConfirm(false);
               navigation.reset({
                 index: 0,
                 routes: [
@@ -335,6 +341,7 @@ const StoreAddInfoScreen = ({navigation}) => {
       }
     } catch (error) {
       console.error(error);
+      setConfirm(false);
       showAlert({
         title: '등록 실패',
         message: '로그인 상태를 확인해주세요.',
