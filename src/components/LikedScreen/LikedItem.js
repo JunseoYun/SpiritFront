@@ -22,12 +22,12 @@ const drinkColors = {
   KAOLIANG: '#5D4037',
   WHISKEY: '#6D4C41',
   VODKA: '#3949AB',
-  GIN: '#2E7D32',
+  TRADITIONAL: '#C8A85E',
   RUM: '#3E2723',
   HIGHBALL: '#20B2AA',
   TEQUILA: '#EF6C00',
 };
-// utils/colorUtils.js (또는 상단에 직접 추가해도 됨)
+
 const hexToRGBA = (hex, opacity = 0.3) => {
   let col = hex.replace('#', '');
 
@@ -126,7 +126,7 @@ const LikedItem = ({store, navigation}) => {
                       <Text
                         style={[
                           styles.drinkText,
-                          {color: baseColor, borderColor: borderColor},
+                          {color: '#fff', backgroundColor: borderColor},
                         ]}>
                         {translateAlcohol(drink.type)} {drink.price}
                       </Text>
@@ -275,7 +275,6 @@ const styles = StyleSheet.create({
     color: '#333',
     fontFamily: 'Pretendard-Medium',
     fontSize: 14,
-    borderWidth: 1.2,
     padding: 4,
     borderRadius: 5,
     marginRight: 7,

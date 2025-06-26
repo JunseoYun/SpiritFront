@@ -5,6 +5,7 @@ const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
   {label: '맥주', value: 'BEER'},
   {label: '막걸리', value: 'MAKGEOLLI'},
+  {label: '전통주', value: 'TRADITIONAL'},
   {label: '하이볼', value: 'HIGHBALL'},
   {label: '와인', value: 'WINE'},
   {label: '칵테일', value: 'COCKTAIL'},
@@ -12,7 +13,6 @@ const alcoholTypes = [
   {label: '고량주', value: 'KAOLIANG'},
   {label: '위스키', value: 'WHISKEY'},
   {label: '보드카', value: 'VODKA'},
-  {label: '진', value: 'GIN'},
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
