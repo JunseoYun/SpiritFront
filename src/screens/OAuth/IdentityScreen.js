@@ -7,7 +7,6 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   ScrollView,
-  SafeAreaView,
 } from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import filterWords from '../../hooks/filterWords';
