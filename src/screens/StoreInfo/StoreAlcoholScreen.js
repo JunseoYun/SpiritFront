@@ -100,7 +100,12 @@ const StoreAlcoholScreen = ({
         <View key={type}>
           <Text style={styles.typeLabel}>{type}</Text>
           {groupedAlcohols[type].map(alcohol => (
-            <AlcoholItem key={alcohol.id} alcohol={alcohol} storeId={storeId} />
+            <AlcoholItem
+              key={alcohol.id}
+              alcohol={alcohol}
+              storeId={storeId}
+              navigation={navigation}
+            />
           ))}
           <View style={styles.line} />
         </View>

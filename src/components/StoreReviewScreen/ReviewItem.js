@@ -28,6 +28,13 @@ const ReviewItem = ({item, navigation}) => {
   const formattedCreatedDate = formatDate(item.createdAt);
   const formattedVisitedDate = formatDate(item.visitedAt);
 
+  const handleImagePress = index => {
+    navigation.navigate('ImageViewerScreen', {
+      images: item.imgUrlList,
+      index: index,
+    });
+  };
+
   // 최대 3줄까지만 표시 (그 이상이면 '...더보기' 버튼 활성화)
   const MAX_LENGTH = 70; // 100글자 기준으로 줄이기
   const isLongText = item.content.length > MAX_LENGTH;
@@ -83,15 +90,21 @@ const ReviewItem = ({item, navigation}) => {
           style={styles.imageScrollView}
           contentContainerStyle={styles.imageContainer}>
           {item.imgUrlList.map((image, index) => (
-            <FastImage
+            <Pressable
               key={image || index}
-              source={{
-                uri: image,
-                priority: FastImage.priority.normal,
-              }}
-              style={styles.reviewImage}
-              resizeMode={FastImage.resizeMode.cover}
-            />
+              onPress={() => {
+                handleImagePress(index);
+              }}>
+              <FastImage
+                key={image || index}
+                source={{
+                  uri: image,
+                  priority: FastImage.priority.normal,
+                }}
+                style={styles.reviewImage}
+                resizeMode={FastImage.resizeMode.cover}
+              />
+            </Pressable>
           ))}
         </ScrollView>
       )}

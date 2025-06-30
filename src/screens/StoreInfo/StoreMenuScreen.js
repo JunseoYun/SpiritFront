@@ -36,6 +36,7 @@ const StoreMenuScreen = ({
                 key={menu.id}
                 menu={menu}
                 isLast={idx === mainAndNormal.length - 1} // ✅ 추가
+                navigation={navigation}
               />
             ))}
             <View style={styles.line} />
@@ -50,6 +51,7 @@ const StoreMenuScreen = ({
                 key={menu.id}
                 menu={menu}
                 isLast={idx === sideMenus.length - 1} // ✅ 추가
+                navigation={navigation}
               />
             ))}
 

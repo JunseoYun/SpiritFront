@@ -18,6 +18,7 @@ import UpdateStoreDrink from '../components/UpdateBottomSheet/UpdateStoreDrink';
 import MenuEditScreen from '../screens/StoreInfo/Menu/MenuEditScreen';
 import ImageReorderScreen from '../components/StoreScreen/StoreImage/ImageReorderScreen';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
+import ImageViewerScreen from '../hooks/ImageViewerScreen';
 
 const Stack = createStackNavigator();
 
@@ -28,6 +29,11 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreMainScreen"
         component={StoreMainScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ImageViewerScreen"
+        component={ImageViewerScreen}
         options={{headerShown: false}}
       />
       <Stack.Screen

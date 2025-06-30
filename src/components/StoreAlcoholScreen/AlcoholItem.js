@@ -36,6 +36,7 @@ const AlcoholItem = ({
   isUpdatable,
   isMainEditing,
   onTypeChange,
+  navigation,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(alcohol.name);
@@ -197,6 +198,10 @@ const AlcoholItem = ({
     }
   };
 
+  const handleImagePress = () => {
+    navigation.navigate('ImageViewerScreen', {images: imgUrl});
+  };
+
   return (
     <View style={[styles.container, isLast && {borderBottomWidth: 0}]}>
       <View
@@ -272,7 +277,11 @@ const AlcoholItem = ({
           )}
         </View>
         <View style={styles.imgWrap}>
-          {imgUrl && <Image source={{uri: imgUrl}} style={styles.image} />}
+          {imgUrl && (
+            <Pressable onPress={handleImagePress}>
+              <Image source={{uri: imgUrl}} style={styles.image} />
+            </Pressable>
+          )}
           {!imgUrl && isMainEditing && !isEditing && (
             <View style={styles.emptyImage}>
               <Text style={{color: '#aaa'}}>사진 없음</Text>
