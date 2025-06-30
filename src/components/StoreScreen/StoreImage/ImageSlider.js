@@ -42,7 +42,9 @@ const ImageSlider = ({
   // 초기 위치 설정
   useEffect(() => {
     if (scrollRef.current && localImages.length > 1) {
-      scrollRef.current.scrollTo({x: width, animated: false});
+      setTimeout(() => {
+        scrollRef.current.scrollTo({x: width, animated: false});
+      }, 0);
     }
   }, [localImages]);
   const indexRef = useRef(currentIndex);
@@ -50,23 +52,6 @@ const ImageSlider = ({
   useEffect(() => {
     indexRef.current = currentIndex;
   }, [currentIndex]);
-
-  useEffect(() => {
-    if (localImages.length > 1) {
-      const autoSlide = setInterval(() => {
-        if (scrollRef.current) {
-          const nextIndex = indexRef.current + 1;
-          scrollRef.current.scrollTo({
-            x: nextIndex * width,
-            animated: true,
-          });
-          setCurrentIndex(nextIndex); // state도 갱신
-        }
-      }, interval);
-
-      return () => clearInterval(autoSlide);
-    }
-  }, [interval, localImages]);
 
   // 무한 슬라이드 처리
   const handleScrollEnd = event => {
@@ -138,11 +123,10 @@ const ImageSlider = ({
                 <Pressable
                   key={index}
                   style={styles.imageContainer}
-                  onTouchEnd={() => {
-                    console.log('touch end index:', index);
-                  }}
                   onPress={() => {
-                    console.log('press index:', index);
+                    // 무한루프에서 복제된 첫/마지막 이미지는 클릭시 무시
+                    if (index === 0 || index === imagesWithLoop.length - 1)
+                      return;
                     const realIndex =
                       (index - 1 + localImages.length) % localImages.length;
                     handleImagePress(realIndex);
