@@ -33,6 +33,7 @@ const MenuItem = ({
   isMainEditing,
   onTypeChange,
   onMenuUpdate,
+  navigation,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(menu.name);
@@ -225,6 +226,10 @@ const MenuItem = ({
     }
   };
 
+  const handleImagePress = () => {
+    navigation.navigate('ImageViewerScreen', {images: imgUrl});
+  };
+
   return (
     <View style={[styles.container, isLast && {borderBottomWidth: 0}]}>
       <View
@@ -308,7 +313,11 @@ const MenuItem = ({
           )}
         </View>
         <View style={styles.ImageContainer}>
-          {imgUrl && <Image source={{uri: imgUrl}} style={styles.image} />}
+          {imgUrl && (
+            <Pressable onPress={handleImagePress}>
+              <Image source={{uri: imgUrl}} style={styles.image} />
+            </Pressable>
+          )}
 
           {!imgUrl && isMainEditing && !isEditing && (
             <View style={styles.emptyImage}>

@@ -70,8 +70,11 @@ const AlcoholAddScreen = ({navigation}) => {
     });
   };
 
+  const alcoholRefs = useRef([]);
+
   const AlcoholAdd = async () => {
-    for (const alcohol of alcohols) {
+    for (let i = 0; i < alcohols.length; i++) {
+      const alcohol = alcohols[i];
       const containsForbiddenWord = forbiddenWords.some(
         word =>
           alcohol.alcoholName.includes(word) ||
@@ -79,10 +82,25 @@ const AlcoholAddScreen = ({navigation}) => {
           alcohol.price.toString().includes(word),
       );
 
+      const Gotoalcoholrror = () => {
+        alcoholRefs.current[i]?.measureLayout(
+          scrollViewRef.current,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({y: y - 40, animated: true});
+          },
+          error => {
+            console.log('measureLayout error:', error);
+          },
+        );
+      };
+
       if (containsForbiddenWord) {
         showAlert({
           title: '가이드 위반',
           message: '비속어 및 이용 약관에 위배되는\n내용이 포함되어 있습니다.',
+          onConfirm: () => {
+            Gotoalcoholrror();
+          },
         });
         return;
       }
@@ -91,6 +109,9 @@ const AlcoholAddScreen = ({navigation}) => {
         showAlert({
           title: '입력 오류',
           message: '주류 이름을 입력해주세요.',
+          onConfirm: () => {
+            Gotoalcoholrror();
+          },
         });
         return;
       }
@@ -99,6 +120,9 @@ const AlcoholAddScreen = ({navigation}) => {
         showAlert({
           title: '입력 오류',
           message: '주류 가격을 입력해주세요.',
+          onConfirm: () => {
+            Gotoalcoholrror();
+          },
         });
         return;
       }
@@ -107,6 +131,9 @@ const AlcoholAddScreen = ({navigation}) => {
         showAlert({
           title: '입력 오류',
           message: '주류 주종을 선택해주세요.',
+          onConfirm: () => {
+            Gotoalcoholrror();
+          },
         });
         return;
       }
@@ -171,34 +198,35 @@ const AlcoholAddScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView
-          style={{flex: 1, backgroundColor: '#F7F8FA'}}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <ScrollView
-            ref={scrollViewRef}
-            contentContainerStyle={{flexGrow: 1, paddingBottom: 40}} // 👈 핵심
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}>
-            {alcohols.map((alcohol, index) => (
-              <AlcoholAddForm
-                key={index}
-                alcohol={alcohol}
-                index={index}
-                handleAlcoholChange={handleAlcoholChange}
-                onDelete={handleDeleteAlcohol}
-              />
-            ))}
-          </ScrollView>
-          <AlertComponent />
-          <View style={styles.menuAddTextview}>
-            <Pressable style={styles.menuAddButton} onPress={handleAddAlcohol}>
-              <Text style={styles.menuAddText}>주류 추가</Text>
-            </Pressable>
-          </View>
-          <Loading loading={loading} />
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+      {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss}> */}
+      <KeyboardAvoidingView
+        style={{flex: 1, backgroundColor: '#F7F8FA'}}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={{flexGrow: 1, paddingBottom: 40}} // 👈 핵심
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          {alcohols.map((alcohol, index) => (
+            <AlcoholAddForm
+              key={index}
+              ref={el => (alcoholRefs.current[index] = el)}
+              alcohol={alcohol}
+              index={index}
+              handleAlcoholChange={handleAlcoholChange}
+              onDelete={handleDeleteAlcohol}
+            />
+          ))}
+        </ScrollView>
+        <AlertComponent />
+        <View style={styles.menuAddTextview}>
+          <Pressable style={styles.menuAddButton} onPress={handleAddAlcohol}>
+            <Text style={styles.menuAddText}>주류 추가</Text>
+          </Pressable>
+        </View>
+        <Loading loading={loading} />
+      </KeyboardAvoidingView>
+      {/* </TouchableWithoutFeedback> */}
     </SafeAreaView>
   );
 };

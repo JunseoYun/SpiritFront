@@ -74,11 +74,21 @@ const MyScreen = ({navigation}) => {
     return <Loading loading={true} />;
   }
 
+  const handleImagePress = () => {
+    navigation.navigate('StoreStack', {
+      screen: 'ImageViewerScreen',
+      params: {
+        images: userdata.imgUrl,
+      },
+    });
+  };
+
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
       <MyPageheader
         nickname={userdata.nickname}
         imageuri={userdata.imgUrl}
+        handleImagePress={handleImagePress}
         onProfilePress={() =>
           navigation.navigate('MyStack', {
             screen: 'ConfigScreen',

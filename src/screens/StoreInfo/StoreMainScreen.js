@@ -446,101 +446,99 @@ const StoreMainScreen = ({navigation}) => {
             keyboardShouldPersistTaps="always"
             scrollEnabled={true}
             contentContainerStyle={{flexGrow: 1}}>
-            <TouchableWithoutFeedback onPress={handleBottomClose}>
-              <View>
-                {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
-                  <View
-                    style={[
-                      {
-                        height: 270, // 숫자 값은 따옴표 없이 사용
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: 'black',
+            <View>
+              {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
+                <View
+                  style={[
+                    {
+                      height: 270, // 숫자 값은 따옴표 없이 사용
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'black',
+                    },
+                    isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
+                    isUpdate &&
+                      !storedata?.imgUrlList?.length > 0 && {
+                        marginTop: Platform.OS === 'ios' ? 20 : 30,
                       },
-                      isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
-                      isUpdate &&
-                        !storedata?.imgUrlList?.length > 0 && {
-                          marginTop: Platform.OS === 'ios' ? 20 : 30,
-                        },
-                    ]}>
-                    <ImageSlider
-                      storeId={storeId}
-                      images={imageSliderData}
-                      interval={4000}
-                      isUpdate={isUpdate}
-                      handleBottomOpen={handleBottomOpen}
-                      onEditKey={handleEditKey}
-                      onEditValue={handleEditValue}
-                      navigation={navigation}
-                    />
-                  </View>
-                )}
-                {!storedata?.imgUrlList?.length > 0 &&
-                  !isUpdate &&
-                  storedata?.isUpdatable === true && (
-                    <Pressable
-                      style={styles.addImageButton}
-                      onPress={startUpdate}>
-                      <Text style={styles.addImageText}>
-                        매장 이미지 추가하기
-                      </Text>
-                      <Feather name="chevron-right" size={23} color="#999" />
-                    </Pressable>
-                  )}
-
-                <StoreMainInfo
-                  storedata={storedata}
-                  onModalOpen={() => setIsModalVisible(true)}
-                  navigation={navigation}
-                  isUpdate={isUpdate}
-                  endUpdate={endUpdate}
-                  handleBottomOpen={handleBottomOpen}
-                  onEditKey={handleEditKey}
-                  onEditValue={handleEditValue}
-                  storeTimeEditHandle={storeTimeEditHandle}
-                  storeupdatedrink={storeupdatedrink}
-                  setLoading={setLoading}
-                  loading={loading}
-                />
-                {!isUpdate && (
-                  <View style={{backgroundColor: '#F2F2F2', height: 20}} />
-                )}
-
-                {!isUpdate && (
-                  <StoreTabs
-                    changePage={setCurrentPage}
-                    currentPage={currentPage}
+                  ]}>
+                  <ImageSlider
+                    storeId={storeId}
+                    images={imageSliderData}
+                    interval={4000}
+                    isUpdate={isUpdate}
+                    handleBottomOpen={handleBottomOpen}
+                    onEditKey={handleEditKey}
+                    onEditValue={handleEditValue}
+                    navigation={navigation}
                   />
+                </View>
+              )}
+              {!storedata?.imgUrlList?.length > 0 &&
+                !isUpdate &&
+                storedata?.isUpdatable === true && (
+                  <Pressable
+                    style={styles.addImageButton}
+                    onPress={startUpdate}>
+                    <Text style={styles.addImageText}>
+                      매장 이미지 추가하기
+                    </Text>
+                    <Feather name="chevron-right" size={23} color="#999" />
+                  </Pressable>
                 )}
 
-                {!isUpdate && (
-                  <View>
-                    {currentPage === 'StoreMenuScreen' && (
-                      <StoreMenuScreen
-                        navigation={navigation}
-                        storeId={storeId}
-                        menus={menus}
-                        onMenuDelete={handleMenuDelete}
-                        isUpdatable={storedata?.isUpdatable}
-                        onMenuUpdateComplete={refreshMenus}
-                      />
-                    )}
-                    {currentPage === 'StoreAlcoholScreen' && (
-                      <StoreAlcoholScreen
-                        navigation={navigation}
-                        storeId={storeId}
-                        alcohols={alcohols}
-                        mainDrinks={storedata.mainDrinkDtos}
-                        scrollViewRef={scrollViewRef}
-                        onAlcoholDelete={handleAlcoholDelete}
-                        isUpdatable={storedata?.isUpdatable}
-                        onAlcoholUpdateComplete={refresAlcohols}
-                      />
-                    )}
-                  </View>
-                )}
-              </View>
-            </TouchableWithoutFeedback>
+              <StoreMainInfo
+                storedata={storedata}
+                onModalOpen={() => setIsModalVisible(true)}
+                navigation={navigation}
+                isUpdate={isUpdate}
+                endUpdate={endUpdate}
+                handleBottomOpen={handleBottomOpen}
+                onEditKey={handleEditKey}
+                onEditValue={handleEditValue}
+                storeTimeEditHandle={storeTimeEditHandle}
+                storeupdatedrink={storeupdatedrink}
+                setLoading={setLoading}
+                loading={loading}
+              />
+              {!isUpdate && (
+                <View style={{backgroundColor: '#F2F2F2', height: 20}} />
+              )}
+
+              {!isUpdate && (
+                <StoreTabs
+                  changePage={setCurrentPage}
+                  currentPage={currentPage}
+                />
+              )}
+
+              {!isUpdate && (
+                <View>
+                  {currentPage === 'StoreMenuScreen' && (
+                    <StoreMenuScreen
+                      navigation={navigation}
+                      storeId={storeId}
+                      menus={menus}
+                      onMenuDelete={handleMenuDelete}
+                      isUpdatable={storedata?.isUpdatable}
+                      onMenuUpdateComplete={refreshMenus}
+                    />
+                  )}
+                  {currentPage === 'StoreAlcoholScreen' && (
+                    <StoreAlcoholScreen
+                      navigation={navigation}
+                      storeId={storeId}
+                      alcohols={alcohols}
+                      mainDrinks={storedata.mainDrinkDtos}
+                      scrollViewRef={scrollViewRef}
+                      onAlcoholDelete={handleAlcoholDelete}
+                      isUpdatable={storedata?.isUpdatable}
+                      onAlcoholUpdateComplete={refresAlcohols}
+                    />
+                  )}
+                </View>
+              )}
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
         <StoreModal
