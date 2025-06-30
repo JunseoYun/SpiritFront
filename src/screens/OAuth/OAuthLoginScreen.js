@@ -18,13 +18,11 @@ import {user_login} from '../../api/userApi';
 import {useAuth} from '../../context/AuthContext';
 import Config from 'react-native-config';
 import FastImage from 'react-native-fast-image';
-import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
 import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
 import Loading from '../../hooks/Loading';
-const OAuthLoginScreen = ({navigation}) => {
+const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
   const {loginauth} = useAuth();
-  const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
   const [loading, setLoading] = useState(false);
 
@@ -37,7 +35,7 @@ const OAuthLoginScreen = ({navigation}) => {
     });
   }, []);
 
-  const handleLogin = async ({socialType, socialId, socialToken}) => {
+  const handleLogin = async ({socialType, socialId, socialToken, tester}) => {
     setLoading(true);
     const fcmToken = await getFcmToken();
 
@@ -49,7 +47,7 @@ const OAuthLoginScreen = ({navigation}) => {
         fcmToken,
       );
 
-      if (response.isVerified === false) {
+      if (response.isVerified === false && !isTestEnabled) {
         navigation.navigate('IdentityScreen', {
           socialType: socialType,
           socialId: socialId,
@@ -74,6 +72,7 @@ const OAuthLoginScreen = ({navigation}) => {
             socialId: socialId,
             socialToken: socialToken,
             fcmToken: fcmToken,
+            isTestEnabled: tester,
           });
         }
       }
@@ -125,7 +124,7 @@ const OAuthLoginScreen = ({navigation}) => {
     }
   };
 
-  const handleAppleSignIn = async () => {
+  const handleAppleSignIn = async (tester = false) => {
     if (Platform.OS === 'ios') {
       try {
         const appleAuthRequestResponse = await appleAuth.performRequest({
@@ -140,7 +139,7 @@ const OAuthLoginScreen = ({navigation}) => {
           const socialType = 'APPLE';
           const socialId = appleAuthRequestResponse.user;
           const socialToken = appleAuthRequestResponse.identityToken;
-          handleLogin({socialType, socialId, socialToken});
+          handleLogin({socialType, socialId, socialToken, tester});
         }
       } catch (error) {}
     } else {
@@ -210,7 +209,7 @@ const OAuthLoginScreen = ({navigation}) => {
         </TouchableOpacity>
         {Platform.OS === 'ios' && (
           <TouchableOpacity
-            onPress={handleAppleSignIn}
+            onPress={() => handleAppleSignIn(false)}
             style={[styles.googleButtonContainer, {marginBottom: 20}]}>
             <View style={styles.googleView}>
               <View style={styles.googleLogoContainer}>
@@ -227,9 +226,15 @@ const OAuthLoginScreen = ({navigation}) => {
             </View>
           </TouchableOpacity>
         )}
+        {isTestEnabled && Platform.OS === 'ios' && (
+          <TouchableOpacity onPress={() => handleAppleSignIn(true)}>
+            <Text style={{color: '#333', fontFamily: 'Pretendard-Bold'}}>
+              APPLE TESTER
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
       {loading && <Loading loading={true} />}
-      <AlertComponent />
     </SafeAreaView>
   );
 };

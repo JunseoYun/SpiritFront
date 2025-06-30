@@ -8,7 +8,12 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import useCustomAlert from '../../hooks/useCustomAlert';
-import {check_nickName, user_register, user_login} from '../../api/userApi';
+import {
+  check_nickName,
+  user_register,
+  user_login,
+  user_register_tester,
+} from '../../api/userApi';
 import Entypo from 'react-native-vector-icons/Entypo';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import filterWords from '../../hooks/filterWords';
@@ -19,7 +24,8 @@ import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
 
 const RegisterScreen = ({route, navigation}) => {
   // route.params를 통해 전달된 데이터 접근
-  const {socialType, socialId, socialToken, mokDataId} = route.params;
+  const {socialType, socialId, socialToken, mokDataId, isTestEnabled} =
+    route.params;
   const [nickname, setNickname] = useState('');
   const [nicknameCheck, setNicknameCheck] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -122,12 +128,14 @@ const RegisterScreen = ({route, navigation}) => {
     try {
       setLoading(true);
       // 회원가입이 완료될 때까지 기다림
-
-      await user_register(socialType, socialId, nickname, mokDataId);
+      if (isTestEnabled) {
+        await user_register_tester(socialType, socialId, nickname);
+      } else {
+        await user_register(socialType, socialId, nickname, mokDataId);
+      }
 
       try {
         const fcmToken = await getFcmToken();
-        console.log('🔥 FCM Token:', fcmToken);
         const login_data = await user_login(
           socialType,
           socialId,
@@ -139,7 +147,6 @@ const RegisterScreen = ({route, navigation}) => {
           login_data.refreshToken,
           login_data.marketingConsent,
         );
-        // await loginauth(login_data.accessToken, login_data.refreshToken, 마케팅 알림 수신 여부);
         navigation.reset({
           index: 0,
           routes: [
