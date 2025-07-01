@@ -47,7 +47,7 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
         fcmToken,
       );
 
-      if (response.isVerified === false && !isTestEnabled) {
+      if (response.isVerified === false) {
         navigation.navigate('IdentityScreen', {
           socialType: socialType,
           socialId: socialId,
