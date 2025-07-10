@@ -7,6 +7,7 @@ import {
   Pressable,
   TouchableOpacity,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const alcohols = [
   {label: '소주', value: 'SOJU'},
@@ -23,7 +24,7 @@ const alcohols = [
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
-const StoreAlcohol = ({alcohol, setAlcohol, error, index}) => {
+const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const handleAlcoholChange = (index, key, value) => {
@@ -37,22 +38,24 @@ const StoreAlcohol = ({alcohol, setAlcohol, error, index}) => {
     });
   };
 
+  const handleRemoveAlcohol = index => {
+    setAlcohol(prev => prev.filter((_, i) => i !== index));
+    if (expandedIndex === index) setExpandedIndex(null);
+  };
+
   const toggleExpand = index => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
   const hasValidAlcohol = alcohol.some(
-    item => item.type.trim() && item.price > 0,
+    item => item.type?.trim() && item.price > 0,
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        {index ? '대표주종* (최대 3종)' : '대표주종 (최대 3종)'}
-      </Text>
+      <Text style={styles.title}>대표주종* (최대 3종)</Text>
 
-      {[0, 1, 2].map((_, index) => {
-        const itemPerRow = 3;
+      {alcohol.map((_, index) => {
         const selectedTypes = alcohol
           .filter((_, i) => i !== index)
           .map(d => d?.type);
@@ -62,8 +65,8 @@ const StoreAlcohol = ({alcohol, setAlcohol, error, index}) => {
           a => !selectedTypes.includes(a.value) || a.value === currentType,
         );
 
-        const remainder = filteredAlcohols.length % itemPerRow;
-        const paddingCount = remainder === 0 ? 0 : itemPerRow - remainder;
+        const remainder = filteredAlcohols.length % 4;
+        const paddingCount = remainder === 0 ? 0 : 4 - remainder;
         const paddedAlcohols = [
           ...filteredAlcohols,
           ...Array(paddingCount).fill(null),
@@ -88,79 +91,107 @@ const StoreAlcohol = ({alcohol, setAlcohol, error, index}) => {
                 </Text>
               </TouchableOpacity>
             ) : (
-              <>
-                <View style={styles.sectionView}>
-                  <View style={styles.pickerContainer}>
-                    <Text style={styles.sectionTitle}>주종 선택</Text>
-                    <View style={styles.alcoholList}>
-                      {paddedAlcohols.map((alcoholItem, i) =>
-                        alcoholItem ? (
-                          <Pressable
-                            key={alcoholItem.value}
-                            style={[
-                              styles.alcoholButton,
-                              alcoholItem.value === alcohol[index]?.type &&
-                                styles.selectedAlcohol,
-                            ]}
-                            onPress={() => {
-                              const current = alcohol[index]?.type;
-                              const selected = alcoholItem.value;
-                              handleAlcoholChange(
-                                index,
-                                'type',
-                                current === selected ? '' : selected, // 동일하면 해제, 아니면 선택
-                              );
-                            }}>
-                            <Text
-                              style={[
-                                styles.alcoholText,
-                                alcoholItem.value === alcohol[index]?.type &&
-                                  styles.selectedAlcoholText,
-                              ]}>
-                              {alcoholItem.label}
-                            </Text>
-                          </Pressable>
-                        ) : (
-                          <View
-                            key={`dummy-${i}`}
-                            style={styles.alcoholButton}
-                          />
-                        ),
-                      )}
+              <View style={styles.sectionView}>
+                <TouchableOpacity
+                  style={[styles.closeButton]}
+                  onPress={() => handleRemoveAlcohol(index)}>
+                  <Ionicons name="close" size={25} color="#999" />
+                </TouchableOpacity>
+
+                <View style={styles.pickerContainer}>
+                  <View style={styles.priceContainer}>
+                    <View>
+                      {alcohol[index]?.price === 0 ||
+                      alcohol[index]?.price === ''
+                        ? ''
+                        : alcohol[index]?.price.toString() && (
+                            <Text style={styles.sectionTitle}>주류 가격 *</Text>
+                          )}
                     </View>
+                    <TextInput
+                      style={[styles.priceInput]}
+                      value={
+                        alcohol[index]?.price === 0 ||
+                        alcohol[index]?.price === ''
+                          ? ''
+                          : alcohol[index]?.price.toString()
+                      }
+                      onChangeText={value =>
+                        handleAlcoholChange(
+                          index,
+                          'price',
+                          value === '' ? '' : parseInt(value),
+                        )
+                      }
+                      placeholder="주류 가격 *"
+                      placeholderTextColor="#999"
+                      keyboardType="number-pad"
+                      returnKeyType="done"
+                    />
                   </View>
 
-                  <View style={styles.priceContainer}>
-                    <Text style={styles.sectionTitle}>가격 입력</Text>
-                    <View style={styles.priceInputWrapper}>
-                      <TextInput
-                        style={styles.priceInput}
-                        keyboardType="number-pad"
-                        placeholder="0"
-                        placeholderTextColor="#aaa"
-                        value={alcohol[index]?.price?.toString() || ''}
-                        onChangeText={value =>
-                          handleAlcoholChange(
-                            index,
-                            'price',
-                            parseInt(value) || 0,
-                          )
-                        }
-                      />
-                      <Text style={styles.unit}>원</Text>
-                    </View>
+                  <Text style={styles.sectionTitle}>주종 선택</Text>
+                  <View style={styles.grid}>
+                    {paddedAlcohols.map((alcoholItem, i) =>
+                      alcoholItem ? (
+                        <Pressable
+                          key={alcoholItem.value}
+                          style={[
+                            styles.gridItem,
+                            alcoholItem.value === alcohol[index]?.type
+                              ? styles.itemSelected
+                              : styles.itemUnselected,
+                          ]}
+                          onPress={() => {
+                            const current = alcohol[index]?.type;
+                            const selected = alcoholItem.value;
+                            handleAlcoholChange(
+                              index,
+                              'type',
+                              current === selected ? '' : selected,
+                            );
+                          }}>
+                          <Text
+                            style={[
+                              styles.gridLabel,
+                              alcoholItem.value === alcohol[index]?.type
+                                ? styles.labelSelected
+                                : styles.labelUnselected,
+                            ]}>
+                            {alcoholItem.label}
+                          </Text>
+                        </Pressable>
+                      ) : (
+                        <View
+                          key={`dummy-${i}`}
+                          style={[styles.gridItem, {opacity: 0}]}
+                        />
+                      ),
+                    )}
                   </View>
-                  <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={() => toggleExpand(index)}>
-                    <Text style={styles.saveButtonText}>완료</Text>
-                  </TouchableOpacity>
                 </View>
-              </>
+
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={() => toggleExpand(index)}>
+                  <Text style={styles.saveButtonText}>완료</Text>
+                </TouchableOpacity>
+              </View>
             )}
           </View>
         );
       })}
+
+      {alcohol.length < 3 && (
+        <TouchableOpacity
+          onPress={() => {
+            setAlcohol(prev => [...(prev || []), {type: '', price: 0}]);
+          }}
+          style={styles.addButton}>
+          <Text style={styles.addButtonText}>+ 대표주종 추가</Text>
+        </TouchableOpacity>
+      )}
+
       {error === 'StoreDrink' && !hasValidAlcohol && (
         <Text style={styles.errorMessage}>
           대표 주종을 입력하고 가격을 설정해 주세요.
@@ -185,12 +216,32 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   sectionView: {
-    backgroundColor: '#F7F8FA',
+    backgroundColor: '#fff',
     padding: 20,
     borderRadius: 17,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    position: 'relative',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButtonText: {
+    fontSize: 20,
+    color: '#666',
+    fontWeight: 'bold',
   },
   pickerContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
+    marginTop: 15,
   },
   sectionTitle: {
     fontSize: 16,
@@ -198,66 +249,65 @@ const styles = StyleSheet.create({
     color: '#181A1A',
     marginBottom: 10,
   },
-  alcoholList: {
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
     justifyContent: 'space-between',
-    backgroundColor: '#F7F8FA',
-    borderRadius: 16,
-    padding: 14,
+    rowGap: 10,
+    columnGap: 10,
+    marginTop: 10,
   },
-  alcoholButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 7,
-    minWidth: '25%',
+  gridItem: {
+    width: '22.5%',
+    paddingVertical: 10,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    marginBottom: 10,
   },
-  alcoholText: {
-    fontSize: 16,
+  itemSelected: {
+    backgroundColor: '#E8F7FF',
+    borderColor: '#16BBFF',
+  },
+  itemUnselected: {
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
+  },
+  gridLabel: {
+    fontSize: 14,
     fontFamily: 'Pretendard-Medium',
+  },
+  labelSelected: {
+    color: '#16BBFF',
+    fontWeight: '600',
+  },
+  labelUnselected: {
     color: '#999',
   },
-  selectedAlcohol: {
-    backgroundColor: '#80D2F4',
-  },
-  selectedAlcoholText: {
-    color: '#fff',
-    fontFamily: 'Pretendard-SemiBold',
-  },
-
   priceContainer: {
-    marginTop: 20,
-  },
-  priceInputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    backgroundColor: '#FFF',
-    height: 50,
+    marginBottom: 30,
+    marginTop: 10,
   },
   priceInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#181A1A',
-    fontFamily: 'Pretendard-Medium',
-    textAlign: 'center',
-  },
-  unit: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#333',
+    borderBottomColor: '#F2F2F2',
+    borderBottomWidth: 1,
+    fontSize: 22,
+    fontWeight: '500',
+    paddingVertical: 7,
+    color: 'black',
   },
   collapsedInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F7F8FA',
+    backgroundColor: '#fff',
     borderRadius: 17,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
     paddingVertical: 15,
     paddingHorizontal: 20,
   },
@@ -268,7 +318,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginTop: 20,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#16BBFF',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,
@@ -283,6 +333,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Pretendard-Medium',
     marginTop: 5,
+  },
+  addButton: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  addButtonText: {
+    color: '#45C9FF',
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

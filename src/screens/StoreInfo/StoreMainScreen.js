@@ -39,6 +39,7 @@ import {useToast} from '../../context/ToastContext';
 import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
+import ImageActionModal from '../../components/StoreScreen/StoreImage/ImageActionModal';
 
 const {width} = Dimensions.get('window');
 
@@ -64,6 +65,15 @@ const StoreMainScreen = ({navigation}) => {
   const scrollViewRef = useRef(null); // ScrollView 참조 추가
   const [loading, setLoading] = useState(true);
   const {showToast} = useToast();
+
+  const [sectionPositions, setSectionPositions] = useState({});
+
+  // 상위 scrollTo 함수
+  const scrollToHandler = params => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo(params);
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -390,6 +400,14 @@ const StoreMainScreen = ({navigation}) => {
     });
   };
 
+  const [ismenuimgModalVisible, setMenuingModalVisible] = useState(false);
+  const [modalSource, setModalSource] = useState(null);
+
+  const openModalFrom = source => {
+    setModalSource(source);
+    setMenuingModalVisible(true);
+  };
+
   return (
     <>
       <View style={{backgroundColor: 'white', flex: 1}}>
@@ -522,6 +540,12 @@ const StoreMainScreen = ({navigation}) => {
                       onMenuDelete={handleMenuDelete}
                       isUpdatable={storedata?.isUpdatable}
                       onMenuUpdateComplete={refreshMenus}
+                      ismenuimgModalVisible={ismenuimgModalVisible}
+                      setMenuingModalVisible={visible => {
+                        setModalSource('menu');
+                        setMenuingModalVisible(visible);
+                      }}
+                      images={imageSliderData}
                     />
                   )}
                   {currentPage === 'StoreAlcoholScreen' && (
@@ -534,6 +558,15 @@ const StoreMainScreen = ({navigation}) => {
                       onAlcoholDelete={handleAlcoholDelete}
                       isUpdatable={storedata?.isUpdatable}
                       onAlcoholUpdateComplete={refresAlcohols}
+                      imagelist={storedata?.imgUrlList?.length}
+                      onScrollTo={scrollToHandler}
+                      sectionPositions={sectionPositions}
+                      setSectionPositions={setSectionPositions}
+                      ismenuimgModalVisible={ismenuimgModalVisible}
+                      setMenuingModalVisible={visible => {
+                        setModalSource('alcohol');
+                        setMenuingModalVisible(visible);
+                      }}
                     />
                   )}
                 </View>
@@ -541,6 +574,43 @@ const StoreMainScreen = ({navigation}) => {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
+        <ImageActionModal
+          visible={ismenuimgModalVisible}
+          navigation={navigation}
+          onClose={() => setMenuingModalVisible(false)}
+          onEdit={() => {
+            // 메뉴 편집
+            if (modalSource === 'menu') {
+              navigation.navigate('InfoImageEditScreen', {
+                storeId,
+                Source: 'menu',
+              });
+            } else if (modalSource === 'alcohol') {
+              // 주종 편집
+              navigation.navigate('InfoImageEditScreen', {
+                storeId,
+                Source: 'alcohol',
+              });
+            }
+            setMenuingModalVisible(false);
+          }}
+          onSort={() => {
+            if (modalSource === 'menu') {
+              // 메뉴 정렬
+              navigation.navigate('InfoImageReorderScreen', {
+                storeId,
+                Source: 'menu',
+              });
+            } else if (modalSource === 'alcohol') {
+              // 주종 정렬
+              navigation.navigate('InfoImageReorderScreen', {
+                storeId,
+                Source: 'alcohol',
+              });
+            }
+            setMenuingModalVisible(false);
+          }}
+        />
         <StoreModal
           isModalVisible={isModalVisible}
           onPressModalClose={onPressModalClose}
