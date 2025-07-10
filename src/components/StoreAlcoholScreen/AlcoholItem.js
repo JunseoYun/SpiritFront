@@ -210,7 +210,11 @@ const AlcoholItem = ({
           isMainEditing && {paddingHorizontal: 0},
           isEditing && {paddingBottom: 0},
         ]}>
-        <View style={styles.textWrap}>
+        <View
+          style={[
+            styles.textWrap,
+            description == '' && {justifyContent: 'space-evenly'},
+          ]}>
           {isEditing ? (
             <>
               <TextInput
@@ -267,7 +271,9 @@ const AlcoholItem = ({
           ) : (
             <>
               <Text style={styles.name}>{name}</Text>
-              <Text style={styles.desc}>{description}</Text>
+              {description == '' ? null : (
+                <Text style={styles.desc}>{description}</Text>
+              )}
               <Text style={styles.price}>
                 {price === '변동'
                   ? '변동'

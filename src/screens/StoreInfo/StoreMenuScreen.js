@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView, StyleSheet, View, Text, Pressable} from 'react-native';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
+import Feather from 'react-native-vector-icons/Feather';
 
 const StoreMenuScreen = ({
   navigation,
@@ -9,6 +10,9 @@ const StoreMenuScreen = ({
   onMenuDelete,
   isUpdatable,
   onMenuUpdateComplete,
+  ismenuimgModalVisible,
+  setMenuingModalVisible,
+  images,
 }) => {
   const [menuList, setMenuList] = useState(menus);
 
@@ -62,21 +66,31 @@ const StoreMenuScreen = ({
     );
   };
 
+  // 메뉴판, 주류 정보 사진 없을때 이미지 추가로 수정
   return (
     <SafeAreaView style={styles.container}>
       {isUpdatable && (
-        <Pressable
-          style={styles.reorderButton}
-          onPress={() =>
-            navigation.navigate('MenuEditScreen', {
-              storeId,
-              menus,
-              onMenuUpdateComplete, // ✅ 메뉴 다시 불러오는 콜백 전달
-              onMenuDelete,
-            })
-          }>
-          <Text style={styles.menuAddButtonText}>메뉴 편집</Text>
-        </Pressable>
+        <>
+          <Pressable
+            style={styles.addImageButton}
+            onPress={() => setMenuingModalVisible(true)}>
+            <Text style={styles.addImageText}> 가격표 이미지 편집</Text>
+            <Feather name="chevron-right" size={23} color="#999" />
+          </Pressable>
+
+          <Pressable
+            style={styles.reorderButton}
+            onPress={() =>
+              navigation.navigate('MenuEditScreen', {
+                storeId,
+                menus,
+                onMenuUpdateComplete, // ✅ 메뉴 다시 불러오는 콜백 전달
+                onMenuDelete,
+              })
+            }>
+            <Text style={styles.menuAddButtonText}>메뉴 편집</Text>
+          </Pressable>
+        </>
       )}
 
       {menuList?.length > 0 ? (
@@ -108,6 +122,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     padding: 16,
+  },
+  addImageButton: {
+    marginTop: 20,
+    marginHorizontal: 18,
+    paddingTop: 10,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  addImageText: {
+    color: '#999',
+    fontSize: 16,
+    fontWeight: '600',
   },
   section: {
     marginBottom: 10,
