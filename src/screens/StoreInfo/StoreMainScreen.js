@@ -5,16 +5,15 @@ import {
   Text,
   Platform,
   Keyboard,
-  TouchableWithoutFeedback,
   StyleSheet,
   Pressable,
   KeyboardAvoidingView,
-  Dimensions,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/StoreImage/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
+import StorePriceImage from '../../components/StoreScreen/StorePriceImage';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {
   StoreMainget,
@@ -40,8 +39,7 @@ import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
 import ImageActionModal from '../../components/StoreScreen/StoreImage/ImageActionModal';
-
-const {width} = Dimensions.get('window');
+import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcategorytab';
 
 const StoreMainScreen = ({navigation}) => {
   const {token} = useAuth();
@@ -403,10 +401,7 @@ const StoreMainScreen = ({navigation}) => {
   const [ismenuimgModalVisible, setMenuingModalVisible] = useState(false);
   const [modalSource, setModalSource] = useState(null);
 
-  const openModalFrom = source => {
-    setModalSource(source);
-    setMenuingModalVisible(true);
-  };
+  const [tabY, setTabY] = useState(0);
 
   return (
     <>
@@ -442,6 +437,9 @@ const StoreMainScreen = ({navigation}) => {
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView
+            stickyHeaderIndices={
+              !isUpdate && currentPage === 'StoreAlcoholScreen' ? [5] : []
+            }
             onScroll={Animated.event(
               [{nativeEvent: {contentOffset: {y: scrollY}}}],
               {useNativeDriver: false},
@@ -464,114 +462,138 @@ const StoreMainScreen = ({navigation}) => {
             keyboardShouldPersistTaps="always"
             scrollEnabled={true}
             contentContainerStyle={{flexGrow: 1}}>
-            <View>
-              {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
-                <View
-                  style={[
-                    {
-                      height: 270, // 숫자 값은 따옴표 없이 사용
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'black',
+            {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
+              <View
+                style={[
+                  {
+                    height: 270, // 숫자 값은 따옴표 없이 사용
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'black',
+                  },
+                  isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
+                  isUpdate &&
+                    !storedata?.imgUrlList?.length > 0 && {
+                      marginTop: Platform.OS === 'ios' ? 20 : 30,
                     },
-                    isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
-                    isUpdate &&
-                      !storedata?.imgUrlList?.length > 0 && {
-                        marginTop: Platform.OS === 'ios' ? 20 : 30,
-                      },
-                  ]}>
-                  <ImageSlider
-                    storeId={storeId}
-                    images={imageSliderData}
-                    interval={4000}
-                    isUpdate={isUpdate}
-                    handleBottomOpen={handleBottomOpen}
-                    onEditKey={handleEditKey}
-                    onEditValue={handleEditValue}
-                    navigation={navigation}
-                  />
-                </View>
-              )}
-              {!storedata?.imgUrlList?.length > 0 &&
-                !isUpdate &&
-                storedata?.isUpdatable === true && (
-                  <Pressable
-                    style={styles.addImageButton}
-                    onPress={startUpdate}>
-                    <Text style={styles.addImageText}>
-                      매장 이미지 추가하기
-                    </Text>
-                    <Feather name="chevron-right" size={23} color="#999" />
-                  </Pressable>
-                )}
-
-              <StoreMainInfo
-                storedata={storedata}
-                onModalOpen={() => setIsModalVisible(true)}
-                navigation={navigation}
-                isUpdate={isUpdate}
-                endUpdate={endUpdate}
-                handleBottomOpen={handleBottomOpen}
-                onEditKey={handleEditKey}
-                onEditValue={handleEditValue}
-                storeTimeEditHandle={storeTimeEditHandle}
-                storeupdatedrink={storeupdatedrink}
-                setLoading={setLoading}
-                loading={loading}
-              />
-              {!isUpdate && (
-                <View style={{backgroundColor: '#F2F2F2', height: 20}} />
-              )}
-
-              {!isUpdate && (
-                <StoreTabs
-                  changePage={setCurrentPage}
-                  currentPage={currentPage}
+                ]}>
+                <ImageSlider
+                  storeId={storeId}
+                  images={imageSliderData}
+                  interval={4000}
+                  isUpdate={isUpdate}
+                  handleBottomOpen={handleBottomOpen}
+                  onEditKey={handleEditKey}
+                  onEditValue={handleEditValue}
+                  navigation={navigation}
                 />
+              </View>
+            )}
+            {!storedata?.imgUrlList?.length > 0 &&
+              !isUpdate &&
+              storedata?.isUpdatable === true && (
+                <Pressable style={styles.addImageButton} onPress={startUpdate}>
+                  <Text style={styles.addImageText}>매장 이미지 추가하기</Text>
+                  <Feather name="chevron-right" size={23} color="#999" />
+                </Pressable>
               )}
 
-              {!isUpdate && (
-                <View>
-                  {currentPage === 'StoreMenuScreen' && (
-                    <StoreMenuScreen
-                      navigation={navigation}
-                      storeId={storeId}
-                      menus={menus}
-                      onMenuDelete={handleMenuDelete}
-                      isUpdatable={storedata?.isUpdatable}
-                      onMenuUpdateComplete={refreshMenus}
-                      ismenuimgModalVisible={ismenuimgModalVisible}
-                      setMenuingModalVisible={visible => {
-                        setModalSource('menu');
-                        setMenuingModalVisible(visible);
-                      }}
-                      images={imageSliderData}
-                    />
-                  )}
-                  {currentPage === 'StoreAlcoholScreen' && (
-                    <StoreAlcoholScreen
-                      navigation={navigation}
-                      storeId={storeId}
-                      alcohols={alcohols}
-                      mainDrinks={storedata.mainDrinkDtos}
-                      scrollViewRef={scrollViewRef}
-                      onAlcoholDelete={handleAlcoholDelete}
-                      isUpdatable={storedata?.isUpdatable}
-                      onAlcoholUpdateComplete={refresAlcohols}
-                      imagelist={storedata?.imgUrlList?.length}
-                      onScrollTo={scrollToHandler}
-                      sectionPositions={sectionPositions}
-                      setSectionPositions={setSectionPositions}
-                      ismenuimgModalVisible={ismenuimgModalVisible}
-                      setMenuingModalVisible={visible => {
-                        setModalSource('alcohol');
-                        setMenuingModalVisible(visible);
-                      }}
-                    />
-                  )}
-                </View>
-              )}
-            </View>
+            <StoreMainInfo
+              storedata={storedata}
+              onModalOpen={() => setIsModalVisible(true)}
+              navigation={navigation}
+              isUpdate={isUpdate}
+              endUpdate={endUpdate}
+              handleBottomOpen={handleBottomOpen}
+              onEditKey={handleEditKey}
+              onEditValue={handleEditValue}
+              storeTimeEditHandle={storeTimeEditHandle}
+              storeupdatedrink={storeupdatedrink}
+              setLoading={setLoading}
+              loading={loading}
+            />
+            {!isUpdate && (
+              <View style={{backgroundColor: '#F2F2F2', height: 20}} />
+            )}
+
+            {!isUpdate && (
+              <StoreTabs
+                changePage={setCurrentPage}
+                currentPage={currentPage}
+              />
+            )}
+
+            {!isUpdate && (
+              <StorePriceImage
+                isUpdatable={storedata?.isUpdatable}
+                imageList={storedata?.imgUrlList}
+                navigation={navigation}
+                setMenuingModalVisible={visible => {
+                  setModalSource('menu');
+                  setMenuingModalVisible(visible);
+                }}
+              />
+            )}
+
+            {(!isUpdate && currentPage) === 'StoreAlcoholScreen' && (
+              <View
+                onLayout={e => {
+                  const y = e.nativeEvent.layout.y;
+                  setTabY(y);
+                }}>
+                <Alcoholcategorytab
+                  alcohols={alcohols}
+                  mainDrinks={storedata.mainDrinkDtos}
+                  imagelist={storedata?.imgUrlList?.length}
+                  onScrollTo={scrollToHandler}
+                  sectionPositions={sectionPositions}
+                  scrollY={scrollY}
+                  tabY={tabY}
+                />
+              </View>
+            )}
+
+            {!isUpdate && (
+              <>
+                {currentPage === 'StoreMenuScreen' && (
+                  <StoreMenuScreen
+                    navigation={navigation}
+                    storeId={storeId}
+                    menus={menus}
+                    onMenuDelete={handleMenuDelete}
+                    isUpdatable={storedata?.isUpdatable}
+                    onMenuUpdateComplete={refreshMenus}
+                    ismenuimgModalVisible={ismenuimgModalVisible}
+                    setMenuingModalVisible={visible => {
+                      setModalSource('menu');
+                      setMenuingModalVisible(visible);
+                    }}
+                    images={imageSliderData}
+                  />
+                )}
+                {currentPage === 'StoreAlcoholScreen' && (
+                  <StoreAlcoholScreen
+                    navigation={navigation}
+                    storeId={storeId}
+                    alcohols={alcohols}
+                    mainDrinks={storedata.mainDrinkDtos}
+                    scrollViewRef={scrollViewRef}
+                    onAlcoholDelete={handleAlcoholDelete}
+                    isUpdatable={storedata?.isUpdatable}
+                    onAlcoholUpdateComplete={refresAlcohols}
+                    imagelist={storedata?.imgUrlList?.length}
+                    onScrollTo={scrollToHandler}
+                    sectionPositions={sectionPositions}
+                    setSectionPositions={setSectionPositions}
+                    ismenuimgModalVisible={ismenuimgModalVisible}
+                    setMenuingModalVisible={visible => {
+                      setModalSource('alcohol');
+                      setMenuingModalVisible(visible);
+                    }}
+                  />
+                )}
+              </>
+            )}
           </ScrollView>
         </KeyboardAvoidingView>
         <ImageActionModal
@@ -579,35 +601,15 @@ const StoreMainScreen = ({navigation}) => {
           navigation={navigation}
           onClose={() => setMenuingModalVisible(false)}
           onEdit={() => {
-            // 메뉴 편집
-            if (modalSource === 'menu') {
-              navigation.navigate('InfoImageEditScreen', {
-                storeId,
-                Source: 'menu',
-              });
-            } else if (modalSource === 'alcohol') {
-              // 주종 편집
-              navigation.navigate('InfoImageEditScreen', {
-                storeId,
-                Source: 'alcohol',
-              });
-            }
+            navigation.navigate('InfoImageEditScreen', {
+              storeId,
+            });
             setMenuingModalVisible(false);
           }}
           onSort={() => {
-            if (modalSource === 'menu') {
-              // 메뉴 정렬
-              navigation.navigate('InfoImageReorderScreen', {
-                storeId,
-                Source: 'menu',
-              });
-            } else if (modalSource === 'alcohol') {
-              // 주종 정렬
-              navigation.navigate('InfoImageReorderScreen', {
-                storeId,
-                Source: 'alcohol',
-              });
-            }
+            navigation.navigate('InfoImageReorderScreen', {
+              storeId,
+            });
             setMenuingModalVisible(false);
           }}
         />
