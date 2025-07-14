@@ -234,7 +234,11 @@ const MenuItem = ({
     <View style={[styles.container, isLast && {borderBottomWidth: 0}]}>
       <View
         style={[styles.menuContainer, isMainEditing && {paddingHorizontal: 0}]}>
-        <View style={styles.textView}>
+        <View
+          style={[
+            styles.textView,
+            description == '' && {justifyContent: 'space-evenly'},
+          ]}>
           {isEditing ? (
             <>
               <TextInput
@@ -303,7 +307,7 @@ const MenuItem = ({
                   <Text style={styles.mainMenu}>대표</Text>
                 )}
               </View>
-              <Text style={styles.descText}>{description}</Text>
+              {description && <Text style={styles.desc}>{description}</Text>}
               <Text style={styles.priceText}>
                 {price === '변동'
                   ? '변동'
@@ -385,7 +389,7 @@ const MenuItem = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.7,
     borderColor: '#eee',
   },
   menuContainer: {
@@ -420,7 +424,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignSelf: 'center',
   },
-  descText: {
+  desc: {
     paddingVertical: 5,
     width: '90%',
     fontSize: 14,
@@ -430,16 +434,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   priceText: {
-    marginTop: 5,
+    marginTop: 7,
     fontSize: 16,
     color: '#333',
     fontFamily: 'Pretendard-SemiBold',
     marginLeft: 2,
   },
   ImageContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
+    // width: 100,
+    // height: 100,
+    // borderRadius: 10,
   },
   image: {
     width: 100,

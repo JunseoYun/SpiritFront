@@ -422,13 +422,8 @@ export default function StoreStack() {
         name="InfoImageEditScreen"
         component={InfoImageEditScreen}
         options={({navigation, route}) => {
-          const title =
-            route.params?.Source === 'alcohol'
-              ? '주류 가격표 편집'
-              : '메뉴 가격표 편집';
-
           return {
-            title,
+            title: '메뉴판 편집',
             headerTitleAlign: 'center',
             headerTitleStyle: {
               fontFamily: 'Pretendard-SemiBold',
@@ -464,13 +459,8 @@ export default function StoreStack() {
         name="InfoImageReorderScreen"
         component={InfoImageReorderScreen}
         options={({navigation, route}) => {
-          const title =
-            route.params?.Source === 'alcohol'
-              ? '주류 가격표 순서 변경'
-              : '메뉴 가격표 순서 변경';
-
           return {
-            title,
+            title: '메뉴판 순서 변경',
             headerTitleAlign: 'center',
             headerTitleStyle: {
               fontFamily: 'Pretendard-SemiBold',

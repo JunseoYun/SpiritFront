@@ -10,9 +10,6 @@ const StoreMenuScreen = ({
   onMenuDelete,
   isUpdatable,
   onMenuUpdateComplete,
-  ismenuimgModalVisible,
-  setMenuingModalVisible,
-  images,
 }) => {
   const [menuList, setMenuList] = useState(menus);
 
@@ -72,13 +69,6 @@ const StoreMenuScreen = ({
       {isUpdatable && (
         <>
           <Pressable
-            style={styles.addImageButton}
-            onPress={() => setMenuingModalVisible(true)}>
-            <Text style={styles.addImageText}> 가격표 이미지 편집</Text>
-            <Feather name="chevron-right" size={23} color="#999" />
-          </Pressable>
-
-          <Pressable
             style={styles.reorderButton}
             onPress={() =>
               navigation.navigate('MenuEditScreen', {
@@ -109,10 +99,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   reorderButton: {
-    marginTop: 30,
-    marginBottom: 20,
     marginHorizontal: 18,
     marginTop: 20,
+    marginBottom: 10,
     alignItems: 'center',
     borderRadius: 10,
     backgroundColor: '#E9F5FB',
