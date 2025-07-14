@@ -40,8 +40,6 @@ const StoreAlcoholScreen = ({
   sectionPositions: parentSectionPositions, // 상위에서 관리하는 섹션 위치들
   setSectionPositions: setParentSectionPositions, // 상위에서 섹션 위치 관리 함수
   imagelist = 0,
-  ismenuimgModalVisible,
-  setMenuingModalVisible,
 }) => {
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
   const {height: windowHeight} = Dimensions.get('window');
@@ -95,12 +93,6 @@ const StoreAlcoholScreen = ({
       {isUpdatable && (
         <>
           <Pressable
-            style={styles.addImageButton}
-            onPress={() => setMenuingModalVisible(true)}>
-            <Text style={styles.addImageText}> 가격표 이미지 편집</Text>
-            <Feather name="chevron-right" size={23} color="#999" />
-          </Pressable>
-          <Pressable
             style={styles.reorderButton}
             onPress={() =>
               navigation.navigate('AlcoholEditScreen', {
@@ -114,37 +106,6 @@ const StoreAlcoholScreen = ({
           </Pressable>
         </>
       )}
-
-      {/* 카테고리 탭 */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.tabContainer}>
-        {Object.keys(groupedAlcohols).map(type => (
-          <TouchableOpacity
-            key={type}
-            style={styles.tabButton}
-            onPress={() => {
-              const y = parentSectionPositions[type];
-              if (onScrollTo && y !== undefined) {
-                if (imagelist === 0) {
-                  onScrollTo({x: 0, y: y + paddingTopValue, animated: true});
-                } else if (imagelist > 0) {
-                  onScrollTo({
-                    x: 0,
-                    y: y + paddingTopValue + 150,
-                    animated: true,
-                  });
-                } else {
-                }
-              } else {
-                console.warn('onScrollTo 또는 y 좌표가 올바르지 않습니다');
-              }
-            }}>
-            <Text style={styles.tabText}>{type}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
 
       {/* 주류 리스트 */}
       {/* 내부 ScrollView 제거하고 View로 감싸기 */}
@@ -184,12 +145,12 @@ const StoreAlcoholScreen = ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#fff',
   },
   reorderButton: {
-    marginTop: 20,
     marginHorizontal: 18,
+    marginTop: 20,
+    marginBottom: 10,
     alignItems: 'center',
     borderRadius: 10,
     backgroundColor: '#E9F5FB',
@@ -201,10 +162,9 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   tabContainer: {
-    marginLeft: 18,
-    marginTop: 30,
-    marginBottom: 20,
+    paddingHorizontal: 18,
     backgroundColor: '#fff',
+    marginTop: 10,
   },
   tabButton: {
     marginRight: 10,
@@ -212,7 +172,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     backgroundColor: '#eee',
-    margin: 4,
+    marginBottom: 5,
   },
   tabText: {
     fontSize: 13,

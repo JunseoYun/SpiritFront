@@ -118,10 +118,6 @@ const InfoImageEditScreen = ({navigation, route}) => {
   };
 
   const removeServerImage = index => {
-    if (allImages.length <= 1) {
-      showToast('이미지는 최소 1개 이상 필요합니다.');
-      return;
-    }
     setLoading(true);
     const imageToRemove = serverImages[index];
     setServerImages(prev => prev.filter((_, i) => i !== index));
@@ -133,10 +129,6 @@ const InfoImageEditScreen = ({navigation, route}) => {
   };
 
   const removeAddedImage = index => {
-    if (allImages.length <= 1) {
-      showToast('이미지는 최소 1개 이상 필요합니다.');
-      return;
-    }
     setLoading(true);
     setAddedImages(prevImages => prevImages.filter((_, i) => i !== index));
     showToast('이미지가 삭제 되었습니다.');
@@ -175,10 +167,6 @@ const InfoImageEditScreen = ({navigation, route}) => {
   return (
     <>
       <ScrollView style={styles.bottomSheetContent}>
-        <Text style={styles.title}>
-          {Source == 'menu' ? '메뉴판' : '주류 정보'} 이미지
-        </Text>
-
         {allImages.map((image, index) => (
           <View key={index} style={styles.imageWrapper}>
             <Image

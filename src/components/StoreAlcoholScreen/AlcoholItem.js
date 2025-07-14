@@ -271,9 +271,7 @@ const AlcoholItem = ({
           ) : (
             <>
               <Text style={styles.name}>{name}</Text>
-              {description == '' ? null : (
-                <Text style={styles.desc}>{description}</Text>
-              )}
+              {description && <Text style={styles.desc}>{description}</Text>}
               <Text style={styles.price}>
                 {price === '변동'
                   ? '변동'
@@ -359,7 +357,7 @@ const AlcoholItem = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.7,
     borderColor: '#eee',
   },
   contentRow: {
@@ -398,16 +396,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   price: {
-    marginTop: 5,
+    marginTop: 7,
     fontSize: 16,
     color: '#333',
     fontFamily: 'Pretendard-SemiBold',
-    marginLeft: 2,
   },
   imgWrap: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
+    // width: 100,
+    // height: 100,
+    // borderRadius: 10,
   },
   image: {
     width: 100,

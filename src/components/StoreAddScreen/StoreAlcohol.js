@@ -29,12 +29,10 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
 
   const handleAlcoholChange = (index, key, value) => {
     setAlcohol(prev => {
-      const updatedAlcohol = [...(prev || [])];
-      if (!updatedAlcohol[index]) {
-        updatedAlcohol[index] = {type: '', price: 0};
-      }
-      updatedAlcohol[index][key] = value;
-      return updatedAlcohol;
+      const updated = [...(prev || [])];
+      if (!updated[index]) updated[index] = {type: '', price: 0};
+      updated[index][key] = value;
+      return updated;
     });
   };
 
@@ -53,131 +51,122 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>대표주종* (최대 3종)</Text>
+      <Text style={styles.title}>대표주종 (최대 3종)</Text>
 
-      {alcohol.map((_, index) => {
+      <View style={styles.summaryWrap}>
+        {alcohol.map((item, index) => {
+          const label = alcohols.find(a => a.value === item?.type)?.label;
+          const price = item?.price?.toLocaleString();
+          const isFilled = item?.type && item?.price;
+
+          return (
+            <Pressable
+              key={index}
+              style={[styles.summaryItem, !isFilled && styles.summaryItemEmpty]}
+              onPress={() => toggleExpand(index)}>
+              <Text
+                style={[
+                  styles.summaryText,
+                  !isFilled && styles.summaryTextEmpty,
+                ]}>
+                {isFilled ? `${label} ${price}원` : '주종 · 가격'}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {alcohol.map((item, index) => {
+        if (expandedIndex !== index) return null;
+
         const selectedTypes = alcohol
           .filter((_, i) => i !== index)
           .map(d => d?.type);
 
-        const currentType = alcohol[index]?.type;
-        const filteredAlcohols = alcohols.filter(
-          a => !selectedTypes.includes(a.value) || a.value === currentType,
+        const filtered = alcohols.filter(
+          a => !selectedTypes.includes(a.value) || a.value === item?.type,
         );
 
-        const remainder = filteredAlcohols.length % 4;
+        const remainder = filtered.length % 4;
         const paddingCount = remainder === 0 ? 0 : 4 - remainder;
-        const paddedAlcohols = [
-          ...filteredAlcohols,
-          ...Array(paddingCount).fill(null),
-        ];
+        const padded = [...filtered, ...Array(paddingCount).fill(null)];
 
         return (
-          <View key={index} style={styles.alcoholRow}>
-            {expandedIndex !== index ? (
-              <TouchableOpacity
-                style={styles.collapsedInfo}
-                onPress={() => toggleExpand(index)}>
-                <Text style={styles.collapsedText}>
-                  {alcohol[index]?.type
-                    ? alcohols.find(a => a.value === alcohol[index]?.type)
-                        ?.label || '선택'
-                    : '주종 선택'}
-                </Text>
-                <Text style={styles.collapsedText}>
-                  {alcohol[index]?.price
-                    ? `${alcohol[index]?.price} 원`
-                    : '가격 입력'}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.sectionView}>
-                <TouchableOpacity
-                  style={[styles.closeButton]}
-                  onPress={() => handleRemoveAlcohol(index)}>
-                  <Ionicons name="close" size={25} color="#999" />
-                </TouchableOpacity>
+          <View key={index} style={styles.sectionView}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => handleRemoveAlcohol(index)}>
+              <Text style={styles.deleteText}>삭제</Text>
+            </TouchableOpacity>
 
-                <View style={styles.pickerContainer}>
-                  <View style={styles.priceContainer}>
-                    <View>
-                      {alcohol[index]?.price === 0 ||
-                      alcohol[index]?.price === ''
-                        ? ''
-                        : alcohol[index]?.price.toString() && (
-                            <Text style={styles.sectionTitle}>주류 가격 *</Text>
-                          )}
-                    </View>
-                    <TextInput
-                      style={[styles.priceInput]}
-                      value={
-                        alcohol[index]?.price === 0 ||
-                        alcohol[index]?.price === ''
-                          ? ''
-                          : alcohol[index]?.price.toString()
-                      }
-                      onChangeText={value =>
+            <View style={styles.pickerContainer}>
+              <Text style={styles.sectionTitle}>주종</Text>
+              <View style={styles.grid}>
+                {padded.map((alcoholItem, i) =>
+                  alcoholItem ? (
+                    <Pressable
+                      key={alcoholItem.value}
+                      style={[
+                        styles.gridItem,
+                        item.type === alcoholItem.value
+                          ? styles.itemSelected
+                          : styles.itemUnselected,
+                      ]}
+                      onPress={() =>
                         handleAlcoholChange(
                           index,
-                          'price',
-                          value === '' ? '' : parseInt(value),
+                          'type',
+                          item.type === alcoholItem.value
+                            ? ''
+                            : alcoholItem.value,
                         )
-                      }
-                      placeholder="주류 가격 *"
-                      placeholderTextColor="#999"
-                      keyboardType="number-pad"
-                      returnKeyType="done"
+                      }>
+                      <Text
+                        style={[
+                          styles.gridLabel,
+                          item.type === alcoholItem.value
+                            ? styles.labelSelected
+                            : styles.labelUnselected,
+                        ]}>
+                        {alcoholItem.label}
+                      </Text>
+                    </Pressable>
+                  ) : (
+                    <View
+                      key={`dummy-${i}`}
+                      style={[styles.gridItem, {opacity: 0}]}
                     />
-                  </View>
-
-                  <Text style={styles.sectionTitle}>주종 선택</Text>
-                  <View style={styles.grid}>
-                    {paddedAlcohols.map((alcoholItem, i) =>
-                      alcoholItem ? (
-                        <Pressable
-                          key={alcoholItem.value}
-                          style={[
-                            styles.gridItem,
-                            alcoholItem.value === alcohol[index]?.type
-                              ? styles.itemSelected
-                              : styles.itemUnselected,
-                          ]}
-                          onPress={() => {
-                            const current = alcohol[index]?.type;
-                            const selected = alcoholItem.value;
-                            handleAlcoholChange(
-                              index,
-                              'type',
-                              current === selected ? '' : selected,
-                            );
-                          }}>
-                          <Text
-                            style={[
-                              styles.gridLabel,
-                              alcoholItem.value === alcohol[index]?.type
-                                ? styles.labelSelected
-                                : styles.labelUnselected,
-                            ]}>
-                            {alcoholItem.label}
-                          </Text>
-                        </Pressable>
-                      ) : (
-                        <View
-                          key={`dummy-${i}`}
-                          style={[styles.gridItem, {opacity: 0}]}
-                        />
-                      ),
-                    )}
-                  </View>
-                </View>
-
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={() => toggleExpand(index)}>
-                  <Text style={styles.saveButtonText}>완료</Text>
-                </TouchableOpacity>
+                  ),
+                )}
               </View>
-            )}
+
+              <View style={styles.priceContainer}>
+                {item?.price > 0 && (
+                  <Text style={styles.sectionTitle}>가격</Text>
+                )}
+                <TextInput
+                  style={styles.priceInput}
+                  value={item.price ? item.price.toString() : ''}
+                  onChangeText={value =>
+                    handleAlcoholChange(
+                      index,
+                      'price',
+                      value === '' ? '' : parseInt(value),
+                    )
+                  }
+                  placeholder="가격"
+                  placeholderTextColor="#999"
+                  keyboardType="number-pad"
+                  returnKeyType="done"
+                />
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={() => toggleExpand(index)}>
+              <Text style={styles.saveButtonText}>완료</Text>
+            </TouchableOpacity>
           </View>
         );
       })}
@@ -185,7 +174,13 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
       {alcohol.length < 3 && (
         <TouchableOpacity
           onPress={() => {
-            setAlcohol(prev => [...(prev || []), {type: '', price: 0}]);
+            setAlcohol(prev => {
+              const updated = [...(prev || []), {type: '', price: 0}];
+              setTimeout(() => {
+                setExpandedIndex(updated.length - 1);
+              }, 0);
+              return updated;
+            });
           }}
           style={styles.addButton}>
           <Text style={styles.addButtonText}>+ 대표주종 추가</Text>
@@ -202,29 +197,49 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: 20,
-    marginTop: 40,
-  },
+  container: {marginHorizontal: 20, marginTop: 40},
   title: {
     fontFamily: 'Pretendard-Medium',
     color: '#999',
     fontSize: 16,
     marginBottom: 20,
   },
-  alcoholRow: {
-    marginBottom: 30,
+  summaryWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 20,
   },
+  summaryItem: {
+    backgroundColor: '#E8F7FF',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  summaryItemEmpty: {backgroundColor: '#f0f0f0'},
+  summaryText: {
+    color: '#16BBFF',
+    fontSize: 14,
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  summaryTextEmpty: {color: '#999'},
+  alcoholRow: {marginBottom: 30},
   sectionView: {
     backgroundColor: '#fff',
     padding: 20,
-    borderRadius: 17,
+    borderRadius: 7,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
     position: 'relative',
+    marginBottom: 20,
+  },
+  deleteText: {
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 15,
   },
   closeButton: {
     position: 'absolute',
@@ -234,15 +249,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  closeButtonText: {
-    fontSize: 20,
-    color: '#666',
-    fontWeight: 'bold',
-  },
-  pickerContainer: {
-    marginBottom: 10,
-    marginTop: 15,
-  },
+  pickerContainer: {marginBottom: 10, marginTop: 15},
   sectionTitle: {
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
@@ -253,8 +260,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    rowGap: 10,
-    columnGap: 10,
+    gap: 4,
     marginTop: 10,
   },
   gridItem: {
@@ -266,29 +272,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 10,
   },
-  itemSelected: {
-    backgroundColor: '#E8F7FF',
-    borderColor: '#16BBFF',
-  },
-  itemUnselected: {
-    backgroundColor: '#fff',
-    borderColor: '#ccc',
-  },
-  gridLabel: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-Medium',
-  },
-  labelSelected: {
-    color: '#16BBFF',
-    fontWeight: '600',
-  },
-  labelUnselected: {
-    color: '#999',
-  },
-  priceContainer: {
-    marginBottom: 30,
-    marginTop: 10,
-  },
+  itemSelected: {backgroundColor: '#E8F7FF', borderColor: '#16BBFF'},
+  itemUnselected: {backgroundColor: '#fff', borderColor: '#ccc'},
+  gridLabel: {fontSize: 14, fontFamily: 'Pretendard-Medium'},
+  labelSelected: {color: '#16BBFF', fontWeight: '600'},
+  labelUnselected: {color: '#999'},
+  priceContainer: {marginVertical: 20},
   priceInput: {
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
@@ -297,28 +286,9 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     color: 'black',
   },
-  collapsedInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 17,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-  },
-  collapsedText: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-Medium',
-    color: '#333',
-  },
   saveButton: {
     marginTop: 20,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,
@@ -328,12 +298,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
   },
-  errorMessage: {
-    color: '#FF4816',
-    fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
-    marginTop: 5,
-  },
   addButton: {
     alignItems: 'center',
     marginBottom: 10,
@@ -342,6 +306,12 @@ const styles = StyleSheet.create({
     color: '#45C9FF',
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
+  },
+  errorMessage: {
+    color: '#FF4816',
+    fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
+    marginTop: 5,
   },
 });
 

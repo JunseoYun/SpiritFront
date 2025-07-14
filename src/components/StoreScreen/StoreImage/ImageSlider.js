@@ -73,6 +73,9 @@ const ImageSlider = ({
   };
 
   const handleImagePress = index => {
+    if (isUpdate) {
+      return;
+    }
     navigation.navigate('ImageViewerScreen', {images: images, index: index});
   };
 
