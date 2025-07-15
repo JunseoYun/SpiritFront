@@ -18,14 +18,13 @@ import ThirdPartyInfo from '../components/IdentityScreen/Policy/ThirdPartyInfo';
 import MainBtmbar from './MainBtmbar';
 const Stack = createStackNavigator();
 
-export default function OAuthStack() {
+export default function OAuthStack({isTestEnabled}) {
   return (
     <Stack.Navigator initialRouteName="OAuthLoginScreen">
-      <Stack.Screen
-        name="OAuthLoginScreen"
-        options={{headerShown: false}}
-        component={OAuthLoginScreen}
-      />
+      <Stack.Screen name="OAuthLoginScreen" options={{headerShown: false}}>
+        {props => <OAuthLoginScreen {...props} isTestEnabled={isTestEnabled} />}
+      </Stack.Screen>
+
       <Stack.Screen
         name="MainBtmbar"
         component={MainBtmbar}

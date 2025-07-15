@@ -34,10 +34,10 @@ const StoreAddInfoScreen = ({navigation}) => {
     storeContent: '',
   });
   const [selectedCategory, setSelectedCategory] = useState([]);
-  const [selectedOption, setSelectedOption] = useState(false);
-  const [selectedscreenOption, setselectedscreenOption] = useState(false);
+  const [selectedOption, setSelectedOption] = useState();
+  const [selectedscreenOption, setselectedscreenOption] = useState();
   const [closedDay, setClosedDay] = useState([]);
-  const [alcohol, setAlcohol] = useState([{type: '', price: 0}]);
+  const [alcohol, setAlcohol] = useState([]);
   const [is24Hours, setIs24Hours] = useState(null);
   const [isSameEveryTime, setIsSameEveryTime] = useState(true);
   const [error, setError] = useState('');

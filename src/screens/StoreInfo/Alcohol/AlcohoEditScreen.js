@@ -1,4 +1,10 @@
-import React, {useState, useMemo, useLayoutEffect} from 'react';
+import React, {
+  useState,
+  useMemo,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import {
   View,
   Text,
@@ -11,12 +17,15 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   Animated,
+  BackHandler,
+  ToastAndroid,
 } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import AlcoholItem from '../../../components/StoreAlcoholScreen/AlcoholItem';
 import {DrinkUpdateSort, StoreDrinkdelete} from '../../../api/drinkApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
+import {useFocusEffect} from '@react-navigation/native';
 
 const BUTTON_HEIGHT = 64;
 
@@ -177,6 +186,35 @@ const AlcoholEditScreen = ({route, navigation}) => {
       contentContainerStyle={{paddingBottom: BUTTON_HEIGHT + 32}}
       showsVerticalScrollIndicator={false}
     />
+  );
+
+  const lastBackPressed = useRef(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        const now = Date.now();
+
+        if (now - lastBackPressed.current < 2000) {
+          navigation.goBack();
+          return true;
+        }
+
+        lastBackPressed.current = now;
+        ToastAndroid.show(
+          '한 번 더 누르면 작성한 내용이 사라집니다.',
+          ToastAndroid.SHORT,
+        );
+        return true; // 기본 동작 막기
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove(); // cleanup
+    }, [navigation]),
   );
 
   return (

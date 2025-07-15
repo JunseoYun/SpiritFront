@@ -40,6 +40,7 @@ const MainScreen = ({navigation}) => {
   const [address, setAddress] = useState('');
   const insets = useSafeAreaInsets();
   const scrollY = useRef(new Animated.Value(0)).current;
+  const scrollRef = useRef(null);
   const [showTopView2, setShowTopView2] = useState(false);
   const [showLocation, setShowLocation] = useState(false);
 
@@ -55,6 +56,17 @@ const MainScreen = ({navigation}) => {
   const {recommendCategory} = useRecommendation();
   const {token} = useAuth();
   const {showToast} = useToast();
+
+  useEffect(() => {
+    navigation.setParams({
+      scrollToTop: () => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTo({y: 0, animated: true}); // ✅ getNode 제거
+        }
+      },
+    });
+  }, [navigation]);
+
   useEffect(() => {
     const listener = scrollY.addListener(({value}) => {
       const iosThreshold = insets.top + 30;
@@ -288,6 +300,7 @@ const MainScreen = ({navigation}) => {
         </View>
       )}
       <Animated.ScrollView
+        ref={scrollRef}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {useNativeDriver: false},

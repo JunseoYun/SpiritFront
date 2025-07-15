@@ -1,4 +1,4 @@
-import React, {useState, useLayoutEffect, useRef} from 'react';
+import React, {useState, useLayoutEffect, useRef, useCallback} from 'react';
 import {
   Text,
   StyleSheet,
@@ -10,8 +10,10 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  BackHandler,
+  ToastAndroid,
 } from 'react-native';
-import {useRoute} from '@react-navigation/native';
+import {useRoute, useFocusEffect} from '@react-navigation/native';
 import MenuAddForm from '../../../components/MenuAddScreen/MenuAddForm';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {StoreMenucreate} from '../../../api/menuApi';
@@ -66,8 +68,11 @@ const MenuAddScreen = ({navigation}) => {
     });
   };
 
+  const menuRefs = useRef([]);
+
   const MenuAdd = async () => {
-    for (const menu of menus) {
+    for (let i = 0; i < menus.length; i++) {
+      const menu = menus[i];
       const containsForbiddenWord = forbiddenWords.some(
         word =>
           menu.menuName.includes(word) ||
@@ -75,10 +80,25 @@ const MenuAddScreen = ({navigation}) => {
           menu.price.toString().includes(word),
       );
 
+      const Gotomenuerror = () => {
+        menuRefs.current[i]?.measureLayout(
+          scrollViewRef.current,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({y: y - 40, animated: true});
+          },
+          error => {
+            console.log('measureLayout error:', error);
+          },
+        );
+      };
+
       if (containsForbiddenWord) {
         showAlert({
           title: '가이드 위반',
           message: '비속어 및 이용 약관에 위배되는\n내용이 포함되어 있습니다.',
+          onConfirm: () => {
+            Gotomenuerror();
+          },
         });
         return;
       }
@@ -87,6 +107,9 @@ const MenuAddScreen = ({navigation}) => {
         showAlert({
           title: '입력 오류',
           message: '메뉴 이름을 입력해주세요.',
+          onConfirm: () => {
+            Gotomenuerror();
+          },
         });
         return;
       }
@@ -95,6 +118,9 @@ const MenuAddScreen = ({navigation}) => {
         showAlert({
           title: '입력 오류',
           message: '메뉴 가격을 입력해주세요.',
+          onConfirm: () => {
+            Gotomenuerror();
+          },
         });
         return;
       }
@@ -157,36 +183,65 @@ const MenuAddScreen = ({navigation}) => {
     });
   }, [navigation, MenuAdd, loading, confirm]);
 
+  const lastBackPressed = useRef(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        const now = Date.now();
+
+        if (now - lastBackPressed.current < 2000) {
+          navigation.goBack();
+          return true;
+        }
+
+        lastBackPressed.current = now;
+        ToastAndroid.show(
+          '한 번 더 누르면 작성한 내용이 사라집니다.',
+          ToastAndroid.SHORT,
+        );
+        return true; // 기본 동작 막기
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove(); // cleanup
+    }, [navigation]),
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         style={{flex: 1, backgroundColor: '#F7F8FA'}}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{flex: 1}}>
-            <ScrollView
-              ref={scrollViewRef}
-              contentContainerStyle={styles.scrollContainer}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}>
-              {menus.map((menu, index) => (
-                <MenuAddForm
-                  key={index}
-                  menu={menu}
-                  index={index}
-                  handleMenuChange={handleMenuChange}
-                  onDelete={handleDeleteMenu}
-                />
-              ))}
-            </ScrollView>
-
-            <View style={styles.menuAddTextview}>
-              <Pressable style={styles.menuAddButton} onPress={handleAddMenu}>
-                <Text style={styles.menuAddText}>메뉴 추가</Text>
-              </Pressable>
-            </View>
+        {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss}> */}
+        <View style={{flex: 1}}>
+          <ScrollView
+            ref={scrollViewRef}
+            contentContainerStyle={styles.scrollContainer}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}>
+            {menus.map((menu, index) => (
+              <MenuAddForm
+                ref={el => (menuRefs.current[index] = el)}
+                key={index}
+                menu={menu}
+                index={index}
+                handleMenuChange={handleMenuChange}
+                onDelete={handleDeleteMenu}
+              />
+            ))}
+          </ScrollView>
+          <View style={styles.menuAddTextview}>
+            <Pressable style={styles.menuAddButton} onPress={handleAddMenu}>
+              <Text style={styles.menuAddText}>메뉴 추가</Text>
+            </Pressable>
           </View>
-        </TouchableWithoutFeedback>
+        </View>
+        {/* </TouchableWithoutFeedback> */}
       </KeyboardAvoidingView>
 
       <AlertComponent />

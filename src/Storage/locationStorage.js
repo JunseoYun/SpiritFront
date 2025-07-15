@@ -13,8 +13,6 @@ export const saveLocationAddress = async (location, address) => {
 
     cachedLocation = location; // 메모리에 캐싱
     cachedAddress = address;
-
-    return {location, address};
   } catch (error) {
     console.log('위치 정보 저장 오류:', error);
   }

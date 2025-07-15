@@ -28,7 +28,7 @@ const MyManagerItem = ({sotreInfo, onPress, width}) => {
     <Pressable style={[styles.card, {width}]} onPress={onPress}>
       <ImageBackground
         source={
-          mainImgUrl ? {uri: mainImgUrl} : require('../../assets/store.png')
+          mainImgUrl ? {uri: mainImgUrl} : require('../../../assets/store.png')
         }
         style={styles.image}
         imageStyle={{borderRadius: 16}}>

@@ -1,119 +1,265 @@
-import React, {useState, useEffect} from 'react';
+import React, {
+  useContext,
+  useEffect,
+  useCallback,
+  useRef,
+  useState,
+} from 'react';
 import {useIsFocused} from '@react-navigation/native';
-import {View, Text, FlatList, StyleSheet, SafeAreaView} from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  Pressable,
+} from 'react-native';
+import {AlcoholFilterContext} from '../../context/AlcoholFilterContext';
 import {Store_getby_category} from '../../api/storeApi';
 import StoreItem from '../../components/CategoryTapScreen/StoreItem';
 import Loading from '../../hooks/Loading';
 
+const alcoholTypes = [
+  {label: '소주', value: 'SOJU'},
+  {label: '맥주', value: 'BEER'},
+  {label: '막걸리', value: 'MAKGEOLLI'},
+  {label: '와인', value: 'WINE'},
+  {label: '칵테일', value: 'COCKTAIL'},
+  {label: '사케', value: 'SAKE'},
+  {label: '고량주', value: 'KAOLIANG'},
+  {label: '위스키', value: 'WHISKEY'},
+  {label: '보드카', value: 'VODKA'},
+  {label: '전통주', value: 'TRADITIONAL'},
+  {label: '하이볼', value: 'HIGHBALL'},
+  {label: '데킬라', value: 'TEQUILA'},
+];
+
 const CategoryTapScreen = ({navigation, route}) => {
   const {categoryname, location} = route.params;
   const isFocused = useIsFocused();
+
+  const {selectedAlcohols, toggleAlcohol, filterScrollX, setFilterScrollX} =
+    useContext(AlcoholFilterContext);
+
+  const [rawStores, setRawStores] = useState([]);
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false); // 전체 로딩 상태
-  const [isInitialLoading, setIsInitialLoading] = useState(true); // 첫 로딩 상태
-  const [isEnd, setIsEnd] = useState(false); // 더 이상 데이터가 없는 상태
+  const [loading, setLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isEnd, setIsEnd] = useState(false);
   const [totalpage, setTotalpage] = useState(0);
 
-  // 🔥 데이터 불러오기 함수
-  const fetchStores = async (currentPage, reset = false) => {
-    if (loading || isEnd) return; // 로딩 중이거나 데이터가 끝났으면 요청 막기
-    setLoading(true); // 로딩 시작
+  const scrollRef = useRef(null);
+
+  // 필터 적용 함수
+  const applyAlcoholFilter = useCallback(
+    data => {
+      if (selectedAlcohols.length === 0) return data;
+      return data.filter(store =>
+        (store.mainDrinkDtos || []).some(drink =>
+          selectedAlcohols.includes(drink.type),
+        ),
+      );
+    },
+    [selectedAlcohols],
+  );
+
+  // 가게 데이터 불러오기 함수
+  const fetchStores = async (startPage = 0, reset = false) => {
+    if (loading || isEnd) return;
+    setLoading(true);
 
     try {
-      const data = await Store_getby_category(
-        currentPage,
-        location.latitude,
-        location.longitude,
-        categoryname,
-      );
+      const size = selectedAlcohols.length > 0 ? 100 : 10;
 
-      setTotalpage(data.totalPages);
+      let combinedRaw = reset ? [] : [...rawStores];
+      let currentPage = startPage;
+      let shouldContinue = true;
+
+      while (shouldContinue) {
+        const data = await Store_getby_category(
+          currentPage,
+          location.latitude,
+          location.longitude,
+          categoryname,
+          size,
+        );
+
+        const newRaw = data.content || [];
+        combinedRaw = [...combinedRaw, ...newRaw];
+        const unique = Array.from(
+          new Map(combinedRaw.map(s => [s.id, s])).values(),
+        );
+
+        setRawStores(unique);
+        setStores(applyAlcoholFilter(unique));
+        setTotalpage(data.totalPages);
+
+        const isLastPage =
+          data.content.length === 0 || currentPage + 1 >= data.totalPages;
+
+        if (selectedAlcohols.length === 0 || isLastPage) {
+          shouldContinue = false;
+          setIsEnd(isLastPage);
+        } else {
+          currentPage += 1;
+        }
+      }
 
       if (reset) {
-        setStores(data.content); // 초기화 시 새 데이터를 설정
-        setPage(0); // 페이지 초기화
-        setIsEnd(data.content.length === 0); // 데이터 끝 상태 설정
-      } else if (data.content.length === 0) {
-        setIsEnd(true); // 추가 데이터가 없을 경우
+        setPage(0);
       } else {
-        setStores(prevStores => {
-          const mergedStores = [...prevStores, ...data.content];
-          const uniqueStores = Array.from(
-            new Map(mergedStores.map(store => [store.id, store])).values(),
-          );
-          return uniqueStores;
-        });
+        setPage(currentPage);
       }
     } catch (err) {
       console.error(err.message || '오류 발생');
     } finally {
-      setLoading(false); // 로딩 끝
-      if (isInitialLoading) setIsInitialLoading(false); // 첫 로딩 상태 해제
+      setLoading(false);
+      if (isInitialLoading) setIsInitialLoading(false);
     }
   };
 
+  // 화면이 포커스될 때 데이터 처음 불러오기
   useEffect(() => {
-    if (isFocused && stores.length === 0) {
+    if (isFocused && rawStores.length === 0) {
       fetchStores(0, true);
     }
   }, [isFocused]);
 
+  // 선택한 필터가 바뀌면 가게 리스트 다시 필터링
+  useEffect(() => {
+    setStores(applyAlcoholFilter(rawStores));
+  }, [selectedAlcohols]);
+
+  // 포커스 될 때 필터 ScrollView 위치 복원
+  useEffect(() => {
+    if (isFocused && scrollRef.current) {
+      scrollRef.current.scrollTo({x: filterScrollX.current, animated: false});
+    }
+  }, [isFocused]);
+
+  // 필터 버튼 클릭 핸들러
+  const handleAlcoholPress = value => {
+    toggleAlcohol(value);
+  };
+
   return (
-    <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
-      {isInitialLoading ? (
-        <Loading loading={isInitialLoading} />
+    <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+      {isInitialLoading || loading ? (
+        <Loading loading={true} />
       ) : (
-        <FlatList
-          data={stores}
-          renderItem={({item}) => (
-            <StoreItem
-              store={item}
-              location={location}
-              navigation={navigation}
-            />
-          )}
-          keyExtractor={item => `${categoryname}-${item.id}`} // ✅ 카테고리별 고유 키
-          onEndReached={() => {
-            if (!loading && !isEnd && page < totalpage - 1) {
-              setPage(prevPage => {
-                const nextPage = prevPage + 1;
-                fetchStores(nextPage); // 다음 페이지 요청
-                return nextPage;
+        <View>
+          {/* 필터 바 - 가로 스크롤 */}
+          <ScrollView
+            ref={scrollRef}
+            horizontal
+            onLayout={() => {
+              scrollRef.current?.scrollTo({
+                x: filterScrollX.current,
+                animated: false,
               });
+            }}
+            showsHorizontalScrollIndicator={false}
+            style={styles.filterBar}
+            contentContainerStyle={{paddingHorizontal: 12}}
+            onScroll={e => {
+              filterScrollX.current = e.nativeEvent.contentOffset.x;
+            }}
+            scrollEventThrottle={16}>
+            {alcoholTypes.map(({label, value}) => (
+              <Pressable
+                key={value}
+                onPress={() => handleAlcoholPress(value)}
+                style={[
+                  styles.filterButton,
+                  selectedAlcohols.includes(value) && styles.activeFilter,
+                ]}>
+                <Text
+                  style={[
+                    styles.filterText,
+                    selectedAlcohols.includes(value) && styles.activeFilterText,
+                  ]}>
+                  {label}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+
+          {/* 가게 목록 */}
+          <FlatList
+            data={stores}
+            renderItem={({item}) => (
+              <StoreItem
+                store={item}
+                location={location}
+                navigation={navigation}
+              />
+            )}
+            keyExtractor={item => `${categoryname}-${item.id}`}
+            onEndReached={() => {
+              if (
+                !loading &&
+                !isEnd &&
+                rawStores.length > 0 &&
+                page < totalpage - 1
+              ) {
+                const nextPage = page + 1;
+                setPage(nextPage);
+                fetchStores(nextPage);
+              }
+            }}
+            onEndReachedThreshold={0.5}
+            initialNumToRender={10}
+            maxToRenderPerBatch={5}
+            windowSize={5}
+            removeClippedSubviews={true}
+            ListEmptyComponent={
+              !loading && stores.length === 0 ? (
+                <Text style={styles.emptyText}>등록된 가게가 없어요</Text>
+              ) : null
             }
-          }}
-          onEndReachedThreshold={0.5}
-          initialNumToRender={10}
-          maxToRenderPerBatch={5}
-          windowSize={5}
-          removeClippedSubviews={true}
-          ListEmptyComponent={
-            !loading && stores.length === 0 ? (
-              <Text style={styles.emptyText}>등록된 가게가 없어요</Text>
-            ) : null
-          }
-          refreshing={loading}
-          onRefresh={() => fetchStores(0, true)}
-          contentContainerStyle={{paddingBottom: 70}}
-        />
+            refreshing={loading}
+            nRefresh={() => {
+              setIsEnd(false);
+              fetchStores(0, true);
+            }}
+            contentContainerStyle={{paddingBottom: 70}}
+          />
+        </View>
       )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  filterBar: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    backgroundColor: 'white',
   },
-  loadingtext: {
-    fontFamily: 'Pretendard-SemiBold',
-    fontSize: 20,
-    color: '#333',
-    marginVertical: 40,
+  filterButton: {
+    height: 30,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    margin: 3,
+  },
+  filterText: {
+    fontSize: 14,
+    color: '#555',
+    fontFamily: 'Pretendard-Regular',
     textAlign: 'center',
+  },
+  activeFilter: {
+    backgroundColor: '#45C9FF',
+    borderColor: '#45C9FF',
+  },
+  activeFilterText: {
+    color: 'white',
+    fontFamily: 'Pretendard-Bold',
   },
   emptyText: {
     textAlign: 'center',

@@ -36,6 +36,7 @@ const AlcoholItem = ({
   isUpdatable,
   isMainEditing,
   onTypeChange,
+  navigation,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(alcohol.name);
@@ -197,6 +198,10 @@ const AlcoholItem = ({
     }
   };
 
+  const handleImagePress = () => {
+    navigation.navigate('ImageViewerScreen', {images: imgUrl});
+  };
+
   return (
     <View style={[styles.container, isLast && {borderBottomWidth: 0}]}>
       <View
@@ -205,7 +210,11 @@ const AlcoholItem = ({
           isMainEditing && {paddingHorizontal: 0},
           isEditing && {paddingBottom: 0},
         ]}>
-        <View style={styles.textWrap}>
+        <View
+          style={[
+            styles.textWrap,
+            description == '' && {justifyContent: 'space-evenly'},
+          ]}>
           {isEditing ? (
             <>
               <TextInput
@@ -262,7 +271,7 @@ const AlcoholItem = ({
           ) : (
             <>
               <Text style={styles.name}>{name}</Text>
-              <Text style={styles.desc}>{description}</Text>
+              {description && <Text style={styles.desc}>{description}</Text>}
               <Text style={styles.price}>
                 {price === '변동'
                   ? '변동'
@@ -272,7 +281,11 @@ const AlcoholItem = ({
           )}
         </View>
         <View style={styles.imgWrap}>
-          {imgUrl && <Image source={{uri: imgUrl}} style={styles.image} />}
+          {imgUrl && (
+            <Pressable onPress={handleImagePress}>
+              <Image source={{uri: imgUrl}} style={styles.image} />
+            </Pressable>
+          )}
           {!imgUrl && isMainEditing && !isEditing && (
             <View style={styles.emptyImage}>
               <Text style={{color: '#aaa'}}>사진 없음</Text>
@@ -344,7 +357,7 @@ const AlcoholItem = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.7,
     borderColor: '#eee',
   },
   contentRow: {
@@ -383,16 +396,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   price: {
-    marginTop: 5,
+    marginTop: 7,
     fontSize: 16,
     color: '#333',
     fontFamily: 'Pretendard-SemiBold',
-    marginLeft: 2,
   },
   imgWrap: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
+    // width: 100,
+    // height: 100,
+    // borderRadius: 10,
   },
   image: {
     width: 100,

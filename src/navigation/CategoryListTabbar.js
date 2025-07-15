@@ -6,7 +6,7 @@ import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs
 import CategoryTapScreen from '../screens/CategoryTap/CategoryTapScreen';
 import {getLocation} from '../storage/locationStorage';
 import Loading from '../hooks/Loading';
-
+import {AlcoholFilterProvider} from '../context/AlcoholFilterContext';
 const categories = [
   {name: 'IZAKAYA', title: '이자카야', categoryname: 'IZAKAYA'},
   {name: 'KOREAN', title: '한식', categoryname: 'KOREAN'},
@@ -60,35 +60,37 @@ const CategoryListTabbar = ({route}) => {
   }
 
   return (
-    <Tab.Navigator
-      initialRouteName={screen}
-      screenOptions={{
-        lazy: false,
-        tabBarScrollEnabled: true,
-        tabBarItemStyle: {width: 90},
+    <AlcoholFilterProvider>
+      <Tab.Navigator
+        initialRouteName={screen}
+        screenOptions={{
+          lazy: false,
+          tabBarScrollEnabled: true,
+          tabBarItemStyle: {width: 90},
 
-        swipeEnabled: true,
-        unmountOnBlur: false,
-        tabBarActiveTintColor: '#80D2F4', // 선택된 탭 글자 색상
-        tabBarIndicatorStyle: {
-          backgroundColor: '#45C9FF', // 선택된 탭 아래의 인디케이터 색상
-        },
-        tabBarInactiveTintColor: '#CFCFCF', // 선택되지 않은 탭 글자 색상
-        tabBarLabelStyle: {
-          fontFamily: 'Pretendard-Bold',
-          fontSize: 16, // 글씨 크기 조정
-        },
-      }}>
-      {categories.map(({name, title, categoryname}) => (
-        <Tab.Screen
-          key={name}
-          name={name}
-          component={CategoryTapScreen}
-          options={{title}}
-          initialParams={{categoryname, location}} // categoryname 전달
-        />
-      ))}
-    </Tab.Navigator>
+          swipeEnabled: true,
+          unmountOnBlur: false,
+          tabBarActiveTintColor: '#80D2F4', // 선택된 탭 글자 색상
+          tabBarIndicatorStyle: {
+            backgroundColor: '#45C9FF', // 선택된 탭 아래의 인디케이터 색상
+          },
+          tabBarInactiveTintColor: '#CFCFCF', // 선택되지 않은 탭 글자 색상
+          tabBarLabelStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 16, // 글씨 크기 조정
+          },
+        }}>
+        {categories.map(({name, title, categoryname}) => (
+          <Tab.Screen
+            key={name}
+            name={name}
+            component={CategoryTapScreen}
+            options={{title}}
+            initialParams={{categoryname, location}} // categoryname 전달
+          />
+        ))}
+      </Tab.Navigator>
+    </AlcoholFilterProvider>
   );
 };
 

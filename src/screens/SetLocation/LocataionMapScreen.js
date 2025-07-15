@@ -105,7 +105,7 @@ const LocataionMapScreen = ({navigation}) => {
           setTimeout(() => {
             navigation.reset({
               index: 1,
-              routes: [{name: 'MainBtmbar'}, {name: 'SetLocationScreen'}],
+              routes: [{name: 'MainBtmbar'}],
             });
           }, 100);
         } else {
@@ -200,14 +200,14 @@ const styles = StyleSheet.create({
   },
   locationbtn: {
     position: 'absolute',
-    bottom: '5%',
+    bottom: '6%',
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     width: '90%',
-    height: '8%',
+    height: '7%',
     backgroundColor: '#45C9FF',
-    borderRadius: 12,
+    borderRadius: 8,
   },
   locationbtntext: {
     alignSelf: 'center',

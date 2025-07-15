@@ -85,7 +85,7 @@ const MapScreen = ({navigation}) => {
     setLocation(currentLocation);
   };
 
-  const fetchSaveLocation = async radius => {
+  const getStorelist = async radius => {
     setLoading(true);
     try {
       const currentLocation = await getLocation();
@@ -122,14 +122,42 @@ const MapScreen = ({navigation}) => {
     }
   };
 
-  const roundToPrecision = (value, precision = 4) => {
-    return parseFloat(value.toFixed(precision)); // 🔥 소수점 5자리까지만 남김
+  const fetchSaveLocation = async () => {
+    setLoading(true);
+    try {
+      const currentLocation = await getLocation();
+      setLocation(currentLocation);
+      setCenterLatLng(currentLocation);
+
+      if (webViewRef.current) {
+        webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
+
+        const script = generateMapScript(
+          currentLocation.latitude,
+          currentLocation.longitude,
+          stores,
+        );
+        webViewRef.current.injectJavaScript(script);
+      }
+
+      moveCenterMap(currentLocation.latitude, currentLocation.longitude);
+    } catch (err) {
+      console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
+    } finally {
+      setRefresh(true);
+      setLoading(false);
+    }
+  };
+
+  const roundToPrecision = (value, precision = 7) => {
+    return parseFloat(value.toFixed(precision)); // 🔥 소수점 8자리까지만 남김
   };
 
   const updateNewLocation = async radius => {
     setLoading(true);
     try {
       const {newLocation, address} = await fetchLocationAddress();
+      setCenterLatLng(newLocation);
 
       const roundedCurrentLat = location
         ? roundToPrecision(location.latitude)
@@ -149,22 +177,12 @@ const MapScreen = ({navigation}) => {
       } else {
         setLocation(newLocation);
         moveCenterMap(newLocation.latitude, newLocation.longitude);
-        const storesData = await Store_getby_radius(
-          newLocation.latitude,
-          newLocation.longitude,
-          radius,
-        );
-        storesData.sort((a, b) =>
-          a.locationDto.address.localeCompare(b.locationDto.address),
-        );
-        setStores(storesData);
-        setSelectedStore(storesData[0]);
         if (webViewRef.current) {
           webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
           const script = generateMapScript(
             newLocation.latitude,
             newLocation.longitude,
-            storesData,
+            stores,
           );
           webViewRef.current.injectJavaScript(script);
         }
@@ -172,7 +190,7 @@ const MapScreen = ({navigation}) => {
     } catch (err) {
       console.error('위치 업데이트 중 오류 발생:', err);
     } finally {
-      setRefresh(false);
+      setRefresh(true);
       setLoading(false);
     }
   };
@@ -257,7 +275,10 @@ const MapScreen = ({navigation}) => {
       // 기존 메시지 처리
       if (message.action === 'mapLoaded') {
         console.log('Kakao Maps API가 로드되었습니다.');
-        fetchSaveLocation(radius);
+        const script = generateMapScript(location.latitude, location.longitude);
+        webViewRef.current.injectJavaScript(script);
+
+        getStorelist(radius);
         setRefresh(false);
         return;
       }
@@ -372,8 +393,8 @@ const MapScreen = ({navigation}) => {
       <MapRadius setRadiusint={setRadiusint} />
 
       <MapStoreList
-        updateNewLocation={() => updateNewLocation(radius)}
-        fetchSaveLocation={() => fetchSaveLocation(radius)}
+        updateNewLocation={() => updateNewLocation()}
+        fetchSaveLocation={() => fetchSaveLocation()}
         panHandlers={panResponder.panHandlers}
         flatListAnim={flatListAnim}
         isFlatListVisible={isFlatListVisible}
