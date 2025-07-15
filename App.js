@@ -60,7 +60,7 @@ const AppNavigator = () => {
     setPendingNotification(null),
   );
 
-  const isVersionValid = useVersionCheck();
+  const {isVersionValid, isTestEnabled} = useVersionCheck();
 
   useEffect(() => {
     setTimeout(() => {
@@ -78,7 +78,7 @@ const AppNavigator = () => {
   return (
     <>
       <NavigationContainer ref={navigationRef}>
-        {token ? <MainStack /> : <OAuthStack />}
+        {token ? <MainStack /> : <OAuthStack isTestEnabled={isTestEnabled} />}
       </NavigationContainer>
     </>
   );

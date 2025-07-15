@@ -2,16 +2,31 @@ import React from 'react';
 import {View, Text, Image, Pressable, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
-const MyPageheader = ({nickname, onProfilePress, imageuri}) => (
+const MyPageheader = ({
+  nickname,
+  onProfilePress,
+  imageuri,
+  handleImagePress,
+}) => (
   <View style={styles.profiletopview}>
-    <Image
-      source={
-        imageuri
-          ? {uri: imageuri} // 동적으로 설정된 이미지 URI
-          : require('../../assets/default_profile.png') // 기본 이미지
-      }
-      style={styles.profileimg}
-    />
+    {imageuri ? (
+      <Pressable onPress={handleImagePress}>
+        <Image
+          source={
+            {uri: imageuri} // 동적으로 설정된 이미지 URI
+          }
+          style={styles.profileimg}
+        />
+      </Pressable>
+    ) : (
+      <Image
+        source={
+          require('../../assets/default_profile.png') // 기본 이미지
+        }
+        style={styles.profileimg}
+      />
+    )}
+
     <Pressable style={styles.pressView} onPress={onProfilePress}>
       <Text style={[styles.Nickname]}>{nickname}</Text>
 

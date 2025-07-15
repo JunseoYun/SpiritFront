@@ -349,17 +349,17 @@ export const Store_getby_category = async (
   latitude,
   longitude,
   category,
+  size = 10, // ← 기본값 설정
 ) => {
   try {
     const response = await axiosInstance.get(
       `/store/get-by/category/${category}`,
       {
-        // auth: false,
-
         params: {
           longitude,
           latitude,
           page,
+          size, // ← size 파라미터 추가
         },
       },
     );

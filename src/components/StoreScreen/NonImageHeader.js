@@ -30,7 +30,7 @@ const NonImageHeader = ({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          maxWidth: '70%',
+          maxWidth: '74%',
         }}>
         <Animated.Text
           style={styles.headerTitle}

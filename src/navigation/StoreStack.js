@@ -17,7 +17,10 @@ import AlcoholEditScreen from '../screens/StoreInfo/Alcohol/AlcohoEditScreen';
 import UpdateStoreDrink from '../components/UpdateBottomSheet/UpdateStoreDrink';
 import MenuEditScreen from '../screens/StoreInfo/Menu/MenuEditScreen';
 import ImageReorderScreen from '../components/StoreScreen/StoreImage/ImageReorderScreen';
+import InfoImageEditScreen from '../components/StoreScreen/StoreImage/InfoImageEditScreen';
+import InfoImageReorderScreen from '../components/StoreScreen/StoreImage/InfoImageReorderScreen';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
+import ImageViewerScreen from '../hooks/ImageViewerScreen';
 
 const Stack = createStackNavigator();
 
@@ -28,6 +31,11 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreMainScreen"
         component={StoreMainScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ImageViewerScreen"
+        component={ImageViewerScreen}
         options={{headerShown: false}}
       />
       <Stack.Screen
@@ -408,6 +416,80 @@ export default function StoreStack() {
             </Pressable>
           ),
         })}
+      />
+
+      <Stack.Screen
+        name="InfoImageEditScreen"
+        component={InfoImageEditScreen}
+        options={({navigation, route}) => {
+          return {
+            title: '메뉴판 편집',
+            headerTitleAlign: 'center',
+            headerTitleStyle: {
+              fontFamily: 'Pretendard-SemiBold',
+              fontSize: 18,
+              color: '#333',
+            },
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  showAlert({
+                    title: '작성한 내용이 저장되지 않았습니다',
+                    message: '뒤로 가시겠습니까?',
+                    onConfirm: () => {
+                      navigation.goBack();
+                    },
+                    onCancel: null,
+                    type: 'confirm',
+                  });
+                }}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+          };
+        }}
+      />
+
+      <Stack.Screen
+        name="InfoImageReorderScreen"
+        component={InfoImageReorderScreen}
+        options={({navigation, route}) => {
+          return {
+            title: '메뉴판 순서 변경',
+            headerTitleAlign: 'center',
+            headerTitleStyle: {
+              fontFamily: 'Pretendard-SemiBold',
+              fontSize: 18,
+              color: '#333',
+            },
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  showAlert({
+                    title: '작성한 내용이 저장되지 않았습니다',
+                    message: '뒤로 가시겠습니까?',
+                    onConfirm: () => {
+                      navigation.goBack();
+                    },
+                    onCancel: null,
+                    type: 'confirm',
+                  });
+                }}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+          };
+        }}
       />
     </Stack.Navigator>
   );

@@ -18,6 +18,17 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
   };
   const formattedCreatedDate = formatDate(review.visitedAt);
   const {translateCategory} = useCategoryTranslation();
+
+  const handleImagePress = index => {
+    navigation.navigate('StoreStack', {
+      screen: 'ImageViewerScreen',
+      params: {
+        images: review.imgUrlList,
+        index: index,
+      },
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.reviewCard}>
@@ -77,11 +88,17 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
         {review.imgUrlList.length > 0 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {review.imgUrlList.map((imgUrl, index) => (
-              <Image
+              <Pressable
                 key={index}
-                source={{uri: imgUrl}}
-                style={styles.reviewImage}
-              />
+                onPress={() => {
+                  handleImagePress(index);
+                }}>
+                <Image
+                  key={index}
+                  source={{uri: imgUrl}}
+                  style={styles.reviewImage}
+                />
+              </Pressable>
             ))}
           </ScrollView>
         )}

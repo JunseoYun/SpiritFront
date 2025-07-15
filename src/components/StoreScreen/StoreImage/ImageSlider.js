@@ -1,5 +1,12 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {View, ScrollView, StyleSheet, Dimensions, Text} from 'react-native';
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  Text,
+  Pressable,
+} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
 import ImageActionModal from './ImageActionModal';
@@ -35,25 +42,16 @@ const ImageSlider = ({
   // 초기 위치 설정
   useEffect(() => {
     if (scrollRef.current && localImages.length > 1) {
-      scrollRef.current.scrollTo({x: width, animated: false});
+      setTimeout(() => {
+        scrollRef.current.scrollTo({x: width, animated: false});
+      }, 0);
     }
   }, [localImages]);
-  // 자동 슬라이드
+  const indexRef = useRef(currentIndex);
+
   useEffect(() => {
-    if (localImages.length > 1) {
-      const autoSlide = setInterval(() => {
-        if (scrollRef.current) {
-          const nextIndex = currentIndex + 1;
-          scrollRef.current.scrollTo({
-            x: nextIndex * width,
-            animated: true,
-          });
-          setCurrentIndex(nextIndex);
-        }
-      }, interval);
-      return () => clearInterval(autoSlide);
-    }
-  }, [currentIndex, interval, localImages]);
+    indexRef.current = currentIndex;
+  }, [currentIndex]);
 
   // 무한 슬라이드 처리
   const handleScrollEnd = event => {
@@ -72,6 +70,13 @@ const ImageSlider = ({
     } else {
       setCurrentIndex(index);
     }
+  };
+
+  const handleImagePress = index => {
+    if (isUpdate) {
+      return;
+    }
+    navigation.navigate('ImageViewerScreen', {images: images, index: index});
   };
 
   return (
@@ -118,7 +123,17 @@ const ImageSlider = ({
               onMomentumScrollEnd={handleScrollEnd}
               scrollEventThrottle={16}>
               {imagesWithLoop.map((item, index) => (
-                <View key={index} style={styles.imageContainer}>
+                <Pressable
+                  key={index}
+                  style={styles.imageContainer}
+                  onPress={() => {
+                    // 무한루프에서 복제된 첫/마지막 이미지는 클릭시 무시
+                    if (index === 0 || index === imagesWithLoop.length - 1)
+                      return;
+                    const realIndex =
+                      (index - 1 + localImages.length) % localImages.length;
+                    handleImagePress(realIndex);
+                  }}>
                   <FastImage
                     source={{
                       uri: item.imageUrl,
@@ -127,11 +142,15 @@ const ImageSlider = ({
                     style={styles.image}
                     resizeMode={FastImage.resizeMode.cover}
                   />
-                </View>
+                </Pressable>
               ))}
             </ScrollView>
           ) : (
-            <View style={styles.imageContainer}>
+            <Pressable
+              style={styles.imageContainer}
+              onPress={() => {
+                handleImagePress(0);
+              }}>
               <FastImage
                 source={{
                   uri: localImages[0]?.imageUrl,
@@ -140,7 +159,7 @@ const ImageSlider = ({
                 style={styles.image}
                 resizeMode={FastImage.resizeMode.cover}
               />
-            </View>
+            </Pressable>
           )}
 
           {localImages.length > 1 && (

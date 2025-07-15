@@ -72,6 +72,23 @@ export const user_register = async (
   }
 };
 
+export const user_register_tester = async (socialType, socialId, nickname) => {
+  const data = {
+    socialInfoDto: {
+      socialType: socialType, // 소셜 로그인 타입 (예: KAKAO)
+      socialId: socialId, // 소셜 로그인 ID
+    },
+    nickname: nickname, // 소셜 액세스 토큰
+  };
+
+  try {
+    await userAxiosInstance.post(`/auth/register-tester`, data); // 요청 본문 전달
+  } catch (error) {
+    functionError(error); // 에러 처리
+    throw error;
+  }
+};
+
 export const check_nickName = async nickname => {
   try {
     const response = await userAxiosInstance.post(
