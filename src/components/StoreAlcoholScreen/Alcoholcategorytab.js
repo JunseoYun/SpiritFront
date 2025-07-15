@@ -6,8 +6,10 @@ import {
   Dimensions,
   ScrollView,
   View,
+  Platform,
 } from 'react-native';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const alcoholMapping = {
   SOJU: '소주',
@@ -34,12 +36,13 @@ const Alcoholcategorytab = ({
   tabY,
 }) => {
   const [isSticky, setIsSticky] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const listener = scrollY.addListener(({value}) => {
       if (value >= tabY) {
         setIsSticky(true);
-      } else if (value < tabY) {
+      } else if (value + 5 < tabY) {
         setIsSticky(false);
       }
     });
@@ -101,11 +104,24 @@ const Alcoholcategorytab = ({
         styles.tabContainer,
         isSticky
           ? imagelist > 0
-            ? styles.stickyActive
+            ? Platform.OS === 'ios'
+              ? {
+                  marginTop: insets.top + 30,
+                  borderBottomWidth: 1,
+                  borderColor: '#eee',
+                }
+              : {
+                  marginTop: insets.top + 40,
+                  borderBottomWidth: 1,
+                  borderColor: '#eee',
+                }
             : styles.nonimgstickyActive
           : null, // sticky 상태일 때 스타일 적용
       ]}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{paddingHorizontal: 12}}
+        horizontal
+        showsHorizontalScrollIndicator={false}>
         {Object.keys(groupedAlcohols).map(type => (
           <TouchableOpacity
             key={type}
@@ -141,7 +157,6 @@ const Alcoholcategorytab = ({
 
 const styles = StyleSheet.create({
   tabContainer: {
-    marginLeft: 10,
     paddingTop: 10,
     backgroundColor: '#fff',
     paddingBottom: 5,
@@ -151,6 +166,8 @@ const styles = StyleSheet.create({
   },
   nonimgstickyActive: {
     marginTop: 10,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
   },
   tabButton: {
     marginRight: 10,
