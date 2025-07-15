@@ -7,7 +7,7 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import MyTabs from '../../../components/MyScreen/MyTabs';
 import MyReview from '../../../components/MyScreen/MyReview';
 import MyLocation from '../../../components/MyScreen/MyLocation';
-import MyManager from '../../../components/MyScreen/MyManager';
+import MyManager from '../../../components/MyScreen/MyManager/MyManager';
 import Loading from '../../../hooks/Loading';
 
 const MyScreen = ({navigation}) => {

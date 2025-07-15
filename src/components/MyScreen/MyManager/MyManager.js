@@ -8,9 +8,10 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import {Store_getby_managed} from '../../api/storeApi';
-import Loading from '../../hooks/Loading';
+import {Store_getby_managed} from '../../../api/storeApi';
+import Loading from '../../../hooks/Loading';
 import MyManagerItem from './MyManagerItem';
+import ManagerPickerModal from './ManagerPickerModal';
 
 const {width} = Dimensions.get('window');
 const CARD_WIDTH = width * 0.65;
@@ -23,6 +24,9 @@ const MyManager = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [nameTabDisabled, setNameTabDisabled] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [selectStoreId, setSelectStoreId] = useState(null);
+  const [selectStoreName, setSelectStoreName] = useState(null);
 
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
@@ -50,6 +54,21 @@ const MyManager = ({navigation}) => {
   useEffect(() => {
     MyStore(0);
   }, []);
+
+  const handleMoveStore = () => {
+    navigation.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {storeId: selectStoreId},
+    });
+  };
+
+  const handleMoveStoreInfo = () => {
+    navigation.navigate('ManagerStoreInfoScreen', {
+      storeId: selectStoreId,
+      storeName: selectStoreName,
+    });
+  };
+  console.log(selectStoreName);
 
   const renderItem = ({item, index}) => {
     const inputRange = [
@@ -82,10 +101,13 @@ const MyManager = ({navigation}) => {
             onPress={() => {
               if (index === currentIndex) {
                 // 가운데 카드 클릭 시, navigation
-                navigation.navigate('StoreStack', {
-                  screen: 'StoreMainScreen',
-                  params: {storeId: item.storeId},
-                });
+                // navigation.navigate('StoreStack', {
+                //   screen: 'StoreMainScreen',
+                //   params: {storeId: item.storeId},
+                // });
+                setSelectStoreId(item.storeId);
+                setSelectStoreName(item.storeName);
+                setIsVisible(true);
               } else {
                 // 가운데가 아닌 카드 클릭 시, 가운데로 스크롤
                 const offset = CARD_WIDTH * index;
@@ -232,6 +254,12 @@ const MyManager = ({navigation}) => {
           )}
         />
       )}
+      <ManagerPickerModal
+        isVisible={isVisible}
+        setVisible={setIsVisible}
+        handleMoveStore={handleMoveStore}
+        handleMoveStoreInfo={handleMoveStoreInfo}
+      />
 
       <Loading loading={loading} />
     </View>

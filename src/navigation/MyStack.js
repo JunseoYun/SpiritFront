@@ -11,6 +11,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import NotificationScreen from '../screens/BottomTab/My/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/BottomTab/My/Notification/NotificationSetScreen';
+import ManagerStoreInfoScreen from '../screens/BottomTab/My/ManagerStoreInfoScreen';
 //AntDesign bells
 const Stack = createStackNavigator();
 
@@ -176,6 +177,26 @@ export default function MyStack() {
         component={NotificationSetScreen}
         options={({navigation}) => ({
           ...getScreenOptions('알림 설정'), // getScreenOptions 객체를 펼쳐 병합
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="ManagerStoreInfoScreen"
+        component={ManagerStoreInfoScreen}
+        options={({navigation}) => ({
+          ...getScreenOptions('매장 통계'), // getScreenOptions 객체를 펼쳐 병합
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}
