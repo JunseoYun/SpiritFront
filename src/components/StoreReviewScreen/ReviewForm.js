@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -8,204 +8,271 @@ import {
   Pressable,
   StyleSheet,
   Keyboard,
+  ScrollView,
   TouchableWithoutFeedback,
 } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ReviewForm = ({
-  onChangeText,
+  storeName,
   newReviewContent,
+  onChangeText,
+  renderStars,
   visitDate,
   setVisitDate,
   isDatePickerOpen,
   setIsDatePickerOpen,
   images,
-  setImages,
   selectedImageIndex,
-  setSelectedImageIndex,
-  renderStars,
-  selectImage,
   handleImagePress,
+  selectImage,
   handleSubmitReview,
   hadleNoWrite,
+  setIsWriting,
 }) => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [rateSelected, setRateSelected] = useState(false);
+
+  const handleReviewNext = () => {
+    if (!newReviewContent || !newReviewContent.trim()) return; // 빈 값이면 넘어가지 않음
+    setCurrentStep(2);
+  };
+
+  const handleRateNext = () => {
+    setCurrentStep(3);
+  };
+
+  const handleDateNext = () => {
+    setCurrentStep(4);
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.writeContainer}>
-        <Text style={styles.titleText}>리뷰 작성</Text>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{padding: 20}}>
+        {/* STEP 1 : 리뷰 내용 */}
+        <Text style={styles.sectionTitle}>
+          {storeName}을(를) 방문한 이야기를 적어주세요!
+        </Text>
         <TextInput
-          style={[styles.textarea, {color: '#333'}]}
+          style={styles.textarea}
           multiline
-          onChangeText={onChangeText}
           value={newReviewContent}
-          placeholder="소중한 리뷰를 남겨주세요."
+          onChangeText={onChangeText}
+          placeholder="내용을 입력하세요."
           placeholderTextColor="#999"
         />
+        {currentStep === 1 && (
+          <View>
+            <TouchableOpacity
+              style={styles.nextBtn}
+              onPress={() => setIsWriting(false)}>
+              <Text style={styles.nextTxt}>취소</Text>
+            </TouchableOpacity>
 
-        <Text style={styles.titleText}>별점 입력</Text>
-        <View style={styles.starcontainer}>{renderStars()}</View>
+            <TouchableOpacity style={styles.nextBtn} onPress={handleReviewNext}>
+              <Text style={styles.nextTxt}>다음</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-        <Text style={styles.titleText}>방문 날짜</Text>
-        <TouchableOpacity
-          style={styles.dateButton}
-          onPress={() => setIsDatePickerOpen(true)}>
-          <Text style={styles.dateButtonText}>
-            {visitDate.toLocaleDateString()}
-          </Text>
-        </TouchableOpacity>
-        <DatePicker
-          modal
-          open={isDatePickerOpen}
-          date={visitDate}
-          locale="ko"
-          mode="date"
-          maximumDate={new Date(new Date().setHours(23, 59, 59, 999))} // 한국 시간 기준 오늘까지 선택 가능
-          onConfirm={date => {
-            setVisitDate(date);
-            setIsDatePickerOpen(false);
-          }}
-          style={{backgroundColor: 'blue', color: 'blue'}}
-          onCancel={() => setIsDatePickerOpen(false)}
-        />
-
-        <Text style={styles.titleText}>리뷰 사진 추가 (최대 5장)</Text>
-        <View style={styles.imageContainer}>
-          {images.map((image, index) => (
-            <Pressable
-              key={index}
-              onPress={() => handleImagePress(index)}
-              style={styles.imagePressable}>
-              <Image
-                source={{uri: `file://${image.path}`}}
-                style={[
-                  styles.selectImage,
-                  index === selectedImageIndex && styles.selectedEffect,
-                ]}
-              />
-            </Pressable>
-          ))}
-          {images.length < 5 && (
-            <Pressable
-              style={{
-                width: 100,
-                height: 100,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: '#f2f2f2',
-                borderRadius: 10,
-              }}
-              onPress={selectImage}>
-              <View
-                style={{
-                  width: 30,
-                  height: 30,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <MaterialCommunityIcons name="plus" size={30} color="#999" />
+        {/* STEP 2 : 별점 */}
+        {currentStep >= 2 && (
+          <View style={{marginTop: 30}}>
+            <Text style={styles.sectionTitle}>별점을 선택해주세요!</Text>
+            <View style={styles.starRow}>{renderStars()}</View>
+            {currentStep === 2 && (
+              <View>
+                <TouchableOpacity
+                  style={styles.nextBtn}
+                  onPress={() => setIsWriting(false)}>
+                  <Text style={styles.nextTxt}>취소</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.nextBtn}
+                  onPress={() => {
+                    setRateSelected(true);
+                    handleRateNext();
+                  }}>
+                  <Text style={styles.nextTxt}>다음</Text>
+                </TouchableOpacity>
               </View>
-            </Pressable>
-          )}
-        </View>
+            )}
+          </View>
+        )}
 
-        <View style={styles.buttonView}>
-          <TouchableOpacity style={styles.cancelbutton} onPress={hadleNoWrite}>
-            <Text style={styles.canceltext}>취소</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.savebutton}
-            onPress={handleSubmitReview}>
-            <Text style={styles.savetext}>작성완료</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+        {/* STEP 3 : 방문 날짜 */}
+        {currentStep >= 3 && (
+          <View style={{marginTop: 30}}>
+            <Text style={styles.sectionTitle}>방문 날짜를 선택해주세요!</Text>
+            <TouchableOpacity
+              style={styles.dateBtn}
+              onPress={() => setIsDatePickerOpen(true)}>
+              <Text style={styles.dateTxt}>
+                {visitDate.toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
+            <DatePicker
+              modal
+              open={isDatePickerOpen}
+              date={visitDate}
+              locale="ko"
+              mode="date"
+              maximumDate={new Date(new Date().setHours(23, 59, 59, 999))}
+              onConfirm={date => {
+                setVisitDate(date);
+                setIsDatePickerOpen(false);
+              }}
+              onCancel={() => setIsDatePickerOpen(false)}
+            />
+            {currentStep === 3 && (
+              <View>
+                <TouchableOpacity
+                  style={styles.nextBtn}
+                  onPress={() => setIsWriting(false)}>
+                  <Text style={styles.nextTxt}>취소</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.nextBtn}
+                  onPress={handleDateNext}>
+                  <Text style={styles.nextTxt}>다음</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* STEP 4 : 사진 추가 */}
+        {currentStep >= 4 && (
+          <View style={{marginTop: 30}}>
+            <Text style={styles.sectionTitle}>사진을 추가해주세요! (선택)</Text>
+            <View style={styles.imagesRow}>
+              {images.map((image, index) => (
+                <Pressable
+                  key={index}
+                  onPress={() => handleImagePress(index)}
+                  style={[
+                    styles.imageBox,
+                    index === selectedImageIndex && styles.imageSelected,
+                  ]}>
+                  <Image
+                    source={{uri: `file://${image.path}`}}
+                    style={styles.image}
+                  />
+                </Pressable>
+              ))}
+              {images.length < 5 && (
+                <Pressable style={styles.addImage} onPress={selectImage}>
+                  <MaterialCommunityIcons name="plus" size={28} color="#888" />
+                </Pressable>
+              )}
+            </View>
+
+            {/* STEP 5 : 버튼 */}
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => {
+                  hadleNoWrite();
+                  setIsWriting(false);
+                }}>
+                <Text style={styles.cancelTxt}>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.submitBtn}
+                onPress={() => {
+                  handleSubmitReview();
+                  setIsWriting(false);
+                }}>
+                <Text style={styles.submitTxt}>작성 완료</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </ScrollView>
     </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
-  writeContainer: {
-    height: 640,
-    marginBottom: 10,
-    marginTop: 30,
-    marginHorizontal: 18,
-  },
-  titleText: {
-    fontFamily: 'Pretendard-Medium',
-    color: '#999',
-    fontSize: 16,
-    marginBottom: 10,
-    marginLeft: 3,
+  container: {flex: 1},
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+    color: '#222',
   },
   textarea: {
     backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 30,
-    height: 100,
-    padding: 10,
-    fontFamily: 'Pretendard-Medium',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    minHeight: 120,
+    textAlignVertical: 'top',
   },
-  starcontainer: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    marginBottom: 30,
-    color: '#F5F5F5',
-  },
-  buttonView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  savebutton: {
-    alignItems: 'center',
-    borderRadius: 7,
+  nextBtn: {
+    marginTop: 10,
+    alignSelf: 'flex-end',
     backgroundColor: '#45C9FF',
+    paddingHorizontal: 20,
     paddingVertical: 10,
-    width: '48%',
+    borderRadius: 8,
   },
-  savetext: {
-    color: 'white',
-    fontFamily: 'Pretendard-SemiBold',
-    fontSize: 18,
-  },
-  cancelbutton: {
+  nextTxt: {color: '#fff', fontWeight: '700', fontSize: 16},
+  starRow: {flexDirection: 'row', marginBottom: 10},
+  dateBtn: {
+    backgroundColor: '#F5F5F5',
+    padding: 15,
+    borderRadius: 12,
     alignItems: 'center',
-    borderRadius: 7,
-    backgroundColor: '#fff',
-    paddingVertical: 10,
-    width: '48%',
-    borderWidth: 2,
-    borderColor: '#45C9FF',
+    marginBottom: 10,
   },
-  canceltext: {
-    color: '#45C9FF',
-    fontFamily: 'Pretendard-SemiBold',
-    fontSize: 18,
-  },
-  imageContainer: {
+  dateTxt: {fontSize: 18, fontWeight: '600', color: '#333'},
+  imagesRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
-    marginBottom: 30,
-  },
-  selectImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-  },
-  selectedEffect: {
-    borderWidth: 3,
-    borderColor: '#FF6B6B', // 선택된 이미지를 강조
-  },
-  dateButton: {
-    backgroundColor: '#F5F5F5',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
     marginBottom: 20,
   },
-  dateButtonText: {fontSize: 16, color: '#333'},
+  imageBox: {
+    borderRadius: 10,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  imageSelected: {borderColor: '#FF6B6B'},
+  image: {width: 90, height: 90, borderRadius: 8},
+  addImage: {
+    width: 90,
+    height: 90,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#ddd',
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonRow: {flexDirection: 'row', justifyContent: 'space-between'},
+  cancelBtn: {
+    flex: 1,
+    backgroundColor: '#EAEAEA',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  cancelTxt: {color: '#555', fontSize: 17, fontWeight: '600'},
+  submitBtn: {
+    flex: 1,
+    backgroundColor: '#45C9FF',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  submitTxt: {color: '#fff', fontSize: 17, fontWeight: '700'},
 });
 
 export default ReviewForm;

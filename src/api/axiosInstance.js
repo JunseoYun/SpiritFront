@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {functionError} from './errorHandler';
 import Config from 'react-native-config';
+import {log_access_create} from './userApi';
 
 import {
   getAccessToken,
@@ -28,6 +29,7 @@ const refreshAccessToken = async () => {
         },
       },
     );
+    log_access_create();
 
     const newAccessToken = response.data.data.accessToken;
     const newRefreshToken = response.data.data.refreshToken;

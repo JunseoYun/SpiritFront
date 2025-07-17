@@ -69,7 +69,7 @@ const StoreMainInfo = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [descripexpanded, setDescripexpanded] = useState(false);
   const [descLineCount, setDescLineCount] = useState(0);
-
+  console.log(storedata.isOwner);
   const handleTextLayout = e => {
     setDescLineCount(e.nativeEvent.lines.length);
   };
@@ -142,7 +142,8 @@ const StoreMainInfo = ({
           name: storedata?.name,
           id: storedata?.id,
           rate: storedata?.storeRate,
-          reviewCount: storedata.reviewCount,
+          reviewCount: storedata?.reviewCount,
+          isOwner: storedata?.isOwner,
         }}
       />
 
@@ -231,6 +232,8 @@ const StoreMainInfo = ({
             reviewCount: storedata?.reviewCount,
             isGroupAvailable: storedata?.isGroupAvailable,
             hasScreen: storedata?.hasScreen,
+            name: storedata.name,
+            isOwner: storedata?.isOwner,
           }}
           distance={distance}
           unit={unit}

@@ -5,6 +5,8 @@ import {getRefreshToken} from '../storage/tokenStorage';
 import axios from 'axios';
 import Config from 'react-native-config';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
+import {getLocation} from '../storage/locationStorage';
+
 export const user_login = async (
   socialType,
   socialId,
@@ -22,9 +24,34 @@ export const user_login = async (
 
   try {
     const response = await userAxiosInstance.post(`/auth/login`, data); // 요청 본문 전달
+    log_access_create();
     return response.data.data; // 응답 데이터 반환
   } catch (error) {
     functionError(error); // 에러 처리
+    throw error;
+  }
+};
+
+export const log_access_create = async coords => {
+  try {
+    let location;
+    // 위치 정보 가져오기
+    if (coords) {
+      location = coords;
+    } else {
+      location = await getLocation(); // { latitude: number, longitude: number }
+    }
+
+    const {latitude, longitude} = location;
+
+    // 쿼리스트링 방식으로 호출
+    const response = await userAxiosInstance.post(
+      `/log/access/create?latitude=${latitude}&longitude=${longitude}`,
+    );
+
+    return response.data.data; // 응답 데이터 반환
+  } catch (error) {
+    functionError(error);
     throw error;
   }
 };

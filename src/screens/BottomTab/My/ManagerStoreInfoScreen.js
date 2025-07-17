@@ -1,5 +1,11 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {StyleSheet, Text, SafeAreaView, BackHandler} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  BackHandler,
+  Pressable,
+} from 'react-native';
 import {useRoute} from '@react-navigation/native';
 
 const ManagerStoreInfoScreen = ({navigation}) => {

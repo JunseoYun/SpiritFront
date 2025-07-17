@@ -18,6 +18,7 @@ import {
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
+import {log_access_create} from '../../api/userApi';
 
 const SetLocationScreen = ({navigation}) => {
   const [currentAddress, setCurrentAddress] = useState('');
@@ -49,6 +50,8 @@ const SetLocationScreen = ({navigation}) => {
       setLoading(true);
       if (address && coords) {
         await saveLocationAddress(coords, address);
+
+        log_access_create(coords);
         setCurrentLocation(coords);
         setCurrentAddress(address);
         showToast('주소 설정이 완료 되었습니다.');
