@@ -52,7 +52,6 @@ const CategoryTapScreen = ({navigation, route}) => {
 
   const scrollRef = useRef(null);
 
-  // 필터 적용 함수
   const applyAlcoholFilter = useCallback(
     data => {
       if (selectedAlcohols.length === 0) return data;
@@ -65,14 +64,12 @@ const CategoryTapScreen = ({navigation, route}) => {
     [selectedAlcohols],
   );
 
-  // 가게 데이터 불러오기 함수
   const fetchStores = async (startPage = 0, reset = false) => {
     if (loading || isEnd) return;
     setLoading(true);
 
     try {
       const size = selectedAlcohols.length > 0 ? 100 : 10;
-
       let combinedRaw = reset ? [] : [...rawStores];
       let currentPage = startPage;
       let shouldContinue = true;
@@ -120,114 +117,109 @@ const CategoryTapScreen = ({navigation, route}) => {
     }
   };
 
-  // 화면이 포커스될 때 데이터 처음 불러오기
   useEffect(() => {
     if (isFocused && rawStores.length === 0) {
       fetchStores(0, true);
     }
   }, [isFocused]);
 
-  // 선택한 필터가 바뀌면 가게 리스트 다시 필터링
   useEffect(() => {
     setStores(applyAlcoholFilter(rawStores));
   }, [selectedAlcohols]);
 
-  // 포커스 될 때 필터 ScrollView 위치 복원
   useEffect(() => {
     if (isFocused && scrollRef.current) {
       scrollRef.current.scrollTo({x: filterScrollX.current, animated: false});
     }
   }, [isFocused]);
 
-  // 필터 버튼 클릭 핸들러
   const handleAlcoholPress = value => {
     toggleAlcohol(value);
   };
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
-      {isInitialLoading || loading ? (
-        <Loading loading={true} />
-      ) : (
-        <View>
-          {/* 필터 바 - 가로 스크롤 */}
-          <ScrollView
-            ref={scrollRef}
-            horizontal
-            onLayout={() => {
-              scrollRef.current?.scrollTo({
-                x: filterScrollX.current,
-                animated: false,
-              });
-            }}
-            showsHorizontalScrollIndicator={false}
-            style={styles.filterBar}
-            contentContainerStyle={{paddingHorizontal: 12}}
-            onScroll={e => {
-              filterScrollX.current = e.nativeEvent.contentOffset.x;
-            }}
-            scrollEventThrottle={16}>
-            {alcoholTypes.map(({label, value}) => (
-              <Pressable
-                key={value}
-                onPress={() => handleAlcoholPress(value)}
+      <View>
+        {/* 필터 바 */}
+        <ScrollView
+          ref={scrollRef}
+          horizontal
+          onLayout={() => {
+            scrollRef.current?.scrollTo({
+              x: filterScrollX.current,
+              animated: false,
+            });
+          }}
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterBar}
+          contentContainerStyle={{paddingHorizontal: 12}}
+          onScroll={e => {
+            filterScrollX.current = e.nativeEvent.contentOffset.x;
+          }}
+          scrollEventThrottle={16}>
+          {alcoholTypes.map(({label, value}) => (
+            <Pressable
+              key={value}
+              onPress={() => handleAlcoholPress(value)}
+              style={[
+                styles.filterButton,
+                selectedAlcohols.includes(value) && styles.activeFilter,
+              ]}>
+              <Text
                 style={[
-                  styles.filterButton,
-                  selectedAlcohols.includes(value) && styles.activeFilter,
+                  styles.filterText,
+                  selectedAlcohols.includes(value) && styles.activeFilterText,
                 ]}>
-                <Text
-                  style={[
-                    styles.filterText,
-                    selectedAlcohols.includes(value) && styles.activeFilterText,
-                  ]}>
-                  {label}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+                {label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
 
-          {/* 가게 목록 */}
-          <FlatList
-            data={stores}
-            renderItem={({item}) => (
-              <StoreItem
-                store={item}
-                location={location}
-                navigation={navigation}
-              />
-            )}
-            keyExtractor={item => `${categoryname}-${item.id}`}
-            onEndReached={() => {
-              if (
-                !loading &&
-                !isEnd &&
-                rawStores.length > 0 &&
-                page < totalpage - 1
-              ) {
-                const nextPage = page + 1;
-                setPage(nextPage);
-                fetchStores(nextPage);
-              }
-            }}
-            onEndReachedThreshold={0.5}
-            initialNumToRender={10}
-            maxToRenderPerBatch={5}
-            windowSize={5}
-            removeClippedSubviews={true}
-            ListEmptyComponent={
-              !loading && stores.length === 0 ? (
-                <Text style={styles.emptyText}>등록된 가게가 없어요</Text>
-              ) : null
+        {/* FlatList 항상 렌더 */}
+        <FlatList
+          data={stores}
+          renderItem={({item}) => (
+            <StoreItem
+              store={item}
+              location={location}
+              navigation={navigation}
+            />
+          )}
+          keyExtractor={item => `${categoryname}-${item.id}`}
+          onEndReached={() => {
+            if (
+              !loading &&
+              !isEnd &&
+              rawStores.length > 0 &&
+              page < totalpage - 1
+            ) {
+              const nextPage = page + 1;
+              setPage(nextPage);
+              fetchStores(nextPage);
             }
-            refreshing={loading}
-            nRefresh={() => {
-              setIsEnd(false);
-              fetchStores(0, true);
-            }}
-            contentContainerStyle={{paddingBottom: 70}}
-          />
-        </View>
-      )}
+          }}
+          onEndReachedThreshold={0.7}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={true}
+          ListEmptyComponent={
+            !loading && stores.length === 0 ? (
+              <Text style={styles.emptyText}>등록된 가게가 없어요</Text>
+            ) : null
+          }
+          refreshing={loading}
+          onRefresh={() => {
+            setIsEnd(false);
+            fetchStores(0, true);
+          }}
+          contentContainerStyle={{paddingBottom: 70}}
+        />
+
+        {/* 로딩 오버레이 */}
+        {isInitialLoading && <Loading loading={true} />}
+      </View>
     </SafeAreaView>
   );
 };

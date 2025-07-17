@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   FlatList,
+  Modal,
 } from 'react-native';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {ReviewStoreGet} from '../../api/reviewApi';
@@ -25,7 +26,7 @@ import Loading from '../../hooks/Loading';
 
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeId, storename} = route.params;
+  const {storeId, storename, isOwner} = route.params;
   const [reviewdata, setReviewdata] = useState([]);
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
@@ -33,7 +34,7 @@ const StoreReviewScreen = ({navigation}) => {
   const [isWriting, setIsWriting] = useState(false); // 작성 상태
 
   const [newrate, setNewRate] = useState(0);
-  const [newReviewContent, setNewReviewContent] = useState(null);
+  const [newReviewContent, setNewReviewContent] = useState('');
   const [images, setImages] = useState([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [visitDate, setVisitDate] = useState(new Date()); // 방문 날짜 상태
@@ -203,7 +204,7 @@ const StoreReviewScreen = ({navigation}) => {
           storeId: storeId,
         },
       };
-
+      console.log(data);
       await ReviewCreate(data);
       setImages([]); // 이미지 초기화
       setNewRate(0); // 별점 초기화
@@ -225,62 +226,74 @@ const StoreReviewScreen = ({navigation}) => {
   };
 
   const renderItem = ({item}) => (
-    <ReviewItem key={item.id} item={item} navigation={navigation} />
+    <ReviewItem
+      key={item.id}
+      item={item}
+      navigation={navigation}
+      isOwner={isOwner}
+    />
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      {isWriting ? (
-        <ReviewForm
-          onChangeText={onChangeText}
-          newReviewContent={newReviewContent}
-          visitDate={visitDate}
-          setVisitDate={setVisitDate}
-          isDatePickerOpen={isDatePickerOpen}
-          setIsDatePickerOpen={setIsDatePickerOpen}
-          images={images}
-          setImages={setImages}
-          selectedImageIndex={selectedImageIndex}
-          setSelectedImageIndex={setSelectedImageIndex}
-          renderStars={renderStars}
-          selectImage={selectImage}
-          handleImagePress={handleImagePress}
-          handleSubmitReview={handleSubmitReview}
-          hadleNoWrite={hadleNoWrite}
-        />
-      ) : (
-        <View style={{width: '100%'}}>
-          <View style={styles.MenuaddView}>
-            <Pressable style={styles.addButton} onPress={hadleIsWrite}>
-              <Text style={styles.addButtonText}>리뷰 작성하기</Text>
-            </Pressable>
-          </View>
-          <FlatList
-            data={reviewdata}
-            renderItem={renderItem}
-            keyExtractor={item => item.id.toString()}
-            showsVerticalScrollIndicator={false}
-            initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
-            maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
-            windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-            removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
-            onEndReached={loadMoreReviews} // 더 많은 데이터 불러오기
-            onEndReachedThreshold={0.5}
-            onRefresh={handleRefresh} // 새로고침
-            refreshing={refreshing}
-            contentContainerStyle={{paddingBottom: 0}}
-            ListFooterComponent={
-              <View style={styles.footer}>
-                {loading && !isEnd ? (
-                  <Text style={styles.emptyText}>Loading...</Text>
-                ) : !loading && reviewdata.length === 0 ? (
-                  <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
-                ) : null}
-              </View>
-            }
-          />
+      <View style={{width: '100%'}}>
+        <View style={styles.MenuaddView}>
+          <Pressable style={styles.addButton} onPress={hadleIsWrite}>
+            <Text style={styles.addButtonText}>리뷰 작성하기</Text>
+          </Pressable>
         </View>
-      )}
+        <FlatList
+          data={reviewdata}
+          renderItem={renderItem}
+          keyExtractor={item => item.id.toString()}
+          showsVerticalScrollIndicator={false}
+          initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
+          maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
+          windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
+          removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
+          onEndReached={loadMoreReviews} // 더 많은 데이터 불러오기
+          onEndReachedThreshold={0.5}
+          onRefresh={handleRefresh} // 새로고침
+          refreshing={refreshing}
+          contentContainerStyle={{paddingBottom: 0}}
+          ListFooterComponent={
+            <View style={styles.footer}>
+              {loading && !isEnd ? (
+                <Text style={styles.emptyText}>Loading...</Text>
+              ) : !loading && reviewdata.length === 0 ? (
+                <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
+              ) : null}
+            </View>
+          }
+        />
+      </View>
+      <Modal
+        visible={isWriting}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={hadleNoWrite}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ReviewForm
+              storeName={storename} // 스토어 이름 넘겨주기
+              newReviewContent={newReviewContent}
+              onChangeText={onChangeText}
+              renderStars={renderStars}
+              visitDate={visitDate}
+              setVisitDate={setVisitDate}
+              isDatePickerOpen={isDatePickerOpen}
+              setIsDatePickerOpen={setIsDatePickerOpen}
+              images={images}
+              selectedImageIndex={selectedImageIndex}
+              handleImagePress={handleImagePress}
+              selectImage={selectImage}
+              handleSubmitReview={handleSubmitReview}
+              hadleNoWrite={hadleNoWrite}
+              setIsWriting={setIsWriting}
+            />
+          </View>
+        </View>
+      </Modal>
 
       <AlertComponent />
 
@@ -370,6 +383,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#c0c0c0',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)', // 배경 반투명
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    flex: 1,
+    width: '90%',
+    maxHeight: '90%',
+    borderRadius: 16,
+    padding: 20,
   },
 });
 

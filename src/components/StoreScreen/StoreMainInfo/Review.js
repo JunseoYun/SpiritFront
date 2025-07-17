@@ -16,6 +16,7 @@ const Review = ({navigation, isUpdate, storeData}) => {
               params: {
                 storeId: storeData.id,
                 storename: storeData.name,
+                isOwner: storeData.isOwner,
               },
             });
           }}

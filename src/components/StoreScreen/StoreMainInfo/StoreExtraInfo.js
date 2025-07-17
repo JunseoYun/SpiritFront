@@ -88,6 +88,7 @@ const StoreExtraInfo = ({
               params: {
                 storeId: storeData.id,
                 storename: storeData.name,
+                isOwner: storeData.isOwner,
               },
             });
           }}
@@ -114,7 +115,6 @@ const StoreExtraInfo = ({
         <View style={styles.infoCol}>
           <Feather name="tv" size={23} color="#181A1A" />
           <Text style={styles.locationtext}>
-            {' '}
             {storeData?.hasScreen ? '스크린 설치' : '스크린 미설치'}
           </Text>
         </View>

@@ -68,7 +68,6 @@ const MyManager = ({navigation}) => {
       storeName: selectStoreName,
     });
   };
-  console.log(selectStoreName);
 
   const renderItem = ({item, index}) => {
     const inputRange = [

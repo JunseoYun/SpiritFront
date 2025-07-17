@@ -3,6 +3,7 @@ import {functionError} from './errorHandler';
 
 export const ReviewCreate = async data => {
   const formData = new FormData();
+  console.log(data);
 
   if (data.files && data.files.length > 0) {
     data.files.forEach(file => {
