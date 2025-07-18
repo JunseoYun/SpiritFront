@@ -1,25 +1,27 @@
 import React, {createContext, useContext, useState} from 'react';
-import Toastmessage from '../hooks/Toastmessage'; // 네가 만든 Toastmessage 컴포넌트 불러오기
+import Toastmessage from '../hooks/Toastmessage';
 
-const ToastContext = createContext(); // Context 생성
+const ToastContext = createContext();
+
+let globalShowToast = null; // ✅ 전역 변수 선언
 
 export const ToastProvider = ({children}) => {
   const [toastMessage, setToastMessage] = useState(null);
-
   const [position, setPosition] = useState(null);
   const [isShowToast, setIsShowToast] = useState(false);
 
-  // 토스트 메시지를 보여주는 함수
+  // ✅ 전역에서도 사용 가능한 함수
   const showToast = (message, position) => {
     setToastMessage(message);
     setPosition(position);
     setIsShowToast(true);
   };
 
+  globalShowToast = showToast; // ✅ 전역에 저장
+
   return (
     <ToastContext.Provider value={{showToast}}>
       {children}
-      {/* Toastmessage를 전역으로 렌더링 */}
       <Toastmessage
         message={toastMessage}
         isShowToast={isShowToast}
@@ -30,5 +32,8 @@ export const ToastProvider = ({children}) => {
   );
 };
 
-// 전역적으로 `showToast`를 사용할 수 있도록 하는 커스텀 훅
+// ✅ 기존 방식 유지 (컴포넌트 내에서 사용할 경우)
 export const useToast = () => useContext(ToastContext);
+
+// ✅ 전역에서 접근 가능하도록 함수 추가
+export const getGlobalShowToast = () => globalShowToast;
