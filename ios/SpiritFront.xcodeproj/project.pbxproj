@@ -55,6 +55,7 @@
 		4102BCBC2DD5C68F00AE6F2A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		413E142D2D58D1A700DA6FFA /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		4149EBC02D270C0200298819 /* SpiritFrontDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SpiritFrontDebug.entitlements; path = SpiritFront/SpiritFrontDebug.entitlements; sourceTree = "<group>"; };
+		415930EB2E28B1D50098D63E /* SpiritFrontProdRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SpiritFrontProdRelease.entitlements; path = SpiritFront/SpiritFrontProdRelease.entitlements; sourceTree = "<group>"; };
 		4161DA002D796CC400B63908 /* SpiritFrontRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SpiritFrontRelease.entitlements; path = SpiritFront/SpiritFrontRelease.entitlements; sourceTree = "<group>"; };
 		433F39A38D1B4B90A59CED1A /* Pretendard-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-ExtraLight.ttf"; path = "../src/assets/fonts/Pretendard-ExtraLight.ttf"; sourceTree = "<group>"; };
 		5D3B8B47C2E34B0697899DDF /* Pretendard-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Black.ttf"; path = "../src/assets/fonts/Pretendard-Black.ttf"; sourceTree = "<group>"; };
@@ -117,6 +118,7 @@
 		13B07FAE1A68108700A75B9A /* SpiritFront */ = {
 			isa = PBXGroup;
 			children = (
+				415930EB2E28B1D50098D63E /* SpiritFrontProdRelease.entitlements */,
 				4161DA002D796CC400B63908 /* SpiritFrontRelease.entitlements */,
 				4149EBC02D270C0200298819 /* SpiritFrontDebug.entitlements */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
@@ -563,7 +565,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.3;
+				MARKETING_VERSION = 1.2.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -596,7 +598,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.3;
+				MARKETING_VERSION = 1.2.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -721,7 +723,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.3;
+				MARKETING_VERSION = 1.2.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -854,7 +856,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = SpiritFront/SpiritFrontRelease.entitlements;
+				CODE_SIGN_ENTITLEMENTS = SpiritFront/SpiritFrontProdRelease.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = B6Y8UPNX32;
 				INFOPLIST_FILE = SpiritFront/Info.plist;
@@ -865,7 +867,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.3;
+				MARKETING_VERSION = 1.2.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

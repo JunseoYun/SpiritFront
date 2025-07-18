@@ -4,6 +4,7 @@
 #import <GoogleSignIn/GoogleSignIn.h>
 #import "RNSplashScreen.h"
 #import <Firebase.h>
+#import <React/RCTLinkingManager.h>
 
 @implementation AppDelegate
 
@@ -32,6 +33,11 @@
   if ([GIDSignIn.sharedInstance handleURL:url]) {
     return YES;
   }
+  
+  // React Native Linking 처리 (딥링크용)
+  if ([RCTLinkingManager application:app openURL:url options:options]) {
+    return YES;
+  }
 
   return NO;
 }
@@ -48,6 +54,15 @@
 #else
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
+}
+
+
+- (BOOL)application:(UIApplication *)application continueUserActivity:(nonnull NSUserActivity *)userActivity
+ restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler
+{
+ return [RCTLinkingManager application:application
+                  continueUserActivity:userActivity
+                    restorationHandler:restorationHandler];
 }
 
 @end
