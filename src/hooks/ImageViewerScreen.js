@@ -15,8 +15,7 @@ const ImageViewerScreen = () => {
   const route = useRoute();
   const {images, index = 0} = route.params; // index 기본값 0
   const insets = useSafeAreaInsets();
-  console.log(images);
-  console.log(index);
+
   if (!images || images.length === 0) return null;
 
   const formattedImages = Array.isArray(images)
