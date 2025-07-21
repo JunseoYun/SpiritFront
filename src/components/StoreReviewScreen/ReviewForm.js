@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     borderColor: '#ebebeb',
     width: '100%',
   },
-  dateTxt: {fontSize: 18, fontWeight: '600', color: '#333'},
+  dateTxt: {fontSize: 18, fontFamily: 'Pretendard-SemiBold', color: '#333'},
   imagesRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 8,
   },
-  cancelTxt: {color: '#555', fontSize: 17, fontWeight: '600'},
+  cancelTxt: {color: '#555', fontSize: 17, fontFamily: 'Pretendard-SemiBold'},
   submitBtn: {
     flex: 1,
     backgroundColor: '#45C9FF',
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 8,
   },
-  submitTxt: {color: '#fff', fontSize: 17, fontWeight: '700'},
+  submitTxt: {color: '#fff', fontSize: 17, fontFamily: 'Pretendard-Bold'},
 });
 
 export default ReviewForm;
