@@ -440,7 +440,6 @@ export const StoreImageUpdateSort = async (
   storeId,
   storeImageUrlInOrderList,
 ) => {
-  console.log(storeId, storeImageUrlInOrderList);
   try {
     const response = await axiosInstance.put(`/store/update-image/sort-order`, {
       storeId,
