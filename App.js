@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {Linking, Platform} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import MainStack from './src/navigation/MainStack';
@@ -6,7 +6,7 @@ import OAuthStack from './src/navigation/OAuthStack';
 import {AuthProvider, useAuth} from './src/context/AuthContext';
 import {CustomAlertProvider} from './src/context/CustomAlertContext';
 import {Provider as PaperProvider} from 'react-native-paper';
-import {ToastProvider, useToast} from './src/context/ToastContext';
+import {ToastProvider} from './src/context/ToastContext';
 import {
   NotificationProvider,
   useNotification,
@@ -34,9 +34,7 @@ const App = () => {
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
-      setTimeout(() => {
-        SplashScreen.hide();
-      }, 500);
+      SplashScreen.hide();
     }
   }, []);
 
@@ -58,17 +56,24 @@ const App = () => {
 };
 
 const AppNavigator = () => {
-  const {token} = useAuth(); // 여전히 컴포넌트 안에서는 사용
-  const {showToast} = useToast();
+  const {token} = useAuth();
   const {isVersionValid, isTestEnabled} = useVersionCheck();
   const {pendingNotification, setPendingNotification} = useNotification();
   const {pendingStoreId, setPendingStoreId} = useDeepLink();
 
   const [loading, setLoading] = useState(true);
-  const [initialUrl, setInitialUrl] = useState(null);
   const [navigationReady, setNavigationReady] = useState(false);
-
   const alreadyHandledRef = useRef(false);
+
+  const handleDeepLink = useCallback(url => {
+    if (!url) return;
+    if (alreadyHandledRef.current) return;
+    alreadyHandledRef.current = true;
+    handleUrl({url});
+    setTimeout(() => {
+      alreadyHandledRef.current = false;
+    }, 500);
+  }, []);
 
   useNotificationClickHandler();
   useHandlePendingNotification(loading, pendingNotification, () =>
@@ -76,84 +81,52 @@ const AppNavigator = () => {
   );
 
   useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 2500);
+    const t = setTimeout(() => setLoading(false), 2000);
+    return () => clearTimeout(t);
   }, []);
 
-  const onNavigationReady = () => {
-    setNavigationReady(true);
-  };
+  const onNavigationReady = () => setNavigationReady(true);
 
+  // 🚀 앱이 처음 시작될 때 딥링크 처리
   useEffect(() => {
-    if (initialUrl && navigationReady && !alreadyHandledRef.current) {
-      alreadyHandledRef.current = true;
-      handleUrl({url: initialUrl});
-      setInitialUrl(null);
-
-      // 1초 뒤 다시 false로 초기화 (딥링크 재처리 가능하게)
-      setTimeout(() => {
-        alreadyHandledRef.current = false;
-      }, 500);
-    }
-  }, [initialUrl, navigationReady]);
-
-  // 2) 링크 이벤트 처리 (앱 실행 중)
-  useEffect(() => {
-    const handleLink = ({url}) => {
-      if (alreadyHandledRef.current) return;
-      alreadyHandledRef.current = true;
-      handleUrl({url});
-
-      setTimeout(() => {
-        alreadyHandledRef.current = false;
-      }, 500);
-    };
-
-    const getInitialUrl = async () => {
+    const fetchInitialUrl = async () => {
       const url = await Linking.getInitialURL();
-      if (url) setInitialUrl(url);
-
-      Linking.addEventListener('url', handleLink);
+      if (!url) return;
+      handleDeepLink(url);
     };
+    if (navigationReady) fetchInitialUrl();
+  }, [navigationReady, handleDeepLink]);
 
-    getInitialUrl();
-
-    return () => {
-      Linking.removeAllListeners('url');
-    };
-  }, [navigationReady]);
-
+  // 🚀 앱 실행 중에 들어오는 링크 처리
   useEffect(() => {
-    if (!navigationReady) return; // ✅ NavigationContainer 준비 전엔 아무것도 하지 않음
+    const listener = ({url}) => {
+      handleDeepLink(url);
+    };
+    const sub = Linking.addEventListener('url', listener);
+    return () => {
+      sub.remove();
+    };
+  }, [handleDeepLink]);
 
-    if (token && pendingStoreId) {
-      navigationRef.reset({
-        index: 1,
-        routes: [
-          {
-            name: 'MainBtmbar',
-            state: {
-              routes: [{name: 'MainScreen'}], // 👈 반드시 초기 탭 명시
-            },
-          },
-          {
-            name: 'StoreStack',
-            state: {
-              routes: [
-                {
-                  name: 'StoreMainScreen',
-                  params: {storeId: pendingStoreId},
-                },
-              ],
-            },
-          },
-        ],
-      });
+  // 🚀 pendingStoreId 가 세팅되었을 때 실제 네비게이션 이동
+  useEffect(() => {
+    if (!navigationReady || !pendingStoreId || !token) return;
 
-      setPendingStoreId(null); // ✅ navigation 성공 후에만 초기화
+    const currentRoute = navigationRef.getCurrentRoute();
+    if (
+      currentRoute?.name === 'StoreMainScreen' &&
+      currentRoute?.params?.storeId === pendingStoreId
+    ) {
+      setPendingStoreId(null);
+      return;
     }
-  }, [token, pendingStoreId, navigationReady]);
+    navigationRef.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {storeId: pendingStoreId},
+    });
+
+    setPendingStoreId(null);
+  }, [navigationReady, token, pendingStoreId, setPendingStoreId]);
 
   if (loading || !isVersionValid) {
     return <MySplashScreen isVersionValid={isVersionValid} />;
@@ -162,11 +135,9 @@ const AppNavigator = () => {
   }
 
   return (
-    <>
-      <NavigationContainer ref={navigationRef} onReady={onNavigationReady}>
-        {token ? <MainStack /> : <OAuthStack isTestEnabled={isTestEnabled} />}
-      </NavigationContainer>
-    </>
+    <NavigationContainer ref={navigationRef} onReady={onNavigationReady}>
+      {token ? <MainStack /> : <OAuthStack isTestEnabled={isTestEnabled} />}
+    </NavigationContainer>
   );
 };
 

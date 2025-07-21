@@ -46,7 +46,6 @@ const StoreExtraInfo = ({
   }, [storeData.id]);
   const storeNumberHandle = () => {
     if (storeNumber !== '000-0000-0000') {
-      console.log(storeNumber);
       Linking.openURL(`tel:${storeNumber}`);
     } else {
       showAlert({
