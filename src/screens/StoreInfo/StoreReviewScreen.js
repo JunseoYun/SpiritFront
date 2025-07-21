@@ -18,11 +18,10 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import ImagePicker from 'react-native-image-crop-picker';
 import ReviewForm from '../../components/StoreReviewScreen/ReviewForm';
 import forbiddenWords from '../../hooks/forbiddenWords';
-import filterWords from '../../hooks/filterWords';
 import {useToast} from '../../context/ToastContext';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {requestPhotoPermission} from '../../hooks/usePhotopermis';
 import Loading from '../../hooks/Loading';
+import ImagePickermodal from '../../hooks/ImagePickermodal';
 
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
@@ -46,6 +45,7 @@ const StoreReviewScreen = ({navigation}) => {
   const [totalpage, setTotalpage] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [addloading, setAddloading] = useState(false);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
   const getReviewData = async currentPage => {
     setLoading(true);
@@ -107,20 +107,31 @@ const StoreReviewScreen = ({navigation}) => {
     showAlert({
       title: '작성한 내용이 저장되지 않았습니다',
       message: '리뷰 작성을 취소하시겠습니까?',
-      onConfirm: () => setIsWriting(false),
+      onConfirm: () => {
+        setIsWriting(false);
+        setImages([]); // 이미지 초기화
+        setNewRate(0); // 별점 초기화
+        setNewReviewContent(''); // 리뷰 내용 초기화
+        setVisitDate(new Date()); // 방문 날짜 초기화
+      },
       type: 'confirm',
     });
   };
 
-  const renderStars = () => {
+  const renderStars = onRateSelect => {
     return Array.from({length: 5}, (_, index) => {
-      const starIndex = index + 1; // 별의 번호 (1부터 시작)
+      const starIndex = index + 1;
       return (
-        <TouchableOpacity key={index} onPress={() => setNewRate(starIndex)}>
+        <TouchableOpacity
+          key={index}
+          onPress={() => {
+            setNewRate(starIndex);
+            onRateSelect?.(starIndex); // ✅ 올바른 콜백 호출
+          }}>
           <FontAwesomeIcon
             name="star"
             size={30}
-            color={starIndex <= newrate ? '#FFD700' : '#F0F0F0'} // 노란색(#FFD700) 또는 회색(#D3D3D3)
+            color={starIndex <= newrate ? '#FFD700' : '#F0F0F0'}
             style={styles.star}
           />
         </TouchableOpacity>
@@ -135,12 +146,32 @@ const StoreReviewScreen = ({navigation}) => {
   const selectImage = async () => {
     const hasCamera = await requestPhotoPermission();
     if (!hasCamera) return;
-    ImagePicker.openPicker({
+    ImagePicker.openCamera({
       width: 1024,
       height: 1024,
       quality: 1,
       cropping: true,
       mediaType: 'photo',
+    })
+      .then(image => {
+        setImages(prevImages => [...prevImages, image]); // 이미지를 배열에 추가
+      })
+      .catch(error => {
+        console.log('ImagePicker Error: ', error);
+      });
+  };
+
+  const handleGalleryPick = async () => {
+    const hasCamera = await requestPhotoPermission();
+    if (!hasCamera) {
+      return;
+    }
+    ImagePicker.openPicker({
+      width: 1024,
+      height: 1024,
+      cropping: true,
+      mediaType: 'photo',
+      quality: 1,
     })
       .then(image => {
         setImages(prevImages => [...prevImages, image]); // 이미지를 배열에 추가
@@ -204,16 +235,9 @@ const StoreReviewScreen = ({navigation}) => {
           storeId: storeId,
         },
       };
-      console.log(data);
       await ReviewCreate(data);
-      setImages([]); // 이미지 초기화
-      setNewRate(0); // 별점 초기화
-      setNewReviewContent(''); // 리뷰 내용 초기화
-      setVisitDate(new Date()); // 방문 날짜 초기화
-
       showToast('리뷰가 등록되었습니다.');
       handleRefresh();
-      setIsWriting(false);
     } catch (error) {
       console.log(error, '리뷰 등록 중 에러');
       showAlert({
@@ -222,6 +246,11 @@ const StoreReviewScreen = ({navigation}) => {
       });
     } finally {
       setAddloading(false);
+      setIsWriting(false);
+      setImages([]); // 이미지 초기화
+      setNewRate(0); // 별점 초기화
+      setNewReviewContent(''); // 리뷰 내용 초기화
+      setVisitDate(new Date()); // 방문 날짜 초기화
     }
   };
 
@@ -290,6 +319,8 @@ const StoreReviewScreen = ({navigation}) => {
               handleSubmitReview={handleSubmitReview}
               hadleNoWrite={hadleNoWrite}
               setIsWriting={setIsWriting}
+              isBottomSheetVisible={isBottomSheetVisible}
+              setBottomSheetVisible={setBottomSheetVisible}
             />
           </View>
         </View>
@@ -297,6 +328,12 @@ const StoreReviewScreen = ({navigation}) => {
 
       <AlertComponent />
 
+      <ImagePickermodal
+        isBottomSheetVisible={isBottomSheetVisible}
+        setBottomSheetVisible={setBottomSheetVisible}
+        handleCameraPick={selectImage}
+        handleGalleryPick={handleGalleryPick}
+      />
       <Loading loading={addloading} />
     </SafeAreaView>
   );
@@ -393,9 +430,7 @@ const styles = StyleSheet.create({
   modalContent: {
     flex: 1,
     width: '90%',
-    maxHeight: '90%',
     borderRadius: 16,
-    padding: 20,
   },
 });
 
