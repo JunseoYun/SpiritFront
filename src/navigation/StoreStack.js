@@ -389,56 +389,6 @@ export default function StoreStack() {
           };
         }}
       />
-      {/* 
-      <Stack.Screen
-        name="StoreReportList"
-        component={StoreReportList}
-        options={({navigation, route}) => ({
-          title: `${
-            route.params?.storeName
-              ? route.params.storeName + ' 신고·제보'
-              : '매장'
-          }`,
-          
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerTitle: props => (
-            <Text
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              style={[
-                props.style,
-                {
-                  fontFamily: 'Pretendard-SemiBold',
-                  fontSize: 18,
-                  color: '#333',
-                  textAlign: 'center',
-                },
-              ]}>
-              {props.children}
-            </Text>
-          ),
-
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                navigation.goBack();
-              }}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      /> */}
 
       <Stack.Screen
         name="StoreReportScreen"
