@@ -340,7 +340,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-
     width: '100%',
     height: '100%',
   },
@@ -354,7 +353,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 15,
     marginLeft: 15,
     textAlign: 'center',
