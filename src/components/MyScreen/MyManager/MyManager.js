@@ -478,6 +478,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     height: height * 0.47,
     marginTop: 18,
+    width: CARD_WIDTH,
   },
   image: {
     width: '100%',
