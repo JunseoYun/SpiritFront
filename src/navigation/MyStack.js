@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Pressable} from 'react-native';
+import {Pressable, Text, Dimensions} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import ConfigScreen from '../screens/BottomTab/My/ConfigScreen';
@@ -9,6 +9,7 @@ import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
 import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+
 import NotificationScreen from '../screens/BottomTab/My/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/BottomTab/My/Notification/NotificationSetScreen';
 import ManagerStoreInfoScreen from '../screens/BottomTab/My/ManagerStoreInfoScreen';
@@ -29,6 +30,14 @@ const getScreenOptions = title => ({
 });
 export default function MyStack() {
   // const {token, unToken} = useAuth();
+
+  const screenWidth = Dimensions.get('window').width;
+
+  function getShortTitle(storename, suffix) {
+    if (!storename) return `매장 ${suffix}`;
+    const firstWord = storename.split(' ')[0];
+    return `${firstWord} ${suffix}`;
+  }
 
   return (
     <Stack.Navigator initialRouteName={'MyScreen'}>
@@ -196,9 +205,10 @@ export default function MyStack() {
         name="ManagerStoreInfoScreen"
         component={ManagerStoreInfoScreen}
         options={({navigation, route}) => {
-          const {storeName} = route.params;
+          const storename = route.params?.storename || '매장';
+          const displayTitle = getShortTitle(storename, ' 통계');
+
           return {
-            ...getScreenOptions(`${storeName} 통계`),
             headerLeft: () => (
               <Pressable
                 onPress={() => navigation.goBack()}
@@ -211,6 +221,22 @@ export default function MyStack() {
                 />
               </Pressable>
             ),
+            headerTitle: () => (
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  fontSize: 18,
+                  fontFamily: 'Pretendard-SemiBold',
+                  maxWidth: screenWidth * 0.7,
+                  textAlign: 'center',
+                }}>
+                {displayTitle}
+              </Text>
+            ),
+            headerTitleAlign: 'center',
+            animation: 'slide_from_right',
+            headerShadowVisible: false,
           };
         }}
       />

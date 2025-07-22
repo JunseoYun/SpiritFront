@@ -377,44 +377,70 @@ const MyManager = ({navigation}) => {
                 <View style={styles.bottomButtons}>
                   <View style={styles.bottomButtonView}>
                     <Pressable
-                      style={[styles.btn, styles.primaryBtn]}
+                      style={[
+                        styles.btn,
+                        {borderColor: '#fff', borderWidth: 1.3},
+                      ]}
                       onPress={() => {
                         closeModal();
                         navigation.navigate('StoreStack', {
                           screen: 'StoreMainScreen',
                           params: {storeId: selectedStore.storeId},
                         });
-                      }}></Pressable>
+                      }}>
+                      <Ionicons name="home" size={30} color="#fff" />
+                    </Pressable>
                     <Text style={styles.btnText}>매장 홈</Text>
                   </View>
                   <View style={styles.bottomButtonView}>
                     <Pressable
-                      style={[styles.btn, styles.primaryBtn]}
+                      style={[
+                        styles.btn,
+                        {borderColor: '#fff', borderWidth: 1.3},
+                      ]}
                       onPress={() => {
                         closeModal();
                         navigation.navigate('ManagerStoreInfoScreen', {
                           storeId: selectedStore.storeId,
-                          storeName: selectedStore.storeName,
+                          storename: selectedStore.storeName,
                         });
-                      }}></Pressable>
+                      }}>
+                      <Ionicons name="stats-chart" size={30} color="#fff" />
+                    </Pressable>
                     <Text style={styles.btnText}>통계 조회</Text>
                   </View>
 
                   <View style={styles.bottomButtonView}>
                     <Pressable
-                      style={[styles.btn, styles.primaryBtn]}
+                      style={[
+                        styles.btn,
+                        {borderColor: '#fff', borderWidth: 1.3},
+                      ]}
                       onPress={() => {
                         closeModal();
-                        navigation.navigate('ManagerStoreInfoScreen', {
-                          storeId: selectedStore.storeId,
-                          storeName: selectedStore.storeName,
+                        navigation.navigate('StoreStack', {
+                          screen: 'StoreReviewScreen',
+                          params: {
+                            storeId: selectedStore.storeId,
+                            storename: selectedStore.storeName,
+                            isOwner: true,
+                          },
                         });
-                      }}></Pressable>
+                      }}>
+                      <Ionicons
+                        name="chatbubble-ellipses"
+                        size={30}
+                        color="#fff"
+                      />
+                    </Pressable>
                     <Text style={styles.btnText}>리뷰 조회</Text>
                   </View>
                   <View style={styles.bottomButtonView}>
                     <Pressable
-                      style={[styles.btn, styles.primaryBtn]}
+                      style={[
+                        styles.btn,
+                        {borderColor: '#fff', borderWidth: 1.3},
+                      ]}
                       onPress={() => {
                         closeModal();
 
@@ -425,7 +451,13 @@ const MyManager = ({navigation}) => {
                             storeName: selectedStore.storeName,
                           },
                         });
-                      }}></Pressable>
+                      }}>
+                      <Ionicons
+                        name="information-circle-sharp"
+                        size={30}
+                        color="#fff"
+                      />
+                    </Pressable>
                     <Text style={styles.btnText}>제보·신고</Text>
                   </View>
                 </View>
@@ -462,7 +494,7 @@ const styles = StyleSheet.create({
   name: {
     color: '#fff',
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Pretendard-Bold',
     marginBottom: 6,
   },
   address: {
@@ -484,7 +516,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     marginLeft: 4,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
   reportRow: {
     flexDirection: 'row',
@@ -496,7 +528,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     paddingHorizontal: 8,
     marginRight: 6,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
   normalReport: {
     backgroundColor: 'rgba(255,165,0,0.25)',
@@ -521,11 +553,11 @@ const styles = StyleSheet.create({
   nameTabText: {
     fontSize: 13,
     color: '#555',
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
   },
   activeTabText: {
     color: '#45C9FF',
-    fontWeight: '700',
+    fontFamily: 'Pretendard-Bold',
   },
   closeBtn: {
     position: 'absolute',
@@ -551,20 +583,19 @@ const styles = StyleSheet.create({
   },
   btn: {
     flex: 1,
-    paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
-    backgroundColor: '#ccc',
     width: 60,
     height: 60,
     marginBottom: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  primaryBtn: {},
 
   btnText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontFamily: 'Pretendard-SemiBold',
   },
 
   // 모달 전용 스타일
@@ -584,7 +615,7 @@ const styles = StyleSheet.create({
   modalInfoTitle: {
     color: '#fff',
     fontSize: 22,
-    fontWeight: '700',
+    fontFamily: 'Pretendard-Bold',
     marginBottom: 6,
   },
   modalInfoAddress: {
@@ -606,7 +637,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     marginLeft: 6,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
   modalReportRow: {
     flexDirection: 'row',
@@ -618,7 +649,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 12,
     marginRight: 10,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 
