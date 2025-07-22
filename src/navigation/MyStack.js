@@ -195,21 +195,24 @@ export default function MyStack() {
       <Stack.Screen
         name="ManagerStoreInfoScreen"
         component={ManagerStoreInfoScreen}
-        options={({navigation}) => ({
-          ...getScreenOptions('매장 통계'), // getScreenOptions 객체를 펼쳐 병합
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
+        options={({navigation, route}) => {
+          const {storeName} = route.params;
+          return {
+            ...getScreenOptions(`${storeName} 통계`),
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+          };
+        }}
       />
     </Stack.Navigator>
   );
