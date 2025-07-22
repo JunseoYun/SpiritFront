@@ -353,12 +353,53 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreReportList"
         component={StoreReportList}
+        options={({navigation, route}) => {
+          const storename = route.params?.storeName || '매장';
+          const displayTitle = getShortTitle(storename, ' 신고·제보');
+
+          return {
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+            headerTitle: () => (
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  fontSize: 18,
+                  fontFamily: 'Pretendard-SemiBold',
+                  maxWidth: screenWidth * 0.7,
+                  textAlign: 'center',
+                }}>
+                {displayTitle}
+              </Text>
+            ),
+            headerTitleAlign: 'center',
+            animation: 'slide_from_right',
+            headerShadowVisible: false,
+          };
+        }}
+      />
+      {/* 
+      <Stack.Screen
+        name="StoreReportList"
+        component={StoreReportList}
         options={({navigation, route}) => ({
           title: `${
             route.params?.storeName
               ? route.params.storeName + ' 신고·제보'
               : '매장'
           }`,
+          
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-SemiBold',
@@ -397,7 +438,7 @@ export default function StoreStack() {
             </Pressable>
           ),
         })}
-      />
+      /> */}
 
       <Stack.Screen
         name="StoreReportScreen"
