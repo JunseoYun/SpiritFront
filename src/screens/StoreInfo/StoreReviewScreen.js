@@ -324,13 +324,6 @@ const StoreReviewScreen = ({navigation}) => {
       )}
 
       <AlertComponent />
-
-      {/* <ImagePickermodal
-        isBottomSheetVisible={isBottomSheetVisible}
-        setBottomSheetVisible={setBottomSheetVisible}
-        handleCameraPick={selectImage}
-        handleGalleryPick={handleGalleryPick}
-      /> */}
       <Loading loading={addloading} />
     </SafeAreaView>
   );
