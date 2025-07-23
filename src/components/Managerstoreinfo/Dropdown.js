@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     color: '#333',
     fontWeight: '600',
+    textAlign: 'center',
   },
   button: {
     height: 44,
