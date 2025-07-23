@@ -7,10 +7,11 @@ import {
   SafeAreaView,
   TouchableOpacity,
   FlatList,
-  Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
-import {ReviewStoreGet} from '../../api/reviewApi';
+import {ReviewStoreGet, review_delete_reply} from '../../api/reviewApi';
 import ReviewItem from '../../components/StoreReviewScreen/ReviewItem';
 import {ReviewCreate} from '../../api/reviewApi';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
@@ -21,7 +22,6 @@ import forbiddenWords from '../../hooks/forbiddenWords';
 import {useToast} from '../../context/ToastContext';
 import {requestPhotoPermission} from '../../hooks/usePhotopermis';
 import Loading from '../../hooks/Loading';
-import ImagePickermodal from '../../hooks/ImagePickermodal';
 
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
@@ -254,78 +254,103 @@ const StoreReviewScreen = ({navigation}) => {
     }
   };
 
+  const handleDeleteReply = reviewId => {
+    showAlert({
+      title: '답글 삭제',
+      message: '해당 답글 삭제하시겠습니까?',
+      onConfirm: () => {
+        deleteReply(reviewId);
+      },
+      type: 'delete',
+    });
+  };
+
+  const deleteReply = async reviewId => {
+    setLoading(true);
+    try {
+      await review_delete_reply(reviewId);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderItem = ({item}) => (
     <ReviewItem
       key={item.id}
       item={item}
       navigation={navigation}
       isOwner={isOwner}
+      handleDeleteReply={handleDeleteReply}
     />
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {!isWriting ? (
-        <View style={{width: '100%'}}>
-          <View style={styles.MenuaddView}>
-            <Pressable style={styles.addButton} onPress={hadleIsWrite}>
-              <Text style={styles.addButtonText}>리뷰 작성하기</Text>
-            </Pressable>
+    <KeyboardAvoidingView
+      style={{flex: 1}}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 70}>
+      <SafeAreaView style={styles.container}>
+        {!isWriting ? (
+          <View style={{width: '100%'}}>
+            <View style={styles.MenuaddView}>
+              <Pressable style={styles.addButton} onPress={hadleIsWrite}>
+                <Text style={styles.addButtonText}>리뷰 작성하기</Text>
+              </Pressable>
+            </View>
+            <FlatList
+              data={reviewdata}
+              renderItem={renderItem}
+              keyExtractor={item => item.id.toString()}
+              // 🔥 스크롤해도 키보드 닫히지 않음
+              keyboardDismissMode="none"
+              keyboardShouldPersistTaps="always"
+              onEndReached={loadMoreReviews}
+              onEndReachedThreshold={0.5}
+              onRefresh={handleRefresh}
+              refreshing={refreshing}
+              contentContainerStyle={{paddingBottom: 0}}
+              ListFooterComponent={
+                <View style={styles.footer}>
+                  {loading && !isEnd ? (
+                    <Text style={styles.emptyText}>Loading...</Text>
+                  ) : !loading && reviewdata.length === 0 ? (
+                    <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
+                  ) : null}
+                </View>
+              }
+            />
           </View>
-          <FlatList
-            data={reviewdata}
-            renderItem={renderItem}
-            keyExtractor={item => item.id.toString()}
-            showsVerticalScrollIndicator={false}
-            initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
-            maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
-            windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-            removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
-            onEndReached={loadMoreReviews} // 더 많은 데이터 불러오기
-            onEndReachedThreshold={0.5}
-            onRefresh={handleRefresh} // 새로고침
-            refreshing={refreshing}
-            contentContainerStyle={{paddingBottom: 0}}
-            ListFooterComponent={
-              <View style={styles.footer}>
-                {loading && !isEnd ? (
-                  <Text style={styles.emptyText}>Loading...</Text>
-                ) : !loading && reviewdata.length === 0 ? (
-                  <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
-                ) : null}
-              </View>
-            }
-          />
-        </View>
-      ) : (
-        <View visible={isWriting}>
-          <ReviewForm
-            storeName={storename} // 스토어 이름 넘겨주기
-            newReviewContent={newReviewContent}
-            onChangeText={onChangeText}
-            renderStars={renderStars}
-            visitDate={visitDate}
-            setVisitDate={setVisitDate}
-            isDatePickerOpen={isDatePickerOpen}
-            setIsDatePickerOpen={setIsDatePickerOpen}
-            images={images}
-            selectedImageIndex={selectedImageIndex}
-            handleImagePress={handleImagePress}
-            selectImage={selectImage}
-            handleSubmitReview={handleSubmitReview}
-            hadleNoWrite={hadleNoWrite}
-            setIsWriting={setIsWriting}
-            isBottomSheetVisible={isBottomSheetVisible}
-            setBottomSheetVisible={setBottomSheetVisible}
-            handleGalleryPick={handleGalleryPick}
-            setSelectedImageIndex={setSelectedImageIndex}
-          />
-        </View>
-      )}
-
-      <AlertComponent />
-      <Loading loading={addloading} />
-    </SafeAreaView>
+        ) : (
+          <View visible={isWriting}>
+            <ReviewForm
+              storeName={storename} // 스토어 이름 넘겨주기
+              newReviewContent={newReviewContent}
+              onChangeText={onChangeText}
+              renderStars={renderStars}
+              visitDate={visitDate}
+              setVisitDate={setVisitDate}
+              isDatePickerOpen={isDatePickerOpen}
+              setIsDatePickerOpen={setIsDatePickerOpen}
+              images={images}
+              selectedImageIndex={selectedImageIndex}
+              handleImagePress={handleImagePress}
+              selectImage={selectImage}
+              handleSubmitReview={handleSubmitReview}
+              hadleNoWrite={hadleNoWrite}
+              setIsWriting={setIsWriting}
+              isBottomSheetVisible={isBottomSheetVisible}
+              setBottomSheetVisible={setBottomSheetVisible}
+              handleGalleryPick={handleGalleryPick}
+              setSelectedImageIndex={setSelectedImageIndex}
+            />
+          </View>
+        )}
+        <AlertComponent />
+        <Loading loading={addloading || loading} />
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
