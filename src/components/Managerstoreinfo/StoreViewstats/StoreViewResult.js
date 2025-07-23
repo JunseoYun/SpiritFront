@@ -150,17 +150,32 @@ const StoreViewResult = ({result, showBy}) => {
     const barWidth = 80;
 
     const formatDateToKorean = dateStr => {
-      const [year, month, day] = dateStr.split('-');
-      if (showBy == 'day') {
-        return `${year}년 ${parseInt(month)}월 ${parseInt(day)}일`;
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const today = new Date(); // 현재 날짜
+
+      if (showBy === 'day') {
+        return `${year}년 ${month}월 ${day}일`;
       }
-      if (showBy == 'week') {
-        return `${year}년 ${parseInt(month)}월 ${parseInt(day)}일 ~ ${
-          parseInt(day) + 6
-        }일`;
+
+      if (showBy === 'week') {
+        const startDate = new Date(year, month - 1, day);
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+
+        const actualEndDate = endDate > today ? today : endDate;
+
+        const startMonth = startDate.getMonth() + 1;
+        const endMonth = actualEndDate.getMonth() + 1;
+
+        if (startMonth === endMonth) {
+          return `${year}년 ${startMonth}월 ${startDate.getDate()}일 ~ ${actualEndDate.getDate()}일`;
+        } else {
+          return `${year}년 ${startMonth}월 ${startDate.getDate()}일 ~ ${endMonth}월 ${actualEndDate.getDate()}일`;
+        }
       }
-      if (showBy == 'month') {
-        return `${year}년 ${parseInt(month)}월`;
+
+      if (showBy === 'month') {
+        return `${year}년 ${month}월`;
       }
     };
 
