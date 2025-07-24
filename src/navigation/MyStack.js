@@ -12,8 +12,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 
 import NotificationScreen from '../screens/BottomTab/My/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/BottomTab/My/Notification/NotificationSetScreen';
-import ManagerStoreInfoScreen from '../screens/BottomTab/My/ManagerStoreInfoScreen';
-//AntDesign bells
+
 const Stack = createStackNavigator();
 
 // 재사용 가능한 옵션 컴포넌트
@@ -199,46 +198,6 @@ export default function MyStack() {
             </Pressable>
           ),
         })}
-      />
-
-      <Stack.Screen
-        name="ManagerStoreInfoScreen"
-        component={ManagerStoreInfoScreen}
-        options={({navigation, route}) => {
-          const storename = route.params?.storename || '매장';
-          const displayTitle = getShortTitle(storename, ' 통계');
-
-          return {
-            headerLeft: () => (
-              <Pressable
-                onPress={() => navigation.goBack()}
-                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-                <Ionicons
-                  name="arrow-back-outline"
-                  size={23}
-                  color="#333"
-                  style={{paddingLeft: 12}}
-                />
-              </Pressable>
-            ),
-            headerTitle: () => (
-              <Text
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                style={{
-                  fontSize: 18,
-                  fontFamily: 'Pretendard-SemiBold',
-                  maxWidth: screenWidth * 0.7,
-                  textAlign: 'center',
-                }}>
-                {displayTitle}
-              </Text>
-            ),
-            headerTitleAlign: 'center',
-            animation: 'slide_from_right',
-            headerShadowVisible: false,
-          };
-        }}
       />
     </Stack.Navigator>
   );

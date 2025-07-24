@@ -7,12 +7,23 @@ import {
   Pressable,
   StyleSheet,
   FlatList,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from 'react-native';
 import {store_stats_get} from '../../../api/logstats';
 import StoreAreaResult from './StoreAreaResult';
 import Dropdown from '../Dropdown';
 import Entypo from 'react-native-vector-icons/Entypo';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Loading from '../../../hooks/Loading';
+
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const AGE_OPTIONS = [
   {label: '전체', value: ''},
@@ -23,13 +34,12 @@ const AGE_OPTIONS = [
 ];
 
 const StoreAreastats = ({locationDto}) => {
-  const [togglebtn, setTogglebtn] = useState(false);
+  const [togglebtn, setTogglebtn] = useState(true);
   const [loading, setLoading] = useState(false);
-
   const [form, setForm] = useState({
     period: 'month',
-    latitude: locationDto.latitude,
-    longitude: locationDto.longitude,
+    latitude: '12.34',
+    longitude: '12.34',
     radius: '2',
     gender: '',
     ageGroup: [''],
@@ -99,19 +109,16 @@ const StoreAreastats = ({locationDto}) => {
     setForm(prev => {
       const exists = prev.groupBy.includes(type);
 
-      // 결과값 묶음이 하나일 때, 해당 항목을 다시 클릭 → 다른 항목으로 전환
       if (prev.groupBy.length === 1 && exists) {
         const other = type === 'gender' ? 'ageGroup' : 'gender';
         return {...prev, groupBy: [other]};
       }
 
-      // 선택되어 있으면 제거 (단, 1개 남았을 때는 제거하지 않음)
       if (exists) {
         if (prev.groupBy.length === 1) return prev;
         return {...prev, groupBy: prev.groupBy.filter(t => t !== type)};
       }
 
-      // 2개 이상 선택 불가, 1개면 추가
       if (prev.groupBy.length < 2) {
         return {...prev, groupBy: [...prev.groupBy, type]};
       }
@@ -119,35 +126,30 @@ const StoreAreastats = ({locationDto}) => {
       return prev;
     });
   };
-  // ‘전체’가 선택됐으면 true
-  const isAllSelected = form.ageGroup.includes('');
+
+  const handleToggle = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setTogglebtn(prev => !prev);
+  };
 
   return (
     <>
-      <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
+      <SafeAreaView style={{flex: 1, backgroundColor: '#f8f9fb'}}>
         <ScrollView contentContainerStyle={styles.container}>
-          <Pressable
-            onPress={() => setTogglebtn(prev => !prev)}
-            style={styles.titleview}>
-            <Text style={styles.title}>매장 주변 조건</Text>
-            {togglebtn ? (
-              <Entypo
-                name="chevron-small-up"
-                size={25}
-                color="#333"
-                style={styles.icon}
-              />
-            ) : (
-              <Entypo
-                name="chevron-small-down"
-                size={25}
-                color="#333"
-                style={styles.icon}
-              />
-            )}
+          {/* 헤더 */}
+          <Pressable onPress={handleToggle} style={styles.header}>
+            <FontAwesome5 name="sliders-h" size={16} color="#16BBFF" />
+            <Text style={styles.headerTitle}>통계 조건 설정</Text>
+            <Entypo
+              name={togglebtn ? 'chevron-small-up' : 'chevron-small-down'}
+              size={24}
+              color="#333"
+              style={{marginLeft: 'auto'}}
+            />
           </Pressable>
+
           {togglebtn && (
-            <>
+            <View style={styles.card}>
               <View style={styles.row}>
                 <Dropdown
                   label="조회 기간"
@@ -194,16 +196,12 @@ const StoreAreastats = ({locationDto}) => {
                   return (
                     <Pressable
                       onPress={() => toggleAgeGroup(item.value)}
-                      style={[
-                        styles.chip,
-                        isSelected ? styles.chipSelected : styles.chipDisabled, // 선택된건 chipSelected, 아니면 chipDisabled
-                      ]}>
+                      style={[styles.chip, isSelected && styles.chipSelected]}>
                       <Text
-                        style={
-                          isSelected
-                            ? styles.chipTextSelected
-                            : styles.chipTextDisabled
-                        }>
+                        style={[
+                          styles.chipText,
+                          isSelected && styles.chipTextSelected,
+                        ]}>
                         {item.label}
                       </Text>
                     </Pressable>
@@ -233,11 +231,11 @@ const StoreAreastats = ({locationDto}) => {
               </View>
 
               {error ? <Text style={styles.error}>{error}</Text> : null}
-            </>
+            </View>
           )}
 
           {result && (
-            <View style={{marginTop: 20}}>
+            <View style={{marginTop: 20, marginHorizontal: 18}}>
               <StoreAreaResult result={result} setLoading={setLoading} />
             </View>
           )}
@@ -252,71 +250,81 @@ export default StoreAreastats;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    paddingBottom: 20,
   },
-  titleview: {
-    alignItems: 'center',
+  header: {
     flexDirection: 'row',
-    marginBottom: 20,
-    gap: 3,
-    alignSelf: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderColor: '#eee',
   },
-  icon: {
-    width: 25,
-    alignSelf: 'center',
-  },
-  title: {
-    fontSize: 18,
-    fontFamily: 'Pretendard-Bold',
-  },
-  sectionTitle: {
-    fontSize: 14,
+  headerTitle: {
+    fontSize: 16,
+    marginLeft: 8,
+    color: '#333',
     fontFamily: 'Pretendard-SemiBold',
-    marginVertical: 12,
-    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginTop: 14,
+    borderRadius: 12,
+    paddingVertical: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 2},
+    elevation: 2,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     flexWrap: 'wrap',
+    marginBottom: 8,
+    marginHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontFamily: 'Pretendard-SemiBold',
+    marginVertical: 12,
+    color: '#333',
+    marginHorizontal: 16,
   },
   chipGroup: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
     marginBottom: 12,
-    alignSelf: 'center',
+    marginHorizontal: 16,
   },
   chipGroupFlatList: {
     marginBottom: 12,
+    paddingHorizontal: 16,
   },
   chip: {
     borderColor: '#dfdfdf',
     borderWidth: 1,
-    borderRadius: 7,
-    paddingHorizontal: 14,
+    borderRadius: 20,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     marginRight: 10,
-  },
-  chipDisabled: {
-    borderColor: '#dfdfdf', // 테두리는 기본색 유지
-    backgroundColor: 'transparent',
+    backgroundColor: '#f9f9f9',
   },
   chipSelected: {
-    backgroundColor: '#fff', // 클릭된 칩은 파란색 배경
-    borderWidth: 1,
+    backgroundColor: '#16BBFF22',
     borderColor: '#16BBFF',
-    opacity: 1,
   },
   chipText: {
     fontFamily: 'Pretendard-Medium',
-    color: '#999',
+    color: '#666',
+    fontSize: 13,
   },
   chipTextSelected: {
     color: '#16BBFF',
-  },
-  chipTextDisabled: {
-    color: '#999',
+    fontWeight: '600',
   },
   error: {
     color: 'red',

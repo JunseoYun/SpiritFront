@@ -400,10 +400,18 @@ const MyManager = ({navigation}) => {
                       ]}
                       onPress={() => {
                         closeModal();
-                        navigation.navigate('ManagerStoreInfoScreen', {
-                          storeId: selectedStore.storeId,
-                          storename: selectedStore.storeName,
-                          locationDto: selectedStore.locationDto,
+                        // navigation.navigate('ManagerStoreInfoScreen', {
+                        //   storeId: selectedStore.storeId,
+                        //   storename: selectedStore.storeName,
+                        //   locationDto: selectedStore.locationDto,
+                        // });
+                        navigation.navigate('StoreStack', {
+                          screen: 'ManagerStoreInfoScreen',
+                          params: {
+                            storeId: selectedStore.storeId,
+                            storename: selectedStore.storeName,
+                            locationDto: selectedStore.locationDto,
+                          },
                         });
                       }}>
                       <Ionicons name="stats-chart" size={30} color="#fff" />
