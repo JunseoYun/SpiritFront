@@ -7,12 +7,23 @@ import {
   Pressable,
   StyleSheet,
   FlatList,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from 'react-native';
 import {store_view_stats_get} from '../../../api/logstats';
 import StoreViewResult from './StoreViewResult';
 import Dropdown from '../Dropdown';
 import Entypo from 'react-native-vector-icons/Entypo';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Loading from '../../../hooks/Loading';
+
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const AGE_OPTIONS = [
   {label: '전체', value: ''},
@@ -30,7 +41,6 @@ const PERIOD_OPTIONS = [
   {label: '년', value: 'year'},
 ];
 
-// period에 따라 showBy 옵션 생성 (year 제외)
 const getShowByOptions = selectedPeriod => {
   const periodIndex = UNIT_ORDER.indexOf(selectedPeriod);
   return UNIT_ORDER.filter(
@@ -42,7 +52,7 @@ const getShowByOptions = selectedPeriod => {
 };
 
 const StoreViewstats = ({storeId}) => {
-  const [togglebtn, setTogglebtn] = useState(false);
+  const [togglebtn, setTogglebtn] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
@@ -51,7 +61,7 @@ const StoreViewstats = ({storeId}) => {
     gender: '',
     ageGroup: [''],
     groupBy: ['gender', 'ageGroup'],
-    showBy: 'month', // 기본값은 사용 가능한 항목 내에서 설정
+    showBy: 'month',
   });
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -92,26 +102,19 @@ const StoreViewstats = ({storeId}) => {
   const handleChange = (key, value) => {
     if (key === 'period') {
       setForm(prev => {
-        // 현재 showBy 순서 인덱스
         const showByIndex = UNIT_ORDER.indexOf(prev.showBy);
-        // 새로 선택된 period 인덱스
         const periodIndex = UNIT_ORDER.indexOf(value);
-
         let newShowBy = prev.showBy;
-
-        // showBy가 period보다 크면 showBy를 period로 맞춤 (단, year는 showBy가 될 수 없으니 제외)
         if (showByIndex > periodIndex) {
-          // 만약 period가 year라면 showBy는 바꾸지 말고 그대로 둠
-          // showBy에 year는 없으니 period가 year면 유지
           newShowBy = value === 'year' ? prev.showBy : value;
         }
-
         return {...prev, period: value, showBy: newShowBy};
       });
     } else {
       setForm(prev => ({...prev, [key]: value}));
     }
   };
+
   const toggleAgeGroup = age => {
     setForm(prev => {
       let arr = [...prev.ageGroup];
@@ -141,24 +144,29 @@ const StoreViewstats = ({storeId}) => {
     });
   };
 
+  const handleToggle = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setTogglebtn(prev => !prev);
+  };
+
   return (
     <>
-      <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
+      <SafeAreaView style={{flex: 1, backgroundColor: '#f8f9fb'}}>
         <ScrollView contentContainerStyle={styles.container}>
-          <Pressable
-            onPress={() => setTogglebtn(prev => !prev)}
-            style={styles.titleview}>
-            <Text style={styles.title}>매장 조회 조건</Text>
+          {/* 헤더 */}
+          <Pressable onPress={handleToggle} style={styles.header}>
+            <FontAwesome5 name="sliders-h" size={16} color="#16BBFF" />
+            <Text style={styles.headerTitle}>통계 조건 설정</Text>
             <Entypo
               name={togglebtn ? 'chevron-small-up' : 'chevron-small-down'}
-              size={25}
+              size={24}
               color="#333"
-              style={styles.icon}
+              style={{marginLeft: 'auto'}}
             />
           </Pressable>
 
           {togglebtn && (
-            <>
+            <View style={styles.card}>
               <View style={styles.row}>
                 <Dropdown
                   label="조회 기간"
@@ -187,6 +195,7 @@ const StoreViewstats = ({storeId}) => {
               <Text style={styles.sectionTitle}>연령대</Text>
               <FlatList
                 horizontal
+                showsHorizontalScrollIndicator={false}
                 data={AGE_OPTIONS}
                 keyExtractor={item => item.value}
                 contentContainerStyle={styles.chipGroupFlatList}
@@ -195,16 +204,12 @@ const StoreViewstats = ({storeId}) => {
                   return (
                     <Pressable
                       onPress={() => toggleAgeGroup(item.value)}
-                      style={[
-                        styles.chip,
-                        selected ? styles.chipSelected : styles.chipDisabled,
-                      ]}>
+                      style={[styles.chip, selected && styles.chipSelected]}>
                       <Text
-                        style={
-                          selected
-                            ? styles.chipTextSelected
-                            : styles.chipTextDisabled
-                        }>
+                        style={[
+                          styles.chipText,
+                          selected && styles.chipTextSelected,
+                        ]}>
                         {item.label}
                       </Text>
                     </Pressable>
@@ -234,11 +239,11 @@ const StoreViewstats = ({storeId}) => {
               </View>
 
               {error ? <Text style={styles.error}>{error}</Text> : null}
-            </>
+            </View>
           )}
 
           {result && (
-            <View style={{marginTop: 20}}>
+            <View style={{marginTop: 20, marginHorizontal: 18}}>
               <StoreViewResult
                 result={result}
                 setLoading={setLoading}
@@ -253,50 +258,88 @@ const StoreViewstats = ({storeId}) => {
   );
 };
 
+export default StoreViewstats;
+
 const styles = StyleSheet.create({
-  container: {padding: 20},
-  titleview: {
+  container: {
+    paddingBottom: 20,
+  },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-    gap: 3,
-    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderColor: '#eee',
   },
-  icon: {width: 25},
-  title: {fontSize: 18, fontFamily: 'Pretendard-Bold'},
+  headerTitle: {
+    fontSize: 16,
+    marginLeft: 8,
+    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  card: {
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginTop: 14,
+    borderRadius: 12,
+    paddingVertical: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 2},
+    elevation: 2,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    marginBottom: 8,
+    marginHorizontal: 16,
+  },
   sectionTitle: {
     fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
     marginVertical: 12,
-    textAlign: 'center',
-  },
-  row: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    color: '#333',
+    marginHorizontal: 16,
   },
   chipGroup: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
     marginBottom: 12,
-    alignSelf: 'center',
+    marginHorizontal: 16,
   },
-  chipGroupFlatList: {marginBottom: 12},
+  chipGroupFlatList: {
+    marginBottom: 12,
+    paddingHorizontal: 16,
+  },
   chip: {
+    borderColor: '#dfdfdf',
     borderWidth: 1,
-    borderRadius: 7,
-    paddingHorizontal: 14,
+    borderRadius: 20,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     marginRight: 10,
-    borderColor: '#dfdfdf',
+    backgroundColor: '#f9f9f9',
   },
-  chipDisabled: {backgroundColor: 'transparent'},
-  chipSelected: {backgroundColor: '#fff', borderColor: '#16BBFF', opacity: 1},
-  chipText: {fontFamily: 'Pretendard-Medium', color: '#999'},
-  chipTextSelected: {color: '#16BBFF'},
-  chipTextDisabled: {color: '#999'},
-  error: {color: 'red', marginTop: 10},
+  chipSelected: {
+    backgroundColor: '#16BBFF22',
+    borderColor: '#16BBFF',
+  },
+  chipText: {
+    fontFamily: 'Pretendard-Medium',
+    color: '#666',
+    fontSize: 13,
+  },
+  chipTextSelected: {
+    color: '#16BBFF',
+    fontWeight: '600',
+  },
+  error: {
+    color: 'red',
+    marginTop: 10,
+  },
 });
-
-export default StoreViewstats;
