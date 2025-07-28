@@ -2,8 +2,15 @@ import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 
 import Entypo from 'react-native-vector-icons/Entypo';
+import FastImage from 'react-native-fast-image';
 
-const Category = ({handleEdit, storedata, isUpdate, translateCategory}) => {
+const Category = ({
+  handleEdit,
+  storedata,
+  isUpdate,
+  translateCategory,
+  isOwner,
+}) => {
   return (
     <>
       {isUpdate ? (
@@ -31,6 +38,12 @@ const Category = ({handleEdit, storedata, isUpdate, translateCategory}) => {
         </TouchableOpacity>
       ) : (
         <View style={styles.Storesubtitleview}>
+          {isOwner != null && (
+            <FastImage
+              source={require('../../../assets/verifyMaker.png')}
+              style={styles.imageStyle}
+            />
+          )}
           {Array.isArray(storedata?.categories) &&
             storedata?.categories.map((category, index) => (
               <Text key={index} style={styles.Storesubtitle}>
@@ -57,6 +70,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginRight: 7,
     fontFamily: 'Pretendard-Regular',
+  },
+  imageStyle: {
+    alignSelf: 'center',
+    width: 20,
+    height: 20,
+    marginRight: 5,
   },
 });
 

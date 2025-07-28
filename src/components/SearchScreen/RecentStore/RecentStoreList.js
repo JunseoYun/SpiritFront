@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   mylocationlivetext: {
     fontSize: 18,
     fontFamily: 'Pretendard-Bold',
-    color: '#181a1a',
+    color: '#333',
     marginTop: 10,
   },
   mylocationlivesubtext: {
