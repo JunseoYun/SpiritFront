@@ -391,16 +391,34 @@ export const Store_getby_condition_search = async requestData => {
   const {latitude, longitude, page, conditionSearchDto} = requestData;
 
   try {
+    // 기본 필수 파라미터
+    const params = {
+      latitude,
+      longitude,
+      page,
+    };
+
+    // 선택 파라미터는 값이 있을 때만 추가
+    if (conditionSearchDto.category) {
+      params.category = conditionSearchDto.category;
+    }
+    if (
+      conditionSearchDto.isGroupAvailable !== undefined &&
+      conditionSearchDto.isGroupAvailable !== ''
+    ) {
+      params.isGroupAvailable = conditionSearchDto.isGroupAvailable;
+    }
+    if (conditionSearchDto.conditionTime) {
+      params.conditionTime = conditionSearchDto.conditionTime;
+    }
+    if (conditionSearchDto.alcoholType) {
+      params.drinkType = conditionSearchDto.alcoholType;
+    }
+
     const response = await axiosInstance.get(`/store/get-by/condition-search`, {
-      params: {
-        latitude,
-        longitude,
-        page: page,
-        category: conditionSearchDto.category,
-        isGroupAvailable: conditionSearchDto.isGroupAvailable,
-        conditionTime: conditionSearchDto.conditionTime,
-      },
+      params,
     });
+
     return response.data.data;
   } catch (error) {
     functionError(error);
@@ -446,6 +464,15 @@ export const StoreImageUpdateSort = async (
       storeImageUrlInOrderList,
     });
     return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const get_store_share = async storeId => {
+  try {
+    const response = await axiosInstance.get(`/store/share/${storeId}`);
+    return response.data; // 또는 response.data.url depending on backend structure
   } catch (error) {
     functionError(error);
   }

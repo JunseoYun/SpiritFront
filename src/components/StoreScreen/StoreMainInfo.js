@@ -1,19 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
-import StoreActions from './StoreActions';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import {getLocation} from '../../storage/locationStorage';
 import useDistance from '../../hooks/useDistance';
-import useDayTranslation from '../../hooks/useDayTranslation';
 import useStoreStatus from '../../hooks/useStoreStatus';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
-import useCustomAlert from '../../hooks/useCustomAlert';
 import Title from './StoreMainInfo/Title';
 import Category from './StoreMainInfo/Category';
 import Review from './StoreMainInfo/Review';
@@ -62,9 +53,7 @@ const StoreMainInfo = ({
   const calculateDistance = useDistance();
 
   const {translateCategory} = useCategoryTranslation();
-  const {translateDays} = useDayTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
-  const {showAlert, AlertComponent} = useCustomAlert();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [descripexpanded, setDescripexpanded] = useState(false);
@@ -126,11 +115,11 @@ const StoreMainInfo = ({
         storedata={storedata}
         translateCategory={translateCategory}
         isUpdate={isUpdate}
+        isOwner={storedata?.isOwner}
       />
       <Title
         handleEdit={handleEdit}
         storeName={storedata?.name}
-        isOwner={storedata?.isOwner}
         isUpdate={isUpdate}
         onModalOpen={onModalOpen}
       />
@@ -255,8 +244,6 @@ const StoreMainInfo = ({
           />
         </>
       )}
-
-      <AlertComponent />
     </View>
   );
 };

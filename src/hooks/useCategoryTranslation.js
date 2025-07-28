@@ -18,7 +18,7 @@ const categoryMap = {
 const useCategoryTranslation = () => {
   // 변환 함수
   const translateCategory = useCallback(englishCategory => {
-    return categoryMap[englishCategory] || '알 수 없는 카테고리';
+    return categoryMap[englishCategory] || '미지정';
   }, []);
 
   return {translateCategory};

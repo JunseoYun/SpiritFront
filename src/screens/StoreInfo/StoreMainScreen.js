@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Pressable,
   KeyboardAvoidingView,
+  Share,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/StoreImage/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
@@ -20,6 +21,7 @@ import {
   UpdateStore,
   DeleteStoreImage,
   UpdateStoreImage,
+  get_store_share,
 } from '../../api/storeApi';
 
 import Feather from 'react-native-vector-icons/Feather';
@@ -48,6 +50,7 @@ const StoreMainScreen = ({navigation}) => {
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '70%', '85%'], []);
   const {storeId, innerlatitude, innerlongitude} = route.params;
+
   const [menus, setMenus] = useState([]);
   const [alcohols, setAlcohols] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -403,6 +406,29 @@ const StoreMainScreen = ({navigation}) => {
 
   const [tabY, setTabY] = useState(0);
 
+  const onShare = async () => {
+    try {
+      const response = await get_store_share(storeId);
+
+      if (!response?.url) {
+        showToast('공유할 링크를 가져오지 못했어요.');
+        return;
+      }
+
+      await Share.share({
+        message:
+          Platform.OS === 'ios'
+            ? `${storedata.name}에서 한잔 어때요?\n한잔할까에서 확인해보세요!\n`
+            : `${storedata.name}에서 한잔 어때요?\n한잔할까에서 확인해보세요!\n${response.url}`,
+        url: response.url,
+        title: '가게 공유',
+      });
+    } catch (error) {
+      showToast('공유 도중 문제가 발생했어요.');
+      console.error('onShare error:', error);
+    }
+  };
+
   return (
     <>
       <View style={{backgroundColor: 'white', flex: 1}}>
@@ -412,8 +438,8 @@ const StoreMainScreen = ({navigation}) => {
             headerBackgroundColor={headerBackgroundColor}
             iconColor={iconColor}
             titleOpacity={titleOpacity}
-            title={storedata.name}
-            isOwner={storedata?.isOwner}
+            title={storedata?.name}
+            onShare={onShare}
           />
         )}
         {isUpdate && (
@@ -429,8 +455,8 @@ const StoreMainScreen = ({navigation}) => {
               navigation={navigation}
               headerBackgroundColor={'#fff'}
               iconColor={'#333'}
-              title={storedata.name}
-              isOwner={storedata.isOwner}
+              title={storedata?.name}
+              onShare={onShare}
             />
           )}
 
