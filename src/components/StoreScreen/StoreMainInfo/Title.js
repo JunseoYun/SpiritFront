@@ -1,15 +1,49 @@
-import React from 'react';
-
+import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
   Text,
   Pressable,
   TouchableOpacity,
   StyleSheet,
+  Animated,
 } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 
-const Title = ({handleEdit, storeName, isUpdate, onModalOpen}) => {
+const Title = ({
+  handleEdit,
+  storeName,
+  isUpdate,
+  startUpdate,
+  handleReport,
+  handleReportList,
+  handleStoreInfo,
+  isUpdatable,
+}) => {
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const dropdownAnim = useRef(new Animated.Value(0)).current;
+
+  const toggleDropdown = () => {
+    if (dropdownVisible) {
+      Animated.timing(dropdownAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => setDropdownVisible(false));
+    } else {
+      setDropdownVisible(true);
+      Animated.timing(dropdownAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
+
+  const dropdownTranslateY = dropdownAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-10, 0],
+  });
+
   return (
     <>
       {isUpdate ? (
@@ -31,11 +65,62 @@ const Title = ({handleEdit, storeName, isUpdate, onModalOpen}) => {
           <View style={styles.titleView2}>
             <Text style={styles.Storetitle}>{storeName}</Text>
           </View>
-          <Pressable
-            onPress={onModalOpen}
-            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-            <Entypo name="dots-three-vertical" size={20} color="#333" />
-          </Pressable>
+
+          <View>
+            <Pressable
+              onPress={toggleDropdown}
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+              <Entypo name="dots-three-vertical" size={20} color="#333" />
+            </Pressable>
+
+            {dropdownVisible && (
+              <Animated.View
+                style={[
+                  styles.dropdown,
+                  {transform: [{translateY: dropdownTranslateY}]},
+                ]}>
+                {isUpdatable && (
+                  <Pressable
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      toggleDropdown();
+                      startUpdate();
+                    }}>
+                    <Text style={styles.dropdownText}>매장 수정</Text>
+                  </Pressable>
+                )}
+                {isUpdatable && (
+                  <Pressable
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      toggleDropdown();
+                      handleStoreInfo();
+                    }}>
+                    <Text style={styles.dropdownText}>매장 통계 조회</Text>
+                  </Pressable>
+                )}
+                {isUpdatable ? (
+                  <Pressable
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      toggleDropdown();
+                      handleReportList();
+                    }}>
+                    <Text style={styles.dropdownText}>매장 신고 조회</Text>
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      toggleDropdown();
+                      handleReport();
+                    }}>
+                    <Text style={styles.dropdownText}>매장 제보·신고</Text>
+                  </Pressable>
+                )}
+              </Animated.View>
+            )}
+          </View>
         </View>
       )}
     </>
@@ -48,7 +133,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 7,
-
     paddingHorizontal: 18,
     justifyContent: 'space-between',
   },
@@ -75,12 +159,29 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Bold',
     color: '#333',
   },
-  updateicons: {},
-  imageStyle: {
-    alignSelf: 'center',
-    width: 20,
-    height: 20,
-    marginLeft: 5,
+  dropdown: {
+    position: 'absolute',
+    top: 25,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    paddingVertical: 5,
+    width: 150,
+    zIndex: 999,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+  dropdownText: {
+    fontSize: 15,
+    color: '#333',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 
