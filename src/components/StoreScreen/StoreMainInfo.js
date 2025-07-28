@@ -19,7 +19,6 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import StoreExtraInfo from './StoreMainInfo/StoreExtraInfo';
 const StoreMainInfo = ({
   storedata = {},
-  onModalOpen,
   isUpdate,
   handleBottomOpen,
   onEditKey,
@@ -29,6 +28,10 @@ const StoreMainInfo = ({
   storeupdatedrink,
   setLoading,
   loading,
+  startUpdate,
+  handleReport,
+  handleReportList,
+  handleStoreInfo,
 }) => {
   const handleEdit = (key, value) => {
     onEditKey(key); // 수정 키와 값을 부모 컴포넌트로 전달
@@ -121,7 +124,11 @@ const StoreMainInfo = ({
         handleEdit={handleEdit}
         storeName={storedata?.name}
         isUpdate={isUpdate}
-        onModalOpen={onModalOpen}
+        startUpdate={startUpdate}
+        handleReport={handleReport}
+        handleReportList={handleReportList}
+        handleStoreInfo={handleStoreInfo}
+        isUpdatable={storedata?.isUpdatable}
       />
 
       <Review

@@ -30,7 +30,6 @@ import StoreAlcoholScreen from './StoreAlcoholScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
 import {StoreMenuget} from '../../api/menuApi';
 import {StoreDrinkget} from '../../api/drinkApi';
-import StoreModal from '../../components/StoreScreen/StoreModal';
 import UpdateHeader from '../../components/StoreScreen/UpdateHeader';
 import BottomSheet from '@gorhom/bottom-sheet';
 import UpdateBottomSheet from '../../components/StoreScreen/UpdateBottomSheet';
@@ -53,7 +52,6 @@ const StoreMainScreen = ({navigation}) => {
 
   const [menus, setMenus] = useState([]);
   const [alcohols, setAlcohols] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedata, setStoredata] = useState('');
   const [scrollY] = useState(new Animated.Value(0));
   const [longitude, setLongitude] = useState('');
@@ -210,10 +208,6 @@ const StoreMainScreen = ({navigation}) => {
   const endUpdate = () => {
     setIsUpdate(false);
     handleBottomClose();
-  };
-
-  const onPressModalClose = () => {
-    setIsModalVisible(false);
   };
 
   const handleBottomOpen = () => {
@@ -429,6 +423,21 @@ const StoreMainScreen = ({navigation}) => {
     }
   };
 
+  const handleStoreInfo = () => {
+    const locationDto = {
+      latitude: latitude,
+      longitude: longitude,
+    };
+    navigation.navigate('StoreStack', {
+      screen: 'ManagerStoreInfoScreen',
+      params: {
+        storeId: storeId,
+        storename: storedata.name,
+        locationDto: locationDto,
+      },
+    });
+  };
+
   return (
     <>
       <View style={{backgroundColor: 'white', flex: 1}}>
@@ -526,7 +535,6 @@ const StoreMainScreen = ({navigation}) => {
 
             <StoreMainInfo
               storedata={storedata}
-              onModalOpen={() => setIsModalVisible(true)}
               navigation={navigation}
               isUpdate={isUpdate}
               endUpdate={endUpdate}
@@ -537,6 +545,10 @@ const StoreMainScreen = ({navigation}) => {
               storeupdatedrink={storeupdatedrink}
               setLoading={setLoading}
               loading={loading}
+              startUpdate={startUpdate}
+              handleReport={handleReport}
+              handleReportList={handleReportList}
+              handleStoreInfo={handleStoreInfo}
             />
             {!isUpdate && (
               <View style={{backgroundColor: '#F2F2F2', height: 20}} />
@@ -638,16 +650,6 @@ const StoreMainScreen = ({navigation}) => {
             });
             setMenuingModalVisible(false);
           }}
-        />
-        <StoreModal
-          isModalVisible={isModalVisible}
-          onPressModalClose={onPressModalClose}
-          storeId={storeId}
-          navigation={navigation}
-          startUpdate={startUpdate}
-          handleReport={handleReport}
-          handleReportList={handleReportList}
-          isUpdatable={storedata?.isUpdatable}
         />
       </View>
       {isUpdate && (
@@ -751,7 +753,7 @@ const styles = StyleSheet.create({
   addImageText: {
     color: '#999',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

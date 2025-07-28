@@ -400,11 +400,6 @@ const MyManager = ({navigation}) => {
                       ]}
                       onPress={() => {
                         closeModal();
-                        // navigation.navigate('ManagerStoreInfoScreen', {
-                        //   storeId: selectedStore.storeId,
-                        //   storename: selectedStore.storeName,
-                        //   locationDto: selectedStore.locationDto,
-                        // });
                         navigation.navigate('StoreStack', {
                           screen: 'ManagerStoreInfoScreen',
                           params: {

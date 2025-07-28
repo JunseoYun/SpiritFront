@@ -38,8 +38,8 @@ const StoreAreastats = ({locationDto}) => {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     period: 'month',
-    latitude: '12.34',
-    longitude: '12.34',
+    latitude: locationDto.latitude,
+    longitude: locationDto.longitude,
     radius: '2',
     gender: '',
     ageGroup: [''],
