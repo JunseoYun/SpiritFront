@@ -477,3 +477,83 @@ export const get_store_share = async storeId => {
     functionError(error);
   }
 };
+
+export const StoreBoardimage = async (data, storeId) => {
+  const formData = new FormData();
+
+  if (data.file) {
+    formData.append('files', {
+      uri: data.file.path,
+      type: data.file.mime,
+      name: data.file.filename,
+    });
+  }
+
+  try {
+    const response = await axiosInstance.post(
+      `/store/upload-board-image/${storeId}?boardType=${data.boardType}`, // 쿼리파라미터로 boardType 포함
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const StoreBoardimageUpdate = async (boardImageId, boardType) => {
+  try {
+    const response = await axiosInstance.put(
+      `/store/update-board-image/type?boardImageId=${boardImageId}&boardType=${boardType}`,
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const DeleteStoreboardImage = async (storeId, images) => {
+  try {
+    const imgUrlList = images
+      .map(img => img.url) // 여기 수정
+      .filter(Boolean); // 혹시 undefined나 null 제거
+
+    if (imgUrlList.length === 0) {
+      return;
+    }
+
+    const response = await axiosInstance.delete(
+      `/store/delete-board-image/${storeId}`,
+      {
+        data: {
+          imgUrlList,
+        },
+      },
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const StoreBoardImageUpdateSort = async (
+  storeId,
+  storeImageUrlInOrderList,
+) => {
+  try {
+    const response = await axiosInstance.put(
+      `/store/update-board-image/sort-order`,
+      {
+        storeId,
+        boardImageUrlInOrderList: storeImageUrlInOrderList,
+      },
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};

@@ -39,7 +39,6 @@ import {useToast} from '../../context/ToastContext';
 import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
-import ImageActionModal from '../../components/StoreScreen/StoreImage/ImageActionModal';
 import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcategorytab';
 
 const StoreMainScreen = ({navigation}) => {
@@ -395,9 +394,6 @@ const StoreMainScreen = ({navigation}) => {
     });
   };
 
-  const [ismenuimgModalVisible, setMenuingModalVisible] = useState(false);
-  const [modalSource, setModalSource] = useState(null);
-
   const [tabY, setTabY] = useState(0);
 
   const onShare = async () => {
@@ -563,13 +559,10 @@ const StoreMainScreen = ({navigation}) => {
 
             {!isUpdate && (
               <StorePriceImage
+                storeId={storeId}
                 isUpdatable={storedata?.isUpdatable}
-                imageList={storedata?.imgUrlList}
+                imageList={storedata?.boardImageDtoList}
                 navigation={navigation}
-                setMenuingModalVisible={visible => {
-                  setModalSource('menu');
-                  setMenuingModalVisible(visible);
-                }}
               />
             )}
 
@@ -601,11 +594,6 @@ const StoreMainScreen = ({navigation}) => {
                     onMenuDelete={handleMenuDelete}
                     isUpdatable={storedata?.isUpdatable}
                     onMenuUpdateComplete={refreshMenus}
-                    ismenuimgModalVisible={ismenuimgModalVisible}
-                    setMenuingModalVisible={visible => {
-                      setModalSource('menu');
-                      setMenuingModalVisible(visible);
-                    }}
                     images={imageSliderData}
                   />
                 )}
@@ -623,34 +611,12 @@ const StoreMainScreen = ({navigation}) => {
                     onScrollTo={scrollToHandler}
                     sectionPositions={sectionPositions}
                     setSectionPositions={setSectionPositions}
-                    ismenuimgModalVisible={ismenuimgModalVisible}
-                    setMenuingModalVisible={visible => {
-                      setModalSource('alcohol');
-                      setMenuingModalVisible(visible);
-                    }}
                   />
                 )}
               </>
             )}
           </ScrollView>
         </KeyboardAvoidingView>
-        <ImageActionModal
-          visible={ismenuimgModalVisible}
-          navigation={navigation}
-          onClose={() => setMenuingModalVisible(false)}
-          onEdit={() => {
-            navigation.navigate('InfoImageEditScreen', {
-              storeId,
-            });
-            setMenuingModalVisible(false);
-          }}
-          onSort={() => {
-            navigation.navigate('InfoImageReorderScreen', {
-              storeId,
-            });
-            setMenuingModalVisible(false);
-          }}
-        />
       </View>
       {isUpdate && (
         <View style={styles.endUpdateButton}>
