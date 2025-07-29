@@ -58,13 +58,17 @@ const MainScreen = ({navigation}) => {
   const {showToast} = useToast();
 
   useEffect(() => {
-    navigation.setParams({
-      scrollToTop: () => {
-        if (scrollRef.current) {
-          scrollRef.current.scrollTo({y: 0, animated: true}); // ✅ getNode 제거
-        }
-      },
-    });
+    const timer = setTimeout(() => {
+      if (scrollRef.current) {
+        navigation.setParams({
+          scrollToTop: () => {
+            scrollRef.current.scrollTo({y: 0, animated: true});
+          },
+        });
+      }
+    }, 300); // 컴포넌트가 모두 렌더된 뒤 실행
+
+    return () => clearTimeout(timer);
   }, [navigation]);
 
   useEffect(() => {
