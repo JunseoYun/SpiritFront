@@ -21,8 +21,9 @@ const DraggableImageItem = ({
   index,
   isActive,
   drag,
-  toggleBoardTypeServerImage,
-  removeServerImage,
+  toggleBoardTypeImage,
+  // removeServerImage,
+  removeLocalImage,
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
@@ -65,14 +66,18 @@ const DraggableImageItem = ({
         },
       ]}>
       <View style={styles.imageWrapper}>
-        <Image source={{uri: item.url}} style={styles.image} />
+        <Image
+          source={{uri: item.isNew ? item.path : item.url}}
+          style={styles.image}
+        />
+
         <View style={styles.buttonGroup}>
           <Pressable
             style={[
               styles.menuTypeButton,
               item.boardType === 'MENU' && styles.selectedButton,
             ]}
-            onPress={() => toggleBoardTypeServerImage(index, 'MENU')}>
+            onPress={() => toggleBoardTypeImage(item, 'MENU')}>
             <Text
               style={[
                 styles.menuTypeText,
@@ -87,7 +92,7 @@ const DraggableImageItem = ({
               styles.menuTypeButton,
               item.boardType === 'DRINK' && styles.selectedButton,
             ]}
-            onPress={() => toggleBoardTypeServerImage(index, 'DRINK')}>
+            onPress={() => toggleBoardTypeImage(item, 'DRINK')}>
             <Text
               style={[
                 styles.menuTypeText,
@@ -105,7 +110,7 @@ const DraggableImageItem = ({
           height: IMAGE_HEIGHT - 20,
         }}>
         <TouchableOpacity
-          onPress={() => removeServerImage(index)}
+          onPress={() => removeLocalImage(item)}
           style={[styles.removeButton, styles.shadowEffect]}>
           <Ionicons name="trash-outline" size={30} color="#999" />
         </TouchableOpacity>

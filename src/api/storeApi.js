@@ -478,20 +478,20 @@ export const get_store_share = async storeId => {
   }
 };
 
-export const StoreBoardimage = async (data, storeId) => {
+export const StoreBoardimage = async ({files, boardType}, storeId) => {
   const formData = new FormData();
 
-  if (data.file) {
+  files.forEach(file => {
     formData.append('files', {
-      uri: data.file.path,
-      type: data.file.mime,
-      name: data.file.filename,
+      uri: file.path,
+      type: file.mime,
+      name: file.filename,
     });
-  }
+  });
 
   try {
     const response = await axiosInstance.post(
-      `/store/upload-board-image/${storeId}?boardType=${data.boardType}`, // 쿼리파라미터로 boardType 포함
+      `/store/upload-board-image/${storeId}?boardType=${boardType}`,
       formData,
       {
         headers: {
@@ -499,6 +499,7 @@ export const StoreBoardimage = async (data, storeId) => {
         },
       },
     );
+
     return response.data.data;
   } catch (error) {
     functionError(error);

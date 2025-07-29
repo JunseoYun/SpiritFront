@@ -1,4 +1,5 @@
 import React, {useEffect, useState, useCallback, useRef} from 'react';
+
 import {
   View,
   Text,
@@ -37,15 +38,18 @@ const IMAGE_WIDTH = width - 120;
 const IMAGE_HEIGHT = (IMAGE_WIDTH * 3) / 4;
 
 const InfoImageEditScreen = ({navigation, route}) => {
-  const {storeId, Source, imgList} = route.params;
+  const {storeId, imgList} = route.params;
+
   const {showAlert, AlertComponent} = useCustomAlert();
-  const [serverImages, setServerImages] = useState([]);
+  const [localImages, setLocalImages] = useState([]);
   const [deletedImages, setDeletedImages] = useState([]);
+  const [originalImages, setOriginalImages] = useState([]); // 최초 받아온 서버 이미지 (초기 상태)
   const [loading, setLoading] = useState(false);
   const [loadingimg, setLoadingimg] = useState(false);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const {showToast} = useToast();
-  const [isOrderChanged, setIsOrderChanged] = useState(false);
+
+  const lastBackPressed = useRef(0);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoadingimg(true), 500);
@@ -54,58 +58,54 @@ const InfoImageEditScreen = ({navigation, route}) => {
 
   useEffect(() => {
     if (Array.isArray(imgList)) {
-      setServerImages(
-        imgList.map(img => ({
-          ...img,
-          initialBoardType: img.boardType, // 초기 상태 저장
-        })),
-      );
-    } else {
-      setServerImages([]);
+      const enriched = imgList.map(img => ({
+        ...img,
+        localId: img.id || `${Date.now()}-${Math.random()}`, // 구분자
+        isNew: false,
+      }));
+      setLocalImages(enriched);
+      setOriginalImages(enriched);
     }
   }, [imgList]);
+
+  const addImages = newImages => {
+    const enriched = newImages.map(image => ({
+      ...image,
+      localId: `${Date.now()}-${Math.random()}`,
+      isNew: true,
+      boardType: 'MENU',
+    }));
+    setLocalImages(prev => [...prev, ...enriched]);
+  };
+
+  const removeLocalImage = image => {
+    setLocalImages(prev => prev.filter(img => img.localId !== image.localId));
+
+    if (!image.isNew) {
+      setDeletedImages(prev => [...prev, image]);
+    }
+  };
 
   const handleCameraPick = async () => {
     const hasCamera = await requestCameraPermission();
     if (!hasCamera) return;
 
-    setLoading(true);
     try {
       const image = await ImagePicker.openCamera({
-        width: 1024,
-        height: 768,
         cropping: true,
         mediaType: 'photo',
         quality: 1,
       });
 
-      const data = {
-        file: {
-          path: image.path,
-          mime: image.mime,
-          filename: image.filename || image.path.split('/').pop(),
-        },
-        boardType: 'MENU',
+      const picked = {
+        path: image.path,
+        mime: image.mime,
+        filename: image.filename || image.path.split('/').pop(),
       };
-
-      console.log(data);
-
-      const response = await StoreBoardimage(data, storeId);
-
-      console.log(response);
-
-      const enriched = response.map(img => ({
-        ...img,
-        initialBoardType: img.boardType,
-      }));
-
-      setServerImages(enriched);
-
-      showToast('이미지 추가 완료');
-    } catch (er) {
-      showToast('추가 실패 다시 시도해주세요');
-    } finally {
-      setLoading(false);
+      addImages([picked]);
+      showToast('이미지를 추가했습니다');
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -113,7 +113,6 @@ const InfoImageEditScreen = ({navigation, route}) => {
     const hasPermission = await requestPhotoPermission();
     if (!hasPermission) return;
 
-    setLoading(true);
     try {
       const images = await ImagePicker.openPicker({
         multiple: true,
@@ -121,50 +120,35 @@ const InfoImageEditScreen = ({navigation, route}) => {
         compressImageQuality: 1,
         maxFiles: 20,
       });
-      let mergedImages = [];
-
-      for (const image of images) {
-        const data = {
-          file: {
-            path: image.path,
-            mime: image.mime,
-            filename: image.filename || image.path.split('/').pop(),
-          },
-          boardType: 'MENU',
-        };
-
-        const response = await StoreBoardimage(data, storeId);
-        mergedImages = response; // 서버에서 항상 전체 이미지 배열을 줌 (최신 상태)
-      }
-
-      const enriched = mergedImages.map(img => ({
-        ...img,
-        initialBoardType: img.boardType,
+      // let mergedImages = [];
+      const picked = images.map(image => ({
+        path: image.path,
+        mime: image.mime,
+        filename: image.filename || image.path.split('/').pop(),
       }));
-
-      setServerImages(enriched);
-      showToast('모든 이미지 추가 및 업로드 완료');
-    } catch (er) {
-      showToast('추가 실패 다시 시도해주세요');
-    } finally {
-      setLoading(false);
-    }
+      addImages(picked);
+      showToast('이미지를 추가했습니다');
+    } catch (er) {}
   };
 
-  const toggleBoardTypeServerImage = index => {
-    setServerImages(prev =>
-      prev.map((item, idx) =>
-        idx === index
-          ? {...item, boardType: item.boardType === 'MENU' ? 'DRINK' : 'MENU'}
-          : item,
-      ),
+  const toggleBoardTypeImage = (targetItem, boardType) => {
+    const idToFind = targetItem.isNew ? targetItem.localId : targetItem.id;
+
+    setLocalImages(prev =>
+      prev.map(item => {
+        const currentId = item.isNew ? item.localId : item.id;
+        if (currentId === idToFind) {
+          return {...item, boardType};
+        }
+        return item;
+      }),
     );
   };
 
   // stable sort by boardType
   const sortByBoardTypeStable = type => {
-    if (!serverImages.length) return;
-    const indexedList = serverImages.map((item, idx) => ({
+    if (!localImages.length) return;
+    const indexedList = localImages.map((item, idx) => ({
       ...item,
       originalIndex: idx,
     }));
@@ -176,106 +160,9 @@ const InfoImageEditScreen = ({navigation, route}) => {
       return a.originalIndex - b.originalIndex;
     });
 
-    setServerImages(sorted);
-    setIsOrderChanged(true);
+    setLocalImages(sorted);
   };
 
-  // boardType 변경 여부 확인
-  const isBoardTypeChanged = () =>
-    serverImages.some(img => img.boardType !== img.initialBoardType);
-
-  const saveChanges = async () => {
-    setLoading(true);
-    try {
-      // boardType 변경된 항목만 골라서 업데이트
-      const changedBoardTypes = serverImages.filter(
-        img => img.boardType !== img.initialBoardType,
-      );
-      if (changedBoardTypes.length) {
-        await Promise.all(
-          changedBoardTypes.map(img =>
-            StoreBoardimageUpdate(img.id, img.boardType),
-          ),
-        );
-      }
-
-      // 순서 변경 저장
-      if (isOrderChanged) {
-        await StoreBoardImageUpdateSort(
-          storeId,
-          serverImages.map(img => img.url),
-        );
-      }
-
-      showToast('저장 완료');
-      setIsOrderChanged(false);
-
-      // 저장 완료 후 기준값 갱신
-      setServerImages(prev =>
-        prev.map(img => ({
-          ...img,
-          initialBoardType: img.boardType,
-        })),
-      );
-    } catch (e) {
-      showToast('저장 실패 다시 시도해주세요.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 이미지 추가 전 저장 확인
-  const selectImage = () => {
-    if (isOrderChanged || isBoardTypeChanged()) {
-      showAlert({
-        title: '변경사항이 저장되지 않았습니다',
-        message: '저장 후 이미지를 추가하시겠습니까?',
-        type: 'confirm',
-        onConfirm: saveChanges,
-      });
-    } else {
-      setBottomSheetVisible(true);
-    }
-  };
-
-  const removeServerImage = index => {
-    if (isOrderChanged || isBoardTypeChanged()) {
-      showAlert({
-        title: '변경사항이 저장되지 않았습니다',
-        message: '저장 후 이미지를 삭제하시겠습니까?',
-        type: 'confirm',
-        onConfirm: saveChanges,
-      });
-    } else {
-      showAlert({
-        title: '이미지를 삭제하시겠습니까?',
-        type: 'confirm',
-        onConfirm: () => deleteimg(index),
-      });
-    }
-  };
-
-  // 이미지 삭제 처리
-  const deleteimg = async index => {
-    setLoading(true);
-    try {
-      const imageToRemove = serverImages[index];
-      const response = await DeleteStoreboardImage(storeId, [imageToRemove]);
-      const enriched = response.map(img => ({
-        ...img,
-        initialBoardType: img.boardType,
-      }));
-
-      setServerImages(enriched);
-      showToast('이미지가 삭제 되었습니다.');
-    } catch (error) {
-      showToast('삭제 실패 다시 시도해주세요');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const lastBackPressed = useRef(0);
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -286,6 +173,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
         }
 
         lastBackPressed.current = now;
+
         ToastAndroid.show(
           '한 번 더 누르면 작성한 내용이 사라집니다.',
           ToastAndroid.SHORT,
@@ -302,48 +190,146 @@ const InfoImageEditScreen = ({navigation, route}) => {
     }, [navigation]),
   );
 
+  const isOrderChanged = () => {
+    // 기존 이미지 중 isNew false만 대상으로 함
+    const localOrder = localImages.filter(img => !img.isNew).map(img => img.id);
+
+    const originalOrder = originalImages.map(img => img.id);
+
+    if (localOrder.length !== originalOrder.length) return true;
+
+    for (let i = 0; i < localOrder.length; i++) {
+      if (localOrder[i] !== originalOrder[i]) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   const handleSave = async () => {
+    const newImages = localImages.filter(img => img.isNew);
+    const hasNewImages = newImages.length > 0;
+    const changedBoardTypes = localImages.filter(img => {
+      if (img.isNew) return false;
+      const original = originalImages.find(o => o.id === img.id);
+      return original && original.boardType !== img.boardType;
+    });
+
     try {
       setLoading(true);
-      if (isOrderChanged || isBoardTypeChanged()) {
-        await saveChanges();
+
+      // 삭제된 이미지 처리
+      if (deletedImages.length > 0) {
+        await DeleteStoreboardImage(storeId, deletedImages);
       }
-      showToast('이미지 저장이 완료되었습니다.');
+
+      let updatedLocalImages = [...localImages];
+
+      // 새 이미지 업로드
+      if (hasNewImages) {
+        const groupedByBoardType = newImages.reduce((acc, img) => {
+          const {boardType} = img;
+          if (!acc[boardType]) acc[boardType] = [];
+          acc[boardType].push(img);
+          return acc;
+        }, {});
+
+        const uploadResponses = await Promise.all(
+          Object.entries(groupedByBoardType).map(([boardType, images]) =>
+            StoreBoardimage({files: images, boardType}, storeId),
+          ),
+        );
+
+        const uploadedList = uploadResponses.flat();
+
+        // 서버 응답 기반으로 localImages 업데이트
+        updatedLocalImages = localImages.map(localImg => {
+          if (!localImg.isNew) return localImg;
+
+          const match = uploadedList.find(uploaded =>
+            uploaded.url.includes(localImg.filename),
+          );
+
+          return match
+            ? {
+                ...localImg,
+                id: match.id,
+                url: match.url,
+                isNew: false,
+              }
+            : localImg;
+        });
+
+        // 상태 반영 (시각적 UI용)
+        setLocalImages(updatedLocalImages);
+      }
+
+      // boardType 변경된 이미지 처리
+      if (changedBoardTypes.length > 0) {
+        await Promise.all(
+          changedBoardTypes.map(img =>
+            StoreBoardimageUpdate(img.id, img.boardType),
+          ),
+        );
+      }
+
+      // 순서 변경 처리 (업로드 후 기준 정렬 필요)
+      const orderedURLs = updatedLocalImages
+        .filter(img => !img.isNew)
+        .map(img => img.url);
+
+      if (orderedURLs.length > 0) {
+        await StoreBoardImageUpdateSort(storeId, orderedURLs);
+      }
+
       navigation.goBack();
     } catch (error) {
-      showToast('저장 실패 다시 시도해주세요');
+      console.error('handleSave 에러:', error);
     } finally {
       setDeletedImages([]);
-      setServerImages([]);
       setLoading(false);
-      setIsOrderChanged(false);
     }
   };
-  const handleCancel = () => {
-    showAlert({
-      title: '작성한 내용이 저장되지 않았습니다',
-      message: '메뉴판 편집을 취소하시겠습니까?',
-      onConfirm: () => {
-        setDeletedImages([]);
-        setServerImages([]);
-        navigation.goBack();
-      },
-      type: 'confirm',
+
+  const hasChanges = () => {
+    const newImages = localImages.filter(img => img.isNew);
+    const changedBoardTypes = localImages.some(img => {
+      if (img.isNew) return false;
+      const original = originalImages.find(o => o.id === img.id);
+      return original && original.boardType !== img.boardType;
     });
+    const orderChanged = isOrderChanged();
+    const deletedExists = deletedImages.length > 0;
+
+    return (
+      newImages.length > 0 || changedBoardTypes || orderChanged || deletedExists
+    );
+  };
+
+  const handleCancel = () => {
+    if (hasChanges()) {
+      showAlert({
+        title: '작성한 내용이 저장되지 않았습니다',
+        message: '메뉴판 편집을 취소하시겠습니까?',
+        onConfirm: () => {
+          setDeletedImages([]);
+          setLocalImages([]);
+          navigation.goBack();
+        },
+        type: 'confirm',
+      });
+    } else {
+      // 변경사항 없으면 바로 뒤로가기
+      navigation.goBack();
+    }
   };
 
   const previousOrderRef = useRef([]);
 
-  useEffect(() => {
-    if (serverImages.length) {
-      previousOrderRef.current = serverImages.map(img => img.id);
-    }
-  }, [serverImages]);
-
   const onDragEnd = ({data}) => {
-    setServerImages(data);
+    setLocalImages(data);
 
-    const currentOrder = data.map(img => img.id);
+    const currentOrder = data.map(img => (img.isNew ? img.localId : img.id));
     const prevOrder = previousOrderRef.current;
 
     if (currentOrder.length !== prevOrder.length) {
@@ -357,20 +343,18 @@ const InfoImageEditScreen = ({navigation, route}) => {
         break;
       }
     }
-
-    setIsOrderChanged(isChanged);
   };
 
-  const renderItem = ({item, drag, isActive}) => {
-    const index = serverImages.findIndex(i => i.url === item.url);
+  const renderItem = ({item, drag, isActive, index}) => {
     return (
       <DraggableImageItem
         item={item}
         index={index}
         isActive={isActive}
         drag={drag}
-        toggleBoardTypeServerImage={toggleBoardTypeServerImage}
-        removeServerImage={removeServerImage}
+        toggleBoardTypeImage={toggleBoardTypeImage}
+        // removeServerImage={removeServerImage}
+        removeLocalImage={removeLocalImage}
       />
     );
   };
@@ -386,7 +370,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
 
       <View style={styles.listWrapper}>
         <DraggableFlatList
-          data={serverImages}
+          data={localImages}
           onDragEnd={({data}) => onDragEnd({data})}
           keyExtractor={(item, index) =>
             item.id ? `${item.id}` : `${item.url}-${index}`
@@ -413,7 +397,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
             <>
               <TouchableOpacity
                 style={styles.addImageBox}
-                onPress={selectImage}>
+                onPress={() => setBottomSheetVisible(true)}>
                 <MaterialCommunityIcons name="plus" size={30} color="#999" />
               </TouchableOpacity>
               <ImagePickermodal
