@@ -297,12 +297,12 @@ const styles = StyleSheet.create({
   headerButton: {
     marginRight: 18,
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     marginHorizontal: 20,
     marginVertical: 10,
     color: '#333',
@@ -318,7 +318,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
   },
-  certificateButtonText: {color: '#fff', fontSize: 16, fontWeight: '600'},
+  certificateButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+  },
   certificateImage: {width: '100%', height: 200, marginTop: 10},
   instructionsContainer: {
     backgroundColor: '#f1f1f1',
@@ -343,7 +347,7 @@ const styles = StyleSheet.create({
   },
   storeAddText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
 });
