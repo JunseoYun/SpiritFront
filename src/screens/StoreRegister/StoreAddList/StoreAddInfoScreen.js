@@ -494,13 +494,13 @@ const styles = StyleSheet.create({
     marginTop: 30,
     marginHorizontal: 18,
     color: '#333',
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 20,
   },
   nextButton: {
     marginRight: 18,
     fontSize: 19,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },
 
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
   },
   storeAddText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
 });

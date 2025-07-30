@@ -1,4 +1,10 @@
-import React, {useEffect, useState, useCallback, useRef} from 'react';
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from 'react';
 
 import {
   View,
@@ -10,6 +16,7 @@ import {
   BackHandler,
   ToastAndroid,
   SafeAreaView,
+  Animated,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -47,6 +54,12 @@ const InfoImageEditScreen = ({navigation, route}) => {
   const [loading, setLoading] = useState(false);
   const [loadingimg, setLoadingimg] = useState(false);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [checkDelete, setCheckDelete] = useState(false);
+  const [selectedForDelete, setSelectedForDelete] = useState([]);
+
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const dropdownAnim = useRef(new Animated.Value(0)).current;
+
   const {showToast} = useToast();
 
   const lastBackPressed = useRef(0);
@@ -64,9 +77,29 @@ const InfoImageEditScreen = ({navigation, route}) => {
         isNew: false,
       }));
       setLocalImages(enriched);
-      setOriginalImages(enriched);
+      setOriginalImages(JSON.parse(JSON.stringify(enriched)));
     }
   }, [imgList]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={toggleDropdown}
+          hitSlop={10}
+          style={{paddingHorizontal: 16, justifyContent: 'center'}}>
+          <Text
+            style={{
+              color: '#121212',
+              fontFamily: 'Pretendard-Medium',
+              fontSize: 17,
+            }}>
+            도구
+          </Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, toggleDropdown, dropdownVisible]);
 
   const addImages = newImages => {
     const enriched = newImages.map(image => ({
@@ -120,15 +153,55 @@ const InfoImageEditScreen = ({navigation, route}) => {
         compressImageQuality: 1,
         maxFiles: 20,
       });
-      // let mergedImages = [];
+
       const picked = images.map(image => ({
         path: image.path,
         mime: image.mime,
         filename: image.filename || image.path.split('/').pop(),
       }));
-      addImages(picked);
-      showToast('이미지를 추가했습니다');
-    } catch (er) {}
+
+      const existingUrls = localImages
+        .filter(img => img.url)
+        .map(img => img.url.toLowerCase());
+
+      const existingFilenames = localImages
+        .map(img => img.filename?.toLowerCase?.())
+        .filter(Boolean);
+
+      const {unique, duplicated} = picked.reduce(
+        (acc, pick) => {
+          const filename = pick.filename?.toLowerCase();
+          if (!filename) {
+            acc.unique.push(pick);
+            return acc;
+          }
+
+          const isDuplicated =
+            existingUrls.some(url => url.includes(filename)) ||
+            existingFilenames.includes(filename);
+
+          if (isDuplicated) {
+            acc.duplicated.push(pick);
+          } else {
+            acc.unique.push(pick);
+          }
+
+          return acc;
+        },
+        {unique: [], duplicated: []},
+      );
+
+      if (unique.length > 0) {
+        addImages(unique);
+        showToast(`${unique.length}개의 이미지가 추가되었습니다`);
+      }
+
+      if (duplicated.length > 0) {
+        showToast(`${duplicated.length}개의 이미지는 이미 추가된 상태입니다`);
+      }
+    } catch (er) {
+      console.warn(er);
+    }
   };
 
   const toggleBoardTypeImage = (targetItem, boardType) => {
@@ -234,11 +307,24 @@ const InfoImageEditScreen = ({navigation, route}) => {
           return acc;
         }, {});
 
-        const uploadResponses = await Promise.all(
-          Object.entries(groupedByBoardType).map(([boardType, images]) =>
-            StoreBoardimage({files: images, boardType}, storeId),
-          ),
-        );
+        const uploadResponses = [];
+
+        for (const [boardType, images] of Object.entries(groupedByBoardType)) {
+          try {
+            // 같은 boardType 이미지들은 한 번에 업로드
+            const response = await StoreBoardimage(
+              {files: images, boardType},
+              storeId,
+            );
+            uploadResponses.push(...response);
+          } catch (error) {
+            console.error(
+              `Error uploading images for boardType ${boardType}:`,
+              error,
+            );
+            // 필요하면 에러 처리 추가
+          }
+        }
 
         const uploadedList = uploadResponses.flat();
 
@@ -336,7 +422,6 @@ const InfoImageEditScreen = ({navigation, route}) => {
       return;
     }
 
-    let isChanged = false;
     for (let i = 0; i < currentOrder.length; i++) {
       if (currentOrder[i] !== prevOrder[i]) {
         isChanged = true;
@@ -344,6 +429,82 @@ const InfoImageEditScreen = ({navigation, route}) => {
       }
     }
   };
+
+  const reset = () => {
+    showAlert({
+      title: '변경 전 초기화',
+      message: '변경 전으로 초기화 하시겠습니까?',
+      onConfirm: () => {
+        setLocalImages(JSON.parse(JSON.stringify(originalImages)));
+        setDeletedImages([]);
+        toggleDropdown();
+      },
+      type: 'confirm',
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedForDelete.length === 0) {
+      showToast('삭제할 이미지를 선택해주세요.');
+      return;
+    }
+
+    showAlert({
+      title: '선택한 이미지를 삭제할까요?',
+      message: `${selectedForDelete.length}개의 이미지가 삭제됩니다.`,
+      type: 'delete',
+      onConfirm: () => {
+        setLocalImages(prev =>
+          prev.filter(img => {
+            const id = img.isNew ? img.localId : img.id;
+            const shouldDelete = selectedForDelete.includes(id);
+            if (!img.isNew && shouldDelete) {
+              setDeletedImages(deleted => [...deleted, img]);
+            }
+            return !shouldDelete;
+          }),
+        );
+
+        // 초기화
+        setSelectedForDelete([]);
+        setCheckDelete(false);
+        if (dropdownVisible) {
+          toggleDropdown();
+        }
+        showToast('선택한 이미지가 삭제되었습니다.');
+      },
+    });
+  };
+
+  const cancelSelectDelete = () => {
+    setSelectedForDelete([]);
+    setCheckDelete(false);
+    if (dropdownVisible) {
+      toggleDropdown();
+    }
+  };
+
+  const toggleDropdown = () => {
+    if (dropdownVisible) {
+      Animated.timing(dropdownAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setDropdownVisible(false));
+    } else {
+      setDropdownVisible(true);
+      Animated.timing(dropdownAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
+
+  const dropdownTranslateY = dropdownAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-5, 0],
+  });
 
   const renderItem = ({item, drag, isActive, index}) => {
     return (
@@ -355,19 +516,82 @@ const InfoImageEditScreen = ({navigation, route}) => {
         toggleBoardTypeImage={toggleBoardTypeImage}
         // removeServerImage={removeServerImage}
         removeLocalImage={removeLocalImage}
+        checkDelete={checkDelete}
+        selectedForDelete={selectedForDelete}
+        setSelectedForDelete={setSelectedForDelete}
       />
     );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Ionicons name="reorder-three-outline" size={24} color="#999" />
-        <Text style={styles.headerText}>
-          아이콘을 꾹 눌러 원하는 순서로 바꿔보세요
-        </Text>
-      </View>
+      {dropdownVisible && (
+        <Animated.View
+          style={[
+            styles.dropdown,
+            {transform: [{translateY: dropdownTranslateY}]},
+          ]}>
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => {
+              toggleDropdown();
+              sortByBoardTypeStable('MENU');
+            }}>
+            <Text style={styles.dropdownText}>메뉴 우선 정렬</Text>
+          </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => {
+              toggleDropdown();
+              sortByBoardTypeStable('DRINK');
+            }}>
+            <Text style={styles.dropdownText}>주류 우선 정렬</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => {
+              if (!checkDelete) {
+                setCheckDelete(true);
+                toggleDropdown();
+              } else {
+                cancelSelectDelete(); // 이미 checkDelete 상태일 경우 삭제 시도
+              }
+            }}>
+            <Text style={styles.dropdownText}>
+              {checkDelete ? '선택 삭제 취소' : '선택 삭제'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.dropdownItem} onPress={reset}>
+            <Text style={styles.dropdownText}>초기화</Text>
+          </TouchableOpacity>
+          {/* 필요한 기능 더 추가 가능 */}
+        </Animated.View>
+      )}
+      {checkDelete ? (
+        <View style={[styles.header]}>
+          <Text
+            style={[
+              styles.headerText,
+              {
+                color: selectedForDelete.length === 0 ? '#999' : '#333',
+              },
+            ]}>
+            {selectedForDelete.length === 0
+              ? '삭제할 사진을 선택해주세요'
+              : `${selectedForDelete.length}장의 사진이 선택되었어요`}
+          </Text>
+        </View>
+      ) : (
+        <View style={styles.header}>
+          {/* <Ionicons name="reorder-three-outline" size={24} color="#999" /> */}
+          <Text style={styles.headerText}>
+            사진을 꾹 눌러 원하는 순서로 바꿔보세요
+          </Text>
+        </View>
+      )}
+      <View style={styles.btnheader}></View>
       <View style={styles.listWrapper}>
         <DraggableFlatList
           data={localImages}
@@ -375,31 +599,30 @@ const InfoImageEditScreen = ({navigation, route}) => {
           keyExtractor={(item, index) =>
             item.id ? `${item.id}` : `${item.url}-${index}`
           }
+          onScrollBeginDrag={() => {
+            if (dropdownVisible) {
+              toggleDropdown();
+            }
+          }}
           renderItem={renderItem}
           activationDistance={Platform.OS === 'ios' ? 10 : 20}
           scrollPercent={5}
-          contentContainerStyle={{paddingBottom: 100}}
-          ListHeaderComponent={
-            <View style={styles.btnheader}>
-              <TouchableOpacity
-                style={styles.btnview}
-                onPress={() => sortByBoardTypeStable('MENU')}>
-                <Text style={styles.btnheaderText}>메뉴 우선 정렬</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.btnview}
-                onPress={() => sortByBoardTypeStable('DRINK')}>
-                <Text style={styles.btnheaderText}>주류 우선 정렬</Text>
-              </TouchableOpacity>
-            </View>
-          }
+          contentContainerStyle={{paddingBottom: 0}}
           ListFooterComponent={
             <>
-              <TouchableOpacity
-                style={styles.addImageBox}
-                onPress={() => setBottomSheetVisible(true)}>
-                <MaterialCommunityIcons name="plus" size={30} color="#999" />
-              </TouchableOpacity>
+              {!checkDelete && (
+                <TouchableOpacity
+                  style={styles.addImageBox}
+                  onPress={() => {
+                    setBottomSheetVisible(true);
+                    if (dropdownVisible) {
+                      toggleDropdown();
+                    }
+                  }}>
+                  <MaterialCommunityIcons name="plus" size={30} color="#999" />
+                </TouchableOpacity>
+              )}
+
               <ImagePickermodal
                 isBottomSheetVisible={isBottomSheetVisible}
                 setBottomSheetVisible={setBottomSheetVisible}
@@ -412,12 +635,32 @@ const InfoImageEditScreen = ({navigation, route}) => {
       </View>
 
       <View
+        View
         style={{
           paddingHorizontal: 18,
-          paddingBottom: 18,
+          paddingBottom: Platform.OS === 'ios' ? 7 : 18,
           backgroundColor: '#fff',
+          ...Platform.select({
+            ios: {
+              shadowColor: '#000',
+              shadowOffset: {width: 0, height: -8}, // 위쪽 그림자
+              shadowOpacity: 0.03,
+              shadowRadius: 4,
+            },
+            android: {
+              elevation: 8, // 안드로이드는 이거 하나면 됨
+            },
+          }),
         }}>
-        <ActionButtons onCancel={handleCancel} onSave={handleSave} />
+        {checkDelete ? (
+          <ActionButtons
+            onCancel={cancelSelectDelete}
+            onSave={handleDeleteSelected}
+            option="delete"
+          />
+        ) : (
+          <ActionButtons onCancel={handleCancel} onSave={handleSave} />
+        )}
       </View>
 
       <AlertComponent />
@@ -438,7 +681,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   headerText: {
-    fontFamily: 'Pretendard-Regular',
+    fontFamily: 'Pretendard-Medium',
     color: '#333',
     fontSize: 15,
     marginLeft: 3,
@@ -447,20 +690,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    gap: 20,
-  },
-  btnview: {
-    borderWidth: 1,
-    borderColor: '#45C9FF',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 7,
-    marginBottom: 5,
-  },
-  btnheaderText: {
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
-    fontSize: 15,
+    flexWrap: 'wrap',
   },
   listWrapper: {
     flex: 1,
@@ -540,10 +770,34 @@ const styles = StyleSheet.create({
     height: IMAGE_HEIGHT,
     marginBottom: Platform.OS === 'ios' ? 70 : 40,
   },
-  dragIcon: {},
   removeButton: {
     position: 'absolute',
     top: 7,
+  },
+  dropdown: {
+    position: 'absolute',
+    top: 3, // 부가기능 버튼 아래 위치 조절
+    right: 6, // 버튼 padding 맞춰 위치 조절
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    paddingVertical: 5,
+    width: 150,
+    zIndex: 999,
+    // flexDirection: 'column', 기본값이라 생략 가능
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+  dropdownText: {
+    fontSize: 15,
+    color: '#333',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 
