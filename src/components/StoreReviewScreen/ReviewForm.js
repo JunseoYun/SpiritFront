@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
   Keyboard,
   ScrollView,
   TouchableWithoutFeedback,
+  ToastAndroid,
+  BackHandler,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DatePicker from 'react-native-date-picker';
@@ -17,6 +19,7 @@ import forbiddenWords from '../../hooks/forbiddenWords';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useFocusEffect} from '@react-navigation/native';
 const rateTextMap = {
   0: '어땠나요?',
   1: '별로예요',
@@ -77,6 +80,35 @@ const ReviewForm = ({
       handleSubmitReview();
     }
   };
+
+  const lastBackPressed = useRef(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        const now = Date.now();
+
+        if (now - lastBackPressed.current < 2000) {
+          hadleNoWrite();
+          return true;
+        }
+
+        lastBackPressed.current = now;
+        ToastAndroid.show(
+          '한 번 더 누르면 작성한 내용이 사라집니다.',
+          ToastAndroid.SHORT,
+        );
+        return true; // 기본 동작 막기
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove(); // cleanup
+    }, []),
+  );
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>

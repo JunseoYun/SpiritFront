@@ -10,6 +10,7 @@ import {
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
 import FastImage from 'react-native-fast-image';
+import TodayRecommItemSkeleton from './TodayRecommItemSkeleton';
 
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
@@ -21,6 +22,7 @@ const TodayRecomm = ({
   recommStores,
   location,
   navigation,
+  loading,
   refresh,
 }) => {
   const {translateCategory} = useCategoryTranslation();
@@ -103,78 +105,84 @@ const TodayRecomm = ({
 
   return (
     <>
-      <View style={styles.todayPhrasesView}>
-        <Text style={styles.todayReason}>{recommReason}</Text>
-      </View>
+      {loading || refresh ? (
+        <TodayRecommItemSkeleton />
+      ) : (
+        <>
+          <View style={styles.todayPhrasesView}>
+            <Text style={styles.todayReason}>{recommReason}</Text>
+          </View>
 
-      {recommStores && (
-        <FlatList
-          ref={listRef}
-          key={recommStores.length}
-          data={extendedStores}
-          horizontal
-          keyExtractor={(item, index) => index.toString()}
-          showsHorizontalScrollIndicator={false}
-          removeClippedSubviews={false}
-          contentContainerStyle={[
-            styles.scrollContainer,
-            recommStores.length < 3 && styles.centeredListContainer,
-          ]}
-          snapToAlignment="center"
-          snapToInterval={
-            recommStores.length === 2
-              ? ITEM_WIDTH + SPACING + SPACING
-              : ITEM_WIDTH + SPACING
-          }
-          decelerationRate={0.8}
-          onScroll={handleScroll} // 실시간으로 점 업데이트
-          onMomentumScrollEnd={
-            recommStores.length >= 3 ? handleScrollEnd : undefined
-          } // 가게 3개 이상일 때만 무한 스크롤 적용
-          getItemLayout={(data, index) => ({
-            length: ITEM_WIDTH + SPACING,
-            offset: (ITEM_WIDTH + SPACING) * index,
-            index,
-          })}
-          renderItem={({item, index}) => (
-            <View key={index} style={[styles.slideItem]}>
-              <TodayRecommItem
-                store={item}
-                category={koreanCategory}
-                location={location}
-                navigation={navigation}
+          {recommStores && (
+            <FlatList
+              ref={listRef}
+              key={recommStores.length}
+              data={extendedStores}
+              horizontal
+              keyExtractor={(item, index) => index.toString()}
+              showsHorizontalScrollIndicator={false}
+              removeClippedSubviews={false}
+              contentContainerStyle={[
+                styles.scrollContainer,
+                recommStores.length < 3 && styles.centeredListContainer,
+              ]}
+              snapToAlignment="center"
+              snapToInterval={
+                recommStores.length === 2
+                  ? ITEM_WIDTH + SPACING + SPACING
+                  : ITEM_WIDTH + SPACING
+              }
+              decelerationRate={0.8}
+              onScroll={handleScroll} // 실시간으로 점 업데이트
+              onMomentumScrollEnd={
+                recommStores.length >= 3 ? handleScrollEnd : undefined
+              } // 가게 3개 이상일 때만 무한 스크롤 적용
+              getItemLayout={(data, index) => ({
+                length: ITEM_WIDTH + SPACING,
+                offset: (ITEM_WIDTH + SPACING) * index,
+                index,
+              })}
+              renderItem={({item, index}) => (
+                <View key={index} style={[styles.slideItem]}>
+                  <TodayRecommItem
+                    store={item}
+                    category={koreanCategory}
+                    location={location}
+                    navigation={navigation}
+                  />
+                </View>
+              )}
+            />
+          )}
+          {/* 페이지네이션 점 표시 */}
+          {recommStores.length > 1 ? (
+            <View style={styles.pagination}>
+              {recommStores.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.dot,
+                    currentIndex === index ? styles.activeDot : null,
+                  ]}
+                />
+              ))}
+            </View>
+          ) : (
+            <View style={styles.pagination} />
+          )}
+          {recommStores.length === 0 && (
+            <View style={styles.noDataView}>
+              <FastImage
+                source={require('../../../assets/AppLogoNoback.png')}
+                style={styles.imageStyle}
+                resizeMode={FastImage.resizeMode.contain}
               />
+              <Text style={styles.noDataText}>
+                추천 카테고리에 등록된 술집이 없어요
+              </Text>
             </View>
           )}
-        />
-      )}
-      {/* 페이지네이션 점 표시 */}
-      {recommStores.length > 1 ? (
-        <View style={styles.pagination}>
-          {recommStores.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                currentIndex === index ? styles.activeDot : null,
-              ]}
-            />
-          ))}
-        </View>
-      ) : (
-        <View style={styles.pagination} />
-      )}
-      {recommStores.length === 0 && (
-        <View style={styles.noDataView}>
-          <FastImage
-            source={require('../../../assets/AppLogoNoback.png')}
-            style={styles.imageStyle}
-            resizeMode={FastImage.resizeMode.contain}
-          />
-          <Text style={styles.noDataText}>
-            추천 카테고리에 등록된 술집이 없어요
-          </Text>
-        </View>
+        </>
       )}
     </>
   );

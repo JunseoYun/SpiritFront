@@ -22,6 +22,7 @@ import forbiddenWords from '../../hooks/forbiddenWords';
 import {useToast} from '../../context/ToastContext';
 import {requestPhotoPermission} from '../../hooks/usePhotopermis';
 import Loading from '../../hooks/Loading';
+import ReviewItemSkeleton from '../../components/StoreReviewScreen/ReviewItemSkeleton';
 
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
@@ -299,28 +300,36 @@ const StoreReviewScreen = ({navigation}) => {
                 <Text style={styles.addButtonText}>리뷰 작성하기</Text>
               </Pressable>
             </View>
-            <FlatList
-              data={reviewdata}
-              renderItem={renderItem}
-              keyExtractor={item => item.id.toString()}
-              // 🔥 스크롤해도 키보드 닫히지 않음
-              keyboardDismissMode="none"
-              keyboardShouldPersistTaps="always"
-              onEndReached={loadMoreReviews}
-              onEndReachedThreshold={0.5}
-              onRefresh={handleRefresh}
-              refreshing={refreshing}
-              contentContainerStyle={{paddingBottom: 0}}
-              ListFooterComponent={
-                <View style={styles.footer}>
-                  {loading && !isEnd ? (
-                    <Text style={styles.emptyText}>Loading...</Text>
-                  ) : !loading && reviewdata.length === 0 ? (
-                    <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
-                  ) : null}
-                </View>
-              }
-            />
+            {loading || refreshing ? (
+              <FlatList
+                data={[1, 2, 3]} // 임의의 더미 데이터
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={() => <ReviewItemSkeleton />}
+                showsVerticalScrollIndicator={false}
+              />
+            ) : (
+              <FlatList
+                data={reviewdata}
+                renderItem={renderItem}
+                keyExtractor={item => item.id.toString()}
+                keyboardDismissMode="none"
+                keyboardShouldPersistTaps="always"
+                onEndReached={loadMoreReviews}
+                onEndReachedThreshold={0.5}
+                onRefresh={handleRefresh}
+                refreshing={refreshing}
+                contentContainerStyle={{paddingBottom: 0}}
+                ListFooterComponent={
+                  <View style={styles.footer}>
+                    {loading && !isEnd ? (
+                      <Text style={styles.emptyText}>Loading...</Text>
+                    ) : !loading && reviewdata.length === 0 ? (
+                      <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
+                    ) : null}
+                  </View>
+                }
+              />
+            )}
           </View>
         ) : (
           <View visible={isWriting}>

@@ -132,7 +132,6 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
     paddingHorizontal: 16,
     paddingVertical: 8,
     marginVertical: 5,
@@ -145,7 +144,7 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.2,
     shadowRadius: 3,
-    elevation: 3, // Android 그림자
+    elevation: 2, // Android 그림자
   },
   header: {
     flexDirection: 'column',

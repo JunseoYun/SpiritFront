@@ -326,6 +326,7 @@ const MainScreen = ({navigation}) => {
             location={location}
             refresh={isRefreshing}
             navigation={navigation}
+            loading={loading}
           />
 
           <CategoryGrid onPress={catagoryClick} />
