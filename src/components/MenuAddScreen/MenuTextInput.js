@@ -17,9 +17,6 @@ const MenuTextInput = forwardRef(
     ref,
   ) => {
     const handleTextChange = text => {
-      const lines = text.split('\n'); // 줄바꿈 개수 확인
-      if (lines.length > 2) return; // ✅ 3줄 초과 입력 방지
-
       if (onChangeText) {
         onChangeText(text);
       }

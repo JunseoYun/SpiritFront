@@ -24,6 +24,7 @@ import SearchButton from '../../../components/SearchScreen/SearchButton';
 import RecentStoreList from '../../../components/SearchScreen/RecentStore/RecentStoreList';
 import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
+import MyBanner from '../../../components/Ads/MyBanner';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
@@ -78,7 +79,12 @@ const SearchScreen = ({navigation}) => {
       if (currentLocation) {
         setLocation(currentLocation);
       }
-      setSelectedFilters({});
+      setSelectedFilters({
+        카테고리: '',
+        인원: '',
+        '방문 시간': '',
+        주종: '',
+      });
       await new Promise(resolve => setTimeout(resolve, 300));
     } catch (error) {
       console.error('초기 로드 오류:', error);
@@ -227,6 +233,7 @@ const SearchScreen = ({navigation}) => {
               navigation={navigation}
               location={location}
             />
+            <MyBanner />
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
@@ -274,7 +281,7 @@ const styles = StyleSheet.create({
     flex: 1, // 화면 전체를 차지하도록 설정
   },
   scrollViewContent: {
-    paddingBottom: 100, // 버튼 영역이 가려지지 않도록 여유 공간 추가
+    paddingBottom: 100,
   },
   openButton: {
     marginTop: 40,

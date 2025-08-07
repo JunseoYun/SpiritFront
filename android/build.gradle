@@ -7,6 +7,9 @@ buildscript {
         ndkVersion = "26.1.10909125"
         kotlinVersion = "1.9.24" //2025.05.15 2.1.0 버전 업그레이드
         // kotlinVersion = "2.1.0"
+        googleMobileAds = [
+            adManager: false // ← 이것이 핵심
+        ]
     }
     repositories {
         google()
