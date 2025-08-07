@@ -22,6 +22,7 @@ import {navigationRef} from './src/navigation/NavigationService';
 import {handleUrl} from './src/hooks/applink/AppLinkHandler';
 import {DeepLinkProvider, useDeepLink} from './src/context/DeepLinkContext';
 import './reanimatedConfig';
+import mobileAds from 'react-native-google-mobile-ads';
 
 if (!__DEV__) {
   console.log = () => {};
@@ -31,6 +32,12 @@ if (!__DEV__) {
 
 const App = () => {
   useNotificationSetup();
+
+  useEffect(() => {
+    mobileAds()
+      .initialize()
+      .then(() => {});
+  }, []);
 
   useEffect(() => {
     if (Platform.OS === 'ios') {

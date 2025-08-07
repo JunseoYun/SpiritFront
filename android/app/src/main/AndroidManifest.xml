@@ -21,6 +21,11 @@
       android:usesCleartextTraffic="true"
       android:supportsRtl="true">
 
+      <meta-data
+        android:name="com.google.android.gms.ads.APPLICATION_ID"
+        android:value="@string/GOOGLE_ADS_APPID"
+        tools:replace="android:value" />
+
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"

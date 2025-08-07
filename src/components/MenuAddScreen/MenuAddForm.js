@@ -27,9 +27,6 @@ const MenuAddForm = forwardRef(
     const {showAlert, AlertComponent} = useCustomAlert();
 
     const [isImageSelected, setIsImageSelected] = useState(false);
-    const [menuNamelength, setMenuNamelength] = useState(false);
-    const [menuPricelength, setMenuPricelength] = useState(false);
-    const [menuContentlength, setMenuContentlength] = useState(false);
     const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
     const selectImage = () => {
@@ -93,28 +90,13 @@ const MenuAddForm = forwardRef(
 
     const MenuChange = (text, index, value) => {
       if (value == 'menuName') {
-        if (text.length > 20) {
-          setMenuNamelength(true);
-        } else {
-          setMenuNamelength(false);
-          handleMenuChange(text, index, 'menuName');
-        }
+        handleMenuChange(text, index, 'menuName');
       }
       if (value == 'price') {
-        if (text.length > 20) {
-          setMenuPricelength(true);
-        } else {
-          setMenuPricelength(false);
-          handleMenuChange(text, index, 'price');
-        }
+        handleMenuChange(text, index, 'price');
       }
       if (value == 'menuContent') {
-        if (text.length > 30) {
-          setMenuContentlength(true);
-        } else {
-          setMenuContentlength(false);
-          handleMenuChange(text, index, 'menuContent');
-        }
+        handleMenuChange(text, index, 'menuContent');
       }
     };
 
@@ -175,7 +157,6 @@ const MenuAddForm = forwardRef(
           value={menu.menuName}
           onChangeText={text => MenuChange(text, index, 'menuName')}
           placeholder="메뉴 이름*"
-          maxLength={21}
           ref={menunameRef}
           returnKeyType="next"
           onSubmitEditing={() => {
@@ -184,11 +165,6 @@ const MenuAddForm = forwardRef(
             }
           }}
         />
-        {menuNamelength && (
-          <View style={styles.errorview}>
-            <Text style={styles.errorText}>최대 20자 입니다.</Text>
-          </View>
-        )}
         <MenuPrice
           label="메뉴 가격*"
           value={menu.price}
@@ -196,7 +172,6 @@ const MenuAddForm = forwardRef(
           placeholder="메뉴 가격*"
           isVariable={isVariable}
           onToggleVariable={handleToggleVariable}
-          maxLength={21}
           ref={priceRef}
           returnKeyType="next" // ✅ 추가
           onSubmitEditing={() => {
@@ -205,25 +180,14 @@ const MenuAddForm = forwardRef(
             }
           }}
         />
-        {menuPricelength && (
-          <View style={styles.errorview}>
-            <Text style={styles.errorText}>최대 20자 입니다.</Text>
-          </View>
-        )}
         <MenuTextInput
           label="메뉴 소개"
           value={menu.menuContent}
           onChangeText={text => MenuChange(text, index, 'menuContent')}
           placeholder="메뉴를 간단하게 소개해주세요."
           multiline
-          maxLength={31}
           ref={menucontentRef}
         />
-        {menuContentlength && (
-          <View style={styles.errorview}>
-            <Text style={styles.errorText}>최대 30자 입니다.</Text>
-          </View>
-        )}
 
         <View style={styles.menuAddImageView}>
           <Text style={styles.menuAddImageText}>메뉴 사진</Text>
