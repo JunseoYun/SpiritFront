@@ -202,7 +202,6 @@ const styles = StyleSheet.create({
     width: imageWidth,
     height: imageHeight,
     borderRadius: 10,
-
     alignSelf: 'center',
   },
   backimagestyle: {
@@ -268,7 +267,6 @@ const styles = StyleSheet.create({
   drinkView: {
     flexDirection: 'row',
     alignItems: 'center',
-
     marginBottom: 3,
   },
   drinkText: {

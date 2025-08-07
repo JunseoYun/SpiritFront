@@ -20,6 +20,7 @@ import FastSearch from '../../../components/SearchScreen/FastSearch/FastSearch';
 import FastSearchFilter from '../../../components/SearchScreen/FastSearch/FastSearchFilter';
 import {Store_getby_condition_search} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
+import ResultModalItemSkeleton from '../../../components/SearchScreen/FastSearch/Modal/ResultModalItemSkeleton';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
@@ -168,27 +169,38 @@ const SearchFastScreen = ({navigation}) => {
       />
 
       {/* 검색 결과 리스트 */}
-      <FlatList
-        data={faststores}
-        renderItem={renderStoreItem}
-        keyExtractor={item => item.id.toString()}
-        contentContainerStyle={styles.listContainer}
-        onEndReached={() => {
-          if (hasMore && !loading && page < totalpage - 1) {
-            setPage(prev => {
-              const nextPage = prev + 1;
-              fetchStores(nextPage, false, searchDto);
-              return nextPage;
-            });
-          }
-        }}
-        onEndReachedThreshold={0.5}
-        ListEmptyComponent={renderEmptyComponent}
-        initialNumToRender={10}
-        maxToRenderPerBatch={5}
-        windowSize={5}
-        removeClippedSubviews={true}
-      />
+      {loading ? (
+        <FlatList
+          data={[1, 2, 3, 5, 6, 7, 8, 9]} // 임의의 더미 데이터
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={() => <ResultModalItemSkeleton />}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContainer}
+          windowSize={5}
+        />
+      ) : (
+        <FlatList
+          data={faststores}
+          renderItem={renderStoreItem}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.listContainer}
+          onEndReached={() => {
+            if (hasMore && !loading && page < totalpage - 1) {
+              setPage(prev => {
+                const nextPage = prev + 1;
+                fetchStores(nextPage, false, searchDto);
+                return nextPage;
+              });
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={renderEmptyComponent}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={true}
+        />
+      )}
 
       {/* 바텀시트 */}
       <Modal

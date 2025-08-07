@@ -12,6 +12,7 @@ import {
 import MapStoreItem from './MapStoreItem';
 import MapLocation from '../MapLocation';
 import MapDirections from '../MapDirections';
+import MapStoreItemSkeleton from './MapStoreItemSkeleton';
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
 const BUTON_WIDTH = width * 0.4;
@@ -31,6 +32,8 @@ const MapStoreList = ({
   flatListRef,
   navigation,
   location,
+  loading,
+  storegetloading,
 }) => {
   const handleScroll = event => {
     const offsetX = event.nativeEvent.contentOffset.x; // 스크롤 위치
@@ -63,43 +66,51 @@ const MapStoreList = ({
             <MapDirections onPress={fetchSaveLocation} />
           </View>
         )}
+
         {isFlatListVisible && (
-          <FlatList
-            ref={flatListRef}
-            data={stores}
-            horizontal
-            keyExtractor={item => item.id.toString()}
-            showsHorizontalScrollIndicator={false}
-            snapToAlignment="center"
-            snapToInterval={width} // 아이템 너비(350) + 간격(60)
-            decelerationRate="fast"
-            onScroll={handleScroll}
-            scrollEventThrottle={16} // 스크롤 이벤트 호출 빈도
-            renderItem={({item, index}) => (
-              <MapStoreItem
-                item={item}
-                index={index}
-                selectedStoreIndex={selectedStoreIndex}
-                setSelectedStore={setSelectedStore}
-                moveCenterMap={moveCenterMap}
-                navigation={navigation}
-                location={location}
+          <>
+            {storegetloading ? (
+              <MapStoreItemSkeleton />
+            ) : (
+              <FlatList
+                ref={flatListRef}
+                data={stores}
+                horizontal
+                keyExtractor={item => item.id.toString()}
+                showsHorizontalScrollIndicator={false}
+                snapToAlignment="center"
+                snapToInterval={width} // 아이템 너비(350) + 간격(60)
+                decelerationRate="fast"
+                onScroll={handleScroll}
+                scrollEventThrottle={16} // 스크롤 이벤트 호출 빈도
+                renderItem={({item, index}) => (
+                  <MapStoreItem
+                    item={item}
+                    index={index}
+                    selectedStoreIndex={selectedStoreIndex}
+                    setSelectedStore={setSelectedStore}
+                    moveCenterMap={moveCenterMap}
+                    navigation={navigation}
+                    location={location}
+                    loading={loading}
+                  />
+                )}
+                getItemLayout={(data, index) => ({
+                  length: width,
+                  offset: width * index,
+                  index,
+                })}
+                onScrollToIndexFailed={({index}) => {
+                  setTimeout(() => {
+                    flatListRef.current?.scrollToIndex({index, animated: true});
+                  }, 300);
+                }}
               />
             )}
-            getItemLayout={(data, index) => ({
-              length: width,
-              offset: width * index,
-              index,
-            })}
-            onScrollToIndexFailed={({index}) => {
-              setTimeout(() => {
-                flatListRef.current?.scrollToIndex({index, animated: true});
-              }, 300);
-            }}
-          />
+          </>
         )}
       </Animated.View>
-      {stores.length === 0 && (
+      {stores.length === 0 && !loading && !storegetloading && (
         <View style={styles.noneView}>
           <View style={[styles.buttonView, {marginHorizontal: 0}]}>
             <MapLocation onPress={updateNewLocation} />

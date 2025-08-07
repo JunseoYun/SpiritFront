@@ -19,6 +19,7 @@ import {AlcoholFilterContext} from '../../context/AlcoholFilterContext';
 import {Store_getby_category} from '../../api/storeApi';
 import StoreItem from '../../components/CategoryTapScreen/StoreItem';
 import Loading from '../../hooks/Loading';
+import StoreItemSkeleton from '../../components/CategoryTapScreen/StoreItemSkeleton';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -177,49 +178,57 @@ const CategoryTapScreen = ({navigation, route}) => {
         </ScrollView>
 
         {/* FlatList 항상 렌더 */}
-        <FlatList
-          data={stores}
-          renderItem={({item}) => (
-            <StoreItem
-              store={item}
-              location={location}
-              navigation={navigation}
-            />
-          )}
-          keyExtractor={item => `${categoryname}-${item.id}`}
-          onEndReached={() => {
-            if (
-              !loading &&
-              !isEnd &&
-              rawStores.length > 0 &&
-              page < totalpage - 1
-            ) {
-              const nextPage = page + 1;
-              setPage(nextPage);
-              fetchStores(nextPage);
+        {isInitialLoading || loading ? (
+          <FlatList
+            data={[1, 2, 3, 4]} // 임의의 더미 데이터
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={() => <StoreItemSkeleton />}
+            showsVerticalScrollIndicator={false}
+          />
+        ) : (
+          <FlatList
+            data={stores}
+            renderItem={({item}) => (
+              <StoreItem
+                store={item}
+                location={location}
+                navigation={navigation}
+              />
+            )}
+            keyExtractor={item => `${categoryname}-${item.id}`}
+            onEndReached={() => {
+              if (
+                !loading &&
+                !isEnd &&
+                rawStores.length > 0 &&
+                page < totalpage - 1
+              ) {
+                const nextPage = page + 1;
+                setPage(nextPage);
+                fetchStores(nextPage);
+              }
+            }}
+            onEndReachedThreshold={0.7}
+            initialNumToRender={10}
+            maxToRenderPerBatch={5}
+            windowSize={5}
+            removeClippedSubviews={true}
+            ListEmptyComponent={
+              !loading && stores.length === 0 ? (
+                <Text style={styles.emptyText}>등록된 가게가 없어요</Text>
+              ) : null
             }
-          }}
-          onEndReachedThreshold={0.7}
-          initialNumToRender={10}
-          maxToRenderPerBatch={5}
-          windowSize={5}
-          removeClippedSubviews={true}
-          ListEmptyComponent={
-            !loading && stores.length === 0 ? (
-              <Text style={styles.emptyText}>등록된 가게가 없어요</Text>
-            ) : null
-          }
-          refreshing={loading}
-          onRefresh={() => {
-            setIsEnd(false);
-            fetchStores(0, true);
-          }}
-          contentContainerStyle={{paddingBottom: 70}}
-        />
-
-        {/* 로딩 오버레이 */}
-        {isInitialLoading && <Loading loading={true} />}
+            refreshing={loading}
+            onRefresh={() => {
+              setIsEnd(false);
+              fetchStores(0, true);
+            }}
+            contentContainerStyle={{paddingBottom: 70}}
+          />
+        )}
       </View>
+      {/* 로딩 오버레이 */}
+      {(isInitialLoading || loading) && <Loading loading={true} />}
     </SafeAreaView>
   );
 };

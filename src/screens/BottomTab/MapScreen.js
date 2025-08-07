@@ -43,6 +43,7 @@ const MapScreen = ({navigation}) => {
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
   const [radius, setRadiusint] = useState(0.5);
   const prevRadiusRef = useRef(radius);
+  const [storegetloading, setStoregetloading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
@@ -87,6 +88,7 @@ const MapScreen = ({navigation}) => {
 
   const getStorelist = async radius => {
     setLoading(true);
+    setStoregetloading(true);
     try {
       const currentLocation = await getLocation();
       setLocation(currentLocation);
@@ -119,6 +121,7 @@ const MapScreen = ({navigation}) => {
     } finally {
       setRefresh(false);
       setLoading(false);
+      setStoregetloading(false);
     }
   };
 
@@ -232,7 +235,7 @@ const MapScreen = ({navigation}) => {
 
   const setcenterrefresh = async radius => {
     setLoading(true);
-
+    setStoregetloading(true);
     try {
       const lat = centerLatLng?.latitude ?? location?.latitude;
       const lng = centerLatLng?.longitude ?? location?.longitude;
@@ -265,6 +268,7 @@ const MapScreen = ({navigation}) => {
     } finally {
       setRefresh(false);
       setLoading(false);
+      setStoregetloading(false);
     }
   };
 
@@ -406,6 +410,8 @@ const MapScreen = ({navigation}) => {
         flatListRef={flatListRef}
         navigation={navigation}
         location={location}
+        loading={loading}
+        storegetloading={storegetloading}
       />
 
       <Loading loading={loading} />

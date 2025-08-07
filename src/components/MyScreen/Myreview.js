@@ -6,6 +6,7 @@ import {ReviewRecentGet, ReviewDelete} from '../../api/reviewApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
+import MyReviewSkeleton from './MyReviewSkeleton';
 
 const MyReview = ({navigation}) => {
   const [myReview, setMyReview] = useState([]); // 검색된 가게 목록
@@ -94,40 +95,49 @@ const MyReview = ({navigation}) => {
   );
   return (
     <>
-      <FlatList
-        data={myReview}
-        renderItem={renderItem}
-        keyExtractor={item => item.id.toString()}
-        initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
-        maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
-        windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-        removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
-        onEndReached={() => {
-          if (!loading && !isEnd && page < totalpage - 1) {
-            setPage(prevPage => {
-              const nextPage = prevPage + 1; // 다음 페이지 번호
-              myReviewsget(nextPage); // 그 페이지 번호로 데이터 요청
-              return nextPage; // 상태를 증가된 페이지 번호로 갱신
-            });
+      {loading ? (
+        <FlatList
+          data={[1, 2, 3]} // 임의의 더미 데이터
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={() => <MyReviewSkeleton />}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <FlatList
+          data={myReview}
+          renderItem={renderItem}
+          keyExtractor={item => item.id.toString()}
+          initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
+          maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
+          windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
+          removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
+          onEndReached={() => {
+            if (!loading && !isEnd && page < totalpage - 1) {
+              setPage(prevPage => {
+                const nextPage = prevPage + 1; // 다음 페이지 번호
+                myReviewsget(nextPage); // 그 페이지 번호로 데이터 요청
+                return nextPage; // 상태를 증가된 페이지 번호로 갱신
+              });
+            }
+          }} // 끝에 도달하면 데이터 불러오기
+          onEndReachedThreshold={0.5}
+          // ListFooterComponent={
+          //   loading && !isEnd ? (
+          //     <View style={styles.footer}>
+          //       <Text style={styles.emptyText}>Loading...</Text>
+          //     </View>
+          //   ) :
+          //   null
+          // }
+          ListEmptyComponent={
+            !loading && myReview.length === 0 ? (
+              <View style={styles.footer}>
+                <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
+              </View>
+            ) : null
           }
-        }} // 끝에 도달하면 데이터 불러오기
-        onEndReachedThreshold={0.5}
-        // ListFooterComponent={
-        //   loading && !isEnd ? (
-        //     <View style={styles.footer}>
-        //       <Text style={styles.emptyText}>Loading...</Text>
-        //     </View>
-        //   ) : //aa
-        //   null
-        // }
-        ListEmptyComponent={
-          !loading && myReview.length === 0 ? (
-            <View style={styles.footer}>
-              <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
-            </View>
-          ) : null
-        }
-      />
+        />
+      )}
       <Loading loading={loading} />
       <AlertComponent />
       {/* 모달 컴포넌트 사용 */}

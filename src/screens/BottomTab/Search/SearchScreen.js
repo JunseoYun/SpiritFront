@@ -200,10 +200,6 @@ const SearchScreen = ({navigation}) => {
     }
   }, [bottomModalVisible]);
 
-  const handleApply = () => {
-    console.log('선택된 필터:', selectedFilters);
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <Loading loading={isRefreshing || loading} />
