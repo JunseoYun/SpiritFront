@@ -7,14 +7,10 @@ import {
   Pressable,
   StyleSheet,
   FlatList,
-  LayoutAnimation,
   Platform,
   UIManager,
 } from 'react-native';
 import {store_like_stats_get} from '../../../api/logstats';
-import Dropdown from '../Dropdown';
-import Entypo from 'react-native-vector-icons/Entypo';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import StoreLikeResult from './StoreLikeResult';
 import Loading from '../../../hooks/Loading';
 
@@ -32,9 +28,13 @@ const AGE_OPTIONS = [
     value: age,
   })),
 ];
+const gender = [
+  {label: '전체', value: ''},
+  {label: '남자', value: 'MALE'},
+  {label: '여자', value: 'FEMALE'},
+];
 
 const StoreLikestats = ({storeId}) => {
-  const [togglebtn, setTogglebtn] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
@@ -121,95 +121,75 @@ const StoreLikestats = ({storeId}) => {
     });
   };
 
-  const handleToggle = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setTogglebtn(prev => !prev);
-  };
-
   return (
     <>
-      <SafeAreaView style={{flex: 1, backgroundColor: '#f8f9fb'}}>
+      <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
         <ScrollView contentContainerStyle={styles.container}>
           {/* 헤더 */}
-          <Pressable onPress={handleToggle} style={styles.header}>
-            <FontAwesome5 name="sliders-h" size={16} color="#16BBFF" />
-            <Text style={styles.headerTitle}>통계 조건 설정</Text>
-            <Entypo
-              name={togglebtn ? 'chevron-small-up' : 'chevron-small-down'}
-              size={24}
-              color="#333"
-              style={{marginLeft: 'auto'}}
-            />
-          </Pressable>
 
-          {togglebtn && (
-            <View style={styles.card}>
-              <View style={styles.row}>
-                <Dropdown
-                  label="성별"
-                  options={[
-                    {label: '전체', value: ''},
-                    {label: '남자', value: 'MALE'},
-                    {label: '여자', value: 'FEMALE'},
-                  ]}
-                  selectedValue={form.gender}
-                  onValueChange={value => handleChange('gender', value)}
-                />
-              </View>
-
-              <Text style={styles.sectionTitle}>결과값 묶음 *</Text>
-              <View style={styles.chipGroup}>
-                {['gender', 'ageGroup'].map(gb => {
-                  const isSelected = form.groupBy.includes(gb);
-                  return (
-                    <Pressable
-                      key={gb}
-                      onPress={() => toggleGroupBy(gb)}
-                      style={[styles.chip, isSelected && styles.chipSelected]}>
-                      <Text
-                        style={[
-                          styles.chipText,
-                          isSelected && styles.chipTextSelected,
-                        ]}>
-                        {gb === 'gender' ? '성별' : '연령대'}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
-              <Text style={styles.sectionTitle}>연령대</Text>
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={AGE_OPTIONS}
-                keyExtractor={item => item.value}
-                contentContainerStyle={styles.chipGroupFlatList}
-                renderItem={({item}) => {
-                  const isSelected = form.ageGroup.includes(item.value);
-                  return (
-                    <Pressable
-                      onPress={() => toggleAgeGroup(item.value)}
-                      style={[styles.chip, isSelected && styles.chipSelected]}>
-                      <Text
-                        style={[
-                          styles.chipText,
-                          isSelected && styles.chipTextSelected,
-                        ]}>
-                        {item.label}
-                      </Text>
-                    </Pressable>
-                  );
-                }}
-              />
-
-              {error ? <Text style={styles.error}>{error}</Text> : null}
+          <View style={styles.card}>
+            <View style={styles.genderView}>
+              {gender.map((gen, idx) => {
+                const isSelected = form.gender === gen.value;
+                return (
+                  <Pressable
+                    key={gen.value}
+                    hitSlop={10}
+                    style={[styles.genderButton]}
+                    onPress={() => handleChange('gender', gen.value)}>
+                    <View
+                      style={[
+                        styles.genderPoint,
+                        isSelected && {backgroundColor: '#45C9FF'},
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        styles.genderText,
+                        isSelected && styles.chipTextSelected,
+                      ]}>
+                      {gen.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
-          )}
+
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={AGE_OPTIONS}
+              keyExtractor={item => item.value}
+              contentContainerStyle={styles.chipGroupFlatList}
+              renderItem={({item}) => {
+                const isSelected = form.ageGroup.includes(item.value);
+                return (
+                  <Pressable
+                    onPress={() => toggleAgeGroup(item.value)}
+                    style={[styles.chip, isSelected && styles.chipSelected]}>
+                    <Text
+                      style={[
+                        styles.chipText,
+                        isSelected && styles.chipTextSelected,
+                      ]}>
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                );
+              }}
+            />
+
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+          </View>
 
           {result && (
-            <View style={{marginTop: 20, marginHorizontal: 18}}>
-              <StoreLikeResult result={result} setLoading={setLoading} />
+            <View style={{marginTop: 10}}>
+              <StoreLikeResult
+                result={result}
+                setLoading={setLoading}
+                groupBy={form.groupBy}
+                toggleGroupBy={toggleGroupBy}
+              />
             </View>
           )}
         </ScrollView>
@@ -225,47 +205,13 @@ const styles = StyleSheet.create({
   container: {
     paddingBottom: 20,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderColor: '#eee',
-  },
-  headerTitle: {
-    fontSize: 16,
-    marginLeft: 8,
-    color: '#333',
-    fontFamily: 'Pretendard-SemiBold',
-  },
+
   card: {
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginTop: 14,
     borderRadius: 12,
     paddingVertical: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: {width: 0, height: 2},
-    elevation: 2,
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    marginBottom: 8,
-    marginHorizontal: 16,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-SemiBold',
-    marginVertical: 12,
-    color: '#333',
-    marginHorizontal: 16,
-  },
+
   chipGroup: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -274,20 +220,19 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   chipGroupFlatList: {
+    marginTop: 5,
     marginBottom: 12,
     paddingHorizontal: 16,
   },
   chip: {
     borderColor: '#dfdfdf',
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 4,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 5,
     marginRight: 10,
-    backgroundColor: '#f9f9f9',
   },
   chipSelected: {
-    backgroundColor: '#16BBFF22',
     borderColor: '#16BBFF',
   },
   chipText: {
@@ -296,8 +241,33 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   chipTextSelected: {
-    color: '#16BBFF',
-    fontWeight: '600',
+    color: '#45C9FF',
+    fontFamily: 'Pretendard-Bold',
+  },
+  genderView: {
+    marginTop: 15,
+    marginHorizontal: 16,
+    flexDirection: 'row',
+    marginBottom: 15,
+  },
+  genderButton: {
+    marginLeft: 3,
+    marginRight: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  genderPoint: {
+    width: 5,
+    height: 5,
+    borderRadius: 30,
+    backgroundColor: '#ddd',
+    marginRight: 5,
+  },
+  genderText: {
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
+    color: '#999',
   },
   error: {
     color: 'red',

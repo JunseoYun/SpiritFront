@@ -42,8 +42,20 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>GADApplicationIdentifier</key>
+  <string>ca-app-pub-1420294930834875~9246852863</string>
+
+	<key>SKAdNetworkItems</key>
+  <array>
+    <dict>
+      <key>SKAdNetworkIdentifier</key>
+      <string>cstr6suwn9.skadnetwork</string>
+    </dict>
+  </array> 
+
 	<key>KAKAO_APP_KEY</key>
 	<string>$(KAKAO_APP_KEY)</string>
+	
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>$(KAKAO_APP_SCHEMES)</string>
