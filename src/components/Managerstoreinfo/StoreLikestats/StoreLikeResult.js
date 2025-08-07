@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,42 @@ import {
   StyleSheet,
   InteractionManager,
 } from 'react-native';
-import {PieChart, BarChart} from 'react-native-chart-kit';
-import ResultitemCustom from '../StoreAreastats/ResultitemCustom';
+import GroupBySelector from '../GroupBySelector';
+import GenderPieChart from '../GenderPieChart';
+import AgeDistributionTable from '../AgeDistributionTable';
+import StoreLikeBarGraph from './StoreLikeBarGraph';
+const genders = ['MALE', 'FEMALE'];
+const genderColor = [
+  {label: '남자', color: '#3CA5FF'},
+  {label: '여자', color: '#FF7096'},
+];
 
-const screenWidth = Dimensions.get('window').width;
+function getAgeGenderStats(data, ageGroups) {
+  const resultMap = {};
+  let total = 0;
 
-const StoreLikeResult = ({result, setLoading}) => {
+  data.forEach(item => {
+    const key = `${item.ageGroup}${item.gender}`;
+    if (!resultMap[key]) resultMap[key] = 0;
+    resultMap[key] += item.count;
+    total += item.count;
+  });
+
+  const result = [];
+  ageGroups.forEach(age => {
+    genders.forEach(gender => {
+      const key = `${age}${gender}`;
+      const count = resultMap[key] || 0;
+      result.push({
+        label: `${key}`,
+        count: count,
+      });
+    });
+  });
+  return result;
+}
+
+const StoreLikeResult = ({result, setLoading, groupBy, toggleGroupBy}) => {
   useEffect(() => {
     if (result) {
       // 그래프 렌더링이 모두 끝난 후에 loading 끄기
@@ -26,167 +56,89 @@ const StoreLikeResult = ({result, setLoading}) => {
 
   const data = result?.data || [];
 
-  const genderLabels = {MALE: '남자', FEMALE: '여자'};
-  const genders = ['MALE', 'FEMALE'];
+  const validAgeGenderData = useMemo(() => {
+    return data.filter(
+      item =>
+        item.ageGroup &&
+        !['80s', '90s', '100s'].includes(item.ageGroup) &&
+        genders.includes(item.gender),
+    );
+  }, [data]);
 
-  const hasGender = data.every(item => item.gender);
-  const hasAgeGroup = data.every(item => item.ageGroup);
-
-  const isAllFiltersPresent = hasGender && hasAgeGroup;
-  const isGenderOnly = hasGender && !hasAgeGroup;
-  const isAgeOnly = !hasGender && hasAgeGroup;
-
-  const ageGroupColors = {
-    '10s': '#4F98FF',
-    '20s': '#FF8C00',
-    '30s': '#8A2BE2',
-    '40s': '#228B22',
-    '50s': '#FF1493',
-    '60s': '#FFD700',
-    '70s': '#16BBFF',
-  };
-
-  const genderOnlyData = genders.map(g => {
-    const found = data.find(item => item.gender === g);
-    return {
-      gender: genderLabels[g],
-      count: found ? found.count : 0,
-      color: g === 'MALE' ? '#3CA5FF' : '#FF6F61',
-    };
-  });
-
-  const ageOnlyData = data
-    .filter(item => item.ageGroup && !item.gender)
-    .map(item => ({
-      ageGroup: item.ageGroup,
-      count: item.count,
-      color: ageGroupColors[item.ageGroup] || '#4F98FF',
-    }))
-    .sort((a, b) => parseInt(a.ageGroup) - parseInt(b.ageGroup));
-
-  const validData = data.filter(
-    item => item.ageGroup && genders.includes(item.gender),
+  const ageGroups = useMemo(
+    () =>
+      Array.from(new Set(validAgeGenderData.map(item => item.ageGroup))).sort(
+        (a, b) => parseInt(a) - parseInt(b),
+      ),
+    [validAgeGenderData],
   );
 
-  const ageGroups = Array.from(
-    new Set(validData.map(item => item.ageGroup)),
-  ).sort((a, b) => parseInt(a) - parseInt(b));
+  const ageGenderStats = useMemo(() => {
+    if (validAgeGenderData.length === 0 || ageGroups.length === 0) return [];
+    return getAgeGenderStats(validAgeGenderData, ageGroups);
+  }, [validAgeGenderData, ageGroups]);
 
-  const groupedCombinedData = [];
-  const groupedColors = [];
+  const hasGenderOnly =
+    data.length > 0 &&
+    data.some(item => item.gender) &&
+    !data.some(item => item.ageGroup);
 
-  ageGroups.forEach(ageGroup => {
-    genders.forEach(gender => {
-      const label = `${ageGroup.replace('s', '대')}\n${genderLabels[gender]}`;
-      const found = validData.find(
-        item => item.ageGroup === ageGroup && item.gender === gender,
-      );
-      const count = found ? found.count : 0;
+  const ageOrders = ['20s', '30s', '40s', '50s', '60s', '70s'];
 
-      groupedCombinedData.push({label, count});
-      groupedColors.push(gender === 'MALE' ? '#3CA5FF' : '#FF7096');
-    });
-  });
-
-  const chartConfig = {
-    backgroundGradientFrom: '#fff',
-    backgroundGradientTo: '#fff',
-    decimalPlaces: 0,
-    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(0,0,0,${opacity})`,
-    style: {borderRadius: 8},
-    propsForBackgroundLines: {strokeDasharray: '3 3'},
-    formatYLabel: yValue => `${parseInt(yValue, 10)}`,
-  };
-
-  const chartHeight = 280;
-  const barWidth = 80;
-
-  const genderOnlyDataWithCount = genderOnlyData
-    .filter(d => d.count > 0)
-    .map(d => ({
-      name: `${d.gender} (${d.count}명)`,
-      count: d.count,
-      color: d.color,
-      legendFontColor: '#333',
-      legendFontSize: 14,
-    }));
-
-  const ageOnlyDataWithCount = ageOnlyData
-    .filter(d => d.count > 0)
-    .map(d => ({
-      name: `${d.ageGroup.replace('s', '대')}  (${d.count}명)`,
-      count: d.count,
-      color: d.color,
-      legendFontColor: '#333',
-      legendFontSize: 14,
-    }));
-
-  const groupedCountData = groupedCombinedData.map(d => d.count ?? 0);
-
-  const groupedLabels = groupedCombinedData.map(d => d.label);
-
-  const legendData = groupedCombinedData.map((d, i) => ({
-    name: d.label.replace(/\n/g, ''),
-    color: groupedColors[i],
-    percent: `${d.count}명`,
-  }));
+  const ageDistributionData = useMemo(() => {
+    const filtered = data.filter(
+      item => item.ageGroup && !['80s', '90s', '100s'].includes(item.ageGroup),
+    );
+    const total = filtered.reduce((sum, d) => sum + (d.count || 0), 0);
+    return ageOrders
+      .map(age => {
+        const found = filtered.find(item => item.ageGroup === age);
+        if (!found) return null;
+        return {
+          name: age.replace('s', '대'),
+          count: found.count,
+          population:
+            total > 0
+              ? parseFloat(((found.count / total) * 100).toFixed(1))
+              : 0,
+        };
+      })
+      .filter(Boolean)
+      .filter(d => d.population > 0);
+  }, [data]);
 
   return (
     <View>
       {data.length === 0 && (
         <Text style={styles.nulltext}>
-          조건의 해당 통계가 없습니다.{'\n'}
-          {'\n'}조건을 변경하여 확인 해보세요!
+          해당 조건에 해당하는 데이터가 없어요{'\n\n'}조건을 변경하여
+          확인해보세요!
         </Text>
-      )}
-      {/* 성별만 있을 때 원형 차트 */}
-      {isGenderOnly && genderOnlyDataWithCount.length > 0 && (
-        <>
-          <Text style={styles.subtitle}>성별 인원수</Text>
-          <ScrollView horizontal>
-            <PieChart
-              data={genderOnlyDataWithCount}
-              width={screenWidth - 32}
-              height={220}
-              chartConfig={chartConfig}
-              accessor="count"
-              backgroundColor="transparent"
-              paddingLeft="20"
-              center={[0, 0]}
-              absolute={false}
-            />
-          </ScrollView>
-        </>
-      )}
-
-      {/* 나이대만 있을 때 원형 차트 */}
-      {isAgeOnly && ageOnlyDataWithCount.length > 0 && (
-        <>
-          <Text style={styles.subtitle}>나이대별 인원수</Text>
-          <ScrollView horizontal>
-            <PieChart
-              data={ageOnlyDataWithCount}
-              width={screenWidth - 32}
-              height={220}
-              chartConfig={chartConfig}
-              accessor="count"
-              backgroundColor="transparent"
-              paddingLeft="20"
-              center={[0, 0]}
-              absolute={false}
-            />
-          </ScrollView>
-        </>
       )}
 
       {/* 나이대 + 성별 있을 때 막대 차트 */}
-      {isAllFiltersPresent &&
-        groupedCombinedData.length > 0 &&
-        groupedCountData.reduce((acc, cur) => acc + cur, 0) > 0 && (
-          <>
-            <Text style={styles.subtitle}>나이대 + 성별 인원수</Text>
-            <ScrollView horizontal>
+      {ageGenderStats.length > 0 && (
+        <>
+          <View style={styles.titleView}>
+            <Text style={styles.subtitle}>성별 · 연령대</Text>
+            <GroupBySelector groupBy={groupBy} toggleGroupBy={toggleGroupBy} />
+          </View>
+          <View style={[styles.genderView]}>
+            {genderColor.map(gen => {
+              return (
+                <View key={gen.label} style={[styles.genderSubView]}>
+                  <View
+                    style={[
+                      styles.genderPoint,
+                      {backgroundColor: gen.color},
+                    ]}></View>
+                  <Text style={styles.genderText}>{gen.label}</Text>
+                </View>
+              );
+            })}
+          </View>
+          <StoreLikeBarGraph ageGenderStats={ageGenderStats} />
+          {/* <ScrollView horizontal>
               <BarChart
                 showYAxisLabels={true}
                 data={{
@@ -210,10 +162,64 @@ const StoreLikeResult = ({result, setLoading}) => {
                 flatColor
                 style={{marginBottom: 20, borderRadius: 8, marginLeft: -10}}
               />
-            </ScrollView>
-            <View style={{flex: 1}}>
+            </ScrollView> */}
+          {/* <View style={{flex: 1}}>
               <ResultitemCustom data={legendData} />
+            </View> */}
+        </>
+      )}
+      {/* 성별만 있을 때 원형 차트 */}
+      {ageGenderStats.length === 0 && hasGenderOnly && (
+        <>
+          <View style={styles.titleView}>
+            <Text style={styles.subtitle}>성별</Text>
+            <GroupBySelector groupBy={groupBy} toggleGroupBy={toggleGroupBy} />
+          </View>
+          <View style={[styles.genderView]}>
+            {genderColor.map(gen => {
+              return (
+                <View key={gen.label} style={[styles.genderSubView]}>
+                  <View
+                    style={[
+                      styles.genderPoint,
+                      {backgroundColor: gen.color},
+                    ]}></View>
+                  <Text style={styles.genderText}>
+                    {gen.label}{' '}
+                    {gen.label === '남자'
+                      ? `${data.find(d => d.gender === 'MALE')?.count ?? 0}명`
+                      : `${
+                          data.find(d => d.gender === 'FEMALE')?.count ?? 0
+                        }명`}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+          <GenderPieChart
+            male={data.find(d => d.gender === 'MALE')?.count ?? 0}
+            female={data.find(d => d.gender === 'FEMALE')?.count ?? 0}
+          />
+        </>
+      )}
+
+      {/* 연령대만 PieChart */}
+      {ageGenderStats.length === 0 &&
+        !hasGenderOnly &&
+        ageDistributionData.length > 0 && (
+          <>
+            <View style={styles.titleView}>
+              <Text style={styles.subtitle}>연령대별</Text>
+              <GroupBySelector
+                groupBy={groupBy}
+                toggleGroupBy={toggleGroupBy}
+              />
             </View>
+
+            <AgeDistributionTable
+              ageDistributionData={ageDistributionData}
+              option={'storeLike'}
+            />
           </>
         )}
     </View>
@@ -226,8 +232,43 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     marginTop: 6,
     textAlign: 'center',
+    color: '#999',
   },
-  subtitle: {fontSize: 16, fontFamily: 'Pretendard-Bold', marginBottom: 6},
+  titleView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 18,
+    marginTop: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    marginBottom: 6,
+    color: '#121212',
+  },
+  genderView: {
+    flexDirection: 'row',
+    marginTop: 10,
+    marginHorizontal: 18,
+  },
+  genderSubView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  genderPoint: {
+    width: 7,
+    height: 7,
+    borderRadius: 30,
+    backgroundColor: '#3CA5FF',
+    marginRight: 5,
+  },
+  genderText: {
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
+    marginRight: 10,
+    color: '#666',
+  },
 });
 
 export default StoreLikeResult;

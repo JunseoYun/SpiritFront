@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import {
   SafeAreaView,
   Text,
@@ -6,14 +6,16 @@ import {
   Pressable,
   StyleSheet,
   Platform,
+  Animated,
+  TouchableOpacity,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Feather from 'react-native-vector-icons/Feather';
 
 import StoreAreastats from '../../../components/Managerstoreinfo/StoreAreastats/StoreAreastats';
 import StoreLikestats from '../../../components/Managerstoreinfo/StoreLikestats/StoreLikestats';
 import StoreViewstats from '../../../components/Managerstoreinfo/StoreViewstats/StoreViewstats';
-
 const tabs = [
   {
     id: 'around',
@@ -40,26 +42,132 @@ const ManagerStoreInfoScreen = () => {
   const {storeId, locationDto} = route.params;
 
   const [selectedTab, setSelectedTab] = useState('around');
+  const [radius, setRadius] = useState('2');
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+
+  const dropdownAnim = useRef(new Animated.Value(0)).current;
 
   const currentTab = tabs.find(t => t.id === selectedTab);
+
+  const dropdownTranslateY = dropdownAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-5, 0],
+  });
+  const toggleDropdown = () => {
+    if (dropdownVisible) {
+      Animated.timing(dropdownAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setDropdownVisible(false));
+    } else {
+      setDropdownVisible(true);
+      Animated.timing(dropdownAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       {/* 선택된 탭 부가설명 영역 */}
       <View style={styles.subLabelContainer}>
-        <Ionicons
-          name={currentTab.icon}
-          size={20}
-          color="#999"
-          style={styles.subLabelIcon}
-        />
-        <Text style={styles.subLabelText}>{currentTab.subLabel}</Text>
+        <View style={{flexDirection: 'row'}}>
+          <Ionicons
+            name={currentTab.icon}
+            size={20}
+            color="#999"
+            style={styles.subLabelIcon}
+          />
+          <Text style={styles.subLabelText}>{currentTab.subLabel}</Text>
+        </View>
+
+        {selectedTab === 'around' && (
+          <Pressable
+            hitSlop={10}
+            onPress={() => toggleDropdown()}
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              alignContent: 'center',
+            }}>
+            <Text style={[styles.subLabelText, {marginRight: 3, fontSize: 14}]}>
+              {radius}km
+            </Text>
+            <Feather
+              name={dropdownVisible ? 'chevron-up' : 'chevron-down'}
+              size={17}
+              color="#555"
+            />
+          </Pressable>
+        )}
+        {selectedTab === 'around' && dropdownVisible && (
+          <Animated.View
+            style={[
+              styles.dropdown,
+              {transform: [{translateY: dropdownTranslateY}]},
+            ]}>
+            <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={() => {
+                toggleDropdown();
+                setRadius('2');
+              }}>
+              <Text
+                style={[
+                  styles.dropdownText,
+                  radius === '2' && {color: '#121212'},
+                ]}>
+                2km
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={() => {
+                toggleDropdown();
+                setRadius('3');
+              }}>
+              <Text
+                style={[
+                  styles.dropdownText,
+                  radius === '3' && {color: '#121212'},
+                ]}>
+                3km
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={() => {
+                toggleDropdown();
+                setRadius('5');
+              }}>
+              <Text
+                style={[
+                  styles.dropdownText,
+                  radius === '5' && {color: '#121212'},
+                ]}>
+                5km
+              </Text>
+            </TouchableOpacity>
+
+            {/* 필요한 기능 더 추가 가능 */}
+          </Animated.View>
+        )}
       </View>
 
       {/* 통계 컴포넌트 렌더링 */}
       <View style={styles.contentContainer}>
         {selectedTab === 'around' && (
-          <StoreAreastats locationDto={locationDto} />
+          <StoreAreastats
+            locationDto={locationDto}
+            radius={radius}
+            onScrollCloseDropdown={() => dropdownVisible && toggleDropdown()}
+          />
         )}
         {selectedTab === 'view' && <StoreViewstats storeId={storeId} />}
         {selectedTab === 'like' && <StoreLikestats storeId={storeId} />}
@@ -72,7 +180,12 @@ const ManagerStoreInfoScreen = () => {
           return (
             <Pressable
               key={tab.id}
-              onPress={() => setSelectedTab(tab.id)}
+              onPress={() => {
+                setSelectedTab(tab.id);
+                if (dropdownVisible) {
+                  toggleDropdown();
+                }
+              }}
               style={[styles.tabItem]}
               android_ripple={{color: '#ddd'}}>
               <Ionicons
@@ -108,6 +221,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#eee',
     backgroundColor: '#f9faff',
+    justifyContent: 'space-between',
   },
   subLabelIcon: {
     marginRight: 8,
@@ -144,5 +258,31 @@ const styles = StyleSheet.create({
   tabLabelFocused: {
     color: '#45C9FF',
     fontFamily: 'Pretendard-SemiBold',
+  },
+  dropdown: {
+    position: 'absolute',
+    top: 50, // 부가기능 버튼 아래 위치 조절
+    right: 15, // 버튼 padding 맞춰 위치 조절
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    paddingVertical: 5,
+    width: 70,
+    zIndex: 999,
+
+    // flexDirection: 'column', 기본값이라 생략 가능
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  dropdownText: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
   },
 });
