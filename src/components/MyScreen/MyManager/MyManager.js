@@ -289,7 +289,11 @@ const MyManager = ({navigation}) => {
       )}
 
       {/* 모달 */}
-      <Modal visible={modalVisible} transparent={true} animationType="none">
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="none"
+        onRequestClose={closeModal}>
         <View style={StyleSheet.absoluteFill}>
           {Platform.OS === 'ios' ? (
             <BlurView
