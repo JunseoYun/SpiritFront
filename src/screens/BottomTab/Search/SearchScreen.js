@@ -229,6 +229,7 @@ const SearchScreen = ({navigation}) => {
               navigation={navigation}
               location={location}
             />
+            <View style={{height: 50}} />
             <MyBanner />
           </View>
         </ScrollView>
