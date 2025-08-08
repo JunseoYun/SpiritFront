@@ -3,6 +3,7 @@ import {FlatList, StyleSheet, Text, View} from 'react-native';
 import StoreResultItem from './StoreResultItem';
 import {Store_getby_store} from '../../api/storeApi';
 import Loading from '../../hooks/Loading';
+import StoreResultItemSkeleton from './StoreResultItemSkeleton';
 
 const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
   const [searchingStores, setSearchingStores] = useState([]); // 검색된 가게 목록
@@ -74,31 +75,47 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
 
   return (
     <>
-      <FlatList
-        data={searchingStores}
-        renderItem={renderItem}
-        keyExtractor={item => item.id.toString()}
-        contentContainerStyle={styles.fastSearchModalScrollView}
-        initialNumToRender={10}
-        maxToRenderPerBatch={5}
-        windowSize={5}
-        removeClippedSubviews={true}
-        onEndReached={() => {
-          if (!loading && !isEnd && page < totalpage - 1) {
-            setPage(prevPage => {
-              const nextPage = prevPage + 1;
-              filteredStores(nextPage);
-              return nextPage;
-            });
+      {loading ? (
+        <FlatList
+          data={[1, 2, 3, 4, 5]} // 임의의 더미 데이터
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({item, index}) => (
+            <>
+              <StoreResultItemSkeleton />
+              {index !== searchingStores.length - 1 && (
+                <View style={styles.horizontalDivider} />
+              )}
+            </>
+          )}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <FlatList
+          data={searchingStores}
+          renderItem={renderItem}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.fastSearchModalScrollView}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={true}
+          onEndReached={() => {
+            if (!loading && !isEnd && page < totalpage - 1) {
+              setPage(prevPage => {
+                const nextPage = prevPage + 1;
+                filteredStores(nextPage);
+                return nextPage;
+              });
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={
+            !loading && searchingStores.length === 0 && isword ? (
+              <Text style={styles.emptyText}>검색된 술집이 없습니다</Text>
+            ) : null
           }
-        }}
-        onEndReachedThreshold={0.5}
-        ListEmptyComponent={
-          !loading && searchingStores.length === 0 && isword ? (
-            <Text style={styles.emptyText}>검색된 술집이 없습니다</Text>
-          ) : null
-        }
-      />
+        />
+      )}
       <Loading loading={loading} />
     </>
   );
