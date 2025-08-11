@@ -28,11 +28,6 @@ export default function StoreStack() {
   const screenWidth = Dimensions.get('window').width;
   const showAlert = getGlobalShowAlert();
 
-  function getShortTitle(storename, suffix) {
-    if (!storename) return `매장 ${suffix}`;
-    const firstWord = storename.split(' ')[0];
-    return `${firstWord} ${suffix}`;
-  }
   return (
     <Stack.Navigator initialRouteName="StoreMainScreen">
       <Stack.Screen
@@ -276,7 +271,7 @@ export default function StoreStack() {
         component={StoreMapScreen}
         options={({navigation, route}) => {
           const storename = route.params?.storename || '매장';
-          const displayTitle = getShortTitle(storename, '길찾기');
+          const displayTitle = storename + ' 길찾기';
 
           return {
             headerLeft: () => (
@@ -315,7 +310,7 @@ export default function StoreStack() {
         component={StoreReviewScreen}
         options={({navigation, route}) => {
           const storename = route.params?.storename || '매장';
-          const displayTitle = getShortTitle(storename, '리뷰');
+          const displayTitle = storename + ' 리뷰';
 
           return {
             headerLeft: () => (
@@ -355,7 +350,7 @@ export default function StoreStack() {
         component={StoreReportList}
         options={({navigation, route}) => {
           const storename = route.params?.storeName || '매장';
-          const displayTitle = getShortTitle(storename, ' 신고·제보');
+          const displayTitle = storename + ' 신고·제보';
 
           return {
             headerLeft: () => (
@@ -490,7 +485,7 @@ export default function StoreStack() {
         component={ManagerStoreInfoScreen}
         options={({navigation, route}) => {
           const storename = route.params?.storename || '매장';
-          const displayTitle = getShortTitle(storename, ' 통계');
+          const displayTitle = storename + ' 통계';
 
           return {
             headerLeft: () => (
