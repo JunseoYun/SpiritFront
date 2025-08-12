@@ -9,20 +9,15 @@ import {
 import ResultItem from './ResultItem';
 import {Store_getby_keyword} from '../../../api/storeApi';
 import ResultItemSkeleton from './ResultItemSkeleton';
+import Loading from '../../../hooks/Loading';
 
-const ResultList = ({
-  trimmedSearchWord,
-  location,
-  navigation,
-  loading,
-  setLoading,
-}) => {
+const ResultList = ({trimmedSearchWord, location, navigation}) => {
   const [searchingStores, setSearchingStores] = useState([]); // 검색된 가게 목록
   const [page, setPage] = useState(0); // 페이지 번호
-  //const [loading, setLoading] = useState(false); // 로딩 상태
+  const [loading, setLoading] = useState(false);
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
   const [totalpage, setTotalpage] = useState(0);
-
+  const [firstloading, setFirstloading] = useState(true);
   // 검색된 가게들을 필터링하는 함수
   const filteredStores = async currentPage => {
     setLoading(true);
@@ -54,6 +49,9 @@ const ResultList = ({
         console.error('오류 발생:', err.message);
       } finally {
         setLoading(false);
+        if (firstloading == true) {
+          setFirstloading(false);
+        }
       }
     }
   };
@@ -79,7 +77,7 @@ const ResultList = ({
 
   return (
     <View style={styles.container}>
-      {loading ? (
+      {firstloading ? (
         <FlatList
           data={[1, 2, 3, 4, 5, 6, 7, 8, 9]} // 임의의 더미 데이터
           keyExtractor={(item, index) => index.toString()}
@@ -113,6 +111,7 @@ const ResultList = ({
           }
         />
       )}
+      <Loading loading={loading} />
     </View>
   );
 };

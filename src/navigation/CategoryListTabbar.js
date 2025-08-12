@@ -7,6 +7,7 @@ import CategoryTapScreen from '../screens/CategoryTap/CategoryTapScreen';
 import {getLocation} from '../storage/locationStorage';
 import Loading from '../hooks/Loading';
 import {AlcoholFilterProvider} from '../context/AlcoholFilterContext';
+import FilterBar from '../components/CategoryTapScreen/FilterBar';
 const categories = [
   {name: 'IZAKAYA', title: '이자카야', categoryname: 'IZAKAYA'},
   {name: 'KOREAN', title: '한식', categoryname: 'KOREAN'},
@@ -64,7 +65,7 @@ const CategoryListTabbar = ({route}) => {
       <Tab.Navigator
         initialRouteName={screen}
         screenOptions={{
-          lazy: false,
+          lazy: true,
           tabBarScrollEnabled: true,
           tabBarItemStyle: {width: 90},
 
@@ -79,6 +80,8 @@ const CategoryListTabbar = ({route}) => {
             fontFamily: 'Pretendard-Bold',
             fontSize: 16, // 글씨 크기 조정
           },
+          swipeDistanceThreshold: 150, // 기본값은 25, 크게 하면 더 많이 드래그해야 넘어감
+          swipeVelocityImpact: 0.7,
         }}>
         {categories.map(({name, title, categoryname}) => (
           <Tab.Screen

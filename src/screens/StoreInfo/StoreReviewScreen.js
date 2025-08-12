@@ -39,7 +39,7 @@ const StoreReviewScreen = ({navigation}) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [visitDate, setVisitDate] = useState(new Date()); // 방문 날짜 상태
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false); // 날짜 선택기 표시 상태
-
+  const [firstloading, setFirstloading] = useState(true);
   const [page, setPage] = useState(0); // 페이지 번호
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
@@ -72,6 +72,9 @@ const StoreReviewScreen = ({navigation}) => {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      if (firstloading == true) {
+        setFirstloading(false);
+      }
     }
   };
 
@@ -300,7 +303,7 @@ const StoreReviewScreen = ({navigation}) => {
                 <Text style={styles.addButtonText}>리뷰 작성하기</Text>
               </Pressable>
             </View>
-            {loading || refreshing ? (
+            {firstloading || refreshing ? (
               <FlatList
                 data={[1, 2, 3]} // 임의의 더미 데이터
                 keyExtractor={(item, index) => index.toString()}

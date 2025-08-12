@@ -5,7 +5,7 @@ import Feather from 'react-native-vector-icons/Feather';
 const StoreMapCenter = ({onPress}) => {
   return (
     <Pressable style={styles.buttonBottom} onPress={onPress}>
-      <Feather name="home" size={30} color="#16BBFF" />
+      <Feather name="home" size={30} color="#1a1a1a" />
     </Pressable>
   );
 };
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
-    backgroundColor: 'rgba(22, 187, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
   },
 });
 

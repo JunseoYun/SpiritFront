@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   },
   selectedTabText: {
     fontFamily: 'Pretendard-Bold',
-    color: '#45C9FF',
+    color: '#1a1a1a', // 여기도?
   },
   defaultUnderline: {
     height: 3,
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   animatedUnderline: {
     height: 3,
     width: width / 3 - 30, // 탭 2개 기준 너비에서 양쪽 20씩 줄임
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#1a1a1a', // 여기 색상?
     position: 'absolute',
     bottom: 0,
     marginHorizontal: 15, // 양쪽 여백 추가

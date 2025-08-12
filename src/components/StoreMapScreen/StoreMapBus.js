@@ -6,7 +6,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 const StoreMapBus = ({onPress}) => {
   return (
     <Pressable style={styles.buttonRoute} onPress={onPress}>
-      <FontAwesome name="bus" size={30} color="#16BBFF" />
+      <FontAwesome name="bus" size={30} color="#1a1a1a" />
     </Pressable>
   );
 };
@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
-    backgroundColor: 'rgba(22, 187, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
   },
 });
 

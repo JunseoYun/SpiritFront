@@ -235,7 +235,7 @@ const SearchScreen = ({navigation}) => {
         </ScrollView>
       </TouchableWithoutFeedback>
       {/* 하단에 고정된 검색 버튼 */}
-      <SearchButton onPress={onPressSearch} title="검색" />
+      {/* <SearchButton onPress={onPressSearch} title="검색" /> */}
 
       <Modal
         animationType="fade"
