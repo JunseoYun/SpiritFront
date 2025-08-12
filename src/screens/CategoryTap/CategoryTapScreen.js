@@ -1,11 +1,11 @@
 import React, {
+  useCallback,
   useContext,
   useEffect,
-  useCallback,
   useRef,
   useState,
 } from 'react';
-import {useIsFocused} from '@react-navigation/native';
+import {useFocusEffect, useIsFocused} from '@react-navigation/native';
 import {
   View,
   Text,
@@ -14,12 +14,17 @@ import {
   SafeAreaView,
   ScrollView,
   Pressable,
+  Dimensions,
+  Animated,
+  TouchableOpacity,
 } from 'react-native';
 import {AlcoholFilterContext} from '../../context/AlcoholFilterContext';
 import {Store_getby_category} from '../../api/storeApi';
 import StoreItem from '../../components/CategoryTapScreen/StoreItem';
 import Loading from '../../hooks/Loading';
 import StoreItemSkeleton from '../../components/CategoryTapScreen/StoreItemSkeleton';
+import Feather from 'react-native-vector-icons/Feather';
+import FilterBar from '../../components/CategoryTapScreen/FilterBar';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -36,153 +41,136 @@ const alcoholTypes = [
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
+const screenWidth = Dimensions.get('window').width;
+
 const CategoryTapScreen = ({navigation, route}) => {
   const {categoryname, location} = route.params;
   const isFocused = useIsFocused();
-
-  const {selectedAlcohols, toggleAlcohol, filterScrollX, setFilterScrollX} =
+  const {drinkType, filterScrollX, priceOrder} =
     useContext(AlcoholFilterContext);
 
-  const [rawStores, setRawStores] = useState([]);
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
+  const [firstloading, setFirstloading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [totalpage, setTotalpage] = useState(0);
 
   const scrollRef = useRef(null);
-
-  const applyAlcoholFilter = useCallback(
-    data => {
-      if (selectedAlcohols.length === 0) return data;
-      return data.filter(store =>
-        (store.mainDrinkDtos || []).some(drink =>
-          selectedAlcohols.includes(drink.type),
-        ),
-      );
-    },
-    [selectedAlcohols],
-  );
-
-  const fetchStores = async (startPage = 0, reset = false) => {
-    if (loading || isEnd) return;
+  const buttonLayouts = useRef({});
+  const fetchStores = async (page = 0, reset = false) => {
+    if (loading || (isEnd && !reset)) return;
     setLoading(true);
-
     try {
-      const size = selectedAlcohols.length > 0 ? 100 : 10;
-      let combinedRaw = reset ? [] : [...rawStores];
-      let currentPage = startPage;
-      let shouldContinue = true;
+      const data = await Store_getby_category(
+        page,
+        location.latitude,
+        location.longitude,
+        categoryname,
+        drinkType,
+        priceOrder,
+      );
+      setTotalpage(data.totalPages);
+      if (data.content.length > 0 && data.content) {
+        const newData = data.content || [];
 
-      while (shouldContinue) {
-        const data = await Store_getby_category(
-          currentPage,
-          location.latitude,
-          location.longitude,
-          categoryname,
-          size,
-        );
-
-        const newRaw = data.content || [];
-        combinedRaw = [...combinedRaw, ...newRaw];
-        const unique = Array.from(
-          new Map(combinedRaw.map(s => [s.id, s])).values(),
-        );
-
-        setRawStores(unique);
-        setStores(applyAlcoholFilter(unique));
-        setTotalpage(data.totalPages);
-
-        const isLastPage =
-          data.content.length === 0 || currentPage + 1 >= data.totalPages;
-
-        if (selectedAlcohols.length === 0 || isLastPage) {
-          shouldContinue = false;
-          setIsEnd(isLastPage);
-        } else {
-          currentPage += 1;
-        }
-      }
-
-      if (reset) {
-        setPage(0);
+        setStores(prevStores => {
+          const newStores = reset ? newData : [...prevStores, ...newData];
+          const uniqueStores = Array.from(
+            new Map(newStores.map(store => [store.id, store])).values(),
+          );
+          return uniqueStores;
+        });
       } else {
-        setPage(currentPage);
+        setIsEnd(true);
       }
     } catch (err) {
-      console.error(err.message || '오류 발생');
+      console.error(err);
     } finally {
       setLoading(false);
-      if (isInitialLoading) setIsInitialLoading(false);
+      setRefreshing(false);
+      setFirstloading(false);
     }
   };
 
+  // useEffect(() => {
+  //   if (isFocused) {
+  //     setIsEnd(false);
+  //     setStores([]);
+  //     fetchStores(0, true);
+  //     setFirstloading(true);
+  //   }
+  // }, [isFocused, drinkType, priceOrder]);
+
+  const lastParamsRef = useRef(null);
+
   useEffect(() => {
-    if (isFocused && rawStores.length === 0) {
-      fetchStores(0, true);
+    if (isFocused) {
+      const lastParams = lastParamsRef.current;
+
+      const hasChanged =
+        !lastParams || // 초기 진입이면 호출
+        lastParams.drinkType !== drinkType ||
+        lastParams.priceOrder !== priceOrder;
+
+      if (hasChanged) {
+        setIsEnd(false);
+        setStores([]);
+        setFirstloading(true);
+        fetchStores(0, true);
+
+        lastParamsRef.current = {drinkType, priceOrder};
+      }
     }
-  }, [isFocused]);
+  }, [isFocused, drinkType, priceOrder]);
 
-  useEffect(() => {
-    setStores(applyAlcoholFilter(rawStores));
-  }, [selectedAlcohols]);
+  const onRefresh = () => {
+    setRefreshing(true);
+    setFirstloading(true);
+    setIsEnd(false);
+    fetchStores(0, true);
+  };
 
+  // 페이징 호출
+  const loadMoreStores = () => {
+    if (!loading && isEnd == false && page < totalpage - 1) {
+      setPage(prevPage => {
+        const nextPage = prevPage + 1;
+        fetchStores(nextPage);
+        return nextPage;
+      });
+    }
+  };
+
+  // 필터바 스크롤 위치 유지 + 선택된 버튼 중앙 정렬
   useEffect(() => {
     if (isFocused && scrollRef.current) {
-      scrollRef.current.scrollTo({x: filterScrollX.current, animated: false});
+      if (drinkType && buttonLayouts.current[drinkType]) {
+        const {x, width} = buttonLayouts.current[drinkType];
+        const scrollToX = x + width / 2 - screenWidth / 2 + 30;
+        scrollRef.current.scrollTo({
+          x: scrollToX > 0 ? scrollToX : 0,
+          animated: true,
+        });
+      } else {
+        // drinkType이 없으면 기존 위치 복원
+        scrollRef.current.scrollTo({x: filterScrollX.current, animated: false});
+      }
     }
-  }, [isFocused]);
-
-  const handleAlcoholPress = value => {
-    toggleAlcohol(value);
-  };
+  }, [isFocused, drinkType]);
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
       <View>
         {/* 필터 바 */}
-        <ScrollView
-          ref={scrollRef}
-          horizontal
-          onLayout={() => {
-            scrollRef.current?.scrollTo({
-              x: filterScrollX.current,
-              animated: false,
-            });
-          }}
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterBar}
-          contentContainerStyle={{paddingHorizontal: 12}}
-          onScroll={e => {
-            filterScrollX.current = e.nativeEvent.contentOffset.x;
-          }}
-          scrollEventThrottle={16}>
-          {alcoholTypes.map(({label, value}) => (
-            <Pressable
-              key={value}
-              onPress={() => handleAlcoholPress(value)}
-              style={[
-                styles.filterButton,
-                selectedAlcohols.includes(value) && styles.activeFilter,
-              ]}>
-              <Text
-                style={[
-                  styles.filterText,
-                  selectedAlcohols.includes(value) && styles.activeFilterText,
-                ]}>
-                {label}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
+        <FilterBar navigation={navigation} />
 
-        {/* FlatList 항상 렌더 */}
-        {isInitialLoading || loading ? (
+        {firstloading ? (
           <FlatList
-            data={[1, 2, 3, 4]} // 임의의 더미 데이터
+            data={[1, 2, 3, 4]} // 더미 데이터
             keyExtractor={(item, index) => index.toString()}
-            renderItem={() => <StoreItemSkeleton />}
+            renderItem={() => <StoreItemSkeleton loading={loading} />}
             showsVerticalScrollIndicator={false}
           />
         ) : (
@@ -196,18 +184,7 @@ const CategoryTapScreen = ({navigation, route}) => {
               />
             )}
             keyExtractor={item => `${categoryname}-${item.id}`}
-            onEndReached={() => {
-              if (
-                !loading &&
-                !isEnd &&
-                rawStores.length > 0 &&
-                page < totalpage - 1
-              ) {
-                const nextPage = page + 1;
-                setPage(nextPage);
-                fetchStores(nextPage);
-              }
-            }}
+            onEndReached={loadMoreStores}
             onEndReachedThreshold={0.7}
             initialNumToRender={10}
             maxToRenderPerBatch={5}
@@ -218,50 +195,20 @@ const CategoryTapScreen = ({navigation, route}) => {
                 <Text style={styles.emptyText}>등록된 가게가 없어요</Text>
               ) : null
             }
-            refreshing={loading}
-            onRefresh={() => {
-              setIsEnd(false);
-              fetchStores(0, true);
-            }}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
             contentContainerStyle={{paddingBottom: 70}}
           />
         )}
+
+        {/* 로딩 오버레이 */}
+        <Loading loading={loading} />
       </View>
-      {/* 로딩 오버레이 */}
-      {(isInitialLoading || loading) && <Loading loading={true} />}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  filterBar: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    backgroundColor: 'white',
-  },
-  filterButton: {
-    height: 30,
-    justifyContent: 'center',
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    margin: 3,
-  },
-  filterText: {
-    fontSize: 14,
-    color: '#555',
-    fontFamily: 'Pretendard-Regular',
-    textAlign: 'center',
-  },
-  activeFilter: {
-    backgroundColor: '#45C9FF',
-    borderColor: '#45C9FF',
-  },
-  activeFilterText: {
-    color: 'white',
-    fontFamily: 'Pretendard-Bold',
-  },
   emptyText: {
     textAlign: 'center',
     marginVertical: 40,

@@ -6,7 +6,7 @@ import Feather from 'react-native-vector-icons/Feather';
 const MapLocation = ({onPress}) => {
   return (
     <Pressable style={styles.buttonBottom} onPress={onPress}>
-      <Feather name="crosshair" size={30} color="#16BBFF" />
+      <Feather name="crosshair" size={30} color="#1a1a1a" />
     </Pressable>
   );
 };
@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
-    backgroundColor: 'rgba(22, 187, 255, 0.2)',
+    backgroundColor: '#fff',
   },
 });
 

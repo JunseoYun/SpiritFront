@@ -8,6 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Feather from 'react-native-vector-icons/Feather';
 import {getAddress} from '../../storage/locationStorage';
 
 const MyLocation = ({navigation}) => {
@@ -60,6 +61,12 @@ const MyLocation = ({navigation}) => {
         </View>
       </View>
       <Pressable style={styles.button} onPress={searchAddressHandle}>
+        <Feather
+          name="crosshair"
+          size={15}
+          color="#1a1a1a"
+          style={styles.texticon}
+        />
         <Text style={styles.buttonText}>내 위치 변경하기</Text>
       </Pressable>
     </ScrollView>
@@ -77,16 +84,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    elevation: 3, // Android 그림자
+    elevation: 2, // Android 그림자
     marginBottom: 20,
   },
   icon: {
     marginRight: 12,
+  },
+  texticon: {
+    marginRight: 6,
   },
   label: {
     fontSize: 16,
@@ -100,14 +110,18 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
   },
   button: {
-    backgroundColor: '#45C9FF',
-    paddingVertical: 14,
-    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    borderRadius: 5,
     alignItems: 'center',
+    borderColor: '#ccc',
+    borderWidth: 1,
   },
   buttonText: {
-    fontSize: 16,
-    color: '#FFFFFF',
+    fontSize: 14,
+    color: '#1a1a1a',
     fontFamily: 'Pretendard-Medium',
   },
 });

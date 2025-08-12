@@ -6,7 +6,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const StoreMapFoot = ({onPress}) => {
   return (
     <Pressable style={styles.buttonRoute} onPress={onPress}>
-      <Ionicons name="footsteps" size={30} color="#16BBFF" />
+      <Ionicons name="footsteps" size={30} color="#16B1a1a1aBFF" />
     </Pressable>
   );
 };
@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
-    backgroundColor: 'rgba(22, 187, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
   },
 });
 

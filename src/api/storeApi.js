@@ -349,7 +349,8 @@ export const Store_getby_category = async (
   latitude,
   longitude,
   category,
-  size = 10, // ← 기본값 설정
+  drinkType,
+  priceOrder,
 ) => {
   try {
     const response = await axiosInstance.get(
@@ -358,8 +359,9 @@ export const Store_getby_category = async (
         params: {
           longitude,
           latitude,
+          drinkType,
           page,
-          size, // ← size 파라미터 추가
+          priceOrder,
         },
       },
     );

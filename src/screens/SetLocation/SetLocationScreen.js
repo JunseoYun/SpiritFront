@@ -121,8 +121,8 @@ const SetLocationScreen = ({navigation}) => {
         onPress={handleGetCurrentLocation}>
         <Feather
           name="crosshair"
-          size={18}
-          color="#fff"
+          size={15}
+          color="#1a1a1a"
           style={{marginRight: 6}}
         />
         <Text style={styles.buttonTextWhite}>현재 위치로 설정</Text>
@@ -130,7 +130,7 @@ const SetLocationScreen = ({navigation}) => {
       <TouchableOpacity style={styles.grayButton} onPress={handleSearch}>
         <Ionicons
           name="search-outline"
-          size={18}
+          size={15}
           color="#333"
           style={{marginRight: 6}}
         />
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#E6F6FD',
     padding: 18,
-    borderRadius: 12,
+    borderRadius: 8,
     marginBottom: 24,
     marginHorizontal: 18,
     marginTop: 20,
@@ -177,32 +177,34 @@ const styles = StyleSheet.create({
   blueButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#16BBFF',
-    paddingVertical: 14,
-    borderRadius: 12,
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    borderRadius: 5,
     justifyContent: 'center',
     marginVertical: 3,
     marginHorizontal: 18,
+    borderWidth: 0.7,
+    borderColor: '#1a1a1a',
   },
   grayButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F2F2F2',
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 12,
+    borderRadius: 5,
     justifyContent: 'center',
     marginHorizontal: 18,
-    marginTop: 10,
+    marginTop: 15,
   },
   buttonTextWhite: {
-    color: '#fff',
-    fontSize: 15,
-    fontFamily: 'Pretendard-SemiBold',
+    color: '#1a1a1a',
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
   },
   buttonText: {
     color: '#333',
     fontSize: 15,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
   deleteButton: {
     marginTop: 28,

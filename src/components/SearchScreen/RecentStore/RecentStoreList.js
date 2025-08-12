@@ -15,6 +15,7 @@ const RecentStoreList = ({
   const {token} = useAuth();
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
+  const [firstloading, setFirstloading] = useState(true);
   // const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalpage, setTotalpage] = useState(0);
@@ -57,6 +58,9 @@ const RecentStoreList = ({
     } catch (error) {
       console.error(error);
     } finally {
+      if (firstloading == true) {
+        setFirstloading(false);
+      }
       setLoading(false);
     }
   };
@@ -97,7 +101,7 @@ const RecentStoreList = ({
       </View>
       {token && (
         <>
-          {loading || refresh ? (
+          {firstloading || refresh ? (
             <FlatList
               data={[1, 2, 3]} // 임의의 더미 데이터
               keyExtractor={(item, index) => index.toString()}

@@ -44,6 +44,7 @@ const SearchFastScreen = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalpage, setTotalpage] = useState(0);
+  const [firstloading, setFirstloading] = useState(true);
 
   // ✅ 바텀시트 상태
   const [bottomModalVisible, setBottomModalVisible] = useState(false);
@@ -120,6 +121,9 @@ const SearchFastScreen = ({navigation}) => {
       console.error('데이터 로드 오류:', err);
     } finally {
       setLoading(false);
+      if (firstloading == true) {
+        setFirstloading(false);
+      }
     }
   };
 
@@ -169,7 +173,7 @@ const SearchFastScreen = ({navigation}) => {
       />
 
       {/* 검색 결과 리스트 */}
-      {loading ? (
+      {firstloading ? (
         <FlatList
           data={[1, 2, 3, 5, 6, 7, 8, 9]} // 임의의 더미 데이터
           keyExtractor={(item, index) => index.toString()}

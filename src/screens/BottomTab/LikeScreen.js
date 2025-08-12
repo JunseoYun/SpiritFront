@@ -20,6 +20,7 @@ const LikeScreen = ({navigation}) => {
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [firstloading, setFirstloading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
@@ -48,6 +49,9 @@ const LikeScreen = ({navigation}) => {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      if (firstloading == true) {
+        setFirstloading(false);
+      }
     }
   };
 
@@ -105,7 +109,7 @@ const LikeScreen = ({navigation}) => {
     <SafeAreaView style={styles.container}>
       {token && (
         <>
-          {loading || refreshing ? (
+          {firstloading || refreshing ? (
             <FlatList
               data={[1, 2, 3]} // 임의의 더미 데이터
               keyExtractor={(item, index) => index.toString()}
