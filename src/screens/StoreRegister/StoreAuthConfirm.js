@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   scrollContainer: {paddingHorizontal: 20, paddingBottom: 30},
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
     marginTop: 24,
     marginBottom: 12,
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     fontSize: 15,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#111',
     flex: 1,
     textAlign: 'right',
@@ -281,13 +281,13 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
   headerButton: {
     marginRight: 16,
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },
 });

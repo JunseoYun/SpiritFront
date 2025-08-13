@@ -18,7 +18,7 @@ const MapSearchBar = ({onPress}) => {
   return (
     <View style={[styles.buttonTop, {paddingTop: insets.top + 10}]}>
       <Pressable style={styles.searchView} onPress={onPress}>
-        <EvilIcons name="redo" size={25} color={'#16BBFF'} />
+        <EvilIcons name="redo" size={25} color={'#1a1a1a'} />
         <Text style={styles.buttonTextTop}>현 지도에서 재검색</Text>
       </Pressable>
     </View>
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   buttonTextTop: {
-    color: '#16BBFF',
+    color: '#1a1a1a',
     fontSize: 15,
     fontWeight: '400',
   },

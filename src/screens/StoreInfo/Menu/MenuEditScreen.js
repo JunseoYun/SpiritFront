@@ -1,4 +1,11 @@
-import React, {useState, useMemo, useLayoutEffect, useEffect} from 'react';
+import React, {
+  useState,
+  useMemo,
+  useLayoutEffect,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import {
   View,
   Text,
@@ -11,11 +18,13 @@ import {
   Platform,
   Keyboard,
   TouchableWithoutFeedback,
+  BackHandler,
+  ToastAndroid,
 } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import MenuItem from '../../../components/StoreMenuScreen/MenuItem';
 import {MenuUpdateSort, StoreMenudelete} from '../../../api/menuApi';
-
+import {useFocusEffect} from '@react-navigation/native';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
 const BUTTON_HEIGHT = 64;
@@ -183,6 +192,35 @@ const MenuEditScreen = ({route, navigation}) => {
   };
 
   const [currentData, setCurrentData] = getCurrentData();
+
+  const lastBackPressed = useRef(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        const now = Date.now();
+
+        if (now - lastBackPressed.current < 2000) {
+          navigation.goBack();
+          return true;
+        }
+
+        lastBackPressed.current = now;
+        ToastAndroid.show(
+          '한 번 더 누르면 작성한 내용이 사라집니다.',
+          ToastAndroid.SHORT,
+        );
+        return true; // 기본 동작 막기
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove(); // cleanup
+    }, [navigation]),
+  );
 
   return (
     <KeyboardAvoidingView

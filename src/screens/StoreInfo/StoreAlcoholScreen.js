@@ -1,7 +1,17 @@
-import React, {useEffect, useState, useMemo} from 'react';
-import {SafeAreaView, StyleSheet, Text, View, Pressable} from 'react-native';
+import React, {useEffect, useState, useMemo, useRef} from 'react';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
 import AlcoholItem from '../../components/StoreAlcoholScreen/AlcoholItem';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
+import Feather from 'react-native-vector-icons/Feather';
 
 const alcoholMapping = {
   SOJU: '소주',
@@ -26,10 +36,16 @@ const StoreAlcoholScreen = ({
   onAlcoholDelete,
   isUpdatable,
   onAlcoholUpdateComplete,
+  onScrollTo, // 상위에서 scrollTo를 호출할 함수 (scrollToHandler)
+  sectionPositions: parentSectionPositions, // 상위에서 관리하는 섹션 위치들
+  setSectionPositions: setParentSectionPositions, // 상위에서 섹션 위치 관리 함수
+  imagelist = 0,
 }) => {
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
+  const {height: windowHeight} = Dimensions.get('window');
 
   const {translateAlcohol} = useTranslateAlcohol();
+  const paddingTopValue = windowHeight * 0.7;
 
   useEffect(() => {
     setAlcoholsState(alcohols);
@@ -37,24 +53,19 @@ const StoreAlcoholScreen = ({
 
   const groupedAlcohols = useMemo(() => {
     const mainDrinkTypes = new Set(mainDrinks.map(drink => drink.type));
-
     const grouped = alcoholsState.reduce((acc, alcohol) => {
       const translatedType = translateAlcohol(alcohol.type);
       const isMainDrink = mainDrinkTypes.has(alcohol.type);
-
       if (!acc[translatedType]) {
         acc[translatedType] = {main: [], regular: []};
       }
-
       if (isMainDrink) {
         acc[translatedType].main.push(alcohol);
       } else {
         acc[translatedType].regular.push(alcohol);
       }
-
       return acc;
     }, {});
-
     return Object.keys(grouped)
       .sort((a, b) => {
         const isAMainDrink = mainDrinkTypes.has(
@@ -63,10 +74,8 @@ const StoreAlcoholScreen = ({
         const isBMainDrink = mainDrinkTypes.has(
           Object.keys(alcoholMapping).find(key => alcoholMapping[key] === b),
         );
-
         if (isAMainDrink && !isBMainDrink) return -1;
         if (!isAMainDrink && isBMainDrink) return 1;
-
         return (
           Object.values(alcoholMapping).indexOf(a) -
           Object.values(alcoholMapping).indexOf(b)
@@ -82,48 +91,66 @@ const StoreAlcoholScreen = ({
   return (
     <SafeAreaView style={styles.container}>
       {isUpdatable && (
-        <Pressable
-          style={styles.reorderButton}
-          onPress={() =>
-            navigation.navigate('AlcoholEditScreen', {
-              storeId,
-              alcohols,
-              onAlcoholUpdateComplete, // ✅ 메뉴 다시 불러오는 콜백 전달
-              onAlcoholDelete,
-            })
-          }>
-          <Text style={styles.alcoholAddButtonText}>주류 편집</Text>
-        </Pressable>
+        <>
+          <Pressable
+            style={styles.reorderButton}
+            onPress={() =>
+              navigation.navigate('AlcoholEditScreen', {
+                storeId,
+                alcohols,
+                onAlcoholUpdateComplete,
+                onAlcoholDelete,
+              })
+            }>
+            <Text style={styles.alcoholAddButtonText}>주류 편집</Text>
+          </Pressable>
+        </>
       )}
 
-      {Object.keys(groupedAlcohols).map(type => (
-        <View key={type}>
-          <Text style={styles.typeLabel}>{type}</Text>
-          {groupedAlcohols[type].map(alcohol => (
-            <AlcoholItem key={alcohol.id} alcohol={alcohol} storeId={storeId} />
-          ))}
-          <View style={styles.line} />
-        </View>
-      ))}
-      {alcohols?.length === 0 && (
-        <View style={styles.footer}>
-          <Text style={styles.emptyText}>등록된 주류가 없어요</Text>
-        </View>
-      )}
+      {/* 주류 리스트 */}
+      {/* 내부 ScrollView 제거하고 View로 감싸기 */}
+      <View style={{flex: 1}}>
+        {Object.keys(groupedAlcohols).map(type => (
+          <View
+            key={type}
+            onLayout={e => {
+              const y = e.nativeEvent.layout.y;
+              setParentSectionPositions(prev => ({
+                ...prev,
+                [type]: y,
+              }));
+            }}>
+            <Text style={styles.typeLabel}>{type}</Text>
+            {groupedAlcohols[type].map(alcohol => (
+              <AlcoholItem
+                key={alcohol.id}
+                alcohol={alcohol}
+                storeId={storeId}
+                navigation={navigation}
+              />
+            ))}
+            <View style={styles.line} />
+          </View>
+        ))}
+
+        {alcohols?.length === 0 && (
+          <View style={styles.footer}>
+            <Text style={styles.emptyText}>등록된 주류가 없어요</Text>
+          </View>
+        )}
+      </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 20,
     backgroundColor: '#fff',
   },
   reorderButton: {
-    marginTop: 30,
-    marginBottom: 20,
     marginHorizontal: 18,
     marginTop: 20,
+    marginBottom: 10,
     alignItems: 'center',
     borderRadius: 10,
     backgroundColor: '#E9F5FB',
@@ -133,6 +160,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     padding: 16,
+  },
+  tabContainer: {
+    paddingHorizontal: 18,
+    backgroundColor: '#fff',
+    marginTop: 10,
+  },
+  tabButton: {
+    marginRight: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: '#eee',
+    marginBottom: 5,
+  },
+  tabText: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    color: '#555',
   },
   typeLabel: {
     fontSize: 20,
@@ -154,9 +199,22 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Medium',
     fontSize: 20,
     color: '#c0c0c0',
+  },
+  addImageButton: {
+    marginTop: 20,
+    marginHorizontal: 18,
+    paddingTop: 10,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  addImageText: {
+    color: '#999',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

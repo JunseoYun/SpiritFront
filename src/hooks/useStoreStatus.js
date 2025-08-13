@@ -283,7 +283,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         setClosed(false);
         setNextclosed(false);
 
-        if (now <= openDate && !nextdayInfo.isClosed) {
+        if (now <= openDate && !nextdayInfo?.isClosed) {
           setStarttime(todayInfo.openTime.slice(0, 5));
         }
         if (nextdayInfo && !nextdayInfo.isClosed && now >= closeDate) {

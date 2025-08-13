@@ -5,22 +5,23 @@ import {
   Text,
   Platform,
   Keyboard,
-  TouchableWithoutFeedback,
   StyleSheet,
   Pressable,
   KeyboardAvoidingView,
-  Dimensions,
+  Share,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/StoreImage/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
+import StorePriceImage from '../../components/StoreScreen/StorePriceImage';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {
   StoreMainget,
   UpdateStore,
   DeleteStoreImage,
   UpdateStoreImage,
+  get_store_share,
 } from '../../api/storeApi';
 
 import Feather from 'react-native-vector-icons/Feather';
@@ -29,7 +30,6 @@ import StoreAlcoholScreen from './StoreAlcoholScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
 import {StoreMenuget} from '../../api/menuApi';
 import {StoreDrinkget} from '../../api/drinkApi';
-import StoreModal from '../../components/StoreScreen/StoreModal';
 import UpdateHeader from '../../components/StoreScreen/UpdateHeader';
 import BottomSheet from '@gorhom/bottom-sheet';
 import UpdateBottomSheet from '../../components/StoreScreen/UpdateBottomSheet';
@@ -39,8 +39,7 @@ import {useToast} from '../../context/ToastContext';
 import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
-
-const {width} = Dimensions.get('window');
+import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcategorytab';
 
 const StoreMainScreen = ({navigation}) => {
   const {token} = useAuth();
@@ -49,9 +48,9 @@ const StoreMainScreen = ({navigation}) => {
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '70%', '85%'], []);
   const {storeId, innerlatitude, innerlongitude} = route.params;
+
   const [menus, setMenus] = useState([]);
   const [alcohols, setAlcohols] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedata, setStoredata] = useState('');
   const [scrollY] = useState(new Animated.Value(0));
   const [longitude, setLongitude] = useState('');
@@ -64,6 +63,15 @@ const StoreMainScreen = ({navigation}) => {
   const scrollViewRef = useRef(null); // ScrollView 참조 추가
   const [loading, setLoading] = useState(true);
   const {showToast} = useToast();
+
+  const [sectionPositions, setSectionPositions] = useState({});
+
+  // 상위 scrollTo 함수
+  const scrollToHandler = params => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo(params);
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -199,10 +207,6 @@ const StoreMainScreen = ({navigation}) => {
   const endUpdate = () => {
     setIsUpdate(false);
     handleBottomClose();
-  };
-
-  const onPressModalClose = () => {
-    setIsModalVisible(false);
   };
 
   const handleBottomOpen = () => {
@@ -390,6 +394,46 @@ const StoreMainScreen = ({navigation}) => {
     });
   };
 
+  const [tabY, setTabY] = useState(0);
+
+  const onShare = async () => {
+    try {
+      const response = await get_store_share(storeId);
+
+      if (!response?.url) {
+        showToast('공유할 링크를 가져오지 못했어요.');
+        return;
+      }
+
+      await Share.share({
+        message:
+          Platform.OS === 'ios'
+            ? `${storedata.name}에서 한잔 어때요?\n한잔할까에서 확인해보세요!\n`
+            : `${storedata.name}에서 한잔 어때요?\n한잔할까에서 확인해보세요!\n${response.url}`,
+        url: response.url,
+        title: '가게 공유',
+      });
+    } catch (error) {
+      showToast('공유 도중 문제가 발생했어요.');
+      console.error('onShare error:', error);
+    }
+  };
+
+  const handleStoreInfo = () => {
+    const locationDto = {
+      latitude: latitude,
+      longitude: longitude,
+    };
+    navigation.navigate('StoreStack', {
+      screen: 'ManagerStoreInfoScreen',
+      params: {
+        storeId: storeId,
+        storename: storedata.name,
+        locationDto: locationDto,
+      },
+    });
+  };
+
   return (
     <>
       <View style={{backgroundColor: 'white', flex: 1}}>
@@ -399,8 +443,8 @@ const StoreMainScreen = ({navigation}) => {
             headerBackgroundColor={headerBackgroundColor}
             iconColor={iconColor}
             titleOpacity={titleOpacity}
-            title={storedata.name}
-            isOwner={storedata?.isOwner}
+            title={storedata?.name}
+            onShare={onShare}
           />
         )}
         {isUpdate && (
@@ -416,14 +460,17 @@ const StoreMainScreen = ({navigation}) => {
               navigation={navigation}
               headerBackgroundColor={'#fff'}
               iconColor={'#333'}
-              title={storedata.name}
-              isOwner={storedata.isOwner}
+              title={storedata?.name}
+              onShare={onShare}
             />
           )}
 
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView
+            stickyHeaderIndices={
+              !isUpdate && currentPage === 'StoreAlcoholScreen' ? [5] : []
+            }
             onScroll={Animated.event(
               [{nativeEvent: {contentOffset: {y: scrollY}}}],
               {useNativeDriver: false},
@@ -446,113 +493,130 @@ const StoreMainScreen = ({navigation}) => {
             keyboardShouldPersistTaps="always"
             scrollEnabled={true}
             contentContainerStyle={{flexGrow: 1}}>
-            <TouchableWithoutFeedback onPress={handleBottomClose}>
-              <View>
-                {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
-                  <View
-                    style={[
-                      {
-                        height: 270, // 숫자 값은 따옴표 없이 사용
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: 'black',
-                      },
-                      isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
-                      isUpdate &&
-                        !storedata?.imgUrlList?.length > 0 && {
-                          marginTop: Platform.OS === 'ios' ? 20 : 30,
-                        },
-                    ]}>
-                    <ImageSlider
-                      storeId={storeId}
-                      images={imageSliderData}
-                      interval={4000}
-                      isUpdate={isUpdate}
-                      handleBottomOpen={handleBottomOpen}
-                      onEditKey={handleEditKey}
-                      onEditValue={handleEditValue}
-                      navigation={navigation}
-                    />
-                  </View>
-                )}
-                {!storedata?.imgUrlList?.length > 0 &&
-                  !isUpdate &&
-                  storedata?.isUpdatable === true && (
-                    <Pressable
-                      style={styles.addImageButton}
-                      onPress={startUpdate}>
-                      <Text style={styles.addImageText}>
-                        매장 이미지 추가하기
-                      </Text>
-                      <Feather name="chevron-right" size={23} color="#999" />
-                    </Pressable>
-                  )}
-
-                <StoreMainInfo
-                  storedata={storedata}
-                  onModalOpen={() => setIsModalVisible(true)}
-                  navigation={navigation}
+            {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
+              <View
+                style={[
+                  {
+                    height: 270, // 숫자 값은 따옴표 없이 사용
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'black',
+                  },
+                  isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
+                  isUpdate &&
+                    !storedata?.imgUrlList?.length > 0 && {
+                      marginTop: Platform.OS === 'ios' ? 20 : 30,
+                    },
+                ]}>
+                <ImageSlider
+                  storeId={storeId}
+                  images={imageSliderData}
+                  interval={4000}
                   isUpdate={isUpdate}
-                  endUpdate={endUpdate}
                   handleBottomOpen={handleBottomOpen}
                   onEditKey={handleEditKey}
                   onEditValue={handleEditValue}
-                  storeTimeEditHandle={storeTimeEditHandle}
-                  storeupdatedrink={storeupdatedrink}
-                  setLoading={setLoading}
-                  loading={loading}
+                  navigation={navigation}
                 />
-                {!isUpdate && (
-                  <View style={{backgroundColor: '#F2F2F2', height: 20}} />
-                )}
+              </View>
+            )}
+            {!storedata?.imgUrlList?.length > 0 &&
+              !isUpdate &&
+              storedata?.isUpdatable === true && (
+                <Pressable style={styles.addImageButton} onPress={startUpdate}>
+                  <Text style={styles.addImageText}>매장 이미지 추가하기</Text>
+                  <Feather name="chevron-right" size={23} color="#999" />
+                </Pressable>
+              )}
 
-                {!isUpdate && (
-                  <StoreTabs
-                    changePage={setCurrentPage}
-                    currentPage={currentPage}
+            <StoreMainInfo
+              storedata={storedata}
+              navigation={navigation}
+              isUpdate={isUpdate}
+              endUpdate={endUpdate}
+              handleBottomOpen={handleBottomOpen}
+              onEditKey={handleEditKey}
+              onEditValue={handleEditValue}
+              storeTimeEditHandle={storeTimeEditHandle}
+              storeupdatedrink={storeupdatedrink}
+              setLoading={setLoading}
+              loading={loading}
+              startUpdate={startUpdate}
+              handleReport={handleReport}
+              handleReportList={handleReportList}
+              handleStoreInfo={handleStoreInfo}
+            />
+            {!isUpdate && (
+              <View style={{backgroundColor: '#F2F2F2', height: 20}} />
+            )}
+
+            {!isUpdate && (
+              <StoreTabs
+                changePage={setCurrentPage}
+                currentPage={currentPage}
+              />
+            )}
+
+            {!isUpdate && (
+              <StorePriceImage
+                storeId={storeId}
+                isUpdatable={storedata?.isUpdatable}
+                imageList={storedata?.boardImageDtoList}
+                navigation={navigation}
+              />
+            )}
+
+            {(!isUpdate && currentPage) === 'StoreAlcoholScreen' && (
+              <View
+                onLayout={e => {
+                  const y = e.nativeEvent.layout.y;
+                  setTabY(y);
+                }}>
+                <Alcoholcategorytab
+                  alcohols={alcohols}
+                  mainDrinks={storedata.mainDrinkDtos}
+                  imagelist={storedata?.imgUrlList?.length}
+                  onScrollTo={scrollToHandler}
+                  sectionPositions={sectionPositions}
+                  scrollY={scrollY}
+                  tabY={tabY}
+                />
+              </View>
+            )}
+
+            {!isUpdate && (
+              <>
+                {currentPage === 'StoreMenuScreen' && (
+                  <StoreMenuScreen
+                    navigation={navigation}
+                    storeId={storeId}
+                    menus={menus}
+                    onMenuDelete={handleMenuDelete}
+                    isUpdatable={storedata?.isUpdatable}
+                    onMenuUpdateComplete={refreshMenus}
+                    images={imageSliderData}
                   />
                 )}
-
-                {!isUpdate && (
-                  <View>
-                    {currentPage === 'StoreMenuScreen' && (
-                      <StoreMenuScreen
-                        navigation={navigation}
-                        storeId={storeId}
-                        menus={menus}
-                        onMenuDelete={handleMenuDelete}
-                        isUpdatable={storedata?.isUpdatable}
-                        onMenuUpdateComplete={refreshMenus}
-                      />
-                    )}
-                    {currentPage === 'StoreAlcoholScreen' && (
-                      <StoreAlcoholScreen
-                        navigation={navigation}
-                        storeId={storeId}
-                        alcohols={alcohols}
-                        mainDrinks={storedata.mainDrinkDtos}
-                        scrollViewRef={scrollViewRef}
-                        onAlcoholDelete={handleAlcoholDelete}
-                        isUpdatable={storedata?.isUpdatable}
-                        onAlcoholUpdateComplete={refresAlcohols}
-                      />
-                    )}
-                  </View>
+                {currentPage === 'StoreAlcoholScreen' && (
+                  <StoreAlcoholScreen
+                    navigation={navigation}
+                    storeId={storeId}
+                    alcohols={alcohols}
+                    mainDrinks={storedata.mainDrinkDtos}
+                    scrollViewRef={scrollViewRef}
+                    onAlcoholDelete={handleAlcoholDelete}
+                    isUpdatable={storedata?.isUpdatable}
+                    onAlcoholUpdateComplete={refresAlcohols}
+                    imagelist={storedata?.imgUrlList?.length}
+                    onScrollTo={scrollToHandler}
+                    sectionPositions={sectionPositions}
+                    setSectionPositions={setSectionPositions}
+                  />
                 )}
-              </View>
-            </TouchableWithoutFeedback>
+              </>
+            )}
           </ScrollView>
         </KeyboardAvoidingView>
-        <StoreModal
-          isModalVisible={isModalVisible}
-          onPressModalClose={onPressModalClose}
-          storeId={storeId}
-          navigation={navigation}
-          startUpdate={startUpdate}
-          handleReport={handleReport}
-          handleReportList={handleReportList}
-          isUpdatable={storedata?.isUpdatable}
-        />
       </View>
       {isUpdate && (
         <View style={styles.endUpdateButton}>
@@ -655,7 +719,7 @@ const styles = StyleSheet.create({
   addImageText: {
     color: '#999',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

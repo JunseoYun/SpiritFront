@@ -10,7 +10,6 @@ const SearchResultScreen = ({navigation}) => {
   const {searchName, location} = route.params;
   const [searchWord, setSearchWord] = useState(searchName);
   const [trimmedSearchWord, setTrimmedSearchWord] = useState(searchWord);
-  const [loading, setLoading] = useState(false);
 
   // ✅ 새로운 검색 실행 함수
   const handleSearch = newSearchWord => {
@@ -30,10 +29,7 @@ const SearchResultScreen = ({navigation}) => {
         trimmedSearchWord={trimmedSearchWord}
         navigation={navigation}
         location={location}
-        loading={loading}
-        setLoading={setLoading}
       />
-      <Loading loading={loading} />
     </SafeAreaView>
   );
 };

@@ -7,9 +7,11 @@ import {
   SafeAreaView,
   TouchableOpacity,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
-import {ReviewStoreGet} from '../../api/reviewApi';
+import {ReviewStoreGet, review_delete_reply} from '../../api/reviewApi';
 import ReviewItem from '../../components/StoreReviewScreen/ReviewItem';
 import {ReviewCreate} from '../../api/reviewApi';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
@@ -17,15 +19,14 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import ImagePicker from 'react-native-image-crop-picker';
 import ReviewForm from '../../components/StoreReviewScreen/ReviewForm';
 import forbiddenWords from '../../hooks/forbiddenWords';
-import filterWords from '../../hooks/filterWords';
 import {useToast} from '../../context/ToastContext';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {requestPhotoPermission} from '../../hooks/usePhotopermis';
 import Loading from '../../hooks/Loading';
+import ReviewItemSkeleton from '../../components/StoreReviewScreen/ReviewItemSkeleton';
 
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeId, storename} = route.params;
+  const {storeId, storename, isOwner} = route.params;
   const [reviewdata, setReviewdata] = useState([]);
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
@@ -33,18 +34,19 @@ const StoreReviewScreen = ({navigation}) => {
   const [isWriting, setIsWriting] = useState(false); // 작성 상태
 
   const [newrate, setNewRate] = useState(0);
-  const [newReviewContent, setNewReviewContent] = useState(null);
+  const [newReviewContent, setNewReviewContent] = useState('');
   const [images, setImages] = useState([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [visitDate, setVisitDate] = useState(new Date()); // 방문 날짜 상태
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false); // 날짜 선택기 표시 상태
-
+  const [firstloading, setFirstloading] = useState(true);
   const [page, setPage] = useState(0); // 페이지 번호
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
   const [totalpage, setTotalpage] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [addloading, setAddloading] = useState(false);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
   const getReviewData = async currentPage => {
     setLoading(true);
@@ -70,6 +72,9 @@ const StoreReviewScreen = ({navigation}) => {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      if (firstloading == true) {
+        setFirstloading(false);
+      }
     }
   };
 
@@ -106,20 +111,31 @@ const StoreReviewScreen = ({navigation}) => {
     showAlert({
       title: '작성한 내용이 저장되지 않았습니다',
       message: '리뷰 작성을 취소하시겠습니까?',
-      onConfirm: () => setIsWriting(false),
+      onConfirm: () => {
+        setIsWriting(false);
+        setImages([]); // 이미지 초기화
+        setNewRate(0); // 별점 초기화
+        setNewReviewContent(''); // 리뷰 내용 초기화
+        setVisitDate(new Date()); // 방문 날짜 초기화
+      },
       type: 'confirm',
     });
   };
 
-  const renderStars = () => {
+  const renderStars = onRateSelect => {
     return Array.from({length: 5}, (_, index) => {
-      const starIndex = index + 1; // 별의 번호 (1부터 시작)
+      const starIndex = index + 1;
       return (
-        <TouchableOpacity key={index} onPress={() => setNewRate(starIndex)}>
+        <TouchableOpacity
+          key={index}
+          onPress={() => {
+            setNewRate(starIndex);
+            onRateSelect?.(starIndex); // ✅ 올바른 콜백 호출
+          }}>
           <FontAwesomeIcon
             name="star"
             size={30}
-            color={starIndex <= newrate ? '#FFD700' : '#F0F0F0'} // 노란색(#FFD700) 또는 회색(#D3D3D3)
+            color={starIndex <= newrate ? '#FFD700' : '#F0F0F0'}
             style={styles.star}
           />
         </TouchableOpacity>
@@ -134,12 +150,32 @@ const StoreReviewScreen = ({navigation}) => {
   const selectImage = async () => {
     const hasCamera = await requestPhotoPermission();
     if (!hasCamera) return;
-    ImagePicker.openPicker({
+    ImagePicker.openCamera({
       width: 1024,
       height: 1024,
       quality: 1,
       cropping: true,
       mediaType: 'photo',
+    })
+      .then(image => {
+        setImages(prevImages => [...prevImages, image]); // 이미지를 배열에 추가
+      })
+      .catch(error => {
+        console.log('ImagePicker Error: ', error);
+      });
+  };
+
+  const handleGalleryPick = async () => {
+    const hasCamera = await requestPhotoPermission();
+    if (!hasCamera) {
+      return;
+    }
+    ImagePicker.openPicker({
+      width: 1024,
+      height: 1024,
+      cropping: true,
+      mediaType: 'photo',
+      quality: 1,
     })
       .then(image => {
         setImages(prevImages => [...prevImages, image]); // 이미지를 배열에 추가
@@ -203,16 +239,9 @@ const StoreReviewScreen = ({navigation}) => {
           storeId: storeId,
         },
       };
-
       await ReviewCreate(data);
-      setImages([]); // 이미지 초기화
-      setNewRate(0); // 별점 초기화
-      setNewReviewContent(''); // 리뷰 내용 초기화
-      setVisitDate(new Date()); // 방문 날짜 초기화
-
       showToast('리뷰가 등록되었습니다.');
       handleRefresh();
-      setIsWriting(false);
     } catch (error) {
       console.log(error, '리뷰 등록 중 에러');
       showAlert({
@@ -221,78 +250,126 @@ const StoreReviewScreen = ({navigation}) => {
       });
     } finally {
       setAddloading(false);
+      setIsWriting(false);
+      setImages([]); // 이미지 초기화
+      setNewRate(0); // 별점 초기화
+      setNewReviewContent(''); // 리뷰 내용 초기화
+      setVisitDate(new Date()); // 방문 날짜 초기화
+    }
+  };
+
+  const handleDeleteReply = reviewId => {
+    showAlert({
+      title: '답글 삭제',
+      message: '해당 답글 삭제하시겠습니까?',
+      onConfirm: () => {
+        deleteReply(reviewId);
+      },
+      type: 'delete',
+    });
+  };
+
+  const deleteReply = async reviewId => {
+    setLoading(true);
+    try {
+      await review_delete_reply(reviewId);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const renderItem = ({item}) => (
-    <ReviewItem key={item.id} item={item} navigation={navigation} />
+    <ReviewItem
+      key={item.id}
+      item={item}
+      navigation={navigation}
+      isOwner={isOwner}
+      handleDeleteReply={handleDeleteReply}
+    />
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {isWriting ? (
-        <ReviewForm
-          onChangeText={onChangeText}
-          newReviewContent={newReviewContent}
-          visitDate={visitDate}
-          setVisitDate={setVisitDate}
-          isDatePickerOpen={isDatePickerOpen}
-          setIsDatePickerOpen={setIsDatePickerOpen}
-          images={images}
-          setImages={setImages}
-          selectedImageIndex={selectedImageIndex}
-          setSelectedImageIndex={setSelectedImageIndex}
-          renderStars={renderStars}
-          selectImage={selectImage}
-          handleImagePress={handleImagePress}
-          handleSubmitReview={handleSubmitReview}
-          hadleNoWrite={hadleNoWrite}
-        />
-      ) : (
-        <View style={{width: '100%'}}>
-          <View style={styles.MenuaddView}>
-            <Pressable style={styles.addButton} onPress={hadleIsWrite}>
-              <Text style={styles.addButtonText}>리뷰 작성하기</Text>
-            </Pressable>
+    <KeyboardAvoidingView
+      style={{flex: 1}}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 70}>
+      <SafeAreaView style={styles.container}>
+        {!isWriting ? (
+          <View style={{width: '100%'}}>
+            <View style={styles.MenuaddView}>
+              <Pressable style={styles.addButton} onPress={hadleIsWrite}>
+                <Text style={styles.addButtonText}>리뷰 작성하기</Text>
+              </Pressable>
+            </View>
+            {firstloading || refreshing ? (
+              <FlatList
+                data={[1, 2, 3]} // 임의의 더미 데이터
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={() => <ReviewItemSkeleton />}
+                showsVerticalScrollIndicator={false}
+              />
+            ) : (
+              <FlatList
+                data={reviewdata}
+                renderItem={renderItem}
+                keyExtractor={item => item.id.toString()}
+                keyboardDismissMode="none"
+                keyboardShouldPersistTaps="always"
+                onEndReached={loadMoreReviews}
+                onEndReachedThreshold={0.5}
+                onRefresh={handleRefresh}
+                refreshing={refreshing}
+                contentContainerStyle={{paddingBottom: 0}}
+                ListFooterComponent={
+                  <View style={styles.footer}>
+                    {loading && !isEnd ? (
+                      <Text style={styles.emptyText}>Loading...</Text>
+                    ) : !loading && reviewdata.length === 0 ? (
+                      <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
+                    ) : null}
+                  </View>
+                }
+              />
+            )}
           </View>
-          <FlatList
-            data={reviewdata}
-            renderItem={renderItem}
-            keyExtractor={item => item.id.toString()}
-            showsVerticalScrollIndicator={false}
-            initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
-            maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
-            windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-            removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
-            onEndReached={loadMoreReviews} // 더 많은 데이터 불러오기
-            onEndReachedThreshold={0.5}
-            onRefresh={handleRefresh} // 새로고침
-            refreshing={refreshing}
-            contentContainerStyle={{paddingBottom: 0}}
-            ListFooterComponent={
-              <View style={styles.footer}>
-                {loading && !isEnd ? (
-                  <Text style={styles.emptyText}>Loading...</Text>
-                ) : !loading && reviewdata.length === 0 ? (
-                  <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
-                ) : null}
-              </View>
-            }
-          />
-        </View>
-      )}
-
-      <AlertComponent />
-
-      <Loading loading={addloading} />
-    </SafeAreaView>
+        ) : (
+          <View visible={isWriting}>
+            <ReviewForm
+              storeName={storename} // 스토어 이름 넘겨주기
+              newReviewContent={newReviewContent}
+              onChangeText={onChangeText}
+              renderStars={renderStars}
+              visitDate={visitDate}
+              setVisitDate={setVisitDate}
+              isDatePickerOpen={isDatePickerOpen}
+              setIsDatePickerOpen={setIsDatePickerOpen}
+              images={images}
+              selectedImageIndex={selectedImageIndex}
+              handleImagePress={handleImagePress}
+              selectImage={selectImage}
+              handleSubmitReview={handleSubmitReview}
+              hadleNoWrite={hadleNoWrite}
+              setIsWriting={setIsWriting}
+              isBottomSheetVisible={isBottomSheetVisible}
+              setBottomSheetVisible={setBottomSheetVisible}
+              handleGalleryPick={handleGalleryPick}
+              setSelectedImageIndex={setSelectedImageIndex}
+            />
+          </View>
+        )}
+        <AlertComponent />
+        <Loading loading={addloading || loading} />
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: '#fff',
-
     width: '100%',
     height: '100%',
   },
@@ -306,7 +383,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 15,
     marginLeft: 15,
     textAlign: 'center',
@@ -370,6 +447,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#c0c0c0',
+  },
+
+  modalContent: {
+    flex: 1,
+    width: '100%',
   },
 });
 

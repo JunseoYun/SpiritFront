@@ -32,7 +32,7 @@ const CFUserinfo = ({userdata, navigation}) => {
           }>
           <Text style={styles.label}>이름</Text>
           <View style={styles.info}>
-            <Text style={styles.value}>{userdata.name}</Text>
+            <Text style={styles.value}>{userdata?.name}</Text>
             <View>
               <FontAwesomeIcon name="angle-right" size={18} color="#999" />
             </View>
@@ -64,19 +64,31 @@ const CFUserinfo = ({userdata, navigation}) => {
           <View style={styles.info}>
             {(() => {
               const SOCIAL_ORDER = ['KAKAO', 'GOOGLE', 'APPLE'];
-              const sortedSocialList = [
-                ...(userdata.socialInfoDtoList || []),
-              ].sort(
+              const socialInfoList = userdata?.socialInfoDtoList || [];
+
+              // ✅ 1. socialType 기준으로 중복 제거
+              const uniqueSocialMap = new Map();
+              socialInfoList.forEach(info => {
+                if (!uniqueSocialMap.has(info.socialType)) {
+                  uniqueSocialMap.set(info.socialType, info);
+                }
+              });
+
+              // ✅ 2. 정렬
+              const sortedSocialList = Array.from(
+                uniqueSocialMap.values(),
+              ).sort(
                 (a, b) =>
                   SOCIAL_ORDER.indexOf(a.socialType) -
                   SOCIAL_ORDER.indexOf(b.socialType),
               );
 
+              // ✅ 3. 렌더링
               return sortedSocialList.map(info => {
                 if (info.socialType === 'KAKAO') {
                   return (
                     <FastImage
-                      key={info.socialId}
+                      key={info.socialType}
                       style={[styles.socialimg, {marginRight: 20}]}
                       source={require('../../assets/kakao_symbol_yellow.png')}
                       resizeMode={FastImage.resizeMode.contain}
@@ -86,7 +98,7 @@ const CFUserinfo = ({userdata, navigation}) => {
                 if (info.socialType === 'GOOGLE') {
                   return (
                     <FastImage
-                      key={info.socialId}
+                      key={info.socialType}
                       style={styles.socialimg}
                       source={require('../../assets/g-logo.png')}
                       resizeMode={FastImage.resizeMode.contain}
@@ -96,7 +108,7 @@ const CFUserinfo = ({userdata, navigation}) => {
                 if (info.socialType === 'APPLE') {
                   return (
                     <FastImage
-                      key={info.socialId}
+                      key={info.socialType}
                       style={styles.socialAppleimg}
                       source={require('../../assets/appleLogo3.png')}
                       resizeMode={FastImage.resizeMode.contain}

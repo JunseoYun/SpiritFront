@@ -99,7 +99,7 @@ window.overlayMarkers = [];
       }
 
       var overlayContent = document.createElement('div');
-      overlayContent.style.cssText = "background:white; padding:10px; border-radius:10px; box-shadow:0px 2px 5px rgba(0,0,0,0.2); font-size:14px; width:60vw; border:1px solid #ddd; position:relative; transform:translateY(-120%);";
+      overlayContent.style.cssText = "background:white; padding:10px; border-radius:10px; box-shadow:0px 2px 5px rgba(0,0,0,0.2); font-size:14px; width:60vw; border:1px solid #ddd; position:relative; transform:translateY(-30px);";
       
       // ✅ 리스트 내부 클릭 시 닫히지 않도록 방지
       overlayContent.addEventListener("click", function(event) {
@@ -135,7 +135,7 @@ window.overlayMarkers = [];
         position: markerPosition,
         map: map,
         zIndex:10,
-        yAnchor: 0 // ✅ 마커 위쪽에 배치
+        yAnchor: 1 // ✅ 마커 위쪽에 배치
       });
 
       window.currentOverlay = overlay;

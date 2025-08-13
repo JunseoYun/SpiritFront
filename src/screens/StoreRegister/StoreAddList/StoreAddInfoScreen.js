@@ -34,10 +34,10 @@ const StoreAddInfoScreen = ({navigation}) => {
     storeContent: '',
   });
   const [selectedCategory, setSelectedCategory] = useState([]);
-  const [selectedOption, setSelectedOption] = useState(false);
-  const [selectedscreenOption, setselectedscreenOption] = useState(false);
+  const [selectedOption, setSelectedOption] = useState();
+  const [selectedscreenOption, setselectedscreenOption] = useState();
   const [closedDay, setClosedDay] = useState([]);
-  const [alcohol, setAlcohol] = useState([{type: '', price: 0}]);
+  const [alcohol, setAlcohol] = useState([]);
   const [is24Hours, setIs24Hours] = useState(null);
   const [isSameEveryTime, setIsSameEveryTime] = useState(true);
   const [error, setError] = useState('');
@@ -494,13 +494,13 @@ const styles = StyleSheet.create({
     marginTop: 30,
     marginHorizontal: 18,
     color: '#333',
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 20,
   },
   nextButton: {
     marginRight: 18,
     fontSize: 19,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },
 
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
   },
   storeAddText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
 });

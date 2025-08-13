@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Pressable} from 'react-native';
+import {Pressable, Text, Dimensions} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import ConfigScreen from '../screens/BottomTab/My/ConfigScreen';
@@ -9,9 +9,10 @@ import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
 import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+
 import NotificationScreen from '../screens/BottomTab/My/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/BottomTab/My/Notification/NotificationSetScreen';
-//AntDesign bells
+
 const Stack = createStackNavigator();
 
 // 재사용 가능한 옵션 컴포넌트
@@ -28,6 +29,14 @@ const getScreenOptions = title => ({
 });
 export default function MyStack() {
   // const {token, unToken} = useAuth();
+
+  const screenWidth = Dimensions.get('window').width;
+
+  function getShortTitle(storename, suffix) {
+    if (!storename) return `매장 ${suffix}`;
+    const firstWord = storename.split(' ')[0];
+    return `${firstWord} ${suffix}`;
+  }
 
   return (
     <Stack.Navigator initialRouteName={'MyScreen'}>

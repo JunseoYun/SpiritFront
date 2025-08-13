@@ -1,22 +1,17 @@
 import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity, Platform} from 'react-native';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import AgreementItem from '../../components/OAuthRegister/AgreementItem';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const AgreeScreen = ({route, navigation}) => {
-  const {socialType, socialId, socialToken, fcmToken} = route.params;
+  const {socialType, socialId, socialToken, fcmToken, isTestEnabled} =
+    route.params;
 
   const insets = useSafeAreaInsets();
   const {showAlert, AlertComponent} = useCustomAlert();
 
-  // 체크박스 상태 관리
   const [agreements, setAgreements] = useState({
     all: false,
     terms: false,
@@ -66,14 +61,22 @@ const AgreeScreen = ({route, navigation}) => {
       });
       return;
     }
-
-    navigation.navigate('IdentityScreen', {
-      socialType: socialType,
-      socialId: socialId,
-      socialToken: socialToken,
-      beforeScreen: 'Agree',
-      fcmToken: fcmToken,
-    });
+    if (isTestEnabled) {
+      navigation.navigate('RegisterScreen', {
+        socialType: socialType,
+        socialId: socialId,
+        socialToken: socialToken,
+        isTestEnabled: isTestEnabled,
+      });
+    } else {
+      navigation.navigate('IdentityScreen', {
+        socialType: socialType,
+        socialId: socialId,
+        socialToken: socialToken,
+        beforeScreen: 'Agree',
+        fcmToken: fcmToken,
+      });
+    }
   };
 
   return (
@@ -99,13 +102,16 @@ const AgreeScreen = ({route, navigation}) => {
       <View style={styles.allAgreeView}>
         <TouchableOpacity
           onPress={() => handleCheck('all')}
-          style={{flexDirection: 'row'}}>
+          style={{flexDirection: 'row', alignItems: 'center'}}>
           <View
             style={[
               styles.checkBoxIndicator,
               agreements.all && styles.checkedBox,
-            ]}
-          />
+            ]}>
+            {agreements.all && (
+              <Ionicons name="checkmark" size={16} color="#fff" />
+            )}
+          </View>
           <Text style={styles.allAgreeText}>전체 동의</Text>
         </TouchableOpacity>
       </View>
@@ -209,14 +215,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 10,
   },
-  checkBoxIndicator: {
-    width: 25,
-    height: 25,
-    borderRadius: 3,
-    borderWidth: 1,
-    borderColor: '#E7E7E7',
-    marginRight: 10,
-  },
+
   checkedBox: {
     backgroundColor: '#5CCEFF',
     borderColor: '#5CCEFF',
@@ -235,6 +234,17 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
+  },
+  checkBoxIndicator: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
   },
 });
 

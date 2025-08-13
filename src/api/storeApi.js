@@ -349,17 +349,19 @@ export const Store_getby_category = async (
   latitude,
   longitude,
   category,
+  drinkType,
+  priceOrder,
 ) => {
   try {
     const response = await axiosInstance.get(
       `/store/get-by/category/${category}`,
       {
-        // auth: false,
-
         params: {
           longitude,
           latitude,
+          drinkType,
           page,
+          priceOrder,
         },
       },
     );
@@ -391,16 +393,34 @@ export const Store_getby_condition_search = async requestData => {
   const {latitude, longitude, page, conditionSearchDto} = requestData;
 
   try {
+    // 기본 필수 파라미터
+    const params = {
+      latitude,
+      longitude,
+      page,
+    };
+
+    // 선택 파라미터는 값이 있을 때만 추가
+    if (conditionSearchDto.category) {
+      params.category = conditionSearchDto.category;
+    }
+    if (
+      conditionSearchDto.isGroupAvailable !== undefined &&
+      conditionSearchDto.isGroupAvailable !== ''
+    ) {
+      params.isGroupAvailable = conditionSearchDto.isGroupAvailable;
+    }
+    if (conditionSearchDto.conditionTime) {
+      params.conditionTime = conditionSearchDto.conditionTime;
+    }
+    if (conditionSearchDto.alcoholType) {
+      params.drinkType = conditionSearchDto.alcoholType;
+    }
+
     const response = await axiosInstance.get(`/store/get-by/condition-search`, {
-      params: {
-        latitude,
-        longitude,
-        page: page,
-        category: conditionSearchDto.category,
-        isGroupAvailable: conditionSearchDto.isGroupAvailable,
-        conditionTime: conditionSearchDto.conditionTime,
-      },
+      params,
     });
+
     return response.data.data;
   } catch (error) {
     functionError(error);
@@ -440,12 +460,101 @@ export const StoreImageUpdateSort = async (
   storeId,
   storeImageUrlInOrderList,
 ) => {
-  console.log(storeId, storeImageUrlInOrderList);
   try {
     const response = await axiosInstance.put(`/store/update-image/sort-order`, {
       storeId,
       storeImageUrlInOrderList,
     });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const get_store_share = async storeId => {
+  try {
+    const response = await axiosInstance.get(`/store/share/${storeId}`);
+    return response.data; // 또는 response.data.url depending on backend structure
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const StoreBoardimage = async ({files, boardType}, storeId) => {
+  const formData = new FormData();
+
+  files.forEach(file => {
+    formData.append('files', {
+      uri: file.path,
+      type: file.mime,
+      name: file.filename,
+    });
+  });
+
+  try {
+    const response = await axiosInstance.post(
+      `/store/upload-board-image/${storeId}?boardType=${boardType}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    );
+
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const StoreBoardimageUpdate = async (boardImageId, boardType) => {
+  try {
+    const response = await axiosInstance.put(
+      `/store/update-board-image/type?boardImageId=${boardImageId}&boardType=${boardType}`,
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const DeleteStoreboardImage = async (storeId, images) => {
+  try {
+    const imgUrlList = images
+      .map(img => img.url) // 여기 수정
+      .filter(Boolean); // 혹시 undefined나 null 제거
+
+    if (imgUrlList.length === 0) {
+      return;
+    }
+
+    const response = await axiosInstance.delete(
+      `/store/delete-board-image/${storeId}`,
+      {
+        data: {
+          imgUrlList,
+        },
+      },
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const StoreBoardImageUpdateSort = async (
+  storeId,
+  storeImageUrlInOrderList,
+) => {
+  try {
+    const response = await axiosInstance.put(
+      `/store/update-board-image/sort-order`,
+      {
+        storeId,
+        boardImageUrlInOrderList: storeImageUrlInOrderList,
+      },
+    );
     return response.data.data;
   } catch (error) {
     functionError(error);

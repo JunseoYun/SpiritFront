@@ -21,6 +21,11 @@
       android:usesCleartextTraffic="true"
       android:supportsRtl="true">
 
+      <meta-data
+        android:name="com.google.android.gms.ads.APPLICATION_ID"
+        android:value="@string/GOOGLE_ADS_APPID"
+        tools:replace="android:value" />
+
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
@@ -32,6 +37,27 @@
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+
+          <!-- ✅ App Link를 위한 설정 -->
+        <intent-filter android:autoVerify="true">
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+         <data
+          android:scheme="https"
+          android:host="dev.team-spirit.click"
+          android:pathPrefix="/link/store" />
+        </intent-filter>
+
+         <!-- ✅ 앱 내부 스킴 딥링크: spirit://store/{id} -->
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+        <data
+          android:scheme="spirit"
+          android:host="store" />
         </intent-filter>
       </activity>
 
