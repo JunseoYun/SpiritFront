@@ -21,9 +21,6 @@ const MenuPrice = forwardRef(
     ref,
   ) => {
     const handleTextChange = text => {
-      const lines = text.split('\n');
-      if (lines.length > 2) return;
-
       if (onChangeText) {
         onChangeText(text);
       }

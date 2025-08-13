@@ -9,7 +9,7 @@ const NonImageHeader = ({
   headerBackgroundColor,
   iconColor,
   title,
-  isOwner,
+  onShare,
 }) => {
   const insets = useSafeAreaInsets();
   return (
@@ -30,7 +30,7 @@ const NonImageHeader = ({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          maxWidth: '74%',
+          maxWidth: '78%',
         }}>
         <Animated.Text
           style={styles.headerTitle}
@@ -38,31 +38,24 @@ const NonImageHeader = ({
           ellipsizeMode="tail">
           {title || '한잔할까'}
         </Animated.Text>
-        {isOwner !== null && (
-          <FastImage
-            source={require('../../assets/verifyMaker.png')}
-            style={styles.imageStyle}
-          />
-        )}
       </Animated.View>
-      <Pressable
-        onPress={() =>
-          navigation.reset({
-            index: 0, // 초기 화면 인덱스
-            routes: [
-              {
-                name: 'MainBtmbar',
-                state: {
-                  routes: [{name: 'MainScreen'}],
-                },
-              },
-            ], // 이동할 화면
-          })
-        }>
-        <Animated.Text style={{color: iconColor}}>
-          <Ionicons name="home-outline" size={25} />
-        </Animated.Text>
-      </Pressable>
+      <Animated.View style={{flexDirection: 'row'}}>
+        <Pressable onPress={() => onShare()}>
+          <Animated.Text style={{color: iconColor, marginRight: 10}}>
+            <Ionicons name="share-outline" size={25} />
+          </Animated.Text>
+        </Pressable>
+        <Pressable
+          onPress={() =>
+            navigation.navigate('MainBtmbar', {
+              screen: 'MainScreen',
+            })
+          }>
+          <Animated.Text style={{color: iconColor}}>
+            <Ionicons name="home-outline" size={25} />
+          </Animated.Text>
+        </Pressable>
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -73,7 +66,6 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

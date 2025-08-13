@@ -47,6 +47,25 @@ export const ReviewStoreGet = async (storeId, page) => {
   }
 };
 
+export const review_set_reply = async (reviewId, reply) => {
+  try {
+    const response = await axiosInstance.post(
+      '/review/set-reply',
+      {
+        reviewId: reviewId,
+        reply: reply,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 export const ReviewRecentGet = async page => {
   try {
     const response = await axiosInstance.get(`/review/get-by/recent`, {
@@ -117,6 +136,17 @@ export const ReviewDeleteImage = async (reviewId, image) => {
 export const ReviewDelete = async reviewId => {
   try {
     const response = await axiosInstance.delete(`/review/delete/${reviewId}`);
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const review_delete_reply = async reviewId => {
+  try {
+    const response = await axiosInstance.delete(
+      `/review/delete-reply/${reviewId}`,
+    );
     return response.data.data;
   } catch (error) {
     functionError(error);

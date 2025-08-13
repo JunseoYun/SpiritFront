@@ -1,12 +1,14 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {useFocusEffect} from '@react-navigation/native';
-import {View, Text, BackHandler} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import {View, BackHandler} from 'react-native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import CategoryTapScreen from '../screens/CategoryTap/CategoryTapScreen';
 import {getLocation} from '../storage/locationStorage';
 import Loading from '../hooks/Loading';
 import {AlcoholFilterProvider} from '../context/AlcoholFilterContext';
+import FilterBar from '../components/CategoryTapScreen/FilterBar';
+import {MaterialTopTabBar} from '@react-navigation/material-top-tabs';
+
 const categories = [
   {name: 'IZAKAYA', title: '이자카야', categoryname: 'IZAKAYA'},
   {name: 'KOREAN', title: '한식', categoryname: 'KOREAN'},
@@ -22,9 +24,20 @@ const categories = [
 
 const Tab = createMaterialTopTabNavigator();
 
+// ✅ 커스텀 탭바 컴포넌트
+const CustomTabBar = props => {
+  return (
+    <View>
+      <MaterialTopTabBar {...props} />
+      <FilterBar />
+    </View>
+  );
+};
+
 const CategoryListTabbar = ({route}) => {
   const [location, setLocation] = useState(null);
   const navigation = useNavigation();
+
   useEffect(() => {
     const fetchLocation = async () => {
       try {
@@ -43,17 +56,15 @@ const CategoryListTabbar = ({route}) => {
         navigation.goBack();
         return true;
       };
-
       const backHandler = BackHandler.addEventListener(
         'hardwareBackPress',
         onBackPress,
       );
-
       return () => backHandler.remove();
     }, [navigation]),
   );
 
-  const {screen} = route.params || {}; // 전달받은 screen과 location
+  const {screen} = route.params || {};
 
   if (!location) {
     return <Loading loading={true} />;
@@ -63,22 +74,22 @@ const CategoryListTabbar = ({route}) => {
     <AlcoholFilterProvider>
       <Tab.Navigator
         initialRouteName={screen}
+        tabBar={props => <CustomTabBar {...props} />} // 👈 커스텀 탭바 적용
         screenOptions={{
-          lazy: false,
+          lazy: true,
           tabBarScrollEnabled: true,
           tabBarItemStyle: {width: 90},
-
           swipeEnabled: true,
           unmountOnBlur: false,
-          tabBarActiveTintColor: '#80D2F4', // 선택된 탭 글자 색상
-          tabBarIndicatorStyle: {
-            backgroundColor: '#45C9FF', // 선택된 탭 아래의 인디케이터 색상
-          },
-          tabBarInactiveTintColor: '#CFCFCF', // 선택되지 않은 탭 글자 색상
+          tabBarActiveTintColor: '#80D2F4',
+          tabBarIndicatorStyle: {backgroundColor: '#45C9FF'},
+          tabBarInactiveTintColor: '#CFCFCF',
           tabBarLabelStyle: {
             fontFamily: 'Pretendard-Bold',
-            fontSize: 16, // 글씨 크기 조정
+            fontSize: 16,
           },
+          swipeDistanceThreshold: 150,
+          swipeVelocityImpact: 0.7,
         }}>
         {categories.map(({name, title, categoryname}) => (
           <Tab.Screen
@@ -86,7 +97,7 @@ const CategoryListTabbar = ({route}) => {
             name={name}
             component={CategoryTapScreen}
             options={{title}}
-            initialParams={{categoryname, location}} // categoryname 전달
+            initialParams={{categoryname, location}}
           />
         ))}
       </Tab.Navigator>

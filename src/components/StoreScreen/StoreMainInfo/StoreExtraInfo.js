@@ -46,7 +46,6 @@ const StoreExtraInfo = ({
   }, [storeData.id]);
   const storeNumberHandle = () => {
     if (storeNumber !== '000-0000-0000') {
-      console.log(storeNumber);
       Linking.openURL(`tel:${storeNumber}`);
     } else {
       showAlert({
@@ -59,7 +58,7 @@ const StoreExtraInfo = ({
     <View style={styles.infoCard}>
       <View style={styles.infoRow}>
         <Pressable style={styles.infoCol} onPress={storeNumberHandle}>
-          <SimpleLineIcons name="phone" size={23} color="#181A1A" />
+          <SimpleLineIcons name="phone" size={23} color="#333" />
           <Text style={styles.locationtext}>전화</Text>
         </Pressable>
 
@@ -88,6 +87,7 @@ const StoreExtraInfo = ({
               params: {
                 storeId: storeData.id,
                 storename: storeData.name,
+                isOwner: storeData.isOwner,
               },
             });
           }}
@@ -99,22 +99,21 @@ const StoreExtraInfo = ({
 
       <View style={styles.infoRow}>
         <View style={styles.infoCol}>
-          <Ionicons name="location-outline" size={23} color="#181A1A" />
+          <Ionicons name="location-outline" size={23} color="#333" />
           <Text style={styles.locationtext}>
             {distance} {unit}
           </Text>
         </View>
         <View style={styles.infoCol}>
-          <MaterialIcons name="group" size={23} color="#181A1A" />
+          <MaterialIcons name="group" size={23} color="#333" />
           <Text style={styles.locationtext}>
             {storeData?.isGroupAvailable ? '10인 이상 가능' : '10인 이상 불가'}
           </Text>
         </View>
 
         <View style={styles.infoCol}>
-          <Feather name="tv" size={23} color="#181A1A" />
+          <Feather name="tv" size={23} color="#333" />
           <Text style={styles.locationtext}>
-            {' '}
             {storeData?.hasScreen ? '스크린 설치' : '스크린 미설치'}
           </Text>
         </View>

@@ -21,6 +21,7 @@ import {
   handleLocationError,
 } from '../../hooks/useLocation';
 import Loading from '../../hooks/Loading';
+import {log_access_create} from '../../api/userApi';
 
 const LocataionMapScreen = ({navigation}) => {
   const route = useRoute();
@@ -100,7 +101,7 @@ const LocataionMapScreen = ({navigation}) => {
 
         if (addressObj) {
           await saveLocationAddress(targetCoords, addressText);
-
+          log_access_create(targetCoords);
           showToast('주소 설정이 완료 되었습니다.');
           setTimeout(() => {
             navigation.reset({

@@ -10,7 +10,7 @@ const StoreHeader = ({
   iconColor,
   titleOpacity,
   title,
-  isOwner,
+  onShare,
 }) => {
   const insets = useSafeAreaInsets();
   return (
@@ -31,7 +31,7 @@ const StoreHeader = ({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          maxWidth: '70%',
+          maxWidth: '78%',
           opacity: titleOpacity, // ✅ 제목과 마커에 동일한 opacity 애니메이션
         }}>
         <Animated.Text
@@ -40,32 +40,25 @@ const StoreHeader = ({
           ellipsizeMode="tail">
           {title || '한잔할까'}
         </Animated.Text>
-        {isOwner !== null && (
-          <FastImage
-            source={require('../../assets/verifyMaker.png')}
-            style={styles.imageStyle}
-          />
-        )}
       </Animated.View>
+      <Animated.View style={{flexDirection: 'row'}}>
+        <Pressable onPress={() => onShare()}>
+          <Animated.Text style={{color: iconColor, marginRight: 10}}>
+            <Ionicons name="share-outline" size={25} />
+          </Animated.Text>
+        </Pressable>
 
-      <Pressable
-        onPress={() =>
-          navigation.reset({
-            index: 0, // 초기 화면 인덱스
-            routes: [
-              {
-                name: 'MainBtmbar',
-                state: {
-                  routes: [{name: 'MainScreen'}],
-                },
-              },
-            ], // 이동할 화면
-          })
-        }>
-        <Animated.Text style={{color: iconColor}}>
-          <Ionicons name="home-outline" size={25} />
-        </Animated.Text>
-      </Pressable>
+        <Pressable
+          onPress={() =>
+            navigation.navigate('MainBtmbar', {
+              screen: 'MainScreen',
+            })
+          }>
+          <Animated.Text style={{color: iconColor}}>
+            <Ionicons name="home-outline" size={25} />
+          </Animated.Text>
+        </Pressable>
+      </Animated.View>
     </Animated.View>
   );
 };

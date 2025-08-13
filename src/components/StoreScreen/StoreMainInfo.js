@@ -1,19 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
-import StoreActions from './StoreActions';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import {getLocation} from '../../storage/locationStorage';
 import useDistance from '../../hooks/useDistance';
-import useDayTranslation from '../../hooks/useDayTranslation';
 import useStoreStatus from '../../hooks/useStoreStatus';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
-import useCustomAlert from '../../hooks/useCustomAlert';
 import Title from './StoreMainInfo/Title';
 import Category from './StoreMainInfo/Category';
 import Review from './StoreMainInfo/Review';
@@ -28,7 +19,6 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import StoreExtraInfo from './StoreMainInfo/StoreExtraInfo';
 const StoreMainInfo = ({
   storedata = {},
-  onModalOpen,
   isUpdate,
   handleBottomOpen,
   onEditKey,
@@ -38,6 +28,10 @@ const StoreMainInfo = ({
   storeupdatedrink,
   setLoading,
   loading,
+  startUpdate,
+  handleReport,
+  handleReportList,
+  handleStoreInfo,
 }) => {
   const handleEdit = (key, value) => {
     onEditKey(key); // 수정 키와 값을 부모 컴포넌트로 전달
@@ -62,9 +56,7 @@ const StoreMainInfo = ({
   const calculateDistance = useDistance();
 
   const {translateCategory} = useCategoryTranslation();
-  const {translateDays} = useDayTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
-  const {showAlert, AlertComponent} = useCustomAlert();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [descripexpanded, setDescripexpanded] = useState(false);
@@ -126,13 +118,17 @@ const StoreMainInfo = ({
         storedata={storedata}
         translateCategory={translateCategory}
         isUpdate={isUpdate}
+        isOwner={storedata?.isOwner}
       />
       <Title
         handleEdit={handleEdit}
         storeName={storedata?.name}
-        isOwner={storedata?.isOwner}
         isUpdate={isUpdate}
-        onModalOpen={onModalOpen}
+        startUpdate={startUpdate}
+        handleReport={handleReport}
+        handleReportList={handleReportList}
+        handleStoreInfo={handleStoreInfo}
+        isUpdatable={storedata?.isUpdatable}
       />
 
       <Review
@@ -142,7 +138,8 @@ const StoreMainInfo = ({
           name: storedata?.name,
           id: storedata?.id,
           rate: storedata?.storeRate,
-          reviewCount: storedata.reviewCount,
+          reviewCount: storedata?.reviewCount,
+          isOwner: storedata?.isOwner,
         }}
       />
 
@@ -231,6 +228,8 @@ const StoreMainInfo = ({
             reviewCount: storedata?.reviewCount,
             isGroupAvailable: storedata?.isGroupAvailable,
             hasScreen: storedata?.hasScreen,
+            name: storedata.name,
+            isOwner: storedata?.isOwner,
           }}
           distance={distance}
           unit={unit}
@@ -252,8 +251,6 @@ const StoreMainInfo = ({
           />
         </>
       )}
-
-      <AlertComponent />
     </View>
   );
 };

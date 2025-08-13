@@ -16,6 +16,7 @@ const Review = ({navigation, isUpdate, storeData}) => {
               params: {
                 storeId: storeData.id,
                 storename: storeData.name,
+                isOwner: storeData.isOwner,
               },
             });
           }}
@@ -55,9 +56,9 @@ const styles = StyleSheet.create({
   },
   iconStar: {
     justifyContent: 'space-between',
-    padding: 10,
-    height: 20,
-    width: 20,
+    padding: 5,
+    height: 18,
+    width: 18,
   },
   reviewView: {
     flexDirection: 'row',

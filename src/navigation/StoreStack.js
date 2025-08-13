@@ -1,5 +1,5 @@
 import React from 'react';
-import {Pressable, Text} from 'react-native';
+import {Pressable, Text, Dimensions} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {createStackNavigator} from '@react-navigation/stack';
 import Octicons from 'react-native-vector-icons/Octicons';
@@ -18,14 +18,16 @@ import UpdateStoreDrink from '../components/UpdateBottomSheet/UpdateStoreDrink';
 import MenuEditScreen from '../screens/StoreInfo/Menu/MenuEditScreen';
 import ImageReorderScreen from '../components/StoreScreen/StoreImage/ImageReorderScreen';
 import InfoImageEditScreen from '../components/StoreScreen/StoreImage/InfoImageEditScreen';
-import InfoImageReorderScreen from '../components/StoreScreen/StoreImage/InfoImageReorderScreen';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 import ImageViewerScreen from '../hooks/ImageViewerScreen';
+import ManagerStoreInfoScreen from '../screens/BottomTab/My/ManagerStoreInfoScreen';
 
 const Stack = createStackNavigator();
 
 export default function StoreStack() {
+  const screenWidth = Dimensions.get('window').width;
   const showAlert = getGlobalShowAlert();
+
   return (
     <Stack.Navigator initialRouteName="StoreMainScreen">
       <Stack.Screen
@@ -267,97 +269,120 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreMapScreen"
         component={StoreMapScreen}
-        options={({navigation, route}) => ({
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-          title: `${route.params?.storename || '매장'} 길찾기`,
-          headerTitleAlign: 'center',
+        options={({navigation, route}) => {
+          const storename = route.params?.storename || '매장';
+          const displayTitle = storename + ' 길찾기';
 
-          gestureDirection: 'vertical',
-          animation: 'slide_from_bottom',
-        })}
+          return {
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+            headerTitle: () => (
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  fontSize: 18,
+                  fontFamily: 'Pretendard-SemiBold',
+                  maxWidth: screenWidth * 0.7,
+                  textAlign: 'center',
+                }}>
+                {displayTitle}
+              </Text>
+            ),
+            headerTitleAlign: 'center',
+            gestureDirection: 'vertical',
+            animation: 'slide_from_bottom',
+          };
+        }}
       />
-
       <Stack.Screen
         name="StoreReviewScreen"
         component={StoreReviewScreen}
-        options={({navigation, route}) => ({
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-          title: `${route.params?.storename || '매장'} 리뷰`, // 매장 이름이 없으면 기본값 '매장' 사용
-          headerTitleAlign: 'center',
-          animation: 'slide_from_right',
-          headerShadowVisible: false,
-        })}
+        options={({navigation, route}) => {
+          const storename = route.params?.storename || '매장';
+          const displayTitle = storename + ' 리뷰';
+
+          return {
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+            headerTitle: () => (
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  fontSize: 18,
+                  fontFamily: 'Pretendard-SemiBold',
+                  maxWidth: screenWidth * 0.7,
+                  textAlign: 'center',
+                }}>
+                {displayTitle}
+              </Text>
+            ),
+            headerTitleAlign: 'center',
+            animation: 'slide_from_right',
+            headerShadowVisible: false,
+          };
+        }}
       />
 
       <Stack.Screen
         name="StoreReportList"
         component={StoreReportList}
-        options={({navigation, route}) => ({
-          title: `${
-            route.params?.storeName
-              ? route.params.storeName + ' 신고·제보'
-              : '매장'
-          }`,
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerTitle: props => (
-            <Text
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              style={[
-                props.style,
-                {
-                  fontFamily: 'Pretendard-SemiBold',
-                  fontSize: 18,
-                  color: '#333',
-                  textAlign: 'center',
-                },
-              ]}>
-              {props.children}
-            </Text>
-          ),
+        options={({navigation, route}) => {
+          const storename = route.params?.storeName || '매장';
+          const displayTitle = storename + ' 신고·제보';
 
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                navigation.goBack();
-              }}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
+          return {
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+            headerTitle: () => (
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  fontSize: 18,
+                  fontFamily: 'Pretendard-SemiBold',
+                  maxWidth: screenWidth * 0.7,
+                  textAlign: 'center',
+                }}>
+                {displayTitle}
+              </Text>
+            ),
+            headerTitleAlign: 'center',
+            animation: 'slide_from_right',
+            headerShadowVisible: false,
+          };
+        }}
       />
 
       <Stack.Screen
@@ -456,30 +481,17 @@ export default function StoreStack() {
       />
 
       <Stack.Screen
-        name="InfoImageReorderScreen"
-        component={InfoImageReorderScreen}
+        name="ManagerStoreInfoScreen"
+        component={ManagerStoreInfoScreen}
         options={({navigation, route}) => {
+          const storename = route.params?.storename || '매장';
+          const displayTitle = storename + ' 통계';
+
           return {
-            title: '메뉴판 순서 변경',
-            headerTitleAlign: 'center',
-            headerTitleStyle: {
-              fontFamily: 'Pretendard-SemiBold',
-              fontSize: 18,
-              color: '#333',
-            },
             headerLeft: () => (
               <Pressable
-                onPress={() => {
-                  showAlert({
-                    title: '작성한 내용이 저장되지 않았습니다',
-                    message: '뒤로 가시겠습니까?',
-                    onConfirm: () => {
-                      navigation.goBack();
-                    },
-                    onCancel: null,
-                    type: 'confirm',
-                  });
-                }}>
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
                 <Ionicons
                   name="arrow-back-outline"
                   size={23}
@@ -488,6 +500,22 @@ export default function StoreStack() {
                 />
               </Pressable>
             ),
+            headerTitle: () => (
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  fontSize: 18,
+                  fontFamily: 'Pretendard-SemiBold',
+                  maxWidth: screenWidth * 0.7,
+                  textAlign: 'center',
+                }}>
+                {displayTitle}
+              </Text>
+            ),
+            headerTitleAlign: 'center',
+            animation: 'slide_from_right',
+            headerShadowVisible: false,
           };
         }}
       />
