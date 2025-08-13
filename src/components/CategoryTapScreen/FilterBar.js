@@ -44,6 +44,9 @@ const FilterBar = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const dropdownAnim = useRef(new Animated.Value(0)).current;
 
+  const [choiceBtnWidth, setChoiceBtnWidth] = useState(64); // 버튼 대략 너비(초기값)
+  const OVERLAP_GAP = 8; // 버튼과 스크롤 콘텐츠 사이 여백
+
   const dropdownTranslateY = dropdownAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [-5, 0],
@@ -51,7 +54,6 @@ const FilterBar = () => {
 
   useEffect(() => {
     if (scrollRef.current) {
-      // 전역에 저장된 스크롤 위치로 복원
       scrollRef.current.scrollTo({
         x: filterScrollX.current || 0,
         animated: false,
@@ -73,13 +75,24 @@ const FilterBar = () => {
     }
   }, [drinkType]);
 
-  const toggleDropdown = () => {
-    if (dropdownVisible) {
+  // 드롭다운 닫기 유틸
+  const closeDropdown = (animated = true) => {
+    if (!dropdownVisible) return;
+    if (animated) {
       Animated.timing(dropdownAnim, {
         toValue: 0,
-        duration: 300,
+        duration: 200,
         useNativeDriver: true,
       }).start(() => setDropdownVisible(false));
+    } else {
+      dropdownAnim.setValue(0);
+      setDropdownVisible(false);
+    }
+  };
+
+  const toggleDropdown = () => {
+    if (dropdownVisible) {
+      closeDropdown();
     } else {
       setDropdownVisible(true);
       Animated.timing(dropdownAnim, {
@@ -91,17 +104,64 @@ const FilterBar = () => {
   };
 
   const handleAlcoholPress = value => {
+    closeDropdown(false); // 필터 선택 시 즉시 닫기
     toggleAlcohol(value);
   };
 
-  const handlePriceOrderPress = value => {
-    togglepriceOrder(value);
-  };
+  const handlePriceOrderPress = value => togglepriceOrder(value);
 
   return (
     <View style={styles.container}>
+      {/* 스크롤이 “버튼 뒤로” 흐르도록 먼저 ScrollView를 깔고, 버튼을 나중에 absolute로 올립니다 */}
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterBar}
+        nestedScrollEnabled
+        onStartShouldSetResponder={() => true}
+        onTouchStart={() => closeDropdown(false)} // 손가락 닿는 순간 닫기(즉시)
+        onScrollBeginDrag={() => closeDropdown()} // 드래그 시작 시 닫기(애니메이션)
+        onMomentumScrollBegin={() => closeDropdown()} // 관성 스크롤 시작 시 닫기
+        contentContainerStyle={{
+          paddingHorizontal: 12,
+          gap: 6,
+          // 버튼이 덮는 영역만큼 왼쪽 패딩을 줘서 첫 아이템이 가려지지 않게 합니다
+          paddingLeft: drinkType != null ? choiceBtnWidth + OVERLAP_GAP : 12,
+        }}
+        onScroll={e => {
+          filterScrollX.current = e.nativeEvent.contentOffset.x;
+        }}
+        scrollEventThrottle={16}>
+        {alcoholTypes.map(({label, value}) => (
+          <Pressable
+            key={value}
+            onPress={() => handleAlcoholPress(value)}
+            onLayout={e => {
+              const layout = e.nativeEvent.layout;
+              buttonLayouts.current[value] = {x: layout.x, width: layout.width};
+            }}
+            style={[
+              styles.filterButton,
+              drinkType === value && styles.activeFilter,
+            ]}>
+            <Text
+              style={[
+                styles.filterText,
+                drinkType === value && styles.activeFilterText,
+              ]}>
+              {label}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      {/* choice 버튼을 절대배치로 올려 스크롤 위에 겹칩니다 */}
       {drinkType != null && (
-        <Pressable style={styles.choicebtn} onPress={toggleDropdown}>
+        <Pressable
+          style={styles.choicebtn}
+          onPress={toggleDropdown}
+          onLayout={e => setChoiceBtnWidth(e.nativeEvent.layout.width)}>
           <Text style={styles.choicetext}>
             {priceOrder === 'ASC'
               ? '낮은가격순'
@@ -112,16 +172,17 @@ const FilterBar = () => {
           <Feather
             name={dropdownVisible ? 'chevron-up' : 'chevron-down'}
             size={17}
-            color="#555"
+            color="#121212"
           />
         </Pressable>
       )}
 
+      {/* 드롭다운도 버튼 기준으로 absolute 배치 */}
       {dropdownVisible && (
         <Animated.View
           style={[
             styles.dropdown,
-            {transform: [{translateY: dropdownTranslateY}]},
+            {left: 5, transform: [{translateY: dropdownTranslateY}]},
           ]}>
           <TouchableOpacity
             style={styles.dropdownItem}
@@ -169,75 +230,47 @@ const FilterBar = () => {
           </TouchableOpacity>
         </Animated.View>
       )}
-
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterBar}
-        nestedScrollEnabled={true}
-        onStartShouldSetResponder={() => true}
-        contentContainerStyle={{paddingHorizontal: 12, gap: 6}}
-        onScroll={e => {
-          filterScrollX.current = e.nativeEvent.contentOffset.x;
-        }}
-        scrollEventThrottle={16}>
-        {alcoholTypes.map(({label, value}) => (
-          <Pressable
-            key={value}
-            onPress={() => handleAlcoholPress(value)}
-            onLayout={e => {
-              const layout = e.nativeEvent.layout;
-              buttonLayouts.current[value] = {x: layout.x, width: layout.width};
-            }}
-            style={[
-              styles.filterButton,
-              drinkType === value && styles.activeFilter,
-            ]}>
-            <Text
-              style={[
-                styles.filterText,
-                drinkType === value && styles.activeFilterText,
-              ]}>
-              {label}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  // 버튼을 덮어씌우기 위해 컨테이너를 상대배치로
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
+    position: 'relative',
     backgroundColor: 'white',
+    paddingVertical: 10,
+    minHeight: 55,
   },
-  choicebtn: {
-    marginRight: 1,
-    paddingHorizontal: 15,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
-    height: 35,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  choicetext: {
-    fontSize: 14,
-    color: '#555',
-    fontFamily: 'Pretendard-Bold',
-    textAlign: 'center',
-    marginRight: 3,
-  },
+
   filterBar: {
     flexDirection: 'row',
     flexShrink: 1,
   },
+
+  // 겹치는 choice 버튼
+  choicebtn: {
+    position: 'absolute',
+    top: 10,
+    paddingHorizontal: 15,
+    height: 35,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 10, // iOS
+    gap: 4,
+    backgroundColor: '#fff',
+  },
+  choicetext: {
+    fontSize: 14,
+    color: '#121212',
+    fontFamily: 'Pretendard-SemiBold',
+    textAlign: 'center',
+  },
+
   filterButton: {
     height: 35,
     justifyContent: 'center',
@@ -245,6 +278,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#ccc',
+    backgroundColor: 'white',
   },
   filterText: {
     fontSize: 14,
@@ -260,19 +294,19 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: 'Pretendard-Bold',
   },
+
   dropdown: {
     position: 'absolute',
-    top: 50,
-    left: 10,
+    top: 50, // choicebtn 아래로
     backgroundColor: '#fff',
     borderRadius: 6,
-    elevation: 5,
+    elevation: 8,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 1},
     shadowOpacity: 0.2,
     shadowRadius: 3,
     paddingVertical: 5,
-    zIndex: 999,
+    zIndex: 20,
   },
   dropdownItem: {
     paddingVertical: 10,

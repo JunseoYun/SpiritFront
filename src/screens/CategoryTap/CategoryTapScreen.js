@@ -12,34 +12,14 @@ import {
   FlatList,
   StyleSheet,
   SafeAreaView,
-  ScrollView,
-  Pressable,
   Dimensions,
-  Animated,
-  TouchableOpacity,
 } from 'react-native';
 import {AlcoholFilterContext} from '../../context/AlcoholFilterContext';
 import {Store_getby_category} from '../../api/storeApi';
 import StoreItem from '../../components/CategoryTapScreen/StoreItem';
 import Loading from '../../hooks/Loading';
 import StoreItemSkeleton from '../../components/CategoryTapScreen/StoreItemSkeleton';
-import Feather from 'react-native-vector-icons/Feather';
 import FilterBar from '../../components/CategoryTapScreen/FilterBar';
-
-const alcoholTypes = [
-  {label: '소주', value: 'SOJU'},
-  {label: '맥주', value: 'BEER'},
-  {label: '막걸리', value: 'MAKGEOLLI'},
-  {label: '와인', value: 'WINE'},
-  {label: '칵테일', value: 'COCKTAIL'},
-  {label: '사케', value: 'SAKE'},
-  {label: '고량주', value: 'KAOLIANG'},
-  {label: '위스키', value: 'WHISKEY'},
-  {label: '보드카', value: 'VODKA'},
-  {label: '전통주', value: 'TRADITIONAL'},
-  {label: '하이볼', value: 'HIGHBALL'},
-  {label: '데킬라', value: 'TEQUILA'},
-];
 
 const screenWidth = Dimensions.get('window').width;
 
