@@ -1,121 +1,146 @@
-import React, {useState, useEffect, useMemo} from 'react';
-import {FlatList, StyleSheet, Text, View} from 'react-native';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+  Platform,
+} from 'react-native';
 import StoreResultItem from './StoreResultItem';
 import {Store_getby_store} from '../../api/storeApi';
-import Loading from '../../hooks/Loading';
 import StoreResultItemSkeleton from './StoreResultItemSkeleton';
-
+import Loading from '../../hooks/Loading';
 const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
-  const [searchingStores, setSearchingStores] = useState([]); // 검색된 가게 목록
-  const [page, setPage] = useState(0); // 페이지 번호
-  const [loading, setLoading] = useState(false); // 로딩 상태
-  const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
-  const [isword, setIsword] = useState(false);
-  const [totalpage, setTotalpage] = useState(0);
+  const [searchingStores, setSearchingStores] = useState([]);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false); // 페이지네이션 로딩
+  const [firstLoading, setFirstLoading] = useState(false); // 최초 로딩
+  const [isEnd, setIsEnd] = useState(false);
+  const [totalPage, setTotalPage] = useState(0);
+  const [isWord, setIsWord] = useState(false);
 
-  // 검색된 가게들을 불러오는 함수
-  const filteredStores = async currentPage => {
-    setLoading(true);
-    if (trimmedSearchWord) {
+  const scrollRef = useRef(null);
+
+  const filteredStores = useCallback(
+    async currentPage => {
+      const isInitial = currentPage === 0;
+      if (isInitial) setFirstLoading(true);
+      setLoading(true);
+
+      if (!trimmedSearchWord) {
+        setFirstLoading(false);
+        setIsWord(false);
+        setLoading(false);
+        return;
+      }
+
       try {
         const data = await Store_getby_store(currentPage, trimmedSearchWord);
+        setTotalPage(data.totalPages ?? 0);
 
-        setTotalpage(data.totalPages);
+        setSearchingStores(prev => {
+          const next =
+            currentPage === 0 ? data.content : [...prev, ...data.content];
+          // 중복 제거
+          const unique = Array.from(new Map(next.map(s => [s.id, s])).values());
+          return unique;
+        });
 
-        if (data.content.length === 0) {
-          setIsEnd(true);
-        } else {
-          // 기존 데이터와 병합 후 중복 제거
-          setSearchingStores(prevStores => {
-            const mergedStores = [...prevStores, ...data.content];
-            const uniqueStores = Array.from(
-              new Map(mergedStores.map(store => [store.id, store])).values(),
-            );
-            return uniqueStores;
-          });
-        }
+        // 마지막 페이지 판단
+        const noMore =
+          data.content.length === 0 ||
+          currentPage >= (data.totalPages ?? 1) - 1;
+        setIsEnd(noMore);
+        setIsWord(true);
       } catch (err) {
-        console.error('오류 발생:', err.message);
+        console.error('오류 발생:', err?.message ?? err);
       } finally {
-        setIsword(true);
         setLoading(false);
+        if (isInitial) setFirstLoading(false);
       }
-    } else {
-      setIsword(false);
-      setLoading(false);
-    }
-  };
+    },
+    [trimmedSearchWord],
+  );
 
-  // trimmedSearchWord나 location이 변경되면 초기 데이터 로딩
+  // 검색어 변경 시 초기화 + 첫 페이지 로드
   useEffect(() => {
     if (trimmedSearchWord) {
-      setSearchingStores([]); // 기존 데이터 초기화
-      setPage(0); // 페이지 초기화
-      setIsEnd(false); // 데이터 끝 상태 초기화
+      setSearchingStores([]);
+      setPage(0);
+      setIsEnd(false);
       filteredStores(0);
-      setIsword(true);
-    } else if (!trimmedSearchWord) {
-      setIsword(false);
+      setIsWord(true);
+      // 첫 로드시만 맨 위로
+      if (scrollRef.current) {
+        scrollRef.current.scrollToOffset({offset: 0, animated: false});
+      }
+    } else {
+      setIsWord(false);
+      setSearchingStores([]);
+      setPage(0);
+      setIsEnd(false);
     }
-  }, [trimmedSearchWord]);
+  }, [trimmedSearchWord, filteredStores]);
 
   const renderItem = ({item, index: itemIndex}) => (
     <>
-      <StoreResultItem
-        key={item.id}
-        store={item}
-        navigation={navigation}
-        index={index}
-      />
+      <StoreResultItem store={item} navigation={navigation} index={index} />
       {itemIndex !== searchingStores.length - 1 && (
         <View style={styles.horizontalDivider} />
       )}
     </>
   );
 
+  const loadMore = () => {
+    if (!loading && !isEnd && page < totalPage - 1) {
+      const next = page + 1;
+      setPage(next);
+      filteredStores(next);
+    }
+  };
+
   return (
     <>
-      {loading ? (
-        <FlatList
-          data={[1, 2, 3, 4, 5]} // 임의의 더미 데이터
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({item, index}) => (
-            <>
-              <StoreResultItemSkeleton />
-              {index !== searchingStores.length - 1 && (
-                <View style={styles.horizontalDivider} />
-              )}
-            </>
-          )}
-          showsVerticalScrollIndicator={false}
-        />
-      ) : (
-        <FlatList
-          data={searchingStores}
-          renderItem={renderItem}
-          keyExtractor={item => item.id.toString()}
-          contentContainerStyle={styles.fastSearchModalScrollView}
-          initialNumToRender={10}
-          maxToRenderPerBatch={5}
-          windowSize={5}
-          removeClippedSubviews={true}
-          onEndReached={() => {
-            if (!loading && !isEnd && page < totalpage - 1) {
-              setPage(prevPage => {
-                const nextPage = prevPage + 1;
-                filteredStores(nextPage);
-                return nextPage;
-              });
-            }
-          }}
-          onEndReachedThreshold={0.5}
-          ListEmptyComponent={
-            !loading && searchingStores.length === 0 && isword ? (
+      <FlatList
+        ref={scrollRef}
+        data={searchingStores}
+        renderItem={renderItem}
+        keyExtractor={item => String(item.id)}
+        contentContainerStyle={styles.fastSearchModalScrollView}
+        initialNumToRender={10}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        // iOS에서 점프 이슈가 있으면 false로 바꿔보세요.
+        removeClippedSubviews={Platform.OS === 'android'}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.4}
+        ListEmptyComponent={
+          firstLoading ? (
+            <View>
+              {[1, 2, 3, 4, 5].map(i => (
+                <View key={`skel-${i}`}>
+                  <StoreResultItemSkeleton />
+                  <View style={styles.horizontalDivider} />
+                </View>
+              ))}
+            </View>
+          ) : (
+            isWord &&
+            !loading && (
               <Text style={styles.emptyText}>검색된 술집이 없습니다</Text>
-            ) : null
-          }
-        />
-      )}
+            )
+          )
+        }
+        ListFooterComponent={
+          loading && !firstLoading ? (
+            <View style={{paddingVertical: 12}}>
+              <StoreResultItemSkeleton />
+            </View>
+          ) : null
+        }
+        showsVerticalScrollIndicator={false}
+      />
       <Loading loading={loading} />
     </>
   );
@@ -125,18 +150,6 @@ const styles = StyleSheet.create({
   fastSearchModalScrollView: {
     marginTop: 1,
     paddingBottom: 100,
-  },
-  footer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-  },
-  loadingText: {
-    textAlign: 'center',
-    marginVertical: 20,
-    fontFamily: 'Pretendard-Bold',
-    fontSize: 20,
-    color: '#333',
   },
   emptyText: {
     textAlign: 'center',
