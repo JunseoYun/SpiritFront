@@ -71,7 +71,10 @@ const FilterBar = () => {
         animated: true,
       });
     } else if (scrollRef.current) {
-      scrollRef.current.scrollTo({x: filterScrollX.current, animated: false});
+      scrollRef.current.scrollTo({
+        x: filterScrollX.current - choiceBtnWidth,
+        animated: false,
+      });
     }
   }, [drinkType]);
 
