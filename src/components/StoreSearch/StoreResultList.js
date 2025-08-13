@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from 'react';
+import React, {useState, useEffect, useMemo, useRef} from 'react';
 import {FlatList, StyleSheet, Text, View} from 'react-native';
 import StoreResultItem from './StoreResultItem';
 import {Store_getby_store} from '../../api/storeApi';
@@ -11,8 +11,9 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
   const [isword, setIsword] = useState(false);
+  const [firstloading, setFirstloading] = useState(true);
   const [totalpage, setTotalpage] = useState(0);
-
+  const scrollRef = useRef(null);
   // 검색된 가게들을 불러오는 함수
   const filteredStores = async currentPage => {
     setLoading(true);
@@ -43,17 +44,22 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
     } else {
       setIsword(false);
       setLoading(false);
+      setFirstloading(false);
     }
   };
 
   // trimmedSearchWord나 location이 변경되면 초기 데이터 로딩
   useEffect(() => {
     if (trimmedSearchWord) {
+      setFirstloading(true);
       setSearchingStores([]); // 기존 데이터 초기화
       setPage(0); // 페이지 초기화
       setIsEnd(false); // 데이터 끝 상태 초기화
       filteredStores(0);
       setIsword(true);
+      if (scrollRef.current) {
+        scrollRef.current.scrollToOffset({offset: 0, animated: false});
+      }
     } else if (!trimmedSearchWord) {
       setIsword(false);
     }
@@ -75,7 +81,7 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
 
   return (
     <>
-      {loading ? (
+      {loading || firstloading ? (
         <FlatList
           data={[1, 2, 3, 4, 5]} // 임의의 더미 데이터
           keyExtractor={(item, index) => index.toString()}
@@ -91,6 +97,7 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
         />
       ) : (
         <FlatList
+          ref={scrollRef}
           data={searchingStores}
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
