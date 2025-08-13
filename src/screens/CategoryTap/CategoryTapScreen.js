@@ -36,9 +36,9 @@ const CategoryTapScreen = ({navigation, route}) => {
   const [firstloading, setFirstloading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [totalpage, setTotalpage] = useState(0);
+  const allowLoadMore = useRef(false);
+  const onEndReachedCalledDuringMomentum = useRef(false);
 
-  const scrollRef = useRef(null);
-  const buttonLayouts = useRef({});
   const fetchStores = async (page = 0, reset = false) => {
     if (loading || (isEnd && !reset)) return;
     setLoading(true);
@@ -71,19 +71,24 @@ const CategoryTapScreen = ({navigation, route}) => {
       setLoading(false);
       setRefreshing(false);
       setFirstloading(false);
+      if (reset) {
+        setTimeout(() => {
+          allowLoadMore.current = true;
+        }, 300); // 살짝 지연을 줘서 첫 렌더 onEndReached 이벤트 무시
+      }
     }
   };
 
-  // useEffect(() => {
-  //   if (isFocused) {
-  //     setIsEnd(false);
-  //     setStores([]);
-  //     fetchStores(0, true);
-  //     setFirstloading(true);
-  //   }
-  // }, [isFocused, drinkType, priceOrder]);
-
   const lastParamsRef = useRef(null);
+
+  const resetList = () => {
+    allowLoadMore.current = false;
+    setIsEnd(false);
+    setPage(0);
+    setTotalpage(0);
+    setStores([]);
+    setFirstloading(true);
+  };
 
   useEffect(() => {
     if (isFocused) {
@@ -95,11 +100,8 @@ const CategoryTapScreen = ({navigation, route}) => {
         lastParams.priceOrder !== priceOrder;
 
       if (hasChanged) {
-        setIsEnd(false);
-        setStores([]);
-        setFirstloading(true);
+        resetList();
         fetchStores(0, true);
-
         lastParamsRef.current = {drinkType, priceOrder};
       }
     }
@@ -109,43 +111,30 @@ const CategoryTapScreen = ({navigation, route}) => {
     setRefreshing(true);
     setFirstloading(true);
     setIsEnd(false);
+    setPage(0);
+    setTotalpage(0);
     fetchStores(0, true);
   };
 
   // 페이징 호출
   const loadMoreStores = () => {
-    if (!loading && isEnd == false && page < totalpage - 1) {
+    if (
+      !loading &&
+      isEnd == false &&
+      page < totalpage - 1 &&
+      allowLoadMore.current
+    ) {
       setPage(prevPage => {
         const nextPage = prevPage + 1;
-        fetchStores(nextPage);
+        fetchStores(nextPage, false);
         return nextPage;
       });
     }
   };
 
-  // 필터바 스크롤 위치 유지 + 선택된 버튼 중앙 정렬
-  useEffect(() => {
-    if (isFocused && scrollRef.current) {
-      if (drinkType && buttonLayouts.current[drinkType]) {
-        const {x, width} = buttonLayouts.current[drinkType];
-        const scrollToX = x + width / 2 - screenWidth / 2 + 30;
-        scrollRef.current.scrollTo({
-          x: scrollToX > 0 ? scrollToX : 0,
-          animated: true,
-        });
-      } else {
-        // drinkType이 없으면 기존 위치 복원
-        scrollRef.current.scrollTo({x: filterScrollX.current, animated: false});
-      }
-    }
-  }, [isFocused, drinkType]);
-
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
       <View>
-        {/* 필터 바 */}
-        <FilterBar navigation={navigation} />
-
         {firstloading ? (
           <FlatList
             data={[1, 2, 3, 4]} // 더미 데이터
@@ -163,9 +152,22 @@ const CategoryTapScreen = ({navigation, route}) => {
                 navigation={navigation}
               />
             )}
-            keyExtractor={item => `${categoryname}-${item.id}`}
-            onEndReached={loadMoreStores}
-            onEndReachedThreshold={0.7}
+            keyExtractor={item =>
+              `${categoryname}-${item.id}-${drinkType}-${priceOrder}`
+            }
+            onMomentumScrollBegin={() => {
+              onEndReachedCalledDuringMomentum.current = false;
+            }}
+            onEndReached={() => {
+              if (
+                !onEndReachedCalledDuringMomentum.current &&
+                allowLoadMore.current
+              ) {
+                loadMoreStores();
+                onEndReachedCalledDuringMomentum.current = true;
+              }
+            }}
+            onEndReachedThreshold={0.4}
             initialNumToRender={10}
             maxToRenderPerBatch={5}
             windowSize={5}
