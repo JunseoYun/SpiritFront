@@ -20,7 +20,6 @@ import {getLocation} from '../../../storage/locationStorage';
 import SearchBar from '../../../components/SearchScreen/SearchBar';
 import FastSearch from '../../../components/SearchScreen/FastSearch/FastSearch';
 import FastSearchFilter from '../../../components/SearchScreen/FastSearch/FastSearchFilter';
-import SearchButton from '../../../components/SearchScreen/SearchButton';
 import RecentStoreList from '../../../components/SearchScreen/RecentStore/RecentStoreList';
 import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
