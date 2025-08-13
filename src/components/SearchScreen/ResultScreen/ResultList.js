@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   FlatList,
   StyleSheet,
@@ -18,6 +18,8 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
   const [totalpage, setTotalpage] = useState(0);
   const [firstloading, setFirstloading] = useState(true);
+  const scrollRef = useRef(null);
+
   // 검색된 가게들을 필터링하는 함수
   const filteredStores = async currentPage => {
     setLoading(true);
@@ -63,6 +65,9 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
       setPage(0); // 페이지 초기화
       setIsEnd(false); // 데이터 끝 상태 초기화
       filteredStores(0); // 데이터 불러오기
+      if (scrollRef.current) {
+        scrollRef.current.scrollToOffset({offset: 0, animated: false});
+      }
     }
   }, [trimmedSearchWord, location]);
 
@@ -86,6 +91,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
         />
       ) : (
         <FlatList
+          ref={scrollRef}
           data={searchingStores}
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
