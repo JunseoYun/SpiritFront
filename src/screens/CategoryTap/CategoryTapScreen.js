@@ -1,11 +1,5 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import {useFocusEffect, useIsFocused} from '@react-navigation/native';
+import React, {useContext, useEffect, useRef, useState} from 'react';
+import {useIsFocused} from '@react-navigation/native';
 import {
   View,
   Text,
@@ -19,9 +13,6 @@ import {Store_getby_category} from '../../api/storeApi';
 import StoreItem from '../../components/CategoryTapScreen/StoreItem';
 import Loading from '../../hooks/Loading';
 import StoreItemSkeleton from '../../components/CategoryTapScreen/StoreItemSkeleton';
-import FilterBar from '../../components/CategoryTapScreen/FilterBar';
-
-const screenWidth = Dimensions.get('window').width;
 
 const CategoryTapScreen = ({navigation, route}) => {
   const {categoryname, location} = route.params;
@@ -38,6 +29,7 @@ const CategoryTapScreen = ({navigation, route}) => {
   const [totalpage, setTotalpage] = useState(0);
   const allowLoadMore = useRef(false);
   const onEndReachedCalledDuringMomentum = useRef(false);
+  const scrollRef = useRef(null);
 
   const fetchStores = async (page = 0, reset = false) => {
     if (loading || (isEnd && !reset)) return;
@@ -103,6 +95,9 @@ const CategoryTapScreen = ({navigation, route}) => {
         resetList();
         fetchStores(0, true);
         lastParamsRef.current = {drinkType, priceOrder};
+        if (scrollRef.current) {
+          scrollRef.current.scrollToOffset({offset: 0, animated: false});
+        }
       }
     }
   }, [isFocused, drinkType, priceOrder]);
@@ -144,6 +139,7 @@ const CategoryTapScreen = ({navigation, route}) => {
           />
         ) : (
           <FlatList
+            ref={scrollRef}
             data={stores}
             renderItem={({item}) => (
               <StoreItem
