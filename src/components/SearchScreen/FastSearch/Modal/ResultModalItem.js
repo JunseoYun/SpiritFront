@@ -31,7 +31,7 @@ const ResultModalItem = ({store, navigation, location}) => {
     breakstart,
     breakend,
   } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
-  console.log(store);
+
   const {token} = useAuth();
   const {showToast} = useToast();
   const handlePress = () => {
@@ -189,7 +189,6 @@ const styles = StyleSheet.create({
   backimage: {
     width: 100,
     height: 100,
-    borderRadius: 10,
     borderRadius: 10,
   },
   backimagestyle: {

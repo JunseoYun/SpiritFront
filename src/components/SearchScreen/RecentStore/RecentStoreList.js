@@ -3,6 +3,7 @@ import {FlatList, StyleSheet, View, Text} from 'react-native';
 import RecentStoreItem from './RecentStoreItem';
 import {Store_getby_recent} from '../../../api/storeApi';
 import {useAuth} from '../../../context/AuthContext';
+import RecentStoreItemSkeleton from './RecentStoreItemSkeleton';
 const RecentStoreList = ({
   refresh,
   setRefresh,
@@ -14,6 +15,7 @@ const RecentStoreList = ({
   const {token} = useAuth();
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
+  const [firstloading, setFirstloading] = useState(true);
   // const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalpage, setTotalpage] = useState(0);
@@ -56,6 +58,9 @@ const RecentStoreList = ({
     } catch (error) {
       console.error(error);
     } finally {
+      if (firstloading == true) {
+        setFirstloading(false);
+      }
       setLoading(false);
     }
   };
@@ -82,13 +87,6 @@ const RecentStoreList = ({
     fetchStores(0, true);
   }, []);
 
-  const renderEmptyComponent = () => {
-    if (!loading) {
-      return <Text style={styles.emptyText}>최근 방문한 술집이 없습니다.</Text>;
-    }
-    return null;
-  };
-
   const renderStoreItem = ({item}) => (
     <RecentStoreItem store={item} navigation={navigation} location={location} />
   );
@@ -102,20 +100,33 @@ const RecentStoreList = ({
         </Text>
       </View>
       {token && (
-        <FlatList
-          data={stores}
-          renderItem={renderStoreItem}
-          keyExtractor={item => item.id.toString()} // 고유 ID를 문자열로 변환
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollViewContent}
-          onEndReached={handleEndReached} // 끝에 도달했을 때 추가 데이터 로드
-          onEndReachedThreshold={0.5} // 스크롤 트리거 임계값
-          initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
-          maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
-          windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-          removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
-        />
+        <>
+          {firstloading || refresh ? (
+            <FlatList
+              data={[1, 2, 3]} // 임의의 더미 데이터
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={() => <RecentStoreItemSkeleton />}
+              showsHorizontalScrollIndicator={false}
+              horizontal
+              contentContainerStyle={styles.scrollViewContent}
+            />
+          ) : (
+            <FlatList
+              data={stores}
+              renderItem={renderStoreItem}
+              keyExtractor={item => item.id.toString()} // 고유 ID를 문자열로 변환
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.scrollViewContent}
+              onEndReached={handleEndReached} // 끝에 도달했을 때 추가 데이터 로드
+              onEndReachedThreshold={0.5} // 스크롤 트리거 임계값
+              initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
+              maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
+              windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
+              removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
+            />
+          )}
+        </>
       )}
 
       {token && stores.length === 0 && !loading && (
@@ -146,7 +157,7 @@ const styles = StyleSheet.create({
   mylocationlivetext: {
     fontSize: 18,
     fontFamily: 'Pretendard-Bold',
-    color: '#181a1a',
+    color: '#333',
     marginTop: 10,
   },
   mylocationlivesubtext: {

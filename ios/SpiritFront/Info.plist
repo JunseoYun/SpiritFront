@@ -29,11 +29,33 @@
 				<string>kakao$(KAKAO_APP_KEY)</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>spirit</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>spirit</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>GADApplicationIdentifier</key>
+  <string>ca-app-pub-1420294930834875~9246852863</string>
+
+	<key>SKAdNetworkItems</key>
+  <array>
+    <dict>
+      <key>SKAdNetworkIdentifier</key>
+      <string>cstr6suwn9.skadnetwork</string>
+    </dict>
+  </array> 
+
 	<key>KAKAO_APP_KEY</key>
 	<string>$(KAKAO_APP_KEY)</string>
+	
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>$(KAKAO_APP_SCHEMES)</string>
@@ -79,11 +101,8 @@
 	<string>카메라 사용 권한은 게시물 이미지 촬영 및 첨부를 위해 필요합니다.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>카메라 사용 권한은 게시물 이미지 촬영 및 첨부를 위해 필요합니다.</string>
-	<!-- <key>NSPushNotificationUsageDescription</key>
-	<string>앱 알림을 받기 위해 알림 권한이 필요합니다.</string> -->
 	<key>NSUserNotificationUsageDescription</key>
 	<string>앱에서 푸시 알림을 보내기 위해 권한이 필요합니다.</string>
-
 	<key>UIAppFonts</key>
 	<array>
 		<string>AntDesign.ttf</string>
@@ -128,5 +147,10 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:dev.team-spirit.click</string>
+		<string>applinks:team-spirit.click</string>
+	</array>
 </dict>
 </plist>

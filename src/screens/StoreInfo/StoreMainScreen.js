@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Pressable,
   KeyboardAvoidingView,
+  Share,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/StoreImage/ImageSlider';
 import {ScrollView} from 'react-native-gesture-handler';
@@ -20,6 +21,7 @@ import {
   UpdateStore,
   DeleteStoreImage,
   UpdateStoreImage,
+  get_store_share,
 } from '../../api/storeApi';
 
 import Feather from 'react-native-vector-icons/Feather';
@@ -28,7 +30,6 @@ import StoreAlcoholScreen from './StoreAlcoholScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
 import {StoreMenuget} from '../../api/menuApi';
 import {StoreDrinkget} from '../../api/drinkApi';
-import StoreModal from '../../components/StoreScreen/StoreModal';
 import UpdateHeader from '../../components/StoreScreen/UpdateHeader';
 import BottomSheet from '@gorhom/bottom-sheet';
 import UpdateBottomSheet from '../../components/StoreScreen/UpdateBottomSheet';
@@ -38,7 +39,6 @@ import {useToast} from '../../context/ToastContext';
 import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
-import ImageActionModal from '../../components/StoreScreen/StoreImage/ImageActionModal';
 import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcategorytab';
 
 const StoreMainScreen = ({navigation}) => {
@@ -48,9 +48,9 @@ const StoreMainScreen = ({navigation}) => {
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '70%', '85%'], []);
   const {storeId, innerlatitude, innerlongitude} = route.params;
+
   const [menus, setMenus] = useState([]);
   const [alcohols, setAlcohols] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [storedata, setStoredata] = useState('');
   const [scrollY] = useState(new Animated.Value(0));
   const [longitude, setLongitude] = useState('');
@@ -207,10 +207,6 @@ const StoreMainScreen = ({navigation}) => {
   const endUpdate = () => {
     setIsUpdate(false);
     handleBottomClose();
-  };
-
-  const onPressModalClose = () => {
-    setIsModalVisible(false);
   };
 
   const handleBottomOpen = () => {
@@ -398,10 +394,45 @@ const StoreMainScreen = ({navigation}) => {
     });
   };
 
-  const [ismenuimgModalVisible, setMenuingModalVisible] = useState(false);
-  const [modalSource, setModalSource] = useState(null);
-
   const [tabY, setTabY] = useState(0);
+
+  const onShare = async () => {
+    try {
+      const response = await get_store_share(storeId);
+
+      if (!response?.url) {
+        showToast('공유할 링크를 가져오지 못했어요.');
+        return;
+      }
+
+      await Share.share({
+        message:
+          Platform.OS === 'ios'
+            ? `${storedata.name}에서 한잔 어때요?\n한잔할까에서 확인해보세요!\n`
+            : `${storedata.name}에서 한잔 어때요?\n한잔할까에서 확인해보세요!\n${response.url}`,
+        url: response.url,
+        title: '가게 공유',
+      });
+    } catch (error) {
+      showToast('공유 도중 문제가 발생했어요.');
+      console.error('onShare error:', error);
+    }
+  };
+
+  const handleStoreInfo = () => {
+    const locationDto = {
+      latitude: latitude,
+      longitude: longitude,
+    };
+    navigation.navigate('StoreStack', {
+      screen: 'ManagerStoreInfoScreen',
+      params: {
+        storeId: storeId,
+        storename: storedata.name,
+        locationDto: locationDto,
+      },
+    });
+  };
 
   return (
     <>
@@ -412,8 +443,8 @@ const StoreMainScreen = ({navigation}) => {
             headerBackgroundColor={headerBackgroundColor}
             iconColor={iconColor}
             titleOpacity={titleOpacity}
-            title={storedata.name}
-            isOwner={storedata?.isOwner}
+            title={storedata?.name}
+            onShare={onShare}
           />
         )}
         {isUpdate && (
@@ -429,8 +460,8 @@ const StoreMainScreen = ({navigation}) => {
               navigation={navigation}
               headerBackgroundColor={'#fff'}
               iconColor={'#333'}
-              title={storedata.name}
-              isOwner={storedata.isOwner}
+              title={storedata?.name}
+              onShare={onShare}
             />
           )}
 
@@ -500,7 +531,6 @@ const StoreMainScreen = ({navigation}) => {
 
             <StoreMainInfo
               storedata={storedata}
-              onModalOpen={() => setIsModalVisible(true)}
               navigation={navigation}
               isUpdate={isUpdate}
               endUpdate={endUpdate}
@@ -511,6 +541,10 @@ const StoreMainScreen = ({navigation}) => {
               storeupdatedrink={storeupdatedrink}
               setLoading={setLoading}
               loading={loading}
+              startUpdate={startUpdate}
+              handleReport={handleReport}
+              handleReportList={handleReportList}
+              handleStoreInfo={handleStoreInfo}
             />
             {!isUpdate && (
               <View style={{backgroundColor: '#F2F2F2', height: 20}} />
@@ -525,13 +559,10 @@ const StoreMainScreen = ({navigation}) => {
 
             {!isUpdate && (
               <StorePriceImage
+                storeId={storeId}
                 isUpdatable={storedata?.isUpdatable}
-                imageList={storedata?.imgUrlList}
+                imageList={storedata?.boardImageDtoList}
                 navigation={navigation}
-                setMenuingModalVisible={visible => {
-                  setModalSource('menu');
-                  setMenuingModalVisible(visible);
-                }}
               />
             )}
 
@@ -563,11 +594,6 @@ const StoreMainScreen = ({navigation}) => {
                     onMenuDelete={handleMenuDelete}
                     isUpdatable={storedata?.isUpdatable}
                     onMenuUpdateComplete={refreshMenus}
-                    ismenuimgModalVisible={ismenuimgModalVisible}
-                    setMenuingModalVisible={visible => {
-                      setModalSource('menu');
-                      setMenuingModalVisible(visible);
-                    }}
                     images={imageSliderData}
                   />
                 )}
@@ -585,44 +611,12 @@ const StoreMainScreen = ({navigation}) => {
                     onScrollTo={scrollToHandler}
                     sectionPositions={sectionPositions}
                     setSectionPositions={setSectionPositions}
-                    ismenuimgModalVisible={ismenuimgModalVisible}
-                    setMenuingModalVisible={visible => {
-                      setModalSource('alcohol');
-                      setMenuingModalVisible(visible);
-                    }}
                   />
                 )}
               </>
             )}
           </ScrollView>
         </KeyboardAvoidingView>
-        <ImageActionModal
-          visible={ismenuimgModalVisible}
-          navigation={navigation}
-          onClose={() => setMenuingModalVisible(false)}
-          onEdit={() => {
-            navigation.navigate('InfoImageEditScreen', {
-              storeId,
-            });
-            setMenuingModalVisible(false);
-          }}
-          onSort={() => {
-            navigation.navigate('InfoImageReorderScreen', {
-              storeId,
-            });
-            setMenuingModalVisible(false);
-          }}
-        />
-        <StoreModal
-          isModalVisible={isModalVisible}
-          onPressModalClose={onPressModalClose}
-          storeId={storeId}
-          navigation={navigation}
-          startUpdate={startUpdate}
-          handleReport={handleReport}
-          handleReportList={handleReportList}
-          isUpdatable={storedata?.isUpdatable}
-        />
       </View>
       {isUpdate && (
         <View style={styles.endUpdateButton}>
@@ -725,7 +719,7 @@ const styles = StyleSheet.create({
   addImageText: {
     color: '#999',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

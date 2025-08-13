@@ -13,14 +13,7 @@ import Feather from 'react-native-vector-icons/Feather';
 
 const {width} = Dimensions.get('window');
 
-const StorePriceImage = ({
-  isUpdatable,
-  imageList,
-  navigation,
-  setMenuingModalVisible,
-}) => {
-  if (!imageList || imageList.length === 0) return null;
-
+const StorePriceImage = ({isUpdatable, imageList, navigation, storeId}) => {
   const handleImagePress = index => {
     navigation.navigate('StoreStack', {
       screen: 'ImageViewerScreen',
@@ -36,26 +29,35 @@ const StorePriceImage = ({
       {isUpdatable && (
         <Pressable
           style={styles.addImageButton}
-          onPress={() => setMenuingModalVisible(true)}>
+          onPress={() => {
+            navigation.navigate('InfoImageEditScreen', {
+              storeId,
+              imgList: imageList,
+            });
+          }}>
           <Text style={styles.addImageText}>메뉴판 이미지 편집</Text>
           <Feather name="chevron-right" size={22} color="#999" />
         </Pressable>
       )}
-      {imageList?.length > 0 && (
+      {!imageList || imageList.length === 0 ? null : (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}>
-          {imageList.map((imgUrl, index) => (
-            <Pressable key={index} onPress={() => handleImagePress(index)}>
+          {imageList.map((img, index) => (
+            <Pressable
+              key={img.id || index}
+              onPress={() => handleImagePress(index)}>
               <View style={styles.imageWrapper}>
                 <FastImage
-                  source={{uri: imgUrl}}
+                  source={{uri: img.url}}
                   style={styles.reviewImage}
                   resizeMode={FastImage.resizeMode.cover}
                 />
                 <View style={styles.label}>
-                  <Text style={styles.labelText}>메뉴</Text>
+                  <Text style={styles.labelText}>
+                    {img.boardType === 'DRINK' ? '주류' : '메뉴'}
+                  </Text>
                 </View>
               </View>
             </Pressable>

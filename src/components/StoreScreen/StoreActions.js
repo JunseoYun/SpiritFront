@@ -76,7 +76,7 @@ const StoreActions = ({storeData, navigation, storename}) => {
             screen: 'StoreReviewScreen',
             params: {
               storeId: storeData.id,
-              storename: storename,
+              storename: storeData.name,
             },
           });
         }}

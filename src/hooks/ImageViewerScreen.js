@@ -15,15 +15,24 @@ const ImageViewerScreen = () => {
   const route = useRoute();
   const {images, index = 0} = route.params; // index 기본값 0
   const insets = useSafeAreaInsets();
-  console.log(images);
-  console.log(index);
+
   if (!images || images.length === 0) return null;
 
   const formattedImages = Array.isArray(images)
-    ? images.map(img =>
-        typeof img === 'string' ? {url: img} : {url: img.imageUrl},
-      )
-    : [{url: typeof images === 'string' ? images : images?.imageUrl}];
+    ? images.map(img => ({
+        url: typeof img === 'string' ? img : img.url || img.imageUrl || '',
+        boardType: typeof img === 'string' ? null : img.boardType || null,
+      }))
+    : [
+        {
+          url:
+            typeof images === 'string'
+              ? images
+              : images?.url || images?.imageUrl || '',
+          boardType:
+            typeof images === 'string' ? null : images?.boardType || null,
+        },
+      ];
 
   return (
     <View style={[styles.container, {paddingTop: insets.top - 25}]}>

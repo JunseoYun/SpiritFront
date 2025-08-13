@@ -4,6 +4,7 @@
 #import <GoogleSignIn/GoogleSignIn.h>
 #import "RNSplashScreen.h"
 #import <Firebase.h>
+#import <React/RCTLinkingManager.h>
 
 @implementation AppDelegate
 
@@ -21,6 +22,16 @@
   BOOL ret = [super application:application didFinishLaunchingWithOptions:launchOptions]; if (ret == YES) { [RNSplashScreen show];  } return ret;
 }
 
+//- (BOOL)application:(UIApplication *)application
+//continueUserActivity:(NSUserActivity *)userActivity
+//restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> *restorableObjects))restorationHandler
+//{
+//  return [RCTLinkingManager application:application
+//                   continueUserActivity:userActivity
+//                     restorationHandler:restorationHandler];
+//}
+
+
 // openURL 메서드를 하나로 통합하여 카카오와 구글 로그인 처리를 모두 합니다.
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
   // 카카오 로그인 URL 처리
@@ -30,6 +41,11 @@
   
   // 구글 로그인 URL 처리
   if ([GIDSignIn.sharedInstance handleURL:url]) {
+    return YES;
+  }
+  
+  // React Native Linking 처리 (딥링크용)
+  if ([RCTLinkingManager application:app openURL:url options:options]) {
     return YES;
   }
 
@@ -48,6 +64,15 @@
 #else
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
+}
+
+
+- (BOOL)application:(UIApplication *)application continueUserActivity:(nonnull NSUserActivity *)userActivity
+ restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler
+{
+ return [RCTLinkingManager application:application
+                  continueUserActivity:userActivity
+                    restorationHandler:restorationHandler];
 }
 
 @end

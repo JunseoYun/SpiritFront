@@ -6,18 +6,21 @@ import {
   Text,
   View,
   BackHandler,
+  ScrollView,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import LikedItem from '../../components/LikedScreen/LikedItem';
 import {Store_getby_liked} from '../../api/storeApi';
 import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
+import LikedItemSkeleton from '../../components/LikedScreen/LikedItemSkeleton';
 
 const LikeScreen = ({navigation}) => {
   const {token} = useAuth();
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [firstloading, setFirstloading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
@@ -46,6 +49,9 @@ const LikeScreen = ({navigation}) => {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      if (firstloading == true) {
+        setFirstloading(false);
+      }
     }
   };
 
@@ -102,25 +108,36 @@ const LikeScreen = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       {token && (
-        <FlatList
-          data={stores}
-          renderItem={renderItem}
-          keyExtractor={item => item.id.toString()}
-          showsVerticalScrollIndicator={false}
-          initialNumToRender={10}
-          maxToRenderPerBatch={5}
-          windowSize={5}
-          removeClippedSubviews={true}
-          onEndReached={loadMoreStores}
-          onEndReachedThreshold={0.5}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
-          ListEmptyComponent={
-            !loading && stores.length === 0 ? (
-              <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
-            ) : null
-          }
-        />
+        <>
+          {firstloading || refreshing ? (
+            <FlatList
+              data={[1, 2, 3]} // 임의의 더미 데이터
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={() => <LikedItemSkeleton />}
+              showsVerticalScrollIndicator={false}
+            />
+          ) : (
+            <FlatList
+              data={stores}
+              renderItem={renderItem}
+              keyExtractor={item => item.id.toString()}
+              showsVerticalScrollIndicator={false}
+              initialNumToRender={10}
+              maxToRenderPerBatch={5}
+              windowSize={5}
+              removeClippedSubviews={true}
+              onEndReached={loadMoreStores}
+              onEndReachedThreshold={0.5}
+              onRefresh={handleRefresh}
+              refreshing={refreshing}
+              ListEmptyComponent={
+                !loading && stores.length === 0 ? (
+                  <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
+                ) : null
+              }
+            />
+          )}
+        </>
       )}
       {!token && <Text style={styles.emptyText}>로그인 후 이용해주세요</Text>}
       <Loading loading={refreshing || loading} />

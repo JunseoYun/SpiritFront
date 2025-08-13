@@ -21,7 +21,7 @@ const MainBtmbar = () => {
           alignContent: 'center',
           justifyContent: 'center',
         },
-        tabBarActiveTintColor: '#45C9FF', // 선택된 탭의 텍스트/아이콘 색상
+        tabBarActiveTintColor: '#1a1a1a', // 선택된 탭의 텍스트/아이콘 색상 black
         tabBarInactiveTintColor: '#999', // 비활성 탭의 텍스트/아이콘 색상
         tabBarIcon: ({focused, color, size}) => {
           let iconName;

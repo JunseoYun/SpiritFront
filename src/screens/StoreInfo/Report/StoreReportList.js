@@ -133,7 +133,7 @@ const StoreReportList = () => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#f0f2f5',
+    backgroundColor: '#f9faff',
   },
   container: {
     padding: 16,

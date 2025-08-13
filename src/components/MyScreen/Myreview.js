@@ -110,16 +110,8 @@ const MyReview = ({navigation}) => {
               return nextPage; // 상태를 증가된 페이지 번호로 갱신
             });
           }
-        }} // 끝에 도달하면 데이터 불러오기
+        }}
         onEndReachedThreshold={0.5}
-        // ListFooterComponent={
-        //   loading && !isEnd ? (
-        //     <View style={styles.footer}>
-        //       <Text style={styles.emptyText}>Loading...</Text>
-        //     </View>
-        //   ) : //aa
-        //   null
-        // }
         ListEmptyComponent={
           !loading && myReview.length === 0 ? (
             <View style={styles.footer}>
