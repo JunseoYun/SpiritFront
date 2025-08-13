@@ -10,6 +10,7 @@ const forbiddenWords = [
   'Spirit',
   'spirit',
   'SPIRIT',
+  '운영자',
 
   // 직접적인 욕설
   '시발',

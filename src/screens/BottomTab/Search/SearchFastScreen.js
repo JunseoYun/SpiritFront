@@ -1,199 +1,151 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
-  Modal,
   View,
   Text,
-  ScrollView,
   Pressable,
-  Image,
   StyleSheet,
   FlatList,
   SafeAreaView,
+  TouchableWithoutFeedback,
+  Modal,
+  Animated,
+  Easing,
+  Dimensions,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import ResultModalItem from '../../../components/SearchScreen/FastSearch/Modal/ResultModalItem';
-import {Store_getby_condition_search} from '../../../api/storeApi';
-import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import {useRoute} from '@react-navigation/native';
+
+import ResultModalItem from '../../../components/SearchScreen/FastSearch/Modal/ResultModalItem';
 import FastSearch from '../../../components/SearchScreen/FastSearch/FastSearch';
-import CategoryModal from '../../../components/SearchScreen/FastSearch/Modal/CategoryModal';
-import PeopleModal from '../../../components/SearchScreen/FastSearch/Modal/PeopleModal';
-import VisitTimeModal from '../../../components/SearchScreen/FastSearch/Modal/VisitTimeModal';
+import FastSearchFilter from '../../../components/SearchScreen/FastSearch/FastSearchFilter';
+import {Store_getby_condition_search} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
+import ResultModalItemSkeleton from '../../../components/SearchScreen/FastSearch/Modal/ResultModalItemSkeleton';
+
+const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 const SearchFastScreen = ({navigation}) => {
   const route = useRoute();
   const {fastSearchStores, fastviewDto, location} = route.params;
 
-  const [firstSearch, setFirstSearch] = useState(fastSearchStores);
-  const [firstSearchDto, setFirstSearchDto] = useState(fastviewDto);
+  // ✅ 필터 상태
+  const [selectedFilters, setSelectedFilters] = useState({
+    카테고리: fastviewDto.selectedCategory || '',
+    인원: fastviewDto.selectedPeople || '',
+    '방문 시간': fastviewDto.timeselectedHour
+      ? `${fastviewDto.timeselectedHour}:${fastviewDto.timeselectedMinute}`
+      : '',
+    주종: fastviewDto.selectedAlcohol || '',
+  });
 
-  const [faststores, setFasttores] = useState([]);
+  // ✅ 검색 결과 상태
+  const [faststores, setFaststores] = useState([]);
   const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false); // 로딩 상태
+  const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalpage, setTotalpage] = useState(0);
+  const [firstloading, setFirstloading] = useState(true);
 
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [peopleModalVisible, setPeopleModalVisible] = useState(false);
-  const [timeModalVisible, setTimeModalVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedPeople, setSelectedPeople] = useState('');
-  const [isGroup, setGroup] = useState(false);
-  const [selectedHour, setSelectedHour] = useState('');
-  const [selectedMinute, setSelectedMinute] = useState('');
-  const [selectedEngCategory, setSelectedEngCategory] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
+  // ✅ 바텀시트 상태
+  const [bottomModalVisible, setBottomModalVisible] = useState(false);
+  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const scrollRef = useRef(null);
+  // ✅ 검색 조건 DTO
+  const [searchDto, setSearchDto] = useState(fastSearchStores);
 
-  const onPressModalOpen = () => {
-    setModalVisible(true);
-  };
-  const onPressModalClose = () => {
-    setModalVisible(false);
-  };
-  const onPressCategory = (text, category) => {
-    setSelectedCategory(text);
-    setSelectedEngCategory(category);
-    setModalVisible(false); // 모달 닫기
-  };
-
-  const onPressPeopleModalOpen = () => {
-    setPeopleModalVisible(true);
-  };
-  const onPressPeopleModalClose = () => {
-    setPeopleModalVisible(false);
-  };
-  const onSelectPeople = (peopleOption, value) => {
-    setSelectedPeople(peopleOption); // 선택된 인원 값을 상태 변수에 저장
-    setGroup(value);
-    setPeopleModalVisible(false); // 모달 닫기
-  };
-
-  const onPressTimeModalOpen = () => {
-    setTimeModalVisible(true);
-  };
-  const onPressTimeModalClose = () => {
-    setTimeModalVisible(false);
-  };
-  const postbutton = () => {
-    setSelectedTime(`${selectedHour}:${selectedMinute}`);
-    setTimeModalVisible(false);
-  };
-  const changeHour = text => {
-    setSelectedHour(text);
-  };
-  const changeMinute = text => {
-    setSelectedMinute(text);
-  };
-
-  const searchOptions = [
-    {
-      label: selectedCategory || firstSearchDto.selectedCategory,
-      isSelected: true,
-      onPress: onPressModalOpen,
-    },
-    {
-      label: selectedPeople || firstSearchDto.selectedPeople,
-      isSelected: true,
-      onPress: onPressPeopleModalOpen,
-    },
-    {
-      label: `${firstSearchDto.timeselectedHour}:${firstSearchDto.timeselectedMinute}`,
-      isSelected: true,
-      onPress: onPressTimeModalOpen,
-    },
-  ];
+  // ✅ 초기 첫 호출
   useEffect(() => {
-    if (location) {
-      fastgetStores(0, true, firstSearch); // 서버 통신
+    if (location && searchDto) {
+      fetchStores(0, true, searchDto);
     }
   }, [location]);
 
-  useEffect(() => {
-    // selectedCategory, selectedPeople, selectedHour, selectedMinute가 변경될 때마다 상태 업데이트 후 서버 통신
-    if (selectedCategory || selectedPeople || selectedTime) {
-      let updatedSearch = {...firstSearch}; // 현재 상태를 복사
-      let updatedSearchinfo = {...firstSearchDto};
+  // ✅ 검색 버튼 눌렀을 때 API 호출
+  const handleApply = () => {
+    const {카테고리, 인원, '방문 시간': visitTime, 주종} = selectedFilters;
+    const updated = {};
 
-      // Category 선택 시
-      if (selectedCategory) {
-        updatedSearch.category = selectedEngCategory;
-        updatedSearchinfo.selectedCategory = selectedCategory;
-      }
-
-      // People 선택 시
-      if (selectedPeople) {
-        updatedSearch.isGroupAvailable = isGroup;
-        updatedSearchinfo.selectedPeople = selectedPeople;
-      }
-
-      // 시간 변경 시
-      if (selectedTime) {
-        const now = new Date();
-        now.setHours(selectedHour, selectedMinute, 0, 0);
-
-        now.setHours(now.getHours() + 9);
-
-        updatedSearch.conditionTime = now.toISOString().slice(0, -1);
-
-        if (selectedHour !== '') {
-          updatedSearchinfo.timeselectedHour = selectedHour;
-        }
-        if (selectedMinute !== '') {
-          updatedSearchinfo.timeselectedMinute = selectedMinute;
-        }
-      }
-
-      setFasttores([]);
-
-      fastgetStores(0, true, updatedSearch); // API 호출
-
-      // 상태 업데이트
-
-      setFirstSearch(updatedSearch);
-      setFirstSearchDto(updatedSearchinfo);
+    if (카테고리) updated.category = 카테고리;
+    if (인원) updated.isGroupAvailable = 인원 === '10인 이상';
+    if (visitTime) {
+      const [hh, mm] = visitTime.split(':');
+      const now = new Date();
+      now.setHours(parseInt(hh), parseInt(mm), 0, 0);
+      now.setHours(now.getHours() + 9);
+      updated.conditionTime = now.toISOString().slice(0, -1);
     }
-  }, [selectedCategory, selectedPeople, selectedTime]);
+    if (주종) updated.alcoholType = 주종;
 
-  const fastgetStores = async (currentPage, refresh = false, updatedSearch) => {
-    if (location) {
-      if (loading || (!hasMore && !refresh)) return;
-      setLoading(true);
+    // 상태 갱신 후 호출
+    setSearchDto(updated);
+    setPage(0);
+    setFaststores([]);
+    fetchStores(0, true, updated);
+    setBottomModalVisible(false);
+    if (scrollRef.current) {
+      scrollRef.current.scrollToOffset({offset: 0, animated: false});
+    }
+  };
 
-      try {
-        const requestData = {
-          page: currentPage,
-          latitude: location.latitude,
-          longitude: location.longitude,
-          conditionSearchDto: updatedSearch,
-        };
+  // ✅ 가게 리스트 요청
+  const fetchStores = async (currentPage, refresh = false, dto) => {
+    if (!location) return;
+    if (loading || (!hasMore && !refresh)) return;
 
-        const storesData = await Store_getby_condition_search(requestData);
+    setLoading(true);
+    try {
+      const requestData = {
+        page: currentPage,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        conditionSearchDto: dto,
+      };
 
-        setTotalpage(storesData.totalPages);
+      const storesData = await Store_getby_condition_search(requestData);
 
-        if (storesData.content && storesData.content.length > 0) {
-          setFasttores(prevStores => {
-            const newStores = refresh
-              ? storesData.content // 새로고침 시 초기화
-              : [...prevStores, ...storesData.content]; // 추가 로드
+      setTotalpage(storesData.totalPages);
 
-            const uniqueStores = Array.from(
-              new Map(newStores.map(store => [store.id, store])).values(),
-            );
-            return uniqueStores;
-          });
-          setHasMore(true);
-        } else {
-          setHasMore(false);
-        }
-      } catch (error) {
-        console.error('데이터 로드 중 오류 발생:', error);
-      } finally {
-        setLoading(false);
+      if (storesData.content && storesData.content.length > 0) {
+        setFaststores(prevStores => {
+          const newStores = refresh
+            ? storesData.content
+            : [...prevStores, ...storesData.content];
+          const uniqueStores = Array.from(
+            new Map(newStores.map(store => [store.id, store])).values(),
+          );
+          return uniqueStores;
+        });
+        setHasMore(true);
+      } else {
+        if (refresh) setFaststores([]);
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error('데이터 로드 오류:', err);
+    } finally {
+      setLoading(false);
+      if (firstloading == true) {
+        setFirstloading(false);
       }
     }
   };
+
+  // ✅ 바텀시트 애니메이션
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: bottomModalVisible ? 0 : SCREEN_HEIGHT,
+      duration: 300,
+      easing: bottomModalVisible
+        ? Easing.out(Easing.ease)
+        : Easing.in(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  }, [bottomModalVisible]);
+
+  // ✅ 리스트 렌더
+  const renderStoreItem = ({item}) => (
+    <ResultModalItem store={item} navigation={navigation} location={location} />
+  );
 
   const renderEmptyComponent = () => {
     if (!loading) {
@@ -204,120 +156,143 @@ const SearchFastScreen = ({navigation}) => {
     return null;
   };
 
-  const renderStoreItem = ({item}) => {
-    return (
-      <ResultModalItem
-        store={item}
-        navigation={navigation}
-        location={location}
-      />
-    );
-  };
-
   return (
-    <SafeAreaView style={styles.fastSearchModalContainer}>
-      <View style={styles.searchModaltopview}>
+    <SafeAreaView style={styles.container}>
+      {/* 상단 헤더 */}
+      <View style={styles.header}>
         <Pressable
-          style={styles.fastSearchModalcloseButton}
-          onPress={() => {
-            navigation.goBack();
-          }}>
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}>
           <AntDesign name="arrowleft" size={25} color={'black'} />
         </Pressable>
-        <Text style={styles.TitleText}>내 주변 빠른 검색</Text>
+        <Text style={styles.headerTitle}>내 주변 빠른 검색</Text>
       </View>
-      <FastSearch title={''} searchOptions={searchOptions} />
-      <FlatList
-        data={faststores}
-        renderItem={renderStoreItem}
-        keyExtractor={item => item.id.toString()}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.fastSearchModalScrollView}
-        onEndReached={() => {
-          if (hasMore && !loading && page < totalpage - 1) {
-            setPage(prevPage => {
-              const nextPage = prevPage + 1; // 다음 페이지 번호
-              fastgetStores(nextPage); // 그 페이지 번호로 데이터 요청
-              return nextPage; // 상태를 증가된 페이지 번호로 갱신
-            });
-          }
-        }}
-        initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
-        maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
-        windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-        removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
-        onEndReachedThreshold={0.5} // 리스트 끝에 가까워지면 데이터를 추가로 가져옵니다.
-        ListEmptyComponent={renderEmptyComponent}
+
+      {/* 필터 Chips */}
+      <FastSearch
+        title=""
+        selectedFilters={selectedFilters}
+        handleBottomOpen={() => setBottomModalVisible(true)}
       />
-      <CategoryModal
-        isModalVisible={isModalVisible}
-        onPressCategory={(text, category) => onPressCategory(text, category)}
-        onPressModalClose={() => onPressModalClose()}
-      />
-      <PeopleModal
-        visible={peopleModalVisible}
-        selectedPeople={
-          selectedPeople ? selectedPeople : fastviewDto.selectedPeople
-        }
-        onSelectPeople={onSelectPeople}
-        onPressClose={onPressPeopleModalClose}
-      />
-      <VisitTimeModal
-        visible={timeModalVisible}
-        selectedHour={
-          selectedHour ? selectedHour : fastviewDto.timeselectedHour
-        }
-        selectedMinute={
-          selectedMinute ? selectedMinute : fastviewDto.timeselectedMinute
-        }
-        onHourChange={changeHour}
-        onMinuteChange={changeMinute}
-        onPressClose={onPressTimeModalClose}
-        postbutton={postbutton}
-      />
+
+      {/* 검색 결과 리스트 */}
+      {firstloading ? (
+        <FlatList
+          data={[1, 2, 3, 5, 6, 7, 8, 9]} // 임의의 더미 데이터
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={() => <ResultModalItemSkeleton />}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContainer}
+          windowSize={5}
+        />
+      ) : (
+        <FlatList
+          ref={scrollRef}
+          data={faststores}
+          renderItem={renderStoreItem}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.listContainer}
+          onEndReached={() => {
+            if (hasMore && !loading && page < totalpage - 1) {
+              setPage(prev => {
+                const nextPage = prev + 1;
+                fetchStores(nextPage, false, searchDto);
+                return nextPage;
+              });
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={renderEmptyComponent}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={true}
+        />
+      )}
+
+      {/* 바텀시트 */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={bottomModalVisible}
+        onRequestClose={() => setBottomModalVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => setBottomModalVisible(false)}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+        <Animated.View
+          style={[styles.modalContent, {transform: [{translateY: slideAnim}]}]}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>내 주변 술집 빠른 검색</Text>
+            <Pressable onPress={() => setBottomModalVisible(false)}>
+              <Text style={styles.modalClose}>×</Text>
+            </Pressable>
+          </View>
+          <FastSearchFilter
+            selectedFilters={selectedFilters}
+            setSelectedFilters={setSelectedFilters}
+            handleApply={handleApply}
+          />
+        </Animated.View>
+      </Modal>
+
       <Loading loading={loading} />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  fastSearchModalContainer: {
-    height: '100%',
-    backgroundColor: '#F8FDFF',
-    justifyContent: 'center',
-  },
-  searchModaltopview: {
+  container: {flex: 1, backgroundColor: '#F8FDFF'},
+  header: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
   },
-  TitleText: {
+  backButton: {position: 'absolute', left: 25},
+  headerTitle: {
     textAlign: 'center',
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 19,
     color: '#333',
   },
-  fastSearchModalcloseButton: {
-    alignItems: 'center',
-    position: 'absolute',
-    left: 25,
-  },
-  fastSearchModalScrollView: {
-    marginTop: 1,
-  },
-  footer: {
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
+  listContainer: {marginTop: 1},
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Medium',
     fontSize: 17,
     color: '#c0c0c0',
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalContent: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: SCREEN_HEIGHT * 0.85,
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 20,
+    paddingTop: 12,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: -3},
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    marginHorizontal: 16,
+  },
+  modalTitle: {fontSize: 18, fontWeight: 'bold'},
+  modalClose: {fontSize: 28, color: '#666'},
 });
 
 export default SearchFastScreen;

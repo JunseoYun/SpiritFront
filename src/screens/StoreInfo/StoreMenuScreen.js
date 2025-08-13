@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView, StyleSheet, View, Text, Pressable} from 'react-native';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
+import Feather from 'react-native-vector-icons/Feather';
 
 const StoreMenuScreen = ({
   navigation,
@@ -36,6 +37,7 @@ const StoreMenuScreen = ({
                 key={menu.id}
                 menu={menu}
                 isLast={idx === mainAndNormal.length - 1} // ✅ 추가
+                navigation={navigation}
               />
             ))}
             <View style={styles.line} />
@@ -50,6 +52,7 @@ const StoreMenuScreen = ({
                 key={menu.id}
                 menu={menu}
                 isLast={idx === sideMenus.length - 1} // ✅ 추가
+                navigation={navigation}
               />
             ))}
 
@@ -60,21 +63,24 @@ const StoreMenuScreen = ({
     );
   };
 
+  // 메뉴판, 주류 정보 사진 없을때 이미지 추가로 수정
   return (
     <SafeAreaView style={styles.container}>
       {isUpdatable && (
-        <Pressable
-          style={styles.reorderButton}
-          onPress={() =>
-            navigation.navigate('MenuEditScreen', {
-              storeId,
-              menus,
-              onMenuUpdateComplete, // ✅ 메뉴 다시 불러오는 콜백 전달
-              onMenuDelete,
-            })
-          }>
-          <Text style={styles.menuAddButtonText}>메뉴 편집</Text>
-        </Pressable>
+        <>
+          <Pressable
+            style={styles.reorderButton}
+            onPress={() =>
+              navigation.navigate('MenuEditScreen', {
+                storeId,
+                menus,
+                onMenuUpdateComplete, // ✅ 메뉴 다시 불러오는 콜백 전달
+                onMenuDelete,
+              })
+            }>
+            <Text style={styles.menuAddButtonText}>메뉴 편집</Text>
+          </Pressable>
+        </>
       )}
 
       {menuList?.length > 0 ? (
@@ -93,10 +99,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   reorderButton: {
-    marginTop: 30,
-    marginBottom: 20,
     marginHorizontal: 18,
     marginTop: 20,
+    marginBottom: 10,
     alignItems: 'center',
     borderRadius: 10,
     backgroundColor: '#E9F5FB',
@@ -106,6 +111,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     padding: 16,
+  },
+  addImageButton: {
+    marginTop: 20,
+    marginHorizontal: 18,
+    paddingTop: 10,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  addImageText: {
+    color: '#999',
+    fontSize: 16,
+    fontWeight: '600',
   },
   section: {
     marginBottom: 10,

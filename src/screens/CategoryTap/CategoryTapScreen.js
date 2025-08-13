@@ -1,120 +1,192 @@
-import React, {useState, useEffect} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {useIsFocused} from '@react-navigation/native';
-import {View, Text, FlatList, StyleSheet, SafeAreaView} from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  SafeAreaView,
+  Dimensions,
+} from 'react-native';
+import {AlcoholFilterContext} from '../../context/AlcoholFilterContext';
 import {Store_getby_category} from '../../api/storeApi';
 import StoreItem from '../../components/CategoryTapScreen/StoreItem';
 import Loading from '../../hooks/Loading';
+import StoreItemSkeleton from '../../components/CategoryTapScreen/StoreItemSkeleton';
 
 const CategoryTapScreen = ({navigation, route}) => {
   const {categoryname, location} = route.params;
   const isFocused = useIsFocused();
+  const {drinkType, filterScrollX, priceOrder} =
+    useContext(AlcoholFilterContext);
+
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false); // 전체 로딩 상태
-  const [isInitialLoading, setIsInitialLoading] = useState(true); // 첫 로딩 상태
-  const [isEnd, setIsEnd] = useState(false); // 더 이상 데이터가 없는 상태
+  const [loading, setLoading] = useState(false);
+  const [isEnd, setIsEnd] = useState(false);
+  const [firstloading, setFirstloading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [totalpage, setTotalpage] = useState(0);
+  const allowLoadMore = useRef(false);
+  const onEndReachedCalledDuringMomentum = useRef(false);
+  const scrollRef = useRef(null);
 
-  // 🔥 데이터 불러오기 함수
-  const fetchStores = async (currentPage, reset = false) => {
-    if (loading || isEnd) return; // 로딩 중이거나 데이터가 끝났으면 요청 막기
-    setLoading(true); // 로딩 시작
-
+  const fetchStores = async (page = 0, reset = false) => {
+    if (loading || (isEnd && !reset)) return;
+    setLoading(true);
     try {
       const data = await Store_getby_category(
-        currentPage,
+        page,
         location.latitude,
         location.longitude,
         categoryname,
+        drinkType,
+        priceOrder,
       );
-
       setTotalpage(data.totalPages);
+      if (data.content.length > 0 && data.content) {
+        const newData = data.content || [];
 
-      if (reset) {
-        setStores(data.content); // 초기화 시 새 데이터를 설정
-        setPage(0); // 페이지 초기화
-        setIsEnd(data.content.length === 0); // 데이터 끝 상태 설정
-      } else if (data.content.length === 0) {
-        setIsEnd(true); // 추가 데이터가 없을 경우
-      } else {
         setStores(prevStores => {
-          const mergedStores = [...prevStores, ...data.content];
+          const newStores = reset ? newData : [...prevStores, ...newData];
           const uniqueStores = Array.from(
-            new Map(mergedStores.map(store => [store.id, store])).values(),
+            new Map(newStores.map(store => [store.id, store])).values(),
           );
           return uniqueStores;
         });
+      } else {
+        setIsEnd(true);
       }
     } catch (err) {
-      console.error(err.message || '오류 발생');
+      console.error(err);
     } finally {
-      setLoading(false); // 로딩 끝
-      if (isInitialLoading) setIsInitialLoading(false); // 첫 로딩 상태 해제
+      setLoading(false);
+      setRefreshing(false);
+      setFirstloading(false);
+      if (reset) {
+        setTimeout(() => {
+          allowLoadMore.current = true;
+        }, 300); // 살짝 지연을 줘서 첫 렌더 onEndReached 이벤트 무시
+      }
     }
   };
 
+  const lastParamsRef = useRef(null);
+
+  const resetList = () => {
+    allowLoadMore.current = false;
+    setIsEnd(false);
+    setPage(0);
+    setTotalpage(0);
+    setStores([]);
+    setFirstloading(true);
+  };
+
   useEffect(() => {
-    if (isFocused && stores.length === 0) {
-      fetchStores(0, true);
+    if (isFocused) {
+      const lastParams = lastParamsRef.current;
+
+      const hasChanged =
+        !lastParams || // 초기 진입이면 호출
+        lastParams.drinkType !== drinkType ||
+        lastParams.priceOrder !== priceOrder;
+
+      if (hasChanged) {
+        resetList();
+        fetchStores(0, true);
+        lastParamsRef.current = {drinkType, priceOrder};
+        if (scrollRef.current) {
+          scrollRef.current.scrollToOffset({offset: 0, animated: false});
+        }
+      }
     }
-  }, [isFocused]);
+  }, [isFocused, drinkType, priceOrder]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setFirstloading(true);
+    setIsEnd(false);
+    setPage(0);
+    setTotalpage(0);
+    fetchStores(0, true);
+  };
+
+  // 페이징 호출
+  const loadMoreStores = () => {
+    if (
+      !loading &&
+      isEnd == false &&
+      page < totalpage - 1 &&
+      allowLoadMore.current
+    ) {
+      setPage(prevPage => {
+        const nextPage = prevPage + 1;
+        fetchStores(nextPage, false);
+        return nextPage;
+      });
+    }
+  };
 
   return (
-    <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
-      {isInitialLoading ? (
-        <Loading loading={isInitialLoading} />
-      ) : (
-        <FlatList
-          data={stores}
-          renderItem={({item}) => (
-            <StoreItem
-              store={item}
-              location={location}
-              navigation={navigation}
-            />
-          )}
-          keyExtractor={item => `${categoryname}-${item.id}`} // ✅ 카테고리별 고유 키
-          onEndReached={() => {
-            if (!loading && !isEnd && page < totalpage - 1) {
-              setPage(prevPage => {
-                const nextPage = prevPage + 1;
-                fetchStores(nextPage); // 다음 페이지 요청
-                return nextPage;
-              });
+    <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+      <View>
+        {firstloading ? (
+          <FlatList
+            data={[1, 2, 3, 4]} // 더미 데이터
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={() => <StoreItemSkeleton loading={loading} />}
+            showsVerticalScrollIndicator={false}
+          />
+        ) : (
+          <FlatList
+            ref={scrollRef}
+            data={stores}
+            renderItem={({item}) => (
+              <StoreItem
+                store={item}
+                location={location}
+                navigation={navigation}
+              />
+            )}
+            keyExtractor={item =>
+              `${categoryname}-${item.id}-${drinkType}-${priceOrder}`
             }
-          }}
-          onEndReachedThreshold={0.5}
-          initialNumToRender={10}
-          maxToRenderPerBatch={5}
-          windowSize={5}
-          removeClippedSubviews={true}
-          ListEmptyComponent={
-            !loading && stores.length === 0 ? (
-              <Text style={styles.emptyText}>등록된 가게가 없어요</Text>
-            ) : null
-          }
-          refreshing={loading}
-          onRefresh={() => fetchStores(0, true)}
-          contentContainerStyle={{paddingBottom: 70}}
-        />
-      )}
+            onMomentumScrollBegin={() => {
+              onEndReachedCalledDuringMomentum.current = false;
+            }}
+            onEndReached={() => {
+              if (
+                !onEndReachedCalledDuringMomentum.current &&
+                allowLoadMore.current
+              ) {
+                loadMoreStores();
+                onEndReachedCalledDuringMomentum.current = true;
+              }
+            }}
+            onEndReachedThreshold={0.4}
+            initialNumToRender={10}
+            maxToRenderPerBatch={5}
+            windowSize={5}
+            removeClippedSubviews={true}
+            ListEmptyComponent={
+              !loading && stores.length === 0 ? (
+                <Text style={styles.emptyText}>등록된 가게가 없어요</Text>
+              ) : null
+            }
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            contentContainerStyle={{paddingBottom: 70}}
+          />
+        )}
+
+        {/* 로딩 오버레이 */}
+        <Loading loading={loading} />
+      </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingtext: {
-    fontFamily: 'Pretendard-SemiBold',
-    fontSize: 20,
-    color: '#333',
-    marginVertical: 40,
-    textAlign: 'center',
-  },
   emptyText: {
     textAlign: 'center',
     marginVertical: 40,

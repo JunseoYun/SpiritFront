@@ -98,11 +98,12 @@ android {
         applicationId "com.spiritfront"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 29
-        versionName "1.1.3"
+        versionCode 32
+        versionName "1.2"
         resValue "string", "KAKAO_APP_KEY", project.env.get("KAKAO_APP_KEY")
         resValue "string", "KAKAO_APP_SCHEMES", project.env.get("KAKAO_APP_SCHEMES")
         resValue "string", "GOOGLE_WEB_CLIENT_ID", project.env.get("GOOGLE_WEB_CLIENT_ID")
+        resValue "string", "GOOGLE_ADS_APPID", project.env.get("GOOGLE_ADS_APPID")
     }
     signingConfigs {
         debug {
@@ -155,6 +156,7 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.13.0')
     // implementation 'com.google.firebase:firebase-analytics' //빌드 버전 오류 남
     implementation 'com.google.firebase:firebase-messaging' //FCM firebase 라이브러리
+    implementation("com.google.android.gms:play-services-ads:21.5.0")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

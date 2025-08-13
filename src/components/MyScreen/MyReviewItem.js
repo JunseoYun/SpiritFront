@@ -10,14 +10,33 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
 
     const date = new Date(dateString);
     const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // 두 자리
+    const day = String(date.getDate()).padStart(2, '0'); // 두 자리
     const currentYear = new Date().getFullYear();
 
-    return year === currentYear
-      ? `${date.getMonth() + 1}.${date.getDate()}`
-      : `${year}.${date.getMonth() + 1}.${date.getDate()}`;
+    // 올해 날짜면 YY.MM.DD에서 연도를 생략하고 MM.DD만
+    if (year === currentYear) {
+      return `${month}.${day}`;
+    } else {
+      // 다른 해면 YY.MM.DD (연도는 뒤 두자리)
+      const shortYear = String(year).slice(-2);
+      return `${shortYear}.${month}.${day}`;
+    }
   };
+
   const formattedCreatedDate = formatDate(review.visitedAt);
   const {translateCategory} = useCategoryTranslation();
+
+  const handleImagePress = index => {
+    navigation.navigate('StoreStack', {
+      screen: 'ImageViewerScreen',
+      params: {
+        images: review.imgUrlList,
+        index: index,
+      },
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.reviewCard}>
@@ -46,7 +65,9 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
                 numberOfLines={1}>
                 {review.storeName}
               </Text>
-              <Text style={styles.date}>{formattedCreatedDate}방문</Text>
+              <Text style={styles.date} ellipsizeMode="tail" numberOfLines={1}>
+                {formattedCreatedDate}
+              </Text>
             </View>
 
             <View>
@@ -77,11 +98,17 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
         {review.imgUrlList.length > 0 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {review.imgUrlList.map((imgUrl, index) => (
-              <Image
+              <Pressable
                 key={index}
-                source={{uri: imgUrl}}
-                style={styles.reviewImage}
-              />
+                onPress={() => {
+                  handleImagePress(index);
+                }}>
+                <Image
+                  key={index}
+                  source={{uri: imgUrl}}
+                  style={styles.reviewImage}
+                />
+              </Pressable>
             ))}
           </ScrollView>
         )}
@@ -105,7 +132,6 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
     paddingHorizontal: 16,
     paddingVertical: 8,
     marginVertical: 5,
@@ -118,7 +144,7 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.2,
     shadowRadius: 3,
-    elevation: 3, // Android 그림자
+    elevation: 2, // Android 그림자
   },
   header: {
     flexDirection: 'column',
@@ -127,19 +153,21 @@ const styles = StyleSheet.create({
   storeName: {
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#181A1A',
-    width: '80%',
-  },
-  category: {
-    fontSize: 14,
-    color: '#999',
-    fontFamily: 'Pretendard-Medium',
-    marginTop: 4,
+    color: '#333',
+    flexShrink: 1, // 추가
   },
   date: {
     fontSize: 14,
     color: '#767676',
     fontFamily: 'Pretendard-Medium',
+    flexShrink: 0, // 추가
+  },
+
+  category: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
+    marginTop: 4,
   },
   rating: {
     flexDirection: 'row',

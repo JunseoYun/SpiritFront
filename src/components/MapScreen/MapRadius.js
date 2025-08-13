@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   buttonTextTop: {
-    color: 'black',
+    color: '#121212',
     fontSize: 15,
     paddingRight: 7,
     borderRightWidth: 0.5,
@@ -119,10 +119,11 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     fontFamily: 'Pretendard-Medium',
+    color: '#999',
   },
   selectedOptionText: {
-    color: '#45c9ff',
-    fontFamily: 'Pretendard-Bold',
+    color: '#121212',
+    fontFamily: 'Pretendard-SemiBold',
   },
   overlay: {
     position: 'absolute',

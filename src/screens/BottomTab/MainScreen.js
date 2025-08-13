@@ -40,6 +40,7 @@ const MainScreen = ({navigation}) => {
   const [address, setAddress] = useState('');
   const insets = useSafeAreaInsets();
   const scrollY = useRef(new Animated.Value(0)).current;
+  const scrollRef = useRef(null);
   const [showTopView2, setShowTopView2] = useState(false);
   const [showLocation, setShowLocation] = useState(false);
 
@@ -55,6 +56,21 @@ const MainScreen = ({navigation}) => {
   const {recommendCategory} = useRecommendation();
   const {token} = useAuth();
   const {showToast} = useToast();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (scrollRef.current) {
+        navigation.setParams({
+          scrollToTop: () => {
+            scrollRef.current.scrollTo({y: 0, animated: true});
+          },
+        });
+      }
+    }, 300); // 컴포넌트가 모두 렌더된 뒤 실행
+
+    return () => clearTimeout(timer);
+  }, [navigation]);
+
   useEffect(() => {
     const listener = scrollY.addListener(({value}) => {
       const iosThreshold = insets.top + 30;
@@ -288,6 +304,7 @@ const MainScreen = ({navigation}) => {
         </View>
       )}
       <Animated.ScrollView
+        ref={scrollRef}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {useNativeDriver: false},
@@ -309,6 +326,7 @@ const MainScreen = ({navigation}) => {
             location={location}
             refresh={isRefreshing}
             navigation={navigation}
+            loading={loading}
           />
 
           <CategoryGrid onPress={catagoryClick} />

@@ -1,51 +1,134 @@
-import React, {useState} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   Text,
   ScrollView,
   Pressable,
   View,
   StyleSheet,
-  Image,
+  TextInput,
+  Platform,
 } from 'react-native';
 
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import Feather from 'react-native-vector-icons/Feather';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FastImage from 'react-native-fast-image';
-const ReviewItem = ({item, navigation}) => {
-  const [isExpanded, setIsExpanded] = useState(false); // 더보기 상태 관리
+import {review_set_reply} from '../../api/reviewApi';
+import Loading from '../../hooks/Loading';
+
+const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [reply, setReply] = useState(item.reply); // 현재 답글
+  const [repliedAt, setRepliedAt] = useState(item.repliedAt);
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyText, setReplyText] = useState(item.reply || '');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(item.reply || '');
+  const [loading, setLoading] = useState(false);
+  // 🔥 수정 입력창 ref
+  const editInputRef = useRef(null);
+
+  // isEditing이 true가 되면 자동으로 focus
+  useEffect(() => {
+    if (isEditing && editInputRef.current) {
+      editInputRef.current.focus();
+    }
+  }, [isEditing]);
 
   const formatDate = dateString => {
     if (!dateString) return 'N/A';
-
     const date = new Date(dateString);
     const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     const currentYear = new Date().getFullYear();
-
     return year === currentYear
-      ? `${date.getMonth() + 1}.${date.getDate()}`
-      : `${year}.${date.getMonth() + 1}.${date.getDate()}`;
+      ? `${month}.${day}`
+      : `${String(year).slice(-2)}.${month}.${day}`;
+  };
+
+  const formatVisitDate = dateString => {
+    if (!dateString) return '방문일 정보 없음';
+    const visitDate = new Date(dateString);
+    const now = new Date();
+    const diffTime = now.setHours(0, 0, 0, 0) - visitDate.setHours(0, 0, 0, 0);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return '오늘';
+    if (diffDays === 1) return '어제';
+    if (diffDays === 2) return '그제';
+    if (diffDays < 7) return `${diffDays}일전`;
+    const diffWeeks = Math.floor(diffDays / 7);
+    if (diffDays < 30) return `${diffWeeks}주전`;
+    const diffMonths =
+      (now.getFullYear() - visitDate.getFullYear()) * 12 +
+      (now.getMonth() - visitDate.getMonth());
+    if (diffMonths < 12) return `${diffMonths}달전`;
+    const diffYears = Math.floor(diffMonths / 12);
+    if (diffYears === 1) return '작년';
+    if (diffYears === 2) return '재작년';
+    return `${diffYears}년전`;
   };
 
   const formattedCreatedDate = formatDate(item.createdAt);
-  const formattedVisitedDate = formatDate(item.visitedAt);
+  const formattedVisitedDate = formatVisitDate(item.visitedAt);
 
-  // 최대 3줄까지만 표시 (그 이상이면 '...더보기' 버튼 활성화)
-  const MAX_LENGTH = 70; // 100글자 기준으로 줄이기
+  const handleImagePress = index => {
+    navigation.navigate('ImageViewerScreen', {images: item.imgUrlList, index});
+  };
+
+  const MAX_LENGTH = 70;
   const isLongText = item.content.length > MAX_LENGTH;
   const displayedContent =
     isExpanded || !isLongText
       ? item.content
       : item.content.substring(0, MAX_LENGTH) + '...';
 
+  // ✅ 답글 등록
+  const handleReplySubmit = async () => {
+    if (replyText.trim() === '') return;
+    setLoading(true);
+    try {
+      await review_set_reply(item.id, replyText);
+      setReply(replyText);
+      setRepliedAt(new Date().toISOString());
+      setIsReplying(false);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ 답글 수정 저장
+  const handleReplySave = async () => {
+    if (editText.trim() === '') return;
+
+    setLoading(true);
+    try {
+      await review_set_reply(item.id, editText);
+      setReply(editText);
+      setIsEditing(false);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <View key={item.reviewId} style={styles.reviewContainer}>
+    <View
+      key={item.reviewId}
+      style={[
+        styles.reviewContainer,
+        (isEditing || isReplying) &&
+          Platform.OS === 'android' && {paddingBottom: 70},
+      ]}>
+      {/* 상단 리뷰 헤더 */}
       <View style={styles.reviewHeader}>
         <FastImage
           source={
             item.writerImgUrl
-              ? {
-                  uri: item.writerImgUrl,
-                  priority: FastImage.priority.normal,
-                }
+              ? {uri: item.writerImgUrl, priority: FastImage.priority.normal}
               : require('../../assets/default_profile.png')
           }
           style={styles.avatar}
@@ -55,7 +138,7 @@ const ReviewItem = ({item, navigation}) => {
           <Text
             style={[
               styles.writerName,
-              item.writerNickname === '탈퇴한 사용자' && {color: '#999'}, // 추가
+              item.writerNickname === '탈퇴한 사용자' && {color: '#999'},
             ]}>
             {item.writerNickname}
           </Text>
@@ -66,6 +149,8 @@ const ReviewItem = ({item, navigation}) => {
         </View>
         <Text style={styles.reviewDate}>{formattedVisitedDate} 방문</Text>
       </View>
+
+      {/* 리뷰 본문 */}
       <View style={styles.contentView}>
         <Text style={styles.reviewContent}>{displayedContent}</Text>
         {isLongText && (
@@ -76,6 +161,8 @@ const ReviewItem = ({item, navigation}) => {
           </Pressable>
         )}
       </View>
+
+      {/* 리뷰 이미지 */}
       {item.imgUrlList && (
         <ScrollView
           horizontal
@@ -83,29 +170,173 @@ const ReviewItem = ({item, navigation}) => {
           style={styles.imageScrollView}
           contentContainerStyle={styles.imageContainer}>
           {item.imgUrlList.map((image, index) => (
-            <FastImage
-              key={image || index}
-              source={{
-                uri: image,
-                priority: FastImage.priority.normal,
-              }}
-              style={styles.reviewImage}
-              resizeMode={FastImage.resizeMode.cover}
-            />
+            <Pressable key={index} onPress={() => handleImagePress(index)}>
+              <FastImage
+                source={{uri: image, priority: FastImage.priority.normal}}
+                style={styles.reviewImage}
+                resizeMode={FastImage.resizeMode.cover}
+              />
+            </Pressable>
           ))}
         </ScrollView>
       )}
+
+      {/* 하단 날짜/신고 */}
       <View style={styles.bottomView}>
         <Text style={styles.datetimeText}>작성 {formattedCreatedDate}</Text>
         <Pressable
           onPress={() => {
-            navigation.navigate('ReviewReportScreen', {
-              reviewId: item.id,
-            });
+            navigation.navigate('ReviewReportScreen', {reviewId: item.id});
           }}>
           <Text style={styles.datetimeText}>신고하기</Text>
         </Pressable>
       </View>
+
+      {/* 답글 달기 */}
+      {isOwner && !reply && (
+        <>
+          <Pressable
+            style={styles.recommentView}
+            onPress={() => setIsReplying(prev => !prev)}>
+            <Feather name="corner-down-right" size={17} color="#333" />
+            <Text style={styles.recommentText}>
+              {isReplying ? '취소' : '답글달기'}
+            </Text>
+          </Pressable>
+
+          {isReplying && (
+            <View style={styles.replyForm}>
+              <TextInput
+                style={styles.replyInput}
+                placeholder="답글을 입력하세요"
+                value={replyText}
+                onChangeText={setReplyText}
+                multiline
+              />
+              <Pressable style={styles.replyButton} onPress={handleReplySubmit}>
+                <Text style={styles.replyButtonText}>등록</Text>
+              </Pressable>
+            </View>
+          )}
+        </>
+      )}
+
+      {/* 답글 UI */}
+      {reply && (
+        <View style={styles.repliesContainer}>
+          <View style={styles.replyItem}>
+            <View style={styles.shopImageView}>
+              <FastImage
+                source={require('../../assets/shop.png')}
+                style={styles.shopImage}
+                resizeMode={FastImage.resizeMode.cover}
+              />
+            </View>
+
+            <View style={{flex: 1}}>
+              <View style={styles.replyHeader}>
+                <Text style={styles.replyOwnerName}>사장님</Text>
+                <Text style={styles.replyDate}>{formatDate(repliedAt)}</Text>
+              </View>
+
+              {isEditing ? (
+                <View style={styles.editBox}>
+                  <TextInput
+                    ref={editInputRef}
+                    style={[styles.replyInput, {backgroundColor: '#fff'}]}
+                    value={editText}
+                    onChangeText={setEditText}
+                    multiline
+                  />
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      marginTop: 6,
+                      justifyContent: 'flex-end',
+                    }}>
+                    <Pressable
+                      style={[styles.replyButton, {marginRight: 6}]}
+                      onPress={handleReplySave}>
+                      <Text style={styles.replyButtonText}>저장</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.replyButton, {backgroundColor: '#eee'}]}
+                      onPress={() => setIsEditing(false)}>
+                      <Text style={[styles.replyButtonText, {color: '#333'}]}>
+                        취소
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.replyBubble}>
+                  {!isEditing && (
+                    <>
+                      <Text style={styles.replyText}>{reply}</Text>
+                      {isOwner && (
+                        <View style={styles.editView}>
+                          <Pressable
+                            style={[styles.replyButton, styles.editBtn]}
+                            onPress={() => {
+                              setIsEditing(true);
+                              setEditText(reply);
+                            }}>
+                            <Text style={styles.actionBtnText}>수정</Text>
+                          </Pressable>
+                          <Pressable
+                            style={[
+                              styles.replyButton,
+                              {backgroundColor: '#eee'},
+                            ]}
+                            onPress={() => {
+                              handleDeleteReply(item.id);
+                              setReply(null);
+                              setRepliedAt(null);
+                              setEditText('');
+                              setReplyText('');
+                              setIsEditing(false);
+                              setIsReplying(false);
+                            }}>
+                            <Text
+                              style={[styles.actionBtnText, {color: '#333'}]}>
+                              삭제
+                            </Text>
+                          </Pressable>
+                        </View>
+                      )}
+                    </>
+                  )}
+
+                  <View style={{display: isEditing ? 'flex' : 'none'}}>
+                    <TextInput
+                      ref={editInputRef}
+                      style={[styles.replyInput, {backgroundColor: '#fff'}]}
+                      value={editText}
+                      onChangeText={setEditText}
+                      multiline
+                    />
+                    <View style={{flexDirection: 'row', marginTop: 6}}>
+                      <Pressable
+                        style={[styles.replyButton, {marginRight: 6}]}
+                        onPress={handleReplySave}>
+                        <Text style={styles.replyButtonText}>저장</Text>
+                      </Pressable>
+                      <Pressable
+                        style={[styles.replyButton, {backgroundColor: '#eee'}]}
+                        onPress={() => setIsEditing(false)}>
+                        <Text style={[styles.replyButtonText, {color: '#333'}]}>
+                          취소
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+      )}
+      <Loading loading={loading} />
     </View>
   );
 };
@@ -113,7 +344,6 @@ const ReviewItem = ({item, navigation}) => {
 const styles = StyleSheet.create({
   reviewContainer: {
     width: '100%',
-    textAlign: 'center',
     backgroundColor: 'white',
     paddingTop: 20,
     paddingBottom: 25,
@@ -128,9 +358,12 @@ const styles = StyleSheet.create({
   avatar: {
     width: 40,
     height: 40,
-    borderRadius: 40,
+    borderRadius: 100,
     marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#eee',
   },
+
   reviewHeaderText: {
     flex: 1,
     justifyContent: 'center',
@@ -165,9 +398,8 @@ const styles = StyleSheet.create({
     marginLeft: 3,
     color: '#181A1A',
     textAlign: 'left',
-    alignSelf: 'flex-start',
     fontFamily: 'Pretendard-Medium',
-    lineHeight: 22, // 가독성을 위해 줄 간격 추가
+    lineHeight: 22,
   },
   moreText: {
     color: '#999',
@@ -177,7 +409,7 @@ const styles = StyleSheet.create({
     marginBottom: 7,
   },
   imageScrollView: {
-    marginTop: 7, // 위 여백 추가
+    marginTop: 7,
   },
   imageContainer: {
     flexDirection: 'row',
@@ -201,6 +433,141 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     marginTop: 10,
     marginLeft: 3,
+  },
+  recommentView: {
+    marginTop: 7,
+    marginHorizontal: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  recommentText: {
+    marginTop: 3,
+    marginLeft: 3,
+    fontFamily: 'Pretendard-Medium',
+    color: '#333',
+  },
+  replyForm: {
+    marginHorizontal: 18,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 8,
+  },
+  replyInput: {
+    minHeight: 40,
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 8,
+    fontFamily: 'Pretendard-Regular',
+  },
+  replyButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#45C9FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  replyButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
+  },
+  repliesContainer: {
+    marginHorizontal: 18,
+    marginTop: 12,
+  },
+  replyItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: 16,
+  },
+  shopImageView: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#eee',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#E9F5FB',
+  },
+  shopImage: {
+    width: 25,
+    height: 25,
+  },
+  replyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  replyOwnerName: {
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 15,
+    color: '#333',
+    marginRight: 8,
+  },
+  replyDate: {
+    fontSize: 13,
+    color: '#999',
+    fontFamily: 'Pretendard-Regular',
+  },
+  replyBubble: {
+    backgroundColor: '#F7F7F7',
+    borderRadius: 12,
+    padding: 12,
+    paddingBottom: 10,
+  },
+  replyText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#181A1A',
+    fontFamily: 'Pretendard-Regular',
+  },
+  editView: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 10,
+    columnGap: 8, // 버튼 사이 간격
+  },
+
+  actionBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  actionBtnText: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#45C9FF',
+  },
+
+  editBtn: {
+    borderColor: '#45C9FF',
+    backgroundColor: '#E9F7FF',
+  },
+
+  deleteBtn: {
+    borderColor: '#ccc',
+    backgroundColor: '#F5F5F5',
+  },
+
+  replyEditText: {
+    fontSize: 13,
+    color: '#45C9FF',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  editBox: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 10,
+    borderColor: '#ccc',
+    borderWidth: 1,
   },
 });
 

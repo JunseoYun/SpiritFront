@@ -4,14 +4,19 @@ import {Versioncheck} from '../api/versioncheckApi';
 const useVersionCheck = () => {
   const [isVersionValid, setIsVersionValid] = useState(true);
 
+  const [isTestEnabled, setIsTestEnabled] = useState(false);
+
   useEffect(() => {
     const checkVersion = async () => {
       try {
         const response = await Versioncheck();
         const isUpdateRequired = response.data.data.isUpdateRequired;
-
+        const isTestRequired = response.data.data.isTestEnabled;
         if (isUpdateRequired) {
           setIsVersionValid(false);
+        }
+        if (isTestRequired) {
+          setIsTestEnabled(true);
         }
       } catch (error) {
         console.warn('버전 체크 실패:', error.response);
@@ -21,7 +26,7 @@ const useVersionCheck = () => {
     checkVersion();
   }, []);
 
-  return isVersionValid;
+  return {isVersionValid, isTestEnabled};
 };
 
 export default useVersionCheck;

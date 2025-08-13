@@ -21,6 +21,7 @@ import {
   handleLocationError,
 } from '../../hooks/useLocation';
 import Loading from '../../hooks/Loading';
+import {log_access_create} from '../../api/userApi';
 
 const LocataionMapScreen = ({navigation}) => {
   const route = useRoute();
@@ -100,12 +101,12 @@ const LocataionMapScreen = ({navigation}) => {
 
         if (addressObj) {
           await saveLocationAddress(targetCoords, addressText);
-
+          log_access_create(targetCoords);
           showToast('주소 설정이 완료 되었습니다.');
           setTimeout(() => {
             navigation.reset({
               index: 1,
-              routes: [{name: 'MainBtmbar'}, {name: 'SetLocationScreen'}],
+              routes: [{name: 'MainBtmbar'}],
             });
           }, 100);
         } else {
@@ -200,14 +201,14 @@ const styles = StyleSheet.create({
   },
   locationbtn: {
     position: 'absolute',
-    bottom: '5%',
+    bottom: '6%',
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     width: '90%',
-    height: '8%',
+    height: '7%',
     backgroundColor: '#45C9FF',
-    borderRadius: 12,
+    borderRadius: 8,
   },
   locationbtntext: {
     alignSelf: 'center',

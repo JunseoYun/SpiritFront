@@ -81,6 +81,7 @@ const StoreTabs = ({changePage, currentPage}) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
+    marginBottom: 5,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -100,15 +101,16 @@ const styles = StyleSheet.create({
   },
   selectedTabText: {
     fontFamily: 'Pretendard-Bold',
-    color: '#45C9FF',
+    color: '#1a1a1a', // 여긴
   },
   underline: {
     height: 3,
     width: width / 3 - 60, // ✅ 각 탭에 맞는 밑줄 너비 설정
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#1a1a1a', // 여기
     position: 'absolute',
-    bottom: 0,
+    bottom: 5,
     left: 30,
+    borderRadius: 1,
   },
 });
 

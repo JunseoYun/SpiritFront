@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   storeTimeInfo: {
     marginTop: 5,
     fontSize: 13,
-    color: '#BA5554',
+    color: '#999',
     fontWeight: 'bold',
   },
   store24TimeInfo: {
