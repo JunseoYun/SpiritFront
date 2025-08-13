@@ -49,7 +49,7 @@ const SearchFastScreen = ({navigation}) => {
   // ✅ 바텀시트 상태
   const [bottomModalVisible, setBottomModalVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-
+  const scrollRef = useRef(null);
   // ✅ 검색 조건 DTO
   const [searchDto, setSearchDto] = useState(fastSearchStores);
 
@@ -82,6 +82,9 @@ const SearchFastScreen = ({navigation}) => {
     setFaststores([]);
     fetchStores(0, true, updated);
     setBottomModalVisible(false);
+    if (scrollRef.current) {
+      scrollRef.current.scrollToOffset({offset: 0, animated: false});
+    }
   };
 
   // ✅ 가게 리스트 요청
@@ -184,6 +187,7 @@ const SearchFastScreen = ({navigation}) => {
         />
       ) : (
         <FlatList
+          ref={scrollRef}
           data={faststores}
           renderItem={renderStoreItem}
           keyExtractor={item => item.id.toString()}
