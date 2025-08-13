@@ -1,9 +1,12 @@
 import React from 'react';
-import {View} from 'react-native';
+import {View, Platform} from 'react-native';
 import Config from 'react-native-config';
 import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
 
-const adUnitId = `${Config.GOOGLE_ADS_ID}`; // ← 배너 단위 ID
+const adUnitId =
+  Platform.OS === 'android'
+    ? `${Config.GOOGLE_ADS_ID}`
+    : `${Config.GOOGLE_ADS_ID_IOS}`; // ← 배너 단위 ID
 
 export default function MyBanner() {
   return (
