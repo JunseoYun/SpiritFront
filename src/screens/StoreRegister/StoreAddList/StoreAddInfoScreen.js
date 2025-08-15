@@ -23,8 +23,10 @@ import StoreAlcohol from '../../../components/StoreAddScreen/StoreAlcohol';
 import StoreInfo from '../../../components/StoreAddScreen/StoreInfo';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const StoreAddInfoScreen = ({navigation}) => {
+  const {bottom} = useSafeAndroidInsets();
   const route = useRoute();
   const {storename, address, detailedAddress, imageUris, index, coords} =
     route.params;
@@ -413,7 +415,7 @@ const StoreAddInfoScreen = ({navigation}) => {
       style={{flex: 1}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
     >
-      <SafeAreaView style={styles.storetopview}>
+      <SafeAreaView style={[styles.storetopview, {paddingBottom: bottom}]}>
         <StoreAddProgressbar progress={1} />
         <ScrollView
           contentContainerStyle={styles.scrollContent}

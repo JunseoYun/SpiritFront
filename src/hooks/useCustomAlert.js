@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
+  StatusBar,
 } from 'react-native';
 import {Portal} from 'react-native-paper';
 
@@ -54,8 +55,9 @@ const useCustomAlert = () => {
           transparent
           visible={isVisible}
           animationType="none"
+          statusBarTranslucent={true}
           onRequestClose={() => closeAlert()}>
-          <View style={styles.overlay}>
+          <View style={[styles.overlay]}>
             <Animated.View style={[styles.alertBox, {opacity}]}>
               {title && <Text style={styles.alertTitle}>{title}</Text>}
               {message && <Text style={styles.alertMessage}>{message}</Text>}
@@ -163,6 +165,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   alertBox: {
     width: '80%',

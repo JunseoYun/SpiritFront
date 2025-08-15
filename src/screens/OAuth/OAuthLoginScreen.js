@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Platform,
   SafeAreaView,
+  StatusBar,
 } from 'react-native';
 import {
   login,
@@ -149,6 +150,12 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
 
   return (
     <SafeAreaView style={styles.background}>
+      {Platform.OS === 'android' && (
+        <StatusBar
+          barStyle="dark-content" // 상태바 글자/아이콘 색
+          backgroundColor="#FAFAFA" // 상태바 배경색
+        />
+      )}
       <View style={styles.logoView}>
         <FastImage
           source={require('../../assets/AppName.png')}

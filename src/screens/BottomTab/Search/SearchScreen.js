@@ -3,7 +3,6 @@ import {
   View,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   Keyboard,
   TouchableWithoutFeedback,
   RefreshControl,
@@ -24,6 +23,7 @@ import RecentStoreList from '../../../components/SearchScreen/RecentStore/Recent
 import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
 import MyBanner from '../../../components/Ads/MyBanner';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 

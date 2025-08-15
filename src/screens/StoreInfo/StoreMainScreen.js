@@ -40,8 +40,10 @@ import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
 import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcategorytab';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const StoreMainScreen = ({navigation}) => {
+  const {top, bottom} = useSafeAndroidInsets();
   const {token} = useAuth();
   const route = useRoute();
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -436,7 +438,16 @@ const StoreMainScreen = ({navigation}) => {
 
   return (
     <>
-      <View style={{backgroundColor: 'white', flex: 1}}>
+      <View
+        style={{
+          backgroundColor: 'white',
+          flex: 1,
+          ...(!storedata?.imgUrlList?.length > 0 &&
+          !isUpdate &&
+          storedata?.isUpdatable === true
+            ? {paddingTop: top, paddingBottom: bottom}
+            : {}),
+        }}>
         {!isUpdate && storedata?.imgUrlList && (
           <StoreHeader
             navigation={navigation}
@@ -523,7 +534,9 @@ const StoreMainScreen = ({navigation}) => {
             {!storedata?.imgUrlList?.length > 0 &&
               !isUpdate &&
               storedata?.isUpdatable === true && (
-                <Pressable style={styles.addImageButton} onPress={startUpdate}>
+                <Pressable
+                  style={[styles.addImageButton, {}]}
+                  onPress={startUpdate}>
                   <Text style={styles.addImageText}>매장 이미지 추가하기</Text>
                   <Feather name="chevron-right" size={23} color="#999" />
                 </Pressable>
@@ -619,7 +632,11 @@ const StoreMainScreen = ({navigation}) => {
         </KeyboardAvoidingView>
       </View>
       {isUpdate && (
-        <View style={styles.endUpdateButton}>
+        <View
+          style={[
+            styles.endUpdateButton,
+            {paddingBottom: Platform.OS === 'ios' ? 30 : 10 + bottom},
+          ]}>
           <Pressable onPress={endUpdate} style={styles.storeAddButtonsearch}>
             <Text style={styles.endUpdateText}>완료</Text>
           </Pressable>
@@ -688,7 +705,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 10,
+
     paddingTop: 10,
   },
   storeAddButtonsearch: {

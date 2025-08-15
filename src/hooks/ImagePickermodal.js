@@ -15,6 +15,7 @@ const ImagePickermodal = ({
       visible={isBottomSheetVisible}
       transparent
       animationType="none"
+      statusBarTranslucent={true}
       onRequestClose={() => setBottomSheetVisible(false)}>
       <TouchableOpacity
         style={styles.modalOverlay}

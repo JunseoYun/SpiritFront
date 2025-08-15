@@ -2,12 +2,14 @@ import React from 'react';
 import {Pressable, StyleSheet, View, Platform, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const UpdateHeader = ({endUpdate}) => {
+  const {top} = useSafeAndroidInsets();
   const {showAlert, AlertComponent} = useCustomAlert();
 
   return (
-    <View style={styles.view}>
+    <View style={[styles.view, {paddingTop: top}]}>
       <Pressable onPress={endUpdate}>
         <Ionicons
           name="arrow-back-outline"
@@ -37,7 +39,7 @@ const styles = StyleSheet.create({
     left: 0,
 
     width: '100%',
-    height: Platform.OS === 'ios' ? 100 : 60,
+    height: Platform.OS === 'ios' ? 100 : 80,
 
     backgroundColor: '#fff', // 헤더 배경색
     shadowColor: '#000', // iOS 그림자 색상

@@ -20,9 +20,11 @@ import {StoreMenucreate} from '../../../api/menuApi';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import Loading from '../../../hooks/Loading';
 import {useToast} from '../../../context/ToastContext';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const MenuAddScreen = ({navigation}) => {
   const route = useRoute();
+  const {bottom} = useSafeAndroidInsets();
   const scrollViewRef = useRef(null);
   const {storeId} = route.params;
   const [loading, setLoading] = useState(false);
@@ -213,7 +215,7 @@ const MenuAddScreen = ({navigation}) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       <KeyboardAvoidingView
         style={{flex: 1, backgroundColor: '#F7F8FA'}}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>

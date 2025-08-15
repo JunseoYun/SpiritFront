@@ -13,10 +13,12 @@ import StoreResultList from '../../components/StoreSearch/StoreResultList';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {useToast} from '../../context/ToastContext';
 import {useAuth} from '../../context/AuthContext';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const {width} = Dimensions.get('window');
 
 const StoreSearchScreen = ({navigation}) => {
+  const {bottom} = useSafeAndroidInsets();
   const route = useRoute();
   const {index, location} = route.params;
   const [searchStoreName, setSearchStoreName] = useState('');
@@ -63,7 +65,7 @@ const StoreSearchScreen = ({navigation}) => {
   }, [navigation, searchStoreName]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       <StoreSearchBar
         value={searchStoreName}
         onChangeText={setSearchStoreName}
