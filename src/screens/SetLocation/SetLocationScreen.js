@@ -82,7 +82,7 @@ const SetLocationScreen = ({navigation}) => {
   };
 
   const handleClearLocation = async () => {
-    if (currentAddress === '강남역') {
+    if (currentAddress === '죽전역') {
       showToast('현재 기본 주소입니다.');
     } else {
       try {
