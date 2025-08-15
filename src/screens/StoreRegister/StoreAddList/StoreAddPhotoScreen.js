@@ -18,10 +18,12 @@ import StoreAddress from '../../../components/StoreAddScreen/StoreAddress';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const StoreAddPhotoScreen = ({navigation}) => {
   const {token} = useAuth();
   const {showToast} = useToast();
+  const {bottom} = useSafeAndroidInsets();
   useFocusEffect(
     React.useCallback(() => {
       if (!token) {
@@ -110,7 +112,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
       style={{flex: 1}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
     >
-      <SafeAreaView style={styles.storetopview}>
+      <SafeAreaView style={[styles.storetopview, {paddingBottom: bottom}]}>
         {/* 진행 바: 50% 진행 */}
         <StoreAddProgressbar progress={0} />
         <ScrollView

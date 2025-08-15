@@ -12,6 +12,7 @@ import {
 import AlcoholItem from '../../components/StoreAlcoholScreen/AlcoholItem';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import Feather from 'react-native-vector-icons/Feather';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const alcoholMapping = {
   SOJU: '소주',
@@ -43,7 +44,7 @@ const StoreAlcoholScreen = ({
 }) => {
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
   const {height: windowHeight} = Dimensions.get('window');
-
+  const {bottom} = useSafeAndroidInsets();
   const {translateAlcohol} = useTranslateAlcohol();
   const paddingTopValue = windowHeight * 0.7;
 
@@ -89,7 +90,7 @@ const StoreAlcoholScreen = ({
   }, [alcoholsState, mainDrinks, translateAlcohol]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom * 2}]}>
       {isUpdatable && (
         <>
           <Pressable

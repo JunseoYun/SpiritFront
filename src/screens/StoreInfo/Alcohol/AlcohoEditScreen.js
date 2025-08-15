@@ -26,6 +26,7 @@ import {DrinkUpdateSort, StoreDrinkdelete} from '../../../api/drinkApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
 import {useFocusEffect} from '@react-navigation/native';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const BUTTON_HEIGHT = 64;
 
@@ -51,7 +52,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
     onAlcoholUpdateComplete,
     onAlcoholDelete,
   } = route.params;
-
+  const {bottom} = useSafeAndroidInsets();
   const [activeTab, setActiveTab] = useState('SOJU');
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -261,7 +262,10 @@ const AlcoholEditScreen = ({route, navigation}) => {
         </View>
 
         <View
-          style={styles.footer}
+          style={[
+            styles.footer,
+            {paddingBottom: Platform.OS === 'ios' ? 30 : 10 + bottom},
+          ]}
           pointerEvents={isDragging ? 'none' : 'auto'}>
           <Pressable onPress={handleSave} style={styles.saveButton}>
             <Text style={styles.saveText}>편집 완료</Text>
@@ -353,7 +357,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 10,
     paddingTop: 10,
   },
   saveButton: {

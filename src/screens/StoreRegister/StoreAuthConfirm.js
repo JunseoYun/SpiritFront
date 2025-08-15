@@ -11,6 +11,7 @@ import {
 import {useRoute} from '@react-navigation/native';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import {CreateOwnership, Create_store_with_ownership} from '../../api/storeApi';
 import Loading from '../../hooks/Loading';
 
@@ -42,6 +43,7 @@ const InfoRow = ({label, value}) => (
 
 const StoreAuthConfirm = ({navigation}) => {
   const {data} = useRoute().params;
+  const {bottom} = useSafeAndroidInsets();
   const {
     storeData,
     owners,
@@ -172,7 +174,7 @@ const StoreAuthConfirm = ({navigation}) => {
   }, [navigation, handleSubmit, loading, confirm]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       <ProgressBar progress={2} />
 
       <ScrollView
