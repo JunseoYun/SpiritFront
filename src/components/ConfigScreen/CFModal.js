@@ -1,12 +1,26 @@
 import React from 'react';
-import {Modal, View, Pressable, Text, StyleSheet} from 'react-native';
+import {
+  Modal,
+  View,
+  Pressable,
+  Text,
+  StyleSheet,
+  Platform,
+  StatusBar,
+} from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import {requestPhotoPermission} from '../../hooks/usePhotopermis';
 
 const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
   const handleImagePick = async () => {
     const hasCamera = await requestPhotoPermission();
-    if (!hasCamera) return;
+    if (!hasCamera) {
+      onClose();
+      return;
+    }
+    if (Platform.OS === 'android') {
+      StatusBar.setTranslucent(false); // StatusBar 아래로 UI가 안 겹치게
+    }
     try {
       const image = await ImagePicker.openPicker({
         width: 1024,
@@ -22,7 +36,11 @@ const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
   };
 
   return (
-    <Modal visible={isVisible} transparent={true} animationType="fade">
+    <Modal
+      visible={isVisible}
+      transparent={true}
+      animationType="fade"
+      statusBarTranslucent={true}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <View style={styles.container}>
           <Pressable style={styles.button} onPress={handleImagePick}>

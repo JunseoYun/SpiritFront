@@ -20,6 +20,7 @@ import {StoreDrinkcreate} from '../../../api/drinkApi';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import Loading from '../../../hooks/Loading';
 import {useToast} from '../../../context/ToastContext';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const AlcoholAddScreen = ({navigation}) => {
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,7 @@ const AlcoholAddScreen = ({navigation}) => {
   const {storeId} = route.params;
   const {showToast} = useToast();
   const {showAlert, AlertComponent} = useCustomAlert();
-
+  const {bottom} = useSafeAndroidInsets();
   const [alcohols, setAlcohols] = useState([
     {alcoholName: '', price: '', alcoholContent: '', type: '', imageUri: ''},
   ]);
@@ -228,7 +229,7 @@ const AlcoholAddScreen = ({navigation}) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss}> */}
       <KeyboardAvoidingView
         style={{flex: 1, backgroundColor: '#F7F8FA'}}

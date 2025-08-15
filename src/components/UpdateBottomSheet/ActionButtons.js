@@ -1,22 +1,28 @@
 import React from 'react';
 import {View, Pressable, Text, StyleSheet} from 'react-native';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
-const ActionButtons = ({onCancel, onSave, option}) => (
-  <View style={styles.buttonView}>
-    <Pressable style={styles.cancelButton} onPress={onCancel}>
-      <Text style={styles.buttonText}>취소</Text>
-    </Pressable>
-    {option !== 'delete' ? (
-      <Pressable style={styles.saveButton} onPress={onSave}>
-        <Text style={[styles.buttonText, {color: '#fff'}]}>저장</Text>
+const ActionButtons = ({onCancel, onSave, option}) => {
+  const {bottom} = useSafeAndroidInsets();
+
+  return (
+    <View style={[styles.buttonView, {paddingBottom: bottom}]}>
+      <Pressable style={styles.cancelButton} onPress={onCancel}>
+        <Text style={styles.buttonText}>취소</Text>
       </Pressable>
-    ) : (
-      <Pressable style={[styles.saveButton]} onPress={onSave}>
-        <Text style={[styles.buttonText, {color: '#fff'}]}>삭제</Text>
-      </Pressable>
-    )}
-  </View>
-);
+
+      {option !== 'delete' ? (
+        <Pressable style={styles.saveButton} onPress={onSave}>
+          <Text style={[styles.buttonText, {color: '#fff'}]}>저장</Text>
+        </Pressable>
+      ) : (
+        <Pressable style={styles.saveButton} onPress={onSave}>
+          <Text style={[styles.buttonText, {color: '#fff'}]}>삭제</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+};
 
 export default ActionButtons;
 

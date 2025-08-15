@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {SafeAreaView, StyleSheet, View, Text, Pressable} from 'react-native';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
 import Feather from 'react-native-vector-icons/Feather';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const StoreMenuScreen = ({
   navigation,
@@ -12,7 +13,7 @@ const StoreMenuScreen = ({
   onMenuUpdateComplete,
 }) => {
   const [menuList, setMenuList] = useState(menus);
-
+  const {bottom} = useSafeAndroidInsets();
   useEffect(() => {
     setMenuList(menus);
   }, [menus]);
@@ -65,7 +66,7 @@ const StoreMenuScreen = ({
 
   // 메뉴판, 주류 정보 사진 없을때 이미지 추가로 수정
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom * 2}]}>
       {isUpdatable && (
         <>
           <Pressable

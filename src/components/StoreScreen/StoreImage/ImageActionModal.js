@@ -11,7 +11,11 @@ import {
 
 const ImageActionModal = ({visible, onClose, onEdit, onSort}) => {
   return (
-    <Modal transparent visible={visible} animationType="fade">
+    <Modal
+      transparent
+      visible={visible}
+      animationType="fade"
+      statusBarTranslucent={true}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <View style={styles.modal}>
           <TouchableOpacity style={styles.option} onPress={onSort}>

@@ -12,9 +12,11 @@ import {
 import {useRoute} from '@react-navigation/native';
 import StoreAuthorityData from '../../components/StoreAuthority/StoreAuthorityData';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const StoreCheckScreen = ({navigation}) => {
   const route = useRoute();
+  const {bottom} = useSafeAndroidInsets();
   const {
     storeId,
     storeName,
@@ -74,7 +76,7 @@ const StoreCheckScreen = ({navigation}) => {
       style={{flex: 1}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
     >
-      <SafeAreaView style={styles.storetopview}>
+      <SafeAreaView style={[styles.storetopview, {paddingBottom: bottom}]}>
         {/* 진행 바: 50% 진행 */}
         <ProgressBar progress={0} />
         <ScrollView contentContainerStyle={styles.scrollContent}>
