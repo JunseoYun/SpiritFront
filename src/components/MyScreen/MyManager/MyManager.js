@@ -292,6 +292,7 @@ const MyManager = ({navigation}) => {
       <Modal
         visible={modalVisible}
         transparent={true}
+        statusBarTranslucent={true}
         animationType="none"
         onRequestClose={closeModal}>
         <View style={StyleSheet.absoluteFill}>

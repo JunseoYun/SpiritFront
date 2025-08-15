@@ -26,7 +26,16 @@ export const requestCameraPermission = async () => {
 
       case RESULTS.DENIED: {
         const reqResult = await request(permission);
-        return reqResult === RESULTS.GRANTED;
+
+        if (reqResult === RESULTS.GRANTED) return true;
+
+        showAlert({
+          title: '사진 권한 필요',
+          message: '갤러리를 사용하려면 사진 권한을 허용해주세요.',
+          onConfirm: openAppSettings,
+          type: 'confirm',
+        });
+        return false;
       }
 
       case RESULTS.BLOCKED:
@@ -72,7 +81,16 @@ export const requestPhotoPermission = async () => {
 
       case RESULTS.DENIED: {
         const reqResult = await request(permission);
-        return reqResult === RESULTS.GRANTED;
+
+        if (reqResult === RESULTS.GRANTED) return true;
+
+        showAlert({
+          title: '사진 권한 필요',
+          message: '갤러리를 사용하려면 사진 권한을 허용해주세요.',
+          onConfirm: openAppSettings,
+          type: 'confirm',
+        });
+        return false;
       }
 
       case RESULTS.BLOCKED:

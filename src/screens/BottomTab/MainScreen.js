@@ -10,6 +10,7 @@ import {
   Animated,
   Platform,
   Dimensions,
+  StatusBar,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
@@ -253,6 +254,21 @@ const MainScreen = ({navigation}) => {
 
     checkStoredNotification();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'android') {
+        StatusBar.setBackgroundColor(showTopView2 ? 'white' : '#45C9FF');
+      }
+
+      return () => {
+        // 블러(다른 탭으로 이동) 시 → white로 리셋
+        if (Platform.OS === 'android') {
+          StatusBar.setBackgroundColor('white');
+        }
+      };
+    }, [showTopView2]),
+  );
 
   return (
     <>

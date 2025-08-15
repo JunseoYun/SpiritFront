@@ -9,9 +9,9 @@ import React, {
 import {
   View,
   Text,
-  SafeAreaView,
   TouchableOpacity,
   StyleSheet,
+  SafeAreaView,
   Animated,
   Pressable,
   KeyboardAvoidingView,
@@ -27,11 +27,12 @@ import {MenuUpdateSort, StoreMenudelete} from '../../../api/menuApi';
 import {useFocusEffect} from '@react-navigation/native';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 const BUTTON_HEIGHT = 64;
 
 const MenuEditScreen = ({route, navigation}) => {
   const {menus, storeId, onMenuUpdateComplete, onMenuDelete} = route.params;
-
+  const {bottom} = useSafeAndroidInsets();
   const [activeTab, setActiveTab] = useState('MAIN');
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -270,7 +271,10 @@ const MenuEditScreen = ({route, navigation}) => {
         </View>
 
         <View
-          style={styles.storeAddTextview}
+          style={[
+            styles.storeAddTextview,
+            {paddingBottom: Platform.OS === 'ios' ? 30 : 10 + bottom},
+          ]}
           pointerEvents={isDragging ? 'none' : 'auto'}>
           <Pressable onPress={handleSave} style={styles.saveButton}>
             <Text style={styles.saveText}>편집 완료</Text>
@@ -359,7 +363,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 10,
+
     paddingTop: 10,
   },
   saveButton: {

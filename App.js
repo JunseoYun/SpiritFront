@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
-import {Linking, Platform} from 'react-native';
+import {Linking, Platform, StatusBar} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import MainStack from './src/navigation/MainStack';
 import OAuthStack from './src/navigation/OAuthStack';
@@ -23,6 +23,11 @@ import {handleUrl} from './src/hooks/applink/AppLinkHandler';
 import {DeepLinkProvider, useDeepLink} from './src/context/DeepLinkContext';
 import './reanimatedConfig';
 import mobileAds from 'react-native-google-mobile-ads';
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 if (!__DEV__) {
   console.log = () => {};
@@ -46,19 +51,21 @@ const App = () => {
   }, []);
 
   return (
-    <PaperProvider>
-      <AuthProvider>
-        <CustomAlertProvider>
-          <ToastProvider>
-            <NotificationProvider>
-              <DeepLinkProvider>
-                <AppNavigator />
-              </DeepLinkProvider>
-            </NotificationProvider>
-          </ToastProvider>
-        </CustomAlertProvider>
-      </AuthProvider>
-    </PaperProvider>
+    <SafeAreaProvider>
+      <PaperProvider>
+        <AuthProvider>
+          <CustomAlertProvider>
+            <ToastProvider>
+              <NotificationProvider>
+                <DeepLinkProvider>
+                  <AppNavigator />
+                </DeepLinkProvider>
+              </NotificationProvider>
+            </ToastProvider>
+          </CustomAlertProvider>
+        </AuthProvider>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 };
 
@@ -143,6 +150,11 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer ref={navigationRef} onReady={onNavigationReady}>
+      {Platform.OS === 'android' && (
+        <StatusBar
+          barStyle="dark-content" // 상태바 글자/아이콘 색
+        />
+      )}
       {token ? <MainStack /> : <OAuthStack isTestEnabled={isTestEnabled} />}
     </NavigationContainer>
   );

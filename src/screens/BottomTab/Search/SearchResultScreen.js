@@ -4,9 +4,11 @@ import {StyleSheet, SafeAreaView} from 'react-native';
 import ResultTopBar from '../../../components/SearchScreen/ResultScreen/ResultTopBar';
 import ResultList from '../../../components/SearchScreen/ResultScreen/ResultList';
 import Loading from '../../../hooks/Loading';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const SearchResultScreen = ({navigation}) => {
   const route = useRoute();
+  const {top} = useSafeAndroidInsets();
   const {searchName, location} = route.params;
   const [searchWord, setSearchWord] = useState(searchName);
   const [trimmedSearchWord, setTrimmedSearchWord] = useState(searchWord);
@@ -18,7 +20,7 @@ const SearchResultScreen = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingTop: top}]}>
       <ResultTopBar
         searchWord={searchWord}
         setSearchWord={setSearchWord}

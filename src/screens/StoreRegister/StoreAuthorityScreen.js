@@ -18,11 +18,12 @@ import StoreOwnerInput from '../../components/StoreAuthority/StoreOwnerInput';
 import StoreBusinessData from '../../components/StoreAuthority/StoreBusinessData';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import useCustomAlert from '../../hooks/useCustomAlert';
-
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import Loading from '../../hooks/Loading';
 
 const StoreAuthorityScreen = ({navigation}) => {
   const route = useRoute();
+  const {bottom} = useSafeAndroidInsets();
   const {storeData, storeLocationDto, storeSuggestionData} = route.params;
   const [owners, setOwners] = useState([{name: ''}]);
   const [hasCoRepresentative, setHasCoRepresentative] = useState(false);
@@ -200,7 +201,7 @@ const StoreAuthorityScreen = ({navigation}) => {
       style={{flex: 1}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
     >
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
         <ProgressBar progress={1} />
         <ScrollView
           contentContainerStyle={styles.contentContainer}

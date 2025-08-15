@@ -5,12 +5,12 @@ import {
   Pressable,
   StyleSheet,
   FlatList,
-  SafeAreaView,
   TouchableWithoutFeedback,
   Modal,
   Animated,
   Easing,
   Dimensions,
+  SafeAreaView,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {useRoute} from '@react-navigation/native';
@@ -21,11 +21,13 @@ import FastSearchFilter from '../../../components/SearchScreen/FastSearch/FastSe
 import {Store_getby_condition_search} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
 import ResultModalItemSkeleton from '../../../components/SearchScreen/FastSearch/Modal/ResultModalItemSkeleton';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 const SearchFastScreen = ({navigation}) => {
   const route = useRoute();
+  const {top} = useSafeAndroidInsets();
   const {fastSearchStores, fastviewDto, location} = route.params;
 
   // ✅ 필터 상태
@@ -157,7 +159,7 @@ const SearchFastScreen = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingTop: top}]}>
       {/* 상단 헤더 */}
       <View style={styles.header}>
         <Pressable
@@ -214,6 +216,7 @@ const SearchFastScreen = ({navigation}) => {
       <Modal
         animationType="fade"
         transparent={true}
+        statusBarTranslucent={true}
         visible={bottomModalVisible}
         onRequestClose={() => setBottomModalVisible(false)}>
         <TouchableWithoutFeedback onPress={() => setBottomModalVisible(false)}>
