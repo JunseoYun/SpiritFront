@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const fixedLocation = {latitude: 37.496486, longitude: 127.0283};
-const fixedAddress = '강남역';
+const fixedLocation = {latitude: 37.324264, longitude: 127.107483};
+const fixedAddress = '죽전역';
 // 이거 수정
 let cachedLocation = null; // 캐시된 위치를 저장할 변수
 let error = null;
