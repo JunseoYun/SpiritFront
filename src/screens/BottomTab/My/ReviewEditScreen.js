@@ -185,17 +185,25 @@ const ReviewEditScreen = ({route, navigation}) => {
     if (!hasCamera) return;
     // 서버에 있는 이미지와 추가된 이미지를 합쳐서 5개 이하로 제한
     if (addedImages.length + serverImages.length < 5) {
-      ImagePicker.openPicker({
-        width: 1024,
-        height: 1024,
-        quality: 1,
-        mediaType: 'photo',
-        cropping: true,
-      })
-        .then(images => {
-          setAddedImages([...addedImages, images]); // 기존 이미지 배열에 새 이미지를 추가
-        })
-        .catch(error => {});
+      const remaining = 5 - (addedImages.length + serverImages.length);
+      try {
+        const pickedImages = await ImagePicker.openPicker({
+          mediaType: 'photo',
+          multiple: remaining > 1, // ✅ 2개 이상일 때만 multiple
+          maxFiles: remaining > 1 ? remaining : 1, // multiple true일 때만 maxFiles 적용
+          compressImageQuality: 0.95,
+          compressImageMaxWidth: 2160,
+          compressImageMaxHeight: 2160,
+          cropping: false,
+        });
+
+        const newImages = Array.isArray(pickedImages)
+          ? pickedImages
+          : [pickedImages];
+        setAddedImages(prev => [...prev, ...newImages]);
+      } catch (error) {
+        console.log('ImagePicker Error: ', error);
+      }
     } else {
       showAlert({
         title: '이미지 추가 제한',
