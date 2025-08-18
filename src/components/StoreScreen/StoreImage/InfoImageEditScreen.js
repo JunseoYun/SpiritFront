@@ -127,7 +127,9 @@ const InfoImageEditScreen = ({navigation, route}) => {
       const image = await ImagePicker.openCamera({
         cropping: true,
         mediaType: 'photo',
-        quality: 1,
+        compressImageQuality: 1, // 품질
+        compressImageMaxWidth: 2160, // 최대 너비
+        compressImageMaxHeight: 2160, // 최대 높이
       });
 
       const picked = {
@@ -150,8 +152,11 @@ const InfoImageEditScreen = ({navigation, route}) => {
       const images = await ImagePicker.openPicker({
         multiple: true,
         mediaType: 'photo',
-        compressImageQuality: 1,
-        maxFiles: 20,
+        maxFiles: 10,
+        compressImageQuality: 0.95, // 품질
+        compressImageMaxWidth: 2160, // 최대 너비
+        compressImageMaxHeight: 2160, // 최대 높이
+        cropping: false,
       });
 
       const picked = images.map(image => ({

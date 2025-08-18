@@ -166,11 +166,11 @@ const StoreAuthorityScreen = ({navigation}) => {
   // 이미지 선택 함수: 갤러리에서 이미지 선택 후 state 업데이트
   const handlePickCertificate = () => {
     ImagePicker.openPicker({
-      width: 768,
-      height: 1024,
       mediaType: 'photo',
+      compressImageQuality: 0.95,
+      compressImageMaxWidth: 2160,
+      compressImageMaxHeight: 2160,
       cropping: true,
-      freeStyleCropEnabled: true,
     })
       .then(image => {
         setBusiness_registration_certificate(image);

@@ -151,11 +151,12 @@ const StoreReviewScreen = ({navigation}) => {
     const hasCamera = await requestPhotoPermission();
     if (!hasCamera) return;
     ImagePicker.openCamera({
-      width: 1024,
-      height: 1024,
       quality: 1,
       cropping: true,
       mediaType: 'photo',
+      compressImageMaxWidth: 2160, // 최대 너비
+      compressImageMaxHeight: 2160,
+      compressImageQuality: 0.95, // 품질
     })
       .then(image => {
         setImages(prevImages => [...prevImages, image]); // 이미지를 배열에 추가
@@ -170,19 +171,26 @@ const StoreReviewScreen = ({navigation}) => {
     if (!hasCamera) {
       return;
     }
-    ImagePicker.openPicker({
-      width: 1024,
-      height: 1024,
-      cropping: true,
-      mediaType: 'photo',
-      quality: 1,
-    })
-      .then(image => {
-        setImages(prevImages => [...prevImages, image]); // 이미지를 배열에 추가
-      })
-      .catch(error => {
-        console.log('ImagePicker Error: ', error);
+    const remaining = 5 - images.length;
+
+    try {
+      const pickedImages = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        multiple: remaining > 1, // ✅ 2개 이상일 때만 multiple
+        maxFiles: remaining > 1 ? remaining : 1, // multiple true일 때만 maxFiles 적용
+        compressImageQuality: 0.95,
+        compressImageMaxWidth: 2160,
+        compressImageMaxHeight: 2160,
+        cropping: false,
       });
+
+      const newImages = Array.isArray(pickedImages)
+        ? pickedImages
+        : [pickedImages];
+      setImages(prev => [...prev, ...newImages]);
+    } catch (error) {
+      console.log('ImagePicker Error: ', error);
+    }
   };
 
   const handleImagePress = index => {
