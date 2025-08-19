@@ -109,49 +109,28 @@ const OpenStoreScreenitem = ({store, location, navigation}) => {
       </ImageBackground>
 
       {/* 정보 영역 */}
-      <View style={{paddingHorizontal: 20, marginTop: 10}}>
+      <View style={styles.infoview}>
         {/* 상단: 이름 + 평점 */}
-        <View style={{flexDirection: 'row', marginBottom: 4}}>
-          <Text style={{flex: 1, fontSize: 18, fontFamily: 'Pretendard-Bold'}}>
-            {store.name}
-          </Text>
-          <Text style={{textAlign: 'right', fontSize: 16}}>5.0</Text>
+        <View style={styles.titleview}>
+          <Text style={styles.titletext}>{store.name}</Text>
+          <Text style={styles.ratetext}>5.0</Text>
         </View>
 
         {/* 카테고리 */}
-        <Text
-          style={{
-            marginBottom: 4,
-            color: '#666',
-            fontFamily: 'Pretendard-SemiBold',
-          }}>
+        <Text style={styles.categorytext}>
           {store.categories?.map(cat => translateCategory(cat)).join(' · ')}
         </Text>
 
         {/* 영업시간 + 거리 */}
-        <View style={{flexDirection: 'row'}}>
+        <View style={styles.timeview}>
           {store?.isAlwaysOpen == true ? (
-            <Text
-              style={{
-                flex: 1,
-                color: '#555',
-                fontFamily: 'Pretendard-Regular',
-                fontSize: 14,
-              }}>
-              24시간 영업
-            </Text>
+            <Text style={styles.timetext}>24시간 영업</Text>
           ) : (
-            <Text
-              style={{
-                flex: 1,
-                color: '#555',
-                fontFamily: 'Pretendard-Regular',
-                fontSize: 14,
-              }}>
+            <Text style={styles.timetext}>
               영업 종료 {endtime || '정보 없음'}
             </Text>
           )}
-          <Text style={{textAlign: 'right', color: '#666'}}>
+          <Text style={styles.distancetext}>
             {distance} {unit}
           </Text>
         </View>
@@ -197,6 +176,27 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontFamily: 'Pretendard-Bold',
+  },
+  infoview: {paddingHorizontal: 20, marginTop: 10},
+  titleview: {flexDirection: 'row', marginBottom: 4, alignItems: 'center'},
+  titletext: {flex: 1, fontSize: 18, fontFamily: 'Pretendard-Bold'},
+  ratetext: {textAlign: 'right', fontSize: 16, fontFamily: 'Pretendard-Medium'},
+  categorytext: {
+    marginBottom: 4,
+    color: '#666',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  timeview: {flexDirection: 'row'},
+  timetext: {
+    flex: 1,
+    color: '#555',
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 14,
+  },
+  distancetext: {
+    textAlign: 'right',
+    color: '#666',
+    fontFamily: 'Pretendard-Regular',
   },
 });
 
