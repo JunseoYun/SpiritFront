@@ -22,6 +22,7 @@ import StoreAddPhotoScreen from '../screens/StoreRegister/StoreAddList/StoreAddP
 import StoreAddInfoScreen from '../screens/StoreRegister/StoreAddList/StoreAddInfoScreen';
 import LocataionMapScreen from '../screens/SetLocation/LocataionMapScreen';
 import OpenStoreScreen from '../screens/TotalScreen/OpenStoreScreen';
+import NearStoreScreen from '../screens/TotalScreen/NearStoreScreen';
 
 const Stack = createStackNavigator();
 
@@ -410,6 +411,31 @@ export default function MainStack() {
         component={OpenStoreScreen}
         options={({navigation}) => ({
           title: '영업 중',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="NearStoreScreen"
+        component={NearStoreScreen}
+        options={({navigation}) => ({
+          title: '가까운 술집',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',

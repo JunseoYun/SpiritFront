@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, FlatList, StyleSheet} from 'react-native';
+import {View, Text, FlatList, StyleSheet, Pressable} from 'react-native';
 import NearStoreItem from './NearStoreItem';
 import {Store_getby_distance} from '../../../api/storeApi';
 
@@ -93,7 +93,22 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
   return (
     <View>
       <View style={styles.storeTextView}>
-        <Text style={styles.storeText}>제일 가까운 술집은?</Text>
+        <View
+          style={{
+            marginTop: 10,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginRight: 40,
+            alignItems: 'center',
+          }}>
+          <Text style={styles.storeText}>제일 가까운 술집은?</Text>
+          <Pressable
+            onPress={() => {
+              navigation.navigate('NearStoreScreen', {location: location});
+            }}>
+            <Text style={styles.storetotaltext}>더보기{' >'}</Text>
+          </Pressable>
+        </View>
         <Text style={styles.storeSubText}>
           현재 위치에서 가장 가까운 술집을 알려드려요
         </Text>
@@ -137,14 +152,17 @@ const styles = StyleSheet.create({
   storeTextView: {
     width: '100%',
     marginLeft: 20,
-
     marginTop: 20,
   },
   storeText: {
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181a1a',
-    marginTop: 10,
+  },
+  storetotaltext: {
+    fontSize: 12,
+    fontFamily: 'Pretendard-Medium',
+    color: '#181a1a',
   },
   storeSubText: {
     fontSize: 15,
