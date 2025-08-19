@@ -14,7 +14,7 @@ const StoreMapFoot = ({onPress}) => {
 const styles = StyleSheet.create({
   buttonRoute: {
     position: 'absolute',
-    bottom: '20%',
+    bottom: '10%',
     right: '7%',
     width: 42,
     borderRadius: 42,

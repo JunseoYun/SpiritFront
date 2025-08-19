@@ -17,6 +17,15 @@ const StoreOwnerInput = ({
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>대표자</Text>
+      {hasCoRepresentative ? (
+        <Text style={styles.guidetext}>
+          ※ 신청자는 주 대표자 또는 공동 대표자여야 합니다.
+        </Text>
+      ) : (
+        <Text style={styles.guidetext}>
+          ※ 신청자는 해당 사업자의 대표자여야 합니다.
+        </Text>
+      )}
       {/* 단일/공동 대표 토글 */}
       <View style={styles.toggleContainer}>
         <Pressable
@@ -133,7 +142,13 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#333',
     fontSize: 16,
-    marginBottom: 10,
+    marginBottom: 5,
+  },
+  guidetext: {
+    fontFamily: 'Pretendard-Medium',
+    color: '#333',
+    fontSize: 14,
+    marginBottom: 12,
   },
   toggleContainer: {
     flexDirection: 'row',

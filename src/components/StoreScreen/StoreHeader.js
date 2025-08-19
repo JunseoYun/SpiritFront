@@ -22,28 +22,36 @@ const StoreHeader = ({
           paddingTop: Platform.OS === 'android' ? insets.top + 10 : insets.top,
         },
       ]}>
-      <Pressable onPress={() => navigation.goBack()}>
-        <Animated.Text style={{color: iconColor}}>
-          <Ionicons name="arrow-back-outline" size={25} />
-        </Animated.Text>
-      </Pressable>
       <Animated.View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          maxWidth: '78%',
-          opacity: titleOpacity, // ✅ 제목과 마커에 동일한 opacity 애니메이션
+          flex: 1,
+          marginRight: 10,
         }}>
-        <Animated.Text
-          style={styles.headerTitle}
-          numberOfLines={1}
-          ellipsizeMode="tail">
-          {title || '한잔할까'}
-        </Animated.Text>
+        <Pressable onPress={() => navigation.goBack()} style={{marginRight: 8}}>
+          <Animated.Text allowFontScaling={false} style={{color: iconColor}}>
+            <Ionicons name="arrow-back-outline" size={25} />
+          </Animated.Text>
+        </Pressable>
+        <Animated.View
+          style={{
+            flex: 1,
+            opacity: titleOpacity, // ✅ 제목과 마커에 동일한 opacity 애니메이션
+          }}>
+          <Animated.Text
+            allowFontScaling={false}
+            style={styles.headerTitle}
+            numberOfLines={1}>
+            {title || '한잔할까'}
+          </Animated.Text>
+        </Animated.View>
       </Animated.View>
       <Animated.View style={{flexDirection: 'row'}}>
         <Pressable onPress={() => onShare()}>
-          <Animated.Text style={{color: iconColor, marginRight: 10}}>
+          <Animated.Text
+            allowFontScaling={false}
+            style={{color: iconColor, marginRight: 10}}>
             <Ionicons name="share-outline" size={25} />
           </Animated.Text>
         </Pressable>
@@ -54,7 +62,7 @@ const StoreHeader = ({
               screen: 'MainScreen',
             })
           }>
-          <Animated.Text style={{color: iconColor}}>
+          <Animated.Text allowFontScaling={false} style={{color: iconColor}}>
             <Ionicons name="home-outline" size={25} />
           </Animated.Text>
         </Pressable>
@@ -69,7 +77,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -81,7 +89,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    textAlign: 'center',
   },
   imageStyle: {
     alignSelf: 'center',

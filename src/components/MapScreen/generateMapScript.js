@@ -3,7 +3,7 @@ const generateMapScript = (lat, lng, stores) => `
     var mapContainer = document.getElementById('map');
     var options = {
       center: new kakao.maps.LatLng(${lat}, ${lng}),
-      level: 3
+      level: 5
     };
     window.map = new kakao.maps.Map(mapContainer, options);
 

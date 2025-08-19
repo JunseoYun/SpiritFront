@@ -57,7 +57,6 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
         mediaType: 'photo',
         multiple: remaining > 1, // 2개 이상일 때만 multiple
         maxFiles: remaining > 1 ? remaining : 1,
-        compressImageQuality: 0.95, // 최대 화질
         cropping: false, // 우선 crop 안함
       });
 
@@ -75,6 +74,7 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
           width: 2048,
           height: 1536,
           cropping: true,
+          compressImageQuality: 0.95,
           cropperToolbarTitle: '이미지 편집',
           cropperActiveWidgetColor: '#45C9FF',
           cropperStatusBarLight: true,
