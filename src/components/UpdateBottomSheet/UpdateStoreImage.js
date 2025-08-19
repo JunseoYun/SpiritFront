@@ -120,7 +120,6 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
         mediaType: 'photo',
         multiple: remaining > 1, // 2개 이상일 때만 multiple
         maxFiles: remaining > 1 ? remaining : 1,
-        compressImageQuality: 0.95,
         cropping: false, // crop은 따로 처리
       });
 
@@ -144,11 +143,11 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
           cropperToolbarColor: '#ffffff',
           cropperToolbarWidgetColor: '#333333',
           avoidEmptySpaceAroundImage: true,
+          compressImageQuality: 0.95,
         });
         croppedImages.push(cropped);
       }
 
-      // 상태에 추가
       setAddedImages(prev => [...prev, ...croppedImages]);
       showToast('이미지 추가 완료');
     } catch (er) {

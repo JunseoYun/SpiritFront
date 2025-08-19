@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {FlatList, StyleSheet, View, Text} from 'react-native';
+import {FlatList, StyleSheet, View, Text, Pressable} from 'react-native';
 import OpenStoreItem from './OpenStoreItem';
 import {Store_getby_business_hours} from '../../../api/storeApi';
 
@@ -71,7 +71,22 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
   return (
     <View>
       <View style={styles.todayPhrasesView}>
-        <Text style={styles.mylocationlivetext}>현재 영업 중인 술집은?</Text>
+        <View
+          style={{
+            marginTop: 10,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginRight: 20,
+            alignItems: 'center',
+          }}>
+          <Text style={styles.mylocationlivetext}>현재 영업 중인 술집은?</Text>
+          <Pressable
+            onPress={() => {
+              navigation.navigate('OpenStoreScreen', {location: location});
+            }}>
+            <Text style={styles.mylocationlivetotaltext}>더보기{' >'}</Text>
+          </Pressable>
+        </View>
         <Text style={styles.mylocationlivesubtext}>
           내 주변 늦게까지 영업하는 술집을 알려드려요
         </Text>
@@ -123,7 +138,6 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   todayPhrasesView: {
-    width: '100%',
     marginTop: 20,
     marginLeft: 20,
   },
@@ -131,7 +145,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181a1a',
-    marginTop: 10,
+  },
+  mylocationlivetotaltext: {
+    fontSize: 12,
+    fontFamily: 'Pretendard-Medium',
+    color: '#181a1a',
   },
   mylocationlivesubtext: {
     fontSize: 15,

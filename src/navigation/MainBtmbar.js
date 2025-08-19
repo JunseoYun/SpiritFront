@@ -54,7 +54,7 @@ const MainBtmbar = () => {
       <Tab.Screen
         name="MapScreen"
         component={MapScreen}
-        options={{tabBarLabel: '지역', headerShown: false}}
+        options={{tabBarLabel: '주변', headerShown: false}}
       />
       <Tab.Screen
         name="MainScreen"
