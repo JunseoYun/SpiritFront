@@ -12,6 +12,7 @@ export const user_login = async (
   socialId,
   accessToken,
   fcmToken,
+  ssoLog,
 ) => {
   const data = {
     socialInfoDto: {
@@ -20,6 +21,7 @@ export const user_login = async (
     },
     socialToken: accessToken, // 소셜 액세스 토큰
     fcmToken: fcmToken,
+    ssoLog: ssoLog,
   };
 
   try {

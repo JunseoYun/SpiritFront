@@ -28,15 +28,20 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    GoogleSignin.revokeAccess();
-    GoogleSignin.signOut();
     GoogleSignin.configure({
-      webClientId: Config.GOOGLE_WEB_CLIENT_ID,
-      iosClientId: Config.GOOGLE_CLIENT_ID,
+      webClientId: Config.GOOGLE_WEB_CLIENT_ID, // Web 클라이언트 ID (idToken 용)
+      iosClientId: Config.GOOGLE_CLIENT_ID, // iOS 클라이언트 ID (iOS면 필수)
+      offlineAccess: true, // 필요한 경우만 유지
     });
   }, []);
 
-  const handleLogin = async ({socialType, socialId, socialToken, tester}) => {
+  const handleLogin = async ({
+    socialType,
+    socialId,
+    socialToken,
+    tester,
+    ssoLog,
+  }) => {
     setLoading(true);
     const fcmToken = await getFcmToken();
 
@@ -46,6 +51,7 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
         socialId,
         socialToken,
         fcmToken,
+        ssoLog,
       );
 
       if (response.isVerified === false) {
@@ -99,21 +105,38 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
       const socialType = 'KAKAO';
       const socialId = profile.id;
       const socialToken = token.accessToken;
-      handleLogin({socialType, socialId, socialToken});
+      const ssoLogString = {
+        ...profile,
+        ...token,
+      };
+
+      const ssoLog = JSON.stringify(ssoLogString);
+      handleLogin({socialType, socialId, socialToken, ssoLog});
     } catch (err) {}
   };
 
   const handleGoogleSignIn = async () => {
     try {
       await GoogleSignin.signOut();
-
+      // GoogleSignin.configure({
+      //   webClientId:
+      //     '55496276543-b5j0de5qpjjpg55874qi4dj6fpdd7srf.apps.googleusercontent.com',
+      //   offlineAccess: true,
+      //   // forceCodeForRefreshToken: true,
+      // });
       const userInfo = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
 
       const socialType = 'GOOGLE';
       const socialId = userInfo.data.user.id;
       const socialToken = userInfo.data.idToken;
-      handleLogin({socialType, socialId, socialToken});
+      const ssoLogString = {
+        ...userInfo,
+        ...tokens,
+      };
+
+      const ssoLog = JSON.stringify(ssoLogString);
+      handleLogin({socialType, socialId, socialToken, ssoLog});
     } catch (error) {
       console.log(error);
       if (error.code === '7') {
@@ -140,7 +163,13 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
           const socialType = 'APPLE';
           const socialId = appleAuthRequestResponse.user;
           const socialToken = appleAuthRequestResponse.identityToken;
-          handleLogin({socialType, socialId, socialToken, tester});
+          const ssoLogString = {
+            ...appleAuthRequestResponse,
+            ...credentialState,
+          };
+
+          const ssoLog = JSON.stringify(ssoLogString);
+          handleLogin({socialType, socialId, socialToken, tester, ssoLog});
         }
       } catch (error) {}
     } else {
