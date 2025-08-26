@@ -30,24 +30,11 @@ const FilterHeader = ({
   topView2Height,
   drinkType,
   setDrinkType,
-  priceOrder,
-  setPriceOrder,
   screenWidth,
 }) => {
   const scrollRef = useRef(null);
   const buttonLayouts = useRef({});
   const filterScrollX = useRef(0);
-
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const dropdownAnim = useRef(new Animated.Value(0)).current;
-
-  const [choiceBtnWidth, setChoiceBtnWidth] = useState(64); // 버튼 대략 너비(초기값)
-  const OVERLAP_GAP = 8; // 버튼과 스크롤 콘텐츠 사이 여백
-
-  const dropdownTranslateY = dropdownAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-5, 0],
-  });
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -61,96 +48,37 @@ const FilterHeader = ({
   useEffect(() => {
     if (drinkType && scrollRef.current && buttonLayouts.current[drinkType]) {
       const {x, width} = buttonLayouts.current[drinkType];
-      const scrollToX = x + width / 2 - screenWidth / 2 + 30;
+      const scrollToX = x + width / 2 - screenWidth / 2;
       scrollRef.current.scrollTo({
         x: scrollToX > 0 ? scrollToX : 0,
         animated: true,
       });
     } else if (scrollRef.current) {
       scrollRef.current.scrollTo({
-        x: filterScrollX.current - choiceBtnWidth,
+        x: filterScrollX.current,
         animated: false,
       });
     }
   }, [drinkType]);
 
-  // 드롭다운 닫기 유틸
-  const closeDropdown = (animated = true) => {
-    if (!dropdownVisible) return;
-    if (animated) {
-      Animated.timing(dropdownAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => setDropdownVisible(false));
-    } else {
-      dropdownAnim.setValue(0);
-      setDropdownVisible(false);
-    }
-  };
-
-  const toggleDropdown = () => {
-    if (dropdownVisible) {
-      closeDropdown();
-    } else {
-      setDropdownVisible(true);
-      Animated.timing(dropdownAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    }
-  };
-
-  const toggleAlcohol = value => {
-    closeDropdown(false);
-    setDrinkType(prev => {
-      if (prev === value) {
-        setPriceOrder(''); // alcohol 해제 시 priceOrder 초기화
-        return null;
-      }
-      return value;
-    });
-  };
-
-  const togglepriceOrder = value => {
-    setPriceOrder(prev => (prev === value ? '' : value));
-  };
+  const toggleAlcohol = value =>
+    setDrinkType(prev => (prev === value ? null : value));
   return (
     <View
       style={{
         paddingBottom: 10,
         backgroundColor: '#fff',
       }}>
-      <View
-        style={{
-          height: topView2Height,
-          marginLeft: 20,
-          justifyContent: 'flex-end',
-        }}>
-        <Text
-          style={{
-            fontSize: 18,
-            fontFamily: 'Pretendard-SemiBold',
-            color: '#181a1a',
-          }}>
-          현재 인기 매장
-        </Text>
-      </View>
       <ScrollView
         ref={scrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.filterBar}
         onStartShouldSetResponder={() => true}
-        onTouchStart={() => closeDropdown(false)} // 손가락 닿는 순간 닫기(즉시)
-        onScrollBeginDrag={() => closeDropdown()} // 드래그 시작 시 닫기(애니메이션)
-        onMomentumScrollBegin={() => closeDropdown()} // 관성 스크롤 시작 시 닫기
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 10,
           gap: 7,
-          paddingLeft: drinkType != null ? choiceBtnWidth + OVERLAP_GAP : 12,
         }}
         onScroll={e => {
           filterScrollX.current = e.nativeEvent.contentOffset.x;
@@ -177,80 +105,6 @@ const FilterHeader = ({
           </Pressable>
         ))}
       </ScrollView>
-      {drinkType != null && (
-        <Pressable
-          style={[styles.choicebtn, {top: topView2Height + 10}]}
-          onPress={toggleDropdown}
-          onLayout={e => setChoiceBtnWidth(e.nativeEvent.layout.width)}>
-          <Text style={styles.choicetext}>
-            {priceOrder === 'ASC'
-              ? '낮은가격순'
-              : priceOrder === 'DESC'
-              ? '높은가격순'
-              : '기본순'}
-          </Text>
-          <Feather
-            name={dropdownVisible ? 'chevron-up' : 'chevron-down'}
-            size={17}
-            color="#121212"
-          />
-        </Pressable>
-      )}
-
-      {/* 드롭다운도 버튼 기준으로 absolute 배치 */}
-      {dropdownVisible && (
-        <Animated.View
-          style={[
-            styles.dropdown,
-            {top: topView2Height + 40},
-            {left: 5, transform: [{translateY: dropdownTranslateY}]},
-          ]}>
-          <TouchableOpacity
-            style={styles.dropdownItem}
-            onPress={() => {
-              toggleDropdown();
-              togglepriceOrder('');
-            }}>
-            <Text
-              style={[
-                styles.dropdownText,
-                priceOrder === '' && styles.activeDropdownText,
-              ]}>
-              기본순
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.dropdownItem}
-            onPress={() => {
-              toggleDropdown();
-              togglepriceOrder('ASC');
-            }}>
-            <Text
-              style={[
-                styles.dropdownText,
-                priceOrder === 'ASC' && styles.activeDropdownText,
-              ]}>
-              낮은가격순
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.dropdownItem}
-            onPress={() => {
-              toggleDropdown();
-              togglepriceOrder('DESC');
-            }}>
-            <Text
-              style={[
-                styles.dropdownText,
-                priceOrder === 'DESC' && styles.activeDropdownText,
-              ]}>
-              높은가격순
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
     </View>
   );
 };

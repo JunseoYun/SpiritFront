@@ -308,7 +308,12 @@ export const Store_getby_keyword = async (
   }
 };
 
-export const Store_getby_popular = async (page, latitude, longitude) => {
+export const Store_getby_popular = async (
+  page,
+  latitude,
+  longitude,
+  drinkType,
+) => {
   try {
     const response = await axiosInstance.get(`/store/get-by/popular`, {
       // auth: false,
@@ -316,6 +321,7 @@ export const Store_getby_popular = async (page, latitude, longitude) => {
         longitude,
         latitude,
         page, // page 값만 전달 초기 : 0
+        drinkType,
       },
     });
     return response.data.data;
