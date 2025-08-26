@@ -38,9 +38,9 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
   const handleLogin = async ({
     socialType,
     socialId,
-    socialToken,
+    identityToken,
     tester,
-    ssoLog,
+    authorizationCode,
   }) => {
     setLoading(true);
     const fcmToken = await getFcmToken();
@@ -49,16 +49,17 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
       const response = await user_login(
         socialType,
         socialId,
-        socialToken,
+        identityToken,
         fcmToken,
-        ssoLog,
+        authorizationCode,
       );
 
       if (response.isVerified === false) {
         navigation.navigate('IdentityScreen', {
           socialType: socialType,
           socialId: socialId,
-          socialToken: socialToken,
+          identityToken: identityToken,
+          authorizationCode: authorizationCode,
           beforeScreen: 'Login',
           token: response,
           fcmToken: fcmToken,
@@ -77,7 +78,8 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
           navigation.navigate('AgreeScreen', {
             socialType: socialType,
             socialId: socialId,
-            socialToken: socialToken,
+            identityToken: identityToken,
+            authorizationCode: authorizationCode,
             fcmToken: fcmToken,
             isTestEnabled: tester,
           });
@@ -104,39 +106,23 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
       const profile = await getProfile();
       const socialType = 'KAKAO';
       const socialId = profile.id;
-      const socialToken = token.accessToken;
-      const ssoLogString = {
-        ...profile,
-        ...token,
-      };
+      const identityToken = token.accessToken;
 
-      const ssoLog = JSON.stringify(ssoLogString);
-      handleLogin({socialType, socialId, socialToken, ssoLog});
+      handleLogin({socialType, socialId, identityToken});
     } catch (err) {}
   };
 
   const handleGoogleSignIn = async () => {
     try {
       await GoogleSignin.signOut();
-      // GoogleSignin.configure({
-      //   webClientId:
-      //     '55496276543-b5j0de5qpjjpg55874qi4dj6fpdd7srf.apps.googleusercontent.com',
-      //   offlineAccess: true,
-      //   // forceCodeForRefreshToken: true,
-      // });
       const userInfo = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
 
       const socialType = 'GOOGLE';
       const socialId = userInfo.data.user.id;
-      const socialToken = userInfo.data.idToken;
-      const ssoLogString = {
-        ...userInfo,
-        ...tokens,
-      };
-
-      const ssoLog = JSON.stringify(ssoLogString);
-      handleLogin({socialType, socialId, socialToken, ssoLog});
+      const identityToken = userInfo.data.idToken;
+      const authorizationCode = userInfo.data.serverAuthCode;
+      handleLogin({socialType, socialId, identityToken, authorizationCode});
     } catch (error) {
       console.log(error);
       if (error.code === '7') {
@@ -162,14 +148,15 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
         if (credentialState === appleAuth.State.AUTHORIZED) {
           const socialType = 'APPLE';
           const socialId = appleAuthRequestResponse.user;
-          const socialToken = appleAuthRequestResponse.identityToken;
-          const ssoLogString = {
-            ...appleAuthRequestResponse,
-            ...credentialState,
-          };
-
-          const ssoLog = JSON.stringify(ssoLogString);
-          handleLogin({socialType, socialId, socialToken, tester, ssoLog});
+          const identityToken = appleAuthRequestResponse.identityToken;
+          const authorizationCode = appleAuthRequestResponse.authorizationCode;
+          handleLogin({
+            socialType,
+            socialId,
+            identityToken,
+            tester,
+            authorizationCode,
+          });
         }
       } catch (error) {}
     } else {

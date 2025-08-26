@@ -24,8 +24,14 @@ import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
 
 const RegisterScreen = ({route, navigation}) => {
   // route.params를 통해 전달된 데이터 접근
-  const {socialType, socialId, socialToken, mokDataId, isTestEnabled} =
-    route.params;
+  const {
+    socialType,
+    socialId,
+    identityToken,
+    authorizationCode,
+    mokDataId,
+    isTestEnabled,
+  } = route.params;
   const [nickname, setNickname] = useState('');
   const [nicknameCheck, setNicknameCheck] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -139,8 +145,9 @@ const RegisterScreen = ({route, navigation}) => {
         const login_data = await user_login(
           socialType,
           socialId,
-          socialToken,
+          identityToken,
           fcmToken,
+          authorizationCode,
         );
         await loginauth(
           login_data.accessToken,

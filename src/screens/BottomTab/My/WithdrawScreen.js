@@ -12,10 +12,12 @@ import {useAuth} from '../../../context/AuthContext';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {user_withdraw} from '../../../api/userApi';
 import {removeNotification} from '../../../storage/notificationStorage';
+import Loading from '../../../hooks/Loading';
 const WithdrawScreen = () => {
   const navigation = useNavigation();
   const {logout} = useAuth();
   const [isChecked, setIsChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
 
   useEffect(() => {
@@ -37,15 +39,22 @@ const WithdrawScreen = () => {
   };
 
   const withdraw = async () => {
-    await user_withdraw();
-    navigation.reset({
-      index: 0,
-      routes: [
-        {name: 'OAuthStack', state: {routes: [{name: 'OAuthLoginScreen'}]}},
-      ],
-    });
-    await logout(1); // 로그아웃 완료될 때까지 대기
-    await removeNotification();
+    try {
+      setLoading(true);
+      await user_withdraw();
+      navigation.reset({
+        index: 0,
+        routes: [
+          {name: 'OAuthStack', state: {routes: [{name: 'OAuthLoginScreen'}]}},
+        ],
+      });
+      await logout(1); // 로그아웃 완료될 때까지 대기
+      await removeNotification();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -82,6 +91,7 @@ const WithdrawScreen = () => {
         </Text>
       </TouchableOpacity>
       <AlertComponent />
+      <Loading loading={loading} />
     </SafeAreaView>
   );
 };
