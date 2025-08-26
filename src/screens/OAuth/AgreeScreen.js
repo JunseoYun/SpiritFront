@@ -6,8 +6,14 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const AgreeScreen = ({route, navigation}) => {
-  const {socialType, socialId, socialToken, fcmToken, isTestEnabled} =
-    route.params;
+  const {
+    socialType,
+    socialId,
+    identityToken,
+    authorizationCode,
+    fcmToken,
+    isTestEnabled,
+  } = route.params;
 
   const insets = useSafeAreaInsets();
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -65,14 +71,16 @@ const AgreeScreen = ({route, navigation}) => {
       navigation.navigate('RegisterScreen', {
         socialType: socialType,
         socialId: socialId,
-        socialToken: socialToken,
+        identityToken: identityToken,
+        authorizationCode: authorizationCode,
         isTestEnabled: isTestEnabled,
       });
     } else {
       navigation.navigate('IdentityScreen', {
         socialType: socialType,
         socialId: socialId,
-        socialToken: socialToken,
+        identityToken: identityToken,
+        authorizationCode: authorizationCode,
         beforeScreen: 'Agree',
         fcmToken: fcmToken,
       });

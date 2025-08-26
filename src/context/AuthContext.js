@@ -48,7 +48,6 @@ export const AuthProvider = ({children}) => {
   // 로그아웃 처리
   const logout = async index => {
     if (index === 1) {
-      resetTo('OAuthStack', 'OAuthLoginScreen');
       try {
         await removeToken(); // 토큰 제거
         setTokenState(null); // 상태 초기화
