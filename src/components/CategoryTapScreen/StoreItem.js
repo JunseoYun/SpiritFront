@@ -52,15 +52,15 @@ const StoreItem = ({store, location, navigation}) => {
           }}>
           <Pressable
             onPress={handleStorePress}
-            style={Categorystyles.menuItemView}>
+            style={Categorystyles.mainItemView}>
             {store.mainImgUrl ? (
               <ImageBackground
                 resizeMode={FastImage.resizeMode.cover}
                 source={
                   {uri: store.mainImgUrl} // ✅ 네트워크 이미지
                 }
-                style={Categorystyles.menuImageView}
-                imageStyle={Categorystyles.menuImg}>
+                style={Categorystyles.mainImageView}
+                imageStyle={Categorystyles.mainImg}>
                 {!isOpen && !nextclosed && !closed && (
                   <View style={Categorystyles.overlay}>
                     <Text style={Categorystyles.overlayText}>

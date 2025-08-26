@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
+import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,16 +15,9 @@ import {
 import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
 
-import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
-import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
-import StoreRegister from '../../components/MainScreen/StoreRegister';
-import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
-import NearStoreList from '../../components/MainScreen/NearStore/NearStoreList';
-
-import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
-import {Store_getby_main_banner} from '../../api/storeApi';
+import {Store_getby_main_banner, Store_getby_popular} from '../../api/storeApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
@@ -34,12 +27,18 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import RejectModal from '../../components/Reject/RejectModal';
 import useHandlePendingNotification from '../../hooks/notification/useHandlePendingNotification';
 import {useNotification} from '../../context/NotificationContext';
+import MainSection from '../../components/MainScreen/MainSection';
+import FilterHeader from '../../components/MainScreen/FilterHeader';
+import StoreItem from '../../components/CategoryTapScreen/StoreItem';
+import StoreItemSkeleton from '../../components/CategoryTapScreen/StoreItemSkeleton';
+
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
   const insets = useSafeAreaInsets();
+
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef(null);
   const [showTopView2, setShowTopView2] = useState(false);
@@ -57,44 +56,52 @@ const MainScreen = ({navigation}) => {
   const {recommendCategory} = useRecommendation();
   const {token} = useAuth();
   const {showToast} = useToast();
-
+  const [topView2Height, setTopView2Height] = useState(0);
+  const MemoPopularstoreItem = React.memo(StoreItem);
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (scrollRef.current) {
-        navigation.setParams({
-          scrollToTop: () => {
-            scrollRef.current.scrollTo({y: 0, animated: true});
-          },
-        });
-      }
-    }, 300); // 컴포넌트가 모두 렌더된 뒤 실행
-
-    return () => clearTimeout(timer);
+    // SectionList가 렌더된 후에 ref가 존재하면 바로 등록
+    if (scrollRef.current) {
+      navigation.setParams({
+        scrollToTop: () => {
+          scrollRef.current?.scrollToLocation({
+            sectionIndex: 0,
+            itemIndex: 0,
+            animated: true,
+          });
+        },
+      });
+    }
   }, [navigation]);
 
-  useEffect(() => {
-    const listener = scrollY.addListener(({value}) => {
-      const iosThreshold = insets.top + 30;
-      const androidThreshold = insets.top + 90; // 좀 더 스크롤해야 보이게
+  const scrollListener = useRef(null);
 
+  useEffect(() => {
+    scrollListener.current = scrollY.addListener(({value}) => {
+      const iosThreshold = insets.top + 30;
+      const androidThreshold = insets.top + 90;
       const threshold = Platform.OS === 'ios' ? iosThreshold : androidThreshold;
 
-      if (value >= threshold && !showTopView2) {
-        setShowTopView2(true);
-      } else if (value < threshold && showTopView2) {
-        setShowTopView2(false);
-      }
-      const locationHhreshold =
+      // 상태 변경이 실제로 필요할 때만 setState
+      setShowTopView2(prev => {
+        if (value >= threshold && !prev) return true;
+        if (value < threshold && prev) return false;
+        return prev;
+      });
+
+      const locationThreshold =
         Platform.OS === 'ios' ? insets.top - 20 : insets.top + 40;
-      if (value >= locationHhreshold && !showLocation) {
-        setShowLocation(true);
-      } else if (value < locationHhreshold && showLocation) {
-        setShowLocation(false);
-      }
+      setShowLocation(prev => {
+        if (value >= locationThreshold && !prev) return true;
+        if (value < locationThreshold && prev) return false;
+        return prev;
+      });
     });
 
-    return () => scrollY.removeListener(listener);
-  }, [insets.top, showTopView2, showLocation]);
+    return () => {
+      if (scrollListener.current)
+        scrollY.removeListener(scrollListener.current);
+    };
+  }, [insets.top]);
 
   useFocusEffect(
     useCallback(() => {
@@ -128,7 +135,6 @@ const MainScreen = ({navigation}) => {
         const currentLocation = await getLocation();
         if (currentLocation) {
           setLocation(currentLocation);
-
           const recommStoreData = await Store_getby_main_banner(
             currentLocation.latitude,
             currentLocation.longitude,
@@ -137,6 +143,7 @@ const MainScreen = ({navigation}) => {
           setRecommCategory(recommStoreData.category);
           setRecommReason(reason);
           setRecommStores(recommStoreData.mainBannerStoreDtoList);
+          PopularStores(0, true, currentLocation);
         }
         const currentAddress = await getAddress();
         if (currentAddress) {
@@ -147,7 +154,6 @@ const MainScreen = ({navigation}) => {
         setLoading(false);
       }
     };
-
     fetchLocation();
   }, []);
 
@@ -167,6 +173,7 @@ const MainScreen = ({navigation}) => {
         setRecommCategory(recommStoreData.category);
         setRecommReason(reason);
         setRecommStores(recommStoreData.mainBannerStoreDtoList);
+        PopularStores(0, true, currentLocation);
       }
 
       const currentAddress = await getAddress();
@@ -201,31 +208,17 @@ const MainScreen = ({navigation}) => {
     }
   };
 
-  const setLocationHandle = () => {
-    navigation.navigate('SetLocationScreen');
-  };
+  const setLocationHandle = useCallback(() => {
+    setTimeout(() => {
+      navigation.navigate('SetLocationScreen');
+    }, 50);
+  }, [navigation]);
 
   const formatAddress = address => {
     if (address === '강남역') {
       return address;
     }
     return address;
-  };
-
-  const handleAgreeScreen = screen => {
-    if (screen === 'terms') {
-      navigation.navigate('OAuthStack', {
-        screen: 'TermsAgreeScreen',
-      });
-    } else if (screen === 'privacy') {
-      navigation.navigate('OAuthStack', {
-        screen: 'PrivacyAgreeScreen',
-      });
-    } else if (screen === 'location') {
-      navigation.navigate('OAuthStack', {
-        screen: 'LocationAgreeScreen',
-      });
-    }
   };
 
   const [rejectModalData, setRejectModalData] = useState(null);
@@ -269,7 +262,124 @@ const MainScreen = ({navigation}) => {
       };
     }, [showTopView2]),
   );
+  const [popularstores, setPopularstores] = useState([]);
+  const [popularpage, setPopularpage] = useState(0);
+  const [totalpage, setTotalpage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [drinkType, setDrinkType] = useState(null);
+  const [priceOrder, setPriceOrder] = useState('');
+  const [popularloading, setPopularloading] = useState(false);
 
+  const PopularStores = async (currentPage, reset = false, location) => {
+    setPopularloading(true);
+    if (location) {
+      if (loading || (!hasMore && !reset)) return;
+
+      if (reset) {
+        setPopularpage(0);
+      }
+      try {
+        const data = await Store_getby_popular(
+          currentPage,
+          location.latitude,
+          location.longitude,
+        );
+        setTotalpage(data.totalPages);
+
+        if (data.content && data.content.length > 0) {
+          setPopularstores(prevData => {
+            const newData = reset
+              ? data.content
+              : [...prevData, ...data.content];
+            const uniqueData = newData.filter(
+              (item, index, self) =>
+                index === self.findIndex(existing => existing.id === item.id),
+            );
+            return uniqueData;
+          });
+        } else {
+          setHasMore(false); // 더 이상 데이터가 없으면 false로 설정
+        }
+      } catch (error) {
+      } finally {
+        setPopularloading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    setPopularstores([]);
+    PopularStores(0, true, location);
+    if (!popularloading && popularstores.length > 0) {
+      setTimeout(() => {
+        scrollRef.current.scrollToLocation({
+          sectionIndex: 1,
+          itemIndex: 1,
+        });
+      }, 100);
+    }
+  }, [drinkType, priceOrder]);
+
+  const loadMoreData = () => {
+    if (!loading && hasMore && popularpage < totalpage - 1) {
+      setPopularpage(prevPage => {
+        const nextPage = prevPage + 1; // 다음 페이지 번호
+        PopularStores(nextPage, false, location); // 그 페이지 번호로 데이터 요청
+        return nextPage; // 상태를 증가된 페이지 번호로 갱신
+      });
+    }
+  };
+
+  const stableNavigation = useMemo(() => navigation, [navigation]);
+  const stableLocation = useMemo(() => location, [location]);
+
+  const mainSectionData = useMemo(
+    () => ({
+      recommCategory,
+      recommReason,
+      recommStores,
+      location,
+      isRefreshing,
+      navigation,
+      loading,
+      storeactiveIndex,
+      handlestoreItemClick,
+      setIsRefreshing,
+      catagoryClick,
+    }),
+    [
+      recommCategory,
+      recommReason,
+      recommStores,
+      location,
+      isRefreshing,
+      storeactiveIndex,
+      loading,
+      navigation,
+    ],
+  );
+
+  const sectionsData = useMemo(
+    () => [
+      {
+        key: 'mainSection',
+        data: [mainSectionData],
+        renderItem: ({item}) => <MainSection {...item} />,
+      },
+      {
+        key: 'popularStores',
+        data: popularstores,
+        renderItem: ({item}) => (
+          <MemoPopularstoreItem
+            store={item}
+            location={stableLocation}
+            navigation={stableNavigation}
+          />
+        ),
+      },
+    ],
+    [popularstores, mainSectionData, stableLocation, stableNavigation],
+  );
   return (
     <>
       <View
@@ -292,7 +402,12 @@ const MainScreen = ({navigation}) => {
           </Text>
           {!showLocation && (
             <Pressable
-              hitSlop={{left: screenWidth, right: 15, top: 15, bottom: 15}}
+              hitSlop={{
+                left: screenWidth,
+                right: 15,
+                top: 15,
+                bottom: 15,
+              }}
               style={{zIndex: 1, position: 'relative'}}
               onPress={setLocationHandle}>
               <Feather name="chevron-right" size={23} color="#fff" />
@@ -302,7 +417,16 @@ const MainScreen = ({navigation}) => {
       </View>
 
       {showTopView2 && (
-        <View style={[styles.topView2, {paddingTop: insets.top}]}>
+        <View
+          style={[
+            styles.topView2,
+            {paddingTop: insets.top},
+            insets.top === 0 && {height: 50}, // 조건부 스타일
+          ]}
+          onLayout={event => {
+            const {height} = event.nativeEvent.layout;
+            setTopView2Height(height);
+          }}>
           <Pressable hitSlop={10} onPress={setLocationHandle}>
             <Text
               style={[styles.todayAddress2, {color: '#333', marginTop: 10}]}
@@ -319,70 +443,66 @@ const MainScreen = ({navigation}) => {
           </Pressable>
         </View>
       )}
-      <Animated.ScrollView
+      <Animated.SectionList
         ref={scrollRef}
+        scrollEnabled={!(isRefreshing || loading)}
+        sections={sectionsData}
+        keyExtractor={(item, index) => item.id ?? index.toString()}
+        renderItem={({item, section}) => section.renderItem({item})}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {useNativeDriver: false},
+          {useNativeDriver: true},
         )}
-        scrollEventThrottle={16}
-        contentContainerStyle={{
-          marginTop:
-            Platform.OS === 'android' ? insets.top + 120 : insets.top + 110,
-          paddingBottom: Platform.OS === 'ios' ? 30 : 120,
+        renderSectionHeader={({section}) => {
+          if (section.key === 'popularStores') {
+            return (
+              <FilterHeader
+                topView2Height={topView2Height}
+                navigation={navigation}
+                drinkType={drinkType}
+                setDrinkType={setDrinkType}
+                priceOrder={priceOrder}
+                setPriceOrder={setPriceOrder}
+                screenWidth={screenWidth}
+              />
+            );
+          }
+          return null;
         }}
+        stickySectionHeadersEnabled={true}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }>
-        <View style={styles.innerContainer}>
-          <TodayRecomm
-            recommCategory={recommCategory}
-            recommReason={recommReason}
-            recommStores={recommStores}
-            location={location}
-            refresh={isRefreshing}
-            navigation={navigation}
-            loading={loading}
-          />
+        }
+        onEndReached={loadMoreData}
+        onEndReachedThreshold={0.4}
+        contentContainerStyle={{
+          paddingTop:
+            Platform.OS === 'android' ? insets.top + 120 : insets.top + 110,
+        }}
+        ListFooterComponent={
+          loading || popularloading ? (
+            <View style={{backgroundColor: '#fff'}}>
+              {[1, 2, 3, 4].map(i => (
+                <StoreItemSkeleton key={i} />
+              ))}
+            </View>
+          ) : null
+        }
+        initialNumToRender={4}
+        maxToRenderPerBatch={7}
+        windowSize={4}
+        removeClippedSubviews={true}
+      />
 
-          <CategoryGrid onPress={catagoryClick} />
-
-          <StoreRegister
-            storeactiveIndex={storeactiveIndex}
-            handlestoreItemClick={handlestoreItemClick}
-          />
-
-          <View style={styles.division} />
-
-          <OpenStoreList
-            location={location}
-            navigation={navigation}
-            refresh={isRefreshing}
-            setRefresh={setIsRefreshing}
-          />
-
-          <View style={styles.division} />
-
-          <View
-            onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
-            <NearStoreList
-              navigation={navigation}
-              location={location}
-              refresh={isRefreshing}
-              setRefresh={onRefresh}
-            />
-          </View>
-
-          <AppInfo handleAgreeScreen={handleAgreeScreen} />
-        </View>
-      </Animated.ScrollView>
       {rejectModalData && !loading && (
         <RejectModal
           data={rejectModalData}
           onClose={() => setRejectModalData(null)}
         />
       )}
-      <Loading loading={isRefreshing || loading} />
+      <Loading loading={isRefreshing || loading || popularloading} />
       <AlertComponent />
     </>
   );
@@ -409,12 +529,6 @@ const styles = StyleSheet.create({
     height: screenHeight,
     paddingHorizontal: 14,
   },
-  innerContainer: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 27,
-    borderTopRightRadius: 27,
-    paddingTop: 24,
-  },
   topView: {
     flexDirection: 'row',
     alignSelf: 'center',
@@ -439,35 +553,18 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    zIndex: 20,
+    zIndex: 40,
     flexDirection: 'row',
     paddingVertical: 10,
     paddingHorizontal: 12,
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   todayAddress2: {
     fontSize: 17,
     fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
     paddingLeft: 4,
-  },
-  topbar: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginHorizontal: 25,
-    alignItems: 'center',
-    marginVertical: 5,
-  },
-  topimage: {
-    width: 120,
-    resizeMode: 'contain',
-    height: 70,
-  },
-  division: {
-    width: '100%',
-    height: 10,
-    backgroundColor: '#F5F5F5',
-    marginTop: 30,
   },
 });
 

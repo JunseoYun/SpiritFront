@@ -1,0 +1,347 @@
+// FilterHeader.js
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  Pressable,
+  Animated,
+  TouchableOpacity,
+} from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
+
+const alcoholTypes = [
+  {label: '소주', value: 'SOJU'},
+  {label: '맥주', value: 'BEER'},
+  {label: '막걸리', value: 'MAKGEOLLI'},
+  {label: '와인', value: 'WINE'},
+  {label: '칵테일', value: 'COCKTAIL'},
+  {label: '사케', value: 'SAKE'},
+  {label: '고량주', value: 'KAOLIANG'},
+  {label: '위스키', value: 'WHISKEY'},
+  {label: '보드카', value: 'VODKA'},
+  {label: '전통주', value: 'TRADITIONAL'},
+  {label: '하이볼', value: 'HIGHBALL'},
+  {label: '데킬라', value: 'TEQUILA'},
+];
+
+const FilterHeader = ({
+  topView2Height,
+  drinkType,
+  setDrinkType,
+  priceOrder,
+  setPriceOrder,
+  screenWidth,
+}) => {
+  const scrollRef = useRef(null);
+  const buttonLayouts = useRef({});
+  const filterScrollX = useRef(0);
+
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const dropdownAnim = useRef(new Animated.Value(0)).current;
+
+  const [choiceBtnWidth, setChoiceBtnWidth] = useState(64); // 버튼 대략 너비(초기값)
+  const OVERLAP_GAP = 8; // 버튼과 스크롤 콘텐츠 사이 여백
+
+  const dropdownTranslateY = dropdownAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-5, 0],
+  });
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        x: filterScrollX.current || 0,
+        animated: false,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (drinkType && scrollRef.current && buttonLayouts.current[drinkType]) {
+      const {x, width} = buttonLayouts.current[drinkType];
+      const scrollToX = x + width / 2 - screenWidth / 2 + 30;
+      scrollRef.current.scrollTo({
+        x: scrollToX > 0 ? scrollToX : 0,
+        animated: true,
+      });
+    } else if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        x: filterScrollX.current - choiceBtnWidth,
+        animated: false,
+      });
+    }
+  }, [drinkType]);
+
+  // 드롭다운 닫기 유틸
+  const closeDropdown = (animated = true) => {
+    if (!dropdownVisible) return;
+    if (animated) {
+      Animated.timing(dropdownAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => setDropdownVisible(false));
+    } else {
+      dropdownAnim.setValue(0);
+      setDropdownVisible(false);
+    }
+  };
+
+  const toggleDropdown = () => {
+    if (dropdownVisible) {
+      closeDropdown();
+    } else {
+      setDropdownVisible(true);
+      Animated.timing(dropdownAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
+
+  const toggleAlcohol = value => {
+    closeDropdown(false);
+    setDrinkType(prev => {
+      if (prev === value) {
+        setPriceOrder(''); // alcohol 해제 시 priceOrder 초기화
+        return null;
+      }
+      return value;
+    });
+  };
+
+  const togglepriceOrder = value => {
+    setPriceOrder(prev => (prev === value ? '' : value));
+  };
+  return (
+    <View
+      style={{
+        paddingBottom: 10,
+        backgroundColor: '#fff',
+      }}>
+      <View
+        style={{
+          height: topView2Height,
+          marginLeft: 20,
+          justifyContent: 'flex-end',
+        }}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontFamily: 'Pretendard-SemiBold',
+            color: '#181a1a',
+          }}>
+          현재 인기 매장
+        </Text>
+      </View>
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterBar}
+        onStartShouldSetResponder={() => true}
+        onTouchStart={() => closeDropdown(false)} // 손가락 닿는 순간 닫기(즉시)
+        onScrollBeginDrag={() => closeDropdown()} // 드래그 시작 시 닫기(애니메이션)
+        onMomentumScrollBegin={() => closeDropdown()} // 관성 스크롤 시작 시 닫기
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 10,
+          gap: 7,
+          paddingLeft: drinkType != null ? choiceBtnWidth + OVERLAP_GAP : 12,
+        }}
+        onScroll={e => {
+          filterScrollX.current = e.nativeEvent.contentOffset.x;
+        }}>
+        {alcoholTypes.map(({label, value}) => (
+          <Pressable
+            key={value}
+            onPress={() => toggleAlcohol(value)}
+            onLayout={e => {
+              const layout = e.nativeEvent.layout;
+              buttonLayouts.current[value] = {x: layout.x, width: layout.width};
+            }}
+            style={[
+              styles.filterButton,
+              drinkType === value && styles.activeFilter,
+            ]}>
+            <Text
+              style={[
+                styles.filterText,
+                drinkType === value && styles.activeFilterText,
+              ]}>
+              {label}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+      {drinkType != null && (
+        <Pressable
+          style={[styles.choicebtn, {top: topView2Height + 10}]}
+          onPress={toggleDropdown}
+          onLayout={e => setChoiceBtnWidth(e.nativeEvent.layout.width)}>
+          <Text style={styles.choicetext}>
+            {priceOrder === 'ASC'
+              ? '낮은가격순'
+              : priceOrder === 'DESC'
+              ? '높은가격순'
+              : '기본순'}
+          </Text>
+          <Feather
+            name={dropdownVisible ? 'chevron-up' : 'chevron-down'}
+            size={17}
+            color="#121212"
+          />
+        </Pressable>
+      )}
+
+      {/* 드롭다운도 버튼 기준으로 absolute 배치 */}
+      {dropdownVisible && (
+        <Animated.View
+          style={[
+            styles.dropdown,
+            {top: topView2Height + 40},
+            {left: 5, transform: [{translateY: dropdownTranslateY}]},
+          ]}>
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => {
+              toggleDropdown();
+              togglepriceOrder('');
+            }}>
+            <Text
+              style={[
+                styles.dropdownText,
+                priceOrder === '' && styles.activeDropdownText,
+              ]}>
+              기본순
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => {
+              toggleDropdown();
+              togglepriceOrder('ASC');
+            }}>
+            <Text
+              style={[
+                styles.dropdownText,
+                priceOrder === 'ASC' && styles.activeDropdownText,
+              ]}>
+              낮은가격순
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => {
+              toggleDropdown();
+              togglepriceOrder('DESC');
+            }}>
+            <Text
+              style={[
+                styles.dropdownText,
+                priceOrder === 'DESC' && styles.activeDropdownText,
+              ]}>
+              높은가격순
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  // 버튼을 덮어씌우기 위해 컨테이너를 상대배치로
+  container: {
+    position: 'relative',
+    backgroundColor: 'white',
+    paddingVertical: 10,
+    minHeight: 55,
+  },
+
+  filterBar: {
+    flexDirection: 'row',
+    flexShrink: 1,
+  },
+
+  // 겹치는 choice 버튼
+  choicebtn: {
+    position: 'absolute',
+
+    paddingHorizontal: 15,
+    height: 35,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 10, // iOS
+    gap: 4,
+    backgroundColor: '#fff',
+  },
+  choicetext: {
+    fontSize: 14,
+    color: '#121212',
+    fontFamily: 'Pretendard-SemiBold',
+    textAlign: 'center',
+  },
+
+  filterButton: {
+    height: 35,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: 'white',
+  },
+  filterText: {
+    fontSize: 14,
+    color: '#555',
+    fontFamily: 'Pretendard-Regular',
+    textAlign: 'center',
+  },
+  activeFilter: {
+    backgroundColor: '#45C9FF',
+    borderColor: '#45C9FF',
+  },
+  activeFilterText: {
+    color: 'white',
+    fontFamily: 'Pretendard-Bold',
+  },
+
+  dropdown: {
+    position: 'absolute',
+    // choicebtn 아래로
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    paddingVertical: 5,
+    zIndex: 20,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    alignItems: 'center',
+  },
+  dropdownText: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
+  },
+  activeDropdownText: {
+    color: '#121212',
+  },
+});
+
+export default React.memo(FilterHeader);

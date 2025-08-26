@@ -12,17 +12,34 @@ const Categorystyles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
   },
-  menuItemView: {
-    width: 120,
-    height: 140,
+  mainItemView: {
+    width: 180,
+    height: 130,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: -3,
+  },
+  mainImageView: {
+    width: 180,
+    height: 130,
+    borderRadius: 10,
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
+  mainImg: {
+    width: 180,
+    height: 130,
+    borderRadius: 9,
+    resizeMode: 'cover',
+  },
+  menuItemView: {
+    width: 120,
+    height: 130,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   menuImageView: {
     width: 130,
     height: 130,
-    justifyContent: 'flex-end',
     borderRadius: 10,
     justifyContent: 'center',
   },
@@ -33,7 +50,7 @@ const Categorystyles = StyleSheet.create({
     resizeMode: 'cover',
   },
   noneImageView: {
-    width: 130,
+    width: 180,
     height: 130,
     borderRadius: 10,
     backgroundColor: '#fff',
@@ -43,7 +60,7 @@ const Categorystyles = StyleSheet.create({
   },
   noneImg: {
     width: 120,
-    height: 120,
+    height: 130,
     borderRadius: 10,
     // 아래 세 줄은 삭제하세요 👇
     // alignContent: 'center',
@@ -189,6 +206,7 @@ const Categorystyles = StyleSheet.create({
 
   drinkView: {
     flexDirection: 'row',
+    marginTop: 1,
   },
   drinkText: {
     fontSize: 14,

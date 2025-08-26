@@ -3,6 +3,7 @@ import {getAccessToken, setToken, removeToken} from '../storage/tokenStorage';
 import {user_logout} from '../api/userApi';
 import {getMessaging, deleteToken} from '@react-native-firebase/messaging';
 import {showMarketingConsentAlert} from '../hooks/notification/useNotificationPermission';
+import {resetTo} from '../navigation/NavigationService';
 
 const AuthContext = createContext();
 
@@ -47,6 +48,7 @@ export const AuthProvider = ({children}) => {
   // 로그아웃 처리
   const logout = async index => {
     if (index === 1) {
+      resetTo('OAuthStack', 'OAuthLoginScreen');
       try {
         await removeToken(); // 토큰 제거
         setTokenState(null); // 상태 초기화

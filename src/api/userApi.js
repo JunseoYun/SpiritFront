@@ -72,7 +72,6 @@ export const user_logout = async () => {
       },
     );
   } catch (error) {
-    console.error('❌ logout error:', error.response);
     functionError(error);
     throw error;
   }
