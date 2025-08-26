@@ -13,7 +13,7 @@ const StoreItemSkeleton = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
             paddingHorizontal: 18,
-            gap: 18,
+            gap: 2,
           }}>
           {/* 메인 이미지 */}
           <View style={styles.mainimgitem}>
@@ -93,10 +93,11 @@ const styles = StyleSheet.create({
   mainimgview: {
     width: 180,
     height: 130,
-    borderRadius: 10,
+    borderTopLeftRadius: 9,
+    borderBottomLeftRadius: 9,
   },
   menuItemView: {
-    width: 120,
+    width: 130,
     height: 130,
     alignItems: 'center',
     justifyContent: 'center',
@@ -104,7 +105,6 @@ const styles = StyleSheet.create({
   menuImageView: {
     width: 130,
     height: 130,
-    borderRadius: 10,
   },
   infoTopView: {
     width: '100%',

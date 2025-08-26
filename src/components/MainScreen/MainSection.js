@@ -63,6 +63,21 @@ const MainSection = ({
         setRefresh={setIsRefreshing}
       />
       <View style={[styles.division, {marginTop: 20}]} />
+      {/* <View
+        style={{
+          marginLeft: 20,
+          marginTop: 20,
+          marginBottom: 10,
+        }}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontFamily: 'Pretendard-SemiBold',
+            color: '#181a1a',
+          }}>
+          현재 인기 매장
+        </Text>
+      </View> */}
     </View>
   );
 };

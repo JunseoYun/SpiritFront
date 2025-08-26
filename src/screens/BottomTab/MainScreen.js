@@ -63,9 +63,10 @@ const MainScreen = ({navigation}) => {
     if (scrollRef.current) {
       navigation.setParams({
         scrollToTop: () => {
-          scrollRef.current?.scrollToLocation({
+          scrollRef.current.scrollToLocation({
             sectionIndex: 0,
             itemIndex: 0,
+            viewPosition: 0, // 0이면 최상단, 1이면 최하단
             animated: true,
           });
         },
@@ -267,10 +268,14 @@ const MainScreen = ({navigation}) => {
   const [totalpage, setTotalpage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [drinkType, setDrinkType] = useState(null);
-  const [priceOrder, setPriceOrder] = useState('');
   const [popularloading, setPopularloading] = useState(false);
 
-  const PopularStores = async (currentPage, reset = false, location) => {
+  const PopularStores = async (
+    currentPage,
+    reset = false,
+    location,
+    drinkType = null,
+  ) => {
     setPopularloading(true);
     if (location) {
       if (loading || (!hasMore && !reset)) return;
@@ -283,6 +288,7 @@ const MainScreen = ({navigation}) => {
           currentPage,
           location.latitude,
           location.longitude,
+          drinkType,
         );
         setTotalpage(data.totalPages);
 
@@ -309,16 +315,20 @@ const MainScreen = ({navigation}) => {
 
   useEffect(() => {
     setPopularstores([]);
-    PopularStores(0, true, location);
+    PopularStores(0, true, location, drinkType);
     if (!popularloading && popularstores.length > 0) {
       setTimeout(() => {
         scrollRef.current.scrollToLocation({
-          sectionIndex: 1,
-          itemIndex: 1,
+          sectionIndex: 1, // popularStoresheader
+          itemIndex: 1, // 해당 section의 첫 아이템
+          viewPosition: 0, // 0이면 화면 맨 위에 위치
+          viewOffset:
+            Platform.OS === 'android' ? insets.top + 120 : insets.top + 110,
+          animated: true,
         });
       }, 100);
     }
-  }, [drinkType, priceOrder]);
+  }, [drinkType]);
 
   const loadMoreData = () => {
     if (!loading && hasMore && popularpage < totalpage - 1) {
@@ -359,12 +369,50 @@ const MainScreen = ({navigation}) => {
     ],
   );
 
+  const [mainSectionHeight, setMainSectionHeight] = useState(0);
+  const [populartext, setPopulartext] = useState(0);
+  const [filterHeight, FilterHeight] = useState(0);
+
   const sectionsData = useMemo(
     () => [
       {
         key: 'mainSection',
         data: [mainSectionData],
-        renderItem: ({item}) => <MainSection {...item} />,
+        renderItem: ({item}) => (
+          <View
+            onLayout={e => {
+              const {height} = e.nativeEvent.layout;
+              setMainSectionHeight(height); // 높이값 저장
+            }}>
+            <MainSection {...item} />
+          </View>
+        ),
+      },
+      {
+        key: 'popularStoresheader',
+        data: [{}],
+        renderItem: ({}) => (
+          <View
+            style={{
+              backgroundColor: '#fff',
+              paddingLeft: 20,
+              paddingTop: 20,
+              paddingBottom: 10,
+            }}
+            onLayout={e => {
+              const {height} = e.nativeEvent.layout;
+              setPopulartext(height); // 높이값 저장
+            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: 'Pretendard-SemiBold',
+                color: '#181a1a',
+              }}>
+              현재 인기 매장
+            </Text>
+          </View>
+        ),
       },
       {
         key: 'popularStores',
@@ -380,6 +428,36 @@ const MainScreen = ({navigation}) => {
     ],
     [popularstores, mainSectionData, stableLocation, stableNavigation],
   );
+
+  const stickyThreshold = useMemo(() => {
+    return (
+      mainSectionHeight +
+      filterHeight * 2 +
+      insets.top +
+      filterHeight / 2 +
+      populartext
+    ); // 원하는 offset 추가 가능
+  }, [
+    mainSectionHeight,
+    topView2Height,
+    insets.top,
+    filterHeight,
+    populartext,
+  ]);
+
+  const stickyTranslateY = scrollY.interpolate({
+    inputRange: [stickyThreshold - 80, stickyThreshold],
+    outputRange: [-80, 0], // 위에서 부드럽게 내려옴
+    extrapolate: 'clamp',
+  });
+  9;
+
+  const stickyOpacity = scrollY.interpolate({
+    inputRange: [stickyThreshold - 80, stickyThreshold],
+    outputRange: [1, 1], // 점점 나타남
+    extrapolate: 'clamp',
+  });
+
   return (
     <>
       <View
@@ -443,6 +521,24 @@ const MainScreen = ({navigation}) => {
           </Pressable>
         </View>
       )}
+      <Animated.View
+        style={[
+          styles.fixedFilterHeader,
+          {
+            top: topView2Height,
+            opacity: showTopView2 ? stickyOpacity : 0,
+            transform: [{translateY: stickyTranslateY}],
+          },
+        ]}>
+        <FilterHeader
+          topView2Height={topView2Height}
+          navigation={navigation}
+          drinkType={drinkType}
+          setDrinkType={setDrinkType}
+          screenWidth={screenWidth}
+        />
+      </Animated.View>
+
       <Animated.SectionList
         ref={scrollRef}
         scrollEnabled={!(isRefreshing || loading)}
@@ -451,20 +547,24 @@ const MainScreen = ({navigation}) => {
         renderItem={({item, section}) => section.renderItem({item})}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {useNativeDriver: true},
+          {useNativeDriver: true}, // 상태 체크를 위해 false
         )}
         renderSectionHeader={({section}) => {
           if (section.key === 'popularStores') {
             return (
-              <FilterHeader
-                topView2Height={topView2Height}
-                navigation={navigation}
-                drinkType={drinkType}
-                setDrinkType={setDrinkType}
-                priceOrder={priceOrder}
-                setPriceOrder={setPriceOrder}
-                screenWidth={screenWidth}
-              />
+              <View
+                onLayout={event => {
+                  const {height} = event.nativeEvent.layout;
+                  FilterHeight(height);
+                }}>
+                <FilterHeader
+                  topView2Height={topView2Height}
+                  navigation={navigation}
+                  drinkType={drinkType}
+                  setDrinkType={setDrinkType}
+                  screenWidth={screenWidth}
+                />
+              </View>
             );
           }
           return null;
@@ -565,6 +665,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
     paddingLeft: 4,
+  },
+  fixedFilterHeader: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 30,
+    backgroundColor: '#fff',
+    elevation: 1,
   },
 });
 
