@@ -12,6 +12,8 @@ let globalAuth = {
 };
 let globalToken = null; // ✅ 최신 토큰 전역 저장용
 
+let isLoggingOut = false;
+
 export const AuthProvider = ({children}) => {
   const [token, setTokenState] = useState(null);
   // 처음 렌더링 시 토큰을 가져와 상태를 업데이트
@@ -43,10 +45,12 @@ export const AuthProvider = ({children}) => {
     setTokenState(accessToken, refreshToken); // 상태 업데이트
 
     globalToken = accessToken; // ✅ 전역 토큰 업데이트
+    isLoggingOut = false;
   };
 
   // 로그아웃 처리
   const logout = async index => {
+    isLoggingOut = true;
     if (index === 1) {
       try {
         await removeToken(); // 토큰 제거
@@ -64,6 +68,7 @@ export const AuthProvider = ({children}) => {
         globalToken = null;
         await deleteToken(getMessaging());
       } catch (error) {
+        console.log(error, '여기');
         if (error.response.data.code === 21002) {
           await removeToken(); // 토큰 제거
           setTokenState(null); // 상태 초기화
@@ -86,6 +91,10 @@ export const AuthProvider = ({children}) => {
 // ✅ 외부에서 최신 토큰을 참조하기 위한 함수
 export const getGlobalToken = () => globalToken;
 
+export const getisLoggingOut = () => isLoggingOut;
+export const setIsLoggingOut = value => {
+  isLoggingOut = value;
+};
 // ✅ 기존 로그아웃 접근 함수
 export const getGlobalLogout = () => globalAuth;
 

@@ -8,25 +8,26 @@ import {
   getRefreshToken,
   setToken,
 } from '../storage/tokenStorage';
-import {getGlobalLogout} from '../context/AuthContext';
+import {
+  getGlobalLogout,
+  setIsLoggingOut,
+  getisLoggingOut,
+} from '../context/AuthContext';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
+import {resetTo} from '../navigation/NavigationService';
 
 // 새로운 Access Token 요청 함수
 const refreshAccessToken = async () => {
   const refreshToken = await getRefreshToken();
-
   if (!refreshToken) {
     throw new Error('No refresh token available');
   }
 
   try {
-    // GET 요청으로 x-auth-token 헤더에 refreshToken 전달
     const response = await axios.get(
       `https://${Config.AUTH_URL}/api/auth/reissue-token`,
       {
-        headers: {
-          'x-auth-token': refreshToken,
-        },
+        headers: {'x-auth-token': refreshToken},
       },
     );
     log_access_create();
@@ -39,8 +40,13 @@ const refreshAccessToken = async () => {
     } else {
       await setToken(newAccessToken, newRefreshToken);
     }
-    return newAccessToken; // 새로운 Access Token 반환
+
+    return newAccessToken;
   } catch (error) {
+    if (error?.response?.data?.code === 21002 && !getisLoggingOut()) {
+      setIsLoggingOut(true);
+      resetTo('OAuthStack', 'OAuthLoginScreen');
+    }
     throw error;
   }
 };
@@ -79,6 +85,7 @@ axiosInstance.interceptors.request.use(
         config.headers['x-auth-token'] = token;
       }
     } catch (error) {
+      console.log(error, 'axiosInstanceerror');
       functionError(error); // 에러 처리
     }
     return config;
@@ -102,6 +109,7 @@ userAxiosInstance.interceptors.request.use(
         config.headers['x-auth-token'] = token;
       }
     } catch (error) {
+      console.log(error, 'useraxioserror');
       functionError(error); // 에러 처리
     }
     return config;
@@ -137,6 +145,7 @@ axiosInstance.interceptors.response.use(
 
         if (logout) {
           try {
+            console.log(refreshError, 'axiosInstancerefreshError');
             await logout(1); // 로그아웃 먼저 실행
           } catch (error) {}
         }
@@ -191,6 +200,7 @@ userAxiosInstance.interceptors.response.use(
 
         if (logout) {
           try {
+            console.log(refreshError, 'userAxiosInstancerefreshError');
             await logout(1); // 로그아웃 먼저 실행
           } catch (error) {}
         }
