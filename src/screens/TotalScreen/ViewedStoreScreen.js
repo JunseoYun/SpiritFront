@@ -10,10 +10,9 @@ import {
 } from 'react-native';
 import Loading from '../../hooks/Loading';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import ViewedStoreScreenitem from '../../components/ViewedStoreScreen/ViewedStoreScreenitem';
+import ViewedStoreTotalItem from '../../components/TotalScreen/ViewedStoreTotalItem';
 import {Store_getby_viewed} from '../../api/storeApi';
-import ViewedStoreScreenSkeleton from '../../components/ViewedStoreScreen/ViewedStoreScreenSkeleton';
-
+import ViewedStoreItemSkeleton from '../../components/TotalScreen/TotalSkeleton/ViewedStoreItemSkeleton';
 const ViewedStoreScreen = ({navigation}) => {
   const {bottom} = useSafeAndroidInsets();
   const [distancestores, setDistancestores] = useState([]);
@@ -68,7 +67,7 @@ const ViewedStoreScreen = ({navigation}) => {
 
   const renderStoreItem = ({item}) => (
     <View style={styles.storeContainer}>
-      <ViewedStoreScreenitem store={item} navigation={navigation} />
+      <ViewedStoreTotalItem store={item} navigation={navigation} />
     </View>
   );
 
@@ -80,7 +79,7 @@ const ViewedStoreScreen = ({navigation}) => {
           data={[1, 2, 3, 4, 5, 6, 7]} // 임의의 더미 데이터
           keyExtractor={(item, index) => index.toString()}
           contentContainerStyle={{paddingTop: 11, paddingBottom: 11}}
-          renderItem={() => <ViewedStoreScreenSkeleton />}
+          renderItem={() => <ViewedStoreItemSkeleton />}
           showsVerticalScrollIndicator={false}
         />
       ) : (

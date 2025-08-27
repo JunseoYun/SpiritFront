@@ -18,9 +18,9 @@ import {Store_getby_distance} from '../../api/storeApi';
 import FastImage from 'react-native-fast-image';
 import {useRoute} from '@react-navigation/native';
 import Loading from '../../hooks/Loading';
-import NearStoreScreenitem from '../../components/NearStoreScreen/NearStoreScreenitem';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import OpenStoreScreenitemSkeleton from '../../components/OpenStoreScreen/OpenStoreScreenitemSkeleton';
+import TotalItemSkeleton from '../../components/TotalScreen/TotalSkeleton/TotalItemSkeleton';
+import NearStoreTotalItem from '../../components/TotalScreen/NearStoreTotalItem';
 
 const NearStoreScreen = ({navigation}) => {
   const route = useRoute();
@@ -88,7 +88,7 @@ const NearStoreScreen = ({navigation}) => {
 
   const renderStoreItem = ({item}) => (
     <View style={styles.storeContainer}>
-      <NearStoreScreenitem
+      <NearStoreTotalItem
         store={item}
         location={location}
         navigation={navigation}
@@ -103,7 +103,7 @@ const NearStoreScreen = ({navigation}) => {
         <FlatList
           data={[1, 2, 3]} // 임의의 더미 데이터
           keyExtractor={(item, index) => index.toString()}
-          renderItem={() => <OpenStoreScreenitemSkeleton />}
+          renderItem={() => <TotalItemSkeleton />}
           showsVerticalScrollIndicator={false}
         />
       ) : (
@@ -134,15 +134,22 @@ const NearStoreScreen = ({navigation}) => {
         />
       )}
       {distancestores.length === 0 && !loading && (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>근처에 등록된 술집이 없어요</Text>
-        </View>
+        <Text style={styles.emptyText}>근처에 등록된 술집이 없어요</Text>
       )}
       <Loading loading={loading || refreshing} />
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 60,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 17,
+    color: '#c0c0c0',
+    alignSelf: 'center',
+  },
+});
 
 export default NearStoreScreen;

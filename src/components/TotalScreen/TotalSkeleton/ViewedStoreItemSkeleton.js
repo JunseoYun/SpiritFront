@@ -1,8 +1,8 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
-import SkeletonBox from '../../hooks/SkeletonBox';
+import SkeletonBox from '../../../hooks/SkeletonBox';
 
-const ViewedStoreScreenSkeleton = () => {
+const ViewedStoreItemSkeleton = () => {
   return (
     <View style={styles.container}>
       {/* 왼쪽 썸네일 */}
@@ -67,4 +67,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ViewedStoreScreenSkeleton;
+export default ViewedStoreItemSkeleton;

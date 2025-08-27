@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {FlatList, StyleSheet, View, Text, Pressable} from 'react-native';
 import OpenStoreItem from './OpenStoreItem';
 import {Store_getby_business_hours} from '../../../api/storeApi';
+import Feather from 'react-native-vector-icons/Feather';
 
 const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
   const [distancestores, setDistancestores] = useState([]);
@@ -70,7 +71,11 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
 
   return (
     <View>
-      <View style={styles.todayPhrasesView}>
+      <Pressable
+        style={styles.todayPhrasesView}
+        onPress={() => {
+          navigation.navigate('OpenStoreScreen', {location: location});
+        }}>
         <View
           style={{
             marginTop: 10,
@@ -80,17 +85,15 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
             alignItems: 'center',
           }}>
           <Text style={styles.mylocationlivetext}>현재 영업 중인 술집은?</Text>
-          <Pressable
-            onPress={() => {
-              navigation.navigate('OpenStoreScreen', {location: location});
-            }}>
-            <Text style={styles.mylocationlivetotaltext}>더보기{' >'}</Text>
-          </Pressable>
+          <View style={styles.totalView}>
+            <Text style={styles.totalText}>전체보기</Text>
+            <Feather name={'chevron-right'} size={15} color="#333" />
+          </View>
         </View>
         <Text style={styles.mylocationlivesubtext}>
           내 주변 늦게까지 영업하는 술집을 알려드려요
         </Text>
-      </View>
+      </Pressable>
 
       <FlatList
         data={distancestores}
@@ -144,12 +147,16 @@ const styles = StyleSheet.create({
   mylocationlivetext: {
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#181a1a',
+    color: '#121212',
   },
-  mylocationlivetotaltext: {
-    fontSize: 12,
-    fontFamily: 'Pretendard-Medium',
-    color: '#181a1a',
+  totalView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  totalText: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-Regular',
+    color: '#333',
   },
   mylocationlivesubtext: {
     fontSize: 15,

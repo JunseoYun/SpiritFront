@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {View, Text, FlatList, StyleSheet, Pressable} from 'react-native';
 import NearStoreItem from './NearStoreItem';
 import {Store_getby_distance} from '../../../api/storeApi';
+import Feather from 'react-native-vector-icons/Feather';
 
 const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
   const [stores, setStores] = useState([]);
@@ -92,7 +93,11 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
 
   return (
     <View>
-      <View style={styles.storeTextView}>
+      <Pressable
+        style={styles.storeTextView}
+        onPress={() => {
+          navigation.navigate('NearStoreScreen', {location: location});
+        }}>
         <View
           style={{
             marginTop: 10,
@@ -102,17 +107,15 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
             alignItems: 'center',
           }}>
           <Text style={styles.storeText}>제일 가까운 술집은?</Text>
-          <Pressable
-            onPress={() => {
-              navigation.navigate('NearStoreScreen', {location: location});
-            }}>
-            <Text style={styles.storetotaltext}>더보기{' >'}</Text>
-          </Pressable>
+          <View style={styles.totalView}>
+            <Text style={styles.totalText}>전체보기</Text>
+            <Feather name={'chevron-right'} size={15} color="#333" />
+          </View>
         </View>
         <Text style={styles.storeSubText}>
           현재 위치에서 가장 가까운 술집을 알려드려요
         </Text>
-      </View>
+      </Pressable>
       <FlatList
         data={stores}
         renderItem={renderStoreItem}
@@ -162,6 +165,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181a1a',
+  },
+  totalView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  totalText: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-Regular',
+    color: '#333',
   },
   storetotaltext: {
     fontSize: 12,

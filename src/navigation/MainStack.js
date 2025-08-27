@@ -411,7 +411,7 @@ export default function MainStack() {
         name="OpenStoreScreen"
         component={OpenStoreScreen}
         options={({navigation}) => ({
-          title: '영업 중',
+          title: '영업 중인 술집',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',

@@ -526,7 +526,7 @@ const MainScreen = ({navigation}) => {
           styles.fixedFilterHeader,
           {
             top: topView2Height,
-            opacity: showTopView2 ? stickyOpacity : 0,
+            opacity: Animated.multiply(stickyOpacity, showTopView2 ? 1 : 0),
             transform: [{translateY: stickyTranslateY}],
           },
         ]}>

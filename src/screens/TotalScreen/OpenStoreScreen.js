@@ -18,9 +18,9 @@ import {Store_getby_business_hours} from '../../api/storeApi';
 import FastImage from 'react-native-fast-image';
 import {useRoute} from '@react-navigation/native';
 import Loading from '../../hooks/Loading';
-import OpenStoreScreenitem from '../../components/OpenStoreScreen/OpenStoreScreenitem';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import OpenStoreScreenitemSkeleton from '../../components/OpenStoreScreen/OpenStoreScreenitemSkeleton';
+import OpenStoreTotalItem from '../../components/TotalScreen/OpenStoreTotalItem';
+import TotalItemSkeleton from '../../components/TotalScreen/TotalSkeleton/TotalItemSkeleton';
 
 const OpenStoreScreen = ({navigation}) => {
   const route = useRoute();
@@ -87,7 +87,7 @@ const OpenStoreScreen = ({navigation}) => {
 
   const renderStoreItem = ({item}) => (
     <View style={styles.storeContainer}>
-      <OpenStoreScreenitem
+      <OpenStoreTotalItem
         store={item}
         location={location}
         navigation={navigation}
@@ -102,7 +102,7 @@ const OpenStoreScreen = ({navigation}) => {
         <FlatList
           data={[1, 2, 3]} // 임의의 더미 데이터
           keyExtractor={(item, index) => index.toString()}
-          renderItem={() => <OpenStoreScreenitemSkeleton />}
+          renderItem={() => <TotalItemSkeleton />}
           showsVerticalScrollIndicator={false}
         />
       ) : (
@@ -133,15 +133,22 @@ const OpenStoreScreen = ({navigation}) => {
         />
       )}
       {distancestores.length === 0 && !loading && (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>근처에 영업 중인 술집이 없어요</Text>
-        </View>
+        <Text style={styles.emptyText}>근처에 영업 중인 술집이 없어요</Text>
       )}
       <Loading loading={loading || refreshing} />
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 60,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 17,
+    color: '#c0c0c0',
+    alignSelf: 'center',
+  },
+});
 
 export default OpenStoreScreen;
