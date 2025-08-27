@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 
-const ViewedStoreScreenitem = ({store, navigation, location}) => {
+const ViewedStoreTotalItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();
   const handlePress = () => {
     navigation.navigate('StoreStack', {
@@ -113,4 +113,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ViewedStoreScreenitem;
+export default ViewedStoreTotalItem;

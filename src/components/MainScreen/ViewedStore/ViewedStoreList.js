@@ -3,6 +3,7 @@ import {View, Text, FlatList, StyleSheet, Pressable} from 'react-native';
 import ViewedStoreItem from './ViewedStoreItem';
 import {Store_getby_viewed} from '../../../api/storeApi';
 import {useFocusEffect} from '@react-navigation/native';
+import Feather from 'react-native-vector-icons/Feather';
 
 const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
   const [stores, setStores] = useState([]);
@@ -84,8 +85,15 @@ const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
               backgroundColor: '#fff',
               borderRadius: 15,
               elevation: 2,
+            }}
+            onPress={() => {
+              navigation.navigate('ViewedStoreScreen');
             }}>
-            <View style={styles.storeTextView}>
+            <Pressable
+              style={styles.storeTextView}
+              onPress={() => {
+                navigation.navigate('ViewedStoreScreen');
+              }}>
               <View
                 style={{
                   marginTop: 10,
@@ -95,14 +103,13 @@ const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
                   alignItems: 'center',
                 }}>
                 <Text style={styles.storeText}>최근 본 매장</Text>
-                <Pressable
-                  onPress={() => {
-                    navigation.navigate('ViewedStoreScreen');
-                  }}>
-                  <Text style={styles.storetotaltext}>더보기{' >'}</Text>
-                </Pressable>
+
+                <View style={styles.totalView}>
+                  <Text style={styles.totalText}>전체보기</Text>
+                  <Feather name={'chevron-right'} size={15} color="#333" />
+                </View>
               </View>
-            </View>
+            </Pressable>
             <FlatList
               data={stores}
               renderItem={renderStoreItem}
@@ -155,6 +162,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Pretendard-Medium',
     color: '#181a1a',
+  },
+  totalView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  totalText: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-Regular',
+    color: '#333',
   },
   storeSubText: {
     fontSize: 15,

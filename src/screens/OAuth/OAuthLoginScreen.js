@@ -32,6 +32,7 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
       webClientId: Config.GOOGLE_WEB_CLIENT_ID, // Web 클라이언트 ID (idToken 용)
       iosClientId: Config.GOOGLE_CLIENT_ID, // iOS 클라이언트 ID (iOS면 필수)
       offlineAccess: true, // 필요한 경우만 유지
+      forceCodeForRefreshToken: true,
     });
   }, []);
 

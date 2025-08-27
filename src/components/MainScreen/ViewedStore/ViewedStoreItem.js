@@ -1,18 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {
-  View,
-  Text,
-  ImageBackground,
-  StyleSheet,
-  Pressable,
-  Dimensions,
-} from 'react-native';
-import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
-import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
-import useDistance from '../../../hooks/useDistance';
-import useStoreStatus from '../../../hooks/useStoreStatus';
-import {useAuth} from '../../../context/AuthContext';
-import {useToast} from '../../../context/ToastContext';
+import {View, Text, StyleSheet, Pressable, Dimensions} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 const ViewedStoreItem = ({store, location, navigation}) => {
@@ -24,7 +11,7 @@ const ViewedStoreItem = ({store, location, navigation}) => {
   };
 
   return (
-    <View style={{paddingHorizontal: 8}}>
+    <View style={{paddingHorizontal: 5}}>
       <Pressable
         onPress={handlePress}
         style={{
@@ -33,7 +20,7 @@ const ViewedStoreItem = ({store, location, navigation}) => {
           marginTop: 15,
         }}>
         {/* 이미지 + 술 배지 */}
-        <ImageBackground
+        <FastImage
           source={
             store.mainImgUrl
               ? {uri: store.mainImgUrl}
@@ -43,15 +30,9 @@ const ViewedStoreItem = ({store, location, navigation}) => {
             width: 100,
             aspectRatio: 1,
             alignSelf: 'center',
+            borderRadius: 7,
           }}
-          imageStyle={styles.backimagestyle}>
-          {/* <View style={styles.overlay}>
-            <FastImage
-              source={require('../../../assets/verifyMaker.png')}
-              style={styles.imageStyle}
-            />
-          </View> */}
-        </ImageBackground>
+          imageStyle={styles.backimagestyle}></FastImage>
 
         <Text style={styles.titletext} numberOfLines={1}>
           {store.name}
@@ -67,11 +48,12 @@ const styles = StyleSheet.create({
   },
   titletext: {
     textAlign: 'left',
-    width: 100,
-    fontSize: 15,
+    width: 97,
+    fontSize: 14,
     fontFamily: 'Pretendard-Medium',
-    color: '#444',
+    color: '#121212',
     marginTop: 6,
+    marginLeft: 3,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
