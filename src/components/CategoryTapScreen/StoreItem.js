@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, Pressable, ScrollView, ImageBackground} from 'react-native';
+import {View, Text, Pressable, ScrollView} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -54,14 +54,13 @@ const StoreItem = ({store, location, navigation}) => {
             onPress={handleStorePress}
             style={Categorystyles.mainItemView}>
             {store.mainImgUrl ? (
-              <ImageBackground
+              <FastImage
                 resizeMode={FastImage.resizeMode.cover}
                 source={
                   {uri: store.mainImgUrl} // ✅ 네트워크 이미지
                 }
-                style={Categorystyles.mainImageView}
-                imageStyle={[
-                  Categorystyles.mainImg,
+                style={[
+                  Categorystyles.mainImageView,
                   store.menuList.every(menu => !menu.imgUrl)
                     ? {
                         borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
@@ -111,9 +110,10 @@ const StoreItem = ({store, location, navigation}) => {
                     </View>
                   );
                 })()}
-              </ImageBackground>
+              </FastImage>
             ) : (
-              <ImageBackground
+              <FastImage
+                resizeMode={FastImage.resizeMode.contain}
                 style={[
                   Categorystyles.noneImageView,
                   store.menuList.every(menu => !menu.imgUrl)
@@ -177,7 +177,7 @@ const StoreItem = ({store, location, navigation}) => {
                     </View>
                   );
                 })()}
-              </ImageBackground>
+              </FastImage>
             )}
           </Pressable>
           {store.menuList?.length > 0 &&
@@ -188,20 +188,18 @@ const StoreItem = ({store, location, navigation}) => {
                   onPress={handleStorePress}
                   key={index}
                   style={Categorystyles.menuItemView}>
-                  <ImageBackground
+                  <FastImage
                     source={
                       {uri: menu.imgUrl} // ✅ 네트워크 이미지
                       // ✅ 로컬 이미지
                     }
-                    style={Categorystyles.menuImageView}
-                    imageStyle={[
-                      Categorystyles.menuImg,
+                    style={[
+                      Categorystyles.menuImageView,
                       index === arr.length - 1 && {
                         borderTopRightRadius: 9,
                         borderBottomRightRadius: 9,
                       },
-                    ]} // ✅ 스타일 조건부 적용
-                  >
+                    ]}>
                     {(!isOpen && !nextclosed && !closed) ||
                     (!isOpen && nextclosed && !closed) ||
                     (!isOpen && !nextclosed && closed) ||
@@ -243,7 +241,7 @@ const StoreItem = ({store, location, navigation}) => {
                         </Text>
                       </View>
                     )}
-                  </ImageBackground>
+                  </FastImage>
                 </Pressable>
               ))}
         </ScrollView>

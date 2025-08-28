@@ -18,7 +18,6 @@ import Feather from 'react-native-vector-icons/Feather';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
 import {Store_getby_main_banner, Store_getby_popular} from '../../api/storeApi';
-import useCustomAlert from '../../hooks/useCustomAlert';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
@@ -29,8 +28,9 @@ import useHandlePendingNotification from '../../hooks/notification/useHandlePend
 import {useNotification} from '../../context/NotificationContext';
 import MainSection from '../../components/MainScreen/MainSection';
 import FilterHeader from '../../components/MainScreen/FilterHeader';
-import StoreItem from '../../components/CategoryTapScreen/StoreItem';
-import StoreItemSkeleton from '../../components/CategoryTapScreen/StoreItemSkeleton';
+import PopularStoreItem from '../../components/MainScreen/PopularStroe/PopularStoreItem';
+import PopularItemSkeleton from '../../components/MainScreen/PopularStroe/PopularItemSkeleton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -50,14 +50,13 @@ const MainScreen = ({navigation}) => {
   // const [isModalVisible, setIsModalVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const {showAlert, AlertComponent} = useCustomAlert();
   const [storeactiveIndex, setStoreActiveIndex] = useState(null);
-  const recentRef = useRef(null);
+
   const {recommendCategory} = useRecommendation();
   const {token} = useAuth();
   const {showToast} = useToast();
   const [topView2Height, setTopView2Height] = useState(0);
-  const MemoPopularstoreItem = React.memo(StoreItem);
+  const MemoPopularstoreItem = React.memo(PopularStoreItem);
   useEffect(() => {
     // SectionList가 렌더된 후에 ref가 존재하면 바로 등록
     if (scrollRef.current) {
@@ -290,6 +289,7 @@ const MainScreen = ({navigation}) => {
           location.longitude,
           drinkType,
         );
+        console.log(data);
         setTotalpage(data.totalPages);
 
         if (data.content && data.content.length > 0) {
@@ -414,6 +414,7 @@ const MainScreen = ({navigation}) => {
           </View>
         ),
       },
+
       {
         key: 'popularStores',
         data: popularstores,
@@ -585,7 +586,7 @@ const MainScreen = ({navigation}) => {
           loading || popularloading ? (
             <View style={{backgroundColor: '#fff'}}>
               {[1, 2, 3, 4].map(i => (
-                <StoreItemSkeleton key={i} />
+                <PopularItemSkeleton key={i} />
               ))}
             </View>
           ) : null
@@ -603,7 +604,6 @@ const MainScreen = ({navigation}) => {
         />
       )}
       <Loading loading={isRefreshing || loading || popularloading} />
-      <AlertComponent />
     </>
   );
 };

@@ -54,7 +54,8 @@ const RecentStoreItem = ({store, navigation, location}) => {
       style={styles.recentView}>
       {/* 이미지 */}
       <View style={styles.backimageview}>
-        <ImageBackground
+        <FastImage
+          resizeMode={FastImage.resizeMode.cover}
           source={
             store.mainImgUrl
               ? {uri: store.mainImgUrl} // ✅ 네트워크 이미지
@@ -88,7 +89,7 @@ const RecentStoreItem = ({store, navigation, location}) => {
               </Text>
             </View>
           )}
-        </ImageBackground>
+        </FastImage>
       </View>
       {/* 매장 정보 */}
       <View style={styles.infoContainer}>
@@ -159,7 +160,6 @@ const styles = StyleSheet.create({
   backimage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover', // ✅ 이미지가 꽉 차도록
   },
   backimagestyle: {
     borderRadius: 15, // ✅ borderRadius 적용

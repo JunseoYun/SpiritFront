@@ -25,13 +25,7 @@ const Categorystyles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
   },
-  mainImg: {
-    width: 180,
-    height: 130,
-    // borderRadius: 9,
 
-    resizeMode: 'cover',
-  },
   menuItemView: {
     width: 130,
     height: 130,
@@ -213,10 +207,9 @@ const Categorystyles = StyleSheet.create({
   drinkText: {
     fontSize: 14,
     paddingVertical: 3,
-
     borderRadius: 5,
-    marginRight: 10,
-    fontFamily: 'Pretendard-SemiBold',
+    marginRight: 9,
+    fontFamily: 'Pretendard-Medium',
     color: '#767676',
   },
   imageStyle: {
