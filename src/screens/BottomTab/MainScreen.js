@@ -539,7 +539,6 @@ const MainScreen = ({navigation}) => {
         ]}>
         <FilterHeader
           ref={filterHeaderRef}
-          topView2Height={topView2Height}
           navigation={navigation}
           drinkType={drinkType}
           setDrinkType={setDrinkType}
@@ -572,7 +571,6 @@ const MainScreen = ({navigation}) => {
                 }}>
                 <FilterHeader
                   ref={filterHeaderRef}
-                  topView2Height={topView2Height}
                   navigation={navigation}
                   drinkType={drinkType}
                   setDrinkType={setDrinkType}
