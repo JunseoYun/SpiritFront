@@ -25,8 +25,8 @@ const MainSection = ({
     <View
       style={{
         backgroundColor: '#fff',
-        borderTopLeftRadius: 27,
-        borderTopRightRadius: 27,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
         paddingTop: 24,
       }}>
       <TodayRecomm
@@ -50,6 +50,7 @@ const MainSection = ({
         refresh={isRefreshing}
         setRefresh={setIsRefreshing}
       />
+      <View style={[styles.division, {marginTop: 10}]} />
       <OpenStoreList
         location={location}
         navigation={navigation}
