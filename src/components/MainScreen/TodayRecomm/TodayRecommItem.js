@@ -5,19 +5,21 @@ import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 const drinkColors = {
-  SOJU: '#43A047',
-  BEER: '#F9A825',
-  MAKGEOLLI: '#616161',
-  WINE: '#8E0038',
-  COCKTAIL: '#D84315',
-  SAKE: '#455A64',
-  KAOLIANG: '#5D4037',
-  WHISKEY: '#6D4C41',
-  VODKA: '#3949AB',
-  TRADITIONAL: '#C8A85E',
-  HIGHBALL: '#20B2AA',
-  TEQUILA: '#EF6C00',
+  SOJU: '#9BE7C5', // 민트 그린
+  BEER: '#FFE08A', // 라이트 앰버
+  MAKGEOLLI: '#CFD8DC', // 소프트 블루그레이
+  WINE: '#F28CA6', // 로지 핑크
+  COCKTAIL: '#FFB199', // 코랄 오렌지
+  SAKE: '#B7CADB', // 페일 슬레이트 블루
+  KAOLIANG: '#E2C8B0', // 라이트 모카
+  WHISKEY: '#E5B887', // 라이트 캐러멜
+  VODKA: '#B6C6FF', // 페리윙클
+  TRADITIONAL: '#F5E1A4', // 라이트 오커
+  RUM: '#D9B89E', // 샌디 브라운
+  HIGHBALL: '#A9F0E2', // 파스텔 틸
+  TEQUILA: '#FFD2A1', // 피치 오렌지
 };
+
 const hexToRGBA = (hex, opacity = 0.3) => {
   let col = hex.replace('#', '');
 
@@ -90,7 +92,7 @@ const TodayRecommItem = ({store, navigation}) => {
                 <Text
                   style={[
                     styles.drinkText,
-                    {color: '#fff', backgroundColor: borderColor},
+                    {color: baseColor, backgroundColor: 'rgba(0,0,0,0.40)'},
                   ]}>
                   {translateAlcohol(drink.type)} {drink.price}
                 </Text>
@@ -111,7 +113,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 230,
     marginVertical: 10,
-    // borderRadius: 10,
     overflow: 'hidden',
   },
   imageBackground: {
@@ -165,10 +166,12 @@ const styles = StyleSheet.create({
   drinkText: {
     color: '#333',
     fontFamily: 'Pretendard-Medium',
-    fontSize: 14,
+    fontSize: 12,
 
     padding: 4,
-    borderRadius: 5,
+    borderRadius: 7,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
   },
   division: {
     height: 12,

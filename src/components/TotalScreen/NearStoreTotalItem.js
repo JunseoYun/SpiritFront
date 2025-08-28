@@ -142,18 +142,6 @@ const NearStoreTotalItem = ({store, location, navigation}) => {
                 </Text>
               </View>
             )}
-            {/* {!isOpen && (
-              <View style={[styles.chip, styles.chipWarn]}>
-                <FontAwesomeIcon
-                  name="clock-o"
-                  size={12}
-                  style={styles.chipIcon}
-                />
-                <Text style={styles.chipText} numberOfLines={1}>
-                  영업종료 · {starttime} 오픈
-                </Text>
-              </View>
-            )} */}
           </View>
         ) : (
           !!distance && (
@@ -218,7 +206,7 @@ const NearStoreTotalItem = ({store, location, navigation}) => {
             <FontAwesomeIcon name="star" size={16} color="#FED348" />{' '}
             {typeof store?.storeRate === 'number'
               ? store.storeRate.toFixed(1)
-              : '5.0'}
+              : '0'}
           </Text>
         </View>
 
@@ -261,7 +249,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: {width: 0, height: 6},
     // Android shadow
-    elevation: 4,
+    elevation: 2,
   },
   imageWrap: {
     width: imageWidth,

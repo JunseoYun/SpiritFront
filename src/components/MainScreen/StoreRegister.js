@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
     color: '#121212',
     marginLeft: 10,
   },

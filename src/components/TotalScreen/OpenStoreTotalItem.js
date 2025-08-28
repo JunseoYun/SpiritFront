@@ -161,7 +161,7 @@ const OpenStoreTotalItem = ({store, location, navigation}) => {
             <FontAwesomeIcon name="star" size={16} color="#FED348" />{' '}
             {typeof store?.storeRate === 'number'
               ? store.storeRate.toFixed(1)
-              : '5.0'}
+              : '0'}
           </Text>
         </View>
 
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: {width: 0, height: 6},
     // Android shadow
-    elevation: 4,
+    elevation: 2,
   },
   imageWrap: {
     width: imageWidth,

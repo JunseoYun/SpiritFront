@@ -26,12 +26,6 @@ const ViewedStoreTotalItem = ({store, navigation, location}) => {
         </ImageBackground>
         <View style={styles.StoreTextView}>
           <View style={styles.StoreScore}>
-            {/* {store.isCertified == false && (
-              <FastImage
-                source={require('../../assets/verifyMaker.png')}
-                style={styles.imageStyle}
-              />
-            )} */}
             {store.categories.slice(0, 3).map((category, index) => (
               <Text key={index} style={styles.StoreCategory}>
                 {translateCategory(category)}
@@ -58,8 +52,6 @@ const ViewedStoreTotalItem = ({store, navigation, location}) => {
           </View>
         </View>
       </View>
-
-      {/* <View style={styles.horizontalDivider} /> */}
     </Pressable>
   );
 };
