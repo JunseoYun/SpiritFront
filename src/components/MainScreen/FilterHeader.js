@@ -33,18 +33,7 @@ const alcoholTypes = [
 ];
 
 const FilterHeader = forwardRef(
-  (
-    {
-      topView2Height,
-      drinkType,
-      setDrinkType,
-      priceOrder,
-      setPriceOrder,
-      screenWidth,
-      scrollfilterAnim,
-    },
-    ref,
-  ) => {
+  ({drinkType, setDrinkType, priceOrder, setPriceOrder, screenWidth}, ref) => {
     const scrollRef = useRef(null);
     const buttonLayouts = useRef({});
     const filterScrollX = useRef(0);
