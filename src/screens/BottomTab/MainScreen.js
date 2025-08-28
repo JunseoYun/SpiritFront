@@ -267,13 +267,17 @@ const MainScreen = ({navigation}) => {
   const [totalpage, setTotalpage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [drinkType, setDrinkType] = useState(null);
+  const [priceOrder, setPriceOrder] = useState('');
   const [popularloading, setPopularloading] = useState(false);
+  const [popularempty, setPopularempty] = useState(false);
+  const filterHeaderRef = useRef(null);
 
   const PopularStores = async (
     currentPage,
     reset = false,
     location,
     drinkType = null,
+    priceOrder = '',
   ) => {
     setPopularloading(true);
     if (location) {
@@ -288,9 +292,11 @@ const MainScreen = ({navigation}) => {
           location.latitude,
           location.longitude,
           drinkType,
+          priceOrder,
         );
 
         setTotalpage(data.totalPages);
+        setPopularempty(data.empty);
 
         if (data.content && data.content.length > 0) {
           setPopularstores(prevData => {
@@ -315,7 +321,8 @@ const MainScreen = ({navigation}) => {
 
   useEffect(() => {
     setPopularstores([]);
-    PopularStores(0, true, location, drinkType);
+    setPopularempty(false);
+    PopularStores(0, true, location, drinkType, priceOrder);
     if (!popularloading && popularstores.length > 0) {
       setTimeout(() => {
         scrollRef.current.scrollToLocation({
@@ -328,7 +335,7 @@ const MainScreen = ({navigation}) => {
         });
       }, 100);
     }
-  }, [drinkType]);
+  }, [drinkType, priceOrder]);
 
   const loadMoreData = () => {
     if (!loading && hasMore && popularpage < totalpage - 1) {
@@ -451,7 +458,6 @@ const MainScreen = ({navigation}) => {
     outputRange: [-80, 0], // 위에서 부드럽게 내려옴
     extrapolate: 'clamp',
   });
-  9;
 
   const stickyOpacity = scrollY.interpolate({
     inputRange: [stickyThreshold - 80, stickyThreshold],
@@ -532,20 +538,26 @@ const MainScreen = ({navigation}) => {
           },
         ]}>
         <FilterHeader
+          ref={filterHeaderRef}
           topView2Height={topView2Height}
           navigation={navigation}
           drinkType={drinkType}
           setDrinkType={setDrinkType}
           screenWidth={screenWidth}
+          priceOrder={priceOrder}
+          setPriceOrder={setPriceOrder}
         />
       </Animated.View>
 
       <Animated.SectionList
         ref={scrollRef}
-        scrollEnabled={!(isRefreshing || loading)}
         sections={sectionsData}
         keyExtractor={(item, index) => item.id ?? index.toString()}
         renderItem={({item, section}) => section.renderItem({item})}
+        onScrollBeginDrag={() => filterHeaderRef.current?.closeDropdown(false)}
+        onMomentumScrollBegin={() =>
+          filterHeaderRef.current?.closeDropdown(false)
+        }
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {useNativeDriver: true}, // 상태 체크를 위해 false
@@ -559,11 +571,14 @@ const MainScreen = ({navigation}) => {
                   FilterHeight(height);
                 }}>
                 <FilterHeader
+                  ref={filterHeaderRef}
                   topView2Height={topView2Height}
                   navigation={navigation}
                   drinkType={drinkType}
                   setDrinkType={setDrinkType}
                   screenWidth={screenWidth}
+                  priceOrder={priceOrder}
+                  setPriceOrder={setPriceOrder}
                 />
               </View>
             );
@@ -589,7 +604,15 @@ const MainScreen = ({navigation}) => {
                 <PopularItemSkeleton key={i} />
               ))}
             </View>
-          ) : null
+          ) : (
+            !loading &&
+            !popularloading &&
+            popularempty && (
+              <Text style={styles.emptyText}>
+                조건에 해당하는 매장이 없어요.
+              </Text>
+            )
+          )
         }
         initialNumToRender={4}
         maxToRenderPerBatch={7}
@@ -673,6 +696,16 @@ const styles = StyleSheet.create({
     zIndex: 30,
     backgroundColor: '#fff',
     elevation: 1,
+  },
+  emptyText: {
+    width: '100%',
+    backgroundColor: '#fff',
+    textAlign: 'center',
+    paddingVertical: 60,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 17,
+    color: '#c0c0c0',
+    alignSelf: 'center',
   },
 });
 
