@@ -47,7 +47,6 @@ const MainScreen = ({navigation}) => {
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
   const [recommReason, setRecommReason] = useState(null);
-  // const [isModalVisible, setIsModalVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [storeactiveIndex, setStoreActiveIndex] = useState(null);
@@ -57,6 +56,7 @@ const MainScreen = ({navigation}) => {
   const {showToast} = useToast();
   const [topView2Height, setTopView2Height] = useState(0);
   const MemoPopularstoreItem = React.memo(PopularStoreItem);
+
   useEffect(() => {
     // SectionList가 렌더된 후에 ref가 존재하면 바로 등록
     if (scrollRef.current) {
@@ -289,7 +289,7 @@ const MainScreen = ({navigation}) => {
           location.longitude,
           drinkType,
         );
-        console.log(data);
+
         setTotalpage(data.totalPages);
 
         if (data.content && data.content.length > 0) {
