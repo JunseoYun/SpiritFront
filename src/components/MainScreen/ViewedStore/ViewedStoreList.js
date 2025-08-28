@@ -78,70 +78,59 @@ const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
       {stores.length === 0 && !loading ? (
         <View style={styles.division} />
       ) : (
-        <View style={{backgroundColor: '#f5f5f5', marginTop: 20}}>
-          <View
-            style={{
-              margin: 15,
-              backgroundColor: '#fff',
-              borderRadius: 15,
-              elevation: 2,
-            }}
+        <View style={{backgroundColor: '#fff', marginTop: 20}}>
+          <Pressable
+            style={styles.storeTextView}
             onPress={() => {
               navigation.navigate('ViewedStoreScreen');
             }}>
-            <Pressable
-              style={styles.storeTextView}
-              onPress={() => {
-                navigation.navigate('ViewedStoreScreen');
+            <View
+              style={{
+                marginTop: 10,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginRight: 20,
+                alignItems: 'center',
               }}>
-              <View
-                style={{
-                  marginTop: 10,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  marginRight: 20,
-                  alignItems: 'center',
-                }}>
-                <Text style={styles.storeText}>최근 본 매장</Text>
+              <Text style={styles.storeText}>최근 본 매장</Text>
 
-                <View style={styles.totalView}>
-                  <Text style={styles.totalText}>전체보기</Text>
-                  <Feather name={'chevron-right'} size={15} color="#333" />
-                </View>
+              <View style={styles.totalView}>
+                <Text style={styles.totalText}>전체보기</Text>
+                <Feather name={'chevron-right'} size={15} color="#333" />
               </View>
-            </Pressable>
-            <FlatList
-              data={stores}
-              renderItem={renderStoreItem}
-              keyExtractor={item => item.id.toString()}
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={[
-                styles.horizontalFlatListContent,
-                {
-                  paddingRight: 18,
-                  paddingLeft: 10,
-                  paddingBottom: 10,
-                  marginBottom: 10,
-                },
-              ]} // 오른쪽 여백 추가
-              onEndReached={() => {
-                if (hasMore && !loading && page < totalpage - 1) {
-                  setPage(prevPage => {
-                    const nextPage = prevPage + 1; // 다음 페이지 번호
-                    getStoreData(nextPage); // 그 페이지 번호로 데이터 요청
-                    return nextPage; // 상태를 증가된 페이지 번호로 갱신
-                  });
-                }
-              }}
-              initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
-              maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
-              windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-              removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
-              onEndReachedThreshold={0.5} // 리스트 끝에 가까워지면 데이터를 추가로 가져옵니다.
-              //ListFooterComponent={renderFooter} // 로딩 인디케이터
-            />
-          </View>
+            </View>
+          </Pressable>
+          <FlatList
+            data={stores}
+            renderItem={renderStoreItem}
+            keyExtractor={item => item.id.toString()}
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[
+              styles.horizontalFlatListContent,
+              {
+                paddingRight: 18,
+                paddingLeft: 10,
+                paddingBottom: 10,
+                marginBottom: 10,
+              },
+            ]} // 오른쪽 여백 추가
+            onEndReached={() => {
+              if (hasMore && !loading && page < totalpage - 1) {
+                setPage(prevPage => {
+                  const nextPage = prevPage + 1; // 다음 페이지 번호
+                  getStoreData(nextPage); // 그 페이지 번호로 데이터 요청
+                  return nextPage; // 상태를 증가된 페이지 번호로 갱신
+                });
+              }
+            }}
+            initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
+            maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
+            windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
+            removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
+            onEndReachedThreshold={0.5} // 리스트 끝에 가까워지면 데이터를 추가로 가져옵니다.
+            //ListFooterComponent={renderFooter} // 로딩 인디케이터
+          />
         </View>
       )}
     </>
@@ -151,7 +140,7 @@ const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
 const styles = StyleSheet.create({
   storeTextView: {
     marginLeft: 20,
-    marginTop: 10,
+    marginTop: 0,
   },
   storeText: {
     fontSize: 18,
