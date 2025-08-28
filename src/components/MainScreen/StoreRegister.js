@@ -1,11 +1,13 @@
 import React from 'react';
-import {View, Pressable, Text, StyleSheet} from 'react-native';
+import {View, Pressable, Text, StyleSheet, Platform} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import {iniBasictNotification} from '../../hooks/notification/useNotificationPermission';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {openSettings} from 'react-native-permissions';
-const StoreRegister = ({storeactiveIndex, handlestoreItemClick}) => {
+
+const StoreRegister = ({handlestoreItemClick}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
+
   const options = [
     {
       id: 0,
@@ -19,6 +21,10 @@ const StoreRegister = ({storeactiveIndex, handlestoreItemClick}) => {
     },
   ];
 
+  const handleGoToSettings = () => {
+    openSettings().catch(() => console.warn('설정 열기에 실패했습니다.'));
+  };
+
   const handlePress = async id => {
     if (id === 1) {
       const isAuthorized = await iniBasictNotification(1);
@@ -30,82 +36,84 @@ const StoreRegister = ({storeactiveIndex, handlestoreItemClick}) => {
           message: '사장님 인증 결과를 받기 위해\n알림 권한이 필요해요',
           type: 'notificationSetting',
           onConfirm: handleGoToSettings,
-          onCancel: () => {
-            console.log('취소 눌림');
-          },
+          onCancel: () => {},
         });
       }
-    } else {
-      handlestoreItemClick(id);
+      return;
     }
+    handlestoreItemClick(id);
   };
 
-  const handleGoToSettings = () => {
-    openSettings().catch(() => {
-      console.warn('설정 열기에 실패했습니다.');
-    });
-  };
   return (
-    <View style={styles.StoreregView}>
-      {options.map(option => (
-        <Pressable
-          key={option.id}
-          style={[styles.StorereginnerView]}
-          onPress={() => handlePress(option.id)}>
-          <View style={styles.iconCircle}>
-            <Feather name={option.icon} size={24} color={'#16BBFF'} />
-          </View>
-          <View style={styles.textView}>
-            <Text style={styles.StoreMainText}>{option.title}</Text>
-          </View>
-        </Pressable>
-      ))}
+    <View style={styles.container}>
+      {options.map(option => {
+        return (
+          <Pressable
+            key={option.id}
+            onPress={() => handlePress(option.id)}
+            hitSlop={8}
+            style={({pressed}) => [styles.card, pressed && styles.cardPressed]}
+            accessibilityRole="button"
+            accessibilityLabel={option.title}>
+            <View style={[styles.cover]}>
+              <Feather name={option.icon} size={22} color={'#45C9FF'} />
+              <Text style={styles.title}>{option.title}</Text>
+            </View>
+          </Pressable>
+        );
+      })}
       <AlertComponent />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  StoreregView: {
+  container: {
     flexDirection: 'row',
     marginTop: 20,
     marginHorizontal: 18,
-    borderRadius: 16,
     gap: 12,
   },
-  StorereginnerView: {
+
+  // 카드(버튼)
+  card: {
     flex: 1,
-    borderRadius: 16,
     flexDirection: 'row',
-    backgroundColor: '#FAFAFA',
-    padding: 14,
     alignItems: 'center',
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  activeCard: {
-    backgroundColor: '#EAF6FF',
-    borderColor: '#007AFF',
-  },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#fff',
-    alignItems: 'center',
+    borderColor: '#E9ECEF',
     justifyContent: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 1},
   },
-  textView: {
-    marginLeft: 12,
+  cardActive: {
+    borderColor: '#B6E7FF',
+    backgroundColor: '#F5FBFF',
   },
-  StoreMainText: {
+  cardPressed: {
+    transform: [{scale: 0.98}],
+    opacity: Platform.OS === 'ios' ? 0.9 : 0.9,
+    borderColor: '#45C9FF',
+  },
+  cover: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 7,
+  },
+
+  title: {
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#181a1a',
+    color: '#121212',
+    marginLeft: 10,
+  },
+  subtitle: {
+    marginTop: 2,
+    fontSize: 12,
+    fontFamily: 'Pretendard-Regular',
+    color: '#7A7F85',
   },
 });
 
