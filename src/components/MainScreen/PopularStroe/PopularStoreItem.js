@@ -3,6 +3,7 @@ import {View, Text, Pressable, ScrollView, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
@@ -11,7 +12,7 @@ import FastImage from 'react-native-fast-image';
 
 const PopularStoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
-
+  const {translateCategory} = useCategoryTranslation();
   const {
     isOpen,
     isBreak,
@@ -38,8 +39,8 @@ const PopularStoreItem = ({store, location, navigation}) => {
   };
 
   return (
-    <View style={Categorystyles.itemContainer}>
-      <View style={Categorystyles.imageView}>
+    <View style={styles.itemContainer}>
+      <View style={styles.imageView}>
         <ScrollView
           horizontal
           nestedScrollEnabled={true}
@@ -49,9 +50,7 @@ const PopularStoreItem = ({store, location, navigation}) => {
             paddingHorizontal: 18,
             gap: 1,
           }}>
-          <Pressable
-            onPress={handleStorePress}
-            style={Categorystyles.mainItemView}>
+          <Pressable onPress={handleStorePress} style={styles.mainItemView}>
             {store.mainImgUrl ? (
               <FastImage
                 resizeMode={FastImage.resizeMode.cover}
@@ -59,7 +58,7 @@ const PopularStoreItem = ({store, location, navigation}) => {
                   {uri: store.mainImgUrl} // ✅ 네트워크 이미지
                 }
                 style={[
-                  Categorystyles.mainImageView,
+                  styles.mainImageView,
                   store.menuList.every(menu => !menu.imgUrl)
                     ? {
                         borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
@@ -90,7 +89,7 @@ const PopularStoreItem = ({store, location, navigation}) => {
 
                   // overlay 스타일 계산
                   const overlayStyle = [
-                    Categorystyles.overlay,
+                    styles.overlay,
                     store.menuList.every(menu => !menu.imgUrl)
                       ? {
                           borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
@@ -103,9 +102,7 @@ const PopularStoreItem = ({store, location, navigation}) => {
 
                   return (
                     <View style={overlayStyle}>
-                      <Text style={Categorystyles.overlayText}>
-                        {overlayText}
-                      </Text>
+                      <Text style={styles.overlayText}>{overlayText}</Text>
                     </View>
                   );
                 })()}
@@ -114,7 +111,7 @@ const PopularStoreItem = ({store, location, navigation}) => {
               <FastImage
                 resizeMode={FastImage.resizeMode.contain}
                 style={[
-                  Categorystyles.noneImageView,
+                  styles.noneImageView,
                   store.menuList.every(menu => !menu.imgUrl)
                     ? {
                         borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
@@ -132,7 +129,7 @@ const PopularStoreItem = ({store, location, navigation}) => {
                   }}>
                   <FastImage
                     source={require('../../../assets/store.png')}
-                    style={Categorystyles.noneImg}
+                    style={styles.noneImg}
                     resizeMode={FastImage.resizeMode.contain}
                   />
                 </View>
@@ -157,7 +154,7 @@ const PopularStoreItem = ({store, location, navigation}) => {
 
                   // overlay 스타일 계산
                   const overlayStyle = [
-                    Categorystyles.overlay,
+                    styles.overlay,
                     store.menuList.every(menu => !menu.imgUrl)
                       ? {
                           borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
@@ -170,9 +167,7 @@ const PopularStoreItem = ({store, location, navigation}) => {
 
                   return (
                     <View style={overlayStyle}>
-                      <Text style={Categorystyles.overlayText}>
-                        {overlayText}
-                      </Text>
+                      <Text style={styles.overlayText}>{overlayText}</Text>
                     </View>
                   );
                 })()}
@@ -186,14 +181,14 @@ const PopularStoreItem = ({store, location, navigation}) => {
                 <Pressable
                   onPress={handleStorePress}
                   key={index}
-                  style={Categorystyles.menuItemView}>
+                  style={styles.menuItemView}>
                   <FastImage
                     source={
                       {uri: menu.imgUrl} // ✅ 네트워크 이미지
                       // ✅ 로컬 이미지
                     }
                     style={[
-                      Categorystyles.menuImageView,
+                      styles.menuImageView,
                       index === arr.length - 1 && {
                         borderTopRightRadius: 9,
                         borderBottomRightRadius: 9,
@@ -206,7 +201,7 @@ const PopularStoreItem = ({store, location, navigation}) => {
                       // 오버레이만 표시 (내용 없음)
                       <View
                         style={[
-                          Categorystyles.overlay,
+                          styles.overlay,
                           index === arr.length - 1 && {
                             borderTopRightRadius: 9,
                             borderBottomRightRadius: 9,
@@ -216,21 +211,21 @@ const PopularStoreItem = ({store, location, navigation}) => {
                       // 메뉴 정보가 포함된 오버레이
                       <View
                         style={[
-                          Categorystyles.semiOverlay,
+                          styles.semiOverlay,
                           index === arr.length - 1 && {
                             borderTopRightRadius: 9,
                             borderBottomRightRadius: 9,
                           },
                         ]}>
                         <Text
-                          style={Categorystyles.menuName}
+                          style={styles.menuName}
                           allowFontScaling={false}
                           numberOfLines={1}
                           ellipsizeMode="tail">
                           {menu.name}
                         </Text>
                         <Text
-                          style={Categorystyles.menuPrice}
+                          style={styles.menuPrice}
                           allowFontScaling={false}
                           numberOfLines={1}
                           ellipsizeMode="tail">
@@ -246,91 +241,86 @@ const PopularStoreItem = ({store, location, navigation}) => {
         </ScrollView>
       </View>
 
-      <Pressable onPress={handleStorePress} style={Categorystyles.infoTopView}>
-        <View style={Categorystyles.drinkView}>
-          {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
-            ? store.mainDrinkDtos?.map((drink, index) => {
-                return (
-                  <React.Fragment key={index}>
-                    <Text style={[Categorystyles.drinkText]}>
-                      {translateAlcohol(drink.type)} {drink.price}
-                    </Text>
-                    {index !== store.mainDrinkDtos.length - 1 && (
-                      <View style={Categorystyles.division} />
-                    )}
-                  </React.Fragment>
-                );
-              })
-            : '메인주류가 없습니다.'}
-        </View>
-        <View style={Categorystyles.infoTitleView}>
-          {store.isCertified == true && (
-            <FastImage
-              source={require('../../../assets/verifyMaker.png')}
-              style={Categorystyles.imageStyle}
-            />
-          )}
-          <Text
-            style={Categorystyles.storeName}
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            {store.name}
+      <Pressable onPress={handleStorePress} style={styles.infoTopView}>
+        {!!store?.categories?.length && (
+          <Text style={styles.category} numberOfLines={1}>
+            {store.categories.map(c => translateCategory(c)).join(', ')}
           </Text>
+        )}
+        <View style={styles.infoTitleView}>
+          <View style={[styles.infoTitleViewSection, {flex: 1}]}>
+            {store.isCertified == true && (
+              <FastImage
+                source={require('../../../assets/verifyMaker.png')}
+                style={styles.imageStyle}
+              />
+            )}
+            <Text
+              style={styles.storeName}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {store.name}
+            </Text>
+          </View>
+          <View style={styles.infoTitleViewSection}>
+            <FontAwesomeIcon name="star" size={16} color="#FED348" />
+            <Text style={styles.infoText}> {store.storeRate || 0}</Text>
+            <Text
+              style={[
+                styles.infoText,
+                {
+                  color: '#999',
+                  fontFamily: 'Pretendard-Regular',
+                  marginLeft: 3,
+                },
+              ]}>
+              ({Number(store.reviewCount ?? 0).toLocaleString('ko-KR')})
+            </Text>
+          </View>
         </View>
-        <View style={Categorystyles.infoReviewView}>
-          <FontAwesomeIcon name="star" size={16} color="#FED348" />
-          <Text style={Categorystyles.infoText}> {store.storeRate || 0}</Text>
-          <Text
-            style={[
-              Categorystyles.infoText,
-              {color: '#999', fontFamily: 'Pretendard-Regular', marginLeft: 3},
-            ]}>
-            ({store.reviewCount || 0})
-          </Text>
-          <Ionicons
-            name="heart"
-            size={16}
-            color={'#F85656'}
-            style={{marginLeft: 7}}
-          />
-          <Text style={[Categorystyles.infoText, {marginLeft: 3}]}>
-            {store.storeLikeCount || 0}
-          </Text>
-        </View>
-        <View style={Categorystyles.infoTimeView}>
-          <View style={Categorystyles.infoView}>
+
+        <View style={styles.infoTimeView}>
+          <View style={styles.infoView}>
             {store?.isAlwaysOpen == true ? (
-              <Text style={Categorystyles.subInfoText}>24시간 영업</Text>
+              <Text style={styles.subInfoText}>24시간 영업</Text>
             ) : store?.isAlwaysOpen == false && closed ? (
-              <Text style={Categorystyles.subInfoText}>금일 휴무</Text>
+              <Text style={styles.subInfoText}>금일 휴무</Text>
             ) : !isOpen && nextclosed && !closed ? (
-              <Text style={Categorystyles.subInfoText}>
-                영업 종료 익일 휴무
-              </Text>
+              <Text style={styles.subInfoText}>영업 종료 익일 휴무</Text>
             ) : !isOpen && !nextclosed && !closed ? (
-              <Text style={Categorystyles.subInfoText}>
+              <Text style={styles.subInfoText}>
                 영업 전 {starttime ? `${starttime} 영업 시작` : ''}
               </Text>
             ) : (
-              <Text style={Categorystyles.subInfoText}>
+              <Text style={styles.subInfoText}>
                 영업 중 {`${starttime} - ${endtime}` || '정보 없음'}
               </Text>
             )}
           </View>
           {breakstart && breakend && (
-            <View style={Categorystyles.infoView}>
-              <Text style={Categorystyles.subInfoText}>
+            <View style={styles.infoView}>
+              <Text style={styles.subInfoText}>
                 휴게시간 {breakstart} ~ {breakend}
               </Text>
             </View>
           )}
+        </View>
+
+        <View style={styles.mainDrinkView}>
+          {store?.mainDrinkDtos?.slice(0, 3)?.map((drink, idx) => (
+            <View key={idx} style={styles.drinkBadge}>
+              <Text style={styles.drinkBadgeText}>
+                {translateAlcohol(drink.type)} {drink.price}
+              </Text>
+            </View>
+          ))}
         </View>
       </Pressable>
     </View>
   );
 };
 
-const Categorystyles = StyleSheet.create({
+const styles = StyleSheet.create({
   itemContainer: {
     width: '100%',
     borderColor: '#EDEDED',
@@ -365,19 +355,16 @@ const Categorystyles = StyleSheet.create({
   menuImageView: {
     width: 130,
     height: 130,
-    // borderRadius: 10,
     justifyContent: 'center',
   },
   menuImg: {
     width: 130,
     height: 130,
-    // borderRadius: 9,
     resizeMode: 'cover',
   },
   noneImageView: {
     width: 180,
     height: 130,
-    // borderRadius: 10,
     backgroundColor: '#fff',
     alignItems: 'center', // 가로 중앙
     justifyContent: 'center', // 세로 중앙
@@ -388,11 +375,6 @@ const Categorystyles = StyleSheet.create({
   noneImg: {
     width: 130,
     height: 130,
-    // borderRadius: 10,
-    // 아래 세 줄은 삭제하세요 👇
-    // alignContent: 'center',
-    // alignItems: 'center',
-    // justifyContent: 'center',
   },
 
   menuName: {
@@ -469,11 +451,22 @@ const Categorystyles = StyleSheet.create({
   },
   infoTopView: {
     width: '100%',
-    marginTop: 1,
+    marginTop: 10,
 
-    paddingHorizontal: 18,
+    paddingHorizontal: 20,
+  },
+  category: {
+    fontSize: 13,
+    color: '#6b7280',
+    marginBottom: 5,
+    fontFamily: 'Pretendard-SemiBold',
   },
   infoTitleView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  infoTitleViewSection: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -481,7 +474,7 @@ const Categorystyles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    maxWidth: '95%',
+    maxWidth: '100%',
   },
   alcoholText: {
     fontSize: 14,
@@ -509,17 +502,16 @@ const Categorystyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 7,
   },
   subInfoText: {
     fontSize: 14,
-    fontFamily: 'Pretendard-Medium',
-    color: '#999',
+    color: '#4b5563',
+    fontFamily: 'Pretendard-Regular',
     textAlign: 'center',
   },
   iconStar: {
     justifyContent: 'space-between',
-
     height: 16,
     width: 16,
   },
@@ -547,6 +539,23 @@ const Categorystyles = StyleSheet.create({
     width: 15,
     height: 15,
     marginRight: 5,
+  },
+
+  mainDrinkView: {
+    flexDirection: 'row',
+    marginTop: 16,
+  },
+  drinkBadge: {
+    marginRight: 7,
+    backgroundColor: 'rgba(0,0,0,0.05)', // 필요 없으면 제거
+    borderRadius: 3,
+  },
+  drinkBadgeText: {
+    color: '#121212',
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    paddingVertical: 2,
+    paddingHorizontal: 4,
   },
 });
 

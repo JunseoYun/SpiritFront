@@ -15,7 +15,8 @@ import {
   Animated,
   TouchableOpacity,
 } from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
+
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -173,17 +174,25 @@ const FilterHeader = forwardRef(
             onPress={toggleDropdown}
             onStartShouldSetResponder={() => true}
             onLayout={e => setChoiceBtnWidth(e.nativeEvent.layout.width)}>
+            <MaterialCommunityIcons
+              name="tune-variant"
+              size={17}
+              color="#555"
+            />
             <Text style={styles.choicetext}>
               {priceOrder === 'ASC'
-                ? '낮은가격순'
+                ? '낮은 가격순'
                 : priceOrder === 'DESC'
-                ? '높은가격순'
+                ? '높은 가격순'
                 : '기본순'}
             </Text>
-            <Feather
-              name={dropdownVisible ? 'chevron-up' : 'chevron-down'}
-              size={17}
-              color="#121212"
+            <View
+              style={{
+                width: 1,
+                height: 18,
+                backgroundColor: '#ccc',
+                marginLeft: 5,
+              }}
             />
           </Pressable>
         )}
@@ -222,7 +231,7 @@ const FilterHeader = forwardRef(
                   styles.dropdownText,
                   priceOrder === 'ASC' && styles.activeDropdownText,
                 ]}>
-                낮은가격순
+                낮은 가격순
               </Text>
             </TouchableOpacity>
 
@@ -237,7 +246,7 @@ const FilterHeader = forwardRef(
                   styles.dropdownText,
                   priceOrder === 'DESC' && styles.activeDropdownText,
                 ]}>
-                높은가격순
+                높은 가격순
               </Text>
             </TouchableOpacity>
           </Animated.View>
@@ -264,22 +273,18 @@ const styles = StyleSheet.create({
   // 겹치는 choice 버튼
   choicebtn: {
     position: 'absolute',
-    paddingHorizontal: 15,
     height: 35,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
     zIndex: 50, // iOS
     gap: 4,
     backgroundColor: '#fff',
+    paddingLeft: 18,
   },
   choicetext: {
     fontSize: 14,
-    color: '#121212',
-    fontFamily: 'Pretendard-SemiBold',
+    color: '#555',
+    fontFamily: 'Pretendard-Medium',
     textAlign: 'center',
   },
 
@@ -299,12 +304,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   activeFilter: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#E8F7FF',
     borderColor: '#45C9FF',
   },
   activeFilterText: {
-    color: 'white',
-    fontFamily: 'Pretendard-Bold',
+    color: '#45C9FF',
+    fontFamily: 'Pretendard-Medium',
   },
 
   dropdown: {
