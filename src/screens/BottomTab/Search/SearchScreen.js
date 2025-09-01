@@ -211,7 +211,7 @@ const SearchScreen = ({navigation}) => {
           <SearchBar
             value={searchStoreName}
             onChangeText={setSearchStoreName}
-            placeholder="술집 이름을 입력해주세요."
+            placeholder="원하는 술집이나 메뉴를 검색하세요"
             onPress={onPressSearch}
           />
           {/* 스크롤 가능한 영역 */}

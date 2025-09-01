@@ -1,26 +1,20 @@
-// import React from 'react';
-// import {View, TextInput, StyleSheet, Dimensions} from 'react-native';
-
-import React, {useState} from 'react';
+import React from 'react';
 import {
   View,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Text,
-  Keyboard,
-  Dimensions,
+  Platform,
 } from 'react-native';
-import EvilIcons from 'react-native-vector-icons/EvilIcons';
 
 import AntDesign from 'react-native-vector-icons/AntDesign';
-const screenWidth = Dimensions.get('window').width;
 
 const SearchBar = ({value, onChangeText, placeholder, onPress}) => {
   return (
-    <View style={styles.topView}>
+    <View
+      style={[styles.topView, Platform.OS === 'android' && {paddingTop: 10}]}>
       <TouchableOpacity style={styles.searchButton}>
-        <AntDesign name="search1" size={18} color={'#A9A9A9'} />
+        <AntDesign name="search1" size={20} color={'#A9A9A9'} />
       </TouchableOpacity>
 
       {/* ✅ 검색창 */}
@@ -69,8 +63,8 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 16,
-    color: '#333', // 입력 텍스트 색상
-    fontWeight: '500', // 글씨 굵기
+    color: '#121212', // 입력 텍스트 색상
+    fontFamily: 'Pretendard-Medium',
   },
 });
 
