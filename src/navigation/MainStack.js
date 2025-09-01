@@ -127,7 +127,7 @@ export default function MainStack() {
           title: '한잔할까',
           headerTitleAlign: 'center',
           headerTitleStyle: {
-            fontWeight: '600',
+            fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
           },
           headerTitleStyle: {

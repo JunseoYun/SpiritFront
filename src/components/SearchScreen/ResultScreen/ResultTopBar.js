@@ -30,7 +30,7 @@ const ResultTopBar = ({searchWord, setSearchWord, navigation, onSearch}) => {
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         style={styles.backButton}>
-        <AntDesign name="arrowleft" size={25} color={'#111'} />
+        <AntDesign name="arrowleft" size={22} color={'#111'} />
       </TouchableOpacity>
 
       {/* ✅ 검색창 */}
@@ -51,7 +51,7 @@ const ResultTopBar = ({searchWord, setSearchWord, navigation, onSearch}) => {
         />
       </View>
       <TouchableOpacity style={styles.homeButton} onPress={onSearchPress}>
-        <AntDesign name="search1" size={25} color={'#111'} />
+        <AntDesign name="search1" size={22} color={'#111'} />
       </TouchableOpacity>
     </View>
   );
