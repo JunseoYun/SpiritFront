@@ -1,9 +1,11 @@
 import React from 'react';
 import {View, StyleSheet, Text, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import LinearGradient from 'react-native-linear-gradient';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
+
 const drinkColors = {
   SOJU: '#9BE7C5', // 민트 그린
   BEER: '#FFE08A', // 라이트 앰버
@@ -37,11 +39,12 @@ const hexToRGBA = (hex, opacity = 0.3) => {
 
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
+
 const TodayRecommItem = ({store, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
-
   const {token} = useAuth();
   const {showToast} = useToast();
+
   const handlePress = () => {
     if (!token) {
       showToast('로그인 후 이용할 수 있어요!', 'center');
@@ -64,7 +67,20 @@ const TodayRecommItem = ({store, navigation}) => {
             : require('../../../assets/default_store.png')
         }
         resizeMode={FastImage.resizeMode.cover}>
+        {/* 오버레이 컨테이너 */}
         <View style={styles.overlay}>
+          {/* ✅ 상단 그라데이션 */}
+          <LinearGradient
+            colors={
+              store.mainImgUrl
+                ? ['rgba(0, 0, 0, 0.5)', 'transparent']
+                : ['rgba(0, 0, 0, 0.3)', 'transparent']
+            } // 위쪽은 어두움 → 아래쪽은 투명
+            style={styles.gradientTop}
+            pointerEvents="none"
+          />
+
+          {/* 가게 이름 */}
           <View style={styles.storeContainer}>
             {store.isCertified && (
               <FastImage
@@ -73,16 +89,15 @@ const TodayRecommItem = ({store, navigation}) => {
               />
             )}
             <Text
-              style={[
-                styles.storeName,
-                !store.mainImgUrl && {color: '#696E6F'},
-              ]}
+              style={[styles.storeName]}
               numberOfLines={3}
               ellipsizeMode="tail">
               {store.name}
             </Text>
           </View>
         </View>
+
+        {/* 메뉴 정보 */}
         <View style={styles.drinkView}>
           {store.mainDrinkDtos?.map((drink, index) => {
             const baseColor = drinkColors[drink.type] || '#333';
@@ -118,27 +133,36 @@ const styles = StyleSheet.create({
   imageBackground: {
     flex: 1,
     justifyContent: 'space-between',
-    padding: 10,
+
     borderRadius: 10,
   },
-
   overlay: {
     flex: 1,
     width: '100%',
     justifyContent: 'space-between',
-    position: 'relative', // 🔹 기준 위치로 사용
+    position: 'relative', // 기준 위치
+  },
+  gradientTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 115, // 그라데이션 높이
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    zIndex: 1,
   },
   storeContainer: {
     flexDirection: 'row',
+    zIndex: 2, // 텍스트를 그라데이션 위로
+    marginLeft: 10,
+    marginTop: 10,
   },
   imageStyle: {
     alignSelf: 'center',
     width: 20,
     height: 20,
     marginRight: 5,
-  },
-  storeNameView: {
-    backgroundColor: '#333',
   },
   storeName: {
     color: '#fff',
@@ -147,27 +171,16 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     marginTop: 3,
   },
-  likeView: {
-    alignSelf: 'flex-end',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-
-    padding: 7,
-    borderRadius: 30,
-  },
-  likeIcon: {
-    alignSelf: 'flex-end',
-  },
   drinkView: {
     flexDirection: 'row',
     alignItems: 'center',
-
     marginBottom: 12,
+    marginLeft: 10,
   },
   drinkText: {
     color: '#333',
     fontFamily: 'Pretendard-Medium',
     fontSize: 12,
-
     padding: 4,
     borderRadius: 7,
     paddingHorizontal: 8,
@@ -176,7 +189,6 @@ const styles = StyleSheet.create({
   division: {
     height: 12,
     width: 1.5,
-
     marginHorizontal: 2,
   },
 });

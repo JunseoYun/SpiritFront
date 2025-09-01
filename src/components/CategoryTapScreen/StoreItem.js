@@ -3,6 +3,7 @@ import {View, Text, Pressable, ScrollView} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+import LinearGradient from 'react-native-linear-gradient';
 import Categorystyles from '../../screens/CategoryTap/CategoryTapStyles';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
@@ -223,6 +224,11 @@ const StoreItem = ({store, location, navigation}) => {
                             borderBottomRightRadius: 9,
                           },
                         ]}>
+                        <LinearGradient
+                          colors={['rgba(0, 0, 0, 0.3)', 'transparent']} // 위쪽은 어두움 → 아래쪽은 투명
+                          style={Categorystyles.gradientTop}
+                          pointerEvents="none"
+                        />
                         <Text
                           style={Categorystyles.menuName}
                           allowFontScaling={false}
