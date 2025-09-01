@@ -240,6 +240,7 @@ const SearchScreen = ({navigation}) => {
       <Modal
         animationType="fade"
         transparent={true}
+        statusBarTranslucent={true}
         visible={bottomModalVisible}
         onRequestClose={() => setBottomModalVisible(false)}>
         <TouchableWithoutFeedback onPress={() => setBottomModalVisible(false)}>
