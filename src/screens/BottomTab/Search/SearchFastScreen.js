@@ -244,7 +244,7 @@ const SearchFastScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: '#F8FDFF'},
+  container: {flex: 1, backgroundColor: '#fdfdfd'},
   header: {
     width: '100%',
     flexDirection: 'row',

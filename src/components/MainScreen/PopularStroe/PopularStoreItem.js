@@ -1,8 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, ScrollView, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import LinearGradient from 'react-native-linear-gradient';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../../hooks/useStoreStatus';
@@ -217,6 +216,11 @@ const PopularStoreItem = ({store, location, navigation}) => {
                             borderBottomRightRadius: 9,
                           },
                         ]}>
+                        <LinearGradient
+                          colors={['rgba(0, 0, 0, 0.3)', 'transparent']} // 위쪽은 어두움 → 아래쪽은 투명
+                          style={styles.gradientTop}
+                          pointerEvents="none"
+                        />
                         <Text
                           style={styles.menuName}
                           allowFontScaling={false}
@@ -376,7 +380,14 @@ const styles = StyleSheet.create({
     width: 130,
     height: 130,
   },
-
+  gradientTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 65, // 그라데이션 높이
+    zIndex: 1,
+  },
   menuName: {
     fontSize: 13,
     fontFamily: 'Pretendard-Regular',
@@ -384,6 +395,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
     marginLeft: 5,
     textAlign: 'center',
+    zIndex: 3,
   },
   menuPrice: {
     fontSize: 11,
@@ -391,6 +403,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginLeft: 5,
     textAlign: 'center',
+
+    zIndex: 3,
   },
   storeMainView: {
     width: 130,
