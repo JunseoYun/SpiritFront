@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from 'react';
+import React, {useState, useEffect, useMemo, useRef} from 'react';
 import {
   Text,
   StyleSheet,
@@ -32,10 +32,13 @@ const Alcoholcategorytab = ({
   onScrollTo, // 상위에서 scrollTo를 호출할 함수 (scrollToHandler)
   sectionPositions: parentSectionPositions, // 상위에서 관리하는 섹션 위치들
   imagelist = 0,
+  scrollY,
+  selectedType,
+  setSelectedType,
+  isClickedRef,
 }) => {
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
   const {height: windowHeight} = Dimensions.get('window');
-
   const {translateAlcohol} = useTranslateAlcohol();
   const paddingTopValue = windowHeight;
 
@@ -80,17 +83,52 @@ const Alcoholcategorytab = ({
       }, {});
   }, [alcoholsState, mainDrinks, translateAlcohol]);
 
+  const selectedTypeRef = useRef(selectedType);
+
+  useEffect(() => {
+    selectedTypeRef.current = selectedType;
+  }, [selectedType]);
+
+  useEffect(() => {
+    if (!scrollY || !parentSectionPositions) return;
+
+    const listenerId = scrollY.addListener(({value}) => {
+      if (isClickedRef.current) return; // 클릭 강제 활성화 중이면 무시
+
+      let current = null;
+      Object.keys(parentSectionPositions).forEach(type => {
+        if (value >= parentSectionPositions[type] + paddingTopValue - 180) {
+          current = type;
+        }
+      });
+
+      if (current && current !== selectedType) {
+        setSelectedType(current);
+      }
+    });
+    return () => scrollY.removeListener(listenerId);
+  }, [scrollY, parentSectionPositions, selectedType]);
+
   return (
     <View style={[styles.tabContainer]}>
       <ScrollView
-        contentContainerStyle={{paddingHorizontal: 12}}
+        contentContainerStyle={{
+          paddingHorizontal: 12,
+          gap: 6,
+          paddingVertical: 6,
+        }}
         horizontal
         showsHorizontalScrollIndicator={false}>
         {Object.keys(groupedAlcohols).map(type => (
           <TouchableOpacity
             key={type}
-            style={styles.tabButton}
+            style={[
+              styles.tabButton,
+              selectedType === type && styles.tabButtonActive, // ✅ 선택된 버튼 스타일
+            ]}
             onPress={() => {
+              setSelectedType(type); // 클릭 즉시 활성화
+              isClickedRef.current = true; // scrollY 이벤트 잠시 무시
               const y = parentSectionPositions[type];
               if (onScrollTo && y !== undefined) {
                 if (imagelist === 0) {
@@ -111,7 +149,13 @@ const Alcoholcategorytab = ({
                 console.warn('onScrollTo 또는 y 좌표가 올바르지 않습니다');
               }
             }}>
-            <Text style={styles.tabText}>{type}</Text>
+            <Text
+              style={[
+                styles.tabText,
+                selectedType === type && styles.tabTextActive, // ✅ 선택된 텍스트 스타일
+              ]}>
+              {type}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -134,17 +178,24 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
   },
   tabButton: {
-    marginRight: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
     borderRadius: 20,
-    backgroundColor: '#eee',
-    margin: 4,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
   tabText: {
     fontSize: 13,
     fontFamily: 'Pretendard-Medium',
     color: '#555',
+  },
+  tabButtonActive: {
+    backgroundColor: '#E8F7FF', // 선택 시 배경색
+    borderColor: '#45C9FF',
+  },
+  tabTextActive: {
+    color: '#45C9FF', // 선택 시 글자색
   },
 });
 
