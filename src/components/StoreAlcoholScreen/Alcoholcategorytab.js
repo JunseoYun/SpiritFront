@@ -32,25 +32,7 @@ const Alcoholcategorytab = ({
   onScrollTo, // 상위에서 scrollTo를 호출할 함수 (scrollToHandler)
   sectionPositions: parentSectionPositions, // 상위에서 관리하는 섹션 위치들
   imagelist = 0,
-  scrollY,
-  tabY,
 }) => {
-  const [isSticky, setIsSticky] = useState(false);
-  const insets = useSafeAreaInsets();
-
-  useEffect(() => {
-    const listener = scrollY.addListener(({value}) => {
-      if (value >= tabY) {
-        setIsSticky(true);
-      } else if (value + 5 < tabY) {
-        setIsSticky(false);
-      }
-    });
-    return () => {
-      scrollY.removeListener(listener);
-    };
-  }, [scrollY, tabY]);
-
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
   const {height: windowHeight} = Dimensions.get('window');
 
@@ -99,25 +81,7 @@ const Alcoholcategorytab = ({
   }, [alcoholsState, mainDrinks, translateAlcohol]);
 
   return (
-    <View
-      style={[
-        styles.tabContainer,
-        isSticky
-          ? imagelist > 0
-            ? Platform.OS === 'ios'
-              ? {
-                  marginTop: insets.top + 30,
-                  borderBottomWidth: 1,
-                  borderColor: '#eee',
-                }
-              : {
-                  marginTop: insets.top + 40,
-                  borderBottomWidth: 1,
-                  borderColor: '#eee',
-                }
-            : styles.nonimgstickyActive
-          : null, // sticky 상태일 때 스타일 적용
-      ]}>
+    <View style={[styles.tabContainer]}>
       <ScrollView
         contentContainerStyle={{paddingHorizontal: 12}}
         horizontal
