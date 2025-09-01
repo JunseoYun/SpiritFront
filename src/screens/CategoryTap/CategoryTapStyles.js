@@ -64,7 +64,14 @@ const Categorystyles = StyleSheet.create({
     // alignItems: 'center',
     // justifyContent: 'center',
   },
-
+  gradientTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 65, // 그라데이션 높이
+    zIndex: 1,
+  },
   menuName: {
     fontSize: 13,
     fontFamily: 'Pretendard-Regular',
@@ -72,6 +79,8 @@ const Categorystyles = StyleSheet.create({
     marginTop: 3,
     marginLeft: 5,
     textAlign: 'center',
+
+    zIndex: 3,
   },
   menuPrice: {
     fontSize: 11,
@@ -79,6 +88,8 @@ const Categorystyles = StyleSheet.create({
     color: '#fff',
     marginLeft: 5,
     textAlign: 'center',
+
+    zIndex: 3,
   },
   storeMainView: {
     width: 130,

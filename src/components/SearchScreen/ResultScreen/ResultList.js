@@ -124,7 +124,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#F8FDFF',
+    backgroundColor: '#fdfdfd',
     height: '100%',
 
     paddingBottom: 50,

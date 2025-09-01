@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
-    borderRadius: 15, // ✅ 부모 컨테이너 둥글게
+    borderRadius: 10, // ✅ 부모 컨테이너 둥글게
     overflow: 'hidden', // ✅ 넘치는 부분 숨기기
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
 
   infoContainer: {
     marginTop: 8,
-    paddingHorizontal: 5,
+    paddingHorizontal: 2,
   },
   headerView: {
     flexDirection: 'row',
