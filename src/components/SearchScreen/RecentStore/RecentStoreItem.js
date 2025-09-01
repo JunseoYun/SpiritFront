@@ -139,7 +139,7 @@ const RecentStoreItem = ({store, navigation, location}) => {
 const styles = StyleSheet.create({
   recentView: {
     width: 170,
-    marginHorizontal: 10,
+    marginHorizontal: 7,
     marginBottom: 20,
   },
   backimageview: {
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   overlayText: {
     color: 'white',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     lineHeight: 22,
   },
 
@@ -187,21 +187,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   storeName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#333',
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#121212',
     flex: 1,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  ratingText: {
-    fontSize: 14,
-    color: '#FCC104',
-    fontWeight: '600',
-    marginLeft: 4,
-  },
+
   storeViewInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -209,27 +204,27 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   StoreCategory: {
-    fontSize: 15,
-    color: '#999',
-    fontWeight: '500',
+    fontSize: 14,
+    color: '#6b7280',
+    fontFamily: 'Pretendard-Medium',
   },
   storeTimeInfo: {
     marginTop: 5,
     fontSize: 13,
-    color: '#999',
-    fontWeight: 'bold',
+    color: '#4b5563',
+    fontFamily: 'Pretendard-Medium',
   },
   store24TimeInfo: {
     marginTop: 5,
     fontSize: 13,
-    color: 'green',
-    fontWeight: 'bold',
+    color: '#28a745',
+    fontFamily: 'Pretendard-Medium',
   },
   storeSubInfo: {
     marginTop: 5,
     fontSize: 13,
-    color: '#999',
-    fontWeight: 'bold',
+    color: '#4b5563',
+    fontFamily: 'Pretendard-Medium',
   },
   imageStyle: {
     alignSelf: 'center',
