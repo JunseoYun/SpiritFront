@@ -40,8 +40,10 @@ import Loading from '../../hooks/Loading';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
 import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcategorytab';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const StoreMainScreen = ({navigation}) => {
+  const insets = useSafeAreaInsets();
   const {top, bottom} = useSafeAndroidInsets();
   const {token} = useAuth();
   const route = useRoute();
@@ -464,6 +466,8 @@ const StoreMainScreen = ({navigation}) => {
     extrapolate: 'clamp',
   });
 
+  const [selectedType, setSelectedType] = useState(null);
+  const isClickedRef = useRef(false);
   return (
     <>
       <View
@@ -508,7 +512,7 @@ const StoreMainScreen = ({navigation}) => {
             style={[
               styles.fixedFilterHeader,
               {
-                top: Platform.OS === 'ios' ? top + 30 : top + 40,
+                top: Platform.OS === 'ios' ? insets.top + 30 : top + 40,
                 opacity: Animated.multiply(
                   stickyOpacity,
                   stickyProgress ? 1 : 0,
@@ -522,6 +526,10 @@ const StoreMainScreen = ({navigation}) => {
               imagelist={storedata?.imgUrlList?.length}
               onScrollTo={scrollToHandler}
               sectionPositions={sectionPositions}
+              scrollY={scrollY}
+              selectedType={selectedType}
+              setSelectedType={setSelectedType}
+              isClickedRef={isClickedRef}
             />
           </Animated.View>
         )}
@@ -530,7 +538,16 @@ const StoreMainScreen = ({navigation}) => {
           <Animated.ScrollView
             onScroll={Animated.event(
               [{nativeEvent: {contentOffset: {y: scrollY}}}],
-              {useNativeDriver: false},
+              {
+                useNativeDriver: false,
+                listener: event => {
+                  if (isClickedRef.current) {
+                    setTimeout(() => {
+                      isClickedRef.current = false;
+                    }, 200);
+                  }
+                },
+              },
             )}
             scrollEventThrottle={16}
             ref={scrollViewRef}
@@ -646,6 +663,9 @@ const StoreMainScreen = ({navigation}) => {
                   onScrollTo={scrollToHandler}
                   sectionPositions={sectionPositions}
                   scrollY={scrollY}
+                  selectedType={selectedType}
+                  setSelectedType={setSelectedType}
+                  isClickedRef={isClickedRef}
                 />
               </View>
             )}
