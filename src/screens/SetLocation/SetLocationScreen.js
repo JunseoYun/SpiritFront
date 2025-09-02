@@ -164,13 +164,13 @@ const styles = StyleSheet.create({
   },
   cardLabel: {
     fontSize: 13,
-    color: '#555',
+    color: '#6B7280',
     fontFamily: 'Pretendard-Regular',
     marginBottom: 4,
   },
   cardText: {
     fontSize: 16,
-    color: '#111',
+    color: '#121212',
     fontFamily: 'Pretendard-SemiBold',
   },
 

@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   Nickname: {
     fontSize: 20,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
+    color: '#121212',
     marginLeft: 20,
   },
   changenick: {

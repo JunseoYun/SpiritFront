@@ -144,8 +144,11 @@ const ConfigScreen = ({navigation}) => {
           onPress={() => setIsModalVisible(true)}
         />
         <CFUserinfo userdata={userdata} navigation={navigation} />
+
+        <View style={styles.appInfoView}>
+          <AppInfo scrollRef={scrollRef} navigation={navigation} />
+        </View>
         <CFActionbtn navigation={navigation} />
-        <AppInfo scrollRef={scrollRef} navigation={navigation} />
         <CFModal
           isVisible={isModalVisible}
           onClose={() => setIsModalVisible(false)}
@@ -183,6 +186,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#333',
+  },
+  appInfoView: {
+    borderColor: '#EDEDED',
+    borderWidth: 1,
+    marginHorizontal: 18,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    marginTop: 50,
   },
 });
 

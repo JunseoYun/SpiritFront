@@ -141,9 +141,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: {width: 0, height: 0},
     shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowRadius: 2,
     elevation: 2, // Android 그림자
   },
   header: {
@@ -153,21 +153,21 @@ const styles = StyleSheet.create({
   storeName: {
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
+    color: '#121212',
     flexShrink: 1, // 추가
   },
   date: {
     fontSize: 14,
-    color: '#767676',
+    color: '#6B7280',
     fontFamily: 'Pretendard-Medium',
     flexShrink: 0, // 추가
   },
 
   category: {
     fontSize: 14,
-    color: '#999',
+    color: '#6B7280',
     fontFamily: 'Pretendard-Medium',
-    marginTop: 4,
+    marginTop: 0,
   },
   rating: {
     flexDirection: 'row',
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   reviewText: {
     fontSize: 15,
     fontFamily: 'Pretendard-Medium',
-    color: '#181A1A',
+    color: '#121212',
     lineHeight: 20,
     marginBottom: 12,
   },

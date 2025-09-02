@@ -89,23 +89,23 @@ const styles = StyleSheet.create({
     paddingBottom: 17,
   },
   tabText: {
-    fontSize: 18,
+    fontSize: 17,
     color: '#999',
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
   selectedTabText: {
-    fontFamily: 'Pretendard-Bold',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#1a1a1a', // 여기도?
   },
   defaultUnderline: {
-    height: 3,
+    height: 2.5,
     width: '100%',
     backgroundColor: '#E0E0E0', // 기본 회색 줄
     position: 'absolute',
     bottom: 0,
   },
   animatedUnderline: {
-    height: 3,
+    height: 2.5,
     width: width / 3 - 30, // 탭 2개 기준 너비에서 양쪽 20씩 줄임
     backgroundColor: '#1a1a1a', // 여기 색상?
     position: 'absolute',

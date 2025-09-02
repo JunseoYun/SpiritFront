@@ -125,12 +125,8 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
       const authorizationCode = userInfo.data.serverAuthCode;
       handleLogin({socialType, socialId, identityToken, authorizationCode});
     } catch (error) {
-      console.log(error);
       if (error.code === '7') {
         showToast('인터넷 연결을 확인해 주세요.', 'center');
-      } else {
-        console.log('Google SignIn Error:', error);
-        showToast('로그인 중 문제가 발생했어요.', 'center');
       }
     }
   };
