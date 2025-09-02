@@ -73,7 +73,7 @@ const AppInfo = ({scrollRef, navigation}) => {
         {!toggle && (
           <Entypo name="chevron-small-right" size={20} color="#777" />
         )}
-        {toggle && <Entypo name="chevron-small-up" size={20} color="#777" />}
+        {toggle && <Entypo name="chevron-small-down" size={20} color="#777" />}
       </Pressable>
 
       <Animated.View
@@ -110,9 +110,6 @@ const AppInfo = ({scrollRef, navigation}) => {
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingTop: 20,
-    paddingBottom: 20,
     width: '100%',
   },
   toggletext: {

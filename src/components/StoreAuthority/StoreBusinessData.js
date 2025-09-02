@@ -29,6 +29,8 @@ const StoreBusinessData = ({
   businessNumberRef,
   openDateRef,
   drink_sales_numberRef,
+  error,
+  errorMessage,
 }) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
   const [errors, setErrors] = useState({}); // 각 필드별 에러 메시지 상태
@@ -102,9 +104,10 @@ const StoreBusinessData = ({
             }
           }}
         />
-        {errors.businessNumber && (
-          <Text style={styles.errorText}>{errors.businessNumber}</Text>
-        )}
+        {error === 'businessData.businessNumber' &&
+          !businessData.businessNumber && (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          )}
       </View>
 
       {/* 개업연월일 입력 */}
@@ -139,6 +142,11 @@ const StoreBusinessData = ({
         {errors.openDate && (
           <Text style={styles.errorText}>{errors.openDate}</Text>
         )}
+        {error === 'businessData.openDate' &&
+          !businessData.openDate &&
+          !errors.openDate && (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          )}
       </View>
 
       {/* 주류판매신고번호 입력 */}
@@ -160,9 +168,13 @@ const StoreBusinessData = ({
           onFocus={() => setFocusedInput('drink_sales_number')}
           onBlur={() => setFocusedInput(null)}
         />
-        {errors.drink_sales_number && (
+        {/* {errors.drink_sales_number && (
           <Text style={styles.errorText}>{errors.drink_sales_number}</Text>
-        )}
+        )} */}
+        {error === 'businessData.drink_sales_number' &&
+          !businessData.drink_sales_number && (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          )}
       </View>
     </View>
   );
@@ -174,7 +186,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   storeinputtext: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#333',
     fontSize: 16,
     marginBottom: 10,
@@ -184,7 +196,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 7,
     paddingLeft: 1,
     color: 'black',
@@ -197,6 +209,7 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 14,
     marginTop: 5,
+    fontFamily: 'Pretendard-Regular',
   },
 });
 

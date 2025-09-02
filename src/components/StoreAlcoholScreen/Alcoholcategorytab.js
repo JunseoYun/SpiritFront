@@ -96,8 +96,18 @@ const Alcoholcategorytab = ({
       if (isClickedRef.current) return; // 클릭 강제 활성화 중이면 무시
 
       let current = null;
+      let imgnull = 0;
       Object.keys(parentSectionPositions).forEach(type => {
-        if (value >= parentSectionPositions[type] + paddingTopValue - 180) {
+        if (imagelist == 0) {
+          imgnull = 250;
+        }
+        if (
+          value >=
+          parentSectionPositions[type] +
+            paddingTopValue -
+            paddingTopValue * 0.01 -
+            imgnull
+        ) {
           current = type;
         }
       });
@@ -134,7 +144,7 @@ const Alcoholcategorytab = ({
                 if (imagelist === 0) {
                   onScrollTo({
                     x: 0,
-                    y: y + paddingTopValue - paddingTopValue * 0.01,
+                    y: y + paddingTopValue - paddingTopValue * 0.01 - 250,
                     animated: true,
                   });
                 } else if (imagelist > 0) {
