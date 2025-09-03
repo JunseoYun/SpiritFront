@@ -1,8 +1,9 @@
 import React from 'react';
-import {View, Text, Pressable, ScrollView, ImageBackground} from 'react-native';
+import {View, Text, Pressable, ScrollView} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+import LinearGradient from 'react-native-linear-gradient';
 import Categorystyles from '../../screens/CategoryTap/CategoryTapStyles';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
@@ -48,51 +49,83 @@ const StoreItem = ({store, location, navigation}) => {
           onStartShouldSetResponder={() => true}
           contentContainerStyle={{
             paddingHorizontal: 18,
-            gap: 18,
+            gap: 1,
           }}>
           <Pressable
             onPress={handleStorePress}
-            style={Categorystyles.menuItemView}>
+            style={Categorystyles.mainItemView}>
             {store.mainImgUrl ? (
-              <ImageBackground
+              <FastImage
                 resizeMode={FastImage.resizeMode.cover}
                 source={
                   {uri: store.mainImgUrl} // ✅ 네트워크 이미지
                 }
-                style={Categorystyles.menuImageView}
-                imageStyle={Categorystyles.menuImg}>
-                {!isOpen && !nextclosed && !closed && (
-                  <View style={Categorystyles.overlay}>
-                    <Text style={Categorystyles.overlayText}>
-                      영업 종료{'\n'}
-                      {starttime ? `${starttime} 오픈` : ''}
-                    </Text>
-                  </View>
-                )}
-                {!isOpen && nextclosed && !closed && (
-                  <View style={Categorystyles.overlay}>
-                    <Text style={Categorystyles.overlayText}>
-                      영업 종료{'\n'}익일 휴무
-                    </Text>
-                  </View>
-                )}
-                {!isOpen && !nextclosed && closed && (
-                  <View style={Categorystyles.overlay}>
-                    <Text style={Categorystyles.overlayText}>금일 휴무</Text>
-                  </View>
-                )}
+                style={[
+                  Categorystyles.mainImageView,
+                  store.menuList.every(menu => !menu.imgUrl)
+                    ? {
+                        borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
+                      }
+                    : {
+                        borderTopLeftRadius: 9,
+                        borderBottomLeftRadius: 9,
+                      },
+                ]}>
+                {(() => {
+                  let overlayText = null;
 
-                {isOpen && isBreak && (
-                  <View style={Categorystyles.overlay}>
-                    <Text style={Categorystyles.overlayText}>
-                      브레이크 타임{'\n'}
-                      {breakend ? `${breakend} 종료` : ''}
-                    </Text>
-                  </View>
-                )}
-              </ImageBackground>
+                  if (!isOpen && !nextclosed && !closed) {
+                    overlayText = `영업 종료${
+                      starttime ? `\n${starttime} 오픈` : ''
+                    }`;
+                  } else if (!isOpen && nextclosed && !closed) {
+                    overlayText = '영업 종료\n익일 휴무';
+                  } else if (!isOpen && !nextclosed && closed) {
+                    overlayText = '금일 휴무';
+                  } else if (isOpen && isBreak) {
+                    overlayText = `브레이크 타임${
+                      breakend ? `\n${breakend} 종료` : ''
+                    }`;
+                  }
+
+                  if (!overlayText) return null; // 조건 없으면 렌더링 안함
+
+                  // overlay 스타일 계산
+                  const overlayStyle = [
+                    Categorystyles.overlay,
+                    store.menuList.every(menu => !menu.imgUrl)
+                      ? {
+                          borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
+                        }
+                      : {
+                          borderTopLeftRadius: 9,
+                          borderBottomLeftRadius: 9,
+                        },
+                  ];
+
+                  return (
+                    <View style={overlayStyle}>
+                      <Text style={Categorystyles.overlayText}>
+                        {overlayText}
+                      </Text>
+                    </View>
+                  );
+                })()}
+              </FastImage>
             ) : (
-              <ImageBackground style={Categorystyles.noneImageView}>
+              <FastImage
+                resizeMode={FastImage.resizeMode.contain}
+                style={[
+                  Categorystyles.noneImageView,
+                  store.menuList.every(menu => !menu.imgUrl)
+                    ? {
+                        borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
+                      }
+                    : {
+                        borderTopLeftRadius: 9,
+                        borderBottomLeftRadius: 9,
+                      },
+                ]}>
                 <View
                   style={{
                     flex: 1,
@@ -105,71 +138,107 @@ const StoreItem = ({store, location, navigation}) => {
                     resizeMode={FastImage.resizeMode.contain}
                   />
                 </View>
-                {!isOpen && !nextclosed && !closed && (
-                  <View style={Categorystyles.overlay}>
-                    <Text style={Categorystyles.overlayText}>
-                      영업 종료{'\n'}
-                      {starttime ? `${starttime} 오픈` : ''}
-                    </Text>
-                  </View>
-                )}
-                {!isOpen && nextclosed && !closed && (
-                  <View style={Categorystyles.overlay}>
-                    <Text style={Categorystyles.overlayText}>
-                      영업 종료{'\n'}익일 휴무
-                    </Text>
-                  </View>
-                )}
-                {!isOpen && !nextclosed && closed && (
-                  <View style={Categorystyles.overlay}>
-                    <Text style={Categorystyles.overlayText}>금일 휴무</Text>
-                  </View>
-                )}
+                {(() => {
+                  let overlayText = null;
 
-                {isOpen && isBreak && (
-                  <View style={Categorystyles.overlay}>
-                    <Text style={Categorystyles.overlayText}>
-                      브레이크 타임{'\n'}
-                      {breakend ? `${breakend} 종료` : ''}
-                    </Text>
-                  </View>
-                )}
-              </ImageBackground>
+                  if (!isOpen && !nextclosed && !closed) {
+                    overlayText = `영업 종료${
+                      starttime ? `\n${starttime} 오픈` : ''
+                    }`;
+                  } else if (!isOpen && nextclosed && !closed) {
+                    overlayText = '영업 종료\n익일 휴무';
+                  } else if (!isOpen && !nextclosed && closed) {
+                    overlayText = '금일 휴무';
+                  } else if (isOpen && isBreak) {
+                    overlayText = `브레이크 타임${
+                      breakend ? `\n${breakend} 종료` : ''
+                    }`;
+                  }
+
+                  if (!overlayText) return null; // 조건 없으면 렌더링 안함
+
+                  // overlay 스타일 계산
+                  const overlayStyle = [
+                    Categorystyles.overlay,
+                    store.menuList.every(menu => !menu.imgUrl)
+                      ? {
+                          borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
+                        }
+                      : {
+                          borderTopLeftRadius: 9,
+                          borderBottomLeftRadius: 9,
+                        },
+                  ];
+
+                  return (
+                    <View style={overlayStyle}>
+                      <Text style={Categorystyles.overlayText}>
+                        {overlayText}
+                      </Text>
+                    </View>
+                  );
+                })()}
+              </FastImage>
             )}
           </Pressable>
           {store.menuList?.length > 0 &&
             store.menuList
               .filter(menu => !!menu.imgUrl)
-              .map((menu, index) => (
+              .map((menu, index, arr) => (
                 <Pressable
                   onPress={handleStorePress}
                   key={index}
                   style={Categorystyles.menuItemView}>
-                  <ImageBackground
+                  <FastImage
                     source={
                       {uri: menu.imgUrl} // ✅ 네트워크 이미지
                       // ✅ 로컬 이미지
                     }
-                    style={Categorystyles.menuImageView}
-                    imageStyle={Categorystyles.menuImg} // ✅ 스타일 조건부 적용
-                  >
+                    style={[
+                      Categorystyles.menuImageView,
+                      index === arr.length - 1 && {
+                        borderTopRightRadius: 9,
+                        borderBottomRightRadius: 9,
+                      },
+                    ]}>
                     {(!isOpen && !nextclosed && !closed) ||
                     (!isOpen && nextclosed && !closed) ||
                     (!isOpen && !nextclosed && closed) ||
                     (isOpen && isBreak) ? (
                       // 오버레이만 표시 (내용 없음)
-                      <View style={Categorystyles.overlay}></View>
+                      <View
+                        style={[
+                          Categorystyles.overlay,
+                          index === arr.length - 1 && {
+                            borderTopRightRadius: 9,
+                            borderBottomRightRadius: 9,
+                          },
+                        ]}></View>
                     ) : (
                       // 메뉴 정보가 포함된 오버레이
-                      <View style={Categorystyles.semiOverlay}>
+                      <View
+                        style={[
+                          Categorystyles.semiOverlay,
+                          index === arr.length - 1 && {
+                            borderTopRightRadius: 9,
+                            borderBottomRightRadius: 9,
+                          },
+                        ]}>
+                        <LinearGradient
+                          colors={['rgba(0, 0, 0, 0.3)', 'transparent']} // 위쪽은 어두움 → 아래쪽은 투명
+                          style={Categorystyles.gradientTop}
+                          pointerEvents="none"
+                        />
                         <Text
                           style={Categorystyles.menuName}
+                          allowFontScaling={false}
                           numberOfLines={1}
                           ellipsizeMode="tail">
                           {menu.name}
                         </Text>
                         <Text
                           style={Categorystyles.menuPrice}
+                          allowFontScaling={false}
                           numberOfLines={1}
                           ellipsizeMode="tail">
                           {/^\d+$/.test(menu?.price)
@@ -178,7 +247,7 @@ const StoreItem = ({store, location, navigation}) => {
                         </Text>
                       </View>
                     )}
-                  </ImageBackground>
+                  </FastImage>
                 </Pressable>
               ))}
         </ScrollView>
@@ -241,9 +310,17 @@ const StoreItem = ({store, location, navigation}) => {
               <Text style={Categorystyles.subInfoText}>24시간 영업</Text>
             ) : store?.isAlwaysOpen == false && closed ? (
               <Text style={Categorystyles.subInfoText}>금일 휴무</Text>
+            ) : !isOpen && nextclosed && !closed ? (
+              <Text style={Categorystyles.subInfoText}>
+                영업 종료 익일 휴무
+              </Text>
+            ) : !isOpen && !nextclosed && !closed ? (
+              <Text style={Categorystyles.subInfoText}>
+                영업 전 {starttime ? `${starttime} 영업 시작` : ''}
+              </Text>
             ) : (
               <Text style={Categorystyles.subInfoText}>
-                영업 종료 {endtime || '정보 없음'}
+                영업 중 {`${starttime} - ${endtime}` || '정보 없음'}
               </Text>
             )}
           </View>

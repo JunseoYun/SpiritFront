@@ -91,11 +91,11 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
     setLoading(true);
     try {
       const image = await ImagePicker.openCamera({
-        width: 1024,
-        height: 768,
+        width: 2048,
+        height: 1536,
         cropping: true,
         mediaType: 'photo',
-        quality: 1,
+        compressImageQuality: 0.95, // 품질
       });
       setAddedImages(prev => [...prev, image]);
       showToast('이미지 추가 완료');
@@ -108,19 +108,47 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
 
   const handleGalleryPick = async () => {
     const hasCamera = await requestPhotoPermission();
-    if (!hasCamera) {
-      return;
-    }
-    setLoading(true);
+    if (!hasCamera) return;
+
+    const remaining = 5 - (addedImages.length + serverImages.length); // 최대 5개 제한
+
     try {
-      const image = await ImagePicker.openPicker({
-        width: 1024,
-        height: 768,
-        cropping: true,
+      setLoading(true);
+
+      // 이미지 선택
+      const pickedImages = await ImagePicker.openPicker({
         mediaType: 'photo',
-        quality: 1,
+        multiple: remaining > 1, // 2개 이상일 때만 multiple
+        maxFiles: remaining > 1 ? remaining : 1,
+        cropping: false, // crop은 따로 처리
       });
-      setAddedImages(prev => [...prev, image]);
+
+      const selectedImages = Array.isArray(pickedImages)
+        ? pickedImages
+        : [pickedImages];
+
+      const croppedImages = [];
+
+      // 각 이미지 crop 처리
+      for (let i = 0; i < selectedImages.length; i++) {
+        const image = selectedImages[i];
+        const cropped = await ImagePicker.openCropper({
+          path: image.path,
+          width: 2048,
+          height: 1536,
+          cropping: true,
+          cropperToolbarTitle: '이미지 편집',
+          cropperActiveWidgetColor: '#45C9FF',
+          cropperStatusBarLight: true,
+          cropperToolbarColor: '#ffffff',
+          cropperToolbarWidgetColor: '#333333',
+          avoidEmptySpaceAroundImage: true,
+          compressImageQuality: 0.95,
+        });
+        croppedImages.push(cropped);
+      }
+
+      setAddedImages(prev => [...prev, ...croppedImages]);
       showToast('이미지 추가 완료');
     } catch (er) {
       console.log('Picker Error: ', er);

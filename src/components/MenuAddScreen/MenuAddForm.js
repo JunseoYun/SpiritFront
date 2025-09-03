@@ -41,9 +41,9 @@ const MenuAddForm = forwardRef(
       ImagePicker.openCamera({
         width: 1024,
         height: 1024,
+        compressImageQuality: 1, // 품질
         cropping: true,
         mediaType: 'photo',
-        quality: 1,
       })
         .then(image => {
           handleMenuChange(image, index, 'imageUri');
@@ -61,9 +61,9 @@ const MenuAddForm = forwardRef(
       ImagePicker.openPicker({
         width: 1024,
         height: 1024,
+        compressImageQuality: 1, // 품질
         cropping: true,
         mediaType: 'photo',
-        quality: 1,
       })
         .then(image => {
           handleMenuChange(image, index, 'imageUri');

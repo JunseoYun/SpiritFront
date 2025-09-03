@@ -13,11 +13,11 @@ const StoreItemSkeleton = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
             paddingHorizontal: 18,
-            gap: 18,
+            gap: 2,
           }}>
           {/* 메인 이미지 */}
-          <View style={styles.menuItemView}>
-            <SkeletonBox style={styles.menuImageView} />
+          <View style={styles.mainimgitem}>
+            <SkeletonBox style={styles.mainimgview} />
           </View>
           {/* 추가 메뉴 이미지 2~3개 정도 */}
           <View style={styles.menuItemView}>
@@ -84,20 +84,31 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
   },
+  mainimgitem: {
+    width: 180,
+    height: 130,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mainimgview: {
+    width: 180,
+    height: 130,
+    borderTopLeftRadius: 9,
+    borderBottomLeftRadius: 9,
+  },
   menuItemView: {
-    width: 120,
-    height: 140,
+    width: 130,
+    height: 130,
     alignItems: 'center',
     justifyContent: 'center',
   },
   menuImageView: {
     width: 130,
     height: 130,
-    borderRadius: 10,
   },
   infoTopView: {
     width: '100%',
-    marginTop: 1,
+    marginTop: 4,
     paddingHorizontal: 18,
   },
   infoTitleView: {

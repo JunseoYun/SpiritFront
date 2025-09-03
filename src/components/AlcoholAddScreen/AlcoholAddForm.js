@@ -38,11 +38,11 @@ const AlcoholAddForm = forwardRef(
         return;
       }
       ImagePicker.openCamera({
+        compressImageQuality: 1, // 품질
         width: 1024,
         height: 1024,
         cropping: true,
         mediaType: 'photo',
-        quality: 1,
       })
         .then(image => {
           handleAlcoholChange(image, index, 'imageUri');
@@ -58,11 +58,11 @@ const AlcoholAddForm = forwardRef(
         return;
       }
       ImagePicker.openPicker({
+        compressImageQuality: 1, // 품질
         width: 1024,
         height: 1024,
         cropping: true,
         mediaType: 'photo',
-        quality: 1,
       })
         .then(image => {
           handleAlcoholChange(image, index, 'imageUri');

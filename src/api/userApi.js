@@ -10,16 +10,18 @@ import {getLocation} from '../storage/locationStorage';
 export const user_login = async (
   socialType,
   socialId,
-  accessToken,
+  identityToken,
   fcmToken,
+  authorizationCode,
 ) => {
   const data = {
     socialInfoDto: {
       socialType: socialType, // 소셜 로그인 타입 (예: KAKAO)
       socialId: socialId, // 소셜 로그인 ID
     },
-    socialToken: accessToken, // 소셜 액세스 토큰
+    identityToken: identityToken, // 소셜 액세스 토큰
     fcmToken: fcmToken,
+    authorizationCode: authorizationCode,
   };
 
   try {
@@ -70,7 +72,23 @@ export const user_logout = async () => {
       },
     );
   } catch (error) {
-    console.error('❌ logout error:', error.response);
+    functionError(error);
+    throw error;
+  }
+};
+
+export const user_withdraw = async () => {
+  try {
+    const refreshToken = await getRefreshToken();
+
+    const res = await userAxiosInstance.delete('/auth/withdraw', {
+      auth: false, // 👈 인터셉터 스킵(당신 코드에 이미 처리 있음)
+      headers: {'x-auth-token': refreshToken},
+      // 필요 시 body가 요구되면: data: {}
+    });
+
+    return res.data?.data;
+  } catch (error) {
     functionError(error);
     throw error;
   }
@@ -143,15 +161,6 @@ export const Userdataget = async () => {
     throw error;
   }
 };
-export const user_withdraw = async () => {
-  try {
-    const response = await axiosInstance.delete(`/auth/withdraw`, {});
-    return response.data.data;
-  } catch (error) {
-    functionError(error); // 에러 처리
-    throw error;
-  }
-};
 
 export const Userputnickname = async nickname => {
   try {
@@ -209,7 +218,7 @@ export const user_merge = async (originalSocialInfoDto, newSocialInfoDto) => {
 
   try {
     const response = await axios.post(
-      `https://${Config.BASE_URL}/api/auth/merge`,
+      `https://${Config.AUTH_URL}/api/auth/merge`,
       data, // ✅ body를 그대로 전달
     );
   } catch (error) {

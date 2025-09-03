@@ -13,8 +13,8 @@ const StoreMapCenter = ({onPress}) => {
 const styles = StyleSheet.create({
   buttonBottom: {
     position: 'absolute',
-    bottom: '20%',
-    left: '23%',
+    bottom: '50%',
+    right: '7%',
     width: 42,
     borderRadius: 42,
     alignItems: 'center',

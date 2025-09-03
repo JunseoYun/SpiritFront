@@ -308,6 +308,44 @@ export const Store_getby_keyword = async (
   }
 };
 
+export const Store_getby_popular = async (
+  page,
+  latitude,
+  longitude,
+  drinkType,
+  priceOrder,
+) => {
+  try {
+    const response = await axiosInstance.get(`/store/get-by/popular`, {
+      // auth: false,
+      params: {
+        longitude,
+        latitude,
+        page, // page 값만 전달 초기 : 0
+        drinkType,
+        priceOrder,
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const Store_getby_viewed = async page => {
+  try {
+    const response = await axiosInstance.get(`/store/get-by/viewed`, {
+      // auth: false,
+      params: {
+        page, // page 값만 전달 초기 : 0
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 // 가게 검색(가게명)리스트 조회
 export const Store_getby_store = async (page, keyword) => {
   try {

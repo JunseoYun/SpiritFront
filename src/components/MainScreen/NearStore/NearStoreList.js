@@ -1,7 +1,8 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, FlatList, StyleSheet} from 'react-native';
+import {View, Text, FlatList, StyleSheet, Pressable} from 'react-native';
 import NearStoreItem from './NearStoreItem';
 import {Store_getby_distance} from '../../../api/storeApi';
+import Feather from 'react-native-vector-icons/Feather';
 
 const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
   const [stores, setStores] = useState([]);
@@ -92,12 +93,29 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
 
   return (
     <View>
-      <View style={styles.storeTextView}>
-        <Text style={styles.storeText}>제일 가까운 술집은?</Text>
+      <Pressable
+        style={styles.storeTextView}
+        onPress={() => {
+          navigation.navigate('NearStoreScreen', {location: location});
+        }}>
+        <View
+          style={{
+            marginTop: 10,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginRight: 40,
+            alignItems: 'center',
+          }}>
+          <Text style={styles.storeText}>제일 가까운 술집은?</Text>
+          <View style={styles.totalView}>
+            <Text style={styles.totalText}>전체보기</Text>
+            <Feather name={'chevron-right'} size={15} color="#333" />
+          </View>
+        </View>
         <Text style={styles.storeSubText}>
           현재 위치에서 가장 가까운 술집을 알려드려요
         </Text>
-      </View>
+      </Pressable>
       <FlatList
         data={stores}
         renderItem={renderStoreItem}
@@ -106,7 +124,11 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={[
           styles.horizontalFlatListContent,
-          {paddingRight: 18, paddingLeft: 10, paddingBottom: 10},
+          {
+            paddingRight: 18,
+            paddingLeft: 10,
+            paddingBottom: 10,
+          },
         ]} // 오른쪽 여백 추가
         onEndReached={() => {
           if (hasMore && !loading && page < totalpage - 1) {
@@ -137,14 +159,26 @@ const styles = StyleSheet.create({
   storeTextView: {
     width: '100%',
     marginLeft: 20,
-
     marginTop: 20,
   },
   storeText: {
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181a1a',
-    marginTop: 10,
+  },
+  totalView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  totalText: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-Regular',
+    color: '#333',
+  },
+  storetotaltext: {
+    fontSize: 12,
+    fontFamily: 'Pretendard-Medium',
+    color: '#181a1a',
   },
   storeSubText: {
     fontSize: 15,

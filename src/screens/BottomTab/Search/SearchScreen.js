@@ -24,6 +24,7 @@ import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
 import MyBanner from '../../../components/Ads/MyBanner';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
@@ -210,7 +211,7 @@ const SearchScreen = ({navigation}) => {
           <SearchBar
             value={searchStoreName}
             onChangeText={setSearchStoreName}
-            placeholder="술집 이름을 입력해주세요."
+            placeholder="원하는 술집이나 메뉴를 검색하세요"
             onPress={onPressSearch}
           />
           {/* 스크롤 가능한 영역 */}
@@ -239,6 +240,7 @@ const SearchScreen = ({navigation}) => {
       <Modal
         animationType="fade"
         transparent={true}
+        statusBarTranslucent={true}
         visible={bottomModalVisible}
         onRequestClose={() => setBottomModalVisible(false)}>
         <TouchableWithoutFeedback onPress={() => setBottomModalVisible(false)}>
@@ -256,7 +258,7 @@ const SearchScreen = ({navigation}) => {
           <View style={styles.header}>
             <Text style={styles.headerTitle}>내 주변 술집 빠른 검색</Text>
             <TouchableOpacity onPress={() => setBottomModalVisible(false)}>
-              <Text style={styles.closeText}>×</Text>
+              <Ionicons name="close" size={22} color="#666" />
             </TouchableOpacity>
           </View>
           <FastSearchFilter
@@ -311,16 +313,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginVertical: 7,
     marginHorizontal: 16,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  closeText: {
-    fontSize: 28,
-    color: '#666',
+    fontSize: 17,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#121212',
   },
 });
 

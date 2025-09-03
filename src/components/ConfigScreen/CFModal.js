@@ -23,9 +23,9 @@ const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
     }
     try {
       const image = await ImagePicker.openPicker({
-        width: 1024,
-        height: 1024,
-        quality: 1,
+        compressImageQuality: 0.95, // 품질
+        compressImageMaxWidth: 2160, // 최대 너비
+        compressImageMaxHeight: 2160, // 최대 높이
         cropping: true,
         mediaType: 'photo',
       });

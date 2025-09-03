@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   filterItemSelected: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#E9F5FB',
     borderColor: '#45C9FF',
   },
   filterItemText: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
   },
   filterItemTextSelected: {
-    color: '#fff',
+    color: '#45C9FF',
     fontFamily: 'Pretendard-SemiBold',
   },
   footer: {
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   timeTabActive: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#E9F5FB',
     borderColor: '#45C9FF',
   },
   timeTabText: {
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   timeTabTextActive: {
-    color: '#fff',
+    color: '#45C9FF',
     fontFamily: 'Pretendard-SemiBold',
   },
   timeScroll: {

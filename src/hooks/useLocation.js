@@ -1,6 +1,11 @@
 import {Platform, PermissionsAndroid, Alert, Linking} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
-import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import {
+  request,
+  PERMISSIONS,
+  RESULTS,
+  openSettings,
+} from 'react-native-permissions';
 import {get_address, get_coordinate} from '../api/location';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 const showAlert = getGlobalShowAlert();
@@ -72,13 +77,16 @@ export const fetchLocation = () => {
 
 export const handleLocationError = error => {
   if (error.code === 1) {
-    const hasPermission = requestLocationPermission();
-    if (!hasPermission) {
-      showAlert({
-        title: '위치 권한이 거부되었습니다.',
-      });
-      return;
-    }
+    showAlert({
+      title: '위치 권한이 거부되었습니다.',
+      message: '위치 권한을 활성화해야 현재 위치를 사용할 수 있습니다.',
+      onConfirm: () => {
+        openSettings();
+      },
+      onCancel: null,
+      type: 'confirm',
+    });
+    return;
   } else if (error.code === 2) {
     showAlert({
       title: '위치 서비스 비활성화',

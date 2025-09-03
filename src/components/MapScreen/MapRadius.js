@@ -14,10 +14,10 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 const {width} = Dimensions.get('window');
 
 const MapRadius = ({setRadiusint}) => {
-  const [selectedDistance, setSelectedDistance] = useState(0.5);
+  const [selectedDistance, setSelectedDistance] = useState(1);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const insets = useSafeAreaInsets();
-  const distanceOptions = [0.5, 1, 2];
+  const distanceOptions = [1, 3, 5];
 
   const handleSelect = distance => {
     setSelectedDistance(distance);

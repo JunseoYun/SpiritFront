@@ -202,7 +202,7 @@ const NotificationScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FDFF',
+    backgroundColor: '#fdfdfd',
   },
   listContent: {
     padding: 16,
@@ -213,26 +213,28 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
     shadowOffset: {width: 0, height: 2},
-    shadowRadius: 6,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 2,
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#222',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#121212',
     marginBottom: 6,
   },
   cardMessage: {
     fontSize: 14,
     color: '#444',
     marginBottom: 8,
+    fontFamily: 'Pretendard-Medium',
   },
   cardDate: {
     fontSize: 12,
     color: '#999',
     textAlign: 'right',
+    fontFamily: 'Pretendard-Regular',
   },
   readText: {
     color: '#aaa',

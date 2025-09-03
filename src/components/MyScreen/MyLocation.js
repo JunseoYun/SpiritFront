@@ -51,12 +51,12 @@ const MyLocation = ({navigation}) => {
       <View style={styles.infoBox}>
         <Ionicons
           name="location-outline"
-          size={25}
-          color="#45C9FF"
+          size={24}
+          color="#555"
           style={styles.icon}
         />
         <View>
-          <Text style={styles.label}>현재 위치</Text>
+          <Text style={styles.label}>현재 설정된 위치</Text>
           <Text style={styles.address}>{address}</Text>
         </View>
       </View>
@@ -86,9 +86,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOffset: {width: 0, height: 0},
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
     elevation: 2, // Android 그림자
     marginBottom: 20,
   },
@@ -99,14 +99,14 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   label: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-Medium',
-    color: '#45C9FF',
+    fontSize: 13,
+    color: '#6B7280',
+    fontFamily: 'Pretendard-Regular',
     marginBottom: 4,
   },
   address: {
-    fontSize: 18,
-    color: '#181A1A',
+    fontSize: 16,
+    color: '#121212',
     fontFamily: 'Pretendard-SemiBold',
   },
   button: {

@@ -23,6 +23,8 @@ import Loading from '../../../hooks/Loading';
 import ResultModalItemSkeleton from '../../../components/SearchScreen/FastSearch/Modal/ResultModalItemSkeleton';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 const SearchFastScreen = ({navigation}) => {
@@ -165,7 +167,7 @@ const SearchFastScreen = ({navigation}) => {
         <Pressable
           style={styles.backButton}
           onPress={() => navigation.goBack()}>
-          <AntDesign name="arrowleft" size={25} color={'black'} />
+          <AntDesign name="arrowleft" size={22} color={'black'} />
         </Pressable>
         <Text style={styles.headerTitle}>내 주변 빠른 검색</Text>
       </View>
@@ -175,6 +177,7 @@ const SearchFastScreen = ({navigation}) => {
         title=""
         selectedFilters={selectedFilters}
         handleBottomOpen={() => setBottomModalVisible(true)}
+        isHeader={false}
       />
 
       {/* 검색 결과 리스트 */}
@@ -227,7 +230,7 @@ const SearchFastScreen = ({navigation}) => {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>내 주변 술집 빠른 검색</Text>
             <Pressable onPress={() => setBottomModalVisible(false)}>
-              <Text style={styles.modalClose}>×</Text>
+              <Ionicons name="close" size={22} color="#666" />
             </Pressable>
           </View>
           <FastSearchFilter
@@ -244,7 +247,7 @@ const SearchFastScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: '#F8FDFF'},
+  container: {flex: 1, backgroundColor: '#fdfdfd'},
   header: {
     width: '100%',
     flexDirection: 'row',
@@ -291,11 +294,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginVertical: 7,
     marginHorizontal: 16,
   },
-  modalTitle: {fontSize: 18, fontWeight: 'bold'},
-  modalClose: {fontSize: 28, color: '#666'},
+  modalTitle: {
+    fontSize: 17,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#121212',
+  },
 });
 
 export default SearchFastScreen;
