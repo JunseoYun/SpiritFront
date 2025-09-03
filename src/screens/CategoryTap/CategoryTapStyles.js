@@ -12,63 +12,89 @@ const Categorystyles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
   },
-  menuItemView: {
-    width: 120,
-    height: 140,
+  mainItemView: {
+    width: 180,
+    height: 130,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: -3,
+  },
+  mainImageView: {
+    width: 180,
+    height: 130,
+    // borderRadius: 10,
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
+
+  menuItemView: {
+    width: 130,
+    height: 130,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   menuImageView: {
     width: 130,
     height: 130,
-    justifyContent: 'flex-end',
-    borderRadius: 10,
+    // borderRadius: 10,
     justifyContent: 'center',
   },
   menuImg: {
     width: 130,
     height: 130,
-    borderRadius: 9,
+    // borderRadius: 9,
     resizeMode: 'cover',
   },
   noneImageView: {
-    width: 130,
+    width: 180,
     height: 130,
-    borderRadius: 10,
+    // borderRadius: 10,
     backgroundColor: '#fff',
     alignItems: 'center', // 가로 중앙
     justifyContent: 'center', // 세로 중앙
     alignSelf: 'center', // 부모 기준 중앙 (ScrollView 내에서)
+    borderWidth: 1,
+    borderColor: '#f1f1f1',
   },
   noneImg: {
-    width: 120,
-    height: 120,
-    borderRadius: 10,
+    width: 130,
+    height: 130,
+    // borderRadius: 10,
     // 아래 세 줄은 삭제하세요 👇
     // alignContent: 'center',
     // alignItems: 'center',
     // justifyContent: 'center',
   },
-
+  gradientTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 65, // 그라데이션 높이
+    zIndex: 1,
+  },
   menuName: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-Medium',
+    fontSize: 13,
+    fontFamily: 'Pretendard-Regular',
     color: '#fff',
-    lineHeight: 22,
     marginTop: 3,
+    marginLeft: 5,
+    textAlign: 'center',
+
+    zIndex: 3,
   },
   menuPrice: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-Medium',
+    fontSize: 11,
+    fontFamily: 'Pretendard-Bold',
     color: '#fff',
-    lineHeight: 20,
-    marginBottom: 3,
+    marginLeft: 5,
+    textAlign: 'center',
+
+    zIndex: 3,
   },
   storeMainView: {
     width: 130,
     height: 130,
-    borderRadius: 10,
+    //borderRadius: 10,
     alignContent: 'center',
     justifyContent: 'center',
     backgroundColor: '#EEEEEE',
@@ -78,7 +104,7 @@ const Categorystyles = StyleSheet.create({
   storeMainImg: {
     width: 130,
     height: 130,
-    borderRadius: 10,
+    //borderRadius: 10,
     alignSelf: 'center', // 자기 자신을 중앙 정렬
   },
   overlay: {
@@ -86,16 +112,14 @@ const Categorystyles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.3)', // ✅ 반투명 배경 추가
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 9,
+    // borderRadius: 9,
   },
   semiOverlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.1)', // ✅ 반투명 배경 추가
-    alignItems: 'center',
-    borderRadius: 9,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)', // ✅ 반투명 배경 추가
+    alignItems: 'flex-start',
     width: '100%',
     height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   overlayText: {
     color: 'white',
@@ -110,11 +134,11 @@ const Categorystyles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#F4F5F7',
     alignItems: 'center',
-    borderRadius: 9,
+    //borderRadius: 9,
   },
   menuNoImg: {
     width: '100%',
-    borderRadius: 9,
+    //borderRadius: 9,
     resizeMode: 'contain',
     justifyContent: 'center',
     position: 'absolute',
@@ -189,14 +213,14 @@ const Categorystyles = StyleSheet.create({
 
   drinkView: {
     flexDirection: 'row',
+    marginTop: 1,
   },
   drinkText: {
     fontSize: 14,
     paddingVertical: 3,
-
     borderRadius: 5,
-    marginRight: 10,
-    fontFamily: 'Pretendard-SemiBold',
+    marginRight: 9,
+    fontFamily: 'Pretendard-Medium',
     color: '#767676',
   },
   imageStyle: {

@@ -38,3 +38,13 @@ export const get_coordinate = async address => {
     return null;
   }
 };
+
+export const get_init_road = async () => {
+  try {
+    const response = await axiosInstance.get('/location/get-init-road', {});
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+    return null;
+  }
+};

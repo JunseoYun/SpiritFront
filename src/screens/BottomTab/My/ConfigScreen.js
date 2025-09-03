@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Text, StyleSheet, SafeAreaView, View} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {Text, StyleSheet, SafeAreaView, View, ScrollView} from 'react-native';
 import {Userdataget} from '../../../api/userApi';
 import {Userimgpost} from '../../../api/userApi';
 import {Userimgdelete} from '../../../api/userApi';
@@ -10,11 +10,13 @@ import CFModal from '../../../components/ConfigScreen/CFModal';
 import CFActionbtn from '../../../components/ConfigScreen/CFActionbtn';
 import CFUserinfo from '../../../components/ConfigScreen/CFUserinfo';
 import Loading from '../../../hooks/Loading';
+import AppInfo from '../../../components/MainScreen/AppInfo';
 
 const ConfigScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
   const {showAlert, AlertComponent} = useCustomAlert();
   const [loading, setLoading] = useState(false);
+  const scrollRef = useRef(null);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const onPressModalOpen = () => {
@@ -136,20 +138,27 @@ const ConfigScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <CFImage
-        imageUrl={userdata.imgUrl}
-        onPress={() => setIsModalVisible(true)}
-      />
-      <CFUserinfo userdata={userdata} navigation={navigation} />
-      <CFActionbtn navigation={navigation} />
-      <CFModal
-        isVisible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-        onUpdate={UserImagepost}
-        onDelete={UserImagedelete}
-      />
+      <ScrollView ref={scrollRef}>
+        <CFImage
+          imageUrl={userdata.imgUrl}
+          onPress={() => setIsModalVisible(true)}
+        />
+        <CFUserinfo userdata={userdata} navigation={navigation} />
+
+        <View style={styles.appInfoView}>
+          <AppInfo scrollRef={scrollRef} navigation={navigation} />
+        </View>
+        <CFActionbtn navigation={navigation} />
+        <CFModal
+          isVisible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          onUpdate={UserImagepost}
+          onDelete={UserImagedelete}
+        />
+      </ScrollView>
 
       <Loading loading={loading} />
+
       <AlertComponent />
     </SafeAreaView>
   );
@@ -177,6 +186,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#333',
+  },
+  appInfoView: {
+    borderColor: '#EDEDED',
+    borderWidth: 1,
+    marginHorizontal: 18,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    marginTop: 50,
   },
 });
 

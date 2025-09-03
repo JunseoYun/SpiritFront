@@ -3,7 +3,7 @@ import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 
-const FastSearch = ({title, selectedFilters, handleBottomOpen}) => {
+const FastSearch = ({title, selectedFilters, handleBottomOpen, isHeader}) => {
   const {translateCategory} = useCategoryTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
 
@@ -17,7 +17,8 @@ const FastSearch = ({title, selectedFilters, handleBottomOpen}) => {
   };
 
   return (
-    <View style={[styles.container, !title && styles.fastcontainer]}>
+    <View
+      style={[styles.container, isHeader === false && styles.fastcontainer]}>
       {title ? (
         <View style={styles.titleContainer}>
           <Text style={styles.title}>{title}</Text>
@@ -55,22 +56,24 @@ const FastSearch = ({title, selectedFilters, handleBottomOpen}) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 25,
-    marginLeft: 25,
+    marginLeft: 18,
+    marginBottom: 20,
   },
   fastcontainer: {
-    marginVertical: 15,
+    marginTop: 15,
+    marginBottom: 15,
   },
   titleContainer: {
     marginBottom: 12,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
+    marginTop: 40,
     fontFamily: 'Pretendard-Bold',
     color: '#333',
   },
   subTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'Pretendard-Medium',
     color: '#777',
     marginTop: 5,
@@ -81,25 +84,29 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   optionButton: {
-    paddingVertical: 10,
+    paddingVertical: 9,
     paddingHorizontal: 12,
     marginRight: 10,
-    marginTop: 10,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 12,
+
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   optionSelected: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#E9F5FB',
+
+    borderWidth: 1,
+    borderColor: '#45C9FF',
   },
   optionText: {
-    color: '#333',
-    fontSize: 14,
+    color: '#121212',
+    fontSize: 13,
     fontFamily: 'Pretendard-Medium',
   },
   optionTextSelected: {
-    color: '#fff',
+    color: '#45C9FF',
     fontFamily: 'Pretendard-Bold',
   },
 });

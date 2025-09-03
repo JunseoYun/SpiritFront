@@ -11,7 +11,6 @@ import {
   Share,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/StoreImage/ImageSlider';
-import {ScrollView} from 'react-native-gesture-handler';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
 import StorePriceImage from '../../components/StoreScreen/StorePriceImage';
@@ -41,8 +40,10 @@ import Loading from '../../hooks/Loading';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
 import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcategorytab';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const StoreMainScreen = ({navigation}) => {
+  const insets = useSafeAreaInsets();
   const {top, bottom} = useSafeAndroidInsets();
   const {token} = useAuth();
   const route = useRoute();
@@ -54,7 +55,7 @@ const StoreMainScreen = ({navigation}) => {
   const [menus, setMenus] = useState([]);
   const [alcohols, setAlcohols] = useState([]);
   const [storedata, setStoredata] = useState('');
-  const [scrollY] = useState(new Animated.Value(0));
+  const scrollY = useRef(new Animated.Value(0)).current;
   const [longitude, setLongitude] = useState('');
   const [latitude, setLatitude] = useState('');
   const [currentPage, setCurrentPage] = useState('StoreMenuScreen');
@@ -376,6 +377,12 @@ const StoreMainScreen = ({navigation}) => {
     extrapolate: 'clamp',
   });
 
+  const stickyProgress = scrollY.interpolate({
+    inputRange: [250, 251], // 250 이후는 1, 그 전은 0
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
   const handleReport = () => {
     navigation.navigate('StoreStack', {
       screen: 'StoreReportScreen',
@@ -395,8 +402,6 @@ const StoreMainScreen = ({navigation}) => {
       },
     });
   };
-
-  const [tabY, setTabY] = useState(0);
 
   const onShare = async () => {
     try {
@@ -436,6 +441,33 @@ const StoreMainScreen = ({navigation}) => {
     });
   };
 
+  const [mainSectionHeight, setMainSectionHeight] = useState(0);
+  const [filterHeight, setFilterHeight] = useState(0);
+
+  const stickyThreshold = useMemo(() => {
+    if (!storedata?.imgUrlList || storedata.imgUrlList.length === 0) {
+      return mainSectionHeight;
+    }
+    if (storedata?.imgUrlList) {
+      return mainSectionHeight - filterHeight;
+    }
+    // 원하는 offset 추가 가능
+  }, [mainSectionHeight, filterHeight]);
+
+  const stickyTranslateY = scrollY.interpolate({
+    inputRange: [stickyThreshold - 80, stickyThreshold],
+    outputRange: [-80, 0], // 위에서 부드럽게 내려옴
+    extrapolate: 'clamp',
+  });
+
+  const stickyOpacity = scrollY.interpolate({
+    inputRange: [stickyThreshold - 80, stickyThreshold],
+    outputRange: [0, 1], // 점점 나타남
+    extrapolate: 'clamp',
+  });
+
+  const [selectedType, setSelectedType] = useState(null);
+  const isClickedRef = useRef(false);
   return (
     <>
       <View
@@ -475,16 +507,47 @@ const StoreMainScreen = ({navigation}) => {
               onShare={onShare}
             />
           )}
-
+        {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
+          <Animated.View
+            style={[
+              styles.fixedFilterHeader,
+              {
+                top: Platform.OS === 'ios' ? insets.top + 30 : top + 40,
+                opacity: Animated.multiply(
+                  stickyOpacity,
+                  stickyProgress ? 1 : 0,
+                ),
+                transform: [{translateY: stickyTranslateY}],
+              },
+            ]}>
+            <Alcoholcategorytab
+              alcohols={alcohols}
+              mainDrinks={storedata.mainDrinkDtos}
+              imagelist={storedata?.imgUrlList?.length}
+              onScrollTo={scrollToHandler}
+              sectionPositions={sectionPositions}
+              scrollY={scrollY}
+              selectedType={selectedType}
+              setSelectedType={setSelectedType}
+              isClickedRef={isClickedRef}
+            />
+          </Animated.View>
+        )}
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView
-            stickyHeaderIndices={
-              !isUpdate && currentPage === 'StoreAlcoholScreen' ? [5] : []
-            }
+          <Animated.ScrollView
             onScroll={Animated.event(
               [{nativeEvent: {contentOffset: {y: scrollY}}}],
-              {useNativeDriver: false},
+              {
+                useNativeDriver: false,
+                listener: event => {
+                  if (isClickedRef.current) {
+                    setTimeout(() => {
+                      isClickedRef.current = false;
+                    }, 200);
+                  }
+                },
+              },
             )}
             scrollEventThrottle={16}
             ref={scrollViewRef}
@@ -504,86 +567,94 @@ const StoreMainScreen = ({navigation}) => {
             keyboardShouldPersistTaps="always"
             scrollEnabled={true}
             contentContainerStyle={{flexGrow: 1}}>
-            {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
-              <View
-                style={[
-                  {
-                    height: 270, // 숫자 값은 따옴표 없이 사용
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'black',
-                  },
-                  isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
-                  isUpdate &&
-                    !storedata?.imgUrlList?.length > 0 && {
-                      marginTop: Platform.OS === 'ios' ? 20 : 30,
+            <View
+              onLayout={e => {
+                const {height} = e.nativeEvent.layout;
+                setMainSectionHeight(height);
+              }}>
+              {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
+                <View
+                  style={[
+                    {
+                      height: 270, // 숫자 값은 따옴표 없이 사용
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'black',
                     },
-                ]}>
-                <ImageSlider
-                  storeId={storeId}
-                  images={imageSliderData}
-                  interval={4000}
-                  isUpdate={isUpdate}
-                  handleBottomOpen={handleBottomOpen}
-                  onEditKey={handleEditKey}
-                  onEditValue={handleEditValue}
-                  navigation={navigation}
-                />
-              </View>
-            )}
-            {!storedata?.imgUrlList?.length > 0 &&
-              !isUpdate &&
-              storedata?.isUpdatable === true && (
-                <Pressable
-                  style={[styles.addImageButton, {}]}
-                  onPress={startUpdate}>
-                  <Text style={styles.addImageText}>매장 이미지 추가하기</Text>
-                  <Feather name="chevron-right" size={23} color="#999" />
-                </Pressable>
+                    isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
+                    isUpdate &&
+                      !storedata?.imgUrlList?.length > 0 && {
+                        marginTop: Platform.OS === 'ios' ? 20 : 30,
+                      },
+                  ]}>
+                  <ImageSlider
+                    storeId={storeId}
+                    images={imageSliderData}
+                    interval={4000}
+                    isUpdate={isUpdate}
+                    handleBottomOpen={handleBottomOpen}
+                    onEditKey={handleEditKey}
+                    onEditValue={handleEditValue}
+                    navigation={navigation}
+                  />
+                </View>
+              )}
+              {!storedata?.imgUrlList?.length > 0 &&
+                !isUpdate &&
+                storedata?.isUpdatable === true && (
+                  <Pressable
+                    style={[styles.addImageButton, {}]}
+                    onPress={startUpdate}>
+                    <Text style={styles.addImageText}>
+                      매장 이미지 추가하기
+                    </Text>
+                    <Feather name="chevron-right" size={23} color="#999" />
+                  </Pressable>
+                )}
+
+              <StoreMainInfo
+                storedata={storedata}
+                navigation={navigation}
+                isUpdate={isUpdate}
+                endUpdate={endUpdate}
+                handleBottomOpen={handleBottomOpen}
+                onEditKey={handleEditKey}
+                onEditValue={handleEditValue}
+                storeTimeEditHandle={storeTimeEditHandle}
+                storeupdatedrink={storeupdatedrink}
+                setLoading={setLoading}
+                loading={loading}
+                startUpdate={startUpdate}
+                handleReport={handleReport}
+                handleReportList={handleReportList}
+                handleStoreInfo={handleStoreInfo}
+              />
+              {!isUpdate && (
+                <View style={{backgroundColor: '#F2F2F2', height: 20}} />
               )}
 
-            <StoreMainInfo
-              storedata={storedata}
-              navigation={navigation}
-              isUpdate={isUpdate}
-              endUpdate={endUpdate}
-              handleBottomOpen={handleBottomOpen}
-              onEditKey={handleEditKey}
-              onEditValue={handleEditValue}
-              storeTimeEditHandle={storeTimeEditHandle}
-              storeupdatedrink={storeupdatedrink}
-              setLoading={setLoading}
-              loading={loading}
-              startUpdate={startUpdate}
-              handleReport={handleReport}
-              handleReportList={handleReportList}
-              handleStoreInfo={handleStoreInfo}
-            />
-            {!isUpdate && (
-              <View style={{backgroundColor: '#F2F2F2', height: 20}} />
-            )}
+              {!isUpdate && (
+                <StoreTabs
+                  changePage={setCurrentPage}
+                  currentPage={currentPage}
+                />
+              )}
 
-            {!isUpdate && (
-              <StoreTabs
-                changePage={setCurrentPage}
-                currentPage={currentPage}
-              />
-            )}
+              {!isUpdate && (
+                <StorePriceImage
+                  storeId={storeId}
+                  isUpdatable={storedata?.isUpdatable}
+                  imageList={storedata?.boardImageDtoList}
+                  navigation={navigation}
+                />
+              )}
+            </View>
 
-            {!isUpdate && (
-              <StorePriceImage
-                storeId={storeId}
-                isUpdatable={storedata?.isUpdatable}
-                imageList={storedata?.boardImageDtoList}
-                navigation={navigation}
-              />
-            )}
-
-            {(!isUpdate && currentPage) === 'StoreAlcoholScreen' && (
+            {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
               <View
                 onLayout={e => {
-                  const y = e.nativeEvent.layout.y;
-                  setTabY(y);
+                  const {height} = e.nativeEvent.layout;
+                  setFilterHeight(height);
                 }}>
                 <Alcoholcategorytab
                   alcohols={alcohols}
@@ -592,7 +663,9 @@ const StoreMainScreen = ({navigation}) => {
                   onScrollTo={scrollToHandler}
                   sectionPositions={sectionPositions}
                   scrollY={scrollY}
-                  tabY={tabY}
+                  selectedType={selectedType}
+                  setSelectedType={setSelectedType}
+                  isClickedRef={isClickedRef}
                 />
               </View>
             )}
@@ -628,7 +701,7 @@ const StoreMainScreen = ({navigation}) => {
                 )}
               </>
             )}
-          </ScrollView>
+          </Animated.ScrollView>
         </KeyboardAvoidingView>
       </View>
       {isUpdate && (
@@ -737,6 +810,19 @@ const styles = StyleSheet.create({
     color: '#999',
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
+  },
+  fixedFilterHeader: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 1,
+    backgroundColor: '#fff',
+    elevation: 1,
+  },
+  nonimgstickyActive: {
+    paddingTop: 10,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
   },
 });
 

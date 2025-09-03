@@ -17,9 +17,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import StoreOwnerInput from '../../components/StoreAuthority/StoreOwnerInput';
 import StoreBusinessData from '../../components/StoreAuthority/StoreBusinessData';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
-import useCustomAlert from '../../hooks/useCustomAlert';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import Loading from '../../hooks/Loading';
 
 const StoreAuthorityScreen = ({navigation}) => {
   const route = useRoute();
@@ -27,7 +25,8 @@ const StoreAuthorityScreen = ({navigation}) => {
   const {storeData, storeLocationDto, storeSuggestionData} = route.params;
   const [owners, setOwners] = useState([{name: ''}]);
   const [hasCoRepresentative, setHasCoRepresentative] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const [businessData, setBusinessData] = useState({
     businessNumber: '',
@@ -45,33 +44,50 @@ const StoreAuthorityScreen = ({navigation}) => {
     longitude: storeLocationDto.longitude,
   });
 
-  const {showAlert, AlertComponent} = useCustomAlert();
+  const scrollViewRef = useRef(null);
+  const certificateRef = useRef(null);
+  const nameRef = useRef(null);
+  const ownerRefs = useRef([]);
+  const owneRef = useRef(null);
+  const businessNumberRef = useRef(null);
+  const openDateRef = useRef(null);
+  const drink_sales_numberRef = useRef(null);
+  const storeAddressRef = useRef(null);
+
+  const scrollToError = ref => {
+    if (ref?.current) {
+      ref.current.measureLayout(
+        scrollViewRef.current,
+        (x, y) => {
+          scrollViewRef.current.scrollTo({y: y - 20, animated: true});
+        },
+        error => console.log(error),
+      );
+    }
+  };
 
   const handleNext = useCallback(() => {
     // 1. 사업자등록증 첨부 여부 확인
     if (!business_registration_certificate) {
-      showAlert({
-        title: '정보 미입력',
-        message: '사업자등록증을 첨부해주세요.',
-      });
+      setError('business_registration_certificate');
+      setErrorMessage('사업자등록증을 첨부해주세요.');
+      scrollToError(certificateRef);
       return;
     }
 
     // 2. 대표자 정보 확인 (공동 대표 or 단일 대표)
     if (hasCoRepresentative) {
       if (owners.some(owner => !owner.name.trim())) {
-        showAlert({
-          title: '정보 미입력',
-          message: '모든 대표자의 성명을 입력해주세요.',
-        });
+        setError('ownerGroup');
+        setErrorMessage('모든 대표자의 성명을 입력해주세요.');
+        scrollToError(owneRef);
         return;
       }
     } else {
       if (!owners[0].name.trim()) {
-        showAlert({
-          title: '정보 미입력',
-          message: '대표자 성명을 입력해주세요.',
-        });
+        setError('owner');
+        setErrorMessage('대표자 성명을 입력해주세요.');
+        scrollToError(owneRef);
         return;
       }
     }
@@ -81,41 +97,39 @@ const StoreAuthorityScreen = ({navigation}) => {
       !businessData.businessNumber.trim() ||
       !/^\d+$/.test(businessData.businessNumber)
     ) {
-      showAlert({
-        title: '정보 미입력',
-        message: '사업자등록번호를 올바르게 입력해주세요.',
-      });
+      setError('businessData.businessNumber');
+      setErrorMessage('사업자등록번호를 올바르게 입력해주세요.');
+      scrollToError(businessNumberRef);
       return;
     }
     if (
       !businessData.openDate.trim() ||
       !/^\d{8}$/.test(businessData.openDate)
     ) {
-      showAlert({
-        title: '정보 미입력',
-        message: '개업연월일을 올바르게 입력해주세요. (YYYYMMDD 형식)',
-      });
+      setError('businessData.openDate');
+      setErrorMessage('개업연월일을 올바르게 입력해주세요. (19000101 형식)');
+      scrollToError(openDateRef);
       return;
     }
     if (
       !businessData.drink_sales_number.trim() ||
       !/^\d+$/.test(businessData.drink_sales_number)
     ) {
-      showAlert({
-        title: '정보 미입력',
-        message: '주류판매신고번호를 올바르게 입력해주세요.',
-      });
+      setError('businessData.drink_sales_number');
+      setErrorMessage('주류판매신고번호를 올바르게 입력해주세요.');
+      scrollToError(drink_sales_numberRef);
       return;
     }
 
     // 4. 매장 주소 확인
     if (!storeAddressData.storeAddress.trim()) {
-      showAlert({
-        title: '정보 미입력',
-        message: '매장 주소를 입력해주세요.',
-      });
+      scrollToError(storeAddressRef);
+      setError('StoreAddress');
       return;
     }
+
+    setError('');
+    setErrorMessage('');
 
     navigation.navigate('StoreAuthConfirm', {
       data: {
@@ -135,7 +149,6 @@ const StoreAuthorityScreen = ({navigation}) => {
     businessData,
     business_registration_certificate,
     storeAddressData,
-    showAlert,
   ]);
 
   const addOwner = () => {
@@ -166,16 +179,20 @@ const StoreAuthorityScreen = ({navigation}) => {
   // 이미지 선택 함수: 갤러리에서 이미지 선택 후 state 업데이트
   const handlePickCertificate = () => {
     ImagePicker.openPicker({
-      width: 768,
-      height: 1024,
       mediaType: 'photo',
+      compressImageQuality: 0.95,
+      compressImageMaxWidth: 2160,
+      compressImageMaxHeight: 2160,
       cropping: true,
-      freeStyleCropEnabled: true,
     })
       .then(image => {
         setBusiness_registration_certificate(image);
       })
       .catch(error => {});
+    if (error === 'business_registration_certificate') {
+      setError('');
+      setErrorMessage('');
+    }
   };
 
   useLayoutEffect(() => {
@@ -187,13 +204,6 @@ const StoreAuthorityScreen = ({navigation}) => {
       ),
     });
   }, [navigation, handleNext]);
-
-  const scrollViewRef = useRef(null);
-  const nameRef = useRef(null);
-  const ownerRefs = useRef([]);
-  const businessNumberRef = useRef(null);
-  const openDateRef = useRef(null);
-  const drink_sales_numberRef = useRef(null);
 
   return (
     <KeyboardAvoidingView
@@ -211,13 +221,19 @@ const StoreAuthorityScreen = ({navigation}) => {
           <StoreInfoCard storeData={storeData} />
 
           {/* 사업자등록증 첨부 */}
-          <Text style={styles.sectionTitle}>사업자등록증 첨부*</Text>
+          <Text ref={certificateRef} style={styles.sectionTitle}>
+            사업자등록증 첨부*
+          </Text>
+
           <View style={styles.certificateContainer}>
             <Pressable
               style={styles.certificateButton}
               onPress={handlePickCertificate}>
               <Text style={styles.certificateButtonText}>이미지 선택하기</Text>
             </Pressable>
+            {error === 'business_registration_certificate' && (
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            )}
             {business_registration_certificate && (
               <Image
                 source={{uri: business_registration_certificate.path}}
@@ -236,8 +252,11 @@ const StoreAuthorityScreen = ({navigation}) => {
             removeOwner={removeOwner}
             nameRef={nameRef}
             ownerRefs={ownerRefs}
+            owneRef={owneRef}
             businessNumberRef={businessNumberRef}
             businessData={businessData}
+            error={error}
+            errorMessage={errorMessage}
           />
 
           <StoreBusinessData
@@ -246,6 +265,8 @@ const StoreAuthorityScreen = ({navigation}) => {
             businessNumberRef={businessNumberRef}
             openDateRef={openDateRef}
             drink_sales_numberRef={drink_sales_numberRef}
+            error={error}
+            errorMessage={errorMessage}
           />
           <StoreAddress
             address={storeAddressData.storeAddress}
@@ -263,6 +284,8 @@ const StoreAuthorityScreen = ({navigation}) => {
               latitude: storeAddressData.latitude,
               longitude: storeAddressData.longitude,
             }}
+            error={error}
+            storeAddressRef={storeAddressRef}
           />
 
           {/* 안내 멘트 */}
@@ -278,15 +301,11 @@ const StoreAuthorityScreen = ({navigation}) => {
           </View>
         </ScrollView>
 
-        <AlertComponent />
-
         <View style={styles.storeAddTextview}>
           <Pressable style={styles.storeAddButtonsearch} onPress={handleNext}>
             <Text style={styles.storeAddText}>다음</Text>
           </Pressable>
         </View>
-
-        <Loading loading={loading} />
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
@@ -303,7 +322,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
     marginHorizontal: 20,
     marginVertical: 10,
     color: '#333',
@@ -314,15 +333,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   certificateButton: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: 7,
   },
   certificateButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
   certificateImage: {width: '100%', height: 200, marginTop: 10},
   instructionsContainer: {
@@ -332,7 +351,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
     marginTop: 30,
   },
-  instructions: {fontSize: 15, color: '#999', lineHeight: 24},
+  instructions: {
+    fontSize: 14,
+    color: '#6B7280',
+    lineHeight: 24,
+    fontFamily: 'Pretendard-Regular',
+  },
   storeAddTextview: {
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
@@ -350,6 +374,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginVertical: 7,
+    fontFamily: 'Pretendard-Regular',
+    marginHorizontal: 18,
   },
 });
 

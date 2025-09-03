@@ -28,15 +28,21 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    GoogleSignin.revokeAccess();
-    GoogleSignin.signOut();
     GoogleSignin.configure({
-      webClientId: Config.GOOGLE_WEB_CLIENT_ID,
-      iosClientId: Config.GOOGLE_CLIENT_ID,
+      webClientId: Config.GOOGLE_WEB_CLIENT_ID, // Web 클라이언트 ID (idToken 용)
+      iosClientId: Config.GOOGLE_CLIENT_ID, // iOS 클라이언트 ID (iOS면 필수)
+      offlineAccess: true, // 필요한 경우만 유지
+      forceCodeForRefreshToken: true,
     });
   }, []);
 
-  const handleLogin = async ({socialType, socialId, socialToken, tester}) => {
+  const handleLogin = async ({
+    socialType,
+    socialId,
+    identityToken,
+    tester,
+    authorizationCode,
+  }) => {
     setLoading(true);
     const fcmToken = await getFcmToken();
 
@@ -44,15 +50,17 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
       const response = await user_login(
         socialType,
         socialId,
-        socialToken,
+        identityToken,
         fcmToken,
+        authorizationCode,
       );
 
       if (response.isVerified === false) {
         navigation.navigate('IdentityScreen', {
           socialType: socialType,
           socialId: socialId,
-          socialToken: socialToken,
+          identityToken: identityToken,
+          authorizationCode: authorizationCode,
           beforeScreen: 'Login',
           token: response,
           fcmToken: fcmToken,
@@ -71,7 +79,8 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
           navigation.navigate('AgreeScreen', {
             socialType: socialType,
             socialId: socialId,
-            socialToken: socialToken,
+            identityToken: identityToken,
+            authorizationCode: authorizationCode,
             fcmToken: fcmToken,
             isTestEnabled: tester,
           });
@@ -98,29 +107,26 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
       const profile = await getProfile();
       const socialType = 'KAKAO';
       const socialId = profile.id;
-      const socialToken = token.accessToken;
-      handleLogin({socialType, socialId, socialToken});
+      const identityToken = token.accessToken;
+
+      handleLogin({socialType, socialId, identityToken});
     } catch (err) {}
   };
 
   const handleGoogleSignIn = async () => {
     try {
       await GoogleSignin.signOut();
-
       const userInfo = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
 
       const socialType = 'GOOGLE';
       const socialId = userInfo.data.user.id;
-      const socialToken = userInfo.data.idToken;
-      handleLogin({socialType, socialId, socialToken});
+      const identityToken = userInfo.data.idToken;
+      const authorizationCode = userInfo.data.serverAuthCode;
+      handleLogin({socialType, socialId, identityToken, authorizationCode});
     } catch (error) {
-      console.log(error);
       if (error.code === '7') {
         showToast('인터넷 연결을 확인해 주세요.', 'center');
-      } else {
-        console.log('Google SignIn Error:', error);
-        showToast('로그인 중 문제가 발생했어요.', 'center');
       }
     }
   };
@@ -139,8 +145,15 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
         if (credentialState === appleAuth.State.AUTHORIZED) {
           const socialType = 'APPLE';
           const socialId = appleAuthRequestResponse.user;
-          const socialToken = appleAuthRequestResponse.identityToken;
-          handleLogin({socialType, socialId, socialToken, tester});
+          const identityToken = appleAuthRequestResponse.identityToken;
+          const authorizationCode = appleAuthRequestResponse.authorizationCode;
+          handleLogin({
+            socialType,
+            socialId,
+            identityToken,
+            tester,
+            authorizationCode,
+          });
         }
       } catch (error) {}
     } else {

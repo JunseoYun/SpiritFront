@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, ImageBackground, StyleSheet, Pressable} from 'react-native';
+import {View, Text, StyleSheet, Pressable} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import useDistance from '../../../hooks/useDistance';
@@ -65,7 +65,8 @@ const OpenStoreItem = ({store, location, navigation}) => {
     <>
       <Pressable onPress={handlePress} style={styles.container}>
         <View style={styles.backimageview}>
-          <ImageBackground
+          <FastImage
+            resizeMode={FastImage.resizeMode.cover}
             source={
               store.mainImgUrl
                 ? {uri: store.mainImgUrl} // ✅ 네트워크 이미지
@@ -80,7 +81,7 @@ const OpenStoreItem = ({store, location, navigation}) => {
                 </Text>
               </View>
             )}
-          </ImageBackground>
+          </FastImage>
         </View>
 
         <View style={styles.storeViewInfo}>
@@ -160,7 +161,6 @@ const styles = StyleSheet.create({
   backimage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'contain',
   },
   backimagestyle: {
     borderRadius: 7,

@@ -133,7 +133,7 @@ const StoreReportList = () => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#f9faff',
+    backgroundColor: '#FDFDFD',
   },
   container: {
     padding: 16,
@@ -143,16 +143,17 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111',
+    fontSize: 18,
+    fontFamily: 'Pretendard-Bold',
+    color: '#121212',
     marginBottom: 16,
   },
   noItemText: {
     textAlign: 'center',
     fontSize: 14,
-    color: '#aaa',
+    color: '#999',
     paddingVertical: 20,
+    fontFamily: 'Pretendard-Medium',
   },
   card: {
     backgroundColor: '#fff',
@@ -160,33 +161,22 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.1,
     shadowOffset: {width: 0, height: 2},
     shadowRadius: 4,
     elevation: 2,
   },
-  tagContainer: {
-    marginBottom: 6,
-  },
-  tag: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#e6f0ff',
-    color: '#3a86ff',
-    fontSize: 12,
-    fontWeight: '600',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
+
   descriptionTitle: {
     fontSize: 13,
-    color: '#888',
+    color: '#6B7280',
     marginBottom: 4,
+    fontFamily: 'Pretendard-Regular',
   },
   descriptionText: {
     fontSize: 15,
-    fontWeight: '500',
-    color: '#333',
+    fontFamily: 'Pretendard-Medium',
+    color: '#121212',
     marginBottom: 12,
   },
   metaContainer: {
@@ -196,11 +186,12 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: 12,
-    color: '#666',
+    color: '#6B7280',
+    fontFamily: 'Pretendard-Regular',
   },
   button: {
     backgroundColor: '#45C9FF',
-    borderRadius: 8,
+    borderRadius: 7,
     paddingVertical: 6,
     paddingHorizontal: 16,
   },
@@ -209,7 +200,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
 });

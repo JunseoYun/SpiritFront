@@ -13,10 +13,24 @@ const StoreOwnerInput = ({
   ownerRefs,
   businessNumberRef,
   businessData,
+  error,
+  errorMessage,
+  owneRef,
 }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>대표자</Text>
+      <Text ref={owneRef} style={styles.sectionTitle}>
+        대표자
+      </Text>
+      {hasCoRepresentative ? (
+        <Text style={styles.guidetext}>
+          ※ 신청자는 주 대표자 또는 공동 대표자여야 합니다.
+        </Text>
+      ) : (
+        <Text style={styles.guidetext}>
+          ※ 신청자는 해당 사업자의 대표자여야 합니다.
+        </Text>
+      )}
       {/* 단일/공동 대표 토글 */}
       <View style={styles.toggleContainer}>
         <Pressable
@@ -66,7 +80,6 @@ const StoreOwnerInput = ({
                     onPress={() => removeOwner(index)}
                     hitSlop={10}
                     style={styles.deleteButton}>
-                    {/* <Text style={styles.deleteButtonText}>삭제</Text> */}
                     <AntDesign name="minuscircleo" size={16} color="#ff4d4d" />
                   </Pressable>
                 )}
@@ -91,6 +104,9 @@ const StoreOwnerInput = ({
                   }
                 }}
               />
+              {error === 'ownerGroup' && !owner.name && (
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              )}
             </View>
           ))}
           <Pressable style={styles.addButton} onPress={addOwner}>
@@ -118,6 +134,9 @@ const StoreOwnerInput = ({
               }
             }}
           />
+          {error === 'owner' && !owners[0].name && (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          )}
         </View>
       )}
     </View>
@@ -130,10 +149,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   sectionTitle: {
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#333',
     fontSize: 16,
-    marginBottom: 10,
+    marginBottom: 5,
+  },
+  guidetext: {
+    fontFamily: 'Pretendard-Medium',
+    color: '#6B7280',
+    fontSize: 14,
+    marginBottom: 12,
   },
   toggleContainer: {
     flexDirection: 'row',
@@ -145,16 +170,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginHorizontal: 5,
     borderWidth: 1,
-    borderColor: '#16BBFF',
+    borderColor: '#45C9FF',
     borderRadius: 4,
     alignItems: 'center',
   },
   selectedToggleButton: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
   },
   toggleButtonText: {
     fontSize: 14,
-    color: '#16BBFF',
+    color: '#45C9FF',
   },
   selectedToggleButtonText: {
     color: '#fff',
@@ -171,8 +196,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   inputLabel: {
-    fontWeight: '500',
-    color: '#333',
+    fontFamily: 'Pretendard-Medium',
+    color: '#121212',
     fontSize: 16,
   },
   input: {
@@ -180,33 +205,34 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     paddingVertical: 7,
     paddingLeft: 1,
     color: 'black',
   },
   addButton: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: 7,
     alignSelf: 'center',
     marginVertical: 10,
   },
   addButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-Medium',
   },
   deleteButton: {
     backgroundColor: '#fff',
     paddingRight: 3,
     borderRadius: 4,
   },
-  deleteButtonText: {
-    color: '#ff4d4d',
+  errorText: {
+    color: 'red',
     fontSize: 14,
-    fontWeight: 'bold',
+    marginVertical: 7,
+    fontFamily: 'Pretendard-Regular',
   },
 });
 

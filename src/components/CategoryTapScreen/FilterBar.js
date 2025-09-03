@@ -10,7 +10,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import {AlcoholFilterContext} from '../../context/AlcoholFilterContext';
-import Feather from 'react-native-vector-icons/Feather';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -165,18 +165,14 @@ const FilterBar = () => {
           style={styles.choicebtn}
           onPress={toggleDropdown}
           onLayout={e => setChoiceBtnWidth(e.nativeEvent.layout.width)}>
+          <MaterialCommunityIcons name="tune-variant" size={17} color="#555" />
           <Text style={styles.choicetext}>
             {priceOrder === 'ASC'
-              ? '낮은가격순'
+              ? '낮은 가격순'
               : priceOrder === 'DESC'
-              ? '높은가격순'
+              ? '높은 가격순'
               : '기본순'}
           </Text>
-          <Feather
-            name={dropdownVisible ? 'chevron-up' : 'chevron-down'}
-            size={17}
-            color="#121212"
-          />
         </Pressable>
       )}
 
@@ -213,7 +209,7 @@ const FilterBar = () => {
                 styles.dropdownText,
                 priceOrder === 'ASC' && styles.activeDropdownText,
               ]}>
-              낮은가격순
+              낮은 가격순
             </Text>
           </TouchableOpacity>
 
@@ -228,7 +224,7 @@ const FilterBar = () => {
                 styles.dropdownText,
                 priceOrder === 'DESC' && styles.activeDropdownText,
               ]}>
-              높은가격순
+              높은 가격순
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -257,20 +253,26 @@ const styles = StyleSheet.create({
     top: 10,
     paddingHorizontal: 15,
     height: 35,
-    borderWidth: 1,
-    borderColor: '#ccc',
+
     borderTopRightRadius: 20,
     borderBottomRightRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    zIndex: 10, // iOS
     gap: 4,
     backgroundColor: '#fff',
+    zIndex: 50, // iOS
+
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    shadowOffset: {width: 0, height: 0},
+    // Android shadow
+    elevation: 2,
   },
   choicetext: {
     fontSize: 14,
-    color: '#121212',
-    fontFamily: 'Pretendard-SemiBold',
+    color: '#555',
+    fontFamily: 'Pretendard-Medium',
     textAlign: 'center',
   },
 
@@ -290,12 +292,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   activeFilter: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#E8F7FF',
     borderColor: '#45C9FF',
   },
   activeFilterText: {
-    color: 'white',
-    fontFamily: 'Pretendard-Bold',
+    color: '#45C9FF',
+    fontFamily: 'Pretendard-Medium',
   },
 
   dropdown: {

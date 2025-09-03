@@ -17,8 +17,9 @@ import {
   requestCameraPermission,
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
+import Loading from '../../hooks/Loading';
 
-const StoreImage = ({imageUris, setImageUris, error}) => {
+const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
   const [images, setImage] = useState([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false); // 바텀시트 상태
@@ -29,11 +30,11 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
     const hasCamera = await requestCameraPermission();
     if (!hasCamera) return;
     ImagePicker.openCamera({
-      width: 1024,
-      height: 768,
+      width: 2048,
+      height: 1536,
       cropping: true,
       mediaType: 'photo',
-      quality: 1,
+      compressImageQuality: 0.95, // 최대 화질
     })
       .then(image => {
         setImage([...images, image.path]);
@@ -45,23 +46,53 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
   };
 
   const handleGalleryPick = async () => {
+    setLoading(true);
     const hasCamera = await requestPhotoPermission();
     if (!hasCamera) return;
 
-    ImagePicker.openPicker({
-      width: 1024,
-      height: 768,
-      cropping: true,
-      mediaType: 'photo',
-      quality: 1,
-    })
-      .then(image => {
-        setImage([...images, image.path]);
-        setImageUris([...imageUris, image]);
-      })
-      .catch(error => {
-        console.log('Picker Error: ', error);
+    const remaining = 5 - imageUris.length; // 최대 5개 제한
+
+    try {
+      const pickedImages = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        multiple: remaining > 1, // 2개 이상일 때만 multiple
+        maxFiles: remaining > 1 ? remaining : 1,
+        cropping: false, // 우선 crop 안함
       });
+
+      const selectedImages = Array.isArray(pickedImages)
+        ? pickedImages
+        : [pickedImages];
+
+      const croppedImages = [];
+
+      // 각 이미지 2048 x 1536, 4:3 비율 crop
+      for (let i = 0; i < selectedImages.length; i++) {
+        const image = selectedImages[i];
+        const cropped = await ImagePicker.openCropper({
+          path: image.path,
+          width: 2048,
+          height: 1536,
+          cropping: true,
+          compressImageQuality: 0.95,
+          cropperToolbarTitle: '이미지 편집',
+          cropperActiveWidgetColor: '#45C9FF',
+          cropperStatusBarLight: true,
+          cropperToolbarColor: '#ffffff',
+          cropperToolbarWidgetColor: '#333333',
+          avoidEmptySpaceAroundImage: true,
+        });
+        croppedImages.push(cropped);
+      }
+
+      // 상태에 추가
+      setImage(prev => [...prev, ...croppedImages.map(img => img.path)]);
+      setImageUris(prev => [...prev, ...croppedImages]);
+    } catch (error) {
+      console.log('Picker Error: ', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const selectImage = () => {
@@ -150,7 +181,6 @@ const StoreImage = ({imageUris, setImageUris, error}) => {
             </View>
           </Pressable>
         </ScrollView>
-
         <AlertComponent />
         <ImagePickermodal
           isBottomSheetVisible={isBottomSheetVisible}

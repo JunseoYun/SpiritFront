@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
+import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,17 +15,9 @@ import {
 import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
 
-import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
-import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
-import StoreRegister from '../../components/MainScreen/StoreRegister';
-import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
-import NearStoreList from '../../components/MainScreen/NearStore/NearStoreList';
-
-import AppInfo from '../../components/MainScreen/AppInfo';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
-import {Store_getby_main_banner} from '../../api/storeApi';
-import useCustomAlert from '../../hooks/useCustomAlert';
+import {Store_getby_main_banner, Store_getby_popular} from '../../api/storeApi';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
@@ -34,12 +26,19 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import RejectModal from '../../components/Reject/RejectModal';
 import useHandlePendingNotification from '../../hooks/notification/useHandlePendingNotification';
 import {useNotification} from '../../context/NotificationContext';
+import MainSection from '../../components/MainScreen/MainSection';
+import FilterHeader from '../../components/MainScreen/FilterHeader';
+import PopularStoreItem from '../../components/MainScreen/PopularStroe/PopularStoreItem';
+import PopularItemSkeleton from '../../components/MainScreen/PopularStroe/PopularItemSkeleton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
   const insets = useSafeAreaInsets();
+
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef(null);
   const [showTopView2, setShowTopView2] = useState(false);
@@ -48,53 +47,61 @@ const MainScreen = ({navigation}) => {
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
   const [recommReason, setRecommReason] = useState(null);
-  // const [isModalVisible, setIsModalVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const {showAlert, AlertComponent} = useCustomAlert();
   const [storeactiveIndex, setStoreActiveIndex] = useState(null);
-  const recentRef = useRef(null);
+
   const {recommendCategory} = useRecommendation();
   const {token} = useAuth();
   const {showToast} = useToast();
+  const [topView2Height, setTopView2Height] = useState(0);
+  const MemoPopularstoreItem = React.memo(PopularStoreItem);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (scrollRef.current) {
-        navigation.setParams({
-          scrollToTop: () => {
-            scrollRef.current.scrollTo({y: 0, animated: true});
-          },
-        });
-      }
-    }, 300); // 컴포넌트가 모두 렌더된 뒤 실행
-
-    return () => clearTimeout(timer);
+    // SectionList가 렌더된 후에 ref가 존재하면 바로 등록
+    if (scrollRef.current) {
+      navigation.setParams({
+        scrollToTop: () => {
+          scrollRef.current.scrollToLocation({
+            sectionIndex: 0,
+            itemIndex: 0,
+            viewPosition: 0, // 0이면 최상단, 1이면 최하단
+            animated: true,
+          });
+        },
+      });
+    }
   }, [navigation]);
 
-  useEffect(() => {
-    const listener = scrollY.addListener(({value}) => {
-      const iosThreshold = insets.top + 30;
-      const androidThreshold = insets.top + 90; // 좀 더 스크롤해야 보이게
+  const scrollListener = useRef(null);
 
+  useEffect(() => {
+    scrollListener.current = scrollY.addListener(({value}) => {
+      const iosThreshold = insets.top + 30;
+      const androidThreshold = insets.top + 90;
       const threshold = Platform.OS === 'ios' ? iosThreshold : androidThreshold;
 
-      if (value >= threshold && !showTopView2) {
-        setShowTopView2(true);
-      } else if (value < threshold && showTopView2) {
-        setShowTopView2(false);
-      }
-      const locationHhreshold =
+      // 상태 변경이 실제로 필요할 때만 setState
+      setShowTopView2(prev => {
+        if (value >= threshold && !prev) return true;
+        if (value < threshold && prev) return false;
+        return prev;
+      });
+
+      const locationThreshold =
         Platform.OS === 'ios' ? insets.top - 20 : insets.top + 40;
-      if (value >= locationHhreshold && !showLocation) {
-        setShowLocation(true);
-      } else if (value < locationHhreshold && showLocation) {
-        setShowLocation(false);
-      }
+      setShowLocation(prev => {
+        if (value >= locationThreshold && !prev) return true;
+        if (value < locationThreshold && prev) return false;
+        return prev;
+      });
     });
 
-    return () => scrollY.removeListener(listener);
-  }, [insets.top, showTopView2, showLocation]);
+    return () => {
+      if (scrollListener.current)
+        scrollY.removeListener(scrollListener.current);
+    };
+  }, [insets.top]);
 
   useFocusEffect(
     useCallback(() => {
@@ -128,7 +135,6 @@ const MainScreen = ({navigation}) => {
         const currentLocation = await getLocation();
         if (currentLocation) {
           setLocation(currentLocation);
-
           const recommStoreData = await Store_getby_main_banner(
             currentLocation.latitude,
             currentLocation.longitude,
@@ -137,6 +143,7 @@ const MainScreen = ({navigation}) => {
           setRecommCategory(recommStoreData.category);
           setRecommReason(reason);
           setRecommStores(recommStoreData.mainBannerStoreDtoList);
+          PopularStores(0, true, currentLocation);
         }
         const currentAddress = await getAddress();
         if (currentAddress) {
@@ -147,7 +154,6 @@ const MainScreen = ({navigation}) => {
         setLoading(false);
       }
     };
-
     fetchLocation();
   }, []);
 
@@ -167,6 +173,7 @@ const MainScreen = ({navigation}) => {
         setRecommCategory(recommStoreData.category);
         setRecommReason(reason);
         setRecommStores(recommStoreData.mainBannerStoreDtoList);
+        PopularStores(0, true, currentLocation);
       }
 
       const currentAddress = await getAddress();
@@ -201,31 +208,17 @@ const MainScreen = ({navigation}) => {
     }
   };
 
-  const setLocationHandle = () => {
-    navigation.navigate('SetLocationScreen');
-  };
+  const setLocationHandle = useCallback(() => {
+    setTimeout(() => {
+      navigation.navigate('SetLocationScreen');
+    }, 50);
+  }, [navigation]);
 
   const formatAddress = address => {
     if (address === '강남역') {
       return address;
     }
     return address;
-  };
-
-  const handleAgreeScreen = screen => {
-    if (screen === 'terms') {
-      navigation.navigate('OAuthStack', {
-        screen: 'TermsAgreeScreen',
-      });
-    } else if (screen === 'privacy') {
-      navigation.navigate('OAuthStack', {
-        screen: 'PrivacyAgreeScreen',
-      });
-    } else if (screen === 'location') {
-      navigation.navigate('OAuthStack', {
-        screen: 'LocationAgreeScreen',
-      });
-    }
   };
 
   const [rejectModalData, setRejectModalData] = useState(null);
@@ -269,6 +262,208 @@ const MainScreen = ({navigation}) => {
       };
     }, [showTopView2]),
   );
+  const [popularstores, setPopularstores] = useState([]);
+  const [popularpage, setPopularpage] = useState(0);
+  const [totalpage, setTotalpage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [drinkType, setDrinkType] = useState(null);
+  const [priceOrder, setPriceOrder] = useState('');
+  const [popularloading, setPopularloading] = useState(false);
+  const [popularempty, setPopularempty] = useState(false);
+  const filterHeaderRef = useRef(null);
+
+  const PopularStores = async (
+    currentPage,
+    reset = false,
+    location,
+    drinkType = null,
+    priceOrder = '',
+  ) => {
+    setPopularloading(true);
+    if (location) {
+      if (loading || (!hasMore && !reset)) return;
+
+      if (reset) {
+        setPopularpage(0);
+      }
+      try {
+        const data = await Store_getby_popular(
+          currentPage,
+          location.latitude,
+          location.longitude,
+          drinkType,
+          priceOrder,
+        );
+
+        setTotalpage(data.totalPages);
+        setPopularempty(data.empty);
+
+        if (data.content && data.content.length > 0) {
+          setPopularstores(prevData => {
+            const newData = reset
+              ? data.content
+              : [...prevData, ...data.content];
+            const uniqueData = newData.filter(
+              (item, index, self) =>
+                index === self.findIndex(existing => existing.id === item.id),
+            );
+            return uniqueData;
+          });
+        } else {
+          setHasMore(false); // 더 이상 데이터가 없으면 false로 설정
+        }
+      } catch (error) {
+      } finally {
+        setPopularloading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    setPopularstores([]);
+    setPopularempty(false);
+    PopularStores(0, true, location, drinkType, priceOrder);
+    if (!popularloading && popularstores.length > 0) {
+      setTimeout(() => {
+        scrollRef.current.scrollToLocation({
+          sectionIndex: 1, // popularStoresheader
+          itemIndex: 1, // 해당 section의 첫 아이템
+          viewPosition: 0, // 0이면 화면 맨 위에 위치
+          viewOffset:
+            Platform.OS === 'android' ? insets.top + 120 : insets.top + 110,
+          animated: true,
+        });
+      }, 100);
+    }
+  }, [drinkType, priceOrder]);
+
+  const loadMoreData = () => {
+    if (!loading && hasMore && popularpage < totalpage - 1) {
+      setPopularpage(prevPage => {
+        const nextPage = prevPage + 1; // 다음 페이지 번호
+        PopularStores(nextPage, false, location); // 그 페이지 번호로 데이터 요청
+        return nextPage; // 상태를 증가된 페이지 번호로 갱신
+      });
+    }
+  };
+
+  const stableNavigation = useMemo(() => navigation, [navigation]);
+  const stableLocation = useMemo(() => location, [location]);
+
+  const mainSectionData = useMemo(
+    () => ({
+      recommCategory,
+      recommReason,
+      recommStores,
+      location,
+      isRefreshing,
+      navigation,
+      loading,
+      storeactiveIndex,
+      handlestoreItemClick,
+      setIsRefreshing,
+      catagoryClick,
+    }),
+    [
+      recommCategory,
+      recommReason,
+      recommStores,
+      location,
+      isRefreshing,
+      storeactiveIndex,
+      loading,
+      navigation,
+    ],
+  );
+
+  const [mainSectionHeight, setMainSectionHeight] = useState(0);
+  const [populartext, setPopulartext] = useState(0);
+  const [filterHeight, FilterHeight] = useState(0);
+
+  const sectionsData = useMemo(
+    () => [
+      {
+        key: 'mainSection',
+        data: [mainSectionData],
+        renderItem: ({item}) => (
+          <View
+            onLayout={e => {
+              const {height} = e.nativeEvent.layout;
+              setMainSectionHeight(height); // 높이값 저장
+            }}>
+            <MainSection {...item} />
+          </View>
+        ),
+      },
+      {
+        key: 'popularStoresheader',
+        data: [{}],
+        renderItem: ({}) => (
+          <View
+            style={{
+              backgroundColor: '#fff',
+              paddingLeft: 20,
+              paddingTop: 20,
+              paddingBottom: 10,
+            }}
+            onLayout={e => {
+              const {height} = e.nativeEvent.layout;
+              setPopulartext(height); // 높이값 저장
+            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: 'Pretendard-SemiBold',
+                color: '#181a1a',
+              }}>
+              현재 인기 매장
+            </Text>
+          </View>
+        ),
+      },
+
+      {
+        key: 'popularStores',
+        data: popularstores,
+        renderItem: ({item}) => (
+          <MemoPopularstoreItem
+            store={item}
+            location={stableLocation}
+            navigation={stableNavigation}
+          />
+        ),
+      },
+    ],
+    [popularstores, mainSectionData, stableLocation, stableNavigation],
+  );
+
+  const stickyThreshold = useMemo(() => {
+    return (
+      mainSectionHeight +
+      filterHeight * 2 +
+      insets.top +
+      filterHeight / 2 +
+      populartext
+    ); // 원하는 offset 추가 가능
+  }, [
+    mainSectionHeight,
+    topView2Height,
+    insets.top,
+    filterHeight,
+    populartext,
+  ]);
+
+  const stickyTranslateY = scrollY.interpolate({
+    inputRange: [stickyThreshold - 80, stickyThreshold],
+    outputRange: [-80, 0], // 위에서 부드럽게 내려옴
+    extrapolate: 'clamp',
+  });
+
+  const stickyOpacity = scrollY.interpolate({
+    inputRange: [stickyThreshold - 80, stickyThreshold],
+    outputRange: [1, 1], // 점점 나타남
+    extrapolate: 'clamp',
+  });
 
   return (
     <>
@@ -292,7 +487,12 @@ const MainScreen = ({navigation}) => {
           </Text>
           {!showLocation && (
             <Pressable
-              hitSlop={{left: screenWidth, right: 15, top: 15, bottom: 15}}
+              hitSlop={{
+                left: screenWidth,
+                right: 15,
+                top: 15,
+                bottom: 15,
+              }}
               style={{zIndex: 1, position: 'relative'}}
               onPress={setLocationHandle}>
               <Feather name="chevron-right" size={23} color="#fff" />
@@ -302,7 +502,16 @@ const MainScreen = ({navigation}) => {
       </View>
 
       {showTopView2 && (
-        <View style={[styles.topView2, {paddingTop: insets.top}]}>
+        <View
+          style={[
+            styles.topView2,
+            {paddingTop: insets.top},
+            insets.top === 0 && {height: 50}, // 조건부 스타일
+          ]}
+          onLayout={event => {
+            const {height} = event.nativeEvent.layout;
+            setTopView2Height(height);
+          }}>
           <Pressable hitSlop={10} onPress={setLocationHandle}>
             <Text
               style={[styles.todayAddress2, {color: '#333', marginTop: 10}]}
@@ -319,71 +528,103 @@ const MainScreen = ({navigation}) => {
           </Pressable>
         </View>
       )}
-      <Animated.ScrollView
+      <Animated.View
+        style={[
+          styles.fixedFilterHeader,
+          {
+            top: topView2Height,
+            opacity: Animated.multiply(stickyOpacity, showTopView2 ? 1 : 0),
+            transform: [{translateY: stickyTranslateY}],
+          },
+        ]}>
+        <FilterHeader
+          ref={filterHeaderRef}
+          navigation={navigation}
+          drinkType={drinkType}
+          setDrinkType={setDrinkType}
+          screenWidth={screenWidth}
+          priceOrder={priceOrder}
+          setPriceOrder={setPriceOrder}
+        />
+      </Animated.View>
+
+      <Animated.SectionList
         ref={scrollRef}
+        sections={sectionsData}
+        keyExtractor={(item, index) => item.id ?? index.toString()}
+        renderItem={({item, section}) => section.renderItem({item})}
+        onScrollBeginDrag={() => filterHeaderRef.current?.closeDropdown(false)}
+        onMomentumScrollBegin={() =>
+          filterHeaderRef.current?.closeDropdown(false)
+        }
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {useNativeDriver: false},
+          {useNativeDriver: true}, // 상태 체크를 위해 false
         )}
-        scrollEventThrottle={16}
-        contentContainerStyle={{
-          marginTop:
-            Platform.OS === 'android' ? insets.top + 120 : insets.top + 110,
-          paddingBottom: Platform.OS === 'ios' ? 30 : 120,
+        renderSectionHeader={({section}) => {
+          if (section.key === 'popularStores') {
+            return (
+              <View
+                onLayout={event => {
+                  const {height} = event.nativeEvent.layout;
+                  FilterHeight(height);
+                }}>
+                <FilterHeader
+                  ref={filterHeaderRef}
+                  navigation={navigation}
+                  drinkType={drinkType}
+                  setDrinkType={setDrinkType}
+                  screenWidth={screenWidth}
+                  priceOrder={priceOrder}
+                  setPriceOrder={setPriceOrder}
+                />
+              </View>
+            );
+          }
+          return null;
         }}
+        stickySectionHeadersEnabled={true}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }>
-        <View style={styles.innerContainer}>
-          <TodayRecomm
-            recommCategory={recommCategory}
-            recommReason={recommReason}
-            recommStores={recommStores}
-            location={location}
-            refresh={isRefreshing}
-            navigation={navigation}
-            loading={loading}
-          />
+        }
+        onEndReached={loadMoreData}
+        onEndReachedThreshold={0.4}
+        contentContainerStyle={{
+          paddingTop:
+            Platform.OS === 'android' ? insets.top + 120 : insets.top + 110,
+        }}
+        ListFooterComponent={
+          loading || popularloading ? (
+            <View style={{backgroundColor: '#fff'}}>
+              {[1, 2, 3, 4].map(i => (
+                <PopularItemSkeleton key={i} />
+              ))}
+            </View>
+          ) : (
+            !loading &&
+            !popularloading &&
+            popularempty && (
+              <Text style={styles.emptyText}>
+                조건에 해당하는 매장이 없어요.
+              </Text>
+            )
+          )
+        }
+        initialNumToRender={4}
+        maxToRenderPerBatch={7}
+        windowSize={4}
+        removeClippedSubviews={true}
+      />
 
-          <CategoryGrid onPress={catagoryClick} />
-
-          <StoreRegister
-            storeactiveIndex={storeactiveIndex}
-            handlestoreItemClick={handlestoreItemClick}
-          />
-
-          <View style={styles.division} />
-
-          <OpenStoreList
-            location={location}
-            navigation={navigation}
-            refresh={isRefreshing}
-            setRefresh={setIsRefreshing}
-          />
-
-          <View style={styles.division} />
-
-          <View
-            onLayout={event => (recentRef.current = event.nativeEvent.layout)}>
-            <NearStoreList
-              navigation={navigation}
-              location={location}
-              refresh={isRefreshing}
-              setRefresh={onRefresh}
-            />
-          </View>
-
-          <AppInfo handleAgreeScreen={handleAgreeScreen} />
-        </View>
-      </Animated.ScrollView>
       {rejectModalData && !loading && (
         <RejectModal
           data={rejectModalData}
           onClose={() => setRejectModalData(null)}
         />
       )}
-      <Loading loading={isRefreshing || loading} />
-      <AlertComponent />
+      <Loading loading={isRefreshing || loading || popularloading} />
     </>
   );
 };
@@ -409,12 +650,6 @@ const styles = StyleSheet.create({
     height: screenHeight,
     paddingHorizontal: 14,
   },
-  innerContainer: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 27,
-    borderTopRightRadius: 27,
-    paddingTop: 24,
-  },
   topView: {
     flexDirection: 'row',
     alignSelf: 'center',
@@ -439,11 +674,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    zIndex: 20,
+    zIndex: 40,
     flexDirection: 'row',
     paddingVertical: 10,
     paddingHorizontal: 12,
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   todayAddress2: {
     fontSize: 17,
@@ -451,23 +687,23 @@ const styles = StyleSheet.create({
     color: '#fff',
     paddingLeft: 4,
   },
-  topbar: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginHorizontal: 25,
-    alignItems: 'center',
-    marginVertical: 5,
+  fixedFilterHeader: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 30,
+    backgroundColor: '#fff',
+    elevation: 1,
   },
-  topimage: {
-    width: 120,
-    resizeMode: 'contain',
-    height: 70,
-  },
-  division: {
+  emptyText: {
     width: '100%',
-    height: 10,
-    backgroundColor: '#F5F5F5',
-    marginTop: 30,
+    backgroundColor: '#fff',
+    textAlign: 'center',
+    paddingVertical: 60,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 17,
+    color: '#c0c0c0',
+    alignSelf: 'center',
   },
 });
 

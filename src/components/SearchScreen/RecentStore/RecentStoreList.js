@@ -152,16 +152,16 @@ const styles = StyleSheet.create({
   },
   todayPhrasesView: {
     marginTop: 10,
-    marginLeft: 25,
+    marginLeft: 18,
   },
   mylocationlivetext: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'Pretendard-Bold',
     color: '#333',
     marginTop: 10,
   },
   mylocationlivesubtext: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'Pretendard-Medium',
     color: '#777',
     marginTop: 5,

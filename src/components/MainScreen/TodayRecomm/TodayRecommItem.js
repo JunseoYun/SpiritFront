@@ -1,23 +1,27 @@
 import React from 'react';
 import {View, StyleSheet, Text, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import LinearGradient from 'react-native-linear-gradient';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
+
 const drinkColors = {
-  SOJU: '#43A047',
-  BEER: '#F9A825',
-  MAKGEOLLI: '#616161',
-  WINE: '#8E0038',
-  COCKTAIL: '#D84315',
-  SAKE: '#455A64',
-  KAOLIANG: '#5D4037',
-  WHISKEY: '#6D4C41',
-  VODKA: '#3949AB',
-  TRADITIONAL: '#C8A85E',
-  HIGHBALL: '#20B2AA',
-  TEQUILA: '#EF6C00',
+  SOJU: '#9BE7C5', // 민트 그린
+  BEER: '#FFE08A', // 라이트 앰버
+  MAKGEOLLI: '#CFD8DC', // 소프트 블루그레이
+  WINE: '#F28CA6', // 로지 핑크
+  COCKTAIL: '#FFB199', // 코랄 오렌지
+  SAKE: '#B7CADB', // 페일 슬레이트 블루
+  KAOLIANG: '#E2C8B0', // 라이트 모카
+  WHISKEY: '#E5B887', // 라이트 캐러멜
+  VODKA: '#B6C6FF', // 페리윙클
+  TRADITIONAL: '#F5E1A4', // 라이트 오커
+  RUM: '#D9B89E', // 샌디 브라운
+  HIGHBALL: '#A9F0E2', // 파스텔 틸
+  TEQUILA: '#FFD2A1', // 피치 오렌지
 };
+
 const hexToRGBA = (hex, opacity = 0.3) => {
   let col = hex.replace('#', '');
 
@@ -35,11 +39,12 @@ const hexToRGBA = (hex, opacity = 0.3) => {
 
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
+
 const TodayRecommItem = ({store, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
-
   const {token} = useAuth();
   const {showToast} = useToast();
+
   const handlePress = () => {
     if (!token) {
       showToast('로그인 후 이용할 수 있어요!', 'center');
@@ -62,7 +67,20 @@ const TodayRecommItem = ({store, navigation}) => {
             : require('../../../assets/default_store.png')
         }
         resizeMode={FastImage.resizeMode.cover}>
+        {/* 오버레이 컨테이너 */}
         <View style={styles.overlay}>
+          {/* ✅ 상단 그라데이션 */}
+          <LinearGradient
+            colors={
+              store.mainImgUrl
+                ? ['rgba(0, 0, 0, 0.5)', 'transparent']
+                : ['rgba(0, 0, 0, 0.3)', 'transparent']
+            } // 위쪽은 어두움 → 아래쪽은 투명
+            style={styles.gradientTop}
+            pointerEvents="none"
+          />
+
+          {/* 가게 이름 */}
           <View style={styles.storeContainer}>
             {store.isCertified && (
               <FastImage
@@ -71,16 +89,15 @@ const TodayRecommItem = ({store, navigation}) => {
               />
             )}
             <Text
-              style={[
-                styles.storeName,
-                !store.mainImgUrl && {color: '#696E6F'},
-              ]}
+              style={[styles.storeName]}
               numberOfLines={3}
               ellipsizeMode="tail">
               {store.name}
             </Text>
           </View>
         </View>
+
+        {/* 메뉴 정보 */}
         <View style={styles.drinkView}>
           {store.mainDrinkDtos?.map((drink, index) => {
             const baseColor = drinkColors[drink.type] || '#333';
@@ -90,7 +107,7 @@ const TodayRecommItem = ({store, navigation}) => {
                 <Text
                   style={[
                     styles.drinkText,
-                    {color: '#fff', backgroundColor: borderColor},
+                    {color: baseColor, backgroundColor: 'rgba(0,0,0,0.40)'},
                   ]}>
                   {translateAlcohol(drink.type)} {drink.price}
                 </Text>
@@ -111,33 +128,41 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 230,
     marginVertical: 10,
-    // borderRadius: 10,
     overflow: 'hidden',
   },
   imageBackground: {
     flex: 1,
     justifyContent: 'space-between',
-    padding: 10,
+
     borderRadius: 10,
   },
-
   overlay: {
     flex: 1,
     width: '100%',
     justifyContent: 'space-between',
-    position: 'relative', // 🔹 기준 위치로 사용
+    position: 'relative', // 기준 위치
+  },
+  gradientTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 115, // 그라데이션 높이
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    zIndex: 1,
   },
   storeContainer: {
     flexDirection: 'row',
+    zIndex: 2, // 텍스트를 그라데이션 위로
+    marginLeft: 10,
+    marginTop: 10,
   },
   imageStyle: {
     alignSelf: 'center',
     width: 20,
     height: 20,
     marginRight: 5,
-  },
-  storeNameView: {
-    backgroundColor: '#333',
   },
   storeName: {
     color: '#fff',
@@ -146,34 +171,24 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     marginTop: 3,
   },
-  likeView: {
-    alignSelf: 'flex-end',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-
-    padding: 7,
-    borderRadius: 30,
-  },
-  likeIcon: {
-    alignSelf: 'flex-end',
-  },
   drinkView: {
     flexDirection: 'row',
     alignItems: 'center',
-
     marginBottom: 12,
+    marginLeft: 10,
   },
   drinkText: {
     color: '#333',
     fontFamily: 'Pretendard-Medium',
-    fontSize: 14,
-
+    fontSize: 12,
     padding: 4,
-    borderRadius: 5,
+    borderRadius: 7,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
   },
   division: {
     height: 12,
     width: 1.5,
-
     marginHorizontal: 2,
   },
 });

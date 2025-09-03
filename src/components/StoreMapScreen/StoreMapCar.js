@@ -14,7 +14,7 @@ const StoreMapCar = ({onPress}) => {
 const styles = StyleSheet.create({
   buttonRoute: {
     position: 'absolute',
-    bottom: '40%',
+    bottom: '30%',
     right: '7%',
     width: 42,
     borderRadius: 42,

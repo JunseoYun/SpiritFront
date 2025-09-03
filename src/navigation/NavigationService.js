@@ -7,3 +7,19 @@ export function navigate(name, params) {
     navigationRef.navigate(name, params);
   }
 }
+
+export function resetTo(stackName, screenName) {
+  if (navigationRef.isReady()) {
+    navigationRef.reset({
+      index: 0,
+      routes: [
+        {
+          name: stackName,
+          state: {
+            routes: [{name: screenName}],
+          },
+        },
+      ],
+    });
+  }
+}

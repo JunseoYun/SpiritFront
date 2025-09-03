@@ -1,6 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
@@ -61,7 +60,8 @@ const NearStoreItem = ({store, navigation, location}) => {
       <View style={styles.storeInfoView}>
         {/* ✅ 가게 이미지 (영업 상태에 따라 안내 문구 추가) */}
         <View style={styles.backimageview}>
-          <ImageBackground
+          <FastImage
+            resizeMode={FastImage.resizeMode.cover}
             source={
               store.mainImgUrl
                 ? {uri: store.mainImgUrl} // ✅ 네트워크 이미지
@@ -95,7 +95,7 @@ const NearStoreItem = ({store, navigation, location}) => {
                 </Text>
               </View>
             )}
-          </ImageBackground>
+          </FastImage>
         </View>
 
         {/* ✅ 가게 기본 정보 */}
@@ -171,7 +171,6 @@ const styles = StyleSheet.create({
   backimage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'contain',
   },
   backimagestyle: {
     borderRadius: 7,

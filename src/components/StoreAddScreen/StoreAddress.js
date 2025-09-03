@@ -24,6 +24,7 @@ const StoreAddress = ({
   index,
   error,
   location,
+  storeAddressRef,
 }) => {
   const [focusedInput, setFocusedInput] = useState(null);
   const [errors, setErrors] = useState(null);
@@ -54,7 +55,7 @@ const StoreAddress = ({
       fontSize: withTiming(isActive ? 16 : 22, {
         duration: 120,
       }),
-      color: '#999',
+      color: detailedAddress !== '' ? '#121212' : '#999', // ← 값 있을 때 검정
       fontFamily: 'Pretendard-Medium',
     };
   });
@@ -81,7 +82,7 @@ const StoreAddress = ({
     <View>
       {/* 매장 주소/사업장 소재지 */}
       <View style={inputViewStyle}>
-        <View style={styles.storeinput}>
+        <View style={styles.storeinput} ref={storeAddressRef}>
           <TouchableOpacity
             style={styles.addressTouchable}
             onPress={() =>

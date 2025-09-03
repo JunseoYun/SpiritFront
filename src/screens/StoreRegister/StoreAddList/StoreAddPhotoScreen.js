@@ -19,6 +19,7 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+import Loading from '../../../hooks/Loading';
 
 const StoreAddPhotoScreen = ({navigation}) => {
   const {token} = useAuth();
@@ -42,6 +43,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
   const [address, setAddress] = useState('');
   const [detailedAddress, setDetailedAddress] = useState('');
 
+  const [loading, setLoading] = useState(false);
   const scrollViewRef = useRef(null); // 스크롤뷰 참조
   const storeInfoRef = useRef(null);
   const storeAddressRef = useRef(null);
@@ -128,6 +130,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
               imageUris={imageUris}
               setImageUris={setImageUris}
               error={error}
+              setLoading={setLoading}
             />
           </View>
 
@@ -162,6 +165,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
           </Pressable>
         </View>
         <AlertComponent />
+        <Loading loading={loading} />
       </SafeAreaView>
     </KeyboardAvoidingView>
   );

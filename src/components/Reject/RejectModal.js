@@ -14,13 +14,13 @@ const RejectModal = ({data, onClose}) => {
   const firstLineSuffix = firstLine.replace(storeName, '');
 
   return (
-    <Modal transparent animationType="fade" visible>
+    <Modal statusBarTranslucent={true} transparent animationType="fade" visible>
       <View style={styles.overlay}>
         <View style={styles.modal}>
           <Text style={styles.title}>매장 인증 거절됨</Text>
 
           {/* 굵은 매장명 + 이어지는 문장 */}
-          <Text style={styles.reason}>
+          <Text style={styles.mainText}>
             <Text style={styles.storeName}>{storeName}</Text>
             {firstLineSuffix}
           </Text>
@@ -54,28 +54,37 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-Bold',
     marginBottom: 12,
   },
   storeName: {
-    fontWeight: 'bold',
-    color: '#333',
+    fontFamily: 'Pretendard-Bold',
+    color: '#121212',
   },
-  reason: {
+  mainText: {
     fontSize: 16,
     marginBottom: 8,
     lineHeight: 22,
+    fontFamily: 'Pretendard-Medium',
+    color: '#121212',
+  },
+  reason: {
+    fontSize: 15,
+    marginBottom: 8,
+    lineHeight: 22,
+    fontFamily: 'Pretendard-Medium',
+    color: '#121212',
   },
   button: {
     backgroundColor: '#45C9FF',
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 7,
     alignItems: 'center',
     marginTop: 10,
   },
   buttonText: {
     color: 'white',
-    fontWeight: '600',
+    fontFamily: 'Pretendard-Medium',
     fontSize: 16,
   },
 });

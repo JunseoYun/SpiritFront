@@ -1,12 +1,5 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  Dimensions,
-  Image,
-} from 'react-native';
+import {View, Text, StyleSheet, FlatList, Dimensions} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
 import FastImage from 'react-native-fast-image';
@@ -30,37 +23,11 @@ const TodayRecomm = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const listRef = useRef(null);
 
-  useEffect(() => {
-    if (refresh) {
-      setCurrentIndex(0);
-      setTimeout(() => {
-        if (listRef.current) {
-          listRef.current.scrollToOffset({
-            offset: (ITEM_WIDTH + SPACING) * recommStores.length - SPACING,
-            animated: false,
-          });
-        }
-      }, 100);
-    }
-    if (recommStores.length > 2) {
-      setCurrentIndex(0);
-      setTimeout(() => {
-        if (listRef.current) {
-          listRef.current.scrollToOffset({
-            offset: (ITEM_WIDTH + SPACING) * recommStores.length - SPACING,
-            animated: false,
-          });
-        }
-      }, 100);
-    }
-  }, [refresh, recommStores]);
-
   const extendedStores =
     Array.isArray(recommStores) && recommStores.length >= 3
       ? [...recommStores, ...recommStores, ...recommStores]
       : recommStores;
 
-  // 스크롤 위치를 즉시 업데이트하여 점이 따라오도록 개선
   const handleScroll = ({nativeEvent}) => {
     const contentOffsetX = nativeEvent.contentOffset.x;
     const totalItems = recommStores.length;
@@ -68,40 +35,30 @@ const TodayRecomm = ({
       Math.round(contentOffsetX / (ITEM_WIDTH + SPACING)) % totalItems;
     setCurrentIndex(index);
   };
-  // 마지막을 처음으로 바꾸고 다래 dots를 따로 설정한다면?
-  // 스크롤이 멈출 때 위치 자동 보정 (양방향 무한 스크롤)
+
   const handleScrollEnd = ({nativeEvent}) => {
     const contentOffsetX = nativeEvent.contentOffset.x;
     const totalItems = recommStores.length;
     const index = Math.round(contentOffsetX / (ITEM_WIDTH + SPACING));
 
     if (index === 0) {
-      // 왼쪽 끝에서 왼쪽으로 스크롤하면 마지막 아이템으로 이동
-      listRef.current.scrollToOffset({
-        offset: (ITEM_WIDTH + SPACING) * totalItems - SPACING,
-        animated: false,
+      requestAnimationFrame(() => {
+        listRef.current?.scrollToOffset({
+          offset: (ITEM_WIDTH + SPACING) * totalItems - SPACING,
+          animated: false,
+        });
+        setCurrentIndex(totalItems - 1);
       });
-      setCurrentIndex(totalItems - 1);
     } else if (index >= totalItems * 2) {
-      // 오른쪽 끝에서 오른쪽으로 스크롤하면 첫 번째 아이템으로 이동
-      listRef.current.scrollToOffset({
-        offset: (ITEM_WIDTH + SPACING) * totalItems - SPACING,
-        animated: false,
-      });
-      setCurrentIndex(0);
-    }
-  };
-  useEffect(() => {
-    if (recommStores.length >= 3 && listRef.current) {
-      setTimeout(() => {
-        listRef.current.scrollToOffset({
-          offset: (ITEM_WIDTH + SPACING) * recommStores.length,
+      requestAnimationFrame(() => {
+        listRef.current?.scrollToOffset({
+          offset: (ITEM_WIDTH + SPACING) * totalItems - SPACING,
           animated: false,
         });
         setCurrentIndex(0);
-      }, 50);
+      });
     }
-  }, [recommStores]);
+  };
 
   return (
     <>
@@ -133,10 +90,10 @@ const TodayRecomm = ({
                   : ITEM_WIDTH + SPACING
               }
               decelerationRate={0.8}
-              onScroll={handleScroll} // 실시간으로 점 업데이트
+              onScroll={handleScroll}
               onMomentumScrollEnd={
                 recommStores.length >= 3 ? handleScrollEnd : undefined
-              } // 가게 3개 이상일 때만 무한 스크롤 적용
+              }
               getItemLayout={(data, index) => ({
                 length: ITEM_WIDTH + SPACING,
                 offset: (ITEM_WIDTH + SPACING) * index,
@@ -152,9 +109,22 @@ const TodayRecomm = ({
                   />
                 </View>
               )}
+              onLayout={() => {
+                // FlatList가 렌더링되어 레이아웃이 잡힌 시점에 실행
+                if (recommStores.length >= 3) {
+                  requestAnimationFrame(() => {
+                    listRef.current?.scrollToOffset({
+                      offset:
+                        (ITEM_WIDTH + SPACING) * recommStores.length - SPACING,
+                      animated: false,
+                    });
+                    setCurrentIndex(0);
+                  });
+                }
+              }}
             />
           )}
-          {/* 페이지네이션 점 표시 */}
+
           {recommStores.length > 1 ? (
             <View style={styles.pagination}>
               {recommStores.map((_, index) => (
@@ -170,6 +140,7 @@ const TodayRecomm = ({
           ) : (
             <View style={styles.pagination} />
           )}
+
           {recommStores.length === 0 && (
             <View style={styles.noDataView}>
               <FastImage
@@ -192,13 +163,11 @@ const styles = StyleSheet.create({
   todayPhrasesView: {
     marginLeft: 20,
     alignContent: 'center',
-    marginTop: 10,
   },
   todayReason: {
     fontSize: 16,
     fontFamily: 'Pretendard-Medium',
     color: '#888',
-
     paddingLeft: 4,
   },
   slideItem: {
@@ -210,11 +179,10 @@ const styles = StyleSheet.create({
   },
   centeredListContainer: {
     alignItems: 'center',
-    justifyContent: 'center', // 리스트 중앙 정렬
+    justifyContent: 'center',
     flexDirection: 'row',
     paddingHorizontal: 15,
   },
-  smallListContainer: {marginLeft: 15, marginRight: 15},
   pagination: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -254,39 +222,10 @@ const styles = StyleSheet.create({
   },
   imageStyle: {
     width: '100%',
-    height: 70, // 추가
+    height: 70,
     borderRadius: 10,
     resizeMode: 'contain',
     justifyContent: 'center',
-  },
-  topdayweather: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '88%',
-    alignSelf: 'center',
-  },
-  weatherTemp: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  weatherIcon: {
-    width: 35,
-    height: 35,
-    marginTop: -5,
-  },
-  todayweathertext: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 7,
-    fontWeight: '600',
-  },
-  notWeathertext: {
-    alignSelf: 'center',
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 7,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
   },
 });
 

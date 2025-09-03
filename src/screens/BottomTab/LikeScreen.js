@@ -151,22 +151,7 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: 'white',
   },
-  loadingContainer: {
-    height: 400,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  footer: {
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
-  loadingText: {
-    textAlign: 'center',
-    marginVertical: 20,
-    fontFamily: 'Pretendard-Bold',
-    fontSize: 20,
-    color: '#333',
-  },
+
   emptyText: {
     textAlign: 'center',
     marginVertical: 60,

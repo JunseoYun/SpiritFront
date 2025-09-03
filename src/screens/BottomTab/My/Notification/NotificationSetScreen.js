@@ -147,13 +147,7 @@ const NotificationSetScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FDFF',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 24,
+    backgroundColor: '#FDFDFD',
   },
   section: {
     backgroundColor: '#fff',

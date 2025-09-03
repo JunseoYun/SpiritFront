@@ -47,12 +47,18 @@ const CARRIER_PROVIDER_MAP = {
 };
 
 const IdentityScreen = ({route, navigation}) => {
-  const {socialType, socialId, socialToken, beforeScreen, token, fcmToken} =
-    route?.params ?? {};
+  const {
+    socialType,
+    socialId,
+    identityToken,
+    authorizationCode,
+    beforeScreen,
+    token,
+    fcmToken,
+  } = route?.params ?? {};
   const {loginauth} = useAuth();
   const {showToast} = useToast();
   const [sendToMsg, setSendToMsg] = useState(false);
-
   const [name, setName] = useState('');
   const [nameerror, setNameerror] = useState({});
   const [nameStepDone, setNameStepDone] = useState(false);
@@ -368,8 +374,9 @@ const IdentityScreen = ({route, navigation}) => {
           const login_data = await user_login(
             socialType,
             socialId,
-            socialToken,
+            identityToken,
             fcmToken,
+            authorizationCode,
           );
           loginauth(
             login_data.accessToken,
@@ -379,10 +386,11 @@ const IdentityScreen = ({route, navigation}) => {
         } catch (error) {}
       } else {
         if (beforeScreen === 'Agree') {
-          navigation.navigate('RegisterScreen', {
+          navigation.replace('RegisterScreen', {
             socialType,
             socialId,
-            socialToken,
+            identityToken,
+            authorizationCode,
             mokDataId: localMokTokenId,
           });
         } else if (beforeScreen === 'Login') {
@@ -438,7 +446,8 @@ const IdentityScreen = ({route, navigation}) => {
     beforeScreen,
     socialType,
     socialId,
-    socialToken,
+    identityToken,
+    authorizationCode,
     token,
   ]);
 

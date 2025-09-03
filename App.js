@@ -23,11 +23,11 @@ import {handleUrl} from './src/hooks/applink/AppLinkHandler';
 import {DeepLinkProvider, useDeepLink} from './src/context/DeepLinkContext';
 import './reanimatedConfig';
 import mobileAds from 'react-native-google-mobile-ads';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {
-  SafeAreaProvider,
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+  initLocationIfNeeded,
+  initLocationFromServer,
+} from './src/storage/locationStorage';
 
 if (!__DEV__) {
   console.log = () => {};
@@ -93,6 +93,16 @@ const AppNavigator = () => {
   useHandlePendingNotification(loading, pendingNotification, () =>
     setPendingNotification(null),
   );
+  useEffect(() => {
+    if (token) {
+      setLoading(true);
+      const init = async () => {
+        await initLocationFromServer();
+        setLoading(false);
+      };
+      init();
+    }
+  }, [token]);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 2000);
