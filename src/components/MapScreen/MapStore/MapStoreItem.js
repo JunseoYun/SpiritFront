@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ImageBackground,
   Dimensions,
+  PixelRatio,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
@@ -18,6 +19,9 @@ const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
 const IMG_WIDTH = width * 0.3;
 const SPACING = width * 0.05;
+
+let fontScale = PixelRatio.getFontScale();
+if (fontScale >= 1.5) fontScale = 1.5;
 const MapStoreItem = ({
   item,
   index,
@@ -207,7 +211,7 @@ const styles = StyleSheet.create({
   },
   overlayText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 14 / fontScale,
     fontWeight: 'bold',
     textAlign: 'center',
     lineHeight: 22,
@@ -231,13 +235,13 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   storeName: {
-    fontSize: 18,
+    fontSize: 18 / fontScale,
     fontFamily: 'Pretendard-Bold',
     color: '#333',
     width: '90%',
   },
   storeAddress: {
-    fontSize: 14,
+    fontSize: 14 / fontScale,
     fontFamily: 'Pretendard-Medium',
     color: '#666',
     marginRight: 5,
@@ -248,7 +252,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   StoreCategory: {
-    fontSize: 14,
+    fontSize: 14 / fontScale,
     color: '#999',
     marginRight: 5,
     fontFamily: 'Pretendard-Medium',
@@ -259,12 +263,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   timeviewtext: {
-    fontSize: 13,
+    fontSize: 13 / fontScale,
     fontFamily: 'Pretendard-Medium',
     color: '#999',
   },
   menutext: {
-    fontSize: 14,
+    fontSize: 14 / fontScale,
     fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Pressable} from 'react-native';
+import {Pressable, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {createStackNavigator} from '@react-navigation/stack';
 import OAuthLoginScreen from '../screens/OAuth/OAuthLoginScreen';
@@ -16,6 +16,7 @@ import UniqueNumber from '../components/IdentityScreen/Policy/UniqueNumber';
 import ThirdPartyInfo from '../components/IdentityScreen/Policy/ThirdPartyInfo';
 
 import MainBtmbar from './MainBtmbar';
+import {normalizeFont} from '../hooks/normalizeFont';
 const Stack = createStackNavigator();
 
 export default function OAuthStack({isTestEnabled}) {
@@ -74,12 +75,19 @@ export default function OAuthStack({isTestEnabled}) {
         name="TermsAgreeScreen"
         component={TermsAgreeScreen}
         options={({navigation}) => ({
-          title: '한잔할까 서비스 이용약관',
           headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
+          headerTitle: () => (
+            <Text
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: normalizeFont(18, 1.5),
+                color: '#333',
+              }}
+              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+            >
+              한잔할까 서비스 이용약관
+            </Text>
+          ),
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -152,13 +160,20 @@ export default function OAuthStack({isTestEnabled}) {
         name="PersonalInfo"
         component={PersonalInfo}
         options={({navigation}) => ({
-          title: '개인정보 수집/이용 동의',
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
+          headerTitle: () => (
+            <Text
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: normalizeFont(18, 1.5),
+                color: '#333',
+              }}
+              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+            >
+              개인정보 수집/이용 동의
+            </Text>
+          ),
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -179,13 +194,20 @@ export default function OAuthStack({isTestEnabled}) {
         name="UniqueNumber"
         component={UniqueNumber}
         options={({navigation}) => ({
-          title: '고유식별번호 처리 동의',
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
+          headerTitle: () => (
+            <Text
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: normalizeFont(18, 1.5),
+                color: '#333',
+              }}
+              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+            >
+              고유식별번호 처리 동의
+            </Text>
+          ),
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -206,13 +228,20 @@ export default function OAuthStack({isTestEnabled}) {
         name="CarrierUse"
         component={CarrierUse}
         options={({navigation}) => ({
-          title: '통신사 이용약관 동의',
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
+          headerTitle: () => (
+            <Text
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: normalizeFont(18, 1.5),
+                color: '#333',
+              }}
+              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+            >
+              통신사 이용약관 동의
+            </Text>
+          ),
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -233,13 +262,20 @@ export default function OAuthStack({isTestEnabled}) {
         name="Service"
         component={Service}
         options={({navigation}) => ({
-          title: '서비스 이용약관 동의',
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
+          headerTitle: () => (
+            <Text
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: normalizeFont(18, 1.5),
+                color: '#333',
+              }}
+              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+            >
+              서비스 이용약관 동의
+            </Text>
+          ),
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -261,13 +297,20 @@ export default function OAuthStack({isTestEnabled}) {
         name="ThirdPartyInfo"
         component={ThirdPartyInfo}
         options={({navigation}) => ({
-          title: '개인정보 제3자 제공 동의',
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
+          headerTitle: () => (
+            <Text
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: normalizeFont(18, 1.5),
+                color: '#333',
+              }}
+              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+            >
+              개인정보 제3자 제공 동의
+            </Text>
+          ),
           headerLeft: () => (
             <Pressable
               onPress={() => {

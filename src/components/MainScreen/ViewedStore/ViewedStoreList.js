@@ -1,9 +1,22 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {View, Text, FlatList, StyleSheet, Pressable} from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Pressable,
+  PixelRatio,
+} from 'react-native';
 import ViewedStoreItem from './ViewedStoreItem';
 import {Store_getby_viewed} from '../../../api/storeApi';
 import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
+
+let fontScale = PixelRatio.getFontScale(); // let으로 변경
+if (fontScale > 1.7) fontScale = 1.7;
+
+const fontSize = 18 * fontScale;
+const subfontSize = 13 * fontScale;
 
 const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
   const [stores, setStores] = useState([]);
@@ -92,10 +105,18 @@ const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
                 marginRight: 20,
                 alignItems: 'center',
               }}>
-              <Text style={styles.storeText}>최근 본 매장</Text>
+              <Text
+                allowFontScaling={false}
+                style={[styles.storeText, {fontSize}]}>
+                최근 본 매장
+              </Text>
 
               <View style={styles.totalView}>
-                <Text style={styles.totalText}>전체보기</Text>
+                <Text
+                  allowFontScaling={false}
+                  style={[styles.totalText, {fontSize: subfontSize}]}>
+                  전체보기
+                </Text>
                 <Feather name={'chevron-right'} size={15} color="#333" />
               </View>
             </View>
@@ -143,12 +164,10 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   storeText: {
-    fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181a1a',
   },
   storetotaltext: {
-    fontSize: 12,
     fontFamily: 'Pretendard-Medium',
     color: '#181a1a',
   },
@@ -157,7 +176,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalText: {
-    fontSize: 13,
     fontFamily: 'Pretendard-Regular',
     color: '#333',
   },

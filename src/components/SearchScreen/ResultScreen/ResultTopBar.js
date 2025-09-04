@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {normalizeFont} from '../../../hooks/normalizeFont';
 
 const ResultTopBar = ({searchWord, navigation, onSearch}) => {
   const [tempSearchWord, setTempSearchWord] = useState(searchWord); // 검색어 입력값 (즉시 반영 안됨)
@@ -43,6 +44,7 @@ const ResultTopBar = ({searchWord, navigation, onSearch}) => {
           }}
           returnKeyType="search" // ✅ 키보드에 '검색' 버튼 표시 (iOS & Android)
           onSubmitEditing={onSearchPress}
+          allowFontScaling={false}
         />
       </View>
       <TouchableOpacity style={styles.homeButton} onPress={onSearchPress}>
@@ -78,7 +80,7 @@ const styles = StyleSheet.create({
   },
 
   searchTextInput: {
-    fontSize: 16,
+    fontSize: normalizeFont(16, 1.3),
     color: '#121212',
     flex: 1, // 입력 필드가 남은 공간을 차지하도록 설정
 

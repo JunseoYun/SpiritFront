@@ -226,7 +226,7 @@ const AlcoholItem = ({
                 multiline
               />
               <TextInput
-                style={[styles.input, {height: 60}]}
+                style={[styles.input]}
                 value={description}
                 onChangeText={setDescription}
                 placeholder="주류 설명을 입력하세요"
@@ -318,12 +318,12 @@ const AlcoholItem = ({
               <TouchableOpacity
                 style={[styles.btn, styles.save]}
                 onPress={handleSave}>
-                <Text style={styles.btnText}>저장</Text>
+                <Text style={styles.editbtnText}>저장</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.btn, styles.cancel]}
                 onPress={onCancelEdit}>
-                <Text style={styles.btnText}>취소</Text>
+                <Text style={styles.deletebtnText}>취소</Text>
               </TouchableOpacity>
             </>
           ) : (
@@ -331,12 +331,12 @@ const AlcoholItem = ({
               <TouchableOpacity
                 style={[styles.btn, styles.edit]}
                 onPress={onEditStart}>
-                <Text style={styles.btnText}>수정</Text>
+                <Text style={styles.editbtnText}>수정</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.btn, styles.delete]}
                 onPress={() => onDelete(alcohol.id, alcohol.name)}>
-                <Text style={styles.btnText}>삭제</Text>
+                <Text style={styles.deletebtnText}>삭제</Text>
               </TouchableOpacity>
             </>
           )}
@@ -441,17 +441,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#45C9FF',
   },
   cancel: {
-    backgroundColor: '#999',
+    backgroundColor: '#f5f5f5',
   },
   edit: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
   },
   delete: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#f5f5f5',
   },
-  btnText: {
-    color: '#fff',
+  editbtnText: {
     fontSize: 14,
+    color: '#fff',
+    fontFamily: 'Pretendard-Bold',
+  },
+  deletebtnText: {
+    fontSize: 14,
+    color: '#666',
     fontFamily: 'Pretendard-Medium',
   },
   rowBetween: {

@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, TextInput, StyleSheet, Dimensions} from 'react-native';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -16,6 +17,7 @@ const StoreSearchBar = ({value, onChangeText, placeholder, onPress}) => {
         onChangeText={onChangeText}
         returnKeyType="search" // ✅ 키보드에 '검색' 버튼 표시 (iOS & Android)
         onSubmitEditing={onPress}
+        allowFontScaling={false}
       />
     </View>
   );
@@ -43,7 +45,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    fontSize: 18,
+    fontSize: normalizeFont(18, 1.3),
     color: '#333', // 입력 텍스트 색상
     fontFamily: 'Pretendard-Medium',
   },

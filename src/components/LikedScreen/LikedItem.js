@@ -170,13 +170,26 @@ const LikedItem = ({store, navigation}) => {
         {/* 메인 주류 배지 */}
         {!!store?.mainDrinkDtos?.length && (
           <View style={styles.mainDrinkView}>
-            {store.mainDrinkDtos.slice(0, 3).map((drink, idx) => (
-              <View key={idx} style={styles.drinkBadge}>
-                <Text style={styles.drinkBadgeText}>
-                  {translateAlcohol(drink.type)} {drink.price}
-                </Text>
-              </View>
-            ))}
+            {store?.mainDrinkDtos?.slice(0, 3)?.map((drink, idx, arr) => {
+              const isLast = idx === arr.length - 1;
+
+              return (
+                <View
+                  key={idx}
+                  style={[
+                    styles.drinkBadge,
+                    isLast ? {flexShrink: 1} : {}, // 마지막만 줄어들게
+                  ]}>
+                  <Text
+                    style={styles.drinkBadgeText}
+                    {...(isLast
+                      ? {numberOfLines: 1, ellipsizeMode: 'tail'}
+                      : {})}>
+                    {translateAlcohol(drink.type)} {drink.price}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
         )}
       </View>

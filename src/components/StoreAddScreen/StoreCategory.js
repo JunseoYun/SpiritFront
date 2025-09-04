@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const StoreCategory = ({
   selectedCategory,
@@ -91,7 +92,11 @@ const StoreCategory = ({
                       ]}
                       onPress={() => toggleCategory(value)}>
                       <Image source={source} style={styles.catagoryimgs} />
-                      <Text style={styles.catagorytext}>{text}</Text>
+                      <Text
+                        style={styles.catagorytext}
+                        allowFontScaling={false}>
+                        {text}
+                      </Text>
                     </Pressable>,
                   );
                   return acc;
@@ -242,7 +247,7 @@ const styles = StyleSheet.create({
   catagorytext: {
     color: 'black',
     fontFamily: 'Pretendard-SemiBold',
-    fontSize: 12,
+    fontSize: normalizeFont(12, 1.3),
     marginTop: 7,
   },
   catagoryView: {

@@ -1,10 +1,19 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  ImageBackground,
+  StyleSheet,
+  PixelRatio,
+} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import FastImage from 'react-native-fast-image';
+
+const fontScale = PixelRatio.getFontScale();
 
 const RecentStoreItem = ({store, navigation, location}) => {
   const [distance, setDistance] = useState(0);
@@ -116,7 +125,14 @@ const RecentStoreItem = ({store, navigation, location}) => {
               : '카테고리 미설정'}
           </Text>
         </View>
-        <View style={styles.storeViewInfo}>
+        <View
+          style={[
+            styles.storeViewInfo,
+            fontScale >= 1.5 && {
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+            },
+          ]}>
           {store?.isAlwaysOpen == true ? (
             <Text style={styles.store24TimeInfo}>24시간 영업</Text>
           ) : store?.isAlwaysOpen == false && closed ? (

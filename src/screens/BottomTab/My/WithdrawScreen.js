@@ -5,6 +5,7 @@ import {
   SafeAreaView,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -59,37 +60,42 @@ const WithdrawScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>회원탈퇴 안내</Text>
-      <Text style={styles.description}>
-        • 회원탈퇴 시 작성한 게시물은 한잔할까 서비스에 귀속됩니다. {'\n\n'}•
-        회원정보는 탈퇴 즉시 파기되며, 부정 이용 방지를 위해 회원 식별 정보는
-        탈퇴 후 일정기간 보관됩니다. {'\n\n'}• 자세한 내용은 한잔할까 이용약관과
-        개인정보 처리방침 약관을 확인해주세요.
-      </Text>
-
-      <View style={styles.line} />
-      <TouchableOpacity
-        onPress={() => setIsChecked(!isChecked)}
-        style={styles.checkboxContainer}>
-        <Ionicons
-          name={isChecked ? 'checkbox-outline' : 'square-outline'}
-          size={24}
-          color={isChecked ? '#16BBFF' : '#888'}
-        />
-
-        <Text style={styles.checkboxText}>
-          회원탈퇴 안내를 모두 확인하였습니다.
+      <ScrollView
+        contentContainerStyle={{paddingBottom: 20}}
+        showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>회원탈퇴 안내</Text>
+        <Text style={styles.description}>
+          • 회원탈퇴 시 작성한 게시물은 한잔할까 서비스에 귀속됩니다. {'\n\n'}•
+          회원정보는 탈퇴 즉시 파기되며, 부정 이용 방지를 위해 회원 식별 정보는
+          탈퇴 후 일정기간 보관됩니다. {'\n\n'}• 자세한 내용은 한잔할까
+          이용약관과 개인정보 처리방침 약관을 확인해주세요.
         </Text>
-      </TouchableOpacity>
-      {/* 회원탈퇴 버튼 */}
-      <TouchableOpacity
-        style={[styles.withdrawButton, !isChecked && styles.disabledButton]}
-        onPress={handleWithdraw}
-        disabled={!isChecked}>
-        <Text style={[styles.withdrawText, !isChecked && styles.disabledText]}>
-          회원탈퇴
-        </Text>
-      </TouchableOpacity>
+
+        <View style={styles.line} />
+        <TouchableOpacity
+          onPress={() => setIsChecked(!isChecked)}
+          style={styles.checkboxContainer}>
+          <Ionicons
+            name={isChecked ? 'checkbox-outline' : 'square-outline'}
+            size={24}
+            color={isChecked ? '#16BBFF' : '#888'}
+          />
+
+          <Text style={styles.checkboxText}>
+            회원탈퇴 안내를 모두 확인하였습니다.
+          </Text>
+        </TouchableOpacity>
+        {/* 회원탈퇴 버튼 */}
+        <TouchableOpacity
+          style={[styles.withdrawButton, !isChecked && styles.disabledButton]}
+          onPress={handleWithdraw}
+          disabled={!isChecked}>
+          <Text
+            style={[styles.withdrawText, !isChecked && styles.disabledText]}>
+            회원탈퇴
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
       <AlertComponent />
       <Loading loading={loading} />
     </SafeAreaView>

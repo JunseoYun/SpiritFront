@@ -7,10 +7,14 @@ import {
   StyleSheet,
   Platform,
   Dimensions,
+  PixelRatio,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
+
+let fontScale = PixelRatio.getFontScale();
+if (fontScale > 1.3) fontScale = 1.3;
 
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 const MapSearchBar = ({onPress}) => {
@@ -19,7 +23,9 @@ const MapSearchBar = ({onPress}) => {
     <View style={[styles.buttonTop, {paddingTop: insets.top + 10}]}>
       <Pressable style={styles.searchView} onPress={onPress}>
         <EvilIcons name="redo" size={25} color={'#1a1a1a'} />
-        <Text style={styles.buttonTextTop}>현 지도에서 재검색</Text>
+        <Text allowFontScaling={false} style={styles.buttonTextTop}>
+          현 지도에서 재검색
+        </Text>
       </Pressable>
     </View>
   );
@@ -46,7 +52,7 @@ const styles = StyleSheet.create({
   },
   buttonTextTop: {
     color: '#1a1a1a',
-    fontSize: 15,
+    fontSize: 15 * fontScale,
     fontFamily: 'Pretendard-Medium',
   },
 });

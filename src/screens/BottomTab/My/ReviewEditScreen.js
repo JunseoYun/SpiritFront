@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   completeButton: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
