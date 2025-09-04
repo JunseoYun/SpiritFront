@@ -4,6 +4,7 @@ import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useStoreStatus from '../../hooks/useStoreStatus';
 import Feather from 'react-native-vector-icons/Feather';
 import FastImage from 'react-native-fast-image';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const StoreResultItem = ({store, navigation, index}) => {
   const {translateCategory} = useCategoryTranslation();
@@ -44,25 +45,29 @@ const StoreResultItem = ({store, navigation, index}) => {
           {/* ✅ 영업 종료 표시 */}
           {!isOpen && !nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>
+              <Text style={styles.overlayText} allowFontScaling={false}>
                 영업 종료 {starttime ? `\n${starttime} 오픈` : ''}
               </Text>
             </View>
           )}
           {!isOpen && nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
+              <Text style={styles.overlayText} allowFontScaling={false}>
+                영업 종료 익일 휴무
+              </Text>
             </View>
           )}
           {!isOpen && !nextclosed && closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>금일 휴무</Text>
+              <Text style={styles.overlayText} allowFontScaling={false}>
+                금일 휴무
+              </Text>
             </View>
           )}
           {/* ✅ 브레이크 타임 표시 */}
           {isOpen && isBreak && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>
+              <Text style={styles.overlayText} allowFontScaling={false}>
                 브레이크 타임 {breakend ? `\n${breakend} 종료` : ''}
               </Text>
             </View>
@@ -176,7 +181,7 @@ const styles = StyleSheet.create({
   },
   overlayText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: normalizeFont(14, 1.3),
     fontFamily: 'Pretendard-SemiBold',
     textAlign: 'center',
     lineHeight: 22,

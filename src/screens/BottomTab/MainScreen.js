@@ -31,7 +31,6 @@ import FilterHeader from '../../components/MainScreen/FilterHeader';
 import PopularStoreItem from '../../components/MainScreen/PopularStroe/PopularStoreItem';
 import PopularItemSkeleton from '../../components/MainScreen/PopularStroe/PopularItemSkeleton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 const MainScreen = ({navigation}) => {
@@ -430,6 +429,7 @@ const MainScreen = ({navigation}) => {
             store={item}
             location={stableLocation}
             navigation={stableNavigation}
+            screenWidth={screenWidth}
           />
         ),
       },
@@ -482,6 +482,7 @@ const MainScreen = ({navigation}) => {
           <Text
             style={styles.todayAddress}
             numberOfLines={1}
+            allowFontScaling={false}
             ellipsizeMode="tail">
             {formatAddress(address)}
           </Text>
@@ -514,6 +515,7 @@ const MainScreen = ({navigation}) => {
           }}>
           <Pressable hitSlop={10} onPress={setLocationHandle}>
             <Text
+              allowFontScaling={false}
               style={[styles.todayAddress2, {color: '#333', marginTop: 10}]}
               numberOfLines={1}
               ellipsizeMode="tail">

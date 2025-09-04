@@ -13,6 +13,7 @@ import {useRoute} from '@react-navigation/native';
 import StoreAuthorityData from '../../components/StoreAuthority/StoreAuthorityData';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const StoreCheckScreen = ({navigation}) => {
   const route = useRoute();
@@ -64,7 +65,9 @@ const StoreCheckScreen = ({navigation}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleNext}>
-          <Text style={styles.nextButton}>다음</Text>
+          <Text style={styles.nextButton} allowFontScaling={false}>
+            다음
+          </Text>
         </Pressable>
       ),
     });
@@ -116,7 +119,7 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     marginRight: 18,
-    fontSize: 19,
+    fontSize: normalizeFont(18, 1.5),
     fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },

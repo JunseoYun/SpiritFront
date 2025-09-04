@@ -1,8 +1,21 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, FlatList, StyleSheet, Pressable} from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Pressable,
+  PixelRatio,
+} from 'react-native';
 import NearStoreItem from './NearStoreItem';
 import {Store_getby_distance} from '../../../api/storeApi';
 import Feather from 'react-native-vector-icons/Feather';
+
+let fontScale = PixelRatio.getFontScale(); // let으로 변경
+if (fontScale > 1.7) fontScale = 1.7;
+
+const fontSize = 18 * fontScale;
+const subfontSize = 13 * fontScale;
 
 const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
   const [stores, setStores] = useState([]);
@@ -106,9 +119,15 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
             marginRight: 40,
             alignItems: 'center',
           }}>
-          <Text style={styles.storeText}>제일 가까운 술집은?</Text>
+          <Text style={[styles.storeText, {fontSize}]} allowFontScaling={false}>
+            제일 가까운 술집은?
+          </Text>
           <View style={styles.totalView}>
-            <Text style={styles.totalText}>전체보기</Text>
+            <Text
+              style={[styles.totalText, {fontSize: subfontSize}]}
+              allowFontScaling={false}>
+              전체보기
+            </Text>
             <Feather name={'chevron-right'} size={15} color="#333" />
           </View>
         </View>

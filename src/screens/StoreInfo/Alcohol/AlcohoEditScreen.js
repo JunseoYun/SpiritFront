@@ -19,6 +19,7 @@ import {
   Animated,
   BackHandler,
   ToastAndroid,
+  ScrollView,
 } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import AlcoholItem from '../../../components/StoreAlcoholScreen/AlcoholItem';
@@ -27,6 +28,7 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
 import {useFocusEffect} from '@react-navigation/native';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+import {normalizeFont} from '../../../hooks/normalizeFont';
 
 const BUTTON_HEIGHT = 64;
 
@@ -70,6 +72,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
 
   const stableItemProps = useMemo(
     () => ({
+      navigation: navigation,
       isLast: true,
       isUpdatable: true,
       isMainEditing: true,
@@ -149,7 +152,9 @@ const AlcoholEditScreen = ({route, navigation}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleAlcoholAdd}>
-          <Text style={styles.headerButton}>주류 추가</Text>
+          <Text style={styles.headerButton} allowFontScaling={false}>
+            주류 추가
+          </Text>
         </Pressable>
       ),
     });
@@ -226,7 +231,12 @@ const AlcoholEditScreen = ({route, navigation}) => {
       <SafeAreaView style={styles.container}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View pointerEvents={isDragging ? 'none' : 'auto'}>
-            <View style={styles.tabContainer}>
+            <ScrollView
+              contentContainerStyle={{
+                paddingHorizontal: 12,
+                marginVertical: 12,
+              }}
+              horizontal>
               {Object.entries(alcoholMapping)
                 .filter(([type]) => (alcoholGroups[type] || []).length > 0) // ✅ 해당 타입이 실제 존재하는 경우만 표시
                 .map(([type, label]) => (
@@ -238,6 +248,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
                     ]}
                     onPress={() => setActiveTab(type)}>
                     <Text
+                      allowFontScaling={false}
                       style={[
                         styles.tabText,
                         activeTab === type && styles.activeTabText,
@@ -246,7 +257,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
                     </Text>
                   </TouchableOpacity>
                 ))}
-            </View>
+            </ScrollView>
             {alcohols.length === 0 && (
               <TouchableOpacity
                 style={styles.MenuaddButton}
@@ -286,7 +297,7 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     marginRight: 18,
-    fontSize: 17,
+    fontSize: normalizeFont(17, 1.5),
     fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },
@@ -301,19 +312,22 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: '#eee',
+    backgroundColor: '#fff',
     margin: 4,
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
   activeTabButton: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#E8F7FF', // 선택 시 배경색
+    borderColor: '#45C9FF',
   },
   tabText: {
-    fontSize: 13,
+    fontSize: normalizeFont(13, 1.7),
     fontFamily: 'Pretendard-Medium',
     color: '#555',
   },
   activeTabText: {
-    color: '#fff',
+    color: '#45C9FF',
   },
   MenuaddButton: {
     alignItems: 'center',

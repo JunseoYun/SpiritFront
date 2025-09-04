@@ -17,7 +17,9 @@ const CategoryGrid = ({onPress, style}) => {
                 <View style={styles.iconWrapper}>
                   <Image source={source} style={styles.icon} />
                 </View>
-                <Text style={styles.text}>{text}</Text>
+                <Text style={styles.text} allowFontScaling={false}>
+                  {text}
+                </Text>
               </Pressable>,
             );
             return acc;

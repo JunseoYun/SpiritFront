@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
-import {Linking, Platform, StatusBar} from 'react-native';
+import {Linking, Platform, StatusBar, PixelRatio, Text} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import MainStack from './src/navigation/MainStack';
 import OAuthStack from './src/navigation/OAuthStack';
@@ -28,6 +28,7 @@ import {
   initLocationIfNeeded,
   initLocationFromServer,
 } from './src/storage/locationStorage';
+import {AdConsentProvider} from './src/context/AdConsentContext';
 
 if (!__DEV__) {
   console.log = () => {};
@@ -37,12 +38,6 @@ if (!__DEV__) {
 
 const App = () => {
   useNotificationSetup();
-
-  useEffect(() => {
-    mobileAds()
-      .initialize()
-      .then(() => {});
-  }, []);
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
@@ -58,7 +53,9 @@ const App = () => {
             <ToastProvider>
               <NotificationProvider>
                 <DeepLinkProvider>
-                  <AppNavigator />
+                  <AdConsentProvider>
+                    <AppNavigator />
+                  </AdConsentProvider>
                 </DeepLinkProvider>
               </NotificationProvider>
             </ToastProvider>
