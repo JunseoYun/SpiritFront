@@ -101,7 +101,7 @@ const MyScreen = ({navigation}) => {
         {currentPage === 'MyReview' && <MyReview navigation={navigation} />}
         {currentPage === 'MyLocation' && <MyLocation navigation={navigation} />}
         {currentPage === 'MyManager' && userdata?.isManager === true && (
-          <MyManager navigation={navigation} />
+          <MyManager navigation={navigation} userId={userdata?.id} />
         )}
       </>
 

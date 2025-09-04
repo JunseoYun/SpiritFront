@@ -16,12 +16,13 @@ import Loading from '../../../hooks/Loading';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {BlurView} from '@react-native-community/blur';
+import LinearGradient from 'react-native-linear-gradient';
 
 const {width, height} = Dimensions.get('window');
 const CARD_WIDTH = width * 0.65;
 const CARD_SPACING = (width - CARD_WIDTH) / 2;
 
-const MyManager = ({navigation}) => {
+const MyManager = ({navigation, userId}) => {
   const [page, setPage] = useState(0);
   const [totalpage, setTotalpage] = useState(null);
   const [mysotredata, setMystoredata] = useState([]);
@@ -126,7 +127,15 @@ const MyManager = ({navigation}) => {
               }
               style={styles.image}
               imageStyle={{borderRadius: 16}}>
-              <View style={styles.gradientOverlay} />
+              <LinearGradient
+                colors={
+                  item.mainImgUrl
+                    ? ['transparent', 'rgba(0, 0, 0, 0.5)'] // 위는 투명, 아래는 어두움
+                    : ['transparent', 'rgba(0, 0, 0, 0.3)']
+                }
+                style={[styles.gradientBottom, {height: (height * 0.47) / 1.5}]}
+                pointerEvents="none"
+              />
               <View style={styles.overlayContent}>
                 <Text style={styles.name} numberOfLines={1}>
                   {item.storeName || '상호명 없음'}
@@ -189,7 +198,7 @@ const MyManager = ({navigation}) => {
         onScrollEndDrag={() => setNameTabDisabled(false)}
         data={mysotredata}
         renderItem={renderItem}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={item => item.storeId.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={CARD_WIDTH}
@@ -260,7 +269,7 @@ const MyManager = ({navigation}) => {
           data={mysotredata}
           horizontal
           showsHorizontalScrollIndicator={false}
-          keyExtractor={item => item.id.toString()}
+          keyExtractor={item => item.storeId.toString()}
           contentContainerStyle={{paddingHorizontal: 200, marginTop: 10}}
           renderItem={({item, index}) => (
             <Pressable
@@ -322,8 +331,15 @@ const MyManager = ({navigation}) => {
                 }
                 style={{width, height}}
                 imageStyle={{resizeMode: 'cover'}}>
-                <View style={styles.modalGradientOverlay} />
-
+                <LinearGradient
+                  colors={
+                    selectedStore.mainImgUrl
+                      ? ['transparent', 'rgba(0, 0, 0, 0.5)'] // 위는 투명, 아래는 어두움
+                      : ['transparent', 'rgba(0, 0, 0, 0.3)']
+                  }
+                  style={styles.gradientBottom}
+                  pointerEvents="none"
+                />
                 {/* 정보 영역 */}
                 <View style={styles.modalInfoContainer}>
                   <Text style={styles.modalInfoTitle} numberOfLines={1}>
@@ -418,7 +434,27 @@ const MyManager = ({navigation}) => {
                     </Pressable>
                     <Text style={styles.btnText}>통계 조회</Text>
                   </View>
-
+                  <View style={styles.bottomButtonView}>
+                    <Pressable
+                      style={[
+                        styles.btn,
+                        {borderColor: '#fff', borderWidth: 1.3},
+                      ]}
+                      onPress={() => {
+                        closeModal();
+                        navigation.navigate('StoreStack', {
+                          screen: 'StoreManagerScreen',
+                          params: {
+                            storeId: selectedStore.storeId,
+                            storename: selectedStore.storeName,
+                            userId,
+                          },
+                        });
+                      }}>
+                      <Ionicons name="person-sharp" size={30} color="#fff" />
+                    </Pressable>
+                    <Text style={styles.btnText}>운영진</Text>
+                  </View>
                   <View style={styles.bottomButtonView}>
                     <Pressable
                       style={[
@@ -494,23 +530,22 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'flex-end',
   },
-  gradientOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-  },
+
   overlayContent: {
     padding: 12,
+    zIndex: 3,
   },
   name: {
     color: '#fff',
-    fontSize: 20,
-    fontFamily: 'Pretendard-Bold',
+    fontSize: 18,
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 6,
   },
   address: {
     color: '#ddd',
-    fontSize: 15,
+    fontSize: 14,
     marginBottom: 6,
+    fontFamily: 'Pretendard-Regular',
   },
   statsRow: {
     flexDirection: 'row',
@@ -526,7 +561,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     marginLeft: 4,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
   reportRow: {
     flexDirection: 'row',
@@ -538,7 +573,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     paddingHorizontal: 8,
     marginRight: 6,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
   normalReport: {
     backgroundColor: 'rgba(255,165,0,0.25)',
@@ -585,18 +620,18 @@ const styles = StyleSheet.create({
     right: 20,
     flexDirection: 'row',
     gap: 10,
-    zIndex: 10,
     justifyContent: 'space-evenly',
+    zIndex: 10,
   },
   bottomButtonView: {
     alignItems: 'center',
   },
   btn: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
-    width: 60,
-    height: 60,
+    width: 55,
+    height: 55,
     marginBottom: 3,
     alignItems: 'center',
     justifyContent: 'center',
@@ -604,23 +639,27 @@ const styles = StyleSheet.create({
 
   btnText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Pretendard-SemiBold',
   },
-
-  // 모달 전용 스타일
-  modalGradientOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.25)',
+  gradientBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: height / 2, // 아래 절반
+    zIndex: 1,
   },
+
   modalInfoContainer: {
     position: 'absolute',
     bottom: 120,
     left: 20,
     right: 20,
-    // backgroundColor: 'rgba(0,0,0,0.25)',
     borderRadius: 16,
-    padding: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 10,
+    zIndex: 3,
   },
   modalInfoTitle: {
     color: '#fff',

@@ -7,6 +7,7 @@ import {AuthProvider, useAuth} from './src/context/AuthContext';
 import {CustomAlertProvider} from './src/context/CustomAlertContext';
 import {Provider as PaperProvider} from 'react-native-paper';
 import {ToastProvider} from './src/context/ToastContext';
+import {StoreInviteProvider} from './src/context/StoreInviteContext';
 import {
   NotificationProvider,
   useNotification,
@@ -58,7 +59,9 @@ const App = () => {
             <ToastProvider>
               <NotificationProvider>
                 <DeepLinkProvider>
-                  <AppNavigator />
+                  <StoreInviteProvider>
+                    <AppNavigator />
+                  </StoreInviteProvider>
                 </DeepLinkProvider>
               </NotificationProvider>
             </ToastProvider>
@@ -73,7 +76,12 @@ const AppNavigator = () => {
   const {token} = useAuth();
   const {isVersionValid, isTestEnabled} = useVersionCheck();
   const {pendingNotification, setPendingNotification} = useNotification();
-  const {pendingStoreId, setPendingStoreId} = useDeepLink();
+  const {
+    pendingStoreId,
+    setPendingStoreId,
+    pendingStoreInviteId,
+    setPendingStoreInviteId,
+  } = useDeepLink();
 
   const [loading, setLoading] = useState(true);
   const [navigationReady, setNavigationReady] = useState(false);
@@ -127,6 +135,7 @@ const AppNavigator = () => {
       handleDeepLink(url);
     };
     const sub = Linking.addEventListener('url', listener);
+
     return () => {
       sub.remove();
     };
