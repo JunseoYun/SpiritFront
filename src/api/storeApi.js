@@ -511,8 +511,53 @@ export const StoreImageUpdateSort = async (
 
 export const get_store_share = async storeId => {
   try {
-    const response = await axiosInstance.get(`/store/share/${storeId}`);
-    return response.data; // 또는 response.data.url depending on backend structure
+    const response = await axiosInstance.post(`/store/share/${storeId}`);
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const get_store_manager_invitationLink = async storeId => {
+  try {
+    const response = await axiosInstance.post(
+      `/store/manager-invitation/create/${storeId}`,
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const get_store_manager_invitation_accept =
+  async managerInvitationId => {
+    try {
+      const response = await axiosInstance.post(
+        `/store/manager-invitation/accept/${managerInvitationId}`,
+      );
+      return response.data.data;
+    } catch (error) {
+      functionError(error);
+    }
+  };
+
+export const Store_getby_managers = async storeId => {
+  try {
+    const response = await axiosInstance.get(
+      `/store/get-by/managers/${storeId}`,
+    );
+    return response.data.data; // 또는 response.data.url depending on backend structure
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const getby_manager_invitation_preview = async managerInvitationId => {
+  try {
+    const response = await axiosInstance.get(
+      `/store/get-by/manager-invitation/preview/${managerInvitationId}`,
+    );
+    return response.data.data; // 또는 response.data.url depending on backend structure
   } catch (error) {
     functionError(error);
   }

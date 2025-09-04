@@ -406,23 +406,19 @@ const StoreMainScreen = ({navigation}) => {
   const onShare = async () => {
     try {
       const response = await get_store_share(storeId);
-
-      if (!response?.url) {
+      if (!response?.shareLink) {
         showToast('공유할 링크를 가져오지 못했어요.');
         return;
       }
 
       await Share.share({
-        message:
-          Platform.OS === 'ios'
-            ? `${storedata.name}에서 한잔 어때요?\n한잔할까에서 확인해보세요!\n`
-            : `${storedata.name}에서 한잔 어때요?\n한잔할까에서 확인해보세요!\n${response.url}`,
-        url: response.url,
+        message: `${storedata.name}에서 한잔 어때요?\n한잔할까에서 확인해보세요!\n${response.shareLink}`,
+        shareLink: response.shareLink,
         title: '가게 공유',
       });
     } catch (error) {
       showToast('공유 도중 문제가 발생했어요.');
-      console.error('onShare error:', error);
+      console.error('onShare error:', error.response);
     }
   };
 
