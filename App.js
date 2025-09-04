@@ -29,6 +29,7 @@ import {
   initLocationIfNeeded,
   initLocationFromServer,
 } from './src/storage/locationStorage';
+import {AdConsentProvider} from './src/context/AdConsentContext';
 
 if (!__DEV__) {
   console.log = () => {};
@@ -60,7 +61,9 @@ const App = () => {
               <NotificationProvider>
                 <DeepLinkProvider>
                   <StoreInviteProvider>
-                    <AppNavigator />
+                    <AdConsentProvider>
+                      <AppNavigator />
+                    </AdConsentProvider>
                   </StoreInviteProvider>
                 </DeepLinkProvider>
               </NotificationProvider>
