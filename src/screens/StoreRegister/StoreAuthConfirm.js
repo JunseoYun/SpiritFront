@@ -14,6 +14,7 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import {CreateOwnership, Create_store_with_ownership} from '../../api/storeApi';
 import Loading from '../../hooks/Loading';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const getErrorMessage = code => {
   const messages = {
@@ -167,7 +168,9 @@ const StoreAuthConfirm = ({navigation}) => {
         <Pressable
           onPress={loading || confirm ? null : handleSubmit}
           disabled={loading || confirm}>
-          <Text style={[styles.headerButton]}>제출</Text>
+          <Text style={[styles.headerButton]} allowFontScaling={false}>
+            제출
+          </Text>
         </Pressable>
       ),
     });
@@ -288,7 +291,7 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     marginRight: 16,
-    fontSize: 16,
+    fontSize: normalizeFont(18, 1.5),
     fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },

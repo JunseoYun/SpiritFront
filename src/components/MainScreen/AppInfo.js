@@ -1,33 +1,31 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {View, Pressable, Text, StyleSheet, Animated} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const AppInfo = ({scrollRef, navigation}) => {
   const [toggle, setToggle] = useState(false);
+  const [contentHeight, setContentHeight] = useState(0);
   const animatedHeight = useRef(new Animated.Value(0)).current;
   const animatedOpacity = useRef(new Animated.Value(0)).current;
 
   const handleAgreeScreen = screen => {
-    if (screen === 'terms') {
-      navigation.navigate('OAuthStack', {
-        screen: 'TermsAgreeScreen',
-      });
-    } else if (screen === 'privacy') {
-      navigation.navigate('OAuthStack', {
-        screen: 'PrivacyAgreeScreen',
-      });
-    } else if (screen === 'location') {
-      navigation.navigate('OAuthStack', {
-        screen: 'LocationAgreeScreen',
-      });
-    }
+    navigation.navigate('OAuthStack', {
+      screen:
+        screen === 'terms'
+          ? 'TermsAgreeScreen'
+          : screen === 'privacy'
+          ? 'PrivacyAgreeScreen'
+          : 'LocationAgreeScreen',
+    });
   };
 
+  // 토글 애니메이션
   useEffect(() => {
     if (toggle) {
       Animated.parallel([
         Animated.timing(animatedHeight, {
-          toValue: 100, // 내용 높이 (필요시 맞게 조정)
+          toValue: contentHeight || 100, // 높이 아직 측정 안됐으면 임시값
           duration: 300,
           useNativeDriver: false,
         }),
@@ -36,12 +34,7 @@ const AppInfo = ({scrollRef, navigation}) => {
           duration: 300,
           useNativeDriver: false,
         }),
-      ]).start(() => {
-        // 펼쳐진 후 스크롤
-        // setTimeout(() => {
-        //   scrollRef?.current?.scrollToEnd({animated: true});
-        // }, 50);
-      });
+      ]).start();
     } else {
       Animated.parallel([
         Animated.timing(animatedHeight, {
@@ -56,7 +49,7 @@ const AppInfo = ({scrollRef, navigation}) => {
         }),
       ]).start();
     }
-  }, [toggle, scrollRef]);
+  }, [toggle, contentHeight]);
 
   return (
     <View style={styles.container}>
@@ -67,13 +60,16 @@ const AppInfo = ({scrollRef, navigation}) => {
           alignItems: 'center',
           paddingVertical: 5,
         }}>
-        <Text style={[styles.toggletext, {marginRight: 1}]}>
+        <Text
+          style={[styles.toggletext, {marginRight: 1}]}
+          allowFontScaling={false}>
           스피릿 사업자 정보
         </Text>
-        {!toggle && (
+        {!toggle ? (
           <Entypo name="chevron-small-right" size={20} color="#777" />
+        ) : (
+          <Entypo name="chevron-small-down" size={20} color="#777" />
         )}
-        {toggle && <Entypo name="chevron-small-down" size={20} color="#777" />}
       </Pressable>
 
       <Animated.View
@@ -82,25 +78,61 @@ const AppInfo = ({scrollRef, navigation}) => {
           height: animatedHeight,
           opacity: animatedOpacity,
         }}>
-        <Text style={styles.buttonText}>사업자: 스피릿</Text>
-        <Text style={styles.buttonText}>대표자: 윤준서 김경모 김민</Text>
-        <Text style={styles.buttonText}>
-          주소: 경기 용인시 기흥구 사은로 126번길 48
-        </Text>
-        <Text style={styles.buttonText}>연락처: team19spirit@gmail.com</Text>
+        {/* 높이 측정용 뷰 */}
+        <View
+          style={{opacity: 0, position: 'absolute'}}
+          onLayout={event => {
+            const {height} = event.nativeEvent.layout;
+            if (contentHeight === 0) setContentHeight(height);
+          }}>
+          <Text style={styles.buttonText} allowFontScaling={false}>
+            사업자: 스피릿
+          </Text>
+          <Text style={styles.buttonText} allowFontScaling={false}>
+            대표자: 윤준서 김경모 김민
+          </Text>
+          <Text style={styles.buttonText} allowFontScaling={false}>
+            주소: 경기 용인시 기흥구 사은로 126번길 48
+          </Text>
+          <Text style={styles.buttonText} allowFontScaling={false}>
+            연락처: team19spirit@gmail.com
+          </Text>
+        </View>
+
+        {/* 실제 보이는 뷰 */}
+        <View>
+          <Text style={styles.buttonText} allowFontScaling={false}>
+            사업자: 스피릿
+          </Text>
+          <Text style={styles.buttonText} allowFontScaling={false}>
+            대표자: 윤준서 김경모 김민
+          </Text>
+          <Text style={styles.buttonText} allowFontScaling={false}>
+            주소: 경기 용인시 기흥구 사은로 126번길 48
+          </Text>
+          <Text style={styles.buttonText} allowFontScaling={false}>
+            연락처: team19spirit@gmail.com
+          </Text>
+        </View>
       </Animated.View>
 
-      <View style={{flexDirection: 'row'}}>
+      <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
         <Pressable onPress={() => handleAgreeScreen('terms')}>
-          <Text style={styles.buttonText}>서비스 이용약관</Text>
+          <Text style={styles.buttonText} allowFontScaling={false}>
+            서비스 이용약관
+          </Text>
         </Pressable>
         <View style={styles.divider} />
         <Pressable onPress={() => handleAgreeScreen('privacy')}>
-          <Text style={styles.buttonText}>개인정보 처리방침</Text>
+          <Text style={styles.buttonText} allowFontScaling={false}>
+            개인정보 처리방침
+          </Text>
         </Pressable>
         <View style={styles.divider} />
         <Pressable onPress={() => handleAgreeScreen('location')}>
-          <Text style={styles.buttonText}>위치정보 이용약관</Text>
+          <Text style={styles.buttonText} allowFontScaling={false}>
+            위치정보 이용약관
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -112,12 +144,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
   },
-  toggletext: {
-    fontSize: 12,
-    color: '#777',
-  },
+  toggletext: {fontSize: normalizeFont(12, 1.7), color: '#777'},
   buttonText: {
-    fontSize: 12,
+    fontSize: normalizeFont(12, 1.7),
     color: '#777',
     paddingVertical: 5,
   },

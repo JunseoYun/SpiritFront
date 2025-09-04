@@ -1,5 +1,5 @@
 import React from 'react';
-import {Pressable} from 'react-native';
+import {Pressable, Text} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import MainBtmbar from './MainBtmbar';
 import SetLocationScreen from '../screens/SetLocation/SetLocationScreen';
@@ -24,6 +24,7 @@ import LocataionMapScreen from '../screens/SetLocation/LocataionMapScreen';
 import OpenStoreScreen from '../screens/TotalScreen/OpenStoreScreen';
 import NearStoreScreen from '../screens/TotalScreen/NearStoreScreen';
 import ViewedStoreScreen from '../screens/TotalScreen/ViewedStoreScreen';
+import {normalizeFont} from '../hooks/normalizeFont';
 
 const Stack = createStackNavigator();
 
@@ -266,14 +267,21 @@ export default function MainStack() {
         name="StoreSearchScreen"
         component={StoreSearchScreen}
         options={({navigation, route}) => ({
-          title: `${
-            route.params?.index === 0 ? '매장 제보 조회' : '사장님 인증 조회'
-          }`,
           headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
+          headerTitle: () => (
+            <Text
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: normalizeFont(18, 1.5),
+                color: '#333',
+              }}
+              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+            >
+              {route.params?.index === 0
+                ? '매장 제보 조회'
+                : '사장님 인증 조회'}
+            </Text>
+          ),
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}
@@ -292,12 +300,18 @@ export default function MainStack() {
         name="StoreCheckScreen"
         component={StoreCheckScreen}
         options={({navigation}) => ({
-          title: '사장님 인증 신청 1/3',
           headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
+          headerTitle: () => (
+            <Text
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: normalizeFont(18, 1.5),
+                color: '#333',
+              }}
+              allowFontScaling={false}>
+              사장님 인증 신청 1/3
+            </Text>
+          ),
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}
@@ -312,16 +326,23 @@ export default function MainStack() {
           ),
         })}
       />
+
       <Stack.Screen
         name="StoreAuthorityScreen"
         component={StoreAuthorityScreen}
         options={({navigation}) => ({
-          title: '사장님 인증 신청 2/3',
           headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
+          headerTitle: () => (
+            <Text
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: normalizeFont(18, 1.5),
+                color: '#333',
+              }}
+              allowFontScaling={false}>
+              사장님 인증 신청 2/3
+            </Text>
+          ),
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}
@@ -336,16 +357,23 @@ export default function MainStack() {
           ),
         })}
       />
+
       <Stack.Screen
         name="StoreAuthConfirm"
         component={StoreAuthConfirm}
         options={({navigation}) => ({
-          title: '사장님 인증 신청 3/3',
           headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
+          headerTitle: () => (
+            <Text
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: normalizeFont(18, 1.5),
+                color: '#333',
+              }}
+              allowFontScaling={false}>
+              사장님 인증 신청 3/3
+            </Text>
+          ),
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}

@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const MENU_TYPES = [
   {label: '일반', value: 'NORMAL'},
@@ -23,7 +24,9 @@ const MainMenuCheck = ({selectedType, imagecheck, onChangeType, isUpdate}) => {
               key={type.value}
               style={[styles.button, isSelected && styles.buttonSelected]}
               onPress={() => onChangeType(type.value)}>
-              <Text style={[styles.text, isSelected && styles.textSelected]}>
+              <Text
+                allowFontScaling={false}
+                style={[styles.text, isSelected && styles.textSelected]}>
                 {type.label}
               </Text>
             </Pressable>
@@ -70,7 +73,7 @@ const styles = StyleSheet.create({
     borderColor: '#16BBFF',
   },
   text: {
-    fontSize: 14,
+    fontSize: normalizeFont(14, 1.5),
     color: '#999',
     fontFamily: 'Pretendard-Medium',
   },

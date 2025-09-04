@@ -187,8 +187,8 @@ const Categorystyles = StyleSheet.create({
     textAlign: 'center',
   },
   infoTimeView: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    // flexDirection: 'row',
+    // alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 10,
   },
@@ -196,7 +196,7 @@ const Categorystyles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Pretendard-Medium',
     color: '#999',
-    textAlign: 'center',
+    textAlign: 'left',
   },
   iconStar: {
     justifyContent: 'space-between',
@@ -212,6 +212,7 @@ const Categorystyles = StyleSheet.create({
   },
 
   drinkView: {
+    width: '100%',
     flexDirection: 'row',
     marginTop: 1,
   },

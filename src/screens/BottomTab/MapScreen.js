@@ -391,6 +391,7 @@ const MapScreen = ({navigation}) => {
           onMessage={onMessageHandler} // 메시지 핸들러 추가
           nestedScrollEnabled={true} // 제스처 전달 허용
           style={styles.webview}
+          textZoom={100}
         />
       ) : null}
       {refresh && <MapSearchBar onPress={() => setcenterrefresh(radius)} />}

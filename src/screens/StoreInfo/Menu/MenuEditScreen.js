@@ -28,6 +28,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+import {normalizeFont} from '../../../hooks/normalizeFont';
 const BUTTON_HEIGHT = 64;
 
 const MenuEditScreen = ({route, navigation}) => {
@@ -52,6 +53,7 @@ const MenuEditScreen = ({route, navigation}) => {
   const MemoizedMenuItem = React.memo(MenuItem);
   const stableItemProps = useMemo(
     () => ({
+      navigation: navigation,
       isLast: true,
       isMainEditing: true,
       isUpdatable: true,
@@ -147,7 +149,9 @@ const MenuEditScreen = ({route, navigation}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleMenuAdd}>
-          <Text style={styles.headerButton}>메뉴 추가</Text>
+          <Text style={styles.headerButton} allowFontScaling={false}>
+            메뉴 추가
+          </Text>
         </Pressable>
       ),
     });
@@ -242,6 +246,7 @@ const MenuEditScreen = ({route, navigation}) => {
                     ]}
                     onPress={() => setActiveTab(type)}>
                     <Text
+                      allowFontScaling={false}
                       style={[
                         styles.tabText,
                         activeTab === type && styles.activeTabText,
@@ -297,7 +302,7 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     marginRight: 18,
-    fontSize: 17,
+    fontSize: normalizeFont(17, 1.5),
     fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },
@@ -310,13 +315,16 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: '#eee',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
   activeTabButton: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#E8F7FF', // 선택 시 배경색
+    borderColor: '#45C9FF',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: normalizeFont(14, 1.7),
     fontFamily: 'Pretendard-Medium',
     color: '#555',
   },
@@ -331,7 +339,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
   },
   activeTabText: {
-    color: '#fff',
+    color: '#45C9FF',
   },
   itemRow: {
     flexDirection: 'row',
