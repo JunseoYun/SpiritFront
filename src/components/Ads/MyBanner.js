@@ -1,25 +1,34 @@
-import React from 'react';
-import {View, Platform} from 'react-native';
+import React, {useEffect} from 'react';
+import {View, Platform, useWindowDimensions} from 'react-native';
 import Config from 'react-native-config';
-import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
+import mobileAds, {
+  BannerAd,
+  BannerAdSize,
+  TestIds,
+} from 'react-native-google-mobile-ads';
+import {useAdConsent} from '../../context/AdConsentContext';
 
-const adUnitId =
+const prodUnitId =
   Platform.OS === 'android'
     ? `${Config.GOOGLE_ADS_ID}`
-    : `${Config.GOOGLE_ADS_ID_IOS}`; // ← 배너 단위 ID
+    : `${Config.GOOGLE_ADS_ID_IOS}`;
 
-export default function MyBanner() {
+export default function MyBanner({}) {
+  const {width} = useWindowDimensions();
+  const {npa} = useAdConsent();
+  const adUnitId = __DEV__ ? TestIds.BANNER : prodUnitId;
+
   return (
-    <View style={{alignItems: 'center', marginTop: 10}}>
+    <View style={{width, alignSelf: 'center', marginTop: 10}}>
       <BannerAd
         unitId={adUnitId}
-        size={BannerAdSize.ADAPTIVE_BANNER}
+        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
         requestOptions={{
-          requestNonPersonalizedAdsOnly: true,
+          requestNonPersonalizedAdsOnly: npa, // 기본은 false
         }}
         onAdLoaded={() => {}}
-        onAdFailedToLoad={error => {
-          console.error('광고 로드 실패', error);
+        onAdFailedToLoad={e => {
+          console.error('광고 로드 실패', e);
         }}
       />
     </View>

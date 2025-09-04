@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import {View, BackHandler} from 'react-native';
+import {View, BackHandler, Text, PixelRatio} from 'react-native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import CategoryTapScreen from '../screens/CategoryTap/CategoryTapScreen';
 import {getLocation} from '../storage/locationStorage';
@@ -96,7 +96,25 @@ const CategoryListTabbar = ({route}) => {
             key={name}
             name={name}
             component={CategoryTapScreen}
-            options={{title}}
+            options={{
+              tabBarLabel: ({color}) => {
+                const fontScale = PixelRatio.getFontScale();
+                const baseSize = 16;
+
+                const fontSize = fontScale >= 1.5 ? 19 : baseSize;
+                return (
+                  <Text
+                    allowFontScaling={false} // ✅ 시스템 비율 무시
+                    style={{
+                      color,
+                      fontFamily: 'Pretendard-Bold',
+                      fontSize,
+                    }}>
+                    {title}
+                  </Text>
+                );
+              },
+            }}
             initialParams={{categoryname, location}}
           />
         ))}

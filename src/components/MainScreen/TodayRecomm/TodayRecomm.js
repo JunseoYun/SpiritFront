@@ -1,5 +1,12 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {View, Text, StyleSheet, FlatList, Dimensions} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Dimensions,
+  PixelRatio,
+} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
 import FastImage from 'react-native-fast-image';
@@ -8,6 +15,8 @@ import TodayRecommItemSkeleton from './TodayRecommItemSkeleton';
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
 const SPACING = width * 0.03;
+
+const fontScale = PixelRatio.getFontScale();
 
 const TodayRecomm = ({
   recommCategory,
@@ -67,7 +76,11 @@ const TodayRecomm = ({
       ) : (
         <>
           <View style={styles.todayPhrasesView}>
-            <Text style={styles.todayReason}>{recommReason}</Text>
+            <Text
+              allowFontScaling={false}
+              style={[styles.todayReason, fontScale >= 1.5 && {fontSize: 20}]}>
+              {recommReason}
+            </Text>
           </View>
 
           {recommStores && (

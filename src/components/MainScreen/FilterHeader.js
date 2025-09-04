@@ -14,7 +14,10 @@ import {
   Pressable,
   Animated,
   TouchableOpacity,
+  PixelRatio,
 } from 'react-native';
+
+let fontScale = PixelRatio.getFontScale(); // let으로 변경
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -176,7 +179,7 @@ const FilterHeader = forwardRef(
             onLayout={e => setChoiceBtnWidth(e.nativeEvent.layout.width)}>
             <MaterialCommunityIcons
               name="tune-variant"
-              size={17}
+              size={fontScale >= 1.5 ? 20 : 17}
               color="#555"
             />
             <Text style={styles.choicetext}>
@@ -187,12 +190,15 @@ const FilterHeader = forwardRef(
                 : '기본순'}
             </Text>
             <View
-              style={{
-                width: 1,
-                height: 18,
-                backgroundColor: '#ccc',
-                marginLeft: 5,
-              }}
+              style={[
+                {
+                  width: 1,
+                  height: 18,
+                  backgroundColor: '#ccc',
+                  marginLeft: 5,
+                },
+                fontScale >= 1.5 && {height: 25},
+              ]}
             />
           </Pressable>
         )}
@@ -273,13 +279,14 @@ const styles = StyleSheet.create({
   // 겹치는 choice 버튼
   choicebtn: {
     position: 'absolute',
-    height: 35,
     flexDirection: 'row',
     alignItems: 'center',
     zIndex: 50, // iOS
     gap: 4,
     backgroundColor: '#fff',
     paddingLeft: 18,
+    paddingVertical: 7,
+    paddingBottom: 10,
   },
   choicetext: {
     fontSize: 14,
@@ -289,13 +296,13 @@ const styles = StyleSheet.create({
   },
 
   filterButton: {
-    height: 35,
     justifyContent: 'center',
     paddingHorizontal: 14,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#ccc',
     backgroundColor: 'white',
+    paddingVertical: 7,
   },
   filterText: {
     fontSize: 14,

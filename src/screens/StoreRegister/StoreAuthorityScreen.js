@@ -18,6 +18,7 @@ import StoreOwnerInput from '../../components/StoreAuthority/StoreOwnerInput';
 import StoreBusinessData from '../../components/StoreAuthority/StoreBusinessData';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const StoreAuthorityScreen = ({navigation}) => {
   const route = useRoute();
@@ -199,7 +200,9 @@ const StoreAuthorityScreen = ({navigation}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleNext}>
-          <Text style={styles.headerButton}>다음</Text>
+          <Text style={styles.headerButton} allowFontScaling={false}>
+            다음
+          </Text>
         </Pressable>
       ),
     });
@@ -316,7 +319,7 @@ const styles = StyleSheet.create({
   contentContainer: {paddingBottom: 30},
   headerButton: {
     marginRight: 18,
-    fontSize: 18,
+    fontSize: normalizeFont(18, 1.5),
     fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },
@@ -361,7 +364,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'android' && 10,
   },
   storeAddButtonsearch: {
     paddingVertical: 15,

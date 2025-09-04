@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, Pressable, ScrollView} from 'react-native';
+import {View, Text, Pressable, ScrollView, PixelRatio} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -10,6 +10,10 @@ import useStoreStatus from '../../hooks/useStoreStatus';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
+
+const fontScale = PixelRatio.getFontScale();
+
+const iconSize = fontScale >= 1.5 ? 22 : 16;
 
 const StoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
@@ -256,10 +260,16 @@ const StoreItem = ({store, location, navigation}) => {
       <Pressable onPress={handleStorePress} style={Categorystyles.infoTopView}>
         <View style={Categorystyles.drinkView}>
           {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
-            ? store.mainDrinkDtos?.map((drink, index) => {
+            ? store.mainDrinkDtos.map((drink, index) => {
+                const isLast = index === store.mainDrinkDtos.length - 1;
                 return (
                   <React.Fragment key={index}>
-                    <Text style={[Categorystyles.drinkText]}>
+                    <Text
+                      style={Categorystyles.drinkText}
+                      {...(isLast
+                        ? {numberOfLines: 1, ellipsizeMode: 'tail', flex: 1}
+                        : {})} // 마지막만 적용
+                    >
                       {translateAlcohol(drink.type)} {drink.price}
                     </Text>
                     {index !== store.mainDrinkDtos.length - 1 && (
@@ -274,7 +284,10 @@ const StoreItem = ({store, location, navigation}) => {
           {store.isCertified == true && (
             <FastImage
               source={require('../../assets/verifyMaker.png')}
-              style={Categorystyles.imageStyle}
+              style={[
+                Categorystyles.imageStyle,
+                fontScale >= 1.5 && {width: 21, height: 21},
+              ]}
             />
           )}
           <Text
@@ -285,7 +298,7 @@ const StoreItem = ({store, location, navigation}) => {
           </Text>
         </View>
         <View style={Categorystyles.infoReviewView}>
-          <FontAwesomeIcon name="star" size={16} color="#FED348" />
+          <FontAwesomeIcon name="star" size={iconSize} color="#FED348" />
           <Text style={Categorystyles.infoText}> {store.storeRate || 0}</Text>
           <Text
             style={[
@@ -296,7 +309,7 @@ const StoreItem = ({store, location, navigation}) => {
           </Text>
           <Ionicons
             name="heart"
-            size={16}
+            size={iconSize}
             color={'#F85656'}
             style={{marginLeft: 7}}
           />
@@ -304,7 +317,13 @@ const StoreItem = ({store, location, navigation}) => {
             {store.storeLikeCount || 0}
           </Text>
         </View>
-        <View style={Categorystyles.infoTimeView}>
+        <View
+          style={[
+            Categorystyles.infoTimeView,
+            fontScale >= 1.5
+              ? {flexDirection: 'column', alignItems: 'flex-start'}
+              : {flexDirection: 'row', alignItems: 'center'},
+          ]}>
           <View style={Categorystyles.infoView}>
             {store?.isAlwaysOpen == true ? (
               <Text style={Categorystyles.subInfoText}>24시간 영업</Text>

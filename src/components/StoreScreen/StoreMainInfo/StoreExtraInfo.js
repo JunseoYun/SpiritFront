@@ -56,7 +56,7 @@ const StoreExtraInfo = ({
 
   return (
     <View style={styles.infoCard}>
-      <View style={styles.infoRow}>
+      <View style={[styles.infoRow, {paddingTop: 20}]}>
         <Pressable style={styles.infoCol} onPress={storeNumberHandle}>
           <SimpleLineIcons name="phone" size={23} color="#333" />
           <Text style={styles.locationtext}>전화</Text>
@@ -97,7 +97,7 @@ const StoreExtraInfo = ({
         </Pressable>
       </View>
 
-      <View style={styles.infoRow}>
+      <View style={[styles.infoRow, {paddingBottom: 20}]}>
         <View style={styles.infoCol}>
           <Ionicons name="location-outline" size={23} color="#333" />
           <Text style={styles.locationtext}>
@@ -129,12 +129,12 @@ const styles = StyleSheet.create({
   infoCard: {
     backgroundColor: '#FAFAFA',
     marginHorizontal: 16,
-    height: 150,
     justifyContent: 'space-evenly',
     borderRadius: 16,
     marginVertical: 12,
   },
   infoRow: {
+    paddingVertical: 10,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
   },
@@ -147,5 +147,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     fontSize: 13,
     color: '#181A1A',
+    textAlign: 'center',
   },
 });
