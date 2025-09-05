@@ -18,6 +18,7 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {BlurView} from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
+import {normalizeFont} from '../../../hooks/normalizeFont';
 
 const {width, height} = Dimensions.get('window');
 const CARD_WIDTH = width * 0.65;
@@ -109,10 +110,25 @@ const MyManager = ({navigation, userId}) => {
     });
 
     return (
-      <View style={{alignItems: 'center', width: CARD_WIDTH}}>
+      <View
+        style={[
+          {
+            alignItems: 'center',
+            width: CARD_WIDTH,
+          },
+          mysotredata.length === 1 && {
+            justifyContent: 'center',
+          },
+        ]}>
         <Animated.View style={{transform: [{scale}], opacity}}>
           <Pressable
-            style={styles.card}
+            style={[
+              styles.card,
+              mysotredata.length === 1 && {
+                height: height * 0.5,
+                marginTop: 0,
+              },
+            ]}
             onPress={() => {
               if (index === currentIndex) {
                 openModal(item);
@@ -245,30 +261,7 @@ const MyManager = ({navigation, userId}) => {
       />
 
       {/* 가게 이름 탭 */}
-      {mysotredata.length === 1 ? (
-        <View style={{alignItems: 'center'}}>
-          <Pressable
-            disabled={nameTabDisabled}
-            onPress={() => {
-              flatListRef.current?.scrollToOffset({offset: 0, animated: true});
-            }}
-            style={[
-              styles.nameTab,
-              currentIndex === 0 && styles.activeTab,
-              {paddingVertical: 10},
-            ]}>
-            <Text
-              style={[
-                styles.nameTabText,
-                currentIndex === 0 && styles.activeTabText,
-                {maxWidth: width * 0.5},
-              ]}
-              numberOfLines={1}>
-              {mysotredata[0].storeName}
-            </Text>
-          </Pressable>
-        </View>
-      ) : (
+      {mysotredata.length === 1 ? null : (
         <FlatList
           ref={tabFlatListRef}
           data={mysotredata}
@@ -416,7 +409,9 @@ const MyManager = ({navigation, userId}) => {
                       }}>
                       <Ionicons name="home" size={30} color="#fff" />
                     </Pressable>
-                    <Text style={styles.btnText}>매장 홈</Text>
+                    <Text style={styles.btnText} allowFontScaling={false}>
+                      매장 홈
+                    </Text>
                   </View>
                   <View style={styles.bottomButtonView}>
                     <Pressable
@@ -437,7 +432,9 @@ const MyManager = ({navigation, userId}) => {
                       }}>
                       <Ionicons name="stats-chart" size={30} color="#fff" />
                     </Pressable>
-                    <Text style={styles.btnText}>통계 조회</Text>
+                    <Text style={styles.btnText} allowFontScaling={false}>
+                      통계 조회
+                    </Text>
                   </View>
                   <View style={styles.bottomButtonView}>
                     <Pressable
@@ -458,7 +455,9 @@ const MyManager = ({navigation, userId}) => {
                       }}>
                       <Ionicons name="person-sharp" size={30} color="#fff" />
                     </Pressable>
-                    <Text style={styles.btnText}>운영진</Text>
+                    <Text style={styles.btnText} allowFontScaling={false}>
+                      운영진
+                    </Text>
                   </View>
                   <View style={styles.bottomButtonView}>
                     <Pressable
@@ -483,7 +482,9 @@ const MyManager = ({navigation, userId}) => {
                         color="#fff"
                       />
                     </Pressable>
-                    <Text style={styles.btnText}>리뷰 조회</Text>
+                    <Text style={styles.btnText} allowFontScaling={false}>
+                      리뷰 조회
+                    </Text>
                   </View>
                   <View style={styles.bottomButtonView}>
                     <Pressable
@@ -508,7 +509,9 @@ const MyManager = ({navigation, userId}) => {
                         color="#fff"
                       />
                     </Pressable>
-                    <Text style={styles.btnText}>제보·신고</Text>
+                    <Text style={styles.btnText} allowFontScaling={false}>
+                      제보·신고
+                    </Text>
                   </View>
                 </View>
               </ImageBackground>
@@ -644,7 +647,7 @@ const styles = StyleSheet.create({
 
   btnText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: normalizeFont(13, 1.5),
     fontFamily: 'Pretendard-SemiBold',
   },
   gradientBottom: {
