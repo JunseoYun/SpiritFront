@@ -230,7 +230,7 @@ const SearchScreen = ({navigation}) => {
               location={location}
             />
             <View style={{height: 50}} />
-            <MyBanner />
+            <MyBanner index={'search'} />
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
