@@ -47,6 +47,15 @@ export const ReviewStoreGet = async (storeId, page) => {
   }
 };
 
+export const ReviewgetbyGet = async reviewId => {
+  try {
+    const response = await axiosInstance.get(`/review/get-by/${reviewId}`);
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 export const review_set_reply = async (reviewId, reply) => {
   try {
     const response = await axiosInstance.post(
