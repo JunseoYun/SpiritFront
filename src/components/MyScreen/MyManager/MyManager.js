@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Modal,
   Platform,
 } from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import {Store_getby_managed} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
@@ -45,8 +46,9 @@ const MyManager = ({navigation, userId}) => {
     setLoading(true);
     try {
       const data = await Store_getby_managed(page);
+
       if (page === 0) {
-        setMystoredata(data.content);
+        setMystoredata([...data.content]);
       } else {
         setMystoredata(prev => [...prev, ...data.content]);
       }
@@ -58,9 +60,12 @@ const MyManager = ({navigation, userId}) => {
     }
   };
 
-  useEffect(() => {
-    MyStore(0);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      // 화면이 포커스 될 때마다 데이터 다시 가져오기
+      MyStore(0);
+    }, []),
+  );
 
   const openModal = store => {
     setSelectedStore(store);

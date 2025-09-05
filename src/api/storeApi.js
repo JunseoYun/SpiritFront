@@ -563,6 +563,28 @@ export const getby_manager_invitation_preview = async managerInvitationId => {
   }
 };
 
+export const store_owner_change = async storeManagerId => {
+  try {
+    const response = await axiosInstance.patch(
+      `/store/owner/change/${storeManagerId}`,
+    );
+    return response.data.data; // 또는 response.data.url depending on backend structure
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const delete_store_manager = async storeManagerId => {
+  try {
+    const response = await axiosInstance.delete(
+      `/store/manager/delete/${storeManagerId}`,
+    );
+    return response.data.data; // 또는 response.data.url depending on backend structure
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 export const StoreBoardimage = async ({files, boardType}, storeId) => {
   const formData = new FormData();
 

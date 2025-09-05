@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,8 @@ import {
 
 const {width} = Dimensions.get('window'); // 화면 너비
 
-const MyTabs = ({changePage, isManager}) => {
-  const [selectedTab, setSelectedTab] = useState(0); // 현재 선택된 탭의 인덱스
-  const animatedValue = useRef(new Animated.Value(0)).current; // 애니메이션 값 초기화
+const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
+  const animatedValue = useRef(new Animated.Value(selectedTab)).current;
 
   const tabs = [
     {name: '나의 리뷰', screen: 'MyReview'},
@@ -23,18 +22,24 @@ const MyTabs = ({changePage, isManager}) => {
     tabs.push({name: '나의 매장', screen: 'MyManager'});
   }
 
-  // 탭 전환 시 애니메이션 효과
   const handlePress = index => {
     setSelectedTab(index);
     Animated.timing(animatedValue, {
-      toValue: index, // 클릭된 탭의 인덱스에 따라 애니메이션
-      duration: 300, // 애니메이션 지속 시간 (ms)
-      useNativeDriver: false, // 레이아웃 애니메이션은 native driver 사용 불가
+      toValue: index,
+      duration: 300,
+      useNativeDriver: false,
     }).start();
     changePage(tabs[index].screen);
   };
 
-  // 애니메이션 값으로 밑줄 위치 계산
+  useEffect(() => {
+    Animated.timing(animatedValue, {
+      toValue: selectedTab,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [selectedTab]);
+
   const underlinePosition = animatedValue.interpolate({
     inputRange: tabs.map((_, i) => i),
     outputRange: tabs.map((_, i) => (width / tabs.length) * i),
@@ -51,16 +56,14 @@ const MyTabs = ({changePage, isManager}) => {
             <Text
               style={[
                 styles.tabText,
-                selectedTab === index && styles.selectedTabText, // 선택된 탭 텍스트 스타일
+                selectedTab === index && styles.selectedTabText,
               ]}>
               {tab.name}
             </Text>
           </Pressable>
         ))}
       </View>
-      {/* 회색 기본 밑줄 */}
       <View style={styles.defaultUnderline} />
-      {/* 애니메이션 밑줄 */}
       <Animated.View
         style={[
           styles.animatedUnderline,

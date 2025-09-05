@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, lazy} from 'react';
 import {
   View,
   Text,
@@ -17,15 +17,20 @@ import Loading from '../../hooks/Loading';
 import {useToast} from '../../context/ToastContext';
 import Feather from 'react-native-vector-icons/Feather';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import useCustomAlert from '../../hooks/useCustomAlert';
 
 import {
   Store_getby_managers,
   get_store_manager_invitationLink,
+  delete_store_manager,
+  store_owner_change,
 } from '../../api/storeApi';
 
 const StoreManagerScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storename, userId} = route.params;
+
+  const {showAlert, AlertComponent} = useCustomAlert();
 
   const {bottom} = useSafeAndroidInsets();
   const {showToast} = useToast();
@@ -33,12 +38,13 @@ const StoreManagerScreen = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [ownerId, setOwnerId] = useState('');
   const [managers, setManagers] = useState([]);
+  const [selectedManagerId, setSelectedManagerId] = useState(null);
 
   const ManagerList = async () => {
     setLoading(true);
     try {
       const data = await Store_getby_managers(storeId);
-      setManagers(data);
+      setManagers([...data]);
       const owner = data.find(m => m.isOwner);
       if (owner) setOwnerId(owner.userId);
     } catch (error) {
@@ -71,45 +77,134 @@ const StoreManagerScreen = ({navigation}) => {
     }
   };
 
+  const toggleManagerOptions = managerId => {
+    if (selectedManagerId === managerId) {
+      setSelectedManagerId(null); // 이미 열려있으면 닫기
+    } else {
+      setSelectedManagerId(managerId); // 선택한 매니저 열기
+    }
+  };
+
+  const handleButton = (type, nickname) => {
+    if (type === 'delete') {
+      showAlert({
+        title: '운영진 삭제',
+        message: `${nickname} 님을 ${storename}\n운영진에서 삭제하시겠습니까?`,
+        onConfirm: () => handleRemoveManager(),
+        onCancel: null,
+        type: 'delete',
+      });
+      handleRemoveManager;
+    } else if (type === 'change_owner') {
+      showAlert({
+        title: '사장님 변경',
+        message: `${nickname} 님을 ${storename}\n사장님으로 위임하시겠습니까?`,
+        onConfirm: () => handleTransferOwnership(),
+        onCancel: null,
+        type: 'confirm',
+      });
+      handleRemoveManager;
+    }
+  };
+
+  const handleTransferOwnership = async () => {
+    if (!selectedManagerId) return;
+
+    setLoading(true);
+    try {
+      await store_owner_change(selectedManagerId);
+      await ManagerList();
+      setSelectedManagerId(null); // 버튼 숨기기
+    } catch (error) {
+      showToast('잠시 후 다시 시도해주세요.');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveManager = async () => {
+    if (!selectedManagerId) return;
+
+    setLoading(true);
+    try {
+      await delete_store_manager(selectedManagerId);
+
+      setManagers(prev =>
+        prev.filter(manager => manager.storeManagerId !== selectedManagerId),
+      );
+      showToast('운영진이 삭제되었습니다.');
+      setSelectedManagerId(null); // 버튼 숨기기
+    } catch (error) {
+      showToast('잠시 후 다시 시도해주세요.');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 사장님과 운영진 분리
   const owner = managers.find(m => m.isOwner);
   const staff = managers.filter(m => !m.isOwner);
 
   const renderManagerItem = ({item}) => (
-    <View style={styles.managerItem}>
-      <View style={styles.managerInfo}>
-        <View>
-          <FastImage
-            source={
-              item.profileImgUrl
-                ? {uri: item.profileImgUrl}
-                : require('../../assets/default_profile.png')
-            }
-            style={[
-              styles.profileImg,
-              item.userId === userId && {
-                borderColor: '#5CCEFF',
-                borderWidth: 1.5,
-              },
-            ]}
-          />
+    <View style={styles.managerItemWrap}>
+      <View style={styles.managerItem}>
+        <View style={styles.managerInfo}>
+          <View>
+            <FastImage
+              source={
+                item.profileImgUrl
+                  ? {uri: item.profileImgUrl}
+                  : require('../../assets/default_profile.png')
+              }
+              style={[
+                styles.profileImg,
+                item.userId === userId && {
+                  borderColor: '#5CCEFF',
+                  borderWidth: 1.5,
+                },
+              ]}
+            />
+          </View>
+
+          <View>
+            <Text style={[styles.managerName]}>{item.nickname}</Text>
+            <Text style={styles.managerDate}>
+              {formatDate(item.approvedAt)} ~
+            </Text>
+          </View>
         </View>
 
-        <View>
-          <Text style={[styles.managerName]}>{item.nickname}</Text>
-          <Text style={styles.managerDate}>
-            {formatDate(item.approvedAt)} ~
-          </Text>
-        </View>
+        {!item.isOwner && ownerId === userId && (
+          <Pressable
+            hitSlop={30}
+            onPress={() => toggleManagerOptions(item.storeManagerId)}>
+            <Text style={styles.editText}>
+              {selectedManagerId === item.storeManagerId ? '취소' : '편집'}
+            </Text>
+          </Pressable>
+        )}
       </View>
+      {selectedManagerId === item.storeManagerId && ownerId === userId && (
+        <View style={styles.managerOptions}>
+          <Pressable
+            style={[styles.optionButton, {marginRight: 5}]}
+            onPress={() => handleButton('change_owner', item.nickname)}>
+            <Text style={styles.optionText}>사장님 위임</Text>
+          </Pressable>
 
-      {!item.isOwner && ownerId === userId && (
-        <Feather
-          name="more-vertical"
-          size={20}
-          color="#121212"
-          style={{paddingLeft: 12}}
-        />
+          <Pressable
+            style={[
+              styles.optionButton,
+              {backgroundColor: '#FF5A5F', marginLeft: 5},
+            ]}
+            onPress={() => handleButton('delete', item.nickname)}>
+            <Text style={[styles.optionText, {color: '#fff'}]}>
+              운영진 삭제
+            </Text>
+          </Pressable>
+        </View>
       )}
     </View>
   );
@@ -160,6 +255,7 @@ const StoreManagerScreen = ({navigation}) => {
         </Pressable>
       </View>
 
+      <AlertComponent />
       <Loading loading={loading} />
     </SafeAreaView>
   );
@@ -239,6 +335,31 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: Platform.OS === 'android' && 10,
     backgroundColor: '#fff',
+  },
+  managerItemWrap: {
+    marginBottom: 10,
+  },
+  editText: {
+    color: '#121212',
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 14,
+  },
+  managerOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 8,
+  },
+  optionButton: {
+    flex: 1,
+    paddingVertical: 10,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  optionText: {
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
+    color: '#121212',
   },
 });
 

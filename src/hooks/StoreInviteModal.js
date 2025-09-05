@@ -18,12 +18,15 @@ import {
 import Loading from './Loading';
 import {useToast} from '../context/ToastContext';
 import LinearGradient from 'react-native-linear-gradient';
+import {navigationRef} from '../navigation/NavigationService';
 
 const {width} = Dimensions.get('window');
 const CARD_WIDTH = Math.min(width * 0.88, 420);
 const COVER_HEIGHT = Math.round(CARD_WIDTH * 0.56);
 
 const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
+  if (!isShowStoreInvite) return null;
+
   const [previewData, setPreviewData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(null);
@@ -59,7 +62,7 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
       console.error(e);
       setPreviewData(null);
       onDismiss();
-      showToast('만료된 초대입니다.');
+      showToast('초대가 만료되었습니다.');
     } finally {
       setLoading(false);
     }
@@ -82,17 +85,18 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
     setLoading(true);
     try {
       const response = await get_store_manager_invitation_accept(storeInviteId);
-      console.log(response);
     } catch (error) {
-      console.error(error.response.data.code);
       if (error.response.data.code === 22036) {
-        console.log('STORE_MANAGER_ALREADY_EXIST');
+        showToast('이미 해당 매장을 관리하고 있습니다.');
       }
     } finally {
       setLoading(false);
+      onDismiss();
+      navigationRef.navigate('MyStack', {
+        screen: 'MyScreen',
+        params: {invitationManager: true},
+      });
     }
-
-    // onDismiss();
   };
 
   return (
