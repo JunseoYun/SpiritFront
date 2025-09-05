@@ -412,9 +412,8 @@ const StoreMainScreen = ({navigation}) => {
       }
 
       await Share.share({
-        message: `${storedata.name}에서 한잔 어때요?\n한잔할까에서 확인해보세요!\n${response.shareLink}`,
+        message: `${storedata.name}에서 한잔 어때요?\n한잔할까에서 매장 정보를 확인하세요.\n\n${response.shareLink}`,
         shareLink: response.shareLink,
-        title: '가게 공유',
       });
     } catch (error) {
       showToast('공유 도중 문제가 발생했어요.');

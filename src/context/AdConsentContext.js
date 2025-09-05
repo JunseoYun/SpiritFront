@@ -1,7 +1,7 @@
 // AdConsentContext.js
 import React, {createContext, useContext, useState, useEffect} from 'react';
 import mobileAds from 'react-native-google-mobile-ads';
-import {AdsConsent} from 'react-native-google-mobile-ads/consent';
+import {AdsConsent} from 'react-native-google-mobile-ads';
 import {Platform} from 'react-native';
 
 const AdConsentContext = createContext({npa: false});

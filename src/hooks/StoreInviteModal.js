@@ -11,7 +11,10 @@ import {
   Animated,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
-import {getby_manager_invitation_preview} from '../api/storeApi';
+import {
+  getby_manager_invitation_preview,
+  get_store_manager_invitation_accept,
+} from '../api/storeApi';
 import Loading from './Loading';
 import {useToast} from '../context/ToastContext';
 import LinearGradient from 'react-native-linear-gradient';
@@ -21,8 +24,6 @@ const CARD_WIDTH = Math.min(width * 0.88, 420);
 const COVER_HEIGHT = Math.round(CARD_WIDTH * 0.56);
 
 const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
-  if (!isShowStoreInvite) return null;
-
   const [previewData, setPreviewData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(null);
@@ -65,6 +66,7 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
   };
 
   useEffect(() => {
+    if (!isShowStoreInvite || !storeInviteId) return;
     let isActive = true;
     (async () => {
       await previewDataLoad();
@@ -76,14 +78,26 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
     // storeInviteId 변경 시 재호출
   }, [storeInviteId]);
 
-  const handleAccept = () => {
-    onDismiss();
+  const handleAccept = async () => {
+    setLoading(true);
+    try {
+      const response = await get_store_manager_invitation_accept(storeInviteId);
+      console.log(response);
+    } catch (error) {
+      console.error(error.response.data.code);
+      if (error.response.data.code === 22036) {
+        console.log('STORE_MANAGER_ALREADY_EXIST');
+      }
+    } finally {
+      setLoading(false);
+    }
+
+    // onDismiss();
   };
 
   return (
     <Modal
       transparent
-      visible={isShowStoreInvite}
       animationType="fade"
       statusBarTranslucent
       onRequestClose={onDismiss}>
@@ -132,7 +146,9 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
                 운영진 초대
               </Text>
               <Text style={styles.message} numberOfLines={3}>
-                {previewData?.storeName} 운영진으로 초대를 수락하고
+                {previewData?.storeName} 매장의 운영진으로 초대되었습니다.{`\n`}
+                초대를 수락하면 {previewData?.storeName} 매장을 관리할 수
+                있습니다.
               </Text>
 
               <View style={styles.ctaRow}>
@@ -269,7 +285,6 @@ const styles = StyleSheet.create({
     minWidth: 120,
     alignItems: 'center',
     justifyContent: 'center',
-    // borderWidth: 1,
   },
   btnText: {
     fontSize: 16,
@@ -286,7 +301,6 @@ const styles = StyleSheet.create({
   },
   btnOutline: {
     backgroundColor: '#f5f5f5',
-    // borderColor: '#E6E8EB',
     flex: 1,
   },
   btnOutlineText: {
