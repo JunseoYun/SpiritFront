@@ -18,6 +18,7 @@ import {useToast} from '../../context/ToastContext';
 import Feather from 'react-native-vector-icons/Feather';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import {Userdataget} from '../../api/userApi';
 
 import {
   Store_getby_managers,
@@ -28,7 +29,8 @@ import {
 
 const StoreManagerScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeId, storename, userId} = route.params;
+  const {storeId, storename} = route.params;
+  const [userdata, setUserdata] = useState('');
 
   const {showAlert, AlertComponent} = useCustomAlert();
 
@@ -39,6 +41,26 @@ const StoreManagerScreen = ({navigation}) => {
   const [ownerId, setOwnerId] = useState('');
   const [managers, setManagers] = useState([]);
   const [selectedManagerId, setSelectedManagerId] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setLoading(true);
+      try {
+        const data = await Userdataget();
+
+        setUserdata(data);
+      } catch (error) {
+        if (error.response) {
+        } else {
+          // 네트워크 또는 다른 에러 처리
+          console.error('Unexpected Error:', error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserData();
+  }, []);
 
   const ManagerList = async () => {
     setLoading(true);
@@ -160,7 +182,7 @@ const StoreManagerScreen = ({navigation}) => {
               }
               style={[
                 styles.profileImg,
-                item.userId === userId && {
+                item.userId === userdata?.id && {
                   borderColor: '#5CCEFF',
                   borderWidth: 1.5,
                 },
@@ -176,7 +198,7 @@ const StoreManagerScreen = ({navigation}) => {
           </View>
         </View>
 
-        {!item.isOwner && ownerId === userId && (
+        {!item.isOwner && ownerId === userdata?.id && (
           <Pressable
             hitSlop={30}
             onPress={() => toggleManagerOptions(item.storeManagerId)}>
@@ -186,26 +208,27 @@ const StoreManagerScreen = ({navigation}) => {
           </Pressable>
         )}
       </View>
-      {selectedManagerId === item.storeManagerId && ownerId === userId && (
-        <View style={styles.managerOptions}>
-          <Pressable
-            style={[styles.optionButton, {marginRight: 5}]}
-            onPress={() => handleButton('change_owner', item.nickname)}>
-            <Text style={styles.optionText}>사장님 위임</Text>
-          </Pressable>
+      {selectedManagerId === item.storeManagerId &&
+        ownerId === userdata?.id && (
+          <View style={styles.managerOptions}>
+            <Pressable
+              style={[styles.optionButton, {marginRight: 5}]}
+              onPress={() => handleButton('change_owner', item.nickname)}>
+              <Text style={styles.optionText}>사장님 위임</Text>
+            </Pressable>
 
-          <Pressable
-            style={[
-              styles.optionButton,
-              {backgroundColor: '#FF5A5F', marginLeft: 5},
-            ]}
-            onPress={() => handleButton('delete', item.nickname)}>
-            <Text style={[styles.optionText, {color: '#fff'}]}>
-              운영진 삭제
-            </Text>
-          </Pressable>
-        </View>
-      )}
+            <Pressable
+              style={[
+                styles.optionButton,
+                {backgroundColor: '#FF5A5F', marginLeft: 5},
+              ]}
+              onPress={() => handleButton('delete', item.nickname)}>
+              <Text style={[styles.optionText, {color: '#fff'}]}>
+                운영진 삭제
+              </Text>
+            </Pressable>
+          </View>
+        )}
     </View>
   );
 

@@ -110,6 +110,10 @@ const NotificationScreen = ({navigation}) => {
       handleRefresh();
     }
   };
+  function extractStoreName(body) {
+    const match = body.match(/(.+?)\s*매장/);
+    return match ? match[1] : null;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -124,29 +128,49 @@ const NotificationScreen = ({navigation}) => {
           <Pressable
             onPress={() => {
               const handlePress = async () => {
+                if (!item.hasRead) {
+                  await NotificationRead(item.id);
+                }
                 if (item.notificationType === 'STORE_OWNERSHIP_REJECTED') {
                   setSelectedReject(item);
                   if (!item.hasRead) {
-                    await NotificationRead(item.id);
                     setHasReadmodal(true);
                   }
                 }
 
                 if (item.notificationType === 'STORE_OWNERSHIP_APPROVED') {
-                  if (!item.hasRead) {
-                    await NotificationRead(item.id);
-                  }
-                  navigation.navigate('StoreStack', {
-                    screen: 'StoreMainScreen',
-                    params: {storeId: item.redirectId},
+                  navigation.reset({
+                    index: 0, // 선택할 화면 인덱스
+                    routes: [
+                      {
+                        name: 'MyStack', // 스택 이름
+                        state: {
+                          index: 0,
+                          routes: [
+                            {
+                              name: 'MyScreen',
+                              params: {invitationManager: true},
+                            },
+                          ],
+                        },
+                      },
+                    ],
                   });
                 }
 
+                if (
+                  item.notificationType === 'STORE_OWNER_CHANGED' ||
+                  item.notificationType === 'STORE_MANAGER_INVITE_ACCEPTED'
+                ) {
+                  navigation.navigate('StoreStack', {
+                    screen: 'StoreManagerScreen',
+                    params: {
+                      storeId: item.redirectId,
+                      storename: extractStoreName(item.body),
+                    },
+                  });
+                }
                 if (item.notificationType === 'STORE_REVIEW_CREATED') {
-                  if (!item.hasRead) {
-                    await NotificationRead(item.id);
-                  }
-
                   const body = item.body || '';
                   let storename = '';
                   const match = body.match(/(.+?) 매장에/);
