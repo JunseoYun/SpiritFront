@@ -63,11 +63,8 @@ const NotificationSetScreen = ({navigation}) => {
     const fetchUserData = async () => {
       try {
         const data = await Userdataget();
-
-        console.log(data);
         setUserdata(data);
         setMarketingEnabled(data.marketingConsent);
-        console.log(data.isManager);
       } catch (error) {
         if (error.response) {
         } else {

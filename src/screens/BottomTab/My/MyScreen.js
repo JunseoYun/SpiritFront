@@ -9,10 +9,14 @@ import MyReview from '../../../components/MyScreen/MyReview';
 import MyLocation from '../../../components/MyScreen/MyLocation';
 import MyManager from '../../../components/MyScreen/MyManager/MyManager';
 import Loading from '../../../hooks/Loading';
+import {useRoute} from '@react-navigation/native';
 
 const MyScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const [selectedTab, setSelectedTab] = useState(0);
+  const route = useRoute();
+  const invitationManager = route.params?.invitationManager;
 
   const [currentPage, setCurrentPage] = useState('MyReview');
   useFocusEffect(
@@ -70,6 +74,13 @@ const MyScreen = ({navigation}) => {
     fetchUserData();
   }, []);
 
+  useEffect(() => {
+    if (invitationManager) {
+      setCurrentPage('MyManager');
+      setSelectedTab(userdata?.isManager ? 2 : 0); // MyManager가 3번째 탭이므로 index = 2
+    }
+  }, [invitationManager, userdata?.isManager]);
+
   if (!userdata) {
     return <Loading loading={true} />;
   }
@@ -95,7 +106,12 @@ const MyScreen = ({navigation}) => {
           })
         }
       />
-      <MyTabs changePage={setCurrentPage} isManager={userdata?.isManager} />
+      <MyTabs
+        selectedTab={selectedTab}
+        setSelectedTab={setSelectedTab}
+        changePage={setCurrentPage}
+        isManager={userdata?.isManager}
+      />
       <>
         {/* Myreview 값 가져오기 */}
         {currentPage === 'MyReview' && <MyReview navigation={navigation} />}
