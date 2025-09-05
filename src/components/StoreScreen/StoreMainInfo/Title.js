@@ -99,7 +99,7 @@ const Title = ({
                     <Text style={styles.dropdownText}>매장 통계 조회</Text>
                   </Pressable>
                 )}
-                {isUpdatable ? (
+                {isUpdatable && (
                   <Pressable
                     style={styles.dropdownItem}
                     onPress={() => {
@@ -108,16 +108,15 @@ const Title = ({
                     }}>
                     <Text style={styles.dropdownText}>매장 신고 조회</Text>
                   </Pressable>
-                ) : (
-                  <Pressable
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      toggleDropdown();
-                      handleReport();
-                    }}>
-                    <Text style={styles.dropdownText}>매장 제보·신고</Text>
-                  </Pressable>
                 )}
+                <Pressable
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    toggleDropdown();
+                    handleReport();
+                  }}>
+                  <Text style={styles.dropdownText}>매장 제보·신고</Text>
+                </Pressable>
               </Animated.View>
             )}
           </View>

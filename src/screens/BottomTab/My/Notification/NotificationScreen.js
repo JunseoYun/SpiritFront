@@ -15,6 +15,7 @@ import {
 import Loading from '../../../../hooks/Loading';
 import RejectModal from '../../../../components/Reject/RejectModal';
 import {useToast} from '../../../../context/ToastContext';
+import {ReviewgetbyGet} from '../../../../api/reviewApi';
 
 const NotificationCard = ({title, message, date, hasRead}) => {
   const textColorStyle = hasRead ? styles.readText : styles.unreadText;
@@ -122,22 +123,52 @@ const NotificationScreen = ({navigation}) => {
         renderItem={({item}) => (
           <Pressable
             onPress={() => {
-              if (item.notificationType === 'STORE_OWNERSHIP_REJECTED') {
-                setSelectedReject(item);
-                if (item.hasRead == false) {
-                  NotificationRead(item.id);
-                  setHasReadmodal(true);
+              const handlePress = async () => {
+                if (item.notificationType === 'STORE_OWNERSHIP_REJECTED') {
+                  setSelectedReject(item);
+                  if (!item.hasRead) {
+                    await NotificationRead(item.id);
+                    setHasReadmodal(true);
+                  }
                 }
-              }
-              if (item.notificationType === 'STORE_OWNERSHIP_APPROVED') {
-                if (item.hasRead == false) {
-                  NotificationRead(item.id);
+
+                if (item.notificationType === 'STORE_OWNERSHIP_APPROVED') {
+                  if (!item.hasRead) {
+                    await NotificationRead(item.id);
+                  }
+                  navigation.navigate('StoreStack', {
+                    screen: 'StoreMainScreen',
+                    params: {storeId: item.redirectId},
+                  });
                 }
-                navigation.navigate('StoreStack', {
-                  screen: 'StoreMainScreen',
-                  params: {storeId: item.redirectId},
-                });
-              }
+
+                if (item.notificationType === 'STORE_REVIEW_CREATED') {
+                  if (!item.hasRead) {
+                    await NotificationRead(item.id);
+                  }
+
+                  const body = item.body || '';
+                  let storename = '';
+                  const match = body.match(/(.+?) 매장에/);
+                  if (match) storename = match[1];
+
+                  try {
+                    const response = await ReviewgetbyGet(item.redirectId);
+                    navigation.navigate('StoreStack', {
+                      screen: 'StoreReviewScreen',
+                      params: {
+                        storeId: response.storeId,
+                        storename,
+                        isOwner: true,
+                      },
+                    });
+                  } catch (er) {
+                    console.log(er);
+                  }
+                }
+              };
+
+              handlePress();
             }}>
             <NotificationCard
               title={item.title}
