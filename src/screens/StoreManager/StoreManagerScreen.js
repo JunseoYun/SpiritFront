@@ -62,9 +62,8 @@ const StoreManagerScreen = ({navigation}) => {
       }
 
       await Share.share({
-        message: `${storename}에서 운영진으로 함께하세요! 아래 링크를 눌러 초대를 수락해 주세요.\n${response.inviteLink}`,
+        message: `${storename} 매장의 운영진으로 초대합니다!\n초대를 수락하고 한잔할까에서 매장을 관리하세요.\n\n${response.inviteLink}`,
         inviteLink: response.inviteLink,
-        title: `${storename} 운영진 초대`,
       });
     } catch (error) {
       showToast('공유 도중 문제가 발생했어요.');
