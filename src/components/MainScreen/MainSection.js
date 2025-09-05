@@ -1,5 +1,5 @@
 // MainSection.js
-import React from 'react';
+import React, {useState} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
 import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
@@ -7,6 +7,7 @@ import StoreRegister from '../../components/MainScreen/StoreRegister';
 import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
 import NearStoreList from '../../components/MainScreen/NearStore/NearStoreList';
 import ViewedStoreList from './ViewedStore/ViewedStoreList';
+import MyBanner from '../Ads/MyBanner';
 
 const MainSection = ({
   recommCategory,
@@ -21,6 +22,7 @@ const MainSection = ({
   setIsRefreshing,
   catagoryClick,
 }) => {
+  const [bannerLoaded, setBannerLoaded] = useState(false);
   return (
     <View
       style={{
@@ -50,7 +52,10 @@ const MainSection = ({
         refresh={isRefreshing}
         setRefresh={setIsRefreshing}
       />
-      <View style={[styles.division, {marginTop: 10}]} />
+
+      <MyBanner onAdLoaded={setBannerLoaded} index={'main'} />
+      {!bannerLoaded && <View style={[styles.division, {marginTop: 10}]} />}
+
       <OpenStoreList
         location={location}
         navigation={navigation}
@@ -64,21 +69,6 @@ const MainSection = ({
         setRefresh={setIsRefreshing}
       />
       <View style={[styles.division, {marginTop: 20}]} />
-      {/* <View
-        style={{
-          marginLeft: 20,
-          marginTop: 20,
-          marginBottom: 10,
-        }}>
-        <Text
-          style={{
-            fontSize: 18,
-            fontFamily: 'Pretendard-SemiBold',
-            color: '#181a1a',
-          }}>
-          현재 인기 매장
-        </Text>
-      </View> */}
     </View>
   );
 };
