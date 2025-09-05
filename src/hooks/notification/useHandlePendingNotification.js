@@ -11,6 +11,10 @@ const useHandlePendingNotification = (
   clearNotification,
   showRejectModal,
 ) => {
+  function extractStoreName(body) {
+    const match = body.match(/(.+?)\s*매장/);
+    return match ? match[1] : null;
+  }
   const NotificationRead = async notificationId => {
     try {
       await NotifiRead(notificationId);
@@ -19,8 +23,13 @@ const useHandlePendingNotification = (
   useEffect(() => {
     if (!loading && pendingNotification) {
       const handleNotification = async () => {
-        const {redirectType, notificationType, redirectId, notificationId} =
-          pendingNotification;
+        const {
+          redirectType,
+          notificationType,
+          redirectId,
+          notificationId,
+          body,
+        } = pendingNotification;
 
         if (
           redirectType === 'REVIEW_DETAIL' &&
@@ -47,9 +56,9 @@ const useHandlePendingNotification = (
           redirectType === 'STORE_DETAIL' &&
           notificationType === 'STORE_OWNERSHIP_APPROVED'
         ) {
-          navigate('StoreStack', {
-            screen: 'StoreMainScreen',
-            params: {storeId: redirectId},
+          navigate('MyStack', {
+            screen: 'MyScreen',
+            params: {invitationManager: true},
           });
         } else if (
           notificationType === 'STORE_OWNERSHIP_REJECTED' &&
@@ -59,6 +68,28 @@ const useHandlePendingNotification = (
           if (typeof showRejectModal === 'function') {
             showRejectModal(pendingNotification);
           }
+        } else if (
+          notificationType === 'STORE_OWNER_CHANGED' &&
+          redirectType === 'STORE_MANAGER_LIST'
+        ) {
+          navigate('StoreStack', {
+            screen: 'StoreManagerScreen',
+            params: {
+              storeId: redirectId,
+              storename: extractStoreName(body),
+            },
+          });
+        } else if (
+          notificationType === 'STORE_MANAGER_INVITE_ACCEPTED' &&
+          redirectType === 'STORE_MANAGER_LIST'
+        ) {
+          navigate('StoreStack', {
+            screen: 'StoreManagerScreen',
+            params: {
+              storeId: redirectId,
+              storename: extractStoreName(body),
+            },
+          });
         }
 
         await NotificationRead(notificationId);

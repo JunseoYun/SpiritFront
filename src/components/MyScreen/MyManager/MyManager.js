@@ -24,7 +24,7 @@ const {width, height} = Dimensions.get('window');
 const CARD_WIDTH = width * 0.65;
 const CARD_SPACING = (width - CARD_WIDTH) / 2;
 
-const MyManager = ({navigation, userId}) => {
+const MyManager = ({navigation}) => {
   const [page, setPage] = useState(0);
   const [totalpage, setTotalpage] = useState(null);
   const [mysotredata, setMystoredata] = useState([]);
@@ -449,7 +449,6 @@ const MyManager = ({navigation, userId}) => {
                           params: {
                             storeId: selectedStore.storeId,
                             storename: selectedStore.storeName,
-                            userId,
                           },
                         });
                       }}>
