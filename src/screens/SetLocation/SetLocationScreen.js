@@ -110,12 +110,18 @@ const SetLocationScreen = ({navigation}) => {
           </Text>
         </View>
       </View>
+      <View style={styles.noticeView}>
+        <Ionicons
+          name="information-circle-outline"
+          size={15}
+          color="#6B7280"
+          style={{marginRight: 3}}
+        />
+        <Text style={styles.noticeText}>
+          현재 한잔할까는 용인시를 중심으로 운영 중입니다.
+        </Text>
+      </View>
 
-      {/* 위치 선택 버튼들
-      <View style={styles.buttonRow}>
-      
- 
-      </View> */}
       <TouchableOpacity
         style={styles.blueButton}
         onPress={handleGetCurrentLocation}>
@@ -158,7 +164,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E6F6FD',
     padding: 18,
     borderRadius: 8,
-    marginBottom: 24,
+    marginBottom: 10,
     marginHorizontal: 18,
     marginTop: 20,
   },
@@ -173,7 +179,18 @@ const styles = StyleSheet.create({
     color: '#121212',
     fontFamily: 'Pretendard-SemiBold',
   },
-
+  noticeView: {
+    marginHorizontal: 18,
+    marginBottom: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    textAlign: 'center',
+  },
+  noticeText: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontFamily: 'Pretendard-Regular',
+  },
   blueButton: {
     flexDirection: 'row',
     alignItems: 'center',

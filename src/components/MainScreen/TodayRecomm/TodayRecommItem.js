@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   drinkView: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 20,
     marginLeft: 10,
   },
   drinkText: {
