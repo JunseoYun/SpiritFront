@@ -58,8 +58,9 @@ const StoreHeader = ({
 
         <Pressable
           onPress={() =>
-            navigation.navigate('MainBtmbar', {
-              screen: 'MainScreen',
+            navigation.reset({
+              index: 1,
+              routes: [{name: 'MainBtmbar'}],
             })
           }>
           <Animated.Text allowFontScaling={false} style={{color: iconColor}}>

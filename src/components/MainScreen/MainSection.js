@@ -22,7 +22,6 @@ const MainSection = ({
   setIsRefreshing,
   catagoryClick,
 }) => {
-  const [bannerLoaded, setBannerLoaded] = useState(false);
   return (
     <View
       style={{
@@ -53,8 +52,7 @@ const MainSection = ({
         setRefresh={setIsRefreshing}
       />
 
-      <MyBanner onAdLoaded={setBannerLoaded} index={'main'} />
-      {!bannerLoaded && <View style={[styles.division, {marginTop: 10}]} />}
+      <MyBanner index={'main'} />
 
       <OpenStoreList
         location={location}

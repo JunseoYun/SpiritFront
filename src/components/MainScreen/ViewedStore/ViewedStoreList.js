@@ -18,7 +18,13 @@ if (fontScale > 1.7) fontScale = 1.7;
 const fontSize = 18 * fontScale;
 const subfontSize = 13 * fontScale;
 
-const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
+const ViewedStoreList = ({
+  refresh,
+  navigation,
+  location,
+  setRefresh,
+  loaded,
+}) => {
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -88,9 +94,7 @@ const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
 
   return (
     <>
-      {stores.length === 0 && !loading ? (
-        <View style={styles.division} />
-      ) : (
+      {stores.length === 0 && !loading ? null : (
         <View style={{backgroundColor: '#fff', marginTop: 20}}>
           <Pressable
             style={styles.storeTextView}

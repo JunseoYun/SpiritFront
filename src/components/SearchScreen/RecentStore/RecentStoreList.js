@@ -16,7 +16,6 @@ const RecentStoreList = ({
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [firstloading, setFirstloading] = useState(true);
-  // const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalpage, setTotalpage] = useState(0);
 
