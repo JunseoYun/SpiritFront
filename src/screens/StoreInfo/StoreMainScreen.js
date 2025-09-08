@@ -771,10 +771,10 @@ const StoreMainScreen = ({navigation}) => {
             />
           </BottomSheet>
           <AlertComponent />
-
-          <Loading loading={loading} />
         </>
       )}
+
+      <Loading loading={loading} />
     </View>
   );
 };

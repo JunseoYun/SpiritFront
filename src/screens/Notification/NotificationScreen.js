@@ -49,6 +49,7 @@ const NotificationScreen = ({navigation}) => {
   const [notifidata, setNotifidata] = useState([]);
   const [selectedReject, setSelectedReject] = useState(null);
   const [hasReadmodal, setHasReadmodal] = useState(false);
+  const [clickedItemId, setClickedItemId] = useState(null);
   const {showToast} = useToast();
 
   useEffect(() => {
@@ -127,10 +128,14 @@ const NotificationScreen = ({navigation}) => {
         renderItem={({item}) => (
           <Pressable
             onPress={() => {
+              if (clickedItemId) return; // 이미 클릭 중이면 무시
+              setClickedItemId(item.id); // 클릭 시작
+
               const handlePress = async () => {
                 if (!item.hasRead) {
                   await NotificationRead(item.id);
                 }
+
                 if (item.notificationType === 'STORE_OWNERSHIP_REJECTED') {
                   setSelectedReject(item);
                   if (!item.hasRead) {
@@ -190,6 +195,7 @@ const NotificationScreen = ({navigation}) => {
                     console.log(er);
                   }
                 }
+                setClickedItemId(null);
               };
 
               handlePress();
