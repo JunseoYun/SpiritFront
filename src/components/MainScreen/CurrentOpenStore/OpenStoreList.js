@@ -86,9 +86,10 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
     <View>
       <Pressable
         style={styles.todayPhrasesView}
-        onPress={() => {
-          navigation.navigate('OpenStoreScreen', {location: location});
-        }}>
+        onPress={() =>
+          distancestores.length >= 3 &&
+          navigation.navigate('OpenStoreScreen', {location})
+        }>
         <View
           style={{
             marginTop: 10,
@@ -102,14 +103,16 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
             allowFontScaling={false}>
             현재 영업 중인 술집은?
           </Text>
-          <View style={styles.totalView}>
-            <Text
-              style={[styles.totalText, {fontSize: subfontSize}]}
-              allowFontScaling={false}>
-              전체보기
-            </Text>
-            <Feather name={'chevron-right'} size={15} color="#333" />
-          </View>
+          {distancestores.length >= 3 && (
+            <View style={styles.totalView}>
+              <Text
+                style={[styles.totalText, {fontSize: subfontSize}]}
+                allowFontScaling={false}>
+                전체보기
+              </Text>
+              <Feather name={'chevron-right'} size={15} color="#333" />
+            </View>
+          )}
         </View>
         <Text style={styles.mylocationlivesubtext}>
           내 주변 늦게까지 영업하는 술집을 알려드려요
