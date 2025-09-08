@@ -94,7 +94,9 @@ const ViewedStoreList = ({
 
   return (
     <>
-      {stores.length === 0 && !loading ? null : (
+      {stores.length === 0 && !loading ? (
+        <View style={{marginTop: 20}}></View>
+      ) : (
         <View style={{backgroundColor: '#fff', marginTop: 20}}>
           <Pressable
             style={styles.storeTextView}
