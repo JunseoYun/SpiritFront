@@ -57,20 +57,21 @@ const MainScreen = ({navigation}) => {
   const MemoPopularstoreItem = React.memo(PopularStoreItem);
 
   useEffect(() => {
-    // SectionList가 렌더된 후에 ref가 존재하면 바로 등록
     if (scrollRef.current) {
       navigation.setParams({
         scrollToTop: () => {
-          scrollRef.current.scrollToLocation({
-            sectionIndex: 0,
-            itemIndex: 0,
-            viewPosition: 0, // 0이면 최상단, 1이면 최하단
-            animated: true,
-          });
+          if (scrollRef.current) {
+            scrollRef.current.scrollToLocation({
+              sectionIndex: 0,
+              itemIndex: 0,
+              viewPosition: 0,
+              animated: true,
+            });
+          }
         },
       });
     }
-  }, [navigation]);
+  }, [navigation, scrollRef.current]);
 
   const scrollListener = useRef(null);
 
@@ -561,7 +562,7 @@ const MainScreen = ({navigation}) => {
         }
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {useNativeDriver: true}, // 상태 체크를 위해 false
+          {useNativeDriver: true}, // 상태 체크를 위해 false -> ios false
         )}
         renderSectionHeader={({section}) => {
           if (section.key === 'popularStores') {

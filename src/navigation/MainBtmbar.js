@@ -70,6 +70,15 @@ const MainBtmbar = () => {
           tabBarLabel: ({color}) => renderLabel('홈', color),
           headerShown: false,
         }}
+        listeners={({navigation, route}) => ({
+          tabPress: e => {
+            const isFocused = navigation.isFocused();
+
+            if (isFocused && route.params?.scrollToTop) {
+              route.params.scrollToTop();
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="LikeScreen"
