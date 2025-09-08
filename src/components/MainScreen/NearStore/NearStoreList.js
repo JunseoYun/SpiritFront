@@ -108,9 +108,10 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
     <View>
       <Pressable
         style={styles.storeTextView}
-        onPress={() => {
-          navigation.navigate('NearStoreScreen', {location: location});
-        }}>
+        onPress={() =>
+          stores.length >= 3 &&
+          navigation.navigate('NearStoreScreen', {location})
+        }>
         <View
           style={{
             marginTop: 10,
@@ -122,14 +123,16 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
           <Text style={[styles.storeText, {fontSize}]} allowFontScaling={false}>
             제일 가까운 술집은?
           </Text>
-          <View style={styles.totalView}>
-            <Text
-              style={[styles.totalText, {fontSize: subfontSize}]}
-              allowFontScaling={false}>
-              전체보기
-            </Text>
-            <Feather name={'chevron-right'} size={15} color="#333" />
-          </View>
+          {stores.length >= 3 && (
+            <View style={styles.totalView}>
+              <Text
+                style={[styles.totalText, {fontSize: subfontSize}]}
+                allowFontScaling={false}>
+                전체보기
+              </Text>
+              <Feather name={'chevron-right'} size={15} color="#333" />
+            </View>
+          )}
         </View>
         <Text style={styles.storeSubText}>
           현재 위치에서 가장 가까운 술집을 알려드려요

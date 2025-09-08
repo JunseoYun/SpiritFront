@@ -98,9 +98,9 @@ const ViewedStoreList = ({
         <View style={{backgroundColor: '#fff', marginTop: 20}}>
           <Pressable
             style={styles.storeTextView}
-            onPress={() => {
-              navigation.navigate('ViewedStoreScreen');
-            }}>
+            onPress={() =>
+              stores.length >= 4 && navigation.navigate('ViewedStoreScreen')
+            }>
             <View
               style={{
                 marginTop: 10,
@@ -114,15 +114,16 @@ const ViewedStoreList = ({
                 style={[styles.storeText, {fontSize}]}>
                 최근 본 매장
               </Text>
-
-              <View style={styles.totalView}>
-                <Text
-                  allowFontScaling={false}
-                  style={[styles.totalText, {fontSize: subfontSize}]}>
-                  전체보기
-                </Text>
-                <Feather name={'chevron-right'} size={15} color="#333" />
-              </View>
+              {stores.length >= 4 && (
+                <View style={styles.totalView}>
+                  <Text
+                    allowFontScaling={false}
+                    style={[styles.totalText, {fontSize: subfontSize}]}>
+                    전체보기
+                  </Text>
+                  <Feather name={'chevron-right'} size={15} color="#333" />
+                </View>
+              )}
             </View>
           </Pressable>
           <FlatList

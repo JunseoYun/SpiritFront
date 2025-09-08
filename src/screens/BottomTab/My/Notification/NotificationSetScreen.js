@@ -130,7 +130,10 @@ const NotificationSetScreen = ({navigation}) => {
           </View>
           {marketingEnabled && (
             <Text style={styles.label2}>
-              {new Date(userdata.marketingAgreedAt).toLocaleDateString()} 동의
+              {new Date(
+                userdata.marketingAgreedAt || Date.now(),
+              ).toLocaleDateString()}{' '}
+              동의
             </Text>
           )}
         </View>
