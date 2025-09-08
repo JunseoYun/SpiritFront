@@ -149,17 +149,37 @@ const InfoImageEditScreen = ({navigation, route}) => {
     if (!hasPermission) return;
 
     try {
-      const images = await ImagePicker.openPicker({
-        multiple: true,
+      const pickedImages = await ImagePicker.openPicker({
         mediaType: 'photo',
+        multiple: true, // 2개 이상일 때만 multiple
         maxFiles: 10,
-        compressImageQuality: 0.95, // 품질
-        compressImageMaxWidth: 2160, // 최대 너비
-        compressImageMaxHeight: 2160, // 최대 높이
-        cropping: false,
+        cropping: false, // 우선 crop 안함
       });
 
-      const picked = images.map(image => ({
+      const selectedImages = Array.isArray(pickedImages)
+        ? pickedImages
+        : [pickedImages];
+
+      const croppedImages = [];
+
+      // 각 이미지 2048 x 1536, 4:3 비율 crop
+      for (let i = 0; i < selectedImages.length; i++) {
+        const image = selectedImages[i];
+        const cropped = await ImagePicker.openCropper({
+          path: image.path,
+          cropping: true,
+          compressImageQuality: 0.95,
+          cropperToolbarTitle: '이미지 편집',
+          cropperActiveWidgetColor: '#45C9FF',
+          cropperStatusBarLight: true,
+          cropperToolbarColor: '#ffffff',
+          cropperToolbarWidgetColor: '#333333',
+          avoidEmptySpaceAroundImage: true,
+        });
+        croppedImages.push(cropped);
+      }
+
+      const picked = croppedImages.map(image => ({
         path: image.path,
         mime: image.mime,
         filename: image.filename || image.path.split('/').pop(),

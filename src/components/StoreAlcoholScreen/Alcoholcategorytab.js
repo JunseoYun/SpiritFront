@@ -36,6 +36,7 @@ const Alcoholcategorytab = ({
   selectedType,
   setSelectedType,
   isClickedRef,
+  filterHeight,
 }) => {
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
   const {height: windowHeight} = Dimensions.get('window');
@@ -99,16 +100,23 @@ const Alcoholcategorytab = ({
       let imgnull = 0;
       Object.keys(parentSectionPositions).forEach(type => {
         if (imagelist == 0) {
-          imgnull = 250;
+          if (
+            value >=
+            parentSectionPositions[type] -
+              250 +
+              paddingTopValue -
+              filterHeight * 2
+          ) {
+            current = type;
+          }
         }
-        if (
-          value >=
-          parentSectionPositions[type] +
-            paddingTopValue -
-            paddingTopValue * 0.01 -
-            imgnull
-        ) {
-          current = type;
+        if (imagelist > 0) {
+          if (
+            value >=
+            parentSectionPositions[type] + paddingTopValue - filterHeight * 2
+          ) {
+            current = type;
+          }
         }
       });
 
@@ -144,13 +152,13 @@ const Alcoholcategorytab = ({
                 if (imagelist === 0) {
                   onScrollTo({
                     x: 0,
-                    y: y + paddingTopValue - paddingTopValue * 0.01 - 250,
+                    y: y - 250 + paddingTopValue - filterHeight * 2,
                     animated: true,
                   });
                 } else if (imagelist > 0) {
                   onScrollTo({
                     x: 0,
-                    y: y + paddingTopValue - paddingTopValue * 0.01,
+                    y: y + paddingTopValue - filterHeight * 2,
                     animated: true,
                   });
                 } else {

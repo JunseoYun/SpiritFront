@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
-
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
 import {Store_getby_main_banner, Store_getby_popular} from '../../api/storeApi';
@@ -478,7 +478,14 @@ const MainScreen = ({navigation}) => {
           },
         ]}>
         <MainHeader />
-
+        <View
+          style={{
+            position: 'absolute',
+            right: 14,
+            top: insets.top + 20,
+          }}>
+          <AntDesign name="bells" size={22} color="#fff" />
+        </View>
         <View style={styles.topView}>
           <Text
             style={styles.todayAddress}

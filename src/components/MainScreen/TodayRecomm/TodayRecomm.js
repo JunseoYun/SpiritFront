@@ -33,7 +33,6 @@ const TodayRecomm = ({
   const koreanCategory = translateCategory(recommCategory);
   const [currentIndex, setCurrentIndex] = useState(0);
   const listRef = useRef(null);
-  const [ready, setReady] = useState(false); // 렌더링 완료 상태
 
   const extendedStores =
     Array.isArray(recommStores) && recommStores.length >= 3
@@ -74,19 +73,6 @@ const TodayRecomm = ({
     }
   };
 
-  // ✅ InteractionManager 적용: 렌더링 완료 후 FlatList 초기 scroll 처리
-  useEffect(() => {
-    InteractionManager.runAfterInteractions(() => {
-      setReady(true); // 이제 Pressable이 안전하게 동작
-      if (recommStores.length >= 3) {
-        listRef.current?.scrollToOffset({
-          offset: (ITEM_WIDTH + SPACING) * recommStores.length - SPACING,
-          animated: false,
-        });
-      }
-    });
-  }, [recommStores]);
-
   if (loading || refresh) {
     return <TodayRecommItemSkeleton />;
   }
@@ -101,48 +87,55 @@ const TodayRecomm = ({
         </Text>
       </View>
 
-      {recommStores &&
-        ready && ( // ready가 true일 때만 FlatList 렌더링
-          <FlatList
-            ref={listRef}
-            key={recommStores.length}
-            data={extendedStores}
-            horizontal
-            keyExtractor={(item, index) => index.toString()}
-            showsHorizontalScrollIndicator={false}
-            removeClippedSubviews={false}
-            contentContainerStyle={[
-              styles.scrollContainer,
-              recommStores.length < 3 && styles.centeredListContainer,
-            ]}
-            snapToAlignment="center"
-            snapToInterval={
-              recommStores.length === 2
-                ? ITEM_WIDTH + SPACING + SPACING
-                : ITEM_WIDTH + SPACING
+      {recommStores && ( // ready가 true일 때만 FlatList 렌더링
+        <FlatList
+          ref={listRef}
+          key={recommStores.length}
+          data={extendedStores}
+          onContentSizeChange={() => {
+            if (recommStores.length >= 3) {
+              listRef.current.scrollToOffset({
+                offset: (ITEM_WIDTH + SPACING) * recommStores.length - SPACING, // 원하는 offset
+                animated: false,
+              });
             }
-            decelerationRate={0.8}
-            onScroll={handleScroll}
-            onMomentumScrollEnd={
-              recommStores.length >= 3 ? handleScrollEnd : undefined
-            }
-            getItemLayout={(data, index) => ({
-              length: ITEM_WIDTH + SPACING,
-              offset: (ITEM_WIDTH + SPACING) * index,
-              index,
-            })}
-            renderItem={({item, index}) => (
-              <View style={[styles.slideItem]}>
-                <TodayRecommItem
-                  store={item}
-                  category={koreanCategory}
-                  location={location}
-                  navigation={navigation}
-                />
-              </View>
-            )}
-          />
-        )}
+          }}
+          horizontal
+          keyExtractor={(item, index) => index.toString()}
+          showsHorizontalScrollIndicator={false}
+          removeClippedSubviews={false}
+          contentContainerStyle={[
+            styles.scrollContainer,
+            recommStores.length < 3 && styles.centeredListContainer,
+          ]}
+          snapToAlignment="center"
+          snapToInterval={
+            recommStores.length === 2
+              ? ITEM_WIDTH + SPACING + SPACING
+              : ITEM_WIDTH + SPACING
+          }
+          decelerationRate={0.8}
+          onScroll={handleScroll}
+          onMomentumScrollEnd={
+            recommStores.length >= 3 ? handleScrollEnd : undefined
+          }
+          getItemLayout={(data, index) => ({
+            length: ITEM_WIDTH + SPACING,
+            offset: (ITEM_WIDTH + SPACING) * index,
+            index,
+          })}
+          renderItem={({item, index}) => (
+            <View style={[styles.slideItem]}>
+              <TodayRecommItem
+                store={item}
+                category={koreanCategory}
+                location={location}
+                navigation={navigation}
+              />
+            </View>
+          )}
+        />
+      )}
 
       {recommStores.length > 1 ? (
         <View style={styles.pagination}>

@@ -176,18 +176,36 @@ const StoreReviewScreen = ({navigation}) => {
     try {
       const pickedImages = await ImagePicker.openPicker({
         mediaType: 'photo',
-        multiple: remaining > 1, // ✅ 2개 이상일 때만 multiple
-        maxFiles: remaining > 1 ? remaining : 1, // multiple true일 때만 maxFiles 적용
-        compressImageQuality: 0.95,
-        compressImageMaxWidth: 2160,
-        compressImageMaxHeight: 2160,
-        cropping: false,
+        multiple: remaining > 1, // 2개 이상일 때만 multiple
+        maxFiles: remaining > 1 ? remaining : 1,
+        cropping: false, // 우선 crop 안함
       });
 
-      const newImages = Array.isArray(pickedImages)
+      const selectedImages = Array.isArray(pickedImages)
         ? pickedImages
         : [pickedImages];
-      setImages(prev => [...prev, ...newImages]);
+
+      const croppedImages = [];
+
+      // 각 이미지 2048 x 1536, 4:3 비율 crop
+      for (let i = 0; i < selectedImages.length; i++) {
+        const image = selectedImages[i];
+        const cropped = await ImagePicker.openCropper({
+          path: image.path,
+          cropping: true,
+          compressImageQuality: 0.95,
+          cropperToolbarTitle: '이미지 편집',
+          cropperActiveWidgetColor: '#45C9FF',
+          cropperStatusBarLight: true,
+          cropperToolbarColor: '#ffffff',
+          cropperToolbarWidgetColor: '#333333',
+          avoidEmptySpaceAroundImage: true,
+        });
+        croppedImages.push(cropped);
+      }
+
+      // 상태에 추가
+      setImages(prev => [...prev, ...croppedImages]);
     } catch (error) {
       console.log('ImagePicker Error: ', error);
     }
