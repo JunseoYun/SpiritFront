@@ -51,6 +51,7 @@ const ReviewForm = ({
   const [contentFocused, setContentFocused] = useState(false);
   const [currentRate, setCurrentRate] = useState(0);
   const [errorcontent, setErrorcontent] = useState(false);
+  const [errorrate, setErrorrate] = useState(false);
   const [forbiddenerror, setForbiddenerror] = useState(false);
 
   const validateReview = () => {
@@ -69,9 +70,15 @@ const ReviewForm = ({
       setForbiddenerror(false);
       return false;
     }
+    if (currentRate == 0) {
+      setErrorrate(true);
+      setForbiddenerror(false);
+      return false;
+    }
 
     setErrorcontent(false);
     setForbiddenerror(false);
+    setErrorrate(false);
     return true;
   };
 
@@ -121,6 +128,9 @@ const ReviewForm = ({
           <View style={styles.starRow}>
             {renderStars(rate => setCurrentRate(rate))}
           </View>
+          {errorrate && (
+            <Text style={styles.errorMessage}>리뷰 별점을 입력해주세요!</Text>
+          )}
         </View>
 
         {/* 리뷰 내용 */}

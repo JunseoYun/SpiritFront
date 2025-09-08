@@ -92,6 +92,12 @@ const SetLocationScreen = ({navigation}) => {
           setCurrentAddress(newLocationAddress.fixedAddress);
           showToast('저장된 주소가 삭제되었습니다.');
         }
+        setTimeout(() => {
+          navigation.reset({
+            index: 1,
+            routes: [{name: 'MainBtmbar'}],
+          });
+        }, 100);
       } catch (error) {
         console.log(error);
       }

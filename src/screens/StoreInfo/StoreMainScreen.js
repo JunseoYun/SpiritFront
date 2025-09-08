@@ -41,6 +41,7 @@ import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
 import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcategorytab';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import StoreMainSkeleton from './StoreMainSkeleton';
 
 const StoreMainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
@@ -441,10 +442,10 @@ const StoreMainScreen = ({navigation}) => {
 
   const stickyThreshold = useMemo(() => {
     if (!storedata?.imgUrlList || storedata.imgUrlList.length === 0) {
-      return mainSectionHeight;
+      return mainSectionHeight + filterHeight;
     }
     if (storedata?.imgUrlList) {
-      return mainSectionHeight - filterHeight;
+      return mainSectionHeight;
     }
     // 원하는 offset 추가 가능
   }, [mainSectionHeight, filterHeight]);
@@ -464,193 +465,61 @@ const StoreMainScreen = ({navigation}) => {
   const [selectedType, setSelectedType] = useState(null);
   const isClickedRef = useRef(false);
   return (
-    <>
-      <View
-        style={{
-          backgroundColor: 'white',
-          flex: 1,
-          ...(!storedata?.imgUrlList?.length > 0 &&
-          !isUpdate &&
-          storedata?.isUpdatable === true
-            ? {paddingTop: top, paddingBottom: bottom}
-            : {}),
-        }}>
-        {!isUpdate && storedata?.imgUrlList && (
-          <StoreHeader
-            navigation={navigation}
-            headerBackgroundColor={headerBackgroundColor}
-            iconColor={iconColor}
-            titleOpacity={titleOpacity}
-            title={storedata?.name}
-            onShare={onShare}
-          />
-        )}
-        {isUpdate && (
-          <UpdateHeader
-            navigation={navigation}
-            endUpdate={endUpdate}
-            handleBottomClose={handleBottomClose}
-          />
-        )}
-        {(!storedata?.imgUrlList || storedata.imgUrlList.length === 0) &&
-          !isUpdate && (
-            <NonImageHeader
-              navigation={navigation}
-              headerBackgroundColor={'#fff'}
-              iconColor={'#333'}
-              title={storedata?.name}
-              onShare={onShare}
-            />
-          )}
-        {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
-          <Animated.View
-            style={[
-              styles.fixedFilterHeader,
-              {
-                top: Platform.OS === 'ios' ? insets.top + 30 : top + 40,
-                opacity: Animated.multiply(
-                  stickyOpacity,
-                  stickyProgress ? 1 : 0,
-                ),
-                transform: [{translateY: stickyTranslateY}],
-              },
-            ]}>
-            <Alcoholcategorytab
-              alcohols={alcohols}
-              mainDrinks={storedata.mainDrinkDtos}
-              imagelist={storedata?.imgUrlList?.length}
-              onScrollTo={scrollToHandler}
-              sectionPositions={sectionPositions}
-              scrollY={scrollY}
-              selectedType={selectedType}
-              setSelectedType={setSelectedType}
-              isClickedRef={isClickedRef}
-            />
-          </Animated.View>
-        )}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <Animated.ScrollView
-            onScroll={Animated.event(
-              [{nativeEvent: {contentOffset: {y: scrollY}}}],
-              {
-                useNativeDriver: false,
-                listener: event => {
-                  if (isClickedRef.current) {
-                    setTimeout(() => {
-                      isClickedRef.current = false;
-                    }, 200);
-                  }
-                },
-              },
-            )}
-            scrollEventThrottle={16}
-            ref={scrollViewRef}
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
+    <View style={{flex: 1}}>
+      {loading ? (
+        <StoreMainSkeleton />
+      ) : (
+        <>
+          <View
             style={{
               backgroundColor: 'white',
-              width: '100%',
-              paddingBottom: 100,
-              paddingTop:
-                !storedata?.imgUrlList?.length > 0
-                  ? Platform.OS === 'ios'
-                    ? 80
-                    : 30
-                  : undefined,
-            }}
-            keyboardShouldPersistTaps="always"
-            scrollEnabled={true}
-            contentContainerStyle={{flexGrow: 1}}>
-            <View
-              onLayout={e => {
-                const {height} = e.nativeEvent.layout;
-                setMainSectionHeight(height);
-              }}>
-              {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
-                <View
-                  style={[
-                    {
-                      height: 270, // 숫자 값은 따옴표 없이 사용
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'black',
-                    },
-                    isUpdate && {marginTop: Platform.OS === 'ios' ? 100 : 60}, // 조건부 스타일
-                    isUpdate &&
-                      !storedata?.imgUrlList?.length > 0 && {
-                        marginTop: Platform.OS === 'ios' ? 20 : 30,
-                      },
-                  ]}>
-                  <ImageSlider
-                    storeId={storeId}
-                    images={imageSliderData}
-                    interval={4000}
-                    isUpdate={isUpdate}
-                    handleBottomOpen={handleBottomOpen}
-                    onEditKey={handleEditKey}
-                    onEditValue={handleEditValue}
-                    navigation={navigation}
-                  />
-                </View>
-              )}
-              {!storedata?.imgUrlList?.length > 0 &&
-                !isUpdate &&
-                storedata?.isUpdatable === true && (
-                  <Pressable
-                    style={[styles.addImageButton, {}]}
-                    onPress={startUpdate}>
-                    <Text style={styles.addImageText}>
-                      매장 이미지 추가하기
-                    </Text>
-                    <Feather name="chevron-right" size={23} color="#999" />
-                  </Pressable>
-                )}
-
-              <StoreMainInfo
-                storedata={storedata}
+              flex: 1,
+              ...(!storedata?.imgUrlList?.length > 0 &&
+              !isUpdate &&
+              storedata?.isUpdatable === true
+                ? {paddingTop: top, paddingBottom: bottom}
+                : {}),
+            }}>
+            {!isUpdate && storedata?.imgUrlList && (
+              <StoreHeader
                 navigation={navigation}
-                isUpdate={isUpdate}
-                endUpdate={endUpdate}
-                handleBottomOpen={handleBottomOpen}
-                onEditKey={handleEditKey}
-                onEditValue={handleEditValue}
-                storeTimeEditHandle={storeTimeEditHandle}
-                storeupdatedrink={storeupdatedrink}
-                setLoading={setLoading}
-                loading={loading}
-                startUpdate={startUpdate}
-                handleReport={handleReport}
-                handleReportList={handleReportList}
-                handleStoreInfo={handleStoreInfo}
+                headerBackgroundColor={headerBackgroundColor}
+                iconColor={iconColor}
+                titleOpacity={titleOpacity}
+                title={storedata?.name}
+                onShare={onShare}
               />
-              {!isUpdate && (
-                <View style={{backgroundColor: '#F2F2F2', height: 20}} />
-              )}
-
-              {!isUpdate && (
-                <StoreTabs
-                  changePage={setCurrentPage}
-                  currentPage={currentPage}
-                />
-              )}
-
-              {!isUpdate && (
-                <StorePriceImage
-                  storeId={storeId}
-                  isUpdatable={storedata?.isUpdatable}
-                  imageList={storedata?.boardImageDtoList}
+            )}
+            {isUpdate && (
+              <UpdateHeader
+                navigation={navigation}
+                endUpdate={endUpdate}
+                handleBottomClose={handleBottomClose}
+              />
+            )}
+            {(!storedata?.imgUrlList || storedata.imgUrlList.length === 0) &&
+              !isUpdate && (
+                <NonImageHeader
                   navigation={navigation}
+                  headerBackgroundColor={'#fff'}
+                  iconColor={'#333'}
+                  title={storedata?.name}
+                  onShare={onShare}
                 />
               )}
-            </View>
-
             {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
-              <View
-                onLayout={e => {
-                  const {height} = e.nativeEvent.layout;
-                  setFilterHeight(height);
-                }}>
+              <Animated.View
+                style={[
+                  styles.fixedFilterHeader,
+                  {
+                    top: Platform.OS === 'ios' ? insets.top + 30 : top + 40,
+                    opacity: Animated.multiply(
+                      stickyOpacity,
+                      stickyProgress ? 1 : 0,
+                    ),
+                    transform: [{translateY: stickyTranslateY}],
+                  },
+                ]}>
                 <Alcoholcategorytab
                   alcohols={alcohols}
                   mainDrinks={storedata.mainDrinkDtos}
@@ -661,88 +530,252 @@ const StoreMainScreen = ({navigation}) => {
                   selectedType={selectedType}
                   setSelectedType={setSelectedType}
                   isClickedRef={isClickedRef}
+                  filterHeight={filterHeight}
                 />
-              </View>
+              </Animated.View>
             )}
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+              <Animated.ScrollView
+                onScroll={Animated.event(
+                  [{nativeEvent: {contentOffset: {y: scrollY}}}],
+                  {
+                    useNativeDriver: false,
+                    listener: event => {
+                      if (isClickedRef.current) {
+                        setTimeout(() => {
+                          isClickedRef.current = false;
+                        }, 200);
+                      }
+                    },
+                  },
+                )}
+                scrollEventThrottle={16}
+                ref={scrollViewRef}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                style={{
+                  backgroundColor: 'white',
+                  width: '100%',
+                  paddingBottom: 100,
+                  paddingTop:
+                    !storedata?.imgUrlList?.length > 0
+                      ? Platform.OS === 'ios'
+                        ? 80
+                        : 30
+                      : undefined,
+                }}
+                keyboardShouldPersistTaps="always"
+                scrollEnabled={true}
+                contentContainerStyle={{flexGrow: 1}}>
+                <View
+                  onLayout={e => {
+                    const {height} = e.nativeEvent.layout;
+                    setMainSectionHeight(height);
+                  }}>
+                  {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
+                    <View
+                      style={[
+                        {
+                          height: 270, // 숫자 값은 따옴표 없이 사용
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: 'black',
+                        },
+                        isUpdate && {
+                          marginTop: Platform.OS === 'ios' ? 100 : 60,
+                        }, // 조건부 스타일
+                        isUpdate &&
+                          !storedata?.imgUrlList?.length > 0 && {
+                            marginTop: Platform.OS === 'ios' ? 20 : 30,
+                          },
+                      ]}>
+                      <ImageSlider
+                        storeId={storeId}
+                        images={imageSliderData}
+                        interval={4000}
+                        isUpdate={isUpdate}
+                        handleBottomOpen={handleBottomOpen}
+                        onEditKey={handleEditKey}
+                        onEditValue={handleEditValue}
+                        navigation={navigation}
+                      />
+                    </View>
+                  )}
+                  {!storedata?.imgUrlList?.length > 0 &&
+                    !isUpdate &&
+                    storedata?.isUpdatable === true && (
+                      <Pressable
+                        style={[styles.addImageButton, {}]}
+                        onPress={startUpdate}>
+                        <Text style={styles.addImageText}>
+                          매장 이미지 추가하기
+                        </Text>
+                        <Feather name="chevron-right" size={23} color="#999" />
+                      </Pressable>
+                    )}
 
-            {!isUpdate && (
-              <>
-                {currentPage === 'StoreMenuScreen' && (
-                  <StoreMenuScreen
+                  <StoreMainInfo
+                    storedata={storedata}
                     navigation={navigation}
-                    storeId={storeId}
-                    menus={menus}
-                    onMenuDelete={handleMenuDelete}
-                    isUpdatable={storedata?.isUpdatable}
-                    onMenuUpdateComplete={refreshMenus}
-                    images={imageSliderData}
+                    isUpdate={isUpdate}
+                    endUpdate={endUpdate}
+                    handleBottomOpen={handleBottomOpen}
+                    onEditKey={handleEditKey}
+                    onEditValue={handleEditValue}
+                    storeTimeEditHandle={storeTimeEditHandle}
+                    storeupdatedrink={storeupdatedrink}
+                    setLoading={setLoading}
+                    loading={loading}
+                    startUpdate={startUpdate}
+                    handleReport={handleReport}
+                    handleReportList={handleReportList}
+                    handleStoreInfo={handleStoreInfo}
                   />
+                  {!isUpdate && (
+                    <View style={{backgroundColor: '#F2F2F2', height: 10}} />
+                  )}
+
+                  {!isUpdate && (
+                    <StoreTabs
+                      changePage={setCurrentPage}
+                      currentPage={currentPage}
+                    />
+                  )}
+
+                  {!isUpdate && (
+                    <StorePriceImage
+                      storeId={storeId}
+                      isUpdatable={storedata?.isUpdatable}
+                      imageList={storedata?.boardImageDtoList}
+                      navigation={navigation}
+                    />
+                  )}
+                  {!isUpdate &&
+                    storedata?.isUpdatable &&
+                    currentPage === 'StoreAlcoholScreen' && (
+                      <>
+                        <Pressable
+                          style={styles.reorderButton}
+                          onPress={() =>
+                            navigation.navigate('AlcoholEditScreen', {
+                              storeId,
+                              alcohols,
+                              handleAlcoholDelete,
+                              handleAlcoholDelete,
+                            })
+                          }>
+                          <Text style={styles.alcoholAddButtonText}>
+                            주류 편집
+                          </Text>
+                        </Pressable>
+                      </>
+                    )}
+                </View>
+
+                {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
+                  <View
+                    onLayout={e => {
+                      const {height} = e.nativeEvent.layout;
+                      setFilterHeight(height);
+                    }}>
+                    <Alcoholcategorytab
+                      alcohols={alcohols}
+                      mainDrinks={storedata.mainDrinkDtos}
+                      imagelist={storedata?.imgUrlList?.length}
+                      onScrollTo={scrollToHandler}
+                      sectionPositions={sectionPositions}
+                      scrollY={scrollY}
+                      selectedType={selectedType}
+                      setSelectedType={setSelectedType}
+                      isClickedRef={isClickedRef}
+                      filterHeight={filterHeight}
+                    />
+                  </View>
                 )}
-                {currentPage === 'StoreAlcoholScreen' && (
-                  <StoreAlcoholScreen
-                    navigation={navigation}
-                    storeId={storeId}
-                    alcohols={alcohols}
-                    mainDrinks={storedata.mainDrinkDtos}
-                    scrollViewRef={scrollViewRef}
-                    onAlcoholDelete={handleAlcoholDelete}
-                    isUpdatable={storedata?.isUpdatable}
-                    onAlcoholUpdateComplete={refresAlcohols}
-                    imagelist={storedata?.imgUrlList?.length}
-                    onScrollTo={scrollToHandler}
-                    sectionPositions={sectionPositions}
-                    setSectionPositions={setSectionPositions}
-                  />
+
+                {!isUpdate && (
+                  <>
+                    {currentPage === 'StoreMenuScreen' && (
+                      <StoreMenuScreen
+                        navigation={navigation}
+                        storeId={storeId}
+                        menus={menus}
+                        onMenuDelete={handleMenuDelete}
+                        isUpdatable={storedata?.isUpdatable}
+                        onMenuUpdateComplete={refreshMenus}
+                        images={imageSliderData}
+                      />
+                    )}
+                    {currentPage === 'StoreAlcoholScreen' && (
+                      <StoreAlcoholScreen
+                        navigation={navigation}
+                        storeId={storeId}
+                        alcohols={alcohols}
+                        mainDrinks={storedata.mainDrinkDtos}
+                        scrollViewRef={scrollViewRef}
+                        onAlcoholDelete={handleAlcoholDelete}
+                        isUpdatable={storedata?.isUpdatable}
+                        onAlcoholUpdateComplete={refresAlcohols}
+                        imagelist={storedata?.imgUrlList?.length}
+                        onScrollTo={scrollToHandler}
+                        sectionPositions={sectionPositions}
+                        setSectionPositions={setSectionPositions}
+                      />
+                    )}
+                  </>
                 )}
-              </>
-            )}
-          </Animated.ScrollView>
-        </KeyboardAvoidingView>
-      </View>
-      {isUpdate && (
-        <View
-          style={[
-            styles.endUpdateButton,
-            {paddingBottom: Platform.OS === 'ios' ? 30 : 10 + bottom},
-          ]}>
-          <Pressable onPress={endUpdate} style={styles.storeAddButtonsearch}>
-            <Text style={styles.endUpdateText}>완료</Text>
-          </Pressable>
-        </View>
+              </Animated.ScrollView>
+            </KeyboardAvoidingView>
+          </View>
+          {isUpdate && (
+            <View
+              style={[
+                styles.endUpdateButton,
+                {paddingBottom: Platform.OS === 'ios' ? 30 : 10 + bottom},
+              ]}>
+              <Pressable
+                onPress={endUpdate}
+                style={styles.storeAddButtonsearch}>
+                <Text style={styles.endUpdateText}>완료</Text>
+              </Pressable>
+            </View>
+          )}
+          <BottomSheet
+            ref={bottomSheetRef}
+            index={-1}
+            snapPoints={snapPoints}
+            enablePanDownToClose={true}
+            gestureEnabled={true}
+            keyboardShouldPersistTaps="handled"
+            keyboardBehavior={Platform.OS === 'ios' ? 'interactive' : 'extend'}
+            keyboardBlurBehavior="restore"
+            backgroundStyle={{
+              backgroundColor: '#F7F7F7',
+              borderTopLeftRadius: 35,
+              borderTopRightRadius: 35,
+              shadowColor: '#000',
+              shadowOffset: {width: 0, height: -3},
+              shadowOpacity: 0.2,
+              shadowRadius: 5,
+              elevation: 10,
+            }}>
+            <UpdateBottomSheet
+              updatedKey={updatedKey}
+              updatedValue={updatedValue}
+              setUpdatedValue={setUpdatedValue}
+              setUpdatedImgValue={setUpdatedImgValue}
+              handleUpdate={handleUpdate}
+              handleBottomClose={handleBottomClose}
+              navigation={navigation}
+            />
+          </BottomSheet>
+          <AlertComponent />
+
+          <Loading loading={loading} />
+        </>
       )}
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={-1}
-        snapPoints={snapPoints}
-        enablePanDownToClose={true}
-        gestureEnabled={true}
-        keyboardShouldPersistTaps="handled"
-        keyboardBehavior={Platform.OS === 'ios' ? 'interactive' : 'extend'}
-        keyboardBlurBehavior="restore"
-        backgroundStyle={{
-          backgroundColor: '#F7F7F7',
-          borderTopLeftRadius: 35,
-          borderTopRightRadius: 35,
-          shadowColor: '#000',
-          shadowOffset: {width: 0, height: -3},
-          shadowOpacity: 0.2,
-          shadowRadius: 5,
-          elevation: 10,
-        }}>
-        <UpdateBottomSheet
-          updatedKey={updatedKey}
-          updatedValue={updatedValue}
-          setUpdatedValue={setUpdatedValue}
-          setUpdatedImgValue={setUpdatedImgValue}
-          handleUpdate={handleUpdate}
-          handleBottomClose={handleBottomClose}
-          navigation={navigation}
-        />
-      </BottomSheet>
-      <AlertComponent />
-
-      <Loading loading={loading} />
-    </>
+    </View>
   );
 };
 
@@ -818,6 +851,20 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     borderBottomWidth: 1,
     borderColor: '#eee',
+  },
+  reorderButton: {
+    marginHorizontal: 18,
+    marginTop: 20,
+    marginBottom: 10,
+    alignItems: 'center',
+    borderRadius: 10,
+    backgroundColor: '#E9F5FB',
+  },
+  alcoholAddButtonText: {
+    color: '#45C9FF',
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    padding: 16,
   },
 });
 
