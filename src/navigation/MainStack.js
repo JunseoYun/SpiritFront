@@ -4,6 +4,8 @@ import {createStackNavigator} from '@react-navigation/stack';
 import MainBtmbar from './MainBtmbar';
 import SetLocationScreen from '../screens/SetLocation/SetLocationScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
 
 import StoreSearchScreen from '../screens/StoreRegister/StoreSearchScreen';
@@ -24,6 +26,8 @@ import LocataionMapScreen from '../screens/SetLocation/LocataionMapScreen';
 import OpenStoreScreen from '../screens/TotalScreen/OpenStoreScreen';
 import NearStoreScreen from '../screens/TotalScreen/NearStoreScreen';
 import ViewedStoreScreen from '../screens/TotalScreen/ViewedStoreScreen';
+import NotificationScreen from '../screens/BottomTab/My/Notification/NotificationScreen';
+import NotificationSetScreen from '../screens/BottomTab/My/Notification/NotificationSetScreen';
 import {normalizeFont} from '../hooks/normalizeFont';
 
 const Stack = createStackNavigator();
@@ -489,6 +493,68 @@ export default function MainStack() {
         component={ViewedStoreScreen}
         options={({navigation}) => ({
           title: '최근 본 매장',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+        options={({navigation}) => ({
+          title: '알림',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+          headerRight: () => (
+            <Pressable
+              onPress={() => navigation.navigate('NotificationSetScreen')}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <AntDesign
+                name="setting"
+                size={23}
+                color="#333"
+                style={{paddingRight: 14}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="NotificationSetScreen"
+        component={NotificationSetScreen}
+        options={({navigation}) => ({
+          title: '알림 설정',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',

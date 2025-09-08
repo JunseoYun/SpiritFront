@@ -32,3 +32,13 @@ export const NotifiReadAll = async () => {
     functionError(error);
   }
 };
+
+export const has_unread_notification = async () => {
+  try {
+    const response = await axiosInstance.get(`/notification/has-unread`, {});
+
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};

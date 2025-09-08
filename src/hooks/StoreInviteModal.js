@@ -84,7 +84,7 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
   const handleAccept = async () => {
     setLoading(true);
     try {
-      const response = await get_store_manager_invitation_accept(storeInviteId);
+      await get_store_manager_invitation_accept(storeInviteId);
     } catch (error) {
       if (error.response.data.code === 22036) {
         showToast('이미 해당 매장을 관리하고 있습니다.');
@@ -92,9 +92,30 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
     } finally {
       setLoading(false);
       onDismiss();
-      navigationRef.navigate('MyStack', {
-        screen: 'MyScreen',
-        params: {invitationManager: true},
+      navigationRef.reset({
+        index: 0, // 최상단 활성 스택
+        routes: [
+          {
+            name: 'MainBtmbar', // 최상위 BottomTab
+            state: {
+              index: 0, // MyStack 탭을 선택
+              routes: [
+                {
+                  name: 'MyStack', // MyStack 안으로
+                  state: {
+                    index: 0,
+                    routes: [
+                      {
+                        name: 'MyScreen', // 최종 화면
+                        params: {invitationManager: true},
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
       });
     }
   };

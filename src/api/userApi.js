@@ -29,7 +29,7 @@ export const user_login = async (
     log_access_create();
     return response.data.data; // 응답 데이터 반환
   } catch (error) {
-    functionError(error); // 에러 처리
+    functionError(error);
     throw error;
   }
 };
@@ -53,7 +53,6 @@ export const log_access_create = async coords => {
 
     return response.data.data; // 응답 데이터 반환
   } catch (error) {
-    functionError(error);
     throw error;
   }
 };
@@ -72,7 +71,6 @@ export const user_logout = async () => {
       },
     );
   } catch (error) {
-    functionError(error);
     throw error;
   }
 };
@@ -89,7 +87,6 @@ export const user_withdraw = async () => {
 
     return res.data?.data;
   } catch (error) {
-    functionError(error);
     throw error;
   }
 };
@@ -112,7 +109,6 @@ export const user_register = async (
   try {
     await userAxiosInstance.post(`/auth/register`, data); // 요청 본문 전달
   } catch (error) {
-    functionError(error); // 에러 처리
     throw error;
   }
 };
@@ -129,7 +125,6 @@ export const user_register_tester = async (socialType, socialId, nickname) => {
   try {
     await userAxiosInstance.post(`/auth/register-tester`, data); // 요청 본문 전달
   } catch (error) {
-    functionError(error); // 에러 처리
     throw error;
   }
 };
@@ -146,7 +141,6 @@ export const check_nickName = async nickname => {
 
     return response.data.data; // 응답 데이터 반환
   } catch (error) {
-    // functionError(error); // 에러 처리
     throw error;
   }
 };
@@ -157,7 +151,7 @@ export const Userdataget = async () => {
     return response.data.data;
   } catch (error) {
     console.error(error.response);
-    functionError(error); // 에러 처리
+
     throw error;
   }
 };
@@ -178,7 +172,6 @@ export const Userimgpost = async formData => {
       },
     });
   } catch (error) {
-    functionError(error); // 에러 처리
     throw error;
   }
 };
@@ -187,7 +180,6 @@ export const Userimgdelete = async () => {
   try {
     await userAxiosInstance.delete(`/auth/delete-image`, {});
   } catch (error) {
-    functionError(error); // 에러 처리
     throw error;
   }
 };
@@ -205,7 +197,7 @@ export const user_personalInfo_add = async (mokDataId, accessToken) => {
     );
   } catch (error) {
     console.error('❌ personal-info-add error:', error.response);
-    functionError(error);
+
     throw error;
   }
 };
@@ -223,7 +215,7 @@ export const user_merge = async (originalSocialInfoDto, newSocialInfoDto) => {
     );
   } catch (error) {
     console.error(error.response);
-    functionError(error);
+
     throw error;
   }
 };

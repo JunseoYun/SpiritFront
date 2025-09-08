@@ -22,6 +22,7 @@ import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
 import MainHeader from '../../components/MainScreen/Header/MainHeader';
+import NotificationButton from '../../components/MainScreen/NotificationButton';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import RejectModal from '../../components/Reject/RejectModal';
 import useHandlePendingNotification from '../../hooks/notification/useHandlePendingNotification';
@@ -31,6 +32,7 @@ import FilterHeader from '../../components/MainScreen/FilterHeader';
 import PopularStoreItem from '../../components/MainScreen/PopularStroe/PopularStoreItem';
 import PopularItemSkeleton from '../../components/MainScreen/PopularStroe/PopularItemSkeleton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {has_unread_notification} from '../../api/notificationApi';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 const MainScreen = ({navigation}) => {
@@ -54,6 +56,7 @@ const MainScreen = ({navigation}) => {
   const {token} = useAuth();
   const {showToast} = useToast();
   const [topView2Height, setTopView2Height] = useState(0);
+  const [unreadNotification, setUnreadNotification] = useState(false);
   const MemoPopularstoreItem = React.memo(PopularStoreItem);
 
   useEffect(() => {
@@ -143,6 +146,8 @@ const MainScreen = ({navigation}) => {
           setRecommCategory(recommStoreData.category);
           setRecommReason(reason);
           setRecommStores(recommStoreData.mainBannerStoreDtoList);
+          const unread = await has_unread_notification();
+          setUnreadNotification(unread.hasUnread);
           PopularStores(0, true, currentLocation);
         }
         const currentAddress = await getAddress();
@@ -173,6 +178,8 @@ const MainScreen = ({navigation}) => {
         setRecommCategory(recommStoreData.category);
         setRecommReason(reason);
         setRecommStores(recommStoreData.mainBannerStoreDtoList);
+        const unread = await has_unread_notification();
+        setUnreadNotification(unread.hasUnread);
         PopularStores(0, true, currentLocation);
       }
 
@@ -262,6 +269,22 @@ const MainScreen = ({navigation}) => {
       };
     }, [showTopView2]),
   );
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUnread = async () => {
+        try {
+          const unread = await has_unread_notification();
+          setUnreadNotification(unread.hasUnread);
+        } catch (err) {
+          console.error('데이터 불러오기 실패', err);
+        }
+      };
+
+      fetchUnread();
+    }, []),
+  );
+
   const [popularstores, setPopularstores] = useState([]);
   const [popularpage, setPopularpage] = useState(0);
   const [totalpage, setTotalpage] = useState(0);
@@ -478,14 +501,7 @@ const MainScreen = ({navigation}) => {
           },
         ]}>
         <MainHeader />
-        <View
-          style={{
-            position: 'absolute',
-            right: 14,
-            top: insets.top + 20,
-          }}>
-          <AntDesign name="bells" size={22} color="#fff" />
-        </View>
+        <NotificationButton unreadNotification={unreadNotification} />
         <View style={styles.topView}>
           <Text
             style={styles.todayAddress}
