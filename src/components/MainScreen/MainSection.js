@@ -17,7 +17,6 @@ const MainSection = ({
   isRefreshing,
   navigation,
   loading,
-  storeactiveIndex,
   handlestoreItemClick,
   setIsRefreshing,
   catagoryClick,
@@ -41,10 +40,7 @@ const MainSection = ({
       />
       <CategoryGrid onPress={catagoryClick} />
 
-      <StoreRegister
-        storeactiveIndex={storeactiveIndex}
-        handlestoreItemClick={handlestoreItemClick}
-      />
+      <StoreRegister handlestoreItemClick={handlestoreItemClick} />
       <ViewedStoreList
         location={location}
         navigation={navigation}

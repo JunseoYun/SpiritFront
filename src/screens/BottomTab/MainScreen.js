@@ -14,12 +14,9 @@ import {
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
 import {Store_getby_main_banner, Store_getby_popular} from '../../api/storeApi';
-import {useAuth} from '../../context/AuthContext';
-import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
 import MainHeader from '../../components/MainScreen/Header/MainHeader';
 import NotificationButton from '../../components/MainScreen/NotificationButton';
@@ -29,12 +26,12 @@ import useHandlePendingNotification from '../../hooks/notification/useHandlePend
 import {useNotification} from '../../context/NotificationContext';
 import MainSection from '../../components/MainScreen/MainSection';
 import FilterHeader from '../../components/MainScreen/FilterHeader';
-import PopularStoreItem from '../../components/MainScreen/PopularStroe/PopularStoreItem';
-import PopularItemSkeleton from '../../components/MainScreen/PopularStroe/PopularItemSkeleton';
+import PopularStoresSection from '../../components/MainScreen/PopularStroe/PopularStoresSection';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {has_unread_notification} from '../../api/notificationApi';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
+
 const MainScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
@@ -50,14 +47,11 @@ const MainScreen = ({navigation}) => {
   const [recommReason, setRecommReason] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [storeactiveIndex, setStoreActiveIndex] = useState(null);
 
   const {recommendCategory} = useRecommendation();
-  const {token} = useAuth();
-  const {showToast} = useToast();
   const [topView2Height, setTopView2Height] = useState(0);
   const [unreadNotification, setUnreadNotification] = useState(false);
-  const MemoPopularstoreItem = React.memo(PopularStoreItem);
+  // Popular stores section is extracted to its own component
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -203,16 +197,7 @@ const MainScreen = ({navigation}) => {
   };
 
   const handlestoreItemClick = index => {
-    setStoreActiveIndex(index);
-    if (index === 0) {
-      if (!token) {
-        showToast('로그인 후 이용할 수 있어요!', 'center');
-        return;
-      }
-      navigation.navigate('StoreSearchScreen', {index: 0, location: location});
-    } else if (index === 1) {
-      navigation.navigate('StoreSearchScreen', {index: 1, location: location});
-    }
+    navigation.navigate('StoreSearchScreen', {index, location: location});
   };
 
   const setLocationHandle = useCallback(() => {
@@ -304,7 +289,8 @@ const MainScreen = ({navigation}) => {
   ) => {
     setPopularloading(true);
     if (location) {
-      if (loading || (!hasMore && !reset)) return;
+      // Use popularloading to guard duplicate fetches; don't block by global loading
+      if (popularloading || (!hasMore && !reset)) return;
 
       if (reset) {
         setPopularpage(0);
@@ -361,7 +347,8 @@ const MainScreen = ({navigation}) => {
   }, [drinkType, priceOrder]);
 
   const loadMoreData = () => {
-    if (!loading && hasMore && popularpage < totalpage - 1) {
+    // Trigger next page earlier and avoid blocking by unrelated loading
+    if (!popularloading && hasMore && popularpage < totalpage - 1) {
       setPopularpage(prevPage => {
         const nextPage = prevPage + 1; // 다음 페이지 번호
         PopularStores(nextPage, false, location); // 그 페이지 번호로 데이터 요청
@@ -382,7 +369,6 @@ const MainScreen = ({navigation}) => {
       isRefreshing,
       navigation,
       loading,
-      storeactiveIndex,
       handlestoreItemClick,
       setIsRefreshing,
       catagoryClick,
@@ -393,7 +379,6 @@ const MainScreen = ({navigation}) => {
       recommStores,
       location,
       isRefreshing,
-      storeactiveIndex,
       loading,
       navigation,
     ],
@@ -419,46 +404,31 @@ const MainScreen = ({navigation}) => {
         ),
       },
       {
-        key: 'popularStoresheader',
+        key: 'popularStoresCombined',
         data: [{}],
-        renderItem: ({}) => (
-          <View
-            style={{
-              backgroundColor: '#fff',
-              paddingLeft: 20,
-              paddingTop: 20,
-              paddingBottom: 10,
-            }}
-            onLayout={e => {
-              const {height} = e.nativeEvent.layout;
-              setPopulartext(height); // 높이값 저장
-            }}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontFamily: 'Pretendard-SemiBold',
-                color: '#181a1a',
-              }}>
-              현재 인기 매장
-            </Text>
-          </View>
-        ),
-      },
-
-      {
-        key: 'popularStores',
-        data: popularstores,
-        renderItem: ({item}) => (
-          <MemoPopularstoreItem
-            store={item}
+        renderItem: () => (
+          <PopularStoresSection
+            popularstores={popularstores}
             location={stableLocation}
             navigation={stableNavigation}
             screenWidth={screenWidth}
+            loading={loading}
+            popularloading={popularloading}
+            popularempty={popularempty}
+            onHeaderLayout={height => setPopulartext(height)}
           />
         ),
       },
     ],
-    [popularstores, mainSectionData, stableLocation, stableNavigation],
+    [
+      popularstores,
+      mainSectionData,
+      stableLocation,
+      stableNavigation,
+      loading,
+      popularloading,
+      popularempty,
+    ],
   );
 
   const stickyThreshold = useMemo(() => {
@@ -483,9 +453,49 @@ const MainScreen = ({navigation}) => {
     extrapolate: 'clamp',
   });
 
-  const stickyOpacity = scrollY.interpolate({
-    inputRange: [stickyThreshold - 80, stickyThreshold],
-    outputRange: [1, 1], // 점점 나타남
+  // 리스트 내부 필터헤더와 고정 헤더를 자연스럽게 전환하기 위한 진행도
+  // 원래 필터헤더가 리스트 상단 위치에 도달하는 시점에 맞춰 발동
+  const filterHeaderThreshold = useMemo(() => {
+    if (!mainSectionHeight || !populartext) return 100000; // wait until measured
+    // 너무 일찍 붙는 현상을 방지하기 위해 약간 늦춤
+    const androidOffset = Platform.OS === 'android' ? 10 : 0;
+    return Math.max(0, mainSectionHeight + populartext + 14 + androidOffset);
+  }, [mainSectionHeight, populartext]);
+  // 동일한 헤더가 그대로 붙는 느낌 유지 + 안드로이드의 "툭" 개선을 위해
+  // 교차 페이드 범위를 플랫폼별로 다르게 적용 (iOS는 촘촘, Android는 조금 넓게)
+  const filterHeaderCrossfade = useMemo(
+    () => (Platform.OS === 'android' ? 6 : 0.5),
+    [],
+  );
+  const filterHeaderProgress = scrollY.interpolate({
+    inputRange: [
+      filterHeaderThreshold - filterHeaderCrossfade,
+      filterHeaderThreshold + filterHeaderCrossfade,
+    ],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+  const fixedFilterOpacity = filterHeaderProgress;
+  const listFilterOpacity = Animated.subtract(1, filterHeaderProgress);
+  // 슬라이드 없이 제자리에서 즉시 표시
+  const fixedFilterTranslateY = 0;
+
+  // 주소 표시 전환을 부드럽게 처리
+  // 원래 주소 영역이 가려지는 순간 스티키 주소가 나타나도록 설정
+  const topBarThreshold = useMemo(
+    () => (Platform.OS === 'ios' ? insets.top + 36 : insets.top + 96),
+    [insets.top],
+  );
+  const topBarProgress = scrollY.interpolate({
+    inputRange: [topBarThreshold - 10, topBarThreshold + 10],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+  const topViewAddressOpacity = Animated.subtract(1, topBarProgress);
+  const topView2Opacity = topBarProgress;
+  const topView2TranslateY = scrollY.interpolate({
+    inputRange: [topBarThreshold - 10, topBarThreshold + 10],
+    outputRange: [-6, 0],
     extrapolate: 'clamp',
   });
 
@@ -503,13 +513,13 @@ const MainScreen = ({navigation}) => {
         <MainHeader />
         <NotificationButton unreadNotification={unreadNotification} />
         <View style={styles.topView}>
-          <Text
-            style={styles.todayAddress}
+          <Animated.Text
+            style={[styles.todayAddress, {opacity: topViewAddressOpacity}]}
             numberOfLines={1}
             allowFontScaling={false}
             ellipsizeMode="tail">
             {formatAddress(address)}
-          </Text>
+          </Animated.Text>
           {!showLocation && (
             <Pressable
               hitSlop={{
@@ -526,41 +536,44 @@ const MainScreen = ({navigation}) => {
         </View>
       </View>
 
-      {showTopView2 && (
-        <View
-          style={[
-            styles.topView2,
-            {paddingTop: insets.top},
-            insets.top === 0 && {height: 50}, // 조건부 스타일
-          ]}
-          onLayout={event => {
-            const {height} = event.nativeEvent.layout;
-            setTopView2Height(height);
-          }}>
-          <Pressable hitSlop={10} onPress={setLocationHandle}>
-            <Text
-              allowFontScaling={false}
-              style={[styles.todayAddress2, {color: '#333', marginTop: 10}]}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              {formatAddress(address)}
-            </Text>
-          </Pressable>
-          <Pressable
-            hitSlop={10}
-            style={{marginTop: 10, marginLeft: 5}}
-            onPress={setLocationHandle}>
-            <Feather name="chevron-right" size={23} color="#181a1a" />
-          </Pressable>
-        </View>
-      )}
+      <Animated.View
+        style={[
+          styles.topView2,
+          {paddingTop: insets.top},
+          insets.top === 0 && {height: 50}, // 조건부 스타일
+          {
+            opacity: topView2Opacity,
+            transform: [{translateY: topView2TranslateY}],
+          },
+        ]}
+        onLayout={event => {
+          const {height} = event.nativeEvent.layout;
+          setTopView2Height(height);
+        }}>
+        <Pressable hitSlop={10} onPress={setLocationHandle}>
+          <Text
+            allowFontScaling={false}
+            style={[styles.todayAddress2, {color: '#333', marginTop: 10}]}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {formatAddress(address)}
+          </Text>
+        </Pressable>
+        <Pressable
+          hitSlop={10}
+          style={{marginTop: 10, marginLeft: 5}}
+          onPress={setLocationHandle}>
+          <Feather name="chevron-right" size={23} color="#181a1a" />
+        </Pressable>
+      </Animated.View>
+      {/* 주소 바 바로 아래에 고정된 필터 헤더 */}
       <Animated.View
         style={[
           styles.fixedFilterHeader,
           {
             top: topView2Height,
-            opacity: Animated.multiply(stickyOpacity, showTopView2 ? 1 : 0),
-            transform: [{translateY: stickyTranslateY}],
+            opacity: fixedFilterOpacity,
+            transform: [{translateY: fixedFilterTranslateY}],
           },
         ]}>
         <FilterHeader
@@ -588,13 +601,14 @@ const MainScreen = ({navigation}) => {
           {useNativeDriver: true}, // 상태 체크를 위해 false -> ios false
         )}
         renderSectionHeader={({section}) => {
-          if (section.key === 'popularStores') {
+          if (section.key === 'popularStoresCombined') {
             return (
-              <View
+              <Animated.View
                 onLayout={event => {
                   const {height} = event.nativeEvent.layout;
                   FilterHeight(height);
-                }}>
+                }}
+                style={{opacity: listFilterOpacity}}>
                 <FilterHeader
                   ref={filterHeaderRef}
                   navigation={navigation}
@@ -604,7 +618,7 @@ const MainScreen = ({navigation}) => {
                   priceOrder={priceOrder}
                   setPriceOrder={setPriceOrder}
                 />
-              </View>
+              </Animated.View>
             );
           }
           return null;
@@ -616,28 +630,12 @@ const MainScreen = ({navigation}) => {
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
         onEndReached={loadMoreData}
-        onEndReachedThreshold={0.4}
+        onEndReachedThreshold={0.7}
         contentContainerStyle={{
           paddingTop:
             Platform.OS === 'android' ? insets.top + 120 : insets.top + 110,
         }}
-        ListFooterComponent={
-          loading || popularloading ? (
-            <View style={{backgroundColor: '#fff'}}>
-              {[1, 2, 3, 4].map(i => (
-                <PopularItemSkeleton key={i} />
-              ))}
-            </View>
-          ) : (
-            !loading &&
-            !popularloading &&
-            popularempty && (
-              <Text style={styles.emptyText}>
-                조건에 해당하는 매장이 없어요.
-              </Text>
-            )
-          )
-        }
+        ListFooterComponent={null}
         initialNumToRender={4}
         maxToRenderPerBatch={7}
         windowSize={4}
