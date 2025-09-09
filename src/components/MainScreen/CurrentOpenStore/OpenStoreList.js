@@ -17,7 +17,7 @@ if (fontScale > 1.7) fontScale = 1.7;
 const fontSize = 18 * fontScale;
 const subfontSize = 13 * fontScale;
 
-const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
+const OpenStoreList = ({location, navigation, refresh}) => {
   const [distancestores, setDistancestores] = useState([]);
   const [distancepage, setDistancepage] = useState(0);
   const [loading, setLoading] = useState(false);

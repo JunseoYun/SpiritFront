@@ -22,7 +22,6 @@ const ViewedStoreList = ({
   refresh,
   navigation,
   location,
-  setRefresh,
   loaded,
 }) => {
   const [stores, setStores] = useState([]);
@@ -68,8 +67,7 @@ const ViewedStoreList = ({
     if (refresh) {
       setStores([]); // 데이터 초기화
       setHasMore(true); // 더 로드할 데이터가 있음을 명시
-      getStoreData(0, true); // 새로고침 시 데이터 리
-      setRefresh(false);
+      getStoreData(0, true); // 새로고침 시 데이터 리로드
     }
   }, [refresh]);
 

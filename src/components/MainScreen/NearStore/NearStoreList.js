@@ -17,7 +17,7 @@ if (fontScale > 1.7) fontScale = 1.7;
 const fontSize = 18 * fontScale;
 const subfontSize = 13 * fontScale;
 
-const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
+const NearStoreList = ({refresh, navigation, location}) => {
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -67,8 +67,7 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
     if (refresh) {
       setStores([]); // 데이터 초기화
       setHasMore(true); // 더 로드할 데이터가 있음을 명시
-      getStoreData(0, true); // 새로고침 시 데이터 리
-      setRefresh(false);
+      getStoreData(0, true); // 새로고침 시 데이터 리로드
     }
   }, [refresh]);
 

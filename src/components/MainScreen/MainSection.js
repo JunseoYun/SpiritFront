@@ -18,7 +18,6 @@ const MainSection = ({
   navigation,
   loading,
   handlestoreItemClick,
-  setIsRefreshing,
   catagoryClick,
 }) => {
   return (
@@ -45,7 +44,6 @@ const MainSection = ({
         location={location}
         navigation={navigation}
         refresh={isRefreshing}
-        setRefresh={setIsRefreshing}
       />
 
       <MyBanner index={'main'} />
@@ -54,13 +52,11 @@ const MainSection = ({
         location={location}
         navigation={navigation}
         refresh={isRefreshing}
-        setRefresh={setIsRefreshing}
       />
       <NearStoreList
         navigation={navigation}
         location={location}
         refresh={isRefreshing}
-        setRefresh={setIsRefreshing}
       />
       <View style={[styles.division, {marginTop: 20}]} />
     </View>
