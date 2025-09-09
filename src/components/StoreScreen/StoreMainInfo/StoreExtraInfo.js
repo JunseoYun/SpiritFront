@@ -107,7 +107,9 @@ const StoreExtraInfo = ({
         <View style={styles.infoCol}>
           <MaterialIcons name="group" size={23} color="#333" />
           <Text style={styles.locationtext}>
-            {storeData?.isGroupAvailable ? '10인 이상 가능' : '10인 이상 불가'}
+            {storeData?.isGroupAvailable == true
+              ? '단체 방문 가능'
+              : '소수 방문 위주'}
           </Text>
         </View>
 

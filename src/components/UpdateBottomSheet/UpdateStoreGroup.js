@@ -10,7 +10,7 @@ const UpdateStoreGroup = ({
 }) => {
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>매장 10인 이상 가능 여부</Text>
+      <Text style={styles.title}>단체 방문 가능 여부</Text>
       <View style={styles.storeCheckView}>
         <TouchableOpacity
           style={styles.storeCheckView}
