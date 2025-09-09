@@ -458,15 +458,12 @@ const MainScreen = ({navigation}) => {
   const filterHeaderThreshold = useMemo(() => {
     if (!mainSectionHeight || !populartext) return 100000; // wait until measured
     // 너무 일찍 붙는 현상을 방지하기 위해 약간 늦춤
-    const androidOffset = Platform.OS === 'android' ? 10 : 0;
-    return Math.max(0, mainSectionHeight + populartext + 14 + androidOffset);
+    const androidOffset = Platform.OS === 'android' ? 8 : 0;
+    return Math.max(0, mainSectionHeight + populartext + 24 + androidOffset);
   }, [mainSectionHeight, populartext]);
   // 동일한 헤더가 그대로 붙는 느낌 유지 + 안드로이드의 "툭" 개선을 위해
   // 교차 페이드 범위를 플랫폼별로 다르게 적용 (iOS는 촘촘, Android는 조금 넓게)
-  const filterHeaderCrossfade = useMemo(
-    () => (Platform.OS === 'android' ? 6 : 0.5),
-    [],
-  );
+  const filterHeaderCrossfade = useMemo(() => 0.5, []);
   const filterHeaderProgress = scrollY.interpolate({
     inputRange: [
       filterHeaderThreshold - filterHeaderCrossfade,
@@ -598,7 +595,10 @@ const MainScreen = ({navigation}) => {
         }
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {useNativeDriver: true}, // 상태 체크를 위해 false -> ios false
+          {
+            // iOS에서 네이티브 드라이버 사용 시 당겨서 새로고침과 인셋 계산이 어긋나며 상단 공백이 남을 수 있어 비활성화
+            useNativeDriver: Platform.OS === 'android',
+          },
         )}
         renderSectionHeader={({section}) => {
           if (section.key === 'popularStoresCombined') {
@@ -608,7 +608,11 @@ const MainScreen = ({navigation}) => {
                   const {height} = event.nativeEvent.layout;
                   FilterHeight(height);
                 }}
-                style={{opacity: listFilterOpacity}}>
+                style={{
+                  opacity: listFilterOpacity,
+                  paddingTop: 10,
+                  backgroundColor: '#fff',
+                }}>
                 <FilterHeader
                   ref={filterHeaderRef}
                   navigation={navigation}
@@ -627,7 +631,15 @@ const MainScreen = ({navigation}) => {
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          // iOS에서는 progressViewOffset 사용 시 스피너가 멈추지 않는 이슈가 있어 적용하지 않음
+          // (Android만 필요 시 오프셋 지정)
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            {...(Platform.OS === 'android'
+              ? {progressViewOffset: insets.top + 110}
+              : {})}
+          />
         }
         onEndReached={loadMoreData}
         onEndReachedThreshold={0.7}
@@ -635,6 +647,11 @@ const MainScreen = ({navigation}) => {
           paddingTop:
             Platform.OS === 'android' ? insets.top + 120 : insets.top + 110,
         }}
+        // iOS가 자동으로 SafeArea 인셋을 더하지 않도록 비활성화 (상단 여백 잔상 방지)
+        automaticallyAdjustContentInsets={false}
+        contentInsetAdjustmentBehavior="never"
+        // 스크롤 인디케이터도 별도 보정이 필요 없도록 초기화
+        scrollIndicatorInsets={{top: 0, left: 0, bottom: 0, right: 0}}
         ListFooterComponent={null}
         initialNumToRender={4}
         maxToRenderPerBatch={7}
