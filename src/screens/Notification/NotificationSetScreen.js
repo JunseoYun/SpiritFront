@@ -12,9 +12,9 @@ import {
   RESULTS,
   openSettings,
 } from 'react-native-permissions';
-import {Userdataget, user_marketing_consent} from '../../../../api/userApi';
-import Loading from '../../../../hooks/Loading';
-import useCustomAlert from '../../../../hooks/useCustomAlert';
+import {Userdataget, user_marketing_consent} from '../../api/userApi';
+import Loading from '../../hooks/Loading';
+import useCustomAlert from '../../hooks/useCustomAlert';
 
 const Toggle = ({value, onToggle}) => {
   const translateX = useState(new Animated.Value(value ? 22 : 2))[0];

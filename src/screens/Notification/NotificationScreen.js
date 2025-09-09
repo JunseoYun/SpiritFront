@@ -7,15 +7,12 @@ import {
   FlatList,
   Pressable,
 } from 'react-native';
-import {
-  NotifiGet,
-  NotifiRead,
-  NotifiReadAll,
-} from '../../../../api/notificationApi';
-import Loading from '../../../../hooks/Loading';
-import RejectModal from '../../../../components/Reject/RejectModal';
-import {useToast} from '../../../../context/ToastContext';
-import {ReviewgetbyGet} from '../../../../api/reviewApi';
+import {NotifiGet, NotifiRead, NotifiReadAll} from '../../api/notificationApi';
+import Loading from '../../hooks/Loading';
+import RejectModal from '../../components/Reject/RejectModal';
+import {useToast} from '../../context/ToastContext';
+import {ReviewgetbyGet} from '../../api/reviewApi';
+import {has_unread_notification} from '../../api/notificationApi';
 
 const NotificationCard = ({title, message, date, hasRead}) => {
   const textColorStyle = hasRead ? styles.readText : styles.unreadText;
@@ -50,6 +47,7 @@ const NotificationScreen = ({navigation}) => {
   const [selectedReject, setSelectedReject] = useState(null);
   const [hasReadmodal, setHasReadmodal] = useState(false);
   const [clickedItemId, setClickedItemId] = useState(null);
+  const [unreadNotification, setUnreadNotification] = useState(false);
   const {showToast} = useToast();
 
   useEffect(() => {
@@ -57,6 +55,19 @@ const NotificationScreen = ({navigation}) => {
     setPage(0);
     setIsEnd(false);
     Notifigetall(0);
+  }, []);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      setLoading(true);
+      try {
+        const unread = await has_unread_notification();
+        setUnreadNotification(unread.hasUnread);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchUnread();
   }, []);
 
   const Notifigetall = async page => {
@@ -229,15 +240,12 @@ const NotificationScreen = ({navigation}) => {
           ) : null
         }
         ListHeaderComponent={
-          <Pressable onPress={readallnotifi}>
+          <Pressable onPress={unreadNotification ? readallnotifi : null}>
             <Text
-              style={{
-                paddingBottom: 16,
-                fontSize: 14,
-                fontFamily: 'Pretendard-Medium',
-                color: '#333',
-                textAlign: 'right',
-              }}>
+              style={[
+                styles.allReadText,
+                unreadNotification && {color: '#121212'},
+              ]}>
               알람 전체 읽기
             </Text>
           </Pressable>
@@ -263,7 +271,7 @@ const NotificationScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fdfdfd',
+    backgroundColor: '#fff',
   },
   listContent: {
     padding: 16,
@@ -296,6 +304,13 @@ const styles = StyleSheet.create({
     color: '#999',
     textAlign: 'right',
     fontFamily: 'Pretendard-Regular',
+  },
+  allReadText: {
+    paddingBottom: 16,
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
+    color: '#999',
+    textAlign: 'right',
   },
   readText: {
     color: '#aaa',

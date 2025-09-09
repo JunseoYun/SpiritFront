@@ -26,8 +26,8 @@ import LocataionMapScreen from '../screens/SetLocation/LocataionMapScreen';
 import OpenStoreScreen from '../screens/TotalScreen/OpenStoreScreen';
 import NearStoreScreen from '../screens/TotalScreen/NearStoreScreen';
 import ViewedStoreScreen from '../screens/TotalScreen/ViewedStoreScreen';
-import NotificationScreen from '../screens/BottomTab/My/Notification/NotificationScreen';
-import NotificationSetScreen from '../screens/BottomTab/My/Notification/NotificationSetScreen';
+import NotificationScreen from '../screens/Notification/NotificationScreen';
+import NotificationSetScreen from '../screens/Notification/NotificationSetScreen';
 import {normalizeFont} from '../hooks/normalizeFont';
 
 const Stack = createStackNavigator();
