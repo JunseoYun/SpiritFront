@@ -7,6 +7,7 @@ import {
   Alert,
   Dimensions,
   View,
+  Platform,
 } from 'react-native';
 import StoreSearchBar from '../../components/StoreSearch/StoreSearchBar';
 import StoreResultList from '../../components/StoreSearch/StoreResultList';

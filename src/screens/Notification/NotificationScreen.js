@@ -104,6 +104,15 @@ const NotificationScreen = ({navigation}) => {
     setLoading(true);
     try {
       await NotifiRead(notificationId);
+      setNotifidata(prev =>
+        prev.map(n => (n.id === notificationId ? {...n, hasRead: true} : n)),
+      );
+      setUnreadNotification(prev => {
+        const stillUnread = notifidata.some(
+          n => n.id !== notificationId && !n.hasRead,
+        );
+        return stillUnread;
+      });
     } catch (err) {
       console.log('읽기 실패');
     } finally {
@@ -156,16 +165,24 @@ const NotificationScreen = ({navigation}) => {
 
                 if (item.notificationType === 'STORE_OWNERSHIP_APPROVED') {
                   navigation.reset({
-                    index: 0, // 선택할 화면 인덱스
+                    index: 0, // 최상단 활성 스택
                     routes: [
                       {
-                        name: 'MyStack', // 스택 이름
+                        name: 'MainBtmbar', // 최상위 BottomTab
                         state: {
-                          index: 0,
+                          index: 0, // MyStack 탭을 선택
                           routes: [
                             {
-                              name: 'MyScreen',
-                              params: {invitationManager: true},
+                              name: 'MyStack', // MyStack 안으로
+                              state: {
+                                index: 0,
+                                routes: [
+                                  {
+                                    name: 'MyScreen', // 최종 화면
+                                    params: {invitationManager: true},
+                                  },
+                                ],
+                              },
                             },
                           ],
                         },
