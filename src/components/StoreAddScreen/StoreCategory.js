@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     color: '#FF4816',
     fontSize: 15,
     fontFamily: 'Pretendard-Medium',
-    marginTop: 5,
+    marginVertical: 5,
   },
   modalBackground: {
     flex: 1,

@@ -24,7 +24,7 @@ const alcohols = [
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
-const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
+const StoreAlcohol = ({alcohol, setAlcohol, index, error}) => {
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const handleAlcoholChange = (index, key, value) => {
@@ -51,8 +51,14 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>대표주종 (최대 3종)</Text>
-
+      <Text style={styles.title}>
+        {index ? '대표주종* (최대 3종)' : '대표주종 (최대 3종)'}
+      </Text>
+      {error === 'StoreDrink' && !hasValidAlcohol && (
+        <Text style={styles.errorMessage}>
+          대표 주종을 입력하고 가격을 설정해 주세요.
+        </Text>
+      )}
       <View style={styles.summaryWrap}>
         {alcohol.map((item, index) => {
           const label = alcohols.find(a => a.value === item?.type)?.label;
@@ -186,12 +192,6 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
           <Text style={styles.addButtonText}>+ 대표주종 추가</Text>
         </TouchableOpacity>
       )}
-
-      {error === 'StoreDrink' && !hasValidAlcohol && (
-        <Text style={styles.errorMessage}>
-          대표 주종을 입력하고 가격을 설정해 주세요.
-        </Text>
-      )}
     </View>
   );
 };
@@ -311,7 +311,8 @@ const styles = StyleSheet.create({
     color: '#FF4816',
     fontSize: 15,
     fontFamily: 'Pretendard-Medium',
-    marginTop: 5,
+    marginTop: -15,
+    marginBottom: 15,
   },
 });
 

@@ -76,9 +76,7 @@ const StoreCheckScreen = ({navigation}) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{flex: 1}}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
-    >
+      style={{flex: 1}}>
       <SafeAreaView style={[styles.storetopview, {paddingBottom: bottom}]}>
         {/* 진행 바: 50% 진행 */}
         <ProgressBar progress={0} />
@@ -128,7 +126,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'android' && 10,
   },
   storeAddButtonsearch: {
     paddingVertical: 15,

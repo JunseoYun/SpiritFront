@@ -32,7 +32,11 @@ const getErrorMessage = code => {
     22024: '이미 인증이 승인된 매장입니다.',
     22025: '매장 인증은 대표자 또는 공동 대표만 신청할 수 있습니다.',
   };
-  return messages[code] || '로그인 상태를 확인해주세요.';
+
+  return (
+    messages[code] ||
+    '잠시 후 다시 시도해 주세요.\n계속 실패할 경우, 메일로 문의해 주세요.'
+  );
 };
 
 const InfoRow = ({label, value}) => (
@@ -222,10 +226,9 @@ const StoreAuthConfirm = ({navigation}) => {
           </>
         )}
       </ScrollView>
-
-      <View style={styles.footer}>
-        <Pressable style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>제출</Text>
+      <View style={styles.storeAddTextview}>
+        <Pressable style={styles.storeAddButtonsearch} onPress={handleSubmit}>
+          <Text style={styles.storeAddText}>제출</Text>
         </Pressable>
       </View>
 
@@ -271,21 +274,23 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 8,
   },
-  footer: {
-    borderTopWidth: 1,
-    borderColor: '#eee',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    backgroundColor: '#fff',
+
+  storeAddTextview: {
+    borderTopWidth: 0.5,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'android' && 10,
   },
-  submitButton: {
-    backgroundColor: '#16BBFF',
-    paddingVertical: 14,
-    borderRadius: 8,
+  storeAddButtonsearch: {
+    paddingVertical: 15,
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#45C9FF',
+    borderRadius: 10,
   },
-  submitButtonText: {
-    fontSize: 16,
+  storeAddText: {
+    fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
