@@ -40,6 +40,7 @@ const MainScreen = ({navigation}) => {
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef(null);
   const [showTopView2, setShowTopView2] = useState(false);
+
   const [showLocation, setShowLocation] = useState(false);
 
   const [recommStores, setRecommStores] = useState([]);
@@ -370,7 +371,6 @@ const MainScreen = ({navigation}) => {
       navigation,
       loading,
       handlestoreItemClick,
-      setIsRefreshing,
       catagoryClick,
     }),
     [
@@ -496,9 +496,23 @@ const MainScreen = ({navigation}) => {
     extrapolate: 'clamp',
   });
 
+  // 👉 그림자 강도를 opacity에 따라 보간
+  const shadowOpacity = fixedFilterOpacity.interpolate({
+    inputRange: [0, 0.1],
+    outputRange: [0.1, 0], // 0일 때 그림자 있음, 1일 때 그림자 없음
+    extrapolate: 'clamp',
+  });
+
+  const elevation = fixedFilterOpacity.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0], // Android: 0일 때 elevation 4, 1일 때 0
+    extrapolate: 'clamp',
+  });
+
   return (
     <>
       <View
+        pointerEvents="box-none"
         style={[
           styles.absoluteTop,
           {
@@ -537,10 +551,21 @@ const MainScreen = ({navigation}) => {
         style={[
           styles.topView2,
           {paddingTop: insets.top},
-          insets.top === 0 && {height: 50}, // 조건부 스타일
+          insets.top === 0 && {height: 50},
           {
             opacity: topView2Opacity,
             transform: [{translateY: topView2TranslateY}],
+            ...Platform.select({
+              ios: {
+                shadowColor: '#000',
+                shadowOffset: {width: 0, height: 1},
+                shadowOpacity, // Animated 값 바로 적용
+                shadowRadius: 1,
+              },
+              android: {
+                elevation, // Animated 값 바로 적용
+              },
+            }),
           },
         ]}
         onLayout={event => {
@@ -735,6 +760,10 @@ const styles = StyleSheet.create({
     zIndex: 30,
     backgroundColor: '#fff',
     elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
   },
   emptyText: {
     width: '100%',
