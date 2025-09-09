@@ -13,7 +13,7 @@ const StoreGroup = ({selectedOption, setSelectedOption}) => {
   return (
     <View>
       <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>10인 이상 단체 가능 여부</Text>
+        <Text style={styles.storeinputtext}>단체 방문 가능 여부</Text>
       </View>
       <View style={styles.storeCheckView}>
         <TouchableOpacity

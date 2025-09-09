@@ -121,7 +121,7 @@ const SearchScreen = ({navigation}) => {
     // 인원
     if (인원) {
       // "10인 이하" -> false, "10인 이상" -> true
-      const isGroup = 인원 === '10인 이상';
+      const isGroup = 인원 === '단체 방문';
       conditionSearchDto.isGroupAvailable = isGroup;
       fastviewDto.selectedPeople = 인원;
     }
