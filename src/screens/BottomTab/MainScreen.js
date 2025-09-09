@@ -339,8 +339,7 @@ const MainScreen = ({navigation}) => {
           sectionIndex: 1, // popularStoresheader
           itemIndex: 1, // 해당 section의 첫 아이템
           viewPosition: 0, // 0이면 화면 맨 위에 위치
-          viewOffset:
-            Platform.OS === 'android' ? insets.top + 120 : insets.top + 110,
+          viewOffset: insets.top + 40,
           animated: true,
         });
       }, 100);
