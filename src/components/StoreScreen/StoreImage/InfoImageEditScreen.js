@@ -17,6 +17,12 @@ import {
   ToastAndroid,
   SafeAreaView,
   Animated,
+  TextInput,
+  FlatList,
+  Image,
+  Pressable,
+  KeyboardAvoidingView,
+  Keyboard,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -39,6 +45,8 @@ import {
   StoreBoardImageUpdateSort,
 } from '../../../api/storeApi';
 import DraggableImageItem from './DraggableImageItem';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 const IMAGE_WIDTH = width - 120;
@@ -60,6 +68,14 @@ const InfoImageEditScreen = ({navigation, route}) => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const dropdownAnim = useRef(new Animated.Value(0)).current;
 
+  // Numeric reorder inline mode
+  const [inlineOrderMode, setInlineOrderMode] = useState(false);
+  const [rankInputs, setRankInputs] = useState({}); // { uid: number }
+  const [previewOrder, setPreviewOrder] = useState([]); // preview list inside inline mode
+  const orderListRef = useRef(null);
+  const lastFocusedUidRef = useRef(null);
+  const insets = useSafeAreaInsets();
+  const {bottom} = useSafeAndroidInsets();
   const {showToast} = useToast();
 
   const lastBackPressed = useRef(0);
@@ -81,11 +97,57 @@ const InfoImageEditScreen = ({navigation, route}) => {
     }
   }, [imgList]);
 
+  // Initialize or clear preview order when entering/leaving inline order mode
+  useEffect(() => {
+    if (inlineOrderMode) {
+      setPreviewOrder(localImages);
+    } else {
+      setPreviewOrder([]);
+    }
+  }, [inlineOrderMode, localImages]);
+
+  // Update preview (not apply) when the keyboard hides, then scroll to the item's new spot
+  useEffect(() => {
+    const eventName =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const sub = Keyboard.addListener(eventName, () => {
+      if (!inlineOrderMode) return;
+      const newPreview = computeNumericOrder(localImages, rankInputs);
+      setPreviewOrder(newPreview);
+      const uid = lastFocusedUidRef.current;
+      if (uid) {
+        const idx = newPreview.findIndex(
+          it => String(getUid(it)) === String(uid),
+        );
+        if (idx >= 0) {
+          setTimeout(() => {
+            try {
+              orderListRef.current?.scrollToIndex({
+                index: idx,
+                animated: true,
+                viewPosition: 0.3,
+              });
+            } catch (e) {}
+          }, 0);
+        }
+      }
+    });
+    return () => sub.remove();
+  }, [inlineOrderMode, localImages, rankInputs]);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <TouchableOpacity
-          onPress={toggleDropdown}
+          onPress={() => {
+            if (inlineOrderMode) {
+              Keyboard.dismiss();
+              applyNumericOrder();
+              setInlineOrderMode(false);
+            } else {
+              toggleDropdown();
+            }
+          }}
           hitSlop={10}
           style={{paddingHorizontal: 16, justifyContent: 'center'}}>
           <Text
@@ -94,12 +156,18 @@ const InfoImageEditScreen = ({navigation, route}) => {
               fontFamily: 'Pretendard-Medium',
               fontSize: 17,
             }}>
-            도구
+            {inlineOrderMode ? '적용' : '도구'}
           </Text>
         </TouchableOpacity>
       ),
     });
-  }, [navigation, toggleDropdown, dropdownVisible]);
+  }, [
+    navigation,
+    toggleDropdown,
+    dropdownVisible,
+    inlineOrderMode,
+    rankInputs,
+  ]);
 
   const addImages = newImages => {
     const enriched = newImages.map(image => ({
@@ -569,6 +637,46 @@ const InfoImageEditScreen = ({navigation, route}) => {
     );
   };
 
+  const getUid = img => (img.isNew ? img.localId : img.id);
+
+  // Build preview/apply order from rank inputs
+  const computeNumericOrder = (images, ranks) => {
+    const withIndex = images.map((img, idx) => ({img, idx}));
+    const assigned = [];
+    const unassigned = [];
+    for (const it of withIndex) {
+      const uid = String(getUid(it.img));
+      const val = ranks[uid];
+      if (Number.isInteger(val) && val > 0) assigned.push(it);
+      else unassigned.push(it);
+    }
+    // group by rank
+    const groups = new Map();
+    for (const it of assigned) {
+      const uid = String(getUid(it.img));
+      const r = ranks[uid];
+      if (!groups.has(r)) groups.set(r, []);
+      groups.get(r).push(it);
+    }
+    const sortedRanks = Array.from(groups.keys()).sort((a, b) => a - b);
+    const result = [];
+    for (const r of sortedRanks) {
+      const arr = groups.get(r).sort((a, b) => a.idx - b.idx);
+      for (const it of arr) result.push(it.img);
+    }
+    unassigned.sort((a, b) => a.idx - b.idx);
+    for (const it of unassigned) result.push(it.img);
+    return result;
+  };
+
+  const applyNumericOrder = () => {
+    const newOrder = computeNumericOrder(localImages, rankInputs);
+    setLocalImages(newOrder);
+    setInlineOrderMode(false);
+    setRankInputs({});
+    showToast('숫자 입력 순서를 적용했어요');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {dropdownVisible && (
@@ -593,6 +701,14 @@ const InfoImageEditScreen = ({navigation, route}) => {
               sortByBoardTypeStable('DRINK');
             }}>
             <Text style={styles.dropdownText}>주류 우선 정렬</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => {
+              toggleDropdown();
+              setInlineOrderMode(true);
+            }}>
+            <Text style={styles.dropdownText}>숫자로 순서 지정</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.dropdownItem}
@@ -632,54 +748,138 @@ const InfoImageEditScreen = ({navigation, route}) => {
       ) : (
         <View style={styles.header}>
           {/* <Ionicons name="reorder-three-outline" size={24} color="#999" /> */}
-          <Text style={styles.headerText}>
-            사진을 꾹 눌러 원하는 순서로 바꿔보세요
-          </Text>
+          {!inlineOrderMode && (
+            <Text style={styles.headerText}>
+              사진을 꾹 눌러 원하는 순서로 바꿔보세요
+            </Text>
+          )}
         </View>
       )}
       <View style={styles.btnheader}></View>
       <View style={styles.listWrapper}>
-        <DraggableFlatList
-          data={localImages}
-          onDragEnd={({data}) => onDragEnd({data})}
-          keyExtractor={item => String(item.localId)}
-          onScrollBeginDrag={() => {
-            if (dropdownVisible) {
-              toggleDropdown();
-            }
-          }}
-          renderItem={renderItem}
-          activationDistance={Platform.OS === 'ios' ? 10 : 20}
-          scrollPercent={5}
-          contentContainerStyle={{paddingBottom: 0}}
-          ListFooterComponent={
-            <>
-              {!checkDelete && (
-                <TouchableOpacity
-                  style={styles.addImageBox}
-                  onPress={() => {
-                    setBottomSheetVisible(true);
-                    if (dropdownVisible) {
-                      toggleDropdown();
-                    }
-                  }}>
-                  <MaterialCommunityIcons name="plus" size={30} color="#999" />
-                </TouchableOpacity>
-              )}
+        {inlineOrderMode ? (
+          <KeyboardAvoidingView
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 120}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{flex: 1}}>
+            <View style={styles.madalTitleView}>
+              <Text style={styles.modalTitle}>숫자로 순서 지정</Text>
+              <Pressable
+                onPress={() => (setRankInputs({}), setInlineOrderMode(false))}>
+                <Ionicons name="close" size={23} color="#121212" />
+              </Pressable>
+            </View>
+            <Text style={styles.modalSubtitle}>
+              각 사진에 순위를 입력하세요 (1, 2, 3 ...). 미입력은 뒤에
+              유지됩니다.
+            </Text>
+            <FlatList
+              ref={orderListRef}
+              keyboardShouldPersistTaps="never"
+              keyboardDismissMode="none"
+              removeClippedSubviews={false}
+              data={previewOrder}
+              keyExtractor={item => String(getUid(item))}
+              numColumns={3}
+              contentContainerStyle={{
+                gap: 10,
+                marginHorizontal: 18,
+                paddingVertical: 10,
+              }}
+              columnWrapperStyle={{gap: 10}}
+              renderItem={({item, index}) => {
+                const uid = String(getUid(item));
+                const uri = item.url || item.path;
+                const value = rankInputs[uid] ?? '';
+                return (
+                  <View style={styles.orderCell}>
+                    <Image source={{uri}} style={styles.orderThumb} />
+                    <TextInput
+                      keyboardType="number-pad"
+                      placeholder="순위"
+                      placeholderTextColor="#aaa"
+                      value={String(value)}
+                      onFocus={() => {
+                        lastFocusedUidRef.current = uid;
+                        if (Platform.OS === 'ios') {
+                          try {
+                            orderListRef.current?.scrollToIndex({
+                              index,
+                              animated: true,
+                              viewPosition: 0.25,
+                            });
+                          } catch (e) {}
+                        }
+                      }}
+                      onChangeText={txt => {
+                        const onlyNum = txt.replace(/[^0-9]/g, '');
+                        const parsed = onlyNum
+                          ? parseInt(onlyNum, 10)
+                          : undefined;
+                        setRankInputs(prev => ({
+                          ...prev,
+                          [uid]: parsed && parsed > 0 ? parsed : undefined,
+                        }));
+                        if (onlyNum === '0') {
+                          showToast('0은 사용할 수 없어요');
+                        }
+                      }}
+                      style={styles.orderInput}
+                      maxLength={3}
+                    />
+                  </View>
+                );
+              }}
+            />
+          </KeyboardAvoidingView>
+        ) : (
+          <DraggableFlatList
+            data={localImages}
+            onDragEnd={({data}) => onDragEnd({data})}
+            keyExtractor={item => String(item.localId)}
+            autoscrollThreshold={60}
+            autoscrollSpeed={60}
+            onScrollBeginDrag={() => {
+              if (dropdownVisible) {
+                toggleDropdown();
+              }
+            }}
+            renderItem={renderItem}
+            activationDistance={Platform.OS === 'ios' ? 12 : 28}
+            scrollPercent={5}
+            contentContainerStyle={{paddingBottom: 0}}
+            ListFooterComponent={
+              <>
+                {!checkDelete && (
+                  <TouchableOpacity
+                    style={styles.addImageBox}
+                    onPress={() => {
+                      setBottomSheetVisible(true);
+                      if (dropdownVisible) {
+                        toggleDropdown();
+                      }
+                    }}>
+                    <MaterialCommunityIcons
+                      name="plus"
+                      size={30}
+                      color="#999"
+                    />
+                  </TouchableOpacity>
+                )}
 
-              <ImagePickermodal
-                isBottomSheetVisible={isBottomSheetVisible}
-                setBottomSheetVisible={setBottomSheetVisible}
-                handleCameraPick={handleCameraPick}
-                handleGalleryPick={handleGalleryPick}
-              />
-            </>
-          }
-        />
+                <ImagePickermodal
+                  isBottomSheetVisible={isBottomSheetVisible}
+                  setBottomSheetVisible={setBottomSheetVisible}
+                  handleCameraPick={handleCameraPick}
+                  handleGalleryPick={handleGalleryPick}
+                />
+              </>
+            }
+          />
+        )}
       </View>
 
       <View
-        View
         style={{
           paddingHorizontal: 18,
           paddingBottom: Platform.OS === 'ios' ? 7 : 18,
@@ -696,7 +896,26 @@ const InfoImageEditScreen = ({navigation, route}) => {
             },
           }),
         }}>
-        {checkDelete ? (
+        {inlineOrderMode ? (
+          <View style={[styles.footer, {paddingBottom: bottom}]}>
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={() => {
+                setRankInputs({});
+                setPreviewOrder(localImages);
+              }}>
+              <Text style={styles.resetText}>초기화</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.applyButton}
+              onPress={() => {
+                applyNumericOrder();
+                setInlineOrderMode(false);
+              }}>
+              <Text style={styles.applyText}>적용</Text>
+            </TouchableOpacity>
+          </View>
+        ) : checkDelete ? (
           <ActionButtons
             onCancel={cancelSelectDelete}
             onSave={handleDeleteSelected}
@@ -709,6 +928,8 @@ const InfoImageEditScreen = ({navigation, route}) => {
 
       <AlertComponent />
       {(loading || !loadingimg) && <Loading loading={true} />}
+
+      {/* Inline numeric order mode replaces modal */}
     </SafeAreaView>
   );
 };
@@ -753,11 +974,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     paddingVertical: 10,
   },
-  bottomSheetContent: {
-    flex: 1,
-    padding: 18,
-    backgroundColor: '#fff',
-  },
+
   imageWrapper: {
     position: 'relative',
   },
@@ -842,6 +1059,96 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#333',
     fontFamily: 'Pretendard-Medium',
+  },
+  // Modal styles
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'flex-end',
+  },
+  modalCard: {
+    maxHeight: '88%',
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  madalTitleView: {
+    flexDirection: 'row',
+    marginHorizontal: 18,
+    marginBottom: 10,
+    justifyContent: 'space-between',
+  },
+  modalTitle: {
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 18,
+    color: '#121212',
+    flex: 1,
+  },
+  modalSubtitle: {
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 12,
+    marginHorizontal: 18,
+  },
+  orderCell: {
+    width: (width - 32 - 20) / 3, // padding 16*2, gaps
+    aspectRatio: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#f2f2f2',
+    position: 'relative',
+  },
+  orderThumb: {
+    width: '100%',
+    height: '100%',
+  },
+  orderInput: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
+    width: 56,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    textAlign: 'center',
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    color: '#111',
+    paddingVertical: Platform.OS === 'ios' ? 6 : 2,
+  },
+  footer: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderColor: '#eee',
+    paddingTop: 12,
+  },
+  resetButton: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    height: 44,
+  },
+  resetText: {
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'Pretendard-Medium',
+  },
+  applyButton: {
+    flex: 2,
+    backgroundColor: '#45C9FF',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 44,
+  },
+  applyText: {
+    fontSize: 16,
+    color: '#fff',
+    fontFamily: 'Pretendard-Bold',
   },
 });
 
