@@ -238,6 +238,7 @@ const SearchFastScreen = ({navigation}) => {
             setSelectedFilters={setSelectedFilters}
             handleApply={handleApply}
             onClose={() => setBottomModalVisible(false)}
+            modalVisible={bottomModalVisible}
           />
         </Animated.View>
       </Modal>
