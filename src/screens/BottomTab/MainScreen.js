@@ -550,6 +550,7 @@ const MainScreen = ({navigation}) => {
       </View>
 
       <Animated.View
+        pointerEvents={topView2Opacity.__getValue() === 0 ? 'none' : 'auto'}
         style={[
           styles.topView2,
           {paddingTop: insets.top},
@@ -592,6 +593,7 @@ const MainScreen = ({navigation}) => {
       </Animated.View>
       {/* 주소 바 바로 아래에 고정된 필터 헤더 */}
       <Animated.View
+        pointerEvents={fixedFilterOpacity.__getValue() === 0 ? 'none' : 'auto'}
         style={[
           styles.fixedFilterHeader,
           {

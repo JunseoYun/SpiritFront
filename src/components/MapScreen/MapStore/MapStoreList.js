@@ -119,6 +119,10 @@ const MapStoreList = ({
           <View style={styles.storeInfo}>
             <View style={styles.titleview}>
               <Text style={styles.noDataText}>주변에 등록된 술집이 없어요</Text>
+              <Text style={styles.noDataText}>
+                {' '}
+                현재 한잔할까는 용인시를 중심으로 운영 중입니다.
+              </Text>
             </View>
 
             <View style={styles.noneView2}>
@@ -130,7 +134,7 @@ const MapStoreList = ({
                     location: location,
                   });
                 }}>
-                <Text style={styles.noneText2}>술집 등록하기</Text>
+                <Text style={styles.noneText2}>매장 제보하기</Text>
               </Pressable>
               <Pressable
                 style={styles.button}
@@ -167,7 +171,7 @@ const styles = StyleSheet.create({
   storeInfo: {
     justifyContent: 'space-between',
     width: ITEM_WIDTH,
-    height: 130,
+    height: 150,
     backgroundColor: '#fdfdfd',
     padding: 15,
     borderRadius: 12,
@@ -179,13 +183,14 @@ const styles = StyleSheet.create({
   },
   titleview: {
     marginTop: 5,
+    gap: 3,
     width: '100%',
   },
   noDataText: {
     alignSelf: 'center',
-    fontSize: 16,
-    color: '#c9c9c9',
-    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    color: '#888',
+    fontFamily: 'Pretendard-Regular',
   },
   noneView2: {
     flexDirection: 'row',

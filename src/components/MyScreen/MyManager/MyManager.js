@@ -299,7 +299,7 @@ const MyManager = ({navigation}) => {
       <Modal
         visible={modalVisible}
         transparent={true}
-        statusBarTranslucent={true}
+        hardwareAccelerated={true}
         animationType="none"
         onRequestClose={closeModal}>
         <View style={StyleSheet.absoluteFill}>
@@ -592,19 +592,16 @@ const styles = StyleSheet.create({
   },
 
   nameTab: {
-    paddingHorizontal: 12,
-    borderRadius: 16,
     justifyContent: 'center',
     marginBottom: 10,
-    backgroundColor: 'rgba(0,0,0,0.03)',
     marginHorizontal: 5,
   },
   activeTab: {
-    backgroundColor: '#E9F5FB',
+    // backgroundColor: '#E9F5FB',
   },
   nameTabText: {
     fontSize: 13,
-    color: '#555',
+    color: '#999',
     fontFamily: 'Pretendard-Medium',
   },
   activeTabText: {

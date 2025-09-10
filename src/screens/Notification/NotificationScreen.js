@@ -263,7 +263,7 @@ const NotificationScreen = ({navigation}) => {
                 styles.allReadText,
                 unreadNotification && {color: '#121212'},
               ]}>
-              알람 전체 읽기
+              알림 전체 읽기
             </Text>
           </Pressable>
         }
