@@ -66,6 +66,7 @@ const StoreMainScreen = ({navigation}) => {
   const [updatedImgValue, setUpdatedImgValue] = useState([]);
   const scrollViewRef = useRef(null); // ScrollView 참조 추가
   const [loading, setLoading] = useState(true);
+  const [skeletonLoading, setSkeletonLoading] = useState(true);
   const {showToast} = useToast();
 
   const [sectionPositions, setSectionPositions] = useState({});
@@ -170,7 +171,7 @@ const StoreMainScreen = ({navigation}) => {
   }, [navigation]);
 
   const fetchStoreDataOnly = async () => {
-    if (!token) return;
+    setLoading(true);
     try {
       const storeData = await StoreMainget(storeId);
 
@@ -184,14 +185,15 @@ const StoreMainScreen = ({navigation}) => {
       }
     } catch (error) {
       console.error(error, '!!');
+    } finally {
+      setSkeletonLoading(false);
+      setLoading(false);
     }
   };
 
   const fetchInitialStoreData = async () => {
-    if (!token) return;
+    setLoading(true);
     try {
-      setLoading(true);
-
       await fetchStoreDataOnly();
 
       const Menus = await StoreMenuget(storeId);
@@ -442,10 +444,15 @@ const StoreMainScreen = ({navigation}) => {
 
   const filterHeaderThreshold = useMemo(() => {
     if (!mainSectionHeight) return 100000; // wait until measured
-    // 너무 일찍 붙는 현상을 방지하기 위해 약간 늦춤
-    const androidOffset = Platform.OS === 'ios' ? insets.top + 30 : top + 40;
-    return Math.max(0, mainSectionHeight - androidOffset);
-  }, [mainSectionHeight]);
+    // 상단 고정 헤더 높이 보정
+    const overlayOffset = Platform.OS === 'ios' ? insets.top + 30 : top + 40;
+    // 메인 이미지가 없는 경우 목록 헤더가 너무 빨리 붙는 것을 방지하기 위해 추가 지연 적용
+    // iOS는 상단 여백이 더 크므로 약간 더 크게 지연
+    const hasImage = !!(storedata?.imgUrlList && storedata.imgUrlList.length);
+    // 조금 더 늦게 붙도록 지연값을 소폭 상향
+    const extraDelay = hasImage ? 0 : Platform.OS === 'ios' ? 80 : 56;
+    return Math.max(0, mainSectionHeight - overlayOffset + extraDelay);
+  }, [mainSectionHeight, insets.top, top, storedata?.imgUrlList]);
 
   const stickyTranslateY = 0;
 
@@ -461,7 +468,7 @@ const StoreMainScreen = ({navigation}) => {
   const isClickedRef = useRef(false);
   return (
     <View style={{flex: 1}}>
-      {loading ? (
+      {loading && skeletonLoading ? (
         <StoreMainSkeleton />
       ) : (
         <>
