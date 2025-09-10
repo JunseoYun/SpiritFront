@@ -246,7 +246,7 @@ const StoreAddInfoScreen = ({navigation}) => {
         files: imageUris,
         createStoreDto: {
           contact: storeData.storeNumber,
-          isAlwaysOpen: is24Hours === null && false,
+          isAlwaysOpen: is24Hours ?? false,
           hasScreen: selectedscreenOption,
           ...(!is24Hours && {operationInfoDtos}),
           locationDto: {

@@ -43,6 +43,15 @@ const MyManager = ({navigation}) => {
   const flatListRef = useRef(null);
   const tabFlatListRef = useRef(null);
 
+  // 탭 아이템 폭 측정으로 가장자리를 정확히 센터 정렬
+  const [tabItemWidths, setTabItemWidths] = useState({});
+  const onTabLayout = (index, w) => {
+    setTabItemWidths(prev => {
+      if (prev[index] === w) return prev;
+      return {...prev, [index]: w};
+    });
+  };
+
   const MyStore = async page => {
     setLoading(true);
     try {
@@ -268,7 +277,21 @@ const MyManager = ({navigation}) => {
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={item => item.storeId.toString()}
-          contentContainerStyle={{paddingHorizontal: 200, marginTop: 10}}
+          // 가장자리를 과도하게 넘기지 않도록
+          bounces={false}
+          overScrollMode="never"
+          contentContainerStyle={{marginTop: 10}}
+          ListHeaderComponent={() => {
+            const firstW = tabItemWidths[0];
+            const headerW = firstW ? Math.max(0, (width - firstW) / 2) : CARD_SPACING;
+            return <View style={{width: headerW}} />;
+          }}
+          ListFooterComponent={() => {
+            const lastIndex = mysotredata.length - 1;
+            const lastW = tabItemWidths[lastIndex];
+            const footerW = lastW ? Math.max(0, (width - lastW) / 2) : CARD_SPACING;
+            return <View style={{width: footerW}} />;
+          }}
           renderItem={({item, index}) => (
             <Pressable
               disabled={nameTabDisabled}
@@ -280,7 +303,8 @@ const MyManager = ({navigation}) => {
                 styles.nameTab,
                 currentIndex === index && styles.activeTab,
                 {paddingVertical: 6},
-              ]}>
+              ]}
+              onLayout={e => onTabLayout(index, e.nativeEvent.layout.width)}>
               <Text
                 style={[
                   styles.nameTabText,
@@ -594,13 +618,13 @@ const styles = StyleSheet.create({
   nameTab: {
     justifyContent: 'center',
     marginBottom: 10,
-    marginHorizontal: 5,
+    marginHorizontal: 10,
   },
   activeTab: {
     // backgroundColor: '#E9F5FB',
   },
   nameTabText: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#999',
     fontFamily: 'Pretendard-Medium',
   },

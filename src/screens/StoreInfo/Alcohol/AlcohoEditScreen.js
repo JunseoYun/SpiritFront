@@ -4,6 +4,7 @@ import React, {
   useLayoutEffect,
   useRef,
   useCallback,
+  useEffect,
 } from 'react';
 import {
   View,
@@ -68,7 +69,28 @@ const AlcoholEditScreen = ({route, navigation}) => {
     return grouped;
   });
 
+  // 초기 진입 시 SOJU가 없으면 첫 번째 존재하는 주종을 선택
+  useEffect(() => {
+    const hasSoju = (alcoholGroups['SOJU'] || []).length > 0;
+    if (!hasSoju) {
+      const firstTypeWithItems = Object.keys(alcoholGroups).find(
+        t => (alcoholGroups[t] || []).length > 0,
+      );
+      if (firstTypeWithItems) setActiveTab(firstTypeWithItems);
+    }
+    // 초기 진입 한 번만 체크
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const MemoizedAlcoholItem = React.memo(AlcoholItem);
+  const itemRefs = useRef({});
+  const setItemBridge = useCallback(
+    id => api => {
+      if (api) itemRefs.current[id] = api;
+      else delete itemRefs.current[id];
+    },
+    [],
+  );
 
   const stableItemProps = useMemo(
     () => ({
@@ -148,6 +170,29 @@ const AlcoholEditScreen = ({route, navigation}) => {
     navigation.navigate('AlcoholAddScreen', {storeId});
   };
 
+  const handleCompletePress = () => {
+    const refs = Object.values(itemRefs.current || {});
+    const hasEditing = refs.some(r => r?.isEditing?.());
+    if (hasEditing) {
+      showAlert({
+        title: '변경사항 저장',
+        message: '변경사항을 저장하시겠습니까?',
+        onConfirm: async () => {
+          for (const r of refs) {
+            try {
+              if (r?.isEditing?.()) await r.save?.();
+            } catch (e) {}
+          }
+          await handleSave();
+        },
+        onCancel: () => navigation.goBack(),
+        type: 'confirm',
+      });
+    } else {
+      handleSave();
+    }
+  };
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -177,7 +222,11 @@ const AlcoholEditScreen = ({route, navigation}) => {
         <Animated.View style={{transform: [{scale: isActive ? 1.02 : 1}]}}>
           <View style={styles.itemRow}>
             <View style={{flex: 1}}>
-              <MemoizedAlcoholItem alcohol={item} {...stableItemProps} />
+              <MemoizedAlcoholItem
+                alcohol={item}
+                expose={setItemBridge(item.id)}
+                {...stableItemProps}
+              />
             </View>
             <TouchableOpacity
               onLongPress={drag}
@@ -234,7 +283,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
             <ScrollView
               contentContainerStyle={{
                 paddingHorizontal: 12,
-                marginVertical: 12,
+                marginVertical: 7,
               }}
               horizontal>
               {Object.entries(alcoholMapping)
@@ -278,7 +327,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
             {paddingBottom: Platform.OS === 'ios' ? 30 : 10 + bottom},
           ]}
           pointerEvents={isDragging ? 'none' : 'auto'}>
-          <Pressable onPress={handleSave} style={styles.saveButton}>
+          <Pressable onPress={handleCompletePress} style={styles.saveButton}>
             <Text style={styles.saveText}>편집 완료</Text>
           </Pressable>
         </View>

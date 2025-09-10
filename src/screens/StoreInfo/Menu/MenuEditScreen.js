@@ -51,6 +51,14 @@ const MenuEditScreen = ({route, navigation}) => {
   );
 
   const MemoizedMenuItem = React.memo(MenuItem);
+  const itemRefs = useRef({});
+  const setItemBridge = useCallback(
+    id => api => {
+      if (api) itemRefs.current[id] = api;
+      else delete itemRefs.current[id];
+    },
+    [],
+  );
   const stableItemProps = useMemo(
     () => ({
       navigation: navigation,
@@ -145,6 +153,29 @@ const MenuEditScreen = ({route, navigation}) => {
     navigation.navigate('MenuAddScreen', {storeId: storeId});
   };
 
+  const handleCompletePress = () => {
+    const refs = Object.values(itemRefs.current || {});
+    const hasEditing = refs.some(r => r?.isEditing?.());
+    if (hasEditing) {
+      showAlert({
+        title: '변경사항 저장',
+        message: '변경사항을 저장하시겠습니까?',
+        onConfirm: async () => {
+          for (const r of refs) {
+            try {
+              if (r?.isEditing?.()) await r.save?.();
+            } catch (e) {}
+          }
+          await handleSave();
+        },
+        onCancel: () => navigation.goBack(),
+        type: 'confirm',
+      });
+    } else {
+      handleSave();
+    }
+  };
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -170,7 +201,11 @@ const MenuEditScreen = ({route, navigation}) => {
         <Animated.View style={{transform: [{scale: isActive ? 1.02 : 1}]}}>
           <View style={styles.itemRow}>
             <View style={{flex: 1}}>
-              <MemoizedMenuItem menu={item} {...stableItemProps} />
+              <MemoizedMenuItem
+                menu={item}
+                expose={setItemBridge(item.id)}
+                {...stableItemProps}
+              />
             </View>
             <TouchableOpacity
               onLongPress={drag}
@@ -281,7 +316,7 @@ const MenuEditScreen = ({route, navigation}) => {
             {paddingBottom: Platform.OS === 'ios' ? 30 : 10 + bottom},
           ]}
           pointerEvents={isDragging ? 'none' : 'auto'}>
-          <Pressable onPress={handleSave} style={styles.saveButton}>
+          <Pressable onPress={handleCompletePress} style={styles.saveButton}>
             <Text style={styles.saveText}>편집 완료</Text>
           </Pressable>
         </View>
@@ -309,10 +344,10 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginVertical: 20,
+    marginVertical: 10,
   },
   tabButton: {
-    paddingVertical: 10,
+    paddingVertical: 7,
     paddingHorizontal: 16,
     borderRadius: 20,
     backgroundColor: '#fff',

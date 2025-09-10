@@ -47,7 +47,6 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 3},
     shadowOpacity: 0.05,
     shadowRadius: 3,
-    elevation: 3,
   },
   searchButton: {
     marginLeft: 18,
