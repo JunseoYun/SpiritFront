@@ -35,20 +35,23 @@ const DraggableImageItem = ({
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
-  const [imageHeight, setImageHeight] = useState(150); // 초기 임의 높이
+  const DISPLAY_MAX_HEIGHT = 320; // 드래그 편의를 위한 최대 미리보기 높이
+  const [imageHeight, setImageHeight] = useState(DISPLAY_MAX_HEIGHT);
 
   useEffect(() => {
     const uri = item.isNew ? item.path : item.url;
 
     Image.getSize(
       uri,
-      (width, height) => {
-        const ratio = height / width;
-
-        setImageHeight(MAX_WIDTH * ratio);
+      (w, h) => {
+        const ratio = h / w;
+        const naturalHeight = MAX_WIDTH * ratio;
+        // 너무 긴 이미지는 미리보기에서 높이를 제한하여 드래그 용이성 개선
+        setImageHeight(Math.min(naturalHeight, DISPLAY_MAX_HEIGHT));
       },
       error => {
         console.warn('Failed to get image size:', error);
+        setImageHeight(DISPLAY_MAX_HEIGHT);
       },
     );
   }, [item, checkDelete]);
@@ -95,7 +98,8 @@ const DraggableImageItem = ({
         onLongPress={checkDelete ? undefined : drag}
         style={styles.imageWrapper}>
         <FastImage
-          resizeMode={FastImage.resizeMode.contain}
+          // 높이를 제한했으므로 채우도록 cover 사용 (세로로 긴 이미지는 상/하단 일부가 잘릴 수 있음)
+          resizeMode={FastImage.resizeMode.cover}
           source={{uri: item.isNew ? item.path : item.url}}
           style={[
             {
