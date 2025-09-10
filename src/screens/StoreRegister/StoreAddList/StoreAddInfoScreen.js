@@ -1,4 +1,10 @@
-import React, {useState, useLayoutEffect, useRef, useCallback} from 'react';
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -10,6 +16,7 @@ import {
   Platform,
   BackHandler,
   ToastAndroid,
+  Keyboard,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {StoreRegister, StoreSuggestion} from '../../../api/storeApi';
@@ -425,11 +432,31 @@ const StoreAddInfoScreen = ({navigation}) => {
     }, [navigation]),
   );
 
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{flex: 1}}>
-      <SafeAreaView style={[styles.storetopview, {paddingBottom: bottom}]}>
+      <SafeAreaView
+        style={[
+          styles.storetopview,
+          {paddingBottom: keyboardVisible ? 0 : bottom},
+        ]}>
         <StoreAddProgressbar progress={1} />
         <ScrollView
           contentContainerStyle={styles.scrollContent}

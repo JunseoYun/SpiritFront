@@ -9,6 +9,7 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const FILTER_TABS = ['카테고리', '인원', '방문 시간', '주종'];
@@ -66,7 +67,7 @@ export default function FastSearchFilter({
   const scrollRef = useRef(null);
   const timeScrollRef = useRef(null); // ✅ 가로 스크롤 참조
   const [sectionPositions, setSectionPositions] = useState({});
-
+  const {bottom} = useSafeAndroidInsets();
   const [timePositions, setTimePositions] = useState({}); // idx: x좌표
 
   const scrollToTimeIndex = idx => {
@@ -292,7 +293,7 @@ export default function FastSearchFilter({
   };
 
   return (
-    <SafeAreaView style={styles.safeContainer}>
+    <SafeAreaView style={[styles.safeContainer, {paddingBottom: bottom}]}>
       <View style={styles.tabContainer}>
         {FILTER_TABS.map(tab => (
           <TouchableOpacity

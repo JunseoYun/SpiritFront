@@ -1,4 +1,10 @@
-import React, {useState, useLayoutEffect, useCallback, useRef} from 'react';
+import React, {
+  useState,
+  useLayoutEffect,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -9,6 +15,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
@@ -191,11 +198,30 @@ const StoreAuthorityScreen = ({navigation}) => {
     });
   }, [navigation, handleNext]);
 
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{flex: 1}}>
-      <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          {paddingBottom: keyboardVisible ? 0 : bottom},
+        ]}>
         <ProgressBar progress={1} />
         <ScrollView
           contentContainerStyle={styles.contentContainer}

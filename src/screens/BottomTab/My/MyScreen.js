@@ -17,7 +17,7 @@ import MyLocation from '../../../components/MyScreen/MyLocation';
 import MyManager from '../../../components/MyScreen/MyManager/MyManager';
 import Loading from '../../../hooks/Loading';
 import {useRoute} from '@react-navigation/native';
-import {Bell, Lamp} from 'lucide-react-native';
+import {Bell} from 'lucide-react-native';
 import {has_unread_notification} from '../../../api/notificationApi';
 
 const MyScreen = ({navigation}) => {

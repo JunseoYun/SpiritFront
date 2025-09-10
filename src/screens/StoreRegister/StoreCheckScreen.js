@@ -1,4 +1,4 @@
-import React, {useState, useLayoutEffect} from 'react';
+import React, {useState, useEffect, useLayoutEffect} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -8,6 +8,7 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import StoreAuthorityData from '../../components/StoreAuthority/StoreAuthorityData';
@@ -61,6 +62,22 @@ const StoreCheckScreen = ({navigation}) => {
     });
   };
 
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -77,7 +94,11 @@ const StoreCheckScreen = ({navigation}) => {
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{flex: 1}}>
-      <SafeAreaView style={[styles.storetopview, {paddingBottom: bottom}]}>
+      <SafeAreaView
+        style={[
+          styles.storetopview,
+          {paddingBottom: keyboardVisible ? 0 : bottom}, // 키보드 켜지면 0, 아니면 bottom
+        ]}>
         {/* 진행 바: 50% 진행 */}
         <ProgressBar progress={0} />
         <ScrollView contentContainerStyle={styles.scrollContent}>

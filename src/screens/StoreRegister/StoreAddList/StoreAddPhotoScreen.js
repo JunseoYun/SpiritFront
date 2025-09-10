@@ -105,11 +105,30 @@ const StoreAddPhotoScreen = ({navigation}) => {
     });
   }, [navigation, storename, address, imageUris]);
 
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{flex: 1}}>
-      <SafeAreaView style={[styles.storetopview, {paddingBottom: bottom}]}>
+      <SafeAreaView
+        style={[
+          styles.storetopview,
+          {paddingBottom: keyboardVisible ? 0 : bottom},
+        ]}>
         {/* 진행 바: 50% 진행 */}
         <StoreAddProgressbar progress={0} />
         <ScrollView

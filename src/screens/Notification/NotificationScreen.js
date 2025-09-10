@@ -13,6 +13,7 @@ import RejectModal from '../../components/Reject/RejectModal';
 import {useToast} from '../../context/ToastContext';
 import {ReviewgetbyGet} from '../../api/reviewApi';
 import {has_unread_notification} from '../../api/notificationApi';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const NotificationCard = ({title, message, date, hasRead}) => {
   const textColorStyle = hasRead ? styles.readText : styles.unreadText;
@@ -49,7 +50,7 @@ const NotificationScreen = ({navigation}) => {
   const [clickedItemId, setClickedItemId] = useState(null);
   const [unreadNotification, setUnreadNotification] = useState(false);
   const {showToast} = useToast();
-
+  const {bottom} = useSafeAndroidInsets();
   useEffect(() => {
     setNotifidata([]); // 기존 데이터 초기화
     setPage(0);
@@ -137,7 +138,7 @@ const NotificationScreen = ({navigation}) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       <FlatList
         data={notifidata}
         keyExtractor={item => item.id.toString()}
