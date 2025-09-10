@@ -23,13 +23,14 @@ import {useToast} from '../../context/ToastContext';
 import {requestPhotoPermission} from '../../hooks/usePhotopermis';
 import Loading from '../../hooks/Loading';
 import ReviewItemSkeleton from '../../components/StoreReviewScreen/ReviewItemSkeleton';
-
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storename, isOwner} = route.params;
   const [reviewdata, setReviewdata] = useState([]);
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
+  const {bottom} = useSafeAndroidInsets();
 
   const [isWriting, setIsWriting] = useState(false); // 작성 상태
 
@@ -151,12 +152,15 @@ const StoreReviewScreen = ({navigation}) => {
     const hasCamera = await requestPhotoPermission();
     if (!hasCamera) return;
     ImagePicker.openCamera({
-      quality: 1,
+      width: 1600,
+      height: 1600, // A4 비율(대략 1.414)
       cropping: true,
+      freeStyleCropEnabled: true, // 자유 크롭 허용
       mediaType: 'photo',
       compressImageMaxWidth: 2160, // 최대 너비
       compressImageMaxHeight: 2160,
       compressImageQuality: 0.95, // 품질
+      includeExif: false,
     })
       .then(image => {
         setImages(prevImages => [...prevImages, image]); // 이미지를 배열에 추가
@@ -178,7 +182,8 @@ const StoreReviewScreen = ({navigation}) => {
         mediaType: 'photo',
         multiple: remaining > 1, // 2개 이상일 때만 multiple
         maxFiles: remaining > 1 ? remaining : 1,
-        cropping: false, // 우선 crop 안함
+        cropping: false, // 우선 crop 안함 (아래에서 개별 크롭)
+        includeExif: false,
       });
 
       const selectedImages = Array.isArray(pickedImages)
@@ -187,19 +192,24 @@ const StoreReviewScreen = ({navigation}) => {
 
       const croppedImages = [];
 
-      // 각 이미지 2048 x 1536, 4:3 비율 crop
+      // 각 이미지 1600 x 1600 정사각 크롭 (카메라와 동일 스펙)
       for (let i = 0; i < selectedImages.length; i++) {
         const image = selectedImages[i];
         const cropped = await ImagePicker.openCropper({
           path: image.path,
+          width: 1600,
+          height: 1600,
           cropping: true,
-          compressImageQuality: 0.95,
+          compressImageQuality: 0.9,
           cropperToolbarTitle: '이미지 편집',
           cropperActiveWidgetColor: '#45C9FF',
           cropperStatusBarLight: true,
           cropperToolbarColor: '#ffffff',
           cropperToolbarWidgetColor: '#333333',
           avoidEmptySpaceAroundImage: true,
+          freeStyleCropEnabled: true, // 자유 크롭 비활성화: 결과 해상도 균일화
+          includeExif: false,
+          forceJpg: true,
         });
         croppedImages.push(cropped);
       }
@@ -319,9 +329,8 @@ const StoreReviewScreen = ({navigation}) => {
   return (
     <KeyboardAvoidingView
       style={{flex: 1}}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 70}>
-      <SafeAreaView style={styles.container}>
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <SafeAreaView style={[styles.container, , {paddingBottom: bottom}]}>
         {!isWriting ? (
           <View style={{width: '100%'}}>
             <View style={styles.MenuaddView}>
@@ -361,33 +370,35 @@ const StoreReviewScreen = ({navigation}) => {
             )}
           </View>
         ) : (
-          <View visible={isWriting}>
-            <ReviewForm
-              storeName={storename} // 스토어 이름 넘겨주기
-              newReviewContent={newReviewContent}
-              onChangeText={onChangeText}
-              renderStars={renderStars}
-              visitDate={visitDate}
-              setVisitDate={setVisitDate}
-              isDatePickerOpen={isDatePickerOpen}
-              setIsDatePickerOpen={setIsDatePickerOpen}
-              images={images}
-              selectedImageIndex={selectedImageIndex}
-              handleImagePress={handleImagePress}
-              selectImage={selectImage}
-              handleSubmitReview={handleSubmitReview}
-              hadleNoWrite={hadleNoWrite}
-              setIsWriting={setIsWriting}
-              isBottomSheetVisible={isBottomSheetVisible}
-              setBottomSheetVisible={setBottomSheetVisible}
-              handleGalleryPick={handleGalleryPick}
-              setSelectedImageIndex={setSelectedImageIndex}
-            />
+          <View visible={isWriting} style={{flex: 1}}>
+            <View style={{flex: 1}}>
+              <ReviewForm
+                storeName={storename} // 스토어 이름 넘겨주기
+                newReviewContent={newReviewContent}
+                onChangeText={onChangeText}
+                renderStars={renderStars}
+                visitDate={visitDate}
+                setVisitDate={setVisitDate}
+                isDatePickerOpen={isDatePickerOpen}
+                setIsDatePickerOpen={setIsDatePickerOpen}
+                images={images}
+                selectedImageIndex={selectedImageIndex}
+                handleImagePress={handleImagePress}
+                selectImage={selectImage}
+                handleSubmitReview={handleSubmitReview}
+                hadleNoWrite={hadleNoWrite}
+                setIsWriting={setIsWriting}
+                isBottomSheetVisible={isBottomSheetVisible}
+                setBottomSheetVisible={setBottomSheetVisible}
+                handleGalleryPick={handleGalleryPick}
+                setSelectedImageIndex={setSelectedImageIndex}
+              />
+            </View>
           </View>
         )}
-        <AlertComponent />
-        <Loading loading={addloading || loading} />
       </SafeAreaView>
+      <AlertComponent />
+      <Loading loading={addloading || loading} />
     </KeyboardAvoidingView>
   );
 };
@@ -396,8 +407,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    width: '100%',
-    height: '100%',
   },
   buttonContainer: {
     flexDirection: 'row',
