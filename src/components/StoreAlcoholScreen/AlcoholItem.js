@@ -37,6 +37,7 @@ const AlcoholItem = ({
   isMainEditing,
   onTypeChange,
   navigation,
+  expose,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(alcohol.name);
@@ -201,6 +202,19 @@ const AlcoholItem = ({
   const handleImagePress = () => {
     navigation.navigate('ImageViewerScreen', {images: imgUrl});
   };
+
+  // expose imperative-like API to parent if requested
+  useEffect(() => {
+    if (!expose) return;
+    const api = {
+      save: handleSave,
+      cancel: onCancelEdit,
+      isEditing: () => isEditing,
+    };
+    expose(api);
+    return () => expose(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expose, isEditing, name, description, price, type, imgUrl, isImageDeleted, selectedImage]);
 
   return (
     <View style={[styles.container, isLast && {borderBottomWidth: 0}]}>
