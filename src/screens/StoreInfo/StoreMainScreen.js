@@ -445,12 +445,14 @@ const StoreMainScreen = ({navigation}) => {
   const filterHeaderThreshold = useMemo(() => {
     if (!mainSectionHeight) return 100000; // wait until measured
     // 상단 고정 헤더 높이 보정
+    // console.log(insets.top);
     const overlayOffset = Platform.OS === 'ios' ? insets.top + 30 : top + 40;
     // 메인 이미지가 없는 경우 목록 헤더가 너무 빨리 붙는 것을 방지하기 위해 추가 지연 적용
     // iOS는 상단 여백이 더 크므로 약간 더 크게 지연
-    const hasImage = !!(storedata?.imgUrlList && storedata.imgUrlList.length);
+
     // 조금 더 늦게 붙도록 지연값을 소폭 상향
-    const extraDelay = hasImage ? 0 : Platform.OS === 'ios' ? 80 : 56;
+    const hasImage = !!(storedata?.imgUrlList && storedata.imgUrlList.length);
+    const extraDelay = hasImage ? 0 : Platform.OS === 'ios' ? 0 : insets.top;
     return Math.max(0, mainSectionHeight - overlayOffset + extraDelay);
   }, [mainSectionHeight, insets.top, top, storedata?.imgUrlList]);
 
@@ -557,17 +559,19 @@ const StoreMainScreen = ({navigation}) => {
                   backgroundColor: 'white',
                   width: '100%',
                   paddingBottom: 100,
-                  paddingTop:
-                    !storedata?.imgUrlList?.length > 0
-                      ? Platform.OS === 'ios'
-                        ? 80
-                        : 30
-                      : undefined,
                 }}
                 keyboardShouldPersistTaps="always"
                 scrollEnabled={true}
                 contentContainerStyle={{flexGrow: 1}}>
                 <View
+                  style={{
+                    paddingTop:
+                      !storedata?.imgUrlList?.length > 0
+                        ? Platform.OS === 'ios'
+                          ? 80
+                          : 30
+                        : undefined,
+                  }}
                   onLayout={e => {
                     const {height} = e.nativeEvent.layout;
                     setMainSectionHeight(height);
