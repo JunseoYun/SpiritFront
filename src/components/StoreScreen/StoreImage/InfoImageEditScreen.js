@@ -127,9 +127,18 @@ const InfoImageEditScreen = ({navigation, route}) => {
       const image = await ImagePicker.openCamera({
         cropping: true,
         mediaType: 'photo',
-        compressImageQuality: 1, // 품질
-        compressImageMaxWidth: 2160, // 최대 너비
-        compressImageMaxHeight: 2160, // 최대 높이
+        // 자유 크롭: width/height 미지정
+        freeStyleCropEnabled: true,
+        avoidEmptySpaceAroundImage: true,
+        compressImageQuality: 0.95,
+        // 해상도 상한(필요 시 조정)
+        compressImageMaxWidth: 2160,
+        compressImageMaxHeight: 2160,
+        includeExif: false,
+        ...(Platform.OS === 'ios' && {
+          width: 1600, // 원하는 와이드 사이즈
+          height: 1600, // 원하는 와이드 사이즈
+        }),
       });
 
       const picked = {
@@ -154,6 +163,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
         multiple: true, // 2개 이상일 때만 multiple
         maxFiles: 10,
         cropping: false, // 우선 crop 안함
+        includeExif: false,
       });
 
       const selectedImages = Array.isArray(pickedImages)
@@ -162,19 +172,28 @@ const InfoImageEditScreen = ({navigation, route}) => {
 
       const croppedImages = [];
 
-      // 각 이미지 2048 x 1536, 4:3 비율 crop
+      // 각 이미지 자유 비율 크롭
       for (let i = 0; i < selectedImages.length; i++) {
         const image = selectedImages[i];
         const cropped = await ImagePicker.openCropper({
           path: image.path,
           cropping: true,
+          freeStyleCropEnabled: true,
+          avoidEmptySpaceAroundImage: true,
           compressImageQuality: 0.95,
+          compressImageMaxWidth: 2160,
+          compressImageMaxHeight: 2160,
           cropperToolbarTitle: '이미지 편집',
           cropperActiveWidgetColor: '#45C9FF',
           cropperStatusBarLight: true,
           cropperToolbarColor: '#ffffff',
           cropperToolbarWidgetColor: '#333333',
-          avoidEmptySpaceAroundImage: true,
+          includeExif: false,
+          ...(Platform.OS === 'ios' && {
+            width: 1600, // 원하는 와이드 사이즈
+            height: 1600, // 원하는 와이드 사이즈
+          }),
+          // forceJpg: true, // 필요 시만 활성화
         });
         croppedImages.push(cropped);
       }
@@ -332,7 +351,8 @@ const InfoImageEditScreen = ({navigation, route}) => {
           return acc;
         }, {});
 
-        const uploadResponses = [];
+        // boardType별 업로드 응답을 순서대로 저장하여 1:1 매핑
+        const responsesByType = {};
 
         for (const [boardType, images] of Object.entries(groupedByBoardType)) {
           try {
@@ -341,31 +361,32 @@ const InfoImageEditScreen = ({navigation, route}) => {
               {files: images, boardType},
               storeId,
             );
-            uploadResponses.push(...response);
+            // uploadResponses.push(...response);
+            const list = Array.isArray(response) ? response : [response];
+            responsesByType[boardType] = list.slice(); // copy
           } catch (error) {
             console.error(
               `Error uploading images for boardType ${boardType}:`,
               error,
             );
-            // 필요하면 에러 처리 추가
+            responsesByType[boardType] = [];
           }
         }
 
-        const uploadedList = uploadResponses.flat();
+        // const uploadedList = uploadResponses.flat();
 
         // 서버 응답 기반으로 localImages 업데이트
         updatedLocalImages = localImages.map(localImg => {
           if (!localImg.isNew) return localImg;
-
-          const match = uploadedList.find(uploaded =>
-            uploaded.url.includes(localImg.filename),
-          );
-
-          return match
+          const queue = responsesByType[localImg.boardType] || [];
+          const assigned = queue.shift();
+          // 큐 소진 결과를 반영
+          responsesByType[localImg.boardType] = queue;
+          return assigned
             ? {
                 ...localImg,
-                id: match.id,
-                url: match.url,
+                id: assigned.id,
+                url: assigned.url,
                 isNew: false,
               }
             : localImg;
@@ -621,9 +642,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
         <DraggableFlatList
           data={localImages}
           onDragEnd={({data}) => onDragEnd({data})}
-          keyExtractor={(item, index) =>
-            item.id ? `${item.id}` : `${item.url}-${index}`
-          }
+          keyExtractor={item => String(item.localId)}
           onScrollBeginDrag={() => {
             if (dropdownVisible) {
               toggleDropdown();

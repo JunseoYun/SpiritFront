@@ -152,15 +152,18 @@ const StoreReviewScreen = ({navigation}) => {
     const hasCamera = await requestPhotoPermission();
     if (!hasCamera) return;
     ImagePicker.openCamera({
-      width: 1600,
-      height: 1600, // A4 비율(대략 1.414)
       cropping: true,
-      freeStyleCropEnabled: true, // 자유 크롭 허용
+      freeStyleCropEnabled: true, // 자유 크롭
       mediaType: 'photo',
-      compressImageMaxWidth: 2160, // 최대 너비
+      avoidEmptySpaceAroundImage: true,
+      compressImageQuality: 0.95, // 품질 고정
+      compressImageMaxWidth: 2160,
       compressImageMaxHeight: 2160,
-      compressImageQuality: 0.95, // 품질
       includeExif: false,
+      ...(Platform.OS === 'ios' && {
+        width: 1600, // 원하는 와이드 사이즈
+        height: 1600, // 원하는 와이드 사이즈
+      }),
     })
       .then(image => {
         setImages(prevImages => [...prevImages, image]); // 이미지를 배열에 추가
@@ -192,24 +195,28 @@ const StoreReviewScreen = ({navigation}) => {
 
       const croppedImages = [];
 
-      // 각 이미지 1600 x 1600 정사각 크롭 (카메라와 동일 스펙)
+      // 각 이미지 자유 비율 크롭 (0.95 품질, 최대 해상도 제한)
       for (let i = 0; i < selectedImages.length; i++) {
         const image = selectedImages[i];
         const cropped = await ImagePicker.openCropper({
           path: image.path,
-          width: 1600,
-          height: 1600,
           cropping: true,
-          compressImageQuality: 0.9,
+          freeStyleCropEnabled: true,
+          avoidEmptySpaceAroundImage: true,
+          compressImageQuality: 0.95,
+          compressImageMaxWidth: 2160,
+          compressImageMaxHeight: 2160,
           cropperToolbarTitle: '이미지 편집',
           cropperActiveWidgetColor: '#45C9FF',
           cropperStatusBarLight: true,
           cropperToolbarColor: '#ffffff',
           cropperToolbarWidgetColor: '#333333',
-          avoidEmptySpaceAroundImage: true,
-          freeStyleCropEnabled: true, // 자유 크롭 비활성화: 결과 해상도 균일화
           includeExif: false,
-          forceJpg: true,
+          ...(Platform.OS === 'ios' && {
+            width: 1600, // 원하는 와이드 사이즈
+            height: 1600, // 원하는 와이드 사이즈
+          }),
+          // forceJpg: true,
         });
         croppedImages.push(cropped);
       }
