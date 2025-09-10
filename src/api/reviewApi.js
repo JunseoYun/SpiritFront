@@ -4,13 +4,21 @@ import {functionError} from './errorHandler';
 export const ReviewCreate = async data => {
   const formData = new FormData();
 
+  const toFileField = (file, idx = 0) => {
+    if (!file) return null;
+    // 지원: image-crop-picker 객체(path/mime/filename), 단순 uri 문자열, {uri, type, name}
+    const rawPath = file.path || file.uri || file;
+    if (!rawPath) return null;
+    const uri = rawPath.startsWith('file://') ? rawPath : `file://${rawPath}`;
+    const type = file.mime || file.type || 'image/jpeg';
+    const name = file.filename || file.name || `review_${Date.now()}_${idx}.jpg`;
+    return {uri, type, name};
+  };
+
   if (data.files && data.files.length > 0) {
-    data.files.forEach(file => {
-      formData.append('files', {
-        uri: file.path,
-        type: file.mime,
-        name: file.filename,
-      });
+    data.files.forEach((file, idx) => {
+      const f = toFileField(file, idx);
+      if (f) formData.append('files', f);
     });
   }
 
@@ -101,14 +109,18 @@ export const ReviewEdit = async (reviewId, data) => {
 
 export const ReviewEditImage = async (reviewId, data) => {
   const formData = new FormData();
-  data.files.forEach(file => {
-    if (file) {
-      formData.append('files', {
-        uri: file.path, // 이미지 URI
-        type: file.mime, // 이미지 타입 (확인 후 필요한 타입 사용)
-        name: file.filename, // 파일 이름 (확장자 포함)
-      });
-    }
+  const toFileField = (file, idx = 0) => {
+    if (!file) return null;
+    const rawPath = file.path || file.uri || file;
+    if (!rawPath) return null;
+    const uri = rawPath.startsWith('file://') ? rawPath : `file://${rawPath}`;
+    const type = file.mime || file.type || 'image/jpeg';
+    const name = file.filename || file.name || `review_${Date.now()}_${idx}.jpg`;
+    return {uri, type, name};
+  };
+  (data.files || []).forEach((file, idx) => {
+    const f = toFileField(file, idx);
+    if (f) formData.append('files', f);
   });
   try {
     const response = await axiosInstance.post(

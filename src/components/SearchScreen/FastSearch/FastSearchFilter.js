@@ -431,7 +431,6 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
     paddingTop: 12,
     paddingHorizontal: 12,
-    paddingBottom: Platform.OS === 'ios' ? 12 : 0,
   },
   resetButton: {
     flex: 1,
