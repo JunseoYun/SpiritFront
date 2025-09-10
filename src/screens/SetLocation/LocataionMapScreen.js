@@ -22,6 +22,7 @@ import {
 } from '../../hooks/useLocation';
 import Loading from '../../hooks/Loading';
 import {log_access_create} from '../../api/userApi';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const LocataionMapScreen = ({navigation}) => {
   const route = useRoute();
@@ -33,6 +34,8 @@ const LocataionMapScreen = ({navigation}) => {
   const isProgrammaticPan = useRef(false);
   const {showToast} = useToast();
   const webViewRef = useRef(null);
+
+  const {bottom} = useSafeAndroidInsets();
 
   useEffect(() => {
     if (location) {
@@ -164,7 +167,7 @@ const LocataionMapScreen = ({navigation}) => {
   };
 
   return (
-    <>
+    <View style={{flex: 1, paddingBottom: bottom}}>
       {location ? (
         <WebView
           ref={webViewRef}
@@ -178,15 +181,19 @@ const LocataionMapScreen = ({navigation}) => {
         />
       ) : null}
 
-      <TouchableOpacity style={styles.buttonRoute} onPress={updateNewLocation}>
+      <TouchableOpacity
+        style={[styles.buttonRoute, {bottom: 110 + bottom}]}
+        onPress={updateNewLocation}>
         <Feather name="crosshair" size={30} color="#16BBFF" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.locationbtn} onPress={setcenterrefresh}>
+      <TouchableOpacity
+        style={[styles.locationbtn, {bottom: 40 + bottom}]}
+        onPress={setcenterrefresh}>
         <Text style={styles.locationbtntext}>이 위치로 주소 설정</Text>
       </TouchableOpacity>
 
       <Loading loading={loading} />
-    </>
+    </View>
   );
 };
 
@@ -201,29 +208,27 @@ const styles = StyleSheet.create({
   },
   locationbtn: {
     position: 'absolute',
-    bottom: '6%',
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     width: '90%',
-    height: '7%',
     backgroundColor: '#45C9FF',
-    borderRadius: 8,
+    borderRadius: 7,
   },
   locationbtntext: {
     alignSelf: 'center',
     color: '#fff',
     fontSize: 18,
     fontFamily: 'Pretendard-Medium',
+    paddingVertical: 15,
   },
   buttonRoute: {
     position: 'absolute',
-    bottom: '15%',
     left: '7%',
     borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10,
+    padding: 9,
     backgroundColor: 'rgba(22, 187, 255, 0.2)',
   },
 });

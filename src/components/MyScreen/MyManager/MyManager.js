@@ -19,6 +19,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {BlurView} from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const {width, height} = Dimensions.get('window');
 const CARD_WIDTH = width * 0.65;
@@ -31,6 +32,7 @@ const MyManager = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [nameTabDisabled, setNameTabDisabled] = useState(false);
+  const {bottom} = useSafeAndroidInsets();
 
   // 모달 상태
   const [modalVisible, setModalVisible] = useState(false);
@@ -133,9 +135,9 @@ const MyManager = ({navigation}) => {
           <Pressable
             style={[
               styles.card,
+              {height: height * 0.5 - bottom},
               mysotredata.length === 1 && {
-                height: height * 0.5,
-                marginTop: 0,
+                height: height * 0.53 - bottom,
               },
             ]}
             onPress={() => {
@@ -236,7 +238,6 @@ const MyManager = ({navigation}) => {
         scrollEventThrottle={16}
         contentContainerStyle={{
           paddingHorizontal: CARD_SPACING,
-          paddingTop: 10,
         }}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {x: scrollX}}}],
@@ -280,16 +281,19 @@ const MyManager = ({navigation}) => {
           // 가장자리를 과도하게 넘기지 않도록
           bounces={false}
           overScrollMode="never"
-          contentContainerStyle={{marginTop: 10}}
           ListHeaderComponent={() => {
             const firstW = tabItemWidths[0];
-            const headerW = firstW ? Math.max(0, (width - firstW) / 2) : CARD_SPACING;
+            const headerW = firstW
+              ? Math.max(0, (width - firstW) / 2)
+              : CARD_SPACING;
             return <View style={{width: headerW}} />;
           }}
           ListFooterComponent={() => {
             const lastIndex = mysotredata.length - 1;
             const lastW = tabItemWidths[lastIndex];
-            const footerW = lastW ? Math.max(0, (width - lastW) / 2) : CARD_SPACING;
+            const footerW = lastW
+              ? Math.max(0, (width - lastW) / 2)
+              : CARD_SPACING;
             return <View style={{width: footerW}} />;
           }}
           renderItem={({item, index}) => (
@@ -302,7 +306,6 @@ const MyManager = ({navigation}) => {
               style={[
                 styles.nameTab,
                 currentIndex === index && styles.activeTab,
-                {paddingVertical: 6},
               ]}
               onLayout={e => onTabLayout(index, e.nativeEvent.layout.width)}>
               <Text
@@ -326,7 +329,7 @@ const MyManager = ({navigation}) => {
         hardwareAccelerated={true}
         animationType="none"
         onRequestClose={closeModal}>
-        <View style={StyleSheet.absoluteFill}>
+        <View style={[StyleSheet.absoluteFill]}>
           {Platform.OS === 'ios' ? (
             <BlurView
               style={StyleSheet.absoluteFill}
@@ -363,7 +366,8 @@ const MyManager = ({navigation}) => {
                   pointerEvents="none"
                 />
                 {/* 정보 영역 */}
-                <View style={styles.modalInfoContainer}>
+                <View
+                  style={[styles.modalInfoContainer, {paddingBottom: bottom}]}>
                   <Text style={styles.modalInfoTitle} numberOfLines={1}>
                     {selectedStore.storeName || '상호명 없음'}
                   </Text>
@@ -417,7 +421,7 @@ const MyManager = ({navigation}) => {
                 </Pressable>
 
                 {/* 하단 버튼 */}
-                <View style={styles.bottomButtons}>
+                <View style={[styles.bottomButtons, {paddingBottom: bottom}]}>
                   <View style={styles.bottomButtonView}>
                     <Pressable
                       style={[
@@ -614,11 +618,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,77,79,0.25)',
     color: '#FF4D4F',
   },
-
   nameTab: {
     justifyContent: 'center',
-    marginBottom: 10,
     marginHorizontal: 10,
+    marginBottom: 10,
   },
   activeTab: {
     // backgroundColor: '#E9F5FB',

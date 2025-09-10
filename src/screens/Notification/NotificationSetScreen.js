@@ -15,6 +15,7 @@ import {
 import {Userdataget, user_marketing_consent} from '../../api/userApi';
 import Loading from '../../hooks/Loading';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const Toggle = ({value, onToggle}) => {
   const translateX = useState(new Animated.Value(value ? 22 : 2))[0];
@@ -45,6 +46,7 @@ const NotificationSetScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
   const [loading, setLoading] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const {bottom} = useSafeAndroidInsets();
 
   useEffect(() => {
     const checkPermission = async () => {
@@ -98,7 +100,7 @@ const NotificationSetScreen = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       <View style={styles.section}>
         <View style={styles.row1}>
           <Text style={styles.label}>시스템 알림</Text>

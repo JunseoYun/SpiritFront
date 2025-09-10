@@ -265,9 +265,8 @@ const MenuEditScreen = ({route, navigation}) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       style={{flex: 1}}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View pointerEvents={isDragging ? 'none' : 'auto'}>
             {menus.length > 0 && (

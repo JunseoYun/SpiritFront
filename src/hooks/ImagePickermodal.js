@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, Modal, TouchableOpacity} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
+import useSafeAndroidInsets from './useSafeAndroidInsets';
 
 const ImagePickermodal = ({
   isBottomSheetVisible,
@@ -9,7 +10,7 @@ const ImagePickermodal = ({
   handleGalleryPick,
 }) => {
   const close = () => setBottomSheetVisible(false);
-
+  const {bottom} = useSafeAndroidInsets();
   return (
     <Modal
       visible={isBottomSheetVisible}
@@ -21,7 +22,7 @@ const ImagePickermodal = ({
         style={styles.modalOverlay}
         activeOpacity={1}
         onPressOut={close}>
-        <View style={styles.bottomSheet}>
+        <View style={[styles.bottomSheet, {paddingBottom: bottom}]}>
           <TouchableOpacity
             style={styles.sheetButton}
             onPress={() => {
