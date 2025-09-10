@@ -479,10 +479,7 @@ const StoreMainScreen = ({navigation}) => {
               backgroundColor: 'white',
               flex: 1,
               ...(!storedata?.imgUrlList?.length > 0 &&
-              !isUpdate &&
-              storedata?.isUpdatable === true
-                ? {paddingTop: top, paddingBottom: bottom}
-                : {}),
+                !isUpdate && {paddingTop: top, paddingBottom: bottom}),
             }}>
             {!isUpdate && storedata?.imgUrlList && (
               <StoreHeader
@@ -513,6 +510,9 @@ const StoreMainScreen = ({navigation}) => {
               )}
             {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
               <Animated.View
+                pointerEvents={
+                  filterHeaderProgress.__getValue() === 0 ? 'none' : 'auto'
+                }
                 style={[
                   styles.fixedFilterHeader,
                   {
@@ -850,6 +850,10 @@ const styles = StyleSheet.create({
     zIndex: 1,
     backgroundColor: '#fff',
     elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
   },
   nonimgstickyActive: {
     paddingTop: 10,
