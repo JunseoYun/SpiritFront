@@ -462,12 +462,13 @@ const MainScreen = ({navigation}) => {
   const filterHeaderThreshold = useMemo(() => {
     if (!mainSectionHeight || !populartext) return 100000; // wait until measured
     // 너무 일찍 붙는 현상을 방지하기 위해 약간 늦춤
-    const androidOffset = Platform.OS === 'android' ? 8 : 0;
-    return Math.max(0, mainSectionHeight + populartext + 24 + androidOffset);
+    const androidOffset = Platform.OS === 'android' ? 6 : 0;
+    const offset = insets.top === 0 ? -10 : 0;
+    return Math.max(
+      0,
+      mainSectionHeight + populartext + 36 + androidOffset + offset,
+    );
   }, [mainSectionHeight, populartext]);
-  // 동일한 헤더가 그대로 붙는 느낌 유지 + 안드로이드의 "툭" 개선을 위해
-  // 교차 페이드 범위를 플랫폼별로 다르게 적용 (iOS는 촘촘, Android는 조금 넓게)
-  const filterHeaderCrossfade = useMemo(() => 0.5, []);
   const filterHeaderProgress = scrollY.interpolate({
     inputRange: [filterHeaderThreshold, filterHeaderThreshold],
     outputRange: [0, 1],
