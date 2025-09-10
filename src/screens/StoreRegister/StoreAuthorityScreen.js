@@ -13,17 +13,11 @@ import {
 import {useRoute} from '@react-navigation/native';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
 import StoreInfoCard from '../../components/StoreAuthority/StoreInfoCard';
-import ImagePicker from 'react-native-image-crop-picker';
 import StoreOwnerInput from '../../components/StoreAuthority/StoreOwnerInput';
 import StoreBusinessData from '../../components/StoreAuthority/StoreBusinessData';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import {normalizeFont} from '../../hooks/normalizeFont';
-import {
-  requestPhotoPermission,
-  requestCameraPermission,
-} from '../../hooks/usePhotopermis';
-import ImagePickermodal from '../../hooks/ImagePickermodal';
 import BusinessCertificate from '../../components/StoreAuthority/BusinessCertificate';
 
 const StoreAuthorityScreen = ({navigation}) => {
@@ -32,8 +26,6 @@ const StoreAuthorityScreen = ({navigation}) => {
   const {storeData, storeLocationDto, storeSuggestionData} = route.params;
   const [owners, setOwners] = useState([{name: ''}]);
   const [hasCoRepresentative, setHasCoRepresentative] = useState(false);
-
-  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false); // 바텀시트 상태
   const [error, setError] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -186,45 +178,6 @@ const StoreAuthorityScreen = ({navigation}) => {
   };
 
   // 이미지 선택 함수: 갤러리에서 이미지 선택 후 state 업데이트
-  const handleGalleryPick = () => {
-    ImagePicker.openPicker({
-      width: 2048,
-      height: 2896, // A4 비율
-      cropping: true,
-      freeStyleCropEnabled: true, // 자유 크롭 허용
-      mediaType: 'photo',
-      compressImageQuality: 1, // 최대 화질
-    })
-      .then(image => {
-        setBusiness_registration_certificate(image);
-      })
-      .catch(error => {});
-    if (error === 'business_registration_certificate') {
-      setError('');
-      setErrorMessage('');
-    }
-  };
-
-  const handleCameraPick = async () => {
-    const hasCamera = await requestCameraPermission();
-    if (!hasCamera) return;
-
-    ImagePicker.openCamera({
-      width: 2048,
-      height: 2896, // A4 비율
-      cropping: true,
-      freeStyleCropEnabled: true, // 자유 크롭 허용
-      mediaType: 'photo',
-      compressImageQuality: 1, // 최대 화질
-    })
-      .then(image => {
-        setBusiness_registration_certificate(image);
-      })
-      .catch(error => {
-        setError('');
-        setErrorMessage('');
-      });
-  };
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -327,13 +280,6 @@ const StoreAuthorityScreen = ({navigation}) => {
             <Text style={styles.storeAddText}>다음</Text>
           </Pressable>
         </View>
-        {/* <ImagePickermodal
-          // isBottomSheetVisible={isBottomSheetVisible}
-          isBottomSheetVisible={true}
-          setBottomSheetVisible={setBottomSheetVisible}
-          handleCameraPick={handleCameraPick}
-          handleGalleryPick={handleGalleryPick}
-        /> */}
       </SafeAreaView>
     </KeyboardAvoidingView>
   );

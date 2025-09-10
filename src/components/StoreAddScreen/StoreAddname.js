@@ -5,7 +5,6 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import forbiddenWords from '../../hooks/forbiddenWords';
 
 const StoreAddname = ({storename, setStorename, error}) => {
   const [focusedInput, setFocusedInput] = useState(false);
@@ -28,17 +27,7 @@ const StoreAddname = ({storename, setStorename, error}) => {
   }, [error]);
 
   const handleChange = value => {
-    const containsForbiddenWord = forbiddenWords.some(word =>
-      value.includes(word),
-    );
-
-    setErrors({
-      storename: containsForbiddenWord ? '비속어 사용 금지' : null,
-    });
-
-    if (!containsForbiddenWord) {
-      setStorename(value);
-    }
+    setStorename(value);
   };
 
   const animatedLabelStyle = useAnimatedStyle(() => {

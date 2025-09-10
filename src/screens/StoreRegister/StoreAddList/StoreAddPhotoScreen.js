@@ -13,10 +13,8 @@ import {
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import StoreAddProgressbar from '../../../components/StoreAddScreen/StoreAddProgressbar';
 import StoreImage from '../../../components/StoreAddScreen/StoreImage';
-import ReceiptImage from '../../../components/StoreAddScreen/ReceiptImage';
 import StoreAddname from '../../../components/StoreAddScreen/StoreAddname';
 import StoreAddress from '../../../components/StoreAddScreen/StoreAddress';
-import useCustomAlert from '../../../hooks/useCustomAlert';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
@@ -54,7 +52,6 @@ const StoreAddPhotoScreen = ({navigation}) => {
     setCoords(coords);
   };
 
-  const {showAlert, AlertComponent} = useCustomAlert();
   const [error, setError] = useState('');
 
   const scrollToError = ref => {
@@ -158,7 +155,6 @@ const StoreAddPhotoScreen = ({navigation}) => {
             <Text style={styles.storeAddText}>다음</Text>
           </Pressable>
         </View>
-        <AlertComponent />
         <Loading loading={loading} />
       </SafeAreaView>
     </KeyboardAvoidingView>

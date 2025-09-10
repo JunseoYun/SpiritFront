@@ -20,12 +20,15 @@ const BusinessCertificate = ({
 
   const handleGalleryPick = () => {
     ImagePicker.openPicker({
-      width: 2048,
-      height: 2896, // A4 비율
+      width: 1600,
+      height: 2264, // A4 비율(대략 1.414)
       cropping: true,
       freeStyleCropEnabled: true, // 자유 크롭 허용
       mediaType: 'photo',
-      compressImageQuality: 1, // 최대 화질
+      compressImageQuality: 0.85, // 용량 절감
+      compressImageMaxWidth: 1600,
+      compressImageMaxHeight: 2264,
+      includeExif: false,
     })
       .then(image => {
         setBusiness_registration_certificate(image);
@@ -38,12 +41,15 @@ const BusinessCertificate = ({
     if (!hasCamera) return;
 
     ImagePicker.openCamera({
-      width: 2048,
-      height: 2896, // A4 비율
+      width: 1600,
+      height: 2264, // A4 비율(대략 1.414)
       cropping: true,
       freeStyleCropEnabled: true, // 자유 크롭 허용
       mediaType: 'photo',
-      compressImageQuality: 1, // 최대 화질
+      compressImageQuality: 0.85,
+      compressImageMaxWidth: 1600,
+      compressImageMaxHeight: 2264,
+      includeExif: false,
     })
       .then(image => {
         setBusiness_registration_certificate(image);

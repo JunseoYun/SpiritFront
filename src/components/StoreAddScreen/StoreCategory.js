@@ -61,7 +61,7 @@ const StoreCategory = ({
             </>
           ) : (
             <Text style={styles.inputHideText}>
-              {index ? '카테고리*' : '카테고리'}
+              {index ? '카테고리* (최대 3개)' : '카테고리 (최대 3개)'}
             </Text>
           )}
         </TouchableOpacity>
