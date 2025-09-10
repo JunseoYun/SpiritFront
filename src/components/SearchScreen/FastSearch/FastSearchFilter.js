@@ -73,57 +73,58 @@ export default function FastSearchFilter({
     const x = timePositions[idx] ?? 0;
     timeScrollRef.current?.scrollTo({x: x - 16, animated: true});
   };
-  // ✅ 현재 시간 기반으로 초기 세팅
-  useEffect(() => {
-    // const timeVal = selectedFilters['방문 시간'];
-    // if (timeVal) return;
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
+  const [hasScrolled, setHasScrolled] = useState(false);
 
-    const baseTimes = generateTimes();
-    const isPM = currentHour >= 12;
-    setTimePeriod(isPM ? 'PM' : 'AM');
+  const autoScrollToTime = positions => {
+    if (hasScrolled) return; // 이미 스크롤했으면 종료
+    setHasScrolled(true);
 
-    let hour12 = currentHour % 12;
-    let index = hour12 * 2;
-
-    if (currentMinute < 30) {
-      index += 1; // 현재시각 < 30분 → 30분 칩
-    } else {
-      index += 2; // 현재시각 >= 30분 → 다음 시각 00분 칩
-    }
-
-    if (index >= baseTimes.length) {
-      index = 0;
-      setTimePeriod(isPM ? 'AM' : 'PM');
-    }
-
-    setTimeout(() => {
-      scrollToTimeIndex(index);
-    }, 300);
-  }, [selectedFilters['방문 시간']]);
-
-  // ✅ 선택된 시간 기반 초기 세팅
-  useEffect(() => {
     const timeVal = selectedFilters['방문 시간'];
-    if (timeVal && typeof timeVal === 'string') {
-      const hour = parseInt(timeVal.split(':')[0], 10);
-      if (!isNaN(hour)) {
-        // 오전/오후 설정
-        if (hour >= 12) setTimePeriod('PM');
-        else setTimePeriod('AM');
+    let index = 0;
 
-        // 스크롤 이동
-        const hour12 = hour % 12;
-        const minute = parseInt(timeVal.split(':')[1], 10);
-        const index = hour12 * 2 + (minute >= 30 ? 1 : 0);
-        setTimeout(() => {
-          scrollToTimeIndex(index);
-        }, 100);
+    if (timeVal) {
+      const [hourStr, minStr] = timeVal.split(':');
+      const hour = parseInt(hourStr, 10);
+      const minute = parseInt(minStr, 10);
+      index = (hour % 12) * 2 + (minute >= 30 ? 1 : 0);
+    } else {
+      const now = new Date();
+      const hour = now.getHours() % 12;
+      const minute = now.getMinutes();
+
+      if (minute < 30) {
+        index = hour * 2 + 1; // 현재 시간 :30
+      } else {
+        index = ((hour + 1) % 12) * 2; // 다음 시간 :00
       }
     }
-  }, [selectedFilters['방문 시간']]);
+
+    const x = positions[index] ?? 0;
+    timeScrollRef.current?.scrollTo({x: x - 16, animated: true});
+  };
+
+  // // ✅ 선택된 시간 기반 초기 세팅
+  useEffect(() => {
+    if (hasScrolled == true) {
+      const timeVal = selectedFilters['방문 시간'];
+      if (timeVal && typeof timeVal === 'string') {
+        const hour = parseInt(timeVal.split(':')[0], 10);
+        if (!isNaN(hour)) {
+          // 오전/오후 설정
+          if (hour >= 12) setTimePeriod('PM');
+          else setTimePeriod('AM');
+
+          // 스크롤 이동
+          const hour12 = hour % 12;
+          const minute = parseInt(timeVal.split(':')[1], 10);
+          const index = hour12 * 2 + (minute >= 30 ? 1 : 0);
+          setTimeout(() => {
+            scrollToTimeIndex(index);
+          }, 100);
+        }
+      }
+    }
+  }, [selectedFilters['방문 시간'], hasScrolled]);
 
   const toggleFilter = (tab, item) => {
     setSelectedFilters(prev => {
@@ -263,7 +264,13 @@ export default function FastSearchFilter({
                 onPress={() => toggleFilter('방문 시간', value)}
                 onLayout={e => {
                   const {x} = e.nativeEvent.layout;
-                  setTimePositions(prev => ({...prev, [idx]: x}));
+                  setTimePositions(prev => {
+                    const newPos = {...prev, [idx]: x};
+                    if (Object.keys(newPos).length === generateTimes().length) {
+                      autoScrollToTime(newPos);
+                    }
+                    return newPos;
+                  });
                 }}
                 style={[
                   styles.filterItem,
@@ -377,7 +384,7 @@ const styles = StyleSheet.create({
   },
   inittext: {
     fontSize: 14,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
     color: '#777',
   },
   sectionContainer: {

@@ -29,10 +29,12 @@ import FilterHeader from '../../components/MainScreen/FilterHeader';
 import PopularStoresSection from '../../components/MainScreen/PopularStroe/PopularStoresSection';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {has_unread_notification} from '../../api/notificationApi';
+import {useDeepLink} from '../../context/DeepLinkContext';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
 const MainScreen = ({navigation}) => {
+  const {pendingStoreId} = useDeepLink();
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
   const insets = useSafeAreaInsets();
@@ -127,6 +129,7 @@ const MainScreen = ({navigation}) => {
   );
 
   useEffect(() => {
+    if (pendingStoreId) return;
     const fetchLocation = async () => {
       try {
         setLoading(true);
@@ -141,8 +144,6 @@ const MainScreen = ({navigation}) => {
           setRecommCategory(recommStoreData.category);
           setRecommReason(reason);
           setRecommStores(recommStoreData.mainBannerStoreDtoList);
-          const unread = await has_unread_notification();
-          setUnreadNotification(unread.hasUnread);
           PopularStores(0, true, currentLocation);
         }
         const currentAddress = await getAddress();
@@ -155,7 +156,7 @@ const MainScreen = ({navigation}) => {
       }
     };
     fetchLocation();
-  }, []);
+  }, [pendingStoreId]);
 
   const onRefresh = async () => {
     setIsRefreshing(true); // 새로 고침 시작
@@ -258,6 +259,7 @@ const MainScreen = ({navigation}) => {
 
   useFocusEffect(
     useCallback(() => {
+      if (pendingStoreId) return;
       const fetchUnread = async () => {
         try {
           const unread = await has_unread_notification();
@@ -268,7 +270,7 @@ const MainScreen = ({navigation}) => {
       };
 
       fetchUnread();
-    }, []),
+    }, [pendingStoreId]),
   );
 
   const [popularstores, setPopularstores] = useState([]);
@@ -339,10 +341,10 @@ const MainScreen = ({navigation}) => {
           sectionIndex: 1, // popularStoresheader
           itemIndex: 1, // 해당 section의 첫 아이템
           viewPosition: 0, // 0이면 화면 맨 위에 위치
-          viewOffset: insets.top + 40,
+          viewOffset: insets.top + 40 + populartext,
           animated: true,
         });
-      }, 100);
+      }, 300);
     }
   }, [drinkType, priceOrder]);
 
@@ -398,7 +400,10 @@ const MainScreen = ({navigation}) => {
               const {height} = e.nativeEvent.layout;
               setMainSectionHeight(height); // 높이값 저장
             }}>
-            <MainSection {...item} />
+            <MainSection
+              {...item}
+              onHeaderLayout={height => setPopulartext(height)}
+            />
           </View>
         ),
       },
@@ -464,10 +469,7 @@ const MainScreen = ({navigation}) => {
   // 교차 페이드 범위를 플랫폼별로 다르게 적용 (iOS는 촘촘, Android는 조금 넓게)
   const filterHeaderCrossfade = useMemo(() => 0.5, []);
   const filterHeaderProgress = scrollY.interpolate({
-    inputRange: [
-      filterHeaderThreshold - filterHeaderCrossfade,
-      filterHeaderThreshold + filterHeaderCrossfade,
-    ],
+    inputRange: [filterHeaderThreshold, filterHeaderThreshold],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });

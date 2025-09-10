@@ -15,27 +15,6 @@ const PopularStoresSection = ({
 }) => {
   return (
     <View>
-      <View
-        style={{
-          backgroundColor: '#fff',
-          paddingLeft: 20,
-          paddingTop: 20,
-          paddingBottom: 10,
-        }}
-        onLayout={e => {
-          const {height} = e.nativeEvent.layout;
-          onHeaderLayout(height);
-        }}>
-        <Text
-          style={{
-            fontSize: 18,
-            fontFamily: 'Pretendard-SemiBold',
-            color: '#181a1a',
-          }}>
-          현재 인기 매장
-        </Text>
-      </View>
-
       {/* 인기 매장 아이템 목록 */}
       {popularstores?.map(item => (
         <PopularStoreItem
@@ -55,7 +34,9 @@ const PopularStoresSection = ({
           ))}
         </View>
       ) : (
-        !loading && !popularloading && popularempty && (
+        !loading &&
+        !popularloading &&
+        popularempty && (
           <Text
             style={{
               width: '100%',

@@ -19,6 +19,7 @@ const MainSection = ({
   loading,
   handlestoreItemClick,
   catagoryClick,
+  onHeaderLayout = () => {},
 }) => {
   return (
     <View
@@ -59,6 +60,25 @@ const MainSection = ({
         refresh={isRefreshing}
       />
       <View style={[styles.division, {marginTop: 20}]} />
+      <View
+        style={{
+          backgroundColor: '#fff',
+          paddingLeft: 20,
+          paddingTop: 20,
+        }}
+        onLayout={e => {
+          const {height} = e.nativeEvent.layout;
+          onHeaderLayout(height);
+        }}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontFamily: 'Pretendard-SemiBold',
+            color: '#181a1a',
+          }}>
+          현재 인기 매장
+        </Text>
+      </View>
     </View>
   );
 };

@@ -142,7 +142,6 @@ const AppNavigator = () => {
   // 🚀 pendingStoreId 가 세팅되었을 때 실제 네비게이션 이동
   useEffect(() => {
     if (!navigationReady || !pendingStoreId || !token) return;
-
     const currentRoute = navigationRef.getCurrentRoute();
     if (
       currentRoute?.name === 'StoreMainScreen' &&
@@ -151,13 +150,15 @@ const AppNavigator = () => {
       setPendingStoreId(null);
       return;
     }
-    navigationRef.navigate('StoreStack', {
-      screen: 'StoreMainScreen',
-      params: {storeId: pendingStoreId},
-    });
+    setTimeout(() => {
+      navigationRef.navigate('StoreStack', {
+        screen: 'StoreMainScreen',
+        params: {storeId: pendingStoreId},
+      });
+    }, 500);
 
     setPendingStoreId(null);
-  }, [navigationReady, token, pendingStoreId, setPendingStoreId]);
+  }, [navigationReady, token, pendingStoreId]);
 
   if (loading || !isVersionValid) {
     return <MySplashScreen isVersionValid={isVersionValid} />;

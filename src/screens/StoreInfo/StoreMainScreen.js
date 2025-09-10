@@ -440,27 +440,22 @@ const StoreMainScreen = ({navigation}) => {
   const [mainSectionHeight, setMainSectionHeight] = useState(0);
   const [filterHeight, setFilterHeight] = useState(0);
 
-  const stickyThreshold = useMemo(() => {
-    if (!storedata?.imgUrlList || storedata.imgUrlList.length === 0) {
-      return mainSectionHeight + filterHeight;
-    }
-    if (storedata?.imgUrlList) {
-      return mainSectionHeight;
-    }
-    // 원하는 offset 추가 가능
-  }, [mainSectionHeight, filterHeight]);
+  const filterHeaderThreshold = useMemo(() => {
+    if (!mainSectionHeight) return 100000; // wait until measured
+    // 너무 일찍 붙는 현상을 방지하기 위해 약간 늦춤
+    const androidOffset = Platform.OS === 'ios' ? insets.top + 30 : top + 40;
+    return Math.max(0, mainSectionHeight - androidOffset);
+  }, [mainSectionHeight]);
 
-  const stickyTranslateY = scrollY.interpolate({
-    inputRange: [stickyThreshold - 80, stickyThreshold],
-    outputRange: [-80, 0], // 위에서 부드럽게 내려옴
+  const stickyTranslateY = 0;
+
+  const filterHeaderProgress = scrollY.interpolate({
+    inputRange: [filterHeaderThreshold, filterHeaderThreshold],
+    outputRange: [0, 1],
     extrapolate: 'clamp',
   });
 
-  const stickyOpacity = scrollY.interpolate({
-    inputRange: [stickyThreshold - 80, stickyThreshold],
-    outputRange: [0, 1], // 점점 나타남
-    extrapolate: 'clamp',
-  });
+  const listFilterOpacity = Animated.subtract(1, filterHeaderProgress);
 
   const [selectedType, setSelectedType] = useState(null);
   const isClickedRef = useRef(false);
@@ -513,10 +508,7 @@ const StoreMainScreen = ({navigation}) => {
                   styles.fixedFilterHeader,
                   {
                     top: Platform.OS === 'ios' ? insets.top + 30 : top + 40,
-                    opacity: Animated.multiply(
-                      stickyOpacity,
-                      stickyProgress ? 1 : 0,
-                    ),
+                    opacity: filterHeaderProgress,
                     transform: [{translateY: stickyTranslateY}],
                   },
                 ]}>
@@ -674,7 +666,8 @@ const StoreMainScreen = ({navigation}) => {
                 </View>
 
                 {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
-                  <View
+                  <Animated.View
+                    style={{opacity: listFilterOpacity}}
                     onLayout={e => {
                       const {height} = e.nativeEvent.layout;
                       setFilterHeight(height);
@@ -691,7 +684,7 @@ const StoreMainScreen = ({navigation}) => {
                       isClickedRef={isClickedRef}
                       filterHeight={filterHeight}
                     />
-                  </View>
+                  </Animated.View>
                 )}
 
                 {!isUpdate && (
