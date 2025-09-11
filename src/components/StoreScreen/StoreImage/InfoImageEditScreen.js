@@ -708,7 +708,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
               toggleDropdown();
               setInlineOrderMode(true);
             }}>
-            <Text style={styles.dropdownText}>숫자로 순서 지정</Text>
+            <Text style={styles.dropdownText}>메뉴판 순서 설정</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.dropdownItem}
@@ -763,15 +763,15 @@ const InfoImageEditScreen = ({navigation, route}) => {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={{flex: 1}}>
             <View style={styles.madalTitleView}>
-              <Text style={styles.modalTitle}>숫자로 순서 지정</Text>
+              <Text style={styles.modalTitle}>메뉴판 순서 설정</Text>
               <Pressable
                 onPress={() => (setRankInputs({}), setInlineOrderMode(false))}>
                 <Ionicons name="close" size={23} color="#121212" />
               </Pressable>
             </View>
             <Text style={styles.modalSubtitle}>
-              각 사진에 순위를 입력하세요 (1, 2, 3 ...). 미입력은 뒤에
-              유지됩니다.
+              순서를 변경할 사진에 번호를 입력하세요.{`\n`}입력하지 않으면
+              뒤쪽으로 자동 정렬됩니다.
             </Text>
             <FlatList
               ref={orderListRef}
@@ -796,7 +796,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
                     <Image source={{uri}} style={styles.orderThumb} />
                     <TextInput
                       keyboardType="number-pad"
-                      placeholder="순위"
+                      placeholder="순서"
                       placeholderTextColor="#aaa"
                       value={String(value)}
                       onFocus={() => {
@@ -1086,9 +1086,9 @@ const styles = StyleSheet.create({
   },
   modalSubtitle: {
     fontFamily: 'Pretendard-Regular',
-    fontSize: 13,
+    fontSize: 14,
     color: '#666',
-    marginBottom: 12,
+    marginBottom: 7,
     marginHorizontal: 18,
   },
   orderCell: {

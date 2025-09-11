@@ -137,7 +137,7 @@ const NearStoreItem = ({store, navigation, location}) => {
           style={[
             styles.storeViewInfo,
             fontScale > 1.5 && {
-              flexDirection: 'cloume',
+              flexDirection: 'column',
               alignItems: 'flex-start',
             },
           ]}>
