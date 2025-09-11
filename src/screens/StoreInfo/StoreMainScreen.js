@@ -350,6 +350,31 @@ const StoreMainScreen = ({navigation}) => {
     }
   }, [isUpdate]);
 
+  // 뒤로가기(스와이프 포함) 시 편집 종료로 대체
+  useEffect(() => {
+    const sub = navigation.addListener('beforeRemove', e => {
+      if (!isUpdate) return; // 편집 중이 아니면 기본 동작
+      e.preventDefault(); // 뒤로가기 취소
+      endUpdate(); // 편집 종료 및 바텀시트 닫기
+    });
+    return sub;
+  }, [navigation, isUpdate]);
+
+  // iOS 제스처 자체를 편집 중에는 비활성화해 '밀고 돌아가기' 애니메이션 방지
+  // 중첩 네비게이터(자신/부모/상위부모)까지 순차적으로 적용
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    try {
+      navigation.setOptions({gestureEnabled: !isUpdate});
+      const parent = navigation.getParent?.();
+      parent?.setOptions?.({gestureEnabled: !isUpdate});
+      const grand = parent?.getParent?.();
+      grand?.setOptions?.({gestureEnabled: !isUpdate});
+    } catch (e) {
+      // no-op
+    }
+  }, [navigation, isUpdate]);
+
   const handleMenuDelete = id => {
     setMenus(prevMenus => prevMenus.filter(menu => menu.id !== id));
   };
