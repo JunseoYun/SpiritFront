@@ -22,7 +22,7 @@ import {normalizeFont} from '../../../hooks/normalizeFont';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const {width, height} = Dimensions.get('window');
-const CARD_WIDTH = width * 0.65;
+const CARD_WIDTH = width * 0.7;
 const CARD_SPACING = (width - CARD_WIDTH) / 2;
 
 const MyManager = ({navigation}) => {
@@ -126,6 +126,8 @@ const MyManager = ({navigation}) => {
           {
             alignItems: 'center',
             width: CARD_WIDTH,
+            marginTop: 20,
+            marginBottom: 10,
           },
           mysotredata.length === 1 && {
             justifyContent: 'center',
@@ -133,13 +135,7 @@ const MyManager = ({navigation}) => {
         ]}>
         <Animated.View style={{transform: [{scale}], opacity}}>
           <Pressable
-            style={[
-              styles.card,
-              {height: height * 0.5 - bottom},
-              mysotredata.length === 1 && {
-                height: height * 0.53 - bottom,
-              },
-            ]}
+            style={[styles.card]}
             onPress={() => {
               if (index === currentIndex) {
                 openModal(item);
@@ -217,116 +213,127 @@ const MyManager = ({navigation}) => {
   };
 
   return (
-    <View style={{flex: 1, backgroundColor: '#fff'}}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: '#fff',
+        justifyContent: 'space-between',
+      }}>
       {/* 카드 리스트 */}
-      <Animated.FlatList
-        ref={flatListRef}
-        getItemLayout={(_, index) => ({
-          length: CARD_WIDTH,
-          offset: CARD_WIDTH * index,
-          index,
-        })}
-        onScrollBeginDrag={() => setNameTabDisabled(true)}
-        onScrollEndDrag={() => setNameTabDisabled(false)}
-        data={mysotredata}
-        renderItem={renderItem}
-        keyExtractor={item => item.storeId.toString()}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={CARD_WIDTH}
-        decelerationRate="fast"
-        scrollEventThrottle={16}
-        contentContainerStyle={{
-          paddingHorizontal: CARD_SPACING,
-        }}
-        onScroll={Animated.event(
-          [{nativeEvent: {contentOffset: {x: scrollX}}}],
-          {
-            useNativeDriver: true,
-            listener: event => {
-              const offsetX = event.nativeEvent.contentOffset.x;
-              const index = Math.round(offsetX / CARD_WIDTH);
-              if (index !== currentIndex) {
-                setCurrentIndex(index);
-                tabFlatListRef.current?.scrollToIndex({
-                  index,
-                  animated: true,
-                  viewPosition: 0.5,
-                });
-              }
-              if (
-                !loading &&
-                index >= mysotredata.length - 3 &&
-                page < totalpage - 1
-              ) {
-                setPage(prev => {
-                  const nextPage = prev + 1;
-                  MyStore(nextPage);
-                  return nextPage;
-                });
-              }
+      <View style={{flex: 9}}>
+        <Animated.FlatList
+          ref={flatListRef}
+          getItemLayout={(_, index) => ({
+            length: CARD_WIDTH,
+            offset: CARD_WIDTH * index,
+            index,
+          })}
+          onScrollBeginDrag={() => setNameTabDisabled(true)}
+          onScrollEndDrag={() => setNameTabDisabled(false)}
+          data={mysotredata}
+          renderItem={renderItem}
+          keyExtractor={item => item.storeId.toString()}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={CARD_WIDTH}
+          decelerationRate="fast"
+          scrollEventThrottle={16}
+          contentContainerStyle={{
+            paddingHorizontal: CARD_SPACING,
+          }}
+          onScroll={Animated.event(
+            [{nativeEvent: {contentOffset: {x: scrollX}}}],
+            {
+              useNativeDriver: true,
+              listener: event => {
+                const offsetX = event.nativeEvent.contentOffset.x;
+                const index = Math.round(offsetX / CARD_WIDTH);
+                if (index !== currentIndex) {
+                  setCurrentIndex(index);
+                  tabFlatListRef.current?.scrollToIndex({
+                    index,
+                    animated: true,
+                    viewPosition: 0.5,
+                  });
+                }
+                if (
+                  !loading &&
+                  index >= mysotredata.length - 3 &&
+                  page < totalpage - 1
+                ) {
+                  setPage(prev => {
+                    const nextPage = prev + 1;
+                    MyStore(nextPage);
+                    return nextPage;
+                  });
+                }
+              },
             },
-          },
-        )}
-      />
+          )}
+        />
+      </View>
 
       {/* 가게 이름 탭 */}
       {mysotredata.length === 1 ? null : (
-        <FlatList
-          ref={tabFlatListRef}
-          data={mysotredata}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={item => item.storeId.toString()}
-          // 가장자리를 과도하게 넘기지 않도록
-          bounces={false}
-          overScrollMode="never"
-          ListHeaderComponent={() => {
-            const firstW = tabItemWidths[0];
-            const headerW = firstW
-              ? Math.max(0, (width - firstW) / 2)
-              : CARD_SPACING;
-            return <View style={{width: headerW}} />;
-          }}
-          ListFooterComponent={() => {
-            const lastIndex = mysotredata.length - 1;
-            const lastW = tabItemWidths[lastIndex];
-            const footerW = lastW
-              ? Math.max(0, (width - lastW) / 2)
-              : CARD_SPACING;
-            return <View style={{width: footerW}} />;
-          }}
-          renderItem={({item, index}) => (
-            <Pressable
-              disabled={nameTabDisabled}
-              onPress={() => {
-                const offset = CARD_WIDTH * index;
-                flatListRef.current?.scrollToOffset({offset, animated: true});
-              }}
-              style={[
-                styles.nameTab,
-                currentIndex === index && styles.activeTab,
-              ]}
-              onLayout={e => onTabLayout(index, e.nativeEvent.layout.width)}>
-              <Text
+        <View style={{flex: 1}}>
+          <FlatList
+            ref={tabFlatListRef}
+            data={mysotredata}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={item => item.storeId.toString()}
+            // 가장자리를 과도하게 넘기지 않도록
+            bounces={false}
+            overScrollMode="never"
+            ListHeaderComponent={() => {
+              const firstW = tabItemWidths[0];
+              const headerW = firstW
+                ? Math.max(0, (width - firstW) / 2)
+                : CARD_SPACING;
+              return <View style={{width: headerW}} />;
+            }}
+            ListFooterComponent={() => {
+              const lastIndex = mysotredata.length - 1;
+              const lastW = tabItemWidths[lastIndex];
+              const footerW = lastW
+                ? Math.max(0, (width - lastW) / 2)
+                : CARD_SPACING;
+              return <View style={{width: footerW}} />;
+            }}
+            renderItem={({item, index}) => (
+              <Pressable
+                disabled={nameTabDisabled}
+                onPress={() => {
+                  const offset = CARD_WIDTH * index;
+                  console.log(CARD_WIDTH * index);
+                  console.log(offset, '버튼클릭');
+                  flatListRef.current?.scrollToOffset({offset, animated: true});
+                }}
                 style={[
-                  styles.nameTabText,
-                  currentIndex === index && styles.activeTabText,
-                  {maxWidth: width * 0.5},
+                  styles.nameTab,
+                  currentIndex === index && styles.activeTab,
                 ]}
-                numberOfLines={1}>
-                {item.storeName}
-              </Text>
-            </Pressable>
-          )}
-        />
+                onLayout={e => onTabLayout(index, e.nativeEvent.layout.width)}>
+                <Text
+                  style={[
+                    styles.nameTabText,
+                    currentIndex === index && styles.activeTabText,
+                    {maxWidth: width * 0.5},
+                  ]}
+                  numberOfLines={1}>
+                  {item.storeName}
+                </Text>
+              </Pressable>
+            )}
+          />
+        </View>
       )}
 
       {/* 모달 */}
       <Modal
         visible={modalVisible}
         transparent={true}
-        hardwareAccelerated={true}
+        statusBarTranslucent={true}
         animationType="none"
         onRequestClose={closeModal}>
         <View style={[StyleSheet.absoluteFill]}>
@@ -556,9 +563,8 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     overflow: 'hidden',
-    height: height * 0.47,
-    marginTop: 18,
     width: CARD_WIDTH,
+    height: '100%',
   },
   image: {
     width: '100%',
