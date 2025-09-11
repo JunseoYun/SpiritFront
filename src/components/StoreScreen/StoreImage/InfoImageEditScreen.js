@@ -747,7 +747,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
         </View>
       ) : (
         <View style={styles.header}>
-          {/* <Ionicons name="reorder-three-outline" size={24} color="#999" /> */}
+          <Ionicons name="reorder-three-outline" size={24} color="#999" />
           {!inlineOrderMode && (
             <Text style={styles.headerText}>
               사진을 꾹 눌러 원하는 순서로 바꿔보세요

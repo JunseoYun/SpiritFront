@@ -35,6 +35,10 @@ const MenuItem = ({
   onMenuUpdate,
   navigation,
   expose,
+  autoEdit,
+  draft,
+  onDraftChange,
+  hideInlineActions,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(menu.name);
@@ -66,14 +70,61 @@ const MenuItem = ({
     setIsEditing(true);
   };
 
+  // auto-start editing when requested by parent (e.g., edit screen)
   useEffect(() => {
+    if (autoEdit && !isEditing) {
+      onEditStart();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoEdit]);
+
+  useEffect(() => {
+    if (isEditing) return;
     setName(menu.name);
     setDescription(menu.description);
     setPrice(menu.price);
     setType(menu.menuType);
     setImgUrl(menu.imgUrl);
     setIsVariable(menu.price === '변동');
-  }, [menu]);
+  }, [menu, isEditing]);
+
+  // hydrate from parent draft if present (handles remounts)
+  useEffect(() => {
+    if (!isMainEditing) return;
+    if (draft) {
+      setName(draft.name ?? menu.name);
+      setDescription(draft.description ?? menu.description);
+      setPrice(draft.price ?? menu.price);
+      setType(draft.type ?? menu.menuType);
+      setImgUrl(draft.imgUrl ?? menu.imgUrl);
+      setIsVariable(
+        draft.isVariable !== undefined
+          ? draft.isVariable
+          : menu.price === '변동',
+      );
+      if (draft?.selectedImage !== undefined)
+        setSelectedImage(draft.selectedImage);
+      if (draft?.isImageDeleted !== undefined)
+        setIsImageDeleted(draft.isImageDeleted);
+      setIsEditing(true);
+    }
+  }, [draft]);
+
+  // persist draft upward while editing so parent can restore after list changes
+  useEffect(() => {
+    if (!isMainEditing) return;
+    if (!onDraftChange) return;
+    onDraftChange(menu.id, {
+      name,
+      description,
+      price,
+      type,
+      imgUrl,
+      isVariable,
+      selectedImage,
+      isImageDeleted,
+    });
+  }, [name, description, price, type, imgUrl, isVariable, selectedImage, isImageDeleted]);
 
   const onCancelEdit = () => {
     setName(originalState.name);
@@ -367,35 +418,13 @@ const MenuItem = ({
         </View>
       </View>
 
-      {isUpdatable && isMainEditing && (
+      {isUpdatable && isMainEditing && !hideInlineActions && (
         <View style={styles.buttonRow}>
-          {isEditing ? (
-            <>
-              <TouchableOpacity
-                style={[styles.btn, styles.save]}
-                onPress={handleSave}>
-                <Text style={styles.editbtnText}>저장</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.btn, styles.cancel]}
-                onPress={onCancelEdit}>
-                <Text style={styles.deletebtnText}>취소</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity
-                style={[styles.btn, styles.edit]}
-                onPress={onEditStart}>
-                <Text style={styles.editbtnText}>수정</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.btn, styles.delete]}
-                onPress={() => onDelete(menu.id, menu.name)}>
-                <Text style={styles.deletebtnText}>삭제</Text>
-              </TouchableOpacity>
-            </>
-          )}
+          <TouchableOpacity
+            style={[styles.btn, styles.delete]}
+            onPress={() => onDelete(menu.id, menu.name)}>
+            <Text style={styles.deletebtnText}>삭제</Text>
+          </TouchableOpacity>
         </View>
       )}
 
