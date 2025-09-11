@@ -63,7 +63,16 @@ const TodayRecommItem = ({store, navigation}) => {
   };
 
   return (
-    <Pressable onPress={handlePress} style={styles.container}>
+    <Pressable
+      onPress={handlePress}
+      style={[
+        styles.container,
+        store.mainImgUrl && {
+          borderWidth: 0.3,
+          borderRadius: 10,
+          borderColor: '#E5E5E5',
+        },
+      ]}>
       <FastImage
         style={styles.imageBackground}
         source={
