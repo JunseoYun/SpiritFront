@@ -29,6 +29,8 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useToast} from '../../../context/ToastContext';
 const BUTTON_HEIGHT = 64;
 
 const MenuEditScreen = ({route, navigation}) => {
@@ -39,6 +41,7 @@ const MenuEditScreen = ({route, navigation}) => {
   const [loading, setLoading] = useState(false);
 
   const {showAlert, AlertComponent} = useCustomAlert();
+  const {showToast} = useToast();
 
   const [mainMenus, setMainMenus] = useState(
     menus.filter(m => m.menuType === 'MAIN'),
@@ -51,6 +54,7 @@ const MenuEditScreen = ({route, navigation}) => {
   );
 
   const MemoizedMenuItem = React.memo(MenuItem);
+  const draftsRef = useRef({}); // id -> draft fields to persist in-progress edits
   const itemRefs = useRef({});
   const setItemBridge = useCallback(
     id => api => {
@@ -72,12 +76,19 @@ const MenuEditScreen = ({route, navigation}) => {
           message: `메뉴를 삭제하시겠습니까?`,
           onConfirm: async () => {
             try {
+              setLoading(true);
               await StoreMenudelete(id);
               setMainMenus(prev => prev.filter(m => m.id !== id));
               setNormalMenus(prev => prev.filter(m => m.id !== id));
               setSideMenus(prev => prev.filter(m => m.id !== id));
               onMenuDelete(id);
-            } catch (error) {}
+              delete draftsRef.current[id];
+              showToast('삭제되었습니다.');
+            } catch (error) {
+              showToast('삭제에 실패했습니다.');
+            } finally {
+              setLoading(false);
+            }
           },
           onCancel: null,
           type: 'delete',
@@ -124,6 +135,60 @@ const MenuEditScreen = ({route, navigation}) => {
     [mainMenus, normalMenus, sideMenus],
   );
 
+  // Header buttons: Add, and Back with unsaved-changes guard
+  useLayoutEffect(() => {
+    const hasAnyEditing = () => {
+      const refs = Object.values(itemRefs.current || {});
+      return refs.some(r => r?.isEditing?.());
+    };
+    const isOrderChanged = () => {
+      const currentIds = [...mainMenus, ...normalMenus, ...sideMenus].map(
+        m => m.id,
+      );
+      const originalIds = menus.map(m => m.id);
+      if (currentIds.length !== originalIds.length) return true;
+      for (let i = 0; i < currentIds.length; i++) {
+        if (currentIds[i] !== originalIds[i]) return true;
+      }
+      return false;
+    };
+
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={handleMenuAdd}>
+          <Text style={styles.headerButton} allowFontScaling={false}>
+            메뉴 추가
+          </Text>
+        </Pressable>
+      ),
+      headerLeft: () => (
+        <Pressable
+          onPress={() => {
+            const changed = hasAnyEditing() || isOrderChanged();
+            if (!changed) {
+              navigation.goBack();
+              return;
+            }
+            showAlert({
+              title: '저장되지 않은 변경사항',
+              message: '변경사항이 저장되지 않습니다. 뒤로 가시겠습니까?',
+              onConfirm: () => navigation.goBack(),
+              onCancel: null,
+              type: 'confirm',
+            });
+          }}
+          hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+          <Ionicons
+            name="arrow-back-outline"
+            size={23}
+            color="#333"
+            style={{paddingLeft: 12}}
+          />
+        </Pressable>
+      ),
+    });
+  }, [navigation, mainMenus, normalMenus, sideMenus, menus]);
+
   const handleSave = async () => {
     const orderedMain = mainMenus.map(menu => menu.id);
     const orderedNormal = normalMenus.map(menu => menu.id);
@@ -139,7 +204,9 @@ const MenuEditScreen = ({route, navigation}) => {
       setLoading(true);
       if (menuIdInOrderList.length !== 0) {
         await MenuUpdateSort(storeId, menuIdInOrderList);
-        onMenuUpdateComplete?.();
+      }
+      if (onMenuUpdateComplete) {
+        await onMenuUpdateComplete();
       }
       navigation.goBack();
     } catch (error) {
@@ -154,6 +221,8 @@ const MenuEditScreen = ({route, navigation}) => {
   };
 
   const handleCompletePress = () => {
+    // Start loading immediately when user taps complete
+    setLoading(true);
     const refs = Object.values(itemRefs.current || {});
     const hasEditing = refs.some(r => r?.isEditing?.());
     if (hasEditing) {
@@ -168,7 +237,11 @@ const MenuEditScreen = ({route, navigation}) => {
           }
           await handleSave();
         },
-        onCancel: () => navigation.goBack(),
+        onCancel: () => {
+          // User canceled; stop loading and just go back
+          setLoading(false);
+          navigation.goBack();
+        },
         type: 'confirm',
       });
     } else {
@@ -198,22 +271,40 @@ const MenuEditScreen = ({route, navigation}) => {
       }}
       keyExtractor={item => item.id.toString()}
       renderItem={({item, drag, isActive}) => (
-        <Animated.View style={{transform: [{scale: isActive ? 1.02 : 1}]}}>
+        <Animated.View
+          key={item.id}
+          style={{transform: [{scale: isActive ? 1.02 : 1}]}}>
           <View style={styles.itemRow}>
             <View style={{flex: 1}}>
               <MemoizedMenuItem
                 menu={item}
                 expose={setItemBridge(item.id)}
+                autoEdit={true}
+                draft={draftsRef.current[item.id]}
+                onDraftChange={(id, draft) => {
+                  draftsRef.current[id] = draft;
+                }}
+                hideInlineActions={true}
                 {...stableItemProps}
               />
             </View>
-            <TouchableOpacity
-              onLongPress={drag}
-              delayLongPress={100}
-              style={styles.dragIcon}
-              hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}>
-              <Text style={styles.dragIconText}>☰</Text>
-            </TouchableOpacity>
+            <View style={styles.dragIconWrap}>
+              <View style={styles.dragIconCenter}>
+                <TouchableOpacity
+                  onLongPress={drag}
+                  delayLongPress={100}
+                  style={styles.dragIcon}
+                  hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}>
+                  <Text style={styles.dragIconText}>☰</Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity
+                onPress={e => stableItemProps.onDelete(item.id, item.name)}
+                style={styles.sideDeleteBtn}
+                hitSlop={{top: 12, bottom: 12, left: 12, right: 12}}>
+                <Text style={styles.sideDeleteText}>삭제</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </Animated.View>
       )}
@@ -390,10 +481,28 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   dragIcon: {
-    marginLeft: 10,
-    paddingVertical: 20,
+    paddingVertical: 8,
+  },
+  dragIconWrap: {
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    flexDirection: 'column',
+    marginLeft: 7,
+  },
+  dragIconCenter: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sideDeleteBtn: {bottom: 25},
+  sideDeleteText: {
+    fontSize: 13,
+    color: '#666',
+    fontFamily: 'Pretendard-Medium',
   },
   dragIconText: {
+    textAlign: 'center',
     fontSize: 24,
     color: '#888',
   },

@@ -664,8 +664,8 @@ const StoreMainScreen = ({navigation}) => {
                             navigation.navigate('AlcoholEditScreen', {
                               storeId,
                               alcohols,
-                              handleAlcoholDelete,
-                              handleAlcoholDelete,
+                              onAlcoholUpdateComplete: refresAlcohols,
+                              onAlcoholDelete: handleAlcoholDelete,
                             })
                           }>
                           <Text style={styles.alcoholAddButtonText}>

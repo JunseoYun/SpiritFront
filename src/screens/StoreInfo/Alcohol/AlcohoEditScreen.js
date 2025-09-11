@@ -30,6 +30,8 @@ import Loading from '../../../hooks/Loading';
 import {useFocusEffect} from '@react-navigation/native';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useToast} from '../../../context/ToastContext';
 
 const BUTTON_HEIGHT = 64;
 
@@ -60,6 +62,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const {showToast} = useToast();
 
   const [alcoholGroups, setAlcoholGroups] = useState(() => {
     const grouped = {};
@@ -83,6 +86,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
   }, []);
 
   const MemoizedAlcoholItem = React.memo(AlcoholItem);
+  const draftsRef = useRef({}); // id -> draft fields for alcohols
   const itemRefs = useRef({});
   const setItemBridge = useCallback(
     id => api => {
@@ -104,6 +108,10 @@ const AlcoholEditScreen = ({route, navigation}) => {
           message: `주류를 삭제하시겠습니까?`,
           onConfirm: async () => {
             try {
+              setLoading(true);
+              // API returns 200 with data=null on success; absence of throw indicates success
+              await StoreDrinkdelete(id);
+              // Remove locally after server success
               setAlcoholGroups(prev => {
                 const updated = {...prev};
                 Object.keys(updated).forEach(key => {
@@ -111,9 +119,15 @@ const AlcoholEditScreen = ({route, navigation}) => {
                 });
                 return updated;
               });
-              await StoreDrinkdelete(id);
-              onAlcoholDelete(id);
-            } catch (e) {}
+              onAlcoholDelete?.(id);
+              delete draftsRef.current[id];
+              showToast('삭제되었습니다.');
+            } catch (e) {
+              console.log(e);
+              showToast('삭제에 실패했습니다.');
+            } finally {
+              setLoading(false);
+            }
           },
           type: 'delete',
         });
@@ -156,8 +170,12 @@ const AlcoholEditScreen = ({route, navigation}) => {
       .map(d => d.id);
     try {
       setLoading(true);
-      await DrinkUpdateSort(storeId, orderList);
-      onAlcoholUpdateComplete?.();
+      if (orderList.length !== 0) {
+        await DrinkUpdateSort(storeId, orderList);
+      }
+      if (onAlcoholUpdateComplete) {
+        await onAlcoholUpdateComplete();
+      }
       navigation.goBack();
     } catch (e) {
       console.error('주류 순서 저장 실패', e);
@@ -171,6 +189,8 @@ const AlcoholEditScreen = ({route, navigation}) => {
   };
 
   const handleCompletePress = () => {
+    // Start loading as soon as user taps complete
+    setLoading(true);
     const refs = Object.values(itemRefs.current || {});
     const hasEditing = refs.some(r => r?.isEditing?.());
     if (hasEditing) {
@@ -185,7 +205,10 @@ const AlcoholEditScreen = ({route, navigation}) => {
           }
           await handleSave();
         },
-        onCancel: () => navigation.goBack(),
+        onCancel: () => {
+          setLoading(false);
+          navigation.goBack();
+        },
         type: 'confirm',
       });
     } else {
@@ -194,6 +217,22 @@ const AlcoholEditScreen = ({route, navigation}) => {
   };
 
   useLayoutEffect(() => {
+    const hasAnyEditing = () => {
+      const refs = Object.values(itemRefs.current || {});
+      return refs.some(r => r?.isEditing?.());
+    };
+    const isOrderChanged = () => {
+      const currentIds = Object.values(alcoholGroups)
+        .flat()
+        .map(d => d.id);
+      const originalIds = (alcohols || []).map(d => d.id);
+      if (currentIds.length !== originalIds.length) return true;
+      for (let i = 0; i < currentIds.length; i++) {
+        if (currentIds[i] !== originalIds[i]) return true;
+      }
+      return false;
+    };
+
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleAlcoholAdd}>
@@ -202,8 +241,33 @@ const AlcoholEditScreen = ({route, navigation}) => {
           </Text>
         </Pressable>
       ),
+      headerLeft: () => (
+        <Pressable
+          onPress={() => {
+            const changed = hasAnyEditing() || isOrderChanged();
+            if (!changed) {
+              navigation.goBack();
+              return;
+            }
+            showAlert({
+              title: '저장되지 않은 변경사항',
+              message: '변경사항이 저장되지 않습니다. 뒤로 가시겠습니까?',
+              onConfirm: () => navigation.goBack(),
+              onCancel: null,
+              type: 'confirm',
+            });
+          }}
+          hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+          <Ionicons
+            name="arrow-back-outline"
+            size={23}
+            color="#333"
+            style={{paddingLeft: 12}}
+          />
+        </Pressable>
+      ),
     });
-  }, [navigation]);
+  }, [navigation, alcoholGroups, alcohols]);
 
   const currentData = alcoholGroups[activeTab] || [];
   const setCurrentData = updated =>
@@ -219,22 +283,40 @@ const AlcoholEditScreen = ({route, navigation}) => {
       }}
       keyExtractor={item => item.id.toString()}
       renderItem={({item, drag, isActive}) => (
-        <Animated.View style={{transform: [{scale: isActive ? 1.02 : 1}]}}>
+        <Animated.View
+          key={item.id}
+          style={{transform: [{scale: isActive ? 1.02 : 1}]}}>
           <View style={styles.itemRow}>
             <View style={{flex: 1}}>
               <MemoizedAlcoholItem
                 alcohol={item}
                 expose={setItemBridge(item.id)}
+                autoEdit={true}
+                draft={draftsRef.current[item.id]}
+                onDraftChange={(id, draft) => {
+                  draftsRef.current[id] = draft;
+                }}
+                hideInlineActions={true}
                 {...stableItemProps}
               />
             </View>
-            <TouchableOpacity
-              onLongPress={drag}
-              delayLongPress={100}
-              style={styles.dragIcon}
-              hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}>
-              <Text style={styles.dragIconText}>☰</Text>
-            </TouchableOpacity>
+            <View style={styles.dragIconWrap}>
+              <View style={styles.dragIconCenter}>
+                <TouchableOpacity
+                  onLongPress={drag}
+                  delayLongPress={100}
+                  style={styles.dragIcon}
+                  hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}>
+                  <Text style={styles.dragIconText}>☰</Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity
+                onPress={() => stableItemProps.onDelete(item.id, item.name)}
+                style={styles.sideDeleteBtn}
+                hitSlop={{top: 12, bottom: 12, left: 12, right: 12}}>
+                <Text style={styles.sideDeleteText}>삭제</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </Animated.View>
       )}
@@ -402,10 +484,29 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   dragIcon: {
-    marginLeft: 10,
-    paddingVertical: 20,
+    paddingVertical: 8,
+  },
+  dragIconWrap: {
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    flexDirection: 'column',
+    marginLeft: 7,
+  },
+  dragIconCenter: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sideDeleteBtn: {bottom: 20},
+  sideDeleteText: {
+    textAlign: 'center',
+    fontSize: 13,
+    color: '#666',
+    fontFamily: 'Pretendard-Medium',
   },
   dragIconText: {
+    textAlign: 'center',
     fontSize: 24,
     color: '#888',
   },
