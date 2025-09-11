@@ -38,6 +38,9 @@ const AlcoholItem = ({
   onTypeChange,
   navigation,
   expose,
+  autoEdit,
+  draft,
+  onDraftChange,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(alcohol.name);
@@ -56,6 +59,7 @@ const AlcoholItem = ({
   const {showToast} = useToast();
 
   useEffect(() => {
+    if (isEditing) return;
     setName(alcohol.name);
     setDescription(alcohol.description);
     setPrice(alcohol.price);
@@ -68,6 +72,61 @@ const AlcoholItem = ({
     setOriginal({name, description, price, type, imgUrl, isVariable});
     setIsEditing(true);
   };
+
+  // auto-start editing when requested by parent (e.g., edit screen)
+  useEffect(() => {
+    if (autoEdit && !isEditing) {
+      onEditStart();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoEdit]);
+
+  // hydrate from parent draft if present (handles remounts)
+  useEffect(() => {
+    if (!isMainEditing) return;
+    if (draft) {
+      setName(draft.name ?? alcohol.name);
+      setDescription(draft.description ?? alcohol.description);
+      setPrice(draft.price ?? alcohol.price);
+      setType(draft.type ?? alcohol.type);
+      setImgUrl(draft.imgUrl ?? alcohol.imgUrl);
+      setIsVariable(
+        draft.isVariable !== undefined
+          ? draft.isVariable
+          : alcohol.price === '변동',
+      );
+      if (draft?.selectedImage !== undefined)
+        setSelectedImage(draft.selectedImage);
+      if (draft?.isImageDeleted !== undefined)
+        setIsImageDeleted(draft.isImageDeleted);
+      setIsEditing(true);
+    }
+  }, [draft]);
+
+  // persist draft upward while editing so parent can restore after list changes
+  useEffect(() => {
+    if (!isMainEditing) return;
+    if (!onDraftChange) return;
+    onDraftChange(alcohol.id, {
+      name,
+      description,
+      price,
+      type,
+      imgUrl,
+      isVariable,
+      selectedImage,
+      isImageDeleted,
+    });
+  }, [
+    name,
+    description,
+    price,
+    type,
+    imgUrl,
+    isVariable,
+    selectedImage,
+    isImageDeleted,
+  ]);
 
   const onCancelEdit = () => {
     setName(original.name);
@@ -214,7 +273,17 @@ const AlcoholItem = ({
     expose(api);
     return () => expose(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expose, isEditing, name, description, price, type, imgUrl, isImageDeleted, selectedImage]);
+  }, [
+    expose,
+    isEditing,
+    name,
+    description,
+    price,
+    type,
+    imgUrl,
+    isImageDeleted,
+    selectedImage,
+  ]);
 
   return (
     <View style={[styles.container, isLast && {borderBottomWidth: 0}]}>
@@ -325,37 +394,6 @@ const AlcoholItem = ({
         />
       )}
 
-      {isUpdatable && isMainEditing && (
-        <View style={[styles.buttonRow, isEditing && {marginTop: 10}]}>
-          {isEditing ? (
-            <>
-              <TouchableOpacity
-                style={[styles.btn, styles.save]}
-                onPress={handleSave}>
-                <Text style={styles.editbtnText}>저장</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.btn, styles.cancel]}
-                onPress={onCancelEdit}>
-                <Text style={styles.deletebtnText}>취소</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity
-                style={[styles.btn, styles.edit]}
-                onPress={onEditStart}>
-                <Text style={styles.editbtnText}>수정</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.btn, styles.delete]}
-                onPress={() => onDelete(alcohol.id, alcohol.name)}>
-                <Text style={styles.deletebtnText}>삭제</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-      )}
       <AlertComponent />
       <ImagePickermodal
         isBottomSheetVisible={isBottomSheetVisible}
