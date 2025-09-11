@@ -44,6 +44,7 @@ const MyManager = ({navigation}) => {
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
   const tabFlatListRef = useRef(null);
+  const TAB_SEPARATOR = 20; // 탭 사이 간격 살짝 증가
 
   // 탭 아이템 폭 측정으로 가장자리를 정확히 센터 정렬
   const [tabItemWidths, setTabItemWidths] = useState({});
@@ -53,6 +54,38 @@ const MyManager = ({navigation}) => {
       return {...prev, [index]: w};
     });
   };
+
+  // 탭을 정확히 가운데로 스크롤하기 위한 함수
+  const scrollTabToIndex = useCallback(
+    (index, animated = true) => {
+      const firstW = tabItemWidths[0];
+      const headerW = firstW ? Math.max(0, (width - firstW) / 2) : CARD_SPACING;
+
+      // index 이전까지의 폭 + 구분선 합
+      let left = headerW;
+      for (let i = 0; i < index; i++) {
+        const w = tabItemWidths[i] ?? 0;
+        left += w + TAB_SEPARATOR;
+      }
+
+      const curW = tabItemWidths[index] ?? 0;
+      const target = left + curW / 2 - width / 2;
+
+      // 음수 방지. 최대치는 RN이 내부에서 클램프
+      const safeTarget = Math.max(0, target);
+      try {
+        tabFlatListRef.current?.scrollToOffset({offset: safeTarget, animated});
+      } catch (e) {
+        // 측정 전에는 fallback
+        tabFlatListRef.current?.scrollToIndex({
+          index,
+          animated,
+          viewPosition: 0.5,
+        });
+      }
+    },
+    [tabItemWidths],
+  );
 
   const MyStore = async page => {
     setLoading(true);
@@ -254,11 +287,8 @@ const MyManager = ({navigation}) => {
                 const index = Math.round(offsetX / CARD_WIDTH);
                 if (index !== currentIndex) {
                   setCurrentIndex(index);
-                  tabFlatListRef.current?.scrollToIndex({
-                    index,
-                    animated: true,
-                    viewPosition: 0.5,
-                  });
+                  // 탭을 정확히 가운데로 이동
+                  scrollTabToIndex(index, true);
                 }
                 if (
                   !loading &&
@@ -291,6 +321,10 @@ const MyManager = ({navigation}) => {
             // 가장자리를 과도하게 넘기지 않도록
             bounces={false}
             overScrollMode="never"
+            // 아이템 간 간격만 두고, 양 끝 여백은 제거
+            ItemSeparatorComponent={() => (
+              <View style={{width: TAB_SEPARATOR}} />
+            )}
             ListHeaderComponent={() => {
               const firstW = tabItemWidths[0];
               const headerW = firstW
@@ -312,8 +346,6 @@ const MyManager = ({navigation}) => {
                 hitSlop={10}
                 onPress={() => {
                   const offset = CARD_WIDTH * index;
-                  console.log(CARD_WIDTH * index);
-                  console.log(offset, '버튼클릭');
                   flatListRef.current?.scrollToOffset({offset, animated: true});
                 }}
                 style={[
@@ -647,7 +679,7 @@ const styles = StyleSheet.create({
   },
   nameTab: {
     justifyContent: 'center',
-    marginHorizontal: 10,
+    // 가로 여백 제거 (아이템 간 간격은 ItemSeparatorComponent로 처리)
     marginBottom: 10,
   },
   activeTab: {
