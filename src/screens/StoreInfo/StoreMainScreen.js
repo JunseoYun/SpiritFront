@@ -68,7 +68,7 @@ const StoreMainScreen = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   const [skeletonLoading, setSkeletonLoading] = useState(true);
   const {showToast} = useToast();
-
+  const [bottomSheetIndex, setBottomSheetIndex] = useState(-1);
   const [sectionPositions, setSectionPositions] = useState({});
 
   // 상위 scrollTo 함수
@@ -749,6 +749,7 @@ const StoreMainScreen = ({navigation}) => {
             ref={bottomSheetRef}
             index={-1}
             snapPoints={snapPoints}
+            onChange={index => setBottomSheetIndex(index)}
             enablePanDownToClose={true}
             gestureEnabled={true}
             keyboardShouldPersistTaps="handled"
@@ -765,6 +766,7 @@ const StoreMainScreen = ({navigation}) => {
               elevation: 10,
             }}>
             <UpdateBottomSheet
+              isUpdate={isUpdate}
               updatedKey={updatedKey}
               updatedValue={updatedValue}
               setUpdatedValue={setUpdatedValue}
@@ -772,6 +774,8 @@ const StoreMainScreen = ({navigation}) => {
               handleUpdate={handleUpdate}
               handleBottomClose={handleBottomClose}
               navigation={navigation}
+              endUpdate={endUpdate}
+              bottomSheetIndex={bottomSheetIndex}
             />
           </BottomSheet>
           <AlertComponent />

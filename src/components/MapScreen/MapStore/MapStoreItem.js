@@ -15,13 +15,12 @@ import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
+import {normalizeFont} from '../../../hooks/normalizeFont';
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
 const IMG_WIDTH = width * 0.3;
 const SPACING = width * 0.05;
 
-let fontScale = PixelRatio.getFontScale();
-if (fontScale >= 1.5) fontScale = 1.5;
 const MapStoreItem = ({
   item,
   index,
@@ -211,7 +210,7 @@ const styles = StyleSheet.create({
   },
   overlayText: {
     color: 'white',
-    fontSize: 14 / fontScale,
+    fontSize: normalizeFont(14, 1.5),
     fontWeight: 'bold',
     textAlign: 'center',
     lineHeight: 22,
@@ -235,13 +234,13 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   storeName: {
-    fontSize: 18 / fontScale,
+    fontSize: normalizeFont(18, 1.5),
     fontFamily: 'Pretendard-Bold',
     color: '#333',
     width: '90%',
   },
   storeAddress: {
-    fontSize: 14 / fontScale,
+    fontSize: normalizeFont(14, 1.5),
     fontFamily: 'Pretendard-Medium',
     color: '#666',
     marginRight: 5,
@@ -252,7 +251,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   StoreCategory: {
-    fontSize: 14 / fontScale,
+    fontSize: normalizeFont(14, 1.5),
     color: '#999',
     marginRight: 5,
     fontFamily: 'Pretendard-Medium',
@@ -263,12 +262,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   timeviewtext: {
-    fontSize: 13 / fontScale,
+    fontSize: normalizeFont(13, 1.5),
     fontFamily: 'Pretendard-Medium',
     color: '#999',
   },
   menutext: {
-    fontSize: 14 / fontScale,
+    fontSize: normalizeFont(14, 1.5),
     fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },

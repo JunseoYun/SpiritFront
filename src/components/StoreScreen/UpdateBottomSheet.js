@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback, useRef} from 'react';
 import UpdateStoreImage from '../UpdateBottomSheet/UpdateStoreImage';
 import UpdateStoreName from '../UpdateBottomSheet/UpdateStoreName';
 import UpdateStoreCategory from '../UpdateBottomSheet/UpdateStoreCategory';
@@ -10,7 +10,9 @@ import UpdateStoreTV from '../UpdateBottomSheet/UpdateStoreTV';
 import UpdateStoreGroup from '../UpdateBottomSheet/UpdateStoreGroup';
 import UpdateStoreContact from '../UpdateBottomSheet/UpdateStoreContact';
 import UpdateStoreDescription from '../UpdateBottomSheet/UpdateStoreDescription';
-
+import {useFocusEffect} from '@react-navigation/native';
+import {BackHandler, ToastAndroid} from 'react-native';
+import {useToast} from '../../context/ToastContext';
 const UpdateBottomSheet = ({
   updatedKey,
   updatedValue,
@@ -19,6 +21,9 @@ const UpdateBottomSheet = ({
   handleUpdate,
   handleBottomClose,
   navigation,
+  endUpdate,
+  bottomSheetIndex,
+  isUpdate,
 }) => {
   const renderContent = () => {
     switch (updatedKey) {
@@ -48,6 +53,81 @@ const UpdateBottomSheet = ({
         return null;
     }
   };
+
+  const {showToast} = useToast();
+
+  const lastBackPressed = useRef(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isUpdate) return;
+
+      if (Platform.OS === 'android') {
+        const onBackPress = () => {
+          const now = Date.now();
+          const isBottomSheetOpen = bottomSheetIndex >= 0;
+          console.log(isBottomSheetOpen);
+          // ✅ 바텀시트 열려있을 때 → 무조건 닫기
+          if (isBottomSheetOpen) {
+            handleBottomClose();
+            return true;
+          }
+
+          // ✅ 바텀시트 닫혀있을 때 → 기존 endUpdate 로직
+          if (now - lastBackPressed.current < 2000) {
+            endUpdate();
+            return true;
+          }
+
+          lastBackPressed.current = now;
+          ToastAndroid.show(
+            '한 번 더 누르면 작성한 내용이 사라집니다.',
+            ToastAndroid.SHORT,
+          );
+          return true; // 기본 동작 막기
+        };
+
+        const backHandler = BackHandler.addEventListener(
+          'hardwareBackPress',
+          onBackPress,
+        );
+
+        return () => backHandler.remove();
+      } else {
+        const unsubscribe = navigation.addListener('beforeRemove', e => {
+          const now = Date.now();
+          const isBottomSheetOpen = bottomSheetIndex >= 0;
+
+          // ✅ 바텀시트 열려있을 때 → 무조건 닫기
+          if (isBottomSheetOpen) {
+            e.preventDefault();
+            handleBottomClose();
+            return;
+          }
+
+          // ✅ 바텀시트 닫혀있을 때 → 기존 endUpdate 로직
+          if (now - lastBackPressed.current < 2000) {
+            e.preventDefault();
+            endUpdate();
+            navigation.dispatch(e.data.action);
+          } else {
+            e.preventDefault();
+            lastBackPressed.current = now;
+            showToast('한 번 더 누르면 작성한 내용이 사라집니다.', 'center');
+          }
+        });
+
+        return unsubscribe;
+      }
+    }, [
+      navigation,
+      endUpdate,
+      updatedKey,
+      handleBottomClose,
+      bottomSheetIndex,
+      isUpdate,
+    ]),
+  );
 
   const renderImages = () => (
     <UpdateStoreImage
