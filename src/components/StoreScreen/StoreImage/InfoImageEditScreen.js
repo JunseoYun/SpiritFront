@@ -746,14 +746,15 @@ const InfoImageEditScreen = ({navigation, route}) => {
           </Text>
         </View>
       ) : (
-        <View style={styles.header}>
-          <Ionicons name="reorder-three-outline" size={24} color="#999" />
-          {!inlineOrderMode && (
+        !inlineOrderMode && (
+          <View style={styles.header}>
+            <Ionicons name="reorder-three-outline" size={24} color="#999" />
+
             <Text style={styles.headerText}>
               사진을 꾹 눌러 원하는 순서로 바꿔보세요
             </Text>
-          )}
-        </View>
+          </View>
+        )
       )}
       <View style={styles.btnheader}></View>
       <View style={styles.listWrapper}>
@@ -1075,6 +1076,7 @@ const styles = StyleSheet.create({
   madalTitleView: {
     flexDirection: 'row',
     marginHorizontal: 18,
+    marginTop: 20,
     marginBottom: 10,
     justifyContent: 'space-between',
   },
