@@ -119,7 +119,7 @@ const OpenStoreItem = ({store, location, navigation}) => {
           style={[
             styles.storeViewInfo,
             fontScale > 1.5 && {
-              flexDirection: 'cloume',
+              flexDirection: 'column',
               alignItems: 'flex-start',
             },
           ]}>
