@@ -22,7 +22,7 @@ import {normalizeFont} from '../../../hooks/normalizeFont';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const {width, height} = Dimensions.get('window');
-const CARD_WIDTH = width * 0.7;
+const CARD_WIDTH = width * 0.75;
 const CARD_SPACING = (width - CARD_WIDTH) / 2;
 
 const MyManager = ({navigation}) => {
@@ -133,7 +133,11 @@ const MyManager = ({navigation}) => {
             justifyContent: 'center',
           },
         ]}>
-        <Animated.View style={{transform: [{scale}], opacity}}>
+        <Animated.View
+          style={[
+            {transform: [{scale}], opacity},
+            index === currentIndex && styles.selectedCardShadow,
+          ]}>
           <Pressable
             style={[styles.card]}
             onPress={() => {
@@ -274,7 +278,9 @@ const MyManager = ({navigation}) => {
       </View>
 
       {/* 가게 이름 탭 */}
-      {mysotredata.length === 1 ? null : (
+      {mysotredata.length === 1 ? (
+        <View style={{marginBottom: 10}} />
+      ) : (
         <View style={{flex: 1}}>
           <FlatList
             ref={tabFlatListRef}
@@ -303,6 +309,7 @@ const MyManager = ({navigation}) => {
             renderItem={({item, index}) => (
               <Pressable
                 disabled={nameTabDisabled}
+                hitSlop={10}
                 onPress={() => {
                   const offset = CARD_WIDTH * index;
                   console.log(CARD_WIDTH * index);
@@ -565,6 +572,20 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     width: CARD_WIDTH,
     height: '100%',
+  },
+  selectedCardShadow: {
+    width: CARD_WIDTH,
+    height: '100%',
+    borderRadius: 16,
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOpacity: 0.7,
+    shadowRadius: 3,
+    shadowOffset: {width: 0, height: 0},
+    // Android elevation
+    elevation: 4,
+    // Ensure shadow is visible on Android
+    backgroundColor: '#fff',
   },
   image: {
     width: '100%',
