@@ -28,6 +28,7 @@ const AlcoholAddForm = forwardRef(
     const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
     const [overText, setOverText] = useState(false);
     const [overdesText, setOverdesText] = useState(false);
+    const [overnameText, setOvernameText] = useState(false);
     const selectImage = () => {
       setBottomSheetVisible(true); // 바텀시트 열기
     };
@@ -147,7 +148,16 @@ const AlcoholAddForm = forwardRef(
         <AlcoholTextInput
           label="주류 이름 *"
           value={alcohol.alcoholName}
-          onChangeText={text => handleAlcoholChange(text, index, 'alcoholName')}
+          onChangeText={text => {
+            const maxChars = 50;
+            if (text.length > maxChars) {
+              setOvernameText(true);
+              return; // 초과 입력 무시
+            } else {
+              setOvernameText(false);
+            }
+            handleAlcoholChange(text, index, 'alcoholName');
+          }}
           placeholder="주류 이름 *"
           ref={alcoholnameRef}
           returnKeyType="next"
@@ -157,6 +167,11 @@ const AlcoholAddForm = forwardRef(
             }
           }}
         />
+        {overnameText && (
+          <Text style={styles.errorText}>
+            주류 이름은 최대 50자까지 입력 가능합니다.
+          </Text>
+        )}
         <AlcoholPrice
           label="주류 가격 *"
           value={purePrice}
@@ -181,10 +196,8 @@ const AlcoholAddForm = forwardRef(
           label="주류 소개"
           value={alcohol.alcoholContent}
           onChangeText={text => {
-            const maxLines = 5;
             const maxChars = 100;
-            const lines = (text || '').split('\n');
-            if (lines.length > maxLines || text.length > maxChars) {
+            if (text.length > maxChars) {
               setOverdesText(true);
               return; // 초과 입력 무시
             } else {
@@ -198,7 +211,7 @@ const AlcoholAddForm = forwardRef(
         />
         {overdesText && (
           <Text style={styles.errorText}>
-            주류 설명은 최대 5줄, 최대 100자까지 입력 가능합니다.
+            주류 설명은 최대 100자까지 입력 가능합니다.
           </Text>
         )}
 

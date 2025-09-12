@@ -56,21 +56,8 @@ const MenuItem = ({
   const {showToast} = useToast();
   const [overText, setOverText] = useState(false);
   const [overdesText, setOverdesText] = useState(false);
+  const [overnameText, setOvernameText] = useState(false);
 
-  const handleContentChange = text => {
-    const maxLines = 5; // 최대 줄 개수
-    const maxChars = 100; // 최대 글자 수
-
-    // 🔥 줄 개수 확인 (빈 줄 제외)
-    const lines = text.split('\n'); // 🔥 입력된 줄 개수 확인
-    if (lines.length > maxLines || text.length > maxChars) {
-      setOverdesText(true);
-      return;
-    }
-
-    setOverdesText(false);
-    setDescription(text);
-  };
   const onEditStart = () => {
     setOriginalState({
       name,
@@ -329,15 +316,36 @@ const MenuItem = ({
                 placeholder="메뉴 이름을 입력하세요"
                 value={name}
                 multiline
-                onChangeText={setName}
+                onChangeText={text => {
+                  const maxChars = 50;
+                  if (text.length > maxChars) {
+                    setOvernameText(true);
+                    return; // 초과 입력 무시
+                  } else {
+                    setOvernameText(false);
+                  }
+                  setName(text);
+                }}
                 placeholderTextColor="#999"
               />
+              {overnameText && (
+                <Text style={styles.errorText}>
+                  메뉴 이름은 최대 50자까지 입력 가능합니다.
+                </Text>
+              )}
               <TextInput
                 style={[styles.inputBox]}
                 placeholder="메뉴 설명을 입력하세요"
                 value={description}
                 onChangeText={text => {
-                  handleContentChange(text);
+                  const maxChars = 100;
+                  if (text.length > maxChars) {
+                    setOverdesText(true);
+                    return; // 초과 입력 무시
+                  } else {
+                    setOverdesText(false);
+                  }
+                  setDescription(text);
                 }}
                 multiline
                 placeholderTextColor="#999"
@@ -345,7 +353,7 @@ const MenuItem = ({
               />
               {overdesText && (
                 <Text style={styles.errorText}>
-                  메뉴 설명은 최대 5줄, 최대 100자까지 입력 가능합니다.
+                  메뉴 설명은 최대 100자까지 입력 가능합니다.
                 </Text>
               )}
               <View style={styles.rowBetween}>

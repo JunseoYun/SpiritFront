@@ -255,21 +255,6 @@ const ReviewEditScreen = ({route, navigation}) => {
   };
   const [overText, setOverText] = useState(false);
 
-  const handleContentChange = text => {
-    const maxLines = 5; // 최대 줄 개수
-    const maxChars = 300; // 최대 글자 수
-
-    // 🔥 줄 개수 확인 (빈 줄 제외)
-    const lines = text.split('\n'); // 🔥 입력된 줄 개수 확인
-    if (lines.length > maxLines || text.length > maxChars) {
-      setOverText(true);
-      return;
-    }
-
-    setOverText(false);
-    setReviewContent(text);
-  };
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
@@ -281,17 +266,26 @@ const ReviewEditScreen = ({route, navigation}) => {
               {borderBottomColor: isFocused ? '#16BBFF' : '#F2F2F2'},
             ]}
             value={reviewContent}
-            onChangeText={handleContentChange}
+            onChangeText={text => {
+              const maxChars = 2000;
+              if (text.length > maxChars) {
+                setOverText(true);
+                return; // 초과 입력 무시
+              } else {
+                setOverText(false);
+              }
+              setReviewContent(text);
+            }}
             placeholder={'리뷰를 입력하세요'}
             placeholderTextColor={'#999'}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             multiline
-            maxLength={300}
+            maxLength={2000}
           />
           {overText && (
             <Text style={styles.errorMessage}>
-              리뷰는 최대 5줄, 최대 300자까지 입력 가능합니다.
+              리뷰는 최대 2000자까지 입력 가능합니다.
             </Text>
           )}
 

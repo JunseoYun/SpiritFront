@@ -10,21 +10,6 @@ const UpdateStoreDescription = ({
 }) => {
   const [overText, setOverText] = useState(false);
 
-  const handleContentChange = text => {
-    const maxLines = 5; // 최대 줄 개수
-    const maxChars = 200; // 최대 글자 수
-
-    // 🔥 줄 개수 확인 (빈 줄 제외)
-    const lines = text.split('\n'); // 🔥 입력된 줄 개수 확인
-    if (lines.length > maxLines || text.length > maxChars) {
-      setOverText(true);
-      return;
-    }
-
-    setOverText(false);
-    setUpdatedValue(text);
-  };
-
   return (
     <View style={styles.bottomSheetContent}>
       <Text style={styles.title}>매장 소개</Text>
@@ -32,14 +17,23 @@ const UpdateStoreDescription = ({
         multiline
         style={styles.input}
         value={updatedValue} // 🔥 `defaultValue` 대신 `value` 사용
-        onChangeText={handleContentChange}
+        onChangeText={text => {
+          const maxChars = 500;
+          if (text.length > maxChars) {
+            setOverText(true);
+            return; // 초과 입력 무시
+          } else {
+            setOverText(false);
+          }
+          setUpdatedValue(text);
+        }}
         placeholder="매장 소개를 입력하세요"
         textAlignVertical="top" // 🔥 입력 시 텍스트가 위쪽 정렬되도록 설정
         placeholderTextColor="#999"
       />
       {overText && (
         <Text style={styles.errorText}>
-          매장 소개는 최대 5줄, 최대 200자까지 입력 가능합니다.
+          매장 소개는 최대 500자까지 입력 가능합니다.
         </Text>
       )}
       <ActionButtons onCancel={onCancel} onSave={onSave} />

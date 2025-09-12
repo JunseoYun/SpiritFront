@@ -59,21 +59,8 @@ const AlcoholItem = ({
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [overText, setOverText] = useState(false);
   const [overdesText, setOverdesText] = useState(false);
+  const [overnameText, setOvernameText] = useState(false);
 
-  const handleContentChange = text => {
-    const maxLines = 5; // 최대 줄 개수
-    const maxChars = 100; // 최대 글자 수
-
-    // 🔥 줄 개수 확인 (빈 줄 제외)
-    const lines = text.split('\n'); // 🔥 입력된 줄 개수 확인
-    if (lines.length > maxLines || text.length > maxChars) {
-      setOverdesText(true);
-      return;
-    }
-
-    setOverdesText(false);
-    setDescription(text);
-  };
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
 
@@ -313,16 +300,38 @@ const AlcoholItem = ({
               <TextInput
                 style={styles.input}
                 value={name}
-                onChangeText={setName}
+                onChangeText={text => {
+                  const maxChars = 50;
+                  if (text.length > maxChars) {
+                    setOvernameText(true);
+                    return; // 초과 입력 무시
+                  } else {
+                    setOvernameText(false);
+                  }
+                  setName(text);
+                }}
                 placeholder="주류 이름"
                 placeholderTextColor="#999"
                 multiline
               />
+              {overnameText && (
+                <Text style={styles.errorText}>
+                  주류 이름은 최대 50자까지 입력 가능합니다.
+                </Text>
+              )}
+
               <TextInput
                 style={[styles.input]}
                 value={description}
                 onChangeText={text => {
-                  handleContentChange(text);
+                  const maxChars = 100;
+                  if (text.length > maxChars) {
+                    setOverdesText(true);
+                    return; // 초과 입력 무시
+                  } else {
+                    setOverdesText(false);
+                  }
+                  setDescription(text);
                 }}
                 placeholder="주류 설명을 입력하세요"
                 placeholderTextColor="#999"
@@ -330,7 +339,7 @@ const AlcoholItem = ({
               />
               {overdesText && (
                 <Text style={styles.errorText}>
-                  매뉴 설명은 최대 5줄, 최대 100자까지 입력 가능합니다.
+                  주류 설명은 최대 100자까지 입력 가능합니다.
                 </Text>
               )}
               <View style={styles.rowBetween}>
