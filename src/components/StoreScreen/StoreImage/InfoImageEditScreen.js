@@ -19,7 +19,6 @@ import {
   Animated,
   TextInput,
   FlatList,
-  Image,
   Pressable,
   KeyboardAvoidingView,
   Keyboard,
@@ -47,6 +46,7 @@ import {
 import DraggableImageItem from './DraggableImageItem';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import FastImage from 'react-native-fast-image';
 
 const {width} = Dimensions.get('window');
 const IMAGE_WIDTH = width - 120;
@@ -74,6 +74,10 @@ const InfoImageEditScreen = ({navigation, route}) => {
   const [previewOrder, setPreviewOrder] = useState([]); // preview list inside inline mode
   const orderListRef = useRef(null);
   const lastFocusedUidRef = useRef(null);
+  const baseRanksRef = useRef({}); // initial 1-based ranks at mode entry
+  const editedSetRef = useRef(new Set()); // uids whose rank is changed from base
+  const editSeqRef = useRef(0); // incremental sequence for edits
+  const editedAtRef = useRef({}); // { uid: seq } last edit order
   const insets = useSafeAreaInsets();
   const {bottom} = useSafeAndroidInsets();
   const {showToast} = useToast();
@@ -100,9 +104,26 @@ const InfoImageEditScreen = ({navigation, route}) => {
   // Initialize or clear preview order when entering/leaving inline order mode
   useEffect(() => {
     if (inlineOrderMode) {
+      // Preview shows current list
       setPreviewOrder(localImages);
+      // Prefill rank inputs with current 1-based order
+      const initialRanks = {};
+      localImages.forEach((img, idx) => {
+        const uid = String(img.isNew ? img.localId : img.id);
+        initialRanks[uid] = idx + 1;
+      });
+      setRankInputs(initialRanks);
+      baseRanksRef.current = initialRanks;
+      editedSetRef.current = new Set();
+      editSeqRef.current = 0;
+      editedAtRef.current = {};
     } else {
       setPreviewOrder([]);
+      // Clear rank inputs when leaving inline mode
+      setRankInputs({});
+      editedSetRef.current = new Set();
+      editSeqRef.current = 0;
+      editedAtRef.current = {};
     }
   }, [inlineOrderMode, localImages]);
 
@@ -112,13 +133,17 @@ const InfoImageEditScreen = ({navigation, route}) => {
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
     const sub = Keyboard.addListener(eventName, () => {
       if (!inlineOrderMode) return;
-      const newPreview = computeNumericOrder(localImages, rankInputs);
-      setPreviewOrder(newPreview);
+      const {order, resolvedRanks} = resolveNumericOrder(
+        localImages,
+        rankInputs,
+        editedSetRef.current,
+        editedAtRef.current,
+      );
+      setPreviewOrder(order);
+      setRankInputs(resolvedRanks);
       const uid = lastFocusedUidRef.current;
       if (uid) {
-        const idx = newPreview.findIndex(
-          it => String(getUid(it)) === String(uid),
-        );
+        const idx = order.findIndex(it => String(getUid(it)) === String(uid));
         if (idx >= 0) {
           setTimeout(() => {
             try {
@@ -639,41 +664,69 @@ const InfoImageEditScreen = ({navigation, route}) => {
 
   const getUid = img => (img.isNew ? img.localId : img.id);
 
-  // Build preview/apply order from rank inputs
-  const computeNumericOrder = (images, ranks) => {
+  // Resolve duplicate numeric ranks by bumping later conflicts forward
+  // Returns both final order and resolved rank mapping
+  const resolveNumericOrder = (images, ranks, editedSet, editedAtMap) => {
     const withIndex = images.map((img, idx) => ({img, idx}));
     const assigned = [];
     const unassigned = [];
     for (const it of withIndex) {
       const uid = String(getUid(it.img));
       const val = ranks[uid];
-      if (Number.isInteger(val) && val > 0) assigned.push(it);
+      if (Number.isInteger(val) && val > 0)
+        assigned.push({
+          ...it,
+          desired: val,
+          edited: !!editedSet?.has(uid),
+          editedAt: editedAtMap?.[uid] || 0,
+        });
       else unassigned.push(it);
     }
-    // group by rank
-    const groups = new Map();
+
+    // Sort by desired asc, edited first (so changed ranks win),
+    // then among edited, most recently edited first, else original index
+    assigned.sort((a, b) => {
+      if (a.desired !== b.desired) return a.desired - b.desired;
+      if (a.edited !== b.edited) return a.edited ? -1 : 1; // edited wins
+      if (a.edited && b.edited) return b.editedAt - a.editedAt; // latest first
+      return a.idx - b.idx;
+    });
+
+    const used = new Set();
+    const assignedWithFinal = [];
+    const resolvedRanks = {};
+
     for (const it of assigned) {
+      let target = it.desired;
+      while (used.has(target)) target += 1;
+      used.add(target);
+      assignedWithFinal.push({...it, final: target});
       const uid = String(getUid(it.img));
-      const r = ranks[uid];
-      if (!groups.has(r)) groups.set(r, []);
-      groups.get(r).push(it);
+      resolvedRanks[uid] = target;
     }
-    const sortedRanks = Array.from(groups.keys()).sort((a, b) => a - b);
-    const result = [];
-    for (const r of sortedRanks) {
-      const arr = groups.get(r).sort((a, b) => a.idx - b.idx);
-      for (const it of arr) result.push(it.img);
-    }
+
+    // Build final order: assigned by final rank, then unassigned by original order
+    assignedWithFinal.sort((a, b) => a.final - b.final);
+    const order = assignedWithFinal.map(it => it.img);
     unassigned.sort((a, b) => a.idx - b.idx);
-    for (const it of unassigned) result.push(it.img);
-    return result;
+    for (const it of unassigned) order.push(it.img);
+
+    return {order, resolvedRanks};
   };
 
   const applyNumericOrder = () => {
-    const newOrder = computeNumericOrder(localImages, rankInputs);
-    setLocalImages(newOrder);
+    const {order} = resolveNumericOrder(
+      localImages,
+      rankInputs,
+      editedSetRef.current,
+      editedAtRef.current,
+    );
+    setLocalImages(order);
     setInlineOrderMode(false);
     setRankInputs({});
+    editedSetRef.current = new Set();
+    editSeqRef.current = 0;
+    editedAtRef.current = {};
     showToast('숫자 입력 순서를 적용했어요');
   };
 
@@ -760,7 +813,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
       <View style={styles.listWrapper}>
         {inlineOrderMode ? (
           <KeyboardAvoidingView
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 120}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 90}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={{flex: 1}}>
             <View style={styles.madalTitleView}>
@@ -794,7 +847,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
                 const value = rankInputs[uid] ?? '';
                 return (
                   <View style={styles.orderCell}>
-                    <Image source={{uri}} style={styles.orderThumb} />
+                    <FastImage source={{uri}} style={styles.orderThumb} />
                     <TextInput
                       keyboardType="number-pad"
                       placeholder="순서"
@@ -821,6 +874,23 @@ const InfoImageEditScreen = ({navigation, route}) => {
                           ...prev,
                           [uid]: parsed && parsed > 0 ? parsed : undefined,
                         }));
+                        // Consider any valid input as 'edited' (explicit intent)
+                        const isEdited = Number.isInteger(parsed) && parsed > 0;
+                        if (isEdited) editedSetRef.current.add(uid);
+                        else editedSetRef.current.delete(uid);
+                        // Track last edit order for tie-breaking among edited items
+                        if (Number.isInteger(parsed) && parsed > 0) {
+                          editSeqRef.current += 1;
+                          editedAtRef.current = {
+                            ...editedAtRef.current,
+                            [uid]: editSeqRef.current,
+                          };
+                        } else {
+                          // If cleared/invalid, remove timestamp to avoid unintended priority
+                          const map = {...editedAtRef.current};
+                          delete map[uid];
+                          editedAtRef.current = map;
+                        }
                         if (onlyNum === '0') {
                           showToast('0은 사용할 수 없어요');
                         }
@@ -902,8 +972,15 @@ const InfoImageEditScreen = ({navigation, route}) => {
             <TouchableOpacity
               style={styles.resetButton}
               onPress={() => {
-                setRankInputs({});
+                // Restore ranks to the values at mode entry
+                const baseRanks = baseRanksRef.current || {};
+                setRankInputs(baseRanks);
+                // Restore preview to the list as it was when mode opened
                 setPreviewOrder(localImages);
+                // Clear edit tracking
+                editedSetRef.current = new Set();
+                editedAtRef.current = {};
+                editSeqRef.current = 0;
               }}>
               <Text style={styles.resetText}>초기화</Text>
             </TouchableOpacity>

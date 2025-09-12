@@ -9,7 +9,7 @@ import {
   Easing,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 const basePolicyList = [
   '[필수] 개인정보 수집/이용 동의',
   '[필수] 고유식별정보 처리 동의',
@@ -24,6 +24,7 @@ const PolicyModal = ({
   handleAuth,
   selectedCarrier,
 }) => {
+  const {bottom} = useSafeAndroidInsets();
   const [shouldRender, setShouldRender] = useState(false);
   const translateY = useRef(new Animated.Value(500)).current;
   const policyList = selectedCarrier?.includes('알뜰폰')
@@ -74,7 +75,7 @@ const PolicyModal = ({
   if (!shouldRender) return null;
 
   return (
-    <View style={styles.overlay}>
+    <View style={[styles.overlay, {bottom: bottom}]}>
       <Pressable style={styles.backdrop} onPress={handleClose} />
       <Animated.View style={[styles.container, {transform: [{translateY}]}]}>
         <View style={styles.header}>
