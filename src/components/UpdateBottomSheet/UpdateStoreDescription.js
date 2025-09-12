@@ -12,7 +12,7 @@ const UpdateStoreDescription = ({
 
   const handleContentChange = text => {
     const maxLines = 5; // 최대 줄 개수
-    const maxChars = 100; // 최대 글자 수
+    const maxChars = 200; // 최대 글자 수
 
     // 🔥 줄 개수 확인 (빈 줄 제외)
     const lines = text.split('\n'); // 🔥 입력된 줄 개수 확인
@@ -39,7 +39,7 @@ const UpdateStoreDescription = ({
       />
       {overText && (
         <Text style={styles.errorText}>
-          매장 소개는 최대 5줄, 최대 100자까지 입력 가능합니다.
+          매장 소개는 최대 5줄, 최대 200자까지 입력 가능합니다.
         </Text>
       )}
       <ActionButtons onCancel={onCancel} onSave={onSave} />

@@ -11,6 +11,7 @@ import {
   requestCameraPermission,
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const AlcoholAddForm = forwardRef(
   (
@@ -25,7 +26,8 @@ const AlcoholAddForm = forwardRef(
     const {showAlert, AlertComponent} = useCustomAlert();
     const [isImageSelected, setIsImageSelected] = useState(false);
     const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
-
+    const [overText, setOverText] = useState(false);
+    const [overdesText, setOverdesText] = useState(false);
     const selectImage = () => {
       setBottomSheetVisible(true); // 바텀시트 열기
     };
@@ -94,13 +96,24 @@ const AlcoholAddForm = forwardRef(
       if (alcohol.price === '변동') {
         setIsVariable(true);
         setPurePrice('');
+        setOverText(false);
       }
     }, [alcohol.price]);
 
     const handlePriceChange = text => {
       const cleaned = text.replace(/[^0-9]/g, '');
-      setPurePrice(cleaned);
-      handleAlcoholChange(cleaned, index, 'price');
+      let num = cleaned === '' ? '' : parseInt(cleaned, 10);
+      if (typeof num === 'number' && !isNaN(num)) {
+        if (num > 100000000) {
+          num = 100000000;
+          setOverText(true);
+        } else {
+          setOverText(false);
+        }
+      }
+      const value = num === '' ? '' : String(num);
+      setPurePrice(value);
+      handleAlcoholChange(value, index, 'price');
     };
 
     const handleToggleVariable = () => {
@@ -159,16 +172,35 @@ const AlcoholAddForm = forwardRef(
             }
           }}
         />
+        {overText && (
+          <Text style={styles.errorText}>
+            가격은 최대 1억원까지 입력 가능합니다
+          </Text>
+        )}
         <AlcoholTextInput
           label="주류 소개"
           value={alcohol.alcoholContent}
-          onChangeText={text =>
-            handleAlcoholChange(text, index, 'alcoholContent')
-          }
+          onChangeText={text => {
+            const maxLines = 5;
+            const maxChars = 100;
+            const lines = (text || '').split('\n');
+            if (lines.length > maxLines || text.length > maxChars) {
+              setOverdesText(true);
+              return; // 초과 입력 무시
+            } else {
+              setOverdesText(false);
+            }
+            handleAlcoholChange(text, index, 'alcoholContent');
+          }}
           placeholder="주류를 간단하게 소개해주세요."
           multiline
           ref={alcoholcontentRef}
         />
+        {overdesText && (
+          <Text style={styles.errorText}>
+            주류 설명은 최대 5줄, 최대 100자까지 입력 가능합니다.
+          </Text>
+        )}
 
         <RptAlcoholPicker
           selectedType={alcohol.type}
@@ -288,6 +320,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingVertical: 4,
     backgroundColor: '#F2F2F2',
+  },
+  errorText: {
+    paddingHorizontal: 18,
+    color: '#FF4816',
+    fontSize: 14,
   },
 });
 

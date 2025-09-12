@@ -20,6 +20,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import ImagePickermodal from '../../hooks/ImagePickermodal';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useFocusEffect} from '@react-navigation/native';
+import {useToast} from '../../context/ToastContext';
 const rateTextMap = {
   0: '어땠나요?',
   1: '별로예요',
@@ -53,6 +54,22 @@ const ReviewForm = ({
   const [errorcontent, setErrorcontent] = useState(false);
   const [errorrate, setErrorrate] = useState(false);
   const [forbiddenerror, setForbiddenerror] = useState(false);
+  const [overText, setOverText] = useState(false);
+
+  const handleContentChange = text => {
+    const maxLines = 5; // 최대 줄 개수
+    const maxChars = 300; // 최대 글자 수
+
+    // 🔥 줄 개수 확인 (빈 줄 제외)
+    const lines = text.split('\n'); // 🔥 입력된 줄 개수 확인
+    if (lines.length > maxLines || text.length > maxChars) {
+      setOverText(true);
+      return;
+    }
+
+    setOverText(false);
+    onChangeText(text);
+  };
 
   const validateReview = () => {
     const containsForbiddenWord = forbiddenWords.some(word =>
@@ -147,15 +164,21 @@ const ReviewForm = ({
               ]}
               multiline
               value={newReviewContent}
-              onChangeText={onChangeText}
+              onChangeText={handleContentChange}
               placeholder="리뷰 별점 이유를 작성해 주세요!"
               placeholderTextColor="#999"
               onFocus={() => setContentFocused(true)}
               onBlur={() => setContentFocused(false)}
+              maxLength={300}
             />
             {errorcontent && (
               <Text style={styles.errorMessage}>
                 리뷰 별점 이유를 작성해 주세요!
+              </Text>
+            )}
+            {overText && (
+              <Text style={styles.errorMessage}>
+                리뷰는 최대 5줄, 최대 300자까지 입력 가능합니다.
               </Text>
             )}
             {forbiddenerror && (

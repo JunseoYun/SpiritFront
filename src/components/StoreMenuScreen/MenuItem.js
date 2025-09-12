@@ -54,7 +54,23 @@ const MenuItem = ({
   const [loading, setLoading] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
+  const [overText, setOverText] = useState(false);
+  const [overdesText, setOverdesText] = useState(false);
 
+  const handleContentChange = text => {
+    const maxLines = 5; // 최대 줄 개수
+    const maxChars = 100; // 최대 글자 수
+
+    // 🔥 줄 개수 확인 (빈 줄 제외)
+    const lines = text.split('\n'); // 🔥 입력된 줄 개수 확인
+    if (lines.length > maxLines || text.length > maxChars) {
+      setOverdesText(true);
+      return;
+    }
+
+    setOverdesText(false);
+    setDescription(text);
+  };
   const onEditStart = () => {
     setOriginalState({
       name,
@@ -320,16 +336,38 @@ const MenuItem = ({
                 style={[styles.inputBox]}
                 placeholder="메뉴 설명을 입력하세요"
                 value={description}
-                onChangeText={setDescription}
+                onChangeText={text => {
+                  handleContentChange(text);
+                }}
                 multiline
                 placeholderTextColor="#999"
+                maxLength={100}
               />
+              {overdesText && (
+                <Text style={styles.errorText}>
+                  메뉴 설명은 최대 5줄, 최대 100자까지 입력 가능합니다.
+                </Text>
+              )}
               <View style={styles.rowBetween}>
                 <TextInput
                   style={[styles.inputBox, {flex: 1}]}
                   placeholder="가격 입력"
                   value={isVariable ? '변동' : price}
-                  onChangeText={t => setPrice(t.replace(/[^0-9]/g, ''))}
+                  onChangeText={t => {
+                    const cleaned = t.replace(/[^0-9]/g, '');
+                    if (cleaned === '') {
+                      setPrice('');
+                      return;
+                    }
+                    let num = parseInt(cleaned, 10);
+                    if (!isNaN(num) && num > 100000000) {
+                      num = 100000000;
+                      setOverText(true);
+                    } else {
+                      setOverText(false);
+                    }
+                    setPrice(String(num));
+                  }}
                   editable={!isVariable}
                   keyboardType="numeric"
                   placeholderTextColor="#999"
@@ -339,6 +377,7 @@ const MenuItem = ({
                   onPress={() => {
                     setIsVariable(prev => !prev);
                     setPrice('');
+                    setOverText(false);
                   }}>
                   <View
                     style={[
@@ -358,6 +397,11 @@ const MenuItem = ({
                   </Text>
                 </Pressable>
               </View>
+              {overText && (
+                <Text style={styles.errorText}>
+                  가격은 최대 1억원까지 입력 가능합니다
+                </Text>
+              )}
               <MainMenuCheck
                 selectedType={type}
                 imagecheck={!!imgUrl}
@@ -467,6 +511,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     marginTop: 1,
     fontSize: 15,
+    lineHeight: 22, // CJK 글리프가 커도 잘리지 않도록 여유
   },
   priceText: {
     marginTop: 7,
@@ -584,6 +629,12 @@ const styles = StyleSheet.create({
   checkLabelActive: {
     color: '#16BBFF',
     fontFamily: 'Pretendard-Medium',
+  },
+  errorText: {
+    color: '#FF4816',
+    fontSize: 14,
+    marginTop: -8,
+    marginBottom: 8,
   },
 });
 
