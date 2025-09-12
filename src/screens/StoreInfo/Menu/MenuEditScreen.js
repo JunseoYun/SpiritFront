@@ -39,6 +39,7 @@ const MenuEditScreen = ({route, navigation}) => {
   const [activeTab, setActiveTab] = useState('MAIN');
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pendingDeletes, setPendingDeletes] = useState([]);
 
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
@@ -70,30 +71,6 @@ const MenuEditScreen = ({route, navigation}) => {
       isMainEditing: true,
       isUpdatable: true,
       onUpdateComplete: onMenuUpdateComplete,
-      onDelete: (id, name) => {
-        showAlert({
-          title: `${name} 삭제`,
-          message: `메뉴를 삭제하시겠습니까?`,
-          onConfirm: async () => {
-            try {
-              setLoading(true);
-              await StoreMenudelete(id);
-              setMainMenus(prev => prev.filter(m => m.id !== id));
-              setNormalMenus(prev => prev.filter(m => m.id !== id));
-              setSideMenus(prev => prev.filter(m => m.id !== id));
-              onMenuDelete(id);
-              delete draftsRef.current[id];
-              showToast('삭제되었습니다.');
-            } catch (error) {
-              showToast('삭제에 실패했습니다.');
-            } finally {
-              setLoading(false);
-            }
-          },
-          onCancel: null,
-          type: 'delete',
-        });
-      },
       storeId,
       onTypeChange: (menuId, newType) => {
         const allMenus = [...mainMenus, ...normalMenus, ...sideMenus];
@@ -133,6 +110,18 @@ const MenuEditScreen = ({route, navigation}) => {
       },
     }),
     [mainMenus, normalMenus, sideMenus],
+  );
+
+  const requestMenuDelete = useCallback(
+    (id, name) => {
+      setMainMenus(prev => prev.filter(m => m.id !== id));
+      setNormalMenus(prev => prev.filter(m => m.id !== id));
+      setSideMenus(prev => prev.filter(m => m.id !== id));
+      setPendingDeletes(prev => (prev.includes(id) ? prev : [...prev, id]));
+      delete draftsRef.current[id];
+      showToast(`${name}삭제 목록에 추가되었습니다.`);
+    },
+    [showToast, setMainMenus, setNormalMenus, setSideMenus, setPendingDeletes],
   );
 
   // Header buttons: Add, and Back with unsaved-changes guard
@@ -202,6 +191,12 @@ const MenuEditScreen = ({route, navigation}) => {
 
     try {
       setLoading(true);
+      // perform pending deletions first
+      for (const id of pendingDeletes) {
+        try {
+          await StoreMenudelete(id);
+        } catch (e) {}
+      }
       if (menuIdInOrderList.length !== 0) {
         await MenuUpdateSort(storeId, menuIdInOrderList);
       }
@@ -225,6 +220,26 @@ const MenuEditScreen = ({route, navigation}) => {
     setLoading(true);
     const refs = Object.values(itemRefs.current || {});
     const hasEditing = refs.some(r => r?.isEditing?.());
+
+    // simple validation using current drafts to avoid closing on invalid inputs
+    const validateDraft = d => {
+      if (!d) return false;
+      const nameOk = !!String(d.name ?? '').trim();
+      const typeOk = !!String(d.type ?? '').trim();
+      const isVar = !!d.isVariable;
+      const priceOk = isVar || !!String(d.price ?? '').trim();
+      return nameOk && typeOk && priceOk;
+    };
+    if (hasEditing) {
+      const invalid = Object.entries(itemRefs.current || {})
+        .filter(([, api]) => api?.isEditing?.())
+        .some(([id]) => !validateDraft(draftsRef.current[id]));
+      if (invalid) {
+        showToast('필수 입력값을 확인해 주세요.');
+        setLoading(false);
+        return;
+      }
+    }
     if (hasEditing) {
       showAlert({
         title: '변경사항 저장',
@@ -271,9 +286,7 @@ const MenuEditScreen = ({route, navigation}) => {
       }}
       keyExtractor={item => item.id.toString()}
       renderItem={({item, drag, isActive}) => (
-        <Animated.View
-          key={item.id}
-          style={{transform: [{scale: isActive ? 1.02 : 1}]}}>
+        <Animated.View style={{transform: [{scale: isActive ? 1.02 : 1}]}}>
           <View style={styles.itemRow}>
             <View style={{flex: 1}}>
               <MemoizedMenuItem
@@ -299,7 +312,7 @@ const MenuEditScreen = ({route, navigation}) => {
                 </TouchableOpacity>
               </View>
               <TouchableOpacity
-                onPress={e => stableItemProps.onDelete(item.id, item.name)}
+                onPress={() => requestMenuDelete(item.id, item.name)}
                 style={styles.sideDeleteBtn}
                 hitSlop={{top: 12, bottom: 12, left: 12, right: 12}}>
                 <Text style={styles.sideDeleteText}>삭제</Text>
@@ -497,9 +510,10 @@ const styles = StyleSheet.create({
   },
   sideDeleteBtn: {bottom: 25},
   sideDeleteText: {
-    fontSize: 13,
-    color: '#666',
-    fontFamily: 'Pretendard-Medium',
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#FF6347',
+    fontFamily: 'Pretendard-Regular',
   },
   dragIconText: {
     textAlign: 'center',

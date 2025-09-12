@@ -42,7 +42,10 @@ const AlcoholItem = ({
   draft,
   onDraftChange,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
+  // Initialize editing true when parent edit mode with autoEdit/draft
+  const [isEditing, setIsEditing] = useState(
+    () => !!(isMainEditing && (autoEdit || !!draft)),
+  );
   const [name, setName] = useState(alcohol.name);
   const [description, setDescription] = useState(alcohol.description);
   const [price, setPrice] = useState(alcohol.price);
@@ -58,16 +61,6 @@ const AlcoholItem = ({
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
 
-  useEffect(() => {
-    if (isEditing) return;
-    setName(alcohol.name);
-    setDescription(alcohol.description);
-    setPrice(alcohol.price);
-    setType(alcohol.type);
-    setImgUrl(alcohol.imgUrl);
-    setIsVariable(alcohol.price === '변동');
-  }, [alcohol]);
-
   const onEditStart = () => {
     setOriginal({name, description, price, type, imgUrl, isVariable});
     setIsEditing(true);
@@ -80,6 +73,23 @@ const AlcoholItem = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoEdit]);
+
+  // Ensure editing stays on after remount if draft/autoEdit present
+  useEffect(() => {
+    if (isMainEditing && (autoEdit || draft) && !isEditing) {
+      setIsEditing(true);
+    }
+  }, [isMainEditing, autoEdit, draft, isEditing]);
+
+  useEffect(() => {
+    if (isEditing) return;
+    setName(alcohol.name);
+    setDescription(alcohol.description);
+    setPrice(alcohol.price);
+    setType(alcohol.type);
+    setImgUrl(alcohol.imgUrl);
+    setIsVariable(alcohol.price === '변동');
+  }, [alcohol, isEditing]);
 
   // hydrate from parent draft if present (handles remounts)
   useEffect(() => {
@@ -178,27 +188,11 @@ const AlcoholItem = ({
   };
 
   const handleSave = async () => {
-    if (!name.trim())
-      return showAlert({
-        title: '입력 오류',
-        message: '주류 이름을 입력해주세요.',
-      });
+    if (!name.trim()) return showToast('주류 이름을 입력해주세요.');
     if (!isVariable && !price.trim())
-      return showAlert({
-        title: '입력 오류',
-        message: '주류 가격을 입력해주세요.',
-      });
-    if (!type.trim())
-      return showAlert({title: '입력 오류', message: '주종을 선택해주세요.'});
+      return showToast('주류 가격을 입력해주세요.');
 
-    const hasForbidden = [name, description, price].some(value =>
-      forbiddenWords.some(word => value?.includes(word)),
-    );
-    if (hasForbidden)
-      return showAlert({
-        title: '가이드 위반',
-        message: '금지된 단어가 포함되어 있습니다.',
-      });
+    if (!type.trim()) return showToast('주류 주종을 선택해주세요.');
 
     const isImageChanged = selectedImage !== null;
     const isImageRemoved = isImageDeleted && !!alcohol.imgUrl;
@@ -217,7 +211,6 @@ const AlcoholItem = ({
       !isInfoChanged &&
       !isImageAddedAndRemoved
     ) {
-      showToast('변경사항이 없습니다.');
       setIsEditing(false);
       return;
     }
@@ -259,6 +252,7 @@ const AlcoholItem = ({
   };
 
   const handleImagePress = () => {
+    if (isEditing) return;
     navigation.navigate('ImageViewerScreen', {images: imgUrl});
   };
 
@@ -512,15 +506,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   rowBetween: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center', // ✅ 수직 가운데 정렬
     marginBottom: 8,
-    minHeight: 48, // ✅ TextInput 높이와 유사하게 고정
+    marginRight: 8,
+    justifyContent: 'space-between',
   },
   checkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 12,
+    marginBottom: 8,
   },
   checkBox: {
     width: 20,

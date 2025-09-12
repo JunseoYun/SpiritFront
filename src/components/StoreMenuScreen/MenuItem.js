@@ -27,7 +27,6 @@ import {useToast} from '../../context/ToastContext';
 import forbiddenWords from '../../hooks/forbiddenWords';
 const MenuItem = ({
   menu,
-  onDelete,
   isUpdatable,
   isLast,
   isMainEditing,
@@ -124,7 +123,16 @@ const MenuItem = ({
       selectedImage,
       isImageDeleted,
     });
-  }, [name, description, price, type, imgUrl, isVariable, selectedImage, isImageDeleted]);
+  }, [
+    name,
+    description,
+    price,
+    type,
+    imgUrl,
+    isVariable,
+    selectedImage,
+    isImageDeleted,
+  ]);
 
   const onCancelEdit = () => {
     setName(originalState.name);
@@ -196,26 +204,10 @@ const MenuItem = ({
   };
 
   const handleSave = async () => {
-    if (!name.trim())
-      return showAlert({
-        title: '입력 오류',
-        message: '메뉴 이름을 입력해주세요.',
-      });
+    if (!name.trim()) return showToast('메뉴 이름을 입력해주세요.');
     if (!isVariable && !price.toString().trim())
-      return showAlert({title: '입력 오류', message: '가격을 입력해주세요.'});
-    if (!type.trim())
-      return showAlert({title: '입력 오류', message: '타입을 선택해주세요.'});
-
-    if (
-      [name, description, price].some(v =>
-        forbiddenWords.some(f => v?.includes(f)),
-      )
-    ) {
-      return showAlert({
-        title: '가이드 위반',
-        message: '금지된 단어가 포함되어 있습니다.',
-      });
-    }
+      return showToast('가격을 입력해주세요.');
+    if (!type.trim()) return showToast('메뉴 타입을 선택해주세요.');
 
     const isImageChanged = selectedImage !== null;
     const isImageRemoved = isImageDeleted && !!menu.imgUrl;
@@ -234,7 +226,6 @@ const MenuItem = ({
       !isInfoChanged &&
       !isImageAddedAndRemoved
     ) {
-      showToast('변경사항이 없습니다.');
       setIsEditing(false);
       return;
     }
@@ -418,16 +409,6 @@ const MenuItem = ({
         </View>
       </View>
 
-      {isUpdatable && isMainEditing && !hideInlineActions && (
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={[styles.btn, styles.delete]}
-            onPress={() => onDelete(menu.id, menu.name)}>
-            <Text style={styles.deletebtnText}>삭제</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
       <AlertComponent />
       <ImagePickermodal
         isBottomSheetVisible={isBottomSheetVisible}
@@ -568,15 +549,17 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   rowBetween: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center', // ✅ 수직 가운데 정렬
     marginBottom: 8,
-    minHeight: 48, // ✅ TextInput 높이와 유사하게 고정
+    marginRight: 8,
+    justifyContent: 'space-between',
   },
   checkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 12,
+    marginBottom: 8,
   },
   checkBox: {
     width: 20,
