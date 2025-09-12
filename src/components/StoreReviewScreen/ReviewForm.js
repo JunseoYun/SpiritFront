@@ -56,21 +56,6 @@ const ReviewForm = ({
   const [forbiddenerror, setForbiddenerror] = useState(false);
   const [overText, setOverText] = useState(false);
 
-  const handleContentChange = text => {
-    const maxLines = 5; // 최대 줄 개수
-    const maxChars = 300; // 최대 글자 수
-
-    // 🔥 줄 개수 확인 (빈 줄 제외)
-    const lines = text.split('\n'); // 🔥 입력된 줄 개수 확인
-    if (lines.length > maxLines || text.length > maxChars) {
-      setOverText(true);
-      return;
-    }
-
-    setOverText(false);
-    onChangeText(text);
-  };
-
   const validateReview = () => {
     const containsForbiddenWord = forbiddenWords.some(word =>
       newReviewContent.includes(word),
@@ -164,12 +149,21 @@ const ReviewForm = ({
               ]}
               multiline
               value={newReviewContent}
-              onChangeText={handleContentChange}
+              onChangeText={text => {
+                const maxChars = 2000;
+                if (text.length > maxChars) {
+                  setOverText(true);
+                  return; // 초과 입력 무시
+                } else {
+                  setOverText(false);
+                }
+                onChangeText(text);
+              }}
               placeholder="리뷰 별점 이유를 작성해 주세요!"
               placeholderTextColor="#999"
               onFocus={() => setContentFocused(true)}
               onBlur={() => setContentFocused(false)}
-              maxLength={300}
+              maxLength={2000}
             />
             {errorcontent && (
               <Text style={styles.errorMessage}>
@@ -178,7 +172,7 @@ const ReviewForm = ({
             )}
             {overText && (
               <Text style={styles.errorMessage}>
-                리뷰는 최대 5줄, 최대 300자까지 입력 가능합니다.
+                리뷰는 최대 2000자까지 입력 가능합니다.
               </Text>
             )}
             {forbiddenerror && (

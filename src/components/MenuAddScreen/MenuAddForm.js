@@ -27,6 +27,7 @@ const MenuAddForm = forwardRef(
     const {showAlert, AlertComponent} = useCustomAlert();
     const [overText, setOverText] = useState(false);
     const [overdesText, setOverdesText] = useState(false);
+    const [overnameText, setOvernameText] = useState(false);
     const [isImageSelected, setIsImageSelected] = useState(false);
     const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
@@ -167,7 +168,16 @@ const MenuAddForm = forwardRef(
         <MenuTextInput
           label="메뉴 이름*"
           value={menu.menuName}
-          onChangeText={text => MenuChange(text, index, 'menuName')}
+          onChangeText={text => {
+            const maxChars = 50;
+            if (text.length > maxChars) {
+              setOvernameText(true);
+              return; // 초과 입력 무시
+            } else {
+              setOvernameText(false);
+            }
+            MenuChange(text, index, 'menuName');
+          }}
           placeholder="메뉴 이름*"
           ref={menunameRef}
           returnKeyType="next"
@@ -177,6 +187,11 @@ const MenuAddForm = forwardRef(
             }
           }}
         />
+        {overnameText && (
+          <Text style={styles.errorTextprice}>
+            메뉴 이름은 최대 50자까지 입력 가능합니다.
+          </Text>
+        )}
         <MenuPrice
           label="메뉴 가격*"
           value={menu.price}
@@ -201,10 +216,8 @@ const MenuAddForm = forwardRef(
           label="메뉴 소개"
           value={menu.menuContent}
           onChangeText={text => {
-            const maxLines = 5;
             const maxChars = 100;
-            const lines = (text || '').split('\n');
-            if (lines.length > maxLines || text.length > maxChars) {
+            if (text.length > maxChars) {
               setOverdesText(true);
               return; // 초과 입력 무시
             } else {
@@ -218,7 +231,7 @@ const MenuAddForm = forwardRef(
         />
         {overdesText && (
           <Text style={styles.errorTextprice}>
-            주류 설명은 최대 5줄, 최대 100자까지 입력 가능합니다.
+            메뉴 설명은 최대 100자까지 입력 가능합니다.
           </Text>
         )}
 

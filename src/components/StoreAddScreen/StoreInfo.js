@@ -34,21 +34,6 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
     setStoreData({...storeData, [key]: value});
   };
 
-  const handleContentChange = text => {
-    const lines = text.split('\n');
-    const maxLines = 5;
-    const maxChars = 100;
-
-    if (lines.length > maxLines || text.length > maxChars) {
-      setOverText(true);
-      return;
-    } else {
-      setOverText(false);
-    }
-
-    handleChange('storeContent', text);
-  };
-
   useEffect(() => {
     storeNumberLabelAnim.value = withTiming(
       isFocused('storeNumber') || storeData.storeNumber !== '' ? 1 : 0,
@@ -128,7 +113,16 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
             ]}
             multiline
             value={storeData.storeContent}
-            onChangeText={handleContentChange}
+            onChangeText={text => {
+              const maxChars = 500;
+              if (text.length > maxChars) {
+                setOverText(true);
+                return; // 초과 입력 무시
+              } else {
+                setOverText(false);
+              }
+              handleChange('storeContent', text);
+            }}
             placeholder=""
             placeholderTextColor="#999"
             onFocus={() => setFocusedInput('storeContent')}
@@ -140,9 +134,7 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
           <Text style={styles.errorText}>{errors.storeContent}</Text>
         )}
         {overText && (
-          <Text style={styles.errorText}>
-            매장 소개는 최대 5줄, 최대 100자입니다.
-          </Text>
+          <Text style={styles.errorText}>매장 소개는 최대 500자입니다.</Text>
         )}
       </View>
     </View>

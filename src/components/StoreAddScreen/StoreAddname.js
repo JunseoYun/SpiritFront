@@ -13,6 +13,7 @@ const StoreAddname = ({storename, setStorename, error}) => {
   const [focusedInput, setFocusedInput] = useState(false);
   const [errors, setErrors] = useState({});
   const storeNameInputRef = useRef(null);
+  const [overText, setOverText] = useState(false);
 
   // reanimated shared value
   const labelAnim = useSharedValue(storename !== '' ? 1 : 0);
@@ -63,22 +64,28 @@ const StoreAddname = ({storename, setStorename, error}) => {
             ref={storeNameInputRef}
             style={[styles.storeinput, focusedInput && styles.focusedInput]}
             value={storename}
-            onChangeText={handleChange}
+            onChangeText={text => {
+              const maxChars = 50;
+              if (text.length > maxChars) {
+                setOverText(true);
+                return; // 초과 입력 무시
+              } else {
+                setOverText(false);
+              }
+              setStorename(text);
+            }}
             placeholder=""
             onFocus={() => setFocusedInput(true)}
             onBlur={() => setFocusedInput(false)}
             returnKeyType="done"
             maxLength={MAX}
-            onKeyPress={e => {
-              if (
-                (storename || '').length >= MAX &&
-                e?.nativeEvent?.key !== 'Backspace'
-              ) {
-                showToast('최대 50자까지 입력 가능합니다', 'center');
-              }
-            }}
           />
         </View>
+        {overText && (
+          <Text style={styles.errorText}>
+            매장 이름은 최대 50자까지 입력 가능합니다.
+          </Text>
+        )}
         {errors.storename && (
           <Text style={styles.errorText}>{errors.storename}</Text>
         )}
