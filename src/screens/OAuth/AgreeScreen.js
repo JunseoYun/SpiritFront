@@ -117,7 +117,7 @@ const AgreeScreen = ({route, navigation}) => {
               agreements.all && styles.checkedBox,
             ]}>
             {agreements.all && (
-              <Ionicons name="checkmark" size={16} color="#fff" />
+              <Ionicons name="checkmark" size={20} color="#fff" />
             )}
           </View>
           <Text style={styles.allAgreeText}>전체 동의</Text>
