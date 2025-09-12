@@ -762,21 +762,23 @@ const StoreMainScreen = ({navigation}) => {
                 <View style={styles.modal}>
                   <TouchableOpacity
                     style={styles.option}
-                    onPress={() =>
+                    onPress={() => {
                       navigation.navigate('AlcoholEditScreen', {
                         storeId,
                         alcohols,
                         onAlcoholUpdateComplete: refresAlcohols,
                         onAlcoholDelete: handleAlcoholDelete,
-                      })
-                    }>
+                      });
+                      setModalVisible(false);
+                    }}>
                     <Text style={styles.optionText}>주류 수정/삭제</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.option}
-                    onPress={() =>
-                      navigation.navigate('AlcoholAddScreen', {storeId})
-                    }>
+                    onPress={() => {
+                      navigation.navigate('AlcoholAddScreen', {storeId});
+                      setModalVisible(false);
+                    }}>
                     <Text style={styles.optionText}>새 주류 추가</Text>
                   </TouchableOpacity>
                 </View>
