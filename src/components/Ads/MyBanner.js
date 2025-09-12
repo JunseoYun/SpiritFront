@@ -18,6 +18,11 @@ const mainBannerId =
     ? Config.GOOGLE_ADS_MAIN_ID
     : Config.GOOGLE_ADS_MAIN_ID_IOS;
 
+const likeBannerId =
+  Platform.OS === 'android'
+    ? Config.GOOGLE_ADS_LIKESCREEN_ID
+    : Config.GOOGLE_ADS_LIKESCREEN_ID_IOS;
+
 export default function MyBanner({index}) {
   const {width} = useWindowDimensions();
   const {npa} = useAdConsent();
@@ -25,7 +30,11 @@ export default function MyBanner({index}) {
   const [reloadKey, setReloadKey] = useState(0);
 
   let prodUnitId = mainBannerId; // 기본값
-  if (index === 'search') prodUnitId = searchBannerId;
+  if (index === 'search') {
+    prodUnitId = searchBannerId;
+  } else if (index === 'like') {
+    prodUnitId = likeBannerId;
+  }
 
   const adUnitId = __DEV__ ? TestIds.BANNER : prodUnitId;
 
