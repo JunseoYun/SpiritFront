@@ -1,5 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {SafeAreaView, StyleSheet, View, Text, Pressable} from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Text,
+  Pressable,
+  Modal,
+  TouchableOpacity,
+} from 'react-native';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
 import Feather from 'react-native-vector-icons/Feather';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
@@ -12,6 +20,7 @@ const StoreMenuScreen = ({
   isUpdatable,
   onMenuUpdateComplete,
 }) => {
+  const [isModalVisible, setModalVisible] = useState(false);
   const [menuList, setMenuList] = useState(menus);
   const {bottom} = useSafeAndroidInsets();
   useEffect(() => {
@@ -71,14 +80,7 @@ const StoreMenuScreen = ({
         <>
           <Pressable
             style={styles.reorderButton}
-            onPress={() =>
-              navigation.navigate('MenuEditScreen', {
-                storeId,
-                menus,
-                onMenuUpdateComplete, // ✅ 메뉴 다시 불러오는 콜백 전달
-                onMenuDelete,
-              })
-            }>
+            onPress={() => setModalVisible(true)}>
             <Text style={styles.menuAddButtonText}>메뉴 편집</Text>
           </Pressable>
         </>
@@ -91,6 +93,37 @@ const StoreMenuScreen = ({
           <Text style={styles.emptyText}>등록된 메뉴가 없어요</Text>
         </View>
       )}
+      <Modal
+        transparent
+        visible={isModalVisible}
+        animationType="fade"
+        statusBarTranslucent={true}>
+        <Pressable
+          style={styles.overlay}
+          onPress={() => setModalVisible(false)}>
+          <View style={styles.modal}>
+            <TouchableOpacity
+              style={styles.option}
+              onPress={() =>
+                navigation.navigate('MenuEditScreen', {
+                  storeId,
+                  menus,
+                  onMenuUpdateComplete, // ✅ 메뉴 다시 불러오는 콜백 전달
+                  onMenuDelete,
+                })
+              }>
+              <Text style={styles.optionText}>메뉴 수정/삭제</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.option}
+              onPress={() =>
+                navigation.navigate('MenuAddScreen', {storeId: storeId})
+              }>
+              <Text style={styles.optionText}>새 메뉴 추가</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -153,6 +186,30 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     fontSize: 20,
     color: '#c0c0c0',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modal: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    width: 260,
+  },
+  option: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  optionText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    textAlign: 'center',
   },
 });
 

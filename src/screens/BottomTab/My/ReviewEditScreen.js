@@ -253,6 +253,22 @@ const ReviewEditScreen = ({route, navigation}) => {
       type: 'delete',
     });
   };
+  const [overText, setOverText] = useState(false);
+
+  const handleContentChange = text => {
+    const maxLines = 5; // 최대 줄 개수
+    const maxChars = 300; // 최대 글자 수
+
+    // 🔥 줄 개수 확인 (빈 줄 제외)
+    const lines = text.split('\n'); // 🔥 입력된 줄 개수 확인
+    if (lines.length > maxLines || text.length > maxChars) {
+      setOverText(true);
+      return;
+    }
+
+    setOverText(false);
+    setReviewContent(text);
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -265,13 +281,19 @@ const ReviewEditScreen = ({route, navigation}) => {
               {borderBottomColor: isFocused ? '#16BBFF' : '#F2F2F2'},
             ]}
             value={reviewContent}
-            onChangeText={setReviewContent}
+            onChangeText={handleContentChange}
             placeholder={'리뷰를 입력하세요'}
             placeholderTextColor={'#999'}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             multiline
+            maxLength={300}
           />
+          {overText && (
+            <Text style={styles.errorMessage}>
+              리뷰는 최대 5줄, 최대 300자까지 입력 가능합니다.
+            </Text>
+          )}
 
           {/* 별점 입력 */}
           <Text style={styles.inputText}>별점 입력</Text>
@@ -486,6 +508,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#333',
+  },
+  errorMessage: {
+    color: '#FF4816',
+    fontSize: 14,
+    marginTop: 5,
+    fontFamily: 'Pretendard-Medium',
+    alignSelf: 'flex-start',
   },
 });
 

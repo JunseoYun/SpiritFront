@@ -46,11 +46,14 @@ const styles = StyleSheet.create({
   },
   option: {
     paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   optionText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#333',
+    textAlign: 'center',
   },
 });
 

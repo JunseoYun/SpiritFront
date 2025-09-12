@@ -5,8 +5,11 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+import {useToast} from '../../context/ToastContext';
 
 const StoreAddname = ({storename, setStorename, error}) => {
+  const {showToast} = useToast();
+  const MAX = 50;
   const [focusedInput, setFocusedInput] = useState(false);
   const [errors, setErrors] = useState({});
   const storeNameInputRef = useRef(null);
@@ -65,6 +68,15 @@ const StoreAddname = ({storename, setStorename, error}) => {
             onFocus={() => setFocusedInput(true)}
             onBlur={() => setFocusedInput(false)}
             returnKeyType="done"
+            maxLength={MAX}
+            onKeyPress={e => {
+              if (
+                (storename || '').length >= MAX &&
+                e?.nativeEvent?.key !== 'Backspace'
+              ) {
+                showToast('최대 50자까지 입력 가능합니다', 'center');
+              }
+            }}
           />
         </View>
         {errors.storename && (
@@ -117,6 +129,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginTop: 5,
     marginHorizontal: 18,
+
     fontFamily: 'Pretendard-Medium',
   },
 });

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useToast} from '../../context/ToastContext';
 
 const alcohols = [
   {label: '소주', value: 'SOJU'},
@@ -25,6 +26,8 @@ const alcohols = [
 ];
 
 const StoreAlcohol = ({alcohol, setAlcohol, index, error}) => {
+  const {showToast} = useToast();
+  const [overText, setOverText] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const handleAlcoholChange = (index, key, value) => {
@@ -153,18 +156,29 @@ const StoreAlcohol = ({alcohol, setAlcohol, index, error}) => {
                 <TextInput
                   style={styles.priceInput}
                   value={item.price ? item.price.toString() : ''}
-                  onChangeText={value =>
-                    handleAlcoholChange(
-                      index,
-                      'price',
-                      value === '' ? '' : parseInt(value),
-                    )
-                  }
+                  onChangeText={value => {
+                    const cleaned = value.replace(/[^0-9]/g, '');
+                    let num = cleaned === '' ? '' : parseInt(cleaned, 10);
+                    if (typeof num === 'number' && !isNaN(num)) {
+                      if (num > 100000000) {
+                        num = 100000000;
+                        setOverText(true);
+                      } else {
+                        setOverText(false);
+                      }
+                    }
+                    handleAlcoholChange(index, 'price', num);
+                  }}
                   placeholder="가격"
                   placeholderTextColor="#999"
                   keyboardType="number-pad"
                   returnKeyType="done"
                 />
+                {overText && (
+                  <Text style={styles.errorText}>
+                    가격은 최대 1억원까지 입력 가능합니다
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -313,6 +327,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     marginTop: -15,
     marginBottom: 15,
+  },
+  errorText: {
+    color: '#FF4816',
+    fontSize: 14,
+    marginTop: 5,
   },
 });
 
