@@ -1,6 +1,6 @@
 // src/hooks/useHandlePendingNotification.js
 import {useEffect} from 'react';
-import {navigate} from '../../navigation/NavigationService';
+import {navigate, resetTo} from '../../navigation/NavigationService';
 import {navigationRef} from '../../navigation/NavigationService';
 import {NotifiRead} from '../../api/notificationApi';
 import {ReviewgetbyGet} from '../../api/reviewApi';
@@ -56,9 +56,30 @@ const useHandlePendingNotification = (
           redirectType === 'STORE_DETAIL' &&
           notificationType === 'STORE_OWNERSHIP_APPROVED'
         ) {
-          navigate('MyStack', {
-            screen: 'MyScreen',
-            params: {invitationManager: true},
+          resetTo({
+            index: 0, // 최상단 활성 스택
+            routes: [
+              {
+                name: 'MainBtmbar', // 최상위 BottomTab
+                state: {
+                  index: 0, // MyStack 탭을 선택
+                  routes: [
+                    {
+                      name: 'MyStack', // MyStack 안으로
+                      state: {
+                        index: 0,
+                        routes: [
+                          {
+                            name: 'MyScreen', // 최종 화면
+                            params: {invitationManager: true},
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
           });
         } else if (
           notificationType === 'STORE_OWNERSHIP_REJECTED' &&

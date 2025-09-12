@@ -155,6 +155,7 @@ const StoreAuthConfirm = ({navigation}) => {
       }
     } catch (error) {
       const errorCode = error?.response?.data?.code;
+      console.log(error?.response);
       setConfirm(false);
       showAlert({
         title: '신청 실패',

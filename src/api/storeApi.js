@@ -154,16 +154,22 @@ export const Create_store_with_ownership = async data => {
 };
 
 export const CreateOwnership = async data => {
+  const toFileField = (file, fallbackName) => {
+    if (!file) return null;
+    const uri = file.path?.startsWith('file://')
+      ? file.path
+      : `file://${file.path}`;
+    const type = file.mime || 'image/jpeg';
+    const name = file.filename || `${fallbackName}_${Date.now()}.jpg`;
+    return {uri, type, name};
+  };
+
   const formData = new FormData();
+  const cert = toFileField(data.file, 'file');
 
-  if (data.file) {
-    formData.append('file', {
-      uri: data.file.path,
-      type: data.file.mime,
-      name: data.file.filename,
-    });
+  if (cert) {
+    formData.append('file', cert);
   }
-
   const createOwnershipRqDto = JSON.stringify(data.createOwnershipRqDto);
 
   formData.append('createOwnershipRqDto', {

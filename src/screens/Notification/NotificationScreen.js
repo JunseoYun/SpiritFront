@@ -125,10 +125,14 @@ const NotificationScreen = ({navigation}) => {
     try {
       setLoading(true);
       await NotifiReadAll();
+      // Optimistically update UI: mark all as read and disable the button
+      setNotifidata(prev => prev.map(n => ({...n, hasRead: true})));
+      setUnreadNotification(false);
     } catch (err) {
       showToast('다시 시도해 주세요.', 'center');
     } finally {
       setLoading(false);
+      // Optionally refresh to ensure server state, but button already disabled
       handleRefresh();
     }
   };
@@ -258,11 +262,15 @@ const NotificationScreen = ({navigation}) => {
           ) : null
         }
         ListHeaderComponent={
-          <Pressable onPress={unreadNotification ? readallnotifi : null}>
+          <Pressable
+            disabled={!unreadNotification || loading}
+            onPress={unreadNotification && !loading ? readallnotifi : null}>
             <Text
               style={[
                 styles.allReadText,
-                unreadNotification && {color: '#121212'},
+                unreadNotification && !loading
+                  ? {color: '#121212'}
+                  : {color: '#c0c0c0'},
               ]}>
               알림 전체 읽기
             </Text>

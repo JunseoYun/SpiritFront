@@ -104,21 +104,23 @@ const StoreMenuScreen = ({
           <View style={styles.modal}>
             <TouchableOpacity
               style={styles.option}
-              onPress={() =>
+              onPress={() => {
                 navigation.navigate('MenuEditScreen', {
                   storeId,
                   menus,
                   onMenuUpdateComplete, // ✅ 메뉴 다시 불러오는 콜백 전달
                   onMenuDelete,
-                })
-              }>
+                });
+                setModalVisible(false);
+              }}>
               <Text style={styles.optionText}>메뉴 수정/삭제</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.option}
-              onPress={() =>
-                navigation.navigate('MenuAddScreen', {storeId: storeId})
-              }>
+              onPress={() => {
+                navigation.navigate('MenuAddScreen', {storeId: storeId});
+                setModalVisible(false);
+              }}>
               <Text style={styles.optionText}>새 메뉴 추가</Text>
             </TouchableOpacity>
           </View>
