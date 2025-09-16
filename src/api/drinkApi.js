@@ -1,15 +1,13 @@
 import axiosInstance from './axiosInstance';
 import {functionError} from './errorHandler';
+import toFileField from '../utils/toFileField';
 
 //주류 추가 api
 export const StoreDrinkcreate = async data => {
   const formData = new FormData();
   if (data.file) {
-    formData.append('file', {
-      uri: data.file.path,
-      type: data.file.mime,
-      name: data.file.filename,
-    });
+    const f = toFileField(data.file, 'drink');
+    if (f) formData.append('file', f);
   }
 
   const createDrinkDto = JSON.stringify(data.createDrinkDto);
@@ -60,11 +58,8 @@ export const DrinkUpdateImage = async (drinkId, file) => {
   const formData = new FormData();
 
   if (file) {
-    formData.append('file', {
-      uri: file.path, // ✅ 올바른 참조
-      type: file.mime,
-      name: file.path.split('/').pop(), // ✅ 파일 이름 추출
-    });
+    const f = toFileField(file, 'drink');
+    if (f) formData.append('file', f);
   }
 
   try {

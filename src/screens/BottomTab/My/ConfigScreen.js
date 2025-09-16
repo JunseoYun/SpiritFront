@@ -6,6 +6,7 @@ import {Userimgdelete} from '../../../api/userApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 
 import CFImage from '../../../components/ConfigScreen/CFImage';
+import toFileField from '../../../utils/toFileField';
 import CFModal from '../../../components/ConfigScreen/CFModal';
 import CFActionbtn from '../../../components/ConfigScreen/CFActionbtn';
 import CFUserinfo from '../../../components/ConfigScreen/CFUserinfo';
@@ -48,11 +49,8 @@ const ConfigScreen = ({navigation}) => {
 
     try {
       const formData = new FormData();
-      formData.append('file', {
-        uri: image.path,
-        type: image.mime,
-        name: image.filename,
-      });
+      const f = toFileField(image, 'profile');
+      if (f) formData.append('file', f);
 
       await Userimgpost(formData); // API 호출
       setIsModalVisible(false);

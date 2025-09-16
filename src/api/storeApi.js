@@ -1,5 +1,6 @@
 import axiosInstance from './axiosInstance';
 import {functionError} from './errorHandler';
+import toFileField from '../utils/toFileField';
 // 매장 데이터 가져오기
 export const getStore = async () => {
   try {
@@ -40,14 +41,9 @@ export const StoreMainget = async storeId => {
 export const StoreRegister = async data => {
   const formData = new FormData();
 
-  data.files.forEach(file => {
-    if (file) {
-      formData.append('files', {
-        uri: file.path, // 이미지 URI
-        type: file.mime, // 이미지 타입 (확인 후 필요한 타입 사용)
-        name: file.filename, // 파일 이름 (확장자 포함)
-      });
-    }
+  (data.files || []).forEach((file, idx) => {
+    const f = toFileField(file, `store_${idx}`);
+    if (f) formData.append('files', f);
   });
 
   const createStoreDto = JSON.stringify(data.createStoreDto);
@@ -70,14 +66,9 @@ export const StoreRegister = async data => {
 export const StoreSuggestion = async data => {
   const formData = new FormData();
 
-  data.files.forEach(file => {
-    if (file) {
-      formData.append('files', {
-        uri: file.path, // 이미지 URI
-        type: file.mime, // 이미지 타입 (확인 후 필요한 타입 사용)
-        name: file.filename, // 파일 이름 (확장자 포함)
-      });
-    }
+  (data.files || []).forEach((file, idx) => {
+    const f = toFileField(file, `suggest_${idx}`);
+    if (f) formData.append('files', f);
   });
 
   const createStoreDto = JSON.stringify(data.createStoreDto);
@@ -104,16 +95,6 @@ export const StoreSuggestion = async data => {
 
 export const Create_store_with_ownership = async data => {
   const formData = new FormData();
-
-  const toFileField = (file, fallbackName) => {
-    if (!file) return null;
-    const uri = file.path?.startsWith('file://')
-      ? file.path
-      : `file://${file.path}`;
-    const type = file.mime || 'image/jpeg';
-    const name = file.filename || `${fallbackName}_${Date.now()}.jpg`;
-    return {uri, type, name};
-  };
   // 사업자 등록증 이미지
   const cert = toFileField(
     data.businessRegistrationCertificateImage,
@@ -154,16 +135,6 @@ export const Create_store_with_ownership = async data => {
 };
 
 export const CreateOwnership = async data => {
-  const toFileField = (file, fallbackName) => {
-    if (!file) return null;
-    const uri = file.path?.startsWith('file://')
-      ? file.path
-      : `file://${file.path}`;
-    const type = file.mime || 'image/jpeg';
-    const name = file.filename || `${fallbackName}_${Date.now()}.jpg`;
-    return {uri, type, name};
-  };
-
   const formData = new FormData();
   const cert = toFileField(data.file, 'file');
 
@@ -205,14 +176,9 @@ export const UpdateStore = async (storeId, data) => {
 
 export const UpdateStoreImage = async (storeId, data) => {
   const formData = new FormData();
-  data.forEach(file => {
-    if (file.path) {
-      formData.append('files', {
-        uri: file.path, // 이미지 URI
-        type: file.mime, // 이미지 타입
-        name: file.filename, // 파일 이름
-      });
-    }
+  (data || []).forEach((file, idx) => {
+    const f = toFileField(file, `store_${idx}`);
+    if (f) formData.append('files', f);
   });
   try {
     const response = await axiosInstance.post(
@@ -599,12 +565,9 @@ export const delete_store_manager = async storeManagerId => {
 export const StoreBoardimage = async ({files, boardType}, storeId) => {
   const formData = new FormData();
 
-  files.forEach(file => {
-    formData.append('files', {
-      uri: file.path,
-      type: file.mime,
-      name: file.filename,
-    });
+  (files || []).forEach((file, idx) => {
+    const f = toFileField(file, `board_${idx}`);
+    if (f) formData.append('files', f);
   });
 
   try {
