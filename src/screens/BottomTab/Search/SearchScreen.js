@@ -121,7 +121,7 @@ const SearchScreen = ({navigation}) => {
     // 인원
     if (인원) {
       // "10인 이하" -> false, "10인 이상" -> true
-      const isGroup = 인원 === '10인 이상';
+      const isGroup = 인원 === '단체 방문';
       conditionSearchDto.isGroupAvailable = isGroup;
       fastviewDto.selectedPeople = 인원;
     }
@@ -201,37 +201,34 @@ const SearchScreen = ({navigation}) => {
   }, [bottomModalVisible]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Loading loading={isRefreshing || loading} />
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <SearchBar
+        value={searchStoreName}
+        onChangeText={setSearchStoreName}
+        placeholder="원하는 술집이나 메뉴를 검색하세요"
+        onPress={onPressSearch}
+      />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        {/* 스크롤 가능한 영역 */}
         <ScrollView
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
           }>
-          <SearchBar
-            value={searchStoreName}
-            onChangeText={setSearchStoreName}
-            placeholder="원하는 술집이나 메뉴를 검색하세요"
-            onPress={onPressSearch}
+          <FastSearch
+            title="내 주변 술집 빠른 검색"
+            selectedFilters={selectedFilters}
+            handleBottomOpen={() => setBottomModalVisible(true)}
           />
-          {/* 스크롤 가능한 영역 */}
-          <View style={styles.scrollViewContent}>
-            <FastSearch
-              title="내 주변 술집 빠른 검색"
-              selectedFilters={selectedFilters}
-              handleBottomOpen={() => setBottomModalVisible(true)}
-            />
-            <RecentStoreList
-              refresh={isRefreshing}
-              setRefresh={setIsRefreshing}
-              loading={loading}
-              setLoading={setLoading}
-              navigation={navigation}
-              location={location}
-            />
-            <View style={{height: 50}} />
-            <MyBanner />
-          </View>
+          <RecentStoreList
+            refresh={isRefreshing}
+            setRefresh={setIsRefreshing}
+            loading={loading}
+            setLoading={setLoading}
+            navigation={navigation}
+            location={location}
+          />
+          <View style={{height: 30}} />
+          <MyBanner index={'search'} />
         </ScrollView>
       </TouchableWithoutFeedback>
       {/* 하단에 고정된 검색 버튼 */}
@@ -266,20 +263,25 @@ const SearchScreen = ({navigation}) => {
             setSelectedFilters={setSelectedFilters}
             onClose={() => setBottomModalVisible(false)}
             handleApply={onPressFastSearch}
+            modalVisible={bottomModalVisible}
           />
         </Animated.View>
       </Modal>
+
+      <Loading loading={isRefreshing || loading} />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     flex: 1, // 화면 전체를 차지하도록 설정
   },
   scrollViewContent: {
     paddingBottom: 100,
+
+    flex: 1, // 화면 전체를 차지하도록 설정
   },
   openButton: {
     marginTop: 40,

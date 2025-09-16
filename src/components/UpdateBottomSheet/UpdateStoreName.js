@@ -1,18 +1,34 @@
-import React from 'react';
+import React, {useRef, useState} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
+import {useToast} from '../../context/ToastContext';
 
 const UpdateStoreName = ({updatedValue, setUpdatedValue, onCancel, onSave}) => {
+  const {showToast} = useToast();
+  const curLenRef = useRef((updatedValue || '').length);
+  const [overText, setOverText] = useState(false);
+
   return (
     <View style={styles.bottomSheetContent}>
       <Text style={styles.title}>매장 이름</Text>
       <TextInput
         style={styles.input}
         defaultValue={updatedValue}
-        onChangeText={text => setUpdatedValue(text)}
+        onChangeText={text => {
+          curLenRef.current = text.length;
+          // 50자 도달 시 안내문 노출되도록 처리
+          setOverText(text.length >= 50);
+          setUpdatedValue(text);
+        }}
         placeholder="매장 이름*"
         placeholderTextColor="#999"
+        maxLength={50}
       />
+      {overText && (
+        <Text style={styles.errorText}>
+          매장 이름은 최대 50자까지 입력 가능합니다.
+        </Text>
+      )}
       <ActionButtons onCancel={onCancel} onSave={onSave} />
     </View>
   );
@@ -43,5 +59,10 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingVertical: 15,
     color: 'black',
+  },
+  errorText: {
+    color: '#FF4816',
+    fontSize: 14,
+    marginTop: 5,
   },
 });

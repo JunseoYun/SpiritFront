@@ -12,9 +12,10 @@ import {
   RESULTS,
   openSettings,
 } from 'react-native-permissions';
-import {Userdataget, user_marketing_consent} from '../../../../api/userApi';
-import Loading from '../../../../hooks/Loading';
-import useCustomAlert from '../../../../hooks/useCustomAlert';
+import {Userdataget, user_marketing_consent} from '../../api/userApi';
+import Loading from '../../hooks/Loading';
+import useCustomAlert from '../../hooks/useCustomAlert';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const Toggle = ({value, onToggle}) => {
   const translateX = useState(new Animated.Value(value ? 22 : 2))[0];
@@ -45,6 +46,7 @@ const NotificationSetScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
   const [loading, setLoading] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
+  const {bottom} = useSafeAndroidInsets();
 
   useEffect(() => {
     const checkPermission = async () => {
@@ -63,11 +65,8 @@ const NotificationSetScreen = ({navigation}) => {
     const fetchUserData = async () => {
       try {
         const data = await Userdataget();
-
-        console.log(data);
         setUserdata(data);
         setMarketingEnabled(data.marketingConsent);
-        console.log(data.isManager);
       } catch (error) {
         if (error.response) {
         } else {
@@ -101,7 +100,7 @@ const NotificationSetScreen = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       <View style={styles.section}>
         <View style={styles.row1}>
           <Text style={styles.label}>시스템 알림</Text>
@@ -133,7 +132,10 @@ const NotificationSetScreen = ({navigation}) => {
           </View>
           {marketingEnabled && (
             <Text style={styles.label2}>
-              {new Date(userdata.marketingAgreedAt).toLocaleDateString()} 동의
+              {new Date(
+                userdata.marketingAgreedAt || Date.now(),
+              ).toLocaleDateString()}{' '}
+              동의
             </Text>
           )}
         </View>

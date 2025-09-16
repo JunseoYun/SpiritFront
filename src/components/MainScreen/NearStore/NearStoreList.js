@@ -1,10 +1,23 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, FlatList, StyleSheet, Pressable} from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Pressable,
+  PixelRatio,
+} from 'react-native';
 import NearStoreItem from './NearStoreItem';
 import {Store_getby_distance} from '../../../api/storeApi';
 import Feather from 'react-native-vector-icons/Feather';
 
-const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
+let fontScale = PixelRatio.getFontScale(); // let으로 변경
+if (fontScale > 1.7) fontScale = 1.7;
+
+const fontSize = 18 * fontScale;
+const subfontSize = 13 * fontScale;
+
+const NearStoreList = ({refresh, navigation, location}) => {
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -54,8 +67,7 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
     if (refresh) {
       setStores([]); // 데이터 초기화
       setHasMore(true); // 더 로드할 데이터가 있음을 명시
-      getStoreData(0, true); // 새로고침 시 데이터 리
-      setRefresh(false);
+      getStoreData(0, true); // 새로고침 시 데이터 리로드
     }
   }, [refresh]);
 
@@ -95,9 +107,10 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
     <View>
       <Pressable
         style={styles.storeTextView}
-        onPress={() => {
-          navigation.navigate('NearStoreScreen', {location: location});
-        }}>
+        onPress={() =>
+          stores.length >= 3 &&
+          navigation.navigate('NearStoreScreen', {location})
+        }>
         <View
           style={{
             marginTop: 10,
@@ -106,11 +119,19 @@ const NearStoreList = ({refresh, navigation, location, setRefresh}) => {
             marginRight: 40,
             alignItems: 'center',
           }}>
-          <Text style={styles.storeText}>제일 가까운 술집은?</Text>
-          <View style={styles.totalView}>
-            <Text style={styles.totalText}>전체보기</Text>
-            <Feather name={'chevron-right'} size={15} color="#333" />
-          </View>
+          <Text style={[styles.storeText, {fontSize}]} allowFontScaling={false}>
+            제일 가까운 술집은?
+          </Text>
+          {stores.length >= 3 && (
+            <View style={styles.totalView}>
+              <Text
+                style={[styles.totalText, {fontSize: subfontSize}]}
+                allowFontScaling={false}>
+                전체보기
+              </Text>
+              <Feather name={'chevron-right'} size={15} color="#333" />
+            </View>
+          )}
         </View>
         <Text style={styles.storeSubText}>
           현재 위치에서 가장 가까운 술집을 알려드려요

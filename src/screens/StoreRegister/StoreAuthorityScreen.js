@@ -1,4 +1,10 @@
-import React, {useState, useLayoutEffect, useCallback, useRef} from 'react';
+import React, {
+  useState,
+  useLayoutEffect,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -9,15 +15,17 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
 import StoreInfoCard from '../../components/StoreAuthority/StoreInfoCard';
-import ImagePicker from 'react-native-image-crop-picker';
 import StoreOwnerInput from '../../components/StoreAuthority/StoreOwnerInput';
 import StoreBusinessData from '../../components/StoreAuthority/StoreBusinessData';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import {normalizeFont} from '../../hooks/normalizeFont';
+import BusinessCertificate from '../../components/StoreAuthority/BusinessCertificate';
 
 const StoreAuthorityScreen = ({navigation}) => {
   const route = useRoute();
@@ -177,41 +185,43 @@ const StoreAuthorityScreen = ({navigation}) => {
   };
 
   // 이미지 선택 함수: 갤러리에서 이미지 선택 후 state 업데이트
-  const handlePickCertificate = () => {
-    ImagePicker.openPicker({
-      mediaType: 'photo',
-      compressImageQuality: 0.95,
-      compressImageMaxWidth: 2160,
-      compressImageMaxHeight: 2160,
-      cropping: true,
-    })
-      .then(image => {
-        setBusiness_registration_certificate(image);
-      })
-      .catch(error => {});
-    if (error === 'business_registration_certificate') {
-      setError('');
-      setErrorMessage('');
-    }
-  };
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleNext}>
-          <Text style={styles.headerButton}>다음</Text>
+          <Text style={styles.headerButton} allowFontScaling={false}>
+            다음
+          </Text>
         </Pressable>
       ),
     });
   }, [navigation, handleNext]);
 
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{flex: 1}}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
-    >
-      <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
+      style={{flex: 1}}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          {paddingBottom: keyboardVisible ? 0 : bottom},
+        ]}>
         <ProgressBar progress={1} />
         <ScrollView
           contentContainerStyle={styles.contentContainer}
@@ -220,27 +230,17 @@ const StoreAuthorityScreen = ({navigation}) => {
           {/* 진행 바: 100% 진행 */}
           <StoreInfoCard storeData={storeData} />
 
-          {/* 사업자등록증 첨부 */}
-          <Text ref={certificateRef} style={styles.sectionTitle}>
-            사업자등록증 첨부*
-          </Text>
-
-          <View style={styles.certificateContainer}>
-            <Pressable
-              style={styles.certificateButton}
-              onPress={handlePickCertificate}>
-              <Text style={styles.certificateButtonText}>이미지 선택하기</Text>
-            </Pressable>
-            {error === 'business_registration_certificate' && (
-              <Text style={styles.errorText}>{errorMessage}</Text>
-            )}
-            {business_registration_certificate && (
-              <Image
-                source={{uri: business_registration_certificate.path}}
-                style={styles.certificateImage}
-                resizeMode="contain"
-              />
-            )}
+          <View ref={certificateRef}>
+            <BusinessCertificate
+              business_registration_certificate={
+                business_registration_certificate
+              }
+              setBusiness_registration_certificate={
+                setBusiness_registration_certificate
+              }
+              error={error}
+              errorMessage={errorMessage}
+            />
           </View>
 
           <StoreOwnerInput
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   contentContainer: {paddingBottom: 30},
   headerButton: {
     marginRight: 18,
-    fontSize: 18,
+    fontSize: normalizeFont(18, 1.5),
     fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },
@@ -361,7 +361,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'android' && 10,
   },
   storeAddButtonsearch: {
     paddingVertical: 15,

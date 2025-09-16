@@ -1,7 +1,8 @@
 import React from 'react';
-import {View, Text, Pressable, StyleSheet} from 'react-native';
+import {View, Text, Pressable, StyleSheet, PixelRatio} from 'react-native';
 import Octicons from 'react-native-vector-icons/Octicons';
-
+import {normalizeFont} from '../../../hooks/normalizeFont';
+const fontScale = PixelRatio.getFontScale();
 const OperatingDayItem = ({
   day,
   isClosedDay,
@@ -24,6 +25,11 @@ const OperatingDayItem = ({
         isClosedDay && styles.disabled,
         !isClosedDay && breakStartHour && {paddingVertical: 15},
         isLastItem && {borderBottomWidth: 0},
+        fontScale >= 1.5 &&
+          !isClosedDay && {
+            flexDirection: 'column',
+            alignItems: 'center',
+          },
       ]}>
       <Text style={styles.operateDayText}>{day.label}요일</Text>
       <View style={[styles.timeContainer]}>
@@ -33,8 +39,10 @@ const OperatingDayItem = ({
               <Text style={styles.holidayText}>휴무</Text>
             ) : (
               <>
-                <Text style={styles.timeInputTitle}>영업 시간</Text>
-                <Text style={styles.timeInputText}>
+                <Text style={styles.timeInputTitle} allowFontScaling={false}>
+                  영업 시간
+                </Text>
+                <Text style={styles.timeInputText} allowFontScaling={false}>
                   {openHour
                     ? `${openHour}:${openMinute} ~ ${
                         closeHour >= 24
@@ -50,8 +58,10 @@ const OperatingDayItem = ({
             ? null
             : breakStartHour && (
                 <View style={styles.timeInputView}>
-                  <Text style={styles.timeInputTitle}>브레이크타임</Text>
-                  <Text style={styles.timeInputText}>
+                  <Text style={styles.timeInputTitle} allowFontScaling={false}>
+                    브레이크타임
+                  </Text>
+                  <Text style={styles.timeInputText} allowFontScaling={false}>
                     {breakStartHour
                       ? `${breakStartHour}:${breakStartMinute} ~ ${
                           breakEndHour >= 24
@@ -109,13 +119,13 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     color: '#999',
     fontFamily: 'Pretendard-Regular',
-    fontSize: 15,
+    fontSize: normalizeFont(15, 1.7),
     marginRight: 7,
   },
   timeInputText: {
     lineHeight: 30,
     fontFamily: 'Pretendard-Medium',
-    fontSize: 15,
+    fontSize: normalizeFont(15, 1.7),
     color: '#181A1A',
   },
   holidayText: {

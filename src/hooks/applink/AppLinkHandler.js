@@ -1,13 +1,17 @@
 import {navigationRef} from '../../navigation/NavigationService';
 import {getGlobalShowToast} from '../../context/ToastContext';
+import {getGlobalShowStoreInvite} from '../../context/StoreInviteContext';
 import {
   setGlobalPendingStoreId,
   getGlobalPendingStoreId,
+  setGlobalPendingStoreInviteId,
 } from '../../context/DeepLinkContext';
 import {getGlobalToken} from '../../context/AuthContext';
+import Config from 'react-native-config';
 
 export const handleUrl = ({url}) => {
   const showToast = getGlobalShowToast();
+  const showStoreInvite = getGlobalShowStoreInvite();
   const token = getGlobalToken();
 
   const safeShowToast = (msg, pos = 'center') => {
@@ -25,8 +29,8 @@ export const handleUrl = ({url}) => {
   try {
     // 🔗 store 링크 판별
     if (
-      url.startsWith('https://dev.team-spirit.click/link/store/') ||
-      url.startsWith('https://dev.team-spirit.click/ul/store/') ||
+      url.includes(`${Config.BASE_URL}/link/store/`) ||
+      url.includes(`${Config.BASE_URL}/ul/store/`) ||
       url.startsWith('spirit://store/')
     ) {
       const parts = url.split('/');
@@ -70,6 +74,28 @@ export const handleUrl = ({url}) => {
 
       // 🔥 토큰이 있지만 navigation 아직 준비 안 됨(앱 첫 진입) → pending
       setGlobalPendingStoreId(storeId);
+    } else if (
+      url.includes(`${Config.BASE_URL}/link/store-manager-invite/`) ||
+      url.includes(`${Config.BASE_URL}/ul/store-manager-invite/`) ||
+      url.startsWith('spirit://store-manager-invite/')
+    ) {
+      const parts = url.split('/');
+      const storeInviteId = parts[parts.length - 1];
+
+      if (!storeInviteId) {
+        safeShowToast('유효하지 않은 링크입니다.');
+        return;
+      }
+
+      if (token) {
+        showStoreInvite?.(storeInviteId); // ✅ 로그인 되어 있으면 바로 모달 표시
+      } else {
+        setGlobalPendingStoreInviteId(storeInviteId); // 🔥 로그인 후 표시될 pending 저장
+        safeShowToast('로그인 후 이용해주세요.');
+      }
+
+      // 🔥 토큰이 있지만 navigation 아직 준비 안 됨(앱 첫 진입) → pending
+      setGlobalPendingStoreInviteId(storeInviteId);
     } else {
       safeShowToast('지원하지 않는 링크입니다.');
     }

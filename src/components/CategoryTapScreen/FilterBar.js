@@ -8,11 +8,17 @@ import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
+  PixelRatio,
 } from 'react-native';
 import {AlcoholFilterContext} from '../../context/AlcoholFilterContext';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const screenWidth = Dimensions.get('window').width;
+
+const fontScale = PixelRatio.getFontScale();
+const baseSize = 14;
+
+const fontSize = fontScale >= 1.5 ? 19 : baseSize;
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -149,9 +155,11 @@ const FilterBar = () => {
               drinkType === value && styles.activeFilter,
             ]}>
             <Text
+              allowFontScaling={false}
               style={[
                 styles.filterText,
                 drinkType === value && styles.activeFilterText,
+                {fontSize},
               ]}>
               {label}
             </Text>
@@ -166,7 +174,9 @@ const FilterBar = () => {
           onPress={toggleDropdown}
           onLayout={e => setChoiceBtnWidth(e.nativeEvent.layout.width)}>
           <MaterialCommunityIcons name="tune-variant" size={17} color="#555" />
-          <Text style={styles.choicetext}>
+          <Text
+            style={[styles.choicetext, {fontSize}]}
+            allowFontScaling={false}>
             {priceOrder === 'ASC'
               ? '낮은 가격순'
               : priceOrder === 'DESC'
@@ -190,9 +200,11 @@ const FilterBar = () => {
               handlePriceOrderPress('');
             }}>
             <Text
+              allowFontScaling={false}
               style={[
                 styles.dropdownText,
                 priceOrder === '' && styles.activeDropdownText,
+                {fontSize},
               ]}>
               기본순
             </Text>
@@ -205,9 +217,11 @@ const FilterBar = () => {
               handlePriceOrderPress('ASC');
             }}>
             <Text
+              allowFontScaling={false}
               style={[
                 styles.dropdownText,
                 priceOrder === 'ASC' && styles.activeDropdownText,
+                {fontSize},
               ]}>
               낮은 가격순
             </Text>
@@ -220,9 +234,11 @@ const FilterBar = () => {
               handlePriceOrderPress('DESC');
             }}>
             <Text
+              allowFontScaling={false}
               style={[
                 styles.dropdownText,
                 priceOrder === 'DESC' && styles.activeDropdownText,
+                {fontSize},
               ]}>
               높은 가격순
             </Text>
@@ -286,7 +302,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   filterText: {
-    fontSize: 14,
     color: '#555',
     fontFamily: 'Pretendard-Regular',
     textAlign: 'center',

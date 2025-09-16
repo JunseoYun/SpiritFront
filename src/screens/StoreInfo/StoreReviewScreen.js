@@ -23,13 +23,14 @@ import {useToast} from '../../context/ToastContext';
 import {requestPhotoPermission} from '../../hooks/usePhotopermis';
 import Loading from '../../hooks/Loading';
 import ReviewItemSkeleton from '../../components/StoreReviewScreen/ReviewItemSkeleton';
-
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storename, isOwner} = route.params;
   const [reviewdata, setReviewdata] = useState([]);
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
+  const {bottom} = useSafeAndroidInsets();
 
   const [isWriting, setIsWriting] = useState(false); // 작성 상태
 
@@ -151,12 +152,18 @@ const StoreReviewScreen = ({navigation}) => {
     const hasCamera = await requestPhotoPermission();
     if (!hasCamera) return;
     ImagePicker.openCamera({
-      quality: 1,
       cropping: true,
+      freeStyleCropEnabled: true, // 자유 크롭
       mediaType: 'photo',
-      compressImageMaxWidth: 2160, // 최대 너비
+      avoidEmptySpaceAroundImage: true,
+      compressImageQuality: 0.95, // 품질 고정
+      compressImageMaxWidth: 2160,
       compressImageMaxHeight: 2160,
-      compressImageQuality: 0.95, // 품질
+      includeExif: false,
+      ...(Platform.OS === 'ios' && {
+        width: 1600, // 원하는 와이드 사이즈
+        height: 1600, // 원하는 와이드 사이즈
+      }),
     })
       .then(image => {
         setImages(prevImages => [...prevImages, image]); // 이미지를 배열에 추가
@@ -176,18 +183,46 @@ const StoreReviewScreen = ({navigation}) => {
     try {
       const pickedImages = await ImagePicker.openPicker({
         mediaType: 'photo',
-        multiple: remaining > 1, // ✅ 2개 이상일 때만 multiple
-        maxFiles: remaining > 1 ? remaining : 1, // multiple true일 때만 maxFiles 적용
-        compressImageQuality: 0.95,
-        compressImageMaxWidth: 2160,
-        compressImageMaxHeight: 2160,
-        cropping: false,
+        multiple: remaining > 1, // 2개 이상일 때만 multiple
+        maxFiles: remaining > 1 ? remaining : 1,
+        cropping: false, // 우선 crop 안함 (아래에서 개별 크롭)
+        includeExif: false,
       });
 
-      const newImages = Array.isArray(pickedImages)
+      const selectedImages = Array.isArray(pickedImages)
         ? pickedImages
         : [pickedImages];
-      setImages(prev => [...prev, ...newImages]);
+
+      const croppedImages = [];
+
+      // 각 이미지 자유 비율 크롭 (0.95 품질, 최대 해상도 제한)
+      for (let i = 0; i < selectedImages.length; i++) {
+        const image = selectedImages[i];
+        const cropped = await ImagePicker.openCropper({
+          path: image.path,
+          cropping: true,
+          freeStyleCropEnabled: true,
+          avoidEmptySpaceAroundImage: true,
+          compressImageQuality: 0.95,
+          compressImageMaxWidth: 2160,
+          compressImageMaxHeight: 2160,
+          cropperToolbarTitle: '이미지 편집',
+          cropperActiveWidgetColor: '#45C9FF',
+          cropperStatusBarLight: true,
+          cropperToolbarColor: '#ffffff',
+          cropperToolbarWidgetColor: '#333333',
+          includeExif: false,
+          ...(Platform.OS === 'ios' && {
+            width: 1600, // 원하는 와이드 사이즈
+            height: 1600, // 원하는 와이드 사이즈
+          }),
+          // forceJpg: true,
+        });
+        croppedImages.push(cropped);
+      }
+
+      // 상태에 추가
+      setImages(prev => [...prev, ...croppedImages]);
     } catch (error) {
       console.log('ImagePicker Error: ', error);
     }
@@ -301,9 +336,8 @@ const StoreReviewScreen = ({navigation}) => {
   return (
     <KeyboardAvoidingView
       style={{flex: 1}}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 70}>
-      <SafeAreaView style={styles.container}>
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <SafeAreaView style={[styles.container, , {paddingBottom: bottom}]}>
         {!isWriting ? (
           <View style={{width: '100%'}}>
             <View style={styles.MenuaddView}>
@@ -343,33 +377,35 @@ const StoreReviewScreen = ({navigation}) => {
             )}
           </View>
         ) : (
-          <View visible={isWriting}>
-            <ReviewForm
-              storeName={storename} // 스토어 이름 넘겨주기
-              newReviewContent={newReviewContent}
-              onChangeText={onChangeText}
-              renderStars={renderStars}
-              visitDate={visitDate}
-              setVisitDate={setVisitDate}
-              isDatePickerOpen={isDatePickerOpen}
-              setIsDatePickerOpen={setIsDatePickerOpen}
-              images={images}
-              selectedImageIndex={selectedImageIndex}
-              handleImagePress={handleImagePress}
-              selectImage={selectImage}
-              handleSubmitReview={handleSubmitReview}
-              hadleNoWrite={hadleNoWrite}
-              setIsWriting={setIsWriting}
-              isBottomSheetVisible={isBottomSheetVisible}
-              setBottomSheetVisible={setBottomSheetVisible}
-              handleGalleryPick={handleGalleryPick}
-              setSelectedImageIndex={setSelectedImageIndex}
-            />
+          <View visible={isWriting} style={{flex: 1}}>
+            <View style={{flex: 1}}>
+              <ReviewForm
+                storeName={storename} // 스토어 이름 넘겨주기
+                newReviewContent={newReviewContent}
+                onChangeText={onChangeText}
+                renderStars={renderStars}
+                visitDate={visitDate}
+                setVisitDate={setVisitDate}
+                isDatePickerOpen={isDatePickerOpen}
+                setIsDatePickerOpen={setIsDatePickerOpen}
+                images={images}
+                selectedImageIndex={selectedImageIndex}
+                handleImagePress={handleImagePress}
+                selectImage={selectImage}
+                handleSubmitReview={handleSubmitReview}
+                hadleNoWrite={hadleNoWrite}
+                setIsWriting={setIsWriting}
+                isBottomSheetVisible={isBottomSheetVisible}
+                setBottomSheetVisible={setBottomSheetVisible}
+                handleGalleryPick={handleGalleryPick}
+                setSelectedImageIndex={setSelectedImageIndex}
+              />
+            </View>
           </View>
         )}
-        <AlertComponent />
-        <Loading loading={addloading || loading} />
       </SafeAreaView>
+      <AlertComponent />
+      <Loading loading={addloading || loading} />
     </KeyboardAvoidingView>
   );
 };
@@ -378,8 +414,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    width: '100%',
-    height: '100%',
   },
   buttonContainer: {
     flexDirection: 'row',

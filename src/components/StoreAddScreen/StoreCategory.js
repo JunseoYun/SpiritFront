@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const StoreCategory = ({
   selectedCategory,
@@ -60,7 +61,7 @@ const StoreCategory = ({
             </>
           ) : (
             <Text style={styles.inputHideText}>
-              {index ? '카테고리*' : '카테고리'}
+              {index ? '카테고리* (최대 3개)' : '카테고리 (최대 3개)'}
             </Text>
           )}
         </TouchableOpacity>
@@ -91,7 +92,11 @@ const StoreCategory = ({
                       ]}
                       onPress={() => toggleCategory(value)}>
                       <Image source={source} style={styles.catagoryimgs} />
-                      <Text style={styles.catagorytext}>{text}</Text>
+                      <Text
+                        style={styles.catagorytext}
+                        allowFontScaling={false}>
+                        {text}
+                      </Text>
                     </Pressable>,
                   );
                   return acc;
@@ -205,7 +210,7 @@ const styles = StyleSheet.create({
     color: '#FF4816',
     fontSize: 15,
     fontFamily: 'Pretendard-Medium',
-    marginTop: 5,
+    marginVertical: 5,
   },
   modalBackground: {
     flex: 1,
@@ -242,7 +247,7 @@ const styles = StyleSheet.create({
   catagorytext: {
     color: 'black',
     fontFamily: 'Pretendard-SemiBold',
-    fontSize: 12,
+    fontSize: normalizeFont(12, 1.3),
     marginTop: 7,
   },
   catagoryView: {

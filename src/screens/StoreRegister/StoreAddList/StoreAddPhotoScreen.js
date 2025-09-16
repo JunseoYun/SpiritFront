@@ -8,14 +8,13 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import StoreAddProgressbar from '../../../components/StoreAddScreen/StoreAddProgressbar';
 import StoreImage from '../../../components/StoreAddScreen/StoreImage';
-import ReceiptImage from '../../../components/StoreAddScreen/ReceiptImage';
 import StoreAddname from '../../../components/StoreAddScreen/StoreAddname';
 import StoreAddress from '../../../components/StoreAddScreen/StoreAddress';
-import useCustomAlert from '../../../hooks/useCustomAlert';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
@@ -36,7 +35,6 @@ const StoreAddPhotoScreen = ({navigation}) => {
 
   const route = useRoute();
   const {index, location} = route.params;
-  const [phototoggle, setPhototoggle] = useState(false);
   const [imageUris, setImageUris] = useState([]);
   const [storename, setStorename] = useState('');
   const [coords, setCoords] = useState({latitude: 0, longitude: 0});
@@ -54,7 +52,6 @@ const StoreAddPhotoScreen = ({navigation}) => {
     setCoords(coords);
   };
 
-  const {showAlert, AlertComponent} = useCustomAlert();
   const [error, setError] = useState('');
 
   const scrollToError = ref => {
@@ -108,23 +105,36 @@ const StoreAddPhotoScreen = ({navigation}) => {
     });
   }, [navigation, storename, address, imageUris]);
 
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{flex: 1}}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
-    >
-      <SafeAreaView style={[styles.storetopview, {paddingBottom: bottom}]}>
+      style={{flex: 1}}>
+      <SafeAreaView
+        style={[
+          styles.storetopview,
+          {paddingBottom: keyboardVisible ? 0 : bottom},
+        ]}>
         {/* 진행 바: 50% 진행 */}
         <StoreAddProgressbar progress={0} />
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           ref={scrollViewRef}>
-          <Text style={styles.title}>
-            {phototoggle
-              ? '사진을 등록 해주세요.'
-              : '사진 및 매장 내용을 등록 해주세요.'}
-          </Text>
+          <Text style={styles.title}>사진 및 매장 내용을 등록 해주세요.</Text>
           <View ref={storeImageRef}>
             <StoreImage
               imageUris={imageUris}
@@ -164,7 +174,6 @@ const StoreAddPhotoScreen = ({navigation}) => {
             <Text style={styles.storeAddText}>다음</Text>
           </Pressable>
         </View>
-        <AlertComponent />
         <Loading loading={loading} />
       </SafeAreaView>
     </KeyboardAvoidingView>
@@ -183,9 +192,9 @@ const styles = StyleSheet.create({
   title: {
     marginTop: 30,
     marginHorizontal: 18,
-    color: '#333',
+    color: '#121212',
     fontFamily: 'Pretendard-SemiBold',
-    fontSize: 20,
+    fontSize: 18,
   },
   nextButton: {
     marginRight: 18,
@@ -198,7 +207,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'android' && 10,
     justifyContent: 'space-between',
   },
   storeAddButtonsearch: {

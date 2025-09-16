@@ -25,6 +25,7 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(item.reply || '');
   const [loading, setLoading] = useState(false);
+  const [overText, setOverText] = useState(false);
   // 🔥 수정 입력창 ref
   const editInputRef = useRef(null);
 
@@ -210,9 +211,23 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
                 style={styles.replyInput}
                 placeholder="답글을 입력하세요"
                 value={replyText}
-                onChangeText={setReplyText}
+                onChangeText={text => {
+                  const maxChars = 2000;
+                  if (text.length > maxChars) {
+                    setOverText(true);
+                    return; // 초과 입력 무시
+                  } else {
+                    setOverText(false);
+                  }
+                  setReplyText(text);
+                }}
                 multiline
               />
+              {overText && (
+                <Text style={styles.errorText}>
+                  답글은 최대 2000자까지 입력 가능합니다.
+                </Text>
+              )}
               <Pressable style={styles.replyButton} onPress={handleReplySubmit}>
                 <Text style={styles.replyButtonText}>등록</Text>
               </Pressable>
@@ -462,7 +477,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
   },
   replyButton: {
-    alignSelf: 'flex-start',
+    alignSelf: 'flex-end',
     backgroundColor: '#45C9FF',
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -568,6 +583,11 @@ const styles = StyleSheet.create({
     padding: 10,
     borderColor: '#ccc',
     borderWidth: 1,
+  },
+  errorText: {
+    color: '#FF4816',
+    fontSize: 14,
+    marginVertical: 3,
   },
 });
 

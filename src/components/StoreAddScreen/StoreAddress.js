@@ -12,7 +12,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-
+import {useToast} from '../../context/ToastContext';
 import forbiddenWords from '../../hooks/forbiddenWords';
 
 const StoreAddress = ({
@@ -28,6 +28,9 @@ const StoreAddress = ({
 }) => {
   const [focusedInput, setFocusedInput] = useState(null);
   const [errors, setErrors] = useState(null);
+  const {showToast} = useToast();
+  const MAX_DETAIL = 100;
+  const [overText, setOverText] = useState(false);
 
   const labelAnim = useSharedValue(detailedAddress !== '' ? 1 : 0);
 
@@ -137,12 +140,22 @@ const StoreAddress = ({
             placeholder=""
             placeholderTextColor="#999"
             value={detailedAddress}
-            onChangeText={handleDetailedAddressChange}
+            onChangeText={text => {
+              handleDetailedAddressChange(text);
+              setOverText(text.length >= MAX_DETAIL);
+            }}
             onFocus={() => setFocusedInput('detailedAddress')}
             onBlur={() => setFocusedInput(null)}
             returnKeyType="done"
+            maxLength={MAX_DETAIL}
           />
+          {overText && (
+            <Text style={styles.errorText}>
+              상세 주소는 최대 100자까지 입력 가능합니다.
+            </Text>
+          )}
         </View>
+
         {errors && <Text style={styles.errorText}>{errors}</Text>}
       </View>
     </View>

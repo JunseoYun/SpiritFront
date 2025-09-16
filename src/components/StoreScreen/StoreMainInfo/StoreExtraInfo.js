@@ -56,7 +56,7 @@ const StoreExtraInfo = ({
 
   return (
     <View style={styles.infoCard}>
-      <View style={styles.infoRow}>
+      <View style={[styles.infoRow, {paddingTop: 20}]}>
         <Pressable style={styles.infoCol} onPress={storeNumberHandle}>
           <SimpleLineIcons name="phone" size={23} color="#333" />
           <Text style={styles.locationtext}>전화</Text>
@@ -97,7 +97,7 @@ const StoreExtraInfo = ({
         </Pressable>
       </View>
 
-      <View style={styles.infoRow}>
+      <View style={[styles.infoRow, {paddingBottom: 20}]}>
         <View style={styles.infoCol}>
           <Ionicons name="location-outline" size={23} color="#333" />
           <Text style={styles.locationtext}>
@@ -107,7 +107,9 @@ const StoreExtraInfo = ({
         <View style={styles.infoCol}>
           <MaterialIcons name="group" size={23} color="#333" />
           <Text style={styles.locationtext}>
-            {storeData?.isGroupAvailable ? '10인 이상 가능' : '10인 이상 불가'}
+            {storeData?.isGroupAvailable == true
+              ? '단체 방문 가능'
+              : '소수 방문 위주'}
           </Text>
         </View>
 
@@ -129,12 +131,12 @@ const styles = StyleSheet.create({
   infoCard: {
     backgroundColor: '#FAFAFA',
     marginHorizontal: 16,
-    height: 150,
     justifyContent: 'space-evenly',
     borderRadius: 16,
     marginVertical: 12,
   },
   infoRow: {
+    paddingVertical: 10,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
   },
@@ -147,5 +149,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     fontSize: 13,
     color: '#181A1A',
+    textAlign: 'center',
   },
 });

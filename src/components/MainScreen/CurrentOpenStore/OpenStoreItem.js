@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Pressable} from 'react-native';
+import {View, Text, StyleSheet, Pressable, PixelRatio} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import useDistance from '../../../hooks/useDistance';
@@ -7,6 +7,9 @@ import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
+
+let fontScale = PixelRatio.getFontScale(); // let으로 변경
+
 const OpenStoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
   const [distance, setDistance] = useState(0);
@@ -77,7 +80,8 @@ const OpenStoreItem = ({store, location, navigation}) => {
             {isOpen && isBreak && (
               <View style={styles.overlay}>
                 <Text style={styles.overlayText}>
-                  브레이크 타임 {breakend ? `${breakend} 종료` : ''}
+                  브레이크 타임{'\n'}
+                  {breakend ? `${breakend} 종료` : ''}
                 </Text>
               </View>
             )}
@@ -111,7 +115,14 @@ const OpenStoreItem = ({store, location, navigation}) => {
               : '카테고리 미설정'}
           </Text>
         </View>
-        <View style={styles.storeViewInfo}>
+        <View
+          style={[
+            styles.storeViewInfo,
+            fontScale > 1.5 && {
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+            },
+          ]}>
           {endtime && !store.isAlwaysOpen && (
             <Text
               style={styles.storeSubInfo}
@@ -131,7 +142,8 @@ const OpenStoreItem = ({store, location, navigation}) => {
           )}
 
           <Text style={styles.storeSubInfo}>
-            {distance} {unit}
+            {distance}
+            {unit}
           </Text>
         </View>
       </Pressable>
@@ -175,6 +187,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontFamily: 'Pretendard-Bold',
+    textAlign: 'center',
   },
 
   storeViewInfo: {

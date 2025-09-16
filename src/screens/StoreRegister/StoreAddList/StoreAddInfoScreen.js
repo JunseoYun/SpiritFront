@@ -1,4 +1,10 @@
-import React, {useState, useLayoutEffect, useRef, useCallback} from 'react';
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -10,6 +16,7 @@ import {
   Platform,
   BackHandler,
   ToastAndroid,
+  Keyboard,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {StoreRegister, StoreSuggestion} from '../../../api/storeApi';
@@ -36,8 +43,8 @@ const StoreAddInfoScreen = ({navigation}) => {
     storeContent: '',
   });
   const [selectedCategory, setSelectedCategory] = useState([]);
-  const [selectedOption, setSelectedOption] = useState();
-  const [selectedscreenOption, setselectedscreenOption] = useState();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedscreenOption, setselectedscreenOption] = useState(null);
   const [closedDay, setClosedDay] = useState([]);
   const [alcohol, setAlcohol] = useState([]);
   const [is24Hours, setIs24Hours] = useState(null);
@@ -47,6 +54,8 @@ const StoreAddInfoScreen = ({navigation}) => {
   const scrollViewRef = useRef(null);
   const storeCategoryRef = useRef(null);
   const storeOperateRef = useRef(null);
+  const StoreGroupRef = useRef(null);
+  const StoreScreenRef = useRef(null);
   const storeDrinkRef = useRef(null);
   const {showAlert, AlertComponent} = useCustomAlert();
   const [confirm, setConfirm] = useState(false);
@@ -121,6 +130,18 @@ const StoreAddInfoScreen = ({navigation}) => {
       return;
     }
 
+    if (selectedOption === null && index) {
+      setError('StoreGroup');
+      scrollToError(StoreGroupRef);
+      return;
+    }
+
+    if (selectedscreenOption === null && index) {
+      setError('StoreScreen');
+      scrollToError(StoreScreenRef);
+      return;
+    }
+
     const hasValidAlcohol = alcohol.some(
       item => item.type.trim() && item.price > 0,
     );
@@ -166,6 +187,7 @@ const StoreAddInfoScreen = ({navigation}) => {
     selectedCategory,
     selectedOption,
     selectedscreenOption,
+    is24Hours,
     closedDay,
     alcohol,
     imageUris,
@@ -231,7 +253,7 @@ const StoreAddInfoScreen = ({navigation}) => {
         files: imageUris,
         createStoreDto: {
           contact: storeData.storeNumber,
-          isAlwaysOpen: is24Hours,
+          isAlwaysOpen: is24Hours ?? false,
           hasScreen: selectedscreenOption,
           ...(!is24Hours && {operationInfoDtos}),
           locationDto: {
@@ -342,11 +364,12 @@ const StoreAddInfoScreen = ({navigation}) => {
         }
       }
     } catch (error) {
-      console.error(error);
+      console.error(error?.response);
       setConfirm(false);
       showAlert({
         title: '등록 실패',
-        message: '로그인 상태를 확인해주세요.',
+        message:
+          '잠시 후 다시 시도해 주세요.\n계속 실패할 경우, 메일로 문의해 주세요.',
       });
     } finally {
       setLoading(false);
@@ -409,13 +432,31 @@ const StoreAddInfoScreen = ({navigation}) => {
     }, [navigation]),
   );
 
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{flex: 1}}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
-    >
-      <SafeAreaView style={[styles.storetopview, {paddingBottom: bottom}]}>
+      style={{flex: 1}}>
+      <SafeAreaView
+        style={[
+          styles.storetopview,
+          {paddingBottom: keyboardVisible ? 0 : bottom},
+        ]}>
         <StoreAddProgressbar progress={1} />
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -445,20 +486,28 @@ const StoreAddInfoScreen = ({navigation}) => {
               index={index}
             />
           </View>
-          <StoreGroup
-            selectedOption={selectedOption}
-            setSelectedOption={setSelectedOption}
-          />
-          <StoreTV
-            selectedscreenOption={selectedscreenOption}
-            setselectedscreenOption={setselectedscreenOption}
-          />
+          <View ref={StoreGroupRef}>
+            <StoreGroup
+              selectedOption={selectedOption}
+              setSelectedOption={setSelectedOption}
+              index={index}
+              error={error}
+            />
+          </View>
+          <View ref={StoreScreenRef}>
+            <StoreTV
+              selectedscreenOption={selectedscreenOption}
+              setselectedscreenOption={setselectedscreenOption}
+              index={index}
+              error={error}
+            />
+          </View>
           <View ref={storeDrinkRef}>
             <StoreAlcohol
               alcohol={alcohol}
               setAlcohol={setAlcohol}
-              error={error}
               index={index}
+              error={error}
             />
           </View>
           <StoreInfo
@@ -495,9 +544,9 @@ const styles = StyleSheet.create({
   title: {
     marginTop: 30,
     marginHorizontal: 18,
-    color: '#333',
+    color: '#121212',
     fontFamily: 'Pretendard-SemiBold',
-    fontSize: 20,
+    fontSize: 18,
   },
   nextButton: {
     marginRight: 18,
@@ -510,7 +559,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'android' && 10,
     justifyContent: 'space-between',
   },
   storeAddButtonsearch: {

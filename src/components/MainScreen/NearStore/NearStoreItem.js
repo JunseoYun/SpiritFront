@@ -1,11 +1,13 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Pressable, StyleSheet} from 'react-native';
+import {View, Text, Pressable, StyleSheet, PixelRatio} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
+
+let fontScale = PixelRatio.getFontScale();
 
 const NearStoreItem = ({store, navigation, location}) => {
   const [distance, setDistance] = useState(0);
@@ -73,13 +75,14 @@ const NearStoreItem = ({store, navigation, location}) => {
             {!isOpen && !nextclosed && !closed && (
               <View style={styles.overlay}>
                 <Text style={styles.overlayText}>
-                  영업 종료 {starttime ? `${starttime} 오픈` : ''}
+                  영업 종료{'\n'}
+                  {starttime ? `${starttime} 오픈` : ''}
                 </Text>
               </View>
             )}
             {!isOpen && nextclosed && !closed && (
               <View style={styles.overlay}>
-                <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
+                <Text style={styles.overlayText}>영업 종료{'\n'}익일 휴무</Text>
               </View>
             )}
             {!isOpen && !nextclosed && closed && (
@@ -91,7 +94,8 @@ const NearStoreItem = ({store, navigation, location}) => {
             {isOpen && isBreak && (
               <View style={styles.overlay}>
                 <Text style={styles.overlayText}>
-                  브레이크 타임 {breakend ? `${breakend} 종료` : ''}
+                  브레이크 타임{'\n'}
+                  {breakend ? `${breakend} 종료` : ''}
                 </Text>
               </View>
             )}
@@ -129,7 +133,14 @@ const NearStoreItem = ({store, navigation, location}) => {
         </View>
 
         {/* ✅ 영업 종료 시간 & 거리 표시 */}
-        <View style={styles.storeViewInfo}>
+        <View
+          style={[
+            styles.storeViewInfo,
+            fontScale > 1.5 && {
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+            },
+          ]}>
           {store?.isAlwaysOpen == true ? (
             <Text style={styles.storeSubInfo}>24시간</Text>
           ) : store?.isAlwaysOpen == false && closed ? (
@@ -141,7 +152,8 @@ const NearStoreItem = ({store, navigation, location}) => {
           )}
 
           <Text style={styles.storeSubInfo}>
-            {distance} {unit}
+            {distance}
+            {unit}
           </Text>
         </View>
       </View>
@@ -185,6 +197,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontFamily: 'Pretendard-Bold',
+    textAlign: 'center',
   },
   storeViewInfo: {
     flexDirection: 'row',

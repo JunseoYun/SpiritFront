@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const OperatingHoursCheckbox = ({isSameEveryday, is24, toggle24Hours}) => {
   return (
@@ -12,7 +13,9 @@ const OperatingHoursCheckbox = ({isSameEveryday, is24, toggle24Hours}) => {
         ]}
         onPress={toggle24Hours}
         disabled={!isSameEveryday}>
-        <View style={is24 ? styles.checkedBox : styles.uncheckedBox} />
+        <View style={is24 ? styles.checkedBox : styles.uncheckedBox}>
+          {is24 && <MaterialIcons name="check" size={15} color="#fff" />}
+        </View>
         <Text style={styles.checkboxLabel24}>24시간 영업</Text>
       </Pressable>
     </View>
@@ -50,6 +53,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#45C9FF',
     marginRight: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   uncheckedBox: {
     width: 18,

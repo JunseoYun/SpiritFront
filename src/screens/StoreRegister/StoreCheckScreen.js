@@ -1,4 +1,4 @@
-import React, {useState, useLayoutEffect} from 'react';
+import React, {useState, useEffect, useLayoutEffect} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -8,11 +8,13 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import StoreAuthorityData from '../../components/StoreAuthority/StoreAuthorityData';
 import ProgressBar from '../../components/StoreAuthority/ProgressBar';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const StoreCheckScreen = ({navigation}) => {
   const route = useRoute();
@@ -60,11 +62,29 @@ const StoreCheckScreen = ({navigation}) => {
     });
   };
 
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleNext}>
-          <Text style={styles.nextButton}>다음</Text>
+          <Text style={styles.nextButton} allowFontScaling={false}>
+            다음
+          </Text>
         </Pressable>
       ),
     });
@@ -73,10 +93,12 @@ const StoreCheckScreen = ({navigation}) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{flex: 1}}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // iOS의 경우 적절한 offset 설정
-    >
-      <SafeAreaView style={[styles.storetopview, {paddingBottom: bottom}]}>
+      style={{flex: 1}}>
+      <SafeAreaView
+        style={[
+          styles.storetopview,
+          {paddingBottom: keyboardVisible ? 0 : bottom}, // 키보드 켜지면 0, 아니면 bottom
+        ]}>
         {/* 진행 바: 50% 진행 */}
         <ProgressBar progress={0} />
         <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -116,7 +138,7 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     marginRight: 18,
-    fontSize: 19,
+    fontSize: normalizeFont(18, 1.5),
     fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },
@@ -125,7 +147,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'android' && 10,
   },
   storeAddButtonsearch: {
     paddingVertical: 15,

@@ -13,6 +13,8 @@ import MapStoreItem from './MapStoreItem';
 import MapLocation from '../MapLocation';
 import MapDirections from '../MapDirections';
 import MapStoreItemSkeleton from './MapStoreItemSkeleton';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {normalizeFont} from '../../../hooks/normalizeFont';
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
 const BUTON_WIDTH = width * 0.4;
@@ -119,6 +121,17 @@ const MapStoreList = ({
           <View style={styles.storeInfo}>
             <View style={styles.titleview}>
               <Text style={styles.noDataText}>주변에 등록된 술집이 없어요</Text>
+              <View style={styles.noticeView}>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={15}
+                  color="#6B7280"
+                  style={{marginRight: 3}}
+                />
+                <Text style={styles.noDatasubText}>
+                  현재 한잔할까는 용인시를 중심으로 운영 중입니다.
+                </Text>
+              </View>
             </View>
 
             <View style={styles.noneView2}>
@@ -130,7 +143,7 @@ const MapStoreList = ({
                     location: location,
                   });
                 }}>
-                <Text style={styles.noneText2}>술집 등록하기</Text>
+                <Text style={styles.noneText2}>매장 제보하기</Text>
               </Pressable>
               <Pressable
                 style={styles.button}
@@ -167,7 +180,7 @@ const styles = StyleSheet.create({
   storeInfo: {
     justifyContent: 'space-between',
     width: ITEM_WIDTH,
-    height: 130,
+    height: 155,
     backgroundColor: '#fdfdfd',
     padding: 15,
     borderRadius: 12,
@@ -178,14 +191,27 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   titleview: {
-    marginTop: 5,
+    marginTop: 2,
+    gap: 7,
     width: '100%',
   },
   noDataText: {
     alignSelf: 'center',
-    fontSize: 16,
-    color: '#c9c9c9',
-    fontFamily: 'Pretendard-Medium',
+    fontSize: normalizeFont(15, 1.3),
+    color: '#888',
+    fontFamily: 'Pretendard-Regular',
+  },
+  noticeView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    textAlign: 'center',
+    justifyContent: 'center',
+  },
+  noDatasubText: {
+    alignSelf: 'center',
+    fontSize: normalizeFont(14, 1.3),
+    color: '#888',
+    fontFamily: 'Pretendard-Regular',
   },
   noneView2: {
     flexDirection: 'row',
@@ -212,7 +238,7 @@ const styles = StyleSheet.create({
   noneText2: {
     alignSelf: 'center',
     color: '#45c9ff',
-    fontSize: 15,
+    fontSize: normalizeFont(15, 1.3),
     fontFamily: 'Pretendard-SemiBold',
   },
   noneText: {

@@ -1,5 +1,12 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  ImageBackground,
+  StyleSheet,
+  PixelRatio,
+} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useStoreStatus from '../../../hooks/useStoreStatus';
@@ -8,7 +15,8 @@ import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
-
+import {normalizeFont} from '../../../hooks/normalizeFont';
+const fontScale = PixelRatio.getFontScale();
 const ResultItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
@@ -71,25 +79,29 @@ const ResultItem = ({store, navigation, location}) => {
           {/* ✅ 영업 종료 표시 */}
           {!isOpen && !nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>
+              <Text style={styles.overlayText} allowFontScaling={false}>
                 영업 종료 {starttime ? `\n${starttime} 오픈` : ''}
               </Text>
             </View>
           )}
           {!isOpen && nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
+              <Text style={styles.overlayText} allowFontScaling={false}>
+                영업 종료 익일 휴무
+              </Text>
             </View>
           )}
           {!isOpen && !nextclosed && closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>금일 휴무</Text>
+              <Text style={styles.overlayText} allowFontScaling={false}>
+                금일 휴무
+              </Text>
             </View>
           )}
           {/* ✅ 브레이크 타임 표시 */}
           {isOpen && isBreak && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>
+              <Text style={styles.overlayText} allowFontScaling={false}>
                 브레이크 타임 {breakend ? `\n${breakend} 종료` : ''}
               </Text>
             </View>
@@ -101,7 +113,10 @@ const ResultItem = ({store, navigation, location}) => {
               {store.isCertified == true && (
                 <FastImage
                   source={require('../../../assets/verifyMaker.png')}
-                  style={styles.imageStyle}
+                  style={[
+                    styles.imageStyle,
+                    fontScale >= 1.5 && {width: 22, height: 22},
+                  ]}
                 />
               )}
               <Text
@@ -136,10 +151,19 @@ const ResultItem = ({store, navigation, location}) => {
             </Text>
           </View>
 
-          <View style={styles.subView}>
-            {store?.isAlwaysOpen == true ? (
+          <View
+            style={[
+              styles.subView,
+              store?.isAlwaysOpen === false &&
+                !closed &&
+                fontScale > 1.8 && {
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                },
+            ]}>
+            {store?.isAlwaysOpen === true ? (
               <Text style={styles.StoreClose}>24시간 영업</Text>
-            ) : store?.isAlwaysOpen == false && closed ? (
+            ) : store?.isAlwaysOpen === false && closed ? (
               <Text style={styles.StoreClose}>금일 휴무</Text>
             ) : (
               <Text style={styles.StoreClose}>
@@ -192,7 +216,7 @@ const styles = StyleSheet.create({
   },
   overlayText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: normalizeFont(14, 1.3),
     fontFamily: 'Pretendard-SemiBold',
     textAlign: 'center',
     lineHeight: 22,

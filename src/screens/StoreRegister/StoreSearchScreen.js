@@ -7,6 +7,7 @@ import {
   Alert,
   Dimensions,
   View,
+  Platform,
 } from 'react-native';
 import StoreSearchBar from '../../components/StoreSearch/StoreSearchBar';
 import StoreResultList from '../../components/StoreSearch/StoreResultList';
@@ -14,6 +15,7 @@ import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {useToast} from '../../context/ToastContext';
 import {useAuth} from '../../context/AuthContext';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const {width} = Dimensions.get('window');
 
@@ -58,7 +60,9 @@ const StoreSearchScreen = ({navigation}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleSearch}>
-          <Text style={styles.searchButton}>검색</Text>
+          <Text style={styles.searchButton} allowFontScaling={false}>
+            검색
+          </Text>
         </Pressable>
       ),
     });
@@ -103,7 +107,7 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     marginRight: 18,
-    fontSize: 18,
+    fontSize: normalizeFont(18, 1.5),
     fontFamily: 'Pretendard-SemiBold',
     color: '#45C9FF',
   },
@@ -123,7 +127,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     borderColor: '#E0E0E0',
     paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'android' && 10,
   },
   storeAddButtonsearch: {
     paddingVertical: 15,

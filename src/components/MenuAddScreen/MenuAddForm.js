@@ -25,7 +25,9 @@ const MenuAddForm = forwardRef(
     ref,
   ) => {
     const {showAlert, AlertComponent} = useCustomAlert();
-
+    const [overText, setOverText] = useState(false);
+    const [overdesText, setOverdesText] = useState(false);
+    const [overnameText, setOvernameText] = useState(false);
     const [isImageSelected, setIsImageSelected] = useState(false);
     const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
@@ -109,13 +111,24 @@ const MenuAddForm = forwardRef(
       if (menu.price === '변동') {
         setIsVariable(true);
         setPurePrice('');
+        setOverText(false);
       }
     }, [menu.price]);
 
     const handlePriceChange = text => {
       const cleaned = text.replace(/[^0-9]/g, '');
-      setPurePrice(cleaned);
-      MenuChange(cleaned, index, 'price');
+      let num = cleaned === '' ? '' : parseInt(cleaned, 10);
+      if (typeof num === 'number' && !isNaN(num)) {
+        if (num > 100000000) {
+          num = 100000000;
+          setOverText(true);
+        } else {
+          setOverText(false);
+        }
+      }
+      const value = num === '' ? '' : String(num);
+      setPurePrice(value);
+      MenuChange(value, index, 'price');
     };
 
     const handleToggleVariable = () => {
@@ -155,7 +168,16 @@ const MenuAddForm = forwardRef(
         <MenuTextInput
           label="메뉴 이름*"
           value={menu.menuName}
-          onChangeText={text => MenuChange(text, index, 'menuName')}
+          onChangeText={text => {
+            const maxChars = 50;
+            if (text.length > maxChars) {
+              setOvernameText(true);
+              return; // 초과 입력 무시
+            } else {
+              setOvernameText(false);
+            }
+            MenuChange(text, index, 'menuName');
+          }}
           placeholder="메뉴 이름*"
           ref={menunameRef}
           returnKeyType="next"
@@ -165,6 +187,11 @@ const MenuAddForm = forwardRef(
             }
           }}
         />
+        {overnameText && (
+          <Text style={styles.errorTextprice}>
+            메뉴 이름은 최대 50자까지 입력 가능합니다.
+          </Text>
+        )}
         <MenuPrice
           label="메뉴 가격*"
           value={menu.price}
@@ -180,14 +207,33 @@ const MenuAddForm = forwardRef(
             }
           }}
         />
+        {overText && (
+          <Text style={styles.errorTextprice}>
+            가격은 최대 1억원까지 입력 가능합니다
+          </Text>
+        )}
         <MenuTextInput
           label="메뉴 소개"
           value={menu.menuContent}
-          onChangeText={text => MenuChange(text, index, 'menuContent')}
+          onChangeText={text => {
+            const maxChars = 100;
+            if (text.length > maxChars) {
+              setOverdesText(true);
+              return; // 초과 입력 무시
+            } else {
+              setOverdesText(false);
+            }
+            MenuChange(text, index, 'menuContent');
+          }}
           placeholder="메뉴를 간단하게 소개해주세요."
           multiline
           ref={menucontentRef}
         />
+        {overdesText && (
+          <Text style={styles.errorTextprice}>
+            메뉴 설명은 최대 100자까지 입력 가능합니다.
+          </Text>
+        )}
 
         <View style={styles.menuAddImageView}>
           <Text style={styles.menuAddImageText}>메뉴 사진</Text>
@@ -299,6 +345,11 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#FF0000',
+    fontSize: 14,
+  },
+  errorTextprice: {
+    paddingHorizontal: 18,
+    color: '#FF4816',
     fontSize: 14,
   },
 });

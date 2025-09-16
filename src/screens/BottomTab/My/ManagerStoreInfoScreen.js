@@ -16,6 +16,8 @@ import Feather from 'react-native-vector-icons/Feather';
 import StoreAreastats from '../../../components/Managerstoreinfo/StoreAreastats/StoreAreastats';
 import StoreLikestats from '../../../components/Managerstoreinfo/StoreLikestats/StoreLikestats';
 import StoreViewstats from '../../../components/Managerstoreinfo/StoreViewstats/StoreViewstats';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+
 const tabs = [
   {
     id: 'around',
@@ -40,7 +42,7 @@ const tabs = [
 const ManagerStoreInfoScreen = () => {
   const route = useRoute();
   const {storeId, locationDto} = route.params;
-
+  const {bottom} = useSafeAndroidInsets();
   const [selectedTab, setSelectedTab] = useState('around');
   const [radius, setRadius] = useState('2');
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -71,7 +73,7 @@ const ManagerStoreInfoScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       {/* 선택된 탭 부가설명 영역 */}
       <View style={styles.subLabelContainer}>
         <View style={{flexDirection: 'row'}}>

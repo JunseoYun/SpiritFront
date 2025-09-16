@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useToast} from '../../context/ToastContext';
 
 const UpdateStoreLocation = ({
   updatedValue,
@@ -16,6 +17,9 @@ const UpdateStoreLocation = ({
   onSave,
   navigation,
 }) => {
+  const {showToast} = useToast();
+  const MAX_DETAIL = 100;
+  const [overText, setOverText] = useState(false);
   return (
     <View style={styles.bottomSheetContent}>
       <Text style={styles.title}>매장 주소</Text>
@@ -71,10 +75,17 @@ const UpdateStoreLocation = ({
           placeholder="상세 주소, 건물 층수, 호수 등"
           placeholderTextColor="#999"
           value={updatedValue.addressDetail}
-          onChangeText={text =>
-            setUpdatedValue(prev => ({...prev, addressDetail: text}))
-          }
+          onChangeText={text => {
+            setOverText(text.length >= MAX_DETAIL);
+            setUpdatedValue(prev => ({...prev, addressDetail: text}));
+          }}
+          maxLength={MAX_DETAIL}
         />
+        {overText && (
+          <Text style={styles.errorText}>
+            상세 주소는 최대 100자까지 입력 가능합니다.
+          </Text>
+        )}
       </View>
       <ActionButtons onCancel={onCancel} onSave={onSave} />
     </View>
@@ -149,5 +160,10 @@ const styles = StyleSheet.create({
   focusedInput: {
     borderBottomColor: '#16BBFF',
     borderBottomWidth: 2,
+  },
+  errorText: {
+    color: '#FF4816',
+    fontSize: 14,
+    marginTop: 5,
   },
 });

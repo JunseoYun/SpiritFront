@@ -30,11 +30,14 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
     const hasCamera = await requestCameraPermission();
     if (!hasCamera) return;
     ImagePicker.openCamera({
-      width: 2048,
-      height: 1536,
+      width: 1600,
+      height: 1200,
       cropping: true,
       mediaType: 'photo',
-      compressImageQuality: 0.95, // 최대 화질
+      compressImageQuality: 0.95,
+      compressImageMaxWidth: 1600,
+      compressImageMaxHeight: 1200,
+      includeExif: false,
     })
       .then(image => {
         setImage([...images, image.path]);
@@ -58,6 +61,10 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
         multiple: remaining > 1, // 2개 이상일 때만 multiple
         maxFiles: remaining > 1 ? remaining : 1,
         cropping: false, // 우선 crop 안함
+        compressImageQuality: 0.95,
+        compressImageMaxWidth: 1600,
+        compressImageMaxHeight: 1200,
+        includeExif: false,
       });
 
       const selectedImages = Array.isArray(pickedImages)
@@ -71,10 +78,13 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
         const image = selectedImages[i];
         const cropped = await ImagePicker.openCropper({
           path: image.path,
-          width: 2048,
-          height: 1536,
+          width: 1600,
+          height: 1200,
           cropping: true,
           compressImageQuality: 0.95,
+          compressImageMaxWidth: 1600,
+          compressImageMaxHeight: 1200,
+          includeExif: false,
           cropperToolbarTitle: '이미지 편집',
           cropperActiveWidgetColor: '#45C9FF',
           cropperStatusBarLight: true,

@@ -7,6 +7,7 @@ import {AuthProvider, useAuth} from './src/context/AuthContext';
 import {CustomAlertProvider} from './src/context/CustomAlertContext';
 import {Provider as PaperProvider} from 'react-native-paper';
 import {ToastProvider} from './src/context/ToastContext';
+import {StoreInviteProvider} from './src/context/StoreInviteContext';
 import {
   NotificationProvider,
   useNotification,
@@ -28,6 +29,7 @@ import {
   initLocationIfNeeded,
   initLocationFromServer,
 } from './src/storage/locationStorage';
+import {AdConsentProvider} from './src/context/AdConsentContext';
 
 if (!__DEV__) {
   console.log = () => {};
@@ -58,7 +60,11 @@ const App = () => {
             <ToastProvider>
               <NotificationProvider>
                 <DeepLinkProvider>
-                  <AppNavigator />
+                  <StoreInviteProvider>
+                    <AdConsentProvider>
+                      <AppNavigator />
+                    </AdConsentProvider>
+                  </StoreInviteProvider>
                 </DeepLinkProvider>
               </NotificationProvider>
             </ToastProvider>
@@ -127,6 +133,7 @@ const AppNavigator = () => {
       handleDeepLink(url);
     };
     const sub = Linking.addEventListener('url', listener);
+
     return () => {
       sub.remove();
     };
@@ -135,7 +142,6 @@ const AppNavigator = () => {
   // 🚀 pendingStoreId 가 세팅되었을 때 실제 네비게이션 이동
   useEffect(() => {
     if (!navigationReady || !pendingStoreId || !token) return;
-
     const currentRoute = navigationRef.getCurrentRoute();
     if (
       currentRoute?.name === 'StoreMainScreen' &&
@@ -144,13 +150,15 @@ const AppNavigator = () => {
       setPendingStoreId(null);
       return;
     }
-    navigationRef.navigate('StoreStack', {
-      screen: 'StoreMainScreen',
-      params: {storeId: pendingStoreId},
-    });
+    setTimeout(() => {
+      navigationRef.navigate('StoreStack', {
+        screen: 'StoreMainScreen',
+        params: {storeId: pendingStoreId},
+      });
+    }, 500);
 
     setPendingStoreId(null);
-  }, [navigationReady, token, pendingStoreId, setPendingStoreId]);
+  }, [navigationReady, token, pendingStoreId]);
 
   if (loading || !isVersionValid) {
     return <MySplashScreen isVersionValid={isVersionValid} />;

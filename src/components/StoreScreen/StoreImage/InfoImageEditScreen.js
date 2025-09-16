@@ -17,6 +17,11 @@ import {
   ToastAndroid,
   SafeAreaView,
   Animated,
+  TextInput,
+  FlatList,
+  Pressable,
+  KeyboardAvoidingView,
+  Keyboard,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -39,6 +44,9 @@ import {
   StoreBoardImageUpdateSort,
 } from '../../../api/storeApi';
 import DraggableImageItem from './DraggableImageItem';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import FastImage from 'react-native-fast-image';
 
 const {width} = Dimensions.get('window');
 const IMAGE_WIDTH = width - 120;
@@ -60,6 +68,18 @@ const InfoImageEditScreen = ({navigation, route}) => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const dropdownAnim = useRef(new Animated.Value(0)).current;
 
+  // Numeric reorder inline mode
+  const [inlineOrderMode, setInlineOrderMode] = useState(false);
+  const [rankInputs, setRankInputs] = useState({}); // { uid: number }
+  const [previewOrder, setPreviewOrder] = useState([]); // preview list inside inline mode
+  const orderListRef = useRef(null);
+  const lastFocusedUidRef = useRef(null);
+  const baseRanksRef = useRef({}); // initial 1-based ranks at mode entry
+  const editedSetRef = useRef(new Set()); // uids whose rank is changed from base
+  const editSeqRef = useRef(0); // incremental sequence for edits
+  const editedAtRef = useRef({}); // { uid: seq } last edit order
+  const insets = useSafeAreaInsets();
+  const {bottom} = useSafeAndroidInsets();
   const {showToast} = useToast();
 
   const lastBackPressed = useRef(0);
@@ -81,11 +101,78 @@ const InfoImageEditScreen = ({navigation, route}) => {
     }
   }, [imgList]);
 
+  // Initialize or clear preview order when entering/leaving inline order mode
+  useEffect(() => {
+    if (inlineOrderMode) {
+      // Preview shows current list
+      setPreviewOrder(localImages);
+      // Prefill rank inputs with current 1-based order
+      const initialRanks = {};
+      localImages.forEach((img, idx) => {
+        const uid = String(img.isNew ? img.localId : img.id);
+        initialRanks[uid] = idx + 1;
+      });
+      setRankInputs(initialRanks);
+      baseRanksRef.current = initialRanks;
+      editedSetRef.current = new Set();
+      editSeqRef.current = 0;
+      editedAtRef.current = {};
+    } else {
+      setPreviewOrder([]);
+      // Clear rank inputs when leaving inline mode
+      setRankInputs({});
+      editedSetRef.current = new Set();
+      editSeqRef.current = 0;
+      editedAtRef.current = {};
+    }
+  }, [inlineOrderMode, localImages]);
+
+  // Update preview (not apply) when the keyboard hides, then scroll to the item's new spot
+  useEffect(() => {
+    const eventName =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const sub = Keyboard.addListener(eventName, () => {
+      if (!inlineOrderMode) return;
+      const {order, resolvedRanks} = resolveNumericOrder(
+        localImages,
+        rankInputs,
+        editedSetRef.current,
+        editedAtRef.current,
+      );
+      setPreviewOrder(order);
+      setRankInputs(resolvedRanks);
+      const uid = lastFocusedUidRef.current;
+      if (uid) {
+        const idx = order.findIndex(it => String(getUid(it)) === String(uid));
+        if (idx >= 0) {
+          setTimeout(() => {
+            try {
+              orderListRef.current?.scrollToIndex({
+                index: idx,
+                animated: true,
+                viewPosition: 0.3,
+              });
+            } catch (e) {}
+          }, 0);
+        }
+      }
+    });
+    return () => sub.remove();
+  }, [inlineOrderMode, localImages, rankInputs]);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <TouchableOpacity
-          onPress={toggleDropdown}
+          onPress={() => {
+            if (inlineOrderMode) {
+              Keyboard.dismiss();
+              applyNumericOrder();
+              setInlineOrderMode(false);
+            } else {
+              toggleDropdown();
+            }
+          }}
           hitSlop={10}
           style={{paddingHorizontal: 16, justifyContent: 'center'}}>
           <Text
@@ -94,12 +181,18 @@ const InfoImageEditScreen = ({navigation, route}) => {
               fontFamily: 'Pretendard-Medium',
               fontSize: 17,
             }}>
-            도구
+            {inlineOrderMode ? '적용' : '도구'}
           </Text>
         </TouchableOpacity>
       ),
     });
-  }, [navigation, toggleDropdown, dropdownVisible]);
+  }, [
+    navigation,
+    toggleDropdown,
+    dropdownVisible,
+    inlineOrderMode,
+    rankInputs,
+  ]);
 
   const addImages = newImages => {
     const enriched = newImages.map(image => ({
@@ -127,9 +220,18 @@ const InfoImageEditScreen = ({navigation, route}) => {
       const image = await ImagePicker.openCamera({
         cropping: true,
         mediaType: 'photo',
-        compressImageQuality: 1, // 품질
-        compressImageMaxWidth: 2160, // 최대 너비
-        compressImageMaxHeight: 2160, // 최대 높이
+        // 자유 크롭: width/height 미지정
+        freeStyleCropEnabled: true,
+        avoidEmptySpaceAroundImage: true,
+        compressImageQuality: 0.95,
+        // 해상도 상한(필요 시 조정)
+        compressImageMaxWidth: 2160,
+        compressImageMaxHeight: 2160,
+        includeExif: false,
+        ...(Platform.OS === 'ios' && {
+          width: 1600, // 원하는 와이드 사이즈
+          height: 1600, // 원하는 와이드 사이즈
+        }),
       });
 
       const picked = {
@@ -149,17 +251,47 @@ const InfoImageEditScreen = ({navigation, route}) => {
     if (!hasPermission) return;
 
     try {
-      const images = await ImagePicker.openPicker({
-        multiple: true,
+      const pickedImages = await ImagePicker.openPicker({
         mediaType: 'photo',
+        multiple: true, // 2개 이상일 때만 multiple
         maxFiles: 10,
-        compressImageQuality: 0.95, // 품질
-        compressImageMaxWidth: 2160, // 최대 너비
-        compressImageMaxHeight: 2160, // 최대 높이
-        cropping: false,
+        cropping: false, // 우선 crop 안함
+        includeExif: false,
       });
 
-      const picked = images.map(image => ({
+      const selectedImages = Array.isArray(pickedImages)
+        ? pickedImages
+        : [pickedImages];
+
+      const croppedImages = [];
+
+      // 각 이미지 자유 비율 크롭
+      for (let i = 0; i < selectedImages.length; i++) {
+        const image = selectedImages[i];
+        const cropped = await ImagePicker.openCropper({
+          path: image.path,
+          cropping: true,
+          freeStyleCropEnabled: true,
+          avoidEmptySpaceAroundImage: true,
+          compressImageQuality: 0.95,
+          compressImageMaxWidth: 2160,
+          compressImageMaxHeight: 2160,
+          cropperToolbarTitle: '이미지 편집',
+          cropperActiveWidgetColor: '#45C9FF',
+          cropperStatusBarLight: true,
+          cropperToolbarColor: '#ffffff',
+          cropperToolbarWidgetColor: '#333333',
+          includeExif: false,
+          ...(Platform.OS === 'ios' && {
+            width: 1600, // 원하는 와이드 사이즈
+            height: 1600, // 원하는 와이드 사이즈
+          }),
+          // forceJpg: true, // 필요 시만 활성화
+        });
+        croppedImages.push(cropped);
+      }
+
+      const picked = croppedImages.map(image => ({
         path: image.path,
         mime: image.mime,
         filename: image.filename || image.path.split('/').pop(),
@@ -312,7 +444,8 @@ const InfoImageEditScreen = ({navigation, route}) => {
           return acc;
         }, {});
 
-        const uploadResponses = [];
+        // boardType별 업로드 응답을 순서대로 저장하여 1:1 매핑
+        const responsesByType = {};
 
         for (const [boardType, images] of Object.entries(groupedByBoardType)) {
           try {
@@ -321,31 +454,32 @@ const InfoImageEditScreen = ({navigation, route}) => {
               {files: images, boardType},
               storeId,
             );
-            uploadResponses.push(...response);
+            // uploadResponses.push(...response);
+            const list = Array.isArray(response) ? response : [response];
+            responsesByType[boardType] = list.slice(); // copy
           } catch (error) {
             console.error(
               `Error uploading images for boardType ${boardType}:`,
               error,
             );
-            // 필요하면 에러 처리 추가
+            responsesByType[boardType] = [];
           }
         }
 
-        const uploadedList = uploadResponses.flat();
+        // const uploadedList = uploadResponses.flat();
 
         // 서버 응답 기반으로 localImages 업데이트
         updatedLocalImages = localImages.map(localImg => {
           if (!localImg.isNew) return localImg;
-
-          const match = uploadedList.find(uploaded =>
-            uploaded.url.includes(localImg.filename),
-          );
-
-          return match
+          const queue = responsesByType[localImg.boardType] || [];
+          const assigned = queue.shift();
+          // 큐 소진 결과를 반영
+          responsesByType[localImg.boardType] = queue;
+          return assigned
             ? {
                 ...localImg,
-                id: match.id,
-                url: match.url,
+                id: assigned.id,
+                url: assigned.url,
                 isNew: false,
               }
             : localImg;
@@ -528,6 +662,74 @@ const InfoImageEditScreen = ({navigation, route}) => {
     );
   };
 
+  const getUid = img => (img.isNew ? img.localId : img.id);
+
+  // Resolve duplicate numeric ranks by bumping later conflicts forward
+  // Returns both final order and resolved rank mapping
+  const resolveNumericOrder = (images, ranks, editedSet, editedAtMap) => {
+    const withIndex = images.map((img, idx) => ({img, idx}));
+    const assigned = [];
+    const unassigned = [];
+    for (const it of withIndex) {
+      const uid = String(getUid(it.img));
+      const val = ranks[uid];
+      if (Number.isInteger(val) && val > 0)
+        assigned.push({
+          ...it,
+          desired: val,
+          edited: !!editedSet?.has(uid),
+          editedAt: editedAtMap?.[uid] || 0,
+        });
+      else unassigned.push(it);
+    }
+
+    // Sort by desired asc, edited first (so changed ranks win),
+    // then among edited, most recently edited first, else original index
+    assigned.sort((a, b) => {
+      if (a.desired !== b.desired) return a.desired - b.desired;
+      if (a.edited !== b.edited) return a.edited ? -1 : 1; // edited wins
+      if (a.edited && b.edited) return b.editedAt - a.editedAt; // latest first
+      return a.idx - b.idx;
+    });
+
+    const used = new Set();
+    const assignedWithFinal = [];
+    const resolvedRanks = {};
+
+    for (const it of assigned) {
+      let target = it.desired;
+      while (used.has(target)) target += 1;
+      used.add(target);
+      assignedWithFinal.push({...it, final: target});
+      const uid = String(getUid(it.img));
+      resolvedRanks[uid] = target;
+    }
+
+    // Build final order: assigned by final rank, then unassigned by original order
+    assignedWithFinal.sort((a, b) => a.final - b.final);
+    const order = assignedWithFinal.map(it => it.img);
+    unassigned.sort((a, b) => a.idx - b.idx);
+    for (const it of unassigned) order.push(it.img);
+
+    return {order, resolvedRanks};
+  };
+
+  const applyNumericOrder = () => {
+    const {order} = resolveNumericOrder(
+      localImages,
+      rankInputs,
+      editedSetRef.current,
+      editedAtRef.current,
+    );
+    setLocalImages(order);
+    setInlineOrderMode(false);
+    setRankInputs({});
+    editedSetRef.current = new Set();
+    editSeqRef.current = 0;
+    editedAtRef.current = {};
+    showToast('숫자 입력 순서를 적용했어요');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {dropdownVisible && (
@@ -552,6 +754,14 @@ const InfoImageEditScreen = ({navigation, route}) => {
               sortByBoardTypeStable('DRINK');
             }}>
             <Text style={styles.dropdownText}>주류 우선 정렬</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.dropdownItem}
+            onPress={() => {
+              toggleDropdown();
+              setInlineOrderMode(true);
+            }}>
+            <Text style={styles.dropdownText}>메뉴판 순서 설정</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.dropdownItem}
@@ -589,58 +799,158 @@ const InfoImageEditScreen = ({navigation, route}) => {
           </Text>
         </View>
       ) : (
-        <View style={styles.header}>
-          {/* <Ionicons name="reorder-three-outline" size={24} color="#999" /> */}
-          <Text style={styles.headerText}>
-            사진을 꾹 눌러 원하는 순서로 바꿔보세요
-          </Text>
-        </View>
+        !inlineOrderMode && (
+          <View style={styles.header}>
+            <Ionicons name="reorder-three-outline" size={24} color="#999" />
+
+            <Text style={styles.headerText}>
+              사진을 꾹 눌러 원하는 순서로 바꿔보세요
+            </Text>
+          </View>
+        )
       )}
       <View style={styles.btnheader}></View>
       <View style={styles.listWrapper}>
-        <DraggableFlatList
-          data={localImages}
-          onDragEnd={({data}) => onDragEnd({data})}
-          keyExtractor={(item, index) =>
-            item.id ? `${item.id}` : `${item.url}-${index}`
-          }
-          onScrollBeginDrag={() => {
-            if (dropdownVisible) {
-              toggleDropdown();
-            }
-          }}
-          renderItem={renderItem}
-          activationDistance={Platform.OS === 'ios' ? 10 : 20}
-          scrollPercent={5}
-          contentContainerStyle={{paddingBottom: 0}}
-          ListFooterComponent={
-            <>
-              {!checkDelete && (
-                <TouchableOpacity
-                  style={styles.addImageBox}
-                  onPress={() => {
-                    setBottomSheetVisible(true);
-                    if (dropdownVisible) {
-                      toggleDropdown();
-                    }
-                  }}>
-                  <MaterialCommunityIcons name="plus" size={30} color="#999" />
-                </TouchableOpacity>
-              )}
+        {inlineOrderMode ? (
+          <KeyboardAvoidingView
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 90}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{flex: 1}}>
+            <View style={styles.madalTitleView}>
+              <Text style={styles.modalTitle}>메뉴판 순서 설정</Text>
+              <Pressable
+                onPress={() => (setRankInputs({}), setInlineOrderMode(false))}>
+                <Ionicons name="close" size={23} color="#121212" />
+              </Pressable>
+            </View>
+            <Text style={styles.modalSubtitle}>
+              순서를 변경할 사진에 번호를 입력하세요.{`\n`}입력하지 않으면
+              뒤쪽으로 자동 정렬됩니다.
+            </Text>
+            <FlatList
+              ref={orderListRef}
+              keyboardShouldPersistTaps="never"
+              keyboardDismissMode="none"
+              removeClippedSubviews={false}
+              data={previewOrder}
+              keyExtractor={item => String(getUid(item))}
+              numColumns={3}
+              contentContainerStyle={{
+                gap: 10,
+                marginHorizontal: 18,
+                paddingVertical: 10,
+              }}
+              columnWrapperStyle={{gap: 10}}
+              renderItem={({item, index}) => {
+                const uid = String(getUid(item));
+                const uri = item.url || item.path;
+                const value = rankInputs[uid] ?? '';
+                return (
+                  <View style={styles.orderCell}>
+                    <FastImage source={{uri}} style={styles.orderThumb} />
+                    <TextInput
+                      keyboardType="number-pad"
+                      placeholder="순서"
+                      placeholderTextColor="#aaa"
+                      value={String(value)}
+                      onFocus={() => {
+                        lastFocusedUidRef.current = uid;
+                        if (Platform.OS === 'ios') {
+                          try {
+                            orderListRef.current?.scrollToIndex({
+                              index,
+                              animated: true,
+                              viewPosition: 0.25,
+                            });
+                          } catch (e) {}
+                        }
+                      }}
+                      onChangeText={txt => {
+                        const onlyNum = txt.replace(/[^0-9]/g, '');
+                        const parsed = onlyNum
+                          ? parseInt(onlyNum, 10)
+                          : undefined;
+                        setRankInputs(prev => ({
+                          ...prev,
+                          [uid]: parsed && parsed > 0 ? parsed : undefined,
+                        }));
+                        // Consider any valid input as 'edited' (explicit intent)
+                        const isEdited = Number.isInteger(parsed) && parsed > 0;
+                        if (isEdited) editedSetRef.current.add(uid);
+                        else editedSetRef.current.delete(uid);
+                        // Track last edit order for tie-breaking among edited items
+                        if (Number.isInteger(parsed) && parsed > 0) {
+                          editSeqRef.current += 1;
+                          editedAtRef.current = {
+                            ...editedAtRef.current,
+                            [uid]: editSeqRef.current,
+                          };
+                        } else {
+                          // If cleared/invalid, remove timestamp to avoid unintended priority
+                          const map = {...editedAtRef.current};
+                          delete map[uid];
+                          editedAtRef.current = map;
+                        }
+                        if (onlyNum === '0') {
+                          showToast('0은 사용할 수 없어요');
+                        }
+                      }}
+                      style={styles.orderInput}
+                      maxLength={3}
+                    />
+                  </View>
+                );
+              }}
+            />
+          </KeyboardAvoidingView>
+        ) : (
+          <DraggableFlatList
+            data={localImages}
+            onDragEnd={({data}) => onDragEnd({data})}
+            keyExtractor={item => String(item.localId)}
+            autoscrollThreshold={60}
+            autoscrollSpeed={60}
+            onScrollBeginDrag={() => {
+              if (dropdownVisible) {
+                toggleDropdown();
+              }
+            }}
+            renderItem={renderItem}
+            activationDistance={Platform.OS === 'ios' ? 12 : 28}
+            scrollPercent={5}
+            contentContainerStyle={{paddingBottom: 0}}
+            ListFooterComponent={
+              <>
+                {!checkDelete && (
+                  <TouchableOpacity
+                    style={styles.addImageBox}
+                    onPress={() => {
+                      setBottomSheetVisible(true);
+                      if (dropdownVisible) {
+                        toggleDropdown();
+                      }
+                    }}>
+                    <MaterialCommunityIcons
+                      name="plus"
+                      size={30}
+                      color="#999"
+                    />
+                  </TouchableOpacity>
+                )}
 
-              <ImagePickermodal
-                isBottomSheetVisible={isBottomSheetVisible}
-                setBottomSheetVisible={setBottomSheetVisible}
-                handleCameraPick={handleCameraPick}
-                handleGalleryPick={handleGalleryPick}
-              />
-            </>
-          }
-        />
+                <ImagePickermodal
+                  isBottomSheetVisible={isBottomSheetVisible}
+                  setBottomSheetVisible={setBottomSheetVisible}
+                  handleCameraPick={handleCameraPick}
+                  handleGalleryPick={handleGalleryPick}
+                />
+              </>
+            }
+          />
+        )}
       </View>
 
       <View
-        View
         style={{
           paddingHorizontal: 18,
           paddingBottom: Platform.OS === 'ios' ? 7 : 18,
@@ -657,7 +967,33 @@ const InfoImageEditScreen = ({navigation, route}) => {
             },
           }),
         }}>
-        {checkDelete ? (
+        {inlineOrderMode ? (
+          <View style={[styles.footer, {paddingBottom: bottom}]}>
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={() => {
+                // Restore ranks to the values at mode entry
+                const baseRanks = baseRanksRef.current || {};
+                setRankInputs(baseRanks);
+                // Restore preview to the list as it was when mode opened
+                setPreviewOrder(localImages);
+                // Clear edit tracking
+                editedSetRef.current = new Set();
+                editedAtRef.current = {};
+                editSeqRef.current = 0;
+              }}>
+              <Text style={styles.resetText}>초기화</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.applyButton}
+              onPress={() => {
+                applyNumericOrder();
+                setInlineOrderMode(false);
+              }}>
+              <Text style={styles.applyText}>적용</Text>
+            </TouchableOpacity>
+          </View>
+        ) : checkDelete ? (
           <ActionButtons
             onCancel={cancelSelectDelete}
             onSave={handleDeleteSelected}
@@ -670,6 +1006,8 @@ const InfoImageEditScreen = ({navigation, route}) => {
 
       <AlertComponent />
       {(loading || !loadingimg) && <Loading loading={true} />}
+
+      {/* Inline numeric order mode replaces modal */}
     </SafeAreaView>
   );
 };
@@ -714,11 +1052,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     paddingVertical: 10,
   },
-  bottomSheetContent: {
-    flex: 1,
-    padding: 18,
-    backgroundColor: '#fff',
-  },
+
   imageWrapper: {
     position: 'relative',
   },
@@ -803,6 +1137,97 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#333',
     fontFamily: 'Pretendard-Medium',
+  },
+  // Modal styles
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'flex-end',
+  },
+  modalCard: {
+    maxHeight: '88%',
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  madalTitleView: {
+    flexDirection: 'row',
+    marginHorizontal: 18,
+    marginTop: 20,
+    marginBottom: 10,
+    justifyContent: 'space-between',
+  },
+  modalTitle: {
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 18,
+    color: '#121212',
+    flex: 1,
+  },
+  modalSubtitle: {
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 7,
+    marginHorizontal: 18,
+  },
+  orderCell: {
+    width: (width - 32 - 20) / 3, // padding 16*2, gaps
+    aspectRatio: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#f2f2f2',
+    position: 'relative',
+  },
+  orderThumb: {
+    width: '100%',
+    height: '100%',
+  },
+  orderInput: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
+    width: 56,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    textAlign: 'center',
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    color: '#111',
+    paddingVertical: Platform.OS === 'ios' ? 6 : 2,
+  },
+  footer: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderColor: '#eee',
+    paddingTop: 12,
+  },
+  resetButton: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    height: 44,
+  },
+  resetText: {
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'Pretendard-Medium',
+  },
+  applyButton: {
+    flex: 2,
+    backgroundColor: '#45C9FF',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 44,
+  },
+  applyText: {
+    fontSize: 16,
+    color: '#fff',
+    fontFamily: 'Pretendard-Bold',
   },
 });
 

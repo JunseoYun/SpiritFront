@@ -6,12 +6,16 @@ import {
   StyleSheet,
   Platform,
   Dimensions,
+  PixelRatio,
 } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
+
+let fontScale = PixelRatio.getFontScale();
+if (fontScale > 1.3) fontScale = 1.3;
 
 const MapRadius = ({setRadiusint}) => {
   const [selectedDistance, setSelectedDistance] = useState(1);
@@ -39,7 +43,7 @@ const MapRadius = ({setRadiusint}) => {
         <Pressable
           style={styles.searchView}
           onPress={() => setDropdownVisible(prev => !prev)}>
-          <Text style={styles.buttonTextTop}>
+          <Text style={styles.buttonTextTop} allowFontScaling={false}>
             {' '}
             {selectedDistance == 0.5 ? '500m' : `${selectedDistance}km`}
           </Text>
@@ -59,6 +63,7 @@ const MapRadius = ({setRadiusint}) => {
                 style={[styles.option]}
                 onPress={() => handleSelect(item)}>
                 <Text
+                  allowFontScaling={false}
                   style={[
                     styles.optionText,
                     item === selectedDistance && styles.selectedOptionText,
@@ -95,7 +100,7 @@ const styles = StyleSheet.create({
   },
   buttonTextTop: {
     color: '#121212',
-    fontSize: 15,
+    fontSize: 15 * fontScale,
     paddingRight: 7,
     borderRightWidth: 0.5,
     borderColor: 'gray',
@@ -117,7 +122,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   optionText: {
-    fontSize: 16,
+    fontSize: 16 * fontScale,
     fontFamily: 'Pretendard-Medium',
     color: '#999',
   },

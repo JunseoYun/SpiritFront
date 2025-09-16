@@ -216,6 +216,7 @@ const MainHeader = () => {
       </Animated.View>
 
       <Animated.Text
+        allowFontScaling={false}
         style={[
           styles.subText,
           {opacity: sub1Opacity, transform: [{translateY: sub1TranslateY}]},

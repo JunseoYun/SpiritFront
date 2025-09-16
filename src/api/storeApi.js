@@ -102,27 +102,43 @@ export const StoreSuggestion = async data => {
   }
 };
 
-export const CreateOwnership = async data => {
+export const Create_store_with_ownership = async data => {
   const formData = new FormData();
 
-  if (data.file) {
-    formData.append('file', {
-      uri: data.file.path,
-      type: data.file.mime,
-      name: data.file.filename,
-    });
+  const toFileField = (file, fallbackName) => {
+    if (!file) return null;
+    const uri = file.path?.startsWith('file://')
+      ? file.path
+      : `file://${file.path}`;
+    const type = file.mime || 'image/jpeg';
+    const name = file.filename || `${fallbackName}_${Date.now()}.jpg`;
+    return {uri, type, name};
+  };
+  // 사업자 등록증 이미지
+  const cert = toFileField(
+    data.businessRegistrationCertificateImage,
+    'business_certificate',
+  );
+  if (cert) {
+    formData.append('businessRegistrationCertificateImage', cert);
   }
+  const images = Array.isArray(data.storeImages) ? data.storeImages : [];
+  images.forEach((img, idx) => {
+    const f = toFileField(img, `store_${idx}`);
+    if (f) formData.append('storeImages', f);
+  });
 
-  const createOwnershipRqDto = JSON.stringify(data.createOwnershipRqDto);
-
-  formData.append('createOwnershipRqDto', {
-    string: createOwnershipRqDto,
+  formData.append('createStoreWithOwnershipRqDto', {
+    string: JSON.stringify({
+      createStoreRqDto: data.createStoreRqDto,
+      createOwnershipRqDto: data.createOwnershipRqDto,
+    }),
     type: 'application/json',
   });
 
   try {
     const response = await axiosInstance.post(
-      '/store/ownership/create',
+      '/store/create/with-ownership',
       formData,
       {
         headers: {
@@ -137,38 +153,33 @@ export const CreateOwnership = async data => {
   }
 };
 
-export const Create_store_with_ownership = async data => {
+export const CreateOwnership = async data => {
+  const toFileField = (file, fallbackName) => {
+    if (!file) return null;
+    const uri = file.path?.startsWith('file://')
+      ? file.path
+      : `file://${file.path}`;
+    const type = file.mime || 'image/jpeg';
+    const name = file.filename || `${fallbackName}_${Date.now()}.jpg`;
+    return {uri, type, name};
+  };
+
   const formData = new FormData();
+  const cert = toFileField(data.file, 'file');
 
-  if (data.businessRegistrationCertificateImage) {
-    formData.append('businessRegistrationCertificateImage', {
-      uri: data.businessRegistrationCertificateImage.path,
-      type: data.businessRegistrationCertificateImage.mime,
-      name: data.businessRegistrationCertificateImage.filename,
-    });
+  if (cert) {
+    formData.append('file', cert);
   }
+  const createOwnershipRqDto = JSON.stringify(data.createOwnershipRqDto);
 
-  data.storeImages.forEach(storeImage => {
-    if (storeImage) {
-      formData.append('storeImages', {
-        uri: storeImage.path, // 이미지 URI
-        type: storeImage.mime, // 이미지 타입 (확인 후 필요한 타입 사용)
-        name: storeImage.filename, // 파일 이름 (확장자 포함)
-      });
-    }
-  });
-
-  formData.append('createStoreWithOwnershipRqDto', {
-    string: JSON.stringify({
-      createStoreRqDto: data.createStoreRqDto,
-      createOwnershipRqDto: data.createOwnershipRqDto,
-    }),
+  formData.append('createOwnershipRqDto', {
+    string: createOwnershipRqDto,
     type: 'application/json',
   });
 
   try {
     const response = await axiosInstance.post(
-      '/store/create/with-ownership',
+      '/store/ownership/create',
       formData,
       {
         headers: {
@@ -511,8 +522,75 @@ export const StoreImageUpdateSort = async (
 
 export const get_store_share = async storeId => {
   try {
-    const response = await axiosInstance.get(`/store/share/${storeId}`);
-    return response.data; // 또는 response.data.url depending on backend structure
+    const response = await axiosInstance.post(`/store/share/${storeId}`);
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const get_store_manager_invitationLink = async storeId => {
+  try {
+    const response = await axiosInstance.post(
+      `/store/manager-invitation/create/${storeId}`,
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const get_store_manager_invitation_accept =
+  async managerInvitationId => {
+    try {
+      const response = await axiosInstance.post(
+        `/store/manager-invitation/accept/${managerInvitationId}`,
+      );
+      return response.data.data;
+    } catch (error) {
+      functionError(error);
+    }
+  };
+
+export const Store_getby_managers = async storeId => {
+  try {
+    const response = await axiosInstance.get(
+      `/store/get-by/managers/${storeId}`,
+    );
+    return response.data.data; // 또는 response.data.url depending on backend structure
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const getby_manager_invitation_preview = async managerInvitationId => {
+  try {
+    const response = await axiosInstance.get(
+      `/store/get-by/manager-invitation/preview/${managerInvitationId}`,
+    );
+    return response.data.data; // 또는 response.data.url depending on backend structure
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const store_owner_change = async storeManagerId => {
+  try {
+    const response = await axiosInstance.patch(
+      `/store/owner/change/${storeManagerId}`,
+    );
+    return response.data.data; // 또는 response.data.url depending on backend structure
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const delete_store_manager = async storeManagerId => {
+  try {
+    const response = await axiosInstance.delete(
+      `/store/manager/delete/${storeManagerId}`,
+    );
+    return response.data.data; // 또는 response.data.url depending on backend structure
   } catch (error) {
     functionError(error);
   }

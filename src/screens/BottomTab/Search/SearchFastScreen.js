@@ -70,7 +70,7 @@ const SearchFastScreen = ({navigation}) => {
     const updated = {};
 
     if (카테고리) updated.category = 카테고리;
-    if (인원) updated.isGroupAvailable = 인원 === '10인 이상';
+    if (인원) updated.isGroupAvailable = 인원 === '단체 방문';
     if (visitTime) {
       const [hh, mm] = visitTime.split(':');
       const now = new Date();
@@ -237,6 +237,8 @@ const SearchFastScreen = ({navigation}) => {
             selectedFilters={selectedFilters}
             setSelectedFilters={setSelectedFilters}
             handleApply={handleApply}
+            onClose={() => setBottomModalVisible(false)}
+            modalVisible={bottomModalVisible}
           />
         </Animated.View>
       </Modal>

@@ -28,6 +28,9 @@ import {useFocusEffect} from '@react-navigation/native';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+import {normalizeFont} from '../../../hooks/normalizeFont';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useToast} from '../../../context/ToastContext';
 const BUTTON_HEIGHT = 64;
 
 const MenuEditScreen = ({route, navigation}) => {
@@ -36,8 +39,10 @@ const MenuEditScreen = ({route, navigation}) => {
   const [activeTab, setActiveTab] = useState('MAIN');
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pendingDeletes, setPendingDeletes] = useState([]);
 
   const {showAlert, AlertComponent} = useCustomAlert();
+  const {showToast} = useToast();
 
   const [mainMenus, setMainMenus] = useState(
     menus.filter(m => m.menuType === 'MAIN'),
@@ -50,29 +55,22 @@ const MenuEditScreen = ({route, navigation}) => {
   );
 
   const MemoizedMenuItem = React.memo(MenuItem);
+  const draftsRef = useRef({}); // id -> draft fields to persist in-progress edits
+  const itemRefs = useRef({});
+  const setItemBridge = useCallback(
+    id => api => {
+      if (api) itemRefs.current[id] = api;
+      else delete itemRefs.current[id];
+    },
+    [],
+  );
   const stableItemProps = useMemo(
     () => ({
+      navigation: navigation,
       isLast: true,
       isMainEditing: true,
       isUpdatable: true,
       onUpdateComplete: onMenuUpdateComplete,
-      onDelete: (id, name) => {
-        showAlert({
-          title: `${name} 삭제`,
-          message: `메뉴를 삭제하시겠습니까?`,
-          onConfirm: async () => {
-            try {
-              await StoreMenudelete(id);
-              setMainMenus(prev => prev.filter(m => m.id !== id));
-              setNormalMenus(prev => prev.filter(m => m.id !== id));
-              setSideMenus(prev => prev.filter(m => m.id !== id));
-              onMenuDelete(id);
-            } catch (error) {}
-          },
-          onCancel: null,
-          type: 'delete',
-        });
-      },
       storeId,
       onTypeChange: (menuId, newType) => {
         const allMenus = [...mainMenus, ...normalMenus, ...sideMenus];
@@ -114,6 +112,72 @@ const MenuEditScreen = ({route, navigation}) => {
     [mainMenus, normalMenus, sideMenus],
   );
 
+  const requestMenuDelete = useCallback(
+    (id, name) => {
+      setMainMenus(prev => prev.filter(m => m.id !== id));
+      setNormalMenus(prev => prev.filter(m => m.id !== id));
+      setSideMenus(prev => prev.filter(m => m.id !== id));
+      setPendingDeletes(prev => (prev.includes(id) ? prev : [...prev, id]));
+      delete draftsRef.current[id];
+      showToast(`${name}삭제 목록에 추가되었습니다.`);
+    },
+    [showToast, setMainMenus, setNormalMenus, setSideMenus, setPendingDeletes],
+  );
+
+  // Header buttons: Add, and Back with unsaved-changes guard
+  useLayoutEffect(() => {
+    const hasAnyEditing = () => {
+      const refs = Object.values(itemRefs.current || {});
+      return refs.some(r => r?.isEditing?.());
+    };
+    const isOrderChanged = () => {
+      const currentIds = [...mainMenus, ...normalMenus, ...sideMenus].map(
+        m => m.id,
+      );
+      const originalIds = menus.map(m => m.id);
+      if (currentIds.length !== originalIds.length) return true;
+      for (let i = 0; i < currentIds.length; i++) {
+        if (currentIds[i] !== originalIds[i]) return true;
+      }
+      return false;
+    };
+
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={handleMenuAdd}>
+          <Text style={styles.headerButton} allowFontScaling={false}>
+            메뉴 추가
+          </Text>
+        </Pressable>
+      ),
+      headerLeft: () => (
+        <Pressable
+          onPress={() => {
+            const changed = hasAnyEditing() || isOrderChanged();
+            if (!changed) {
+              navigation.goBack();
+              return;
+            }
+            showAlert({
+              title: '저장되지 않은 변경사항',
+              message: '변경사항이 저장되지 않습니다. 뒤로 가시겠습니까?',
+              onConfirm: () => navigation.goBack(),
+              onCancel: null,
+              type: 'confirm',
+            });
+          }}
+          hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+          <Ionicons
+            name="arrow-back-outline"
+            size={23}
+            color="#333"
+            style={{paddingLeft: 12}}
+          />
+        </Pressable>
+      ),
+    });
+  }, [navigation, mainMenus, normalMenus, sideMenus, menus]);
+
   const handleSave = async () => {
     const orderedMain = mainMenus.map(menu => menu.id);
     const orderedNormal = normalMenus.map(menu => menu.id);
@@ -127,9 +191,17 @@ const MenuEditScreen = ({route, navigation}) => {
 
     try {
       setLoading(true);
+      // perform pending deletions first
+      for (const id of pendingDeletes) {
+        try {
+          await StoreMenudelete(id);
+        } catch (e) {}
+      }
       if (menuIdInOrderList.length !== 0) {
         await MenuUpdateSort(storeId, menuIdInOrderList);
-        onMenuUpdateComplete?.();
+      }
+      if (onMenuUpdateComplete) {
+        await onMenuUpdateComplete();
       }
       navigation.goBack();
     } catch (error) {
@@ -143,11 +215,62 @@ const MenuEditScreen = ({route, navigation}) => {
     navigation.navigate('MenuAddScreen', {storeId: storeId});
   };
 
+  const handleCompletePress = () => {
+    // Start loading immediately when user taps complete
+    setLoading(true);
+    const refs = Object.values(itemRefs.current || {});
+    const hasEditing = refs.some(r => r?.isEditing?.());
+
+    // simple validation using current drafts to avoid closing on invalid inputs
+    const validateDraft = d => {
+      if (!d) return false;
+      const nameOk = !!String(d.name ?? '').trim();
+      const typeOk = !!String(d.type ?? '').trim();
+      const isVar = !!d.isVariable;
+      const priceOk = isVar || !!String(d.price ?? '').trim();
+      return nameOk && typeOk && priceOk;
+    };
+    if (hasEditing) {
+      const invalid = Object.entries(itemRefs.current || {})
+        .filter(([, api]) => api?.isEditing?.())
+        .some(([id]) => !validateDraft(draftsRef.current[id]));
+      if (invalid) {
+        showToast('필수 입력값을 확인해 주세요.');
+        setLoading(false);
+        return;
+      }
+    }
+    if (hasEditing) {
+      showAlert({
+        title: '변경사항 저장',
+        message: '변경사항을 저장하시겠습니까?',
+        onConfirm: async () => {
+          for (const r of refs) {
+            try {
+              if (r?.isEditing?.()) await r.save?.();
+            } catch (e) {}
+          }
+          await handleSave();
+        },
+        onCancel: () => {
+          // User canceled; stop loading and just go back
+          setLoading(false);
+          navigation.goBack();
+        },
+        type: 'confirm',
+      });
+    } else {
+      handleSave();
+    }
+  };
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleMenuAdd}>
-          <Text style={styles.headerButton}>메뉴 추가</Text>
+          <Text style={styles.headerButton} allowFontScaling={false}>
+            메뉴 추가
+          </Text>
         </Pressable>
       ),
     });
@@ -166,15 +289,35 @@ const MenuEditScreen = ({route, navigation}) => {
         <Animated.View style={{transform: [{scale: isActive ? 1.02 : 1}]}}>
           <View style={styles.itemRow}>
             <View style={{flex: 1}}>
-              <MemoizedMenuItem menu={item} {...stableItemProps} />
+              <MemoizedMenuItem
+                menu={item}
+                expose={setItemBridge(item.id)}
+                autoEdit={true}
+                draft={draftsRef.current[item.id]}
+                onDraftChange={(id, draft) => {
+                  draftsRef.current[id] = draft;
+                }}
+                hideInlineActions={true}
+                {...stableItemProps}
+              />
             </View>
-            <TouchableOpacity
-              onLongPress={drag}
-              delayLongPress={100}
-              style={styles.dragIcon}
-              hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}>
-              <Text style={styles.dragIconText}>☰</Text>
-            </TouchableOpacity>
+            <View style={styles.dragIconWrap}>
+              <View style={styles.dragIconCenter}>
+                <TouchableOpacity
+                  onLongPress={drag}
+                  delayLongPress={100}
+                  style={styles.dragIcon}
+                  hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}>
+                  <Text style={styles.dragIconText}>☰</Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity
+                onPress={() => requestMenuDelete(item.id, item.name)}
+                style={styles.sideDeleteBtn}
+                hitSlop={{top: 12, bottom: 12, left: 12, right: 12}}>
+                <Text style={styles.sideDeleteText}>삭제</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </Animated.View>
       )}
@@ -226,9 +369,8 @@ const MenuEditScreen = ({route, navigation}) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       style={{flex: 1}}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View pointerEvents={isDragging ? 'none' : 'auto'}>
             {menus.length > 0 && (
@@ -242,6 +384,7 @@ const MenuEditScreen = ({route, navigation}) => {
                     ]}
                     onPress={() => setActiveTab(type)}>
                     <Text
+                      allowFontScaling={false}
                       style={[
                         styles.tabText,
                         activeTab === type && styles.activeTabText,
@@ -276,7 +419,7 @@ const MenuEditScreen = ({route, navigation}) => {
             {paddingBottom: Platform.OS === 'ios' ? 30 : 10 + bottom},
           ]}
           pointerEvents={isDragging ? 'none' : 'auto'}>
-          <Pressable onPress={handleSave} style={styles.saveButton}>
+          <Pressable onPress={handleCompletePress} style={styles.saveButton}>
             <Text style={styles.saveText}>편집 완료</Text>
           </Pressable>
         </View>
@@ -297,26 +440,29 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     marginRight: 18,
-    fontSize: 17,
+    fontSize: normalizeFont(17, 1.5),
     fontFamily: 'Pretendard-SemiBold',
     color: '#16BBFF',
   },
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginVertical: 20,
+    marginVertical: 10,
   },
   tabButton: {
-    paddingVertical: 10,
+    paddingVertical: 7,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: '#eee',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
   activeTabButton: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#E8F7FF', // 선택 시 배경색
+    borderColor: '#45C9FF',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: normalizeFont(14, 1.7),
     fontFamily: 'Pretendard-Medium',
     color: '#555',
   },
@@ -331,7 +477,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
   },
   activeTabText: {
-    color: '#fff',
+    color: '#45C9FF',
   },
   itemRow: {
     flexDirection: 'row',
@@ -348,10 +494,29 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   dragIcon: {
-    marginLeft: 10,
-    paddingVertical: 20,
+    paddingVertical: 8,
+  },
+  dragIconWrap: {
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    flexDirection: 'column',
+    marginLeft: 7,
+  },
+  dragIconCenter: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sideDeleteBtn: {bottom: 25},
+  sideDeleteText: {
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#FF6347',
+    fontFamily: 'Pretendard-Regular',
   },
   dragIconText: {
+    textAlign: 'center',
     fontSize: 24,
     color: '#888',
   },

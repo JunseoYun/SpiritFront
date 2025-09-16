@@ -9,13 +9,14 @@ import {
 } from 'react-native';
 
 const {width} = Dimensions.get('window');
-
+import useSafeAndroidInsets from './useSafeAndroidInsets';
 const Toastmessage = ({
   message,
   isShowToast,
   onDismiss,
   position = 'bottom',
 }) => {
+  const {bottom} = useSafeAndroidInsets();
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -44,7 +45,7 @@ const Toastmessage = ({
   if (!isShowToast) return null;
 
   const positionStyle = {
-    bottom: position === 'bottom' ? 40 : undefined,
+    bottom: position === 'bottom' ? 100 + bottom : undefined,
     top:
       position === 'top'
         ? 40

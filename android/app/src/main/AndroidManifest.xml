@@ -44,10 +44,14 @@
           <action android:name="android.intent.action.VIEW" />
           <category android:name="android.intent.category.DEFAULT" />
           <category android:name="android.intent.category.BROWSABLE" />
-         <data
+        <data
           android:scheme="https"
-          android:host="dev.team-spirit.click"
+          android:host="@string/BASE_URL"
           android:pathPrefix="/link/store" />
+        <data 
+          android:scheme="https" 
+          android:host="@string/BASE_URL"
+          android:pathPrefix="/link/store-manager-invite" />
         </intent-filter>
 
          <!-- ✅ 앱 내부 스킴 딥링크: spirit://store/{id} -->
@@ -58,6 +62,10 @@
         <data
           android:scheme="spirit"
           android:host="store" />
+          <data 
+          android:scheme="spirit" 
+          android:host="store-manager-invite" />
+
         </intent-filter>
       </activity>
 

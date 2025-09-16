@@ -7,7 +7,10 @@ import {
   ScrollView,
   SafeAreaView,
   Platform,
+  Dimensions,
 } from 'react-native';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const FILTER_TABS = ['카테고리', '인원', '방문 시간', '주종'];
 
@@ -24,7 +27,7 @@ const categoryOptions = [
   {label: '포차', value: 'POCHA'},
 ];
 
-const peopleOptions = ['10인 이하', '10인 이상'];
+const peopleOptions = ['소수 방문', '단체 방문'];
 
 const alcoholOptions = [
   {label: '소주', value: 'SOJU'},
@@ -60,34 +63,69 @@ export default function FastSearchFilter({
   handleApply,
 }) {
   const [activeTab, setActiveTab] = useState('카테고리');
-  const [timePeriod, setTimePeriod] = useState('AM');
+  const [timePeriod, setTimePeriod] = useState('');
   const scrollRef = useRef(null);
   const timeScrollRef = useRef(null); // ✅ 가로 스크롤 참조
   const [sectionPositions, setSectionPositions] = useState({});
+  const {bottom} = useSafeAndroidInsets();
+  const [timePositions, setTimePositions] = useState({}); // idx: x좌표
 
-  // ✅ 선택된 시간 기반 초기 세팅
-  useEffect(() => {
+  const scrollToTimeIndex = idx => {
+    const x = timePositions[idx] ?? 0;
+    timeScrollRef.current?.scrollTo({x: x - 16, animated: true});
+  };
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  const autoScrollToTime = positions => {
+    if (hasScrolled) return; // 이미 스크롤했으면 종료
+    setHasScrolled(true);
+
     const timeVal = selectedFilters['방문 시간'];
-    if (timeVal && typeof timeVal === 'string') {
-      const hour = parseInt(timeVal.split(':')[0], 10);
-      if (!isNaN(hour)) {
-        // 오전/오후 설정
-        if (hour >= 12) setTimePeriod('PM');
-        else setTimePeriod('AM');
+    let index = 0;
 
-        // 스크롤 이동
-        const hour12 = hour % 12;
-        const minute = parseInt(timeVal.split(':')[1], 10);
-        const index = hour12 * 2 + (minute >= 30 ? 1 : 0);
-        setTimeout(() => {
-          timeScrollRef.current?.scrollTo({
-            x: index * 85, // 칩 하나당 너비 추정
-            animated: true,
-          });
-        }, 100);
+    if (timeVal) {
+      const [hourStr, minStr] = timeVal.split(':');
+      const hour = parseInt(hourStr, 10);
+      const minute = parseInt(minStr, 10);
+      index = (hour % 12) * 2 + (minute >= 30 ? 1 : 0);
+    } else {
+      const now = new Date();
+      const hour = now.getHours() % 12;
+      const minute = now.getMinutes();
+
+      if (minute < 30) {
+        index = hour * 2 + 1; // 현재 시간 :30
+      } else {
+        index = ((hour + 1) % 12) * 2; // 다음 시간 :00
       }
     }
-  }, [selectedFilters['방문 시간']]);
+
+    const x = positions[index] ?? 0;
+    timeScrollRef.current?.scrollTo({x: x - 16, animated: true});
+  };
+
+  // // ✅ 선택된 시간 기반 초기 세팅
+  useEffect(() => {
+    if (hasScrolled == true) {
+      const timeVal = selectedFilters['방문 시간'];
+      if (timeVal && typeof timeVal === 'string') {
+        const hour = parseInt(timeVal.split(':')[0], 10);
+        if (!isNaN(hour)) {
+          // 오전/오후 설정
+          if (hour >= 12) setTimePeriod('PM');
+          else setTimePeriod('AM');
+
+          // 스크롤 이동
+          const hour12 = hour % 12;
+          const minute = parseInt(timeVal.split(':')[1], 10);
+          const index = hour12 * 2 + (minute >= 30 ? 1 : 0);
+          setTimeout(() => {
+            scrollToTimeIndex(index);
+          }, 100);
+        }
+      }
+    }
+  }, [selectedFilters['방문 시간'], hasScrolled]);
 
   const toggleFilter = (tab, item) => {
     setSelectedFilters(prev => {
@@ -112,7 +150,25 @@ export default function FastSearchFilter({
 
   const renderChips = (tab, options) => (
     <View onLayout={e => handleLayout(tab, e)} style={styles.sectionContainer}>
-      <Text style={styles.sectionTitle}>{tab}</Text>
+      {tab == '카테고리' ? (
+        <View style={styles.categoryContainer}>
+          <Text style={styles.categoryTitle}>{tab}</Text>
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedFilters({
+                카테고리: '',
+                인원: '',
+                '방문 시간': '',
+                주종: '',
+              });
+            }}>
+            <Text style={styles.inittext}>초기화</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <Text style={styles.sectionTitle}>{tab}</Text>
+      )}
+
       <View style={styles.filterItemsContainer}>
         {options.map(opt => {
           const label = typeof opt === 'string' ? opt : opt.label;
@@ -150,7 +206,10 @@ export default function FastSearchFilter({
 
         <View style={styles.timeTabContainer}>
           <TouchableOpacity
-            onPress={() => setTimePeriod('AM')}
+            onPress={() => {
+              setTimePeriod('AM');
+              setSelectedFilters(prev => ({...prev, '방문 시간': ''}));
+            }}
             style={[
               styles.timeTab,
               timePeriod === 'AM' && styles.timeTabActive,
@@ -164,7 +223,10 @@ export default function FastSearchFilter({
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setTimePeriod('PM')}
+            onPress={() => {
+              setTimePeriod('PM');
+              setSelectedFilters(prev => ({...prev, '방문 시간': ''}));
+            }}
             style={[
               styles.timeTab,
               timePeriod === 'PM' && styles.timeTabActive,
@@ -201,6 +263,16 @@ export default function FastSearchFilter({
               <TouchableOpacity
                 key={idx}
                 onPress={() => toggleFilter('방문 시간', value)}
+                onLayout={e => {
+                  const {x} = e.nativeEvent.layout;
+                  setTimePositions(prev => {
+                    const newPos = {...prev, [idx]: x};
+                    if (Object.keys(newPos).length === generateTimes().length) {
+                      autoScrollToTime(newPos);
+                    }
+                    return newPos;
+                  });
+                }}
                 style={[
                   styles.filterItem,
                   isSelected && styles.filterItemSelected,
@@ -221,7 +293,7 @@ export default function FastSearchFilter({
   };
 
   return (
-    <SafeAreaView style={styles.safeContainer}>
+    <SafeAreaView style={[styles.safeContainer, {paddingBottom: bottom}]}>
       <View style={styles.tabContainer}>
         {FILTER_TABS.map(tab => (
           <TouchableOpacity
@@ -299,6 +371,23 @@ const styles = StyleSheet.create({
   scrollArea: {
     flex: 1,
   },
+  categoryContainer: {
+    paddingVertical: 12,
+    marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+  },
+  categoryTitle: {
+    fontSize: 15,
+    fontFamily: 'Pretendard-Bold',
+    color: '#333',
+  },
+  inittext: {
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
+    color: '#777',
+  },
   sectionContainer: {
     marginHorizontal: 0,
     paddingVertical: 12,
@@ -343,7 +432,6 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
     paddingTop: 12,
     paddingHorizontal: 12,
-    paddingBottom: Platform.OS === 'ios' ? 12 : 0,
   },
   resetButton: {
     flex: 1,
@@ -386,7 +474,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   timeTabActive: {
-    backgroundColor: '#E9F5FB',
+    backgroundColor: '#fff',
     borderColor: '#45C9FF',
   },
   timeTabText: {
@@ -403,7 +491,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     width: '100%',
-    height: 7,
+    height: 1,
     backgroundColor: '#f5f5f5',
     marginVertical: 10,
   },

@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -11,14 +11,18 @@ import {
   Modal,
   Platform,
 } from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import {Store_getby_managed} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {BlurView} from '@react-native-community/blur';
+import LinearGradient from 'react-native-linear-gradient';
+import {normalizeFont} from '../../../hooks/normalizeFont';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const {width, height} = Dimensions.get('window');
-const CARD_WIDTH = width * 0.65;
+const CARD_WIDTH = width * 0.75;
 const CARD_SPACING = (width - CARD_WIDTH) / 2;
 
 const MyManager = ({navigation}) => {
@@ -28,6 +32,7 @@ const MyManager = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [nameTabDisabled, setNameTabDisabled] = useState(false);
+  const {bottom} = useSafeAndroidInsets();
 
   // 모달 상태
   const [modalVisible, setModalVisible] = useState(false);
@@ -39,13 +44,56 @@ const MyManager = ({navigation}) => {
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
   const tabFlatListRef = useRef(null);
+  const TAB_SEPARATOR = 20; // 탭 사이 간격 살짝 증가
+
+  // 탭 아이템 폭 측정으로 가장자리를 정확히 센터 정렬
+  const [tabItemWidths, setTabItemWidths] = useState({});
+  const onTabLayout = (index, w) => {
+    setTabItemWidths(prev => {
+      if (prev[index] === w) return prev;
+      return {...prev, [index]: w};
+    });
+  };
+
+  // 탭을 정확히 가운데로 스크롤하기 위한 함수
+  const scrollTabToIndex = useCallback(
+    (index, animated = true) => {
+      const firstW = tabItemWidths[0];
+      const headerW = firstW ? Math.max(0, (width - firstW) / 2) : CARD_SPACING;
+
+      // index 이전까지의 폭 + 구분선 합
+      let left = headerW;
+      for (let i = 0; i < index; i++) {
+        const w = tabItemWidths[i] ?? 0;
+        left += w + TAB_SEPARATOR;
+      }
+
+      const curW = tabItemWidths[index] ?? 0;
+      const target = left + curW / 2 - width / 2;
+
+      // 음수 방지. 최대치는 RN이 내부에서 클램프
+      const safeTarget = Math.max(0, target);
+      try {
+        tabFlatListRef.current?.scrollToOffset({offset: safeTarget, animated});
+      } catch (e) {
+        // 측정 전에는 fallback
+        tabFlatListRef.current?.scrollToIndex({
+          index,
+          animated,
+          viewPosition: 0.5,
+        });
+      }
+    },
+    [tabItemWidths],
+  );
 
   const MyStore = async page => {
     setLoading(true);
     try {
       const data = await Store_getby_managed(page);
+
       if (page === 0) {
-        setMystoredata(data.content);
+        setMystoredata([...data.content]);
       } else {
         setMystoredata(prev => [...prev, ...data.content]);
       }
@@ -57,9 +105,12 @@ const MyManager = ({navigation}) => {
     }
   };
 
-  useEffect(() => {
-    MyStore(0);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      // 화면이 포커스 될 때마다 데이터 다시 가져오기
+      MyStore(0);
+    }, []),
+  );
 
   const openModal = store => {
     setSelectedStore(store);
@@ -103,10 +154,25 @@ const MyManager = ({navigation}) => {
     });
 
     return (
-      <View style={{alignItems: 'center', width: CARD_WIDTH}}>
-        <Animated.View style={{transform: [{scale}], opacity}}>
+      <View
+        style={[
+          {
+            alignItems: 'center',
+            width: CARD_WIDTH,
+            marginTop: 20,
+            marginBottom: 10,
+          },
+          mysotredata.length === 1 && {
+            justifyContent: 'center',
+          },
+        ]}>
+        <Animated.View
+          style={[
+            {transform: [{scale}], opacity},
+            index === currentIndex && styles.selectedCardShadow,
+          ]}>
           <Pressable
-            style={styles.card}
+            style={[styles.card]}
             onPress={() => {
               if (index === currentIndex) {
                 openModal(item);
@@ -126,7 +192,15 @@ const MyManager = ({navigation}) => {
               }
               style={styles.image}
               imageStyle={{borderRadius: 16}}>
-              <View style={styles.gradientOverlay} />
+              <LinearGradient
+                colors={
+                  item.mainImgUrl
+                    ? ['transparent', 'rgba(0, 0, 0, 0.5)'] // 위는 투명, 아래는 어두움
+                    : ['transparent', 'rgba(0, 0, 0, 0.3)']
+                }
+                style={[styles.gradientBottom, {height: (height * 0.47) / 1.5}]}
+                pointerEvents="none"
+              />
               <View style={styles.overlayContent}>
                 <Text style={styles.name} numberOfLines={1}>
                   {item.storeName || '상호명 없음'}
@@ -176,116 +250,122 @@ const MyManager = ({navigation}) => {
   };
 
   return (
-    <View style={{flex: 1, backgroundColor: '#FAFAFA'}}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: '#fff',
+        justifyContent: 'space-between',
+      }}>
       {/* 카드 리스트 */}
-      <Animated.FlatList
-        ref={flatListRef}
-        getItemLayout={(_, index) => ({
-          length: CARD_WIDTH,
-          offset: CARD_WIDTH * index,
-          index,
-        })}
-        onScrollBeginDrag={() => setNameTabDisabled(true)}
-        onScrollEndDrag={() => setNameTabDisabled(false)}
-        data={mysotredata}
-        renderItem={renderItem}
-        keyExtractor={item => item.id.toString()}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={CARD_WIDTH}
-        decelerationRate="fast"
-        scrollEventThrottle={16}
-        contentContainerStyle={{
-          paddingHorizontal: CARD_SPACING,
-          paddingTop: 10,
-        }}
-        onScroll={Animated.event(
-          [{nativeEvent: {contentOffset: {x: scrollX}}}],
-          {
-            useNativeDriver: true,
-            listener: event => {
-              const offsetX = event.nativeEvent.contentOffset.x;
-              const index = Math.round(offsetX / CARD_WIDTH);
-              if (index !== currentIndex) {
-                setCurrentIndex(index);
-                tabFlatListRef.current?.scrollToIndex({
-                  index,
-                  animated: true,
-                  viewPosition: 0.5,
-                });
-              }
-              if (
-                !loading &&
-                index >= mysotredata.length - 3 &&
-                page < totalpage - 1
-              ) {
-                setPage(prev => {
-                  const nextPage = prev + 1;
-                  MyStore(nextPage);
-                  return nextPage;
-                });
-              }
+      <View style={{flex: 9}}>
+        <Animated.FlatList
+          ref={flatListRef}
+          getItemLayout={(_, index) => ({
+            length: CARD_WIDTH,
+            offset: CARD_WIDTH * index,
+            index,
+          })}
+          onScrollBeginDrag={() => setNameTabDisabled(true)}
+          onScrollEndDrag={() => setNameTabDisabled(false)}
+          data={mysotredata}
+          renderItem={renderItem}
+          keyExtractor={item => item.storeId.toString()}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={CARD_WIDTH}
+          decelerationRate="fast"
+          scrollEventThrottle={16}
+          contentContainerStyle={{
+            paddingHorizontal: CARD_SPACING,
+          }}
+          onScroll={Animated.event(
+            [{nativeEvent: {contentOffset: {x: scrollX}}}],
+            {
+              useNativeDriver: true,
+              listener: event => {
+                const offsetX = event.nativeEvent.contentOffset.x;
+                const index = Math.round(offsetX / CARD_WIDTH);
+                if (index !== currentIndex) {
+                  setCurrentIndex(index);
+                  // 탭을 정확히 가운데로 이동
+                  scrollTabToIndex(index, true);
+                }
+                if (
+                  !loading &&
+                  index >= mysotredata.length - 3 &&
+                  page < totalpage - 1
+                ) {
+                  setPage(prev => {
+                    const nextPage = prev + 1;
+                    MyStore(nextPage);
+                    return nextPage;
+                  });
+                }
+              },
             },
-          },
-        )}
-      />
+          )}
+        />
+      </View>
 
       {/* 가게 이름 탭 */}
       {mysotredata.length === 1 ? (
-        <View style={{alignItems: 'center'}}>
-          <Pressable
-            disabled={nameTabDisabled}
-            onPress={() => {
-              flatListRef.current?.scrollToOffset({offset: 0, animated: true});
-            }}
-            style={[
-              styles.nameTab,
-              currentIndex === 0 && styles.activeTab,
-              {paddingVertical: 10},
-            ]}>
-            <Text
-              style={[
-                styles.nameTabText,
-                currentIndex === 0 && styles.activeTabText,
-                {maxWidth: width * 0.5},
-              ]}
-              numberOfLines={1}>
-              {mysotredata[0].storeName}
-            </Text>
-          </Pressable>
-        </View>
+        <View style={{marginBottom: 10}} />
       ) : (
-        <FlatList
-          ref={tabFlatListRef}
-          data={mysotredata}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={item => item.id.toString()}
-          contentContainerStyle={{paddingHorizontal: 200, marginTop: 10}}
-          renderItem={({item, index}) => (
-            <Pressable
-              disabled={nameTabDisabled}
-              onPress={() => {
-                const offset = CARD_WIDTH * index;
-                flatListRef.current?.scrollToOffset({offset, animated: true});
-              }}
-              style={[
-                styles.nameTab,
-                currentIndex === index && styles.activeTab,
-                {paddingVertical: 6},
-              ]}>
-              <Text
+        <View style={{flex: 1}}>
+          <FlatList
+            ref={tabFlatListRef}
+            data={mysotredata}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={item => item.storeId.toString()}
+            // 가장자리를 과도하게 넘기지 않도록
+            bounces={false}
+            overScrollMode="never"
+            // 아이템 간 간격만 두고, 양 끝 여백은 제거
+            ItemSeparatorComponent={() => (
+              <View style={{width: TAB_SEPARATOR}} />
+            )}
+            ListHeaderComponent={() => {
+              const firstW = tabItemWidths[0];
+              const headerW = firstW
+                ? Math.max(0, (width - firstW) / 2)
+                : CARD_SPACING;
+              return <View style={{width: headerW}} />;
+            }}
+            ListFooterComponent={() => {
+              const lastIndex = mysotredata.length - 1;
+              const lastW = tabItemWidths[lastIndex];
+              const footerW = lastW
+                ? Math.max(0, (width - lastW) / 2)
+                : CARD_SPACING;
+              return <View style={{width: footerW}} />;
+            }}
+            renderItem={({item, index}) => (
+              <Pressable
+                disabled={nameTabDisabled}
+                hitSlop={10}
+                onPress={() => {
+                  const offset = CARD_WIDTH * index;
+                  flatListRef.current?.scrollToOffset({offset, animated: true});
+                }}
                 style={[
-                  styles.nameTabText,
-                  currentIndex === index && styles.activeTabText,
-                  {maxWidth: width * 0.5},
+                  styles.nameTab,
+                  currentIndex === index && styles.activeTab,
                 ]}
-                numberOfLines={1}>
-                {item.storeName}
-              </Text>
-            </Pressable>
-          )}
-        />
+                onLayout={e => onTabLayout(index, e.nativeEvent.layout.width)}>
+                <Text
+                  style={[
+                    styles.nameTabText,
+                    currentIndex === index && styles.activeTabText,
+                    {maxWidth: width * 0.5},
+                  ]}
+                  numberOfLines={1}>
+                  {item.storeName}
+                </Text>
+              </Pressable>
+            )}
+          />
+        </View>
       )}
 
       {/* 모달 */}
@@ -295,7 +375,7 @@ const MyManager = ({navigation}) => {
         statusBarTranslucent={true}
         animationType="none"
         onRequestClose={closeModal}>
-        <View style={StyleSheet.absoluteFill}>
+        <View style={[StyleSheet.absoluteFill]}>
           {Platform.OS === 'ios' ? (
             <BlurView
               style={StyleSheet.absoluteFill}
@@ -322,10 +402,18 @@ const MyManager = ({navigation}) => {
                 }
                 style={{width, height}}
                 imageStyle={{resizeMode: 'cover'}}>
-                <View style={styles.modalGradientOverlay} />
-
+                <LinearGradient
+                  colors={
+                    selectedStore.mainImgUrl
+                      ? ['transparent', 'rgba(0, 0, 0, 0.5)'] // 위는 투명, 아래는 어두움
+                      : ['transparent', 'rgba(0, 0, 0, 0.3)']
+                  }
+                  style={styles.gradientBottom}
+                  pointerEvents="none"
+                />
                 {/* 정보 영역 */}
-                <View style={styles.modalInfoContainer}>
+                <View
+                  style={[styles.modalInfoContainer, {paddingBottom: bottom}]}>
                   <Text style={styles.modalInfoTitle} numberOfLines={1}>
                     {selectedStore.storeName || '상호명 없음'}
                   </Text>
@@ -379,7 +467,7 @@ const MyManager = ({navigation}) => {
                 </Pressable>
 
                 {/* 하단 버튼 */}
-                <View style={styles.bottomButtons}>
+                <View style={[styles.bottomButtons, {paddingBottom: bottom}]}>
                   <View style={styles.bottomButtonView}>
                     <Pressable
                       style={[
@@ -395,7 +483,9 @@ const MyManager = ({navigation}) => {
                       }}>
                       <Ionicons name="home" size={30} color="#fff" />
                     </Pressable>
-                    <Text style={styles.btnText}>매장 홈</Text>
+                    <Text style={styles.btnText} allowFontScaling={false}>
+                      매장 홈
+                    </Text>
                   </View>
                   <View style={styles.bottomButtonView}>
                     <Pressable
@@ -416,9 +506,32 @@ const MyManager = ({navigation}) => {
                       }}>
                       <Ionicons name="stats-chart" size={30} color="#fff" />
                     </Pressable>
-                    <Text style={styles.btnText}>통계 조회</Text>
+                    <Text style={styles.btnText} allowFontScaling={false}>
+                      통계 조회
+                    </Text>
                   </View>
-
+                  <View style={styles.bottomButtonView}>
+                    <Pressable
+                      style={[
+                        styles.btn,
+                        {borderColor: '#fff', borderWidth: 1.3},
+                      ]}
+                      onPress={() => {
+                        closeModal();
+                        navigation.navigate('StoreStack', {
+                          screen: 'StoreManagerScreen',
+                          params: {
+                            storeId: selectedStore.storeId,
+                            storename: selectedStore.storeName,
+                          },
+                        });
+                      }}>
+                      <Ionicons name="person-sharp" size={30} color="#fff" />
+                    </Pressable>
+                    <Text style={styles.btnText} allowFontScaling={false}>
+                      운영진
+                    </Text>
+                  </View>
                   <View style={styles.bottomButtonView}>
                     <Pressable
                       style={[
@@ -442,7 +555,9 @@ const MyManager = ({navigation}) => {
                         color="#fff"
                       />
                     </Pressable>
-                    <Text style={styles.btnText}>리뷰 조회</Text>
+                    <Text style={styles.btnText} allowFontScaling={false}>
+                      리뷰 조회
+                    </Text>
                   </View>
                   <View style={styles.bottomButtonView}>
                     <Pressable
@@ -467,7 +582,9 @@ const MyManager = ({navigation}) => {
                         color="#fff"
                       />
                     </Pressable>
-                    <Text style={styles.btnText}>제보·신고</Text>
+                    <Text style={styles.btnText} allowFontScaling={false}>
+                      제보·신고
+                    </Text>
                   </View>
                 </View>
               </ImageBackground>
@@ -485,32 +602,44 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     overflow: 'hidden',
-    height: height * 0.47,
-    marginTop: 18,
     width: CARD_WIDTH,
+    height: '100%',
+  },
+  selectedCardShadow: {
+    width: CARD_WIDTH,
+    height: '100%',
+    borderRadius: 16,
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOpacity: 0.7,
+    shadowRadius: 3,
+    shadowOffset: {width: 0, height: 0},
+    // Android elevation
+    elevation: 4,
+    // Ensure shadow is visible on Android
+    backgroundColor: '#fff',
   },
   image: {
     width: '100%',
     height: '100%',
     justifyContent: 'flex-end',
   },
-  gradientOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-  },
+
   overlayContent: {
     padding: 12,
+    zIndex: 3,
   },
   name: {
     color: '#fff',
-    fontSize: 20,
-    fontFamily: 'Pretendard-Bold',
+    fontSize: 18,
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 6,
   },
   address: {
     color: '#ddd',
-    fontSize: 15,
+    fontSize: 14,
     marginBottom: 6,
+    fontFamily: 'Pretendard-Regular',
   },
   statsRow: {
     flexDirection: 'row',
@@ -526,7 +655,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     marginLeft: 4,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
   reportRow: {
     flexDirection: 'row',
@@ -538,7 +667,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     paddingHorizontal: 8,
     marginRight: 6,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
   normalReport: {
     backgroundColor: 'rgba(255,165,0,0.25)',
@@ -548,21 +677,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,77,79,0.25)',
     color: '#FF4D4F',
   },
-
   nameTab: {
-    paddingHorizontal: 12,
-    borderRadius: 16,
     justifyContent: 'center',
+    // 가로 여백 제거 (아이템 간 간격은 ItemSeparatorComponent로 처리)
     marginBottom: 10,
-    backgroundColor: 'rgba(0,0,0,0.03)',
-    marginHorizontal: 5,
   },
   activeTab: {
-    backgroundColor: '#E9F5FB',
+    // backgroundColor: '#E9F5FB',
   },
   nameTabText: {
-    fontSize: 13,
-    color: '#555',
+    fontSize: 14,
+    color: '#999',
     fontFamily: 'Pretendard-Medium',
   },
   activeTabText: {
@@ -585,18 +710,18 @@ const styles = StyleSheet.create({
     right: 20,
     flexDirection: 'row',
     gap: 10,
-    zIndex: 10,
     justifyContent: 'space-evenly',
+    zIndex: 10,
   },
   bottomButtonView: {
     alignItems: 'center',
   },
   btn: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
-    width: 60,
-    height: 60,
+    width: 55,
+    height: 55,
     marginBottom: 3,
     alignItems: 'center',
     justifyContent: 'center',
@@ -604,23 +729,27 @@ const styles = StyleSheet.create({
 
   btnText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: normalizeFont(13, 1.5),
     fontFamily: 'Pretendard-SemiBold',
   },
-
-  // 모달 전용 스타일
-  modalGradientOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.25)',
+  gradientBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: height / 2, // 아래 절반
+    zIndex: 1,
   },
+
   modalInfoContainer: {
     position: 'absolute',
     bottom: 120,
     left: 20,
     right: 20,
-    // backgroundColor: 'rgba(0,0,0,0.25)',
     borderRadius: 16,
-    padding: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 10,
+    zIndex: 3,
   },
   modalInfoTitle: {
     color: '#fff',

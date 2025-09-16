@@ -1,5 +1,5 @@
 // MainSection.js
-import React from 'react';
+import React, {useState} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
 import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
@@ -7,6 +7,7 @@ import StoreRegister from '../../components/MainScreen/StoreRegister';
 import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
 import NearStoreList from '../../components/MainScreen/NearStore/NearStoreList';
 import ViewedStoreList from './ViewedStore/ViewedStoreList';
+import MyBanner from '../Ads/MyBanner';
 
 const MainSection = ({
   recommCategory,
@@ -16,10 +17,9 @@ const MainSection = ({
   isRefreshing,
   navigation,
   loading,
-  storeactiveIndex,
   handlestoreItemClick,
-  setIsRefreshing,
   catagoryClick,
+  onHeaderLayout = () => {},
 }) => {
   return (
     <View
@@ -40,35 +40,35 @@ const MainSection = ({
       />
       <CategoryGrid onPress={catagoryClick} />
 
-      <StoreRegister
-        storeactiveIndex={storeactiveIndex}
-        handlestoreItemClick={handlestoreItemClick}
-      />
+      <StoreRegister handlestoreItemClick={handlestoreItemClick} />
       <ViewedStoreList
         location={location}
         navigation={navigation}
         refresh={isRefreshing}
-        setRefresh={setIsRefreshing}
       />
-      <View style={[styles.division, {marginTop: 10}]} />
+
+      <MyBanner index={'main'} />
+
       <OpenStoreList
         location={location}
         navigation={navigation}
         refresh={isRefreshing}
-        setRefresh={setIsRefreshing}
       />
       <NearStoreList
         navigation={navigation}
         location={location}
         refresh={isRefreshing}
-        setRefresh={setIsRefreshing}
       />
       <View style={[styles.division, {marginTop: 20}]} />
-      {/* <View
+      <View
         style={{
-          marginLeft: 20,
-          marginTop: 20,
-          marginBottom: 10,
+          backgroundColor: '#fff',
+          paddingLeft: 20,
+          paddingTop: 20,
+        }}
+        onLayout={e => {
+          const {height} = e.nativeEvent.layout;
+          onHeaderLayout(height);
         }}>
         <Text
           style={{
@@ -78,7 +78,7 @@ const MainSection = ({
           }}>
           현재 인기 매장
         </Text>
-      </View> */}
+      </View>
     </View>
   );
 };

@@ -15,6 +15,7 @@ import FastImage from 'react-native-fast-image';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {StoreImageUpdateSort, UpdateStore} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 const {width} = Dimensions.get('window');
 const IMAGE_WIDTH = width - 120;
@@ -22,6 +23,7 @@ const IMAGE_HEIGHT = (IMAGE_WIDTH * 3) / 4;
 
 const ImageReorderScreen = ({navigation, route}) => {
   const {images, onSave, storeId} = route.params;
+  const {bottom} = useSafeAndroidInsets();
   const [imageList, setImageList] = useState(images);
   const [loading, setLoading] = useState(false);
 
@@ -120,7 +122,7 @@ const ImageReorderScreen = ({navigation, route}) => {
 
   return (
     <KeyboardAvoidingView
-      style={{flex: 1}}
+      style={{flex: 1, paddingBottom: bottom}}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}>
       <SafeAreaView style={styles.container}>
