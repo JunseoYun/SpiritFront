@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 
-const StoreGroup = ({selectedOption, setSelectedOption}) => {
+const StoreGroup = ({selectedOption, setSelectedOption, index, error}) => {
   const handleCheckBoxChange = index => {
     if (index === 0 && selectedOption !== true) {
       setSelectedOption(true);
@@ -13,8 +13,11 @@ const StoreGroup = ({selectedOption, setSelectedOption}) => {
   return (
     <View>
       <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>10인 이상 단체 가능 여부</Text>
+        <Text style={styles.storeinputtext}>
+          {index ? '단체 방문 가능 여부*' : '단체 방문 가능 여부'}
+        </Text>
       </View>
+
       <View style={styles.storeCheckView}>
         <TouchableOpacity
           style={[
@@ -45,6 +48,11 @@ const StoreGroup = ({selectedOption, setSelectedOption}) => {
           </Text>
         </TouchableOpacity>
       </View>
+      {error === 'StoreGroup' && selectedOption === null && (
+        <Text style={styles.errorMessage}>
+          단체 방문 가능 여부를 선택해 주세요.
+        </Text>
+      )}
     </View>
   );
 };
@@ -85,6 +93,14 @@ const styles = StyleSheet.create({
   },
   checkboxTextSelected: {
     color: '#FFF', // 선택된 경우 흰색
+  },
+  errorMessage: {
+    color: '#FF4816',
+    fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
+    marginTop: 5,
+    marginBottom: 15,
+    marginHorizontal: 22,
   },
 });
 

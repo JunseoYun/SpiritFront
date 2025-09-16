@@ -1,5 +1,6 @@
 import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {Text, PixelRatio} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MainScreen from '../screens/BottomTab/MainScreen';
 import MapScreen from '../screens/BottomTab/MapScreen';
@@ -10,6 +11,15 @@ import MyStack from './MyStack';
 const Tab = createBottomTabNavigator();
 
 const MainBtmbar = () => {
+  // 탭 라벨을 커스텀 Text로 반환
+  const renderLabel = (label, color) => (
+    <Text
+      style={{color, fontFamily: 'Pretendard-Medium', fontSize: 12}}
+      allowFontScaling={false}>
+      {label}
+    </Text>
+  );
+
   return (
     <Tab.Navigator
       initialRouteName="MainScreen"
@@ -20,47 +30,44 @@ const MainBtmbar = () => {
           alignContent: 'center',
           justifyContent: 'center',
         },
-        tabBarActiveTintColor: '#1a1a1a', // 선택된 탭의 텍스트/아이콘 색상 black
-        tabBarInactiveTintColor: '#999', // 비활성 탭의 텍스트/아이콘 색상
+        tabBarActiveTintColor: '#1a1a1a',
+        tabBarInactiveTintColor: '#999',
         tabBarIcon: ({focused, color, size}) => {
           let iconName;
-
-          if (route.name === 'MainScreen') {
+          if (route.name === 'MainScreen')
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'MapScreen') {
+          else if (route.name === 'MapScreen')
             iconName = focused ? 'map' : 'map-outline';
-          } else if (route.name === 'SearchStack') {
+          else if (route.name === 'SearchStack')
             iconName = focused ? 'search' : 'search-outline';
-          } else if (route.name === 'LikeScreen') {
+          else if (route.name === 'LikeScreen')
             iconName = focused ? 'heart' : 'heart-outline';
-          } else if (route.name === 'MyStack') {
+          else if (route.name === 'MyStack')
             iconName = focused ? 'person' : 'person-outline';
-          } else if (route.name === 'LoginStack') {
-            iconName = 'person-outline';
-          }
-
           return <Ionicons name={iconName} size={25} color={color} />;
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontFamily: 'Pretendard-Medium',
         },
       })}>
       <Tab.Screen
         name="SearchStack"
         component={SearchStack}
-        options={{tabBarLabel: '검색', headerShown: false}}
+        options={{
+          tabBarLabel: ({color}) => renderLabel('검색', color),
+          headerShown: false,
+        }}
       />
       <Tab.Screen
         name="MapScreen"
         component={MapScreen}
-        options={{tabBarLabel: '주변', headerShown: false}}
+        options={{
+          tabBarLabel: ({color}) => renderLabel('주변', color),
+          headerShown: false,
+        }}
       />
       <Tab.Screen
         name="MainScreen"
         component={MainScreen}
         options={{
-          tabBarLabel: '홈',
+          tabBarLabel: ({color}) => renderLabel('홈', color),
           headerShown: false,
         }}
         listeners={({navigation, route}) => ({
@@ -77,22 +84,24 @@ const MainBtmbar = () => {
         name="LikeScreen"
         component={LikeScreen}
         options={{
-          tabBarLabel: '찜',
+          tabBarLabel: ({color}) => renderLabel('찜', color),
           headerShown: true,
           headerTitleAlign: 'center',
           title: '찜',
           headerTitleStyle: {
-            fontSize: 19, // 타이틀 크기 설정
-            color: '#333', // 텍스트 색상 (선택 사항)
+            fontSize: 19,
+            color: '#333',
             fontFamily: 'Pretendard-Bold',
           },
         }}
       />
-
       <Tab.Screen
         name="MyStack"
         component={MyStack}
-        options={{tabBarLabel: '마이', headerShown: false}}
+        options={{
+          tabBarLabel: ({color}) => renderLabel('마이', color),
+          headerShown: false,
+        }}
       />
     </Tab.Navigator>
   );

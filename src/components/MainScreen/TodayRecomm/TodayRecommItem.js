@@ -1,10 +1,15 @@
 import React from 'react';
-import {View, StyleSheet, Text, Pressable} from 'react-native';
+import {View, StyleSheet, Text, Pressable, PixelRatio} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
+
+let fontScale = PixelRatio.getFontScale(); // let으로 변경
+if (fontScale >= 1.7) fontScale = 1.7;
+
+const fontSize = 12 * fontScale;
 
 const drinkColors = {
   SOJU: '#9BE7C5', // 민트 그린
@@ -58,7 +63,16 @@ const TodayRecommItem = ({store, navigation}) => {
   };
 
   return (
-    <Pressable onPress={handlePress} style={styles.container}>
+    <Pressable
+      onPress={handlePress}
+      style={[
+        styles.container,
+        store.mainImgUrl && {
+          borderWidth: 0.3,
+          borderRadius: 10,
+          borderColor: '#E5E5E5',
+        },
+      ]}>
       <FastImage
         style={styles.imageBackground}
         source={
@@ -85,11 +99,18 @@ const TodayRecommItem = ({store, navigation}) => {
             {store.isCertified && (
               <FastImage
                 source={require('../../../assets/verifyMaker.png')}
-                style={styles.imageStyle}
+                style={[
+                  styles.imageStyle,
+                  fontScale >= 1.5 && {width: 30, height: 30},
+                ]}
               />
             )}
             <Text
-              style={[styles.storeName]}
+              allowFontScaling={false}
+              style={[
+                styles.storeName,
+                fontScale >= 1.5 ? {fontSize: 34} : {fontSize: 24},
+              ]}
               numberOfLines={3}
               ellipsizeMode="tail">
               {store.name}
@@ -102,12 +123,22 @@ const TodayRecommItem = ({store, navigation}) => {
           {store.mainDrinkDtos?.map((drink, index) => {
             const baseColor = drinkColors[drink.type] || '#333';
             const borderColor = hexToRGBA(baseColor, 0.5); // 살짝 연한 컬러
+
+            // 마지막 item 체크, 3개일 때만 ellipsis 적용
+            const isLast =
+              store.mainDrinkDtos.length === 3 &&
+              index === store.mainDrinkDtos.length - 1;
+
             return (
               <React.Fragment key={index}>
                 <Text
+                  allowFontScaling={false}
+                  {...(isLast ? {numberOfLines: 1, ellipsizeMode: 'tail'} : {})}
                   style={[
                     styles.drinkText,
                     {color: baseColor, backgroundColor: 'rgba(0,0,0,0.40)'},
+                    {fontSize},
+                    isLast && {flexShrink: 1}, // 남은 공간 차지
                   ]}>
                   {translateAlcohol(drink.type)} {drink.price}
                 </Text>
@@ -156,7 +187,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     zIndex: 2, // 텍스트를 그라데이션 위로
     marginLeft: 10,
-    marginTop: 10,
+    marginTop: 5,
   },
   imageStyle: {
     alignSelf: 'center',
@@ -166,21 +197,17 @@ const styles = StyleSheet.create({
   },
   storeName: {
     color: '#fff',
-    fontSize: 24,
     fontFamily: 'Pretendard-Bold',
-    lineHeight: 26,
-    marginTop: 3,
   },
   drinkView: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 20,
     marginLeft: 10,
   },
   drinkText: {
     color: '#333',
     fontFamily: 'Pretendard-Medium',
-    fontSize: 12,
     padding: 4,
     borderRadius: 7,
     paddingHorizontal: 8,

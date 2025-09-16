@@ -1,8 +1,11 @@
 import React from 'react';
 import {Text, SafeAreaView, ScrollView, View, StyleSheet} from 'react-native';
+import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+
 const Location_v20250401 = () => {
+  const {bottom} = useSafeAndroidInsets();
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View>
           <Text style={styles.title}>제 1 조 (목적)</Text>

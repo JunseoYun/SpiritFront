@@ -941,6 +941,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
           animationType="fade"
           transparent={true}
           visible={isBottomOpen}
+          statusBarTranslucent={true}
           onRequestClose={handleBottomClose}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>

@@ -1,5 +1,12 @@
 import React from 'react';
-import {View, Text, Pressable, ScrollView, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  PixelRatio,
+} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import LinearGradient from 'react-native-linear-gradient';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
@@ -8,6 +15,9 @@ import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
+const fontScale = PixelRatio.getFontScale();
+
+const iconSize = fontScale >= 1.5 ? 22 : 16;
 
 const PopularStoreItem = ({store, location, navigation}) => {
   const {translateAlcohol} = useTranslateAlcohol();
@@ -256,7 +266,10 @@ const PopularStoreItem = ({store, location, navigation}) => {
             {store.isCertified == true && (
               <FastImage
                 source={require('../../../assets/verifyMaker.png')}
-                style={styles.imageStyle}
+                style={[
+                  styles.imageStyle,
+                  fontScale >= 1.5 && {width: 21, height: 21},
+                ]}
               />
             )}
             <Text
@@ -267,7 +280,7 @@ const PopularStoreItem = ({store, location, navigation}) => {
             </Text>
           </View>
           <View style={styles.infoTitleViewSection}>
-            <FontAwesomeIcon name="star" size={16} color="#FED348" />
+            <FontAwesomeIcon name="star" size={iconSize} color="#FED348" />
             <Text style={styles.infoText}> {store.storeRate || 0}</Text>
             <Text
               style={[
@@ -283,7 +296,13 @@ const PopularStoreItem = ({store, location, navigation}) => {
           </View>
         </View>
 
-        <View style={styles.infoTimeView}>
+        <View
+          style={[
+            styles.infoTimeView,
+            fontScale >= 1.5
+              ? {flexDirection: 'column', alignItems: 'flex-start'}
+              : {flexDirection: 'row', alignItems: 'center'},
+          ]}>
           <View style={styles.infoView}>
             {store?.isAlwaysOpen == true ? (
               <Text style={styles.subInfoText}>24시간 영업</Text>
@@ -311,13 +330,26 @@ const PopularStoreItem = ({store, location, navigation}) => {
         </View>
 
         <View style={styles.mainDrinkView}>
-          {store?.mainDrinkDtos?.slice(0, 3)?.map((drink, idx) => (
-            <View key={idx} style={styles.drinkBadge}>
-              <Text style={styles.drinkBadgeText}>
-                {translateAlcohol(drink.type)} {drink.price}
-              </Text>
-            </View>
-          ))}
+          {store?.mainDrinkDtos?.slice(0, 3)?.map((drink, idx, arr) => {
+            const isLast = idx === arr.length - 1;
+
+            return (
+              <View
+                key={idx}
+                style={[
+                  styles.drinkBadge,
+                  isLast ? {flexShrink: 1} : {}, // 마지막만 줄어들게
+                ]}>
+                <Text
+                  style={styles.drinkBadgeText}
+                  {...(isLast
+                    ? {numberOfLines: 1, ellipsizeMode: 'tail'}
+                    : {})}>
+                  {translateAlcohol(drink.type)} {drink.price}
+                </Text>
+              </View>
+            );
+          })}
         </View>
       </Pressable>
     </View>
@@ -513,8 +545,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   infoTimeView: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    // flexDirection: 'row',
+    // alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 7,
   },

@@ -1,10 +1,23 @@
 import React, {useState, useEffect} from 'react';
-import {FlatList, StyleSheet, View, Text, Pressable} from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  View,
+  Text,
+  Pressable,
+  PixelRatio,
+} from 'react-native';
 import OpenStoreItem from './OpenStoreItem';
 import {Store_getby_business_hours} from '../../../api/storeApi';
 import Feather from 'react-native-vector-icons/Feather';
 
-const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
+let fontScale = PixelRatio.getFontScale(); // let으로 변경
+if (fontScale > 1.7) fontScale = 1.7;
+
+const fontSize = 18 * fontScale;
+const subfontSize = 13 * fontScale;
+
+const OpenStoreList = ({location, navigation, refresh}) => {
   const [distancestores, setDistancestores] = useState([]);
   const [distancepage, setDistancepage] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -73,9 +86,10 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
     <View>
       <Pressable
         style={styles.todayPhrasesView}
-        onPress={() => {
-          navigation.navigate('OpenStoreScreen', {location: location});
-        }}>
+        onPress={() =>
+          distancestores.length >= 3 &&
+          navigation.navigate('OpenStoreScreen', {location})
+        }>
         <View
           style={{
             marginTop: 10,
@@ -84,11 +98,21 @@ const OpenStoreList = ({location, navigation, refresh, setRefresh}) => {
             marginRight: 20,
             alignItems: 'center',
           }}>
-          <Text style={styles.mylocationlivetext}>현재 영업 중인 술집은?</Text>
-          <View style={styles.totalView}>
-            <Text style={styles.totalText}>전체보기</Text>
-            <Feather name={'chevron-right'} size={15} color="#333" />
-          </View>
+          <Text
+            style={[styles.mylocationlivetext, {fontSize}]}
+            allowFontScaling={false}>
+            현재 영업 중인 술집은?
+          </Text>
+          {distancestores.length >= 3 && (
+            <View style={styles.totalView}>
+              <Text
+                style={[styles.totalText, {fontSize: subfontSize}]}
+                allowFontScaling={false}>
+                전체보기
+              </Text>
+              <Feather name={'chevron-right'} size={15} color="#333" />
+            </View>
+          )}
         </View>
         <Text style={styles.mylocationlivesubtext}>
           내 주변 늦게까지 영업하는 술집을 알려드려요
@@ -145,7 +169,6 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   mylocationlivetext: {
-    fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#121212',
   },
@@ -154,7 +177,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalText: {
-    fontSize: 13,
     fontFamily: 'Pretendard-Regular',
     color: '#333',
   },

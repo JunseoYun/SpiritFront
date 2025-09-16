@@ -64,9 +64,9 @@ const Introduce = ({
           <MaterialIcons name="group" size={20} color="#333" />
 
           {storedata?.isGroupAvailable ? (
-            <Text style={styles.infoHidetext}>10인 이상 가능</Text>
+            <Text style={styles.infoHidetext}>단체 방문 가능</Text>
           ) : (
-            <Text style={styles.infoHidetext}>10인 이상 불가능</Text>
+            <Text style={styles.infoHidetext}>소수 방문 위주</Text>
           )}
           <View style={{right: 30, position: 'absolute', alignSelf: 'center'}}>
             <Entypo name="chevron-small-right" size={25} color="#333" />
@@ -77,9 +77,9 @@ const Introduce = ({
           <MaterialIcons name="group" size={20} color="#333" />
 
           {storedata?.isGroupAvailable ? (
-            <Text style={styles.infoHidetext}>10인 이상 가능</Text>
+            <Text style={styles.infoHidetext}>단체 방문 가능</Text>
           ) : (
-            <Text style={styles.infoHidetext}>10인 이상 불가능</Text>
+            <Text style={styles.infoHidetext}>소수 방문 위주</Text>
           )}
         </View>
       )}

@@ -1,26 +1,67 @@
-import React from 'react';
-import {View, Platform} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Platform, useWindowDimensions} from 'react-native';
 import Config from 'react-native-config';
-import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
+import mobileAds, {
+  BannerAd,
+  BannerAdSize,
+  TestIds,
+} from 'react-native-google-mobile-ads';
+import {useAdConsent} from '../../context/AdConsentContext';
 
-const adUnitId =
+const searchBannerId =
   Platform.OS === 'android'
-    ? `${Config.GOOGLE_ADS_ID}`
-    : `${Config.GOOGLE_ADS_ID_IOS}`; // ← 배너 단위 ID
+    ? Config.GOOGLE_ADS_SEARCH_ID
+    : Config.GOOGLE_ADS_SEARCH_ID_IOS;
 
-export default function MyBanner() {
+const mainBannerId =
+  Platform.OS === 'android'
+    ? Config.GOOGLE_ADS_MAIN_ID
+    : Config.GOOGLE_ADS_MAIN_ID_IOS;
+
+const likeBannerId =
+  Platform.OS === 'android'
+    ? Config.GOOGLE_ADS_LIKESCREEN_ID
+    : Config.GOOGLE_ADS_LIKESCREEN_ID_IOS;
+
+export default function MyBanner({index}) {
+  const {width} = useWindowDimensions();
+  const {npa} = useAdConsent();
+  const [loaded, setLoaded] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  let prodUnitId = mainBannerId; // 기본값
+  if (index === 'search') {
+    prodUnitId = searchBannerId;
+  } else if (index === 'like') {
+    prodUnitId = likeBannerId;
+  }
+
+  const adUnitId = __DEV__ ? TestIds.BANNER : prodUnitId;
+
+  const handleRetry = () => {
+    setLoaded(false);
+    setReloadKey(prev => prev + 1); // key 변경 → BannerAd 재마운트
+  };
+
   return (
-    <View style={{alignItems: 'center', marginTop: 10}}>
+    <View style={{width, alignSelf: 'center', marginTop: 10}}>
+      {!loaded && index === 'main' && (
+        <View
+          style={{
+            width: '100%',
+            height: 10,
+            backgroundColor: '#F5F5F5',
+            marginTop: 5,
+          }}
+        />
+      )}
       <BannerAd
+        key={reloadKey} // key 변경 시 새로 마운트됨
         unitId={adUnitId}
-        size={BannerAdSize.ADAPTIVE_BANNER}
-        requestOptions={{
-          requestNonPersonalizedAdsOnly: true,
-        }}
-        onAdLoaded={() => {}}
-        onAdFailedToLoad={error => {
-          console.error('광고 로드 실패', error);
-        }}
+        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+        requestOptions={{requestNonPersonalizedAdsOnly: false}}
+        onAdLoaded={() => setLoaded(true)}
+        onAdFailedToLoad={() => handleRetry()} // 실패하면 다시 마운트
       />
     </View>
   );

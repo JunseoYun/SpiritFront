@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useToast} from '../../context/ToastContext';
 
 const alcohols = [
   {label: '소주', value: 'SOJU'},
@@ -24,7 +25,9 @@ const alcohols = [
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
-const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
+const StoreAlcohol = ({alcohol, setAlcohol, index, error}) => {
+  const {showToast} = useToast();
+  const [overText, setOverText] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const handleAlcoholChange = (index, key, value) => {
@@ -51,8 +54,14 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>대표주종 (최대 3종)</Text>
-
+      <Text style={styles.title}>
+        {index ? '대표주종* (최대 3종)' : '대표주종 (최대 3종)'}
+      </Text>
+      {error === 'StoreDrink' && !hasValidAlcohol && (
+        <Text style={styles.errorMessage}>
+          대표 주종을 입력하고 가격을 설정해 주세요.
+        </Text>
+      )}
       <View style={styles.summaryWrap}>
         {alcohol.map((item, index) => {
           const label = alcohols.find(a => a.value === item?.type)?.label;
@@ -147,18 +156,29 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
                 <TextInput
                   style={styles.priceInput}
                   value={item.price ? item.price.toString() : ''}
-                  onChangeText={value =>
-                    handleAlcoholChange(
-                      index,
-                      'price',
-                      value === '' ? '' : parseInt(value),
-                    )
-                  }
+                  onChangeText={value => {
+                    const cleaned = value.replace(/[^0-9]/g, '');
+                    let num = cleaned === '' ? '' : parseInt(cleaned, 10);
+                    if (typeof num === 'number' && !isNaN(num)) {
+                      if (num > 100000000) {
+                        num = 100000000;
+                        setOverText(true);
+                      } else {
+                        setOverText(false);
+                      }
+                    }
+                    handleAlcoholChange(index, 'price', num);
+                  }}
                   placeholder="가격"
                   placeholderTextColor="#999"
                   keyboardType="number-pad"
                   returnKeyType="done"
                 />
+                {overText && (
+                  <Text style={styles.errorText}>
+                    가격은 최대 1억원까지 입력 가능합니다
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -185,12 +205,6 @@ const StoreAlcohol = ({alcohol, setAlcohol, error}) => {
           style={styles.addButton}>
           <Text style={styles.addButtonText}>+ 대표주종 추가</Text>
         </TouchableOpacity>
-      )}
-
-      {error === 'StoreDrink' && !hasValidAlcohol && (
-        <Text style={styles.errorMessage}>
-          대표 주종을 입력하고 가격을 설정해 주세요.
-        </Text>
       )}
     </View>
   );
@@ -311,6 +325,12 @@ const styles = StyleSheet.create({
     color: '#FF4816',
     fontSize: 15,
     fontFamily: 'Pretendard-Medium',
+    marginTop: -15,
+    marginBottom: 15,
+  },
+  errorText: {
+    color: '#FF4816',
+    fontSize: 14,
     marginTop: 5,
   },
 });

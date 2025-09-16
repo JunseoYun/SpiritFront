@@ -14,6 +14,7 @@ import {Store_getby_liked} from '../../api/storeApi';
 import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
 import LikedItemSkeleton from '../../components/LikedScreen/LikedItemSkeleton';
+import MyBanner from '../../components/Ads/MyBanner';
 
 const LikeScreen = ({navigation}) => {
   const {token} = useAuth();
@@ -107,6 +108,7 @@ const LikeScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* <MyBanner index={'like'} /> */}
       {token && (
         <>
           {firstloading || refreshing ? (
@@ -130,6 +132,7 @@ const LikeScreen = ({navigation}) => {
               onEndReachedThreshold={0.5}
               onRefresh={handleRefresh}
               refreshing={refreshing}
+              ListHeaderComponent={<MyBanner index={'like'} />}
               ListEmptyComponent={
                 !loading && stores.length === 0 ? (
                   <Text style={styles.emptyText}>찜한 술집이 없어요</Text>

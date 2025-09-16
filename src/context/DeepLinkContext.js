@@ -5,15 +5,22 @@ const DeepLinkContext = createContext();
 let globalSetPendingStoreId = null;
 let globalPendingStoreId = null;
 
+let globalSetPendingStoreInviteId = null;
+let globalPendingStoreInviteId = null;
+
 let globalSetAppLinkHandling = null;
 let globalIsAppLinkHandling = false;
 
 export const DeepLinkProvider = ({children}) => {
   const [pendingStoreId, setPendingStoreId] = useState(null);
+  const [pendingStoreInviteId, setPendingStoreInviteId] = useState(null);
   const [isAppLinkHandling, setIsAppLinkHandling] = useState(false);
 
   globalSetPendingStoreId = setPendingStoreId;
   globalPendingStoreId = pendingStoreId;
+
+  globalSetPendingStoreInviteId = setPendingStoreInviteId;
+  globalPendingStoreInviteId = pendingStoreInviteId;
 
   globalSetAppLinkHandling = setIsAppLinkHandling;
   globalIsAppLinkHandling = isAppLinkHandling;
@@ -23,6 +30,8 @@ export const DeepLinkProvider = ({children}) => {
       value={{
         pendingStoreId,
         setPendingStoreId,
+        pendingStoreInviteId,
+        setPendingStoreInviteId,
         isAppLinkHandling,
         setIsAppLinkHandling,
       }}>
@@ -39,7 +48,14 @@ export const setGlobalPendingStoreId = id => {
   globalSetPendingStoreId?.(id);
 };
 
+export const setGlobalPendingStoreInviteId = id => {
+  globalPendingStoreInviteId = id;
+  globalSetPendingStoreInviteId?.(id);
+};
+
 export const getGlobalPendingStoreId = () => globalPendingStoreId;
+
+export const getGlobalPendingStoreInviteId = () => globalPendingStoreInviteId;
 
 // ✅ 앱링크 처리 상태 전역 접근
 export const setGlobalAppLinkHandling = bool => {

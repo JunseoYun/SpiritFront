@@ -7,14 +7,13 @@ import {
   FlatList,
   Pressable,
 } from 'react-native';
-import {
-  NotifiGet,
-  NotifiRead,
-  NotifiReadAll,
-} from '../../../../api/notificationApi';
-import Loading from '../../../../hooks/Loading';
-import RejectModal from '../../../../components/Reject/RejectModal';
-import {useToast} from '../../../../context/ToastContext';
+import {NotifiGet, NotifiRead, NotifiReadAll} from '../../api/notificationApi';
+import Loading from '../../hooks/Loading';
+import RejectModal from '../../components/Reject/RejectModal';
+import {useToast} from '../../context/ToastContext';
+import {ReviewgetbyGet} from '../../api/reviewApi';
+import {has_unread_notification} from '../../api/notificationApi';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const NotificationCard = ({title, message, date, hasRead}) => {
   const textColorStyle = hasRead ? styles.readText : styles.unreadText;
@@ -48,13 +47,28 @@ const NotificationScreen = ({navigation}) => {
   const [notifidata, setNotifidata] = useState([]);
   const [selectedReject, setSelectedReject] = useState(null);
   const [hasReadmodal, setHasReadmodal] = useState(false);
+  const [clickedItemId, setClickedItemId] = useState(null);
+  const [unreadNotification, setUnreadNotification] = useState(false);
   const {showToast} = useToast();
-
+  const {bottom} = useSafeAndroidInsets();
   useEffect(() => {
     setNotifidata([]); // 기존 데이터 초기화
     setPage(0);
     setIsEnd(false);
     Notifigetall(0);
+  }, []);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      setLoading(true);
+      try {
+        const unread = await has_unread_notification();
+        setUnreadNotification(unread.hasUnread);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchUnread();
   }, []);
 
   const Notifigetall = async page => {
@@ -91,6 +105,15 @@ const NotificationScreen = ({navigation}) => {
     setLoading(true);
     try {
       await NotifiRead(notificationId);
+      setNotifidata(prev =>
+        prev.map(n => (n.id === notificationId ? {...n, hasRead: true} : n)),
+      );
+      setUnreadNotification(prev => {
+        const stillUnread = notifidata.some(
+          n => n.id !== notificationId && !n.hasRead,
+        );
+        return stillUnread;
+      });
     } catch (err) {
       console.log('읽기 실패');
     } finally {
@@ -102,16 +125,24 @@ const NotificationScreen = ({navigation}) => {
     try {
       setLoading(true);
       await NotifiReadAll();
+      // Optimistically update UI: mark all as read and disable the button
+      setNotifidata(prev => prev.map(n => ({...n, hasRead: true})));
+      setUnreadNotification(false);
     } catch (err) {
       showToast('다시 시도해 주세요.', 'center');
     } finally {
       setLoading(false);
+      // Optionally refresh to ensure server state, but button already disabled
       handleRefresh();
     }
   };
+  function extractStoreName(body) {
+    const match = body.match(/(.+?)\s*매장/);
+    return match ? match[1] : null;
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       <FlatList
         data={notifidata}
         keyExtractor={item => item.id.toString()}
@@ -122,22 +153,85 @@ const NotificationScreen = ({navigation}) => {
         renderItem={({item}) => (
           <Pressable
             onPress={() => {
-              if (item.notificationType === 'STORE_OWNERSHIP_REJECTED') {
-                setSelectedReject(item);
-                if (item.hasRead == false) {
-                  NotificationRead(item.id);
-                  setHasReadmodal(true);
+              if (clickedItemId) return; // 이미 클릭 중이면 무시
+              setClickedItemId(item.id); // 클릭 시작
+
+              const handlePress = async () => {
+                if (!item.hasRead) {
+                  await NotificationRead(item.id);
                 }
-              }
-              if (item.notificationType === 'STORE_OWNERSHIP_APPROVED') {
-                if (item.hasRead == false) {
-                  NotificationRead(item.id);
+
+                if (item.notificationType === 'STORE_OWNERSHIP_REJECTED') {
+                  setSelectedReject(item);
+                  if (!item.hasRead) {
+                    setHasReadmodal(true);
+                  }
                 }
-                navigation.navigate('StoreStack', {
-                  screen: 'StoreMainScreen',
-                  params: {storeId: item.redirectId},
-                });
-              }
+
+                if (item.notificationType === 'STORE_OWNERSHIP_APPROVED') {
+                  navigation.reset({
+                    index: 0, // 최상단 활성 스택
+                    routes: [
+                      {
+                        name: 'MainBtmbar', // 최상위 BottomTab
+                        state: {
+                          index: 0, // MyStack 탭을 선택
+                          routes: [
+                            {
+                              name: 'MyStack', // MyStack 안으로
+                              state: {
+                                index: 0,
+                                routes: [
+                                  {
+                                    name: 'MyScreen', // 최종 화면
+                                    params: {invitationManager: true},
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  });
+                }
+
+                if (
+                  item.notificationType === 'STORE_OWNER_CHANGED' ||
+                  item.notificationType === 'STORE_MANAGER_INVITE_ACCEPTED'
+                ) {
+                  navigation.navigate('StoreStack', {
+                    screen: 'StoreManagerScreen',
+                    params: {
+                      storeId: item.redirectId,
+                      storename: extractStoreName(item.body),
+                    },
+                  });
+                }
+                if (item.notificationType === 'STORE_REVIEW_CREATED') {
+                  const body = item.body || '';
+                  let storename = '';
+                  const match = body.match(/(.+?) 매장에/);
+                  if (match) storename = match[1];
+
+                  try {
+                    const response = await ReviewgetbyGet(item.redirectId);
+                    navigation.navigate('StoreStack', {
+                      screen: 'StoreReviewScreen',
+                      params: {
+                        storeId: response.storeId,
+                        storename,
+                        isOwner: true,
+                      },
+                    });
+                  } catch (er) {
+                    console.log(er);
+                  }
+                }
+                setClickedItemId(null);
+              };
+
+              handlePress();
             }}>
             <NotificationCard
               title={item.title}
@@ -168,16 +262,17 @@ const NotificationScreen = ({navigation}) => {
           ) : null
         }
         ListHeaderComponent={
-          <Pressable onPress={readallnotifi}>
+          <Pressable
+            disabled={!unreadNotification || loading}
+            onPress={unreadNotification && !loading ? readallnotifi : null}>
             <Text
-              style={{
-                paddingBottom: 16,
-                fontSize: 14,
-                fontFamily: 'Pretendard-Medium',
-                color: '#333',
-                textAlign: 'right',
-              }}>
-              알람 전체 읽기
+              style={[
+                styles.allReadText,
+                unreadNotification && !loading
+                  ? {color: '#121212'}
+                  : {color: '#c0c0c0'},
+              ]}>
+              알림 전체 읽기
             </Text>
           </Pressable>
         }
@@ -202,7 +297,7 @@ const NotificationScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fdfdfd',
+    backgroundColor: '#fff',
   },
   listContent: {
     padding: 16,
@@ -235,6 +330,13 @@ const styles = StyleSheet.create({
     color: '#999',
     textAlign: 'right',
     fontFamily: 'Pretendard-Regular',
+  },
+  allReadText: {
+    paddingBottom: 16,
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
+    color: '#999',
+    textAlign: 'right',
   },
   readText: {
     color: '#aaa',

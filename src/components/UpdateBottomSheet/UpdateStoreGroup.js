@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const UpdateStoreGroup = ({
   updatedValue,
@@ -10,7 +11,7 @@ const UpdateStoreGroup = ({
 }) => {
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>매장 10인 이상 가능 여부</Text>
+      <Text style={styles.title}>단체 방문 가능 여부</Text>
       <View style={styles.storeCheckView}>
         <TouchableOpacity
           style={styles.storeCheckView}
@@ -19,7 +20,11 @@ const UpdateStoreGroup = ({
             style={[
               styles.checkbox,
               updatedValue === true && styles.checkboxSelected,
-            ]}></View>
+            ]}>
+            {updatedValue === true && (
+              <MaterialIcons name="check" size={25} color="#fff" />
+            )}
+          </View>
           <Text style={styles.checkboxText}>가능</Text>
         </TouchableOpacity>
 
@@ -30,7 +35,11 @@ const UpdateStoreGroup = ({
             style={[
               styles.checkbox,
               updatedValue === false && styles.checkboxSelected,
-            ]}></View>
+            ]}>
+            {updatedValue === false && (
+              <MaterialIcons name="check" size={25} color="#fff" />
+            )}
+          </View>
           <Text style={styles.checkboxText}>불가능</Text>
         </TouchableOpacity>
       </View>
@@ -69,7 +78,6 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     borderWidth: 1,
     borderColor: '#45C9FF',
-    padding: 10,
     margin: 5,
     alignItems: 'center',
   },

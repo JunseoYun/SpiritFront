@@ -38,6 +38,7 @@ const UpdateStoreDrink = ({navigation, route}) => {
   const [selectnull, setSelectnull] = useState(false);
   const [loading, setLoading] = useState(false);
   const {showToast} = useToast();
+  const [overText, setOverText] = useState(false);
 
   const ensureTwoOptions = () => {
     if (updatedValue.length < 3) {
@@ -210,11 +211,20 @@ const UpdateStoreDrink = ({navigation, route}) => {
                           placeholderTextColor="#aaa"
                           value={drink.price?.toString() || ''}
                           onChangeText={value => {
+                            const cleaned = value.replace(/[^0-9]/g, '');
+                            let num =
+                              cleaned === '' ? 0 : parseInt(cleaned, 10);
+                            if (!isNaN(num) && num > 100000000) {
+                              num = 100000000;
+                              setOverText(true);
+                            } else {
+                              setOverText(false);
+                            }
                             setUpdatedValue(prev => {
                               const updatedDrinks = [...prev];
                               updatedDrinks[index] = {
                                 ...updatedDrinks[index],
-                                price: parseInt(value) || 0,
+                                price: num,
                               };
                               return updatedDrinks;
                             });
@@ -222,6 +232,11 @@ const UpdateStoreDrink = ({navigation, route}) => {
                         />
                         <Text style={styles.unit}>원</Text>
                       </View>
+                      {overText && (
+                        <Text style={styles.errorText}>
+                          가격은 최대 1억원까지 입력 가능합니다
+                        </Text>
+                      )}
                     </View>
 
                     <TouchableOpacity
@@ -371,5 +386,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
     fontSize: 20,
     color: '#333',
+  },
+  errorText: {
+    color: '#FF4816',
+    fontSize: 14,
+    marginTop: 5,
   },
 });

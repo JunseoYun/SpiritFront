@@ -168,10 +168,22 @@ const RegisterScreen = ({route, navigation}) => {
         });
       }
     } catch (error) {
-      showAlert({
-        title: '중복된 닉네임',
-        message: '닉네임 변경 후\n중복검사를 다시 시도해주세요.',
-      });
+      if (error.response.data.code === 21029) {
+        showAlert({
+          title: '중복 가입',
+          message: '이미 회원가입된 사용자입니다.',
+        });
+        navigation.reset({
+          index: 0, // 초기 화면 인덱스
+          routes: [{name: 'OAuthLoginScreen'}], // 이동할 화면
+        });
+      } else {
+        showAlert({
+          title: '중복된 닉네임',
+          message: '닉네임 변경 후\n중복검사를 다시 시도해주세요.',
+        });
+      }
+
       setNicknameCheck(false);
     } finally {
       setLoading(false);

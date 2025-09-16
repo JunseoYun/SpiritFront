@@ -91,23 +91,6 @@ const StoreAlcoholScreen = ({
 
   return (
     <SafeAreaView style={[styles.container, {paddingBottom: bottom * 2}]}>
-      {isUpdatable && (
-        <>
-          <Pressable
-            style={styles.reorderButton}
-            onPress={() =>
-              navigation.navigate('AlcoholEditScreen', {
-                storeId,
-                alcohols,
-                onAlcoholUpdateComplete,
-                onAlcoholDelete,
-              })
-            }>
-            <Text style={styles.alcoholAddButtonText}>주류 편집</Text>
-          </Pressable>
-        </>
-      )}
-
       {/* 주류 리스트 */}
       {/* 내부 ScrollView 제거하고 View로 감싸기 */}
       <View style={{flex: 1}}>

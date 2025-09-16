@@ -22,7 +22,7 @@ import {
   handleLocationError,
 } from '../../hooks/useLocation';
 import Loading from '../../hooks/Loading';
-
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 const StoreAddMapScreen = ({navigation}) => {
   const route = useRoute();
   const [loading, setLoading] = useState(false);
@@ -34,6 +34,7 @@ const StoreAddMapScreen = ({navigation}) => {
   const {showToast} = useToast();
   const webViewRef = useRef(null);
 
+  const {bottom} = useSafeAndroidInsets();
   const fetchSaveLocation = async () => {
     setLoading(true);
 
@@ -180,7 +181,7 @@ const StoreAddMapScreen = ({navigation}) => {
   };
 
   return (
-    <>
+    <View style={{flex: 1, paddingBottom: bottom}}>
       {location ? (
         <WebView
           ref={webViewRef}
@@ -188,21 +189,25 @@ const StoreAddMapScreen = ({navigation}) => {
           source={{html: KakaoMapHTML()}}
           javaScriptEnabled={true}
           domStorageEnabled={true}
-          nestedScrollEnabled={true} // 제스처 전달 허용
+          nestedScrollEnabled={true}
           style={styles.webview}
           onMessage={onMessageHandler}
         />
       ) : null}
 
-      <TouchableOpacity style={styles.buttonRoute} onPress={updateNewLocation}>
+      <TouchableOpacity
+        style={[styles.buttonRoute, {bottom: 110 + bottom}]}
+        onPress={updateNewLocation}>
         <Feather name="crosshair" size={30} color="#16BBFF" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.locationbtn} onPress={setcenterrefresh}>
+      <TouchableOpacity
+        style={[styles.locationbtn, {bottom: 40 + bottom}]}
+        onPress={setcenterrefresh}>
         <Text style={styles.locationbtntext}>이 위치로 주소 설정</Text>
       </TouchableOpacity>
 
       <Loading loading={loading} />
-    </>
+    </View>
   );
 };
 
@@ -217,29 +222,27 @@ const styles = StyleSheet.create({
   },
   locationbtn: {
     position: 'absolute',
-    bottom: '5%',
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     width: '90%',
-    height: '8%',
     backgroundColor: '#45C9FF',
-    borderRadius: 12,
+    borderRadius: 7,
   },
   locationbtntext: {
     alignSelf: 'center',
     color: '#fff',
     fontSize: 18,
     fontFamily: 'Pretendard-Medium',
+    paddingVertical: 15,
   },
   buttonRoute: {
     position: 'absolute',
-    bottom: '15%',
     left: '7%',
     borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10,
+    padding: 9,
     backgroundColor: 'rgba(22, 187, 255, 0.2)',
   },
 });

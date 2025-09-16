@@ -19,7 +19,7 @@ const {width} = Dimensions.get('window');
 const IMAGE_WIDTH = width - 120;
 const IMAGE_HEIGHT = (IMAGE_WIDTH * 3) / 4;
 const {width: SCREEN_WIDTH} = Dimensions.get('window');
-const MAX_WIDTH = (SCREEN_WIDTH - 32) * 0.9; // 최대 이미지 너비 (양쪽 여백 포함)
+const MAX_WIDTH = SCREEN_WIDTH - 100; // ImageReorderScreen width alignment
 
 const DraggableImageItem = ({
   item,
@@ -35,20 +35,23 @@ const DraggableImageItem = ({
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
-  const [imageHeight, setImageHeight] = useState(150); // 초기 임의 높이
+  const DISPLAY_MAX_HEIGHT = 320; // ?�래�??�의�??�한 최�? 미리보기 ?�이
+  const [imageHeight, setImageHeight] = useState(DISPLAY_MAX_HEIGHT);
 
   useEffect(() => {
     const uri = item.isNew ? item.path : item.url;
 
     Image.getSize(
       uri,
-      (width, height) => {
-        const ratio = height / width;
-
-        setImageHeight(MAX_WIDTH * ratio);
+      (w, h) => {
+        const ratio = h / w;
+        const naturalHeight = MAX_WIDTH * ratio;
+        // ?�무 �??��?지??미리보기?�서 ?�이�??�한?�여 ?�래�??�이??개선
+        setImageHeight(Math.min(naturalHeight, DISPLAY_MAX_HEIGHT));
       },
       error => {
         console.warn('Failed to get image size:', error);
+        setImageHeight(DISPLAY_MAX_HEIGHT);
       },
     );
   }, [item, checkDelete]);
@@ -92,16 +95,18 @@ const DraggableImageItem = ({
         },
       ]}>
       <Pressable
-        onLongPress={checkDelete ? undefined : drag}
+        // Drag is triggered only from the handle icon (outside image)
+        onLongPress={undefined}
         style={styles.imageWrapper}>
         <FastImage
-          resizeMode={FastImage.resizeMode.contain}
+          // ?�이�??�한?�으므�?채우?�록 cover ?�용 (?�로�?�??��?지?????�단 ?��?가 ?�릴 ???�음)
+          resizeMode={FastImage.resizeMode.cover}
           source={{uri: item.isNew ? item.path : item.url}}
           style={[
             {
               width: MAX_WIDTH,
               height: imageHeight,
-              borderRadius: 10,
+              borderRadius: 12,
             },
             checkDelete && {
               width: MAX_WIDTH,
@@ -150,17 +155,17 @@ const DraggableImageItem = ({
 
         <View style={styles.buttonGroup}>
           {checkDelete ? (
-            // 삭제 모드일 땐 선택된 boardType 버튼만 보여줌
+            // ??�� 모드?????�택??boardType 버튼�?보여�?
             <Pressable
               style={[styles.menuTypeButton, {backgroundColor: '#E9F5FB'}]}
-              disabled // 삭제 모드에선 비활성화
+              disabled // ??�� 모드?�선 비활?�화
             >
               <Text style={[styles.menuTypeText, {color: '#16BBFF'}]}>
                 {item.boardType === 'MENU' ? '메뉴' : '주류'}
               </Text>
             </Pressable>
           ) : (
-            // 평소엔 둘 다 보여줌
+            // ?�소??????보여�?
             <>
               <Pressable
                 style={[
@@ -194,7 +199,18 @@ const DraggableImageItem = ({
             </>
           )}
         </View>
+
       </Pressable>
+
+      {!checkDelete && (
+        <Pressable
+          onLongPress={drag}
+          delayLongPress={100}
+          hitSlop={10}
+          style={styles.dragIcon}>
+          <Ionicons name="reorder-three-outline" size={30} color="#999" />
+        </Pressable>
+      )}
       {/* {!checkDelete && (
         <View
           style={{
@@ -222,7 +238,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 8,
-    marginHorizontal: 20,
+    marginHorizontal: 16,
     backgroundColor: '#fff',
     borderRadius: 12,
     justifyContent: 'center',
@@ -240,7 +256,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     left: 8,
-    gap: 8, // RN 0.71 이상만 동
+    gap: 8, // RN 0.71 ?�상�???
   },
 
   menuTypeButton: {
@@ -270,6 +286,12 @@ const styles = StyleSheet.create({
     top: 7,
     right: 7,
   },
+  dragIcon: {
+    marginLeft: 10,
+  },
 });
 
 export default DraggableImageItem;
+
+
+

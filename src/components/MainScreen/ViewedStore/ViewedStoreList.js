@@ -1,11 +1,29 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {View, Text, FlatList, StyleSheet, Pressable} from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Pressable,
+  PixelRatio,
+} from 'react-native';
 import ViewedStoreItem from './ViewedStoreItem';
 import {Store_getby_viewed} from '../../../api/storeApi';
 import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
 
-const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
+let fontScale = PixelRatio.getFontScale(); // let으로 변경
+if (fontScale > 1.7) fontScale = 1.7;
+
+const fontSize = 18 * fontScale;
+const subfontSize = 13 * fontScale;
+
+const ViewedStoreList = ({
+  refresh,
+  navigation,
+  location,
+  loaded,
+}) => {
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -49,8 +67,7 @@ const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
     if (refresh) {
       setStores([]); // 데이터 초기화
       setHasMore(true); // 더 로드할 데이터가 있음을 명시
-      getStoreData(0, true); // 새로고침 시 데이터 리
-      setRefresh(false);
+      getStoreData(0, true); // 새로고침 시 데이터 리로드
     }
   }, [refresh]);
 
@@ -76,14 +93,14 @@ const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
   return (
     <>
       {stores.length === 0 && !loading ? (
-        <View style={styles.division} />
+        <View style={{marginTop: 20}}></View>
       ) : (
         <View style={{backgroundColor: '#fff', marginTop: 20}}>
           <Pressable
             style={styles.storeTextView}
-            onPress={() => {
-              navigation.navigate('ViewedStoreScreen');
-            }}>
+            onPress={() =>
+              stores.length >= 4 && navigation.navigate('ViewedStoreScreen')
+            }>
             <View
               style={{
                 marginTop: 10,
@@ -92,12 +109,21 @@ const ViewedStoreList = ({refresh, navigation, location, setRefresh}) => {
                 marginRight: 20,
                 alignItems: 'center',
               }}>
-              <Text style={styles.storeText}>최근 본 매장</Text>
-
-              <View style={styles.totalView}>
-                <Text style={styles.totalText}>전체보기</Text>
-                <Feather name={'chevron-right'} size={15} color="#333" />
-              </View>
+              <Text
+                allowFontScaling={false}
+                style={[styles.storeText, {fontSize}]}>
+                최근 본 매장
+              </Text>
+              {stores.length >= 4 && (
+                <View style={styles.totalView}>
+                  <Text
+                    allowFontScaling={false}
+                    style={[styles.totalText, {fontSize: subfontSize}]}>
+                    전체보기
+                  </Text>
+                  <Feather name={'chevron-right'} size={15} color="#333" />
+                </View>
+              )}
             </View>
           </Pressable>
           <FlatList
@@ -143,12 +169,10 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   storeText: {
-    fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181a1a',
   },
   storetotaltext: {
-    fontSize: 12,
     fontFamily: 'Pretendard-Medium',
     color: '#181a1a',
   },
@@ -157,7 +181,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalText: {
-    fontSize: 13,
     fontFamily: 'Pretendard-Regular',
     color: '#333',
   },

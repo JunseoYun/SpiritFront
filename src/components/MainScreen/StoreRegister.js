@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     color: '#121212',
     marginLeft: 10,
+    textAlign: 'center',
   },
   subtitle: {
     marginTop: 2,

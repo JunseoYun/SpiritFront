@@ -37,8 +37,15 @@ const AlcoholItem = ({
   isMainEditing,
   onTypeChange,
   navigation,
+  expose,
+  autoEdit,
+  draft,
+  onDraftChange,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
+  // Initialize editing true when parent edit mode with autoEdit/draft
+  const [isEditing, setIsEditing] = useState(
+    () => !!(isMainEditing && (autoEdit || !!draft)),
+  );
   const [name, setName] = useState(alcohol.name);
   const [description, setDescription] = useState(alcohol.description);
   const [price, setPrice] = useState(alcohol.price);
@@ -50,23 +57,89 @@ const AlcoholItem = ({
   const [original, setOriginal] = useState({});
   const [loading, setLoading] = useState(false);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [overText, setOverText] = useState(false);
+  const [overdesText, setOverdesText] = useState(false);
+  const [overnameText, setOvernameText] = useState(false);
 
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
 
+  const onEditStart = () => {
+    setOriginal({name, description, price, type, imgUrl, isVariable});
+    setIsEditing(true);
+  };
+
+  // auto-start editing when requested by parent (e.g., edit screen)
   useEffect(() => {
+    if (autoEdit && !isEditing) {
+      onEditStart();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoEdit]);
+
+  // Ensure editing stays on after remount if draft/autoEdit present
+  useEffect(() => {
+    if (isMainEditing && (autoEdit || draft) && !isEditing) {
+      setIsEditing(true);
+    }
+  }, [isMainEditing, autoEdit, draft, isEditing]);
+
+  useEffect(() => {
+    if (isEditing) return;
     setName(alcohol.name);
     setDescription(alcohol.description);
     setPrice(alcohol.price);
     setType(alcohol.type);
     setImgUrl(alcohol.imgUrl);
     setIsVariable(alcohol.price === '변동');
-  }, [alcohol]);
+  }, [alcohol, isEditing]);
 
-  const onEditStart = () => {
-    setOriginal({name, description, price, type, imgUrl, isVariable});
-    setIsEditing(true);
-  };
+  // hydrate from parent draft if present (handles remounts)
+  useEffect(() => {
+    if (!isMainEditing) return;
+    if (draft) {
+      setName(draft.name ?? alcohol.name);
+      setDescription(draft.description ?? alcohol.description);
+      setPrice(draft.price ?? alcohol.price);
+      setType(draft.type ?? alcohol.type);
+      setImgUrl(draft.imgUrl ?? alcohol.imgUrl);
+      setIsVariable(
+        draft.isVariable !== undefined
+          ? draft.isVariable
+          : alcohol.price === '변동',
+      );
+      if (draft?.selectedImage !== undefined)
+        setSelectedImage(draft.selectedImage);
+      if (draft?.isImageDeleted !== undefined)
+        setIsImageDeleted(draft.isImageDeleted);
+      setIsEditing(true);
+    }
+  }, [draft]);
+
+  // persist draft upward while editing so parent can restore after list changes
+  useEffect(() => {
+    if (!isMainEditing) return;
+    if (!onDraftChange) return;
+    onDraftChange(alcohol.id, {
+      name,
+      description,
+      price,
+      type,
+      imgUrl,
+      isVariable,
+      selectedImage,
+      isImageDeleted,
+    });
+  }, [
+    name,
+    description,
+    price,
+    type,
+    imgUrl,
+    isVariable,
+    selectedImage,
+    isImageDeleted,
+  ]);
 
   const onCancelEdit = () => {
     setName(original.name);
@@ -118,27 +191,11 @@ const AlcoholItem = ({
   };
 
   const handleSave = async () => {
-    if (!name.trim())
-      return showAlert({
-        title: '입력 오류',
-        message: '주류 이름을 입력해주세요.',
-      });
+    if (!name.trim()) return showToast('주류 이름을 입력해주세요.');
     if (!isVariable && !price.trim())
-      return showAlert({
-        title: '입력 오류',
-        message: '주류 가격을 입력해주세요.',
-      });
-    if (!type.trim())
-      return showAlert({title: '입력 오류', message: '주종을 선택해주세요.'});
+      return showToast('주류 가격을 입력해주세요.');
 
-    const hasForbidden = [name, description, price].some(value =>
-      forbiddenWords.some(word => value?.includes(word)),
-    );
-    if (hasForbidden)
-      return showAlert({
-        title: '가이드 위반',
-        message: '금지된 단어가 포함되어 있습니다.',
-      });
+    if (!type.trim()) return showToast('주류 주종을 선택해주세요.');
 
     const isImageChanged = selectedImage !== null;
     const isImageRemoved = isImageDeleted && !!alcohol.imgUrl;
@@ -157,7 +214,6 @@ const AlcoholItem = ({
       !isInfoChanged &&
       !isImageAddedAndRemoved
     ) {
-      showToast('변경사항이 없습니다.');
       setIsEditing(false);
       return;
     }
@@ -199,8 +255,32 @@ const AlcoholItem = ({
   };
 
   const handleImagePress = () => {
+    if (isEditing) return;
     navigation.navigate('ImageViewerScreen', {images: imgUrl});
   };
+
+  // expose imperative-like API to parent if requested
+  useEffect(() => {
+    if (!expose) return;
+    const api = {
+      save: handleSave,
+      cancel: onCancelEdit,
+      isEditing: () => isEditing,
+    };
+    expose(api);
+    return () => expose(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    expose,
+    isEditing,
+    name,
+    description,
+    price,
+    type,
+    imgUrl,
+    isImageDeleted,
+    selectedImage,
+  ]);
 
   return (
     <View style={[styles.container, isLast && {borderBottomWidth: 0}]}>
@@ -220,25 +300,68 @@ const AlcoholItem = ({
               <TextInput
                 style={styles.input}
                 value={name}
-                onChangeText={setName}
+                onChangeText={text => {
+                  const maxChars = 50;
+                  if (text.length > maxChars) {
+                    setOvernameText(true);
+                    return; // 초과 입력 무시
+                  } else {
+                    setOvernameText(false);
+                  }
+                  setName(text);
+                }}
                 placeholder="주류 이름"
                 placeholderTextColor="#999"
                 multiline
               />
+              {overnameText && (
+                <Text style={styles.errorText}>
+                  주류 이름은 최대 50자까지 입력 가능합니다.
+                </Text>
+              )}
+
               <TextInput
-                style={[styles.input, {height: 60}]}
+                style={[styles.input]}
                 value={description}
-                onChangeText={setDescription}
+                onChangeText={text => {
+                  const maxChars = 100;
+                  if (text.length > maxChars) {
+                    setOverdesText(true);
+                    return; // 초과 입력 무시
+                  } else {
+                    setOverdesText(false);
+                  }
+                  setDescription(text);
+                }}
                 placeholder="주류 설명을 입력하세요"
                 placeholderTextColor="#999"
                 multiline
               />
+              {overdesText && (
+                <Text style={styles.errorText}>
+                  주류 설명은 최대 100자까지 입력 가능합니다.
+                </Text>
+              )}
               <View style={styles.rowBetween}>
                 <TextInput
                   style={[styles.input, {flex: 1}]}
                   placeholder="가격 입력"
                   value={isVariable ? '변동' : price}
-                  onChangeText={t => setPrice(t.replace(/[^0-9]/g, ''))}
+                  onChangeText={t => {
+                    const cleaned = t.replace(/[^0-9]/g, '');
+                    if (cleaned === '') {
+                      setPrice('');
+                      return;
+                    }
+                    let num = parseInt(cleaned, 10);
+                    if (!isNaN(num) && num > 100000000) {
+                      num = 100000000;
+                      setOverText(true);
+                    } else {
+                      setOverText(false);
+                    }
+                    setPrice(String(num));
+                  }}
                   editable={!isVariable}
                   keyboardType="numeric"
                   placeholderTextColor="#999"
@@ -248,6 +371,7 @@ const AlcoholItem = ({
                   onPress={() => {
                     setIsVariable(prev => !prev);
                     setPrice('');
+                    setOverText(false);
                   }}>
                   <View
                     style={[
@@ -267,6 +391,11 @@ const AlcoholItem = ({
                   </Text>
                 </Pressable>
               </View>
+              {overText && (
+                <Text style={styles.errorText}>
+                  가격은 최대 1억원까지 입력 가능합니다
+                </Text>
+              )}
             </>
           ) : (
             <>
@@ -311,37 +440,6 @@ const AlcoholItem = ({
         />
       )}
 
-      {isUpdatable && isMainEditing && (
-        <View style={[styles.buttonRow, isEditing && {marginTop: 10}]}>
-          {isEditing ? (
-            <>
-              <TouchableOpacity
-                style={[styles.btn, styles.save]}
-                onPress={handleSave}>
-                <Text style={styles.btnText}>저장</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.btn, styles.cancel]}
-                onPress={onCancelEdit}>
-                <Text style={styles.btnText}>취소</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity
-                style={[styles.btn, styles.edit]}
-                onPress={onEditStart}>
-                <Text style={styles.btnText}>수정</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.btn, styles.delete]}
-                onPress={() => onDelete(alcohol.id, alcohol.name)}>
-                <Text style={styles.btnText}>삭제</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-      )}
       <AlertComponent />
       <ImagePickermodal
         isBottomSheetVisible={isBottomSheetVisible}
@@ -393,7 +491,7 @@ const styles = StyleSheet.create({
     color: '#999',
     fontFamily: 'Pretendard-Medium',
     marginTop: 1,
-    fontSize: 15,
+    lineHeight: 22,
   },
   price: {
     marginTop: 7,
@@ -441,29 +539,36 @@ const styles = StyleSheet.create({
     backgroundColor: '#45C9FF',
   },
   cancel: {
-    backgroundColor: '#999',
+    backgroundColor: '#f5f5f5',
   },
   edit: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#45C9FF',
   },
   delete: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#f5f5f5',
   },
-  btnText: {
-    color: '#fff',
+  editbtnText: {
     fontSize: 14,
+    color: '#fff',
+    fontFamily: 'Pretendard-Bold',
+  },
+  deletebtnText: {
+    fontSize: 14,
+    color: '#666',
     fontFamily: 'Pretendard-Medium',
   },
   rowBetween: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center', // ✅ 수직 가운데 정렬
     marginBottom: 8,
-    minHeight: 48, // ✅ TextInput 높이와 유사하게 고정
+    marginRight: 8,
+    justifyContent: 'space-between',
   },
   checkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 12,
+    marginBottom: 8,
   },
   checkBox: {
     width: 20,
@@ -488,6 +593,12 @@ const styles = StyleSheet.create({
   checkLabelActive: {
     color: '#16BBFF',
     fontFamily: 'Pretendard-Medium',
+  },
+  errorText: {
+    color: '#FF4816',
+    fontSize: 14,
+    marginTop: -8,
+    marginBottom: 8,
   },
 });
 
