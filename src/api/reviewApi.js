@@ -1,23 +1,15 @@
 import axiosInstance from './axiosInstance';
 import {functionError} from './errorHandler';
+import toFileField from '../utils/toFileField';
 
 export const ReviewCreate = async data => {
   const formData = new FormData();
 
-  const toFileField = (file, idx = 0) => {
-    if (!file) return null;
-    // 지원: image-crop-picker 객체(path/mime/filename), 단순 uri 문자열, {uri, type, name}
-    const rawPath = file.path || file.uri || file;
-    if (!rawPath) return null;
-    const uri = rawPath.startsWith('file://') ? rawPath : `file://${rawPath}`;
-    const type = file.mime || file.type || 'image/jpeg';
-    const name = file.filename || file.name || `review_${Date.now()}_${idx}.jpg`;
-    return {uri, type, name};
-  };
+  const make = (file, idx = 0) => toFileField(file, `review_${idx}`);
 
   if (data.files && data.files.length > 0) {
     data.files.forEach((file, idx) => {
-      const f = toFileField(file, idx);
+      const f = make(file, idx);
       if (f) formData.append('files', f);
     });
   }
@@ -109,17 +101,9 @@ export const ReviewEdit = async (reviewId, data) => {
 
 export const ReviewEditImage = async (reviewId, data) => {
   const formData = new FormData();
-  const toFileField = (file, idx = 0) => {
-    if (!file) return null;
-    const rawPath = file.path || file.uri || file;
-    if (!rawPath) return null;
-    const uri = rawPath.startsWith('file://') ? rawPath : `file://${rawPath}`;
-    const type = file.mime || file.type || 'image/jpeg';
-    const name = file.filename || file.name || `review_${Date.now()}_${idx}.jpg`;
-    return {uri, type, name};
-  };
+  const make = (file, idx = 0) => toFileField(file, `review_${idx}`);
   (data.files || []).forEach((file, idx) => {
-    const f = toFileField(file, idx);
+    const f = make(file, idx);
     if (f) formData.append('files', f);
   });
   try {
