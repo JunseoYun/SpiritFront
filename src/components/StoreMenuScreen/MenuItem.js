@@ -25,6 +25,10 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Loading from '../../hooks/Loading';
 import {useToast} from '../../context/ToastContext';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../constants/imagePickerLabels';
 const MenuItem = ({
   menu,
   isUpdatable,
@@ -164,6 +168,8 @@ const MenuItem = ({
       cropping: true,
       mediaType: 'photo',
       quality: 1,
+      ...IMAGE_PICKER_TEXTS,
+      ...IMAGE_CROPPER_TEXTS,
     })
       .then(image => {
         setSelectedImage(image);
@@ -184,6 +190,8 @@ const MenuItem = ({
       cropping: true,
       mediaType: 'photo',
       quality: 1,
+      ...IMAGE_PICKER_TEXTS,
+      ...IMAGE_CROPPER_TEXTS,
     })
       .then(image => {
         setSelectedImage(image);

@@ -27,6 +27,10 @@ import {
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../constants/imagePickerLabels';
 
 const AlcoholItem = ({
   isLast,
@@ -157,7 +161,13 @@ const AlcoholItem = ({
 
   const handleCameraPick = async () => {
     if (!(await requestCameraPermission())) return;
-    ImagePicker.openCamera({width: 1024, height: 1024, cropping: true})
+    ImagePicker.openCamera({
+      width: 1024,
+      height: 1024,
+      cropping: true,
+      ...IMAGE_PICKER_TEXTS,
+      ...IMAGE_CROPPER_TEXTS,
+    })
       .then(image => {
         setSelectedImage(image);
         setImgUrl(image.path);
@@ -168,7 +178,13 @@ const AlcoholItem = ({
 
   const handleGalleryPick = async () => {
     if (!(await requestPhotoPermission())) return;
-    ImagePicker.openPicker({width: 1024, height: 1024, cropping: true})
+    ImagePicker.openPicker({
+      width: 1024,
+      height: 1024,
+      cropping: true,
+      ...IMAGE_PICKER_TEXTS,
+      ...IMAGE_CROPPER_TEXTS,
+    })
       .then(image => {
         setSelectedImage(image);
         setImgUrl(image.path);

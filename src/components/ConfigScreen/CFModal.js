@@ -10,6 +10,10 @@ import {
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import {requestPhotoPermission} from '../../hooks/usePhotopermis';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../constants/imagePickerLabels';
 
 const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
   const handleImagePick = async () => {
@@ -28,6 +32,8 @@ const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
         compressImageMaxHeight: 2160, // 최대 높이
         cropping: true,
         mediaType: 'photo',
+        ...IMAGE_PICKER_TEXTS,
+        ...IMAGE_CROPPER_TEXTS,
       });
       onUpdate(image);
     } catch (error) {

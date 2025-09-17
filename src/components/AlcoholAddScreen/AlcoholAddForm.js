@@ -12,6 +12,10 @@ import {
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../constants/imagePickerLabels';
 
 const AlcoholAddForm = forwardRef(
   (
@@ -44,6 +48,8 @@ const AlcoholAddForm = forwardRef(
         height: 1024,
         cropping: true,
         mediaType: 'photo',
+        ...IMAGE_PICKER_TEXTS,
+        ...IMAGE_CROPPER_TEXTS,
       })
         .then(image => {
           handleAlcoholChange(image, index, 'imageUri');
@@ -64,6 +70,8 @@ const AlcoholAddForm = forwardRef(
         height: 1024,
         cropping: true,
         mediaType: 'photo',
+        ...IMAGE_PICKER_TEXTS,
+        ...IMAGE_CROPPER_TEXTS,
       })
         .then(image => {
           handleAlcoholChange(image, index, 'imageUri');
