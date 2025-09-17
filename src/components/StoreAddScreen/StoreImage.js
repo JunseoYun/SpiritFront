@@ -18,6 +18,10 @@ import {
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
 import Loading from '../../hooks/Loading';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../constants/imagePickerLabels';
 
 const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
   const [images, setImage] = useState([]);
@@ -38,6 +42,8 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
       compressImageMaxWidth: 1600,
       compressImageMaxHeight: 1200,
       includeExif: false,
+      ...IMAGE_PICKER_TEXTS,
+      ...IMAGE_CROPPER_TEXTS,
     })
       .then(image => {
         setImage([...images, image.path]);
@@ -65,6 +71,7 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
         compressImageMaxWidth: 1600,
         compressImageMaxHeight: 1200,
         includeExif: false,
+        ...IMAGE_PICKER_TEXTS,
       });
 
       const selectedImages = Array.isArray(pickedImages)
@@ -85,7 +92,7 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
           compressImageMaxWidth: 1600,
           compressImageMaxHeight: 1200,
           includeExif: false,
-          cropperToolbarTitle: '이미지 편집',
+          ...IMAGE_CROPPER_TEXTS,
           cropperActiveWidgetColor: '#45C9FF',
           cropperStatusBarLight: true,
           cropperToolbarColor: '#ffffff',

@@ -17,6 +17,10 @@ import {
   requestCameraPermission,
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../constants/imagePickerLabels';
 
 const ReceiptImage = ({receiptimageUris, setReceiptImageUris, error}) => {
   const [images, setImage] = useState([]);
@@ -34,6 +38,8 @@ const ReceiptImage = ({receiptimageUris, setReceiptImageUris, error}) => {
       cropping: true,
       mediaType: 'photo',
       quality: 1,
+      ...IMAGE_PICKER_TEXTS,
+      ...IMAGE_CROPPER_TEXTS,
     })
       .then(image => {
         setImage([...images, image.path]);
@@ -54,6 +60,8 @@ const ReceiptImage = ({receiptimageUris, setReceiptImageUris, error}) => {
       cropping: true,
       mediaType: 'photo',
       quality: 1,
+      ...IMAGE_PICKER_TEXTS,
+      ...IMAGE_CROPPER_TEXTS,
     })
       .then(image => {
         setImage([...images, image.path]);

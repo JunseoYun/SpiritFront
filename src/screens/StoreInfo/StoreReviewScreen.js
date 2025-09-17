@@ -24,6 +24,10 @@ import {requestPhotoPermission} from '../../hooks/usePhotopermis';
 import Loading from '../../hooks/Loading';
 import ReviewItemSkeleton from '../../components/StoreReviewScreen/ReviewItemSkeleton';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../constants/imagePickerLabels';
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storename, isOwner} = route.params;
@@ -160,6 +164,8 @@ const StoreReviewScreen = ({navigation}) => {
       compressImageMaxWidth: 2160,
       compressImageMaxHeight: 2160,
       includeExif: false,
+      ...IMAGE_PICKER_TEXTS,
+      ...IMAGE_CROPPER_TEXTS,
       ...(Platform.OS === 'ios' && {
         width: 1600, // 원하는 와이드 사이즈
         height: 1600, // 원하는 와이드 사이즈
@@ -187,6 +193,7 @@ const StoreReviewScreen = ({navigation}) => {
         maxFiles: remaining > 1 ? remaining : 1,
         cropping: false, // 우선 crop 안함 (아래에서 개별 크롭)
         includeExif: false,
+        ...IMAGE_PICKER_TEXTS,
       });
 
       const selectedImages = Array.isArray(pickedImages)
@@ -206,7 +213,7 @@ const StoreReviewScreen = ({navigation}) => {
           compressImageQuality: 0.95,
           compressImageMaxWidth: 2160,
           compressImageMaxHeight: 2160,
-          cropperToolbarTitle: '이미지 편집',
+          ...IMAGE_CROPPER_TEXTS,
           cropperActiveWidgetColor: '#45C9FF',
           cropperStatusBarLight: true,
           cropperToolbarColor: '#ffffff',

@@ -47,6 +47,10 @@ import DraggableImageItem from './DraggableImageItem';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import FastImage from 'react-native-fast-image';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../../constants/imagePickerLabels';
 
 const {width} = Dimensions.get('window');
 const IMAGE_WIDTH = width - 120;
@@ -228,6 +232,8 @@ const InfoImageEditScreen = ({navigation, route}) => {
         compressImageMaxWidth: 2160,
         compressImageMaxHeight: 2160,
         includeExif: false,
+        ...IMAGE_PICKER_TEXTS,
+        ...IMAGE_CROPPER_TEXTS,
         ...(Platform.OS === 'ios' && {
           width: 1600, // 원하는 와이드 사이즈
           height: 1600, // 원하는 와이드 사이즈
@@ -257,6 +263,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
         maxFiles: 10,
         cropping: false, // 우선 crop 안함
         includeExif: false,
+        ...IMAGE_PICKER_TEXTS,
       });
 
       const selectedImages = Array.isArray(pickedImages)
@@ -276,7 +283,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
           compressImageQuality: 0.95,
           compressImageMaxWidth: 2160,
           compressImageMaxHeight: 2160,
-          cropperToolbarTitle: '이미지 편집',
+          ...IMAGE_CROPPER_TEXTS,
           cropperActiveWidgetColor: '#45C9FF',
           cropperStatusBarLight: true,
           cropperToolbarColor: '#ffffff',

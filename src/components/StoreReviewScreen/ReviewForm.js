@@ -189,7 +189,11 @@ const ReviewForm = ({
               style={styles.dateBtn}
               onPress={() => setIsDatePickerOpen(true)}>
               <Text style={styles.dateTxt}>
-                {visitDate.toLocaleDateString()}
+                {visitDate.toLocaleDateString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
               </Text>
             </TouchableOpacity>
             <DatePicker
@@ -199,6 +203,9 @@ const ReviewForm = ({
               locale="ko"
               mode="date"
               maximumDate={new Date(new Date().setHours(23, 59, 59, 999))}
+              title="방문 날짜 선택"
+              confirmText="완료"
+              cancelText="취소"
               onConfirm={date => {
                 setVisitDate(date);
                 setIsDatePickerOpen(false);

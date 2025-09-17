@@ -8,6 +8,10 @@ import {
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
 import ImagePicker from 'react-native-image-crop-picker';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../constants/imagePickerLabels';
 
 const BusinessCertificate = ({
   business_registration_certificate,
@@ -29,6 +33,8 @@ const BusinessCertificate = ({
       compressImageMaxWidth: 1600,
       compressImageMaxHeight: 2264,
       includeExif: false,
+      ...IMAGE_PICKER_TEXTS,
+      ...IMAGE_CROPPER_TEXTS,
     })
       .then(image => {
         setBusiness_registration_certificate(image);
@@ -50,6 +56,8 @@ const BusinessCertificate = ({
       compressImageMaxWidth: 1600,
       compressImageMaxHeight: 2264,
       includeExif: false,
+      ...IMAGE_PICKER_TEXTS,
+      ...IMAGE_CROPPER_TEXTS,
     })
       .then(image => {
         setBusiness_registration_certificate(image);
