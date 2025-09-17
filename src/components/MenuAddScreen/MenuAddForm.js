@@ -13,6 +13,10 @@ import {
 import ImagePickermodal from '../../hooks/ImagePickermodal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {ScrollView} from 'react-native-gesture-handler';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../constants/imagePickerLabels';
 
 const MenuAddForm = forwardRef(
   (
@@ -46,6 +50,8 @@ const MenuAddForm = forwardRef(
         compressImageQuality: 1, // 품질
         cropping: true,
         mediaType: 'photo',
+        ...IMAGE_PICKER_TEXTS,
+        ...IMAGE_CROPPER_TEXTS,
       })
         .then(image => {
           handleMenuChange(image, index, 'imageUri');
@@ -66,6 +72,8 @@ const MenuAddForm = forwardRef(
         compressImageQuality: 1, // 품질
         cropping: true,
         mediaType: 'photo',
+        ...IMAGE_PICKER_TEXTS,
+        ...IMAGE_CROPPER_TEXTS,
       })
         .then(image => {
           handleMenuChange(image, index, 'imageUri');
