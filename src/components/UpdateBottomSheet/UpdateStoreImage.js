@@ -23,6 +23,10 @@ import {
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
 import Loading from '../../hooks/Loading';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../constants/imagePickerLabels';
 
 const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -96,6 +100,8 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
         cropping: true,
         mediaType: 'photo',
         compressImageQuality: 0.95, // 품질
+        ...IMAGE_PICKER_TEXTS,
+        ...IMAGE_CROPPER_TEXTS,
       });
       setAddedImages(prev => [...prev, image]);
       showToast('이미지 추가 완료');
@@ -121,6 +127,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
         multiple: remaining > 1, // 2개 이상일 때만 multiple
         maxFiles: remaining > 1 ? remaining : 1,
         cropping: false, // crop은 따로 처리
+        ...IMAGE_PICKER_TEXTS,
       });
 
       const selectedImages = Array.isArray(pickedImages)
@@ -137,7 +144,7 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
           width: 2048,
           height: 1536,
           cropping: true,
-          cropperToolbarTitle: '이미지 편집',
+          ...IMAGE_CROPPER_TEXTS,
           cropperActiveWidgetColor: '#45C9FF',
           cropperStatusBarLight: true,
           cropperToolbarColor: '#ffffff',

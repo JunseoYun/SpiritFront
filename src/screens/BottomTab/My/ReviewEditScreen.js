@@ -26,6 +26,7 @@ import forbiddenWords from '../../../hooks/forbiddenWords';
 import ImagePicker from 'react-native-image-crop-picker'; // 이미지 선택 라이브러리
 import {requestPhotoPermission} from '../../../hooks/usePhotopermis';
 import Loading from '../../../hooks/Loading';
+import {IMAGE_PICKER_TEXTS} from '../../../constants/imagePickerLabels';
 
 const ReviewEditScreen = ({route, navigation}) => {
   // 👉 `params`에서 `reviewdata` 가져오기
@@ -195,6 +196,7 @@ const ReviewEditScreen = ({route, navigation}) => {
           compressImageMaxWidth: 2160,
           compressImageMaxHeight: 2160,
           cropping: false,
+          ...IMAGE_PICKER_TEXTS,
         });
 
         const newImages = Array.isArray(pickedImages)
@@ -299,7 +301,11 @@ const ReviewEditScreen = ({route, navigation}) => {
             style={styles.dateButton}
             onPress={() => setIsDatePickerOpen(true)}>
             <Text style={styles.dateButtonText}>
-              {visitedAt.toLocaleDateString()}
+              {visitedAt.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
             </Text>
           </TouchableOpacity>
           <DatePicker
@@ -309,6 +315,9 @@ const ReviewEditScreen = ({route, navigation}) => {
             mode="date"
             locale="ko"
             maximumDate={new Date(new Date().setHours(23, 59, 59, 999))} // 한국 시간 기준 오늘까지 선택 가능
+            title="방문 날짜 선택"
+            confirmText="완료"
+            cancelText="취소"
             onConfirm={date => {
               setVisitedAt(date);
               setIsDatePickerOpen(false);
