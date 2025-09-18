@@ -283,7 +283,6 @@ const ReviewEditScreen = ({route, navigation}) => {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             multiline
-            maxLength={2000}
           />
           {overText && (
             <Text style={styles.errorMessage}>

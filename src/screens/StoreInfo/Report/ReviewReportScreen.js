@@ -29,7 +29,7 @@ const ReviewReportScreen = ({navigation}) => {
     '부적절한 언어 사용': 'INAPPROPRIATE_LANGUAGE',
     '부적절한 사진 게시': 'INAPPROPRIATE_PHOTO',
     '플랫폼 가이드라인 위반': 'VIOLATION_OF_GUIDELINES',
-    '기타 신고 문제': 'ETC',
+    '기타 문제': 'ETC',
   };
   const {showToast} = useToast();
   const [selectedReason, setSelectedReason] = useState(null);
@@ -67,7 +67,7 @@ const ReviewReportScreen = ({navigation}) => {
     let descriptionText = '';
 
     if (selectedReason) {
-      if (selectedReason === '기타 신고 문제') {
+      if (selectedReason === '기타 문제') {
         reportReasonCode = 'ETC';
         descriptionText = customReason; // 직접 입력한 기타 신고 내용
       } else {
