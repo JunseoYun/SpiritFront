@@ -357,7 +357,6 @@ const MenuItem = ({
                 }}
                 multiline
                 placeholderTextColor="#999"
-                maxLength={100}
               />
               {overdesText && (
                 <Text style={styles.errorText}>

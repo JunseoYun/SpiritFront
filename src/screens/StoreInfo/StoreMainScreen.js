@@ -468,6 +468,7 @@ const StoreMainScreen = ({navigation}) => {
 
   const [mainSectionHeight, setMainSectionHeight] = useState(0);
   const [filterHeight, setFilterHeight] = useState(0);
+  const [filterHeaderTouchable, setFilterHeaderTouchable] = useState(false);
 
   const filterHeaderThreshold = useMemo(() => {
     if (!mainSectionHeight) return 100000; // wait until measured
@@ -490,11 +491,20 @@ const StoreMainScreen = ({navigation}) => {
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
-
   const listFilterOpacity = Animated.subtract(1, filterHeaderProgress);
 
   const [selectedType, setSelectedType] = useState(null);
   const isClickedRef = useRef(false);
+
+  // Control sticky filter header touchability without using __getValue()
+  useEffect(() => {
+    const hysteresis = 1; // px
+    const sub = scrollY.addListener(({value}) => {
+      const active = value >= filterHeaderThreshold + hysteresis;
+      setFilterHeaderTouchable(prev => (prev !== active ? active : prev));
+    });
+    return () => scrollY.removeListener(sub);
+  }, [filterHeaderThreshold]);
   return (
     <View style={{flex: 1}}>
       {loading && skeletonLoading ? (
@@ -537,9 +547,7 @@ const StoreMainScreen = ({navigation}) => {
               )}
             {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
               <Animated.View
-                pointerEvents={
-                  filterHeaderProgress.__getValue() === 0 ? 'none' : 'auto'
-                }
+                pointerEvents={filterHeaderTouchable ? 'auto' : 'none'}
                 style={[
                   styles.fixedFilterHeader,
                   {
@@ -559,6 +567,7 @@ const StoreMainScreen = ({navigation}) => {
                   setSelectedType={setSelectedType}
                   isClickedRef={isClickedRef}
                   filterHeight={filterHeight}
+                  mainSectionHeight={mainSectionHeight}
                 />
               </Animated.View>
             )}
@@ -714,6 +723,7 @@ const StoreMainScreen = ({navigation}) => {
                       setSelectedType={setSelectedType}
                       isClickedRef={isClickedRef}
                       filterHeight={filterHeight}
+                      mainSectionHeight={mainSectionHeight}
                     />
                   </Animated.View>
                 )}
