@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
 const alcoholMapping = {
   SOJU: '소주',
@@ -43,7 +44,8 @@ const Alcoholcategorytab = ({
   const {height: windowHeight} = Dimensions.get('window');
   const {translateAlcohol} = useTranslateAlcohol();
   const paddingTopValue = windowHeight;
-
+  const insets = useSafeAreaInsets();
+  const {top, bottom} = useSafeAndroidInsets();
   useEffect(() => {
     setAlcoholsState(alcohols);
   }, [alcohols]);
@@ -101,12 +103,18 @@ const Alcoholcategorytab = ({
       let imgnull = 0;
       Object.keys(parentSectionPositions).forEach(type => {
         if (imagelist == 0) {
-          if (value >= parentSectionPositions[type] + mainSectionHeight - 50) {
+          if (
+            value >=
+            parentSectionPositions[type] + mainSectionHeight - offset + top
+          ) {
             current = type;
           }
         }
         if (imagelist > 0) {
-          if (value >= parentSectionPositions[type] + mainSectionHeight - 50) {
+          if (
+            value >=
+            parentSectionPositions[type] + mainSectionHeight - offset
+          ) {
             current = type;
           }
         }
@@ -140,17 +148,19 @@ const Alcoholcategorytab = ({
               setSelectedType(type); // 클릭 즉시 활성화
               isClickedRef.current = true; // scrollY 이벤트 잠시 무시
               const y = parentSectionPositions[type];
+              const offset = Platform.OS === 'ios' ? insets.top + 30 : top + 40;
+              console.log(offset);
               if (onScrollTo && y !== undefined) {
                 if (imagelist === 0) {
                   onScrollTo({
                     x: 0,
-                    y: y + mainSectionHeight - 50,
+                    y: y + mainSectionHeight - offset + top,
                     animated: true,
                   });
                 } else if (imagelist > 0) {
                   onScrollTo({
                     x: 0,
-                    y: y + mainSectionHeight - 50,
+                    y: y + mainSectionHeight - offset,
                     animated: true,
                   });
                 } else {
