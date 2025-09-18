@@ -22,7 +22,6 @@ const UpdateStoreName = ({updatedValue, setUpdatedValue, onCancel, onSave}) => {
         }}
         placeholder="매장 이름*"
         placeholderTextColor="#999"
-        maxLength={50}
       />
       {overText && (
         <Text style={styles.errorText}>

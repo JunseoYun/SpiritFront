@@ -163,7 +163,6 @@ const ReviewForm = ({
               placeholderTextColor="#999"
               onFocus={() => setContentFocused(true)}
               onBlur={() => setContentFocused(false)}
-              maxLength={2000}
             />
             {errorcontent && (
               <Text style={styles.errorMessage}>

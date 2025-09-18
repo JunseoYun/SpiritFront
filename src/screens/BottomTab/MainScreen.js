@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
+﻿import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import {
   StyleSheet,
   Text,
@@ -468,7 +468,7 @@ const MainScreen = ({navigation}) => {
       0,
       mainSectionHeight + populartext + 36 + androidOffset + offset,
     );
-  }, [mainSectionHeight, populartext]);
+  }, [mainSectionHeight, populartext, insets]);
   const filterHeaderProgress = scrollY.interpolate({
     inputRange: [filterHeaderThreshold, filterHeaderThreshold],
     outputRange: [0, 1],
@@ -510,6 +510,15 @@ const MainScreen = ({navigation}) => {
     outputRange: [1, 0], // Android: 0일 때 elevation 4, 1일 때 0
     extrapolate: 'clamp',
   });
+
+  const [touchable, setTouchable] = useState(false);
+
+  useEffect(() => {
+    const id = fixedFilterOpacity.addListener(({value}) => {
+      setTouchable(value > 0.01);
+    });
+    return () => fixedFilterOpacity.removeListener(id);
+  }, [fixedFilterOpacity]);
 
   return (
     <>
@@ -593,7 +602,7 @@ const MainScreen = ({navigation}) => {
       </Animated.View>
       {/* 주소 바 바로 아래에 고정된 필터 헤더 */}
       <Animated.View
-        pointerEvents={fixedFilterOpacity.__getValue() === 0 ? 'none' : 'auto'}
+        pointerEvents={touchable ? 'auto' : 'none'}
         style={[
           styles.fixedFilterHeader,
           {

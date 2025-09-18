@@ -36,7 +36,6 @@ const Mynickchange = () => {
   const handleNicknameChange = text => {
     setNewnickname(text);
     setNicknameError(false);
-    setNicknamelength(false);
     setNicknamefilter(false);
     setNicknameCheck(false); // 입력 시 중복 검사 초기화
   };
@@ -171,7 +170,15 @@ const Mynickchange = () => {
                   style={styles.input}
                   value={newnickname}
                   placeholder={userdata.nickname}
-                  onChangeText={handleNicknameChange}
+                  onChangeText={text => {
+                    const maxChars = 12;
+                    if (text.length > maxChars) {
+                      setNicknamelength(true);
+                    } else {
+                      setNicknamelength(false);
+                    }
+                    handleNicknameChange(text);
+                  }}
                   placeholderTextColor="#999"
                 />
                 {nicknameCheck && !nicknameError && !nicknamelength && (
