@@ -78,7 +78,6 @@ const StoreAddname = ({storename, setStorename, error}) => {
             onFocus={() => setFocusedInput(true)}
             onBlur={() => setFocusedInput(false)}
             returnKeyType="done"
-            maxLength={MAX}
           />
         </View>
         {overText && (
