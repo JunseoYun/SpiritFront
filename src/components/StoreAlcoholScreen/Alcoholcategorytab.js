@@ -150,7 +150,6 @@ const Alcoholcategorytab = ({
               isClickedRef.current = true; // scrollY 이벤트 잠시 무시
               const y = parentSectionPositions[type];
               const offset = Platform.OS === 'ios' ? insets.top + 30 : top + 40;
-              console.log(offset);
               if (onScrollTo && y !== undefined) {
                 if (imagelist === 0) {
                   onScrollTo({
