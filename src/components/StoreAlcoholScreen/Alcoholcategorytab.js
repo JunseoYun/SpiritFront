@@ -101,6 +101,7 @@ const Alcoholcategorytab = ({
 
       let current = null;
       let imgnull = 0;
+      const offset = Platform.OS === 'ios' ? insets.top + 30 : top + 40;
       Object.keys(parentSectionPositions).forEach(type => {
         if (imagelist == 0) {
           if (
