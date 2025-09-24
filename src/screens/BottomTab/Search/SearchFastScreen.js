@@ -24,12 +24,14 @@ import ResultModalItemSkeleton from '../../../components/SearchScreen/FastSearch
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import ScrollToTopButton from '../../../components/common/ScrollToTopButton';
+import useScrollToTopVisibility from '../../../hooks/useScrollToTopVisibility';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 const SearchFastScreen = ({navigation}) => {
   const route = useRoute();
-  const {top} = useSafeAndroidInsets();
+  const {top, bottom} = useSafeAndroidInsets();
   const {fastSearchStores, fastviewDto, location} = route.params;
 
   // ✅ 필터 상태
@@ -54,6 +56,8 @@ const SearchFastScreen = ({navigation}) => {
   const [bottomModalVisible, setBottomModalVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const scrollRef = useRef(null);
+  const {visible: showScrollToTop, handleScroll, updateVisibility, scrollToTop} =
+    useScrollToTopVisibility({externalRef: scrollRef});
   // ✅ 검색 조건 DTO
   const [searchDto, setSearchDto] = useState(fastSearchStores);
 
@@ -89,6 +93,7 @@ const SearchFastScreen = ({navigation}) => {
     if (scrollRef.current) {
       scrollRef.current.scrollToOffset({offset: 0, animated: false});
     }
+    updateVisibility(0);
   };
 
   // ✅ 가게 리스트 요청
@@ -183,7 +188,7 @@ const SearchFastScreen = ({navigation}) => {
       />
 
       {/* 검색 결과 리스트 */}
-      {firstloading ? (
+     {firstloading ? (
         <FlatList
           data={[1, 2, 3, 5, 6, 7, 8, 9]} // 임의의 더미 데이터
           keyExtractor={(item, index) => index.toString()}
@@ -214,8 +219,16 @@ const SearchFastScreen = ({navigation}) => {
           maxToRenderPerBatch={5}
           windowSize={5}
           removeClippedSubviews={true}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
         />
       )}
+
+      <ScrollToTopButton
+        visible={showScrollToTop}
+        bottom={(bottom || 16) + 24}
+        onPress={scrollToTop}
+      />
 
       {/* 바텀시트 */}
       <Modal
