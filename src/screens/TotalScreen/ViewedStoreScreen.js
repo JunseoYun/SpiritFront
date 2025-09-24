@@ -13,6 +13,8 @@ import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import ViewedStoreTotalItem from '../../components/TotalScreen/ViewedStoreTotalItem';
 import {Store_getby_viewed} from '../../api/storeApi';
 import ViewedStoreItemSkeleton from '../../components/TotalScreen/TotalSkeleton/ViewedStoreItemSkeleton';
+import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 const ViewedStoreScreen = ({navigation}) => {
   const {bottom} = useSafeAndroidInsets();
   const [distancestores, setDistancestores] = useState([]);
@@ -22,6 +24,14 @@ const ViewedStoreScreen = ({navigation}) => {
   const [totalpage, setTotalpage] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [firstloading, setFirstloading] = useState(true);
+  const {
+    scrollRef,
+    visible: showScrollToTop,
+    handleScroll,
+    updateVisibility,
+    scrollToTop,
+  } = useScrollToTopVisibility();
+  const scrollButtonBottom = (bottom || 16) + 24 + 36;
   const fetchdistanceStores = async (currentPage, reset = false) => {
     if (loading || (!hasMore && !reset)) return;
     setLoading(true);
@@ -58,6 +68,12 @@ const ViewedStoreScreen = ({navigation}) => {
     fetchdistanceStores(0, true);
   }, []);
 
+  useEffect(() => {
+    if (firstloading || refreshing) {
+      updateVisibility(0);
+    }
+  }, [firstloading, refreshing, updateVisibility]);
+
   const onRefresh = () => {
     setRefreshing(true);
     setDistancestores([]); // distancestores 초기화
@@ -84,6 +100,7 @@ const ViewedStoreScreen = ({navigation}) => {
         />
       ) : (
         <FlatList
+          ref={scrollRef}
           data={distancestores}
           renderItem={renderStoreItem}
           keyExtractor={(item, index) => `${item.id}-${index}`} // 고유 키 생성
@@ -102,6 +119,8 @@ const ViewedStoreScreen = ({navigation}) => {
               });
             }
           }}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
           refreshing={refreshing}
           onRefresh={() => {
             onRefresh();
@@ -114,6 +133,11 @@ const ViewedStoreScreen = ({navigation}) => {
           <Text style={styles.emptyText}>주변에 등록된 술집이 없어요</Text>
         </View>
       )}
+      <ScrollToTopButton
+        visible={showScrollToTop}
+        bottom={scrollButtonBottom}
+        onPress={scrollToTop}
+      />
       <Loading loading={loading || refreshing} />
     </SafeAreaView>
   );

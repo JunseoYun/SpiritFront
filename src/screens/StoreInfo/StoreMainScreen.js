@@ -44,6 +44,8 @@ import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcateg
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import StoreMainSkeleton from './StoreMainSkeleton';
+import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 
 const StoreMainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
@@ -73,6 +75,9 @@ const StoreMainScreen = ({navigation}) => {
   const [bottomSheetIndex, setBottomSheetIndex] = useState(-1);
   const [sectionPositions, setSectionPositions] = useState({});
   const [isModalVisible, setModalVisible] = useState(false);
+  const {visible: showScrollToTop, scrollToTop, updateVisibility} =
+    useScrollToTopVisibility({externalRef: scrollViewRef});
+  const scrollButtonBottom = (bottom || 16) + 24 + 36;
   // 상위 scrollTo 함수
   const scrollToHandler = params => {
     if (scrollViewRef.current) {
@@ -579,6 +584,8 @@ const StoreMainScreen = ({navigation}) => {
                   {
                     useNativeDriver: false,
                     listener: event => {
+                      const offsetY = event?.nativeEvent?.contentOffset?.y ?? 0;
+                      updateVisibility(offsetY);
                       if (isClickedRef.current) {
                         setTimeout(() => {
                           isClickedRef.current = false;
@@ -761,6 +768,11 @@ const StoreMainScreen = ({navigation}) => {
                 )}
               </Animated.ScrollView>
             </KeyboardAvoidingView>
+            <ScrollToTopButton
+              visible={!isUpdate && showScrollToTop}
+              bottom={scrollButtonBottom}
+              onPress={scrollToTop}
+            />
             <Modal
               transparent
               visible={isModalVisible}
