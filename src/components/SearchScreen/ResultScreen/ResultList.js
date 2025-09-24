@@ -112,7 +112,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
           onEndReachedThreshold={0.5}
           ListEmptyComponent={
             !loading && searchingStores.length === 0 ? (
-              <Text style={styles.emptyText}>검색된 술집이 없어요</Text>
+              <Text style={styles.emptyText}>주변에 검색된 술집이 없어요</Text>
             ) : null
           }
         />

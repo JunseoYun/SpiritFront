@@ -150,7 +150,7 @@ const OpenStoreList = ({location, navigation, refresh}) => {
       />
       {distancestores.length === 0 && !loading && (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>근처에 영업 중인 술집이 없어요</Text>
+          <Text style={styles.emptyText}>주변에 영업 중인 술집이 없어요</Text>
         </View>
       )}
     </View>
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    marginTop: -10,
+    marginTop: 10,
   },
   emptyText: {
     textAlign: 'center',

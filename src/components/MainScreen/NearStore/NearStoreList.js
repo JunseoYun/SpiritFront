@@ -96,7 +96,7 @@ const NearStoreList = ({refresh, navigation, location}) => {
     if (!loading) {
       return (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>근처에 등록된 술집이 없어요</Text>
+          <Text style={styles.emptyText}>주변에 등록된 술집이 없어요</Text>
         </View>
       );
     }
@@ -169,7 +169,7 @@ const NearStoreList = ({refresh, navigation, location}) => {
       />
       {stores.length === 0 && !loading && (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>근처에 등록된 술집이 없어요</Text>
+          <Text style={styles.emptyText}>주변에 등록된 술집이 없어요</Text>
         </View>
       )}
     </View>
