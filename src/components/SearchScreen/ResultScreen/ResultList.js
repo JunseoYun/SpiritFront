@@ -10,6 +10,9 @@ import ResultItem from './ResultItem';
 import {Store_getby_keyword} from '../../../api/storeApi';
 import ResultItemSkeleton from './ResultItemSkeleton';
 import Loading from '../../../hooks/Loading';
+import ScrollToTopButton from '../../common/ScrollToTopButton';
+import useScrollToTopVisibility from '../../../hooks/useScrollToTopVisibility';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const ResultList = ({trimmedSearchWord, location, navigation}) => {
   const [searchingStores, setSearchingStores] = useState([]); // 검색된 가게 목록
@@ -19,6 +22,14 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
   const [totalpage, setTotalpage] = useState(0);
   const [firstloading, setFirstloading] = useState(true);
   const scrollRef = useRef(null);
+  const {
+    visible: showScrollToTop,
+    handleScroll,
+    updateVisibility,
+    scrollToTop,
+  } = useScrollToTopVisibility({externalRef: scrollRef});
+  const {bottom} = useSafeAreaInsets();
+  const scrollButtonBottom = (bottom || 16) + 24 + 36;
 
   // 검색된 가게들을 필터링하는 함수
   const filteredStores = async currentPage => {
@@ -68,6 +79,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
       if (scrollRef.current) {
         scrollRef.current.scrollToOffset({offset: 0, animated: false});
       }
+      updateVisibility(0);
     }
   }, [trimmedSearchWord, location]);
 
@@ -115,9 +127,16 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
               <Text style={styles.emptyText}>검색된 술집이 없어요</Text>
             ) : null
           }
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
         />
       )}
       <Loading loading={loading} />
+      <ScrollToTopButton
+        visible={showScrollToTop}
+        onPress={scrollToTop}
+        bottom={scrollButtonBottom}
+      />
     </View>
   );
 };
