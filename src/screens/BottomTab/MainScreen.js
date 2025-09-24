@@ -27,6 +27,7 @@ import {useNotification} from '../../context/NotificationContext';
 import MainSection from '../../components/MainScreen/MainSection';
 import FilterHeader from '../../components/MainScreen/FilterHeader';
 import PopularStoresSection from '../../components/MainScreen/PopularStroe/PopularStoresSection';
+import ScrollToTopButton from '../../components/common/ScrollToTopButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {has_unread_notification} from '../../api/notificationApi';
 import {useDeepLink} from '../../context/DeepLinkContext';
@@ -44,6 +45,7 @@ const MainScreen = ({navigation}) => {
   const [showTopView2, setShowTopView2] = useState(false);
 
   const [showLocation, setShowLocation] = useState(false);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
@@ -56,24 +58,33 @@ const MainScreen = ({navigation}) => {
   const [unreadNotification, setUnreadNotification] = useState(false);
   // Popular stores section is extracted to its own component
 
-  useEffect(() => {
+  const handleScrollToTop = useCallback(() => {
     if (scrollRef.current) {
-      navigation.setParams({
-        scrollToTop: () => {
-          if (scrollRef.current) {
-            scrollRef.current.scrollToLocation({
-              sectionIndex: 0,
-              itemIndex: 0,
-              viewPosition: 0,
-              animated: true,
-            });
-          }
-        },
+      scrollRef.current.scrollToLocation({
+        sectionIndex: 0,
+        itemIndex: 0,
+        viewPosition: 0,
+        animated: true,
       });
     }
-  }, [navigation, scrollRef.current]);
+  }, []);
+
+  useEffect(() => {
+    navigation.setParams({
+      scrollToTop: handleScrollToTop,
+    });
+  }, [navigation, handleScrollToTop]);
 
   const scrollListener = useRef(null);
+
+  const scrollToTopThreshold = useMemo(
+    () => (Platform.OS === 'ios' ? screenHeight * 0.25 : screenHeight * 0.3),
+    [],
+  );
+  const scrollToTopBottom = useMemo(
+    () => (insets.bottom || 16) + 4,
+    [insets.bottom],
+  );
 
   useEffect(() => {
     scrollListener.current = scrollY.addListener(({value}) => {
@@ -95,13 +106,19 @@ const MainScreen = ({navigation}) => {
         if (value < locationThreshold && prev) return false;
         return prev;
       });
+
+      setShowScrollToTop(prev => {
+        if (value >= scrollToTopThreshold && !prev) return true;
+        if (value < scrollToTopThreshold && prev) return false;
+        return prev;
+      });
     });
 
     return () => {
       if (scrollListener.current)
         scrollY.removeListener(scrollListener.current);
     };
-  }, [insets.top]);
+  }, [insets.top, scrollToTopThreshold]);
 
   useFocusEffect(
     useCallback(() => {
@@ -695,6 +712,12 @@ const MainScreen = ({navigation}) => {
         maxToRenderPerBatch={7}
         windowSize={4}
         removeClippedSubviews={true}
+      />
+
+      <ScrollToTopButton
+        visible={showScrollToTop}
+        bottom={scrollToTopBottom}
+        onPress={handleScrollToTop}
       />
 
       {rejectModalData && !loading && (

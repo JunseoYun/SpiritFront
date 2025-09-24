@@ -21,6 +21,8 @@ import Loading from '../../hooks/Loading';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import TotalItemSkeleton from '../../components/TotalScreen/TotalSkeleton/TotalItemSkeleton';
 import NearStoreTotalItem from '../../components/TotalScreen/NearStoreTotalItem';
+import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 
 const NearStoreScreen = ({navigation}) => {
   const route = useRoute();
@@ -33,6 +35,10 @@ const NearStoreScreen = ({navigation}) => {
   const [totalpage, setTotalpage] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [firstloading, setFirstloading] = useState(true);
+  const {scrollRef, visible: showScrollToTop, handleScroll, updateVisibility, scrollToTop} =
+    useScrollToTopVisibility();
+  const scrollButtonBottom = (bottom || 16) + 24 + 36;
+
   const fetchdistanceStores = async (currentPage, reset = false) => {
     if (location) {
       if (loading || (!hasMore && !reset)) return;
@@ -79,6 +85,12 @@ const NearStoreScreen = ({navigation}) => {
     }
   }, [location]);
 
+  useEffect(() => {
+    if (firstloading || refreshing) {
+      updateVisibility(0);
+    }
+  }, [firstloading, refreshing, updateVisibility]);
+
   const onRefresh = () => {
     setRefreshing(true);
     setDistancestores([]); // distancestores 초기화
@@ -108,6 +120,7 @@ const NearStoreScreen = ({navigation}) => {
         />
       ) : (
         <FlatList
+          ref={scrollRef}
           data={distancestores}
           renderItem={renderStoreItem}
           keyExtractor={(item, index) => `${item.id}-${index}`} // 고유 키 생성
@@ -126,6 +139,8 @@ const NearStoreScreen = ({navigation}) => {
               });
             }
           }}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
           refreshing={refreshing}
           onRefresh={() => {
             onRefresh();
@@ -136,12 +151,20 @@ const NearStoreScreen = ({navigation}) => {
       {distancestores.length === 0 && !loading && (
         <Text style={styles.emptyText}>근처에 등록된 술집이 없어요</Text>
       )}
+      <ScrollToTopButton
+        visible={showScrollToTop}
+        bottom={scrollButtonBottom}
+        onPress={scrollToTop}
+      />
       <Loading loading={loading || refreshing} />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollViewContent: {
+    paddingBottom: 24,
+  },
   emptyText: {
     textAlign: 'center',
     marginVertical: 60,
