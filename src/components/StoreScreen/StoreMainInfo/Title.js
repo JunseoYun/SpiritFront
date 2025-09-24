@@ -74,6 +74,14 @@ const Title = ({
             </Pressable>
 
             {dropdownVisible && (
+              <Pressable
+                style={styles.backdrop}
+                onPress={toggleDropdown}
+                accessibilityLabel="Close menu"
+              />
+            )}
+
+            {dropdownVisible && (
               <Animated.View
                 style={[
                   styles.dropdown,
@@ -172,6 +180,15 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     width: 150,
     zIndex: 999,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: -1000,
+    bottom: -1000,
+    left: -1000,
+    right: -1000,
+    backgroundColor: 'transparent',
+    zIndex: 998,
   },
   dropdownItem: {
     paddingVertical: 10,
