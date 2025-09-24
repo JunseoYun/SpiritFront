@@ -133,7 +133,7 @@ const OpenStoreScreen = ({navigation}) => {
         />
       )}
       {distancestores.length === 0 && !loading && (
-        <Text style={styles.emptyText}>근처에 영업 중인 술집이 없어요</Text>
+        <Text style={styles.emptyText}>주변에 영업 중인 술집이 없어요</Text>
       )}
       <Loading loading={loading || refreshing} />
     </SafeAreaView>

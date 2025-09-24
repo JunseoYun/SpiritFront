@@ -154,7 +154,9 @@ const SearchFastScreen = ({navigation}) => {
   const renderEmptyComponent = () => {
     if (!loading) {
       return (
-        <Text style={styles.emptyText}>내 주변 조건에 맞는 가게가 없어요</Text>
+        <Text style={styles.emptyText}>
+          주변에 조건과 일치하는 술집이 없어요
+        </Text>
       );
     }
     return null;

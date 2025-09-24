@@ -7,12 +7,15 @@ import {
   StyleSheet,
   SafeAreaView,
   Dimensions,
+  Pressable,
 } from 'react-native';
 import {AlcoholFilterContext} from '../../context/AlcoholFilterContext';
 import {Store_getby_category} from '../../api/storeApi';
 import StoreItem from '../../components/CategoryTapScreen/StoreItem';
 import Loading from '../../hooks/Loading';
 import StoreItemSkeleton from '../../components/CategoryTapScreen/StoreItemSkeleton';
+import {normalizeFont} from '../../hooks/normalizeFont';
+import Feather from 'react-native-vector-icons/Feather';
 
 const CategoryTapScreen = ({navigation, route}) => {
   const {categoryname, location} = route.params;
@@ -170,7 +173,19 @@ const CategoryTapScreen = ({navigation, route}) => {
             removeClippedSubviews={true}
             ListEmptyComponent={
               !loading && stores.length === 0 ? (
-                <Text style={styles.emptyText}>등록된 가게가 없어요</Text>
+                <View>
+                  <Text style={styles.emptyText}>
+                    주변에 등록된 술집이 없어요
+                  </Text>
+                  <Pressable
+                    style={styles.button}
+                    onPress={() => {
+                      navigation.navigate('SetLocationScreen');
+                    }}>
+                    <Text style={styles.noneText}>위치 변경하기</Text>
+                    <Feather name={'chevron-right'} size={18} color="#555" />
+                  </Pressable>
+                </View>
               ) : null
             }
             refreshing={refreshing}
@@ -189,10 +204,24 @@ const CategoryTapScreen = ({navigation, route}) => {
 const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
-    marginVertical: 40,
+    marginTop: 40,
+    marginBottom: 40,
     fontFamily: 'Pretendard-Regular',
     fontSize: 18,
     color: '#c0c0c0',
+  },
+  button: {
+    width: '100%',
+    padding: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    flexDirection: 'row',
+  },
+  noneText: {
+    alignSelf: 'center',
+    color: '#555',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 
