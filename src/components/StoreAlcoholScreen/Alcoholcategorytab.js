@@ -154,13 +154,13 @@ const Alcoholcategorytab = ({
                 if (imagelist === 0) {
                   onScrollTo({
                     x: 0,
-                    y: y + mainSectionHeight - offset + top,
+                    y: y + mainSectionHeight - offset + top + 1,
                     animated: true,
                   });
                 } else if (imagelist > 0) {
                   onScrollTo({
                     x: 0,
-                    y: y + mainSectionHeight - offset,
+                    y: y + mainSectionHeight - offset + 1,
                     animated: true,
                   });
                 } else {

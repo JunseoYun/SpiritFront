@@ -1,7 +1,9 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {View, Text, Pressable, TextInput, StyleSheet} from 'react-native';
 
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import CancelText from '../CancelText/CancelText';
+import {normalizeFont} from '../../hooks/normalizeFont';
 const StoreOwnerInput = ({
   owners,
   hasCoRepresentative,
@@ -17,6 +19,9 @@ const StoreOwnerInput = ({
   errorMessage,
   owneRef,
 }) => {
+  const [focused, setFocused] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(null);
+  const [isfocused, setIsFocused] = useState({});
   return (
     <View style={styles.container}>
       <Text ref={owneRef} style={styles.sectionTitle}>
@@ -103,7 +108,18 @@ const StoreOwnerInput = ({
                     }
                   }
                 }}
+                onFocus={() => setFocusedIndex(index)}
+                onBlur={() => setFocusedIndex(null)}
               />
+              {owner.name.length > 0 && focusedIndex === index && (
+                <CancelText
+                  rightnum={0}
+                  topnum={normalizeFont(43)}
+                  paddingnum={0}
+                  handlecancel={() => updateOwnerName(index, '')}
+                  size={normalizeFont(20)}
+                />
+              )}
               {error === 'ownerGroup' && !owner.name && (
                 <Text style={styles.errorText}>{errorMessage}</Text>
               )}
@@ -133,7 +149,18 @@ const StoreOwnerInput = ({
                 businessNumberRef.current?.focus();
               }
             }}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
           />
+          {owners[0].name.length > 0 && focused && (
+            <CancelText
+              rightnum={0}
+              topnum={normalizeFont(43)}
+              paddingnum={0}
+              handlecancel={() => updateOwnerName(0, '')}
+              size={normalizeFont(20)}
+            />
+          )}
           {error === 'owner' && !owners[0].name && (
             <Text style={styles.errorText}>{errorMessage}</Text>
           )}

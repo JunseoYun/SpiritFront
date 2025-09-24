@@ -293,11 +293,27 @@ const StoreReviewScreen = ({navigation}) => {
       showToast('리뷰가 등록되었습니다.');
       handleRefresh();
     } catch (error) {
-      console.log(error, '리뷰 등록 중 에러');
-      showAlert({
-        title: '등록 실패',
-        message: '리뷰 등록에 실패했습니다. 다시 시도해 주세요.',
-      });
+      if (error.response.data.code == 25006) {
+        showAlert({
+          title: '등록 제한',
+          message: '해당 가게에는 하루에 한 번만 리뷰를 작성할 수 있습니다.',
+        });
+        return;
+      }
+      if (error.response.data.code == 25005) {
+        showAlert({
+          title: '등록 제한',
+          message: '리뷰는 하루 최대 5개까지만 작성할 수 있습니다.',
+        });
+        return;
+      } else {
+        showAlert({
+          title: '등록 실패',
+          message:
+            '리뷰 등록 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        });
+        return;
+      }
     } finally {
       setAddloading(false);
       setIsWriting(false);

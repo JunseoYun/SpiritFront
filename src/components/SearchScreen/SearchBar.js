@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   TextInput,
@@ -9,8 +9,10 @@ import {
 
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CancelText from '../CancelText/CancelText';
 
 const SearchBar = ({value, onChangeText, placeholder, onPress}) => {
+  const [focused, setFocused] = useState(false);
   return (
     <View
       style={[styles.topView, Platform.OS === 'android' && {paddingTop: 10}]}>
@@ -29,7 +31,18 @@ const SearchBar = ({value, onChangeText, placeholder, onPress}) => {
           returnKeyType="search" // ✅ 키보드에 '검색' 버튼 표시 (iOS & Android)
           onSubmitEditing={onPress}
           allowFontScaling={false}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
         />
+        {value.length > 0 && focused && (
+          <CancelText
+            rightnum={5}
+            topnum={14}
+            paddingnum={0}
+            handlecancel={onChangeText}
+            size={20}
+          />
+        )}
       </View>
     </View>
   );
@@ -66,6 +79,7 @@ const styles = StyleSheet.create({
     fontSize: normalizeFont(16, 1.3),
     color: '#121212', // 입력 텍스트 색상
     fontFamily: 'Pretendard-Medium',
+    paddingRight: 20,
   },
 });
 

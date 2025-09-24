@@ -132,6 +132,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
         {/* 진행 바: 50% 진행 */}
         <StoreAddProgressbar progress={0} />
         <ScrollView
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.scrollContent}
           ref={scrollViewRef}>
           <Text style={styles.title}>사진 및 매장 내용을 등록 해주세요.</Text>
