@@ -1,5 +1,14 @@
 import React from 'react';
-import {View, Text, TextInput, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import CancelText from '../CancelText/CancelText';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const NameInput = ({
   name,
@@ -41,6 +50,15 @@ const NameInput = ({
         }}
         returnKeyType="next"
       />
+      {name?.length > 0 && isnameFocused && (
+        <CancelText
+          rightnum={10}
+          topnum={normalizeFont(12)}
+          paddingnum={4}
+          handlecancel={handlenamechange}
+          size={normalizeFont(20)}
+        />
+      )}
       {nameerror.name && (
         <Text style={styles.errorMessage}>{nameerror.name}</Text>
       )}
@@ -74,6 +92,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     color: 'black',
+    paddingRight: 40,
   },
   inputFocused: {
     borderWidth: 2,

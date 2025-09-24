@@ -21,6 +21,7 @@ import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
 import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
+import CancelText from '../../components/CancelText/CancelText';
 
 const RegisterScreen = ({route, navigation}) => {
   // route.params를 통해 전달된 데이터 접근
@@ -43,7 +44,7 @@ const RegisterScreen = ({route, navigation}) => {
   const {showToast} = useToast();
   const [isSameNick, setIsSameNick] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [focused, setFocused] = useState(false);
   const handleCheckNickname = async () => {
     const filteredText = nickname.replace(/[^\wㄱ-ㅎㅏ-ㅣ가-힣0-9]/g, '');
 
@@ -218,13 +219,25 @@ const RegisterScreen = ({route, navigation}) => {
             styles.checkInputView,
         ]}>
         <TextInput
+          allowFontScaling={false}
           style={styles.nicknameInput}
           value={nickname}
           onChangeText={handleNicknameChange}
           placeholder="닉네임을 입력하세요"
           placeholderTextColor="#999"
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
         />
         {nicknameCheck && <Entypo name="check" size={25} color="#5CCEFF" />}
+        {nickname.length > 0 && focused && !nicknameCheck && (
+          <CancelText
+            rightnum={10}
+            topnum={14}
+            paddingnum={0}
+            handlecancel={handleNicknameChange}
+            size={20}
+          />
+        )}
       </View>
 
       {/* 비속어 경고 메시지 */}
@@ -314,6 +327,7 @@ const styles = StyleSheet.create({
     color: '#333',
     fontFamily: 'Pretendard-Regular',
     flex: 1,
+    paddingRight: 25,
   },
   errorInputView: {
     borderColor: '#FF0000', // 빨간 테두리

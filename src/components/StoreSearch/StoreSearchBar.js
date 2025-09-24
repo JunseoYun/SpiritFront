@@ -1,11 +1,13 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {View, TextInput, StyleSheet, Dimensions} from 'react-native';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CancelText from '../CancelText/CancelText';
 
 const screenWidth = Dimensions.get('window').width;
 
 const StoreSearchBar = ({value, onChangeText, placeholder, onPress}) => {
+  const [focused, setFocused] = useState(false);
   return (
     <View style={styles.container}>
       <EvilIcons style={styles.icon} name="search" size={24} color="gray" />
@@ -18,7 +20,18 @@ const StoreSearchBar = ({value, onChangeText, placeholder, onPress}) => {
         returnKeyType="search" // ✅ 키보드에 '검색' 버튼 표시 (iOS & Android)
         onSubmitEditing={onPress}
         allowFontScaling={false}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
       />
+      {value.length > 0 && focused && (
+        <CancelText
+          rightnum={10}
+          topnum={11}
+          paddingnum={4}
+          handlecancel={onChangeText}
+          size={20}
+        />
+      )}
     </View>
   );
 };
@@ -48,6 +61,7 @@ const styles = StyleSheet.create({
     fontSize: normalizeFont(18, 1.3),
     color: '#333', // 입력 텍스트 색상
     fontFamily: 'Pretendard-Medium',
+    paddingRight: 30,
   },
 });
 

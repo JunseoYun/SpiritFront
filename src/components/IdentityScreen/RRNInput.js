@@ -1,5 +1,7 @@
 import React from 'react';
 import {View, Text, TextInput, StyleSheet, Keyboard} from 'react-native';
+import CancelText from '../CancelText/CancelText';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const RRNInput = ({
   showrrfLabel,
@@ -57,6 +59,15 @@ const RRNInput = ({
             onBlur={() => setIsrrnfFocused(false)}
             maxLength={6}
           />
+          {rrnFront.length > 0 && isrrnfFocused && (
+            <CancelText
+              rightnum={10}
+              topnum={normalizeFont(12)}
+              paddingnum={4}
+              handlecancel={setRrnFront}
+              size={normalizeFont(20)}
+            />
+          )}
         </View>
         <Text
           style={{
