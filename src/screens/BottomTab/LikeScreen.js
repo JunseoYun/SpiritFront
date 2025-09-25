@@ -160,7 +160,7 @@ const LikeScreen = ({navigation}) => {
       {!token && <Text style={styles.emptyText}>로그인 후 이용해주세요</Text>}
       <ScrollToTopButton
         visible={showScrollToTop}
-        bottom={(insets.bottom || 16) + 4}
+        bottom={18}
         onPress={scrollToTop}
       />
       <Loading loading={refreshing || loading} />
