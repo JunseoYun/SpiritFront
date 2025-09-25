@@ -11,6 +11,7 @@ import {
   Easing,
   Dimensions,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {useRoute} from '@react-navigation/native';
@@ -213,7 +214,7 @@ const SearchFastScreen = ({navigation}) => {
           initialNumToRender={10}
           maxToRenderPerBatch={5}
           windowSize={5}
-          removeClippedSubviews={true}
+          removeClippedSubviews={Platform.OS === 'android'}
         />
       )}
 

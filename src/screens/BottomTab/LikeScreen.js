@@ -6,6 +6,7 @@ import {
   Text,
   View,
   BackHandler,
+  Platform,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import LikedItem from '../../components/LikedScreen/LikedItem';
@@ -140,7 +141,7 @@ const LikeScreen = ({navigation}) => {
               initialNumToRender={10}
               maxToRenderPerBatch={5}
               windowSize={5}
-              removeClippedSubviews={true}
+              removeClippedSubviews={Platform.OS === 'android'}
               onEndReached={loadMoreStores}
               onEndReachedThreshold={0.5}
               onRefresh={handleRefresh}
