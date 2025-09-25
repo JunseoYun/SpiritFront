@@ -105,7 +105,7 @@ const Alcoholcategorytab = ({
         if (imagelist == 0) {
           if (
             value >=
-            parentSectionPositions[type] + mainSectionHeight - offset + top + 1
+            parentSectionPositions[type] + mainSectionHeight - offset + top + 2
           ) {
             current = type;
           }
@@ -113,7 +113,7 @@ const Alcoholcategorytab = ({
         if (imagelist > 0) {
           if (
             value >=
-            parentSectionPositions[type] + mainSectionHeight - offset + 1
+            parentSectionPositions[type] + mainSectionHeight - offset + 2
           ) {
             current = type;
           }
@@ -153,13 +153,13 @@ const Alcoholcategorytab = ({
                 if (imagelist === 0) {
                   onScrollTo({
                     x: 0,
-                    y: y + mainSectionHeight - offset + top + 1,
+                    y: y + mainSectionHeight - offset + top + 2,
                     animated: true,
                   });
                 } else if (imagelist > 0) {
                   onScrollTo({
                     x: 0,
-                    y: y + mainSectionHeight - offset + 1,
+                    y: y + mainSectionHeight - offset + 2,
                     animated: true,
                   });
                 } else {
