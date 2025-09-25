@@ -31,7 +31,7 @@ const ViewedStoreScreen = ({navigation}) => {
     updateVisibility,
     scrollToTop,
   } = useScrollToTopVisibility();
-  const scrollButtonBottom = (bottom || 16) + 24 + 36;
+  const scrollButtonBottom = (bottom || 16) + 34;
   const fetchdistanceStores = async (currentPage, reset = false) => {
     if (loading || (!hasMore && !reset)) return;
     setLoading(true);
