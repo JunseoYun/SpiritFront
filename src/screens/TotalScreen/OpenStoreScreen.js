@@ -7,6 +7,7 @@ import {
   Pressable,
   FlatList,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
@@ -133,7 +134,7 @@ const OpenStoreScreen = ({navigation}) => {
           initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
           maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
           windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-          removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
+          removeClippedSubviews={Platform.OS === 'android'} // iOS에서는 화면이 잘려 렌더링 오류가 발생해 안드로이드에서만 사용
           onEndReached={() => {
             if (!loading && hasMore && distancepage < totalpage - 1) {
               setDistancepage(prevPage => {

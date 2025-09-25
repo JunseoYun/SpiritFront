@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Dimensions,
   Pressable,
+  Platform,
 } from 'react-native';
 import {AlcoholFilterContext} from '../../context/AlcoholFilterContext';
 import {Store_getby_category} from '../../api/storeApi';
@@ -170,7 +171,7 @@ const CategoryTapScreen = ({navigation, route}) => {
             initialNumToRender={10}
             maxToRenderPerBatch={5}
             windowSize={5}
-            removeClippedSubviews={true}
+            removeClippedSubviews={Platform.OS === 'android'}
             ListEmptyComponent={
               !loading && stores.length === 0 ? (
                 <View>

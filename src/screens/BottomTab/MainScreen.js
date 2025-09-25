@@ -708,7 +708,7 @@ const MainScreen = ({navigation}) => {
         initialNumToRender={4}
         maxToRenderPerBatch={7}
         windowSize={4}
-        removeClippedSubviews={true}
+        removeClippedSubviews={Platform.OS === 'android'}
       />
 
       <ScrollToTopButton
