@@ -75,9 +75,12 @@ const StoreMainScreen = ({navigation}) => {
   const [bottomSheetIndex, setBottomSheetIndex] = useState(-1);
   const [sectionPositions, setSectionPositions] = useState({});
   const [isModalVisible, setModalVisible] = useState(false);
-  const {visible: showScrollToTop, scrollToTop, updateVisibility} =
-    useScrollToTopVisibility({externalRef: scrollViewRef});
-  const scrollButtonBottom = (bottom || 16) + 24 + 36;
+  const {
+    visible: showScrollToTop,
+    scrollToTop,
+    updateVisibility,
+  } = useScrollToTopVisibility({externalRef: scrollViewRef});
+  const scrollButtonBottom = (bottom || 16) + 34;
   // 상위 scrollTo 함수
   const scrollToHandler = params => {
     if (scrollViewRef.current) {
@@ -586,14 +589,23 @@ const StoreMainScreen = ({navigation}) => {
                     listener: event => {
                       const offsetY = event?.nativeEvent?.contentOffset?.y ?? 0;
                       updateVisibility(offsetY);
-                      if (isClickedRef.current) {
-                        setTimeout(() => {
-                          isClickedRef.current = false;
-                        }, 200);
-                      }
                     },
                   },
                 )}
+                onScrollEndDrag={() => {
+                  if (isClickedRef.current) {
+                    setTimeout(() => {
+                      isClickedRef.current = false;
+                    }, 200);
+                  }
+                }}
+                onMomentumScrollEnd={() => {
+                  if (isClickedRef.current) {
+                    setTimeout(() => {
+                      isClickedRef.current = false;
+                    }, 200);
+                  }
+                }}
                 scrollEventThrottle={16}
                 ref={scrollViewRef}
                 showsVerticalScrollIndicator={false}
