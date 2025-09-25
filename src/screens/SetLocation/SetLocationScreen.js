@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#121212',
     fontFamily: 'Pretendard-SemiBold',
+    marginRight: 10,
   },
   noticeView: {
     marginHorizontal: 18,
