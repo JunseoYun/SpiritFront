@@ -35,9 +35,14 @@ const OpenStoreScreen = ({navigation}) => {
   const [totalpage, setTotalpage] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [firstloading, setFirstloading] = useState(true);
-  const {scrollRef, visible: showScrollToTop, handleScroll, updateVisibility, scrollToTop} =
-    useScrollToTopVisibility();
-  const scrollButtonBottom = (bottom || 16) + 24 + 36;
+  const {
+    scrollRef,
+    visible: showScrollToTop,
+    handleScroll,
+    updateVisibility,
+    scrollToTop,
+  } = useScrollToTopVisibility();
+  const scrollButtonBottom = (bottom || 16) + 34;
 
   const fetchdistanceStores = async (currentPage, reset = false) => {
     if (location) {

@@ -10,7 +10,6 @@ import ResultItem from './ResultItem';
 import {Store_getby_keyword} from '../../../api/storeApi';
 import ResultItemSkeleton from './ResultItemSkeleton';
 import Loading from '../../../hooks/Loading';
-import ScrollToTopButton from '../../common/ScrollToTopButton';
 import useScrollToTopVisibility from '../../../hooks/useScrollToTopVisibility';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -29,7 +28,6 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
     scrollToTop,
   } = useScrollToTopVisibility({externalRef: scrollRef});
   const {bottom} = useSafeAreaInsets();
-  const scrollButtonBottom = (bottom || 16) + 34;
 
   // 검색된 가게들을 필터링하는 함수
   const filteredStores = async currentPage => {
@@ -93,7 +91,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {paddingBottom: bottom}]}>
       {firstloading ? (
         <FlatList
           data={[1, 2, 3, 4, 5, 6, 7, 8, 9]} // 임의의 더미 데이터
@@ -107,7 +105,10 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
           data={searchingStores}
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
-          contentContainerStyle={styles.fastSearchModalScrollView}
+          contentContainerStyle={[
+            styles.fastSearchModalScrollView,
+            {paddingBottom: 50},
+          ]}
           initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
           maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
           windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
@@ -132,11 +133,6 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
         />
       )}
       <Loading loading={loading} />
-      <ScrollToTopButton
-        visible={showScrollToTop}
-        onPress={scrollToTop}
-        bottom={scrollButtonBottom}
-      />
     </View>
   );
 };
