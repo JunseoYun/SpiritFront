@@ -81,10 +81,7 @@ const MainScreen = ({navigation}) => {
     () => (Platform.OS === 'ios' ? screenHeight * 0.25 : screenHeight * 0.3),
     [],
   );
-  const scrollToTopBottom = useMemo(
-    () => (insets.bottom || 16) + 4,
-    [insets.bottom],
-  );
+  const scrollToTopBottom = useMemo(() => 18, []);
 
   useEffect(() => {
     scrollListener.current = scrollY.addListener(({value}) => {

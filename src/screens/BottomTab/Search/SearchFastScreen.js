@@ -56,8 +56,12 @@ const SearchFastScreen = ({navigation}) => {
   const [bottomModalVisible, setBottomModalVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const scrollRef = useRef(null);
-  const {visible: showScrollToTop, handleScroll, updateVisibility, scrollToTop} =
-    useScrollToTopVisibility({externalRef: scrollRef});
+  const {
+    visible: showScrollToTop,
+    handleScroll,
+    updateVisibility,
+    scrollToTop,
+  } = useScrollToTopVisibility({externalRef: scrollRef});
   // ✅ 검색 조건 DTO
   const [searchDto, setSearchDto] = useState(fastSearchStores);
 
@@ -188,7 +192,7 @@ const SearchFastScreen = ({navigation}) => {
       />
 
       {/* 검색 결과 리스트 */}
-     {firstloading ? (
+      {firstloading ? (
         <FlatList
           data={[1, 2, 3, 5, 6, 7, 8, 9]} // 임의의 더미 데이터
           keyExtractor={(item, index) => index.toString()}
@@ -226,7 +230,7 @@ const SearchFastScreen = ({navigation}) => {
 
       <ScrollToTopButton
         visible={showScrollToTop}
-        bottom={(bottom || 16) + 24}
+        bottom={18}
         onPress={scrollToTop}
       />
 

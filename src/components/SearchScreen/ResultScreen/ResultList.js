@@ -29,7 +29,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
     scrollToTop,
   } = useScrollToTopVisibility({externalRef: scrollRef});
   const {bottom} = useSafeAreaInsets();
-  const scrollButtonBottom = (bottom || 16) + 24 + 36;
+  const scrollButtonBottom = (bottom || 16) + 34;
 
   // 검색된 가게들을 필터링하는 함수
   const filteredStores = async currentPage => {
