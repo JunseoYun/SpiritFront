@@ -14,6 +14,7 @@ const ScrollToTopButton = ({
   style,
   buttonStyle,
   iconName = 'chevron-up',
+  screen,
 }) => {
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useMemo(
@@ -45,7 +46,11 @@ const ScrollToTopButton = ({
       <Pressable
         onPress={onPress}
         hitSlop={hitSlop}
-        style={[styles.button, buttonStyle]}
+        style={[
+          styles.button,
+          buttonStyle,
+          screen === 'StoreMainScreen' && {bottom: 0},
+        ]}
         {...(Platform.OS === 'android'
           ? {android_ripple: {color: rippleColor, radius: 24}}
           : {})}>

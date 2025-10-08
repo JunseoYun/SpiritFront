@@ -11,6 +11,8 @@ import {
   Share,
   Modal,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Dimensions,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/StoreImage/ImageSlider';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
@@ -46,6 +48,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import StoreMainSkeleton from './StoreMainSkeleton';
 import ScrollToTopButton from '../../components/common/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
+import OrderForm from '../../components/StoreScreen/OrderForm';
 
 const StoreMainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
@@ -75,12 +78,17 @@ const StoreMainScreen = ({navigation}) => {
   const [bottomSheetIndex, setBottomSheetIndex] = useState(-1);
   const [sectionPositions, setSectionPositions] = useState({});
   const [isModalVisible, setModalVisible] = useState(false);
+
+  const [isOrderEnabled, setIsOrderEnabled] = useState(true);
+  const [showOrderForm, setShowOrderForm] = useState(false);
+
   const {
     visible: showScrollToTop,
     scrollToTop,
     updateVisibility,
   } = useScrollToTopVisibility({externalRef: scrollViewRef});
   const scrollButtonBottom = (bottom || 16) + 34;
+  const ORDER_FORM_OFFSET = 220;
   // 상위 scrollTo 함수
   const scrollToHandler = params => {
     if (scrollViewRef.current) {
@@ -513,6 +521,32 @@ const StoreMainScreen = ({navigation}) => {
     });
     return () => scrollY.removeListener(sub);
   }, [filterHeaderThreshold]);
+
+  const handleOrderButtonPress = () => {
+    setShowOrderForm(true);
+  };
+
+  const handleOrderCancel = () => {
+    Keyboard.dismiss();
+    setShowOrderForm(false);
+  };
+
+  const baseScrollButtonBottom = isOrderEnabled
+    ? scrollButtonBottom - insets.bottom
+    : scrollButtonBottom;
+  const scrollButtonBottomValue =
+    baseScrollButtonBottom + (showOrderForm ? ORDER_FORM_OFFSET : 0);
+
+  const handleOrderSubmit = ({visitTime, peopleCount}) => {
+    Keyboard.dismiss();
+    setShowOrderForm(false);
+    navigation.navigate('StoreOrderScreen', {
+      storeId,
+      visitTime,
+      peopleCount,
+    });
+  };
+
   return (
     <View style={{flex: 1}}>
       {loading && skeletonLoading ? (
@@ -613,7 +647,11 @@ const StoreMainScreen = ({navigation}) => {
                 style={{
                   backgroundColor: 'white',
                   width: '100%',
-                  paddingBottom: 100,
+                  paddingBottom: showOrderForm
+                    ? ORDER_FORM_OFFSET + 60
+                    : isOrderEnabled
+                    ? ORDER_FORM_OFFSET / 2
+                    : 100,
                 }}
                 keyboardShouldPersistTaps="always"
                 scrollEnabled={true}
@@ -758,6 +796,7 @@ const StoreMainScreen = ({navigation}) => {
                         isUpdatable={storedata?.isUpdatable}
                         onMenuUpdateComplete={refreshMenus}
                         images={imageSliderData}
+                        isOrderEnabled={isOrderEnabled}
                       />
                     )}
                     {currentPage === 'StoreAlcoholScreen' && (
@@ -774,6 +813,7 @@ const StoreMainScreen = ({navigation}) => {
                         onScrollTo={scrollToHandler}
                         sectionPositions={sectionPositions}
                         setSectionPositions={setSectionPositions}
+                        isOrderEnabled={isOrderEnabled}
                       />
                     )}
                   </>
@@ -782,9 +822,10 @@ const StoreMainScreen = ({navigation}) => {
             </KeyboardAvoidingView>
             <ScrollToTopButton
               visible={!isUpdate && showScrollToTop}
-              bottom={scrollButtonBottom}
+              bottom={scrollButtonBottomValue}
               onPress={scrollToTop}
             />
+
             <Modal
               transparent
               visible={isModalVisible}
@@ -832,6 +873,7 @@ const StoreMainScreen = ({navigation}) => {
               </Pressable>
             </View>
           )}
+
           <BottomSheet
             ref={bottomSheetRef}
             index={-1}
@@ -867,6 +909,33 @@ const StoreMainScreen = ({navigation}) => {
           </BottomSheet>
           <AlertComponent />
         </>
+      )}
+      {isOrderEnabled && !isUpdate && (
+        <View
+          style={[
+            styles.storeOrderview,
+            {
+              paddingBottom:
+                Platform.OS === 'android'
+                  ? insets.bottom + 20
+                  : insets.bottom + 10,
+            },
+          ]}>
+          {showOrderForm ? (
+            <OrderForm
+              operationInfoDtos={storedata?.operationInfoDtos}
+              isAlwaysOpen={storedata?.isAlwaysOpen}
+              onCancel={handleOrderCancel}
+              onSubmit={handleOrderSubmit}
+            />
+          ) : (
+            <Pressable
+              style={styles.storeOrderButton}
+              onPress={handleOrderButtonPress}>
+              <Text style={styles.storeOrderText}>실시간 주문하기</Text>
+            </Pressable>
+          )}
+        </View>
       )}
 
       <Loading loading={loading} />
@@ -985,9 +1054,29 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: '#333',
     textAlign: 'center',
+  },
+  storeOrderview: {
+    borderTopWidth: 1,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    backgroundColor: '#fff',
+  },
+  storeOrderButton: {
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#45C9FF',
+    borderRadius: 9,
+    height: 50,
+  },
+  storeOrderText: {
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#fff',
   },
 });
 

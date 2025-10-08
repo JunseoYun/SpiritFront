@@ -34,13 +34,10 @@ const StoreAlcoholScreen = ({
   storeId,
   alcohols = [],
   mainDrinks = [],
-  onAlcoholDelete,
-  isUpdatable,
-  onAlcoholUpdateComplete,
-  onScrollTo, // 상위에서 scrollTo를 호출할 함수 (scrollToHandler)
   sectionPositions: parentSectionPositions, // 상위에서 관리하는 섹션 위치들
   setSectionPositions: setParentSectionPositions, // 상위에서 섹션 위치 관리 함수
-  imagelist = 0,
+
+  isOrderEnabled,
 }) => {
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
   const {height: windowHeight} = Dimensions.get('window');
@@ -90,7 +87,8 @@ const StoreAlcoholScreen = ({
   }, [alcoholsState, mainDrinks, translateAlcohol]);
 
   return (
-    <SafeAreaView style={[styles.container, {paddingBottom: bottom * 2}]}>
+    <SafeAreaView
+      style={[styles.container, !isOrderEnabled && {paddingBottom: bottom}]}>
       {/* 주류 리스트 */}
       {/* 내부 ScrollView 제거하고 View로 감싸기 */}
       <View style={{flex: 1}}>
