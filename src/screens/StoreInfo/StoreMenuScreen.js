@@ -19,6 +19,7 @@ const StoreMenuScreen = ({
   onMenuDelete,
   isUpdatable,
   onMenuUpdateComplete,
+  isOrderEnabled,
 }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [menuList, setMenuList] = useState(menus);
@@ -75,7 +76,8 @@ const StoreMenuScreen = ({
 
   // 메뉴판, 주류 정보 사진 없을때 이미지 추가로 수정
   return (
-    <SafeAreaView style={[styles.container, {paddingBottom: bottom * 2}]}>
+    <SafeAreaView
+      style={[styles.container, !isOrderEnabled && {paddingBottom: bottom}]}>
       {isUpdatable && (
         <>
           <Pressable
