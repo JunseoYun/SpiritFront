@@ -20,6 +20,7 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import {Userputnickname, check_nickName} from '../../../api/userApi';
 import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
+import CancelText from '../../../components/CancelText/CancelText';
 
 const Mynickchange = () => {
   const route = useRoute();
@@ -33,6 +34,7 @@ const Mynickchange = () => {
   const [nicknamefilter, setNicknamefilter] = useState(false);
   const [loading, setLoading] = useState(false);
   const {showToast} = useToast();
+  const [focused, setFocused] = useState(false);
   const handleNicknameChange = text => {
     setNewnickname(text);
     setNicknameError(false);
@@ -152,7 +154,9 @@ const Mynickchange = () => {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={styles.container}>
-          <ScrollView contentContainerStyle={{flexGrow: 1}}>
+          <ScrollView
+            contentContainerStyle={{flexGrow: 1}}
+            keyboardShouldPersistTaps="handled">
             <View style={styles.topview}>
               <Text style={styles.nickname}>새로운 닉네임</Text>
               <View
@@ -180,10 +184,23 @@ const Mynickchange = () => {
                     handleNicknameChange(text);
                   }}
                   placeholderTextColor="#999"
+                  onFocus={() => setFocused(true)}
+                  onBlur={() => setFocused(false)}
                 />
                 {nicknameCheck && !nicknameError && !nicknamelength && (
                   <Entypo name="check" size={25} color="#16BBFF" />
                 )}
+                {newnickname.length > 0 &&
+                  focused &&
+                  !(nicknameCheck && !nicknameError && !nicknamelength) && (
+                    <CancelText
+                      rightnum={10}
+                      topnum={14}
+                      paddingnum={0}
+                      handlecancel={handleNicknameChange}
+                      size={20}
+                    />
+                  )}
               </View>
               <View
                 style={[
@@ -266,6 +283,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Pretendard-Medium',
     color: '#333',
+    paddingRight: 30,
   },
   completebtn: {
     width: '90%',

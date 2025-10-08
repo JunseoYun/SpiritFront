@@ -6,6 +6,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {useToast} from '../../context/ToastContext';
+import CancelText from '../CancelText/CancelText';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const StoreAddname = ({storename, setStorename, error}) => {
   const {showToast} = useToast();
@@ -79,7 +81,17 @@ const StoreAddname = ({storename, setStorename, error}) => {
             onBlur={() => setFocusedInput(false)}
             returnKeyType="done"
           />
+          {storename.length > 0 && focusedInput && (
+            <CancelText
+              rightnum={12}
+              topnum={normalizeFont(25)}
+              paddingnum={0}
+              handlecancel={setStorename}
+              size={normalizeFont(22)}
+            />
+          )}
         </View>
+
         {overText && (
           <Text style={styles.errorText}>
             매장 이름은 최대 50자까지 입력 가능합니다.
@@ -105,7 +117,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   storeinput: {
-    width: '100%',
+    flex: 1,
     borderBottomColor: '#F2F2F2',
     borderBottomWidth: 1,
     fontSize: 22,
@@ -114,6 +126,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingLeft: 1,
     color: 'black',
+    paddingRight: 40,
   },
   focusedInput: {
     borderBottomColor: '#16BBFF',

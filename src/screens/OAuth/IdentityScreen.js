@@ -535,7 +535,7 @@ const IdentityScreen = ({route, navigation}) => {
                 name={name}
                 setName={setName}
                 nameRef={nameRef}
-                isFocused={isnameFocused}
+                isnameFocused={isnameFocused}
                 error={error}
                 nameplaceholder={nameplaceholder}
                 nameerror={nameerror}
@@ -551,7 +551,12 @@ const IdentityScreen = ({route, navigation}) => {
                 isCarrierStepVisible && (
                   <TouchableOpacity
                     style={styles.authButton}
-                    onPress={() => setIsPolicyModalVisible(true)}>
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setTimeout(() => {
+                        setIsPolicyModalVisible(true);
+                      }, 10);
+                    }}>
                     <Text style={styles.authButtonText}>본인 인증하기</Text>
                   </TouchableOpacity>
                 )}

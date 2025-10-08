@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Pressable,
   PixelRatio,
+  Platform,
 } from 'react-native';
 import NearStoreItem from './NearStoreItem';
 import {Store_getby_distance} from '../../../api/storeApi';
@@ -96,7 +97,7 @@ const NearStoreList = ({refresh, navigation, location}) => {
     if (!loading) {
       return (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>근처에 등록된 술집이 없어요</Text>
+          <Text style={styles.emptyText}>주변에 등록된 술집이 없어요</Text>
         </View>
       );
     }
@@ -163,13 +164,13 @@ const NearStoreList = ({refresh, navigation, location}) => {
         initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
         maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
         windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-        removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
+        removeClippedSubviews={Platform.OS === 'android'} // iOS에서는 화면이 잘려 렌더링 오류가 발생해 안드로이드에서만 사용
         onEndReachedThreshold={0.5} // 리스트 끝에 가까워지면 데이터를 추가로 가져옵니다.
         //ListFooterComponent={renderFooter} // 로딩 인디케이터
       />
       {stores.length === 0 && !loading && (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>근처에 등록된 술집이 없어요</Text>
+          <Text style={styles.emptyText}>주변에 등록된 술집이 없어요</Text>
         </View>
       )}
     </View>

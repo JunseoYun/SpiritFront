@@ -517,6 +517,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontFamily: 'Pretendard-Medium',
     alignSelf: 'flex-start',
+    marginHorizontal: 18,
   },
 });
 

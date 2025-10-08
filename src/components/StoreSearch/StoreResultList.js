@@ -128,7 +128,9 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
           ) : (
             isWord &&
             !loading && (
-              <Text style={styles.emptyText}>검색된 술집이 없습니다</Text>
+              <Text style={styles.emptyText}>
+                주변에 검색된 술집이 없습니다
+              </Text>
             )
           )
         }

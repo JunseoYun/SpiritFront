@@ -2,27 +2,43 @@ import React, {useRef, useState} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
 import {useToast} from '../../context/ToastContext';
+import CancelText from '../CancelText/CancelText';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const UpdateStoreName = ({updatedValue, setUpdatedValue, onCancel, onSave}) => {
   const {showToast} = useToast();
   const curLenRef = useRef((updatedValue || '').length);
   const [overText, setOverText] = useState(false);
+  const [focused, setFocused] = useState(false);
 
   return (
     <View style={styles.bottomSheetContent}>
       <Text style={styles.title}>매장 이름</Text>
-      <TextInput
-        style={styles.input}
-        defaultValue={updatedValue}
-        onChangeText={text => {
-          curLenRef.current = text.length;
-          // 50자 도달 시 안내문 노출되도록 처리
-          setOverText(text.length >= 50);
-          setUpdatedValue(text);
-        }}
-        placeholder="매장 이름*"
-        placeholderTextColor="#999"
-      />
+      <View>
+        <TextInput
+          style={styles.input}
+          defaultValue={updatedValue}
+          onChangeText={text => {
+            curLenRef.current = text.length;
+            // 50자 도달 시 안내문 노출되도록 처리
+            setOverText(text.length >= 50);
+            setUpdatedValue(text);
+          }}
+          placeholder="매장 이름*"
+          placeholderTextColor="#999"
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+        />
+        {updatedValue.length > 0 && focused && (
+          <CancelText
+            rightnum={12}
+            topnum={normalizeFont(19)}
+            paddingnum={0}
+            handlecancel={setUpdatedValue}
+            size={normalizeFont(22)}
+          />
+        )}
+      </View>
       {overText && (
         <Text style={styles.errorText}>
           매장 이름은 최대 50자까지 입력 가능합니다.

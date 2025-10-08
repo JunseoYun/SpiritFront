@@ -1,6 +1,8 @@
 import React, {useState, useRef} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import CancelText from '../CancelText/CancelText';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
@@ -72,6 +74,15 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
             }
           }}
         />
+        {storeData.storeName.length > 0 && isFocused('storeName') && (
+          <CancelText
+            rightnum={0}
+            topnum={normalizeFont(43)}
+            paddingnum={0}
+            handlecancel={() => handleChange('storeName', '')}
+            size={normalizeFont(20)}
+          />
+        )}
         {errors.storeName && (
           <Text style={styles.errorText}>{errors.storeName}</Text>
         )}
@@ -104,6 +115,15 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
             }
           }}
         />
+        {storeData.storeNumber.length > 0 && isFocused('storeNumber') && (
+          <CancelText
+            rightnum={0}
+            topnum={normalizeFont(43)}
+            paddingnum={0}
+            handlecancel={() => handleChange('storeNumber', '')}
+            size={normalizeFont(20)}
+          />
+        )}
         {errors.storeNumber && (
           <Text style={styles.errorText}>{errors.storeNumber}</Text>
         )}
@@ -127,6 +147,15 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
           onFocus={() => setFocusedInput('userContact')}
           onBlur={() => setFocusedInput(null)}
         />
+        {storeData.userContact.length > 0 && isFocused('userContact') && (
+          <CancelText
+            rightnum={0}
+            topnum={normalizeFont(43)}
+            paddingnum={0}
+            handlecancel={() => handleChange('userContact', '')}
+            size={normalizeFont(20)}
+          />
+        )}
         {errors.userContact && (
           <Text style={styles.errorText}>{errors.userContact}</Text>
         )}
@@ -155,6 +184,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingLeft: 1,
     color: 'black',
+    paddingRight: 25,
   },
   focusedInput: {
     borderBottomColor: '#16BBFF', // 활성화 상태 색상
