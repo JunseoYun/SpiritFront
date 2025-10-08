@@ -10,10 +10,11 @@ import {
 
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import CancelText from '../../CancelText/CancelText';
 
 const ResultTopBar = ({searchWord, navigation, onSearch}) => {
   const [tempSearchWord, setTempSearchWord] = useState(searchWord); // 검색어 입력값 (즉시 반영 안됨)
-
+  const [focused, setFocused] = useState(false);
   // ✅ 검색 버튼 클릭 시 실행될 함수 (입력 중인 검색어로 검색 실행)
   const onSearchPress = () => {
     if (tempSearchWord.trim()) {
@@ -45,7 +46,18 @@ const ResultTopBar = ({searchWord, navigation, onSearch}) => {
           returnKeyType="search" // ✅ 키보드에 '검색' 버튼 표시 (iOS & Android)
           onSubmitEditing={onSearchPress}
           allowFontScaling={false}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
         />
+        {tempSearchWord.length > 0 && focused && (
+          <CancelText
+            rightnum={0}
+            topnum={14}
+            paddingnum={0}
+            handlecancel={setTempSearchWord}
+            size={20}
+          />
+        )}
       </View>
       <TouchableOpacity style={styles.homeButton} onPress={onSearchPress}>
         <AntDesign name="search1" size={20} color={'#111'} />
@@ -83,7 +95,7 @@ const styles = StyleSheet.create({
     fontSize: normalizeFont(16, 1.3),
     color: '#121212',
     flex: 1, // 입력 필드가 남은 공간을 차지하도록 설정
-
+    paddingRight: 20,
     fontFamily: 'Pretendard-Medium',
   },
 });

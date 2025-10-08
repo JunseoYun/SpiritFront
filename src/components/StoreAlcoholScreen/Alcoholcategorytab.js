@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo, useRef} from 'react';
+﻿import React, {useState, useEffect, useMemo, useRef} from 'react';
 import {
   Text,
   StyleSheet,
@@ -30,8 +30,8 @@ const alcoholMapping = {
 const Alcoholcategorytab = ({
   alcohols = [],
   mainDrinks = [],
-  onScrollTo, // 상위에서 scrollTo를 호출할 함수 (scrollToHandler)
-  sectionPositions: parentSectionPositions, // 상위에서 관리하는 섹션 위치들
+  onScrollTo,
+  sectionPositions: parentSectionPositions,
   imagelist = 0,
   scrollY,
   selectedType,
@@ -92,12 +92,11 @@ const Alcoholcategorytab = ({
   useEffect(() => {
     selectedTypeRef.current = selectedType;
   }, [selectedType]);
-
   useEffect(() => {
     if (!scrollY || !parentSectionPositions) return;
 
     const listenerId = scrollY.addListener(({value}) => {
-      if (isClickedRef.current) return; // 클릭 강제 활성화 중이면 무시
+      if (isClickedRef.current) return;
 
       let current = null;
       let imgnull = 0;
@@ -106,7 +105,7 @@ const Alcoholcategorytab = ({
         if (imagelist == 0) {
           if (
             value >=
-            parentSectionPositions[type] + mainSectionHeight - offset + top
+            parentSectionPositions[type] + mainSectionHeight - offset + top + 2
           ) {
             current = type;
           }
@@ -114,7 +113,7 @@ const Alcoholcategorytab = ({
         if (imagelist > 0) {
           if (
             value >=
-            parentSectionPositions[type] + mainSectionHeight - offset
+            parentSectionPositions[type] + mainSectionHeight - offset + 2
           ) {
             current = type;
           }
@@ -143,36 +142,36 @@ const Alcoholcategorytab = ({
             key={type}
             style={[
               styles.tabButton,
-              selectedType === type && styles.tabButtonActive, // ✅ 선택된 버튼 스타일
+              selectedType === type && styles.tabButtonActive,
             ]}
             onPress={() => {
-              setSelectedType(type); // 클릭 즉시 활성화
-              isClickedRef.current = true; // scrollY 이벤트 잠시 무시
+              setSelectedType(type);
+              isClickedRef.current = true;
               const y = parentSectionPositions[type];
               const offset = Platform.OS === 'ios' ? insets.top + 30 : top + 40;
               if (onScrollTo && y !== undefined) {
                 if (imagelist === 0) {
                   onScrollTo({
                     x: 0,
-                    y: y + mainSectionHeight - offset + top,
+                    y: y + mainSectionHeight - offset + top + 2,
                     animated: true,
                   });
                 } else if (imagelist > 0) {
                   onScrollTo({
                     x: 0,
-                    y: y + mainSectionHeight - offset,
+                    y: y + mainSectionHeight - offset + 2,
                     animated: true,
                   });
                 } else {
                 }
               } else {
-                console.warn('onScrollTo 또는 y 좌표가 올바르지 않습니다');
+                console.warn();
               }
             }}>
             <Text
               style={[
                 styles.tabText,
-                selectedType === type && styles.tabTextActive, // ✅ 선택된 텍스트 스타일
+                selectedType === type && styles.tabTextActive, // ???좏깮???띿뒪???ㅽ???
               ]}>
               {type}
             </Text>
@@ -211,11 +210,11 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   tabButtonActive: {
-    backgroundColor: '#E8F7FF', // 선택 시 배경색
+    backgroundColor: '#E8F7FF', // ?좏깮 ??諛곌꼍??
     borderColor: '#45C9FF',
   },
   tabTextActive: {
-    color: '#45C9FF', // 선택 시 글자색
+    color: '#45C9FF', // ?좏깮 ??湲?먯깋
   },
 });
 

@@ -7,7 +7,7 @@ import {
   FlatList,
   Dimensions,
   PixelRatio,
-  InteractionManager,
+  Platform,
 } from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
@@ -103,7 +103,7 @@ const TodayRecomm = ({
           horizontal
           keyExtractor={(item, index) => index.toString()}
           showsHorizontalScrollIndicator={false}
-          removeClippedSubviews={false}
+          emoveClippedSubviews={Platform.OS === 'android'}
           contentContainerStyle={[
             styles.scrollContainer,
             recommStores.length < 3 && styles.centeredListContainer,

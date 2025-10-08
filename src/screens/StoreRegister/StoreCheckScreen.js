@@ -101,7 +101,9 @@ const StoreCheckScreen = ({navigation}) => {
         ]}>
         {/* 진행 바: 50% 진행 */}
         <ProgressBar progress={0} />
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>신청 정보를 확인해주세요.</Text>
           <StoreAuthorityData
             storeData={storeData}

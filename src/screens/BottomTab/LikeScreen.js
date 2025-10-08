@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import {
   SafeAreaView,
   FlatList,
@@ -6,7 +6,7 @@ import {
   Text,
   View,
   BackHandler,
-  ScrollView,
+  Platform,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import LikedItem from '../../components/LikedScreen/LikedItem';
@@ -15,6 +15,9 @@ import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
 import LikedItemSkeleton from '../../components/LikedScreen/LikedItemSkeleton';
 import MyBanner from '../../components/Ads/MyBanner';
+import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const LikeScreen = ({navigation}) => {
   const {token} = useAuth();
@@ -24,6 +27,14 @@ const LikeScreen = ({navigation}) => {
   const [firstloading, setFirstloading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const insets = useSafeAreaInsets();
+  const scrollRef = useRef(null);
+  const {
+    visible: showScrollToTop,
+    handleScroll,
+    updateVisibility,
+    scrollToTop,
+  } = useScrollToTopVisibility({externalRef: scrollRef});
 
   // 가게 데이터를 가져오는 함수
   const fetchStores = async (currentPage, refresh = false) => {
@@ -80,8 +91,9 @@ const LikeScreen = ({navigation}) => {
       if (!token) {
         return;
       }
+      updateVisibility(0);
       fetchStores(0, true);
-    }, []),
+    }, [token, updateVisibility]),
   );
 
   const loadMoreStores = () => {
@@ -100,6 +112,7 @@ const LikeScreen = ({navigation}) => {
     setPage(0);
     setRefreshing(true);
     fetchStores(0, true);
+    updateVisibility(0);
   };
 
   const renderItem = ({item}) => (
@@ -120,6 +133,7 @@ const LikeScreen = ({navigation}) => {
             />
           ) : (
             <FlatList
+              ref={scrollRef}
               data={stores}
               renderItem={renderItem}
               keyExtractor={item => item.id.toString()}
@@ -127,7 +141,7 @@ const LikeScreen = ({navigation}) => {
               initialNumToRender={10}
               maxToRenderPerBatch={5}
               windowSize={5}
-              removeClippedSubviews={true}
+              removeClippedSubviews={Platform.OS === 'android'}
               onEndReached={loadMoreStores}
               onEndReachedThreshold={0.5}
               onRefresh={handleRefresh}
@@ -138,11 +152,18 @@ const LikeScreen = ({navigation}) => {
                   <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
                 ) : null
               }
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
             />
           )}
         </>
       )}
       {!token && <Text style={styles.emptyText}>로그인 후 이용해주세요</Text>}
+      <ScrollToTopButton
+        visible={showScrollToTop}
+        bottom={18}
+        onPress={scrollToTop}
+      />
       <Loading loading={refreshing || loading} />
     </SafeAreaView>
   );

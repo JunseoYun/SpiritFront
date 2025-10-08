@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import CancelText from '../CancelText/CancelText';
+import {normalizeFont} from '../../hooks/normalizeFont';
 
 // validateDate 함수 정의 (예시)
 const validateDate = dateStr => {
@@ -104,6 +106,16 @@ const StoreBusinessData = ({
             }
           }}
         />
+        {businessData.businessNumber.length > 0 &&
+          isFocused('businessNumber') && (
+            <CancelText
+              rightnum={0}
+              topnum={normalizeFont(45)}
+              paddingnum={0}
+              handlecancel={() => handleChange('businessNumber', '')}
+              size={normalizeFont(20)}
+            />
+          )}
         {error === 'businessData.businessNumber' &&
           !businessData.businessNumber && (
             <Text style={styles.errorText}>{errorMessage}</Text>
@@ -139,6 +151,15 @@ const StoreBusinessData = ({
             }
           }}
         />
+        {businessData.openDate.length > 0 && isFocused('openDate') && (
+          <CancelText
+            rightnum={0}
+            topnum={normalizeFont(45)}
+            paddingnum={0}
+            handlecancel={() => handleChange('openDate', '')}
+            size={normalizeFont(20)}
+          />
+        )}
         {errors.openDate && (
           <Text style={styles.errorText}>{errors.openDate}</Text>
         )}
@@ -171,6 +192,16 @@ const StoreBusinessData = ({
         {/* {errors.drink_sales_number && (
           <Text style={styles.errorText}>{errors.drink_sales_number}</Text>
         )} */}
+        {businessData.drink_sales_number.length > 0 &&
+          isFocused('drink_sales_number') && (
+            <CancelText
+              rightnum={0}
+              topnum={normalizeFont(45)}
+              paddingnum={0}
+              handlecancel={() => handleChange('drink_sales_number', '')}
+              size={normalizeFont(20)}
+            />
+          )}
         {error === 'businessData.drink_sales_number' &&
           !businessData.drink_sales_number && (
             <Text style={styles.errorText}>{errorMessage}</Text>

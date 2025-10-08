@@ -5,11 +5,14 @@ import {
   ActivityIndicator,
   Text,
   View,
+  Platform,
 } from 'react-native';
 import ResultItem from './ResultItem';
 import {Store_getby_keyword} from '../../../api/storeApi';
 import ResultItemSkeleton from './ResultItemSkeleton';
 import Loading from '../../../hooks/Loading';
+import useScrollToTopVisibility from '../../../hooks/useScrollToTopVisibility';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const ResultList = ({trimmedSearchWord, location, navigation}) => {
   const [searchingStores, setSearchingStores] = useState([]); // 검색된 가게 목록
@@ -19,6 +22,13 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
   const [totalpage, setTotalpage] = useState(0);
   const [firstloading, setFirstloading] = useState(true);
   const scrollRef = useRef(null);
+  const {
+    visible: showScrollToTop,
+    handleScroll,
+    updateVisibility,
+    scrollToTop,
+  } = useScrollToTopVisibility({externalRef: scrollRef});
+  const {bottom} = useSafeAreaInsets();
 
   // 검색된 가게들을 필터링하는 함수
   const filteredStores = async currentPage => {
@@ -68,6 +78,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
       if (scrollRef.current) {
         scrollRef.current.scrollToOffset({offset: 0, animated: false});
       }
+      updateVisibility(0);
     }
   }, [trimmedSearchWord, location]);
 
@@ -81,7 +92,7 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {paddingBottom: bottom}]}>
       {firstloading ? (
         <FlatList
           data={[1, 2, 3, 4, 5, 6, 7, 8, 9]} // 임의의 더미 데이터
@@ -95,11 +106,14 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
           data={searchingStores}
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
-          contentContainerStyle={styles.fastSearchModalScrollView}
+          contentContainerStyle={[
+            styles.fastSearchModalScrollView,
+            {paddingBottom: 50},
+          ]}
           initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
           maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
           windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-          removeClippedSubviews={true} // 보이지 않는 컴포넌트 메모리 해제
+          removeClippedSubviews={Platform.OS === 'android'} // iOS에서는 화면이 잘려 렌더링 오류가 발생해 안드로이드에서만 사용
           onEndReached={() => {
             if (!loading && !isEnd && page < totalpage - 1) {
               setPage(prevPage => {
@@ -112,9 +126,11 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
           onEndReachedThreshold={0.5}
           ListEmptyComponent={
             !loading && searchingStores.length === 0 ? (
-              <Text style={styles.emptyText}>검색된 술집이 없어요</Text>
+              <Text style={styles.emptyText}>주변에 검색된 술집이 없어요</Text>
             ) : null
           }
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
         />
       )}
       <Loading loading={loading} />

@@ -6,6 +6,7 @@ import {
   View,
   FlatList,
   Pressable,
+  Platform,
 } from 'react-native';
 import {NotifiGet, NotifiRead, NotifiReadAll} from '../../api/notificationApi';
 import Loading from '../../hooks/Loading';
@@ -149,7 +150,7 @@ const NotificationScreen = ({navigation}) => {
         initialNumToRender={20}
         maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
         windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-        removeClippedSubviews={true}
+        removeClippedSubviews={Platform.OS === 'android'}
         renderItem={({item}) => (
           <Pressable
             onPress={() => {

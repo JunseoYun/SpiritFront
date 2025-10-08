@@ -838,7 +838,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
               ref={orderListRef}
               keyboardShouldPersistTaps="never"
               keyboardDismissMode="none"
-              removeClippedSubviews={false}
+              emoveClippedSubviews={Platform.OS === 'android'}
               data={previewOrder}
               keyExtractor={item => String(getUid(item))}
               numColumns={3}
