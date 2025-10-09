@@ -563,9 +563,6 @@ const StoreMainScreen = ({navigation}) => {
     navigation.navigate('StoreOrderScreen', {
       storeId,
       storeName: storedata?.name ?? '',
-      storeCategories: Array.isArray(storedata?.categories)
-        ? storedata.categories
-        : [],
       initialMenus: menus ?? [],
       initialAlcohols: alcohols ?? [],
       visitTime,
@@ -1180,7 +1177,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#45C9FF',
-    borderRadius: 10,
+    borderRadius: 9,
     width: '100%',
     height: 50,
   },
