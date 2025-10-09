@@ -9,15 +9,13 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Animated,
 } from 'react-native';
 import {useRoute} from '@react-navigation/native';
 import {StoreMenuget} from '../../api/menuApi';
 import {StoreDrinkget} from '../../api/drinkApi';
 import {useToast} from '../../context/ToastContext';
-import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import OrderFooter from '../../components/StoreOrderScreen/OrderFooter';
 
 const ensureArray = value => (Array.isArray(value) ? value : []);
 
@@ -71,13 +69,11 @@ const StoreOrderScreen = () => {
   const {
     storeId,
     storeName,
-    storeCategories = [],
     visitTime,
     peopleCount,
     initialMenus = [],
     initialAlcohols = [],
   } = route.params ?? {};
-  const {translateCategory} = useCategoryTranslation();
 
   const [menuItems, setMenuItems] = useState(() =>
     mapWithQuantity(initialMenus, []),
@@ -93,23 +89,6 @@ const StoreOrderScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('menu');
   const scrollViewRef = useRef(null);
-  const bottomBarVisibility = useRef(new Animated.Value(1)).current;
-  const bottomBarTranslateY = useMemo(
-    () =>
-      bottomBarVisibility.interpolate({
-        inputRange: [0, 1],
-        outputRange: [120, 0],
-      }),
-    [bottomBarVisibility],
-  );
-
-  useEffect(() => {
-    Animated.timing(bottomBarVisibility, {
-      toValue: isRequestFocused ? 0 : 1,
-      duration: 220,
-      useNativeDriver: true,
-    }).start();
-  }, [bottomBarVisibility, isRequestFocused]);
 
   useEffect(() => {
     let isMounted = true;
@@ -162,15 +141,6 @@ const StoreOrderScreen = () => {
       isMounted = false;
     };
   }, [storeId, showToast]);
-
-  const categoriesLabel = useMemo(() => {
-    if (!storeCategories || storeCategories.length === 0) {
-      return '카테고리 정보 없음';
-    }
-    return storeCategories
-      .map(category => translateCategory(category))
-      .join(', ');
-  }, [storeCategories, translateCategory]);
 
   const totalMenuCount = useMemo(
     () => calculateSectionCount(menuItems),
@@ -328,11 +298,6 @@ const StoreOrderScreen = () => {
         ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
-        <View style={styles.metaCard}>
-          <Text style={styles.title}>{storeName || '정보 없는 매장'}</Text>
-          <Text style={styles.metaText}>{categoriesLabel}</Text>
-        </View>
-
         <View style={styles.tabsContainer}>
           <TouchableOpacity
             style={[
@@ -424,64 +389,19 @@ const StoreOrderScreen = () => {
         </View>
       </ScrollView>
 
-      <Animated.View
-        pointerEvents={isRequestFocused ? 'none' : 'auto'}
-        style={[
-          styles.bottomBar,
-          {
-            opacity: bottomBarVisibility,
-            transform: [{translateY: bottomBarTranslateY}],
-            paddingBottom:
-              Platform.OS === 'android'
-                ? insets.bottom + 20
-                : insets.bottom + 10,
-          },
-        ]}>
-        <View style={styles.orderMetaRow}>
-          <View style={styles.metaChip}>
-            <View style={styles.metaIconWrapper}>
-              <Ionicons name="time-outline" size={20} color="#1F2937" />
-            </View>
-            <View style={styles.metaChipText}>
-              <Text style={styles.metaChipValue}>{visitTime || '미지정'}</Text>
-            </View>
-          </View>
-          <View style={styles.metaChip}>
-            <View style={styles.metaIconWrapper}>
-              <Ionicons name={peopleIconName} size={20} color="#1F2937" />
-            </View>
-            <View style={styles.metaChipText}>
-              <Text style={styles.metaChipValue}>{peopleCountLabel}</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>예상 결제 금액</Text>
-          <Text style={styles.totalValue}>
-            {totalPrice > 0 ? `${totalPrice.toLocaleString()}원` : '-'}
-          </Text>
-        </View>
-        {perPersonPrice !== undefined && (
-          <View style={styles.perPersonRow}>
-            <Text style={styles.perPersonLabel}>1인당 예상 금액</Text>
-            <Text style={styles.perPersonValue}>
-              {`${perPersonPrice.toLocaleString()}원`}
-            </Text>
-          </View>
-        )}
-        <TouchableOpacity
-          style={[styles.submitButton, !canSubmit && styles.submitButtonDisabled]}
-          onPress={handleSubmitOrder}
-          disabled={!canSubmit}>
-          <Text
-            style={[
-              styles.submitButtonText,
-              !canSubmit && styles.submitButtonTextDim,
-            ]}>
-            주문 요청하기
-          </Text>
-        </TouchableOpacity>
-      </Animated.View>
+      <OrderFooter
+        visible={!isRequestFocused}
+        safeAreaBottom={insets.bottom}
+        visitTime={visitTime}
+        peopleIconName={peopleIconName}
+        peopleCountLabel={peopleCountLabel}
+        totalPrice={totalPrice}
+        perPersonPrice={perPersonPrice}
+        canSubmit={canSubmit}
+        onSubmit={handleSubmitOrder}
+        totalMenuCount={totalMenuCount}
+        totalAlcoholCount={totalAlcoholCount}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -493,7 +413,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flexGrow: 1,
-    paddingHorizontal: 20,
+    // paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 24,
   },
@@ -523,6 +443,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 4,
     marginBottom: 16,
+    marginHorizontal: 18,
   },
   tabButton: {
     flex: 1,
@@ -552,6 +473,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginHorizontal: 18,
   },
   sectionHeaderText: {
     fontSize: 16,
@@ -577,6 +499,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 24,
     backgroundColor: '#FAFAFA',
+    marginHorizontal: 18,
   },
   sectionTitle: {
     fontSize: 14,
@@ -646,6 +569,8 @@ const styles = StyleSheet.create({
   },
   noteSection: {
     marginBottom: 20,
+
+    marginHorizontal: 18,
   },
   noteInput: {
     minHeight: 110,
@@ -663,104 +588,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     color: '#999',
     textAlign: 'right',
-  },
-
-  totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  totalLabel: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#222',
-  },
-  totalValue: {
-    fontSize: 20,
-    fontFamily: 'Pretendard-Bold',
-    color: '#45C9FF',
-  },
-  perPersonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  perPersonLabel: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-Medium',
-    color: '#4B5563',
-  },
-  perPersonValue: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#1F2937',
-  },
-  orderMetaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-    marginTop: 3,
-  },
-  metaChip: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  metaIconWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 5,
-    marginLeft: 1,
-  },
-  metaChipText: {
-    flex: 1,
-  },
-  metaChipLabel: {
-    fontSize: 12,
-    fontFamily: 'Pretendard-Medium',
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-  metaChipValue: {
-    fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
-    color: '#1F2937',
-  },
-  submitButton: {
-    height: 52,
-    borderRadius: 10,
-    backgroundColor: '#45C9FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#B6E4F6',
-  },
-  submitButtonText: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#fff',
-  },
-  submitButtonTextDim: {
-    color: '#F0F9FD',
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: -1},
-    shadowOpacity: 0.13,
-    shadowRadius: 4,
-    elevation: 10,
+    marginRight: 3,
   },
 });
 
