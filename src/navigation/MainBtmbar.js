@@ -2,10 +2,11 @@ import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {Text, PixelRatio} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Octicons from 'react-native-vector-icons/Octicons';
 import MainScreen from '../screens/BottomTab/MainScreen';
 import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
-import MyOrderScreen from '../screens/BottomTab/MyOrderScreen';
+import OrderScreen from '../screens/BottomTab/Order/OrderScreen';
 import SearchStack from './SearchStack';
 import MyStack from './MyStack';
 
@@ -41,9 +42,9 @@ const MainBtmbar = () => {
             iconName = focused ? 'map' : 'map-outline';
           else if (route.name === 'SearchStack')
             iconName = focused ? 'search' : 'search-outline';
-          else if (route.name === 'MyOrderScreen')
-            iconName = focused ? 'calendar-clear' : 'calendar-clear-outline';
-          else if (route.name === 'MyStack')
+          else if (route.name === 'OrderScreen') {
+            iconName = focused ? 'reader' : 'reader-outline';
+          } else if (route.name === 'MyStack')
             iconName = focused ? 'person' : 'person-outline';
           return <Ionicons name={iconName} size={25} color={color} />;
         },
@@ -82,8 +83,8 @@ const MainBtmbar = () => {
         })}
       />
       <Tab.Screen
-        name="MyOrderScreen"
-        component={MyOrderScreen}
+        name="OrderScreen"
+        component={OrderScreen}
         options={{
           tabBarLabel: ({color}) => renderLabel('주문', color),
           headerShown: true,
