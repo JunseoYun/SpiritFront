@@ -22,6 +22,7 @@ import {getGlobalShowAlert} from '../context/CustomAlertContext';
 import ImageViewerScreen from '../hooks/ImageViewerScreen';
 import ManagerStoreInfoScreen from '../screens/BottomTab/My/ManagerStoreInfoScreen';
 import StoreManagerScreen from '../screens/StoreManager/StoreManagerScreen';
+import StoreOrderScreen from '../screens/StoreOrder/StoreOrderScreen';
 
 const Stack = createStackNavigator();
 
@@ -35,6 +36,35 @@ export default function StoreStack() {
         name="StoreMainScreen"
         component={StoreMainScreen}
         options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="StoreOrderScreen"
+        component={StoreOrderScreen}
+        options={({navigation, route}) => {
+          const storeName = route.params?.storeName;
+          const title = storeName ? `${storeName} 주문` : '주문 진행하기';
+          return {
+            title,
+            headerTitleAlign: 'center',
+            headerTitleStyle: {
+              fontFamily: 'Pretendard-SemiBold',
+              fontSize: 18,
+              color: '#333',
+            },
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+          };
+        }}
       />
       <Stack.Screen
         name="ImageViewerScreen"

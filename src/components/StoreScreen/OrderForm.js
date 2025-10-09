@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Keyboard,
   StyleSheet,
 } from 'react-native';
@@ -20,7 +19,8 @@ const DAY_ORDER = [
 ];
 
 const MIN_ORDER_PEOPLE = 1;
-const MAX_ORDER_PEOPLE = 20;
+const MAX_ORDER_PEOPLE = 40;
+const DEFAULT_ORDER_PEOPLE = 2;
 
 const createDateWithTime = (baseDate, timeString) => {
   if (!timeString) {
@@ -171,64 +171,34 @@ const OrderForm = ({
     () => generateOrderTimeSlots(operationInfoDtos, isAlwaysOpen),
     [operationInfoDtos, isAlwaysOpen],
   );
+  const peopleOptions = useMemo(
+    () =>
+      Array.from(
+        {length: MAX_ORDER_PEOPLE - MIN_ORDER_PEOPLE + 1},
+        (_, index) => MIN_ORDER_PEOPLE + index,
+      ),
+    [],
+  );
   const [selectedOrderTime, setSelectedOrderTime] = useState('');
-  const [selectedOrderPeople, setSelectedOrderPeople] = useState('');
+  const [selectedOrderPeople, setSelectedOrderPeople] = useState(
+    String(DEFAULT_ORDER_PEOPLE),
+  );
 
   useEffect(() => {
-    setSelectedOrderTime(prev => (timeSlots.includes(prev) ? prev : ''));
+    setSelectedOrderTime(prev =>
+      timeSlots.includes(prev) ? prev : timeSlots[0] ?? '',
+    );
   }, [timeSlots]);
 
   const handleSelectOrderTime = value => {
     setSelectedOrderTime(value);
   };
 
-  const handlePeopleInputChange = value => {
-    const sanitized = value.replace(/[^0-9]/g, '');
-    if (!sanitized) {
-      setSelectedOrderPeople('');
-      return;
-    }
-    const numeric = Math.min(
-      MAX_ORDER_PEOPLE,
-      Math.max(MIN_ORDER_PEOPLE, parseInt(sanitized, 10)),
-    );
-    setSelectedOrderPeople(String(numeric));
+  const handleSelectPeople = value => {
+    setSelectedOrderPeople(String(value));
   };
-
-  const handlePeopleBlur = () => {
-    if (!selectedOrderPeople) {
-      return;
-    }
-    const numeric = parseInt(selectedOrderPeople, 10);
-    if (Number.isNaN(numeric) || numeric < MIN_ORDER_PEOPLE) {
-      setSelectedOrderPeople(String(MIN_ORDER_PEOPLE));
-    } else if (numeric > MAX_ORDER_PEOPLE) {
-      setSelectedOrderPeople(String(MAX_ORDER_PEOPLE));
-    }
-  };
-
-  const adjustPeopleCount = delta => {
-    setSelectedOrderPeople(prev => {
-      const current = parseInt(prev, 10);
-      if (Number.isNaN(current)) {
-        return delta > 0 ? String(MIN_ORDER_PEOPLE) : '';
-      }
-      const next = Math.min(
-        MAX_ORDER_PEOPLE,
-        Math.max(MIN_ORDER_PEOPLE, current + delta),
-      );
-      return String(next);
-    });
-  };
-
-  const handleIncreasePeople = () => adjustPeopleCount(1);
-  const handleDecreasePeople = () => adjustPeopleCount(-1);
 
   const peopleCount = parseInt(selectedOrderPeople, 10);
-  const canDecreasePeople =
-    !Number.isNaN(peopleCount) && peopleCount > MIN_ORDER_PEOPLE;
-  const canIncreasePeople =
-    Number.isNaN(peopleCount) || peopleCount < MAX_ORDER_PEOPLE;
 
   const canSubmitOrder =
     !!selectedOrderTime &&
@@ -238,8 +208,8 @@ const OrderForm = ({
 
   const handleCancel = () => {
     Keyboard.dismiss();
-    setSelectedOrderTime('');
-    setSelectedOrderPeople('');
+    setSelectedOrderTime(timeSlots[0] ?? '');
+    setSelectedOrderPeople(String(DEFAULT_ORDER_PEOPLE));
     onCancel?.();
   };
 
@@ -293,58 +263,46 @@ const OrderForm = ({
 
       <View style={[styles.section, styles.sectionSpacing]}>
         <Text style={styles.sectionLabel}>인원</Text>
-        <View style={styles.peopleStepper}>
-          <TouchableOpacity
-            style={[
-              styles.stepperButton,
-              !canDecreasePeople && styles.stepperButtonDisabled,
-            ]}
-            onPress={handleDecreasePeople}
-            disabled={!canDecreasePeople}>
-            <Text style={styles.stepperButtonText}>-</Text>
-          </TouchableOpacity>
-          <TextInput
-            style={styles.peopleInput}
-            value={selectedOrderPeople}
-            onChangeText={handlePeopleInputChange}
-            onBlur={handlePeopleBlur}
-            keyboardType="number-pad"
-            placeholder="0"
-            maxLength={2}
-            returnKeyType="done"
-            textAlign="center"
-          />
-          <TouchableOpacity
-            style={[
-              styles.stepperButton,
-              !canIncreasePeople && styles.stepperButtonDisabled,
-            ]}
-            onPress={handleIncreasePeople}
-            disabled={!canIncreasePeople}>
-            <Text style={styles.stepperButtonText}>+</Text>
-          </TouchableOpacity>
-        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.peopleChipList}>
+          {peopleOptions.map(number => {
+            const isSelected = peopleCount === number;
+            return (
+              <TouchableOpacity
+                key={number}
+                onPress={() => handleSelectPeople(number)}
+                style={[
+                  styles.peopleChip,
+                  isSelected && styles.peopleChipSelected,
+                ]}>
+                <Text
+                  style={[
+                    styles.peopleChipText,
+                    isSelected && styles.peopleChipTextSelected,
+                  ]}>
+                  {number}명
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
         <Text style={styles.peopleHint}>
           최소 {MIN_ORDER_PEOPLE}명, 최대 {MAX_ORDER_PEOPLE}명 선택 가능
         </Text>
       </View>
 
-      <View style={styles.actions}>
+      <View style={styles.footer}>
         <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
           <Text style={styles.cancelText}>취소</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.submitButton,
-            !canSubmitOrder && styles.submitDisabled,
-          ]}
+          style={[styles.applyButton, !canSubmitOrder && styles.applyDisabled]}
           onPress={handleSubmit}
           disabled={!canSubmitOrder}>
           <Text
-            style={[
-              styles.submitText,
-              !canSubmitOrder && styles.submitTextDim,
-            ]}>
+            style={[styles.applyText, !canSubmitOrder && styles.applyTextDim]}>
             주문 진행하기
           </Text>
         </TouchableOpacity>
@@ -356,11 +314,7 @@ const OrderForm = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderRadius: 12,
     paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#E8E8E8',
   },
   section: {
     marginBottom: 16,
@@ -373,10 +327,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
     marginBottom: 10,
+    marginHorizontal: 16,
   },
   timeSlotList: {
     paddingVertical: 4,
     paddingRight: 2,
+    paddingHorizontal: 16,
   },
   timeChip: {
     paddingVertical: 8,
@@ -405,72 +361,48 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     color: '#999',
   },
-  peopleStepper: {
+  peopleChipList: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
-  stepperButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    borderWidth: 1,
-    borderColor: '#D0D0D0',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
-  stepperButtonDisabled: {
-    borderColor: '#EEE',
-    backgroundColor: '#F5F5F5',
-  },
-  stepperButtonText: {
-    fontSize: 20,
-    fontFamily: 'Pretendard-Medium',
-    color: '#333',
-    lineHeight: 20,
-  },
-  peopleInput: {
-    marginHorizontal: 12,
-    width: 52,
-    height: 38,
-    borderWidth: 1,
-    borderColor: '#D0D0D0',
-    borderRadius: 8,
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
     paddingVertical: 4,
-    paddingHorizontal: 0,
-    textAlignVertical: 'center',
+    paddingHorizontal: 16,
+  },
+  peopleChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#fff',
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  peopleChipSelected: {
+    backgroundColor: '#E9F5FB',
+    borderColor: '#45C9FF',
+  },
+  peopleChipText: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-Regular',
+    color: '#555',
+  },
+  peopleChipTextSelected: {
+    color: '#45C9FF',
+    fontFamily: 'Pretendard-SemiBold',
   },
   peopleHint: {
     marginTop: 8,
     fontSize: 12,
     fontFamily: 'Pretendard-Regular',
     color: '#888',
+    marginHorizontal: 16,
   },
   actions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 12,
   },
-  cancelButton: {
-    flex: 1,
-    height: 44,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-    backgroundColor: '#fff',
-  },
-  cancelText: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-Medium',
-    color: '#666',
-  },
-  submitButton: {
+
+  applyButton: {
     flex: 1.2,
     height: 44,
     borderRadius: 8,
@@ -478,15 +410,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#45C9FF',
   },
-  submitDisabled: {
+
+  footer: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderColor: '#eee',
+    paddingTop: 12,
+    paddingHorizontal: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    height: 44,
+  },
+  cancelText: {
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'Pretendard-Medium',
+  },
+  applyButton: {
+    flex: 2,
+    backgroundColor: '#45C9FF',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 44,
+  },
+  applyText: {
+    fontSize: 16,
+    color: '#fff',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  applyDisabled: {
     backgroundColor: '#B6E4F6',
   },
-  submitText: {
-    fontSize: 15,
-    fontFamily: 'Pretendard-Bold',
-    color: '#fff',
-  },
-  submitTextDim: {
+
+  applyTextDim: {
     color: '#F0F9FD',
   },
 });

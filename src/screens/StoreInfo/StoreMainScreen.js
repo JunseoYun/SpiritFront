@@ -11,8 +11,8 @@ import {
   Share,
   Modal,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   Dimensions,
+  Easing,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/StoreImage/ImageSlider';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
@@ -28,6 +28,7 @@ import {
 } from '../../api/storeApi';
 
 import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import StoreMenuScreen from './StoreMenuScreen';
 import StoreAlcoholScreen from './StoreAlcoholScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
@@ -44,11 +45,13 @@ import Loading from '../../hooks/Loading';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
 import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcategorytab';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import StoreMainSkeleton from './StoreMainSkeleton';
 import ScrollToTopButton from '../../components/common/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 import OrderForm from '../../components/StoreScreen/OrderForm';
+
+const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 const StoreMainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
@@ -88,7 +91,7 @@ const StoreMainScreen = ({navigation}) => {
     updateVisibility,
   } = useScrollToTopVisibility({externalRef: scrollViewRef});
   const scrollButtonBottom = (bottom || 16) + 34;
-  const ORDER_FORM_OFFSET = 220;
+  const orderSlideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   // 상위 scrollTo 함수
   const scrollToHandler = params => {
     if (scrollViewRef.current) {
@@ -187,6 +190,24 @@ const StoreMainScreen = ({navigation}) => {
 
     return unsubscribe;
   }, [navigation]);
+
+  useEffect(() => {
+    if (showOrderForm) {
+      Animated.timing(orderSlideAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(orderSlideAnim, {
+        toValue: SCREEN_HEIGHT,
+        duration: 300,
+        easing: Easing.in(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showOrderForm, orderSlideAnim]);
 
   const fetchStoreDataOnly = async () => {
     setLoading(true);
@@ -534,14 +555,19 @@ const StoreMainScreen = ({navigation}) => {
   const baseScrollButtonBottom = isOrderEnabled
     ? scrollButtonBottom - insets.bottom
     : scrollButtonBottom;
-  const scrollButtonBottomValue =
-    baseScrollButtonBottom + (showOrderForm ? ORDER_FORM_OFFSET : 0);
+  const scrollButtonBottomValue = baseScrollButtonBottom;
 
   const handleOrderSubmit = ({visitTime, peopleCount}) => {
     Keyboard.dismiss();
     setShowOrderForm(false);
     navigation.navigate('StoreOrderScreen', {
       storeId,
+      storeName: storedata?.name ?? '',
+      storeCategories: Array.isArray(storedata?.categories)
+        ? storedata.categories
+        : [],
+      initialMenus: menus ?? [],
+      initialAlcohols: alcohols ?? [],
       visitTime,
       peopleCount,
     });
@@ -647,11 +673,7 @@ const StoreMainScreen = ({navigation}) => {
                 style={{
                   backgroundColor: 'white',
                   width: '100%',
-                  paddingBottom: showOrderForm
-                    ? ORDER_FORM_OFFSET + 60
-                    : isOrderEnabled
-                    ? ORDER_FORM_OFFSET / 2
-                    : 100,
+                  paddingBottom: isOrderEnabled ? 160 : 100,
                 }}
                 keyboardShouldPersistTaps="always"
                 scrollEnabled={true}
@@ -864,7 +886,10 @@ const StoreMainScreen = ({navigation}) => {
             <View
               style={[
                 styles.endUpdateButton,
-                {paddingBottom: Platform.OS === 'ios' ? 30 : 10 + bottom},
+                {
+                  paddingBottom:
+                    Platform.OS === 'ios' ? 10 + bottom : 20 + bottom,
+                },
               ]}>
               <Pressable
                 onPress={endUpdate}
@@ -911,31 +936,67 @@ const StoreMainScreen = ({navigation}) => {
         </>
       )}
       {isOrderEnabled && !isUpdate && (
-        <View
-          style={[
-            styles.storeOrderview,
-            {
-              paddingBottom:
-                Platform.OS === 'android'
-                  ? insets.bottom + 20
-                  : insets.bottom + 10,
-            },
-          ]}>
-          {showOrderForm ? (
-            <OrderForm
-              operationInfoDtos={storedata?.operationInfoDtos}
-              isAlwaysOpen={storedata?.isAlwaysOpen}
-              onCancel={handleOrderCancel}
-              onSubmit={handleOrderSubmit}
-            />
-          ) : (
+        <>
+          <View
+            style={[
+              styles.storeOrderview,
+              {
+                paddingBottom:
+                  Platform.OS === 'android'
+                    ? insets.bottom + 20
+                    : insets.bottom + 10,
+              },
+            ]}>
             <Pressable
               style={styles.storeOrderButton}
               onPress={handleOrderButtonPress}>
               <Text style={styles.storeOrderText}>실시간 주문하기</Text>
             </Pressable>
+          </View>
+          {showOrderForm && (
+            <SafeAreaView>
+              <Modal
+                animationType="fade"
+                transparent
+                visible={showOrderForm}
+                statusBarTranslucent={true}
+                onRequestClose={handleOrderCancel}>
+                <View style={styles.orderModalContainer}>
+                  <Pressable
+                    style={styles.orderModalOverlay}
+                    onPress={handleOrderCancel}
+                  />
+                  <Animated.View
+                    style={[
+                      styles.orderModalContent,
+                      {
+                        paddingBottom:
+                          Platform.OS === 'android'
+                            ? insets.bottom + 20
+                            : insets.bottom + 10,
+                      },
+                      {transform: [{translateY: orderSlideAnim}]},
+                    ]}>
+                    <View style={styles.orderModalHeader}>
+                      <Text style={styles.orderModalTitle}>
+                        실시간 주문하기
+                      </Text>
+                      <TouchableOpacity onPress={handleOrderCancel}>
+                        <Ionicons name="close" size={22} color="#666" />
+                      </TouchableOpacity>
+                    </View>
+                    <OrderForm
+                      operationInfoDtos={storedata?.operationInfoDtos}
+                      isAlwaysOpen={storedata?.isAlwaysOpen}
+                      onCancel={handleOrderCancel}
+                      onSubmit={handleOrderSubmit}
+                    />
+                  </Animated.View>
+                </View>
+              </Modal>
+            </SafeAreaView>
           )}
-        </View>
+        </>
       )}
 
       <Loading loading={loading} />
@@ -1058,19 +1119,69 @@ const styles = StyleSheet.create({
     color: '#333',
     textAlign: 'center',
   },
-  storeOrderview: {
-    borderTopWidth: 1,
-    borderColor: '#E0E0E0',
-    paddingHorizontal: 18,
-    paddingTop: 10,
+  orderModalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    position: 'relative',
+  },
+  orderModalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    zIndex: 1,
+  },
+  orderModalContent: {
     backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: -3},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 10,
+    zIndex: 2,
+  },
+  orderModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderColor: '#EFEFEF',
+    paddingHorizontal: 16,
+  },
+  orderModalTitle: {
+    fontSize: 17,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#121212',
+  },
+  storeOrderview: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#fff',
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: -1},
+    shadowOpacity: 0.13,
+    shadowRadius: 4,
+    elevation: 8,
+    zIndex: 10,
   },
   storeOrderButton: {
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#45C9FF',
-    borderRadius: 9,
+    borderRadius: 10,
+    width: '100%',
     height: 50,
   },
   storeOrderText: {
