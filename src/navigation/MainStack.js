@@ -28,6 +28,7 @@ import NearStoreScreen from '../screens/TotalScreen/NearStoreScreen';
 import ViewedStoreScreen from '../screens/TotalScreen/ViewedStoreScreen';
 import NotificationScreen from '../screens/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/Notification/NotificationSetScreen';
+import OrderDetailScreen from '../screens/BottomTab/Order/OrderDetailScreen';
 import {normalizeFont} from '../hooks/normalizeFont';
 
 const Stack = createStackNavigator();
@@ -560,6 +561,27 @@ export default function MainStack() {
             fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="OrderDetailScreen"
+        component={OrderDetailScreen}
+        options={({navigation}) => ({
+          title: '주문 상세',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {fontFamily: 'Pretendard-Bold', fontSize: 18},
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}
