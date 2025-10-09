@@ -5,6 +5,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import MainScreen from '../screens/BottomTab/MainScreen';
 import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
+import MyOrderScreen from '../screens/BottomTab/MyOrderScreen';
 import SearchStack from './SearchStack';
 import MyStack from './MyStack';
 
@@ -40,8 +41,8 @@ const MainBtmbar = () => {
             iconName = focused ? 'map' : 'map-outline';
           else if (route.name === 'SearchStack')
             iconName = focused ? 'search' : 'search-outline';
-          else if (route.name === 'LikeScreen')
-            iconName = focused ? 'heart' : 'heart-outline';
+          else if (route.name === 'MyOrderScreen')
+            iconName = focused ? 'calendar-clear' : 'calendar-clear-outline';
           else if (route.name === 'MyStack')
             iconName = focused ? 'person' : 'person-outline';
           return <Ionicons name={iconName} size={25} color={color} />;
@@ -81,13 +82,13 @@ const MainBtmbar = () => {
         })}
       />
       <Tab.Screen
-        name="LikeScreen"
-        component={LikeScreen}
+        name="MyOrderScreen"
+        component={MyOrderScreen}
         options={{
-          tabBarLabel: ({color}) => renderLabel('찜', color),
+          tabBarLabel: ({color}) => renderLabel('주문', color),
           headerShown: true,
           headerTitleAlign: 'center',
-          title: '찜',
+          title: '나의 주문',
           headerTitleStyle: {
             fontSize: 19,
             color: '#333',

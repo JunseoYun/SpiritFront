@@ -19,6 +19,7 @@ import Loading from '../../../hooks/Loading';
 import {useRoute} from '@react-navigation/native';
 import {Bell} from 'lucide-react-native';
 import {has_unread_notification} from '../../../api/notificationApi';
+import LikeScreen from '../LikeScreen';
 
 const MyScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
@@ -170,7 +171,7 @@ const MyScreen = ({navigation}) => {
       <>
         {/* Myreview 값 가져오기 */}
         {currentPage === 'MyReview' && <MyReview navigation={navigation} />}
-        {currentPage === 'MyLocation' && <MyLocation navigation={navigation} />}
+        {currentPage === 'MyLiked' && <LikeScreen navigation={navigation} />}
         {currentPage === 'MyManager' && userdata?.isManager === true && (
           <MyManager navigation={navigation} />
         )}
