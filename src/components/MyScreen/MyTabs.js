@@ -14,8 +14,8 @@ const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
   const animatedValue = useRef(new Animated.Value(selectedTab)).current;
 
   const tabs = [
-    {name: '나의 리뷰', screen: 'MyReview'},
-    {name: '현재 위치', screen: 'MyLocation'},
+    {name: '리뷰', screen: 'MyReview'},
+    {name: '찜', screen: 'MyLiked'},
   ];
 
   if (isManager) {

@@ -120,8 +120,7 @@ const LikeScreen = ({navigation}) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* <MyBanner index={'like'} /> */}
+    <>
       {token && (
         <>
           {firstloading || refreshing ? (
@@ -146,7 +145,6 @@ const LikeScreen = ({navigation}) => {
               onEndReachedThreshold={0.5}
               onRefresh={handleRefresh}
               refreshing={refreshing}
-              ListHeaderComponent={<MyBanner index={'like'} />}
               ListEmptyComponent={
                 !loading && stores.length === 0 ? (
                   <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
@@ -165,7 +163,7 @@ const LikeScreen = ({navigation}) => {
         onPress={scrollToTop}
       />
       <Loading loading={refreshing || loading} />
-    </SafeAreaView>
+    </>
   );
 };
 
