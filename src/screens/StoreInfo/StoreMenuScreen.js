@@ -1,16 +1,19 @@
 import React, {useEffect, useState} from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   View,
   Text,
   Pressable,
   Modal,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
 import Feather from 'react-native-vector-icons/Feather';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+
+const ORDER_SPACER_HEIGHT = 40;
 
 const StoreMenuScreen = ({
   navigation,
@@ -23,7 +26,13 @@ const StoreMenuScreen = ({
 }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [menuList, setMenuList] = useState(menus);
-  const {bottom} = useSafeAndroidInsets();
+  const {bottom: androidBottom} = useSafeAndroidInsets();
+  const {bottom: safeBottom} = useSafeAreaInsets();
+  const bottomInset =
+    Platform.OS === 'android' ? androidBottom + 30 : safeBottom;
+  const containerPaddingBottom = isOrderEnabled
+    ? ORDER_SPACER_HEIGHT + bottomInset
+    : bottomInset;
   useEffect(() => {
     setMenuList(menus);
   }, [menus]);
@@ -77,7 +86,8 @@ const StoreMenuScreen = ({
   // 메뉴판, 주류 정보 사진 없을때 이미지 추가로 수정
   return (
     <SafeAreaView
-      style={[styles.container, !isOrderEnabled && {paddingBottom: bottom}]}>
+      edges={['bottom']}
+      style={[styles.container, {paddingBottom: containerPaddingBottom}]}>
       {isUpdatable && (
         <>
           <Pressable

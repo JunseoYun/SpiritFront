@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
+import React, {useEffect, useState, useRef, useMemo, useCallback} from 'react';
 import {
   View,
   Animated,
@@ -52,6 +52,7 @@ import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 import OrderForm from '../../components/StoreScreen/OrderForm';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
+const SCROLL_BUTTON_GAP = 1;
 
 const StoreMainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
@@ -84,6 +85,7 @@ const StoreMainScreen = ({navigation}) => {
 
   const [isOrderEnabled, setIsOrderEnabled] = useState(true);
   const [showOrderForm, setShowOrderForm] = useState(false);
+  const [orderBarHeight, setOrderBarHeight] = useState(0);
 
   const {
     visible: showScrollToTop,
@@ -552,10 +554,22 @@ const StoreMainScreen = ({navigation}) => {
     setShowOrderForm(false);
   };
 
-  const baseScrollButtonBottom = isOrderEnabled
-    ? scrollButtonBottom - insets.bottom
-    : scrollButtonBottom;
-  const scrollButtonBottomValue = baseScrollButtonBottom;
+  const handleOrderBarLayout = useCallback(({nativeEvent}) => {
+    const {height} = nativeEvent.layout;
+    setOrderBarHeight(prev => (Math.abs(prev - height) > 2 ? height : prev));
+  }, []);
+
+  useEffect(() => {
+    if (!isOrderEnabled || isUpdate) {
+      setOrderBarHeight(0);
+    }
+  }, [isOrderEnabled, isUpdate]);
+
+  const orderBarOffset =
+    isOrderEnabled && !isUpdate
+      ? Math.max(0, orderBarHeight - insets.bottom)
+      : 0;
+  const scrollButtonBottomValue = scrollButtonBottom + orderBarOffset;
 
   const handleOrderSubmit = ({visitTime, peopleCount}) => {
     Keyboard.dismiss();
@@ -670,7 +684,7 @@ const StoreMainScreen = ({navigation}) => {
                 style={{
                   backgroundColor: 'white',
                   width: '100%',
-                  paddingBottom: isOrderEnabled ? 160 : 100,
+                  paddingBottom: isOrderEnabled ? 60 : 100,
                 }}
                 keyboardShouldPersistTaps="always"
                 scrollEnabled={true}
@@ -943,7 +957,8 @@ const StoreMainScreen = ({navigation}) => {
                     ? insets.bottom + 20
                     : insets.bottom + 10,
               },
-            ]}>
+            ]}
+            onLayout={handleOrderBarLayout}>
             <Pressable
               style={styles.storeOrderButton}
               onPress={handleOrderButtonPress}>
