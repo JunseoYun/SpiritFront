@@ -1,18 +1,11 @@
-import React, {useEffect, useState, useMemo, useRef} from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  Pressable,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import React, {useEffect, useState, useMemo} from 'react';
+import {StyleSheet, Text, View, Platform} from 'react-native';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import AlcoholItem from '../../components/StoreAlcoholScreen/AlcoholItem';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
-import Feather from 'react-native-vector-icons/Feather';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+
+const ORDER_SPACER_HEIGHT = 40;
 
 const alcoholMapping = {
   SOJU: '소주',
@@ -40,10 +33,14 @@ const StoreAlcoholScreen = ({
   isOrderEnabled,
 }) => {
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
-  const {height: windowHeight} = Dimensions.get('window');
-  const {bottom} = useSafeAndroidInsets();
+  const {bottom: androidBottom} = useSafeAndroidInsets();
+  const {bottom: safeBottom} = useSafeAreaInsets();
+  const bottomInset =
+    Platform.OS === 'android' ? androidBottom + 30 : safeBottom;
   const {translateAlcohol} = useTranslateAlcohol();
-  const paddingTopValue = windowHeight * 0.7;
+  const containerPaddingBottom = isOrderEnabled
+    ? ORDER_SPACER_HEIGHT + bottomInset
+    : bottomInset;
 
   useEffect(() => {
     setAlcoholsState(alcohols);
@@ -88,7 +85,8 @@ const StoreAlcoholScreen = ({
 
   return (
     <SafeAreaView
-      style={[styles.container, !isOrderEnabled && {paddingBottom: bottom}]}>
+      edges={['bottom']}
+      style={[styles.container, {paddingBottom: containerPaddingBottom}]}>
       {/* 주류 리스트 */}
       {/* 내부 ScrollView 제거하고 View로 감싸기 */}
       <View style={{flex: 1}}>
