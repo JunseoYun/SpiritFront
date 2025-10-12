@@ -1,4 +1,5 @@
 import React, {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -116,7 +117,15 @@ const StoreOrderScreen = () => {
   const [loadingAlcohols, setLoadingAlcohols] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('menu');
+  const [activeAlcoholType, setActiveAlcoholType] = useState(null);
   const scrollViewRef = useRef(null);
+  const scrollPositionsRef = useRef({menu: 0, alcohol: 0});
+  const alcoholSectionPositionsRef = useRef({});
+  const pendingAlcoholScrollTypeRef = useRef(null);
+  const isProgrammaticAlcoholScrollRef = useRef(false);
+  const alcoholCategoryHeightRef = useRef(0);
+  const alcoholTabsOffsetRef = useRef(null);
+  const [isAlcoholTabsSticky, setIsAlcoholTabsSticky] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({headerShown: false});
@@ -182,28 +191,28 @@ const StoreOrderScreen = () => {
     () => calculateSectionCount(alcoholItems),
     [alcoholItems],
   );
-  const sortedAlcoholItems = useMemo(() => {
+  const mainAlcoholTypeIds = useMemo(() => {
+    return new Set(ensureArray(mainDrinkDtos).map(drink => drink.type));
+  }, [mainDrinkDtos]);
+
+  const alcoholSections = useMemo(() => {
     const items = ensureArray(alcoholItems);
     if (items.length === 0) {
-      return items;
+      return [];
     }
 
-    const mainTypes = new Set(
-      ensureArray(mainDrinkDtos).map(drink => drink.type),
-    );
     const grouped = items.reduce((acc, item) => {
-      const type = item.type;
+      const type = item.type ?? 'UNKNOWN';
       if (!acc.has(type)) {
-        acc.set(type, {main: [], regular: []});
+        acc.set(type, []);
       }
-      const bucket = mainTypes.has(type) ? 'main' : 'regular';
-      acc.get(type)[bucket].push(item);
+      acc.get(type).push(item);
       return acc;
     }, new Map());
 
     const sortedTypes = Array.from(grouped.keys()).sort((a, b) => {
-      const aMain = mainTypes.has(a);
-      const bMain = mainTypes.has(b);
+      const aMain = mainAlcoholTypeIds.has(a);
+      const bMain = mainAlcoholTypeIds.has(b);
       if (aMain !== bMain) {
         return aMain ? -1 : 1;
       }
@@ -211,14 +220,49 @@ const StoreOrderScreen = () => {
       const indexB = ALCOHOL_TYPE_ORDER.indexOf(b);
       const safeIndexA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
       const safeIndexB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
-      return safeIndexA - safeIndexB;
+      if (safeIndexA !== safeIndexB) {
+        return safeIndexA - safeIndexB;
+      }
+      return a.localeCompare(b);
     });
 
-    return sortedTypes.flatMap(type => {
-      const group = grouped.get(type);
-      return [...group.main, ...group.regular];
+    return sortedTypes.map(type => {
+      const translated = translateAlcohol?.(type);
+      return {
+        type,
+        label: translated && translated !== '미지정' ? translated : type,
+        items: grouped.get(type) ?? [],
+      };
     });
-  }, [alcoholItems, mainDrinkDtos]);
+  }, [alcoholItems, mainAlcoholTypeIds, translateAlcohol]);
+  useEffect(() => {
+    const positions = alcoholSectionPositionsRef.current;
+    const validTypes = new Set(alcoholSections.map(section => section.type));
+
+    Object.keys(positions).forEach(type => {
+      if (!validTypes.has(type)) {
+        delete positions[type];
+      }
+    });
+
+    if (
+      pendingAlcoholScrollTypeRef.current &&
+      !validTypes.has(pendingAlcoholScrollTypeRef.current)
+    ) {
+      pendingAlcoholScrollTypeRef.current = null;
+    }
+
+    if (alcoholSections.length === 0) {
+      if (activeAlcoholType !== null) {
+        setActiveAlcoholType(null);
+      }
+      return;
+    }
+
+    if (!validTypes.has(activeAlcoholType)) {
+      setActiveAlcoholType(alcoholSections[0].type);
+    }
+  }, [alcoholSections, activeAlcoholType]);
   const totalPrice = useMemo(() => {
     const menuTotal = calculateSectionTotal(menuItems);
     const alcoholTotal = calculateSectionTotal(alcoholItems);
@@ -314,12 +358,25 @@ const StoreOrderScreen = () => {
   };
 
   const renderSection = (items, onChange, options = {}) => {
-    const {isAlcohol = false, translateAlcohol} = options;
+    const {
+      isAlcohol = false,
+      translateAlcohol,
+      sectionTitle,
+      onSectionLayout,
+      sectionKey,
+    } = options;
 
     const list = ensureArray(items);
+    const handleLayout =
+      typeof onSectionLayout === 'function'
+        ? event => onSectionLayout(event.nativeEvent.layout.y)
+        : undefined;
 
     return (
-      <View style={styles.section}>
+      <View key={sectionKey} style={styles.section} onLayout={handleLayout}>
+        {sectionTitle && list.length > 0 ? (
+          <Text style={styles.sectionTitle}>{sectionTitle}</Text>
+        ) : null}
         {list.length === 0 ? (
           <Text style={styles.emptyMessage}>등록된 항목이 없습니다.</Text>
         ) : (
@@ -406,7 +463,7 @@ const StoreOrderScreen = () => {
                         style={styles.addButton}
                         onPress={() => onChange(item.id, 1)}
                         activeOpacity={0.92}>
-                        <Ionicons name="add" size={16} color="#fff" />
+                        <Ionicons name="add" size={16} color="#1F2937" />
                         <Text style={styles.addButtonLabel}>담기</Text>
                       </TouchableOpacity>
                     ) : (
@@ -442,6 +499,146 @@ const StoreOrderScreen = () => {
     );
   };
 
+  const updateActiveAlcoholTypeForOffset = useCallback(
+    offset => {
+      if (alcoholSections.length === 0) {
+        return;
+      }
+
+      const positions = alcoholSectionPositionsRef.current;
+      if (Object.keys(positions).length === 0) {
+        const fallbackType = alcoholSections[0]?.type;
+        if (fallbackType && fallbackType !== activeAlcoholType) {
+          setActiveAlcoholType(fallbackType);
+        }
+        return;
+      }
+
+      const detectionOffset = (alcoholCategoryHeightRef.current || 0) + 16;
+      let nextType = alcoholSections[0].type;
+
+      for (let i = 0; i < alcoholSections.length; i += 1) {
+        const {type} = alcoholSections[i];
+        const sectionY = positions[type];
+        if (sectionY === undefined) {
+          continue;
+        }
+        if (offset + detectionOffset >= sectionY) {
+          nextType = type;
+        } else {
+          break;
+        }
+      }
+
+      if (nextType !== activeAlcoholType) {
+        setActiveAlcoholType(nextType);
+      }
+    },
+    [alcoholSections, activeAlcoholType],
+  );
+
+  const handleSelectAlcoholCategory = useCallback(type => {
+    setActiveAlcoholType(type);
+
+    const targetY = alcoholSectionPositionsRef.current?.[type];
+    if (typeof targetY !== 'number') {
+      pendingAlcoholScrollTypeRef.current = type;
+      return;
+    }
+
+    const categoryHeight = alcoholCategoryHeightRef.current || 0;
+    const adjustedY = Math.max(targetY - categoryHeight - 4, 0);
+    isProgrammaticAlcoholScrollRef.current = true;
+    scrollViewRef.current?.scrollTo({
+      y: adjustedY,
+      animated: true,
+    });
+    scrollPositionsRef.current.alcohol = adjustedY;
+    setTimeout(() => {
+      isProgrammaticAlcoholScrollRef.current = false;
+    }, 400);
+  }, []);
+
+  const handleSectionLayout = useCallback(
+    (type, y) => {
+      alcoholSectionPositionsRef.current[type] = y;
+      if (pendingAlcoholScrollTypeRef.current === type) {
+        pendingAlcoholScrollTypeRef.current = null;
+        handleSelectAlcoholCategory(type);
+        return;
+      }
+
+      if (activeTab === 'alcohol' && !isProgrammaticAlcoholScrollRef.current) {
+        const storedOffset = scrollPositionsRef.current.alcohol ?? 0;
+        updateActiveAlcoholTypeForOffset(storedOffset);
+      }
+    },
+    [activeTab, handleSelectAlcoholCategory, updateActiveAlcoholTypeForOffset],
+  );
+
+  const hasAlcoholCategories = alcoholSections.length > 0;
+
+  const updateStickyStateForOffset = useCallback(
+    offset => {
+      if (activeTab !== 'alcohol' || !hasAlcoholCategories) {
+        return;
+      }
+      const threshold = alcoholTabsOffsetRef.current;
+      if (threshold == null) {
+        return;
+      }
+      setIsAlcoholTabsSticky(prev => {
+        const shouldStick = offset >= threshold;
+        return prev === shouldStick ? prev : shouldStick;
+      });
+    },
+    [activeTab, hasAlcoholCategories],
+  );
+
+  useEffect(() => {
+    if (activeTab !== 'alcohol' || !hasAlcoholCategories) {
+      setIsAlcoholTabsSticky(false);
+      return;
+    }
+    const storedOffset = scrollPositionsRef.current.alcohol ?? 0;
+    updateStickyStateForOffset(storedOffset);
+  }, [activeTab, hasAlcoholCategories, updateStickyStateForOffset]);
+
+  const handleScroll = useCallback(
+    event => {
+      const offsetY = event.nativeEvent.contentOffset.y;
+      scrollPositionsRef.current[activeTab] = offsetY;
+
+      if (activeTab === 'alcohol' && !isProgrammaticAlcoholScrollRef.current) {
+        updateActiveAlcoholTypeForOffset(offsetY);
+      }
+      updateStickyStateForOffset(offsetY);
+    },
+    [activeTab, updateActiveAlcoholTypeForOffset, updateStickyStateForOffset],
+  );
+
+  useEffect(() => {
+    const targetOffset = scrollPositionsRef.current[activeTab] ?? 0;
+    if (activeTab === 'alcohol') {
+      isProgrammaticAlcoholScrollRef.current = true;
+    }
+    requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollTo({
+        y: targetOffset,
+        animated: false,
+      });
+      if (activeTab === 'alcohol') {
+        requestAnimationFrame(() => {
+          isProgrammaticAlcoholScrollRef.current = false;
+          updateActiveAlcoholTypeForOffset(targetOffset);
+          updateStickyStateForOffset(targetOffset);
+        });
+      } else {
+        updateStickyStateForOffset(targetOffset);
+      }
+    });
+  }, [activeTab, updateActiveAlcoholTypeForOffset, updateStickyStateForOffset]);
+
   const renderTabButton = (key, label, count) => {
     const isActive = activeTab === key;
     const displayCount = count > 99 ? '99+' : count;
@@ -462,6 +659,145 @@ const StoreOrderScreen = () => {
     );
   };
 
+  const scrollChildren = [];
+  const stickyHeaderIndices = [];
+
+  if (activeTab === 'menu') {
+    scrollChildren.push(
+      <View key="menu-section-header" style={styles.sectionHeader}>
+        {loadingMenus && (
+          <View style={styles.loadingGroup}>
+            <ActivityIndicator size="small" color="#45C9FF" />
+            <Text style={styles.loadingText}>메뉴 갱신 중</Text>
+          </View>
+        )}
+      </View>,
+    );
+    scrollChildren.push(
+      renderSection(menuItems, updateMenuQuantity, {
+        sectionKey: 'menu-section',
+      }),
+    );
+  } else {
+    scrollChildren.push(
+      <View key="alcohol-section-header" style={styles.sectionHeader}>
+        {loadingAlcohols && (
+          <View style={styles.loadingGroup}>
+            <ActivityIndicator size="small" color="#45C9FF" />
+            <Text style={styles.loadingText}>주류 갱신 중</Text>
+          </View>
+        )}
+      </View>,
+    );
+
+    if (alcoholSections.length > 0) {
+      const categoryIndex = scrollChildren.length;
+      stickyHeaderIndices.push(categoryIndex);
+
+      scrollChildren.push(
+        <View
+          key="alcohol-categories"
+          style={[
+            styles.alcoholTabsContainer,
+            isAlcoholTabsSticky && styles.alcoholTabsContainerSticky,
+          ]}
+          onLayout={({nativeEvent}) => {
+            const {height, y} = nativeEvent.layout;
+            if (Math.abs(alcoholCategoryHeightRef.current - height) > 1) {
+              alcoholCategoryHeightRef.current = height;
+              if (activeTab === 'alcohol') {
+                updateActiveAlcoholTypeForOffset(
+                  scrollPositionsRef.current.alcohol ?? 0,
+                );
+              }
+            }
+            if (alcoholTabsOffsetRef.current !== y) {
+              alcoholTabsOffsetRef.current = y;
+            }
+            const storedOffset = scrollPositionsRef.current.alcohol ?? 0;
+            updateStickyStateForOffset(storedOffset);
+          }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.alcoholTabsContent}>
+            {alcoholSections.map(section => {
+              const isSelected = section.type === activeAlcoholType;
+              const isMain = mainAlcoholTypeIds.has(section.type);
+              return (
+                <TouchableOpacity
+                  key={section.type}
+                  style={[
+                    styles.alcoholCategoryButton,
+
+                    isSelected && styles.alcoholCategoryButtonActive,
+                  ]}
+                  onPress={() => handleSelectAlcoholCategory(section.type)}
+                  activeOpacity={0.85}>
+                  <Text
+                    style={[
+                      styles.alcoholCategoryText,
+                      isSelected && styles.alcoholCategoryTextActive,
+                    ]}>
+                    {section.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>,
+      );
+
+      alcoholSections.forEach(section => {
+        scrollChildren.push(
+          renderSection(section.items, updateAlcoholQuantity, {
+            isAlcohol: true,
+            translateAlcohol,
+            sectionTitle: section.label,
+            sectionKey: `alcohol-${section.type}`,
+            onSectionLayout: y => handleSectionLayout(section.type, y),
+          }),
+        );
+      });
+    } else {
+      scrollChildren.push(
+        <View key="alcohol-empty" style={styles.section}>
+          <Text style={styles.emptyMessage}>등록된 항목이 없습니다.</Text>
+        </View>,
+      );
+    }
+  }
+
+  scrollChildren.push(
+    <View
+      key="note-section"
+      style={styles.noteSection}
+      onLayout={({nativeEvent}) => setNoteSectionOffset(nativeEvent.layout.y)}>
+      <Text style={styles.sectionTitle}>요청 사항</Text>
+      <TextInput
+        style={styles.noteInput}
+        value={requestNote}
+        onChangeText={setRequestNote}
+        placeholder="예: 여러 메뉴는 한 번에 내어주시고, 주류는 제가 도착해서 받을게요!"
+        placeholderTextColor="#B0B0B0"
+        multiline
+        maxLength={200}
+        textAlignVertical="top"
+        onFocus={() => {
+          setIsRequestFocused(true);
+          requestAnimationFrame(() => {
+            scrollViewRef.current?.scrollTo({
+              y: Math.max(0, noteSectionOffset - 20),
+              animated: true,
+            });
+          });
+        }}
+        onBlur={() => setIsRequestFocused(false)}
+      />
+      <Text style={styles.noteCount}>{requestNote.length}/200</Text>
+    </View>,
+  );
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -473,6 +809,8 @@ const StoreOrderScreen = () => {
           {
             paddingTop:
               Platform.OS === 'android' ? insets.top + 10 : insets.top,
+            borderBottomWidth:
+              activeTab === 'alcohol' && isAlcoholTabsSticky ? 0 : 1,
           },
         ]}>
         <TouchableOpacity
@@ -499,66 +837,11 @@ const StoreOrderScreen = () => {
           },
         ]}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}>
-        {activeTab === 'menu' && (
-          <>
-            <View style={styles.sectionHeader}>
-              {loadingMenus && (
-                <View style={styles.loadingGroup}>
-                  <ActivityIndicator size="small" color="#45C9FF" />
-                  <Text style={styles.loadingText}>메뉴 갱신 중</Text>
-                </View>
-              )}
-            </View>
-            {renderSection(menuItems, updateMenuQuantity)}
-          </>
-        )}
-
-        {activeTab === 'alcohol' && (
-          <>
-            <View style={styles.sectionHeader}>
-              {loadingAlcohols && (
-                <View style={styles.loadingGroup}>
-                  <ActivityIndicator size="small" color="#45C9FF" />
-                  <Text style={styles.loadingText}>주류 갱신 중</Text>
-                </View>
-              )}
-            </View>
-            {renderSection(sortedAlcoholItems, updateAlcoholQuantity, {
-              isAlcohol: true,
-              translateAlcohol,
-            })}
-          </>
-        )}
-
-        <View
-          style={styles.noteSection}
-          onLayout={({nativeEvent}) =>
-            setNoteSectionOffset(nativeEvent.layout.y)
-          }>
-          <Text style={styles.sectionTitle}>요청 사항</Text>
-          <TextInput
-            style={styles.noteInput}
-            value={requestNote}
-            onChangeText={setRequestNote}
-            placeholder="예: 여러 메뉴는 한 번에 내어주시고, 주류는 제가 도착해서 받을게요!"
-            placeholderTextColor="#B0B0B0"
-            multiline
-            maxLength={200}
-            textAlignVertical="top"
-            onFocus={() => {
-              setIsRequestFocused(true);
-              requestAnimationFrame(() => {
-                scrollViewRef.current?.scrollTo({
-                  y: Math.max(0, noteSectionOffset - 20),
-                  animated: true,
-                });
-              });
-            }}
-            onBlur={() => setIsRequestFocused(false)}
-          />
-          <Text style={styles.noteCount}>{requestNote.length}/200</Text>
-        </View>
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        stickyHeaderIndices={stickyHeaderIndices}>
+        {scrollChildren}
       </ScrollView>
 
       <OrderFooter
@@ -614,6 +897,11 @@ const styles = StyleSheet.create({
   headerTabsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    padding: 2,
+    flexShrink: 0,
     minWidth: 130,
   },
   tabButton: {
@@ -625,25 +913,64 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: 10,
     marginHorizontal: 2,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   tabButtonActive: {
-    backgroundColor: '#E9F5FB',
+    borderColor: '#111827',
   },
   tabLabel: {
-    fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
-    color: '#555',
+    fontSize: 13,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#374151',
   },
   tabLabelActive: {
-    color: '#45C9FF',
+    color: '#111827',
   },
   tabCount: {
     marginLeft: 6,
     fontSize: 12,
     fontFamily: 'Pretendard-Medium',
-    color: '#555',
+    color: '#6B7280',
   },
   tabCountActive: {
+    color: '#111827',
+  },
+  alcoholTabsContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 18,
+    paddingVertical: 6,
+    marginBottom: 12,
+    zIndex: 2,
+  },
+  alcoholTabsContainerSticky: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  alcoholTabsContent: {
+    paddingVertical: 2,
+    paddingRight: 6,
+    alignItems: 'center',
+  },
+  alcoholCategoryButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+    marginRight: 8,
+  },
+  alcoholCategoryButtonActive: {
+    backgroundColor: '#E8F7FF',
+    borderColor: '#45C9FF',
+  },
+  alcoholCategoryText: {
+    fontSize: 12,
+    fontFamily: 'Pretendard-Medium',
+    color: '#374151',
+  },
+  alcoholCategoryTextActive: {
     color: '#45C9FF',
   },
   sectionHeader: {
@@ -776,17 +1103,18 @@ const styles = StyleSheet.create({
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1F2937',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#1F2937',
     marginLeft: 12,
   },
   addButtonLabel: {
     marginLeft: 6,
     fontSize: 13,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#FFFFFF',
+    color: '#1F2937',
   },
   stepper: {
     flexDirection: 'row',
