@@ -210,11 +210,11 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   tabButtonActive: {
-    backgroundColor: '#E8F7FF', // ?좏깮 ??諛곌꼍??
+    backgroundColor: '#E8F7FF',
     borderColor: '#45C9FF',
   },
   tabTextActive: {
-    color: '#45C9FF', // ?좏깮 ??湲?먯깋
+    color: '#45C9FF',
   },
 });
 
