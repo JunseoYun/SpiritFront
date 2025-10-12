@@ -1,21 +1,30 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   ScrollView,
   View,
   Text,
   StyleSheet,
+  Image,
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import {useRoute} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {StoreMenuget} from '../../api/menuApi';
 import {StoreDrinkget} from '../../api/drinkApi';
 import {useToast} from '../../context/ToastContext';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import OrderFooter from '../../components/StoreOrderScreen/OrderFooter';
+import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 
 const ensureArray = value => (Array.isArray(value) ? value : []);
 
@@ -62,10 +71,27 @@ const calculateSectionTotal = list =>
 const calculateSectionCount = list =>
   list.reduce((total, item) => total + item.quantity, 0);
 
+const ALCOHOL_TYPE_ORDER = [
+  'SOJU',
+  'BEER',
+  'MAKGEOLLI',
+  'TRADITIONAL',
+  'HIGHBALL',
+  'WINE',
+  'COCKTAIL',
+  'SAKE',
+  'KAOLIANG',
+  'WHISKEY',
+  'VODKA',
+  'TEQUILA',
+];
+
 const StoreOrderScreen = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const {showToast} = useToast();
   const insets = useSafeAreaInsets();
+  const {translateAlcohol} = useTranslateAlcohol();
   const {
     storeId,
     storeName,
@@ -73,11 +99,13 @@ const StoreOrderScreen = () => {
     peopleCount,
     initialMenus = [],
     initialAlcohols = [],
+    mainDrinkDtos = [],
   } = route.params ?? {};
 
   const [menuItems, setMenuItems] = useState(() =>
     mapWithQuantity(initialMenus, []),
   );
+
   const [alcoholItems, setAlcoholItems] = useState(() =>
     mapWithQuantity(initialAlcohols, []),
   );
@@ -89,6 +117,10 @@ const StoreOrderScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('menu');
   const scrollViewRef = useRef(null);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({headerShown: false});
+  }, [navigation]);
 
   useEffect(() => {
     let isMounted = true;
@@ -150,6 +182,43 @@ const StoreOrderScreen = () => {
     () => calculateSectionCount(alcoholItems),
     [alcoholItems],
   );
+  const sortedAlcoholItems = useMemo(() => {
+    const items = ensureArray(alcoholItems);
+    if (items.length === 0) {
+      return items;
+    }
+
+    const mainTypes = new Set(
+      ensureArray(mainDrinkDtos).map(drink => drink.type),
+    );
+    const grouped = items.reduce((acc, item) => {
+      const type = item.type;
+      if (!acc.has(type)) {
+        acc.set(type, {main: [], regular: []});
+      }
+      const bucket = mainTypes.has(type) ? 'main' : 'regular';
+      acc.get(type)[bucket].push(item);
+      return acc;
+    }, new Map());
+
+    const sortedTypes = Array.from(grouped.keys()).sort((a, b) => {
+      const aMain = mainTypes.has(a);
+      const bMain = mainTypes.has(b);
+      if (aMain !== bMain) {
+        return aMain ? -1 : 1;
+      }
+      const indexA = ALCOHOL_TYPE_ORDER.indexOf(a);
+      const indexB = ALCOHOL_TYPE_ORDER.indexOf(b);
+      const safeIndexA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
+      const safeIndexB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
+      return safeIndexA - safeIndexB;
+    });
+
+    return sortedTypes.flatMap(type => {
+      const group = grouped.get(type);
+      return [...group.main, ...group.regular];
+    });
+  }, [alcoholItems, mainDrinkDtos]);
   const totalPrice = useMemo(() => {
     const menuTotal = calculateSectionTotal(menuItems);
     const alcoholTotal = calculateSectionTotal(alcoholItems);
@@ -244,50 +313,183 @@ const StoreOrderScreen = () => {
     setSubmitting(false);
   };
 
-  const renderSection = (title, items, onChange) => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {items.length === 0 ? (
-        <Text style={styles.emptyMessage}>등록된 항목이 없습니다.</Text>
-      ) : (
-        items.map(item => (
-          <View key={item.id} style={styles.itemRow}>
-            <View style={styles.itemInfo}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemPrice}>
-                {typeof item.price === 'string'
-                  ? item.price
-                  : `${item.price.toLocaleString()}원`}
-              </Text>
-            </View>
-            <View style={styles.counter}>
-              <TouchableOpacity
-                style={[
-                  styles.counterButton,
-                  item.quantity === 0 && styles.counterButtonDisabled,
-                ]}
-                onPress={() => onChange(item.id, -1)}
-                disabled={item.quantity === 0}>
-                <Text style={styles.counterButtonText}>-</Text>
-              </TouchableOpacity>
-              <Text style={styles.counterValue}>{item.quantity}</Text>
-              <TouchableOpacity
-                style={styles.counterButton}
-                onPress={() => onChange(item.id, 1)}>
-                <Text style={styles.counterButtonText}>+</Text>
-              </TouchableOpacity>
-            </View>
+  const renderSection = (items, onChange, options = {}) => {
+    const {isAlcohol = false, translateAlcohol} = options;
+
+    const list = ensureArray(items);
+
+    return (
+      <View style={styles.section}>
+        {list.length === 0 ? (
+          <Text style={styles.emptyMessage}>등록된 항목이 없습니다.</Text>
+        ) : (
+          <View>
+            {list.map(item => {
+              const unitPrice = parsePrice(item.price);
+              const formattedPrice =
+                typeof item.price === 'string' &&
+                !Number.isNaN(Number(item.price))
+                  ? `${Number(item.price).toLocaleString()}원`
+                  : unitPrice > 0
+                  ? `${unitPrice.toLocaleString()}원`
+                  : '가격 문의';
+              const isSelected = item.quantity > 0;
+              let tagLabel;
+              if (isAlcohol) {
+                const translated = translateAlcohol?.(item.type);
+                tagLabel =
+                  translated && translated !== '미지정'
+                    ? translated
+                    : undefined;
+              } else {
+                const menuType = item.menuType ?? item.type;
+                tagLabel = menuType === 'MAIN' ? '대표 메뉴' : undefined;
+              }
+              const description = item.description?.trim();
+              const hasImage =
+                typeof item.imgUrl === 'string' &&
+                item.imgUrl.trim().length > 0;
+              return (
+                <View
+                  key={item.id}
+                  style={[
+                    styles.itemCard,
+                    isSelected && styles.itemCardSelected,
+                  ]}>
+                  <View
+                    style={[
+                      styles.itemCardBody,
+                      !hasImage && styles.itemCardBodyCompact,
+                    ]}>
+                    <View
+                      style={[
+                        styles.itemMain,
+                        hasImage
+                          ? styles.itemMainWithImage
+                          : styles.itemMainCompact,
+                      ]}>
+                      {tagLabel ? (
+                        <Text style={styles.itemTagLabel}>{tagLabel}</Text>
+                      ) : null}
+                      <Text style={styles.itemName} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      {description ? (
+                        <Text style={styles.itemDescription} numberOfLines={2}>
+                          {description}
+                        </Text>
+                      ) : null}
+                    </View>
+
+                    {hasImage ? (
+                      <View
+                        style={[
+                          styles.itemImageWrapper,
+                          isSelected && styles.itemImageWrapperSelected,
+                        ]}>
+                        <Image
+                          source={{uri: item.imgUrl}}
+                          style={styles.itemImage}
+                          resizeMode="cover"
+                        />
+                      </View>
+                    ) : null}
+                  </View>
+
+                  <View style={styles.itemFooter}>
+                    <View style={styles.footerPrice}>
+                      <Text style={styles.itemPriceText}>{formattedPrice}</Text>
+                    </View>
+
+                    {item.quantity === 0 ? (
+                      <TouchableOpacity
+                        style={styles.addButton}
+                        onPress={() => onChange(item.id, 1)}
+                        activeOpacity={0.92}>
+                        <Ionicons name="add" size={16} color="#fff" />
+                        <Text style={styles.addButtonLabel}>담기</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <View style={styles.stepper}>
+                        <TouchableOpacity
+                          style={[
+                            styles.stepperButton,
+                            styles.stepperButtonMinus,
+                          ]}
+                          onPress={() => onChange(item.id, -1)}
+                          activeOpacity={0.85}>
+                          <Ionicons name="remove" size={16} color="#1F2937" />
+                        </TouchableOpacity>
+                        <Text style={styles.stepperValue}>{item.quantity}</Text>
+                        <TouchableOpacity
+                          style={[
+                            styles.stepperButton,
+                            styles.stepperButtonPlus,
+                          ]}
+                          onPress={() => onChange(item.id, 1)}
+                          activeOpacity={0.85}>
+                          <Ionicons name="add" size={16} color="#fff" />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              );
+            })}
           </View>
-        ))
-      )}
-    </View>
-  );
+        )}
+      </View>
+    );
+  };
+
+  const renderTabButton = (key, label, count) => {
+    const isActive = activeTab === key;
+    const displayCount = count > 99 ? '99+' : count;
+
+    return (
+      <TouchableOpacity
+        key={key}
+        style={[styles.tabButton, isActive && styles.tabButtonActive]}
+        onPress={() => setActiveTab(key)}
+        activeOpacity={0.9}>
+        <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
+          {label}
+        </Text>
+        <Text style={[styles.tabCount, isActive && styles.tabCountActive]}>
+          {displayCount}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       style={styles.screen}>
+      <View
+        style={[
+          styles.customHeader,
+          {
+            paddingTop:
+              Platform.OS === 'android' ? insets.top + 10 : insets.top,
+          },
+        ]}>
+        <TouchableOpacity
+          style={styles.headerBackButton}
+          onPress={() => navigation.goBack()}
+          hitSlop={{top: 10, bottom: 10, left: 16, right: 16}}>
+          <Ionicons name="arrow-back-outline" size={22} color="#1F2937" />
+        </TouchableOpacity>
+        <Text style={styles.storeTitle} numberOfLines={1}>
+          {storeName || '한잔할까'}
+        </Text>
+        <View style={styles.headerTabsContainer}>
+          {renderTabButton('menu', '메뉴', totalMenuCount)}
+          {renderTabButton('alcohol', '주류', totalAlcoholCount)}
+        </View>
+      </View>
+
       <ScrollView
         ref={scrollViewRef}
         contentContainerStyle={[
@@ -298,41 +500,9 @@ const StoreOrderScreen = () => {
         ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
-        <View style={styles.tabsContainer}>
-          <TouchableOpacity
-            style={[
-              styles.tabButton,
-              activeTab === 'menu' && styles.tabButtonActive,
-            ]}
-            onPress={() => setActiveTab('menu')}>
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === 'menu' && styles.tabTextActive,
-              ]}>
-              메뉴 ({totalMenuCount}개)
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.tabButton,
-              activeTab === 'alcohol' && styles.tabButtonActive,
-            ]}
-            onPress={() => setActiveTab('alcohol')}>
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === 'alcohol' && styles.tabTextActive,
-              ]}>
-              주류 ({totalAlcoholCount}개)
-            </Text>
-          </TouchableOpacity>
-        </View>
-
         {activeTab === 'menu' && (
           <>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderText}>메뉴 선택</Text>
               {loadingMenus && (
                 <View style={styles.loadingGroup}>
                   <ActivityIndicator size="small" color="#45C9FF" />
@@ -340,14 +510,13 @@ const StoreOrderScreen = () => {
                 </View>
               )}
             </View>
-            {renderSection('식사 및 안주', menuItems, updateMenuQuantity)}
+            {renderSection(menuItems, updateMenuQuantity)}
           </>
         )}
 
         {activeTab === 'alcohol' && (
           <>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderText}>주류 선택</Text>
               {loadingAlcohols && (
                 <View style={styles.loadingGroup}>
                   <ActivityIndicator size="small" color="#45C9FF" />
@@ -355,7 +524,10 @@ const StoreOrderScreen = () => {
                 </View>
               )}
             </View>
-            {renderSection('주류', alcoholItems, updateAlcoholQuantity)}
+            {renderSection(sortedAlcoholItems, updateAlcoholQuantity, {
+              isAlcohol: true,
+              translateAlcohol,
+            })}
           </>
         )}
 
@@ -413,61 +585,66 @@ const styles = StyleSheet.create({
   },
   container: {
     flexGrow: 1,
-    // paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 24,
   },
-  metaCard: {
-    borderWidth: 1,
-    borderColor: '#E8F4FA',
-    borderRadius: 14,
-    padding: 18,
-    marginBottom: 24,
-    backgroundColor: '#F7FCFF',
-  },
-  title: {
-    fontSize: 20,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#222',
-    marginBottom: 8,
-  },
-  metaText: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-Regular',
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-  tabsContainer: {
+  customHeader: {
     flexDirection: 'row',
-    backgroundColor: '#F1F6FA',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 16,
-    marginHorizontal: 18,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  headerBackButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 7,
+  },
+  storeTitle: {
+    flex: 1,
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 19,
+    color: '#0F172A',
+    marginRight: 7,
+  },
+  headerTabsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: 130,
   },
   tabButton: {
     flex: 1,
-    height: 40,
-    borderRadius: 10,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 7,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    marginHorizontal: 2,
   },
   tabButtonActive: {
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: '#E9F5FB',
   },
-  tabText: {
-    fontSize: 14,
+  tabLabel: {
+    fontSize: 15,
     fontFamily: 'Pretendard-Medium',
-    color: '#667085',
+    color: '#555',
   },
-  tabTextActive: {
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#222',
+  tabLabelActive: {
+    color: '#45C9FF',
+  },
+  tabCount: {
+    marginLeft: 6,
+    fontSize: 12,
+    fontFamily: 'Pretendard-Medium',
+    color: '#555',
+  },
+  tabCountActive: {
+    color: '#45C9FF',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -478,7 +655,7 @@ const styles = StyleSheet.create({
   sectionHeaderText: {
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#222',
+    color: '#1F2A45',
   },
   loadingGroup: {
     flexDirection: 'row',
@@ -487,89 +664,164 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 12,
     fontFamily: 'Pretendard-Regular',
-    color: '#45C9FF',
+    color: '#3B82F6',
     marginLeft: 6,
   },
   section: {
-    borderWidth: 1,
-    borderColor: '#EFEFEF',
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginTop: 12,
     marginBottom: 24,
-    backgroundColor: '#FAFAFA',
     marginHorizontal: 18,
   },
-  sectionTitle: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
+  sectionHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#1F2933',
+    marginBottom: 10,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    fontFamily: 'Pretendard-Regular',
+    color: '#9AA2AE',
   },
   emptyMessage: {
     fontSize: 13,
     fontFamily: 'Pretendard-Regular',
-    color: '#999',
+    color: '#9AA2AE',
   },
-  itemRow: {
+
+  itemCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 14,
+    marginBottom: 10,
+  },
+  itemCardSelected: {
+    borderColor: '#111827',
+    backgroundColor: '#F5F6F8',
+  },
+  itemCardBody: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  itemCardBodyCompact: {
+    alignItems: 'stretch',
+  },
+  itemImageWrapper: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    marginLeft: 12,
+  },
+  itemImageWrapperSelected: {
+    borderColor: '#111827',
+  },
+  itemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  itemMain: {
+    flex: 1,
+  },
+  itemMainWithImage: {
+    marginRight: 16,
+  },
+  itemMainCompact: {
+    marginRight: 0,
+    marginLeft: 0,
+  },
+  itemTagLabel: {
+    fontSize: 12,
+    fontFamily: 'Pretendard-Medium',
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  itemName: {
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#1F2A37',
+  },
+  itemDescription: {
+    marginTop: 4,
+    fontSize: 12,
+    fontFamily: 'Pretendard-Regular',
+    color: '#6B7280',
+  },
+  itemFooter: {
+    marginTop: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderColor: '#EAEAEA',
   },
-  itemInfo: {
+  footerPrice: {
     flex: 1,
-    paddingRight: 12,
   },
-  itemName: {
+  itemPriceText: {
     fontSize: 15,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#222',
-    marginBottom: 4,
+    color: '#1F2A37',
   },
-  itemPrice: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-Regular',
-    color: '#666',
-  },
-  counter: {
+  addButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#1F2937',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
+    marginLeft: 12,
   },
-  counterButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#D0D0D0',
+  addButtonLabel: {
+    marginLeft: 6,
+    fontSize: 13,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#FFFFFF',
+  },
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E5E7EB',
+    borderRadius: 999,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+    marginLeft: 12,
+  },
+  stepperButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
-    marginHorizontal: 4,
   },
-  counterButtonDisabled: {
-    backgroundColor: '#F2F2F2',
-    borderColor: '#E0E0E0',
+  stepperButtonMinus: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
   },
-  counterButtonText: {
-    fontSize: 18,
-    fontFamily: 'Pretendard-Medium',
-    color: '#333',
+  stepperButtonPlus: {
+    backgroundColor: '#111827',
   },
-  counterValue: {
-    fontSize: 15,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
+  stepperValue: {
+    marginHorizontal: 8,
     minWidth: 24,
     textAlign: 'center',
-    marginHorizontal: 4,
+    fontSize: 14,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#1F2A37',
   },
   noteSection: {
     marginBottom: 20,
-
     marginHorizontal: 18,
   },
   noteInput: {

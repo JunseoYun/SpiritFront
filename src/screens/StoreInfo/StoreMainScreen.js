@@ -579,6 +579,7 @@ const StoreMainScreen = ({navigation}) => {
       storeName: storedata?.name ?? '',
       initialMenus: menus ?? [],
       initialAlcohols: alcohols ?? [],
+      mainDrinkDtos: storedata?.mainDrinkDtos ?? [],
       visitTime,
       peopleCount,
     });
