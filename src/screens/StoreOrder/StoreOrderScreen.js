@@ -436,11 +436,7 @@ const StoreOrderScreen = () => {
               const isSelected = item.quantity > 0;
               let tagLabel;
               if (isAlcohol) {
-                const translated = translateAlcohol?.(item.type);
-                tagLabel =
-                  translated && translated !== '미지정'
-                    ? translated
-                    : undefined;
+                null;
               } else {
                 const menuType = item.menuType ?? item.type;
                 tagLabel = menuType === 'MAIN' ? '대표 메뉴' : undefined;
@@ -689,7 +685,13 @@ const StoreOrderScreen = () => {
     return (
       <TouchableOpacity
         key={key}
-        style={[styles.tabButton, isActive && styles.tabButtonActive]}
+        style={[
+          styles.tabButton,
+          isActive && styles.tabButtonActive,
+          key === 'menu'
+            ? {borderTopLeftRadius: 7, borderBottomLeftRadius: 7}
+            : {borderTopRightRadius: 7, borderBottomRightRadius: 7},
+        ]}
         onPress={() => setActiveTab(key)}
         activeOpacity={0.9}>
         <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
@@ -942,11 +944,6 @@ const styles = StyleSheet.create({
   headerTabsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 10,
-    padding: 2,
-    flexShrink: 0,
     minWidth: 130,
   },
   tabButton: {
@@ -954,20 +951,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 7,
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    marginHorizontal: 2,
-    borderWidth: 1,
+    paddingVertical: 5,
+    paddingHorizontal: 7,
     borderColor: 'transparent',
+    backgroundColor: '#fff',
   },
   tabButtonActive: {
-    borderColor: '#111827',
+    backgroundColor: '#E5E7EB',
   },
   tabLabel: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#374151',
+    fontSize: 14,
+    fontFamily: 'Pretendard-Medium',
+    color: '#555',
   },
   tabLabelActive: {
     color: '#111827',
@@ -976,7 +971,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     fontSize: 12,
     fontFamily: 'Pretendard-Medium',
-    color: '#6B7280',
+    color: '#555',
   },
   tabCountActive: {
     color: '#111827',
@@ -1054,6 +1049,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
     color: '#1F2933',
     marginBottom: 10,
+    marginLeft: 3,
   },
   sectionSubtitle: {
     fontSize: 12,
