@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -111,7 +112,7 @@ const StoreOrderScreen = () => {
     mapWithQuantity(initialAlcohols, []),
   );
   const [requestNote, setRequestNote] = useState('');
-  const [isRequestFocused, setIsRequestFocused] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [noteSectionOffset, setNoteSectionOffset] = useState(0);
   const [loadingMenus, setLoadingMenus] = useState(false);
   const [loadingAlcohols, setLoadingAlcohols] = useState(false);
@@ -125,6 +126,7 @@ const StoreOrderScreen = () => {
   const isProgrammaticAlcoholScrollRef = useRef(false);
   const alcoholCategoryHeightRef = useRef(0);
   const alcoholTabsOffsetRef = useRef(null);
+  const pendingNoteScrollRef = useRef(false);
   const [isAlcoholTabsSticky, setIsAlcoholTabsSticky] = useState(false);
 
   useLayoutEffect(() => {
@@ -182,6 +184,47 @@ const StoreOrderScreen = () => {
       isMounted = false;
     };
   }, [storeId, showToast]);
+
+  useEffect(() => {
+    const handleKeyboardShow = () => {
+      setIsKeyboardVisible(true);
+      if (Platform.OS === 'ios' && pendingNoteScrollRef.current) {
+        requestAnimationFrame(() => {
+          scrollViewRef.current?.scrollTo({
+            y: Math.max(0, noteSectionOffset - 20),
+            animated: true,
+          });
+          pendingNoteScrollRef.current = false;
+        });
+      }
+    };
+    const handleKeyboardHide = () => {
+      setIsKeyboardVisible(false);
+      pendingNoteScrollRef.current = false;
+    };
+
+    const showEvents =
+      Platform.OS === 'ios'
+        ? ['keyboardWillShow', 'keyboardDidShow']
+        : ['keyboardDidShow'];
+    const hideEvents =
+      Platform.OS === 'ios'
+        ? ['keyboardWillHide', 'keyboardDidHide']
+        : ['keyboardDidHide'];
+
+    const listeners = [
+      ...showEvents.map(event =>
+        Keyboard.addListener(event, handleKeyboardShow),
+      ),
+      ...hideEvents.map(event =>
+        Keyboard.addListener(event, handleKeyboardHide),
+      ),
+    ];
+
+    return () => {
+      listeners.forEach(listener => listener.remove());
+    };
+  }, [noteSectionOffset]);
 
   const totalMenuCount = useMemo(
     () => calculateSectionCount(menuItems),
@@ -784,7 +827,7 @@ const StoreOrderScreen = () => {
         maxLength={200}
         textAlignVertical="top"
         onFocus={() => {
-          setIsRequestFocused(true);
+          pendingNoteScrollRef.current = true;
           requestAnimationFrame(() => {
             scrollViewRef.current?.scrollTo({
               y: Math.max(0, noteSectionOffset - 20),
@@ -792,7 +835,9 @@ const StoreOrderScreen = () => {
             });
           });
         }}
-        onBlur={() => setIsRequestFocused(false)}
+        onBlur={() => {
+          pendingNoteScrollRef.current = false;
+        }}
       />
       <Text style={styles.noteCount}>{requestNote.length}/200</Text>
     </View>,
@@ -800,8 +845,8 @@ const StoreOrderScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       style={styles.screen}>
       <View
         style={[
@@ -833,7 +878,7 @@ const StoreOrderScreen = () => {
         contentContainerStyle={[
           styles.container,
           {
-            paddingBottom: 24 + insets.bottom + (isRequestFocused ? 40 : 140),
+            paddingBottom: 24 + insets.bottom + (isKeyboardVisible ? 40 : 140),
           },
         ]}
         keyboardShouldPersistTaps="handled"
@@ -845,7 +890,7 @@ const StoreOrderScreen = () => {
       </ScrollView>
 
       <OrderFooter
-        visible={!isRequestFocused}
+        visible={!isKeyboardVisible}
         safeAreaBottom={insets.bottom}
         visitTime={visitTime}
         peopleIconName={peopleIconName}
