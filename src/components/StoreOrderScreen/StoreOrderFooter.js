@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const OrderFooter = ({
+const StoreOrderFooter = ({
   visible,
   safeAreaBottom = 0,
   visitTime,
@@ -220,4 +220,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OrderFooter;
+export default StoreOrderFooter;
