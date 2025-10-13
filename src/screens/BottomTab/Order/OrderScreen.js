@@ -1,11 +1,21 @@
-import React, {useLayoutEffect, useState} from 'react';
-import {SafeAreaView, StyleSheet, View, Pressable, Text} from 'react-native';
+﻿import React, {useLayoutEffect, useRef, useState} from 'react';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Pressable,
+  Text,
+  Animated,
+} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import OrderUserScreen from './OrderUserScreen';
 import OrderOwnerScreen from './OrderOwnerScreen';
 
 const OrderScreen = ({navigation}) => {
   const [ownerMode, setOwnerMode] = useState(false);
+  const [segmentWidth, setSegmentWidth] = useState(0);
+  const [segmentHeight, setSegmentHeight] = useState(0);
+  const translateX = useRef(new Animated.Value(0)).current;
 
   useLayoutEffect(() => {
     navigation?.setOptions?.({
@@ -13,19 +23,53 @@ const OrderScreen = ({navigation}) => {
     });
   }, [ownerMode, navigation]);
 
+  const onToggle = next => {
+    setOwnerMode(next);
+    const innerWidth = Math.max(segmentWidth - 8, 0);
+    const toValue = next ? innerWidth / 2 : 0;
+    Animated.spring(translateX, {
+      toValue,
+      useNativeDriver: true,
+      bounciness: 8,
+      speed: 20,
+    }).start();
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.toggleRow}>
-        <View style={styles.segment}>
+        <View
+          style={styles.segment}
+          onLayout={e => {
+            setSegmentWidth(e.nativeEvent.layout.width);
+            setSegmentHeight(e.nativeEvent.layout.height);
+          }}
+          accessibilityRole="tablist">
+          {segmentWidth > 0 && (
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.segmentIndicator,
+                {
+                  width: Math.max((segmentWidth - 8) / 2, 0),
+                  height: Math.max(segmentHeight - 8, 0),
+                  transform: [{translateX}],
+                },
+              ]}
+            />
+          )}
+
           <Pressable
-            onPress={() => setOwnerMode(false)}
-            style={[styles.segmentBtn, !ownerMode && styles.segmentActive]}
+            onPress={() => onToggle(false)}
+            style={styles.segmentBtn}
+            accessibilityRole="tab"
+            accessibilityState={{selected: !ownerMode}}
             hitSlop={8}>
             <View style={styles.segmentInner}>
               <Ionicons
-                name="person-outline"
+                name={!ownerMode ? 'person' : 'person-outline'}
                 size={16}
-                color={!ownerMode ? '#fff' : '#6B7280'}
+                color={!ownerMode ? '#111827' : '#6B7280'}
                 style={{marginRight: 6}}
               />
               <Text
@@ -37,15 +81,18 @@ const OrderScreen = ({navigation}) => {
               </Text>
             </View>
           </Pressable>
+
           <Pressable
-            onPress={() => setOwnerMode(true)}
-            style={[styles.segmentBtn, ownerMode && styles.segmentActive]}
+            onPress={() => onToggle(true)}
+            style={styles.segmentBtn}
+            accessibilityRole="tab"
+            accessibilityState={{selected: ownerMode}}
             hitSlop={8}>
             <View style={styles.segmentInner}>
               <Ionicons
-                name="briefcase-outline"
+                name={ownerMode ? 'briefcase' : 'briefcase-outline'}
                 size={16}
-                color={ownerMode ? '#fff' : '#6B7280'}
+                color={ownerMode ? '#111827' : '#6B7280'}
                 style={{marginRight: 6}}
               />
               <Text
@@ -78,16 +125,51 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     padding: 4,
     alignSelf: 'center',
+    position: 'relative',
+    // subtle shadow for floating feel
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    shadowOffset: {width: 0, height: 8},
+    elevation: 2,
   },
-  segmentBtn: {paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999},
-  segmentActive: {backgroundColor: '#111827'},
+  segmentBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
+    flex: 1,
+    alignItems: 'center',
+  },
+  segmentIndicator: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    height: 36,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    // soft inner shadow feel
+    shadowColor: '#000',
+    shadowOpacity: 0.07,
+    shadowRadius: 10,
+    shadowOffset: {width: 0, height: 6},
+    elevation: 1,
+  },
   segmentText: {
     fontFamily: 'Pretendard-Medium',
     color: '#6B7280',
     fontSize: 13,
   },
-  segmentTextActive: {color: '#fff', fontFamily: 'Pretendard-SemiBold'},
+  segmentTextActive: {
+    color: '#111827',
+    fontFamily: 'Pretendard-SemiBold',
+  },
   segmentInner: {flexDirection: 'row', alignItems: 'center'},
+  bannerWrap: {
+    paddingHorizontal: 0,
+    paddingBottom: 4,
+  },
 });
 
 export default OrderScreen;
