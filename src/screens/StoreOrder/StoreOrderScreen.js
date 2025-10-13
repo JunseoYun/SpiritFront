@@ -439,7 +439,7 @@ const StoreOrderScreen = () => {
                 null;
               } else {
                 const menuType = item.menuType ?? item.type;
-                tagLabel = menuType === 'MAIN' ? '대표 메뉴' : undefined;
+                tagLabel = menuType === 'MAIN' ? '대표' : undefined;
               }
               const description = item.description?.trim();
               const hasImage =
@@ -464,12 +464,14 @@ const StoreOrderScreen = () => {
                           ? styles.itemMainWithImage
                           : styles.itemMainCompact,
                       ]}>
-                      {tagLabel ? (
-                        <Text style={styles.itemTagLabel}>{tagLabel}</Text>
-                      ) : null}
-                      <Text style={styles.itemName} numberOfLines={1}>
-                        {item.name}
-                      </Text>
+                      <View style={styles.itemNameRow}>
+                        <Text style={styles.itemName}>{item.name}</Text>
+                        {tagLabel ? (
+                          <View style={styles.itemBadge}>
+                            <Text style={styles.itemBadgeText}>{tagLabel}</Text>
+                          </View>
+                        ) : null}
+                      </View>
                       {description ? (
                         <Text style={styles.itemDescription} numberOfLines={2}>
                           {description}
@@ -689,8 +691,8 @@ const StoreOrderScreen = () => {
           styles.tabButton,
           isActive && styles.tabButtonActive,
           key === 'menu'
-            ? {borderTopLeftRadius: 7, borderBottomLeftRadius: 7}
-            : {borderTopRightRadius: 7, borderBottomRightRadius: 7},
+            ? {borderTopLeftRadius: 5, borderBottomLeftRadius: 5}
+            : {borderTopRightRadius: 5, borderBottomRightRadius: 5},
         ]}
         onPress={() => setActiveTab(key)}
         activeOpacity={0.9}>
@@ -1110,16 +1112,28 @@ const styles = StyleSheet.create({
     marginRight: 0,
     marginLeft: 0,
   },
-  itemTagLabel: {
-    fontSize: 12,
-    fontFamily: 'Pretendard-Medium',
-    color: '#6B7280',
+  itemNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 4,
   },
   itemName: {
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     color: '#1F2A37',
+    flexShrink: 1,
+  },
+  itemBadge: {
+    marginLeft: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 3,
+    backgroundColor: '#45C9FF',
+  },
+  itemBadgeText: {
+    fontSize: 10,
+    fontFamily: 'Pretendard-Regular',
+    color: '#fff',
   },
   itemDescription: {
     marginTop: 4,
