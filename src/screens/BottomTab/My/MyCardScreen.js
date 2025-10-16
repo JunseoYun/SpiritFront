@@ -1,0 +1,599 @@
+import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  SafeAreaView,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useNavigation} from '@react-navigation/native';
+import CancelText from '../../../components/CancelText/CancelText';
+
+// Utils
+const onlyDigits = v => (v || '').replace(/\D+/g, '');
+const formatCardNumber = v => {
+  const d = onlyDigits(v).slice(0, 16);
+  const g = d.match(/.{1,4}/g) || [];
+  return g.join('-');
+};
+const formatExpiry = v => {
+  const d = onlyDigits(v).slice(0, 4);
+  if (d.length <= 2) return d;
+  return `${d.slice(0, 2)}/${d.slice(2)}`;
+};
+const isValidMMYY = v => {
+  const d = onlyDigits(v);
+  if (d.length !== 4) return false;
+  const mm = Number(d.slice(0, 2));
+  return mm >= 1 && mm <= 12;
+};
+const isExpiryNotPast = v => {
+  const d = onlyDigits(v);
+  if (d.length !== 4) return false;
+  const mm = Number(d.slice(0, 2));
+  const yy = Number(d.slice(2));
+  const now = new Date();
+  const curYY = now.getFullYear() % 100;
+  const curMM = now.getMonth() + 1;
+  if (yy > curYY) return true;
+  if (yy < curYY) return false;
+  return mm >= curMM;
+};
+const isValidLuhn = v => {
+  const s = onlyDigits(v);
+  if (s.length !== 16) return false;
+  let sum = 0;
+  for (let i = 0; i < 16; i++) {
+    let n = Number(s[15 - i]);
+    if (i % 2 === 1) {
+      n *= 2;
+      if (n > 9) n -= 9;
+    }
+    sum += n;
+  }
+  return sum % 10 === 0;
+};
+const isValidYYMMDD = v => {
+  const s = onlyDigits(v);
+  if (s.length !== 6) return false;
+  const yy = Number(s.slice(0, 2));
+  const mm = Number(s.slice(2, 4));
+  const dd = Number(s.slice(4, 6));
+  if (mm < 1 || mm > 12) return false;
+  const year = 2000 + yy;
+  const lastDay = new Date(year, mm, 0).getDate();
+  return dd >= 1 && dd <= lastDay;
+};
+
+// Biz registration number utils (10 digits -> 3-2-5)
+const formatBizNo = v => {
+  const d = onlyDigits(v).slice(0, 10);
+  if (d.length <= 3) return d;
+  if (d.length <= 5) return `${d.slice(0, 3)}-${d.slice(3)}`;
+  return `${d.slice(0, 3)}-${d.slice(3, 5)}-${d.slice(5)}`;
+};
+const isValidBizNo = v => {
+  const d = onlyDigits(v);
+  if (d.length !== 10) return false;
+  const w = [1, 3, 7, 1, 3, 7, 1, 3, 5];
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += Number(d[i]) * w[i];
+  sum += Math.floor((Number(d[8]) * 5) / 10);
+  return (10 - (sum % 10)) % 10 === Number(d[9]);
+};
+
+// Empty list UI
+const CardListScreen = ({onAddPress}) => (
+  <SafeAreaView style={styles.container}>
+    <View style={styles.headerRow}>
+      <Text style={styles.headerTitle}>등록된 카드</Text>
+      <View style={styles.countBadge}>
+        <Text style={styles.countText}>0</Text>
+      </View>
+    </View>
+
+    <View style={styles.emptyWrap}>
+      <View style={styles.emptyCard} />
+      <Text style={styles.emptyTitle}>자주 사용하는 카드</Text>
+      <Text style={styles.emptySub}>
+        카드를 등록하면 더 빠르게 결제할 수 있어요
+      </Text>
+      <TouchableOpacity style={styles.cta} onPress={onAddPress}>
+        <Text style={styles.ctaText}>카드 등록</Text>
+      </TouchableOpacity>
+    </View>
+  </SafeAreaView>
+);
+
+// Register form UI (progressive, new fields appear on top)
+const CardRegisterForm = ({onClose}) => {
+  const [cardNumber, setCardNumber] = useState('');
+  const [isCorp, setIsCorp] = useState(false);
+  const [expiry, setExpiry] = useState('');
+  const [pw2, setPw2] = useState('');
+  const [birth, setBirth] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [bizNo, setBizNo] = useState('');
+
+  const [isCardFocused, setIsCardFocused] = useState(false);
+  const [isExpiryFocused, setIsExpiryFocused] = useState(false);
+  const [isPw2Focused, setIsPw2Focused] = useState(false);
+  const [isBirthFocused, setIsBirthFocused] = useState(false);
+  const [isNickFocused, setIsNickFocused] = useState(false);
+  const [isBizFocused, setIsBizFocused] = useState(false);
+
+  const cardRef = useRef(null);
+  const expiryRef = useRef(null);
+  const pw2Ref = useRef(null);
+  const birthRef = useRef(null);
+  const nicknameRef = useRef(null);
+
+  const cardDigits = onlyDigits(cardNumber);
+  const expiryDigits = onlyDigits(expiry);
+  const birthDigits = onlyDigits(birth);
+  const bizDigits = onlyDigits(bizNo);
+
+  const [step1Donelock, setStep1Donelock] = useState(false);
+  const [step2Donelock, setStep2Donelock] = useState(false);
+  const [step3Donelock, setStep3Donelock] = useState(false);
+
+  const step1Done = cardDigits.length === 16 && isValidLuhn(cardDigits);
+  const step2Done =
+    step1Done &&
+    isValidMMYY(expiryDigits) &&
+    isExpiryNotPast(expiryDigits) &&
+    onlyDigits(pw2).length === 2;
+  const step3Done = step2Done && isValidYYMMDD(birthDigits);
+
+  const valid = step3Done && (!isCorp || isValidBizNo(bizDigits));
+  useEffect(() => {
+    if (step3Done) {
+      if (!step3Donelock) setStep3Donelock(true);
+    }
+  }, [step3Done]);
+  useEffect(() => {
+    if (step1Done) {
+      if (!step1Donelock) setStep1Donelock(true);
+      setTimeout(() => expiryRef.current?.focus(), 120);
+    }
+  }, [step1Done]);
+  useEffect(() => {
+    if (
+      isValidMMYY(expiryDigits) &&
+      isExpiryNotPast(expiryDigits) &&
+      onlyDigits(pw2).length < 2
+    )
+      setTimeout(() => pw2Ref.current?.focus(), 120);
+  }, [expiryDigits]);
+  useEffect(() => {
+    if (onlyDigits(pw2).length === 2 && birthDigits.length < 6) {
+      if (!step2Donelock) setStep2Donelock(true);
+      setTimeout(() => birthRef.current?.focus(), 120);
+    }
+  }, [pw2, step2Done]);
+
+  const submit = () => {
+    if (!valid) return;
+    const payload = {
+      cardNumber: cardDigits,
+      isCorporate: isCorp,
+      expiryMMYY: expiryDigits,
+      password2: onlyDigits(pw2),
+      birthYYMMDD: birthDigits,
+      nickname: nickname.trim(),
+    };
+    console.log('카드 등록:', payload);
+    onClose?.();
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{flex: 1}}>
+        <ScrollView
+          contentContainerStyle={styles.form}
+          keyboardShouldPersistTaps="handled">
+          {/* Show newest steps at the top */}
+          {step3Donelock && (
+            <>
+              <Text style={styles.label}>카드 별칭 (선택)</Text>
+              <View style={styles.inputWrap}>
+                <TextInput
+                  style={[styles.input, isNickFocused && styles.inputFocused]}
+                  placeholder="주체크카드"
+                  value={nickname}
+                  onChangeText={setNickname}
+                  maxLength={20}
+                  ref={nicknameRef}
+                  onFocus={() => setIsNickFocused(true)}
+                  onBlur={() => setIsNickFocused(false)}
+                />
+                {isNickFocused && nickname.length > 0 && (
+                  <CancelText
+                    rightnum={10}
+                    topnum={12}
+                    paddingnum={4}
+                    handlecancel={() => setNickname('')}
+                    size={20}
+                  />
+                )}
+              </View>
+            </>
+          )}
+
+          {/* Business registration number when corporate card */}
+          {step3Donelock && isCorp && (
+            <>
+              <Text style={styles.label}>사업자등록번호</Text>
+              <View style={styles.inputWrap}>
+                <TextInput
+                  style={[styles.input, isBizFocused && styles.inputFocused]}
+                  placeholder="000-00-00000"
+                  value={formatBizNo(bizNo)}
+                  onChangeText={v => setBizNo(onlyDigits(v).slice(0, 10))}
+                  inputMode="numeric"
+                  keyboardType="number-pad"
+                  maxLength={12}
+                  onFocus={() => setIsBizFocused(true)}
+                  onBlur={() => setIsBizFocused(false)}
+                />
+                {isBizFocused && bizDigits.length > 0 && (
+                  <CancelText
+                    rightnum={10}
+                    topnum={12}
+                    paddingnum={4}
+                    handlecancel={() => setBizNo('')}
+                    size={20}
+                  />
+                )}
+              </View>
+              {bizDigits.length > 0 && !isValidBizNo(bizDigits) && (
+                <Text style={styles.error}>
+                  올바른 사업자등록번호를 입력해 주세요
+                </Text>
+              )}
+            </>
+          )}
+
+          {step2Donelock && (
+            <>
+              <Text style={styles.label}>생년월일 (YYMMDD)</Text>
+              <View style={styles.inputWrap}>
+                <TextInput
+                  style={[styles.input, isBirthFocused && styles.inputFocused]}
+                  placeholder="YYMMDD"
+                  value={birth}
+                  onChangeText={v => setBirth(onlyDigits(v).slice(0, 6))}
+                  inputMode="numeric"
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  ref={birthRef}
+                  onFocus={() => setIsBirthFocused(true)}
+                  onBlur={() => setIsBirthFocused(false)}
+                />
+                {isBirthFocused && birthDigits.length > 0 && (
+                  <CancelText
+                    rightnum={10}
+                    topnum={12}
+                    paddingnum={4}
+                    handlecancel={() => setBirth('')}
+                    size={20}
+                  />
+                )}
+              </View>
+              {birthDigits.length > 0 && !isValidYYMMDD(birthDigits) && (
+                <Text style={styles.error}>
+                  올바른 생년월일(YYMMDD)을 입력해 주세요
+                </Text>
+              )}
+            </>
+          )}
+
+          {step1Donelock && (
+            <View style={styles.row}>
+              <View style={[styles.col, {marginRight: 8}]}>
+                <Text style={styles.label}>유효기간</Text>
+                <View style={styles.inputWrap}>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      isExpiryFocused && styles.inputFocused,
+                    ]}
+                    placeholder="MM/YY"
+                    value={formatExpiry(expiry)}
+                    onChangeText={v => setExpiry(onlyDigits(v).slice(0, 4))}
+                    inputMode="numeric"
+                    keyboardType="number-pad"
+                    maxLength={5}
+                    ref={expiryRef}
+                    onFocus={() => setIsExpiryFocused(true)}
+                    onBlur={() => setIsExpiryFocused(false)}
+                    returnKeyType="next"
+                  />
+                  {isExpiryFocused && expiryDigits.length > 0 && (
+                    <CancelText
+                      rightnum={10}
+                      topnum={12}
+                      paddingnum={4}
+                      handlecancel={() => setExpiry('')}
+                      size={20}
+                    />
+                  )}
+                </View>
+                {expiryDigits.length > 0 && !isValidMMYY(expiryDigits) && (
+                  <Text style={styles.error}>MM/YY 형식으로 입력해 주세요</Text>
+                )}
+                {isValidMMYY(expiryDigits) &&
+                  !isExpiryNotPast(expiryDigits) && (
+                    <Text style={styles.error}>이미 지난 유효기간입니다</Text>
+                  )}
+              </View>
+              <View style={[styles.col, {marginLeft: 8}]}>
+                <Text style={styles.label}>비밀번호 앞 2자리</Text>
+                <View style={styles.inputWrap}>
+                  <TextInput
+                    style={[styles.input, isPw2Focused && styles.inputFocused]}
+                    placeholder="**"
+                    value={pw2}
+                    onChangeText={v => setPw2(onlyDigits(v).slice(0, 2))}
+                    secureTextEntry
+                    inputMode="numeric"
+                    keyboardType="number-pad"
+                    maxLength={2}
+                    ref={pw2Ref}
+                    onFocus={() => setIsPw2Focused(true)}
+                    onBlur={() => setIsPw2Focused(false)}
+                    returnKeyType="next"
+                  />
+                  {isPw2Focused && pw2.length > 0 && (
+                    <CancelText
+                      rightnum={10}
+                      topnum={12}
+                      paddingnum={4}
+                      handlecancel={() => setPw2('')}
+                      size={20}
+                    />
+                  )}
+                </View>
+                {pw2.length > 0 && pw2.length < 2 && (
+                  <Text style={styles.error}>앞 2자리만 입력해 주세요</Text>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Card number at the bottom so new fields appear above */}
+          <Text style={styles.label}>카드 번호</Text>
+          <View style={styles.inputWrap}>
+            <TextInput
+              style={[styles.input, isCardFocused && styles.inputFocused]}
+              placeholder="0000-0000-0000-0000"
+              value={formatCardNumber(cardNumber)}
+              onChangeText={v => setCardNumber(onlyDigits(v).slice(0, 16))}
+              inputMode="numeric"
+              keyboardType="number-pad"
+              maxLength={19}
+              ref={cardRef}
+              onFocus={() => setIsCardFocused(true)}
+              onBlur={() => setIsCardFocused(false)}
+              returnKeyType="next"
+            />
+            {isCardFocused && cardDigits.length > 0 && (
+              <CancelText
+                rightnum={10}
+                topnum={12}
+                paddingnum={4}
+                handlecancel={() => setCardNumber('')}
+                size={20}
+              />
+            )}
+          </View>
+          {cardDigits.length > 0 && cardDigits.length !== 16 && (
+            <Text style={styles.error}>카드 번호 16자리로 입력해 주세요</Text>
+          )}
+          {cardDigits.length === 16 && !isValidLuhn(cardDigits) && (
+            <Text style={styles.error}>유효하지 않은 카드 번호입니다</Text>
+          )}
+
+          {/* Corporate toggle under card number */}
+          <View style={[styles.corpRow]}>
+            <TouchableOpacity
+              style={styles.checkbox}
+              onPress={() => setIsCorp(s => !s)}>
+              <Ionicons
+                name={isCorp ? 'checkbox-outline' : 'square-outline'}
+                size={20}
+                color={isCorp ? '#16BBFF' : '#888'}
+              />
+              <Text style={styles.checkboxLabel}>법인카드</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      {valid && (
+        <View style={styles.bottomBar}>
+          <TouchableOpacity
+            onPress={submit}
+            disabled={!valid}
+            style={[styles.primaryBtn]}>
+            <Text style={[styles.primaryText]}>등록하기</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </SafeAreaView>
+  );
+};
+
+const CatchPayCardFlow = () => {
+  const navigation = useNavigation();
+  const [mode, setMode] = useState('list');
+
+  useLayoutEffect(() => {
+    if (!navigation?.setOptions) return;
+    if (mode === 'register') {
+      navigation.setOptions({
+        title: '카드 등록',
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => setMode('list')}
+            hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+            <Ionicons
+              name="arrow-back-outline"
+              size={23}
+              color="#333"
+              style={{paddingLeft: 12}}
+            />
+          </TouchableOpacity>
+        ),
+      });
+    } else {
+      navigation.setOptions({
+        title: '내 카드 관리',
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+            <Ionicons
+              name="close"
+              size={23}
+              color="#333"
+              style={{paddingLeft: 12}}
+            />
+          </TouchableOpacity>
+        ),
+      });
+    }
+  }, [mode, navigation]);
+
+  return mode === 'list' ? (
+    <CardListScreen onAddPress={() => setMode('register')} />
+  ) : (
+    <CardRegisterForm onClose={() => setMode('list')} />
+  );
+};
+
+export default CatchPayCardFlow;
+
+const styles = StyleSheet.create({
+  container: {flex: 1, backgroundColor: '#fff'},
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  headerTitle: {fontSize: 20, fontWeight: '800', color: '#111'},
+  countBadge: {
+    marginLeft: 8,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  countText: {fontSize: 14, color: '#475569', fontWeight: '700'},
+  emptyWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  emptyCard: {
+    width: 120,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: '#E2E8F0',
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#45C9FF',
+  },
+  emptySub: {marginTop: 6, fontSize: 14, color: '#6B7280', textAlign: 'center'},
+  cta: {
+    marginTop: 16,
+    backgroundColor: '#80D2F4',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  ctaText: {color: '#fff', fontFamily: 'Pretendard-Medium', fontSize: 16},
+  form: {padding: 20},
+  label: {
+    marginTop: 14,
+    marginBottom: 6,
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '600',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#111',
+  },
+  inputFocused: {borderWidth: 2, borderColor: '#111'},
+  inputWrap: {position: 'relative'},
+  row: {flexDirection: 'row'},
+  col: {flex: 1},
+  error: {marginTop: 6, fontSize: 12, color: '#DC2626'},
+  corpRow: {
+    marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  checkbox: {
+    flexDirection: 'row',
+    paddingLeft: 1,
+    hitSlop: 8,
+    alignItems: 'center',
+    gap: 3,
+  },
+  checkboxBox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#fff',
+    marginRight: 8,
+  },
+  checkboxLabel: {fontSize: 14, color: '#111'},
+  bottomBar: {
+    padding: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#EEE',
+    backgroundColor: '#fff',
+  },
+  primaryBtn: {
+    backgroundColor: '#80D2F4',
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    shadowColor: '#E8F7FF',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 4},
+    elevation: 2,
+  },
+  primaryText: {color: '#fff', fontSize: 17, fontFamily: 'Pretendard-Medium'},
+  stepRow: {flexDirection: 'row', alignItems: 'center', marginBottom: 8},
+  stepDot: {width: 10, height: 10, borderRadius: 5, backgroundColor: '#E5E7EB'},
+  stepDotOn: {backgroundColor: '#0EA5E9'},
+  stepBar: {
+    flex: 1,
+    height: 2,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 6,
+  },
+  stepBarOn: {backgroundColor: '#0EA5E9'},
+});
