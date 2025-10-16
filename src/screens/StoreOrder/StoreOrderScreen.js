@@ -387,9 +387,21 @@ const StoreOrderScreen = () => {
         price: parsePrice(item.price),
       }));
 
+    navigation.navigate('StorePaymentScreen', {
+      storeId,
+      storeName,
+      visitTime,
+      peopleCount,
+      requestNote,
+      totalPrice,
+      menus: orderedMenus,
+      alcohols: orderedAlcohols,
+    });
+
     if (__DEV__) {
       console.log('ORDER_PAYLOAD', {
         storeId,
+        storeName,
         visitTime,
         peopleCount,
         requestNote,
@@ -399,7 +411,7 @@ const StoreOrderScreen = () => {
       });
     }
 
-    showToast?.('주문 요청이 준비되었습니다. 연동을 진행해 주세요.', 'center');
+    // showToast?.('주문 요청이 준비되었습니다. 연동을 진행해 주세요.', 'center');
     setSubmitting(false);
   };
 
