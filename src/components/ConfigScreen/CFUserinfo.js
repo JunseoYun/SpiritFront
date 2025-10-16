@@ -39,7 +39,7 @@ const CFUserinfo = ({userdata, navigation}) => {
           </View>
         </Pressable>
       </View>
-      <View style={styles.bottomcontainer}>
+      <View style={styles.midlebtmcontainer}>
         <Pressable
           style={styles.row}
           onPress={() =>
@@ -51,6 +51,18 @@ const CFUserinfo = ({userdata, navigation}) => {
             })
           }>
           <Text style={styles.label}>휴대폰 번호 변경</Text>
+          <View style={styles.info}>
+            <View>
+              <FontAwesomeIcon name="angle-right" size={18} color="#999" />
+            </View>
+          </View>
+        </Pressable>
+      </View>
+      <View style={styles.bottomcontainer}>
+        <Pressable
+          style={styles.row}
+          onPress={() => navigation.navigate('MyCardScreen')}>
+          <Text style={styles.label}>내 카드 관리</Text>
           <View style={styles.info}>
             <View>
               <FontAwesomeIcon name="angle-right" size={18} color="#999" />
@@ -138,6 +150,13 @@ const styles = StyleSheet.create({
     borderWidth: 0.7,
     borderColor: '#E9E9E9',
     borderTopWidth: 0,
+    borderBottomWidth: 0,
+  },
+  midlebtmcontainer: {
+    marginHorizontal: 18,
+    borderWidth: 0.7,
+    borderColor: '#E9E9E9',
+    borderTopWidth: 0.7,
     borderBottomWidth: 0,
   },
   bottomcontainer: {

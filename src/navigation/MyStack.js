@@ -7,6 +7,7 @@ import Mynickchange from '../screens/BottomTab/My/Mynickchange';
 import MyScreen from '../screens/BottomTab/My/MyScreen';
 import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
 import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
+import MyCardScreen from '../screens/BottomTab/My/MyCardScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 const Stack = createStackNavigator();
 
@@ -106,6 +107,28 @@ export default function MyStack() {
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
           title: '회원탈퇴',
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="close"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="MyCardScreen"
+        component={MyCardScreen}
+        options={({navigation}) => ({
+          gestureDirection: 'vertical',
+          animation: 'slide_from_bottom',
+          title: '내 카드 관리',
           headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
