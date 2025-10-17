@@ -1,18 +1,17 @@
-import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useNavigation} from '@react-navigation/native';
-import CancelText from '../../../components/CancelText/CancelText';
+import CancelText from '../../../../components/CancelText/CancelText';
 
 // Utils
 const onlyDigits = v => (v || '').replace(/\D+/g, '');
@@ -69,7 +68,6 @@ const isValidYYMMDD = v => {
   const lastDay = new Date(year, mm, 0).getDate();
   return dd >= 1 && dd <= lastDay;
 };
-
 // Biz registration number utils (10 digits -> 3-2-5)
 const formatBizNo = v => {
   const d = onlyDigits(v).slice(0, 10);
@@ -87,31 +85,7 @@ const isValidBizNo = v => {
   return (10 - (sum % 10)) % 10 === Number(d[9]);
 };
 
-// Empty list UI
-const CardListScreen = ({onAddPress}) => (
-  <SafeAreaView style={styles.container}>
-    <View style={styles.headerRow}>
-      <Text style={styles.headerTitle}>등록된 카드</Text>
-      <View style={styles.countBadge}>
-        <Text style={styles.countText}>0</Text>
-      </View>
-    </View>
-
-    <View style={styles.emptyWrap}>
-      <View style={styles.emptyCard} />
-      <Text style={styles.emptyTitle}>자주 사용하는 카드</Text>
-      <Text style={styles.emptySub}>
-        카드를 등록하면 더 빠르게 결제할 수 있어요
-      </Text>
-      <TouchableOpacity style={styles.cta} onPress={onAddPress}>
-        <Text style={styles.ctaText}>카드 등록</Text>
-      </TouchableOpacity>
-    </View>
-  </SafeAreaView>
-);
-
-// Register form UI (progressive, new fields appear on top)
-const CardRegisterForm = ({onClose}) => {
+export default function CardRegisterScreen({mode, navigation}) {
   const [cardNumber, setCardNumber] = useState('');
   const [isCorp, setIsCorp] = useState(false);
   const [expiry, setExpiry] = useState('');
@@ -151,6 +125,13 @@ const CardRegisterForm = ({onClose}) => {
   const step3Done = step2Done && isValidYYMMDD(birthDigits);
 
   const valid = step3Done && (!isCorp || isValidBizNo(bizDigits));
+
+  useEffect(() => {
+    setTimeout(() => {
+      cardRef.current.focus();
+    }, 500);
+  }, []);
+
   useEffect(() => {
     if (step3Done) {
       if (!step3Donelock) setStep3Donelock(true);
@@ -188,7 +169,7 @@ const CardRegisterForm = ({onClose}) => {
       nickname: nickname.trim(),
     };
     console.log('카드 등록:', payload);
-    onClose?.();
+    navigation.goBack();
   };
 
   return (
@@ -206,7 +187,7 @@ const CardRegisterForm = ({onClose}) => {
               <View style={styles.inputWrap}>
                 <TextInput
                   style={[styles.input, isNickFocused && styles.inputFocused]}
-                  placeholder="주체크카드"
+                  placeholder="주체할 카드"
                   value={nickname}
                   onChangeText={setNickname}
                   maxLength={20}
@@ -255,7 +236,7 @@ const CardRegisterForm = ({onClose}) => {
               </View>
               {bizDigits.length > 0 && !isValidBizNo(bizDigits) && (
                 <Text style={styles.error}>
-                  올바른 사업자등록번호를 입력해 주세요
+                  올바른 사업자등록번호를 입력해주세요.
                 </Text>
               )}
             </>
@@ -289,7 +270,7 @@ const CardRegisterForm = ({onClose}) => {
               </View>
               {birthDigits.length > 0 && !isValidYYMMDD(birthDigits) && (
                 <Text style={styles.error}>
-                  올바른 생년월일(YYMMDD)을 입력해 주세요
+                  올바른 생년월일(YYMMDD)을 입력해주세요.
                 </Text>
               )}
             </>
@@ -327,11 +308,11 @@ const CardRegisterForm = ({onClose}) => {
                   )}
                 </View>
                 {expiryDigits.length > 0 && !isValidMMYY(expiryDigits) && (
-                  <Text style={styles.error}>MM/YY 형식으로 입력해 주세요</Text>
+                  <Text style={styles.error}>MM/YY 형식으로 입력해주세요.</Text>
                 )}
                 {isValidMMYY(expiryDigits) &&
                   !isExpiryNotPast(expiryDigits) && (
-                    <Text style={styles.error}>이미 지난 유효기간입니다</Text>
+                    <Text style={styles.error}>이미 지난 유효기간입니다.</Text>
                   )}
               </View>
               <View style={[styles.col, {marginLeft: 8}]}>
@@ -362,7 +343,7 @@ const CardRegisterForm = ({onClose}) => {
                   )}
                 </View>
                 {pw2.length > 0 && pw2.length < 2 && (
-                  <Text style={styles.error}>앞 2자리만 입력해 주세요</Text>
+                  <Text style={styles.error}>앞 2자리를 입력해주세요.</Text>
                 )}
               </View>
             </View>
@@ -395,10 +376,10 @@ const CardRegisterForm = ({onClose}) => {
             )}
           </View>
           {cardDigits.length > 0 && cardDigits.length !== 16 && (
-            <Text style={styles.error}>카드 번호 16자리로 입력해 주세요</Text>
+            <Text style={styles.error}>카드 번호 16자리를 입력해주세요.</Text>
           )}
           {cardDigits.length === 16 && !isValidLuhn(cardDigits) && (
-            <Text style={styles.error}>유효하지 않은 카드 번호입니다</Text>
+            <Text style={styles.error}>유효하지 않은 카드 번호입니다.</Text>
           )}
 
           {/* Corporate toggle under card number */}
@@ -421,109 +402,17 @@ const CardRegisterForm = ({onClose}) => {
           <TouchableOpacity
             onPress={submit}
             disabled={!valid}
-            style={[styles.primaryBtn]}>
-            <Text style={[styles.primaryText]}>등록하기</Text>
+            style={styles.primaryBtn}>
+            <Text style={styles.primaryText}>등록하기</Text>
           </TouchableOpacity>
         </View>
       )}
     </SafeAreaView>
   );
-};
-
-const CatchPayCardFlow = () => {
-  const navigation = useNavigation();
-  const [mode, setMode] = useState('list');
-
-  useLayoutEffect(() => {
-    if (!navigation?.setOptions) return;
-    if (mode === 'register') {
-      navigation.setOptions({
-        title: '카드 등록',
-        headerLeft: () => (
-          <TouchableOpacity
-            onPress={() => setMode('list')}
-            hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-            <Ionicons
-              name="arrow-back-outline"
-              size={23}
-              color="#333"
-              style={{paddingLeft: 12}}
-            />
-          </TouchableOpacity>
-        ),
-      });
-    } else {
-      navigation.setOptions({
-        title: '내 카드 관리',
-        headerLeft: () => (
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-            <Ionicons
-              name="close"
-              size={23}
-              color="#333"
-              style={{paddingLeft: 12}}
-            />
-          </TouchableOpacity>
-        ),
-      });
-    }
-  }, [mode, navigation]);
-
-  return mode === 'list' ? (
-    <CardListScreen onAddPress={() => setMode('register')} />
-  ) : (
-    <CardRegisterForm onClose={() => setMode('list')} />
-  );
-};
-
-export default CatchPayCardFlow;
+}
 
 const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: '#fff'},
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-  },
-  headerTitle: {fontSize: 20, fontWeight: '800', color: '#111'},
-  countBadge: {
-    marginLeft: 8,
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  countText: {fontSize: 14, color: '#475569', fontWeight: '700'},
-  emptyWrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  emptyCard: {
-    width: 120,
-    height: 80,
-    borderRadius: 12,
-    backgroundColor: '#E2E8F0',
-    marginBottom: 12,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#45C9FF',
-  },
-  emptySub: {marginTop: 6, fontSize: 14, color: '#6B7280', textAlign: 'center'},
-  cta: {
-    marginTop: 16,
-    backgroundColor: '#80D2F4',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 10,
-  },
-  ctaText: {color: '#fff', fontFamily: 'Pretendard-Medium', fontSize: 16},
   form: {padding: 20},
   label: {
     marginTop: 14,
@@ -554,18 +443,8 @@ const styles = StyleSheet.create({
   checkbox: {
     flexDirection: 'row',
     paddingLeft: 1,
-    hitSlop: 8,
     alignItems: 'center',
     gap: 3,
-  },
-  checkboxBox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#fff',
-    marginRight: 8,
   },
   checkboxLabel: {fontSize: 14, color: '#111'},
   bottomBar: {
@@ -579,21 +458,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
-    shadowColor: '#E8F7FF',
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    shadowOffset: {width: 0, height: 4},
-    elevation: 2,
   },
-  primaryText: {color: '#fff', fontSize: 17, fontFamily: 'Pretendard-Medium'},
-  stepRow: {flexDirection: 'row', alignItems: 'center', marginBottom: 8},
-  stepDot: {width: 10, height: 10, borderRadius: 5, backgroundColor: '#E5E7EB'},
-  stepDotOn: {backgroundColor: '#0EA5E9'},
-  stepBar: {
-    flex: 1,
-    height: 2,
-    backgroundColor: '#E5E7EB',
-    marginHorizontal: 6,
-  },
-  stepBarOn: {backgroundColor: '#0EA5E9'},
+  primaryText: {color: '#fff', fontSize: 17},
 });
