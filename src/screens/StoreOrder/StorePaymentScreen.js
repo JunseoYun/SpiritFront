@@ -22,6 +22,7 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
+import StorePaymentModal from '../../components/StorePaymentScreen/StorePaymentModal';
 
 // ----- utils -----
 const formatCurrency = n => (Number(n) || 0).toLocaleString('ko-KR');
@@ -76,6 +77,7 @@ const StorePaymentScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const insets = useSafeAreaInsets();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const {
     storeId,
@@ -118,6 +120,22 @@ const StorePaymentScreen = () => {
       0,
     );
   }, [cartItems]);
+
+  // 더미 카드 목록 (확인용)
+  const dummyCards = useMemo(
+    () => [
+      {id: 'card1', label: 'KB체크카드', brand: 'KB', last4: '1234'},
+      {id: 'card2', label: '우리카드', brand: 'WOORI', last4: '5678'},
+      {
+        id: 'card3',
+        label: '카카오뱅크',
+        brand: 'KAKAOBANK',
+        last4: '9012',
+        disabled: true,
+      },
+    ],
+    [],
+  );
 
   // 인원수 1명 초과면 1인 금액 표시
   const perPerson = useMemo(() => {
@@ -257,7 +275,16 @@ const StorePaymentScreen = () => {
       </ScrollView>
 
       {/* 하단 결제 영역 */}
-      <View style={[styles.footerWrap, {paddingBottom: insets.bottom + 10}]}>
+      <View
+        style={[
+          styles.footerWrap,
+          {
+            paddingBottom:
+              Platform.OS === 'android'
+                ? insets.bottom + 20
+                : insets.bottom + 10,
+          },
+        ]}>
         <View style={styles.footerTermsWrap}>
           <Text style={styles.footerTerms}>
             결제 진행 시 이용약관 및 개인정보 처리방침에 동의한 것으로
@@ -270,7 +297,7 @@ const StorePaymentScreen = () => {
             cartItems.length === 0 && styles.payBtnDisabled,
           ]}
           disabled={cartItems.length === 0}
-          onPress={handlePay}
+          onPress={() => setShowPaymentModal(true)}
           activeOpacity={0.9}>
           <Text style={styles.payBtnText}>
             {cartItems.length === 0
@@ -284,6 +311,17 @@ const StorePaymentScreen = () => {
           ) : null} */}
         </TouchableOpacity>
       </View>
+      <StorePaymentModal
+        visible={showPaymentModal}
+        amount={totalPrice}
+        cards={dummyCards}
+        onClose={() => setShowPaymentModal(false)}
+        onConfirm={() => setShowPaymentModal(false)}
+        onAddCard={() => {
+          setShowPaymentModal(false);
+          navigation.navigate('MyStack', {screen: 'CardRegisterScreen'});
+        }}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -505,9 +543,9 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   payBtn: {
-    backgroundColor: '#111827',
-    borderRadius: 12,
-    paddingVertical: 14,
+    height: 52,
+    borderRadius: 10,
+    backgroundColor: '#45C9FF',
     alignItems: 'center',
     justifyContent: 'center',
   },
