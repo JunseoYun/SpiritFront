@@ -214,7 +214,7 @@ const StoreReviewScreen = ({navigation}) => {
           compressImageMaxWidth: 2160,
           compressImageMaxHeight: 2160,
           ...IMAGE_CROPPER_TEXTS,
-          cropperActiveWidgetColor: '#45C9FF',
+          cropperActiveWidgetColor: '#3CBBFF',
           cropperStatusBarLight: true,
           cropperToolbarColor: '#ffffff',
           cropperToolbarWidgetColor: '#333333',
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     borderRadius: 10,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
   addButtonText: {
     color: '#fff',

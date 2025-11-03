@@ -117,7 +117,7 @@ export default function StorePaymentModal({
             <Ionicons
               name={method === 'card' ? 'radio-button-on' : 'radio-button-off'}
               size={20}
-              color={method === 'card' ? '#45C9FF' : '#94A3B8'}
+              color={method === 'card' ? '#3CBBFF' : '#94A3B8'}
             />
             <Text style={styles.methodText}>신용/체크카드</Text>
           </TouchableOpacity>
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     backgroundColor: '#f5f5f5',
   },
-  applyBtn: {backgroundColor: '#45C9FF', flex: 2},
+  applyBtn: {backgroundColor: '#3CBBFF', flex: 2},
   actionText: {fontSize: 16},
   cancelText: {color: '#666', fontFamily: 'Pretendard-Medium', fontSize: 14},
   applyText: {color: '#FFFFFF', fontFamily: 'Pretendard-SemiBold'},

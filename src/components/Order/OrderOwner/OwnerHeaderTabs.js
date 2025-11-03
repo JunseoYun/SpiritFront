@@ -52,9 +52,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     marginRight: 10,
   },
-  tabActive: {backgroundColor: '#E8F7FF', borderColor: '#45C9FF'},
+  tabActive: {backgroundColor: '#E8F7FF', borderColor: '#3CBBFF'},
   tabText: {fontFamily: 'Pretendard-Medium', color: '#6B7280', fontSize: 13},
-  tabTextActive: {color: '#45C9FF'},
+  tabTextActive: {color: '#3CBBFF'},
 });
 
 export default OwnerHeaderTabs;

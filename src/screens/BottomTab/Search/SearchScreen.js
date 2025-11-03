@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   openButton: {
     marginTop: 40,
     marginHorizontal: 20,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',

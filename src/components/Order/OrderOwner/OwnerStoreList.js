@@ -32,7 +32,7 @@ const OwnerStoreList = ({
             <Ionicons
               name="business-outline"
               size={14}
-              color={selected ? '#45C9FF' : '#6B7280'}
+              color={selected ? '#3CBBFF' : '#6B7280'}
               style={{marginRight: 6}}
             />
             <Text
@@ -68,13 +68,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
     backgroundColor: '#fff',
   },
-  storeChipActive: {backgroundColor: '#E8F7FF', borderColor: '#45C9FF'},
+  storeChipActive: {backgroundColor: '#E8F7FF', borderColor: '#3CBBFF'},
   storeChipText: {
     fontFamily: 'Pretendard-Medium',
     color: '#6B7280',
     fontSize: 13,
   },
-  storeChipTextActive: {color: '#45C9FF', fontFamily: 'Pretendard-SemiBold'},
+  storeChipTextActive: {color: '#3CBBFF', fontFamily: 'Pretendard-SemiBold'},
 });
 
 export default OwnerStoreList;

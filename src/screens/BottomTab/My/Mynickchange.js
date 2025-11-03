@@ -188,7 +188,7 @@ const Mynickchange = () => {
                   onBlur={() => setFocused(false)}
                 />
                 {nicknameCheck && !nicknameError && !nicknamelength && (
-                  <Entypo name="check" size={25} color="#16BBFF" />
+                  <Entypo name="check" size={25} color="#3CBBFF" />
                 )}
                 {newnickname.length > 0 &&
                   focused &&
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   },
   completebtn: {
     width: '90%',
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     borderColor: '#FF0000',
   },
   checkInputView: {
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   errorText: {
     color: '#FF0000',
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     marginTop: 7,
     fontSize: 14,
     fontFamily: 'Pretendard-Medium',
-    color: '#45C9FF',
+    color: '#3CBBFF',
     alignSelf: 'flex-end',
   },
   lengthview: {

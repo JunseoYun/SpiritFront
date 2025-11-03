@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   inputFocused: {
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   errorFocused: {
     borderColor: '#FF4816',
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     flex: 2,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',

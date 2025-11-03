@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
   emptySub: {marginTop: 6, fontSize: 14, color: '#6B7280', textAlign: 'center'},
   cta: {

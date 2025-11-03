@@ -16,7 +16,7 @@ const AlcoholInput = ({
       <TextInput
         style={[
           isMultiline ? styles.inputMultiline : styles.input,
-          {borderBottomColor: isFocused ? '#16BBFF' : '#F2F2F2'},
+          {borderBottomColor: isFocused ? '#3CBBFF' : '#F2F2F2'},
         ]}
         value={value}
         onChangeText={onChangeText}

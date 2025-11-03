@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   focusedInput: {
-    borderBottomColor: '#16BBFF',
+    borderBottomColor: '#3CBBFF',
     borderBottomWidth: 2,
   },
   errorText: {

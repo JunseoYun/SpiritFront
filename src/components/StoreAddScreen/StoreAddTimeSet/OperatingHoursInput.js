@@ -25,7 +25,7 @@ const OperatingHoursInput = ({
         <Text
           style={[
             styles.timeText,
-            isOpenTime && {color: '#45C9FF'},
+            isOpenTime && {color: '#3CBBFF'},
             isOpenTime && wrongBreak && {color: '#FF4816'},
             isOpenTime && isSameOperating && {color: '#FF4816'},
           ]}>
@@ -60,7 +60,7 @@ const OperatingHoursInput = ({
         <Text
           style={[
             styles.timeText,
-            isCloseTime && {color: '#45C9FF'},
+            isCloseTime && {color: '#3CBBFF'},
             isCloseTime && wrongBreak && {color: '#FF4816'},
             isCloseTime && isSameOperating && {color: '#FF4816'},
           ]}>
@@ -96,10 +96,10 @@ const styles = StyleSheet.create({
   },
   nextText: {
     fontSize: 12,
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     padding: 3,
     marginRight: 5,
     borderRadius: 3,

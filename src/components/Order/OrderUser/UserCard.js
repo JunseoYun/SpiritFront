@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   primaryBtnText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 13,
   },

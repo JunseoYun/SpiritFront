@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
   },
   replyButton: {
     alignSelf: 'flex-end',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
@@ -559,11 +559,11 @@ const styles = StyleSheet.create({
   actionBtnText: {
     fontSize: 13,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
 
   editBtn: {
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     backgroundColor: '#E9F7FF',
   },
 
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
 
   replyEditText: {
     fontSize: 13,
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
   },
   editBox: {

@@ -82,7 +82,7 @@ const CategoryListTabbar = ({route}) => {
           swipeEnabled: true,
           unmountOnBlur: false,
           tabBarActiveTintColor: '#80D2F4',
-          tabBarIndicatorStyle: {backgroundColor: '#45C9FF'},
+          tabBarIndicatorStyle: {backgroundColor: '#3CBBFF'},
           tabBarInactiveTintColor: '#CFCFCF',
           tabBarLabelStyle: {
             fontFamily: 'Pretendard-Bold',

@@ -35,7 +35,7 @@ const DraggableImageItem = ({
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
-  const DISPLAY_MAX_HEIGHT = 320; // ?�래�??�의�??�한 최�? 미리보기 ?�이
+  const DISPLAY_MAX_HEIGHT = 320; // ?�래�??�의�??�한 최�? 미리보기 ?�이
   const [imageHeight, setImageHeight] = useState(DISPLAY_MAX_HEIGHT);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ const DraggableImageItem = ({
       (w, h) => {
         const ratio = h / w;
         const naturalHeight = MAX_WIDTH * ratio;
-        // ?�무 �??��?지??미리보기?�서 ?�이�??�한?�여 ?�래�??�이??개선
+        // ?�무 �??��?지??미리보기?�서 ?�이�??�한?�여 ?�래�??�이??개선
         setImageHeight(Math.min(naturalHeight, DISPLAY_MAX_HEIGHT));
       },
       error => {
@@ -99,7 +99,7 @@ const DraggableImageItem = ({
         onLongPress={undefined}
         style={styles.imageWrapper}>
         <FastImage
-          // ?�이�??�한?�으므�?채우?�록 cover ?�용 (?�로�?�??��?지?????�단 ?��?가 ?�릴 ???�음)
+          // ?�이�??�한?�으므�?채우?�록 cover ?�용 (?�로�?�??��?지?????�단 ?��?가 ?�릴 ???�음)
           resizeMode={FastImage.resizeMode.cover}
           source={{uri: item.isNew ? item.path : item.url}}
           style={[
@@ -139,7 +139,7 @@ const DraggableImageItem = ({
                   selectedForDelete.includes(
                     item.isNew ? item.localId : item.id,
                   )
-                    ? '#45C9FF'
+                    ? '#3CBBFF'
                     : '#aaa'
                 }
               />
@@ -155,17 +155,17 @@ const DraggableImageItem = ({
 
         <View style={styles.buttonGroup}>
           {checkDelete ? (
-            // ??�� 모드?????�택??boardType 버튼�?보여�?
+            // ??�� 모드?????�택??boardType 버튼�?보여�?
             <Pressable
               style={[styles.menuTypeButton, {backgroundColor: '#E9F5FB'}]}
-              disabled // ??�� 모드?�선 비활?�화
+              disabled // ??�� 모드?�선 비활?�화
             >
-              <Text style={[styles.menuTypeText, {color: '#16BBFF'}]}>
+              <Text style={[styles.menuTypeText, {color: '#3CBBFF'}]}>
                 {item.boardType === 'MENU' ? '메뉴' : '주류'}
               </Text>
             </Pressable>
           ) : (
-            // ?�소??????보여�?
+            // ?�소??????보여�?
             <>
               <Pressable
                 style={[
@@ -199,7 +199,6 @@ const DraggableImageItem = ({
             </>
           )}
         </View>
-
       </Pressable>
 
       {!checkDelete && (
@@ -256,7 +255,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     left: 8,
-    gap: 8, // RN 0.71 ?�상�???
+    gap: 8, // RN 0.71 ?�상�???
   },
 
   menuTypeButton: {
@@ -277,7 +276,7 @@ const styles = StyleSheet.create({
   },
 
   selectedText: {
-    color: '#16BBFF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
   },
 
@@ -292,6 +291,3 @@ const styles = StyleSheet.create({
 });
 
 export default DraggableImageItem;
-
-
-

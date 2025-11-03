@@ -563,7 +563,7 @@ const StoreOrderScreen = () => {
       <View key="menu-section-header" style={styles.sectionHeader}>
         {loadingMenus && (
           <View style={styles.loadingGroup}>
-            <ActivityIndicator size="small" color="#45C9FF" />
+            <ActivityIndicator size="small" color="#3CBBFF" />
             <Text style={styles.loadingText}>메뉴 갱신 중</Text>
           </View>
         )}
@@ -584,7 +584,7 @@ const StoreOrderScreen = () => {
       <View key="alcohol-section-header" style={styles.sectionHeader}>
         {loadingAlcohols && (
           <View style={styles.loadingGroup}>
-            <ActivityIndicator size="small" color="#45C9FF" />
+            <ActivityIndicator size="small" color="#3CBBFF" />
             <Text style={styles.loadingText}>주류 갱신 중</Text>
           </View>
         )}
@@ -773,7 +773,7 @@ const styles = StyleSheet.create({
   },
   alcoholCategoryButtonActive: {
     backgroundColor: '#E8F7FF',
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   alcoholCategoryText: {
     fontSize: 12,
@@ -781,7 +781,7 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
   alcoholCategoryTextActive: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
   sectionHeader: {
     flexDirection: 'row',

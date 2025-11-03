@@ -193,7 +193,7 @@ const ManagerStoreInfoScreen = () => {
               <Ionicons
                 name={tab.icon}
                 size={22}
-                color={focused ? '#45C9FF' : '#999'}
+                color={focused ? '#3CBBFF' : '#999'}
                 style={{marginBottom: 4}}
               />
               <Text
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   tabLabelFocused: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
   },
   dropdown: {

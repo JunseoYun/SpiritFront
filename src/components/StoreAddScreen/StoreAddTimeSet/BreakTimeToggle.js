@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
     marginBottom: 100,
   },
   addBreakText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontSize: 16,
     fontFamily: 'Pretendard-Medium',
   },

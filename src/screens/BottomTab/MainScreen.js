@@ -259,7 +259,7 @@ const MainScreen = ({navigation}) => {
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'android') {
-        StatusBar.setBackgroundColor(showTopView2 ? 'white' : '#45C9FF');
+        StatusBar.setBackgroundColor(showTopView2 ? 'white' : '#3CBBFF');
       }
 
       return () => {
@@ -543,7 +543,7 @@ const MainScreen = ({navigation}) => {
           {
             paddingTop:
               Platform.OS === 'android' ? insets.top + 10 : insets.top,
-            backgroundColor: showTopView2 ? '#F5F5F5' : '#45C9FF', // 🎯 여기 조건부 배경색 추가
+            backgroundColor: showTopView2 ? '#F5F5F5' : '#3CBBFF', // 🎯 여기 조건부 배경색 추가
           },
         ]}>
         <MainHeader />

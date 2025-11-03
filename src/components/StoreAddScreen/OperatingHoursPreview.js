@@ -33,7 +33,7 @@ const OperatingHoursPreview = ({
           {index ? '영업시간*' : '영업시간'}
         </Text>
         <Pressable onPress={storeTimeHandle}>
-          <Text style={[styles.storeinputtext, {color: '#16BBFF'}]}>편집</Text>
+          <Text style={[styles.storeinputtext, {color: '#3CBBFF'}]}>편집</Text>
         </Pressable>
       </View>
 
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   editButton: {
     fontSize: 15,
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Medium',
   },
   emptyContainer: {
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5E5',
   },
   dayChip: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 14,
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   allDayText: {
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#45C9FF',
+    color: '#3CBBFF',
     textAlign: 'center',
     paddingVertical: 10,
   },

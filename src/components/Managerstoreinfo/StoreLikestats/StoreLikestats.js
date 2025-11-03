@@ -140,7 +140,7 @@ const StoreLikestats = ({storeId}) => {
                     <View
                       style={[
                         styles.genderPoint,
-                        isSelected && {backgroundColor: '#45C9FF'},
+                        isSelected && {backgroundColor: '#3CBBFF'},
                       ]}
                     />
                     <Text
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   chipSelected: {
-    borderColor: '#16BBFF',
+    borderColor: '#3CBBFF',
   },
   chipText: {
     fontFamily: 'Pretendard-Medium',
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   chipTextSelected: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Bold',
   },
   genderView: {

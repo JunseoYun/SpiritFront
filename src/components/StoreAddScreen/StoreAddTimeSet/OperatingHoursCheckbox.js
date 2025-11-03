@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 4,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     marginRight: 7,
     alignItems: 'center',
     justifyContent: 'center',
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     marginRight: 7,
   },
   checkboxLabel24: {

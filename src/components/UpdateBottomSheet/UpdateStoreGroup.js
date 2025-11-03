@@ -77,12 +77,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F2',
     borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     margin: 5,
     alignItems: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
   checkboxText: {
     color: '#333',

@@ -83,10 +83,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
   checkboxText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontSize: 18,
     fontFamily: 'Pretendard-Medium',
     padding: 3,

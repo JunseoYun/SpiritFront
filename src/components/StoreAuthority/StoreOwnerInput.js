@@ -197,16 +197,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginHorizontal: 5,
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     borderRadius: 4,
     alignItems: 'center',
   },
   selectedToggleButton: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
   toggleButtonText: {
     fontSize: 14,
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
   selectedToggleButtonText: {
     color: '#fff',
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   addButton: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 7,

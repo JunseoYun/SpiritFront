@@ -143,7 +143,7 @@ const StoreResultItem = ({store, navigation, index}) => {
             style={styles.applyButton}>
             <Text style={styles.applyButtonText}>사장님 인증하기</Text>
             {/* <View style={{marginRight: 18}}>
-              <Feather name="chevron-right" size={23} color="#45C9FF" />
+              <Feather name="chevron-right" size={23} color="#3CBBFF" />
             </View> */}
           </Pressable>
         ))}
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     marginLeft: 3,
   },
   applyButtonText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontSize: 16, // ✅ 글씨 크게
     fontFamily: 'Pretendard-Bold',
     textAlign: 'center',

@@ -48,7 +48,7 @@ const MyScreen = ({navigation}) => {
                 width: 5,
                 height: 5,
                 borderRadius: 5,
-                backgroundColor: '#45C9FF',
+                backgroundColor: '#3CBBFF',
                 zIndex: 20,
               }}
             />

@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     paddingRight: 25,
   },
   focusedInput: {
-    borderBottomColor: '#16BBFF', // 활성화 상태 색상
+    borderBottomColor: '#3CBBFF', // 활성화 상태 색상
     borderBottomWidth: 2,
   },
   errorText: {

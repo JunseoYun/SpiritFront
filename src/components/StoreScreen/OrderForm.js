@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   },
   timeChipSelected: {
     backgroundColor: '#E9F5FB',
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   timeChipText: {
     fontSize: 13,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   timeChipTextSelected: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
   },
   emptyText: {
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   },
   peopleChipSelected: {
     backgroundColor: '#E9F5FB',
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   peopleChipText: {
     fontSize: 13,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   peopleChipTextSelected: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
   },
   peopleHint: {
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
 
   footer: {
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     flex: 2,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',

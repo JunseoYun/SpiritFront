@@ -78,7 +78,7 @@ const WithdrawScreen = () => {
           <Ionicons
             name={isChecked ? 'checkbox-outline' : 'square-outline'}
             size={24}
-            color={isChecked ? '#16BBFF' : '#888'}
+            color={isChecked ? '#3CBBFF' : '#888'}
           />
 
           <Text style={styles.checkboxText}>
@@ -149,11 +149,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#16BBFF',
+    borderColor: '#3CBBFF',
   },
   withdrawText: {
     fontSize: 18,
-    color: '#16BBFF',
+    color: '#3CBBFF',
     fontWeight: '6',
   },
   disabledButton: {

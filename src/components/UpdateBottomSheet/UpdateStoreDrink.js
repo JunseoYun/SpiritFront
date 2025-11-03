@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     marginRight: 18,
     fontSize: 18,
     fontWeight: '500',
-    color: '#16BBFF',
+    color: '#3CBBFF',
   },
   footer: {
     position: 'absolute',

@@ -21,7 +21,7 @@ const AgeDistributionTable = ({ageDistributionData, option}) => {
         {ageDistributionData.map((item, index) => {
           const isMax = item.population === maxPopulation;
           const percentStr = `${item.population.toFixed(1)}%`;
-          const barColor = isMax ? '#45C9FF' : '#ABE3FA';
+          const barColor = isMax ? '#3CBBFF' : '#ABE3FA';
           const widthPercent = (item.population / maxPopulation) * 100;
 
           return (

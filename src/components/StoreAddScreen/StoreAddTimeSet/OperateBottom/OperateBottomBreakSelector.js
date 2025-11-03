@@ -26,7 +26,7 @@ const OperateBottomBreakSelector = ({
           <Text
             style={[
               styles.timeText,
-              isStartTime && {color: '#45C9FF'},
+              isStartTime && {color: '#3CBBFF'},
               breakError && {color: '#FF4816'},
             ]}>
             {`${breakStartHour}:${breakStartMinute}`}
@@ -45,7 +45,7 @@ const OperateBottomBreakSelector = ({
             <Text
               style={[
                 styles.nextText,
-                isEndTime && {color: '#45C9FF'},
+                isEndTime && {color: '#3CBBFF'},
                 breakError && {color: '#FF4816', borderColor: '#FF4816'},
               ]}>
               다음날
@@ -54,7 +54,7 @@ const OperateBottomBreakSelector = ({
           <Text
             style={[
               styles.timeText,
-              isEndTime && {color: '#45C9FF'},
+              isEndTime && {color: '#3CBBFF'},
               breakError && {color: '#FF4816'},
             ]}>
             {breakEndHour >= 24
@@ -97,10 +97,10 @@ const styles = StyleSheet.create({
   },
   nextText: {
     fontSize: 12,
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     padding: 3,
     marginRight: 5,
     borderRadius: 3,

@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   focusedInput: {
-    borderBottomColor: '#16BBFF',
+    borderBottomColor: '#3CBBFF',
     borderBottomWidth: 2,
   },
   errorText: {

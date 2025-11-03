@@ -265,7 +265,7 @@ const ReviewEditScreen = ({route, navigation}) => {
           <TextInput
             style={[
               styles.input,
-              {borderBottomColor: isFocused ? '#16BBFF' : '#F2F2F2'},
+              {borderBottomColor: isFocused ? '#3CBBFF' : '#F2F2F2'},
             ]}
             value={reviewContent}
             onChangeText={text => {
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   input: {
-    borderBottomColor: '#16BBFF',
+    borderBottomColor: '#3CBBFF',
     borderBottomWidth: 1,
     fontSize: 18,
     fontWeight: '500',
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   completeButton: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',

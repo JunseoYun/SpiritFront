@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   },
   tabBtnActive: {
     backgroundColor: '#E8F7FF',
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   tabText: {
     fontSize: 12,
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   tabTextActive: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
 
   // Store card
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
   payBtn: {
     height: 52,
     borderRadius: 10,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     alignItems: 'center',
     justifyContent: 'center',
   },

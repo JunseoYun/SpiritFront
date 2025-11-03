@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   menutext: {
     fontSize: normalizeFont(14, 1.5),
     fontFamily: 'Pretendard-SemiBold',
-    color: '#16BBFF',
+    color: '#3CBBFF',
   },
 });
 
