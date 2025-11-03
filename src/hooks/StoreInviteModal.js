@@ -216,7 +216,7 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
 
 export default StoreInviteModal;
 
-const BRAND = '#45C9FF';
+const BRAND = '#3CBBFF';
 
 const styles = StyleSheet.create({
   overlay: {

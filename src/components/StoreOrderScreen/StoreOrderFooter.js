@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 20,
     fontFamily: 'Pretendard-Bold',
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
   metaChipSubValue: {
     fontSize: 13,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   submitButton: {
     height: 52,
     borderRadius: 10,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 13,
     fontFamily: 'Pretendard-Bold',
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
   badgeTextDim: {
     color: '#6AB6CF',

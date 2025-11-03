@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     marginRight: 18,
     fontSize: normalizeFont(18, 1.5),
     fontFamily: 'Pretendard-SemiBold',
-    color: '#16BBFF',
+    color: '#3CBBFF',
   },
   sectionTitle: {
     fontSize: 16,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   certificateButton: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 7,
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 10,
   },
   storeAddText: {

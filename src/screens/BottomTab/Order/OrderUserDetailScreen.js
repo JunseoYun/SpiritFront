@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  secondaryBtnText: {color: '#45C9FF', fontFamily: 'Pretendard-SemiBold'},
+  secondaryBtnText: {color: '#3CBBFF', fontFamily: 'Pretendard-SemiBold'},
   centerBox: {
     flexDirection: 'row',
     alignItems: 'center',

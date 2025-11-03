@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   certificateButton: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 7,

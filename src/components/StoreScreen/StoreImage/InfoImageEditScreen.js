@@ -284,7 +284,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
           compressImageMaxWidth: 2160,
           compressImageMaxHeight: 2160,
           ...IMAGE_CROPPER_TEXTS,
-          cropperActiveWidgetColor: '#45C9FF',
+          cropperActiveWidgetColor: '#3CBBFF',
           cropperStatusBarLight: true,
           cropperToolbarColor: '#ffffff',
           cropperToolbarWidgetColor: '#333333',
@@ -1090,7 +1090,7 @@ const styles = StyleSheet.create({
   },
 
   selectedButton: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
 
   selectedText: {
@@ -1225,7 +1225,7 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     flex: 2,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',

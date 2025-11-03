@@ -552,13 +552,13 @@ const styles = StyleSheet.create({
     borderRadius: 7,
   },
   save: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
   cancel: {
     backgroundColor: '#f5f5f5',
   },
   edit: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
   delete: {
     backgroundColor: '#f5f5f5',
@@ -598,8 +598,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkBoxChecked: {
-    backgroundColor: '#16BBFF',
-    borderColor: '#16BBFF',
+    backgroundColor: '#3CBBFF',
+    borderColor: '#3CBBFF',
   },
   checkLabel: {
     fontSize: 14,
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   checkLabelActive: {
-    color: '#16BBFF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Medium',
   },
   errorText: {

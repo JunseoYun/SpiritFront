@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   dayChip: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   allDayText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#16BBFF',
+    color: '#3CBBFF',
     textAlign: 'center',
     paddingVertical: 10,
   },

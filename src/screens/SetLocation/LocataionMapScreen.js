@@ -184,7 +184,7 @@ const LocataionMapScreen = ({navigation}) => {
       <TouchableOpacity
         style={[styles.buttonRoute, {bottom: 110 + bottom}]}
         onPress={updateNewLocation}>
-        <Feather name="crosshair" size={30} color="#16BBFF" />
+        <Feather name="crosshair" size={30} color="#3CBBFF" />
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.locationbtn, {bottom: 40 + bottom}]}
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '90%',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 7,
   },
   locationbtntext: {

@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
   },
   button: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 7,
     paddingVertical: 6,
     paddingHorizontal: 16,

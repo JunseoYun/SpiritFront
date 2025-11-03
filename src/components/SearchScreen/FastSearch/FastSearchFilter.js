@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   },
   tabButtonActive: {
     borderBottomWidth: 3,
-    borderBottomColor: '#45C9FF',
+    borderBottomColor: '#3CBBFF',
   },
   tabText: {
     fontSize: 14,
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   tabTextActive: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Bold',
   },
   scrollArea: {
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   },
   filterItemSelected: {
     backgroundColor: '#E9F5FB',
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   filterItemText: {
     fontSize: 13,
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
   },
   filterItemTextSelected: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
   },
   footer: {
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     flex: 2,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
   },
   timeTabActive: {
     backgroundColor: '#fff',
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   timeTabText: {
     color: '#444',
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   timeTabTextActive: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
   },
   timeScroll: {

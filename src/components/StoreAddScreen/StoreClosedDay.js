@@ -1,31 +1,30 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 
 // 표시될 값과 실제 저장될 값을 객체로 정의
 const days = [
-  { label: '월', value: 'MONDAY' },
-  { label: '화', value: 'TUESDAY' },
-  { label: '수', value: 'WEDNESDAY' },
-  { label: '목', value: 'THURSDAY' },
-  { label: '금', value: 'FRIDAY' },
-  { label: '토', value: 'SATURDAY' },
-  { label: '일', value: 'SUNDAY' },
-  { label: '없음', value: null },
+  {label: '월', value: 'MONDAY'},
+  {label: '화', value: 'TUESDAY'},
+  {label: '수', value: 'WEDNESDAY'},
+  {label: '목', value: 'THURSDAY'},
+  {label: '금', value: 'FRIDAY'},
+  {label: '토', value: 'SATURDAY'},
+  {label: '일', value: 'SUNDAY'},
+  {label: '없음', value: null},
 ];
 
-const StoreClosedDay = ({ closedDay, setClosedDay }) => {
-
-  const toggleDay = (dayValue) => {
-    setClosedDay((prev) => {
+const StoreClosedDay = ({closedDay, setClosedDay}) => {
+  const toggleDay = dayValue => {
+    setClosedDay(prev => {
       if (dayValue === null) {
         // "없음"이 선택된 경우 다른 항목 모두 해제하고 "없음"만 선택
         return [];
       } else {
         // 다른 항목이 선택된 경우 "없음" 해제
-        const newDays = prev.filter((d) => d !== null);
+        const newDays = prev.filter(d => d !== null);
         if (newDays.includes(dayValue)) {
           // 이미 선택된 경우 제거
-          return newDays.filter((d) => d !== dayValue);
+          return newDays.filter(d => d !== dayValue);
         } else {
           // 선택되지 않은 경우 추가
           return [...newDays, dayValue];
@@ -45,14 +44,12 @@ const StoreClosedDay = ({ closedDay, setClosedDay }) => {
               styles.dayButton,
               closedDay.includes(day.value) && styles.selectedDayButton,
             ]}
-            onPress={() => toggleDay(day.value)}
-          >
+            onPress={() => toggleDay(day.value)}>
             <Text
               style={[
                 styles.dayText,
                 closedDay.includes(day.value) && styles.selectedDayText,
-              ]}
-            >
+              ]}>
               {day.label}
             </Text>
           </TouchableOpacity>
@@ -85,7 +82,7 @@ const styles = StyleSheet.create({
     margin: 7,
   },
   selectedDayButton: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#3CBBFF',
   },
   dayText: {
     fontSize: 18,

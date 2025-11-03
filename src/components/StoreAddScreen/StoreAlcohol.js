@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   summaryItemEmpty: {backgroundColor: '#f0f0f0'},
   summaryText: {
-    color: '#16BBFF',
+    color: '#3CBBFF',
     fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
   },
@@ -286,10 +286,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 10,
   },
-  itemSelected: {backgroundColor: '#E8F7FF', borderColor: '#16BBFF'},
+  itemSelected: {backgroundColor: '#E8F7FF', borderColor: '#3CBBFF'},
   itemUnselected: {backgroundColor: '#fff', borderColor: '#ccc'},
   gridLabel: {fontSize: 14, fontFamily: 'Pretendard-Medium'},
-  labelSelected: {color: '#16BBFF', fontWeight: '600'},
+  labelSelected: {color: '#3CBBFF', fontWeight: '600'},
   labelUnselected: {color: '#999'},
   priceContainer: {marginVertical: 20},
   priceInput: {
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginTop: 20,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 8,
     alignItems: 'center',
     paddingVertical: 12,
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   addButtonText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
   },

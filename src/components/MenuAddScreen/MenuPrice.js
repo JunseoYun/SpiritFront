@@ -107,8 +107,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   checkboxChecked: {
-    backgroundColor: '#16BBFF',
-    borderColor: '#16BBFF',
+    backgroundColor: '#3CBBFF',
+    borderColor: '#3CBBFF',
   },
   checkboxLabel: {
     fontSize: 15,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   checkboxLabelActive: {
-    color: '#16BBFF',
+    color: '#3CBBFF',
   },
 });
 

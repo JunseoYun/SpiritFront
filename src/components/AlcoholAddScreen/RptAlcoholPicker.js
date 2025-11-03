@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   itemSelected: {
     backgroundColor: '#E8F7FF',
-    borderColor: '#16BBFF',
+    borderColor: '#3CBBFF',
   },
   itemUnselected: {
     backgroundColor: '#fff',
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   labelSelected: {
-    color: '#16BBFF',
+    color: '#3CBBFF',
     fontWeight: '600',
   },
   labelUnselected: {

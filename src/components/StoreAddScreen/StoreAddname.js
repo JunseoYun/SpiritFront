@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     paddingRight: 40,
   },
   focusedInput: {
-    borderBottomColor: '#16BBFF',
+    borderBottomColor: '#3CBBFF',
     borderBottomWidth: 2,
   },
   animatedLabel: {

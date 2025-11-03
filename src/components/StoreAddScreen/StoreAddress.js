@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     paddingLeft: 1,
   },
   focusedInput: {
-    borderBottomColor: '#16BBFF',
+    borderBottomColor: '#3CBBFF',
     borderBottomWidth: 2,
   },
   errorText: {

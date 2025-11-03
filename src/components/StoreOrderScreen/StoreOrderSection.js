@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 3,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
   itemBadgeText: {
     fontSize: 10,

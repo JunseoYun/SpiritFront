@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9F5FB',
   },
   alcoholAddButtonText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     padding: 16,

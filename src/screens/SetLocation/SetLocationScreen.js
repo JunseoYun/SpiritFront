@@ -108,7 +108,7 @@ const SetLocationScreen = ({navigation}) => {
     <SafeAreaView style={styles.container}>
       {/* 현재 주소 카드 */}
       <View style={styles.card}>
-        <Ionicons name="location-outline" size={24} color="#16BBFF" />
+        <Ionicons name="location-outline" size={24} color="#3CBBFF" />
         <View style={{marginLeft: 12}}>
           <Text style={styles.cardLabel}>현재 설정된 위치</Text>
           <Text style={styles.cardText}>

@@ -57,7 +57,7 @@ const StoreAddCheckScreen = ({navigation}) => {
               {
                 backgroundColor: '#fff',
                 borderWidth: 1,
-                borderColor: '#45C9FF',
+                borderColor: '#3CBBFF',
               },
             ]}
             onPress={() => {
@@ -67,7 +67,7 @@ const StoreAddCheckScreen = ({navigation}) => {
               style={[
                 styles.storeAddText,
                 {
-                  color: '#45C9FF',
+                  color: '#3CBBFF',
                 },
               ]}>
               아니요
@@ -77,7 +77,7 @@ const StoreAddCheckScreen = ({navigation}) => {
             style={[
               styles.storeAddButtonsearch,
               {
-                backgroundColor: '#45C9FF',
+                backgroundColor: '#3CBBFF',
               },
             ]}
             onPress={() => {
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     marginRight: 18,
     fontSize: 19,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#16BBFF',
+    color: '#3CBBFF',
   },
 
   storeAddTextview: {

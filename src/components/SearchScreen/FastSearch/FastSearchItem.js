@@ -17,7 +17,7 @@ const FastSearchItem = ({label, isSelected, onPress}) => {
       <MaterialIcons
         name="keyboard-arrow-down"
         size={20}
-        color={isSelected ? '#16BBFF' : 'gray'}
+        color={isSelected ? '#3CBBFF' : 'gray'}
       />
     </Pressable>
   );
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   selectedContainer: {
-    borderColor: '#16BBFF',
+    borderColor: '#3CBBFF',
     backgroundColor: '#E6F7FF',
   },
   choiceText: {
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   choiceSelectedText: {
     fontSize: 14,
-    color: '#16BBFF',
+    color: '#3CBBFF',
     fontWeight: 'bold',
   },
 });

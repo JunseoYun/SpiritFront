@@ -26,7 +26,7 @@ const BreakTimeInput = ({
           <Text
             style={[
               styles.timeText,
-              isStartTime && {color: '#45C9FF'},
+              isStartTime && {color: '#3CBBFF'},
               isStartTime && wrongBreak && {color: '#FF4816'},
             ]}>
             {`${sameStartTime.startHour}:${sameStartTime.startMinute}`}
@@ -55,7 +55,7 @@ const BreakTimeInput = ({
           <Text
             style={[
               styles.timeText,
-              isEndTime && {color: '#45C9FF'},
+              isEndTime && {color: '#3CBBFF'},
               isEndTime && wrongBreak && {color: '#FF4816'},
             ]}>
             {`${
@@ -103,10 +103,10 @@ const styles = StyleSheet.create({
   },
   nextText: {
     fontSize: 12,
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     padding: 3,
     marginRight: 5,
     borderRadius: 3,

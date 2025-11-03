@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     marginRight: 18,
     fontSize: normalizeFont(18, 1.5),
     fontFamily: 'Pretendard-SemiBold',
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
   infoText: {
     marginHorizontal: 20,
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 10,
   },
   storeAddText: {

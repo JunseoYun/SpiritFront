@@ -211,10 +211,10 @@ const styles = StyleSheet.create({
   },
   tabButtonActive: {
     backgroundColor: '#E8F7FF',
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   tabTextActive: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
 });
 

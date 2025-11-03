@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     borderColor: '#FF0000', // 빨간 테두리
   },
   checkInputView: {
-    borderColor: '#16BBFF', // 빨간 테두리
+    borderColor: '#3CBBFF', // 빨간 테두리
   },
   errorText: {
     color: '#FF0000',

@@ -32,7 +32,7 @@ const MenupriceInput = ({
           <TextInput
             style={[
               multiline ? styles.inputMultiline : styles.input,
-              {borderBottomColor: isFocused ? '#16BBFF' : '#F2F2F2'},
+              {borderBottomColor: isFocused ? '#3CBBFF' : '#F2F2F2'},
             ]}
             value={value}
             onChangeText={handleTextChange}
@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkBoxChecked: {
-    backgroundColor: '#16BBFF',
-    borderColor: '#16BBFF',
+    backgroundColor: '#3CBBFF',
+    borderColor: '#3CBBFF',
   },
   checkLabel: {
     fontSize: 15,
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   checkLabelActive: {
-    color: '#16BBFF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Medium',
   },
 });

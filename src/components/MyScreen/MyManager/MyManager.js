@@ -691,7 +691,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   activeTabText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Bold',
   },
   closeBtn: {

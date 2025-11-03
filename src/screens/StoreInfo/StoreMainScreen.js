@@ -1051,7 +1051,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 10,
     elevation: 3, // Android shadow
     shadowColor: '#000', // iOS shadow
@@ -1103,7 +1103,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9F5FB',
   },
   alcoholAddButtonText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     padding: 16,
@@ -1192,7 +1192,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 9,
     width: '100%',
     height: 50,

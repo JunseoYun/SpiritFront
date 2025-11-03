@@ -390,7 +390,7 @@ export default function CardRegisterScreen({mode, navigation}) {
               <Ionicons
                 name={isCorp ? 'checkbox-outline' : 'square-outline'}
                 size={20}
-                color={isCorp ? '#16BBFF' : '#888'}
+                color={isCorp ? '#3CBBFF' : '#888'}
               />
               <Text style={styles.checkboxLabel}>법인카드</Text>
             </TouchableOpacity>

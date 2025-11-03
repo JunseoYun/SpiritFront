@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9F5FB',
 
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   optionText: {
     color: '#121212',
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   optionTextSelected: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Bold',
   },
 });

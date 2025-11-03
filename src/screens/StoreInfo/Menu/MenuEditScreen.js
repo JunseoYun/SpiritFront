@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     marginRight: 18,
     fontSize: normalizeFont(17, 1.5),
     fontFamily: 'Pretendard-SemiBold',
-    color: '#16BBFF',
+    color: '#3CBBFF',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
   },
   activeTabButton: {
     backgroundColor: '#E8F7FF', // 선택 시 배경색
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   tabText: {
     fontSize: normalizeFont(14, 1.7),
@@ -472,12 +472,12 @@ const styles = StyleSheet.create({
     paddingTop: 25,
   },
   MenuaddButtonText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
   },
   activeTabText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
   itemRow: {
     flexDirection: 'row',
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 10,
     elevation: 3,
     shadowColor: '#000',

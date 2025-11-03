@@ -135,8 +135,8 @@ const styles = StyleSheet.create({
     marginRight: 7,
   },
   selectedToggle: {
-    backgroundColor: '#45C9FF',
-    borderColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
+    borderColor: '#3CBBFF',
   },
   selectedText: {
     color: '#fff',
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     marginTop: -10,
   },
   selectedDayButton: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
   dayText: {
     fontSize: 15,

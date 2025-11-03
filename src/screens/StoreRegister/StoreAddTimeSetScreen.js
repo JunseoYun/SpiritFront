@@ -1081,6 +1081,6 @@ const styles = StyleSheet.create({
     marginRight: 18,
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
 });

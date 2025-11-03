@@ -56,7 +56,7 @@ const StoreRegister = ({handlestoreItemClick}) => {
             accessibilityRole="button"
             accessibilityLabel={option.title}>
             <View style={[styles.cover]}>
-              <Feather name={option.icon} size={22} color={'#45C9FF'} />
+              <Feather name={option.icon} size={22} color={'#3CBBFF'} />
               <Text style={styles.title}>{option.title}</Text>
             </View>
           </Pressable>
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   cardPressed: {
     transform: [{scale: 0.98}],
     opacity: Platform.OS === 'ios' ? 0.9 : 0.9,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   cover: {
     flexDirection: 'row',

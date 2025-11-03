@@ -29,7 +29,7 @@ const OperateBottomHoursSelector = ({
           <Text
             style={[
               styles.timeText,
-              isOpenTime && {color: '#45C9FF'},
+              isOpenTime && {color: '#3CBBFF'},
               isOpenTime && breakError && {color: '#FF4816'},
               isOpenTime && operateError && {color: '#FF4816'},
             ]}>
@@ -52,7 +52,7 @@ const OperateBottomHoursSelector = ({
             <Text
               style={[
                 styles.nextText,
-                isCloseTime && {color: '#45C9FF'},
+                isCloseTime && {color: '#3CBBFF'},
                 isCloseTime &&
                   breakError && {color: '#FF4816', borderColor: '#FF4816'},
                 isCloseTime &&
@@ -64,7 +64,7 @@ const OperateBottomHoursSelector = ({
           <Text
             style={[
               styles.timeText,
-              isCloseTime && {color: '#45C9FF'},
+              isCloseTime && {color: '#3CBBFF'},
               isCloseTime && breakError && {color: '#FF4816'},
               isCloseTime && operateError && {color: '#FF4816'},
             ]}>
@@ -105,10 +105,10 @@ const styles = StyleSheet.create({
   },
   nextText: {
     fontSize: 12,
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     padding: 3,
     marginRight: 5,
     borderRadius: 3,

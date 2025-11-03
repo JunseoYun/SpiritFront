@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     paddingVertical: 10,
     paddingHorizontal: 30,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 5,
   },
   closeButtonText: {

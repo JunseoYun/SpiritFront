@@ -312,10 +312,10 @@ const styles = StyleSheet.create({
   },
   activeFilter: {
     backgroundColor: '#E8F7FF',
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   activeFilterText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Medium',
   },
 

@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     margin: 7,
   },
   selectedDayButton: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#3CBBFF',
   },
   dayText: {
     fontSize: 18,
