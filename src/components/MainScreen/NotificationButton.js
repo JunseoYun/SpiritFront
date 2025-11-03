@@ -3,35 +3,46 @@ import {Pressable, View, Platform} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
-import {Bell, BellDot} from 'lucide-react-native';
+import {Bell} from 'lucide-react-native';
 
-const NotificationButton = ({unreadNotification = false}) => {
+const NotificationButton = ({
+  unreadNotification = false,
+  floating = true,
+  iconColor,
+  iconSize = 20,
+  badgeColor,
+}) => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const floatingStyle = {
+    zIndex: 10,
+    position: 'absolute',
+    right: 24,
+    top: Platform.OS === 'android' ? insets.top + 20 : insets.top + 10,
+  };
+  const tintColor = iconColor ?? (floating ? '#fff' : '#333');
+  const indicatorColor = badgeColor ?? (floating ? '#333' : '#fff');
 
   return (
     <Pressable
       hitSlop={15}
       onPress={() => navigation.navigate('NotificationScreen')}
-      style={{
-        zIndex: 10,
-        position: 'absolute',
-        right: 24,
-        top: Platform.OS === 'android' ? insets.top + 20 : insets.top + 10,
-      }}>
-      <Bell size={22} color="#fff" />
+      style={[
+        floating ? floatingStyle : null,
+        !floating && {justifyContent: 'center', alignItems: 'center'},
+      ]}>
+      <Bell size={iconSize} color={tintColor} />
 
-      {/* 🔴 빨간 점 */}
-      {unreadNotification && (
+      {!unreadNotification && (
         <View
           style={{
             position: 'absolute',
             top: -2,
             right: -2,
-            width: 5,
-            height: 5,
-            borderRadius: 5,
-            backgroundColor: '#E9F5FB',
+            width: 4,
+            height: 4,
+            borderRadius: 3,
+            backgroundColor: indicatorColor,
             zIndex: 20,
           }}
         />
