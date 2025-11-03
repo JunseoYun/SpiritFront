@@ -18,7 +18,6 @@ import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
 import {Store_getby_main_banner, Store_getby_popular} from '../../api/storeApi';
 import Loading from '../../hooks/Loading';
-import MainHeader from '../../components/MainScreen/Header/MainHeader';
 import NotificationButton from '../../components/MainScreen/NotificationButton';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import RejectModal from '../../components/Reject/RejectModal';
@@ -31,14 +30,20 @@ import ScrollToTopButton from '../../components/common/ScrollToTopButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {has_unread_notification} from '../../api/notificationApi';
 import {useDeepLink} from '../../context/DeepLinkContext';
+import MainSearchBar from '../../components/MainScreen/MainSearchBar';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
+const FILTER_STICKY_DELAY = 36;
 
 const MainScreen = ({navigation}) => {
   const {pendingStoreId} = useDeepLink();
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
   const insets = useSafeAreaInsets();
+  const contentTopPadding = useMemo(
+    () => (Platform.OS === 'android' ? insets.top + 20 : insets.top + 10),
+    [insets.top],
+  );
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef(null);
@@ -55,6 +60,14 @@ const MainScreen = ({navigation}) => {
 
   const {recommendCategory} = useRecommendation();
   const [topView2Height, setTopView2Height] = useState(0);
+  const defaultTopBarHeight = useMemo(
+    () => (Platform.OS === 'android' ? insets.top + 64 : insets.top + 54),
+    [insets.top],
+  );
+  const effectiveTopBarHeight = useMemo(
+    () => (topView2Height > 0 ? topView2Height : defaultTopBarHeight),
+    [topView2Height, defaultTopBarHeight],
+  );
   const [unreadNotification, setUnreadNotification] = useState(false);
   // Popular stores section is extracted to its own component
 
@@ -97,7 +110,7 @@ const MainScreen = ({navigation}) => {
       });
 
       const locationThreshold =
-        Platform.OS === 'ios' ? insets.top - 20 : insets.top + 40;
+        Platform.OS === 'ios' ? insets.top + 20 : insets.top + 40;
       setShowLocation(prev => {
         if (value >= locationThreshold && !prev) return true;
         if (value < locationThreshold && prev) return false;
@@ -215,6 +228,10 @@ const MainScreen = ({navigation}) => {
   const handlestoreItemClick = index => {
     navigation.navigate('StoreSearchScreen', {index, location: location});
   };
+
+  const handleSearchPress = useCallback(() => {
+    console.log('Onpress handleSearchPress');
+  }, [navigation, location]);
 
   const setLocationHandle = useCallback(() => {
     setTimeout(() => {
@@ -399,12 +416,79 @@ const MainScreen = ({navigation}) => {
     ],
   );
 
+  const [addressHeight, setAddressHeight] = useState(0);
+  const [searchBarHeight, setSearchBarHeight] = useState(0);
   const [mainSectionHeight, setMainSectionHeight] = useState(0);
+  const [filterHeight, setFilterHeight] = useState(0);
+  const [filterHeaderOffset, setFilterHeaderOffset] = useState(null);
   const [populartext, setPopulartext] = useState(0);
-  const [filterHeight, FilterHeight] = useState(0);
 
   const sectionsData = useMemo(
     () => [
+      {
+        key: 'address',
+        data: [{}],
+        renderItem: () => (
+          <View
+            onLayout={e => {
+              const {height} = e.nativeEvent.layout;
+              setAddressHeight(prev =>
+                Math.abs(prev - height) > 1 ? height : prev,
+              );
+            }}>
+            <View style={styles.topView}>
+              <Animated.View
+                style={[
+                  styles.addressContainer,
+                  {opacity: topViewAddressOpacity},
+                ]}>
+                <Pressable
+                  hitSlop={{
+                    left: 15,
+                    right: 15,
+                    top: 15,
+                    bottom: 15,
+                  }}
+                  style={styles.addressPressable}
+                  onPress={setLocationHandle}>
+                  <Text
+                    allowFontScaling={false}
+                    style={styles.todayAddress}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    {formatAddress(address)}
+                  </Text>
+                  {!showLocation && (
+                    <Feather name="chevron-right" size={22} color="#fff" />
+                  )}
+                </Pressable>
+              </Animated.View>
+              <NotificationButton
+                unreadNotification={unreadNotification}
+                floating={false}
+                iconColor="#fff"
+              />
+            </View>
+          </View>
+        ),
+      },
+
+      {
+        key: 'searchBar',
+        data: [{}],
+        renderItem: () => (
+          <View
+            onLayout={e => {
+              const {height} = e.nativeEvent.layout;
+              setSearchBarHeight(prev =>
+                Math.abs(prev - height) > 1 ? height : prev,
+              );
+            }}>
+            <MainSearchBar handleSearchPress={handleSearchPress} />
+          </View>
+        ),
+      },
+
       {
         key: 'mainSection',
         data: [mainSectionData],
@@ -412,7 +496,9 @@ const MainScreen = ({navigation}) => {
           <View
             onLayout={e => {
               const {height} = e.nativeEvent.layout;
-              setMainSectionHeight(height); // 높이값 저장
+              setMainSectionHeight(prev =>
+                Math.abs(prev - height) > 1 ? height : prev,
+              );
             }}>
             <MainSection
               {...item}
@@ -449,49 +535,67 @@ const MainScreen = ({navigation}) => {
     ],
   );
 
-  const stickyThreshold = useMemo(() => {
-    return (
-      mainSectionHeight +
-      filterHeight * 2 +
-      insets.top +
-      filterHeight / 2 +
-      populartext
-    ); // 원하는 offset 추가 가능
-  }, [
-    mainSectionHeight,
-    topView2Height,
-    insets.top,
-    filterHeight,
-    populartext,
-  ]);
+  const topContentHeight = useMemo(
+    () =>
+      contentTopPadding + addressHeight + searchBarHeight + mainSectionHeight,
+    [contentTopPadding, addressHeight, searchBarHeight, mainSectionHeight],
+  );
 
-  const stickyTranslateY = scrollY.interpolate({
-    inputRange: [stickyThreshold - 80, stickyThreshold],
-    outputRange: [-80, 0], // 위에서 부드럽게 내려옴
-    extrapolate: 'clamp',
-  });
-
-  // 리스트 내부 필터헤더와 고정 헤더를 자연스럽게 전환하기 위한 진행도
-  // 원래 필터헤더가 리스트 상단 위치에 도달하는 시점에 맞춰 발동
   const filterHeaderThreshold = useMemo(() => {
-    if (!mainSectionHeight || !populartext) return 100000; // wait until measured
-    // 너무 일찍 붙는 현상을 방지하기 위해 약간 늦춤
-    const androidOffset = Platform.OS === 'android' ? 6 : 0;
-    const offset = insets.top === 0 ? -10 : 0;
-    return Math.max(
-      0,
-      mainSectionHeight + populartext + 36 + androidOffset + offset,
-    );
-  }, [mainSectionHeight, populartext, insets]);
-  const filterHeaderProgress = scrollY.interpolate({
-    inputRange: [filterHeaderThreshold, filterHeaderThreshold],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
-  const fixedFilterOpacity = filterHeaderProgress;
-  const listFilterOpacity = Animated.subtract(1, filterHeaderProgress);
-  // 슬라이드 없이 제자리에서 즉시 표시
-  const fixedFilterTranslateY = 0;
+    if (filterHeaderOffset != null) {
+      const headerHeight = filterHeight || 0;
+      const extraSpacing =
+        headerHeight > 0 ? Math.max(40, Math.min(headerHeight * 0.8, 120)) : 40;
+      const threshold =
+        filterHeaderOffset +
+        headerHeight -
+        effectiveTopBarHeight +
+        extraSpacing +
+        FILTER_STICKY_DELAY;
+      return threshold > 0 ? threshold : 0;
+    }
+    if (topContentHeight === 0) {
+      return 100000;
+    }
+    const overlayOffset =
+      effectiveTopBarHeight + (Platform.OS === 'android' ? 12 : 6);
+    const earlySpacing = filterHeight ? Math.min(filterHeight * 0.4, 28) : 6;
+    const threshold =
+      topContentHeight - overlayOffset - earlySpacing + FILTER_STICKY_DELAY;
+    return threshold > 0 ? threshold : 0;
+  }, [
+    filterHeaderOffset,
+    topContentHeight,
+    effectiveTopBarHeight,
+    filterHeight,
+  ]);
+  const [isFilterSticky, setIsFilterSticky] = useState(false);
+
+  useEffect(() => {
+    if (filterHeaderThreshold === 100000) {
+      setIsFilterSticky(false);
+      return undefined;
+    }
+
+    const detachThreshold = Math.max(filterHeaderThreshold, 10);
+    const attachThreshold = filterHeaderThreshold;
+    const listenerId = scrollY.addListener(({value}) => {
+      setIsFilterSticky(prev => {
+        if (prev) {
+          if (value <= detachThreshold) {
+            return false;
+          }
+          return true;
+        }
+        return value >= attachThreshold;
+      });
+    });
+
+    return () => scrollY.removeListener(listenerId);
+  }, [scrollY, filterHeaderThreshold]);
+
+  const fixedFilterOpacity = isFilterSticky ? 1 : 0;
+  const listFilterOpacity = isFilterSticky ? 0 : 1;
 
   // 주소 표시 전환을 부드럽게 처리
   // 원래 주소 영역이 가려지는 순간 스티키 주소가 나타나도록 설정
@@ -511,29 +615,6 @@ const MainScreen = ({navigation}) => {
     outputRange: [-6, 0],
     extrapolate: 'clamp',
   });
-
-  // 👉 그림자 강도를 opacity에 따라 보간
-  const shadowOpacity = fixedFilterOpacity.interpolate({
-    inputRange: [0, 0.1],
-    outputRange: [0.1, 0], // 0일 때 그림자 있음, 1일 때 그림자 없음
-    extrapolate: 'clamp',
-  });
-
-  const elevation = fixedFilterOpacity.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0], // Android: 0일 때 elevation 4, 1일 때 0
-    extrapolate: 'clamp',
-  });
-
-  const [touchable, setTouchable] = useState(false);
-
-  useEffect(() => {
-    const id = fixedFilterOpacity.addListener(({value}) => {
-      setTouchable(value > 0.01);
-    });
-    return () => fixedFilterOpacity.removeListener(id);
-  }, [fixedFilterOpacity]);
-
   return (
     <>
       <View
@@ -542,35 +623,10 @@ const MainScreen = ({navigation}) => {
           styles.absoluteTop,
           {
             paddingTop:
-              Platform.OS === 'android' ? insets.top + 10 : insets.top,
+              Platform.OS === 'android' ? insets.top + 20 : insets.top + 10,
             backgroundColor: showTopView2 ? '#F5F5F5' : '#3CBBFF', // 🎯 여기 조건부 배경색 추가
           },
-        ]}>
-        <MainHeader />
-        <NotificationButton unreadNotification={unreadNotification} />
-        <View style={styles.topView}>
-          <Animated.Text
-            style={[styles.todayAddress, {opacity: topViewAddressOpacity}]}
-            numberOfLines={1}
-            allowFontScaling={false}
-            ellipsizeMode="tail">
-            {formatAddress(address)}
-          </Animated.Text>
-          {!showLocation && (
-            <Pressable
-              hitSlop={{
-                left: screenWidth,
-                right: 15,
-                top: 15,
-                bottom: 15,
-              }}
-              style={{zIndex: 1, position: 'relative'}}
-              onPress={setLocationHandle}>
-              <Feather name="chevron-right" size={23} color="#fff" />
-            </Pressable>
-          )}
-        </View>
-      </View>
+        ]}></View>
 
       <Animated.View
         pointerEvents={topView2Opacity.__getValue() === 0 ? 'none' : 'auto'}
@@ -585,11 +641,11 @@ const MainScreen = ({navigation}) => {
               ios: {
                 shadowColor: '#000',
                 shadowOffset: {width: 0, height: 1},
-                shadowOpacity, // Animated 값 바로 적용
+                shadowOpacity: isFilterSticky ? 0 : 0.1,
                 shadowRadius: 1,
               },
               android: {
-                elevation, // Animated 값 바로 적용
+                elevation: isFilterSticky ? 0 : 1,
               },
             }),
           },
@@ -598,31 +654,42 @@ const MainScreen = ({navigation}) => {
           const {height} = event.nativeEvent.layout;
           setTopView2Height(height);
         }}>
-        <Pressable hitSlop={10} onPress={setLocationHandle}>
+        <Pressable
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+          style={styles.addressPressableCompact}
+          onPress={setLocationHandle}>
           <Text
             allowFontScaling={false}
-            style={[styles.todayAddress2, {color: '#333', marginTop: 10}]}
+            style={styles.todayAddress2}
             numberOfLines={1}
             ellipsizeMode="tail">
             {formatAddress(address)}
           </Text>
+          <Feather name="chevron-right" size={20} color="#181a1a" />
         </Pressable>
-        <Pressable
-          hitSlop={10}
-          style={{marginTop: 10, marginLeft: 5}}
-          onPress={setLocationHandle}>
-          <Feather name="chevron-right" size={23} color="#181a1a" />
-        </Pressable>
+        <View style={styles.topView2Actions}>
+          <Pressable
+            hitSlop={10}
+            style={{marginRight: 10}}
+            onPress={handleSearchPress}>
+            <Feather name="search" size={20} color="#181a1a" />
+          </Pressable>
+          <NotificationButton
+            unreadNotification={unreadNotification}
+            floating={false}
+            iconColor="#181a1a"
+            badgeColor="#3CBBFF"
+          />
+        </View>
       </Animated.View>
       {/* 주소 바 바로 아래에 고정된 필터 헤더 */}
       <Animated.View
-        pointerEvents={touchable ? 'auto' : 'none'}
+        pointerEvents={isFilterSticky ? 'auto' : 'none'}
         style={[
           styles.fixedFilterHeader,
           {
             top: topView2Height,
             opacity: fixedFilterOpacity,
-            transform: [{translateY: fixedFilterTranslateY}],
           },
         ]}>
         <FilterHeader
@@ -656,9 +723,19 @@ const MainScreen = ({navigation}) => {
           if (section.key === 'popularStoresCombined') {
             return (
               <Animated.View
+                pointerEvents={isFilterSticky ? 'none' : 'auto'}
                 onLayout={event => {
-                  const {height} = event.nativeEvent.layout;
-                  FilterHeight(height);
+                  const {height, y} = event.nativeEvent.layout;
+                  setFilterHeight(prev =>
+                    Math.abs(prev - height) > 1 ? height : prev,
+                  );
+                  setFilterHeaderOffset(prev => {
+                    if (y <= 0) return prev;
+                    if (prev === null || Math.abs(prev - y) > 1) {
+                      return y;
+                    }
+                    return prev;
+                  });
                 }}
                 style={{
                   opacity: listFilterOpacity,
@@ -696,8 +773,7 @@ const MainScreen = ({navigation}) => {
         onEndReached={loadMoreData}
         onEndReachedThreshold={0.7}
         contentContainerStyle={{
-          paddingTop:
-            Platform.OS === 'android' ? insets.top + 120 : insets.top + 110,
+          paddingTop: contentTopPadding,
         }}
         // iOS가 자동으로 SafeArea 인셋을 더하지 않도록 비활성화 (상단 여백 잔상 방지)
         automaticallyAdjustContentInsets={false}
@@ -753,19 +829,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignSelf: 'center',
     alignItems: 'center',
-    marginVertical: 15,
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    marginHorizontal: 18,
-    borderRadius: 14,
-    width: '100%',
     justifyContent: 'space-between',
+    marginVertical: 3,
+    marginHorizontal: 18,
+    paddingHorizontal: 4,
   },
   todayAddress: {
-    fontSize: 17,
+    fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
+    flexShrink: 1,
+  },
+  addressContainer: {
+    flex: 1,
+  },
+  addressPressable: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+
+  addressPressableCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    paddingVertical: 6,
+    paddingHorizontal: 4,
   },
   topView2: {
     position: 'absolute',
@@ -775,16 +864,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     zIndex: 40,
     flexDirection: 'row',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    justifyContent: 'space-between',
+    paddingVertical: 7,
+    paddingHorizontal: 18,
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   todayAddress2: {
-    fontSize: 17,
+    fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#fff',
-    paddingLeft: 4,
+    color: '#181a1a',
+    flexShrink: 1,
+    marginRight: 3,
+  },
+  topView2Actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 12,
+  },
+
+  inlineNotificationButton: {
+    marginLeft: 8,
   },
   fixedFilterHeader: {
     position: 'absolute',
