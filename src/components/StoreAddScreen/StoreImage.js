@@ -6,12 +6,10 @@ import {
   ScrollView,
   Pressable,
   StyleSheet,
-  Modal,
-  TouchableOpacity,
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
+
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import useCustomAlert from '../../hooks/useCustomAlert';
 import {
   requestPhotoPermission,
   requestCameraPermission,
@@ -22,13 +20,15 @@ import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
+import ImageAddButton from '../../utils/ImageAddButton';
 
+import {useToast} from '../../context/ToastContext';
 const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
   const [images, setImage] = useState([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false); // 바텀시트 상태
 
-  const {showAlert, AlertComponent} = useCustomAlert();
+  const {showToast} = useToast();
 
   const handleCameraPick = async () => {
     const hasCamera = await requestCameraPermission();
@@ -114,24 +114,10 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
 
   const selectImage = () => {
     if (imageUris.length >= 5) {
-      showAlert({
-        title: '매장 이미지',
-        message: '이미지는 최대 5개까지 선택할 수 있습니다.',
-      });
+      showToast('이미지는 최대 5개까지 선택할 수 있습니다.');
       return;
     }
     setBottomSheetVisible(true); // 바텀시트 열기
-  };
-
-  const handleImagePress = index => {
-    setSelectedImageIndex(index);
-    showAlert({
-      title: '이미지 삭제',
-      message: '이미지를 삭제하시겠습니까?',
-      onConfirm: () => deleteImage(index),
-      onCancel: () => setSelectedImageIndex(null),
-      type: 'delete',
-    });
   };
 
   const deleteImage = index => {
@@ -145,86 +131,81 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
   return (
     <View>
       <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>
-          매장 사진 추가하기* (최대 5장)
-        </Text>
+        <Text style={styles.storeinputtext}>매장 사진 추가하기</Text>
         {error === 'StoreImage' && images.length === 0 && (
           <Text style={styles.errorMessage}>
             매장 사진을 최소 1개 이상 업로드해 주세요.
           </Text>
         )}
       </View>
-      <View style={styles.storeImageView}>
-        <ScrollView
-          style={styles.imageview}
-          horizontal
-          showsHorizontalScrollIndicator={false}>
-          {images.map((uri, index) => (
-            <Pressable key={index} onPress={() => handleImagePress(index)}>
-              <View style={styles.imageWrapper}>
-                <Image
-                  source={{uri: `file://${uri}`}}
-                  style={[
-                    styles.selectimage,
-                    selectedImageIndex === index && styles.selectedImage,
-                  ]}
-                />
-                {index === 0 && (
-                  <View style={styles.representativeBadge}>
-                    <Text style={styles.representativeText}>대표 사진</Text>
-                  </View>
-                )}
+
+      <ScrollView
+        style={styles.imageview}
+        horizontal
+        contentContainerStyle={styles.scrollContent}
+        showsHorizontalScrollIndicator={false}>
+        {imageUris.length !== 5 && (
+          <ImageAddButton
+            currentCount={imageUris.length}
+            maxCount={5}
+            onPress={selectImage}
+          />
+        )}
+
+        {images.map((uri, index) => (
+          <View key={index} style={styles.imageWrapper}>
+            <Image
+              source={{uri: `file://${uri}`}}
+              style={[
+                styles.selectimage,
+                selectedImageIndex === index && styles.selectedImage,
+              ]}
+            />
+
+            {/* 대표 배지 (좌상단) */}
+            {index === 0 && (
+              <View style={styles.representativeBadge}>
+                <Text style={styles.representativeText}>대표 사진</Text>
               </View>
+            )}
+
+            {/* 🗑 삭제 X 버튼 (우상단) */}
+            <Pressable
+              style={styles.deleteButton}
+              onPress={() => deleteImage(index)} // 기존 삭제 로직 재사용(알림→삭제)
+              hitSlop={{top: 8, right: 8, bottom: 8, left: 8}}>
+              <MaterialCommunityIcons name="close" size={18} color="#fff" />
             </Pressable>
-          ))}
-          <Pressable
-            style={{
-              width: 120,
-              height: 120,
-              justifyContent: 'center',
-              alignItems: 'center',
-              backgroundColor: '#f2f2f2',
-              borderRadius: 7,
-            }}
-            onPress={selectImage}>
-            <View
-              style={{
-                width: 30,
-                height: 30,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <MaterialCommunityIcons name="plus" size={30} color="#999" />
-            </View>
-          </Pressable>
-        </ScrollView>
-        <AlertComponent />
-        <ImagePickermodal
-          isBottomSheetVisible={isBottomSheetVisible}
-          setBottomSheetVisible={setBottomSheetVisible}
-          handleCameraPick={handleCameraPick}
-          handleGalleryPick={handleGalleryPick}
-        />
+          </View>
+        ))}
+      </ScrollView>
+      <View style={styles.tipView}>
+        <View style={styles.tipbadge}>
+          <Text style={styles.tipbadgeText}>Tip</Text>
+        </View>
+        <Text style={styles.tipText}>
+          첫 번째로 추가한 사진이 대표 사진으로 설정돼요
+        </Text>
       </View>
+      <ImagePickermodal
+        isBottomSheetVisible={isBottomSheetVisible}
+        setBottomSheetVisible={setBottomSheetVisible}
+        handleCameraPick={handleCameraPick}
+        handleGalleryPick={handleGalleryPick}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   storeinputview: {
-    marginTop: 50,
-    marginHorizontal: 20,
-  },
-  storeImageView: {
-    marginTop: 10,
-    marginHorizontal: 20,
-    height: 120,
+    marginTop: 25,
+    marginHorizontal: 18,
   },
   storeinputtext: {
-    fontFamily: 'Pretendard-Medium',
-    color: '#999',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
     fontSize: 16,
-    marginBottom: 10,
   },
   errorMessage: {
     color: '#FF4816',
@@ -235,19 +216,38 @@ const styles = StyleSheet.create({
   imageview: {
     flexDirection: 'row',
   },
+  scrollContent: {
+    paddingHorizontal: 18, // 하단 버튼 영역 확보
+    paddingVertical: 12,
+  },
   imageWrapper: {
     position: 'relative', // 배지 위치를 조정하기 위해 부모 요소를 상대 위치로 설정
   },
   selectimage: {
-    width: 120,
-    height: 120,
-    borderRadius: 7,
+    width: 100,
+    height: 100,
+    borderRadius: 9,
     marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#F3F3F3',
   },
   selectedImage: {
     borderWidth: 2,
     borderColor: '#FF0000', // 빨간 테두리 추가
     opacity: 0.6, // 반투명 효과
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: -7, // 스크린샷처럼 바깥쪽에 살짝 걸치게
+    right: 0,
+    width: 20,
+    height: 20,
+    borderRadius: 100,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
+    elevation: 4, // Android 그림자 약하게
   },
   representativeBadge: {
     position: 'absolute',
@@ -262,6 +262,29 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  tipView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 6,
+  },
+  tipbadge: {
+    backgroundColor: 'rgba(0, 83, 200, 0.08)', // 은은한 파란 배경 (약한 블루)
+    borderRadius: 100,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    marginRight: 6,
+  },
+  tipbadgeText: {
+    color: '#003C8F', // 짙은 블루 (#003C8F)
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 13,
+  },
+  tipText: {
+    color: '#003C8F',
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 14,
   },
 });
 

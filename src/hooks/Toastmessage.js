@@ -70,17 +70,17 @@ const styles = StyleSheet.create({
     zIndex: 1000000,
     alignItems: 'center',
     justifyContent: 'center',
-    width: width * 0.7,
-    borderRadius: 10,
-    left: width * 0.15,
-    backgroundColor: 'rgba(81, 80, 80, 0.7)',
+    borderRadius: 9,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
     padding: 10,
+    alignSelf: 'center',
   },
   toastText: {
     color: '#ffffff',
     fontSize: 16,
     textAlign: 'center',
-    fontWeight: '400',
+    fontFamily: 'Pretendard-Regular',
+    paddingHorizontal: 7,
   },
 });
 

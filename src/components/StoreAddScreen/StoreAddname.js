@@ -8,6 +8,7 @@ import Animated, {
 import {useToast} from '../../context/ToastContext';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import ColorUtil from '../../utils/ColorUtil';
 
 const StoreAddname = ({storename, setStorename, error}) => {
   const {showToast} = useToast();
@@ -36,60 +37,48 @@ const StoreAddname = ({storename, setStorename, error}) => {
     setStorename(value);
   };
 
-  const animatedLabelStyle = useAnimatedStyle(() => {
-    const isFocused = labelAnim.value === 1;
-
-    return {
-      position: 'absolute',
-      left: 1, // 텍스트 정렬
-      transform: [
-        {
-          translateY: withTiming(isFocused ? -8 : 16, {
-            duration: 120,
-          }),
-        },
-      ],
-      fontSize: withTiming(isFocused ? 16 : 22, {
-        duration: 120,
-      }),
-    };
-  });
-
   return (
     <View>
       <View style={styles.storeinputview}>
         <View style={styles.inputWrapper}>
-          <Animated.Text style={[styles.animatedLabel, animatedLabelStyle]}>
-            매장 이름*
-          </Animated.Text>
-          <TextInput
-            ref={storeNameInputRef}
-            style={[styles.storeinput, focusedInput && styles.focusedInput]}
-            value={storename}
-            onChangeText={text => {
-              const maxChars = 50;
-              if (text.length > maxChars) {
-                setOverText(true);
-                return; // 초과 입력 무시
-              } else {
-                setOverText(false);
-              }
-              setStorename(text);
-            }}
-            placeholder=""
-            onFocus={() => setFocusedInput(true)}
-            onBlur={() => setFocusedInput(false)}
-            returnKeyType="done"
-          />
-          {storename.length > 0 && focusedInput && (
-            <CancelText
-              rightnum={12}
-              topnum={normalizeFont(25)}
-              paddingnum={0}
-              handlecancel={setStorename}
-              size={normalizeFont(22)}
+          <Text style={styles.label}>매장 이름</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              ref={storeNameInputRef}
+              style={[
+                styles.storeinput,
+                focusedInput && styles.focusedInput,
+                storename.length > 0 && {
+                  color: '#333',
+                }, // 입력됐을 때 색상 변경
+              ]}
+              value={storename}
+              onChangeText={text => {
+                const maxChars = 50;
+                if (text.length > maxChars) {
+                  setOverText(true);
+                  return; // 초과 입력 무시
+                } else {
+                  setOverText(false);
+                }
+                setStorename(text);
+              }}
+              placeholder="매장 이름을 입력해주세요"
+              placeholderTextColor={ColorUtil.placeholderText}
+              onFocus={() => setFocusedInput(true)}
+              onBlur={() => setFocusedInput(false)}
+              returnKeyType="done"
             />
-          )}
+            {storename.length > 0 && focusedInput && (
+              <CancelText
+                rightnum={12}
+                paddingnum={0}
+                handlecancel={setStorename}
+                size={normalizeFont(22)}
+                centerVertical
+              />
+            )}
+          </View>
         </View>
 
         {overText && (
@@ -110,33 +99,38 @@ const StoreAddname = ({storename, setStorename, error}) => {
 
 const styles = StyleSheet.create({
   storeinputview: {
-    marginTop: 50,
-    marginHorizontal: 20,
+    marginTop: 25,
+    marginHorizontal: 18,
+  },
+  label: {
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
+    fontSize: 16,
+    marginBottom: 12,
   },
   inputWrapper: {
     position: 'relative',
   },
+  inputContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+    width: '100%',
+  },
   storeinput: {
     flex: 1,
-    borderBottomColor: '#F2F2F2',
-    borderBottomWidth: 1,
-    fontSize: 22,
-    fontFamily: 'Pretendard-Medium',
-    paddingBottom: 7,
-    paddingTop: 20,
-    paddingLeft: 1,
-    color: 'black',
-    paddingRight: 40,
+    height: 52,
+    borderColor: ColorUtil.placeholderBorder,
+    borderWidth: 1,
+    fontSize: 16,
+    fontFamily: 'Pretendard-Regular',
+    borderRadius: 9,
+    paddingHorizontal: 14,
+    paddingRight: 42,
   },
   focusedInput: {
-    borderBottomColor: '#3CBBFF',
-    borderBottomWidth: 2,
+    borderColor: '#333',
   },
-  animatedLabel: {
-    fontSize: 22,
-    color: '#999',
-    fontFamily: 'Pretendard-Medium',
-  },
+
   errorText: {
     color: '#FF4816',
     fontSize: 14,
