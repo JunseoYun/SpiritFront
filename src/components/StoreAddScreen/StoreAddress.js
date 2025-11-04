@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {useToast} from '../../context/ToastContext';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import ColorUtil from '../../utils/ColorUtil';
 
 const StoreAddress = ({
   address,
@@ -25,15 +26,14 @@ const StoreAddress = ({
   error,
   location,
   storeAddressRef,
+  screen,
 }) => {
   const [focusedInput, setFocusedInput] = useState(null);
   const [errors, setErrors] = useState(null);
-  const {showToast} = useToast();
   const MAX_DETAIL = 100;
   const [overText, setOverText] = useState(false);
 
   const labelAnim = useSharedValue(detailedAddress !== '' ? 1 : 0);
-
   const isFocused = key => focusedInput === key;
 
   useEffect(() => {
@@ -43,31 +43,10 @@ const StoreAddress = ({
     );
   }, [focusedInput, detailedAddress]);
 
-  const animatedLabelStyle = useAnimatedStyle(() => {
-    const isActive = labelAnim.value === 1;
-    return {
-      position: 'absolute',
-      left: 1,
-      transform: [
-        {
-          translateY: withTiming(isActive ? -8 : 16, {
-            duration: 120,
-          }),
-        },
-      ],
-      fontSize: withTiming(isActive ? 16 : 22, {
-        duration: 120,
-      }),
-      color: detailedAddress !== '' ? '#121212' : '#999', // ← 값 있을 때 검정
-      fontFamily: 'Pretendard-Medium',
-    };
-  });
-
   const handleDetailedAddressChange = value => {
     const containsForbiddenWord = forbiddenWords.some(word =>
       value.includes(word),
     );
-
     if (containsForbiddenWord) {
       setErrors('비속어 사용 금지');
       return;
@@ -83,31 +62,28 @@ const StoreAddress = ({
 
   return (
     <View>
-      {/* 매장 주소/사업장 소재지 */}
+      {/* ✅ 매장 주소 / 사업장 소재지 */}
       <View style={inputViewStyle}>
-        <View style={styles.storeinput} ref={storeAddressRef}>
+        <Text style={styles.label}>
+          {index === 1 ? '사업장 소재지' : '매장 주소'}
+        </Text>
+        <View style={styles.inputContainer} ref={storeAddressRef}>
           <TouchableOpacity
-            style={styles.addressTouchable}
+            style={styles.inputTouchable}
             onPress={() =>
               navigation.navigate('StoreAddressSearch', {onAddressSelect})
             }>
             {address ? (
-              <>
-                <Text
-                  style={[
-                    styles.storeinputtext,
-                    index === 1 && {color: '#333'},
-                  ]}>
-                  {index === 1 ? '사업장 소재지*' : '매장 주소*'}
-                </Text>
-                <Text style={styles.inputText}>{address}</Text>
-              </>
+              <Text style={styles.inputText}>{address}</Text>
             ) : (
-              <Text style={styles.inputHideText}>
-                {index === 1 ? '사업장 소재지*' : '매장 주소*'}
+              <Text style={styles.placeholderText}>
+                {index === 1
+                  ? '사업장 소재지를 입력해주세요'
+                  : '매장 주소를 입력해주세요'}
               </Text>
             )}
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() =>
               navigation.navigate('StoreAddMapScreen', {
@@ -116,98 +92,98 @@ const StoreAddress = ({
               })
             }
             style={styles.mapIconButton}>
-            <Ionicons name="map-outline" size={30} color="#999" />
+            <Ionicons name="map-outline" size={20} color="#666" />
           </TouchableOpacity>
         </View>
       </View>
 
       {error === 'StoreAddress' && address === '' && (
-        <Text style={styles.errorMessage}>매장주소를 입력해주세요.</Text>
+        <Text style={styles.errorMessage}>매장 주소를 입력해주세요.</Text>
       )}
 
-      {/* 상세주소 */}
-      <View style={inputViewStyle}>
-        <View style={{position: 'relative'}}>
-          <Animated.Text style={animatedLabelStyle}>
-            상세 주소, 건물 층수, 호수 등
-          </Animated.Text>
-          <TextInput
-            style={[
-              styles.storeinput,
-              isFocused('detailedAddress') && styles.focusedInput,
-              {paddingBottom: 7, paddingTop: 20, paddingLeft: 1},
-            ]}
-            placeholder=""
-            placeholderTextColor="#999"
-            value={detailedAddress}
-            onChangeText={text => {
-              handleDetailedAddressChange(text);
-              setOverText(text.length >= MAX_DETAIL);
-            }}
-            onFocus={() => setFocusedInput('detailedAddress')}
-            onBlur={() => setFocusedInput(null)}
-            returnKeyType="done"
-            maxLength={MAX_DETAIL}
-          />
+      {/* ✅ 상세 주소 (매장 주소 구조 동일) */}
+      {screen !== 'StoreSuggestionScreen' && (
+        <View style={inputViewStyle}>
+          <Text style={styles.label}>상세 주소</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.inputField, {paddingRight: 40}]}
+              value={detailedAddress}
+              placeholder="상세 주소, 건물 층수, 호수 등"
+              placeholderTextColor={ColorUtil.placeholderText}
+              onChangeText={text => {
+                handleDetailedAddressChange(text);
+                setOverText(text.length >= MAX_DETAIL);
+              }}
+              onFocus={() => setFocusedInput('detailedAddress')}
+              onBlur={() => setFocusedInput(null)}
+              returnKeyType="done"
+              maxLength={MAX_DETAIL}
+            />
+          </View>
+
           {overText && (
             <Text style={styles.errorText}>
               상세 주소는 최대 100자까지 입력 가능합니다.
             </Text>
           )}
+          {errors && <Text style={styles.errorText}>{errors}</Text>}
         </View>
-
-        {errors && <Text style={styles.errorText}>{errors}</Text>}
-      </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   storeinputview: {
-    marginTop: 50,
+    marginTop: 25,
     marginHorizontal: 20,
   },
-  storeinputtext: {
-    fontFamily: 'Pretendard-Medium',
-    color: '#999',
+  label: {
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
     fontSize: 16,
-    marginBottom: 10,
+    marginBottom: 12,
   },
-  addressTouchable: {
-    flex: 1,
-  },
-  storeinput: {
-    width: '100%',
+  inputContainer: {
     flexDirection: 'row',
-    borderBottomColor: '#F2F2F2',
-    borderBottomWidth: 1,
-    fontSize: 22,
-    fontFamily: 'Pretendard-Medium',
-    paddingVertical: 7,
-    paddingLeft: 1,
-    color: 'black',
+    alignItems: 'center',
+    borderColor: ColorUtil.placeholderBorder,
+    borderWidth: 1,
+    borderRadius: 9,
+    height: 52,
+    paddingHorizontal: 14,
   },
-  inputHideText: {
-    fontSize: 22,
-    fontFamily: 'Pretendard-Medium',
-    paddingVertical: 1,
-    paddingLeft: 1,
-    color: '#999',
+  inputTouchable: {
+    flex: 1,
+    justifyContent: 'center',
   },
   inputText: {
-    fontSize: 22,
-    fontFamily: 'Pretendard-Medium',
-    paddingVertical: 1,
-    paddingLeft: 1,
+    fontSize: 16,
+    fontFamily: 'Pretendard-Regular',
+    color: '#333',
   },
-  focusedInput: {
-    borderBottomColor: '#3CBBFF',
-    borderBottomWidth: 2,
+  placeholderText: {
+    fontFamily: 'Pretendard-Regular',
+    color: ColorUtil.placeholderText,
+    fontSize: 16,
+  },
+  inputField: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'Pretendard-Regular',
+    color: '#333',
+  },
+  mapIconButton: {
+    marginLeft: 8,
+    padding: 6,
+    borderRadius: 20,
+    backgroundColor: '#F8F8F8',
   },
   errorText: {
-    color: 'red',
+    color: '#FF4816',
     fontSize: 14,
-    marginTop: 5,
+    marginTop: 6,
     fontFamily: 'Pretendard-Medium',
   },
   errorMessage: {
@@ -216,11 +192,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginHorizontal: 18,
     fontFamily: 'Pretendard-Medium',
-  },
-  mapIconButton: {
-    alignSelf: 'flex-end',
-    paddingVertical: 1,
-    paddingLeft: 1,
   },
 });
 
