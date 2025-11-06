@@ -3,8 +3,8 @@ import {
   StyleSheet,
   View,
   Text,
-  TouchableOpacity,
   BackHandler,
+  Pressable,
   ScrollView,
 } from 'react-native';
 import SearchBar from '../../../components/SearchScreen/SearchBar';
@@ -17,7 +17,6 @@ import FilterPotal from '../../../components/MapScreen/MapStore/FilterPotal';
 import {useMapSearch} from '../../../context/MapSearchContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect} from '@react-navigation/native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {normalizeFont} from '../../../hooks/normalizeFont';
 
@@ -155,7 +154,7 @@ const SearchScreen = ({navigation}) => {
             contentContainerStyle={{paddingBottom: 40}}
             showsVerticalScrollIndicator={false}>
             {recentSearches.map(item => (
-              <TouchableOpacity
+              <Pressable
                 key={item}
                 style={styles.recentItem}
                 onPress={async () => {
@@ -180,11 +179,11 @@ const SearchScreen = ({navigation}) => {
                   </View>
                   <Text style={styles.recentText}>{item}</Text>
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             ))}
 
             {/* 🗑 최근 검색어 전체 삭제 */}
-            <TouchableOpacity
+            <Pressable
               style={styles.clearButton}
               onPress={async () => {
                 await AsyncStorage.removeItem(RECENT_KEY);
@@ -193,7 +192,7 @@ const SearchScreen = ({navigation}) => {
               <Text style={styles.clearText} allowFontScaling={false}>
                 최근 검색어 삭제
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </ScrollView>
         </View>
       )}

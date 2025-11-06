@@ -13,6 +13,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 const MapFilterHeader = ({
   setFilterInitialTab,
   setFilterModalVisible,
+  setFilterheight,
   distanceLabel,
   categoryLabel,
   peopleLabel,
@@ -27,20 +28,25 @@ const MapFilterHeader = ({
   storeatmCount = 0,
 }) => {
   return (
-    <View style={styles.headerContainer}>
+    <View
+      style={styles.headerContainer}
+      onLayout={e => {
+        const {height} = e.nativeEvent.layout;
+        setFilterheight(height);
+      }}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.headerScroll}>
-        <TouchableOpacity
+        <Pressable
           style={styles.filterChip}
           onPress={() => {
             setFilterInitialTab('거리');
             setFilterModalVisible(true);
           }}>
           <MaterialCommunityIcons name="tune-variant" size={17} color="#555" />
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[styles.filterChip, styles.filterChipActive]}
           onPress={() => {
             setFilterInitialTab('거리');
@@ -49,8 +55,8 @@ const MapFilterHeader = ({
           <Text style={[styles.filterText, styles.filterTextActive]}>
             {distanceLabel}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[
             styles.filterChip,
             categoryLabel !== '카테고리' && styles.filterChipActive,
@@ -66,8 +72,8 @@ const MapFilterHeader = ({
             ]}>
             {categoryLabel}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[
             styles.filterChip,
             alcoholLabel !== '주종' && styles.filterChipActive,
@@ -83,9 +89,9 @@ const MapFilterHeader = ({
             ]}>
             {alcoholLabel}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
         <View>
-          <TouchableOpacity
+          <Pressable
             style={[
               styles.filterChip,
               storeatmCount > 0 && styles.filterChipActive,
@@ -101,7 +107,7 @@ const MapFilterHeader = ({
               ]}>
               매장분위기
             </Text>
-          </TouchableOpacity>
+          </Pressable>
           {storeatmCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText} allowFontScaling={false}>
@@ -111,7 +117,7 @@ const MapFilterHeader = ({
           )}
         </View>
 
-        <TouchableOpacity
+        <Pressable
           style={[
             styles.filterChip,
             timeActive !== '방문시간' && styles.filterChipActive,
@@ -127,8 +133,8 @@ const MapFilterHeader = ({
             ]}>
             {timeActive}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[
             styles.filterChip,
             peopleLabel !== '인원' && styles.filterChipActive,
@@ -144,8 +150,8 @@ const MapFilterHeader = ({
             ]}>
             {peopleLabel}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[
             styles.filterChip,
             parkingLabel == '가능' && styles.filterChipActive,
@@ -161,8 +167,8 @@ const MapFilterHeader = ({
             ]}>
             주차
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[
             styles.filterChip,
             corkageLabel == '가능' && styles.filterChipActive,
@@ -178,8 +184,8 @@ const MapFilterHeader = ({
             ]}>
             콜키지
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[
             styles.filterChip,
             screenLabel == '설치' && styles.filterChipActive,
@@ -195,8 +201,8 @@ const MapFilterHeader = ({
             ]}>
             스크린
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[
             styles.filterChip,
             roomLabel == '가능' && styles.filterChipActive,
@@ -212,8 +218,8 @@ const MapFilterHeader = ({
             ]}>
             룸
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[
             styles.filterChip,
             outdoorLabel == '가능' && styles.filterChipActive,
@@ -229,7 +235,7 @@ const MapFilterHeader = ({
             ]}>
             야장
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </ScrollView>
     </View>
   );
@@ -238,6 +244,8 @@ const MapFilterHeader = ({
 const styles = StyleSheet.create({
   headerContainer: {
     backgroundColor: 'white',
+    paddingTop: 5,
+    paddingBottom: 10,
   },
   headerScroll: {
     paddingHorizontal: 12,

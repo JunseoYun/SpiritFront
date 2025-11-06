@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#fff',
     paddingHorizontal: 15,
-    marginVertical: 10,
+    marginBottom: 20,
   },
   backimageview: {
     width: IMG_WIDTH,
