@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
+﻿import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
   StyleSheet,
   Text,
@@ -23,14 +23,19 @@ import generateMapScript from '../../components/MapScreen/generateMapScript';
 import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
 import MapRadius from '../../components/MapScreen/MapRadius';
 import Loading from '../../hooks/Loading';
+import MapTopBar from '../../components/MapScreen/MapTopBar';
+import {useMapSearch} from '../../context/MapSearchContext';
 
-const {width} = Dimensions.get('window');
+const {width, height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 const MapScreen = ({navigation}) => {
   const [location, setLocation] = useState(null);
   const [stores, setStores] = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
+  const [detailStoreId, setDetailStoreId] = useState(null);
   const [selectedStoreIndex, setSelectedStoreIndex] = useState(0);
+  const [groupStoreIds, setGroupStoreIds] = useState(null);
+  const [lastChosenStoreId, setLastChosenStoreId] = useState(null);
   const webViewRef = useRef(null);
   const flatListRef = useRef(null);
   const isProgrammaticPan = useRef(false);
@@ -42,8 +47,11 @@ const MapScreen = ({navigation}) => {
   const [isFlatListVisible, setIsFlatListVisible] = useState(true); // 플랫리스트 상태
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
   const [radius, setRadiusint] = useState(1);
+  const {radiusKm} = useMapSearch();
   const prevRadiusRef = useRef(radius);
   const [storegetloading, setStoregetloading] = useState(true);
+  const [sheetIndex, setSheetIndex] = useState(1);
+  const bottomSheetRef = useRef(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -72,6 +80,15 @@ const MapScreen = ({navigation}) => {
       setRefresh(true);
     }
   }, [radius]);
+
+  useEffect(() => {
+    if (typeof radiusKm === 'number' && radiusKm !== radius) {
+      setRadiusint(radiusKm);
+      try {
+        setcenterrefresh(radiusKm);
+      } catch (e) {}
+    }
+  }, [radiusKm]);
 
   const closeStoreListOverlayScript = `
   if (window.currentOverlay && typeof window.currentOverlay.setMap === 'function') {
@@ -115,7 +132,7 @@ const MapScreen = ({navigation}) => {
         webViewRef.current.injectJavaScript(script);
       }
 
-      moveCenterMap(currentLocation.latitude, currentLocation.longitude);
+      moveCenterMap(currentLocation.latitude, currentLocation.longitude, 1);
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
     } finally {
@@ -142,8 +159,11 @@ const MapScreen = ({navigation}) => {
         );
         webViewRef.current.injectJavaScript(script);
       }
-
-      moveCenterMap(currentLocation.latitude, currentLocation.longitude);
+      moveCenterMap(
+        currentLocation.latitude,
+        currentLocation.longitude,
+        sheetIndex,
+      );
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
     } finally {
@@ -153,7 +173,7 @@ const MapScreen = ({navigation}) => {
   };
 
   const roundToPrecision = (value, precision = 7) => {
-    return parseFloat(value.toFixed(precision)); // 🔥 소수점 8자리까지만 남김
+    return parseFloat(value.toFixed(precision)); //  소수점 8자리까지만 남김
   };
 
   const updateNewLocation = async radius => {
@@ -176,10 +196,10 @@ const MapScreen = ({navigation}) => {
         roundedCurrentLng === roundedNewLng
       ) {
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-        moveCenterMap(newLocation.latitude, newLocation.longitude);
+        moveCenterMap(newLocation.latitude, newLocation.longitude, sheetIndex);
       } else {
         setLocation(newLocation);
-        moveCenterMap(newLocation.latitude, newLocation.longitude);
+        moveCenterMap(newLocation.latitude, newLocation.longitude, sheetIndex);
         if (webViewRef.current) {
           webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
           const script = generateMapScript(
@@ -198,45 +218,16 @@ const MapScreen = ({navigation}) => {
     }
   };
 
-  const moveCenterMap = (lat, lng) => {
-    const roundedPrev = prevCenterLatLng && {
-      latitude: roundToPrecision(prevCenterLatLng.latitude),
-      longitude: roundToPrecision(prevCenterLatLng.longitude),
-    };
-
-    const roundedNew = {
-      latitude: roundToPrecision(lat),
-      longitude: roundToPrecision(lng),
-    };
-
-    const moved =
-      !roundedPrev || isSignificantMovement(roundedPrev, roundedNew);
-
-    if (moved) {
-      isProgrammaticPan.current = true; // 👉 다음 idle은 무시하게 하기
-
-      const script = `
-          if (window.map) {
-            window.map.panTo(new kakao.maps.LatLng(${lat}, ${lng}));
-          }
-          true;
-        `;
-      webViewRef.current?.injectJavaScript(script);
-    } else {
-    }
-  };
-
-  const isSignificantMovement = (prev, current, threshold = 0.00001) => {
-    if (!prev) return true;
-    const latDiff = Math.abs(prev.latitude - current.latitude);
-    const lngDiff = Math.abs(prev.longitude - current.longitude);
-    return latDiff > threshold || lngDiff > threshold;
-  };
-
   const setcenterrefresh = async radius => {
     setLoading(true);
     setStoregetloading(true);
     try {
+      // 상세 보기 중이면 목록 보기로 전환
+      if (detailStoreId) {
+        setDetailStoreId(null);
+        setGroupStoreIds(null);
+      }
+
       const lat = centerLatLng?.latitude ?? location?.latitude;
       const lng = centerLatLng?.longitude ?? location?.longitude;
 
@@ -257,12 +248,10 @@ const MapScreen = ({navigation}) => {
 
       if (webViewRef.current) {
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-
-        const script = generateMapScript(lat, lng, storesData);
+        const offsetY = sheetIndex === 1 ? SCREEN_HEIGHT * 0.18 : 0;
+        const script = generateMapScript(lat, lng, storesData, offsetY);
         webViewRef.current.injectJavaScript(script);
       }
-
-      moveCenterMap(lat, lng);
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
     } finally {
@@ -272,14 +261,74 @@ const MapScreen = ({navigation}) => {
     }
   };
 
+  const moveCenterMap = (lat, lng, sheetIndex, force = false) => {
+    const offsetY =
+      sheetIndex === null
+        ? 0
+        : sheetIndex === 1
+        ? SCREEN_HEIGHT * 0.18 // 45%일 때
+        : sheetIndex === 10
+        ? SCREEN_HEIGHT * -0.18
+        : 0;
+    // console.log(sheetIndex);
+
+    const roundedPrev = prevCenterLatLng && {
+      latitude: roundToPrecision(prevCenterLatLng.latitude),
+      longitude: roundToPrecision(prevCenterLatLng.longitude),
+    };
+
+    const roundedNew = {
+      latitude: roundToPrecision(lat),
+      longitude: roundToPrecision(lng),
+    };
+
+    const moved =
+      force || !roundedPrev || isSignificantMovement(roundedPrev, roundedNew);
+
+    if (moved) {
+      isProgrammaticPan.current = true; // ?? 다음 idle은 무시하게 하기
+
+      const script = `
+       if (window.map) {
+          const map = window.map;
+    const latLng = new kakao.maps.LatLng(${lat}, ${lng});
+    const proj = map.getProjection();
+    const point = proj.containerPointFromCoords(latLng);
+    const adjustedPoint = new kakao.maps.Point(point.x, point.y + ${offsetY});
+    const newCenter = proj.coordsFromContainerPoint(adjustedPoint);
+    map.panTo(newCenter);
+          }
+          true;
+        `;
+      webViewRef.current?.injectJavaScript(script);
+    } else {
+    }
+  };
+
+  const isSignificantMovement = (prev, current, threshold = 0.00001) => {
+    if (!prev) return true;
+    const latDiff = Math.abs(prev.latitude - current.latitude);
+    const lngDiff = Math.abs(prev.longitude - current.longitude);
+    return latDiff > threshold || lngDiff > threshold;
+  };
+
   const onMessageHandler = event => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
+      if (message && message.action) {
+        // console.log('WebView action:', message.action, message);
+      }
 
       // 기존 메시지 처리
       if (message.action === 'mapLoaded') {
         console.log('Kakao Maps API가 로드되었습니다.');
-        const script = generateMapScript(location.latitude, location.longitude);
+        const initialOffset = sheetIndex === 1 ? SCREEN_HEIGHT * 0.18 : 0;
+        const script = generateMapScript(
+          location.latitude,
+          location.longitude,
+          [],
+          initialOffset,
+        );
         webViewRef.current.injectJavaScript(script);
 
         getStorelist(radius);
@@ -353,26 +402,56 @@ const MapScreen = ({navigation}) => {
   const handleWebViewMessage = throttle(message => {
     if (message.action === 'hideFlatList') {
       hideFlatList();
-    } else if (message.action === 'markerClicked' && message.storeId) {
-      showFlatList();
-
+    } else if (message.action === 'markerGroupClicked' && message.storeId) {
       const index = stores.findIndex(store => store.id === message.storeId);
       if (index !== -1) {
         setSelectedStoreIndex(index);
-
-        // flatListRef가 유효한 경우에만 scrollToOffset 호출
-        if (flatListRef.current) {
-          flatListRef.current.scrollToIndex({
-            index,
-            animated: false, // ❗️즉시 점프
-          });
-        }
-
+        setGroupStoreIds(null);
+        bottomSheetRef.current?.snapToIndex(0);
         const store = stores[index];
         if (store) {
           moveCenterMap(
             store.locationDto.latitude,
             store.locationDto.longitude,
+            10,
+            true,
+          );
+        }
+        return;
+      }
+    } else if (message.action === 'markerListItemClicked' && message.storeId) {
+      const index = stores.findIndex(store => store.id === message.storeId);
+      if (index !== -1) {
+        setSelectedStoreIndex(index);
+        setGroupStoreIds(null);
+        setDetailStoreId(message.storeId);
+        setLastChosenStoreId(message.storeId);
+        bottomSheetRef.current?.snapToIndex(1);
+        const store = stores[index];
+        if (store) {
+          moveCenterMap(
+            store.locationDto.latitude,
+            store.locationDto.longitude,
+            1,
+            true,
+          );
+        }
+      }
+    } else if (message.action === 'markerClicked' && message.storeId) {
+      const index = stores.findIndex(store => store.id === message.storeId);
+      if (index !== -1) {
+        setSelectedStoreIndex(index);
+        setGroupStoreIds(null);
+        setDetailStoreId(message.storeId);
+        setLastChosenStoreId(message.storeId);
+        bottomSheetRef.current?.snapToIndex(1);
+        const store = stores[index];
+        if (store) {
+          moveCenterMap(
+            store.locationDto.latitude,
+            store.locationDto.longitude,
+            1,
+            true,
           );
         }
       }
@@ -394,9 +473,14 @@ const MapScreen = ({navigation}) => {
           textZoom={100}
         />
       ) : null}
-      {refresh && <MapSearchBar onPress={() => setcenterrefresh(radius)} />}
-      <MapRadius setRadiusint={setRadiusint} />
 
+      {/* <MapRadius setRadiusint={setRadiusint} /> */}
+      <MapTopBar
+        navigation={navigation}
+        refresh={refresh}
+        setcenterrefresh={setcenterrefresh}
+        radius={radius}
+      />
       <MapStoreList
         updateNewLocation={() => updateNewLocation()}
         fetchSaveLocation={() => fetchSaveLocation()}
@@ -413,6 +497,20 @@ const MapScreen = ({navigation}) => {
         location={location}
         loading={loading}
         storegetloading={storegetloading}
+        radius={radius}
+        setRadiusint={setRadiusint}
+        setSheetIndex={setSheetIndex}
+        detailStoreId={detailStoreId}
+        groupStoreIds={groupStoreIds}
+        onOpenDetail={id => {
+          setDetailStoreId(id);
+          setGroupStoreIds(null);
+          setLastChosenStoreId(id);
+        }}
+        onCloseDetail={() => setDetailStoreId(null)}
+        lastChosenStoreId={lastChosenStoreId}
+        onCloseGroup={() => setGroupStoreIds(null)}
+        bottomSheetRef={bottomSheetRef}
       />
 
       <Loading loading={loading} />

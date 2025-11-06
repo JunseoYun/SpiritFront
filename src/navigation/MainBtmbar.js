@@ -63,6 +63,7 @@ const MainBtmbar = () => {
         options={{
           tabBarLabel: ({color}) => renderLabel('주변', color),
           headerShown: false,
+          tabBarStyle: {display: 'none'},
         }}
       />
       <Tab.Screen

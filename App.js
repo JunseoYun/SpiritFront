@@ -30,6 +30,7 @@ import {
   initLocationFromServer,
 } from './src/storage/locationStorage';
 import {AdConsentProvider} from './src/context/AdConsentContext';
+import {MapSearchProvider} from './src/context/MapSearchContext';
 
 if (!__DEV__) {
   console.log = () => {};
@@ -62,7 +63,9 @@ const App = () => {
                 <DeepLinkProvider>
                   <StoreInviteProvider>
                     <AdConsentProvider>
-                      <AppNavigator />
+                      <MapSearchProvider>
+                        <AppNavigator />
+                      </MapSearchProvider>
                     </AdConsentProvider>
                   </StoreInviteProvider>
                 </DeepLinkProvider>

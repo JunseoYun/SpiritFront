@@ -20,7 +20,7 @@ import EvilIcons from 'react-native-vector-icons/EvilIcons';
 const MapSearchBar = ({onPress}) => {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.buttonTop, {paddingTop: insets.top + 10}]}>
+    <View style={[styles.buttonTop]}>
       <Pressable style={styles.searchView} onPress={onPress}>
         <EvilIcons name="redo" size={25} color={'#1a1a1a'} />
         <Text allowFontScaling={false} style={styles.buttonTextTop}>
@@ -33,7 +33,6 @@ const MapSearchBar = ({onPress}) => {
 
 const styles = StyleSheet.create({
   buttonTop: {
-    position: 'absolute',
     alignSelf: 'center', // 부모 뷰를 기준으로 가로 중앙 정렬
   },
   searchView: {
