@@ -244,7 +244,6 @@ const MapFilterHeader = ({
 const styles = StyleSheet.create({
   headerContainer: {
     backgroundColor: 'white',
-    paddingTop: 5,
     paddingBottom: 10,
   },
   headerScroll: {
