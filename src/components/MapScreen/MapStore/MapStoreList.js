@@ -101,10 +101,16 @@ const MapStoreList = ({
 
       if (snapPoints.length === 2) {
         if (index === 0) newValue = -SCREEN_HEIGHT * 0.03;
-        if (index === 1) newValue = -SCREEN_HEIGHT * 0.3;
+        if (index === 1) {
+          if (detailStoreId) {
+            if (index === 1) newValue = -SCREEN_HEIGHT * 0.55;
+          } else {
+            newValue = -SCREEN_HEIGHT * 0.3;
+          }
+        }
       } else {
         if (index === 0) newValue = -SCREEN_HEIGHT * 0.03;
-        if (index === 1) newValue = -SCREEN_HEIGHT * 0.51;
+        if (index === 1) newValue = -SCREEN_HEIGHT * 0.55;
         if (index === 2) newValue = 0;
       }
 
