@@ -31,7 +31,9 @@ const OperatingDayItem = ({
             alignItems: 'center',
           },
       ]}>
-      <Text style={styles.operateDayText}>{day.label}요일</Text>
+      <Text style={[styles.operateDayText, isClosedDay && {color: '#6b7280'}]}>
+        {day.label}요일
+      </Text>
       <View style={[styles.timeContainer]}>
         <View>
           <View style={styles.timeInputView}>
@@ -99,9 +101,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   operateDayText: {
-    color: '#181A1A',
+    color: '#333',
     fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
     alignSelf: 'center',
   },
   timeContainer: {
@@ -109,7 +111,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   disabled: {
-    backgroundColor: '#EFEFEF',
+    backgroundColor: '#f7f7f7ff',
   },
   timeInputView: {
     flexDirection: 'row',
@@ -126,13 +128,13 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     fontFamily: 'Pretendard-Medium',
     fontSize: normalizeFont(15, 1.7),
-    color: '#181A1A',
+    color: '#333',
   },
   holidayText: {
     lineHeight: 30,
     fontFamily: 'Pretendard-Medium',
     fontSize: 15,
-    color: '#181A1A',
+    color: '#6b7280',
     marginRight: 18,
   },
   icons: {

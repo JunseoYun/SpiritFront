@@ -5,14 +5,11 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import {useToast} from '../../context/ToastContext';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
 import ColorUtil from '../../utils/ColorUtil';
 
 const StoreAddname = ({storename, setStorename, error}) => {
-  const {showToast} = useToast();
-  const MAX = 50;
   const [focusedInput, setFocusedInput] = useState(false);
   const [errors, setErrors] = useState({});
   const storeNameInputRef = useRef(null);
@@ -32,10 +29,6 @@ const StoreAddname = ({storename, setStorename, error}) => {
       storeNameInputRef.current.focus();
     }
   }, [error]);
-
-  const handleChange = value => {
-    setStorename(value);
-  };
 
   return (
     <View>
@@ -99,7 +92,7 @@ const StoreAddname = ({storename, setStorename, error}) => {
 
 const styles = StyleSheet.create({
   storeinputview: {
-    marginTop: 25,
+    marginTop: 30,
     marginHorizontal: 18,
   },
   label: {

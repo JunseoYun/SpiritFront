@@ -1,4 +1,10 @@
-import React, {useState, useLayoutEffect, useEffect, useRef} from 'react';
+import React, {
+  useState,
+  useLayoutEffect,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -8,28 +14,49 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
+  BackHandler,
+  ToastAndroid,
   Modal,
 } from 'react-native';
-import {useRoute} from '@react-navigation/native';
+import {useRoute, useFocusEffect} from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import StoreImage from '../../../components/StoreAddScreen/StoreImage';
 import StoreAddname from '../../../components/StoreAddScreen/StoreAddname';
 import StoreAddress from '../../../components/StoreAddScreen/StoreAddress';
+import StoreMood from '../../../components/StoreAddScreen/StoreMood';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 import Loading from '../../../hooks/Loading';
 import BottomActionButton from '../../../utils/BottomActionButton';
 import ColorUtil from '../../../utils/ColorUtil';
-
+import {StoreSuggestion} from '../../../api/storeApi';
+import useCustomAlert from '../../../hooks/useCustomAlert';
+import useDoubleBackExit from '../../../hooks/useDoubleBackExit';
 const StoreSuggestionScreen = ({navigation}) => {
+  useDoubleBackExit(navigation);
+
   const {bottom} = useSafeAndroidInsets();
 
+  const {showAlert, AlertComponent} = useCustomAlert();
   const route = useRoute();
   const {index, location} = route.params;
   const [imageUris, setImageUris] = useState([]);
   const [storename, setStorename] = useState('');
   const [coords, setCoords] = useState({latitude: 0, longitude: 0});
   const [address, setAddress] = useState('');
-  const [detailedAddress, setDetailedAddress] = useState('');
+  const [moodInfo, setMoodInfo] = useState({
+    QUIET: false, // 대화하기 좋은
+    LIVELY: false, // 활기찬
+    SOLO_FRIENDLY: false, // 혼술
+    DATE: false, // 데이트
+    PARTY_EVENT: false, // 파티·이벤트
+    TRADITIONAL: false, // 전통적인
+    EXOTIC: false, // 이국적인
+    MODERN: false, // 모던·깔끔한
+    OLD_SCHOOL: false, // 노포 감성
+    VIEW_SPOT: false, // 뷰 맛집
+    LOCAL_FAVORITE: false, // 로컬 맛집
+    SECOND_ROUND: false, // 2차 맛집
+  });
 
   const [loading, setLoading] = useState(false);
   const scrollViewRef = useRef(null); // 스크롤뷰 참조
@@ -38,7 +65,7 @@ const StoreSuggestionScreen = ({navigation}) => {
   const storeImageRef = useRef(null);
   const [isDisabled, setIsDisabled] = useState(true);
   const [isChoiceModalVisible, setIsChoiceModalVisible] = useState(false);
-
+  const [preStoreId, setPreStoreId] = useState('');
   const handleAddressSelect = ({address, coords}) => {
     setAddress(address);
     setCoords(coords);
@@ -58,7 +85,7 @@ const StoreSuggestionScreen = ({navigation}) => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!imageUris.length) {
       setError('StoreImage');
       scrollToError(storeImageRef);
@@ -74,31 +101,66 @@ const StoreSuggestionScreen = ({navigation}) => {
       scrollToError(storeAddressRef);
       return;
     }
-    //TODO
-    //step 1. 제보 api 통신하기 성공하면 모달 띄우기
+    const data = {
+      files: imageUris,
+      createStoreDto: {
+        locationDto: {
+          address,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        },
+        name: storename,
+        moods: Object.entries(moodInfo)
+          .filter(([_, value]) => value)
+          .map(([key]) => key),
+        facilitiesInfoDto: {
+          hasScreen: false,
+          hasRoom: false,
+          hasOutdoor: false,
+          isGroupAvailable: false,
+          isParkingAvailable: false,
+          isCorkageAvailable: false,
+        },
+      },
+    };
 
-    setIsChoiceModalVisible(true);
+    try {
+      setLoading(true);
+      const response = await StoreSuggestion(data);
+      if (response.status === 200) {
+        setPreStoreId(response.data.data.id);
+        setIsChoiceModalVisible(true);
+      }
+    } catch {
+      showAlert({
+        title: '등록 실패',
+        message:
+          '잠시 후 다시 시도해 주세요.\n계속 실패할 경우, 메일로 문의해 주세요.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleModalConfirm = () => {
     setIsChoiceModalVisible(false);
-    //TODO
-    //navigate 대신에 replace로 화면 아예 대체 해버리기
-    navigation.navigate('StoreSuggestionDetailScreen', {
+    navigation.replace('StoreSuggestionDetailScreen', {
       storename,
-      address,
-      detailedAddress,
-      imageUris,
-      index,
-      coords,
+      preStoreId,
     });
   };
 
   const handleModalCancel = () => {
     setIsChoiceModalVisible(false);
-
-    //TODO
-    //스택 초기화 후 MainScreen으로 네비게이션 하기
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: 'MainBtmbar',
+          state: {routes: [{name: 'MainScreen'}]},
+        },
+      ],
+    });
   };
 
   useEffect(() => {
@@ -112,11 +174,13 @@ const StoreSuggestionScreen = ({navigation}) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Pressable disabled={isDisabled} onPress={handleSubmit}>
+        <Pressable disabled={isDisabled || loading} onPress={handleSubmit}>
           <Text
             style={[
               styles.nextButton,
-              isDisabled && {color: ColorUtil.mainDisable},
+              (isDisabled || loading) && {
+                color: ColorUtil.mainDisable,
+              },
             ]}>
             제보
           </Text>
@@ -134,6 +198,10 @@ const StoreSuggestionScreen = ({navigation}) => {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.scrollContent}
           ref={scrollViewRef}>
+          <Pressable onPress={handleModalConfirm}>
+            <Text>ㅇㅇㅇ</Text>
+          </Pressable>
+
           <View ref={storeImageRef}>
             <StoreImage
               imageUris={imageUris}
@@ -152,8 +220,6 @@ const StoreSuggestionScreen = ({navigation}) => {
           <View ref={storeAddressRef}>
             <StoreAddress
               address={address}
-              detailedAddress={detailedAddress}
-              setDetailedAddress={setDetailedAddress}
               navigation={navigation}
               onAddressSelect={handleAddressSelect} // 콜백 전달
               location={location}
@@ -161,12 +227,13 @@ const StoreSuggestionScreen = ({navigation}) => {
               error={error}
             />
           </View>
+          <StoreMood moodInfo={moodInfo} setMoodInfo={setMoodInfo} />
         </ScrollView>
       </KeyboardAvoidingView>
 
       <BottomActionButton
         label={'제보하기'}
-        disabled={isDisabled}
+        disabled={isDisabled || loading}
         cancel={true}
         onPress={() => handleSubmit()}
         onCancel={() => navigation.goBack()}
@@ -202,6 +269,7 @@ const StoreSuggestionScreen = ({navigation}) => {
           </View>
         </View>
       </Modal>
+      <AlertComponent />
     </SafeAreaView>
   );
 };
@@ -217,7 +285,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 100, // 하단 버튼 영역 확보
   },
-
   nextButton: {
     marginRight: 18,
     fontSize: 18,

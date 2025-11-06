@@ -437,7 +437,7 @@ export default function MainStack() {
         name="StoreAddMapScreen"
         component={StoreAddMapScreen}
         options={({navigation}) => ({
-          title: '주소 설정',
+          title: '주소 검색',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',

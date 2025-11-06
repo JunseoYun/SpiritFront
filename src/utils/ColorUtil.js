@@ -4,9 +4,12 @@
 const ColorUtil = {
   // 메인 브랜드 컬러
   main: '#3CBBFF',
-
+  mainChip: '#E9F5FB',
   // 비활성 (disabled) 상태 컬러
+
+  chipText: '#B4B7BE',
   mainDisable: '#A5D8FA',
+  subText: '#6B7280',
 
   // 텍스트 컬러
   textPrimary: '#333333',

@@ -5,8 +5,9 @@ import {
   Pressable,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
-
+import ColorUtil from '../../../utils/ColorUtil';
 const ClosedDaySelector = ({
   days,
   isClosed,
@@ -84,23 +85,35 @@ const ClosedDaySelector = ({
       </View>
       {isClosed && (
         <View style={styles.daysContainer}>
-          {days.map((day, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.dayButton,
-                localClosedDay.includes(day.value) && styles.selectedDayButton,
-              ]}
-              onPress={() => toggleDay(day.value)}>
-              <Text
+          <ScrollView
+            horizontal
+            // nestedScrollEnabled={true}
+            showsHorizontalScrollIndicator={false}
+            // onStartShouldSetResponder={() => true}
+            contentContainerStyle={{
+              paddingHorizontal: 18,
+              gap: 10,
+            }}>
+            {days.map((day, index) => (
+              <TouchableOpacity
+                key={index}
                 style={[
-                  styles.dayText,
-                  localClosedDay.includes(day.value) && styles.selectedDayText,
-                ]}>
-                {day.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                  styles.dayButton,
+                  localClosedDay.includes(day.value) &&
+                    styles.selectedDayButton,
+                ]}
+                onPress={() => toggleDay(day.value)}>
+                <Text
+                  style={[
+                    styles.dayText,
+                    localClosedDay.includes(day.value) &&
+                      styles.selectedDayText,
+                  ]}>
+                  {day.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
       )}
       {isClosed && localClosedDay.length === days.length && (
@@ -129,47 +142,49 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#aaa',
+    borderColor: ColorUtil.border,
     paddingHorizontal: 15,
     borderRadius: 100,
     marginRight: 7,
   },
   selectedToggle: {
-    backgroundColor: '#3CBBFF',
-    borderColor: '#3CBBFF',
+    backgroundColor: ColorUtil.main,
+    borderColor: ColorUtil.main,
   },
   selectedText: {
-    color: '#fff',
-    fontFamily: 'Pretendard-SemiBold',
+    color: '#FFF',
+    fontFamily: 'Pretendard-Medium',
   },
   unselectedText: {
-    color: '#aaa',
-    fontFamily: 'Pretendard-SemiBold',
+    color: ColorUtil.chipText,
+    fontFamily: 'Pretendard-Medium',
   },
   daysContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginVertical: 12,
-    marginHorizontal: 18,
+    marginBottom: 12,
+    marginTop: 5,
   },
   dayButton: {
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 20,
-    backgroundColor: '#F2F2F2',
-    marginTop: -10,
+    borderWidth: 1,
+    borderColor: ColorUtil.border,
   },
   selectedDayButton: {
-    backgroundColor: '#3CBBFF',
+    backgroundColor: ColorUtil.mainChip,
+    borderColor: ColorUtil.main,
+    borderWidth: 1,
   },
   dayText: {
     fontSize: 15,
-    color: '#333',
     fontFamily: 'Pretendard-Medium',
+
+    color: ColorUtil.chipText,
   },
   selectedDayText: {
-    color: '#FFF',
+    color: ColorUtil.main,
   },
   wrongText: {
     marginHorizontal: 18,
