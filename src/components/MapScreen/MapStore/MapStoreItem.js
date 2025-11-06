@@ -28,6 +28,7 @@ const MapStoreItem = ({
   setSelectedStore,
   moveCenterMap,
   navigation,
+  onItemPress,
 }) => {
   const {
     isOpen,
@@ -45,18 +46,25 @@ const MapStoreItem = ({
 
   const handlePress = () => {
     setSelectedStore(item);
-    moveCenterMap(item.locationDto.latitude, item.locationDto.longitude);
+    moveCenterMap(item.locationDto.latitude, item.locationDto.longitude, 1);
+
+    // optional: additional behavior (e.g., open detail)
+    if (typeof onItemPress === 'function') {
+      try {
+        onItemPress(item);
+      } catch (e) {}
+    }
 
     if (!token) {
       showToast('로그인 후 이용할 수 있어요!', 'center');
       return;
     }
-    navigation.navigate('StoreStack', {
-      screen: 'StoreMainScreen',
-      params: {
-        storeId: item.id,
-      },
-    });
+    // navigation.navigate('StoreStack', {
+    //   screen: 'StoreMainScreen',
+    //   params: {
+    //     storeId: item.id,
+    //   },
+    // });
   };
 
   const {translateCategory} = useCategoryTranslation();
@@ -160,7 +168,6 @@ const MapStoreItem = ({
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <FontAwesomeIcon name="star" size={15} color="#FCC104" />
             <Text style={styles.storeAddress}>
-              {' '}
               {item.storeRate} ({item.reviewCount})
             </Text>
           </View>
@@ -173,11 +180,9 @@ const MapStoreItem = ({
 const styles = StyleSheet.create({
   storeInfo: {
     flexDirection: 'row',
-    width: ITEM_WIDTH, // 아이템 너비
     backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 12,
-    marginHorizontal: SPACING, // 아이템 간 간격
+    paddingHorizontal: 15,
+    marginVertical: 10,
   },
   backimageview: {
     width: IMG_WIDTH,
@@ -273,4 +278,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MapStoreItem;
+export default React.memo(MapStoreItem);

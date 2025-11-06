@@ -1,46 +1,60 @@
-import React, {useState, useEffect, useCallback, useRef} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
-  View,
   StyleSheet,
-  ScrollView,
-  Keyboard,
-  TouchableWithoutFeedback,
-  RefreshControl,
-  BackHandler,
+  View,
   Text,
-  Modal,
   TouchableOpacity,
-  Dimensions,
-  Animated,
-  Easing,
+  BackHandler,
+  ScrollView,
 } from 'react-native';
-import {useFocusEffect} from '@react-navigation/native';
-import {getLocation} from '../../../storage/locationStorage';
 import SearchBar from '../../../components/SearchScreen/SearchBar';
-import FastSearch from '../../../components/SearchScreen/FastSearch/FastSearch';
-import FastSearchFilter from '../../../components/SearchScreen/FastSearch/FastSearchFilter';
-import RecentStoreList from '../../../components/SearchScreen/RecentStore/RecentStoreList';
 import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
 import MyBanner from '../../../components/Ads/MyBanner';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-
-const {height: SCREEN_HEIGHT} = Dimensions.get('window');
+import MapFilterHeader from '../../../components/MapScreen/MapStore/MapFilterHeader';
+import FilterPotal from '../../../components/MapScreen/MapStore/FilterPotal';
+import {useMapSearch} from '../../../context/MapSearchContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useFocusEffect} from '@react-navigation/native';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import {normalizeFont} from '../../../hooks/normalizeFont';
 
 const SearchScreen = ({navigation}) => {
   const {showToast} = useToast();
-  const [location, setLocation] = useState(null);
-  const [searchStoreName, setSearchStoreName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [bottomModalVisible, setBottomModalVisible] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState({
-    카테고리: '',
-    인원: '',
-    '방문 시간': '',
-    주종: '',
-  });
+  const {
+    searchText,
+    setSearchText,
+    selectedFilters,
+    setSelectedFilters,
+    setRadiusKm,
+  } = useMapSearch();
+
+  const [searchStoreName, setSearchStoreName] = useState(searchText || '');
+  const [loading] = useState(false);
+  const [isRefreshing] = useState(false);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [filterInitialTab, setFilterInitialTab] = useState('거리');
+  const [recentSearches, setRecentSearches] = useState([]);
+
+  const RECENT_KEY = 'RECENT_SEARCHES';
+
+  const loadRecentSearches = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem(RECENT_KEY);
+      const list = stored ? JSON.parse(stored) : [];
+      if (Array.isArray(list)) setRecentSearches(list);
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadRecentSearches();
+    }, [loadRecentSearches]),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -58,147 +72,47 @@ const SearchScreen = ({navigation}) => {
     }, [navigation]),
   );
 
-  useEffect(() => {
-    const fetchLocation = async () => {
-      setLoading(true);
+  const persistRecent = useCallback(
+    async term => {
       try {
-        const currentLocation = await getLocation(); // 캐시된 위치 가져오기
-        setLocation(currentLocation);
-      } catch (er) {
-      } finally {
-        setLoading(false);
+        const trimmed = (term || '').trim();
+        if (!trimmed) return;
+        const current = Array.isArray(recentSearches) ? recentSearches : [];
+        const next = [trimmed, ...current.filter(t => t !== trimmed)].slice(
+          0,
+          10,
+        );
+        setRecentSearches(next);
+        await AsyncStorage.setItem(RECENT_KEY, JSON.stringify(next));
+      } catch (e) {
+        // ignore
       }
-    };
-    fetchLocation();
-  }, []);
+    },
+    [recentSearches],
+  );
 
-  const onRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      const currentLocation = await getLocation();
-      if (currentLocation) {
-        setLocation(currentLocation);
-      }
-      setSelectedFilters({
-        카테고리: '',
-        인원: '',
-        '방문 시간': '',
-        주종: '',
-      });
-      await new Promise(resolve => setTimeout(resolve, 300));
-    } catch (error) {
-      console.error('초기 로드 오류:', error);
-    } finally {
-      setIsRefreshing(false); // 새로 고침 종료
-    }
-  };
-
-  const onPressFastSearch = () => {
-    const {카테고리, 인원, '방문 시간': 방문시간, 주종} = selectedFilters;
-
-    // 아무것도 선택 안했으면 그냥 return
-    if (!카테고리 && !인원 && !방문시간 && !주종) {
-      showToast('하나 이상의 조건을 선택해주세요.', 'center');
-      return;
-    }
-
-    // 검색 DTO 구성
-    const conditionSearchDto = {};
-    const fastviewDto = {
-      selectedCategory: '',
-      selectedPeople: '',
-      timeselectedHour: '',
-      timeselectedMinute: '',
-      selectedAlcohol: '',
-    };
-
-    // 카테고리
-    if (카테고리) {
-      conditionSearchDto.category = 카테고리;
-      fastviewDto.selectedCategory = 카테고리;
-    }
-
-    // 인원
-    if (인원) {
-      // "10인 이하" -> false, "10인 이상" -> true
-      const isGroup = 인원 === '단체 방문';
-      conditionSearchDto.isGroupAvailable = isGroup;
-      fastviewDto.selectedPeople = 인원;
-    }
-
-    // 방문 시간
-    if (방문시간) {
-      // 방문시간은 "HH:mm" 형식이라고 가정
-      const [hour, minute] = 방문시간.split(':').map(v => parseInt(v, 10));
-      const now = new Date();
-      now.setHours(hour, minute, 0, 0);
-      // 타임존 보정 (서버 사양에 따라 필요 시)
-      now.setHours(now.getHours() + 9);
-      conditionSearchDto.conditionTime = now.toISOString().slice(0, -1);
-
-      fastviewDto.timeselectedHour = hour.toString().padStart(2, '0');
-      fastviewDto.timeselectedMinute = minute.toString().padStart(2, '0');
-    }
-
-    // 주종
-    if (주종) {
-      conditionSearchDto.alcoholType = 주종;
-      fastviewDto.selectedAlcohol = 주종;
-    }
-
-    // ✅ 검색 화면으로 이동
-    navigation.navigate('SearchStack', {
-      screen: 'SearchFastScreen',
-      params: {
-        fastSearchStores: conditionSearchDto,
-        fastviewDto: fastviewDto,
-        location: location,
-      },
-    });
-
-    // 선택 초기화 & 모달 닫기
-    setSelectedFilters({
-      카테고리: '',
-      인원: '',
-      '방문 시간': '',
-      주종: '',
-    });
-    setBottomModalVisible(false);
-  };
-
-  const onPressSearch = () => {
-    if (searchStoreName) {
-      const trimmedSearchName = searchStoreName.trim();
-      navigation.navigate('SearchResultScreen', {
-        searchName: trimmedSearchName, // 검색어 전달
-        location: location,
-      });
+  const onPressSearch = async () => {
+    const trimmed = (searchStoreName || '').trim();
+    if (trimmed.length > 0) {
+      setSearchText(trimmed);
+      await persistRecent(trimmed);
+      navigation.navigate('MapScreen');
     } else {
-      showToast('검색어를 입력하세요.', 'center');
+      showToast('검색어를 입력해주세요', 'center');
     }
   };
 
-  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current; // 초기값: 화면 아래
-
-  useEffect(() => {
-    if (bottomModalVisible) {
-      // 열릴 때 슬라이드 업
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-    } else {
-      // 닫힐 때 슬라이드 다운
-      Animated.timing(slideAnim, {
-        toValue: SCREEN_HEIGHT,
-        duration: 300,
-        easing: Easing.in(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [bottomModalVisible]);
+  const distanceLabel = selectedFilters['거리'] || '1km';
+  const categoryLabel = selectedFilters['카테고리'] || '카테고리';
+  const peopleLabel = selectedFilters['인원'] || '인원';
+  const alcoholLabel = selectedFilters['주종'] || '주종';
+  const storeatmLabel = selectedFilters['매장분위기'] || '매장분위기';
+  const timeActive = selectedFilters['방문시간'] || '방문시간';
+  const parkingLabel = selectedFilters['주차'] || '주차';
+  const corkageLabel = selectedFilters['콜키지'] || '콜키지';
+  const screenLabel = selectedFilters['스크린'] || '스크린';
+  const roomLabel = selectedFilters['룸'] || '룸';
+  const outdoorLabel = selectedFilters['야장'] || '야장';
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -208,64 +122,90 @@ const SearchScreen = ({navigation}) => {
         placeholder="원하는 술집이나 메뉴를 검색하세요"
         onPress={onPressSearch}
       />
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        {/* 스크롤 가능한 영역 */}
-        <ScrollView
-          refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-          }>
-          <FastSearch
-            title="내 주변 술집 빠른 검색"
-            selectedFilters={selectedFilters}
-            handleBottomOpen={() => setBottomModalVisible(true)}
-          />
-          <RecentStoreList
-            refresh={isRefreshing}
-            setRefresh={setIsRefreshing}
-            loading={loading}
-            setLoading={setLoading}
-            navigation={navigation}
-            location={location}
-          />
-          <View style={{height: 30}} />
-          <MyBanner index={'search'} />
-        </ScrollView>
-      </TouchableWithoutFeedback>
 
-      <Modal
-        animationType="fade"
-        transparent={true}
-        statusBarTranslucent={true}
-        visible={bottomModalVisible}
-        onRequestClose={() => setBottomModalVisible(false)}>
-        <TouchableWithoutFeedback onPress={() => setBottomModalVisible(false)}>
-          <View style={styles.modalOverlay} />
-        </TouchableWithoutFeedback>
+      <MapFilterHeader
+        setFilterInitialTab={setFilterInitialTab}
+        setFilterModalVisible={setFilterModalVisible}
+        distanceLabel={distanceLabel}
+        categoryLabel={categoryLabel}
+        peopleLabel={peopleLabel}
+        alcoholLabel={alcoholLabel}
+        timeActive={timeActive}
+        parkingLabel={parkingLabel}
+        corkageLabel={corkageLabel}
+        screenLabel={screenLabel}
+        roomLabel={roomLabel}
+        outdoorLabel={outdoorLabel}
+        storeatmLabel={storeatmLabel}
+        storeatmCount={
+          Array.isArray(selectedFilters['매장분위기'])
+            ? selectedFilters['매장분위기'].length
+            : selectedFilters['매장분위기']
+            ? 1
+            : 0
+        }
+      />
 
-        {/* Animated.View로 감싸기 */}
-        <Animated.View
-          style={[
-            styles.modalContent,
-            {
-              transform: [{translateY: slideAnim}],
-            },
-          ]}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>내 주변 술집 빠른 검색</Text>
-            <TouchableOpacity onPress={() => setBottomModalVisible(false)}>
-              <Ionicons name="close" size={22} color="#666" />
+      <MyBanner index={'search'} />
+
+      {recentSearches.length > 0 && (
+        <View style={styles.recentWrap}>
+          <ScrollView
+            style={{}}
+            contentContainerStyle={{paddingBottom: 40}}
+            showsVerticalScrollIndicator={false}>
+            {recentSearches.map(item => (
+              <TouchableOpacity
+                key={item}
+                style={styles.recentItem}
+                onPress={async () => {
+                  setSearchStoreName(item);
+                  setSearchText(item);
+                  await persistRecent(item);
+                  navigation.navigate('MapScreen');
+                }}>
+                <View style={styles.recentLeft}>
+                  <View
+                    style={{
+                      backgroundColor: '#96c3f3',
+                      paddingHorizontal: 8,
+                      paddingVertical: 7,
+                      borderRadius: 50,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      alignSelf: 'center',
+                      textAlign: 'center',
+                    }}>
+                    <FontAwesome name="search" color="#fff" size={14} />
+                  </View>
+                  <Text style={styles.recentText}>{item}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+
+            {/* 🗑 최근 검색어 전체 삭제 */}
+            <TouchableOpacity
+              style={styles.clearButton}
+              onPress={async () => {
+                await AsyncStorage.removeItem(RECENT_KEY);
+                setRecentSearches([]);
+              }}>
+              <Text style={styles.clearText} allowFontScaling={false}>
+                최근 검색어 삭제
+              </Text>
             </TouchableOpacity>
-          </View>
-          <FastSearchFilter
-            selectedFilters={selectedFilters}
-            setSelectedFilters={setSelectedFilters}
-            onClose={() => setBottomModalVisible(false)}
-            handleApply={onPressFastSearch}
-            modalVisible={bottomModalVisible}
-          />
-        </Animated.View>
-      </Modal>
+          </ScrollView>
+        </View>
+      )}
 
+      <FilterPotal
+        filterModalVisible={filterModalVisible}
+        setFilterModalVisible={setFilterModalVisible}
+        selectedFilters={selectedFilters}
+        setSelectedFilters={setSelectedFilters}
+        initialTab={filterInitialTab}
+        setRadiusint={setRadiusKm}
+      />
       <Loading loading={isRefreshing || loading} />
     </SafeAreaView>
   );
@@ -274,52 +214,53 @@ const SearchScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    flex: 1, // 화면 전체를 차지하도록 설정
-  },
-  scrollViewContent: {
-    paddingBottom: 100,
-
-    flex: 1, // 화면 전체를 차지하도록 설정
-  },
-  openButton: {
-    marginTop: 40,
-    marginHorizontal: 20,
-    backgroundColor: '#3CBBFF',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
   },
-  modalContent: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    height: SCREEN_HEIGHT * 0.85, // 화면 높이의 85%
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 20,
-    paddingTop: 12,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: -3},
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 10,
+  recentWrap: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    flex: 1,
   },
-  header: {
+  recentTitle: {
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#777',
+    marginBottom: 8,
+    fontFamily: 'Pretendard-Medium',
+  },
+  recentItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 7,
-    marginHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  headerTitle: {
+  recentLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  locationIcon: {
+    fontSize: 14,
+  },
+  recentText: {
+    color: '#111',
     fontSize: 17,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#121212',
+    fontFamily: 'Pretendard-Regular',
+  },
+
+  clearButton: {
+    marginTop: 12,
+    alignSelf: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+
+  clearText: {
+    marginTop: 40,
+    color: '#999',
+    fontSize: normalizeFont(13, 1.5),
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

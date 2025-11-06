@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {
   View,
   TextInput,
@@ -10,9 +10,19 @@ import {
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {normalizeFont} from '../../hooks/normalizeFont';
 import CancelText from '../CancelText/CancelText';
+import {useFocusEffect} from '@react-navigation/native';
 
 const SearchBar = ({value, onChangeText, placeholder, onPress}) => {
   const [focused, setFocused] = useState(false);
+  const inputRef = useRef(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 300);
+    }, []),
+  );
   return (
     <View
       style={[styles.topView, Platform.OS === 'android' && {paddingTop: 10}]}>
@@ -23,6 +33,7 @@ const SearchBar = ({value, onChangeText, placeholder, onPress}) => {
       {/* ✅ 검색창 */}
       <View style={styles.search}>
         <TextInput
+          ref={inputRef}
           style={styles.textInput}
           placeholder={placeholder || '검색어를 입력해주세요.'}
           placeholderTextColor="#A9A9A9"
@@ -60,6 +71,7 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 3},
     shadowOpacity: 0.05,
     shadowRadius: 3,
+    marginBottom: 5,
   },
   searchButton: {
     marginLeft: 18,
