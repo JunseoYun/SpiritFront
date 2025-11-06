@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -23,12 +23,44 @@ import {
 import ImageAddButton from '../../utils/ImageAddButton';
 
 import {useToast} from '../../context/ToastContext';
-const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
+const StoreImage = ({
+  imageUris,
+  setImageUris,
+  error,
+  setLoading,
+  type = 'default',
+}) => {
+  const isRegistration = type === 'registration';
   const [images, setImage] = useState([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false); // 바텀시트 상태
 
   const {showToast} = useToast();
+
+  useEffect(() => {
+    const normalized = (imageUris || [])
+      .map(item => {
+        if (typeof item === 'string') {
+          return item;
+        }
+        if (item?.path) {
+          return item.path;
+        }
+        if (item?.uri) {
+          return item.uri;
+        }
+        return '';
+      })
+      .filter(Boolean);
+
+    setImage(prev => {
+      const isSame =
+        prev.length === normalized.length &&
+        prev.every((value, index) => value === normalized[index]);
+
+      return isSame ? prev : normalized;
+    });
+  }, [imageUris]);
 
   const handleCameraPick = async () => {
     const hasCamera = await requestCameraPermission();
@@ -130,12 +162,13 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
 
   return (
     <View>
-      <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>매장 사진 추가하기</Text>
-        {error === 'StoreImage' && images.length === 0 && (
-          <Text style={styles.errorMessage}>
-            매장 사진을 최소 1개 이상 업로드해 주세요.
-          </Text>
+      <View
+        style={[
+          styles.storeinputview,
+          isRegistration && styles.registrationSpacing,
+        ]}>
+        {!isRegistration && (
+          <Text style={styles.storeinputtext}>매장 사진 추가하기</Text>
         )}
       </View>
 
@@ -179,14 +212,22 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
           </View>
         ))}
       </ScrollView>
-      <View style={styles.tipView}>
-        <View style={styles.tipbadge}>
-          <Text style={styles.tipbadgeText}>Tip</Text>
-        </View>
-        <Text style={styles.tipText}>
-          첫 번째로 추가한 사진이 대표 사진으로 설정돼요
+      {error === 'StoreImage' && images.length === 0 && (
+        <Text style={styles.errorMessage}>
+          매장 사진을 최소 1개 이상 업로드해 주세요.
         </Text>
-      </View>
+      )}
+      {!isRegistration && (
+        <View style={styles.tipView}>
+          <View style={styles.tipbadge}>
+            <Text style={styles.tipbadgeText}>Tip</Text>
+          </View>
+          <Text style={styles.tipText}>
+            첫 번째로 추가한 사진이 대표 사진으로 설정돼요
+          </Text>
+        </View>
+      )}
+
       <ImagePickermodal
         isBottomSheetVisible={isBottomSheetVisible}
         setBottomSheetVisible={setBottomSheetVisible}
@@ -202,6 +243,9 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginHorizontal: 18,
   },
+  registrationSpacing: {
+    marginTop: 0,
+  },
   storeinputtext: {
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
@@ -209,9 +253,10 @@ const styles = StyleSheet.create({
   },
   errorMessage: {
     color: '#FF4816',
-    fontFamily: 'Pretendard-Medium',
+    fontFamily: 'Pretendard-Regular',
     fontSize: 15,
-    marginTop: 5,
+    marginVertical: 5,
+    marginHorizontal: 18,
   },
   imageview: {
     flexDirection: 'row',

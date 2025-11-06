@@ -17,7 +17,14 @@ const alcohols = [
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
-const StoreAlcohol = ({alcohol = [], setAlcohol, index, error}) => {
+const StoreAlcohol = ({
+  alcohol = [],
+  setAlcohol,
+  index,
+  error,
+  type = 'default',
+}) => {
+  const isRegistration = type === 'registration';
   const selectedAlcohols = Array.isArray(alcohol) ? alcohol : [];
 
   const toggleAlcohol = value => {
@@ -38,13 +45,18 @@ const StoreAlcohol = ({alcohol = [], setAlcohol, index, error}) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.labelView}>
-        <Text style={styles.label}>
-          {index ? '대표 주종*' : '대표 주종'}
-        </Text>
-        <Text style={styles.countLabel}>({selectedAlcohols.length}/3)</Text>
-      </View>
+    <View
+      style={[styles.container, isRegistration && styles.registrationSpacing]}>
+      {!isRegistration && (
+        <View style={styles.labelView}>
+          <Text style={styles.label}>
+            {index ? '대표 주종*' : '대표 주종'}
+          </Text>
+          <Text style={styles.countLabel}>
+            ({selectedAlcohols.length}/3)
+          </Text>
+        </View>
+      )}
       <View style={styles.categoryGrid}>
         {alcohols.map(({label, value}) => {
           const isSelected = selectedAlcohols.includes(value);
@@ -85,6 +97,9 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 40,
     marginHorizontal: 20,
+  },
+  registrationSpacing: {
+    marginTop: 0,
   },
   labelView: {
     flexDirection: 'row',

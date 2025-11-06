@@ -3,7 +3,13 @@ import {View, Text, StyleSheet, Pressable} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import ColorUtil from '../../utils/ColorUtil';
 
-const StoreCategory = ({selectedCategory, setSelectedCategory, error}) => {
+const StoreCategory = ({
+  selectedCategory,
+  setSelectedCategory,
+  error,
+  type = 'default',
+}) => {
+  const isRegistration = type === 'registration';
   const {translateCategory} = useCategoryTranslation();
 
   const toggleCategory = category => {
@@ -18,12 +24,17 @@ const StoreCategory = ({selectedCategory, setSelectedCategory, error}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, isRegistration && styles.registrationSpacing]}>
       {/* ✅ 상단 라벨 영역 */}
-      <View style={styles.labelView}>
-        <Text style={styles.label}>카테고리</Text>
-        <Text style={[styles.countLabel]}>({selectedCategory.length}/3)</Text>
-      </View>
+      {!isRegistration && (
+        <View style={styles.labelView}>
+          <Text style={styles.label}>카테고리</Text>
+          <Text style={[styles.countLabel]}>
+            ({selectedCategory.length}/3)
+          </Text>
+        </View>
+      )}
 
       {/* ✅ 카테고리 칩 리스트 */}
       <View style={styles.categoryGrid}>
@@ -81,6 +92,9 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 30,
     marginHorizontal: 18,
+  },
+  registrationSpacing: {
+    marginTop: 0,
   },
   labelView: {
     flexDirection: 'row',

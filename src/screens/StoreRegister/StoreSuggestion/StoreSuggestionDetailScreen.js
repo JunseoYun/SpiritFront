@@ -261,9 +261,9 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
       }
     }
 
-    const validDrinks = alcohol.filter(Boolean).map(type => ({type}));
+    const validDrinks = alcohol.filter(Boolean);
     if (validDrinks.length > 0) {
-      updatePayload.mainDrinkDtos = validDrinks;
+      updatePayload.mainDrinkTypes = validDrinks;
     }
 
     const filteredCategories = selectedCategory.filter(c => c !== '-');

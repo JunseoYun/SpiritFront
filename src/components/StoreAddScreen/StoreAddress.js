@@ -27,7 +27,9 @@ const StoreAddress = ({
   location,
   storeAddressRef,
   screen,
+  type = 'default',
 }) => {
+  const isRegistration = type === 'registration';
   const [focusedInput, setFocusedInput] = useState(null);
   const [errors, setErrors] = useState(null);
   const MAX_DETAIL = 100;
@@ -57,23 +59,29 @@ const StoreAddress = ({
 
   const inputViewStyle = [
     styles.storeinputview,
-    index === 1 && {marginTop: 40},
+    index === 1 && !isRegistration && {marginTop: 40},
+    isRegistration && styles.registrationSpacing,
   ];
 
   return (
     <View>
       {/* ✅ 매장 주소 / 사업장 소재지 */}
       <View style={inputViewStyle}>
-        {index === 1 ? (
-          <Text style={styles.label}>사업장 소재지</Text>
-        ) : (
-          <View style={styles.labelView}>
-            <Text style={styles.label}>매장 주소</Text>
-            <Text style={styles.subLabel}>
-              · 대략적인 위치만 알려주셔도 괜찮아요
+        {!isRegistration &&
+          (index === 1 ? (
+            <Text style={[styles.label, {marginBottom: 12}]}>
+              사업장 소재지
             </Text>
-          </View>
-        )}
+          ) : (
+            <View style={styles.labelView}>
+              <Text style={styles.label}>매장 주소</Text>
+              {screen === 'StoreSuggestionScreen' && (
+                <Text style={styles.subLabel}>
+                  · 대략적인 위치만 알려주셔도 괜찮아요
+                </Text>
+              )}
+            </View>
+          ))}
 
         <View style={styles.inputContainer} ref={storeAddressRef}>
           <TouchableOpacity
@@ -111,8 +119,7 @@ const StoreAddress = ({
 
       {/* ✅ 상세 주소 (매장 주소 구조 동일) */}
       {screen !== 'StoreSuggestionScreen' && (
-        <View style={inputViewStyle}>
-          <Text style={styles.label}>상세 주소</Text>
+        <View style={[styles.detailedAddressView]}>
           <View style={styles.inputContainer}>
             <TextInput
               style={[styles.inputField, {paddingRight: 40}]}
@@ -145,7 +152,10 @@ const StoreAddress = ({
 const styles = StyleSheet.create({
   storeinputview: {
     marginTop: 40,
-    marginHorizontal: 20,
+    marginHorizontal: 18,
+  },
+  registrationSpacing: {
+    marginTop: 0,
   },
   // label: {
   //   fontFamily: 'Pretendard-SemiBold',
@@ -172,6 +182,11 @@ const styles = StyleSheet.create({
     marginRight: 4,
     paddingBottom: 1,
   },
+  detailedAddressView: {
+    marginHorizontal: 18,
+    marginTop: 7,
+  },
+
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',

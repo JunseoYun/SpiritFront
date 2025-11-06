@@ -20,6 +20,7 @@ import MyStack from './MyStack';
 import OAuthStack from './OAuthStack';
 import StoreAddMapScreen from '../screens/StoreRegister/StoreAddMapScreen';
 import StoreAddPhotoScreen from '../screens/StoreRegister/StoreAddList/StoreAddPhotoScreen';
+import StoreRegistrationScreen from '../screens/StoreRegister/StoreRegistration/StoreRegistrationScreen';
 import StoreSuggestionScreen from '../screens/StoreRegister/StoreSuggestion/StoreSuggestionScreen';
 import StoreSuggestionDetailScreen from '../screens/StoreRegister/StoreSuggestion/StoreSuggestionDetailScreen';
 import StoreAddInfoScreen from '../screens/StoreRegister/StoreAddList/StoreAddInfoScreen';
@@ -182,6 +183,32 @@ export default function MainStack() {
           ),
         })}
       />
+
+      <Stack.Screen
+        name="StoreRegistrationScreen"
+        component={StoreRegistrationScreen}
+        options={({navigation, route}) => ({
+          title: `매장 등록`,
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+          // headerLeft: () => (
+          //   <Pressable
+          //     onPress={() => navigation.goBack()}
+          //     hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+          //     <Ionicons
+          //       name="arrow-back-outline"
+          //       size={23}
+          //       color="#333"
+          //       style={{paddingLeft: 12}}
+          //     />
+          //   </Pressable>
+          // ),
+        })}
+      />
+
       <Stack.Screen
         name="StoreSuggestionScreen"
         component={StoreSuggestionScreen}

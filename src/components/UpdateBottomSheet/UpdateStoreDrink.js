@@ -1,22 +1,25 @@
-import React, {useState, useEffect, useLayoutEffect} from 'react';
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useCallback,
+} from 'react';
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   Pressable,
-  TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
-  Dimensions,
+  Platform,
   SafeAreaView,
 } from 'react-native';
-
 import {UpdateStore} from '../../api/storeApi';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
 
-const alcoholTypes = [
+const ALCOHOL_TYPES = [
   {label: '소주', value: 'SOJU'},
   {label: '맥주', value: 'BEER'},
   {label: '막걸리', value: 'MAKGEOLLI'},
@@ -31,365 +34,205 @@ const alcoholTypes = [
   {label: '데킬라', value: 'TEQUILA'},
 ];
 
-const UpdateStoreDrink = ({navigation, route}) => {
-  const {storeId, mainDrinkDtos} = route.params;
-  const [expandedIndex, setExpandedIndex] = useState(null);
-  const [updatedValue, setUpdatedValue] = useState(mainDrinkDtos || []);
-  const [selectnull, setSelectnull] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const {showToast} = useToast();
-  const [overText, setOverText] = useState(false);
+const normalizeDrinks = drinks => {
+  if (!Array.isArray(drinks)) {
+    return [];
+  }
 
-  const ensureTwoOptions = () => {
-    if (updatedValue.length < 3) {
-      const additionalValue = {type: '', price: 0};
-      setUpdatedValue([...updatedValue, additionalValue]);
+  if (drinks.length === 0) {
+    return [];
+  }
+
+  if (typeof drinks[0] === 'string') {
+    return drinks;
+  }
+
+  return drinks.map(drink => drink?.type).filter(Boolean);
+};
+
+const MAX_SELECTION = 3;
+
+const UpdateStoreDrink = ({navigation, route}) => {
+  const {storeId, mainDrinkDtos, mainDrinkTypes} = route.params;
+  const {showToast} = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const initialSelection = useMemo(() => {
+    if (Array.isArray(mainDrinkTypes)) {
+      return normalizeDrinks(mainDrinkTypes);
     }
-  };
+    if (Array.isArray(mainDrinkDtos)) {
+      return normalizeDrinks(mainDrinkDtos);
+    }
+    return [];
+  }, [mainDrinkDtos, mainDrinkTypes]);
+
+  const [selectedAlcohols, setSelectedAlcohols] = useState(initialSelection);
 
   useEffect(() => {
-    if (mainDrinkDtos) {
-      setUpdatedValue(mainDrinkDtos);
+    setSelectedAlcohols(initialSelection);
+  }, [initialSelection]);
+
+  const toggleAlcohol = value => {
+    setSelectedAlcohols(prev => {
+      if (prev.includes(value)) {
+        return prev.filter(item => item !== value);
+      }
+      if (prev.length >= MAX_SELECTION) {
+        return prev;
+      }
+      return [...prev, value];
+    });
+  };
+
+  const handleComplete = useCallback(async () => {
+    if (selectedAlcohols.length === 0) {
+      showToast('대표 주종을 하나 이상 선택해주세요.', 'center');
+      return;
     }
-  }, []);
+
+    try {
+      setLoading(true);
+      await UpdateStore(storeId, {mainDrinkTypes: selectedAlcohols});
+      navigation.goBack();
+    } catch (error) {
+      showToast('잠시 후 다시 시도해 주세요.', 'center');
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedAlcohols, showToast, storeId, navigation]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Pressable onPress={handleComplete}>
-          <Text style={[styles.searchButton, selectnull && {color: '#999'}]}>
+        <Pressable
+          onPress={handleComplete}
+          disabled={loading || selectedAlcohols.length === 0}>
+          <Text
+            style={[
+              styles.headerButton,
+              (loading || selectedAlcohols.length === 0) && styles.headerButtonDisabled,
+            ]}>
             완료
           </Text>
         </Pressable>
       ),
     });
-  }, [handleComplete, updatedValue, selectnull]);
-
-  useEffect(() => {
-    const hasInvalidDrink = updatedValue.some(item => {
-      const isEmpty = item.type === '' && (!item.price || item.price === 0);
-      if (isEmpty) return false; // 완전 빈 항목은 무시
-
-      const isMissingTypeOrPrice =
-        item.type === '' ||
-        item.price === undefined ||
-        item.price === null ||
-        item.price === 0 ||
-        isNaN(item.price);
-
-      return isMissingTypeOrPrice;
-    });
-
-    setSelectnull(hasInvalidDrink);
-  }, [updatedValue]);
-
-  const handleComplete = async () => {
-    if (selectnull) {
-      showToast('정보를 모두 입력해 주세요.', 'center');
-      return;
-    }
-
-    const filteredDrinks = updatedValue.filter(
-      item => item.type !== '' && item.price > 0,
-    );
-
-    try {
-      setLoading(true);
-      await UpdateStore(storeId, {mainDrinkDtos: filteredDrinks});
-      navigation.goBack();
-    } catch (err) {
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    ensureTwoOptions();
-  }, [updatedValue]);
-
-  const toggleExpand = index => {
-    setExpandedIndex(expandedIndex === index ? null : index);
-  };
+  }, [navigation, handleComplete, loading, selectedAlcohols.length]);
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{flex: 1}}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 0} // iOS의 경우 적절한 offset 설정
-    >
-      <SafeAreaView style={styles.bottomSheetContent}>
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 0}>
+      <SafeAreaView style={styles.container}>
         <ScrollView
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{paddingTop: 10}}
-          keyboardShouldPersistTaps="handled">
-          {updatedValue.map((drink, index) => {
-            const itemPerRow = 3;
-            const selectedTypes = updatedValue
-              .filter((_, i) => i !== index)
-              .map(d => d.type);
+          contentContainerStyle={styles.contentContainer}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          <Text style={styles.title}>대표 주종 선택</Text>
+          <Text style={styles.subtitle}>최대 3개까지 선택할 수 있습니다.</Text>
 
-            const filteredAlcohols = alcoholTypes.filter(
-              a => !selectedTypes.includes(a.value) || a.value === drink.type,
-            );
+          <View style={styles.alcoholGrid}>
+            {ALCOHOL_TYPES.map(({label, value}) => {
+              const isSelected = selectedAlcohols.includes(value);
+              const disabled =
+                !isSelected && selectedAlcohols.length >= MAX_SELECTION;
 
-            const remainder = filteredAlcohols.length % itemPerRow;
-            const paddingCount = remainder === 0 ? 0 : itemPerRow - remainder;
-            const paddedAlcohols = [
-              ...filteredAlcohols,
-              ...Array(paddingCount).fill(null),
-            ];
-
-            return (
-              <View key={index} style={styles.alcoholRow}>
-                {expandedIndex !== index ? (
-                  <TouchableOpacity
-                    style={styles.collapsedInfo}
-                    onPress={() => toggleExpand(index)}>
-                    <Text style={styles.collapsedText}>
-                      {drink.type
-                        ? alcoholTypes.find(a => a.value === drink.type)
-                            ?.label || '주종 선택'
-                        : '주종 선택'}
-                    </Text>
-                    <Text style={styles.collapsedText}>
-                      {drink.price ? `${drink.price} 원` : '가격 입력'}
-                    </Text>
-                  </TouchableOpacity>
-                ) : (
-                  <>
-                    <View style={styles.pickerContainer}>
-                      <Text style={styles.sectionTitle}>주종 선택</Text>
-                      <View style={styles.alcoholList}>
-                        {paddedAlcohols.map((alcohol, i) =>
-                          alcohol ? (
-                            <Pressable
-                              key={alcohol.value}
-                              style={[
-                                styles.alcoholButton,
-                                drink.type === alcohol.value &&
-                                  styles.selectedAlcohol,
-                              ]}
-                              onPress={() =>
-                                setUpdatedValue(prev => {
-                                  const updatedDrinks = [...prev];
-                                  const current = updatedDrinks[index]?.type;
-                                  const selected = alcohol.value;
-                                  updatedDrinks[index] = {
-                                    ...updatedDrinks[index],
-                                    type: current === selected ? '' : selected,
-                                  };
-                                  return updatedDrinks;
-                                })
-                              }>
-                              <Text
-                                style={[
-                                  styles.alcoholText,
-                                  drink.type === alcohol.value &&
-                                    styles.selectedAlcoholText,
-                                ]}>
-                                {alcohol.label}
-                              </Text>
-                            </Pressable>
-                          ) : (
-                            <View
-                              key={`dummy-${i}`}
-                              style={styles.alcoholButton}
-                            />
-                          ),
-                        )}
-                      </View>
-                    </View>
-
-                    <View style={styles.priceContainer}>
-                      <Text style={styles.sectionTitle}>가격 입력</Text>
-                      <View style={styles.priceInputWrapper}>
-                        <TextInput
-                          style={styles.priceInput}
-                          keyboardType="number-pad"
-                          placeholder="0"
-                          placeholderTextColor="#aaa"
-                          value={drink.price?.toString() || ''}
-                          onChangeText={value => {
-                            const cleaned = value.replace(/[^0-9]/g, '');
-                            let num =
-                              cleaned === '' ? 0 : parseInt(cleaned, 10);
-                            if (!isNaN(num) && num > 100000000) {
-                              num = 100000000;
-                              setOverText(true);
-                            } else {
-                              setOverText(false);
-                            }
-                            setUpdatedValue(prev => {
-                              const updatedDrinks = [...prev];
-                              updatedDrinks[index] = {
-                                ...updatedDrinks[index],
-                                price: num,
-                              };
-                              return updatedDrinks;
-                            });
-                          }}
-                        />
-                        <Text style={styles.unit}>원</Text>
-                      </View>
-                      {overText && (
-                        <Text style={styles.errorText}>
-                          가격은 최대 1억원까지 입력 가능합니다
-                        </Text>
-                      )}
-                    </View>
-
-                    <TouchableOpacity
-                      style={styles.saveButton}
-                      onPress={() => toggleExpand(index)}>
-                      <Text style={styles.saveButtonText}>완료</Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
-            );
-          })}
+              return (
+                <Pressable
+                  key={value}
+                  style={[
+                    styles.alcoholChip,
+                    isSelected && styles.alcoholChipSelected,
+                    disabled && styles.alcoholChipDisabled,
+                  ]}
+                  disabled={disabled}
+                  onPress={() => toggleAlcohol(value)}>
+                  <Text
+                    style={[
+                      styles.alcoholLabel,
+                      isSelected && styles.alcoholLabelSelected,
+                      disabled && styles.alcoholLabelDisabled,
+                    ]}>
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </ScrollView>
-
         <Loading loading={loading} />
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
 };
 
-export default UpdateStoreDrink;
-
 const styles = StyleSheet.create({
-  bottomSheetContent: {
+  container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#FFF',
+  },
+  contentContainer: {
+    paddingHorizontal: 18,
+    paddingTop: 24,
+    paddingBottom: 32,
   },
   title: {
     fontSize: 20,
     fontFamily: 'Pretendard-SemiBold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#333',
+    color: '#111',
   },
-  alcoholRow: {
-    marginVertical: 15,
-    marginHorizontal: 18,
+  subtitle: {
+    marginTop: 6,
+    fontSize: 14,
+    fontFamily: 'Pretendard-Regular',
+    color: '#666',
   },
-  pickerContainer: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#181A1A',
-    marginBottom: 10,
-  },
-  alcoholList: {
+  alcoholGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 14,
+    marginTop: 24,
   },
-  alcoholButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 7,
-    minWidth: '23%',
-    alignItems: 'center',
+  alcoholChip: {
+    marginRight: 12,
     marginBottom: 12,
-  },
-  alcoholText: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-Medium',
-    color: '#767676',
-  },
-  selectedAlcohol: {
-    backgroundColor: '#80D2F4',
-  },
-  selectedAlcoholText: {
-    color: '#fff',
-    fontFamily: 'Pretendard-SemiBold',
-  },
-  priceContainer: {
-    marginTop: 20,
-  },
-  priceInputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    borderColor: '#D5D8DC',
     backgroundColor: '#FFF',
-    height: 50,
   },
-  priceInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-    textAlign: 'center',
+  alcoholChipSelected: {
+    borderColor: '#3CBBFF',
+    backgroundColor: 'rgba(60,187,255,0.12)',
   },
-  unit: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#333',
+  alcoholChipDisabled: {
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F7F8FA',
   },
-  collapsedInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#F2F2F2',
-    borderRadius: 8,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+  alcoholLabel: {
+    fontSize: 15,
+    fontFamily: 'Pretendard-Regular',
+    color: '#444',
   },
-  collapsedText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+  alcoholLabelSelected: {
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#1789E0',
   },
-  saveButton: {
-    marginTop: 20,
-    backgroundColor: '#5CCEFF',
-    borderRadius: 8,
-    alignItems: 'center',
-    paddingVertical: 12,
+  alcoholLabelDisabled: {
+    color: '#B7BDC4',
   },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  searchButton: {
+  headerButton: {
     marginRight: 18,
     fontSize: 18,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#3CBBFF',
   },
-  footer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(194, 194, 194, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
-    fontSize: 20,
-    color: '#333',
-  },
-  errorText: {
-    color: '#FF4816',
-    fontSize: 14,
-    marginTop: 5,
+  headerButtonDisabled: {
+    color: '#A7CFF1',
   },
 });
+
+export default UpdateStoreDrink;

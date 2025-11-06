@@ -465,7 +465,7 @@ export default function StoreStack() {
               hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
               <Ionicons
                 name="close"
-                size={23}
+                size={24}
                 color="#333"
                 style={{paddingLeft: 12}}
               />
