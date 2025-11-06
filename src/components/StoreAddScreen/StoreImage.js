@@ -199,7 +199,7 @@ const StoreImage = ({imageUris, setImageUris, error, setLoading}) => {
 
 const styles = StyleSheet.create({
   storeinputview: {
-    marginTop: 25,
+    marginTop: 15,
     marginHorizontal: 18,
   },
   storeinputtext: {

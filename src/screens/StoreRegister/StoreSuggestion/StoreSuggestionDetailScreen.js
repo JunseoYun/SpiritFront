@@ -14,51 +14,50 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
-  BackHandler,
-  ToastAndroid,
-  Keyboard,
+  findNodeHandle,
+  Modal,
 } from 'react-native';
+import {UpdateStore} from '../../../api/storeApi';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {StoreRegister, StoreSuggestion} from '../../../api/storeApi';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
-import StoreAddProgressbar from '../../../components/StoreAddScreen/StoreAddProgressbar';
 import StoreCategory from '../../../components/StoreAddScreen/StoreCategory';
 import OperatingHoursPreview from '../../../components/StoreAddScreen/OperatingHoursPreview';
-import StoreGroup from '../../../components/StoreAddScreen/StoreGroup';
-import StoreTV from '../../../components/StoreAddScreen/StoreTV';
+import StoreFacilitiesInfo from '../../../components/StoreAddScreen/StoreFacilitiesInfo';
 import StoreAlcohol from '../../../components/StoreAddScreen/StoreAlcohol';
-import StoreInfo from '../../../components/StoreAddScreen/StoreInfo';
+import StorAddeNumber from '../../../components/StoreAddScreen/StoreAddNumber';
+import StoreAddContent from '../../../components/StoreAddScreen/StoreAddContent';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
-
+import BottomActionButton from '../../../utils/BottomActionButton';
+import ColorUtil from '../../../utils/ColorUtil';
+import useDoubleBackExit from '../../../hooks/useDoubleBackExit';
 const StoreSuggestionDetailScreen = ({navigation}) => {
+  useDoubleBackExit(navigation);
   const {bottom} = useSafeAndroidInsets();
   const route = useRoute();
-  const {storename, address, detailedAddress, imageUris, index, coords} =
-    route.params;
+  const {storename, index, preStoreId} = route.params;
   const [loading, setLoading] = useState(false);
-  const [storeData, setStoreData] = useState({
-    storeNumber: '',
-    storeContent: '',
-  });
+  const [isChoiceModalVisible, setIsChoiceModalVisible] = useState(false);
+  const [storeNumber, setStoreNumber] = useState('');
+  const [storeContent, setStoreContent] = useState('');
+
   const [selectedCategory, setSelectedCategory] = useState([]);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [selectedscreenOption, setselectedscreenOption] = useState(null);
+  const [facilitiesInfo, setFacilitiesInfo] = useState({
+    hasScreen: false,
+    hasRoom: false,
+    hasOutdoor: false,
+    isGroupAvailable: false,
+    isParkingAvailable: false,
+    isCorkageAvailable: false,
+  });
   const [closedDay, setClosedDay] = useState([]);
   const [alcohol, setAlcohol] = useState([]);
   const [is24Hours, setIs24Hours] = useState(null);
   const [isSameEveryTime, setIsSameEveryTime] = useState(true);
-  const [error, setError] = useState('');
 
   const scrollViewRef = useRef(null);
-  const storeCategoryRef = useRef(null);
-  const storeOperateRef = useRef(null);
-  const StoreGroupRef = useRef(null);
-  const StoreScreenRef = useRef(null);
-  const storeDrinkRef = useRef(null);
   const {showAlert, AlertComponent} = useCustomAlert();
-  const [confirm, setConfirm] = useState(false);
 
   const [operatingHours, setOperatingHours] = useState({
     Monday: {openHour: '', openMinute: '', closedHour: '', closedMinute: ''},
@@ -81,6 +80,59 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
   });
 
   const [hasBreaking, setHasBreaking] = useState(false);
+
+  const [isChanged, setIsChanged] = useState(false);
+
+  // 1️⃣ 최초 로드 시 초기 상태 저장
+  const initialState = useRef({
+    storeNumber: '',
+    storeContent: '',
+    selectedCategory: [],
+    facilitiesInfo: {
+      hasScreen: false,
+      hasRoom: false,
+      hasOutdoor: false,
+      isGroupAvailable: false,
+      isParkingAvailable: false,
+      isCorkageAvailable: false,
+    },
+    closedDay: [],
+    alcohol: [],
+    is24Hours: null,
+    operatingHours: JSON.parse(JSON.stringify(operatingHours)), // 깊은 복사
+    breakingHours: JSON.parse(JSON.stringify(breakingHours)),
+  });
+
+  // 2️⃣ 변경 감지 useEffect
+  useEffect(() => {
+    const initial = initialState.current;
+
+    const hasChange =
+      storeNumber !== initial.storeNumber ||
+      storeContent !== initial.storeContent ||
+      JSON.stringify(selectedCategory) !==
+        JSON.stringify(initial.selectedCategory) ||
+      JSON.stringify(facilitiesInfo) !==
+        JSON.stringify(initial.facilitiesInfo) ||
+      JSON.stringify(closedDay) !== JSON.stringify(initial.closedDay) ||
+      JSON.stringify(alcohol) !== JSON.stringify(initial.alcohol) ||
+      is24Hours !== initial.is24Hours ||
+      JSON.stringify(operatingHours) !==
+        JSON.stringify(initial.operatingHours) ||
+      JSON.stringify(breakingHours) !== JSON.stringify(initial.breakingHours);
+
+    setIsChanged(hasChange);
+  }, [
+    storeNumber,
+    storeContent,
+    selectedCategory,
+    facilitiesInfo,
+    closedDay,
+    alcohol,
+    is24Hours,
+    operatingHours,
+    breakingHours,
+  ]);
   const storeTimeHandle = () => {
     navigation.navigate('StoreAddTimeSetScreen', {
       operatingHours,
@@ -98,101 +150,48 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
     });
   };
 
-  const scrollToError = ref => {
-    if (ref?.current) {
-      ref.current.measureLayout(
-        scrollViewRef.current,
-        (x, y) => {
-          scrollViewRef.current.scrollTo({y: y - 100, animated: true});
-        },
-        () => console.log('스크롤 이동 실패'),
-      );
-    }
-  };
-
   const confirmSubmission = () => {
-    if (!selectedCategory.length && index) {
-      setError('StoreCategory');
-      scrollToError(storeCategoryRef);
-      return;
-    }
-    const hasEmptyOperatingHours = Object.entries(operatingHours).some(
-      ([day, {openHour, openMinute, closedHour, closedMinute}]) => {
-        const upperDay = day.toUpperCase();
-        if (closedDay.includes(upperDay)) return false; // 휴무일이면 제외
-        return !openHour || !openMinute || !closedHour || !closedMinute;
-      },
-    );
-
-    if (hasEmptyOperatingHours && index) {
-      setError('StoreOperate');
-      scrollToError(storeOperateRef);
-      return;
-    }
-
-    if (selectedOption === null && index) {
-      setError('StoreGroup');
-      scrollToError(StoreGroupRef);
-      return;
-    }
-
-    if (selectedscreenOption === null && index) {
-      setError('StoreScreen');
-      scrollToError(StoreScreenRef);
-      return;
-    }
-
-    const hasValidAlcohol = alcohol.some(
-      item => item.type.trim() && item.price > 0,
-    );
-
-    if (!hasValidAlcohol && index) {
-      setError('StoreDrink');
-      scrollToError(storeDrinkRef);
-      return;
-    }
-    const isRegister = !!index;
     showAlert({
-      title: isRegister ? '매장 등록' : '매장 제보',
-      message: isRegister
-        ? '매장을 등록하시겠습니까?'
-        : '매장을 제보하시겠습니까?',
-      onConfirm: () => StoreAdd(),
+      title: '매장 제보',
+      message: '매장을 제보하시겠습니까?',
+      onConfirm: () => StoreSuggestionDetail(),
       onCancel: null,
       type: 'confirm',
     });
-
-    // setIsModalVisible(true); // 모든 값이 유효하면 모달 열기
   };
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable
-          onPress={loading || confirm ? null : confirmSubmission}
-          disabled={loading || confirm}>
-          <Text style={[styles.nextButton]}>{index ? '등록' : '제보'}</Text>
+          onPress={confirmSubmission}
+          disabled={!preStoreId || !isChanged || loading}>
+          <Text
+            style={[
+              styles.nextButton,
+              (!preStoreId || !isChanged || loading) && {
+                color: ColorUtil.mainDisable,
+              },
+            ]}>
+            {'제보'}
+          </Text>
         </Pressable>
       ),
     });
   }, [
     navigation,
     storename,
-    storeData,
+    storeNumber,
+    storeContent,
     operatingHours,
     breakingHours,
-    coords,
-    address,
-    detailedAddress,
     selectedCategory,
-    selectedOption,
-    selectedscreenOption,
+    facilitiesInfo,
     is24Hours,
     closedDay,
     alcohol,
-    imageUris,
-    confirm,
     loading,
+    preStoreId,
   ]);
 
   const adjustTime = time => {
@@ -205,11 +204,7 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
       .padStart(2, '0')}`;
   };
 
-  const StoreAdd = async () => {
-    const imageFiles = imageUris.map(uri => ({
-      file: uri, // 이미지 URI를 파일로 전달
-    }));
-
+  const StoreSuggestionDetail = async () => {
     const operationInfoDtos = Object.keys(operatingHours).map(day => {
       const upperCaseDay = day.toUpperCase(); // 요일 변환 ("Monday" -> "MONDAY")
       const isClosed = closedDay.includes(upperCaseDay); // 휴무 여부 확인
@@ -241,131 +236,52 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
               ),
       };
     });
-    let data;
 
-    const createStoreDto = {
-      name: storename,
-    };
+    const updatePayload = {};
 
-    if (index) {
-      // ⭐ 매장 등록 - 전체 필드
-      data = {
-        files: imageUris,
-        createStoreDto: {
-          contact: storeData.storeNumber,
-          isAlwaysOpen: is24Hours ?? false,
-          hasScreen: selectedscreenOption,
-          ...(!is24Hours && {operationInfoDtos}),
-          locationDto: {
-            address,
-            addressDetail: detailedAddress,
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-          },
-          name: storename,
-          mainDrinkDtos: alcohol.filter(d => d.type && d.price > 0),
-          isGroupAvailable: selectedOption,
-          categories: selectedCategory.filter(c => c !== '-'),
-          description: storeData.storeContent,
+    if (storename) updatePayload.name = storename;
+    if (storeNumber) updatePayload.contact = storeNumber;
+    if (storeContent) updatePayload.description = storeContent;
+    if (is24Hours !== null) updatePayload.isAlwaysOpen = is24Hours;
+    if (!is24Hours) {
+      const hasValidTime = Object.entries(operatingHours).some(
+        ([day, time]) => {
+          const isClosed = closedDay.includes(day.toUpperCase());
+          if (isClosed) return false;
+          return (
+            time.openHour &&
+            time.openMinute &&
+            time.closedHour &&
+            time.closedMinute
+          );
         },
-      };
-    } else {
-      // ⭐ 매장 제보 - 값이 있는 것만 넣기
-
-      // contact
-      if (storeData.storeNumber) createStoreDto.contact = storeData.storeNumber;
-      if (is24Hours !== null) createStoreDto.isAlwaysOpen = is24Hours;
-      if (!is24Hours) {
-        const hasValidTime = Object.entries(operatingHours).some(
-          ([day, time]) => {
-            const isClosed = closedDay.includes(day.toUpperCase());
-            if (isClosed) return false;
-            return (
-              time.openHour &&
-              time.openMinute &&
-              time.closedHour &&
-              time.closedMinute
-            );
-          },
-        );
-        if (hasValidTime) {
-          createStoreDto.operationInfoDtos = operationInfoDtos;
-        }
+      );
+      if (hasValidTime) {
+        updatePayload.operationInfoDtos = operationInfoDtos;
       }
-      const hasLocation =
-        address || detailedAddress || coords?.latitude || coords?.longitude;
-      if (hasLocation) {
-        createStoreDto.locationDto = {};
-        if (address) createStoreDto.locationDto.address = address;
-        if (detailedAddress)
-          createStoreDto.locationDto.addressDetail = detailedAddress;
-        if (coords?.latitude)
-          createStoreDto.locationDto.latitude = coords.latitude;
-        if (coords?.longitude)
-          createStoreDto.locationDto.longitude = coords.longitude;
-      }
-      const validDrinks = alcohol.filter(d => d.type && d.price > 0);
-      if (validDrinks.length > 0) {
-        createStoreDto.mainDrinkDtos = validDrinks;
-      }
-      createStoreDto.isGroupAvailable = selectedOption;
-      createStoreDto.hasScreen = selectedscreenOption;
-      const filteredCategories = selectedCategory.filter(c => c !== '-');
-      if (filteredCategories.length > 0) {
-        createStoreDto.categories = filteredCategories;
-      }
-      if (storeData.storeContent)
-        createStoreDto.description = storeData.storeContent;
-
-      data = {
-        files: imageUris,
-        createStoreDto,
-      };
     }
 
-    try {
-      let response;
-      if (index) {
-        // response = await StoreRegister(data);
-        const locationDto = {
-          address,
-          addressDetail: detailedAddress,
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-        };
+    const validDrinks = alcohol.filter(d => d.type && d.price > 0);
+    if (validDrinks.length > 0) {
+      updatePayload.mainDrinkDtos = validDrinks;
+    }
+    const filteredCategories = selectedCategory.filter(c => c !== '-');
+    if (filteredCategories.length > 0) {
+      updatePayload.categories = filteredCategories;
+    }
 
-        navigation.navigate('StoreCheckScreen', {
-          storeName: storename,
-          storeLocationDto: locationDto,
-          storeContact: storeData.storeNumber,
-          storeSuggestionData: data,
-        });
-      } else {
-        setConfirm(true);
-        setLoading(true);
-        response = await StoreSuggestion(data);
-        if (response.status === 200) {
-          showAlert({
-            title: '매장 제보가 완료되었습니다.',
-            message: '다른 분들을 위해 \n매장 제보를 해주셔서 감사합니다.',
-            onConfirm: () => {
-              setConfirm(false);
-              navigation.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: 'MainBtmbar',
-                    state: {routes: [{name: 'MainScreen'}]},
-                  },
-                ],
-              });
-            },
-          });
-        }
+    updatePayload.facilitiesInfoDto = facilitiesInfo;
+
+    try {
+      setLoading(true);
+      if (!preStoreId) {
+        throw new Error('Missing preStoreId for update');
       }
+
+      await UpdateStore(preStoreId, updatePayload);
+      setIsChoiceModalVisible(true);
     } catch (error) {
-      console.error(error?.response);
-      setConfirm(false);
+      console.error(error);
       showAlert({
         title: '등록 실패',
         message:
@@ -375,160 +291,140 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
       setLoading(false);
     }
   };
-  const lastBackPressed = useRef(0);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <Pressable
-          onPress={() => {
-            const now = Date.now();
-            if (now - lastBackPressed.current < 2000) {
-              navigation.goBack();
-            } else {
-              lastBackPressed.current = now;
-              ToastAndroid.show(
-                '한 번 더 누르면 작성한 내용이 사라집니다.',
-                ToastAndroid.SHORT,
-              );
-            }
-          }}
-          hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-          <Ionicons
-            name="arrow-back-outline"
-            size={23}
-            color="#333"
-            style={{paddingLeft: 12}}
-          />
-        </Pressable>
-      ),
-    });
-  }, [navigation]);
+  const scrollToInput = useCallback((inputRef, extraOffset = 0) => {
+    if (!scrollViewRef.current || !inputRef?.current) {
+      return;
+    }
 
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-        const now = Date.now();
+    const nodeHandle = findNodeHandle(inputRef.current);
+    if (!nodeHandle) {
+      return;
+    }
 
-        if (now - lastBackPressed.current < 2000) {
-          navigation.goBack();
-          return true;
-        }
+    const scrollResponder = scrollViewRef.current.getScrollResponder?.();
+    if (!scrollResponder) {
+      return;
+    }
 
-        lastBackPressed.current = now;
-        ToastAndroid.show(
-          '한 번 더 누르면 작성한 내용이 사라집니다.',
-          ToastAndroid.SHORT,
+    const keyboardOffset = Platform.OS === 'ios' ? 20 : 40;
+
+    setTimeout(
+      () => {
+        scrollResponder.scrollResponderScrollNativeHandleToKeyboard(
+          nodeHandle,
+          keyboardOffset + extraOffset,
+          true,
         );
-        return true; // 기본 동작 막기
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        onBackPress,
-      );
-
-      return () => backHandler.remove(); // cleanup
-    }, [navigation]),
-  );
-
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-
-  useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', () =>
-      setKeyboardVisible(true),
+      },
+      Platform.OS === 'android' ? 120 : 0,
     );
-    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
-      setKeyboardVisible(false),
-    );
-
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
   }, []);
 
+  const handleModalConfirm = () => {
+    setIsChoiceModalVisible(false);
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: 'MainBtmbar',
+          state: {routes: [{name: 'MainScreen'}]},
+        },
+      ],
+    });
+  };
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{flex: 1}}>
-      <SafeAreaView
-        style={[
-          styles.storetopview,
-          {paddingBottom: keyboardVisible ? 0 : bottom},
-        ]}>
-        <StoreAddProgressbar progress={1} />
+    <SafeAreaView style={[styles.storetopview, {paddingBottom: bottom}]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoiding}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
-          ref={scrollViewRef}>
-          <Text style={styles.title}>
-            {index
-              ? '상세정보를 입력해주세요*'
-              : '상세정보를 입력해주세요 (선택)'}
-          </Text>
-
-          <View ref={storeCategoryRef}>
-            <StoreCategory
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              error={error}
-              index={index}
-            />
+          ref={scrollViewRef}
+          keyboardShouldPersistTaps="handled">
+          <View style={styles.tipView}>
+            <View style={styles.tipbadge}>
+              <Text style={styles.tipbadgeText}>Tip</Text>
+            </View>
+            <Text style={styles.tipText}>
+              항목은 선택적으로 입력할 수 있습니다
+            </Text>
           </View>
-          <View ref={storeOperateRef}>
-            <OperatingHoursPreview
-              storeTimeHandle={storeTimeHandle}
-              is24Hours={is24Hours}
-              operatingHours={operatingHours}
-              breakingHours={breakingHours}
-              closedDay={closedDay}
-              error={error}
-              index={index}
-            />
-          </View>
-          <View ref={StoreGroupRef}>
-            <StoreGroup
-              selectedOption={selectedOption}
-              setSelectedOption={setSelectedOption}
-              index={index}
-              error={error}
-            />
-          </View>
-          <View ref={StoreScreenRef}>
-            <StoreTV
-              selectedscreenOption={selectedscreenOption}
-              setselectedscreenOption={setselectedscreenOption}
-              index={index}
-              error={error}
-            />
-          </View>
-          <View ref={storeDrinkRef}>
-            <StoreAlcohol
-              alcohol={alcohol}
-              setAlcohol={setAlcohol}
-              index={index}
-              error={error}
-            />
-          </View>
-          <StoreInfo
-            storeData={storeData}
-            setStoreData={setStoreData}
-            error={error}
+          <StoreCategory
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            index={index}
+          />
+          <OperatingHoursPreview
+            storeTimeHandle={storeTimeHandle}
+            is24Hours={is24Hours}
+            operatingHours={operatingHours}
+            breakingHours={breakingHours}
+            closedDay={closedDay}
+            index={index}
+          />
+          <StoreAlcohol
+            alcohol={alcohol}
+            setAlcohol={setAlcohol}
+            index={index}
+          />
+          <StoreFacilitiesInfo
+            facilitiesInfo={facilitiesInfo}
+            setFacilitiesInfo={setFacilitiesInfo}
+            index={index}
+          />
+          <StorAddeNumber
+            storeNumber={storeNumber}
+            setStoreNumber={setStoreNumber}
+            index={index}
+            onFocusInput={scrollToInput}
+          />
+          <StoreAddContent
+            storeContent={storeContent}
+            setStoreContent={setStoreContent}
+            index={index}
+            onFocusInput={scrollToInput}
           />
         </ScrollView>
-        <View style={styles.storeAddTextview}>
-          <Pressable
-            style={styles.storeAddButtonsearch}
-            onPress={confirmSubmission}>
-            <Text style={styles.storeAddText}>
-              {index ? '매장 등록' : '매장 제보'}
+      </KeyboardAvoidingView>
+
+      <BottomActionButton
+        label={'제보하기'}
+        cancel={true}
+        disabled={!preStoreId || !isChanged}
+        onPress={() => confirmSubmission()}
+        onCancel={() => navigation.goBack()}
+      />
+      <AlertComponent />
+
+      <Loading loading={loading} />
+
+      <Modal
+        transparent
+        animationType="fade"
+        visible={isChoiceModalVisible}
+        onRequestClose={handleModalConfirm}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalIconWrapper}>
+              <Ionicons name="checkmark" size={26} color="#fff" />
+            </View>
+            <Text style={styles.modalTitle}>매장 제보가 완료되었어요 🎉</Text>
+            <Text style={styles.modalDescription}>
+              매장 제보를 해주셔서 감사합니다.
             </Text>
-          </Pressable>
+            <View style={styles.modalButtonGroup}>
+              <Pressable
+                style={styles.modalPrimaryButton}
+                onPress={handleModalConfirm}>
+                <Text style={styles.modalPrimaryLabel}>확인</Text>
+              </Pressable>
+            </View>
+          </View>
         </View>
-        <AlertComponent />
-        <Loading loading={loading} />
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      </Modal>
+    </SafeAreaView>
   );
 };
 
@@ -537,10 +433,35 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     flex: 1,
   },
+  keyboardAvoiding: {
+    flex: 1,
+  },
   scrollContent: {
     paddingBottom: 100, // 하단 버튼 영역 확보
   },
-
+  tipView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 25,
+  },
+  tipbadge: {
+    backgroundColor: 'rgba(0, 83, 200, 0.08)', // 은은한 파란 배경 (약한 블루)
+    borderRadius: 100,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    marginRight: 6,
+  },
+  tipbadgeText: {
+    color: '#003C8F', // 짙은 블루 (#003C8F)
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 13,
+  },
+  tipText: {
+    color: '#003C8F',
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 14,
+  },
   title: {
     marginTop: 30,
     marginHorizontal: 18,
@@ -550,9 +471,9 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     marginRight: 18,
-    fontSize: 19,
+    fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#3CBBFF',
+    color: ColorUtil.main,
   },
 
   storeAddTextview: {
@@ -577,6 +498,66 @@ const styles = StyleSheet.create({
   },
   storeAddText: {
     fontSize: 18,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#fff',
+  },
+
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 28,
+    alignItems: 'center',
+    maxWidth: 340,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  modalIconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: ColorUtil.main,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: 'Pretendard-Bold',
+    color: '#111',
+    textAlign: 'center',
+  },
+  modalDescription: {
+    marginTop: 12,
+    fontSize: 15,
+    fontFamily: 'Pretendard-Regular',
+    color: '#555',
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  modalButtonGroup: {
+    marginTop: 28,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
+  modalPrimaryButton: {
+    backgroundColor: ColorUtil.main,
+    borderRadius: 7,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  modalPrimaryLabel: {
+    fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },

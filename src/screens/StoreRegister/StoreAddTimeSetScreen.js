@@ -14,7 +14,10 @@ import {
   StyleSheet,
   ScrollView,
   Modal,
+  Platform,
 } from 'react-native';
+
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ClosedDaySelector from '../../components/StoreAddScreen/StoreAddTimeSet/ClosedDaySelector';
 import OperatingHoursToggle from '../../components/StoreAddScreen/StoreAddTimeSet/OperatingHoursToggle';
@@ -58,6 +61,8 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     hasBreaking,
     setHasBreaking,
   } = route.params;
+
+  const insets = useSafeAreaInsets();
 
   const convertToMinutes = (hour, minute) =>
     parseInt(hour, 10) * 60 + parseInt(minute, 10);
@@ -944,7 +949,16 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
           statusBarTranslucent={true}
           onRequestClose={handleBottomClose}>
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+            <View
+              style={[
+                styles.modalContent,
+                {
+                  paddingBottom:
+                    Platform.OS === 'android'
+                      ? insets.bottom + 20
+                      : insets.bottom + 10,
+                },
+              ]}>
               <View style={styles.bottomSheetContent}>
                 <OperateBottomSheetHeader
                   title={`${selectedDay.label}요일 영업 정보`}
@@ -1075,7 +1089,6 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: 70,
   },
   searchButton: {
     marginRight: 18,

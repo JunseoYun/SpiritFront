@@ -64,9 +64,17 @@ const StoreAddress = ({
     <View>
       {/* ✅ 매장 주소 / 사업장 소재지 */}
       <View style={inputViewStyle}>
-        <Text style={styles.label}>
-          {index === 1 ? '사업장 소재지' : '매장 주소'}
-        </Text>
+        {index === 1 ? (
+          <Text style={styles.label}>사업장 소재지</Text>
+        ) : (
+          <View style={styles.labelView}>
+            <Text style={styles.label}>매장 주소</Text>
+            <Text style={styles.subLabel}>
+              · 대략적인 위치만 알려주셔도 괜찮아요
+            </Text>
+          </View>
+        )}
+
         <View style={styles.inputContainer} ref={storeAddressRef}>
           <TouchableOpacity
             style={styles.inputTouchable}
@@ -136,14 +144,33 @@ const StoreAddress = ({
 
 const styles = StyleSheet.create({
   storeinputview: {
-    marginTop: 25,
+    marginTop: 40,
     marginHorizontal: 20,
+  },
+  // label: {
+  //   fontFamily: 'Pretendard-SemiBold',
+  //   color: '#333',
+  //   fontSize: 16,
+  //   marginBottom: 12,
+  // },
+
+  labelView: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginBottom: 12,
   },
   label: {
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
     fontSize: 16,
-    marginBottom: 12,
+    marginRight: 6,
+  },
+  subLabel: {
+    fontFamily: 'Pretendard-Regular',
+    color: '#999',
+    fontSize: 14,
+    marginRight: 4,
+    paddingBottom: 1,
   },
   inputContainer: {
     flexDirection: 'row',

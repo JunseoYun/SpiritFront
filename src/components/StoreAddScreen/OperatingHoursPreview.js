@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
-
+import ColorUtil from '../../utils/ColorUtil';
 const OperatingHoursPreview = ({
   is24Hours,
   operatingHours,
@@ -29,25 +29,23 @@ const OperatingHoursPreview = ({
   return (
     <>
       <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>
-          {index ? '영업시간*' : '영업시간'}
-        </Text>
+        <Text style={styles.label}>영업 시간</Text>
         <Pressable onPress={storeTimeHandle}>
-          <Text style={[styles.storeinputtext, {color: '#3CBBFF'}]}>편집</Text>
+          <Text style={[styles.storeinputtext, {color: '#333'}]}>편집</Text>
         </Pressable>
       </View>
 
       {/* 영업 시간 설정 전 */}
       {!hasValidOperatingHours && (
         <Pressable style={styles.emptyContainer} onPress={storeTimeHandle}>
-          <Text style={styles.emptyText}>영업 시간을 설정하세요</Text>
+          <Text style={styles.emptyText}>등록</Text>
         </Pressable>
       )}
 
       {/* ⏳ 유효한 영업 시간이 있을 때만 표시 */}
       {hasValidOperatingHours && is24Hours && (
         <Pressable style={styles.emptyContainer} onPress={storeTimeHandle}>
-          <Text style={styles.allDayText}>24시간 영업</Text>
+          <Text style={styles.emptyText}>24시간 영업</Text>
         </Pressable>
       )}
       {hasValidOperatingHours && !is24Hours && (
@@ -67,7 +65,13 @@ const OperatingHoursPreview = ({
                 <View key={day} style={styles.dayRow}>
                   <View
                     style={[styles.dayChip, isClosed && styles.closedDayChip]}>
-                    <Text style={[styles.dayText]}>{koreanDay}</Text>
+                    <Text
+                      style={[
+                        styles.dayText,
+                        isClosed && {color: ColorUtil.chipText},
+                      ]}>
+                      {koreanDay}
+                    </Text>
                   </View>
                   {isClosed ? (
                     <Text style={styles.closedText}>휴무</Text>
@@ -122,15 +126,15 @@ const OperatingHoursPreview = ({
 const styles = StyleSheet.create({
   storeinputview: {
     marginTop: 50,
-    marginHorizontal: 20,
+    marginHorizontal: 18,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  storeinputtext: {
-    fontFamily: 'Pretendard-Medium',
-    color: '#999',
+  label: {
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
     fontSize: 16,
-    marginBottom: 10,
+    marginRight: 6,
   },
   editButton: {
     fontSize: 15,
@@ -138,20 +142,20 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
   },
   emptyContainer: {
-    backgroundColor: '#F7F8FA',
+    backgroundColor: '#F1F2F3',
     padding: 15,
-    marginHorizontal: 20,
-    borderRadius: 10,
+    marginHorizontal: 18,
+    borderRadius: 9,
     alignItems: 'center',
     marginTop: 10,
   },
   emptyText: {
     fontSize: 15,
-    color: '#999',
+    color: '#333',
     fontFamily: 'Pretendard-Medium',
   },
   operatingHoursContainer: {
-    marginHorizontal: 20,
+    marginHorizontal: 18,
     paddingVertical: 5,
   },
   dayRow: {
@@ -162,18 +166,22 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5E5',
   },
   dayChip: {
-    backgroundColor: '#3CBBFF',
     borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 14,
     marginRight: 10,
+    borderWidth: 1,
+    backgroundColor: ColorUtil.mainChip,
+
+    borderColor: ColorUtil.main,
   },
   closedDayChip: {
-    backgroundColor: '#D0D0D0', // 휴무일 배경 색상 변경
+    borderColor: ColorUtil.border,
+    backgroundColor: '#FFF',
   },
   dayText: {
     fontSize: 14,
-    color: '#fff',
+    color: ColorUtil.main,
     fontFamily: 'Pretendard-SemiBold',
   },
 
@@ -191,18 +199,10 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   closedText: {
-    fontSize: 15,
-    color: '#4b4b4b',
-    fontFamily: 'Pretendard-SemiBold',
-    flex: 1,
-  },
-
-  allDayText: {
     fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#3CBBFF',
-    textAlign: 'center',
-    paddingVertical: 10,
+    color: ColorUtil.chipText,
+    fontFamily: 'Pretendard-Medium',
+    flex: 1,
   },
   toggleButton: {
     alignSelf: 'flex-end',

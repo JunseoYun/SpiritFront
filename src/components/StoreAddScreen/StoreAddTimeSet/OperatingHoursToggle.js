@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
-
+import ColorUtil from '../../../utils/ColorUtil';
 const OperatingHoursToggle = ({
   isSameEveryday,
   setIsSameEveryday,
@@ -68,24 +68,24 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#aaa',
+    borderColor: ColorUtil.border,
     paddingHorizontal: 15,
     borderRadius: 100,
     marginRight: 7,
   },
   selectedToggle: {
-    backgroundColor: '#3CBBFF',
-    borderColor: '#3CBBFF',
+    backgroundColor: ColorUtil.main,
+    borderColor: ColorUtil.main,
   },
   selectedText: {
     color: '#fff',
     fontSize: 15,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
   unselectedText: {
-    color: '#aaa',
+    color: ColorUtil.chipText,
     fontSize: 15,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 
