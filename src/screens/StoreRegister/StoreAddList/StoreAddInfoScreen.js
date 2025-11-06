@@ -142,9 +142,7 @@ const StoreAddInfoScreen = ({navigation}) => {
       return;
     }
 
-    const hasValidAlcohol = alcohol.some(
-      item => item.type.trim() && item.price > 0,
-    );
+    const hasValidAlcohol = (alcohol || []).length > 0;
 
     if (!hasValidAlcohol && index) {
       setError('StoreDrink');
@@ -263,7 +261,7 @@ const StoreAddInfoScreen = ({navigation}) => {
             longitude: coords.longitude,
           },
           name: storename,
-          mainDrinkDtos: alcohol.filter(d => d.type && d.price > 0),
+          mainDrinkDtos: alcohol.map(type => ({type})),
           isGroupAvailable: selectedOption,
           categories: selectedCategory.filter(c => c !== '-'),
           description: storeData.storeContent,
@@ -304,7 +302,7 @@ const StoreAddInfoScreen = ({navigation}) => {
         if (coords?.longitude)
           createStoreDto.locationDto.longitude = coords.longitude;
       }
-      const validDrinks = alcohol.filter(d => d.type && d.price > 0);
+      const validDrinks = alcohol.filter(Boolean).map(type => ({type}));
       if (validDrinks.length > 0) {
         createStoreDto.mainDrinkDtos = validDrinks;
       }
