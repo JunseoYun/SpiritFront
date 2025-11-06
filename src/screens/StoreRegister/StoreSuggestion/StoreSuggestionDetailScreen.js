@@ -261,17 +261,18 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
       }
     }
 
-    const validDrinks = alcohol.filter(d => d.type && d.price > 0);
+    const validDrinks = alcohol.filter(Boolean).map(type => ({type}));
     if (validDrinks.length > 0) {
       updatePayload.mainDrinkDtos = validDrinks;
     }
+
     const filteredCategories = selectedCategory.filter(c => c !== '-');
     if (filteredCategories.length > 0) {
       updatePayload.categories = filteredCategories;
     }
 
     updatePayload.facilitiesInfoDto = facilitiesInfo;
-
+    // console.log(updatePayload);
     try {
       setLoading(true);
       if (!preStoreId) {
