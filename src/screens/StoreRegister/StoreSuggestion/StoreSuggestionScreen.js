@@ -198,9 +198,9 @@ const StoreSuggestionScreen = ({navigation}) => {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.scrollContent}
           ref={scrollViewRef}>
-          <Pressable onPress={handleModalConfirm}>
+          {/* <Pressable onPress={handleModalConfirm}>
             <Text>ㅇㅇㅇ</Text>
-          </Pressable>
+          </Pressable> */}
 
           <View ref={storeImageRef}>
             <StoreImage
