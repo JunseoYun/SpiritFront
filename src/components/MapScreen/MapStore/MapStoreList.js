@@ -61,7 +61,7 @@ const MapStoreList = ({
   const [filterheight, setFilterheight] = useState(0);
   const initialIndex = stores.length === 0 ? 1 : 1;
   const snapPoints = useMemo(() => {
-    const first = SCREEN_HEIGHT * 0.03 + filterheight - 2; //
+    const first = SCREEN_HEIGHT * 0.03 + filterheight + insets.bottom; //
     const nonemid = SCREEN_HEIGHT * 0.3;
     const mid = SCREEN_HEIGHT * 0.55;
     const max = SCREEN_HEIGHT * 0.8;
@@ -78,6 +78,7 @@ const MapStoreList = ({
   const [showListButtons, setShowListButtons] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [itemheight, setItemheight] = useState(120);
+  const [listfastview, setListfastview] = useState(null);
   const lastCenteredIndexRef = useRef(null);
   const currentSheetIndexRef = useRef(null);
   const mapMoveTimerRef = useRef(null);
@@ -102,7 +103,8 @@ const MapStoreList = ({
       let newValue;
 
       if (snapPoints.length === 2) {
-        if (index === 0) newValue = -SCREEN_HEIGHT * 0.03 - filterheight;
+        if (index === 0)
+          newValue = -SCREEN_HEIGHT * 0.03 - filterheight - insets.bottom;
         if (index === 1) {
           if (detailStoreId) {
             if (index === 1) newValue = -SCREEN_HEIGHT * 0.55;
@@ -111,7 +113,8 @@ const MapStoreList = ({
           }
         }
       } else {
-        if (index === 0) newValue = -SCREEN_HEIGHT * 0.03 - filterheight;
+        if (index === 0)
+          newValue = -SCREEN_HEIGHT * 0.03 - filterheight - insets.bottom;
         if (index === 1) newValue = -SCREEN_HEIGHT * 0.55;
         if (index === 2) newValue = 0;
       }
@@ -135,12 +138,14 @@ const MapStoreList = ({
         setCurrentIndex(1);
         currentSheetIndexRef.current = 1;
         setSheetIndex?.(1);
+        setListfastview(true);
         return;
       }
 
       setCurrentIndex(index);
       currentSheetIndexRef.current = index;
       setSheetIndex?.(index);
+      setListfastview(index >= 1);
     },
     [detailStore, setSheetIndex],
   );
@@ -420,7 +425,8 @@ const MapStoreList = ({
 
   const handleShowList = () => {
     if (!bottomSheetRef.current) return;
-    // Ensure list view shows (close any active detail/group) and open at index 0
+    // Ensure list view shows and mount list immediately
+    setListfastview(true);
     bottomSheetRef.current.snapToIndex(1);
   };
 
@@ -452,7 +458,10 @@ const MapStoreList = ({
             <Pressable
               style={[
                 styles.listButton,
-                {bottom: SCREEN_HEIGHT * 0.03 + 20 + filterheight},
+                {
+                  bottom:
+                    SCREEN_HEIGHT * 0.03 + 20 + filterheight + insets.bottom,
+                },
               ]}
               onPress={handleShowList}>
               <Ionicons name="list" color="#000" size={17} />
@@ -600,16 +609,20 @@ const MapStoreList = ({
               //   </View>
               // )
               storegetloading ? (
-                <FlatList
-                  data={[1, 2, 3]}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={() => <MapStoreItemSkeleton />}
-                  showsVerticalScrollIndicator={false}
-                  onViewableItemsChanged={onViewableItemsChanged.current}
-                  viewabilityConfig={viewabilityConfig.current}
-                />
+                currentIndex >= 1 || listfastview ? (
+                  <FlatList
+                    data={[1, 2, 3]}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={() => <MapStoreItemSkeleton />}
+                    showsVerticalScrollIndicator={false}
+                    onViewableItemsChanged={onViewableItemsChanged.current}
+                    viewabilityConfig={viewabilityConfig.current}
+                  />
+                ) : null
               ) : stores.length === 0 && !loading ? (
                 renderNoStoreView()
+              ) : currentIndex < 1 && !listfastview ? (
+                <View />
               ) : (
                 <FlatList
                   ref={flatListRef}

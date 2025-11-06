@@ -13,7 +13,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 const MapFilterHeader = ({
   setFilterInitialTab,
   setFilterModalVisible,
-  setFilterheight,
+  setFilterheight = () => {},
   distanceLabel,
   categoryLabel,
   peopleLabel,
