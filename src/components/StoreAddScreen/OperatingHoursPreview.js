@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import ColorUtil from '../../utils/ColorUtil';
 const OperatingHoursPreview = ({
@@ -9,7 +9,9 @@ const OperatingHoursPreview = ({
   storeTimeHandle,
   error,
   index,
+  type = 'default',
 }) => {
+  const isRegistration = type === 'registration';
   const dayMapping = {
     Monday: '월',
     Tuesday: '화',
@@ -28,30 +30,45 @@ const OperatingHoursPreview = ({
 
   return (
     <>
-      <View style={styles.storeinputview}>
-        <Text style={styles.label}>영업 시간</Text>
-        <Pressable onPress={storeTimeHandle}>
-          <Text style={[styles.storeinputtext, {color: '#333'}]}>편집</Text>
-        </Pressable>
-      </View>
+      {!isRegistration && (
+        <View style={styles.storeinputview}>
+          <Text style={styles.label}>영업 시간</Text>
+          <Pressable onPress={storeTimeHandle}>
+            <Text style={[styles.storeinputtext, {color: '#333'}]}>편집</Text>
+          </Pressable>
+        </View>
+      )}
 
       {/* 영업 시간 설정 전 */}
       {!hasValidOperatingHours && (
-        <Pressable style={styles.emptyContainer} onPress={storeTimeHandle}>
+        <Pressable
+          style={[
+            styles.emptyContainer,
+            isRegistration && styles.registrationSpacing,
+          ]}
+          onPress={storeTimeHandle}>
           <Text style={styles.emptyText}>등록</Text>
         </Pressable>
       )}
 
       {/* ⏳ 유효한 영업 시간이 있을 때만 표시 */}
       {hasValidOperatingHours && is24Hours && (
-        <Pressable style={styles.emptyContainer} onPress={storeTimeHandle}>
+        <Pressable
+          style={[
+            styles.emptyContainer,
+            isRegistration && styles.registrationSpacing,
+          ]}
+          onPress={storeTimeHandle}>
           <Text style={styles.emptyText}>24시간 영업</Text>
         </Pressable>
       )}
       {hasValidOperatingHours && !is24Hours && (
         <Pressable
           onPress={storeTimeHandle}
-          style={styles.operatingHoursContainer}>
+          style={[
+            styles.operatingHoursContainer,
+            isRegistration && styles.registrationSpacing,
+          ]}>
           {Object.entries(operatingHours).map(
             (
               [day, {openHour, openMinute, closedHour, closedMinute}],
@@ -116,9 +133,13 @@ const OperatingHoursPreview = ({
           )}
         </Pressable>
       )}
-      {!hasValidOperatingHours && !is24Hours && error === 'StoreOperate' && (
-        <Text style={styles.errorMessage}>매장 영업 시간을 등록해 주세요.</Text>
-      )}
+      {!hasValidOperatingHours &&
+        !is24Hours &&
+        error === 'StoreOperate' && (
+          <Text style={styles.errorMessage}>
+            매장 영업 시간을 등록해 주세요.
+          </Text>
+        )}
     </>
   );
 };
@@ -129,6 +150,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  registrationSpacing: {
+    marginTop: 0,
   },
   label: {
     fontFamily: 'Pretendard-SemiBold',

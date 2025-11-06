@@ -5,8 +5,6 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import CancelText from '../CancelText/CancelText';
-import {normalizeFont} from '../../hooks/normalizeFont';
 import ColorUtil from '../../utils/ColorUtil';
 
 const StoreAddContent = ({
@@ -14,7 +12,9 @@ const StoreAddContent = ({
   setStoreContent,
   error,
   onFocusInput,
+  type = 'default',
 }) => {
+  const isRegistration = type === 'registration';
   const [focusedInput, setFocusedInput] = useState(false);
   const [errors, setErrors] = useState({});
   const storeContentInputRef = useRef(null);
@@ -44,9 +44,13 @@ const StoreAddContent = ({
 
   return (
     <View>
-      <View style={styles.storeinputview}>
+      <View
+        style={[
+          styles.storeinputview,
+          isRegistration && styles.registrationSpacing,
+        ]}>
         <View style={styles.inputWrapper}>
-          <Text style={styles.label}>매장 소개</Text>
+          {!isRegistration && <Text style={styles.label}>매장 소개</Text>}
           <View style={styles.inputContainer}>
             <TextInput
               ref={storeContentInputRef}
@@ -78,15 +82,6 @@ const StoreAddContent = ({
               onBlur={() => setFocusedInput(false)}
               returnKeyType="done"
             />
-            {storeContent.length > 0 && focusedInput && (
-              <CancelText
-                rightnum={12}
-                topnum={14}
-                paddingnum={0}
-                handlecancel={handleClearStoreContent}
-                size={normalizeFont(22)}
-              />
-            )}
           </View>
         </View>
 
@@ -110,6 +105,9 @@ const styles = StyleSheet.create({
   storeinputview: {
     marginTop: 30,
     marginHorizontal: 18,
+  },
+  registrationSpacing: {
+    marginTop: 0,
   },
   label: {
     fontFamily: 'Pretendard-SemiBold',

@@ -5,8 +5,6 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import CancelText from '../CancelText/CancelText';
-import {normalizeFont} from '../../hooks/normalizeFont';
 import ColorUtil from '../../utils/ColorUtil';
 
 const StorAddeNumber = ({
@@ -14,7 +12,9 @@ const StorAddeNumber = ({
   setStoreNumber,
   error,
   onFocusInput,
+  type = 'default',
 }) => {
+  const isRegistration = type === 'registration';
   const [focusedInput, setFocusedInput] = useState(false);
   const [errors, setErrors] = useState({});
   const storeNumberInputRef = useRef(null);
@@ -37,9 +37,13 @@ const StorAddeNumber = ({
 
   return (
     <View>
-      <View style={styles.storeinputview}>
+      <View
+        style={[
+          styles.storeinputview,
+          isRegistration && styles.registrationSpacing,
+        ]}>
         <View style={styles.inputWrapper}>
-          <Text style={styles.label}>매장 번호</Text>
+          {!isRegistration && <Text style={styles.label}>매장 연락처</Text>}
           <View style={styles.inputContainer}>
             <TextInput
               ref={storeNumberInputRef}
@@ -62,7 +66,7 @@ const StorAddeNumber = ({
                 setStoreNumber(text);
               }}
               keyboardType="number-pad"
-              placeholder="매장 번호를 입력해주세요"
+              placeholder="매장 연락처를 입력해주세요"
               placeholderTextColor={ColorUtil.placeholderText}
               onFocus={() => {
                 setFocusedInput(true);
@@ -71,15 +75,6 @@ const StorAddeNumber = ({
               onBlur={() => setFocusedInput(false)}
               returnKeyType="done"
             />
-            {storeNumber.length > 0 && focusedInput && (
-              <CancelText
-                rightnum={12}
-                paddingnum={0}
-                handlecancel={setStoreNumber}
-                size={normalizeFont(22)}
-                centerVertical
-              />
-            )}
           </View>
         </View>
 
@@ -103,6 +98,9 @@ const styles = StyleSheet.create({
   storeinputview: {
     marginTop: 30,
     marginHorizontal: 18,
+  },
+  registrationSpacing: {
+    marginTop: 0,
   },
   label: {
     fontFamily: 'Pretendard-SemiBold',

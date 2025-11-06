@@ -20,7 +20,13 @@ const FACILITY_OPTIONS = [
   {text: '주차', key: 'isParkingAvailable', icon: CarFront},
 ];
 
-const StoreFacilitiesInfo = ({facilitiesInfo, setFacilitiesInfo, error}) => {
+const StoreFacilitiesInfo = ({
+  facilitiesInfo,
+  setFacilitiesInfo,
+  error,
+  type = 'default',
+}) => {
+  const isRegistration = type === 'registration';
   const toggleFacility = key => {
     setFacilitiesInfo(prev => ({
       ...prev,
@@ -29,9 +35,10 @@ const StoreFacilitiesInfo = ({facilitiesInfo, setFacilitiesInfo, error}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, isRegistration && styles.registrationSpacing]}>
       {/* ✅ 상단 라벨 */}
-      <Text style={styles.label}>매장 편의시설</Text>
+      {!isRegistration && <Text style={styles.label}>매장 편의시설</Text>}
 
       {/* ✅ 칩 버튼 리스트 */}
       <View style={styles.facilityGrid}>
@@ -86,6 +93,9 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 50,
     marginHorizontal: 18,
+  },
+  registrationSpacing: {
+    marginTop: 0,
   },
   label: {
     fontFamily: 'Pretendard-SemiBold',

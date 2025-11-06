@@ -5,11 +5,10 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import CancelText from '../CancelText/CancelText';
-import {normalizeFont} from '../../hooks/normalizeFont';
 import ColorUtil from '../../utils/ColorUtil';
 
-const StoreAddname = ({storename, setStorename, error}) => {
+const StoreAddname = ({storename, setStorename, error, type = 'default'}) => {
+  const isRegistration = type === 'registration';
   const [focusedInput, setFocusedInput] = useState(false);
   const [errors, setErrors] = useState({});
   const storeNameInputRef = useRef(null);
@@ -32,9 +31,13 @@ const StoreAddname = ({storename, setStorename, error}) => {
 
   return (
     <View>
-      <View style={styles.storeinputview}>
+      <View
+        style={[
+          styles.storeinputview,
+          isRegistration && styles.registrationSpacing,
+        ]}>
         <View style={styles.inputWrapper}>
-          <Text style={styles.label}>매장 이름</Text>
+          {!isRegistration && <Text style={styles.label}>매장 이름</Text>}
           <View style={styles.inputContainer}>
             <TextInput
               ref={storeNameInputRef}
@@ -62,15 +65,6 @@ const StoreAddname = ({storename, setStorename, error}) => {
               onBlur={() => setFocusedInput(false)}
               returnKeyType="done"
             />
-            {storename.length > 0 && focusedInput && (
-              <CancelText
-                rightnum={12}
-                paddingnum={0}
-                handlecancel={setStorename}
-                size={normalizeFont(22)}
-                centerVertical
-              />
-            )}
           </View>
         </View>
 
@@ -94,6 +88,9 @@ const styles = StyleSheet.create({
   storeinputview: {
     marginTop: 30,
     marginHorizontal: 18,
+  },
+  registrationSpacing: {
+    marginTop: 0,
   },
   label: {
     fontFamily: 'Pretendard-SemiBold',

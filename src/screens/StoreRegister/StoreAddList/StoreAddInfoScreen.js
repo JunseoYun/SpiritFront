@@ -261,7 +261,7 @@ const StoreAddInfoScreen = ({navigation}) => {
             longitude: coords.longitude,
           },
           name: storename,
-          mainDrinkDtos: alcohol.map(type => ({type})),
+          mainDrinkTypes: alcohol,
           isGroupAvailable: selectedOption,
           categories: selectedCategory.filter(c => c !== '-'),
           description: storeData.storeContent,
@@ -302,9 +302,9 @@ const StoreAddInfoScreen = ({navigation}) => {
         if (coords?.longitude)
           createStoreDto.locationDto.longitude = coords.longitude;
       }
-      const validDrinks = alcohol.filter(Boolean).map(type => ({type}));
+      const validDrinks = alcohol.filter(Boolean);
       if (validDrinks.length > 0) {
-        createStoreDto.mainDrinkDtos = validDrinks;
+        createStoreDto.mainDrinkTypes = validDrinks;
       }
       createStoreDto.isGroupAvailable = selectedOption;
       createStoreDto.hasScreen = selectedscreenOption;

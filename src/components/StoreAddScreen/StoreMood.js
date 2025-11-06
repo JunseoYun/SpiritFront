@@ -17,7 +17,8 @@ const MOOD_OPTIONS = [
   {text: '2차 맛집', key: 'SECOND_ROUND'},
 ];
 
-const StoreMood = ({moodInfo, setMoodInfo}) => {
+const StoreMood = ({moodInfo, setMoodInfo, type = 'default'}) => {
+  const isRegistration = type === 'registration';
   const selectedCount = Object.values(moodInfo || {}).filter(Boolean).length;
 
   const toggleMood = key => {
@@ -27,16 +28,19 @@ const StoreMood = ({moodInfo, setMoodInfo}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, isRegistration && styles.registrationSpacing]}>
       {/* ✅ 상단 라벨 */}
-      <View style={styles.labelView}>
-        <Text style={styles.label}>매장 분위기</Text>
-        {selectedCount < 1 ? (
-          <Text style={styles.subLabel}>(선택)</Text>
-        ) : (
-          <Text style={styles.subLabel}>(선택 {selectedCount}/4)</Text>
-        )}
-      </View>
+      {!isRegistration && (
+        <View style={styles.labelView}>
+          <Text style={styles.label}>매장 분위기</Text>
+          {selectedCount < 1 ? (
+            <Text style={styles.subLabel}>(선택)</Text>
+          ) : (
+            <Text style={styles.subLabel}>(선택 {selectedCount}/4)</Text>
+          )}
+        </View>
+      )}
 
       {/* ✅ 칩 버튼 리스트 */}
       <View style={styles.moodGrid}>
@@ -74,6 +78,9 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 40,
     marginHorizontal: 18,
+  },
+  registrationSpacing: {
+    marginTop: 0,
   },
   labelView: {
     flexDirection: 'row',
