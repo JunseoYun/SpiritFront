@@ -5,7 +5,6 @@ import {
   Text,
   Pressable,
   ScrollView,
-  TouchableOpacity,
   BackHandler,
 } from 'react-native';
 import {Dimensions} from 'react-native';
@@ -218,9 +217,9 @@ const FilterPotal = ({
             <View style={styles.modalContentBottom}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>필터</Text>
-                <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
+                <Pressable onPress={() => setFilterModalVisible(false)}>
                   <Ionicons name="close" size={22} color="#666" />
-                </TouchableOpacity>
+                </Pressable>
               </View>
 
               {/* Tabs */}
@@ -232,7 +231,7 @@ const FilterPotal = ({
                   style={styles.tabBar}
                   contentContainerStyle={styles.tabContainer}>
                   {FILTER_TABS.map(tab => (
-                    <TouchableOpacity
+                    <Pressable
                       key={tab}
                       onLayout={e => {
                         const {x, width} = e.nativeEvent.layout || {};
@@ -255,7 +254,7 @@ const FilterPotal = ({
                         ]}>
                         {tab}
                       </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   ))}
                 </ScrollView>
               </View>
@@ -274,7 +273,7 @@ const FilterPotal = ({
                   style={styles.sectionContainer}>
                   <View style={styles.categoryContainer}>
                     <Text style={styles.categoryTitle}>거리</Text>
-                    <TouchableOpacity
+                    <Pressable
                       onPress={() => {
                         setSelectedFilters(prev => ({
                           ...prev,
@@ -293,11 +292,11 @@ const FilterPotal = ({
                         if (typeof setRadiusint === 'function') setRadiusint(1);
                       }}>
                       <Text style={styles.inittext}>초기화</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                   <View style={styles.filterItemsContainer}>
                     {['500m', '1km', '2km', '3km', '5km'].map(dist => (
-                      <TouchableOpacity
+                      <Pressable
                         key={dist}
                         style={[
                           styles.filterItem,
@@ -327,7 +326,7 @@ const FilterPotal = ({
                           ]}>
                           {dist}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     ))}
                   </View>
                 </View>
@@ -355,7 +354,7 @@ const FilterPotal = ({
                       '펍/바',
                       '포차',
                     ].map(cat => (
-                      <TouchableOpacity
+                      <Pressable
                         key={cat}
                         style={[
                           styles.filterItem,
@@ -371,7 +370,7 @@ const FilterPotal = ({
                           ]}>
                           {cat}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     ))}
                   </View>
                 </View>
@@ -401,7 +400,7 @@ const FilterPotal = ({
                       '하이볼',
                       '데킬라',
                     ].map(al => (
-                      <TouchableOpacity
+                      <Pressable
                         key={al}
                         style={[
                           styles.filterItem,
@@ -417,7 +416,7 @@ const FilterPotal = ({
                           ]}>
                           {al}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     ))}
                   </View>
                 </View>
@@ -456,7 +455,7 @@ const FilterPotal = ({
                       '로컬 맛집',
                       '2차 맛집',
                     ].map(st => (
-                      <TouchableOpacity
+                      <Pressable
                         key={st}
                         style={[
                           styles.filterItem,
@@ -472,7 +471,7 @@ const FilterPotal = ({
                           ]}>
                           {st}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     ))}
                   </View>
                 </View>
@@ -488,7 +487,7 @@ const FilterPotal = ({
                   <Text style={styles.sectionTitle}>방문시간</Text>
 
                   <View style={styles.timeTabContainer}>
-                    <TouchableOpacity
+                    <Pressable
                       onPress={() => {
                         setTimePeriod('AM');
                         setVal(keyTime, '');
@@ -505,8 +504,8 @@ const FilterPotal = ({
                         ]}>
                         오전
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                       onPress={() => {
                         setTimePeriod('PM');
                         setVal(keyTime, '');
@@ -523,7 +522,7 @@ const FilterPotal = ({
                         ]}>
                         오후
                       </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
 
                   <ScrollView
@@ -548,7 +547,7 @@ const FilterPotal = ({
                       }`;
                       const isSelected = getVal(keyTime, '') === value;
                       return (
-                        <TouchableOpacity
+                        <Pressable
                           key={`${timePeriod}-${idx}`}
                           onPress={() =>
                             setVal(
@@ -579,7 +578,7 @@ const FilterPotal = ({
                             ]}>
                             {label}
                           </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       );
                     })}
                   </ScrollView>
@@ -593,7 +592,7 @@ const FilterPotal = ({
                   style={styles.sectionContainer}>
                   <Text style={styles.sectionTitle}>편의시설</Text>
                   <View style={styles.filterItemsContainer}>
-                    <TouchableOpacity
+                    <Pressable
                       style={[
                         styles.filterfaciItem,
                         getVal(keyPeople, '') === '단체 방문' &&
@@ -631,8 +630,8 @@ const FilterPotal = ({
                         ]}>
                         단체 방문
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                       style={[
                         styles.filterfaciItem,
                         getVal(keyParking, '') === '가능' &&
@@ -668,8 +667,8 @@ const FilterPotal = ({
                         ]}>
                         주차
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                       style={[
                         styles.filterfaciItem,
                         getVal(keyCorkage, '') === '가능' &&
@@ -705,8 +704,8 @@ const FilterPotal = ({
                         ]}>
                         콜키지
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                       style={[
                         styles.filterfaciItem,
                         getVal(keyScreen, '') === '설치' &&
@@ -743,8 +742,8 @@ const FilterPotal = ({
                         ]}>
                         스크린(TV)
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                       style={[
                         styles.filterfaciItem,
                         getVal(keyRoom, '') === '가능' &&
@@ -780,8 +779,8 @@ const FilterPotal = ({
                         ]}>
                         룸
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                       style={[
                         styles.filterfaciItem,
                         getVal(keyOutdoor, '') === '가능' &&
@@ -817,22 +816,22 @@ const FilterPotal = ({
                         ]}>
                         야외 좌석·테라스
                       </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                 </View>
               </ScrollView>
 
               <View style={styles.footer}>
-                <TouchableOpacity
+                <Pressable
                   style={styles.resetButton}
                   onPress={() => setFilterModalVisible(false)}>
                   <Text style={styles.resetText}>닫기</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                   style={styles.applyButton}
                   onPress={() => setFilterModalVisible(false)}>
                   <Text style={styles.applyText}>적용</Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
           </View>

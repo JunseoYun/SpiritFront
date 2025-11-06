@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   InteractionManager,
   BackHandler,
+  Pressable,
 } from 'react-native';
 import BottomSheet, {
   BottomSheetView,
@@ -29,12 +30,9 @@ import FilterPotal from './FilterPotal';
 import MapFilterHeader from './MapFilterHeader';
 import MapDetailItem from './MapDetailItem';
 import {useMapSearch} from '../../../context/MapSearchContext';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
-const PULL_THRESHOLD = 30;
-
-// 🆕 새로 추가된 Threshold (약 20% 내려왔을 때 snap)
-const PULL_COLLAPSE_THRESHOLD = 20;
 
 const MapStoreList = ({
   updateNewLocation,
@@ -59,16 +57,20 @@ const MapStoreList = ({
   bottomSheetRef,
 }) => {
   // const bottomSheetRef = useRef(null);
-
+  const insets = useSafeAreaInsets();
+  const [filterheight, setFilterheight] = useState(0);
   const initialIndex = stores.length === 0 ? 1 : 1;
-
   const snapPoints = useMemo(() => {
+    const first = SCREEN_HEIGHT * 0.03 + filterheight - 2; //
+    const nonemid = SCREEN_HEIGHT * 0.3;
+    const mid = SCREEN_HEIGHT * 0.55;
+    const max = SCREEN_HEIGHT * 0.8;
     if (stores.length === 0 && !loading && !storegetloading) {
-      return ['3%', '30%'];
+      return [first, nonemid];
     }
     // 상세보기 모드에서는 80% 스냅 비활성화
-    if (detailStoreId) return ['3%', '55%'];
-    return ['3%', '55%', '80%'];
+    if (detailStoreId) return [first, mid];
+    return [first, mid, max];
   }, [stores, loading, storegetloading, detailStoreId]);
 
   const animatedIndex = useSharedValue(0);
@@ -100,7 +102,7 @@ const MapStoreList = ({
       let newValue;
 
       if (snapPoints.length === 2) {
-        if (index === 0) newValue = -SCREEN_HEIGHT * 0.03;
+        if (index === 0) newValue = -SCREEN_HEIGHT * 0.03 - filterheight;
         if (index === 1) {
           if (detailStoreId) {
             if (index === 1) newValue = -SCREEN_HEIGHT * 0.55;
@@ -109,7 +111,7 @@ const MapStoreList = ({
           }
         }
       } else {
-        if (index === 0) newValue = -SCREEN_HEIGHT * 0.03;
+        if (index === 0) newValue = -SCREEN_HEIGHT * 0.03 - filterheight;
         if (index === 1) newValue = -SCREEN_HEIGHT * 0.55;
         if (index === 2) newValue = 0;
       }
@@ -447,12 +449,15 @@ const MapStoreList = ({
       {isFlatListVisible && (
         <>
           {stores.length > 0 && currentIndex === 0 && (
-            <TouchableOpacity
-              style={styles.listButton}
+            <Pressable
+              style={[
+                styles.listButton,
+                {bottom: SCREEN_HEIGHT * 0.03 + 20 + filterheight},
+              ]}
               onPress={handleShowList}>
-              <Ionicons name="list" color="#000" size={15} />
+              <Ionicons name="list" color="#000" size={17} />
               <Text style={styles.listButtonText}>목록보기</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
 
           <Animated.View style={[styles.floatingButtons, floatingStyle]}>
@@ -531,6 +536,7 @@ const MapStoreList = ({
               <MapFilterHeader
                 setFilterInitialTab={setFilterInitialTab}
                 setFilterModalVisible={setFilterModalVisible}
+                setFilterheight={setFilterheight}
                 distanceLabel={computedLabels?.distance || distanceLabel}
                 categoryLabel={computedLabels?.category || categoryLabel}
                 peopleLabel={computedLabels?.people || peopleLabel}
@@ -553,11 +559,11 @@ const MapStoreList = ({
                     paddingBottom: 24,
                   }}
                   showsVerticalScrollIndicator={false}>
-                  <TouchableOpacity
+                  <Pressable
                     onPress={handleCloseDetail}
                     style={styles.detailCloseButton}>
                     <Ionicons name="arrow-back" size={18} color="#111" />
-                  </TouchableOpacity>
+                  </Pressable>
                   <MapDetailItem
                     item={detailStore}
                     index={selectedStoreIndex}
@@ -613,7 +619,7 @@ const MapStoreList = ({
                   contentContainerStyle={{
                     ...styles.listContentContainer,
                     ...(currentIndex === 1 && {
-                      paddingBottom: SCREEN_HEIGHT * 0.25,
+                      paddingBottom: SCREEN_HEIGHT * 0.25 + insets.bottom,
                     }),
                   }}
                   onScroll={handleScrollBeginDrag}
@@ -653,7 +659,7 @@ const MapStoreList = ({
 };
 
 const styles = StyleSheet.create({
-  sheet: {zIndex: 2},
+  sheet: {zIndex: 3},
   listContentContainer: {paddingBottom: 18},
   floatingButtons: {
     position: 'absolute',
@@ -667,7 +673,6 @@ const styles = StyleSheet.create({
   listButton: {
     position: 'absolute',
     alignSelf: 'center',
-    bottom: SCREEN_HEIGHT * 0.03 + 20,
     flexDirection: 'row',
     justifyContent: 'center',
     zIndex: 2,
@@ -680,7 +685,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   listButtonText: {
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: 'Pretendard-Regular',
   },
   detailCloseButton: {

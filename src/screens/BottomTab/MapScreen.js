@@ -218,6 +218,38 @@ const MapScreen = ({navigation}) => {
     }
   };
 
+  // baseLat/baseLng: base center coords (marker visually offset from here)
+  // queryLat/queryLng: API query coords (marker actual position with offset applied)
+  const refreshWithLatLngs = async (
+    baseLat,
+    baseLng,
+    queryLat,
+    queryLng,
+    radius,
+    offsetY,
+  ) => {
+    try {
+      const storesData = await Store_getby_radius(queryLat, queryLng, radius);
+      storesData.sort((a, b) =>
+        a.locationDto.address.localeCompare(b.locationDto.address),
+      );
+      setStores(storesData);
+      setSelectedStore(storesData[0]);
+
+      if (webViewRef.current) {
+        webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
+        const script = generateMapScript(baseLat, baseLng, storesData, offsetY);
+        webViewRef.current.injectJavaScript(script);
+      }
+    } catch (err) {
+      console.error('반경 내 매장 조회 중 오류:', err);
+    } finally {
+      setRefresh(false);
+      setLoading(false);
+      setStoregetloading(false);
+    }
+  };
+
   const setcenterrefresh = async radius => {
     setLoading(true);
     setStoregetloading(true);
@@ -238,26 +270,60 @@ const MapScreen = ({navigation}) => {
       if (!lat || !lng) {
         return;
       }
-
-      const storesData = await Store_getby_radius(lat, lng, radius);
-      storesData.sort((a, b) =>
-        a.locationDto.address.localeCompare(b.locationDto.address),
-      );
-      setStores(storesData);
-      setSelectedStore(storesData[0]);
+      const offsetY = sheetIndex === 1 ? SCREEN_HEIGHT * 0.18 : 0;
 
       if (webViewRef.current) {
+        const calcAdjustedScript = `
+          (function(){
+            try {
+              var map = window.map;
+              var __lat = ${lat}, __lng = ${lng};
+              var __offset = ${offsetY} || 0;
+              var __adjLat = __lat, __adjLng = __lng;
+              if (map) {
+                var proj = map.getProjection();
+                var base = new kakao.maps.LatLng(__lat, __lng);
+                var pt = proj.containerPointFromCoords(base);
+                // 마커는 중심에서 위로 올려 찍음 → y - offset
+                var adjPt = new kakao.maps.Point(pt.x, pt.y - __offset);
+                var adj = proj.coordsFromContainerPoint(adjPt);
+                __adjLat = adj.getLat();
+                __adjLng = adj.getLng();
+              }
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                action: 'adjustedLatLngForQuery',
+                reqId: 'setcenterrefresh',
+                baseLat: __lat,
+                baseLng: __lng,
+                latitude: __adjLat,
+                longitude: __adjLng,
+                radius: ${radius},
+                offsetY: __offset
+              }));
+            } catch (e) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                action: 'adjustedLatLngForQuery',
+                reqId: 'setcenterrefresh',
+                baseLat: ${lat},
+                baseLng: ${lng},
+                latitude: ${lat},
+                longitude: ${lng},
+                radius: ${radius},
+                offsetY: ${offsetY},
+                error: 'calc_failed'
+              }));
+            }
+            true;
+          })();
+        `;
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-        const offsetY = sheetIndex === 1 ? SCREEN_HEIGHT * 0.18 : 0;
-        const script = generateMapScript(lat, lng, storesData, offsetY);
-        webViewRef.current.injectJavaScript(script);
+        webViewRef.current.injectJavaScript(calcAdjustedScript);
+      } else {
+        refreshWithLatLngs(lat, lng, lat, lng, radius, offsetY);
       }
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
     } finally {
-      setRefresh(false);
-      setLoading(false);
-      setStoregetloading(false);
     }
   };
 
@@ -333,6 +399,32 @@ const MapScreen = ({navigation}) => {
 
         getStorelist(radius);
         setRefresh(false);
+        return;
+      }
+      if (
+        message.action === 'adjustedLatLngForQuery' &&
+        message.reqId === 'setcenterrefresh'
+      ) {
+        const baseLat = message.baseLat ?? location?.latitude;
+        const baseLng = message.baseLng ?? location?.longitude;
+        const queryLat = message.latitude;
+        const queryLng = message.longitude;
+        const reqRadius = message.radius ?? radius;
+        const adjOffsetY =
+          message.offsetY ??
+          (sheetIndex === 1
+            ? SCREEN_HEIGHT * 0.18
+            : sheetIndex === 10
+            ? SCREEN_HEIGHT * -0.18
+            : 0);
+        refreshWithLatLngs(
+          baseLat,
+          baseLng,
+          queryLat,
+          queryLng,
+          reqRadius,
+          adjOffsetY,
+        );
         return;
       }
       if (message.action === 'mapMoved') {
