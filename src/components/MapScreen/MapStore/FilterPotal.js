@@ -15,6 +15,16 @@ import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import ColorUtil from '../../../utils/ColorUtil';
+import {
+  SunMedium,
+  DoorOpen,
+  TvMinimal,
+  Wine,
+  UsersRound,
+  CarFront,
+  CheckCircle2,
+} from 'lucide-react-native';
 
 // Try to resolve keys that may be mojibake in persisted state
 const findExistingKey = (filters, hint) => {
@@ -35,15 +45,7 @@ const FilterPotal = ({
   setRadiusint,
 }) => {
   const FILTER_TABS = useMemo(
-    () => [
-      '거리',
-      '카테고리',
-      '주종',
-      '매장분위기',
-      '방문시간',
-      '인원',
-      '편의시설',
-    ],
+    () => ['거리', '카테고리', '주종', '매장분위기', '방문시간', '편의시설'],
     [],
   );
 
@@ -114,6 +116,8 @@ const FilterPotal = ({
       setVal(key, [...prev, value]);
     }
   };
+
+  const storeAtmSelected = getArrVal(getVal(keyStoreatm, []));
 
   const generateTimes = () => {
     const times = [];
@@ -199,7 +203,7 @@ const FilterPotal = ({
     }
 
     const x = positions[index] ?? 0;
-    timeScrollRef.current?.scrollTo({x: x - 16, animated: true});
+    timeScrollRef.current?.scrollTo({x: x, animated: true});
   };
 
   return (
@@ -426,7 +430,17 @@ const FilterPotal = ({
                     }
                   }}
                   style={styles.sectionContainer}>
-                  <Text style={styles.sectionTitle}>매장분위기</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                    }}>
+                    <Text style={styles.sectionTitle}>매장분위기</Text>
+                    {storeAtmSelected.length > 0 && (
+                      <Text style={styles.sectionCount}>
+                        {storeAtmSelected.length}/4
+                      </Text>
+                    )}
+                  </View>
                   <View style={styles.filterItemsContainer}>
                     {[
                       '대화하기 좋은',
@@ -516,7 +530,6 @@ const FilterPotal = ({
                     ref={timeScrollRef}
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{paddingHorizontal: 16}}
                     style={styles.timeScroll}>
                     {baseTimes.map((t, idx) => {
                       const hourForValue =
@@ -572,39 +585,6 @@ const FilterPotal = ({
                   </ScrollView>
                 </View>
 
-                {/* 인원 */}
-                <View
-                  onLayout={e => {
-                    const y = e?.nativeEvent?.layout?.y;
-                    if (y != null) {
-                      setSectionPositions(p => ({...p, 인원: y}));
-                    }
-                  }}
-                  style={styles.sectionContainer}>
-                  <Text style={styles.sectionTitle}>인원</Text>
-                  <View style={styles.filterItemsContainer}>
-                    {['소수 방문', '단체 방문'].map(p => (
-                      <TouchableOpacity
-                        key={p}
-                        style={[
-                          styles.filterItem,
-                          getVal(keyPeople, '') === p &&
-                            styles.filterItemSelected,
-                        ]}
-                        onPress={() => toggleSingle(keyPeople, p)}>
-                        <Text
-                          style={[
-                            styles.filterItemText,
-                            getVal(keyPeople, '') === p &&
-                              styles.filterItemTextSelected,
-                          ]}>
-                          {p}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
                 <View
                   onLayout={e => {
                     const y = e.nativeEvent.layout.y;
@@ -613,6 +593,45 @@ const FilterPotal = ({
                   style={styles.sectionContainer}>
                   <Text style={styles.sectionTitle}>편의시설</Text>
                   <View style={styles.filterItemsContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.filterfaciItem,
+                        getVal(keyPeople, '') === '단체 방문' &&
+                          styles.filterItemSelected,
+                      ]}
+                      onPress={() =>
+                        setVal(
+                          keyPeople,
+                          getVal(keyPeople, '') === '단체 방문'
+                            ? ''
+                            : '단체 방문',
+                        )
+                      }>
+                      {getVal(keyPeople, '') === '단체 방문' ? (
+                        <CheckCircle2
+                          size={18}
+                          color="#3CBBFF"
+                          strokeWidth={2.2}
+                          style={{marginRight: 6}}
+                        />
+                      ) : (
+                        <UsersRound
+                          size={18}
+                          color="#999"
+                          strokeWidth={1.7}
+                          style={{marginRight: 6}}
+                        />
+                      )}
+                      <Text
+                        allowFontScaling={false}
+                        style={[
+                          styles.filterfaciItemText,
+                          getVal(keyPeople, '') === '단체 방문' &&
+                            styles.filterItemTextSelected,
+                        ]}>
+                        단체 방문
+                      </Text>
+                    </TouchableOpacity>
                     <TouchableOpacity
                       style={[
                         styles.filterfaciItem,
@@ -625,13 +644,21 @@ const FilterPotal = ({
                           getVal(keyParking, '') === '가능' ? '' : '가능',
                         )
                       }>
-                      <MaterialCommunityIcons
-                        name="parking"
-                        color={
-                          getVal(keyParking, '') === '가능' ? '#3CBBFF' : '#999'
-                        }
-                        size={23}
-                      />
+                      {getVal(keyParking, '') === '가능' ? (
+                        <CheckCircle2
+                          size={18}
+                          color="#3CBBFF"
+                          strokeWidth={2.2}
+                          style={{marginRight: 6}}
+                        />
+                      ) : (
+                        <CarFront
+                          size={18}
+                          color="#999"
+                          strokeWidth={1.7}
+                          style={{marginRight: 6}}
+                        />
+                      )}
                       <Text
                         allowFontScaling={false}
                         style={[
@@ -639,7 +666,7 @@ const FilterPotal = ({
                           getVal(keyParking, '') === '가능' &&
                             styles.filterItemTextSelected,
                         ]}>
-                        주차 가능
+                        주차
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -654,13 +681,21 @@ const FilterPotal = ({
                           getVal(keyCorkage, '') === '가능' ? '' : '가능',
                         )
                       }>
-                      <MaterialCommunityIcons
-                        name="glass-cocktail"
-                        color={
-                          getVal(keyCorkage, '') === '가능' ? '#3CBBFF' : '#999'
-                        }
-                        size={23}
-                      />
+                      {getVal(keyCorkage, '') === '가능' ? (
+                        <CheckCircle2
+                          size={18}
+                          color="#3CBBFF"
+                          strokeWidth={2.2}
+                          style={{marginRight: 6}}
+                        />
+                      ) : (
+                        <Wine
+                          size={18}
+                          color="#999"
+                          strokeWidth={1.7}
+                          style={{marginRight: 6}}
+                        />
+                      )}
                       <Text
                         allowFontScaling={false}
                         style={[
@@ -668,7 +703,7 @@ const FilterPotal = ({
                           getVal(keyCorkage, '') === '가능' &&
                             styles.filterItemTextSelected,
                         ]}>
-                        콜키지 가능
+                        콜키지
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -683,13 +718,21 @@ const FilterPotal = ({
                           getVal(keyScreen, '') === '설치' ? '' : '설치',
                         )
                       }>
-                      <Feather
-                        name="tv"
-                        size={23}
-                        color={
-                          getVal(keyScreen, '') === '설치' ? '#3CBBFF' : '#999'
-                        }
-                      />
+                      {getVal(keyScreen, '') === '설치' ? (
+                        <CheckCircle2
+                          size={18}
+                          color="#3CBBFF"
+                          strokeWidth={2.2}
+                          style={{marginRight: 6}}
+                        />
+                      ) : (
+                        <TvMinimal
+                          size={18}
+                          color="#999"
+                          strokeWidth={1.7}
+                          style={{marginRight: 6}}
+                        />
+                      )}
 
                       <Text
                         allowFontScaling={false}
@@ -698,7 +741,7 @@ const FilterPotal = ({
                           getVal(keyScreen, '') === '설치' &&
                             styles.filterItemTextSelected,
                         ]}>
-                        스크린 설치
+                        스크린(TV)
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -713,13 +756,21 @@ const FilterPotal = ({
                           getVal(keyRoom, '') === '가능' ? '' : '가능',
                         )
                       }>
-                      <MaterialCommunityIcons
-                        name="door-sliding"
-                        color={
-                          getVal(keyRoom, '') === '가능' ? '#3CBBFF' : '#999'
-                        }
-                        size={23}
-                      />
+                      {getVal(keyRoom, '') === '가능' ? (
+                        <CheckCircle2
+                          size={18}
+                          color="#3CBBFF"
+                          strokeWidth={2.2}
+                          style={{marginRight: 6}}
+                        />
+                      ) : (
+                        <DoorOpen
+                          size={18}
+                          color="#999"
+                          strokeWidth={1.7}
+                          style={{marginRight: 6}}
+                        />
+                      )}
                       <Text
                         allowFontScaling={false}
                         style={[
@@ -727,11 +778,9 @@ const FilterPotal = ({
                           getVal(keyRoom, '') === '가능' &&
                             styles.filterItemTextSelected,
                         ]}>
-                        룸 가능
+                        룸
                       </Text>
                     </TouchableOpacity>
-                  </View>
-                  <View style={styles.filterItemsContainer}>
                     <TouchableOpacity
                       style={[
                         styles.filterfaciItem,
@@ -744,13 +793,21 @@ const FilterPotal = ({
                           getVal(keyOutdoor, '') === '가능' ? '' : '가능',
                         )
                       }>
-                      <MaterialIcons
-                        name="table-bar"
-                        color={
-                          getVal(keyOutdoor, '') === '가능' ? '#3CBBFF' : '#999'
-                        }
-                        size={23}
-                      />
+                      {getVal(keyOutdoor, '') === '가능' ? (
+                        <CheckCircle2
+                          size={18}
+                          color="#3CBBFF"
+                          strokeWidth={2.2}
+                          style={{marginRight: 6}}
+                        />
+                      ) : (
+                        <SunMedium
+                          size={18}
+                          color="#999"
+                          strokeWidth={1.7}
+                          style={{marginRight: 6}}
+                        />
+                      )}
                       <Text
                         allowFontScaling={false}
                         style={[
@@ -758,36 +815,9 @@ const FilterPotal = ({
                           getVal(keyOutdoor, '') === '가능' &&
                             styles.filterItemTextSelected,
                         ]}>
-                        야장 가능
+                        야외 좌석·테라스
                       </Text>
                     </TouchableOpacity>
-                    <View
-                      style={{
-                        flex: 1,
-                        paddingVertical: 10,
-                        paddingHorizontal: 14,
-                        gap: 6,
-                        marginRight: 8,
-                        marginBottom: 8,
-                      }}></View>
-                    <View
-                      style={{
-                        flex: 1,
-                        paddingVertical: 10,
-                        paddingHorizontal: 14,
-                        gap: 6,
-                        marginRight: 8,
-                        marginBottom: 8,
-                      }}></View>
-                    <View
-                      style={{
-                        flex: 1,
-                        paddingVertical: 10,
-                        paddingHorizontal: 14,
-                        gap: 6,
-                        marginRight: 8,
-                        marginBottom: 8,
-                      }}></View>
                   </View>
                 </View>
               </ScrollView>
@@ -881,7 +911,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Bold',
   },
   sectionContainer: {
-    marginHorizontal: 0,
+    marginHorizontal: 16,
     paddingVertical: 12,
   },
   categoryContainer: {
@@ -889,7 +919,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginHorizontal: 16,
   },
   categoryTitle: {
     fontSize: 15,
@@ -906,39 +935,37 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Bold',
     marginBottom: 8,
     color: '#333',
-    marginHorizontal: 16,
+    marginRight: 6,
   },
   filterItemsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: 16,
   },
   filterItem: {
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#ddd',
-    marginRight: 8,
-    marginBottom: 8,
+    borderColor: ColorUtil.placeholderBorder,
     backgroundColor: '#fff',
+    marginRight: 12,
+    marginBottom: 10,
   },
   filterfaciItem: {
-    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 12,
+    marginBottom: 10,
+    paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#ddd',
-    marginRight: 8,
-    marginBottom: 8,
+    borderColor: ColorUtil.placeholderBorder,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    gap: 6,
-    flex: 1,
   },
   filterItemSelected: {
-    backgroundColor: '#E9F5FB',
     borderColor: '#3CBBFF',
+    backgroundColor: 'rgba(60,187,255,0.08)',
   },
   filterItemText: {
     fontSize: 13,
@@ -953,7 +980,7 @@ const styles = StyleSheet.create({
   },
   filterItemTextSelected: {
     color: '#3CBBFF',
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
   footer: {
     flexDirection: 'row',
@@ -992,7 +1019,6 @@ const styles = StyleSheet.create({
   timeTabContainer: {
     flexDirection: 'row',
     marginBottom: 8,
-    marginHorizontal: 16,
   },
   timeTab: {
     paddingVertical: 6,
@@ -1017,6 +1043,13 @@ const styles = StyleSheet.create({
   },
   timeScroll: {
     flexDirection: 'row',
+  },
+  sectionCount: {
+    fontFamily: 'Pretendard-Regular',
+    color: '#999',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 1,
   },
 });
 

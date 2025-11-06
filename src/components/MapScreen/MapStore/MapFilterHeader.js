@@ -134,7 +134,7 @@ const MapFilterHeader = ({
             peopleLabel !== '인원' && styles.filterChipActive,
           ]}
           onPress={() => {
-            setFilterInitialTab('인원');
+            setFilterInitialTab('편의시설');
             setFilterModalVisible(true);
           }}>
           <Text
