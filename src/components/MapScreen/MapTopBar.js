@@ -12,6 +12,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useMapSearch} from '../../context/MapSearchContext';
 import MapSearchBar from './MapSearchBar';
+import FastImage from 'react-native-fast-image';
 
 const MapTopBar = ({
   navigation,
@@ -30,16 +31,19 @@ const MapTopBar = ({
         style={[
           {
             position: 'absolute',
-            justifyContent: 'space-between',
             flex: 1,
             width: '100%',
             paddingTop: insets.top + 10,
             gap: 5,
-            paddingHorizontal: 10,
+            paddingHorizontal: 18,
           },
         ]}>
-        <View style={{flexDirection: 'row'}}>
-          <View style={[styles.searchContainer]}>
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: 18,
+          }}>
+          <View style={[styles.searchContainer, {flex: 1}]}>
             <Pressable
               onPress={() => {
                 navigation.navigate('MainScreen');
@@ -66,25 +70,18 @@ const MapTopBar = ({
               </Text>
             </Pressable>
           </View>
-
-          <TouchableOpacity
-            onPress={onExplorePress}
-            style={styles.exploreBtnWrap}>
-            <LinearGradient
-              colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
-              locations={[0, 0.5, 1]}
-              start={{x: 0, y: 0}}
-              end={{x: 1, y: 1}}
-              style={styles.exploreBtn}>
-              <MaterialCommunityIcons
-                name="navigation-variant"
-                size={20}
-                color="white"
-                style={{marginBottom: 3}}
+          <Pressable onPress={onExplorePress} style={styles.exploreBtnWrap}>
+            <View style={styles.exploreContainer}>
+              <FastImage
+                source={require('../../assets/SearchAiButton.png')}
+                style={styles.exploreImage}
+                resizeMode={FastImage.resizeMode.cover}
               />
-              <Text style={styles.exploreText}>탐색</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+              <View style={styles.exploreLabelWrap}>
+                <Text style={styles.exploreLabel}>탐색</Text>
+              </View>
+            </View>
+          </Pressable>
         </View>
         {refresh && <MapSearchBar onPress={() => setcenterrefresh(radius)} />}
       </View>
@@ -94,7 +91,6 @@ const MapTopBar = ({
 
 const styles = StyleSheet.create({
   searchContainer: {
-    flex: 8,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
@@ -119,20 +115,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   exploreBtnWrap: {
-    flex: 2,
+    width: 48,
+    height: 48,
+  },
+  exploreContainer: {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+  },
+  exploreImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 6,
+  },
+  exploreLabelWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 4,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  exploreBtn: {
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 8,
-  },
-  exploreText: {
+  exploreLabel: {
     color: 'white',
     fontSize: 10,
-    fontFamily: 'Pretendard-Regular',
-    textAlign: 'center',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

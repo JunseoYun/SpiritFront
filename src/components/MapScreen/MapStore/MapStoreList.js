@@ -64,7 +64,7 @@ const MapStoreList = ({
     const first = SCREEN_HEIGHT * 0.03 + filterheight + insets.bottom; //
     const nonemid = SCREEN_HEIGHT * 0.3;
     const mid = SCREEN_HEIGHT * 0.55;
-    const max = SCREEN_HEIGHT * 0.8;
+    const max = SCREEN_HEIGHT * 0.7;
     if (stores.length === 0 && !loading && !storegetloading) {
       return [first, nonemid];
     }
@@ -489,6 +489,7 @@ const MapStoreList = ({
             }}
             enableContentPanningGesture={false}
             enableHandlePanningGesture={!filterModalVisible}
+            enableOverDrag={false}
             animatedIndex={animatedIndex}
             onChange={handleSheetChange}>
             <BottomSheetView style={{flex: 1}}>
@@ -696,6 +697,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     gap: 4,
     elevation: 3,
+    shadowColor: '#333',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
   },
   listButtonText: {
     fontSize: 15,

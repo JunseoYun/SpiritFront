@@ -44,7 +44,7 @@ export default function MyBanner({index}) {
   };
 
   return (
-    <View style={{width, alignSelf: 'center', marginTop: 5}}>
+    <View style={{width, alignSelf: 'center'}}>
       {!loaded && index === 'main' && (
         <View
           style={{
