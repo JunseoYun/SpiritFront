@@ -1,3 +1,4 @@
+//사장님 매장 등록 및 인증 스크린
 import React, {
   useState,
   useLayoutEffect,
