@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    fontSize: 16,
+    fontSize: 15,
     marginBottom: 12,
   },
   inputWrapper: {
@@ -139,11 +139,10 @@ const styles = StyleSheet.create({
   },
   errorMessage: {
     color: '#FF4816',
-    fontSize: 15,
     marginTop: 5,
     marginHorizontal: 18,
-
-    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    fontFamily: 'Pretendard-Regular',
   },
 });
 

@@ -49,12 +49,8 @@ const StoreAlcohol = ({
       style={[styles.container, isRegistration && styles.registrationSpacing]}>
       {!isRegistration && (
         <View style={styles.labelView}>
-          <Text style={styles.label}>
-            {index ? '대표 주종*' : '대표 주종'}
-          </Text>
-          <Text style={styles.countLabel}>
-            ({selectedAlcohols.length}/3)
-          </Text>
+          <Text style={styles.label}>대표 주종</Text>
+          <Text style={styles.countLabel}>({selectedAlcohols.length}/3)</Text>
         </View>
       )}
       <View style={styles.categoryGrid}>
@@ -109,7 +105,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    fontSize: 16,
+    fontSize: 15,
     marginRight: 6,
   },
   countLabel: {
@@ -152,8 +148,8 @@ const styles = StyleSheet.create({
   },
   errorMessage: {
     color: '#FF4816',
-    fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    fontFamily: 'Pretendard-Regular',
     marginTop: 6,
   },
 });

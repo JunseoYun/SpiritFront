@@ -22,6 +22,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+
 import {useRoute} from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import StoreImage from '../../../components/StoreAddScreen/StoreImage';
@@ -40,7 +41,9 @@ import BottomActionButton from '../../../utils/BottomActionButton';
 import ColorUtil from '../../../utils/ColorUtil';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import useDoubleBackExit from '../../../hooks/useDoubleBackExit';
-
+import BusinessCertificate from '../../../components/StoreAuthority/BusinessCertificate';
+import StoreRegistrationConsentModal from '../../../components/StoreAuthority/StoreRegistrationConsentModal';
+import {Create_store_with_ownership} from '../../../api/storeApi';
 const STEPS = [
   'image',
   'name',
@@ -52,16 +55,19 @@ const STEPS = [
   'facilities',
   'contact',
   'content',
+  'businessCertificate',
 ];
 
 const STEP_GUIDES = {
   image: {
+    type: '매장 사진',
     title: '매장 사진을 등록해주세요',
     description: '대표 사진을 포함해 최대 5장까지 업로드할 수 있어요.',
     tipTitle: '사진 가이드',
     tip: '첫 번째로 추가한 사진이 대표 사진으로 설정돼요.',
   },
   name: {
+    type: '매장 이름',
     title: '매장 이름을 입력해주세요',
     description:
       '고객이 검색하거나 지도에서 볼 수 있는 공식 상호명을 입력해 주세요.',
@@ -69,49 +75,63 @@ const STEP_GUIDES = {
     tip: '사업자등록증과 동일한 이름을 권장해요. 특수문자는 최소한으로 사용해 주세요.',
   },
   address: {
+    type: '매장 주소',
     title: '매장 주소를 알려주세요',
     description: '정확한 주소는 고객 방문과 심사에 꼭 필요해요.',
     tipTitle: '주소 입력 방법',
     tip: '검색으로 찾기 어렵다면 지도에서 위치를 직접 지정해 보세요.',
   },
   mood: {
+    type: '매장 분위기',
     title: '매장 분위기를 선택해주세요',
     description:
       '고객이 매장의 감성을 느낄 수 있도록 최대 4개까지 선택할 수 있어요.',
   },
   category: {
+    type: '매장 카테고리',
     title: '매장 카테고리를 골라주세요',
     description: '대표되는 업종을 최대 3개까지 선택하면 추천에 도움이 돼요.',
   },
   hours: {
+    type: '매장 영업 시간',
     title: '영업 시간을 등록해주세요',
     description: '요일별 영업 시간과 휴무일을 정확히 입력해 주세요.',
     tipTitle: '시간 입력 팁',
     tip: '브레이크 타임이 있다면 함께 입력하면 고객 문의가 줄어들어요.',
   },
   alcohol: {
+    type: '매장 대표 주종',
     title: '대표 주종을 알려주세요',
     description: '매장을 대표하는 주종을 최대 3개까지 선택해 주세요.',
   },
   facilities: {
+    type: '매장 편의시설',
     title: '편의시설 정보를 선택해주세요',
     description: '제공되는 서비스는 고객 방문 결정에 큰 도움이 됩니다.',
   },
   contact: {
+    type: '매장 연락처',
     title: '매장 연락처를 입력해주세요',
     description: '고객이 문의하거나 예약할 수 있는 번호를 입력해 주세요.',
   },
   content: {
+    type: '매장 소개',
     title: '매장을 소개해주세요',
     description: '매장만의 분위기, 시그니처 메뉴 등을 자유롭게 작성해 주세요.',
     tipTitle: '소개글 작성 팁',
     tip: '대표 메뉴, 좌석 수, 예약 가능 여부 등을 함께 적어주면 좋아요.',
   },
+  businessCertificate: {
+    type: '사업자등록증',
+    title: '사업자등록증을 첨부해주세요',
+    description: '선명한 사업자등록증을 첨부하면 등록 검토가 더 빨라집니다.',
+    tipTitle: '첨부 가이드',
+    tip: '전체 정보가 잘 보이도록 밝은 곳에서 촬영해 주세요. 등록증은 최신본을 사용해주세요.',
+  },
 };
 
 const StoreRegistrationScreen = ({navigation}) => {
   useDoubleBackExit(navigation);
-
   const {bottom} = useSafeAndroidInsets();
   const route = useRoute();
   const {index, location} = route.params;
@@ -120,7 +140,7 @@ const StoreRegistrationScreen = ({navigation}) => {
   const step = STEPS[stepIndex];
   const totalSteps = STEPS.length;
   const currentStepNumber = stepIndex + 1;
-  const currentStepTitle = STEP_GUIDES[step]?.title ?? '';
+  const currentStepTitle = STEP_GUIDES[step]?.type ?? '';
   const progressRatio = useMemo(
     () => (currentStepNumber / totalSteps) * 100,
     [currentStepNumber, totalSteps],
@@ -187,6 +207,9 @@ const StoreRegistrationScreen = ({navigation}) => {
   const [alcohol, setAlcohol] = useState([]);
   const [storeNumber, setStoreNumber] = useState('');
   const [storeContent, setStoreContent] = useState('');
+  const [businessCertificate, setBusinessCertificate] = useState(null);
+  const [isConsentModalVisible, setIsConsentModalVisible] = useState(false);
+  const [isConsentChecked, setIsConsentChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -201,11 +224,30 @@ const StoreRegistrationScreen = ({navigation}) => {
   const facilitiesRef = useRef(null);
   const storeNumberRef = useRef(null);
   const storeContentRef = useRef(null);
+  const businessCertificateRef = useRef(null);
 
   const handleAddressSelect = ({address, coords}) => {
     setAddress(address);
     setCoords(coords);
   };
+
+  useEffect(() => {
+    if (businessCertificate && error === 'businessCertificate') {
+      setError('');
+    }
+  }, [businessCertificate, error]);
+
+  const handleConsentConfirm = useCallback(() => {
+    if (!isConsentChecked) {
+      showAlert({
+        title: '동의 필요',
+        message: '동의 후 등록을 진행할 수 있어요.',
+      });
+      return;
+    }
+    closeConsentModal();
+    handleSubmit();
+  }, [isConsentChecked, closeConsentModal, handleSubmit, showAlert]);
 
   const scrollToError = useCallback(ref => {
     if (ref?.current && scrollViewRef.current) {
@@ -285,6 +327,19 @@ const StoreRegistrationScreen = ({navigation}) => {
     );
   }, []);
 
+  const openConsentModal = useCallback(() => {
+    setIsConsentChecked(false);
+    setIsConsentModalVisible(true);
+  }, []);
+
+  const closeConsentModal = useCallback(() => {
+    setIsConsentModalVisible(false);
+  }, []);
+
+  const toggleConsentChecked = useCallback(() => {
+    setIsConsentChecked(prev => !prev);
+  }, []);
+
   const scrollToTop = useCallback(() => {
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollTo({y: 0, animated: true});
@@ -341,7 +396,8 @@ const StoreRegistrationScreen = ({navigation}) => {
       !hasCompletedOperatingHours ||
       alcohol.length === 0 ||
       !storeNumber.trim() ||
-      !storeContent.trim(),
+      !storeContent.trim() ||
+      !businessCertificate,
     [
       imageUris.length,
       storename,
@@ -351,6 +407,7 @@ const StoreRegistrationScreen = ({navigation}) => {
       alcohol.length,
       storeNumber,
       storeContent,
+      businessCertificate,
     ],
   );
 
@@ -371,7 +428,9 @@ const StoreRegistrationScreen = ({navigation}) => {
       case 'contact':
         return !!storeNumber.trim();
       case 'content':
-        return !isSubmitDisabled;
+        return !!storeContent.trim();
+      case 'businessCertificate':
+        return !!businessCertificate;
       default:
         return true;
     }
@@ -384,7 +443,8 @@ const StoreRegistrationScreen = ({navigation}) => {
     hasCompletedOperatingHours,
     alcohol.length,
     storeNumber,
-    isSubmitDisabled,
+    storeContent,
+    businessCertificate,
   ]);
 
   const adjustTime = time => {
@@ -397,8 +457,14 @@ const StoreRegistrationScreen = ({navigation}) => {
       .padStart(2, '0')}`;
   };
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (isSubmitDisabled) {
+      return;
+    }
+
+    if (!businessCertificate) {
+      setError('businessCertificate');
+      scrollToError(businessCertificateRef);
       return;
     }
 
@@ -461,17 +527,53 @@ const StoreRegistrationScreen = ({navigation}) => {
       createStoreDto.operationInfoDtos = operationInfoDtos;
     }
 
-    const data = {
-      files: imageUris,
-      createStoreDto,
+    const payload = {
+      storeImages: imageUris.map(image => {
+        if (image?.path) return image.path;
+        if (image?.uri) return image.uri;
+        return image;
+      }),
+      businessRegistrationCertificateImage:
+        businessCertificate?.path ||
+        businessCertificate?.uri ||
+        businessCertificate,
+      createStoreRqDto: createStoreDto,
     };
-
-    navigation.navigate('StoreCheckScreen', {
-      storeName: storename.trim(),
-      storeLocationDto: locationDto,
-      storeContact: storeNumber.trim(),
-      storeSuggestionData: data,
-    });
+    console.log(
+      '[CreateStoreWithOwnership] payload (without ownership):',
+      JSON.stringify(payload, null, 2),
+    );
+    // try {
+    //   setLoading(true);
+    //   const response = await Create_store_with_ownership(payload);
+    //   if (response.status === 200) {
+    //     showAlert({
+    //       title: '매장 등록 및 인증 신청 완료',
+    //       message:
+    //         '신청 내용을 확인한 후, 빠른 시일 내에 \n알림으로 안내드릴 예정입니다.',
+    //       onConfirm: () => {
+    //         navigation.reset({
+    //           index: 0,
+    //           routes: [
+    //             {
+    //               name: 'MainBtmbar',
+    //               state: {routes: [{name: 'MainScreen'}]},
+    //             },
+    //           ],
+    //         });
+    //       },
+    //     });
+    //   }
+    // } catch (apiError) {
+    //   console.log('[CreateStoreWithOwnership] error', apiError?.response?.data);
+    //   showAlert({
+    //     title: '등록 실패',
+    //     message:
+    //       '잠시 후 다시 시도해 주세요.\n계속 실패할 경우, 메일로 문의해 주세요.',
+    //   });
+    // } finally {
+    //   setLoading(false);
+    // }
   }, [
     isSubmitDisabled,
     operatingHours,
@@ -490,7 +592,11 @@ const StoreRegistrationScreen = ({navigation}) => {
     facilitiesInfo,
     is24Hours,
     imageUris,
+    businessCertificate,
+    scrollToError,
     navigation,
+    showAlert,
+    setLoading,
   ]);
 
   const validateStep = useCallback(() => {
@@ -551,6 +657,13 @@ const StoreRegistrationScreen = ({navigation}) => {
           return false;
         }
         break;
+      case 'businessCertificate':
+        if (!businessCertificate) {
+          setError('businessCertificate');
+          scrollToError(businessCertificateRef);
+          return false;
+        }
+        break;
       default:
         break;
     }
@@ -568,6 +681,7 @@ const StoreRegistrationScreen = ({navigation}) => {
     storeNumber,
     storeContent,
     scrollToError,
+    businessCertificate,
   ]);
 
   const animateProgress = useCallback(
@@ -617,33 +731,31 @@ const StoreRegistrationScreen = ({navigation}) => {
     animateProgress(progressRatio);
   }, [progressRatio, animateProgress]);
 
+  const handlePrimaryAction = useCallback(() => {
+    if (stepIndex === STEPS.length - 1) {
+      if (!isSubmitDisabled && !loading) {
+        openConsentModal();
+      }
+      return;
+    }
+    handleNext();
+  }, [stepIndex, isSubmitDisabled, loading, openConsentModal, handleNext]);
+
   useLayoutEffect(() => {
     const isIOS = Platform.OS === 'ios';
 
     navigation.setOptions({
-      // headerRight: () => (
-      //   <Pressable
-      //     disabled={
-      //       loading ||
-      //       (stepIndex === STEPS.length - 1
-      //         ? isSubmitDisabled
-      //         : !isCurrentStepValid)
-      //     }
-      //     onPress={handleNext}>
-      //     <Text
-      //       style={[
-      //         styles.nextButton,
-      //         (loading ||
-      //           (stepIndex === STEPS.length - 1
-      //             ? isSubmitDisabled
-      //             : !isCurrentStepValid)) && {
-      //           color: ColorUtil.mainDisable,
-      //         },
-      //       ]}>
-      //       {stepIndex === STEPS.length - 1 ? '등록' : '다음'}
-      //     </Text>
-      //   </Pressable>
-      // ),
+      headerTitle: () => (
+        <Text
+          style={{
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          }}
+          allowFontScaling={false}>
+          {currentStepTitle || '매장 등록'}
+        </Text>
+      ),
+      headerTitleAlign: 'center',
       gestureEnabled: !isIOS || stepIndex === 0,
       headerLeft: () => (
         <Pressable
@@ -658,15 +770,7 @@ const StoreRegistrationScreen = ({navigation}) => {
         </Pressable>
       ),
     });
-  }, [
-    navigation,
-    handleNext,
-    loading,
-    stepIndex,
-    isCurrentStepValid,
-    isSubmitDisabled,
-    handleCancelPress,
-  ]);
+  }, [navigation, stepIndex, handleCancelPress, currentStepTitle]);
 
   return (
     <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
@@ -839,6 +943,21 @@ const StoreRegistrationScreen = ({navigation}) => {
               {renderStepTip('content')}
             </>
           )}
+
+          {step === 'businessCertificate' && (
+            <>
+              {renderStepIntro('businessCertificate')}
+              <View ref={businessCertificateRef}>
+                <BusinessCertificate
+                  business_registration_certificate={businessCertificate}
+                  setBusiness_registration_certificate={setBusinessCertificate}
+                  type="registration"
+                  error={error}
+                />
+              </View>
+              {renderStepTip('businessCertificate')}
+            </>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -852,8 +971,16 @@ const StoreRegistrationScreen = ({navigation}) => {
         }
         cancel
         cancelLabel="이전"
-        onPress={handleNext}
+        onPress={handlePrimaryAction}
         onCancel={handleStepBack}
+      />
+      <StoreRegistrationConsentModal
+        visible={isConsentModalVisible}
+        onRequestClose={closeConsentModal}
+        isChecked={isConsentChecked}
+        onToggleChecked={toggleConsentChecked}
+        onConfirm={handleConsentConfirm}
+        loading={loading}
       />
       <Loading loading={loading} />
       <AlertComponent />
@@ -938,6 +1065,91 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     color: '#24324A',
     lineHeight: 20,
+  },
+  consentOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  consentDim: {
+    flex: 1,
+  },
+  consentModal: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 24,
+    paddingTop: 26,
+    paddingBottom: 30,
+  },
+  consentTitle: {
+    fontSize: 18,
+    fontFamily: 'Pretendard-Bold',
+    color: '#111',
+  },
+  consentDescription: {
+    marginTop: 14,
+    fontSize: 14,
+    lineHeight: 22,
+    color: '#444',
+    fontFamily: 'Pretendard-Regular',
+  },
+  consentCheckboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  consentCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    backgroundColor: '#FFF',
+  },
+  consentCheckboxChecked: {
+    backgroundColor: ColorUtil.main,
+    borderColor: ColorUtil.main,
+  },
+  consentCheckboxLabel: {
+    fontSize: 15,
+    color: '#222',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  consentButtonRow: {
+    flexDirection: 'row',
+    marginTop: 28,
+  },
+  consentButton: {
+    flex: 1,
+    height: 50,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  consentCancelButton: {
+    borderWidth: 1,
+    borderColor: '#D0D7E2',
+    marginRight: 12,
+  },
+  consentConfirmButton: {
+    backgroundColor: ColorUtil.main,
+  },
+  consentButtonDisabled: {
+    backgroundColor: ColorUtil.mainDisable,
+  },
+  consentCancelText: {
+    fontSize: 15,
+    color: '#415373',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  consentConfirmText: {
+    fontSize: 15,
+    color: '#FFF',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

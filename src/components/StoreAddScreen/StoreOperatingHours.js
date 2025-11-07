@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   storeinputtext: {
     fontWeight: '500',
     color: '#999',
-    fontSize: 16,
+    fontSize: 15,
     marginBottom: 10,
   },
   storeinput: {

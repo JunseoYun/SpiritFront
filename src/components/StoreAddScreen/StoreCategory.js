@@ -30,9 +30,7 @@ const StoreCategory = ({
       {!isRegistration && (
         <View style={styles.labelView}>
           <Text style={styles.label}>카테고리</Text>
-          <Text style={[styles.countLabel]}>
-            ({selectedCategory.length}/3)
-          </Text>
+          <Text style={[styles.countLabel]}>({selectedCategory.length}/3)</Text>
         </View>
       )}
 
@@ -104,7 +102,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    fontSize: 16,
+    fontSize: 15,
     marginRight: 6,
   },
   countLabel: {
@@ -147,8 +145,8 @@ const styles = StyleSheet.create({
   },
   errorMessage: {
     color: '#FF4816',
-    fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    fontFamily: 'Pretendard-Regular',
     marginTop: 6,
   },
 });

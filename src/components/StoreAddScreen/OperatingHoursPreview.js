@@ -133,13 +133,9 @@ const OperatingHoursPreview = ({
           )}
         </Pressable>
       )}
-      {!hasValidOperatingHours &&
-        !is24Hours &&
-        error === 'StoreOperate' && (
-          <Text style={styles.errorMessage}>
-            매장 영업 시간을 등록해 주세요.
-          </Text>
-        )}
+      {!hasValidOperatingHours && !is24Hours && error === 'StoreOperate' && (
+        <Text style={styles.errorMessage}>매장 영업 시간을 등록해 주세요.</Text>
+      )}
     </>
   );
 };
@@ -157,7 +153,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    fontSize: 16,
+    fontSize: 15,
     marginRight: 6,
   },
   editButton: {
@@ -233,7 +229,8 @@ const styles = StyleSheet.create({
   },
   errorMessage: {
     color: '#FF4816',
-    fontSize: 15,
+    fontSize: 14,
+    fontFamily: 'Pretendard-Regular',
     marginTop: 5,
     marginHorizontal: 18,
   },
