@@ -168,7 +168,7 @@ const StoreImage = ({
           isRegistration && styles.registrationSpacing,
         ]}>
         {!isRegistration && (
-          <Text style={styles.storeinputtext}>매장 사진 추가하기</Text>
+          <Text style={styles.storeinputtext}>매장 이미지</Text>
         )}
       </View>
 
@@ -249,12 +249,12 @@ const styles = StyleSheet.create({
   storeinputtext: {
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    fontSize: 16,
+    fontSize: 15,
   },
   errorMessage: {
     color: '#FF4816',
+    fontSize: 14,
     fontFamily: 'Pretendard-Regular',
-    fontSize: 15,
     marginVertical: 5,
     marginHorizontal: 18,
   },

@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    fontSize: 16,
+    fontSize: 15,
     marginRight: 6,
   },
   subLabel: {
