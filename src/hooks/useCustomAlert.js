@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Animated,
   StatusBar,
+  Platform,
 } from 'react-native';
 import {Portal} from 'react-native-paper';
 
@@ -19,11 +20,29 @@ const useCustomAlert = () => {
     onConfirm: () => {},
     onCancel: () => {},
     type: 'confirm',
+    confirmText: '확인',
+    cancelText: '취소',
   });
 
-  // 모달 열기
-  const showAlert = ({title, message, onConfirm, onCancel, type = 'ok'}) => {
-    setAlertConfig({title, message, onConfirm, onCancel, type});
+  // ✅ 모달 열기
+  const showAlert = ({
+    title,
+    message,
+    onConfirm,
+    onCancel,
+    type = 'ok',
+    confirmText = '확인',
+    cancelText = '취소',
+  }) => {
+    setAlertConfig({
+      title,
+      message,
+      onConfirm,
+      onCancel,
+      type,
+      confirmText,
+      cancelText,
+    });
     setIsVisible(true);
     Animated.timing(opacity, {
       toValue: 1,
@@ -32,7 +51,7 @@ const useCustomAlert = () => {
     }).start();
   };
 
-  // 모달 닫기 (애니메이션 후 onClose 실행)
+  // ✅ 모달 닫기
   const closeAlert = callback => {
     Animated.timing(opacity, {
       toValue: 0,
@@ -40,14 +59,23 @@ const useCustomAlert = () => {
       useNativeDriver: true,
     }).start(() => {
       setIsVisible(false);
-      if (callback) callback(); // 모달이 완전히 닫힌 후 실행
+      if (callback) callback(); // 모달 완전히 닫힌 후 실행
     });
   };
 
+  // ✅ Alert 컴포넌트
   const AlertComponent = () => {
     if (!isVisible) return null;
 
-    const {title, message, onConfirm, onCancel, type} = alertConfig;
+    const {
+      title,
+      message,
+      onConfirm,
+      onCancel,
+      type,
+      confirmText = '확인',
+      cancelText = '취소',
+    } = alertConfig;
 
     return (
       <Portal>
@@ -57,27 +85,30 @@ const useCustomAlert = () => {
           animationType="none"
           statusBarTranslucent={true}
           onRequestClose={() => closeAlert()}>
-          <View style={[styles.overlay]}>
+          <View style={styles.overlay}>
             <Animated.View style={[styles.alertBox, {opacity}]}>
               {title && <Text style={styles.alertTitle}>{title}</Text>}
               {message && <Text style={styles.alertMessage}>{message}</Text>}
 
               <View style={styles.buttonContainer}>
+                {/* ✅ 일반 확인/취소 */}
                 {type === 'confirm' && (
                   <>
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>취소</Text>
+                      <Text style={styles.buttonText}>{cancelText}</Text>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonText}>확인</Text>
+                      <Text style={styles.buttonText}>{confirmText}</Text>
                     </TouchableOpacity>
                   </>
                 )}
+
+                {/* ✅ 마케팅 동의 */}
                 {type === 'marketingConsent' && (
                   <>
                     <TouchableOpacity
@@ -93,6 +124,8 @@ const useCustomAlert = () => {
                     </TouchableOpacity>
                   </>
                 )}
+
+                {/* ✅ 삭제 */}
                 {type === 'delete' && (
                   <>
                     <TouchableOpacity
@@ -108,6 +141,8 @@ const useCustomAlert = () => {
                     </TouchableOpacity>
                   </>
                 )}
+
+                {/* ✅ 회원 탈퇴 */}
                 {type === 'withdraw' && (
                   <>
                     <TouchableOpacity
@@ -123,6 +158,8 @@ const useCustomAlert = () => {
                     </TouchableOpacity>
                   </>
                 )}
+
+                {/* ✅ 알림 설정 */}
                 {type === 'notificationSetting' && (
                   <>
                     <TouchableOpacity
@@ -139,6 +176,7 @@ const useCustomAlert = () => {
                   </>
                 )}
 
+                {/* ✅ 단일 확인 버튼 */}
                 {type === 'ok' && (
                   <TouchableOpacity
                     style={styles.button}
@@ -189,10 +227,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
     flexWrap: 'wrap',
     color: '#181A1A',
-    height: 'auto',
     lineHeight: 22,
-    alignSelf: 'center',
-    justifyContent: 'center',
   },
   buttonContainer: {
     height: 50,
@@ -207,16 +242,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  buttonDeleteText: {
-    color: '#f44336',
-
-    fontFamily: 'Pretendard-Regular',
-    fontSize: 16,
-  },
   buttonText: {
     color: '#007AFF',
     fontSize: 16,
     fontFamily: 'Pretendard-Regular',
+  },
+  buttonDeleteText: {
+    color: '#f44336',
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 16,
   },
   divider: {
     width: 1,

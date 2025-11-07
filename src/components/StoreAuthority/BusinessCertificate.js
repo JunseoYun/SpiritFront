@@ -1,56 +1,35 @@
-// components/CertificateSection.js
-import React, {useState, useEffect} from 'react';
-import {View, Pressable, Text, Image, StyleSheet} from 'react-native';
+import React, {useState} from 'react';
+import {View, Text, Image, StyleSheet, Pressable} from 'react-native';
+import ImagePicker from 'react-native-image-crop-picker';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import {
   requestPhotoPermission,
   requestCameraPermission,
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
-import ImagePicker from 'react-native-image-crop-picker';
 import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
+import ImageAddButton from '../../utils/ImageAddButton';
 
 const BusinessCertificate = ({
   business_registration_certificate,
   setBusiness_registration_certificate,
-
+  type = 'default',
   error,
   errorMessage,
 }) => {
-  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false); // 바텀시트 상태
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const isRegistration = type === 'registration';
 
-  const handleGalleryPick = () => {
-    ImagePicker.openPicker({
+  const pickImage = async picker => {
+    const options = {
       width: 1600,
-      height: 2264, // A4 비율(대략 1.414)
+      height: 2264,
       cropping: true,
-      freeStyleCropEnabled: true, // 자유 크롭 허용
-      mediaType: 'photo',
-      compressImageQuality: 0.85, // 용량 절감
-      compressImageMaxWidth: 1600,
-      compressImageMaxHeight: 2264,
-      includeExif: false,
-      ...IMAGE_PICKER_TEXTS,
-      ...IMAGE_CROPPER_TEXTS,
-    })
-      .then(image => {
-        setBusiness_registration_certificate(image);
-      })
-      .catch(error => {});
-  };
-
-  const handleCameraPick = async () => {
-    const hasCamera = await requestCameraPermission();
-    if (!hasCamera) return;
-
-    ImagePicker.openCamera({
-      width: 1600,
-      height: 2264, // A4 비율(대략 1.414)
-      cropping: true,
-      freeStyleCropEnabled: true, // 자유 크롭 허용
+      freeStyleCropEnabled: true,
       mediaType: 'photo',
       compressImageQuality: 0.85,
       compressImageMaxWidth: 1600,
@@ -58,36 +37,87 @@ const BusinessCertificate = ({
       includeExif: false,
       ...IMAGE_PICKER_TEXTS,
       ...IMAGE_CROPPER_TEXTS,
-    })
-      .then(image => {
-        setBusiness_registration_certificate(image);
-      })
-      .catch(error => {});
+    };
+
+    try {
+      const image = await picker(options);
+      setBusiness_registration_certificate(image);
+    } catch (_) {}
   };
+
+  const handleGalleryPick = async () => {
+    const granted = await requestPhotoPermission();
+    if (!granted) {
+      setBottomSheetVisible(false);
+      return;
+    }
+    await pickImage(ImagePicker.openPicker);
+    setBottomSheetVisible(false);
+  };
+
+  const handleCameraPick = async () => {
+    const granted = await requestCameraPermission();
+    if (!granted) {
+      setBottomSheetVisible(false);
+      return;
+    }
+    await pickImage(ImagePicker.openCamera);
+    setBottomSheetVisible(false);
+  };
+
+  const handleRemoveImage = () => {
+    setBusiness_registration_certificate(null);
+  };
+
+  const currentPreviewUri =
+    business_registration_certificate?.path ||
+    business_registration_certificate?.uri ||
+    business_registration_certificate;
+
   return (
     <View>
-      <Text style={styles.sectionTitle}>사업자등록증 첨부*</Text>
+      {!isRegistration && (
+        <Text style={styles.sectionTitle}>사업자등록증 첨부</Text>
+      )}
 
-      <View style={styles.certificateContainer}>
-        <Pressable
-          style={styles.certificateButton}
-          onPress={() => setBottomSheetVisible(true)}>
-          <Text style={styles.certificateButtonText}>이미지 선택하기</Text>
-        </Pressable>
-
-        {error === 'business_registration_certificate' &&
-          business_registration_certificate === null && (
-            <Text style={styles.errorText}>{errorMessage}</Text>
-          )}
-
-        {business_registration_certificate && (
-          <Image
-            source={{uri: business_registration_certificate.path}}
-            style={styles.certificateImage}
-            resizeMode="contain"
+      <View
+        style={[
+          styles.certificateContainer,
+          isRegistration && styles.registrationSpacing,
+        ]}>
+        {!currentPreviewUri && (
+          <ImageAddButton
+            currentCount={currentPreviewUri ? 1 : 0}
+            maxCount={1}
+            onPress={() => setBottomSheetVisible(true)}
           />
         )}
+
+        {currentPreviewUri && (
+          <View style={styles.previewWrapper}>
+            <Image
+              source={{uri: currentPreviewUri}}
+              style={styles.certificateImage}
+              resizeMode="contain"
+            />
+            <Pressable
+              onPress={handleRemoveImage}
+              hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
+              style={styles.deleteButton}>
+              <Ionicons name="close" size={16} color="#fff" />
+            </Pressable>
+          </View>
+        )}
+
+        {(error === 'business_registration_certificate' ||
+          error === 'businessCertificate') &&
+          !currentPreviewUri && (
+            <Text style={styles.errorText}>
+              {errorMessage || '사업자등록증을 첨부해주세요.'}
+            </Text>
+          )}
       </View>
+
       <ImagePickermodal
         isBottomSheetVisible={isBottomSheetVisible}
         setBottomSheetVisible={setBottomSheetVisible}
@@ -109,26 +139,40 @@ const styles = StyleSheet.create({
   certificateContainer: {
     marginHorizontal: 20,
     marginBottom: 20,
+    alignItems: 'flex-start',
+  },
+  registrationSpacing: {
+    marginTop: 10,
+  },
+  previewWrapper: {
+    width: '100%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginTop: 12,
+    backgroundColor: '#F5F7FA',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  certificateButton: {
-    backgroundColor: '#3CBBFF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 7,
+  certificateImage: {
+    width: '100%',
+    height: 220,
   },
-  certificateButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: 'Pretendard-Medium',
+  deleteButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  certificateImage: {width: '100%', height: 200, marginTop: 10},
   errorText: {
-    color: 'red',
-    fontSize: 14,
-    marginVertical: 7,
+    color: '#FF4816',
+    fontSize: 13,
+    marginTop: 8,
     fontFamily: 'Pretendard-Regular',
-    marginHorizontal: 18,
   },
 });
 

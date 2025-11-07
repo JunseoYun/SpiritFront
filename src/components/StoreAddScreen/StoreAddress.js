@@ -69,9 +69,10 @@ const StoreAddress = ({
       <View style={inputViewStyle}>
         {!isRegistration &&
           (index === 1 ? (
-            <Text style={[styles.label, {marginBottom: 12}]}>
-              사업장 소재지
-            </Text>
+            <View style={styles.labelView}>
+              <Text style={styles.label}>사업장 소재지</Text>
+              <Text style={styles.subLabel}>(매장 주소)</Text>
+            </View>
           ) : (
             <View style={styles.labelView}>
               <Text style={styles.label}>매장 주소</Text>

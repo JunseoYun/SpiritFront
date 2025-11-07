@@ -20,7 +20,7 @@ import MyStack from './MyStack';
 import OAuthStack from './OAuthStack';
 import StoreAddMapScreen from '../screens/StoreRegister/StoreAddMapScreen';
 import StoreAddPhotoScreen from '../screens/StoreRegister/StoreAddList/StoreAddPhotoScreen';
-import StoreRegistrationScreen from '../screens/StoreRegister/StoreRegistration/StoreRegistrationScreen';
+import StoreOwnershipScreen from '../screens/StoreRegister/StoreOwnershipScreen';
 import StoreSuggestionScreen from '../screens/StoreRegister/StoreSuggestion/StoreSuggestionScreen';
 import StoreSuggestionDetailScreen from '../screens/StoreRegister/StoreSuggestion/StoreSuggestionDetailScreen';
 import StoreAddInfoScreen from '../screens/StoreRegister/StoreAddList/StoreAddInfoScreen';
@@ -185,8 +185,8 @@ export default function MainStack() {
       />
 
       <Stack.Screen
-        name="StoreRegistrationScreen"
-        component={StoreRegistrationScreen}
+        name="StoreOwnershipScreen"
+        component={StoreOwnershipScreen}
         options={({navigation, route}) => ({
           title: `매장 등록`,
           headerTitleAlign: 'center',
@@ -194,18 +194,6 @@ export default function MainStack() {
             fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
-          // headerLeft: () => (
-          //   <Pressable
-          //     onPress={() => navigation.goBack()}
-          //     hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-          //     <Ionicons
-          //       name="arrow-back-outline"
-          //       size={23}
-          //       color="#333"
-          //       style={{paddingLeft: 12}}
-          //     />
-          //   </Pressable>
-          // ),
         })}
       />
 
@@ -366,20 +354,8 @@ export default function MainStack() {
                 color: '#333',
               }}
               allowFontScaling={false}>
-              사장님 인증 신청 1/3
+              사장님 인증 신청
             </Text>
-          ),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
           ),
         })}
       />

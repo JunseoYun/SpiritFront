@@ -40,7 +40,7 @@ const StoreSearchScreen = ({navigation}) => {
 
   const handleStoreAdd = () => {
     index
-      ? navigation.navigate('StoreRegistrationScreen', {
+      ? navigation.navigate('StoreOwnershipScreen', {
           index: index,
           location: location,
         })
