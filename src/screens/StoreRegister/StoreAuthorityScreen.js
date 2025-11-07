@@ -1,387 +1,503 @@
+//사장님 매장 단일 인증 스크린
 import React, {
   useState,
   useLayoutEffect,
-  useEffect,
+  useMemo,
   useCallback,
-  useRef,
+  useEffect,
 } from 'react';
 import {
   Text,
   SafeAreaView,
-  Pressable,
+  ScrollView,
   StyleSheet,
   View,
-  ScrollView,
-  Image,
   KeyboardAvoidingView,
   Platform,
-  Keyboard,
+  Pressable,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useRoute} from '@react-navigation/native';
-import ProgressBar from '../../components/StoreAuthority/ProgressBar';
-import StoreInfoCard from '../../components/StoreAuthority/StoreInfoCard';
-import StoreOwnerInput from '../../components/StoreAuthority/StoreOwnerInput';
-import StoreBusinessData from '../../components/StoreAuthority/StoreBusinessData';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
+import StoreAddname from '../../components/StoreAddScreen/StoreAddname';
+import StorAddeNumber from '../../components/StoreAddScreen/StoreAddNumber';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
-import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import {normalizeFont} from '../../hooks/normalizeFont';
 import BusinessCertificate from '../../components/StoreAuthority/BusinessCertificate';
+import StoreRegistrationConsentModal from '../../components/StoreAuthority/StoreRegistrationConsentModal';
+import BottomActionButton from '../../utils/BottomActionButton';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import ColorUtil from '../../utils/ColorUtil';
+import useCustomAlert from '../../hooks/useCustomAlert';
+const STEP_FLOW = ['storeName', 'storeNumber', 'storeAddress', 'certificate'];
+
+const STEP_GUIDES = {
+  storeName: {
+    type: '매장 이름',
+    title: '매장 이름을 확인해주세요',
+    description: '사업자등록증과 동일한 상호명을 입력하면 심사가 빨라져요.',
+    tipTitle: '이름 가이드',
+    tip: '사업자등록증 상의 상호명과 동일하게 작성해야 심사가 빠르게 진행됩니다.',
+  },
+  storeNumber: {
+    type: '매장 연락처',
+    title: '매장 연락처를 입력해주세요',
+    description: '고객 문의와 인증 안내를 받을 수 있는 번호인지 확인해 주세요.',
+    tipTitle: '연락처 안내',
+    tip: '항상 연결 가능한 번호를 입력하면 인증 결과 안내를 놓치지 않아요.',
+  },
+  storeAddress: {
+    type: '사업장 소재지',
+    title: '사업장 소재지를 입력해주세요',
+    description:
+      '사업자등록증에 기재된 주소와 동일하게 입력하면 검증이 쉬워집니다.',
+    tipTitle: '사업장 소재지(매장 주소)',
+    tip: '사업장 소재지는 실제 매장이 운영되는 주소를 의미해요.',
+  },
+  certificate: {
+    type: '사업자등록증',
+    title: '사업자등록증 사본을 첨부해주세요',
+    description: '선명한 사업자등록증을 첨부하면 등록 검토가 더 빨라집니다.',
+    tipTitle: '첨부 가이드',
+    tip: '사업자등록증의 모든 정보가 보이도록 밝은 곳에서 촬영해 주세요.',
+  },
+};
 
 const StoreAuthorityScreen = ({navigation}) => {
   const route = useRoute();
   const {bottom} = useSafeAndroidInsets();
-  const {storeData, storeLocationDto, storeSuggestionData} = route.params;
-  const [owners, setOwners] = useState([{name: ''}]);
-  const [hasCoRepresentative, setHasCoRepresentative] = useState(false);
-  const [error, setError] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const {
+    storeId,
+    storeName: initialStoreName = '',
+    storeLocationDto = {},
+    storeContact: initialStoreContact = '',
+    businessCertificate: initialCertificate = null,
+  } = route.params;
 
-  const [businessData, setBusinessData] = useState({
-    businessNumber: '',
-    openDate: '',
-    drink_sales_number: '',
+  const [stepIndex, setStepIndex] = useState(0);
+  const step = STEP_FLOW[stepIndex];
+  const totalSteps = STEP_FLOW.length;
+  const currentStepNumber = stepIndex + 1;
+  const currentStepTitle = STEP_GUIDES[step]?.type ?? '';
+  const [storeName, setStoreName] = useState(initialStoreName);
+  const [storeContact, setStoreContact] = useState(initialStoreContact);
+  const [address, setAddress] = useState(storeLocationDto.address || '');
+  const [detailedAddress, setDetailedAddress] = useState(
+    storeLocationDto.addressDetail || '',
+  );
+  const [coords, setCoords] = useState({
+    latitude: storeLocationDto.latitude || 0,
+    longitude: storeLocationDto.longitude || 0,
   });
-  const [
-    business_registration_certificate,
-    setBusiness_registration_certificate,
-  ] = useState(null);
-  const [storeAddressData, setStoreAddressData] = useState({
-    storeAddress: storeLocationDto.address || '',
-    storeAddressDetail: storeLocationDto.addressDetail || '',
-    latitude: storeLocationDto.latitude,
-    longitude: storeLocationDto.longitude,
-  });
+  const [businessCertificate, setBusinessCertificate] =
+    useState(initialCertificate);
+  const [errorField, setErrorField] = useState('');
+  const [isConsentVisible, setIsConsentVisible] = useState(false);
+  const [isConsentChecked, setIsConsentChecked] = useState(false);
 
-  const scrollViewRef = useRef(null);
-  const certificateRef = useRef(null);
-  const nameRef = useRef(null);
-  const ownerRefs = useRef([]);
-  const owneRef = useRef(null);
-  const businessNumberRef = useRef(null);
-  const openDateRef = useRef(null);
-  const drink_sales_numberRef = useRef(null);
-  const storeAddressRef = useRef(null);
+  const progressValue = useMemo(
+    () => (currentStepNumber / totalSteps) * 100,
+    [currentStepNumber, totalSteps],
+  );
+  const progressShared = useSharedValue(progressValue);
+  const animatedProgressStyle = useAnimatedStyle(
+    () => ({
+      width: `${progressShared.value}%`,
+    }),
+    [progressShared],
+  );
 
-  const scrollToError = ref => {
-    if (ref?.current) {
-      ref.current.measureLayout(
-        scrollViewRef.current,
-        (x, y) => {
-          scrollViewRef.current.scrollTo({y: y - 20, animated: true});
-        },
-        error => console.log(error),
-      );
+  const validateCurrentStep = useCallback(() => {
+    switch (step) {
+      case 'storeName':
+        if (!storeName.trim()) {
+          setErrorField('storename');
+          return false;
+        }
+        break;
+      case 'storeNumber':
+        if (!storeContact.trim()) {
+          setErrorField('storeNumber');
+          return false;
+        }
+        break;
+      case 'storeAddress':
+        if (!address.trim()) {
+          setErrorField('StoreAddress');
+          return false;
+        }
+        break;
+      case 'certificate':
+        if (!businessCertificate) {
+          setErrorField('business_registration_certificate');
+          return false;
+        }
+        break;
+      default:
+        break;
     }
+    setErrorField('');
+    return true;
+  }, [step, storeName, storeContact, address, businessCertificate]);
+
+  const isSubmitDisabled = useMemo(
+    () =>
+      !storeName.trim() ||
+      !storeContact.trim() ||
+      !address.trim() ||
+      !businessCertificate,
+    [storeName, storeContact, address, businessCertificate],
+  );
+
+  const isCurrentStepReady = useMemo(() => {
+    switch (step) {
+      case 'storeName':
+        return !!storeName.trim();
+      case 'storeNumber':
+        return !!storeContact.trim();
+      case 'storeAddress':
+        return !!address.trim();
+      case 'certificate':
+        return !!businessCertificate;
+      default:
+        return true;
+    }
+  }, [step, storeName, storeContact, address, businessCertificate]);
+
+  const handleAddressSelect = ({address, coords}) => {
+    setAddress(address);
+    setCoords(coords);
   };
 
   const handleNext = useCallback(() => {
-    // 1. 사업자등록증 첨부 여부 확인
-    if (!business_registration_certificate) {
-      setError('business_registration_certificate');
-      setErrorMessage('사업자등록증을 첨부해주세요.');
-      scrollToError(certificateRef);
+    if (!validateCurrentStep()) return;
+    if (stepIndex === STEP_FLOW.length - 1) {
+      openConsentModal();
+      return;
+    }
+    setStepIndex(prev => prev + 1);
+  }, [stepIndex, validateCurrentStep, openConsentModal]);
+
+  const handleBackStep = useCallback(() => {
+    if (stepIndex === 0) {
+      navigation.goBack();
+      return;
+    }
+    setStepIndex(prev => prev - 1);
+  }, [navigation, stepIndex]);
+
+  const openConsentModal = useCallback(() => {
+    setIsConsentChecked(false);
+    setIsConsentVisible(true);
+  }, []);
+
+  const closeConsentModal = useCallback(() => {
+    setIsConsentVisible(false);
+    setIsConsentChecked(false);
+  }, []);
+
+  const handleConsentConfirm = useCallback(() => {
+    if (!isConsentChecked) {
+      showAlert({
+        title: '동의가 필요해요',
+        message: '동의 후 신청을 진행할 수 있습니다.',
+      });
       return;
     }
 
-    // 2. 대표자 정보 확인 (공동 대표 or 단일 대표)
-    if (hasCoRepresentative) {
-      if (owners.some(owner => !owner.name.trim())) {
-        setError('ownerGroup');
-        setErrorMessage('모든 대표자의 성명을 입력해주세요.');
-        scrollToError(owneRef);
-        return;
-      }
-    } else {
-      if (!owners[0].name.trim()) {
-        setError('owner');
-        setErrorMessage('대표자 성명을 입력해주세요.');
-        scrollToError(owneRef);
-        return;
-      }
-    }
-
-    // 3. 사업자 데이터 확인 (숫자 형식 검증 추가)
-    if (
-      !businessData.businessNumber.trim() ||
-      !/^\d+$/.test(businessData.businessNumber)
-    ) {
-      setError('businessData.businessNumber');
-      setErrorMessage('사업자등록번호를 올바르게 입력해주세요.');
-      scrollToError(businessNumberRef);
-      return;
-    }
-    if (
-      !businessData.openDate.trim() ||
-      !/^\d{8}$/.test(businessData.openDate)
-    ) {
-      setError('businessData.openDate');
-      setErrorMessage('개업연월일을 올바르게 입력해주세요. (19000101 형식)');
-      scrollToError(openDateRef);
-      return;
-    }
-    if (
-      !businessData.drink_sales_number.trim() ||
-      !/^\d+$/.test(businessData.drink_sales_number)
-    ) {
-      setError('businessData.drink_sales_number');
-      setErrorMessage('주류판매신고번호를 올바르게 입력해주세요.');
-      scrollToError(drink_sales_numberRef);
-      return;
-    }
-
-    // 4. 매장 주소 확인
-    if (!storeAddressData.storeAddress.trim()) {
-      scrollToError(storeAddressRef);
-      setError('StoreAddress');
-      return;
-    }
-
-    setError('');
-    setErrorMessage('');
-
-    navigation.navigate('StoreAuthConfirm', {
-      data: {
-        storeData,
-        owners,
-        hasCoRepresentative,
-        businessData,
-        business_certificate: business_registration_certificate,
-        storeAddressData,
-        storeSuggestionData,
+    const payload = {
+      storeData: {
+        storeId,
+        storeName: storeName.trim(),
+        storeNumber: storeContact.trim(),
+        userContact: route.params?.storeData?.userContact || '',
       },
-    });
-    // TODO: 다음 단계 처리 (ex. API 요청 또는 다음 화면 이동)
+      storeLocationDto: {
+        address,
+        addressDetail: detailedAddress,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      },
+      businessCertificate,
+    };
+    console.log('[StoreCheckScreen] consent payload:', payload);
+    closeConsentModal();
   }, [
-    owners,
-    hasCoRepresentative,
-    businessData,
-    business_registration_certificate,
-    storeAddressData,
+    isConsentChecked,
+    showAlert,
+    storeId,
+    storeName,
+    storeContact,
+    route.params?.storeData?.userContact,
+    address,
+    detailedAddress,
+    coords.latitude,
+    coords.longitude,
+    businessCertificate,
+    closeConsentModal,
   ]);
 
-  const addOwner = () => {
-    setOwners(prev => [...prev, {name: ''}]);
-  };
+  useEffect(() => {
+    progressShared.value = withTiming(progressValue, {duration: 220});
+  }, [progressValue, progressShared]);
 
-  // 특정 대표자의 이름 업데이트 함수
-  const updateOwnerName = (index, name) => {
-    const newOwners = [...owners];
-    newOwners[index].name = name;
-    setOwners(newOwners);
-  };
+  const {showAlert, AlertComponent} = useCustomAlert();
 
-  // 대표자 삭제 함수
-  const removeOwner = index => {
-    setOwners(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleAddressSelect = ({address, coords}) => {
-    setStoreAddressData(prevData => ({
-      ...prevData,
-      storeAddress: address,
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-    }));
-  };
-
-  // 이미지 선택 함수: 갤러리에서 이미지 선택 후 state 업데이트
+  const handleCancelPress = useCallback(() => {
+    showAlert({
+      title: '매장 등록을 그만둘까요?',
+      message: '작성 중인 내용은 저장되지 않아요.',
+      type: 'confirm',
+      confirmText: '그만두기',
+      cancelText: '취소',
+      onConfirm: () => navigation.goBack(),
+    });
+  }, [navigation, showAlert]);
 
   useLayoutEffect(() => {
+    const isIOS = Platform.OS === 'ios';
+
     navigation.setOptions({
-      headerRight: () => (
-        <Pressable onPress={handleNext}>
-          <Text style={styles.headerButton} allowFontScaling={false}>
-            다음
-          </Text>
+      headerTitle: () => (
+        <Text
+          style={{
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          }}
+          allowFontScaling={false}>
+          {currentStepTitle || '매장 등록'}
+        </Text>
+      ),
+      headerTitleAlign: 'center',
+      gestureEnabled: !isIOS || stepIndex === 0,
+      headerLeft: () => (
+        <Pressable
+          onPress={handleCancelPress}
+          hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+          <Ionicons
+            name="close"
+            size={24}
+            color="#333"
+            style={{paddingLeft: 12}}
+          />
         </Pressable>
       ),
     });
-  }, [navigation, handleNext]);
+  }, [navigation, stepIndex, handleCancelPress, currentStepTitle]);
 
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-
-  useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', () =>
-      setKeyboardVisible(true),
+  const renderStepIntro = useCallback(stepKey => {
+    const guide = STEP_GUIDES[stepKey];
+    if (!guide) {
+      return null;
+    }
+    return (
+      <View style={styles.sectionIntro}>
+        {guide.title && <Text style={styles.sectionTitle}>{guide.title}</Text>}
+        {guide.description && (
+          <Text style={styles.sectionDescription}>{guide.description}</Text>
+        )}
+      </View>
     );
-    const hideSub = Keyboard.addListener('keyboardDidHide', () =>
-      setKeyboardVisible(false),
-    );
-
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
   }, []);
-  return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{flex: 1}}>
-      <SafeAreaView
-        style={[
-          styles.container,
-          {paddingBottom: keyboardVisible ? 0 : bottom},
-        ]}>
-        <ProgressBar progress={1} />
-        <ScrollView
-          contentContainerStyle={styles.contentContainer}
-          keyboardShouldPersistTaps="handled"
-          ref={scrollViewRef}>
-          {/* 진행 바: 100% 진행 */}
-          <StoreInfoCard storeData={storeData} />
 
-          <View ref={certificateRef}>
-            <BusinessCertificate
-              business_registration_certificate={
-                business_registration_certificate
-              }
-              setBusiness_registration_certificate={
-                setBusiness_registration_certificate
-              }
-              error={error}
-              errorMessage={errorMessage}
-            />
-          </View>
-
-          <StoreOwnerInput
-            owners={owners}
-            hasCoRepresentative={hasCoRepresentative}
-            setHasCoRepresentative={setHasCoRepresentative}
-            addOwner={addOwner}
-            updateOwnerName={updateOwnerName}
-            removeOwner={removeOwner}
-            nameRef={nameRef}
-            ownerRefs={ownerRefs}
-            owneRef={owneRef}
-            businessNumberRef={businessNumberRef}
-            businessData={businessData}
-            error={error}
-            errorMessage={errorMessage}
-          />
-
-          <StoreBusinessData
-            businessData={businessData}
-            setBusinessData={setBusinessData}
-            businessNumberRef={businessNumberRef}
-            openDateRef={openDateRef}
-            drink_sales_numberRef={drink_sales_numberRef}
-            error={error}
-            errorMessage={errorMessage}
-          />
-          <StoreAddress
-            address={storeAddressData.storeAddress}
-            detailedAddress={storeAddressData.storeAddressDetail}
-            setDetailedAddress={value =>
-              setStoreAddressData(prevData => ({
-                ...prevData,
-                storeAddressDetail: value,
-              }))
-            }
-            navigation={navigation}
-            onAddressSelect={handleAddressSelect}
-            index={1}
-            location={{
-              latitude: storeAddressData.latitude,
-              longitude: storeAddressData.longitude,
-            }}
-            error={error}
-            storeAddressRef={storeAddressRef}
-          />
-
-          {/* 안내 멘트 */}
-          <View style={styles.instructionsContainer}>
-            <Text style={styles.instructions}>
-              정확한 신청자 정보를 입력해 주세요.{'\n'}
-              입력된 정보는 매장 정보 확인에만 사용됩니다.{'\n'}
-              무차별적인 신청은 엄격히 금지되며, 부정확한 정보나 타인의 정보를
-              기재할 경우 서비스 이용에 제한을 받을 수 있습니다.{'\n'}
-              모든 정보는 철저히 검토되며, 부정확한 정보가 확인될 경우 신청이
-              반려될 수 있습니다.
-            </Text>
-          </View>
-        </ScrollView>
-
-        <View style={styles.storeAddTextview}>
-          <Pressable style={styles.storeAddButtonsearch} onPress={handleNext}>
-            <Text style={styles.storeAddText}>다음</Text>
-          </Pressable>
+  const renderStepTip = useCallback(stepKey => {
+    const guide = STEP_GUIDES[stepKey];
+    if (!guide?.tip) {
+      return null;
+    }
+    return (
+      <View style={styles.tipWrapper}>
+        <Text style={styles.tipBadge}>TIP</Text>
+        <View style={styles.tipContent}>
+          {guide.tipTitle && (
+            <Text style={styles.tipTitle}>{guide.tipTitle}</Text>
+          )}
+          <Text style={styles.tipBody}>{guide.tip}</Text>
         </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      </View>
+    );
+  }, []);
+
+  const renderStep = () => {
+    switch (step) {
+      case 'storeName':
+        return (
+          <>
+            {renderStepIntro(step)}
+            <StoreAddname
+              storename={storeName}
+              setStorename={setStoreName}
+              error={errorField}
+              type="registration"
+            />
+            {renderStepTip(step)}
+          </>
+        );
+      case 'storeNumber':
+        return (
+          <>
+            {renderStepIntro(step)}
+            <StorAddeNumber
+              storeNumber={storeContact}
+              setStoreNumber={setStoreContact}
+              error={errorField}
+              type="registration"
+            />
+            {renderStepTip(step)}
+          </>
+        );
+      case 'storeAddress':
+        return (
+          <>
+            {renderStepIntro(step)}
+            <StoreAddress
+              address={address}
+              detailedAddress={detailedAddress}
+              setDetailedAddress={setDetailedAddress}
+              navigation={navigation}
+              onAddressSelect={handleAddressSelect}
+              index={1}
+              error={errorField}
+              type="registration"
+            />
+            {renderStepTip(step)}
+          </>
+        );
+      case 'certificate':
+        return (
+          <>
+            {renderStepIntro(step)}
+            <BusinessCertificate
+              business_registration_certificate={businessCertificate}
+              setBusiness_registration_certificate={setBusinessCertificate}
+              type="registration"
+              error={errorField}
+            />
+            {renderStepTip(step)}
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{flex: 1}}>
+        <View style={styles.progressBar}>
+          <Animated.View style={[styles.progressFill, animatedProgressStyle]} />
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled">
+          {renderStep()}
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      <BottomActionButton
+        label={stepIndex === STEP_FLOW.length - 1 ? '인증하기' : '다음'}
+        cancel
+        cancelLabel="이전"
+        onCancel={handleBackStep}
+        onPress={handleNext}
+        disabled={
+          stepIndex === STEP_FLOW.length - 1
+            ? isSubmitDisabled
+            : !isCurrentStepReady
+        }
+      />
+      <StoreRegistrationConsentModal
+        visible={isConsentVisible}
+        onRequestClose={closeConsentModal}
+        isChecked={isConsentChecked}
+        onToggleChecked={() => setIsConsentChecked(prev => !prev)}
+        onConfirm={handleConsentConfirm}
+        loading={false}
+      />
+      <AlertComponent />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: '#fff'},
-  contentContainer: {paddingBottom: 30},
-  headerButton: {
-    marginRight: 18,
-    fontSize: normalizeFont(18, 1.5),
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#3CBBFF',
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: '#E6EDF8',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginHorizontal: 18,
+    marginTop: 10,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: ColorUtil.main,
+  },
+  scrollContent: {
+    paddingBottom: 120,
+  },
+  headerTitle: {
+    fontFamily: 'Pretendard-Bold',
+    fontSize: 18,
+    color: '#111',
+  },
+  sectionIntro: {
+    marginHorizontal: 20,
+    marginTop: 24,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-Medium',
-    marginHorizontal: 20,
-    marginVertical: 10,
+    fontSize: 22,
     color: '#333',
+    fontFamily: 'Pretendard-Bold',
   },
-  certificateContainer: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  certificateButton: {
-    backgroundColor: '#3CBBFF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 7,
-  },
-  certificateButtonText: {
-    color: '#fff',
+  sectionDescription: {
+    marginTop: 8,
     fontSize: 16,
-    fontFamily: 'Pretendard-Medium',
-  },
-  certificateImage: {width: '100%', height: 200, marginTop: 10},
-  instructionsContainer: {
-    backgroundColor: '#f1f1f1',
-    borderRadius: 8,
-    padding: 16,
-    marginHorizontal: 18,
-    marginTop: 30,
-  },
-  instructions: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 24,
+    color: '#6b7280',
     fontFamily: 'Pretendard-Regular',
+    lineHeight: 22,
   },
-  storeAddTextview: {
-    borderTopWidth: 0.5,
-    borderColor: '#E0E0E0',
-    paddingHorizontal: 18,
-    paddingTop: 10,
-    paddingBottom: Platform.OS === 'android' && 10,
+  tipWrapper: {
+    marginHorizontal: 18,
+    marginTop: 14,
+    // flexDirection: 'row',
+    // alignItems: 'flex-start',
   },
-  storeAddButtonsearch: {
-    paddingVertical: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#3CBBFF',
+  tipBadge: {
+    fontSize: 12,
+    color: '#1789E0',
+    fontFamily: 'Pretendard-Bold',
+    marginRight: 10,
+    paddingVertical: 4,
+  },
+  tipContent: {
+    flex: 1,
+    backgroundColor: '#F3F6FC',
     borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
-  storeAddText: {
-    fontSize: 18,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#fff',
-  },
-  errorText: {
-    color: 'red',
+  tipTitle: {
     fontSize: 14,
-    marginVertical: 7,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#0D47A1',
+    marginBottom: 6,
+  },
+  tipBody: {
+    fontSize: 14,
     fontFamily: 'Pretendard-Regular',
-    marginHorizontal: 18,
+    color: '#24324A',
+    lineHeight: 20,
   },
 });
 

@@ -9,9 +9,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
 
 import StoreSearchScreen from '../screens/StoreRegister/StoreSearchScreen';
-import StoreCheckScreen from '../screens/StoreRegister/StoreCheckScreen';
 import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
-import StoreAuthConfirm from '../screens/StoreRegister/StoreAuthConfirm';
 import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
 import StoreAddTimeSetScreen from '../screens/StoreRegister/StoreAddTimeSetScreen';
 import CategoryListTabbar from './CategoryListTabbar';
@@ -342,8 +340,8 @@ export default function MainStack() {
         })}
       />
       <Stack.Screen
-        name="StoreCheckScreen"
-        component={StoreCheckScreen}
+        name="StoreAuthorityScreen"
+        component={StoreAuthorityScreen}
         options={({navigation}) => ({
           headerTitleAlign: 'center',
           headerTitle: () => (
@@ -360,67 +358,6 @@ export default function MainStack() {
         })}
       />
 
-      <Stack.Screen
-        name="StoreAuthorityScreen"
-        component={StoreAuthorityScreen}
-        options={({navigation}) => ({
-          headerTitleAlign: 'center',
-          headerTitle: () => (
-            <Text
-              style={{
-                fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
-                color: '#333',
-              }}
-              allowFontScaling={false}>
-              사장님 인증 신청 2/3
-            </Text>
-          ),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-
-      <Stack.Screen
-        name="StoreAuthConfirm"
-        component={StoreAuthConfirm}
-        options={({navigation}) => ({
-          headerTitleAlign: 'center',
-          headerTitle: () => (
-            <Text
-              style={{
-                fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
-                color: '#333',
-              }}
-              allowFontScaling={false}>
-              사장님 인증 신청 3/3
-            </Text>
-          ),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
       <Stack.Screen
         name="StoreStack"
         component={StoreStack}

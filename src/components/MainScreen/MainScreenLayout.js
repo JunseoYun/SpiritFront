@@ -191,7 +191,7 @@ const MainScreenLayout = ({
                     ellipsizeMode="tail">
                     {formatAddress(address)}
                   </Text>
-                  {!showLocation && (
+                  {!showLocation && formatAddress(address) && (
                     <Feather name="chevron-right" size={22} color="#fff" />
                   )}
                 </Pressable>
@@ -324,7 +324,9 @@ const MainScreenLayout = ({
             ellipsizeMode="tail">
             {formatAddress(address)}
           </Text>
-          <Feather name="chevron-right" size={20} color="#181a1a" />
+          {address && (
+            <Feather name="chevron-right" size={20} color="#181a1a" />
+          )}
         </Pressable>
         <View style={styles.topView2Actions}>
           <Pressable
