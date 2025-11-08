@@ -41,7 +41,6 @@ const StoreMainInfo = ({
     onEditValue(value);
     handleBottomOpen(); // 바텀 시트 열기
   };
-  console.log(storedata?.facilitiesInfoDto);
 
   const {
     isOpen,

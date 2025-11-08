@@ -38,6 +38,7 @@ import {
   StoreMainget,
   UpdateStore,
   UpdateStoreImage,
+  StoreImageUpdateSort,
 } from '../../api/storeApi';
 
 const MOOD_TEMPLATE = {
@@ -816,10 +817,22 @@ const StoreUpdateScreen = ({navigation}) => {
     if (!validateForm() || !storeId) return;
 
     const operationInfoDtos = buildOperationInfoDtos();
+    const desiredOrderItems = imageUris.slice();
     const {added, deleted} = splitImageChanges(imageUris, originalImages);
     const normalizedCurrentImages = normalizeImages(imageUris);
+    const remainingOriginalImages = originalImages.filter(
+      url => !deleted.some(item => item.imageUrl === url),
+    );
+    const hasImageOrderChanged =
+      normalizedCurrentImages.length !== originalImages.length ||
+      normalizedCurrentImages.some(
+        (value, index) => value !== originalImages[index],
+      );
+    const newImageUrlMap = new Map();
+    let updatedNormalizedImages = normalizedCurrentImages;
 
     const diffPayload = {};
+    let fallbackMainImageUrl = null;
     if (initialSnapshotRef.current) {
       const initial = initialSnapshotRef.current;
       const current = currentSnapshot;
@@ -913,19 +926,7 @@ const StoreUpdateScreen = ({navigation}) => {
           deletedResponse,
         );
         if (deletedResponse?.length) {
-          const payload = {mainImgUrl: deletedResponse[0]};
-          console.log(
-            '[StoreUpdateScreen] 메인 이미지 갱신 요청 페이로드(삭제 결과)',
-            {
-              storeId,
-              payload,
-            },
-          );
-          const mainImgUpdateResponse = await UpdateStore(storeId, payload);
-          console.log(
-            '[StoreUpdateScreen] 메인 이미지 갱신 응답(삭제 결과)',
-            mainImgUpdateResponse,
-          );
+          fallbackMainImageUrl = deletedResponse[0];
         }
       }
 
@@ -939,26 +940,80 @@ const StoreUpdateScreen = ({navigation}) => {
           '[StoreUpdateScreen] 매장 이미지 업로드 응답',
           uploadResponse,
         );
-        if (uploadResponse?.length) {
-          const payload = {mainImgUrl: uploadResponse[0]};
-          console.log(
-            '[StoreUpdateScreen] 메인 이미지 갱신 요청 페이로드(업로드 결과)',
-            {
-              storeId,
-              payload,
-            },
+        if (Array.isArray(uploadResponse)) {
+          if (!fallbackMainImageUrl && uploadResponse.length) {
+            fallbackMainImageUrl = uploadResponse[0];
+          }
+          const uploadedUrls = uploadResponse.filter(Boolean);
+          const remainingSet = new Set(remainingOriginalImages);
+          const newRemoteUrls = uploadedUrls.filter(
+            url => !remainingSet.has(url),
           );
-          const mainImgUpdateResponse = await UpdateStore(storeId, payload);
-          console.log(
-            '[StoreUpdateScreen] 메인 이미지 갱신 응답(업로드 결과)',
-            mainImgUpdateResponse,
-          );
+          const pendingNewUrls = [...newRemoteUrls];
+
+          added.forEach(item => {
+            const key = normalizeImageValue(item);
+            const mappedUrl = pendingNewUrls.shift();
+            if (key && mappedUrl) {
+              newImageUrlMap.set(key, mappedUrl);
+            }
+          });
         }
       }
 
-      initialSnapshotRef.current = currentSnapshot;
-      initialSnapshotStringRef.current = serializeSnapshot(currentSnapshot);
-      setOriginalImages(normalizedCurrentImages);
+      let hasMissingUploads = false;
+      const finalRemoteOrder = desiredOrderItems
+        .map(item => {
+          if (typeof item === 'object') {
+            const normalized = normalizeImageValue(item);
+            const uploadedUrl = normalized
+              ? newImageUrlMap.get(normalized)
+              : null;
+            if (!uploadedUrl) {
+              hasMissingUploads = true;
+            }
+            return uploadedUrl || null;
+          }
+          return normalizeImageValue(item);
+        })
+        .filter(Boolean);
+
+      const needsReorderUpdate =
+        !hasMissingUploads &&
+        finalRemoteOrder.length > 0 &&
+        (hasImageOrderChanged || added.length > 0 || deleted.length > 0);
+
+      if (needsReorderUpdate) {
+        console.log('[StoreUpdateScreen] 매장 이미지 순서 변경 요청', {
+          storeId,
+          order: finalRemoteOrder,
+        });
+        await StoreImageUpdateSort(storeId, finalRemoteOrder);
+        const representativeImage = finalRemoteOrder[0];
+        if (representativeImage) {
+          await UpdateStore(storeId, {mainImgUrl: representativeImage});
+        }
+        updatedNormalizedImages = finalRemoteOrder;
+        setImageUris(finalRemoteOrder);
+        setOriginalImages(finalRemoteOrder);
+      } else if (fallbackMainImageUrl) {
+        console.log(
+          '[StoreUpdateScreen] 메인 이미지 갱신 요청 페이로드(응답 기반)',
+          {
+            storeId,
+            payload: {mainImgUrl: fallbackMainImageUrl},
+          },
+        );
+        await UpdateStore(storeId, {mainImgUrl: fallbackMainImageUrl});
+      }
+
+      const snapshotAfterSave = {
+        ...currentSnapshot,
+        images: updatedNormalizedImages,
+      };
+      initialSnapshotRef.current = snapshotAfterSave;
+      initialSnapshotStringRef.current = serializeSnapshot(snapshotAfterSave);
+      setOriginalImages(updatedNormalizedImages);
       setHasChanges(false);
 
       showAlert({

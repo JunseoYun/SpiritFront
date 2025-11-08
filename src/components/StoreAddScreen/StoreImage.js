@@ -10,6 +10,7 @@ import {
 import ImagePicker from 'react-native-image-crop-picker';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {
   requestPhotoPermission,
   requestCameraPermission,
@@ -52,7 +53,6 @@ const StoreImage = ({
 }) => {
   const isRegistration = type === 'registration';
   const [images, setImage] = useState([]);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false); // 바텀시트 상태
 
   const {showToast} = useToast();
@@ -177,7 +177,44 @@ const StoreImage = ({
     const newImageUris = imageUris.filter((_, i) => i !== index);
     setImage(newImages);
     setImageUris(newImageUris);
-    setSelectedImageIndex(null);
+  };
+
+  const moveImage = (fromIndex, toIndex) => {
+    if (toIndex < 0 || toIndex >= imageUris.length || fromIndex === toIndex) {
+      return;
+    }
+
+    setImage(prev => {
+      if (
+        !prev.length ||
+        fromIndex < 0 ||
+        fromIndex >= prev.length ||
+        toIndex < 0 ||
+        toIndex >= prev.length
+      ) {
+        return prev;
+      }
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+
+    setImageUris(prev => {
+      if (
+        !prev.length ||
+        fromIndex < 0 ||
+        fromIndex >= prev.length ||
+        toIndex < 0 ||
+        toIndex >= prev.length
+      ) {
+        return prev;
+      }
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
   };
 
   return (
@@ -210,10 +247,7 @@ const StoreImage = ({
             {resolveDisplayUri(uri) !== '' && (
               <Image
                 source={{uri: resolveDisplayUri(uri)}}
-                style={[
-                  styles.selectimage,
-                  selectedImageIndex === index && styles.selectedImage,
-                ]}
+                style={[styles.selectimage]}
               />
             )}
 
@@ -231,6 +265,27 @@ const StoreImage = ({
               hitSlop={{top: 8, right: 8, bottom: 8, left: 8}}>
               <MaterialCommunityIcons name="close" size={18} color="#fff" />
             </Pressable>
+
+            {imageUris.length > 1 && (
+              <>
+                {index > 0 && (
+                  <Pressable
+                    style={[styles.reorderButton, styles.reorderButtonLeft]}
+                    onPress={() => moveImage(index, index - 1)}
+                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                    <Ionicons name="chevron-back" size={16} color="#fff" />
+                  </Pressable>
+                )}
+                {index < imageUris.length - 1 && (
+                  <Pressable
+                    style={[styles.reorderButton, styles.reorderButtonRight]}
+                    onPress={() => moveImage(index, index + 1)}
+                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                    <Ionicons name="chevron-forward" size={16} color="#fff" />
+                  </Pressable>
+                )}
+              </>
+            )}
           </View>
         ))}
       </ScrollView>
@@ -298,11 +353,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F3F3F3',
   },
-  selectedImage: {
-    borderWidth: 2,
-    borderColor: '#FF0000', // 빨간 테두리 추가
-    opacity: 0.6, // 반투명 효과
-  },
   deleteButton: {
     position: 'absolute',
     top: -7, // 스크린샷처럼 바깥쪽에 살짝 걸치게
@@ -329,6 +379,23 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  reorderButton: {
+    position: 'absolute',
+    width: 22,
+    height: 22,
+    borderRadius: 13,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reorderButtonLeft: {
+    left: 6,
+    bottom: 6,
+  },
+  reorderButtonRight: {
+    right: 15,
+    bottom: 6,
   },
   tipView: {
     flexDirection: 'row',
