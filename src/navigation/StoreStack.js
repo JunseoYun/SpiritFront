@@ -24,6 +24,7 @@ import ManagerStoreInfoScreen from '../screens/BottomTab/My/ManagerStoreInfoScre
 import StoreManagerScreen from '../screens/StoreManager/StoreManagerScreen';
 import StoreOrderScreen from '../screens/StoreOrder/StoreOrderScreen';
 import StorePaymentScreen from '../screens/StoreOrder/StorePaymentScreen';
+import StoreUpdateScreen from '../screens/StoreInfo/StoreUpdateScreen';
 const Stack = createStackNavigator();
 
 export default function StoreStack() {
@@ -101,6 +102,20 @@ export default function StoreStack() {
         component={ImageViewerScreen}
         options={{headerShown: false}}
       />
+      <Stack.Screen
+        name="StoreUpdateScreen"
+        component={StoreUpdateScreen}
+        options={() => ({
+          title: '매장 수정',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-SemiBold',
+            fontSize: 18,
+            color: '#333',
+          },
+        })}
+      />
+
       <Stack.Screen
         name="StoreTimeEditScreen"
         component={StoreTimeEditScreen}

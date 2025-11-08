@@ -5,44 +5,36 @@ import FastImage from 'react-native-fast-image';
 
 import Entypo from 'react-native-vector-icons/Entypo';
 
-const Review = ({navigation, isUpdate, storeData}) => {
+const Review = ({navigation, storeData}) => {
   return (
-    <>
-      {!isUpdate && (
-        <Pressable
-          onPress={() => {
-            navigation.navigate('StoreStack', {
-              screen: 'StoreReviewScreen',
-              params: {
-                storeId: storeData.id,
-                storename: storeData.name,
-                isOwner: storeData.isOwner,
-              },
-            });
-          }}
-          style={styles.ReviewView}>
-          <View style={styles.reviewView}>
-            <FastImage
-              style={styles.iconStar}
-              source={require('../../../assets/icon-star.png')}
-              resizeMode={FastImage.resizeMode.cover}></FastImage>
-            <Text style={styles.reviewRatetext}> {storeData?.rate}</Text>
-            <Text style={styles.reviewDotText}>•</Text>
-            <Text style={styles.reviewtext}>
-              리뷰 {storeData?.reviewCount}개
-            </Text>
-            <Entypo
-              name="chevron-right"
-              size={17}
-              color="#333"
-              style={styles.reviewIcon}
-            />
-          </View>
-          {/* <Text style={styles.reviewtext}>고객 리뷰</Text>
-          <Text style={styles.reviewtext}>찜 {storedata?.likeCount}</Text> */}
-        </Pressable>
-      )}
-    </>
+    <Pressable
+      onPress={() => {
+        navigation.navigate('StoreStack', {
+          screen: 'StoreReviewScreen',
+          params: {
+            storeId: storeData.id,
+            storename: storeData.name,
+            isOwner: storeData.isOwner,
+          },
+        });
+      }}
+      style={styles.ReviewView}>
+      <View style={styles.reviewView}>
+        <FastImage
+          style={styles.iconStar}
+          source={require('../../../assets/icon-star.png')}
+          resizeMode={FastImage.resizeMode.cover}></FastImage>
+        <Text style={styles.reviewRatetext}> {storeData?.rate}</Text>
+        <Text style={styles.reviewDotText}>•</Text>
+        <Text style={styles.reviewtext}>리뷰 {storeData?.reviewCount}개</Text>
+        <Entypo
+          name="chevron-right"
+          size={17}
+          color="#333"
+          style={styles.reviewIcon}
+        />
+      </View>
+    </Pressable>
   );
 };
 
@@ -69,7 +61,7 @@ const styles = StyleSheet.create({
   reviewRatetext: {
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 16,
-    color: '#181A1A',
+    color: '#333',
   },
   reviewDotText: {
     fontFamily: 'Pretendard-Regular',

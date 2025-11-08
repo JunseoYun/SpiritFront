@@ -32,6 +32,7 @@ import BottomActionButton from '../../utils/BottomActionButton';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import ColorUtil from '../../utils/ColorUtil';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import useDoubleBackExit from '../../hooks/useDoubleBackExit';
 const STEP_FLOW = ['storeName', 'storeNumber', 'storeAddress', 'certificate'];
 
 const STEP_GUIDES = {
@@ -69,6 +70,8 @@ const STEP_GUIDES = {
 const StoreAuthorityScreen = ({navigation}) => {
   const route = useRoute();
   const {bottom} = useSafeAndroidInsets();
+
+  useDoubleBackExit(navigation);
   const {
     storeId,
     storeName: initialStoreName = '',

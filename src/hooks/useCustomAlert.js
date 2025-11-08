@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useCallback} from 'react';
 import {
   Modal,
   View,
@@ -25,43 +25,49 @@ const useCustomAlert = () => {
   });
 
   // ✅ 모달 열기
-  const showAlert = ({
-    title,
-    message,
-    onConfirm,
-    onCancel,
-    type = 'ok',
-    confirmText = '확인',
-    cancelText = '취소',
-  }) => {
-    setAlertConfig({
+  const showAlert = useCallback(
+    ({
       title,
       message,
       onConfirm,
       onCancel,
-      type,
-      confirmText,
-      cancelText,
-    });
-    setIsVisible(true);
-    Animated.timing(opacity, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  };
+      type = 'ok',
+      confirmText = '확인',
+      cancelText = '취소',
+    }) => {
+      setAlertConfig({
+        title,
+        message,
+        onConfirm,
+        onCancel,
+        type,
+        confirmText,
+        cancelText,
+      });
+      setIsVisible(true);
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    },
+    [opacity],
+  );
 
   // ✅ 모달 닫기
-  const closeAlert = callback => {
-    Animated.timing(opacity, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => {
-      setIsVisible(false);
-      if (callback) callback(); // 모달 완전히 닫힌 후 실행
-    });
-  };
+  const closeAlert = useCallback(
+    callback => {
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => {
+        setIsVisible(false);
+        if (callback) callback(); // 모달 완전히 닫힌 후 실행
+      });
+    },
+    [opacity],
+  );
 
   // ✅ Alert 컴포넌트
   const AlertComponent = () => {

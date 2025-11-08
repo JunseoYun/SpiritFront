@@ -1,49 +1,28 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Pressable, Linking, Alert} from 'react-native';
+import React from 'react';
+import {View, Text, StyleSheet, Pressable, Linking} from 'react-native';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useCustomAlert from '../../../hooks/useCustomAlert';
-import {Storelikepost} from '../../../api/storeApi';
 
 const StoreExtraInfo = ({
   storeData,
   navigation,
   distance,
   unit,
-  setLoading,
-  loading,
+  onToggleLike,
+  isLiked,
+  likeCount,
+  likeDisabled,
 }) => {
   const {showAlert, AlertComponent} = useCustomAlert();
   const storeNumber = storeData?.contact || '000-0000-0000'; // 기본 전화번호
-  const [storeLike, setStoreLike] = useState(storeData?.isStoreLiked);
-  const [storeLikeCount, setStoreLikeCount] = useState(storeData?.likeCount);
-  useEffect(() => {
-    // storeData가 변경되었고, 좋아요 값도 바뀐 경우에만 반영
-    setStoreLike(storeData?.isStoreLiked);
-  }, [storeData?.id]);
+  const resolvedIsLiked =
+    typeof isLiked === 'boolean' ? isLiked : !!storeData?.isStoreLiked;
+  const resolvedLikeCount =
+    typeof likeCount === 'number' ? likeCount : storeData?.likeCount || 0;
 
-  const StoreLike = async () => {
-    setLoading(true);
-    try {
-      await Storelikepost(storeData.id);
-      setStoreLike(!storeLike);
-      setStoreLikeCount(prev => prev + (storeLike ? -1 : 1));
-    } catch (error) {
-      showAlert({
-        title: '찜 실패하였습니다',
-        message: '잠시 후 다시 시도해주세요.',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    if (storeData?.likeCount !== undefined) {
-      setStoreLikeCount(storeData.likeCount);
-    }
-  }, [storeData.id]);
   const storeNumberHandle = () => {
     if (storeNumber !== '000-0000-0000') {
       Linking.openURL(`tel:${storeNumber}`);
@@ -52,6 +31,12 @@ const StoreExtraInfo = ({
         title: '매장에 등록된 번호가 없습니다.',
       });
     }
+  };
+  const handleLikePress = () => {
+    if (!onToggleLike || likeDisabled) {
+      return;
+    }
+    onToggleLike();
   };
 
   return (
@@ -62,9 +47,12 @@ const StoreExtraInfo = ({
           <Text style={styles.locationtext}>전화</Text>
         </Pressable>
 
-        <Pressable style={styles.infoCol} onPress={StoreLike}>
+        <Pressable
+          style={styles.infoCol}
+          onPress={handleLikePress}
+          disabled={!onToggleLike || likeDisabled}>
           {/* 좋아요 상태 임시로 true */}
-          {storeLike ? (
+          {resolvedIsLiked ? (
             <Ionicons
               name="heart"
               size={20}
@@ -77,7 +65,7 @@ const StoreExtraInfo = ({
               color={'#333'} // Conditional color change
             />
           )}
-          <Text style={styles.locationtext}>{storeLikeCount}</Text>
+          <Text style={styles.locationtext}>{resolvedLikeCount}</Text>
         </Pressable>
 
         <Pressable

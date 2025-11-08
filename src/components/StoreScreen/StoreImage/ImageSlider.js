@@ -22,6 +22,10 @@ const ImageSlider = ({
   onEditKey,
   onEditValue,
   navigation,
+  onToggleLike,
+  isLiked,
+  likeCount,
+  likeDisabled,
 }) => {
   const scrollRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(1);
@@ -175,6 +179,26 @@ const ImageSlider = ({
               ))}
             </View>
           )}
+          {!isUpdate && localImages.length > 0 && onToggleLike && (
+            <Pressable
+              style={[
+                styles.likePill,
+                isLiked && styles.likePillActive,
+                likeDisabled && styles.likePillDisabled,
+              ]}
+              onPress={onToggleLike}
+              disabled={likeDisabled}>
+              <Ionicons
+                name={isLiked ? 'heart' : 'heart-outline'}
+                size={18}
+                color={isLiked ? '#FF5E5E' : '#4F5663'}
+                style={{marginRight: 6}}
+              />
+              <Text style={[styles.likeText, isLiked && styles.likeTextActive]}>
+                {likeCount ?? 0}
+              </Text>
+            </Pressable>
+          )}
         </View>
       ) : (
         <View style={styles.noneImageContainer}>
@@ -192,6 +216,11 @@ const ImageSlider = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  sliderContainer: {
+    width: width,
+    height: 270,
+    position: 'relative',
   },
   imageContainer: {
     width: width,
@@ -237,6 +266,36 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(16, 188, 251)',
     width: 14,
     height: 7,
+  },
+  likePill: {
+    position: 'absolute',
+    right: 18,
+    bottom: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 6},
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  likePillActive: {
+    backgroundColor: 'rgba(255,255,255,0.98)',
+  },
+  likePillDisabled: {
+    opacity: 0.6,
+  },
+  likeText: {
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 14,
+    color: '#4F5663',
+  },
+  likeTextActive: {
+    color: '#FF5E5E',
   },
 });
 

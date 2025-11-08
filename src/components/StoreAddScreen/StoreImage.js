@@ -23,6 +23,26 @@ import {
 import ImageAddButton from '../../utils/ImageAddButton';
 
 import {useToast} from '../../context/ToastContext';
+const resolveDisplayUri = value => {
+  if (!value) {
+    return '';
+  }
+  const normalized = typeof value === 'string' ? value : `${value}`;
+  const hasScheme =
+    normalized.startsWith('file://') ||
+    normalized.startsWith('content://') ||
+    normalized.startsWith('ph://') ||
+    normalized.startsWith('assets-library://') ||
+    normalized.startsWith('http://') ||
+    normalized.startsWith('https://');
+
+  if (hasScheme) {
+    return normalized;
+  }
+
+  return `file://${normalized}`;
+};
+
 const StoreImage = ({
   imageUris,
   setImageUris,
@@ -187,13 +207,15 @@ const StoreImage = ({
 
         {images.map((uri, index) => (
           <View key={index} style={styles.imageWrapper}>
-            <Image
-              source={{uri: `file://${uri}`}}
-              style={[
-                styles.selectimage,
-                selectedImageIndex === index && styles.selectedImage,
-              ]}
-            />
+            {resolveDisplayUri(uri) !== '' && (
+              <Image
+                source={{uri: resolveDisplayUri(uri)}}
+                style={[
+                  styles.selectimage,
+                  selectedImageIndex === index && styles.selectedImage,
+                ]}
+              />
+            )}
 
             {/* 대표 배지 (좌상단) */}
             {index === 0 && (
