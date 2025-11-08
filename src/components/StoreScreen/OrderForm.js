@@ -360,6 +360,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: 'Pretendard-Regular',
     color: '#999',
+    marginHorizontal: 18,
   },
   peopleChipList: {
     flexDirection: 'row',

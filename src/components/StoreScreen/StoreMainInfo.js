@@ -15,8 +15,11 @@ import OperationSchedule from './StoreMainInfo/OperationSchedule';
 import InnerOperation from './StoreMainInfo/InnerOperation';
 import Introduce from './StoreMainInfo/Introduce';
 
-import Entypo from 'react-native-vector-icons/Entypo';
 import StoreExtraInfo from './StoreMainInfo/StoreExtraInfo';
+import FacilitiesInfo from './StoreMainInfo/FacilitiesInfo';
+import Contact from './StoreMainInfo/Contact';
+import Description from './StoreMainInfo/Description';
+import ColorUtil from '../../utils/ColorUtil';
 const StoreMainInfo = ({
   storedata = {},
   isUpdate,
@@ -38,6 +41,7 @@ const StoreMainInfo = ({
     onEditValue(value);
     handleBottomOpen(); // 바텀 시트 열기
   };
+  console.log(storedata?.facilitiesInfoDto);
 
   const {
     isOpen,
@@ -111,28 +115,33 @@ const StoreMainInfo = ({
     fetchLocation();
   }, [storedata]);
 
+  // 매장 연락처
+  // 매장 좋아요
+  // 몇미터 떨어져 있는지
+
   return (
     <View style={[styles.StoreTopView, isUpdate && {paddingBottom: 120}]}>
-      <Category
-        handleEdit={handleEdit}
-        storedata={storedata}
-        translateCategory={translateCategory}
-        isUpdate={isUpdate}
-        isOwner={storedata?.isOwner}
-      />
-      <Title
-        handleEdit={handleEdit}
-        storeName={storedata?.name}
-        isUpdate={isUpdate}
-        startUpdate={startUpdate}
-        handleReport={handleReport}
-        handleReportList={handleReportList}
-        handleStoreInfo={handleStoreInfo}
-        isUpdatable={storedata?.isUpdatable}
-      />
+      {storedata?.categories?.length > 0 && (
+        <Category
+          handleEdit={handleEdit}
+          storedata={storedata}
+          translateCategory={translateCategory}
+          isOwner={storedata?.isOwner}
+        />
+      )}
+      {storedata?.name && (
+        <Title
+          handleEdit={handleEdit}
+          storeName={storedata?.name}
+          startUpdate={startUpdate}
+          handleReport={handleReport}
+          handleReportList={handleReportList}
+          handleStoreInfo={handleStoreInfo}
+          isUpdatable={storedata?.isUpdatable}
+        />
+      )}
 
       <Review
-        isUpdate={isUpdate}
         navigation={navigation}
         storeData={{
           name: storedata?.name,
@@ -143,81 +152,49 @@ const StoreMainInfo = ({
         }}
       />
 
-      <Alcohol
-        isUpdate={isUpdate}
-        storeDrinkDtos={storedata?.mainDrinkDtos}
-        handleEdit={handleEdit}
-        translateAlcohol={translateAlcohol}
-        storeupdatedrink={storeupdatedrink}
-      />
-      {!isUpdate && storedata?.description && (
-        <Pressable onPress={toggleDescription} style={styles.infoView}>
-          <View>
-            {storedata?.description && (
-              <View>
-                {/* 라인 수 측정용 (숨김 처리) */}
-                <Text
-                  style={[
-                    styles.infoText,
-                    {position: 'absolute', opacity: 0, zIndex: -1},
-                  ]}
-                  onTextLayout={handleTextLayout}>
-                  {storedata?.description}
-                </Text>
-
-                {/* 실제 노출용 */}
-                <Text
-                  style={styles.infoText}
-                  numberOfLines={descripexpanded ? undefined : 2}>
-                  {storedata?.description}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {descLineCount > 2 && (
-            <View style={styles.togglebtn}>
-              {descripexpanded ? (
-                <Entypo name="chevron-small-up" size={20} color="#767676" />
-              ) : (
-                <Entypo name="chevron-small-down" size={20} color="#767676" />
-              )}
-            </View>
-          )}
-        </Pressable>
+      {storedata?.mainDrinkDtos?.length > 0 && (
+        <Alcohol
+          storeDrinkDtos={storedata?.mainDrinkDtos}
+          handleEdit={handleEdit}
+          translateAlcohol={translateAlcohol}
+          storeupdatedrink={storeupdatedrink}
+        />
       )}
-      {!isUpdate && <View style={styles.division} />}
-
-      <Address
-        handleEdit={handleEdit}
-        isUpdate={isUpdate}
-        storedata={storedata}
+      <Description
+        description={storedata?.description}
+        descripexpanded={descripexpanded}
+        toggleDescription={toggleDescription}
       />
+      <View style={styles.division} />
+      {storedata?.locationDto?.address && (
+        <Address locationDto={storedata?.locationDto} />
+      )}
 
-      <OperationSchedule
-        toggleExpand={toggleExpand}
-        isExpanded={isExpanded}
-        isUpdate={isUpdate}
-        storedata={storedata}
-        isOpen={isOpen}
-        isBreak={isBreak}
-        closed={closed}
-        nextclosed={nextclosed}
-        starttime={starttime}
-        endtime={endtime}
-        breakend={breakend}
-      />
+      {storedata?.operationInfoDtos?.length > 0 && (
+        <OperationSchedule
+          toggleExpand={toggleExpand}
+          isExpanded={isExpanded}
+          storedata={storedata}
+          isOpen={isOpen}
+          isBreak={isBreak}
+          closed={closed}
+          nextclosed={nextclosed}
+          starttime={starttime}
+          endtime={endtime}
+          breakend={breakend}
+        />
+      )}
 
       <InnerOperation
         toggleExpand={toggleExpand}
         isExpanded={isExpanded}
-        isUpdate={isUpdate}
         storedata={storedata}
         operationSchedule={operationSchedule}
-        storeTimeEditHandle={storeTimeEditHandle}
       />
 
-      {!isUpdate && (
+      <Contact contact={storedata?.contact} />
+
+      {/* {!isUpdate && (
         <StoreExtraInfo
           navigation={navigation}
           storeData={{
@@ -230,15 +207,18 @@ const StoreMainInfo = ({
             hasScreen: storedata?.hasScreen,
             name: storedata.name,
             isOwner: storedata?.isOwner,
+            facilitiesInfoDto: storedata?.facilitiesInfoDto,
           }}
           distance={distance}
           unit={unit}
           setLoading={setLoading}
           loading={loading}
         />
-      )}
+      )} */}
 
-      {isUpdate && (
+      <FacilitiesInfo facilitiesInfoDto={storedata?.facilitiesInfoDto} />
+
+      {/* {isUpdate && (
         <>
           <Location isUpdate={isUpdate} distance={distance} unit={unit} />
 
@@ -250,7 +230,7 @@ const StoreMainInfo = ({
             toggleDescription={toggleDescription}
           />
         </>
-      )}
+      )} */}
     </View>
   );
 };
@@ -303,7 +283,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     fontSize: 15,
     lineHeight: 20,
-    color: '#767676',
+    color: ColorUtil.subText,
     marginTop: 3,
     marginBottom: 5,
   },

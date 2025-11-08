@@ -1,18 +1,9 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  TouchableOpacity,
-  StyleSheet,
-  Animated,
-} from 'react-native';
+import {View, Text, Pressable, StyleSheet, Animated} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 
 const Title = ({
-  handleEdit,
   storeName,
-  isUpdate,
   startUpdate,
   handleReport,
   handleReportList,
@@ -45,92 +36,74 @@ const Title = ({
   });
 
   return (
-    <>
-      {isUpdate ? (
-        <View style={styles.titleview}>
-          <TouchableOpacity
-            onPress={() => handleEdit('name', storeName)}
-            style={styles.titlebtn}>
-            <View style={styles.titleView2}>
-              <Text style={styles.Storetitle}>{storeName}</Text>
-            </View>
-            <View
-              style={{right: 30, position: 'absolute', alignSelf: 'center'}}>
-              <Entypo name="chevron-small-right" size={25} color="#333" />
-            </View>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.Storetitleview}>
-          <View style={styles.titleView2}>
-            <Text style={styles.Storetitle}>{storeName}</Text>
-          </View>
+    <View style={styles.Storetitleview}>
+      <View style={styles.titleView2}>
+        <Text style={styles.Storetitle}>{storeName}</Text>
+      </View>
 
-          <View>
-            <Pressable
-              onPress={toggleDropdown}
-              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-              <Entypo name="dots-three-vertical" size={20} color="#333" />
-            </Pressable>
+      <View>
+        <Pressable
+          onPress={toggleDropdown}
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+          <Entypo name="dots-three-vertical" size={20} color="#333" />
+        </Pressable>
 
-            {dropdownVisible && (
+        {dropdownVisible && (
+          <Pressable
+            style={styles.backdrop}
+            onPress={toggleDropdown}
+            accessibilityLabel="Close menu"
+          />
+        )}
+
+        {dropdownVisible && (
+          <Animated.View
+            style={[
+              styles.dropdown,
+              {transform: [{translateY: dropdownTranslateY}]},
+            ]}>
+            {isUpdatable && (
               <Pressable
-                style={styles.backdrop}
-                onPress={toggleDropdown}
-                accessibilityLabel="Close menu"
-              />
+                style={styles.dropdownItem}
+                onPress={() => {
+                  toggleDropdown();
+                  startUpdate();
+                }}>
+                <Text style={styles.dropdownText}>매장 수정</Text>
+              </Pressable>
             )}
-
-            {dropdownVisible && (
-              <Animated.View
-                style={[
-                  styles.dropdown,
-                  {transform: [{translateY: dropdownTranslateY}]},
-                ]}>
-                {isUpdatable && (
-                  <Pressable
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      toggleDropdown();
-                      startUpdate();
-                    }}>
-                    <Text style={styles.dropdownText}>매장 수정</Text>
-                  </Pressable>
-                )}
-                {isUpdatable && (
-                  <Pressable
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      toggleDropdown();
-                      handleStoreInfo();
-                    }}>
-                    <Text style={styles.dropdownText}>매장 통계 조회</Text>
-                  </Pressable>
-                )}
-                {isUpdatable && (
-                  <Pressable
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      toggleDropdown();
-                      handleReportList();
-                    }}>
-                    <Text style={styles.dropdownText}>매장 신고 조회</Text>
-                  </Pressable>
-                )}
-                <Pressable
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    toggleDropdown();
-                    handleReport();
-                  }}>
-                  <Text style={styles.dropdownText}>매장 제보·신고</Text>
-                </Pressable>
-              </Animated.View>
+            {isUpdatable && (
+              <Pressable
+                style={styles.dropdownItem}
+                onPress={() => {
+                  toggleDropdown();
+                  handleStoreInfo();
+                }}>
+                <Text style={styles.dropdownText}>매장 통계 조회</Text>
+              </Pressable>
             )}
-          </View>
-        </View>
-      )}
-    </>
+            {isUpdatable && (
+              <Pressable
+                style={styles.dropdownItem}
+                onPress={() => {
+                  toggleDropdown();
+                  handleReportList();
+                }}>
+                <Text style={styles.dropdownText}>매장 신고 조회</Text>
+              </Pressable>
+            )}
+            <Pressable
+              style={styles.dropdownItem}
+              onPress={() => {
+                toggleDropdown();
+                handleReport();
+              }}>
+              <Text style={styles.dropdownText}>매장 제보·신고</Text>
+            </Pressable>
+          </Animated.View>
+        )}
+      </View>
+    </View>
   );
 };
 

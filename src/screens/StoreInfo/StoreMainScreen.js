@@ -25,6 +25,7 @@ import {
   DeleteStoreImage,
   UpdateStoreImage,
   get_store_share,
+  Storelikepost,
 } from '../../api/storeApi';
 
 import Feather from 'react-native-vector-icons/Feather';
@@ -67,6 +68,9 @@ const StoreMainScreen = ({navigation}) => {
   const [menus, setMenus] = useState([]);
   const [alcohols, setAlcohols] = useState([]);
   const [storedata, setStoredata] = useState('');
+  const [isStoreLiked, setIsStoreLiked] = useState(false);
+  const [storeLikeCount, setStoreLikeCount] = useState(0);
+  const [isLikeProcessing, setIsLikeProcessing] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const [longitude, setLongitude] = useState('');
   const [latitude, setLatitude] = useState('');
@@ -217,6 +221,8 @@ const StoreMainScreen = ({navigation}) => {
       const storeData = await StoreMainget(storeId);
 
       setStoredata(storeData);
+      setIsStoreLiked(!!storeData?.isStoreLiked);
+      setStoreLikeCount(storeData?.likeCount ?? 0);
       setLongitude(storeData.locationDto.longitude);
       setLatitude(storeData.locationDto.latitude);
 
@@ -249,7 +255,15 @@ const StoreMainScreen = ({navigation}) => {
   };
 
   const startUpdate = () => {
-    setIsUpdate(true);
+    // setIsUpdate(true);
+    if (!storedata?.id) {
+      showToast('매장 정보를 불러온 후 다시 시도해주세요.');
+      return;
+    }
+    navigation.navigate('StoreUpdateScreen', {
+      storeId: storedata.id,
+      initialStoreData: storedata,
+    });
   };
   const endUpdate = () => {
     setIsUpdate(false);
@@ -505,6 +519,29 @@ const StoreMainScreen = ({navigation}) => {
     });
   };
 
+  const handleToggleLike = async () => {
+    if (!storedata?.id || isLikeProcessing) {
+      return;
+    }
+    const nextLikeState = !isStoreLiked;
+    const previousCount = storeLikeCount ?? 0;
+    const delta = nextLikeState ? 1 : -1;
+
+    setIsStoreLiked(nextLikeState);
+    setStoreLikeCount(Math.max(0, previousCount + delta));
+    setIsLikeProcessing(true);
+
+    try {
+      await Storelikepost(storedata.id);
+    } catch (error) {
+      setIsStoreLiked(!nextLikeState);
+      setStoreLikeCount(previousCount);
+      showToast('찜 상태를 변경하지 못했어요.', 'center');
+    } finally {
+      setIsLikeProcessing(false);
+    }
+  };
+
   const [mainSectionHeight, setMainSectionHeight] = useState(0);
   const [filterHeight, setFilterHeight] = useState(0);
   const [filterHeaderTouchable, setFilterHeaderTouchable] = useState(false);
@@ -606,6 +643,9 @@ const StoreMainScreen = ({navigation}) => {
                 titleOpacity={titleOpacity}
                 title={storedata?.name}
                 onShare={onShare}
+                isLiked={isStoreLiked}
+                onToggleLike={handleToggleLike}
+                likeDisabled={isLikeProcessing}
               />
             )}
             {isUpdate && (
@@ -623,6 +663,9 @@ const StoreMainScreen = ({navigation}) => {
                   iconColor={'#333'}
                   title={storedata?.name}
                   onShare={onShare}
+                  isLiked={isStoreLiked}
+                  onToggleLike={handleToggleLike}
+                  likeDisabled={isLikeProcessing}
                 />
               )}
             {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
@@ -729,6 +772,10 @@ const StoreMainScreen = ({navigation}) => {
                         onEditKey={handleEditKey}
                         onEditValue={handleEditValue}
                         navigation={navigation}
+                        onToggleLike={handleToggleLike}
+                        isLiked={isStoreLiked}
+                        likeCount={storeLikeCount}
+                        likeDisabled={isLikeProcessing}
                       />
                     </View>
                   )}
@@ -761,6 +808,10 @@ const StoreMainScreen = ({navigation}) => {
                     handleReport={handleReport}
                     handleReportList={handleReportList}
                     handleStoreInfo={handleStoreInfo}
+                    onToggleLike={handleToggleLike}
+                    isLiked={isStoreLiked}
+                    likeCount={storeLikeCount}
+                    likeDisabled={isLikeProcessing}
                   />
                   {!isUpdate && (
                     <View style={{backgroundColor: '#F2F2F2', height: 10}} />

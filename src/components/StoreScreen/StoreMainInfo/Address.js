@@ -1,54 +1,19 @@
 import React from 'react';
 
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import Entypo from 'react-native-vector-icons/Entypo';
-
-const Address = ({isUpdate, storedata, handleEdit}) => {
+const Address = ({locationDto}) => {
   return (
-    <>
-      {isUpdate ? (
-        <TouchableOpacity
-          style={styles.addresssetview}
-          onPress={
-            isUpdate
-              ? () =>
-                  handleEdit('locationDto', {
-                    address: storedata?.locationDto?.address,
-                    addressDetail: storedata?.locationDto?.addressDetail,
-                    latitude: storedata?.locationDto?.latitude,
-                    longitude: storedata?.locationDto?.longitude,
-                  })
-              : null
-          }>
-          <AntDesign name="home" size={20} color="#333" />
-          <View style={{flexDirection: 'row', flexWrap: 'wrap', width: '100%'}}>
-            <Text style={styles.infoHidetext}>
-              {storedata?.locationDto?.address}
-              {storedata?.locationDto?.addressDetail
-                ? `, ${storedata?.locationDto?.addressDetail}`
-                : ''}
-            </Text>
-          </View>
-          <View style={{right: 30, position: 'absolute', alignSelf: 'center'}}>
-            <Entypo name="chevron-small-right" size={25} color="#333" />
-          </View>
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.addresssetview}>
-          <AntDesign name="home" size={20} color="#333" />
-          <View style={{flexDirection: 'row', flexWrap: 'wrap', width: '100%'}}>
-            <Text style={styles.infoHidetext}>
-              {storedata?.locationDto?.address}
-              {storedata?.locationDto?.addressDetail
-                ? `, ${storedata?.locationDto?.addressDetail}`
-                : ''}
-            </Text>
-          </View>
-        </View>
-      )}
-    </>
+    <View style={styles.addresssetview}>
+      <Ionicons name="storefront-outline" size={20} color="#333" />
+      <View style={{flexDirection: 'row', flexWrap: 'wrap', width: '100%'}}>
+        <Text style={styles.infoHidetext}>
+          {locationDto?.address}
+          {locationDto?.addressDetail ? `, ${locationDto?.addressDetail}` : ''}
+        </Text>
+      </View>
+    </View>
   );
 };
 
@@ -62,9 +27,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   infoHidetext: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Pretendard-Medium',
-    color: '#181A1A',
+    color: '#333',
     paddingLeft: 7,
     width: '80%',
   },
