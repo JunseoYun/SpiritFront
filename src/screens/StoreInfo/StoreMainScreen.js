@@ -415,10 +415,9 @@ const StoreMainScreen = ({navigation}) => {
     return sub;
   }, [navigation, isUpdate]);
 
-  // iOS 제스처 자체를 편집 중에는 비활성화해 '밀고 돌아가기' 애니메이션 방지
+  // 제스처 자체를 편집 중에는 비활성화해 '밀고 돌아가기' 애니메이션 방지
   // 중첩 네비게이터(자신/부모/상위부모)까지 순차적으로 적용
   useEffect(() => {
-    if (Platform.OS !== 'ios') return;
     try {
       navigation.setOptions({gestureEnabled: !isUpdate});
       const parent = navigation.getParent?.();

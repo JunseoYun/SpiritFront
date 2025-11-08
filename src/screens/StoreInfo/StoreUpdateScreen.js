@@ -612,10 +612,8 @@ const StoreUpdateScreen = ({navigation}) => {
   );
 
   useLayoutEffect(() => {
-    const isIOS = Platform.OS === 'ios';
-
     navigation.setOptions({
-      gestureEnabled: !isIOS,
+      gestureEnabled: false,
       headerLeft: () => (
         <Pressable
           onPress={() => handleCancelPress()}
@@ -632,10 +630,6 @@ const StoreUpdateScreen = ({navigation}) => {
   }, [navigation, handleCancelPress]);
 
   useEffect(() => {
-    if (Platform.OS !== 'ios') {
-      return;
-    }
-
     const parent = navigation.getParent?.();
     const grandParent = parent?.getParent?.();
 
