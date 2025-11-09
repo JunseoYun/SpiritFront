@@ -170,6 +170,7 @@ const StoreMainInfo = ({
       )}
 
       <View style={styles.division} />
+
       {storedata?.locationDto?.address && (
         <Address locationDto={storedata?.locationDto} />
       )}
@@ -197,6 +198,8 @@ const StoreMainInfo = ({
       />
 
       <Contact contact={storedata?.contact} />
+
+      <View style={styles.division} />
 
       <FacilitiesInfo facilitiesInfoDto={storedata?.facilitiesInfoDto} />
     </View>

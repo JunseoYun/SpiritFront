@@ -1,12 +1,11 @@
 import React from 'react';
 import {Pressable, StyleSheet} from 'react-native';
 
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-
-const StoreMapBus = ({onPress}) => {
+import Feather from 'react-native-vector-icons/Feather';
+const StoreMapNavi = ({onPress}) => {
   return (
     <Pressable style={styles.buttonRoute} onPress={onPress}>
-      <FontAwesome name="bus" size={22} color="#1a1a1a" />
+      <Feather name="navigation" size={22} color="#16B1a1a1aBFF" />
     </Pressable>
   );
 };
@@ -30,4 +29,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default StoreMapBus;
+export default StoreMapNavi;
