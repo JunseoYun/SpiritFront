@@ -188,7 +188,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
       if (onAlcoholUpdateComplete) {
         await onAlcoholUpdateComplete();
       }
-      navigation.goBack();
+      navigation.popToTop();
     } catch (e) {
       console.error('주류 순서 저장 실패', e);
     } finally {

@@ -13,9 +13,11 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  Text,
   findNodeHandle,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Feather from 'react-native-vector-icons/Feather';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -40,6 +42,9 @@ import {
   UpdateStoreImage,
   StoreImageUpdateSort,
 } from '../../api/storeApi';
+import {StoreMenuget} from '../../api/menuApi';
+import {StoreDrinkget} from '../../api/drinkApi';
+import ColorUtil from '../../utils/ColorUtil';
 
 const MOOD_TEMPLATE = {
   QUIET: false,
@@ -323,6 +328,10 @@ const StoreUpdateScreen = ({navigation}) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [boardImages, setBoardImages] = useState([]);
+  const [menuList, setMenuList] = useState([]);
+  const [alcoholList, setAlcoholList] = useState([]);
+  const [isStoreUpdatable, setIsStoreUpdatable] = useState(false);
 
   const scrollViewRef = useRef(null);
   const imageRef = useRef(null);
@@ -507,6 +516,10 @@ const StoreUpdateScreen = ({navigation}) => {
       nextFacilities[key] = Boolean(facilitySource?.[key]);
     });
     setFacilitiesInfo(nextFacilities);
+    setBoardImages(
+      Array.isArray(data.boardImageDtoList) ? data.boardImageDtoList : [],
+    );
+    setIsStoreUpdatable(Boolean(data.isUpdatable));
 
     const snapshot = buildSnapshotPayload({
       images: remoteImages,
@@ -534,6 +547,26 @@ const StoreUpdateScreen = ({navigation}) => {
     initialSnapshotStringRef.current = serializeSnapshot(snapshot);
     setHasChanges(false);
   }, []);
+
+  const refreshMenuList = useCallback(async () => {
+    if (!storeId) return;
+    try {
+      const menuResponse = await StoreMenuget(storeId);
+      setMenuList(Array.isArray(menuResponse) ? menuResponse : []);
+    } catch (error) {
+      console.error('메뉴 목록을 불러오지 못했습니다.', error);
+    }
+  }, [storeId]);
+
+  const refreshAlcoholList = useCallback(async () => {
+    if (!storeId) return;
+    try {
+      const alcoholResponse = await StoreDrinkget(storeId);
+      setAlcoholList(Array.isArray(alcoholResponse) ? alcoholResponse : []);
+    } catch (error) {
+      console.error('주류 목록을 불러오지 못했습니다.', error);
+    }
+  }, [storeId]);
 
   const fetchStoreInfo = useCallback(async () => {
     if (!storeId) return;
@@ -565,6 +598,12 @@ const StoreUpdateScreen = ({navigation}) => {
     }
     fetchStoreInfo();
   }, [storeId, fetchStoreInfo, navigation, showAlert]);
+
+  useEffect(() => {
+    if (!storeId) return;
+    refreshMenuList();
+    refreshAlcoholList();
+  }, [storeId, refreshMenuList, refreshAlcoholList]);
 
   const exitScreen = useCallback(
     action => {
@@ -643,6 +682,30 @@ const StoreUpdateScreen = ({navigation}) => {
       grandParent?.setOptions?.({gestureEnabled: true});
     };
   }, [navigation]);
+
+  const handleMenuBoardEdit = useCallback(() => {
+    navigation.navigate('InfoImageEditScreen', {
+      storeId,
+      imgList: boardImages,
+    });
+  }, [navigation, storeId, boardImages]);
+
+  const handleMenuEditNavigate = useCallback(() => {
+    navigation.navigate('MenuEditScreen', {
+      storeId,
+      menus: menuList,
+      onMenuUpdateComplete: refreshMenuList,
+    });
+  }, [navigation, storeId, menuList, refreshMenuList]);
+
+  const handleAlcoholEditNavigate = useCallback(() => {
+    navigation.navigate('AlcoholEditScreen', {
+      storeId,
+      alcohols: alcoholList,
+      onAlcoholUpdateComplete: refreshAlcoholList,
+      onAlcoholDelete: null,
+    });
+  }, [navigation, storeId, alcoholList, refreshAlcoholList]);
 
   const handleAddressSelect = useCallback(({address, coords}) => {
     setAddress(address);
@@ -1046,6 +1109,28 @@ const StoreUpdateScreen = ({navigation}) => {
             styles.scrollContent,
             {paddingBottom: 140 + insets.bottom},
           ]}>
+          {isStoreUpdatable && (
+            <View style={styles.quickActionView}>
+              <Text style={styles.quickActionTitle}>편집 항목</Text>
+              <View style={styles.quickActions}>
+                <Pressable
+                  style={styles.quickActionButton}
+                  onPress={handleMenuBoardEdit}>
+                  <Text style={styles.quickActionText}>메뉴판</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.quickActionButton}
+                  onPress={handleMenuEditNavigate}>
+                  <Text style={styles.quickActionText}>메뉴</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.quickActionButton}
+                  onPress={handleAlcoholEditNavigate}>
+                  <Text style={styles.quickActionText}>주류</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
           <View ref={imageRef}>
             <StoreImage
               imageUris={imageUris}
@@ -1157,6 +1242,37 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 160,
+  },
+  quickActionView: {
+    marginHorizontal: 18,
+
+    marginTop: 15,
+  },
+  quickActionTitle: {
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
+    fontSize: 15,
+  },
+  quickActions: {
+    marginTop: 10,
+    marginBottom: 10,
+    flexDirection: 'row',
+    columnGap: 10,
+  },
+  quickActionButton: {
+    backgroundColor: ColorUtil.chipBackgroud,
+    borderRadius: 9,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  quickActionText: {
+    color: '#333',
+    fontSize: 14,
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 
