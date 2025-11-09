@@ -179,6 +179,7 @@ const MapScreen = ({navigation}) => {
   };
 
   const updateNewLocation = async radius => {
+    bottomSheetRef.current?.snapToIndex(0);
     setLoading(true);
     try {
       const {newLocation, address} = await fetchLocationAddress();
@@ -198,10 +199,10 @@ const MapScreen = ({navigation}) => {
         roundedCurrentLng === roundedNewLng
       ) {
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-        moveCenterMap(newLocation.latitude, newLocation.longitude, sheetIndex);
+        moveCenterMap(newLocation.latitude, newLocation.longitude, 0);
       } else {
         setLocation(newLocation);
-        moveCenterMap(newLocation.latitude, newLocation.longitude, sheetIndex);
+        moveCenterMap(newLocation.latitude, newLocation.longitude, 0);
         if (webViewRef.current) {
           webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
           const script = generateMapScript(
@@ -507,7 +508,7 @@ const MapScreen = ({navigation}) => {
         try {
           const js = `try{ if(window.clearStoreLabel){ window.clearStoreLabel(); } }catch(e){}; true;`;
           webViewRef.current?.injectJavaScript(js);
-        } catch(e){}
+        } catch (e) {}
         const store = stores[index];
         if (store) {
           moveCenterMap(
@@ -537,7 +538,10 @@ const MapScreen = ({navigation}) => {
           bubbleCount = message.total;
           setResultCount(message.total);
           lastGroupCountRef.current = message.total;
-        } else if (typeof lastGroupCountRef.current === 'number' && lastGroupCountRef.current > 1) {
+        } else if (
+          typeof lastGroupCountRef.current === 'number' &&
+          lastGroupCountRef.current > 1
+        ) {
           bubbleCount = lastGroupCountRef.current;
           setResultCount(lastGroupCountRef.current);
         } else {
@@ -556,9 +560,13 @@ const MapScreen = ({navigation}) => {
           try {
             // close list overlay and show name bubble above marker with count
             const countArg = bubbleCount != null ? String(bubbleCount) : 'null';
-            const js = `try{ if(window.currentOverlay){ window.currentOverlay.setMap(null); window.currentOverlay=null;} if(window.showStoreLabelAt){ window.showStoreLabelAt(${store.locationDto.latitude}, ${store.locationDto.longitude}, ${JSON.stringify(store.name)}, ${countArg}); } }catch(e){}; true;`;
+            const js = `try{ if(window.currentOverlay){ window.currentOverlay.setMap(null); window.currentOverlay=null;} if(window.showStoreLabelAt){ window.showStoreLabelAt(${
+              store.locationDto.latitude
+            }, ${store.locationDto.longitude}, ${JSON.stringify(
+              store.name,
+            )}, ${countArg}); } }catch(e){}; true;`;
             webViewRef.current?.injectJavaScript(js);
-          } catch(e){}
+          } catch (e) {}
         }
       }
     } else if (message.action === 'markerClicked' && message.storeId) {
@@ -581,9 +589,13 @@ const MapScreen = ({navigation}) => {
             true,
           );
           try {
-            const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${store.locationDto.latitude}, ${store.locationDto.longitude}, ${JSON.stringify(store.name)}, null); } }catch(e){}; true;`;
+            const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${
+              store.locationDto.latitude
+            }, ${store.locationDto.longitude}, ${JSON.stringify(
+              store.name,
+            )}, null); } }catch(e){}; true;`;
             webViewRef.current?.injectJavaScript(js);
-          } catch(e){}
+          } catch (e) {}
         }
       }
     }
@@ -596,7 +608,7 @@ const MapScreen = ({navigation}) => {
       try {
         const js = `try{ if(window.clearStoreLabel){ window.clearStoreLabel(); } }catch(e){}; true;`;
         webViewRef.current?.injectJavaScript(js);
-      } catch(e) {}
+      } catch (e) {}
       setResultCount(null);
       lastGroupCountRef.current = null;
       return;
@@ -604,15 +616,26 @@ const MapScreen = ({navigation}) => {
     const store = stores.find(s => s.id === detailStoreId);
     if (store && webViewRef.current) {
       try {
-        const countVal = (typeof lastGroupCountRef.current === 'number' && lastGroupCountRef.current > 1)
-          ? lastGroupCountRef.current
-          : null;
+        const countVal =
+          typeof lastGroupCountRef.current === 'number' &&
+          lastGroupCountRef.current > 1
+            ? lastGroupCountRef.current
+            : null;
         const countArg = countVal != null ? String(countVal) : 'null';
-        const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${store.locationDto.latitude}, ${store.locationDto.longitude}, ${JSON.stringify(store.name)}, ${countArg}); } }catch(e){}; true;`;
+        const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${
+          store.locationDto.latitude
+        }, ${store.locationDto.longitude}, ${JSON.stringify(
+          store.name,
+        )}, ${countArg}); } }catch(e){}; true;`;
         webViewRef.current.injectJavaScript(js);
-      } catch(e) {}
+      } catch (e) {}
       // only keep resultCount when from a cluster selection (>1)
-      if (!(typeof lastGroupCountRef.current === 'number' && lastGroupCountRef.current > 1)) {
+      if (
+        !(
+          typeof lastGroupCountRef.current === 'number' &&
+          lastGroupCountRef.current > 1
+        )
+      ) {
         setResultCount(null);
       }
     }
