@@ -89,14 +89,133 @@ if (window.overlayMarkers) {
     '</svg>';
 
   var storesArray = ${JSON.stringify(stores)};
-  var storeGroups = {};
-  storesArray.forEach(function(store) {
-    var addr = store.locationDto.address;
-    if (!storeGroups[addr]) {
-      storeGroups[addr] = [];
+  var storeGroups = null; // will be set per level strategy
+
+  try {
+    var level = map.getLevel();
+    var gridSize =  level >= 6 ? 48 :level >= 5 ? 30 : level >= 4 ? 15 : 0;
+    var proj = map.getProjection();
+    var center = map.getCenter();
+    var centerPt = proj.containerPointFromCoords(center);
+    var rawStores = storesArray.slice();
+
+    function coordKeyFromStore(s){
+      try{
+        var la = s && s.locationDto && s.locationDto.latitude;
+        var lo = s && s.locationDto && s.locationDto.longitude;
+        if(la==null || lo==null) return null;
+        return la.toFixed(6)+","+lo.toFixed(6);
+      }catch(_e){return null;}
     }
-    storeGroups[addr].push(store);
-  });
+
+    function secondsFromHHMMSS(t){
+      if(!t) return null;
+      var p=t.split(':');
+      if(p.length<2) return null;
+      var h=parseInt(p[0],10)||0,m=parseInt(p[1],10)||0,s=parseInt(p[2]||'0',10)||0;
+      return h*3600+m*60+s;
+    }
+
+    function isOpenNow(store){
+      try{
+        if(store.isAlwaysOpen) return true;
+        var ops = store.operationInfoDtos || [];
+        if(!ops.length) return false;
+        var now = new Date();
+        var dow = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'][now.getDay()];
+        var today = ops.find(function(o){return o.dayOfWeek===dow});
+        if(!today) return false;
+        if(today.isClosed) return false;
+        var cur = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+        var openS = secondsFromHHMMSS(today.openTime);
+        var closeS = secondsFromHHMMSS(today.closeTime);
+        var bStart = secondsFromHHMMSS(today.breakStartTime);
+        var bEnd = secondsFromHHMMSS(today.breakEndTime);
+        if(openS!=null && closeS!=null){
+          if(!(cur>=openS && cur<=closeS)) return false;
+        }
+        if(bStart!=null && bEnd!=null){
+          if(cur>=bStart && cur<=bEnd) return false;
+        }
+        return true;
+      }catch(e){return false;}
+    }
+
+    // decorate with priority fields
+    var enriched = storesArray.map(function(s){
+      var lat = s.locationDto && s.locationDto.latitude;
+      var lng = s.locationDto && s.locationDto.longitude;
+      var pt = (lat!=null && lng!=null) ? proj.containerPointFromCoords(new kakao.maps.LatLng(lat,lng)) : {x:0,y:0};
+      var dx = pt.x - centerPt.x, dy = pt.y - centerPt.y;
+      var dist2 = dx*dx + dy*dy;
+      return {
+        _src: s,
+        isCertified: !!s.isCertified,
+        isOpen: isOpenNow(s),
+        dist2: dist2,
+        reviewCount: s.reviewCount || 0,
+        pt: pt
+      };
+    });
+
+    enriched.sort(function(a,b){
+      if(a.isCertified!==b.isCertified) return a.isCertified? -1: 1;
+      if(a.isOpen!==b.isOpen) return a.isOpen? -1: 1;
+      if(a.dist2!==b.dist2) return a.dist2 - b.dist2; // nearer first
+      return (b.reviewCount)-(a.reviewCount);
+    });
+
+    // build coordinate groups (same lat/lng rounded to 6 decimals)
+    var coordGroups = {};
+    for (var c=0;c<rawStores.length;c++){
+      var st = rawStores[c];
+      var key = coordKeyFromStore(st);
+      if(!key) continue;
+      if(!coordGroups[key]) coordGroups[key] = [];
+      coordGroups[key].push(st);
+    }
+
+    if(gridSize>0){
+      // screen-space declutter: choose one representative per cell
+      var occupied = {};
+      var reps = [];
+      for(var i=0;i<enriched.length;i++){
+        var e = enriched[i];
+        var gx = Math.floor(e.pt.x / gridSize);
+        var gy = Math.floor(e.pt.y / gridSize);
+        var k = gx+","+gy;
+        if(!occupied[k]){ occupied[k]=1; reps.push(e._src); }
+      }
+      storesArray = reps;
+      // overlays show only stores at the SAME COORD as the representative
+      storeGroups = {};
+      for (var r=0;r<reps.length;r++){
+        var rep = reps[r];
+        var ck = coordKeyFromStore(rep);
+        if(!ck) continue;
+        storeGroups[ck] = coordGroups[ck] || [rep];
+      }
+    } else {
+      // no declutter: one marker per coordinate group
+      storesArray = Object.keys(coordGroups).map(function(k){ return coordGroups[k][0]; });
+      storeGroups = coordGroups;
+    }
+    
+  } catch(_e) { /* fallback: keep original storesArray */ }
+  if (!storeGroups) {
+    // ultimate fallback to coordinate grouping
+    storeGroups = {};
+    storesArray.forEach(function(store){
+      try{
+        var la = store.locationDto && store.locationDto.latitude;
+        var lo = store.locationDto && store.locationDto.longitude;
+        var key = (la!=null && lo!=null) ? la.toFixed(6)+","+lo.toFixed(6) : null;
+        if(!key) return;
+        if(!storeGroups[key]) storeGroups[key] = [];
+        storeGroups[key].push(store);
+      }catch(_e){}
+    });
+  }
 window.overlayMarkers = [];
   window.storeMarkers = [];
   window.currentOverlay = null;
