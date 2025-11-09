@@ -1,11 +1,11 @@
 import React from 'react';
 import {Pressable, StyleSheet} from 'react-native';
 
-import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 const StoreMapCenter = ({onPress}) => {
   return (
     <Pressable style={styles.buttonBottom} onPress={onPress}>
-      <Feather name="home" size={22} color="#1a1a1a" />
+      <Ionicons name="storefront-outline" size={22} color="#1a1a1a" />
     </Pressable>
   );
 };
@@ -13,8 +13,8 @@ const StoreMapCenter = ({onPress}) => {
 const styles = StyleSheet.create({
   buttonBottom: {
     position: 'absolute',
-    bottom: '50%',
-    right: '7%',
+    bottom: '20%',
+    left: '7%',
     width: 42,
     borderRadius: 42,
     alignItems: 'center',

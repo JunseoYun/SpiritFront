@@ -15,9 +15,7 @@ import StoreMapScript from '../../components/StoreMapScreen/StoreMapScript';
 import StoreMapLocation from '../../components/StoreMapScreen/StoreMapLocation';
 import StoreMapCenter from '../../components/StoreMapScreen/StoreMapCenter';
 import {openKakaoMap} from '../../hooks/openKakaoMap';
-import StoreMapFoot from '../../components/StoreMapScreen/StoreMapFoot';
-import StoreMapBus from '../../components/StoreMapScreen/StoreMapBus';
-import StoreMapCar from '../../components/StoreMapScreen/StoreMapCar';
+import StoreMapNavi from '../../components/StoreMapScreen/StoreMapNavi';
 import {useRoute} from '@react-navigation/native';
 
 const StoreMapScreen = ({navigation}) => {
@@ -166,9 +164,7 @@ const StoreMapScreen = ({navigation}) => {
 
       <StoreMapLocation onPress={updateNewLocation} />
       <StoreMapCenter onPress={storeCenter} />
-      <StoreMapFoot onPress={() => openMapHandle('FOOT')} />
-      <StoreMapBus onPress={() => openMapHandle('PUBLICTRANSIT')} />
-      <StoreMapCar onPress={() => openMapHandle('CAR')} />
+      <StoreMapNavi onPress={() => openMapHandle('FOOT')} />
     </>
   );
 };

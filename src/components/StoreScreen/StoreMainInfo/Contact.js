@@ -120,7 +120,9 @@ const Contact = ({contact}) => {
                 {contact}
               </Text>
               <Pressable onPress={handleCopy}>
-                <Text style={styles.copyText}>{copied ? '복사됨' : '복사'}</Text>
+                <Text style={styles.copyText}>
+                  {copied ? '복사됨' : '복사'}
+                </Text>
               </Pressable>
             </View>
             <Pressable style={styles.callButton} onPress={handleCall}>
@@ -138,6 +140,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
     marginTop: 16,
     position: 'relative',
+    marginBottom: 12,
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,

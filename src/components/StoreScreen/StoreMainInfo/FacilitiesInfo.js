@@ -28,28 +28,23 @@ const FacilitiesInfo = ({facilitiesInfoDto}) => {
   const facilities = {...DEFAULT_FACILITIES, ...(facilitiesInfoDto || {})};
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Text style={styles.title}>매장 편의시설</Text>
-      </View>
-
+    <View style={styles.container}>
       <View style={styles.grid}>
         {FACILITY_ITEMS.map(({key, label, icon: Icon}) => {
           const isAvailable = !!facilities[key];
           return (
             <View key={key} style={styles.item}>
               <View
-                style={[
-                  styles.iconContainer,
-                  isAvailable && styles.iconContainerActive,
-                ]}>
+                style={[styles.iconBox, isAvailable && styles.iconBoxActive]}>
                 <Icon
-                  size={18}
-                  color={isAvailable ? ColorUtil.main : '#A9B2C2'}
+                  size={20}
+                  color={isAvailable ? '#3CBBFF' : '#C2C7D1'}
                   strokeWidth={2}
                 />
               </View>
-              <Text style={[styles.label, isAvailable && styles.labelActive]}>
+              <Text
+                style={[styles.label, isAvailable && styles.labelActive]}
+                numberOfLines={1}>
                 {label}
               </Text>
             </View>
@@ -63,59 +58,49 @@ const FacilitiesInfo = ({facilitiesInfoDto}) => {
 export default FacilitiesInfo;
 
 const styles = StyleSheet.create({
-  card: {
-    marginHorizontal: 16,
-    marginTop: 20,
-    marginBottom: 8,
-    paddingVertical: 20,
-    paddingHorizontal: 18,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: ColorUtil.border,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-  title: {
-    fontFamily: 'Pretendard-SemiBold',
-    fontSize: 15,
-    color: '#111',
+  container: {
+    marginHorizontal: 18,
+    marginTop: 12,
+    marginBottom: 16,
   },
 
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    rowGap: 16,
     justifyContent: 'space-between',
+    rowGap: 22,
   },
   item: {
     width: '30%',
     alignItems: 'center',
   },
-  iconContainer: {
+  iconBox: {
     width: 44,
     height: 44,
-    borderRadius: 14,
-    backgroundColor: '#F5F7FA',
+    borderRadius: 12,
+    backgroundColor: '#FAFBFC',
+    borderWidth: 1,
+    borderColor: '#E7E9EE',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
-  iconContainerActive: {
-    backgroundColor: ColorUtil.rgba(ColorUtil.main, 0.15),
+  iconBoxActive: {
+    backgroundColor: '#F3FAFF',
+    borderColor: '#CDEBFF',
+    shadowColor: '#3CBBFF',
+    shadowOpacity: 0.06,
+    shadowOffset: {width: 0, height: 1},
+    shadowRadius: 3,
   },
   label: {
     fontFamily: 'Pretendard-Regular',
-    fontSize: 13,
-    color: '#9BA2AF',
+    fontSize: 12.5,
+    color: '#A1A8B3',
     textAlign: 'center',
   },
   labelActive: {
-    color: '#111',
+    color: '#222',
     fontFamily: 'Pretendard-Medium',
   },
 });
