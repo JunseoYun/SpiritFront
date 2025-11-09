@@ -133,7 +133,7 @@ const StoreResultItem = ({store, navigation, index}) => {
           // 버튼으로 사장님 인증하기
           <Pressable
             onPress={() => {
-              navigation.navigate('StoreCheckScreen', {
+              navigation.navigate('StoreAuthorityScreen', {
                 storeId: store.id,
                 storeName: store.name,
                 storeLocationDto: store.locationDto,

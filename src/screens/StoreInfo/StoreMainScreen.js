@@ -85,7 +85,6 @@ const StoreMainScreen = ({navigation}) => {
   const {showToast} = useToast();
   const [bottomSheetIndex, setBottomSheetIndex] = useState(-1);
   const [sectionPositions, setSectionPositions] = useState({});
-  const [isModalVisible, setModalVisible] = useState(false);
 
   const [isOrderEnabled, setIsOrderEnabled] = useState(true);
   const [showOrderForm, setShowOrderForm] = useState(false);
@@ -831,19 +830,24 @@ const StoreMainScreen = ({navigation}) => {
                       navigation={navigation}
                     />
                   )}
-                  {!isUpdate &&
+                  {/* {!isUpdate &&
                     storedata?.isUpdatable &&
                     currentPage === 'StoreAlcoholScreen' && (
-                      <>
-                        <Pressable
-                          style={styles.reorderButton}
-                          onPress={() => setModalVisible(true)}>
-                          <Text style={styles.alcoholAddButtonText}>
-                            주류 편집
-                          </Text>
-                        </Pressable>
-                      </>
-                    )}
+                      <Pressable
+                        style={styles.reorderButton}
+                        onPress={() =>
+                          navigation.navigate('AlcoholEditScreen', {
+                            storeId,
+                            alcohols,
+                            onAlcoholUpdateComplete: refresAlcohols,
+                            onAlcoholDelete: handleAlcoholDelete,
+                          })
+                        }>
+                        <Text style={styles.alcoholAddButtonText}>
+                          주류 편집
+                        </Text>
+                      </Pressable>
+                    )} */}
                 </View>
 
                 {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
@@ -909,40 +913,6 @@ const StoreMainScreen = ({navigation}) => {
               bottom={scrollButtonBottomValue}
               onPress={scrollToTop}
             />
-
-            <Modal
-              transparent
-              visible={isModalVisible}
-              animationType="fade"
-              statusBarTranslucent={true}>
-              <Pressable
-                style={styles.overlay}
-                onPress={() => setModalVisible(false)}>
-                <View style={styles.modal}>
-                  <TouchableOpacity
-                    style={styles.option}
-                    onPress={() => {
-                      navigation.navigate('AlcoholEditScreen', {
-                        storeId,
-                        alcohols,
-                        onAlcoholUpdateComplete: refresAlcohols,
-                        onAlcoholDelete: handleAlcoholDelete,
-                      });
-                      setModalVisible(false);
-                    }}>
-                    <Text style={styles.optionText}>주류 수정/삭제</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.option}
-                    onPress={() => {
-                      navigation.navigate('AlcoholAddScreen', {storeId});
-                      setModalVisible(false);
-                    }}>
-                    <Text style={styles.optionText}>새 주류 추가</Text>
-                  </TouchableOpacity>
-                </View>
-              </Pressable>
-            </Modal>
           </View>
           {isUpdate && (
             <View
@@ -1157,30 +1127,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     padding: 16,
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modal: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    paddingVertical: 20,
-    paddingHorizontal: 24,
-    width: 260,
-  },
-  option: {
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  optionText: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-Medium',
-    color: '#333',
-    textAlign: 'center',
   },
   orderModalContainer: {
     flex: 1,
