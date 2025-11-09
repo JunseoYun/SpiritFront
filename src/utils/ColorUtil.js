@@ -8,6 +8,7 @@ const ColorUtil = {
   // 비활성 (disabled) 상태 컬러
 
   chipText: '#B4B7BE',
+  chipBackgroud: '#F5F5F5',
   mainDisable: '#A5D8FA',
   subText: '#6B7280',
 

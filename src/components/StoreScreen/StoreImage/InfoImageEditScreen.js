@@ -514,7 +514,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
         await StoreBoardImageUpdateSort(storeId, orderedURLs);
       }
 
-      navigation.goBack();
+      navigation.popToTop();
     } catch (error) {
       console.error('handleSave 에러:', error);
     } finally {
@@ -830,10 +830,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
                 <Ionicons name="close" size={23} color="#121212" />
               </Pressable>
             </View>
-            <Text style={styles.modalSubtitle}>
-              순서를 변경할 사진에 번호를 입력하세요.{`\n`}입력하지 않으면
-              뒤쪽으로 자동 정렬됩니다.
-            </Text>
+
             <FlatList
               ref={orderListRef}
               keyboardShouldPersistTaps="never"
@@ -1160,23 +1157,16 @@ const styles = StyleSheet.create({
   madalTitleView: {
     flexDirection: 'row',
     marginHorizontal: 18,
-    marginTop: 20,
+    marginTop: 15,
     marginBottom: 10,
     justifyContent: 'space-between',
   },
   modalTitle: {
     fontFamily: 'Pretendard-SemiBold',
-    fontSize: 18,
-    color: '#121212',
-    flex: 1,
+    color: '#333',
+    fontSize: 15,
   },
-  modalSubtitle: {
-    fontFamily: 'Pretendard-Regular',
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 7,
-    marginHorizontal: 18,
-  },
+
   orderCell: {
     width: (width - 32 - 20) / 3, // padding 16*2, gaps
     aspectRatio: 1,
