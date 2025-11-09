@@ -31,6 +31,7 @@ import MapFilterHeader from './MapFilterHeader';
 import MapDetailItem from './MapDetailItem';
 import {useMapSearch} from '../../../context/MapSearchContext';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useFocusEffect} from '@react-navigation/native';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
@@ -248,26 +249,46 @@ const MapStoreList = ({
     });
   }, [onCloseGroup, flatListRef]);
 
-  useEffect(() => {
-    if (!detailStore && !isGroupMode) return;
+  useFocusEffect(
+    useCallback(() => {
+      if (!detailStore && !isGroupMode) return undefined;
 
-    const onBackPress = () => {
-      if (detailStore) {
-        handleCloseDetail();
-      }
-      if (isGroupMode) {
-        handleCloseGroup();
-      }
-      return detailStore || isGroupMode ? true : false;
-    };
+      const onBackPress = () => {
+        if (detailStore) {
+          handleCloseDetail();
+          return true; // consume when closing detail
+        }
+        if (isGroupMode) {
+          handleCloseGroup();
+          return true; // consume when closing group
+        }
+        return false;
+      };
 
-    const subscription = BackHandler.addEventListener(
-      'hardwareBackPress',
-      onBackPress,
-    );
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
 
-    return () => subscription.remove();
-  }, [detailStore, isGroupMode]);
+      const navBeforeRemove = navigation?.addListener?.('beforeRemove', e => {
+        if (!detailStore && !isGroupMode) return;
+        e.preventDefault();
+        if (detailStore) handleCloseDetail();
+        else if (isGroupMode) handleCloseGroup();
+      });
+
+      return () => {
+        subscription.remove();
+        navBeforeRemove && navBeforeRemove();
+      };
+    }, [
+      detailStore,
+      isGroupMode,
+      handleCloseDetail,
+      handleCloseGroup,
+      navigation,
+    ]),
+  );
 
   // Track top visible item and center map when sheet is at 45%
   const viewabilityConfig = useRef({itemVisiblePercentThreshold: 25});
@@ -564,16 +585,12 @@ const MapStoreList = ({
               {detailStore ? (
                 <BottomSheetScrollView
                   contentContainerStyle={{
-                    paddingHorizontal: 12,
+                    paddingHorizontal: 0,
                     paddingTop: 8,
-                    paddingBottom: 24,
+                    paddingBottom: insets.bottom,
                   }}
                   showsVerticalScrollIndicator={false}>
-                  <Pressable
-                    onPress={handleCloseDetail}
-                    style={styles.detailCloseButton}>
-                    <Ionicons name="arrow-back" size={18} color="#111" />
-                  </Pressable>
+                  {/* Back moved to custom handle */}
                   <MapDetailItem
                     item={detailStore}
                     index={selectedStoreIndex}
@@ -717,6 +734,47 @@ const styles = StyleSheet.create({
     bottom: 50,
     right: 30,
     elevation: 2,
+  },
+  handleRow: {
+    height: 44,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+  },
+  handleContainer: {
+    height: 44,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  handleBack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  handleTitle: {
+    marginLeft: 6,
+    maxWidth: '80%',
+    fontSize: 14,
+    color: '#111',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  handleCenter: {
+    display: 'none',
+  },
+  handleCenterOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  handleIndicator: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E5E7EB',
   },
 });
 
