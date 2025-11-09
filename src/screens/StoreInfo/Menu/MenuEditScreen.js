@@ -203,7 +203,7 @@ const MenuEditScreen = ({route, navigation}) => {
       if (onMenuUpdateComplete) {
         await onMenuUpdateComplete();
       }
-      navigation.goBack();
+      navigation.popToTop();
     } catch (error) {
       console.error('순서 저장 실패:', error);
     } finally {

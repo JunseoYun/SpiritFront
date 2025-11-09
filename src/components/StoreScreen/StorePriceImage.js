@@ -26,7 +26,7 @@ const StorePriceImage = ({isUpdatable, imageList, navigation, storeId}) => {
 
   return (
     <View>
-      {isUpdatable && (
+      {/* {isUpdatable && (
         <Pressable
           style={styles.addImageButton}
           onPress={() => {
@@ -38,7 +38,7 @@ const StorePriceImage = ({isUpdatable, imageList, navigation, storeId}) => {
           <Text style={styles.addImageText}>메뉴판 이미지 편집</Text>
           <Feather name="chevron-right" size={22} color="#999" />
         </Pressable>
-      )}
+      )} */}
       {!imageList || imageList.length === 0 ? null : (
         <ScrollView
           horizontal

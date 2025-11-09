@@ -481,10 +481,29 @@ const MyManager = ({navigation}) => {
                           params: {storeId: selectedStore.storeId},
                         });
                       }}>
-                      <Ionicons name="home" size={30} color="#fff" />
+                      <Ionicons name="storefront" size={30} color="#fff" />
                     </Pressable>
                     <Text style={styles.btnText} allowFontScaling={false}>
                       매장 홈
+                    </Text>
+                  </View>
+                  <View style={styles.bottomButtonView}>
+                    <Pressable
+                      style={[
+                        styles.btn,
+                        {borderColor: '#fff', borderWidth: 1.3},
+                      ]}
+                      onPress={() => {
+                        closeModal();
+                        navigation.navigate('StoreStack', {
+                          screen: 'StoreUpdateScreen',
+                          params: {storeId: selectedStore.storeId},
+                        });
+                      }}>
+                      <Ionicons name="create-outline" size={30} color="#fff" />
+                    </Pressable>
+                    <Text style={styles.btnText} allowFontScaling={false}>
+                      매장 수정
                     </Text>
                   </View>
                   <View style={styles.bottomButtonView}>
