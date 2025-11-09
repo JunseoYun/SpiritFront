@@ -52,7 +52,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
     color: ColorUtil.subText,
-    marginTop: 3,
     marginBottom: 5,
   },
   measure: {
