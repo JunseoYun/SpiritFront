@@ -19,6 +19,141 @@ const generateMapScript = (lat, lng, stores, offsetY = 0) => `
 
   var map = window.map;
 
+  // Name bubble helper overlay (for selected store)
+  try {
+  if (!window.__nameOverlayStyle) {
+  window.__nameOverlayStyle =
+    "position: relative;" +
+    "background: #3CBBFF;" +
+    "color: #fff;" +
+    "padding: 6px 10px;" +
+    "border-radius: 8px;" +
+    "font-size: 17px;" +
+    "font-family: Arial, sans-serif;" +
+    "font-weight: 600;" +
+    "box-shadow: 0 2px 4px rgba(0,0,0,0.2);" +
+    "white-space: nowrap;" +
+    "pointer-events: auto;" +
+    "cursor: pointer;" +
+    "transform: translateY(-28px);";
+}
+    // Restore previously hidden marker (if any) and remove bubble
+    window.clearStoreLabel = function(){
+      try {
+        if (window.__storeNameOverlay) {
+          window.__storeNameOverlay.setMap(null);
+          window.__storeNameOverlay = null;
+        }
+      } catch(e){}
+      try {
+        if (window.__hiddenMarkerKey && window.__markerMap) {
+          var mk = window.__markerMap[window.__hiddenMarkerKey];
+          if (mk) { mk.setMap(map); }
+        }
+      } catch(e){}
+      try {
+        if (window.__hiddenMarkerKey && window.__overlayMap) {
+          var ov = window.__overlayMap[window.__hiddenMarkerKey];
+          if (ov) { ov.setMap(map); }
+        }
+      } catch(e){}
+      try { window.__hiddenMarkerKey = null; } catch(e){}
+    };
+    // Show name bubble and hide the corresponding marker at that coordinate
+    window.showStoreLabelAt = function(lat, lng, name, count){
+  try {
+    if (!map) return;
+    var pos = new kakao.maps.LatLng(lat, lng);
+    // manage marker hide/show
+    try {
+      var key = (Number(lat).toFixed(6))+","+(Number(lng).toFixed(6));
+      // restore previously hidden marker/overlay if switching target
+      if (window.__hiddenMarkerKey && window.__hiddenMarkerKey !== key) {
+        try {
+          if (window.__markerMap) {
+            var prevM = window.__markerMap[window.__hiddenMarkerKey];
+            if (prevM) { prevM.setMap(map); }
+          }
+        } catch(e){}
+        try {
+          if (window.__overlayMap) {
+            var prevO = window.__overlayMap[window.__hiddenMarkerKey];
+            if (prevO) { prevO.setMap(map); }
+          }
+        } catch(e){}
+        window.__hiddenMarkerKey = null;
+      }
+      // hide current marker and its count overlay (if any)
+      if (window.__markerMap && window.__markerMap[key]) {
+        try { window.__markerMap[key].setMap(null); } catch(e){}
+        window.__hiddenMarkerKey = key;
+      }
+      if (window.__overlayMap && window.__overlayMap[key]) {
+        try { window.__overlayMap[key].setMap(null); } catch(e){}
+      }
+    } catch(e){}
+    var el = document.createElement('div');
+    el.style.cssText = window.__nameOverlayStyle;
+    // bubble content with optional count badge at top-right
+    var safeName = (name || '');
+    var badgeHtml = '';
+    // Only show badge for groups with more than 1 store
+    try { if (typeof count === 'number' && count > 1) { badgeHtml = '<span style="position:absolute; top:-8px; right:-10px; background:#fff; color:#111;  border-radius:9px;  padding:1px 5px; display:flex; align-items:center; justify-content:center; font-size:10px; line-height:18px; border:1px solid #3CBBFF;">'+ count +'</span>'; } } catch(_e){}
+    el.innerHTML = badgeHtml + safeName +
+      '<div style="position:absolute; bottom:-5px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:6px solid #3CBBFF;"></div>';
+    // Bubble click -> reopen list overlay for this coordinate if group > 1
+    try {
+      el.addEventListener('click', function(event){
+        try { event.stopPropagation && event.stopPropagation(); } catch(e){}
+        try {
+          var key = (Number(lat).toFixed(6))+","+(Number(lng).toFixed(6));
+          var groups = window.__storeGroups || {};
+          var grp = groups[key];
+          if (grp && grp.length > 1) {
+            if (window.currentOverlay) { try { window.currentOverlay.setMap(null); } catch(e){} }
+            window.isStoreListClicked = true;
+            var overlayContent = document.createElement('div');
+            overlayContent.style.cssText = "background:white; padding:10px; border-radius:10px; box-shadow:0px 2px 5px rgba(0,0,0,0.2); font-size:14px; width:60vw; border:1px solid #ddd; position:relative; transform:translateY(-30px);";
+            overlayContent.addEventListener('click', function(ev){ try{ ev.stopPropagation(); }catch(e){} });
+            (grp || []).forEach(function(store, index){
+              var storeItem = document.createElement('div');
+              storeItem.innerHTML = '<div style="display:flex; align-items:center; padding:10px; cursor:pointer;"><div style="width:8px; height:8px; background:#5cceff; border-radius:50%; margin-right:8px;"></div>' + '<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;">' + (store.name || '') + '</span>' + '</div>';
+              if (index !== (grp.length - 1)) { storeItem.style.borderBottom = '1px solid #eee'; }
+              storeItem.onclick = function(ev2){
+                try{ ev2.stopPropagation && ev2.stopPropagation(); }catch(e){}
+                window.isStoreListClicked = true;
+                try {
+                  window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'markerListItemClicked', storeId: store.id, total: grp.length }));
+                } catch(e){}
+              };
+              overlayContent.appendChild(storeItem);
+            });
+            var overlay = new kakao.maps.CustomOverlay({ content: overlayContent, position: pos, map: map, zIndex: 10, yAnchor: 1 });
+            window.currentOverlay = overlay;
+            try {
+              window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'markerGroupClicked', storeId: grp[0].id, total: grp.length }));
+            } catch(e){}
+            // when switching from bubble to list, remove bubble but keep marker hidden
+            try { if (window.__storeNameOverlay) { window.__storeNameOverlay.setMap(null); window.__storeNameOverlay = null; } } catch(e){}
+          }
+        } catch(e){}
+        // For single store bubble, do nothing on click (do not clear)
+      });
+    } catch(e){}
+    if (window.__storeNameOverlay) { 
+      try { window.__storeNameOverlay.setMap(null);} catch(e){} 
+    }
+  window.__storeNameOverlay = new kakao.maps.CustomOverlay({
+      position: pos,
+      content: el,
+      yAnchor: 0.5,
+      zIndex: 20
+    });
+      window.__storeNameOverlay.setMap(map);
+  } catch(e){}
+};
+  } catch(_e){}
+
    var markerImageUrl = "data:image/svg+xml;charset=UTF-8," +
       encodeURIComponent(\`
 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
@@ -80,13 +215,14 @@ if (window.overlayMarkers) {
   window.overlayMarkers.forEach(customOverlay => customOverlay.setMap(null));
 }
 
-  var customMarkerUri = 'data:image/svg+xml;charset=UTF-8,' +
-    '<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 32 32">' +
-      '<circle cx="16" cy="16" r="16" fill="%235cceff"/>' +
-      '<g transform="translate(16,16) scale(0.70) translate(-16,-16)">' +
-        '<path d="M16 4 L4 14 L4 28 L13 28 L13 18 L19 18 L19 28 L28 28 L28 14 Z" fill="%23ffffff"/>' +
-      '</g>' +
-    '</svg>';
+var customMarkerUri = "data:image/svg+xml;charset=UTF-8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">' +
+      '<circle cx="18" cy="18" r="17" fill="white"/>' +
+      '<circle cx="18" cy="18" r="14" fill="#3CBBFF"/>' +
+      '<circle cx="18" cy="18" r="4" fill="white"/>' +
+    '</svg>'
+  );
 
   var storesArray = ${JSON.stringify(stores)};
   var storeGroups = null; // will be set per level strategy
@@ -216,8 +352,13 @@ if (window.overlayMarkers) {
       }catch(_e){}
     });
   }
+  // expose groups globally for later interactions (e.g., bubble click)
+  try { window.__storeGroups = storeGroups; } catch(_e){}
 window.overlayMarkers = [];
   window.storeMarkers = [];
+  window.__markerMap = {};
+  window.__overlayMap = {};
+  window.__hiddenMarkerKey = null;
   window.currentOverlay = null;
 
   for (var addr in storeGroups) {
@@ -235,9 +376,16 @@ window.overlayMarkers = [];
       )
     });
 
+    // keep a mapping from coordinate key to marker for hide/show management
+    try {
+      var __k = (group[0].locationDto.latitude.toFixed(6))+","+(group[0].locationDto.longitude.toFixed(6));
+      window.__markerMap[__k] = marker;
+    } catch(e){}
+
     // ✅ 가게 리스트 오버레이 생성
     function createStoreListOverlay(group, markerPosition) {
      window.isStoreListClicked = true;
+      try { if (window.clearStoreLabel) { window.clearStoreLabel(); } } catch(e){}
       if (window.currentOverlay) {
         window.currentOverlay.setMap(null);
       }
@@ -267,7 +415,8 @@ window.overlayMarkers = [];
           // ✅ storeId React Native로 전달
           window.ReactNativeWebView.postMessage(JSON.stringify({ 
             action: 'markerListItemClicked', 
-            storeId: store.id 
+            storeId: store.id,
+            total: (group && group.length) ? group.length : 1
           }));
         };
 
@@ -288,6 +437,7 @@ window.overlayMarkers = [];
     // ✅ 마커 클릭 시 오버레이 표시 (새로운 리스트 클릭하면 기존 리스트 닫힘)
     (function(group, markerPosition) {
       kakao.maps.event.addListener(marker, 'click', function() {
+        try { if (window.clearStoreLabel) { window.clearStoreLabel(); } } catch(e){}
         if (window.currentOverlay) {
           window.currentOverlay.setMap(null);
           window.currentOverlay = null;
@@ -299,7 +449,8 @@ window.overlayMarkers = [];
             var ids = group.map(function(s){ return s.id; });
             window.ReactNativeWebView.postMessage(JSON.stringify({
               action: 'markerGroupClicked',
-              storeId: group[0].id
+              storeId: group[0].id,
+              total: group.length
             }));
           } catch (e) {}
         } else if (group.length === 1) {
@@ -326,6 +477,10 @@ window.overlayMarkers = [];
         zIndex: 3
       });
       window.overlayMarkers.push(customOverlay);
+      try {
+        var __ovk = (group[0].locationDto.latitude.toFixed(6))+","+(group[0].locationDto.longitude.toFixed(6));
+        window.__overlayMap[__ovk] = customOverlay;
+      } catch(e){}
     }
     
     window.storeMarkers.push(marker);

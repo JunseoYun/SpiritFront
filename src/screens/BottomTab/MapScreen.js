@@ -52,6 +52,8 @@ const MapScreen = ({navigation}) => {
   const [storegetloading, setStoregetloading] = useState(true);
   const [sheetIndex, setSheetIndex] = useState(1);
   const bottomSheetRef = useRef(null);
+  const [resultCount, setResultCount] = useState(null);
+  const lastGroupCountRef = useRef(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -499,7 +501,13 @@ const MapScreen = ({navigation}) => {
       if (index !== -1) {
         setSelectedStoreIndex(index);
         setGroupStoreIds(null);
+        // Ensure we exit detail mode so the sheet can collapse fully
+        setDetailStoreId(null);
         bottomSheetRef.current?.snapToIndex(0);
+        try {
+          const js = `try{ if(window.clearStoreLabel){ window.clearStoreLabel(); } }catch(e){}; true;`;
+          webViewRef.current?.injectJavaScript(js);
+        } catch(e){}
         const store = stores[index];
         if (store) {
           moveCenterMap(
@@ -508,6 +516,11 @@ const MapScreen = ({navigation}) => {
             10,
             true,
           );
+        }
+        // save group total for later when picking an item
+        if (typeof message.total === 'number') {
+          lastGroupCountRef.current = message.total;
+          setResultCount(message.total);
         }
         return;
       }
@@ -518,6 +531,19 @@ const MapScreen = ({navigation}) => {
         setGroupStoreIds(null);
         setDetailStoreId(message.storeId);
         setLastChosenStoreId(message.storeId);
+        // decide count to show on bubble (only for clusters > 1)
+        let bubbleCount = null;
+        if (typeof message.total === 'number' && message.total > 1) {
+          bubbleCount = message.total;
+          setResultCount(message.total);
+          lastGroupCountRef.current = message.total;
+        } else if (typeof lastGroupCountRef.current === 'number' && lastGroupCountRef.current > 1) {
+          bubbleCount = lastGroupCountRef.current;
+          setResultCount(lastGroupCountRef.current);
+        } else {
+          bubbleCount = null;
+          setResultCount(null);
+        }
         bottomSheetRef.current?.snapToIndex(1);
         const store = stores[index];
         if (store) {
@@ -527,6 +553,12 @@ const MapScreen = ({navigation}) => {
             1,
             true,
           );
+          try {
+            // close list overlay and show name bubble above marker with count
+            const countArg = bubbleCount != null ? String(bubbleCount) : 'null';
+            const js = `try{ if(window.currentOverlay){ window.currentOverlay.setMap(null); window.currentOverlay=null;} if(window.showStoreLabelAt){ window.showStoreLabelAt(${store.locationDto.latitude}, ${store.locationDto.longitude}, ${JSON.stringify(store.name)}, ${countArg}); } }catch(e){}; true;`;
+            webViewRef.current?.injectJavaScript(js);
+          } catch(e){}
         }
       }
     } else if (message.action === 'markerClicked' && message.storeId) {
@@ -536,6 +568,9 @@ const MapScreen = ({navigation}) => {
         setGroupStoreIds(null);
         setDetailStoreId(message.storeId);
         setLastChosenStoreId(message.storeId);
+        // single marker: do not show list count badge
+        setResultCount(null);
+        lastGroupCountRef.current = null;
         bottomSheetRef.current?.snapToIndex(1);
         const store = stores[index];
         if (store) {
@@ -545,10 +580,48 @@ const MapScreen = ({navigation}) => {
             1,
             true,
           );
+          try {
+            const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${store.locationDto.latitude}, ${store.locationDto.longitude}, ${JSON.stringify(store.name)}, null); } }catch(e){}; true;`;
+            webViewRef.current?.injectJavaScript(js);
+          } catch(e){}
         }
       }
     }
   }, 500);
+
+  // When detail opens (via list or marker), show label and set count
+  useEffect(() => {
+    if (!detailStoreId) {
+      // clear label and badge when closing detail
+      try {
+        const js = `try{ if(window.clearStoreLabel){ window.clearStoreLabel(); } }catch(e){}; true;`;
+        webViewRef.current?.injectJavaScript(js);
+      } catch(e) {}
+      setResultCount(null);
+      lastGroupCountRef.current = null;
+      return;
+    }
+    const store = stores.find(s => s.id === detailStoreId);
+    if (store && webViewRef.current) {
+      try {
+        const countVal = (typeof lastGroupCountRef.current === 'number' && lastGroupCountRef.current > 1)
+          ? lastGroupCountRef.current
+          : null;
+        const countArg = countVal != null ? String(countVal) : 'null';
+        const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${store.locationDto.latitude}, ${store.locationDto.longitude}, ${JSON.stringify(store.name)}, ${countArg}); } }catch(e){}; true;`;
+        webViewRef.current.injectJavaScript(js);
+      } catch(e) {}
+      // only keep resultCount when from a cluster selection (>1)
+      if (!(typeof lastGroupCountRef.current === 'number' && lastGroupCountRef.current > 1)) {
+        setResultCount(null);
+      }
+    }
+  }, [detailStoreId]);
+
+  // Track group total when a marker group is clicked
+  useEffect(() => {
+    // no-op; placeholder to avoid lint complaints for hooks order
+  }, []);
 
   return (
     <>
