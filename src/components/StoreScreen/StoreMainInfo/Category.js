@@ -4,17 +4,21 @@ import {View, Text, StyleSheet} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import ColorUtil from '../../../utils/ColorUtil';
 
-const Category = ({storedata, translateCategory, isOwner}) => {
+const Category = ({categories, translateCategory, isOwner, isMoods}) => {
+  if (categories === null) {
+    return;
+  }
+
   return (
-    <View style={styles.Storesubtitleview}>
+    <View style={[styles.Storesubtitleview, isMoods && {marginTop: 10}]}>
       {isOwner != null && (
         <FastImage
           source={require('../../../assets/verifyMaker.png')}
           style={styles.imageStyle}
         />
       )}
-      {Array.isArray(storedata?.categories) &&
-        storedata?.categories.map((category, index) => (
+      {Array.isArray(categories) &&
+        categories?.map((category, index) => (
           <Text key={index} style={styles.Storesubtitle}>
             {translateCategory(category)}
           </Text>
@@ -32,7 +36,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   Storesubtitle: {
-    fontSize: 16,
+    fontSize: 13,
     color: ColorUtil.subText,
     textAlign: 'center',
     marginRight: 7,

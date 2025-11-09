@@ -1,6 +1,6 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {View, Text, Pressable, StyleSheet, Animated} from 'react-native';
-import Entypo from 'react-native-vector-icons/Entypo';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const Title = ({
   storeName,
@@ -45,7 +45,7 @@ const Title = ({
         <Pressable
           onPress={toggleDropdown}
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-          <Entypo name="dots-three-vertical" size={20} color="#333" />
+          <Ionicons name="ellipsis-vertical" size={20} color="#333" />
         </Pressable>
 
         {dropdownVisible && (
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 7,
+    marginTop: 3,
     paddingHorizontal: 18,
     justifyContent: 'space-between',
   },

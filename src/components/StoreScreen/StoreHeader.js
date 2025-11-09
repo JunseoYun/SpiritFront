@@ -58,7 +58,7 @@ const StoreHeader = ({
             <Animated.Text
               allowFontScaling={false}
               style={[
-                {color: isLiked ? '#333' : iconColor},
+                {color: isLiked ? '#FF5E5E' : iconColor},
                 likeDisabled && {opacity: 0.5},
               ]}>
               <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={25} />

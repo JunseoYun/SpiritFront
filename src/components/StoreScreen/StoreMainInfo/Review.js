@@ -24,9 +24,10 @@ const Review = ({navigation, storeData}) => {
           style={styles.iconStar}
           source={require('../../../assets/icon-star.png')}
           resizeMode={FastImage.resizeMode.cover}></FastImage>
-        <Text style={styles.reviewRatetext}> {storeData?.rate}</Text>
-        <Text style={styles.reviewDotText}>•</Text>
-        <Text style={styles.reviewtext}>리뷰 {storeData?.reviewCount}개</Text>
+        <View style={styles.reviewRateView}>
+          <Text style={styles.reviewRatetext}>{storeData?.rate}</Text>
+          <Text style={styles.reviewtext}>({storeData?.reviewCount})</Text>
+        </View>
         <Entypo
           name="chevron-right"
           size={17}
@@ -49,8 +50,9 @@ const styles = StyleSheet.create({
   iconStar: {
     justifyContent: 'space-between',
     padding: 5,
-    height: 18,
-    width: 18,
+    height: 17,
+    width: 17,
+    marginRight: 5,
   },
   reviewView: {
     flexDirection: 'row',
@@ -58,21 +60,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     textAlign: 'center',
   },
+  reviewRateView: {
+    flexDirection: 'row',
+  },
   reviewRatetext: {
-    fontFamily: 'Pretendard-SemiBold',
-    fontSize: 16,
+    fontFamily: 'Pretendard-Bold',
+    fontSize: 15,
     color: '#333',
+    marginRight: 2,
   },
-  reviewDotText: {
-    fontFamily: 'Pretendard-Regular',
-    fontSize: 16,
-    color: '#E0E0E0',
-    marginHorizontal: 3,
-  },
+
   reviewtext: {
-    fontFamily: 'Pretendard-SemiBold',
-    fontSize: 16,
-    color: '#181A1A',
+    fontFamily: 'Pretendard-Bold',
+    fontSize: 15,
+    color: '#333',
   },
   reviewIcon: {
     marginLeft: 3,

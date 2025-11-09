@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   timetextnow: {
     fontSize: 15,
     width: '85%',
-    fontFamily: 'Pretendard-Bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   alcoholText: {
     fontSize: 15,
