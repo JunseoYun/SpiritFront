@@ -42,8 +42,8 @@ const MainBtmbar = () => {
             iconName = focused ? 'map' : 'map-outline';
           else if (route.name === 'SearchStack')
             iconName = focused ? 'search' : 'search-outline';
-          else if (route.name === 'OrderScreen') {
-            iconName = focused ? 'reader' : 'reader-outline';
+          else if (route.name === 'LikeScreen') {
+            iconName = focused ? 'heart' : 'heart-outline';
           } else if (route.name === 'MyStack')
             iconName = focused ? 'person' : 'person-outline';
           return <Ionicons name={iconName} size={25} color={color} />;
@@ -84,13 +84,13 @@ const MainBtmbar = () => {
         })}
       />
       <Tab.Screen
-        name="OrderScreen"
-        component={OrderScreen}
+        name="LikeScreen"
+        component={LikeScreen}
         options={{
-          tabBarLabel: ({color}) => renderLabel('주문', color),
+          tabBarLabel: ({color}) => renderLabel('찜', color),
           headerShown: true,
           headerTitleAlign: 'center',
-          title: '나의 주문',
+          title: '찜',
           headerTitleStyle: {
             fontSize: 19,
             color: '#333',

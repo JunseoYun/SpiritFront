@@ -171,7 +171,8 @@ const MyScreen = ({navigation}) => {
       <>
         {/* Myreview 값 가져오기 */}
         {currentPage === 'MyReview' && <MyReview navigation={navigation} />}
-        {currentPage === 'MyLiked' && <LikeScreen navigation={navigation} />}
+        {currentPage === 'MyLiked' && <MyLocation navigation={navigation} />}
+        {/* {currentPage === 'MyLiked' && <LikeScreen navigation={navigation} />} */}
         {currentPage === 'MyManager' && userdata?.isManager === true && (
           <MyManager navigation={navigation} />
         )}
