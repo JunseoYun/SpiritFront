@@ -5,7 +5,7 @@ import AlcoholItem from '../../components/StoreAlcoholScreen/AlcoholItem';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
-const ORDER_SPACER_HEIGHT = 40;
+const ORDER_SPACER_HEIGHT = 0;
 
 const alcoholMapping = {
   SOJU: '소주',

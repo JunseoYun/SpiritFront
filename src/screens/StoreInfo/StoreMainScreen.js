@@ -967,7 +967,7 @@ const StoreMainScreen = ({navigation}) => {
           <AlertComponent />
         </>
       )}
-      {isOrderEnabled && !isUpdate && (
+      {/* {isOrderEnabled && !isUpdate && (
         <>
           <View
             style={[
@@ -1030,7 +1030,7 @@ const StoreMainScreen = ({navigation}) => {
             </SafeAreaView>
           )}
         </>
-      )}
+      )} */}
 
       <Loading loading={loading} />
     </View>

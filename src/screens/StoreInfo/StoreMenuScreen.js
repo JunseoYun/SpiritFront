@@ -5,7 +5,7 @@ import MenuItem from '../../components/StoreMenuScreen/MenuItem';
 import Feather from 'react-native-vector-icons/Feather';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 
-const ORDER_SPACER_HEIGHT = 40;
+const ORDER_SPACER_HEIGHT = 0;
 
 const StoreMenuScreen = ({
   navigation,
