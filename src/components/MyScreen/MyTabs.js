@@ -15,7 +15,7 @@ const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
 
   const tabs = [
     {name: '리뷰', screen: 'MyReview'},
-    {name: '찜', screen: 'MyLiked'},
+    {name: '위치', screen: 'MyLiked'},
   ];
 
   if (isManager) {
