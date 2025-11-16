@@ -222,7 +222,7 @@ const StoreSuggestionScreen = ({navigation}) => {
               address={address}
               navigation={navigation}
               onAddressSelect={handleAddressSelect} // 콜백 전달
-              location={location}
+              location={coords}
               screen="StoreSuggestionScreen"
               error={error}
             />

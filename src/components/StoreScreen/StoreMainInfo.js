@@ -20,26 +20,12 @@ import Moods from './StoreMainInfo/Moods';
 import ColorUtil from '../../utils/ColorUtil';
 const StoreMainInfo = ({
   storedata = {},
-  isUpdate,
-  handleBottomOpen,
-  onEditKey,
-  onEditValue,
   navigation,
-  storeTimeEditHandle,
-  storeupdatedrink,
-  setLoading,
-  loading,
   startUpdate,
   handleReport,
   handleReportList,
   handleStoreInfo,
 }) => {
-  const handleEdit = (key, value) => {
-    onEditKey(key); // 수정 키와 값을 부모 컴포넌트로 전달
-    onEditValue(value);
-    handleBottomOpen(); // 바텀 시트 열기
-  };
-
   const {
     isOpen,
     isBreak,
@@ -63,27 +49,12 @@ const StoreMainInfo = ({
   const [descripexpanded, setDescripexpanded] = useState(false);
 
   const toggleExpand = () => {
-    if (isUpdate) {
-      setIsExpanded(true);
-    } else {
-      setIsExpanded(prev => !prev);
-    }
+    setIsExpanded(prev => !prev);
   };
 
   const toggleDescription = () => {
-    if (isUpdate) {
-      setDescripexpanded(true);
-    } else {
-      setDescripexpanded(prev => !prev);
-    }
+    setDescripexpanded(prev => !prev);
   };
-
-  useEffect(() => {
-    if (isUpdate) {
-      setIsExpanded(true);
-      setDescripexpanded(true);
-    }
-  }, [isUpdate]);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -109,11 +80,10 @@ const StoreMainInfo = ({
 
   // 몇미터 떨어져 있는지 distance
   return (
-    <View style={[styles.StoreTopView, isUpdate && {paddingBottom: 120}]}>
+    <View style={[styles.StoreTopView]}>
       {storedata?.moods.length > 0 && <Moods moods={storedata?.moods} />}
       {storedata?.categories?.length > 0 && (
         <Category
-          handleEdit={handleEdit}
           categories={storedata?.categories}
           translateCategory={translateCategory}
           isMoods={storedata?.moods.length > 0}
@@ -122,7 +92,6 @@ const StoreMainInfo = ({
       )}
       {storedata?.name && (
         <Title
-          handleEdit={handleEdit}
           storeName={storedata?.name}
           startUpdate={startUpdate}
           handleReport={handleReport}
@@ -142,7 +111,7 @@ const StoreMainInfo = ({
           isOwner: storedata?.isOwner,
         }}
       />
-      {storedata?.description.length > 0 && (
+      {storedata?.description?.length > 0 && (
         <Description
           description={storedata?.description}
           descripexpanded={descripexpanded}
@@ -163,9 +132,7 @@ const StoreMainInfo = ({
       {storedata?.mainDrinkDtos?.length > 0 && (
         <Alcohol
           storeDrinkDtos={storedata?.mainDrinkDtos}
-          handleEdit={handleEdit}
           translateAlcohol={translateAlcohol}
-          storeupdatedrink={storeupdatedrink}
         />
       )}
 
@@ -175,31 +142,29 @@ const StoreMainInfo = ({
         <Address locationDto={storedata?.locationDto} />
       )}
 
-      {storedata?.operationInfoDtos?.length > 0 && (
-        <OperationSchedule
-          toggleExpand={toggleExpand}
-          isExpanded={isExpanded}
-          storedata={storedata}
-          isOpen={isOpen}
-          isBreak={isBreak}
-          closed={closed}
-          nextclosed={nextclosed}
-          starttime={starttime}
-          endtime={endtime}
-          breakend={breakend}
-        />
-      )}
+      <OperationSchedule
+        toggleExpand={toggleExpand}
+        isExpanded={isExpanded}
+        isAlwaysOpen={storedata?.isAlwaysOpen}
+        isOpen={isOpen}
+        isBreak={isBreak}
+        closed={closed}
+        nextclosed={nextclosed}
+        starttime={starttime}
+        endtime={endtime}
+        breakend={breakend}
+      />
 
       <InnerOperation
         toggleExpand={toggleExpand}
         isExpanded={isExpanded}
-        storedata={storedata}
+        isAlwaysOpen={storedata?.isAlwaysOpen}
         operationSchedule={operationSchedule}
       />
 
       <Contact contact={storedata?.contact} />
 
-      <View style={styles.division} />
+      <View style={[styles.division, !storedata?.contact && {marginTop: 15}]} />
 
       <FacilitiesInfo facilitiesInfoDto={storedata?.facilitiesInfoDto} />
     </View>

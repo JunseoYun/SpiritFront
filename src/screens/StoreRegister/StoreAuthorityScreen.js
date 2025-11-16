@@ -27,13 +27,20 @@ import StoreAddname from '../../components/StoreAddScreen/StoreAddname';
 import StorAddeNumber from '../../components/StoreAddScreen/StoreAddNumber';
 import StoreAddress from '../../components/StoreAddScreen/StoreAddress';
 import BusinessCertificate from '../../components/StoreAuthority/BusinessCertificate';
-import StoreRegistrationConsentModal from '../../components/StoreAuthority/StoreRegistrationConsentModal';
 import BottomActionButton from '../../utils/BottomActionButton';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import ColorUtil from '../../utils/ColorUtil';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import useDoubleBackExit from '../../hooks/useDoubleBackExit';
-const STEP_FLOW = ['storeName', 'storeNumber', 'storeAddress', 'certificate'];
+import {Create_ownership_photoOnly} from '../../api/storeApi';
+import Loading from '../../hooks/Loading';
+const STEP_FLOW = [
+  'storeName',
+  'storeNumber',
+  'storeAddress',
+  'certificate',
+  'consent',
+];
 
 const STEP_GUIDES = {
   storeName: {
@@ -65,11 +72,21 @@ const STEP_GUIDES = {
     tipTitle: '첨부 가이드',
     tip: '사업자등록증의 모든 정보가 보이도록 밝은 곳에서 촬영해 주세요.',
   },
+  consent: {
+    type: '개인정보 수집 동의',
+    title: '동의가 필요해요',
+    description:
+      '매장 등록 및 사업자 인증을 위해 정보 수집·이용에 동의해주세요.',
+    tipTitle: '왜 필요한가요?',
+    tip: '한잔할까는 사업자 등록증과 신청자 정보를 대조해 간편하게 인증하기 때문에, 본인 확인을 위한 최소한의 정보가 필요해요.',
+  },
 };
 
 const StoreAuthorityScreen = ({navigation}) => {
   const route = useRoute();
   const {bottom} = useSafeAndroidInsets();
+
+  const [loading, setLoading] = useState(false);
 
   useDoubleBackExit(navigation);
   const {
@@ -98,9 +115,7 @@ const StoreAuthorityScreen = ({navigation}) => {
   const [businessCertificate, setBusinessCertificate] =
     useState(initialCertificate);
   const [errorField, setErrorField] = useState('');
-  const [isConsentVisible, setIsConsentVisible] = useState(false);
   const [isConsentChecked, setIsConsentChecked] = useState(false);
-
   const progressValue = useMemo(
     () => (currentStepNumber / totalSteps) * 100,
     [currentStepNumber, totalSteps],
@@ -177,32 +192,25 @@ const StoreAuthorityScreen = ({navigation}) => {
 
   const handleNext = useCallback(() => {
     if (!validateCurrentStep()) return;
-    if (stepIndex === STEP_FLOW.length - 1) {
-      openConsentModal();
+    if (stepIndex >= STEP_FLOW.length - 1) {
       return;
     }
-    setStepIndex(prev => prev + 1);
-  }, [stepIndex, validateCurrentStep, openConsentModal]);
+    const nextIndex = stepIndex + 1;
+    if (STEP_FLOW[nextIndex] === 'consent') {
+      setIsConsentChecked(false);
+    }
+    setStepIndex(nextIndex);
+  }, [validateCurrentStep, stepIndex]);
 
   const handleBackStep = useCallback(() => {
     if (stepIndex === 0) {
       navigation.goBack();
       return;
     }
-    setStepIndex(prev => prev - 1);
+    setStepIndex(prev => Math.max(prev - 1, 0));
   }, [navigation, stepIndex]);
 
-  const openConsentModal = useCallback(() => {
-    setIsConsentChecked(false);
-    setIsConsentVisible(true);
-  }, []);
-
-  const closeConsentModal = useCallback(() => {
-    setIsConsentVisible(false);
-    setIsConsentChecked(false);
-  }, []);
-
-  const handleConsentConfirm = useCallback(() => {
+  const handleConsentConfirm = useCallback(async () => {
     if (!isConsentChecked) {
       showAlert({
         title: '동의가 필요해요',
@@ -210,24 +218,83 @@ const StoreAuthorityScreen = ({navigation}) => {
       });
       return;
     }
+    if (!businessCertificate) {
+      showAlert({
+        title: '사업자등록증 필요',
+        message: '사업자등록증 이미지를 업로드해주세요.',
+      });
+      return;
+    }
 
-    const payload = {
-      storeData: {
-        storeId,
-        storeName: storeName.trim(),
-        storeNumber: storeContact.trim(),
-        userContact: route.params?.storeData?.userContact || '',
+    // 📌 서버 DTO 형태에 맞게 매핑
+    const requestBody = {
+      file: businessCertificate, // 이미지 바이너리 or uri
+      createOwnershipPhotoOnlyDto: {
+        storeId: storeId,
+        receivedStoreName: storeName.trim(),
+        receivedStoreContact: storeContact.trim(),
+        businessLocation: {
+          address: address,
+          addressDetail: detailedAddress,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        },
       },
-      storeLocationDto: {
-        address,
-        addressDetail: detailedAddress,
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-      },
-      businessCertificate,
     };
-    console.log('[StoreCheckScreen] consent payload:', payload);
-    closeConsentModal();
+
+    try {
+      setLoading(true);
+      const response = await Create_ownership_photoOnly(requestBody);
+
+      if (response.status === 200) {
+        showAlert({
+          title: '매장 인증 신청 완료',
+          message:
+            '신청 내용을 확인한 후, 빠른 시일 내에\n알림으로 안내드릴 예정입니다.',
+          onConfirm: () => {
+            navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: 'MainBtmbar',
+                  state: {routes: [{name: 'MainScreen'}]},
+                },
+              ],
+            });
+          },
+        });
+      }
+    } catch (error) {
+      console.error(
+        '[StoreCheckScreen] photo-only error:',
+        error.response.data.code,
+      );
+      if (error.response.data.code === 22021) {
+        showAlert({
+          title: '이미 신청한 매장',
+          message: '이미 이 매장에 대해 인증 신청을 하셨습니다.',
+          onConfirm: () => {
+            navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: 'MainBtmbar',
+                  state: {routes: [{name: 'MainScreen'}]},
+                },
+              ],
+            });
+          },
+        });
+      } else {
+        showAlert({
+          title: '신청 실패',
+          message:
+            '잠시 후 다시 시도해 주세요.\n계속 실패할 경우, 메일로 문의해 주세요.',
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
   }, [
     isConsentChecked,
     showAlert,
@@ -240,7 +307,6 @@ const StoreAuthorityScreen = ({navigation}) => {
     coords.latitude,
     coords.longitude,
     businessCertificate,
-    closeConsentModal,
   ]);
 
   useEffect(() => {
@@ -363,6 +429,7 @@ const StoreAuthorityScreen = ({navigation}) => {
               navigation={navigation}
               onAddressSelect={handleAddressSelect}
               index={1}
+              location={coords}
               error={errorField}
               type="registration"
             />
@@ -379,6 +446,37 @@ const StoreAuthorityScreen = ({navigation}) => {
               type="registration"
               error={errorField}
             />
+            {renderStepTip(step)}
+          </>
+        );
+      case 'consent':
+        return (
+          <>
+            {renderStepIntro(step)}
+            <View style={styles.consentCard}>
+              <Text style={styles.consentBody}>
+                한잔할까는 매장 등록 및 사업자 인증을 위해 신청자의 이름,
+                연락처, 사업자등록증 사본을 수집·이용합니다. 해당 정보는 등록
+                심사와 사업자 진위 확인 외의 용도로 사용되지 않으며, 심사 완료
+                후 일정 기간이 지난 후 안전하게 파기됩니다.
+              </Text>
+              <Pressable
+                style={styles.consentCheckboxRow}
+                onPress={() => setIsConsentChecked(prev => !prev)}>
+                <View
+                  style={[
+                    styles.inlineCheckbox,
+                    isConsentChecked && styles.inlineCheckboxChecked,
+                  ]}>
+                  {isConsentChecked && (
+                    <Ionicons name="checkmark" size={16} color="#FFF" />
+                  )}
+                </View>
+                <Text style={styles.consentCheckboxLabel}>
+                  위 내용에 동의합니다. (필수)
+                </Text>
+              </Pressable>
+            </View>
             {renderStepTip(step)}
           </>
         );
@@ -404,26 +502,20 @@ const StoreAuthorityScreen = ({navigation}) => {
       </KeyboardAvoidingView>
 
       <BottomActionButton
-        label={stepIndex === STEP_FLOW.length - 1 ? '인증하기' : '다음'}
+        label={step === 'consent' ? '인증하기' : '다음'}
         cancel
         cancelLabel="이전"
         onCancel={handleBackStep}
-        onPress={handleNext}
+        onPress={step === 'consent' ? handleConsentConfirm : handleNext}
         disabled={
-          stepIndex === STEP_FLOW.length - 1
-            ? isSubmitDisabled
+          step === 'consent'
+            ? !isConsentChecked || isSubmitDisabled
             : !isCurrentStepReady
         }
       />
-      <StoreRegistrationConsentModal
-        visible={isConsentVisible}
-        onRequestClose={closeConsentModal}
-        isChecked={isConsentChecked}
-        onToggleChecked={() => setIsConsentChecked(prev => !prev)}
-        onConfirm={handleConsentConfirm}
-        loading={false}
-      />
+
       <AlertComponent />
+      <Loading loading={loading} />
     </SafeAreaView>
   );
 };
@@ -501,6 +593,45 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     color: '#24324A',
     lineHeight: 20,
+  },
+  consentCard: {
+    marginHorizontal: 18,
+    padding: 18,
+    borderRadius: 12,
+    backgroundColor: '#F8FBFF',
+    borderWidth: 1,
+    borderColor: '#E1E8F5',
+  },
+  consentBody: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 21,
+    fontFamily: 'Pretendard-Regular',
+  },
+  consentCheckboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 18,
+  },
+  inlineCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    backgroundColor: '#FFF',
+  },
+  inlineCheckboxChecked: {
+    backgroundColor: ColorUtil.main,
+    borderColor: ColorUtil.main,
+  },
+  consentCheckboxLabel: {
+    fontSize: 15,
+    color: '#222',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

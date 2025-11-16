@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   reviewIcon: {
+    paddingTop: 4,
     marginLeft: 3,
   },
 });

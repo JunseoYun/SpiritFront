@@ -29,6 +29,7 @@ import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
+import FastImage from 'react-native-fast-image';
 const MenuItem = ({
   menu,
   isUpdatable,
@@ -282,7 +283,13 @@ const MenuItem = ({
 
   const handleImagePress = () => {
     if (isEditing) return;
-    navigation.navigate('ImageViewerScreen', {images: imgUrl});
+
+    navigation.navigate('StoreStack', {
+      screen: 'ImageViewerScreen',
+      params: {
+        images: imgUrl,
+      },
+    });
   };
 
   // expose imperative-like API to parent if requested
@@ -445,7 +452,7 @@ const MenuItem = ({
         <View style={styles.ImageContainer}>
           {imgUrl && (
             <Pressable onPress={handleImagePress}>
-              <Image source={{uri: imgUrl}} style={styles.image} />
+              <FastImage source={{uri: imgUrl}} style={styles.image} />
             </Pressable>
           )}
 

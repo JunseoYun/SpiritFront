@@ -33,7 +33,7 @@ const NotificationButton = ({
       ]}>
       <Bell size={iconSize} color={tintColor} />
 
-      {!unreadNotification && (
+      {unreadNotification && (
         <View
           style={{
             position: 'absolute',

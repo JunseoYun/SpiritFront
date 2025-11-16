@@ -13,7 +13,7 @@ import {
   BackHandler,
   ToastAndroid,
 } from 'react-native';
-import {useRoute, useFocusEffect} from '@react-navigation/native';
+import {useRoute, useFocusEffect, StackActions} from '@react-navigation/native';
 import MenuAddForm from '../../../components/MenuAddScreen/MenuAddForm';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {StoreMenucreate} from '../../../api/menuApi';
@@ -152,14 +152,9 @@ const MenuAddScreen = ({navigation}) => {
       await Promise.all(promises);
       showAlert({
         title: '메뉴 등록이 완료되었습니다.',
-        onConfirm: () => {
+        onConfirm: async () => {
           setConfirm(false);
-          navigation.replace('StoreStack', {
-            screen: 'StoreMainScreen',
-            params: {
-              storeId: storeId,
-            },
-          });
+          navigation.dispatch(StackActions.pop(2));
         },
       });
     } catch (error) {

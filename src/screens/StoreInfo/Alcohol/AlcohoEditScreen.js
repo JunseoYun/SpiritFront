@@ -54,7 +54,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
   const {
     alcohols = [],
     storeId,
-    onAlcoholUpdateComplete,
+    // onAlcoholUpdateComplete,
     onAlcoholDelete,
   } = route.params;
   const {bottom} = useSafeAndroidInsets();
@@ -185,10 +185,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
       if (orderList.length !== 0) {
         await DrinkUpdateSort(storeId, orderList);
       }
-      if (onAlcoholUpdateComplete) {
-        await onAlcoholUpdateComplete();
-      }
-      navigation.popToTop();
+      navigation.goBack();
     } catch (e) {
       console.error('주류 순서 저장 실패', e);
     } finally {

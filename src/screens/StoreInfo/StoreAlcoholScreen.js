@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useMemo} from 'react';
-import {StyleSheet, Text, View, Platform} from 'react-native';
+import {StyleSheet, Text, View, Platform, Pressable} from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import AlcoholItem from '../../components/StoreAlcoholScreen/AlcoholItem';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
@@ -22,6 +22,47 @@ const alcoholMapping = {
   TEQUILA: '데킬라',
 };
 
+export const AlcoholTypeRadioGroup = ({
+  types,
+  selectedType,
+  onSelect,
+  containerStyle,
+  ...wrapperProps
+}) => {
+  if (!types?.length) {
+    return null;
+  }
+  const {style: wrapperStyle, ...restProps} = wrapperProps;
+  return (
+    <View
+      style={[styles.radioGroup, containerStyle, wrapperStyle]}
+      {...restProps}>
+      {['전체', ...types].map(type => (
+        <Pressable
+          key={type}
+          style={styles.radioItem}
+          hitSlop={10}
+          onPress={() => onSelect?.(type)}>
+          <View
+            style={[
+              styles.radioCircle,
+              selectedType === type && styles.radioSelectedCircle,
+            ]}>
+            {selectedType === type && <View style={styles.radioInnerDot} />}
+          </View>
+          <Text
+            style={[
+              styles.radioLabel,
+              selectedType === type && styles.radioLabelSelected,
+            ]}>
+            {type}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+};
+
 const StoreAlcoholScreen = ({
   navigation,
   storeId,
@@ -29,10 +70,17 @@ const StoreAlcoholScreen = ({
   mainDrinks = [],
   sectionPositions: parentSectionPositions, // 상위에서 관리하는 섹션 위치들
   setSectionPositions: setParentSectionPositions, // 상위에서 섹션 위치 관리 함수
-
+  isUpdatable = false,
   isOrderEnabled,
+  onAlcoholUpdateComplete = null,
+  selectedType: controlledType,
+  onTypeChange,
+  hideTypeFilter = false,
+  onAvailableTypesChange,
+  typeFilterProps = {},
 }) => {
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
+  const [uncontrolledType, setUncontrolledType] = useState('전체');
   const {bottom: androidBottom} = useSafeAndroidInsets();
   const {bottom: safeBottom} = useSafeAreaInsets();
   const bottomInset =
@@ -83,14 +131,81 @@ const StoreAlcoholScreen = ({
       }, {});
   }, [alcoholsState, mainDrinks, translateAlcohol]);
 
+  const availableTypes = useMemo(
+    () => Object.keys(groupedAlcohols),
+    [groupedAlcohols],
+  );
+
+  const isTypeControlled =
+    typeof controlledType === 'string' && typeof onTypeChange === 'function';
+  const currentType = isTypeControlled ? controlledType : uncontrolledType;
+
+  const handleTypeSelect = type => {
+    if (isTypeControlled) {
+      onTypeChange(type);
+    } else {
+      setUncontrolledType(type);
+    }
+  };
+
+  useEffect(() => {
+    if (currentType !== '전체' && !availableTypes.includes(currentType)) {
+      if (isTypeControlled) {
+        onTypeChange?.('전체');
+      } else {
+        setUncontrolledType('전체');
+      }
+    }
+  }, [availableTypes, currentType, isTypeControlled, onTypeChange]);
+
+  useEffect(() => {
+    onAvailableTypesChange?.(availableTypes);
+  }, [availableTypes, onAvailableTypesChange]);
+
+  const filteredTypes = currentType === '전체' ? availableTypes : [currentType];
+
+  const handleAlcoholManagePress = () => {
+    navigation.navigate('StoreStack', {
+      screen: 'AlcoholEditScreen',
+      params: {
+        storeId,
+        alcohols: alcoholsState,
+      },
+    });
+    if (typeof onAlcoholUpdateComplete === 'function') {
+      const unsubscribe = navigation.addListener('focus', async () => {
+        await onAlcoholUpdateComplete();
+        unsubscribe();
+      });
+    }
+  };
+
   return (
     <SafeAreaView
       edges={['bottom']}
       style={[styles.container, {paddingBottom: containerPaddingBottom}]}>
       {/* 주류 리스트 */}
       {/* 내부 ScrollView 제거하고 View로 감싸기 */}
+      {isUpdatable && (
+        <>
+          <Pressable
+            style={styles.reorderButton}
+            onPress={handleAlcoholManagePress}>
+            <Text style={styles.alcoholAddButtonText}>주류 관리</Text>
+          </Pressable>
+
+          {availableTypes.length > 0 && !hideTypeFilter && (
+            <AlcoholTypeRadioGroup
+              types={availableTypes}
+              selectedType={currentType}
+              onSelect={handleTypeSelect}
+              {...typeFilterProps}
+            />
+          )}
+        </>
+      )}
       <View style={{flex: 1}}>
-        {Object.keys(groupedAlcohols).map(type => (
+        {filteredTypes.map(type => (
           <View
             key={type}
             onLayout={e => {
@@ -128,18 +243,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   reorderButton: {
+    backgroundColor: '#F1F2F3',
+    padding: 12,
     marginHorizontal: 18,
-    marginTop: 20,
-    marginBottom: 10,
+    borderRadius: 9,
     alignItems: 'center',
-    borderRadius: 10,
-    backgroundColor: '#E9F5FB',
+    marginTop: 20,
+    marginBottom: 32,
   },
   alcoholAddButtonText: {
-    color: '#3CBBFF',
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    padding: 16,
+    fontSize: 14,
+    color: '#333',
+    fontFamily: 'Pretendard-Bold',
   },
   tabContainer: {
     paddingHorizontal: 18,
@@ -195,6 +310,47 @@ const styles = StyleSheet.create({
     color: '#999',
     fontSize: 16,
     fontWeight: '600',
+  },
+  radioGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 18,
+    marginBottom: 10,
+    flexWrap: 'wrap',
+  },
+  radioItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 12,
+    marginBottom: 6,
+  },
+  radioCircle: {
+    width: 15,
+    height: 15,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 4,
+  },
+  radioSelectedCircle: {
+    borderColor: '#3CBBFF',
+  },
+  radioInnerDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 5,
+    backgroundColor: '#3CBBFF',
+  },
+  radioLabel: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
+  },
+  radioLabelSelected: {
+    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

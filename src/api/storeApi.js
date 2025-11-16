@@ -134,6 +134,44 @@ export const Create_store_with_ownership = async data => {
   }
 };
 
+export const Create_store_with_ownership_photoOnly = async data => {
+  const formData = new FormData();
+  // 사업자 등록증 이미지
+  const cert = toFileField(
+    data.businessRegistrationCertificateImage,
+    'business_certificate',
+  );
+  if (cert) {
+    formData.append('businessRegistrationCertificateImage', cert);
+  }
+  const images = Array.isArray(data.storeImages) ? data.storeImages : [];
+  images.forEach((img, idx) => {
+    const f = toFileField(img, `store_${idx}`);
+    if (f) formData.append('storeImages', f);
+  });
+
+  formData.append('createStoreRqDto', {
+    string: JSON.stringify(data.createStoreRqDto),
+    type: 'application/json',
+  });
+
+  try {
+    const response = await axiosInstance.post(
+      '/store/create/with-ownership/photo-only',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data', // 파일 업로드는 multipart/form-data
+        },
+      },
+    );
+
+    return response;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 export const CreateOwnership = async data => {
   const formData = new FormData();
   const cert = toFileField(data.file, 'file');
@@ -151,6 +189,39 @@ export const CreateOwnership = async data => {
   try {
     const response = await axiosInstance.post(
       '/store/ownership/create',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data', // 파일 업로드는 multipart/form-data
+        },
+      },
+    );
+
+    return response;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const Create_ownership_photoOnly = async data => {
+  const formData = new FormData();
+  const cert = toFileField(data.file, 'file');
+
+  if (cert) {
+    formData.append('file', cert);
+  }
+  const createOwnershipPhotoOnlyDto = JSON.stringify(
+    data.createOwnershipPhotoOnlyDto,
+  );
+
+  formData.append('createOwnershipPhotoOnlyDto', {
+    string: createOwnershipPhotoOnlyDto,
+    type: 'application/json',
+  });
+
+  try {
+    const response = await axiosInstance.post(
+      '/store/ownership/create/photo-only',
       formData,
       {
         headers: {

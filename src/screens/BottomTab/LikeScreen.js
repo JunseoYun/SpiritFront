@@ -121,57 +121,58 @@ const LikeScreen = ({navigation}) => {
 
   return (
     <>
-      {token && (
-        <>
-          {firstloading || refreshing ? (
-            <FlatList
-              data={[1, 2, 3]} // 임의의 더미 데이터
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={() => <LikedItemSkeleton />}
-              showsVerticalScrollIndicator={false}
-            />
-          ) : (
-            <FlatList
-              ref={scrollRef}
-              data={stores}
-              renderItem={renderItem}
-              keyExtractor={item => item.id.toString()}
-              showsVerticalScrollIndicator={false}
-              initialNumToRender={10}
-              maxToRenderPerBatch={5}
-              windowSize={5}
-              removeClippedSubviews={Platform.OS === 'android'}
-              onEndReached={loadMoreStores}
-              onEndReachedThreshold={0.5}
-              onRefresh={handleRefresh}
-              refreshing={refreshing}
-              ListEmptyComponent={
-                !loading && stores.length === 0 ? (
-                  <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
-                ) : null
-              }
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-            />
-          )}
-        </>
-      )}
-      {!token && <Text style={styles.emptyText}>로그인 후 이용해주세요</Text>}
-      <ScrollToTopButton
-        visible={showScrollToTop}
-        bottom={18}
-        onPress={scrollToTop}
-      />
-      <Loading loading={refreshing || loading} />
+      <View style={styles.container}>
+        {token && (
+          <>
+            {firstloading || refreshing ? (
+              <FlatList
+                data={[1, 2, 3]} // 임의의 더미 데이터
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={() => <LikedItemSkeleton />}
+                showsVerticalScrollIndicator={false}
+              />
+            ) : (
+              <FlatList
+                ref={scrollRef}
+                data={stores}
+                renderItem={renderItem}
+                keyExtractor={item => item.id.toString()}
+                showsVerticalScrollIndicator={false}
+                initialNumToRender={10}
+                maxToRenderPerBatch={5}
+                windowSize={5}
+                removeClippedSubviews={Platform.OS === 'android'}
+                onEndReached={loadMoreStores}
+                onEndReachedThreshold={0.5}
+                onRefresh={handleRefresh}
+                refreshing={refreshing}
+                ListEmptyComponent={
+                  !loading && stores.length === 0 ? (
+                    <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
+                  ) : null
+                }
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+              />
+            )}
+          </>
+        )}
+        {!token && <Text style={styles.emptyText}>로그인 후 이용해주세요</Text>}
+        <ScrollToTopButton
+          visible={showScrollToTop}
+          bottom={18}
+          onPress={scrollToTop}
+        />
+        <Loading loading={refreshing || loading} />
+      </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'white',
+    flex: 1,
+    backgroundColor: '#FEFEFE',
   },
 
   emptyText: {

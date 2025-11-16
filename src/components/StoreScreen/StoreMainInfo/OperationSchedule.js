@@ -8,7 +8,7 @@ import ColorUtil from '../../../utils/ColorUtil';
 const OperationSchedule = ({
   toggleExpand,
   isExpanded,
-  storedata,
+  isAlwaysOpen,
   isOpen,
   isBreak,
   closed,
@@ -21,7 +21,7 @@ const OperationSchedule = ({
     <>
       <Pressable style={styles.timesetview} onPress={toggleExpand}>
         <Ionicons name="time-outline" size={20} color="#333" />
-        {isOpen && !isBreak && storedata?.isAlwaysOpen == false && (
+        {isOpen && !isBreak && isAlwaysOpen == false && (
           <>
             <Text style={[styles.timetextnow, {color: 'green'}]}>영업 중</Text>
             <Text style={styles.timetext}>영업 종료 - {endtime}</Text>
@@ -29,7 +29,7 @@ const OperationSchedule = ({
         )}
         {!isOpen &&
           !isBreak &&
-          storedata?.isAlwaysOpen == false &&
+          isAlwaysOpen == false &&
           !closed &&
           !nextclosed && (
             <>
@@ -41,7 +41,7 @@ const OperationSchedule = ({
           )}
         {!isOpen &&
           !isBreak &&
-          storedata?.isAlwaysOpen == false &&
+          isAlwaysOpen == false &&
           !closed &&
           nextclosed && (
             <>
@@ -51,7 +51,7 @@ const OperationSchedule = ({
               <Text style={styles.timetext}>익일 휴무</Text>
             </>
           )}
-        {isOpen && isBreak && storedata?.isAlwaysOpen == false && (
+        {isOpen && isBreak && isAlwaysOpen == false && (
           <>
             <Text style={[styles.timetextnow, {color: '#F05650'}]}>
               브레이크 타임
@@ -59,14 +59,14 @@ const OperationSchedule = ({
             <Text style={styles.timetext}>영업 시작 - {breakend}</Text>
           </>
         )}
-        {closed && !isOpen && !isBreak && storedata?.isAlwaysOpen == false && (
+        {closed && !isOpen && !isBreak && isAlwaysOpen == false && (
           <>
             <Text style={[styles.timetextnow, {color: '#F05650'}]}>
               금일 휴무
             </Text>
           </>
         )}
-        {storedata?.isAlwaysOpen == true && (
+        {isAlwaysOpen == true && (
           <>
             <Text style={[styles.timetextnow, {color: 'green'}]}>영업 중</Text>
             <Text style={styles.timetext}>- 연중무휴</Text>
