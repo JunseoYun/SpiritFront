@@ -19,23 +19,13 @@ import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
 import StoreInfoImage from '../../components/StoreScreen/StoreInfoImage';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
-import {
-  StoreMainget,
-  UpdateStore,
-  DeleteStoreImage,
-  UpdateStoreImage,
-  get_store_share,
-  Storelikepost,
-} from '../../api/storeApi';
+import {StoreMainget, get_store_share, Storelikepost} from '../../api/storeApi';
 
-import Feather from 'react-native-vector-icons/Feather';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import StoreMenuScreen from './StoreMenuScreen';
 import StoreAlcoholScreen from './StoreAlcoholScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
 import {StoreMenuget} from '../../api/menuApi';
 import {StoreDrinkget} from '../../api/drinkApi';
-import forbiddenWords from '../../hooks/forbiddenWords';
 import {useToast} from '../../context/ToastContext';
 import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';

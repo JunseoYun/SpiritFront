@@ -52,6 +52,7 @@ const StoreMenuScreen = ({
   storeId,
   menus,
   isUpdatable,
+  loading = false,
   onMenuUpdateComplete = null,
   isOrderEnabled = false,
   selectedCategory: controlledCategory,
@@ -179,11 +180,11 @@ const StoreMenuScreen = ({
       )}
       {menuList?.length > 0 ? (
         renderGroupedMenus()
-      ) : (
+      ) : !loading ? (
         <View style={styles.footer}>
           <Text style={styles.emptyText}>등록된 메뉴가 없어요</Text>
         </View>
-      )}
+      ) : null}
     </SafeAreaView>
   );
 };

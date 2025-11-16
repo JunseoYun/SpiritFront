@@ -144,6 +144,7 @@ const StoreManageScreen = ({route, navigation}) => {
                   navigation={navigation}
                   storeId={storeId}
                   menus={menus}
+                  loading={loading}
                   onMenuUpdateComplete={refreshMenus}
                   isUpdatable={true}
                   selectedCategory={menuCategory}

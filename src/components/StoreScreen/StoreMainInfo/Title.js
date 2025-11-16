@@ -69,29 +69,10 @@ const Title = ({
                   toggleDropdown();
                   startUpdate();
                 }}>
-                <Text style={styles.dropdownText}>매장 수정</Text>
+                <Text style={styles.dropdownText}>매장 관리</Text>
               </Pressable>
             )}
-            {isUpdatable && (
-              <Pressable
-                style={styles.dropdownItem}
-                onPress={() => {
-                  toggleDropdown();
-                  handleStoreInfo();
-                }}>
-                <Text style={styles.dropdownText}>매장 통계 조회</Text>
-              </Pressable>
-            )}
-            {isUpdatable && (
-              <Pressable
-                style={styles.dropdownItem}
-                onPress={() => {
-                  toggleDropdown();
-                  handleReportList();
-                }}>
-                <Text style={styles.dropdownText}>매장 신고 조회</Text>
-              </Pressable>
-            )}
+
             <Pressable
               style={styles.dropdownItem}
               onPress={() => {

@@ -204,7 +204,9 @@ const MainScreen = ({navigation}) => {
   };
 
   const handleSearchPress = useCallback(() => {
-    console.log('Onpress handleSearchPress');
+    navigation.navigate('SearchStack', {
+      screen: 'SearchScreen',
+    });
   }, [navigation, location]);
 
   const setLocationHandle = useCallback(() => {
