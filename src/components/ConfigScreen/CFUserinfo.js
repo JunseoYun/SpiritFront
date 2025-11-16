@@ -39,7 +39,7 @@ const CFUserinfo = ({userdata, navigation}) => {
           </View>
         </Pressable>
       </View>
-      <View style={styles.midlebtmcontainer}>
+      <View style={styles.bottomcontainer}>
         <Pressable
           style={styles.row}
           onPress={() =>
@@ -58,7 +58,7 @@ const CFUserinfo = ({userdata, navigation}) => {
           </View>
         </Pressable>
       </View>
-      <View style={styles.bottomcontainer}>
+      {/* <View style={styles.bottomcontainer}>
         <Pressable
           style={styles.row}
           onPress={() => navigation.navigate('MyCardScreen')}>
@@ -69,7 +69,7 @@ const CFUserinfo = ({userdata, navigation}) => {
             </View>
           </View>
         </Pressable>
-      </View>
+      </View> */}
       <View style={styles.socialcontainer}>
         <View style={styles.row}>
           <Text style={styles.label}>연동된 소셜 계정</Text>

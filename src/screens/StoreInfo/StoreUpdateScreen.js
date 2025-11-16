@@ -186,6 +186,18 @@ const normalizeImages = list =>
 
 const shallowEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
+const containsForbiddenText = value => {
+  if (typeof value !== 'string' || !value.trim()) {
+    return false;
+  }
+  const lowered = value.toLowerCase();
+  return forbiddenWords.some(word =>
+    typeof word === 'string'
+      ? lowered.includes(word.toLowerCase())
+      : false,
+  );
+};
+
 const buildSnapshotPayload = ({
   images = [],
   name = '',
@@ -1025,6 +1037,22 @@ const StoreUpdateScreen = ({navigation}) => {
       if (!shallowEqual(current.moods, initial.moods)) {
         diffPayload.moods = current.moods;
       }
+    }
+
+    const hasForbiddenContent =
+      (typeof diffPayload.name === 'string' &&
+        containsForbiddenText(diffPayload.name)) ||
+      (typeof diffPayload.description === 'string' &&
+        containsForbiddenText(diffPayload.description)) ||
+      (typeof diffPayload.contact === 'string' &&
+        containsForbiddenText(diffPayload.contact));
+
+    if (hasForbiddenContent) {
+      showAlert({
+        title: '금지어가 포함되어 있어요',
+        message: '사용할 수 없는 단어가 포함된 내용은 저장할 수 없습니다.',
+      });
+      return;
     }
 
     const shouldUpdateStore = Object.keys(diffPayload).length > 0;

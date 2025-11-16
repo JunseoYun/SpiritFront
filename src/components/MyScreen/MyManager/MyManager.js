@@ -1,103 +1,29 @@
-import React, {useState, useRef, useEffect, useCallback} from 'react';
-import {
-  View,
-  Text,
-  Animated,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Dimensions,
-  ImageBackground,
-  Modal,
-  Platform,
-} from 'react-native';
+import React, {useState, useCallback} from 'react';
+import {View, Text, FlatList, Pressable, StyleSheet, Image} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import ColorUtil from '../../../utils/ColorUtil';
+
 import {Store_getby_managed} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import {BlurView} from '@react-native-community/blur';
-import LinearGradient from 'react-native-linear-gradient';
-import {normalizeFont} from '../../../hooks/normalizeFont';
-import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
-
-const {width, height} = Dimensions.get('window');
-const CARD_WIDTH = width * 0.75;
-const CARD_SPACING = (width - CARD_WIDTH) / 2;
 
 const MyManager = ({navigation}) => {
   const [page, setPage] = useState(0);
-  const [totalpage, setTotalpage] = useState(null);
+  const [totalpage, setTotalpage] = useState(0);
   const [mysotredata, setMystoredata] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [nameTabDisabled, setNameTabDisabled] = useState(false);
-  const {bottom} = useSafeAndroidInsets();
 
-  // 모달 상태
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedStore, setSelectedStore] = useState(null);
-
-  // fade 애니메이션
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-
-  const scrollX = useRef(new Animated.Value(0)).current;
-  const flatListRef = useRef(null);
-  const tabFlatListRef = useRef(null);
-  const TAB_SEPARATOR = 20; // 탭 사이 간격 살짝 증가
-
-  // 탭 아이템 폭 측정으로 가장자리를 정확히 센터 정렬
-  const [tabItemWidths, setTabItemWidths] = useState({});
-  const onTabLayout = (index, w) => {
-    setTabItemWidths(prev => {
-      if (prev[index] === w) return prev;
-      return {...prev, [index]: w};
-    });
-  };
-
-  // 탭을 정확히 가운데로 스크롤하기 위한 함수
-  const scrollTabToIndex = useCallback(
-    (index, animated = true) => {
-      const firstW = tabItemWidths[0];
-      const headerW = firstW ? Math.max(0, (width - firstW) / 2) : CARD_SPACING;
-
-      // index 이전까지의 폭 + 구분선 합
-      let left = headerW;
-      for (let i = 0; i < index; i++) {
-        const w = tabItemWidths[i] ?? 0;
-        left += w + TAB_SEPARATOR;
-      }
-
-      const curW = tabItemWidths[index] ?? 0;
-      const target = left + curW / 2 - width / 2;
-
-      // 음수 방지. 최대치는 RN이 내부에서 클램프
-      const safeTarget = Math.max(0, target);
-      try {
-        tabFlatListRef.current?.scrollToOffset({offset: safeTarget, animated});
-      } catch (e) {
-        // 측정 전에는 fallback
-        tabFlatListRef.current?.scrollToIndex({
-          index,
-          animated,
-          viewPosition: 0.5,
-        });
-      }
-    },
-    [tabItemWidths],
-  );
-
-  const MyStore = async page => {
+  const MyStore = async targetPage => {
     setLoading(true);
     try {
-      const data = await Store_getby_managed(page);
-
-      if (page === 0) {
-        setMystoredata([...data.content]);
+      const data = await Store_getby_managed(targetPage);
+      setTotalpage(data?.totalPages ?? 0);
+      if (targetPage === 0) {
+        setMystoredata(data?.content ?? []);
       } else {
-        setMystoredata(prev => [...prev, ...data.content]);
+        setMystoredata(prev => [...prev, ...(data?.content ?? [])]);
       }
-      setTotalpage(data.totalPages);
+      setPage(targetPage);
     } catch (error) {
       console.log(error);
     } finally {
@@ -107,707 +33,210 @@ const MyManager = ({navigation}) => {
 
   useFocusEffect(
     useCallback(() => {
-      // 화면이 포커스 될 때마다 데이터 다시 가져오기
       MyStore(0);
     }, []),
   );
 
-  const openModal = store => {
-    setSelectedStore(store);
-    setModalVisible(true);
-    opacityAnim.setValue(0);
-    Animated.timing(opacityAnim, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
-  };
+  const handleOpenStore = store => {
+    if (!store?.storeId) {
+      return;
+    }
 
-  const closeModal = () => {
-    Animated.timing(opacityAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setModalVisible(false);
-      setSelectedStore(null);
+    navigation.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {storeId: store.storeId},
     });
   };
 
-  const renderItem = ({item, index}) => {
-    const inputRange = [
-      (index - 1) * CARD_WIDTH,
-      index * CARD_WIDTH,
-      (index + 1) * CARD_WIDTH,
-    ];
+  const handleManageStore = store => {
+    if (!store?.storeId) {
+      return;
+    }
 
-    const scale = scrollX.interpolate({
-      inputRange,
-      outputRange: [0.85, 1, 0.85],
-      extrapolate: 'clamp',
+    navigation.navigate('StoreStack', {
+      screen: 'StoreManageScreen',
+      params: {
+        storeId: store.storeId,
+        storedata: store,
+        storeName: store.storeName,
+      },
     });
+  };
 
-    const opacity = scrollX.interpolate({
-      inputRange,
-      outputRange: [0.4, 1, 0.4],
-      extrapolate: 'clamp',
-    });
+  const loadMoreStores = () => {
+    if (loading || mysotredata.length === 0) {
+      return;
+    }
+
+    const isLastPage = totalpage !== 0 && page >= totalpage - 1;
+    if (isLastPage) {
+      return;
+    }
+
+    MyStore(page + 1);
+  };
+
+  const renderStoreItem = ({item, index}) => {
+    const isLast = index === mysotredata.length - 1;
+    const address = item.locationDto?.address || '주소 정보 없음';
+    const detail = item.locationDto?.addressDetail
+      ? ` ${item.locationDto.addressDetail}`
+      : '';
 
     return (
-      <View
-        style={[
-          {
-            alignItems: 'center',
-            width: CARD_WIDTH,
-            marginTop: 20,
-            marginBottom: 10,
-          },
-          mysotredata.length === 1 && {
-            justifyContent: 'center',
-          },
-        ]}>
-        <Animated.View
-          style={[
-            {transform: [{scale}], opacity},
-            index === currentIndex && styles.selectedCardShadow,
-          ]}>
-          <Pressable
-            style={[styles.card]}
-            onPress={() => {
-              if (index === currentIndex) {
-                openModal(item);
-              } else {
-                const offset = CARD_WIDTH * index;
-                flatListRef.current?.scrollToOffset({
-                  offset,
-                  animated: true,
-                });
-              }
-            }}>
-            <ImageBackground
-              source={
-                item.mainImgUrl
-                  ? {uri: item.mainImgUrl}
-                  : require('../../../assets/store.png')
-              }
-              style={styles.image}
-              imageStyle={{borderRadius: 16}}>
-              <LinearGradient
-                colors={
-                  item.mainImgUrl
-                    ? ['transparent', 'rgba(0, 0, 0, 0.5)'] // 위는 투명, 아래는 어두움
-                    : ['transparent', 'rgba(0, 0, 0, 0.3)']
-                }
-                style={[styles.gradientBottom, {height: (height * 0.47) / 1.5}]}
-                pointerEvents="none"
-              />
-              <View style={styles.overlayContent}>
-                <Text style={styles.name} numberOfLines={1}>
-                  {item.storeName || '상호명 없음'}
-                </Text>
-                <Text style={styles.address} numberOfLines={1}>
-                  {item.locationDto?.address || '주소 정보 없음'}
-                  {item.locationDto?.addressDetail
-                    ? `, ${item.locationDto.addressDetail}`
-                    : ''}
-                </Text>
-
-                <View style={styles.statsRow}>
-                  <View style={styles.statItem}>
-                    <FontAwesomeIcon name="star" size={16} color="#FFD700" />
-                    <Text style={styles.statText}>{item.storeRate ?? 0}</Text>
-                  </View>
-
-                  <View style={styles.statItem}>
-                    <Ionicons
-                      name="chatbubble-ellipses"
-                      size={16}
-                      color="#4FC3F7"
-                    />
-                    <Text style={styles.statText}>{item.reviewCount ?? 0}</Text>
-                  </View>
-
-                  <View style={styles.statItem}>
-                    <Ionicons name="heart" size={16} color="#FF6B6B" />
-                    <Text style={styles.statText}>{item.likeCount ?? 0}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.reportRow}>
-                  <Text style={[styles.reportBadge, styles.normalReport]}>
-                    제보 {item.normalReportCount ?? 0}
-                  </Text>
-                  <Text style={[styles.reportBadge, styles.priorityReport]}>
-                    신고 {item.priorityReportCount ?? 0}
-                  </Text>
-                </View>
-              </View>
-            </ImageBackground>
-          </Pressable>
-        </Animated.View>
+      <View style={[styles.storeRow, !isLast && styles.storeRowDivider]}>
+        <Pressable
+          style={styles.rowContent}
+          onPress={() => handleOpenStore(item)}>
+          <Image
+            source={
+              item.mainImgUrl
+                ? {uri: item.mainImgUrl}
+                : require('../../../assets/store.png')
+            }
+            style={styles.storeImage}
+          />
+          <View style={styles.textWrapper}>
+            <Text style={styles.storeName} numberOfLines={1}>
+              {item.storeName || '매장 이름 없음'}
+            </Text>
+            <Text style={styles.storeAddress} numberOfLines={1}>
+              {address}
+              {detail ? `,${detail}` : null}
+            </Text>
+          </View>
+        </Pressable>
+        <Pressable
+          style={styles.manageButton}
+          hitSlop={15}
+          onPress={() => handleManageStore(item)}>
+          <Text style={styles.manageText}>매장 관리</Text>
+        </Pressable>
       </View>
     );
   };
 
+  const renderEmptyComponent = () => (
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyTitle}>등록된 매장이 없습니다.</Text>
+      <Text style={styles.emptySubtitle}>
+        매장을 등록하면 이곳에서 빠르게 관리할 수 있어요.
+      </Text>
+    </View>
+  );
+
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: '#fff',
-        justifyContent: 'space-between',
-      }}>
-      {/* 카드 리스트 */}
-      <View style={{flex: 9}}>
-        <Animated.FlatList
-          ref={flatListRef}
-          getItemLayout={(_, index) => ({
-            length: CARD_WIDTH,
-            offset: CARD_WIDTH * index,
-            index,
-          })}
-          onScrollBeginDrag={() => setNameTabDisabled(true)}
-          onScrollEndDrag={() => setNameTabDisabled(false)}
+    <View style={styles.container}>
+      <View style={styles.listCard}>
+        <FlatList
           data={mysotredata}
-          renderItem={renderItem}
-          keyExtractor={item => item.storeId.toString()}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={CARD_WIDTH}
-          decelerationRate="fast"
-          scrollEventThrottle={16}
-          contentContainerStyle={{
-            paddingHorizontal: CARD_SPACING,
-          }}
-          onScroll={Animated.event(
-            [{nativeEvent: {contentOffset: {x: scrollX}}}],
-            {
-              useNativeDriver: true,
-              listener: event => {
-                const offsetX = event.nativeEvent.contentOffset.x;
-                const index = Math.round(offsetX / CARD_WIDTH);
-                if (index !== currentIndex) {
-                  setCurrentIndex(index);
-                  // 탭을 정확히 가운데로 이동
-                  scrollTabToIndex(index, true);
-                }
-                if (
-                  !loading &&
-                  index >= mysotredata.length - 3 &&
-                  page < totalpage - 1
-                ) {
-                  setPage(prev => {
-                    const nextPage = prev + 1;
-                    MyStore(nextPage);
-                    return nextPage;
-                  });
-                }
-              },
-            },
-          )}
+          keyExtractor={(item, index) =>
+            item.storeId ? item.storeId.toString() : `${index}`
+          }
+          renderItem={renderStoreItem}
+          ListEmptyComponent={!loading ? renderEmptyComponent : null}
+          onEndReached={loadMoreStores}
+          onEndReachedThreshold={0.3}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={
+            mysotredata.length === 0
+              ? styles.emptyContentContainer
+              : styles.listContentContainer
+          }
         />
       </View>
-
-      {/* 가게 이름 탭 */}
-      {mysotredata.length === 1 ? (
-        <View style={{marginBottom: 10}} />
-      ) : (
-        <View style={{flex: 1}}>
-          <FlatList
-            ref={tabFlatListRef}
-            data={mysotredata}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={item => item.storeId.toString()}
-            // 가장자리를 과도하게 넘기지 않도록
-            bounces={false}
-            overScrollMode="never"
-            // 아이템 간 간격만 두고, 양 끝 여백은 제거
-            ItemSeparatorComponent={() => (
-              <View style={{width: TAB_SEPARATOR}} />
-            )}
-            ListHeaderComponent={() => {
-              const firstW = tabItemWidths[0];
-              const headerW = firstW
-                ? Math.max(0, (width - firstW) / 2)
-                : CARD_SPACING;
-              return <View style={{width: headerW}} />;
-            }}
-            ListFooterComponent={() => {
-              const lastIndex = mysotredata.length - 1;
-              const lastW = tabItemWidths[lastIndex];
-              const footerW = lastW
-                ? Math.max(0, (width - lastW) / 2)
-                : CARD_SPACING;
-              return <View style={{width: footerW}} />;
-            }}
-            renderItem={({item, index}) => (
-              <Pressable
-                disabled={nameTabDisabled}
-                hitSlop={10}
-                onPress={() => {
-                  const offset = CARD_WIDTH * index;
-                  flatListRef.current?.scrollToOffset({offset, animated: true});
-                }}
-                style={[
-                  styles.nameTab,
-                  currentIndex === index && styles.activeTab,
-                ]}
-                onLayout={e => onTabLayout(index, e.nativeEvent.layout.width)}>
-                <Text
-                  style={[
-                    styles.nameTabText,
-                    currentIndex === index && styles.activeTabText,
-                    {maxWidth: width * 0.5},
-                  ]}
-                  numberOfLines={1}>
-                  {item.storeName}
-                </Text>
-              </Pressable>
-            )}
-          />
-        </View>
-      )}
-
-      {/* 모달 */}
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        statusBarTranslucent={true}
-        animationType="none"
-        onRequestClose={closeModal}>
-        <View style={[StyleSheet.absoluteFill]}>
-          {Platform.OS === 'ios' ? (
-            <BlurView
-              style={StyleSheet.absoluteFill}
-              blurType="dark"
-              blurAmount={10}
-            />
-          ) : (
-            <View
-              style={[
-                StyleSheet.absoluteFill,
-                {backgroundColor: 'rgba(0,0,0,0.6)'},
-              ]}
-            />
-          )}
-
-          {selectedStore && (
-            <Animated.View
-              style={[StyleSheet.absoluteFill, {opacity: opacityAnim}]}>
-              <ImageBackground
-                source={
-                  selectedStore.mainImgUrl
-                    ? {uri: selectedStore.mainImgUrl}
-                    : require('../../../assets/store.png')
-                }
-                style={{width, height}}
-                imageStyle={{resizeMode: 'cover'}}>
-                <LinearGradient
-                  colors={
-                    selectedStore.mainImgUrl
-                      ? ['transparent', 'rgba(0, 0, 0, 0.5)'] // 위는 투명, 아래는 어두움
-                      : ['transparent', 'rgba(0, 0, 0, 0.3)']
-                  }
-                  style={styles.gradientBottom}
-                  pointerEvents="none"
-                />
-                {/* 정보 영역 */}
-                <View
-                  style={[styles.modalInfoContainer, {paddingBottom: bottom}]}>
-                  <Text style={styles.modalInfoTitle} numberOfLines={1}>
-                    {selectedStore.storeName || '상호명 없음'}
-                  </Text>
-                  <Text style={styles.modalInfoAddress} numberOfLines={2}>
-                    {selectedStore.locationDto?.address || '주소 정보 없음'}
-                    {selectedStore.locationDto?.addressDetail
-                      ? `, ${selectedStore.locationDto.addressDetail}`
-                      : ''}
-                  </Text>
-
-                  <View style={styles.modalStatsRow}>
-                    <View style={styles.modalStatItem}>
-                      <FontAwesomeIcon name="star" size={16} color="#FFD700" />
-                      <Text style={styles.modalStatText}>
-                        {selectedStore.storeRate ?? 0}
-                      </Text>
-                    </View>
-                    <View style={styles.modalStatItem}>
-                      <Ionicons
-                        name="chatbubble-ellipses"
-                        size={16}
-                        color="#4FC3F7"
-                      />
-                      <Text style={styles.modalStatText}>
-                        {selectedStore.reviewCount ?? 0}
-                      </Text>
-                    </View>
-                    <View style={styles.modalStatItem}>
-                      <Ionicons name="heart" size={16} color="#FF6B6B" />
-                      <Text style={styles.modalStatText}>
-                        {selectedStore.likeCount ?? 0}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.modalReportRow}>
-                    <Text
-                      style={[styles.modalReportBadge, styles.normalReport]}>
-                      제보 {selectedStore.normalReportCount ?? 0}
-                    </Text>
-                    <Text
-                      style={[styles.modalReportBadge, styles.priorityReport]}>
-                      신고 {selectedStore.priorityReportCount ?? 0}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* 닫기 버튼 */}
-                <Pressable style={styles.closeBtn} onPress={closeModal}>
-                  <Ionicons name="close" size={20} color="#fff" />
-                </Pressable>
-
-                {/* 하단 버튼 */}
-                <View style={[styles.bottomButtons, {paddingBottom: bottom}]}>
-                  <View style={styles.bottomButtonView}>
-                    <Pressable
-                      style={[
-                        styles.btn,
-                        {borderColor: '#fff', borderWidth: 1.3},
-                      ]}
-                      onPress={() => {
-                        closeModal();
-                        navigation.navigate('StoreStack', {
-                          screen: 'StoreMainScreen',
-                          params: {storeId: selectedStore.storeId},
-                        });
-                      }}>
-                      <Ionicons name="storefront" size={30} color="#fff" />
-                    </Pressable>
-                    <Text style={styles.btnText} allowFontScaling={false}>
-                      매장 홈
-                    </Text>
-                  </View>
-                  <View style={styles.bottomButtonView}>
-                    <Pressable
-                      style={[
-                        styles.btn,
-                        {borderColor: '#fff', borderWidth: 1.3},
-                      ]}
-                      onPress={() => {
-                        closeModal();
-                        navigation.navigate('StoreStack', {
-                          screen: 'StoreUpdateScreen',
-                          params: {storeId: selectedStore.storeId},
-                        });
-                      }}>
-                      <Ionicons name="create-outline" size={30} color="#fff" />
-                    </Pressable>
-                    <Text style={styles.btnText} allowFontScaling={false}>
-                      매장 수정
-                    </Text>
-                  </View>
-                  <View style={styles.bottomButtonView}>
-                    <Pressable
-                      style={[
-                        styles.btn,
-                        {borderColor: '#fff', borderWidth: 1.3},
-                      ]}
-                      onPress={() => {
-                        closeModal();
-                        navigation.navigate('StoreStack', {
-                          screen: 'ManagerStoreInfoScreen',
-                          params: {
-                            storeId: selectedStore.storeId,
-                            storename: selectedStore.storeName,
-                            locationDto: selectedStore.locationDto,
-                          },
-                        });
-                      }}>
-                      <Ionicons name="stats-chart" size={30} color="#fff" />
-                    </Pressable>
-                    <Text style={styles.btnText} allowFontScaling={false}>
-                      통계 조회
-                    </Text>
-                  </View>
-                  <View style={styles.bottomButtonView}>
-                    <Pressable
-                      style={[
-                        styles.btn,
-                        {borderColor: '#fff', borderWidth: 1.3},
-                      ]}
-                      onPress={() => {
-                        closeModal();
-                        navigation.navigate('StoreStack', {
-                          screen: 'StoreManagerScreen',
-                          params: {
-                            storeId: selectedStore.storeId,
-                            storename: selectedStore.storeName,
-                          },
-                        });
-                      }}>
-                      <Ionicons name="person-sharp" size={30} color="#fff" />
-                    </Pressable>
-                    <Text style={styles.btnText} allowFontScaling={false}>
-                      운영진
-                    </Text>
-                  </View>
-                  <View style={styles.bottomButtonView}>
-                    <Pressable
-                      style={[
-                        styles.btn,
-                        {borderColor: '#fff', borderWidth: 1.3},
-                      ]}
-                      onPress={() => {
-                        closeModal();
-                        navigation.navigate('StoreStack', {
-                          screen: 'StoreReviewScreen',
-                          params: {
-                            storeId: selectedStore.storeId,
-                            storename: selectedStore.storeName,
-                            isOwner: true,
-                          },
-                        });
-                      }}>
-                      <Ionicons
-                        name="chatbubble-ellipses"
-                        size={30}
-                        color="#fff"
-                      />
-                    </Pressable>
-                    <Text style={styles.btnText} allowFontScaling={false}>
-                      리뷰 조회
-                    </Text>
-                  </View>
-                  <View style={styles.bottomButtonView}>
-                    <Pressable
-                      style={[
-                        styles.btn,
-                        {borderColor: '#fff', borderWidth: 1.3},
-                      ]}
-                      onPress={() => {
-                        closeModal();
-
-                        navigation.navigate('StoreStack', {
-                          screen: 'StoreReportList',
-                          params: {
-                            storeId: selectedStore.storeId,
-                            storeName: selectedStore.storeName,
-                          },
-                        });
-                      }}>
-                      <Ionicons
-                        name="information-circle-sharp"
-                        size={30}
-                        color="#fff"
-                      />
-                    </Pressable>
-                    <Text style={styles.btnText} allowFontScaling={false}>
-                      제보·신고
-                    </Text>
-                  </View>
-                </View>
-              </ImageBackground>
-            </Animated.View>
-          )}
-        </View>
-      </Modal>
-
       <Loading loading={loading} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    width: CARD_WIDTH,
-    height: '100%',
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF',
   },
-  selectedCardShadow: {
-    width: CARD_WIDTH,
-    height: '100%',
-    borderRadius: 16,
-    // iOS shadow
-    shadowColor: '#000',
-    shadowOpacity: 0.7,
-    shadowRadius: 3,
-    shadowOffset: {width: 0, height: 0},
-    // Android elevation
-    elevation: 4,
-    // Ensure shadow is visible on Android
+  listCard: {
+    flex: 1,
     backgroundColor: '#fff',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'flex-end',
-  },
 
-  overlayContent: {
-    padding: 12,
-    zIndex: 3,
+    paddingHorizontal: 18,
   },
-  name: {
-    color: '#fff',
-    fontSize: 18,
-    fontFamily: 'Pretendard-SemiBold',
-    marginBottom: 6,
+  listContentContainer: {
+    paddingVertical: 6,
   },
-  address: {
-    color: '#ddd',
-    fontSize: 14,
-    marginBottom: 6,
-    fontFamily: 'Pretendard-Regular',
-  },
-  statsRow: {
+  storeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    justifyContent: 'space-between',
+    paddingVertical: 16,
   },
-  statItem: {
+  storeRowDivider: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E4E4E4',
+  },
+  rowContent: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 12,
   },
-  statText: {
-    color: '#fff',
-    fontSize: 15,
-    marginLeft: 4,
-    fontFamily: 'Pretendard-Medium',
+  storeImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 24,
+    marginRight: 12,
+    borderWidth: 0.5,
+    borderColor: '#EFEFEF',
   },
-  reportRow: {
-    flexDirection: 'row',
-    marginTop: 10,
+  textWrapper: {
+    flex: 1,
   },
-  reportBadge: {
-    fontSize: 14,
-    borderRadius: 8,
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    marginRight: 6,
-    fontFamily: 'Pretendard-Medium',
+  storeName: {
+    fontSize: 16,
+    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
+    marginBottom: 4,
   },
-  normalReport: {
-    backgroundColor: 'rgba(255,165,0,0.25)',
-    color: '#FFA500',
+  storeAddress: {
+    fontSize: 13,
+    color: ColorUtil.subText,
+    fontFamily: 'Pretendard-Regular',
   },
-  priorityReport: {
-    backgroundColor: 'rgba(255,77,79,0.25)',
-    color: '#FF4D4F',
-  },
-  nameTab: {
+  manageButton: {
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: ColorUtil.border,
+    alignItems: 'center',
     justifyContent: 'center',
-    // 가로 여백 제거 (아이템 간 간격은 ItemSeparatorComponent로 처리)
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    backgroundColor: '#F1F2F3',
+  },
+  manageText: {
+    color: '#333',
+    fontSize: 13,
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    color: '#1A1A1A',
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 10,
   },
-  activeTab: {
-    // backgroundColor: '#E9F5FB',
+  emptySubtitle: {
+    fontSize: 13,
+    color: '#7B7B7B',
+    fontFamily: 'Pretendard-Regular',
+    textAlign: 'center',
+    lineHeight: 18,
   },
-  nameTabText: {
-    fontSize: 14,
-    color: '#999',
-    fontFamily: 'Pretendard-Medium',
-  },
-  activeTabText: {
-    color: '#3CBBFF',
-    fontFamily: 'Pretendard-Bold',
-  },
-  closeBtn: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 30,
-    right: 20,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    padding: 7,
-    borderRadius: 20,
-    zIndex: 10,
-  },
-  bottomButtons: {
-    position: 'absolute',
-    bottom: 40,
-    left: 20,
-    right: 20,
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'space-evenly',
-    zIndex: 10,
-  },
-  bottomButtonView: {
-    alignItems: 'center',
-  },
-  btn: {
+  emptyContentContainer: {
     flex: 1,
-    borderRadius: 10,
-    alignItems: 'center',
-    width: 55,
-    height: 55,
-    marginBottom: 3,
-    alignItems: 'center',
     justifyContent: 'center',
-  },
-
-  btnText: {
-    color: '#fff',
-    fontSize: normalizeFont(13, 1.5),
-    fontFamily: 'Pretendard-SemiBold',
-  },
-  gradientBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: height / 2, // 아래 절반
-    zIndex: 1,
-  },
-
-  modalInfoContainer: {
-    position: 'absolute',
-    bottom: 120,
-    left: 20,
-    right: 20,
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 10,
-    zIndex: 3,
-  },
-  modalInfoTitle: {
-    color: '#fff',
-    fontSize: 22,
-    fontFamily: 'Pretendard-Bold',
-    marginBottom: 6,
-  },
-  modalInfoAddress: {
-    color: '#ddd',
-    fontSize: 16,
-    marginBottom: 6,
-  },
-  modalStatsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  modalStatItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  modalStatText: {
-    color: '#fff',
-    fontSize: 16,
-    marginLeft: 6,
-    fontFamily: 'Pretendard-SemiBold',
-  },
-  modalReportRow: {
-    flexDirection: 'row',
-    marginTop: 12,
-  },
-  modalReportBadge: {
-    fontSize: 14,
-    borderRadius: 10,
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    marginRight: 10,
-    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

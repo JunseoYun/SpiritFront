@@ -1,8 +1,11 @@
 import {StoreDrinkget} from '../../../api/drinkApi';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import StoreAlcoholScreen from '../StoreAlcoholScreen';
 import Loading from '../../../hooks/Loading';
+
+const alcoholCache = new Map();
+const sectionPositionsCache = new Map();
 
 const StoreAlcoholManageScreen = ({
   storeId,
@@ -10,18 +13,35 @@ const StoreAlcoholManageScreen = ({
   navigation,
   children,
 }) => {
-  const [alcohols, setAlcohols] = useState([]);
+  const [alcohols, setAlcohols] = useState(
+    () => alcoholCache.get(storeId) || [],
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [sectionPositions, setSectionPositions] = useState({});
+  const [sectionPositions, setSectionPositions] = useState(
+    () => sectionPositionsCache.get(storeId) || {},
+  );
 
   useEffect(() => {
     let isMounted = true;
+    const cachedAlcohols = alcoholCache.get(storeId);
+    if (cachedAlcohols) {
+      setAlcohols(cachedAlcohols);
+      setError(null);
+      setLoading(false);
+      return () => {
+        isMounted = false;
+      };
+    }
+
     setLoading(true);
     setError(null);
     StoreDrinkget(storeId)
       .then(data => {
-        if (isMounted) setAlcohols(data);
+        if (isMounted) {
+          setAlcohols(data);
+          alcoholCache.set(storeId, data);
+        }
       })
       .catch(e => {
         if (isMounted) setError('주류 불러오기 실패');
@@ -34,14 +54,28 @@ const StoreAlcoholManageScreen = ({
     };
   }, [storeId]);
 
-  const refreshAlcohols = async () => {
+  useEffect(() => {
+    sectionPositionsCache.set(storeId, sectionPositions);
+  }, [storeId, sectionPositions]);
+
+  useEffect(() => {
+    setSectionPositions(sectionPositionsCache.get(storeId) || {});
+  }, [storeId]);
+
+  const refreshAlcohols = useCallback(async () => {
     try {
+      setLoading(true);
       const Alcohols = await StoreDrinkget(storeId);
+      alcoholCache.set(storeId, Alcohols);
       setAlcohols(Alcohols);
+      setError(null);
     } catch (error) {
       console.error('메뉴 다시 불러오기 실패', error);
+      setError('주류 불러오기 실패');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [storeId]);
 
   if (typeof children === 'function') {
     return children({
