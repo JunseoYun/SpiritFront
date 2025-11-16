@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     fontSize: normalizeFont(16, 1.3),
     color: '#121212', // 입력 텍스트 색상
     fontFamily: 'Pretendard-Medium',
-    paddingRight: 20,
+    paddingRight: 30,
   },
 });
 

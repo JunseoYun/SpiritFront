@@ -22,6 +22,7 @@ export const MapSearchProvider = ({children}) => {
     거리: '1km',
     카테고리: '',
     주종: '',
+    가격순: '',
     매장분위기: '',
     방문시간: '', // kept as-is to match existing usage (mojibake in repo)
     인원: '', // 인원 (mojibake in repo)

@@ -9,11 +9,15 @@ import {
   BackHandler,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
-import {useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, useIsFocused} from '@react-navigation/native';
 import {getLocation, saveLocationAddress} from '../../storage/locationStorage';
 import {fetchLocationAddress} from '../../hooks/useLocation';
 import {useToast} from '../../context/ToastContext';
-import {Store_getby_radius} from '../../api/storeApi';
+import {
+  Store_getby_condition_search,
+  Store_getby_condition_search_markers,
+  StoreMainget,
+} from '../../api/storeApi';
 import throttle from 'lodash/throttle';
 import MapSearchBar from '../../components/MapScreen/MapSearchBar';
 import MapLocation from '../../components/MapScreen/MapLocation';
@@ -25,14 +29,85 @@ import MapRadius from '../../components/MapScreen/MapRadius';
 import Loading from '../../hooks/Loading';
 import MapTopBar from '../../components/MapScreen/MapTopBar';
 import {useMapSearch} from '../../context/MapSearchContext';
+import {
+  buildConditionSearchDto,
+  normalizeStoreResponse,
+} from '../../utils/buildConditionSearchDto';
+
+const resolveLocationDto = store => {
+  if (!store) {
+    return null;
+  }
+  const loc = store.locationDto;
+  if (
+    loc &&
+    typeof loc.latitude === 'number' &&
+    typeof loc.longitude === 'number'
+  ) {
+    return loc;
+  }
+  const fallbackLat =
+    store?.latitude ??
+    store?.lat ??
+    store?.location?.latitude ??
+    store?.location?.lat ??
+    null;
+  const fallbackLng =
+    store?.longitude ??
+    store?.lng ??
+    store?.location?.longitude ??
+    store?.location?.lng ??
+    null;
+  if (typeof fallbackLat === 'number' && typeof fallbackLng === 'number') {
+    return {
+      ...(loc || {}),
+      latitude: fallbackLat,
+      longitude: fallbackLng,
+      address:
+        loc?.address ?? store?.address ?? store?.location?.address ?? null,
+    };
+  }
+  return loc ?? null;
+};
+
+const resolveStoreName = store =>
+  store?.name ??
+  store?.storeName ??
+  store?.storeNm ??
+  store?.store_name ??
+  store?.title ??
+  null;
+const mergeUniqueStores = (prevList = [], nextList = []) => {
+  const map = new Map();
+  (Array.isArray(prevList) ? prevList : []).forEach(item => {
+    if (item && item.id != null) {
+      map.set(String(item.id), item);
+    }
+  });
+  (Array.isArray(nextList) ? nextList : []).forEach(item => {
+    if (item && item.id != null) {
+      map.set(String(item.id), item);
+    }
+  });
+  return Array.from(map.values());
+};
+
+const extractTotalPages = response =>
+  response?.totalPages ??
+  response?.data?.totalPages ??
+  response?.data?.page?.totalPages ??
+  response?.page?.totalPages ??
+  null;
 
 const {width, height: SCREEN_HEIGHT} = Dimensions.get('window');
 
-const MapScreen = ({navigation}) => {
+const MapScreen = ({navigation, route}) => {
   const [location, setLocation] = useState(null);
   const [stores, setStores] = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
   const [detailStoreId, setDetailStoreId] = useState(null);
+  const [detailStoreData, setDetailStoreData] = useState(null);
+  const [detailStoreLoading, setDetailStoreLoading] = useState(false);
   const [selectedStoreIndex, setSelectedStoreIndex] = useState(0);
   const [groupStoreIds, setGroupStoreIds] = useState(null);
   const [lastChosenStoreId, setLastChosenStoreId] = useState(null);
@@ -47,13 +122,104 @@ const MapScreen = ({navigation}) => {
   const [isFlatListVisible, setIsFlatListVisible] = useState(true); // 플랫리스트 상태
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
   const [radius, setRadiusint] = useState(1);
-  const {radiusKm} = useMapSearch();
+  const {radiusKm, selectedFilters, searchText} = useMapSearch();
   const prevRadiusRef = useRef(radius);
   const [storegetloading, setStoregetloading] = useState(true);
   const [sheetIndex, setSheetIndex] = useState(1);
+  const skipAutoSnapRef = useRef(false);
   const bottomSheetRef = useRef(null);
   const [resultCount, setResultCount] = useState(null);
   const lastGroupCountRef = useRef(null);
+  const [markerStores, setMarkerStores] = useState([]);
+  const [listPage, setListPage] = useState(0);
+  const [hasMoreStores, setHasMoreStores] = useState(true);
+  const [loadingMoreStores, setLoadingMoreStores] = useState(false);
+  const skipInitialOffsetRef = useRef(true);
+  const lastQueryRef = useRef({lat: null, lng: null});
+  const detailFetchSeqRef = useRef(0);
+  const isFocused = useIsFocused();
+  const buildCurrentQuerySignature = useCallback(
+    () =>
+      JSON.stringify({
+        searchKeyword: (searchText || '').trim(),
+        filters: selectedFilters || {},
+      }),
+    [searchText, selectedFilters],
+  );
+  const lastAppliedQueryRef = useRef(buildCurrentQuerySignature());
+  const buildCurrentConditionDto = useCallback(() => {
+    return buildConditionSearchDto({
+      filters: selectedFilters,
+      searchKeyword: searchText,
+    });
+  }, [selectedFilters, searchText]);
+
+  const fetchStoreListPage = useCallback(
+    async ({page = 0, append = false, lat, lng, conditionDto} = {}) => {
+      const targetLat =
+        typeof lat === 'number' ? lat : lastQueryRef.current.lat;
+      const targetLng =
+        typeof lng === 'number' ? lng : lastQueryRef.current.lng;
+      if (typeof targetLat !== 'number' || typeof targetLng !== 'number') {
+        return;
+      }
+      const dto = conditionDto || buildCurrentConditionDto();
+      if (append) {
+        if (loadingMoreStores || !hasMoreStores) {
+          return;
+        }
+        setLoadingMoreStores(true);
+      } else {
+        setStoregetloading(true);
+      }
+      try {
+        const response = await Store_getby_condition_search(
+          targetLat,
+          targetLng,
+          dto,
+          page,
+          radius,
+        );
+        const normalized = normalizeStoreResponse(response);
+        setStores(prevStores =>
+          append ? mergeUniqueStores(prevStores, normalized) : normalized,
+        );
+        if (!append) {
+          setSelectedStore(normalized[0] || null);
+          setSelectedStoreIndex(0);
+        }
+        setListPage(page);
+        const totalPages = extractTotalPages(response);
+        const nextHasMore =
+          typeof totalPages === 'number'
+            ? page < totalPages - 1
+            : normalized.length > 0;
+        setHasMoreStores(nextHasMore);
+      } catch (error) {
+        console.error('조건 검색 (목록) 실패:', error);
+        if (!append) {
+          setStores([]);
+          setSelectedStore(null);
+        }
+        setHasMoreStores(false);
+      } finally {
+        if (append) {
+          setLoadingMoreStores(false);
+        } else {
+          setStoregetloading(false);
+        }
+      }
+    },
+    [buildCurrentConditionDto, hasMoreStores, loadingMoreStores],
+  );
+
+  const handleLoadMoreStores = useCallback(() => {
+    if (!hasMoreStores || loadingMoreStores) {
+      return;
+    }
+    const nextPage = listPage + 1;
+    fetchStoreListPage({page: nextPage, append: true});
+  }, [fetchStoreListPage, hasMoreStores, listPage, loadingMoreStores]);
 
   useFocusEffect(
     useCallback(() => {
@@ -75,6 +241,32 @@ const MapScreen = ({navigation}) => {
     Location();
     setRefresh(false);
   }, []);
+
+  // consume skipAutoSnap param once and persist in ref for the next focus event
+  useEffect(() => {
+    if (route?.params?.skipAutoSnap) {
+      skipAutoSnapRef.current = true;
+      navigation?.setParams?.({skipAutoSnap: false});
+    }
+  }, [navigation, route?.params?.skipAutoSnap]);
+
+  useFocusEffect(
+    useCallback(() => {
+      // When coming straight from Search, skip the auto snap once to avoid jitter
+      if (skipAutoSnapRef.current) {
+        skipAutoSnapRef.current = false;
+        lastGroupCountRef.current = null;
+        return undefined;
+      }
+      // Collapse bottom sheet and clear selection whenever MapScreen becomes active
+      bottomSheetRef.current?.snapToIndex?.(0);
+      setTimeout(() => {
+        bottomSheetRef.current?.snapToIndex?.(1);
+      }, 500);
+      lastGroupCountRef.current = null;
+      return undefined;
+    }, []),
+  );
 
   useEffect(() => {
     if (prevRadiusRef.current !== radius) {
@@ -112,32 +304,33 @@ const MapScreen = ({navigation}) => {
       const currentLocation = await getLocation();
       setLocation(currentLocation);
 
-      const storesData = await Store_getby_radius(
+      if (
+        !currentLocation ||
+        typeof currentLocation.latitude !== 'number' ||
+        typeof currentLocation.longitude !== 'number'
+      ) {
+        setStores([]);
+        setSelectedStore(null);
+        setRefresh(false);
+        setLoading(false);
+        setStoregetloading(false);
+        return;
+      }
+
+      const offsetY = sheetIndex === 1 ? SCREEN_HEIGHT * 0.18 : 0;
+
+      await refreshWithLatLngs(
+        currentLocation.latitude,
+        currentLocation.longitude,
         currentLocation.latitude,
         currentLocation.longitude,
         radius,
+        offsetY,
       );
-      storesData.sort((a, b) =>
-        a.locationDto.address.localeCompare(b.locationDto.address),
-      );
-      setStores(storesData);
-      setSelectedStore(storesData[0]);
-
-      if (webViewRef.current) {
-        webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-
-        const script = generateMapScript(
-          currentLocation.latitude,
-          currentLocation.longitude,
-          storesData,
-        );
-        webViewRef.current.injectJavaScript(script);
-      }
 
       moveCenterMap(currentLocation.latitude, currentLocation.longitude, 1);
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
-    } finally {
       setRefresh(false);
       setLoading(false);
       setStoregetloading(false);
@@ -228,28 +421,71 @@ const MapScreen = ({navigation}) => {
     baseLng,
     queryLat,
     queryLng,
-    radius,
+    reqRadius,
     offsetY,
+    conditionDtoOverride = null,
+    querySignatureOverride = null,
   ) => {
     try {
-      const storesData = await Store_getby_radius(queryLat, queryLng, radius);
-      storesData.sort((a, b) =>
-        a.locationDto.address.localeCompare(b.locationDto.address),
+      const conditionDto = conditionDtoOverride || buildCurrentConditionDto();
+      const signature = querySignatureOverride || buildCurrentQuerySignature();
+      lastAppliedQueryRef.current = signature;
+
+      const markerResponse = await Store_getby_condition_search_markers(
+        queryLat,
+        queryLng,
+        conditionDto,
+        reqRadius,
       );
-      setStores(storesData);
-      setSelectedStore(storesData[0]);
+      const markerData = normalizeStoreResponse(markerResponse).map(item => {
+        const normalized = {...item};
+        if (normalized.id == null && normalized.storeId != null) {
+          normalized.id = normalized.storeId;
+        }
+        const location = resolveLocationDto(normalized);
+        if (location) {
+          normalized.locationDto = location;
+        }
+        if (!normalized.name) {
+          const fallbackName = resolveStoreName(normalized);
+          if (fallbackName) {
+            normalized.name = fallbackName;
+          }
+        }
+        return normalized;
+      });
+      setMarkerStores(markerData);
+      lastQueryRef.current = {lat: queryLat, lng: queryLng};
+      setHasMoreStores(true);
+      await fetchStoreListPage({
+        page: 0,
+        append: false,
+        lat: queryLat,
+        lng: queryLng,
+        conditionDto,
+      });
 
       if (webViewRef.current) {
+        const effectiveOffset =
+          skipInitialOffsetRef.current === true ? 0 : offsetY;
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-        const script = generateMapScript(baseLat, baseLng, storesData, offsetY);
+        const script = generateMapScript(
+          baseLat,
+          baseLng,
+          markerData,
+          effectiveOffset,
+        );
         webViewRef.current.injectJavaScript(script);
+        if (skipInitialOffsetRef.current) {
+          skipInitialOffsetRef.current = false;
+        }
       }
     } catch (err) {
       console.error('반경 내 매장 조회 중 오류:', err);
+      setStoregetloading(false);
     } finally {
       setRefresh(false);
       setLoading(false);
-      setStoregetloading(false);
     }
   };
 
@@ -455,52 +691,74 @@ const MapScreen = ({navigation}) => {
     }
   };
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        // 세로로 드래그된 경우만 활성화
-        return (
-          Math.abs(gestureState.dy) > Math.abs(gestureState.dx) &&
-          Math.abs(gestureState.dy) > 30
-        );
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy < -30) {
-          // 위로 드래그
-          showFlatList();
-        } else if (gestureState.dy > 30) {
-          // 아래로 드래그
-          hideFlatList();
+  const getStoreFromSources = useCallback(
+    storeId => {
+      if (storeId == null) {
+        return {store: null, index: -1};
+      }
+      const normalizeId = store =>
+        store && (store.id != null || store.storeId != null)
+          ? String(store.id ?? store.storeId)
+          : null;
+      const targetId = String(storeId);
+      const listIndex = stores.findIndex(
+        store => normalizeId(store) === targetId,
+      );
+      if (listIndex !== -1) {
+        return {store: stores[listIndex], index: listIndex};
+      }
+      const fallback =
+        markerStores?.find(
+          markerStore => normalizeId(markerStore) === targetId,
+        ) || null;
+      return {store: fallback, index: -1};
+    },
+    [markerStores, stores],
+  );
+
+  const fetchDetailStore = useCallback(
+    async storeId => {
+      detailFetchSeqRef.current += 1;
+      const seq = detailFetchSeqRef.current;
+      if (!storeId) {
+        setDetailStoreData(null);
+        setDetailStoreLoading(false);
+        return;
+      }
+      setDetailStoreLoading(true);
+      try {
+        const data = await StoreMainget(storeId);
+        if (detailFetchSeqRef.current === seq) {
+          setDetailStoreData(data || null);
         }
-      },
-    }),
-  ).current;
+      } catch (error) {
+        console.error('Failed to fetch store detail', error);
+        if (detailFetchSeqRef.current === seq) {
+          setDetailStoreData(null);
+        }
+        showToast?.('매장 상세 정보를 불러오지 못했어요.', 'center');
+      } finally {
+        if (detailFetchSeqRef.current === seq) {
+          setDetailStoreLoading(false);
+        }
+      }
+    },
+    [showToast],
+  );
 
-  // 플랫리스트 애니메이션 함수
-  const hideFlatList = () => {
-    Animated.timing(flatListAnim, {
-      toValue: 0,
-      duration: 400,
-      useNativeDriver: true,
-    }).start(() => setIsFlatListVisible(false));
-  };
-
-  const showFlatList = () => {
-    setIsFlatListVisible(true);
-    Animated.timing(flatListAnim, {
-      toValue: 0, // 플랫리스트를 원래 위치로
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
+  useEffect(() => {
+    fetchDetailStore(detailStoreId);
+  }, [detailStoreId, fetchDetailStore]);
 
   const handleWebViewMessage = throttle(message => {
     if (message.action === 'hideFlatList') {
-      hideFlatList();
     } else if (message.action === 'markerGroupClicked' && message.storeId) {
-      const index = stores.findIndex(store => store.id === message.storeId);
-      if (index !== -1) {
-        setSelectedStoreIndex(index);
+      const {store, index} = getStoreFromSources(message.storeId);
+      const location = resolveLocationDto(store);
+      if (store && location) {
+        if (index !== -1) {
+          setSelectedStoreIndex(index);
+        }
         setGroupStoreIds(null);
         // Ensure we exit detail mode so the sheet can collapse fully
         setDetailStoreId(null);
@@ -509,15 +767,7 @@ const MapScreen = ({navigation}) => {
           const js = `try{ if(window.clearStoreLabel){ window.clearStoreLabel(); } }catch(e){}; true;`;
           webViewRef.current?.injectJavaScript(js);
         } catch (e) {}
-        const store = stores[index];
-        if (store) {
-          moveCenterMap(
-            store.locationDto.latitude,
-            store.locationDto.longitude,
-            10,
-            true,
-          );
-        }
+        moveCenterMap(location.latitude, location.longitude, 10, true);
         // save group total for later when picking an item
         if (typeof message.total === 'number') {
           lastGroupCountRef.current = message.total;
@@ -526,9 +776,12 @@ const MapScreen = ({navigation}) => {
         return;
       }
     } else if (message.action === 'markerListItemClicked' && message.storeId) {
-      const index = stores.findIndex(store => store.id === message.storeId);
-      if (index !== -1) {
-        setSelectedStoreIndex(index);
+      const {store, index} = getStoreFromSources(message.storeId);
+      const location = resolveLocationDto(store);
+      if (store && location) {
+        if (index !== -1) {
+          setSelectedStoreIndex(index);
+        }
         setGroupStoreIds(null);
         setDetailStoreId(message.storeId);
         setLastChosenStoreId(message.storeId);
@@ -549,30 +802,25 @@ const MapScreen = ({navigation}) => {
           setResultCount(null);
         }
         bottomSheetRef.current?.snapToIndex(1);
-        const store = stores[index];
-        if (store) {
-          moveCenterMap(
-            store.locationDto.latitude,
-            store.locationDto.longitude,
-            1,
-            true,
-          );
-          try {
-            // close list overlay and show name bubble above marker with count
-            const countArg = bubbleCount != null ? String(bubbleCount) : 'null';
-            const js = `try{ if(window.currentOverlay){ window.currentOverlay.setMap(null); window.currentOverlay=null;} if(window.showStoreLabelAt){ window.showStoreLabelAt(${
-              store.locationDto.latitude
-            }, ${store.locationDto.longitude}, ${JSON.stringify(
-              store.name,
-            )}, ${countArg}); } }catch(e){}; true;`;
-            webViewRef.current?.injectJavaScript(js);
-          } catch (e) {}
-        }
+        moveCenterMap(location.latitude, location.longitude, 1, true);
+        try {
+          // close list overlay and show name bubble above marker with count
+          const countArg = bubbleCount != null ? String(bubbleCount) : 'null';
+          const js = `try{ if(window.currentOverlay){ window.currentOverlay.setMap(null); window.currentOverlay=null;} if(window.showStoreLabelAt){ window.showStoreLabelAt(${
+            location.latitude
+          }, ${location.longitude}, ${JSON.stringify(
+            resolveStoreName(store) || '',
+          )}, ${countArg}); } }catch(e){}; true;`;
+          webViewRef.current?.injectJavaScript(js);
+        } catch (e) {}
       }
     } else if (message.action === 'markerClicked' && message.storeId) {
-      const index = stores.findIndex(store => store.id === message.storeId);
-      if (index !== -1) {
-        setSelectedStoreIndex(index);
+      const {store, index} = getStoreFromSources(message.storeId);
+      const location = resolveLocationDto(store);
+      if (store && location) {
+        if (index !== -1) {
+          setSelectedStoreIndex(index);
+        }
         setGroupStoreIds(null);
         setDetailStoreId(message.storeId);
         setLastChosenStoreId(message.storeId);
@@ -580,23 +828,15 @@ const MapScreen = ({navigation}) => {
         setResultCount(null);
         lastGroupCountRef.current = null;
         bottomSheetRef.current?.snapToIndex(1);
-        const store = stores[index];
-        if (store) {
-          moveCenterMap(
-            store.locationDto.latitude,
-            store.locationDto.longitude,
-            1,
-            true,
-          );
-          try {
-            const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${
-              store.locationDto.latitude
-            }, ${store.locationDto.longitude}, ${JSON.stringify(
-              store.name,
-            )}, null); } }catch(e){}; true;`;
-            webViewRef.current?.injectJavaScript(js);
-          } catch (e) {}
-        }
+        moveCenterMap(location.latitude, location.longitude, 1, true);
+        try {
+          const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${
+            location.latitude
+          }, ${location.longitude}, ${JSON.stringify(
+            resolveStoreName(store) || '',
+          )}, null); } }catch(e){}; true;`;
+          webViewRef.current?.injectJavaScript(js);
+        } catch (e) {}
       }
     }
   }, 500);
@@ -613,8 +853,9 @@ const MapScreen = ({navigation}) => {
       lastGroupCountRef.current = null;
       return;
     }
-    const store = stores.find(s => s.id === detailStoreId);
-    if (store && webViewRef.current) {
+    const {store} = getStoreFromSources(detailStoreId);
+    const location = resolveLocationDto(store);
+    if (store && location && webViewRef.current) {
       try {
         const countVal =
           typeof lastGroupCountRef.current === 'number' &&
@@ -623,9 +864,9 @@ const MapScreen = ({navigation}) => {
             : null;
         const countArg = countVal != null ? String(countVal) : 'null';
         const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${
-          store.locationDto.latitude
-        }, ${store.locationDto.longitude}, ${JSON.stringify(
-          store.name,
+          location.latitude
+        }, ${location.longitude}, ${JSON.stringify(
+          resolveStoreName(store) || '',
         )}, ${countArg}); } }catch(e){}; true;`;
         webViewRef.current.injectJavaScript(js);
       } catch (e) {}
@@ -639,7 +880,70 @@ const MapScreen = ({navigation}) => {
         setResultCount(null);
       }
     }
-  }, [detailStoreId]);
+  }, [detailStoreId, getStoreFromSources]);
+
+  const requeryStoresWithCurrentFilters = useCallback(
+    filtersOverride => {
+      const baseLat = centerLatLng?.latitude ?? location?.latitude;
+      const baseLng = centerLatLng?.longitude ?? location?.longitude;
+      if (typeof baseLat !== 'number' || typeof baseLng !== 'number') {
+        return;
+      }
+      if (detailStoreId) {
+        setDetailStoreId(null);
+      }
+      const offsetY =
+        sheetIndex === 1
+          ? SCREEN_HEIGHT * 0.18
+          : sheetIndex === 10
+          ? SCREEN_HEIGHT * -0.18
+          : 0;
+      const signature = JSON.stringify({
+        searchKeyword: (searchText || '').trim(),
+        filters: filtersOverride ?? selectedFilters ?? {},
+      });
+      const conditionOverride = filtersOverride
+        ? buildConditionSearchDto({
+            filters: filtersOverride,
+            searchKeyword: searchText,
+          })
+        : null;
+      refreshWithLatLngs(
+        baseLat,
+        baseLng,
+        baseLat,
+        baseLng,
+        radius,
+        offsetY,
+        conditionOverride,
+        signature,
+      );
+    },
+    [
+      centerLatLng,
+      detailStoreId,
+      location,
+      radius,
+      searchText,
+      selectedFilters,
+      sheetIndex,
+    ],
+  );
+
+  const requeryForSearchParamsChange = useCallback(() => {
+    requeryStoresWithCurrentFilters();
+  }, [requeryStoresWithCurrentFilters]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+    const signature = buildCurrentQuerySignature();
+    if (lastAppliedQueryRef.current === signature) {
+      return;
+    }
+    requeryForSearchParamsChange();
+  }, [buildCurrentQuerySignature, isFocused, requeryForSearchParamsChange]);
 
   // Track group total when a marker group is clicked
   useEffect(() => {
@@ -672,7 +976,6 @@ const MapScreen = ({navigation}) => {
       <MapStoreList
         updateNewLocation={() => updateNewLocation()}
         fetchSaveLocation={() => fetchSaveLocation()}
-        panHandlers={panResponder.panHandlers}
         flatListAnim={flatListAnim}
         isFlatListVisible={isFlatListVisible}
         stores={stores}
@@ -689,6 +992,8 @@ const MapScreen = ({navigation}) => {
         setRadiusint={setRadiusint}
         setSheetIndex={setSheetIndex}
         detailStoreId={detailStoreId}
+        detailStoreData={detailStoreData}
+        detailStoreLoading={detailStoreLoading}
         groupStoreIds={groupStoreIds}
         onOpenDetail={id => {
           setDetailStoreId(id);
@@ -699,6 +1004,10 @@ const MapScreen = ({navigation}) => {
         lastChosenStoreId={lastChosenStoreId}
         onCloseGroup={() => setGroupStoreIds(null)}
         bottomSheetRef={bottomSheetRef}
+        hasMoreStores={hasMoreStores}
+        loadingMoreStores={loadingMoreStores}
+        onLoadMoreStores={handleLoadMoreStores}
+        onApplyFilters={requeryStoresWithCurrentFilters}
       />
 
       <Loading loading={loading} />

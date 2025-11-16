@@ -28,9 +28,12 @@ const SearchScreen = ({navigation}) => {
     selectedFilters,
     setSelectedFilters,
     setRadiusKm,
+    radiusKm,
   } = useMapSearch();
 
   const [searchStoreName, setSearchStoreName] = useState(searchText || '');
+  const [pendingFilters, setPendingFilters] = useState(selectedFilters);
+  const [pendingRadiusKm, setPendingRadiusKm] = useState(radiusKm);
   const [loading] = useState(false);
   const [isRefreshing] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -52,14 +55,17 @@ const SearchScreen = ({navigation}) => {
   useFocusEffect(
     useCallback(() => {
       loadRecentSearches();
-    }, [loadRecentSearches]),
+      setSearchStoreName(searchText || '');
+      setPendingFilters(selectedFilters);
+      setPendingRadiusKm(radiusKm);
+    }, [loadRecentSearches, searchText, selectedFilters, radiusKm]),
   );
 
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        navigation.navigate('MainScreen'); // MainScreen 탭으로 전환
-        return true; // 기본 뒤로가기 방지
+        navigation.navigate('MainScreen'); // MainScreen 화면으로 전환
+        return true; // 기본 뒤로가기를 방지
       };
 
       const backHandler = BackHandler.addEventListener(
@@ -90,35 +96,76 @@ const SearchScreen = ({navigation}) => {
     [recentSearches],
   );
 
-  const onPressSearch = async () => {
-    const trimmed = (searchStoreName || '').trim();
-    if (trimmed.length > 0) {
+  const commitSearchAndFilters = useCallback(
+    async keyword => {
+      const trimmed = (keyword || '').trim();
+      if (!trimmed.length) {
+        showToast('검색어를 입력해 주세요', 'center');
+        return;
+      }
       setSearchText(trimmed);
+      setSelectedFilters(pendingFilters);
+      setRadiusKm(
+        typeof pendingRadiusKm === 'number' ? pendingRadiusKm : radiusKm,
+      );
       await persistRecent(trimmed);
-      navigation.navigate('MapScreen');
-    } else {
-      showToast('검색어를 입력해주세요', 'center');
-    }
+      navigation.navigate('MapScreen', {skipAutoSnap: true});
+    },
+    [
+      navigation,
+      pendingFilters,
+      pendingRadiusKm,
+      persistRecent,
+      radiusKm,
+      setRadiusKm,
+      setSearchText,
+      setSelectedFilters,
+      showToast,
+    ],
+  );
+
+  const onPressSearch = async () => {
+    await commitSearchAndFilters(searchStoreName);
   };
 
-  const distanceLabel = selectedFilters['거리'] || '1km';
-  const categoryLabel = selectedFilters['카테고리'] || '카테고리';
-  const peopleLabel = selectedFilters['인원'] || '인원';
-  const alcoholLabel = selectedFilters['주종'] || '주종';
-  const storeatmLabel = selectedFilters['매장분위기'] || '매장분위기';
-  const timeActive = selectedFilters['방문시간'] || '방문시간';
-  const parkingLabel = selectedFilters['주차'] || '주차';
-  const corkageLabel = selectedFilters['콜키지'] || '콜키지';
-  const screenLabel = selectedFilters['스크린'] || '스크린';
-  const roomLabel = selectedFilters['룸'] || '룸';
-  const outdoorLabel = selectedFilters['야장'] || '야장';
+  const findFilterKey = hint => {
+    const keys = Object.keys(pendingFilters || {});
+    const normalizedHint = (hint || '').replace(/\s/g, '');
+    return (
+      keys.find(k => (k || '').replace(/\s/g, '').includes(normalizedHint)) ||
+      hint
+    );
+  };
+
+  const getFilterValue = (hint, fallback = '') => {
+    const key = findFilterKey(hint);
+    const val = pendingFilters?.[key];
+    const isEmptyArray = Array.isArray(val) && val.length === 0;
+    const isEmptyString =
+      typeof val === 'string' && val.trim().length === 0;
+
+    return val == null || isEmptyArray || isEmptyString ? fallback : val;
+  };
+
+  const distanceLabel = getFilterValue('거리', '1km');
+  const categoryLabel = getFilterValue('카테고리', '카테고리');
+  const peopleLabel = getFilterValue('인원', '인원');
+  const alcoholLabel = getFilterValue('주종', '주종');
+  const storeatmValue = getFilterValue('매장분위기', '');
+  const storeatmLabel = storeatmValue || '매장분위기';
+  const timeActive = getFilterValue('방문시간', '방문시간');
+  const parkingLabel = getFilterValue('주차', '주차');
+  const corkageLabel = getFilterValue('콜키지', '콜키지');
+  const screenLabel = getFilterValue('스크린', '스크린');
+  const roomLabel = getFilterValue('룸', '룸');
+  const outdoorLabel = getFilterValue('야장', '야장');
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <SearchBar
         value={searchStoreName}
         onChangeText={setSearchStoreName}
-        placeholder="원하는 술집이나 메뉴를 검색하세요"
+        placeholder="원하는 가게나 메뉴를 검색해 보세요"
         onPress={onPressSearch}
       />
 
@@ -137,9 +184,9 @@ const SearchScreen = ({navigation}) => {
         outdoorLabel={outdoorLabel}
         storeatmLabel={storeatmLabel}
         storeatmCount={
-          Array.isArray(selectedFilters['매장분위기'])
-            ? selectedFilters['매장분위기'].length
-            : selectedFilters['매장분위기']
+          Array.isArray(storeatmValue)
+            ? storeatmValue.length
+            : storeatmValue
             ? 1
             : 0
         }
@@ -159,9 +206,7 @@ const SearchScreen = ({navigation}) => {
                 style={styles.recentItem}
                 onPress={async () => {
                   setSearchStoreName(item);
-                  setSearchText(item);
-                  await persistRecent(item);
-                  navigation.navigate('MapScreen');
+                  await commitSearchAndFilters(item);
                 }}>
                 <View style={styles.recentLeft}>
                   <View
@@ -182,7 +227,7 @@ const SearchScreen = ({navigation}) => {
               </Pressable>
             ))}
 
-            {/* 🗑 최근 검색어 전체 삭제 */}
+            {/* 전체 최근 검색어 삭제 */}
             <Pressable
               style={styles.clearButton}
               onPress={async () => {
@@ -200,10 +245,11 @@ const SearchScreen = ({navigation}) => {
       <FilterPotal
         filterModalVisible={filterModalVisible}
         setFilterModalVisible={setFilterModalVisible}
-        selectedFilters={selectedFilters}
-        setSelectedFilters={setSelectedFilters}
+        selectedFilters={pendingFilters}
+        setSelectedFilters={setPendingFilters}
         initialTab={filterInitialTab}
-        setRadiusint={setRadiusKm}
+        setRadiusint={setPendingRadiusKm}
+        onApply={filters => setPendingFilters(filters)}
       />
       <Loading loading={isRefreshing || loading} />
     </SafeAreaView>

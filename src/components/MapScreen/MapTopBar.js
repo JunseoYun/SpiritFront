@@ -13,6 +13,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useMapSearch} from '../../context/MapSearchContext';
 import MapSearchBar from './MapSearchBar';
 import FastImage from 'react-native-fast-image';
+import CancelText from '../CancelText/CancelText';
 
 const MapTopBar = ({
   navigation,
@@ -24,7 +25,7 @@ const MapTopBar = ({
   radius,
 }) => {
   const insets = useSafeAreaInsets();
-  const {searchText} = useMapSearch();
+  const {searchText, setSearchText} = useMapSearch();
   return (
     <>
       <View
@@ -63,11 +64,22 @@ const MapTopBar = ({
                 style={[
                   styles.placeholder,
                   searchText?.trim()?.length > 0 && {color: 'black'},
-                ]}>
+                ]}
+                numberOfLines={1}
+                ellipsizeMode="tail">
                 {searchText?.trim()?.length > 0
                   ? searchText
                   : '원하는 술집이나 메뉴를 검색하세요'}
               </Text>
+              {searchText?.trim()?.length > 0 && (
+                <CancelText
+                  rightnum={0}
+                  topnum={0}
+                  paddingnum={0}
+                  handlecancel={() => setSearchText('')}
+                  size={20}
+                />
+              )}
             </Pressable>
           </View>
           <Pressable onPress={onExplorePress} style={styles.exploreBtnWrap}>
@@ -113,6 +125,7 @@ const styles = StyleSheet.create({
   placeholder: {
     color: '#8E8E8E',
     fontSize: 14,
+    paddingRight: 30,
   },
   exploreBtnWrap: {
     width: 48,

@@ -9,6 +9,7 @@ import {
   InteractionManager,
   BackHandler,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
 import BottomSheet, {
   BottomSheetView,
@@ -32,7 +33,6 @@ import MapDetailItem from './MapDetailItem';
 import {useMapSearch} from '../../../context/MapSearchContext';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useFocusEffect} from '@react-navigation/native';
-
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 const MapStoreList = ({
@@ -51,11 +51,17 @@ const MapStoreList = ({
   setRadiusint,
   setSheetIndex,
   detailStoreId,
+  detailStoreData,
+  detailStoreLoading = false,
   onCloseDetail,
   groupStoreIds,
   onOpenDetail,
   onCloseGroup,
   bottomSheetRef,
+  hasMoreStores = false,
+  onLoadMoreStores,
+  loadingMoreStores = false,
+  onApplyFilters,
 }) => {
   // const bottomSheetRef = useRef(null);
   const insets = useSafeAreaInsets();
@@ -66,6 +72,7 @@ const MapStoreList = ({
     const nonemid = SCREEN_HEIGHT * 0.3;
     const mid = SCREEN_HEIGHT * 0.55;
     const max = SCREEN_HEIGHT * 0.7;
+    if (loading || storegetloading) return [first, first];
     if (stores.length === 0 && !loading && !storegetloading) {
       return [first, nonemid];
     }
@@ -84,10 +91,8 @@ const MapStoreList = ({
   const currentSheetIndexRef = useRef(null);
   const mapMoveTimerRef = useRef(null);
   const didForceAfterLoadRef = useRef(true);
-  const detailStore = useMemo(
-    () => stores?.find?.(s => s.id === detailStoreId) || null,
-    [stores, detailStoreId],
-  );
+  const detailStore = detailStoreData || null;
+  const isDetailMode = !!detailStoreId;
   const groupFilteredStores = useMemo(
     () =>
       Array.isArray(groupStoreIds) && groupStoreIds.length > 0
@@ -95,7 +100,7 @@ const MapStoreList = ({
         : [],
     [stores, groupStoreIds],
   );
-  const isGroupMode = groupFilteredStores.length > 0 && !detailStore;
+  const isGroupMode = groupFilteredStores.length > 0 && !isDetailMode;
 
   useAnimatedReaction(
     () => animatedIndex.value,
@@ -133,7 +138,7 @@ const MapStoreList = ({
 
   const handleSheetChange = useCallback(
     index => {
-      if (detailStore && index === 2) {
+      if (isDetailMode && index === 2) {
         // 상세보기 모드에서는 80% 스냅 금지 → 바로 45%로 고정
         bottomSheetRef.current?.snapToIndex(1);
         setCurrentIndex(1);
@@ -148,7 +153,7 @@ const MapStoreList = ({
       setSheetIndex?.(index);
       setListfastview(index >= 1);
     },
-    [detailStore, setSheetIndex],
+    [isDetailMode, setSheetIndex],
   );
   // initialize sheet index so offset can be applied before onChange fires
   useEffect(() => {
@@ -179,15 +184,12 @@ const MapStoreList = ({
   );
   // 상세 모드 진입 시 45% 스냅 고정
   useEffect(() => {
-    if ((detailStore || isGroupMode) && bottomSheetRef.current) {
+    if ((isDetailMode || isGroupMode) && bottomSheetRef.current) {
       bottomSheetRef.current.snapToIndex(1);
     }
-  }, [detailStore, isGroupMode]);
+  }, [isDetailMode, isGroupMode]);
 
   const handleCloseDetail = useCallback(() => {
-    const idx = detailStore
-      ? stores.findIndex(s => s.id === detailStore.id)
-      : -1;
     onCloseDetail?.();
     // FlatList가 다시 마운트된 후 인덱스로 스크롤
     const tryScrollTop = () => {
@@ -216,7 +218,7 @@ const MapStoreList = ({
         });
       });
     });
-  }, [detailStore, stores, onCloseDetail, flatListRef, itemheight]);
+  }, [onCloseDetail, flatListRef]);
 
   const handleCloseGroup = useCallback(() => {
     onCloseGroup?.();
@@ -251,10 +253,10 @@ const MapStoreList = ({
 
   useFocusEffect(
     useCallback(() => {
-      if (!detailStore && !isGroupMode) return undefined;
+      if (!isDetailMode && !isGroupMode) return undefined;
 
       const onBackPress = () => {
-        if (detailStore) {
+        if (isDetailMode) {
           handleCloseDetail();
           return true; // consume when closing detail
         }
@@ -271,9 +273,9 @@ const MapStoreList = ({
       );
 
       const navBeforeRemove = navigation?.addListener?.('beforeRemove', e => {
-        if (!detailStore && !isGroupMode) return;
+        if (!isDetailMode && !isGroupMode) return;
         e.preventDefault();
-        if (detailStore) handleCloseDetail();
+        if (isDetailMode) handleCloseDetail();
         else if (isGroupMode) handleCloseGroup();
       });
 
@@ -282,7 +284,7 @@ const MapStoreList = ({
         navBeforeRemove && navBeforeRemove();
       };
     }, [
-      detailStore,
+      isDetailMode,
       isGroupMode,
       handleCloseDetail,
       handleCloseGroup,
@@ -385,12 +387,6 @@ const MapStoreList = ({
       }
     };
   }, [stores]);
-
-  useEffect(() => {
-    if (!bottomSheetRef.current) return;
-    if (isFlatListVisible) bottomSheetRef.current.snapToIndex(0);
-    else bottomSheetRef.current.close();
-  }, [isFlatListVisible]);
 
   const keyExtractor = useCallback(
     item => item.id?.toString?.() ?? String(item.id ?? ''),
@@ -582,27 +578,39 @@ const MapStoreList = ({
                 storeatmCount={computedLabels?.storeatmCount || storeatmCount}
               />
 
-              {detailStore ? (
-                <BottomSheetScrollView
-                  contentContainerStyle={{
-                    paddingHorizontal: 0,
-                    paddingTop: 8,
-                    paddingBottom: insets.bottom,
-                  }}
-                  showsVerticalScrollIndicator={false}>
-                  {/* Back moved to custom handle */}
-                  <MapDetailItem
-                    item={detailStore}
-                    index={selectedStoreIndex}
-                    selectedStoreIndex={selectedStoreIndex}
-                    setSelectedStore={setSelectedStore}
-                    moveCenterMap={moveCenterMap}
-                    navigation={navigation}
-                    location={location}
-                    loading={loading}
-                    sheetIndex={currentIndex}
-                  />
-                </BottomSheetScrollView>
+              {detailStoreId ? (
+                detailStore ? (
+                  <BottomSheetScrollView
+                    contentContainerStyle={{
+                      paddingHorizontal: 0,
+                      paddingTop: 8,
+                      paddingBottom: insets.bottom,
+                    }}
+                    showsVerticalScrollIndicator={false}>
+                    {/* Back moved to custom handle */}
+                    <MapDetailItem
+                      item={detailStore}
+                      index={selectedStoreIndex}
+                      selectedStoreIndex={selectedStoreIndex}
+                      setSelectedStore={setSelectedStore}
+                      moveCenterMap={moveCenterMap}
+                      navigation={navigation}
+                      location={location}
+                      loading={loading}
+                      sheetIndex={currentIndex}
+                    />
+                  </BottomSheetScrollView>
+                ) : (
+                  <View style={styles.detailLoadingContainer}>
+                    {detailStoreLoading ? (
+                      <ActivityIndicator size="small" color="#999" />
+                    ) : (
+                      <Text style={styles.detailLoadingText}>
+                        매장 정보를 불러오지 못했어요.
+                      </Text>
+                    )}
+                  </View>
+                )
               ) : // :  isGroupMode ? (
               //   <View style={{flex: 1}}>
               //     <TouchableOpacity
@@ -665,6 +673,21 @@ const MapStoreList = ({
                   windowSize={10}
                   updateCellsBatchingPeriod={16}
                   removeClippedSubviews
+                  onEndReached={() => {
+                    if (hasMoreStores && !loadingMoreStores) {
+                      onLoadMoreStores?.();
+                    }
+                  }}
+                  onEndReachedThreshold={0.5}
+                  ListFooterComponent={
+                    loadingMoreStores ? (
+                      <ActivityIndicator
+                        style={{paddingVertical: 12}}
+                        size="small"
+                        color="#999"
+                      />
+                    ) : null
+                  }
                 />
               )}
             </BottomSheetView>
@@ -684,6 +707,7 @@ const MapStoreList = ({
             mapSearchCtx?.setRadiusKm?.(v);
           } catch (e) {}
         }}
+        onApply={filters => onApplyFilters?.(filters)}
       />
     </>
   );
@@ -700,6 +724,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     zIndex: 1,
+  },
+  detailLoadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+  },
+  detailLoadingText: {
+    marginTop: 8,
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    color: '#6B7280',
   },
   listButton: {
     position: 'absolute',
