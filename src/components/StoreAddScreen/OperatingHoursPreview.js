@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import ColorUtil from '../../utils/ColorUtil';
+import {calculateRangeFromEntry} from '../../utils/parseOperatingHours';
 const OperatingHoursPreview = ({
   is24Hours,
   operatingHours,
@@ -40,7 +41,7 @@ const OperatingHoursPreview = ({
       )}
 
       {/* 영업 시간 설정 전 */}
-      {!hasValidOperatingHours && (
+      {!hasValidOperatingHours && !is24Hours && (
         <Pressable
           style={[
             styles.emptyContainer,
@@ -52,7 +53,7 @@ const OperatingHoursPreview = ({
       )}
 
       {/* ⏳ 유효한 영업 시간이 있을 때만 표시 */}
-      {hasValidOperatingHours && is24Hours && (
+      {is24Hours && (
         <Pressable
           style={[
             styles.emptyContainer,
@@ -77,6 +78,42 @@ const OperatingHoursPreview = ({
               const koreanDay = dayMapping[day];
               const isClosed = closedDay.includes(day.toUpperCase());
               const breakTime = breakingHours[day];
+              const {isNextDay, openTime, closeTime} = calculateRangeFromEntry({
+                openHour,
+                openMinute,
+                closedHour,
+                closedMinute,
+              });
+
+              let breakDisplay = null;
+              if (breakTime?.startHour && breakTime?.endHour) {
+                const breakRange = calculateRangeFromEntry(
+                  {
+                    openHour: breakTime.startHour,
+                    openMinute: breakTime.startMinute,
+                    closedHour: breakTime.endHour,
+                    closedMinute: breakTime.endMinute,
+                  },
+                  {
+                    referenceHour: openHour,
+                    referenceMinute: openMinute,
+                  },
+                );
+
+                const breakStartLabel = breakRange.startDayOffset
+                  ? `다음날 ${breakRange.openTime}`
+                  : breakRange.openTime;
+                const breakEndLabel = breakRange.endDayOffset
+                  ? `다음날 ${breakRange.closeTime}`
+                  : breakRange.closeTime;
+
+                breakDisplay = (
+                  <Text style={styles.breakTimeText}>
+                    {`브레이크타임 ${breakStartLabel} ~ `}
+                    <Text>{breakEndLabel}</Text>
+                  </Text>
+                );
+              }
 
               return (
                 <View key={day} style={styles.dayRow}>
@@ -95,36 +132,12 @@ const OperatingHoursPreview = ({
                   ) : (
                     <View style={styles.timeContainer}>
                       <Text style={styles.operatingHoursText}>
-                        {`${openHour.padStart(2, '0')}:${openMinute.padStart(
-                          2,
-                          '0',
-                        )} ~ `}
+                        {`${openTime} ~ `}
                         <Text>
-                          {closedHour >= 24
-                            ? `다음날 ${String(closedHour - 24).padStart(
-                                2,
-                                '0',
-                              )}`
-                            : String(closedHour).padStart(2, '0')}
+                          {isNextDay ? `다음날 ${closeTime}` : closeTime}
                         </Text>
-                        :{closedMinute.padStart(2, '0')}
                       </Text>
-                      {breakTime?.startHour && breakTime?.endHour && (
-                        <Text style={styles.breakTimeText}>
-                          {`브레이크타임 ${breakTime.startHour.padStart(
-                            2,
-                            '0',
-                          )}:${breakTime.startMinute.padStart(2, '0')} ~ `}
-                          <Text>
-                            {breakTime.endHour >= 24
-                              ? `다음날 ${String(
-                                  breakTime.endHour - 24,
-                                ).padStart(2, '0')}`
-                              : String(breakTime.endHour).padStart(2, '0')}
-                          </Text>
-                          :{breakTime.endMinute.padStart(2, '0')}
-                        </Text>
-                      )}
+                      {breakDisplay}
                     </View>
                   )}
                 </View>

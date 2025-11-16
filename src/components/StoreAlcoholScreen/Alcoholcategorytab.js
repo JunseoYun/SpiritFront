@@ -38,7 +38,7 @@ const Alcoholcategorytab = ({
   setSelectedType,
   isClickedRef,
   filterHeight,
-  mainSectionHeight,
+  mainSectionHeight = 0,
 }) => {
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
   const {height: windowHeight} = Dimensions.get('window');

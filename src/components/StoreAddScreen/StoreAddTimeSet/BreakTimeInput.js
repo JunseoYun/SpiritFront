@@ -8,7 +8,18 @@ const BreakTimeInput = ({
   isEndTime,
   wrongBreak,
   handleTimePickerToggle,
+  isStartNextDay = false,
+  isEndNextDay = false,
 }) => {
+  const startHourNumber = Number(sameStartTime.startHour || 0);
+  const endHourNumber = Number(sameEndTime.endHour || 0);
+  const shouldShowStartNext = isStartNextDay || startHourNumber >= 24;
+  const shouldShowEndNext = isEndNextDay || endHourNumber >= 24;
+
+  const formatHour = (value, showNext) =>
+    (showNext ? value % 24 : value).toString().padStart(2, '0');
+  const formatMinute = value => Number(value || 0).toString().padStart(2, '0');
+
   return (
     <View>
       <View style={styles.checkboxHeader}>
@@ -23,13 +34,25 @@ const BreakTimeInput = ({
               wrongBreak && {backgroundColor: 'rgba(255, 50, 50, 0.2)'},
           ]}
           onPress={() => handleTimePickerToggle('start')}>
+          {shouldShowStartNext && (
+            <Text
+              style={[
+                styles.nextText,
+                isStartTime &&
+                  wrongBreak && {color: '#FF4816', borderColor: '#FF4816'},
+              ]}>
+              {'다음날'}
+            </Text>
+          )}
           <Text
             style={[
               styles.timeText,
               isStartTime && {color: '#3CBBFF'},
               isStartTime && wrongBreak && {color: '#FF4816'},
             ]}>
-            {`${sameStartTime.startHour}:${sameStartTime.startMinute}`}
+            {`${formatHour(startHourNumber, shouldShowStartNext)}:${formatMinute(
+              sameStartTime.startMinute,
+            )}`}
           </Text>
         </Pressable>
         <Text style={styles.separator}>~</Text>
@@ -41,7 +64,7 @@ const BreakTimeInput = ({
               wrongBreak && {backgroundColor: 'rgba(255, 50, 50, 0.2)'},
           ]}
           onPress={() => handleTimePickerToggle('end')}>
-          {sameEndTime.endHour >= 24 && (
+          {shouldShowEndNext && (
             <Text
               style={[
                 styles.nextText,
@@ -58,11 +81,9 @@ const BreakTimeInput = ({
               isEndTime && {color: '#3CBBFF'},
               isEndTime && wrongBreak && {color: '#FF4816'},
             ]}>
-            {`${
-              sameEndTime.endHour >= 24
-                ? (sameEndTime.endHour - 24).toString().padStart(2, '0')
-                : sameEndTime.endHour.toString().padStart(2, '0')
-            }:${sameEndTime.endMinute.toString().padStart(2, '0')}`}
+            {`${formatHour(endHourNumber, shouldShowEndNext)}:${formatMinute(
+              sameEndTime.endMinute,
+            )}`}
           </Text>
         </Pressable>
       </View>

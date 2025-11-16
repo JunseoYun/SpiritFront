@@ -13,7 +13,7 @@ import Feather from 'react-native-vector-icons/Feather';
 
 const {width} = Dimensions.get('window');
 
-const StorePriceImage = ({isUpdatable, imageList, navigation, storeId}) => {
+const StoreInfoImage = ({imageList, navigation, storeId}) => {
   const handleImagePress = index => {
     navigation.navigate('StoreStack', {
       screen: 'ImageViewerScreen',
@@ -26,19 +26,6 @@ const StorePriceImage = ({isUpdatable, imageList, navigation, storeId}) => {
 
   return (
     <View>
-      {/* {isUpdatable && (
-        <Pressable
-          style={styles.addImageButton}
-          onPress={() => {
-            navigation.navigate('InfoImageEditScreen', {
-              storeId,
-              imgList: imageList,
-            });
-          }}>
-          <Text style={styles.addImageText}>메뉴판 이미지 편집</Text>
-          <Feather name="chevron-right" size={22} color="#999" />
-        </Pressable>
-      )} */}
       {!imageList || imageList.length === 0 ? null : (
         <ScrollView
           horizontal
@@ -112,4 +99,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default StorePriceImage;
+export default StoreInfoImage;

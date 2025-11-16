@@ -27,30 +27,30 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useFocusEffect} from '@react-navigation/native';
 import ImagePicker from 'react-native-image-crop-picker';
-import useCustomAlert from '../../../hooks/useCustomAlert';
-import {useToast} from '../../../context/ToastContext';
+import useCustomAlert from '../../hooks/useCustomAlert';
+import {useToast} from '../../context/ToastContext';
 import {
   requestPhotoPermission,
   requestCameraPermission,
-} from '../../../hooks/usePhotopermis';
-import ImagePickermodal from '../../../hooks/ImagePickermodal';
-import Loading from '../../../hooks/Loading';
-import ActionButtons from '../../UpdateBottomSheet/ActionButtons';
+} from '../../hooks/usePhotopermis';
+import ImagePickermodal from '../../hooks/ImagePickermodal';
+import Loading from '../../hooks/Loading';
+import ActionButtons from '../../components/UpdateBottomSheet/ActionButtons';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import {
   StoreBoardimage,
   DeleteStoreboardImage,
   StoreBoardimageUpdate,
   StoreBoardImageUpdateSort,
-} from '../../../api/storeApi';
-import DraggableImageItem from './DraggableImageItem';
-import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+} from '../../api/storeApi';
+import DraggableImageItem from '../../components/StoreScreen/StoreImage/DraggableImageItem';
+import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import FastImage from 'react-native-fast-image';
 import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
-} from '../../../constants/imagePickerLabels';
+} from '../../constants/imagePickerLabels';
 
 const {width} = Dimensions.get('window');
 const IMAGE_WIDTH = width - 120;
@@ -514,7 +514,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
         await StoreBoardImageUpdateSort(storeId, orderedURLs);
       }
 
-      navigation.popToTop();
+      navigation.goBack();
     } catch (error) {
       console.error('handleSave 에러:', error);
     } finally {

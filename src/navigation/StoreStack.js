@@ -17,7 +17,7 @@ import AlcoholEditScreen from '../screens/StoreInfo/Alcohol/AlcohoEditScreen';
 import UpdateStoreDrink from '../components/UpdateBottomSheet/UpdateStoreDrink';
 import MenuEditScreen from '../screens/StoreInfo/Menu/MenuEditScreen';
 import ImageReorderScreen from '../components/StoreScreen/StoreImage/ImageReorderScreen';
-import InfoImageEditScreen from '../components/StoreScreen/StoreImage/InfoImageEditScreen';
+import InfoImageEditScreen from '../screens/StoreInfo/InfoImageEditScreen';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 import ImageViewerScreen from '../hooks/ImageViewerScreen';
 import ManagerStoreInfoScreen from '../screens/BottomTab/My/ManagerStoreInfoScreen';
@@ -25,6 +25,7 @@ import StoreManagerScreen from '../screens/StoreManager/StoreManagerScreen';
 import StoreOrderScreen from '../screens/StoreOrder/StoreOrderScreen';
 import StorePaymentScreen from '../screens/StoreOrder/StorePaymentScreen';
 import StoreUpdateScreen from '../screens/StoreInfo/StoreUpdateScreen';
+import StoreManageScreen from '../screens/StoreInfo/StoreManage/StoreManageScreen';
 const Stack = createStackNavigator();
 
 export default function StoreStack() {
@@ -96,7 +97,6 @@ export default function StoreStack() {
           };
         }}
       />
-
       <Stack.Screen
         name="ImageViewerScreen"
         component={ImageViewerScreen}
@@ -105,7 +105,7 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreUpdateScreen"
         component={StoreUpdateScreen}
-        options={() => ({
+        options={({navigation}) => ({
           title: '매장 수정',
           headerTitleAlign: 'center',
           headerTitleStyle: {
@@ -114,6 +114,11 @@ export default function StoreStack() {
             color: '#333',
           },
         })}
+      />
+      <Stack.Screen
+        name="StoreManageScreen"
+        component={StoreManageScreen}
+        options={{headerShown: false}}
       />
 
       <Stack.Screen
@@ -166,7 +171,6 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="MenuAddScreen"
         component={MenuAddScreen}
@@ -201,7 +205,6 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="AlcoholAddScreen"
         component={AlcoholAddScreen}
@@ -236,12 +239,11 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="MenuEditScreen"
         component={MenuEditScreen}
         options={({navigation}) => ({
-          title: '메뉴 편집',
+          title: '메뉴 관리',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-SemiBold',
@@ -271,12 +273,11 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="AlcoholEditScreen"
         component={AlcoholEditScreen}
         options={({navigation}) => ({
-          title: '주류 편집',
+          title: '주류 관리',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-SemiBold',
@@ -306,7 +307,6 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="ImageReorderScreen"
         component={ImageReorderScreen}
@@ -341,7 +341,6 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="StoreMapScreen"
         component={StoreMapScreen}
@@ -420,7 +419,6 @@ export default function StoreStack() {
           };
         }}
       />
-
       <Stack.Screen
         name="StoreReportList"
         component={StoreReportList}
@@ -460,7 +458,6 @@ export default function StoreStack() {
           };
         }}
       />
-
       <Stack.Screen
         name="StoreReportScreen"
         component={StoreReportScreen}
@@ -488,7 +485,6 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="ReviewReportScreen"
         component={ReviewReportScreen}
@@ -518,7 +514,6 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="InfoImageEditScreen"
         component={InfoImageEditScreen}
@@ -555,7 +550,6 @@ export default function StoreStack() {
           };
         }}
       />
-
       <Stack.Screen
         name="ManagerStoreInfoScreen"
         component={ManagerStoreInfoScreen}
@@ -595,7 +589,6 @@ export default function StoreStack() {
           };
         }}
       />
-
       <Stack.Screen
         name="StoreManagerScreen"
         component={StoreManagerScreen}

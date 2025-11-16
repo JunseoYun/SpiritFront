@@ -4,7 +4,7 @@ import ColorUtil from '../../../utils/ColorUtil';
 
 const MOOD_LABELS = {
   QUIET: '조용한',
-  LIVELY: '시끌벅적한',
+  LIVELY: '활기찬',
   SOLO_FRIENDLY: '혼술하기 좋은',
   DATE: '데이트하기 좋은',
   PARTY_EVENT: '모임/파티 분위기',

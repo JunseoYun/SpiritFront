@@ -43,8 +43,10 @@ import ColorUtil from '../../utils/ColorUtil';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import useDoubleBackExit from '../../hooks/useDoubleBackExit';
 import BusinessCertificate from '../../components/StoreAuthority/BusinessCertificate';
-import StoreRegistrationConsentModal from '../../components/StoreAuthority/StoreRegistrationConsentModal';
-import {Create_store_with_ownership} from '../../api/storeApi';
+import {
+  Create_store_with_ownership,
+  Create_store_with_ownership_photoOnly,
+} from '../../api/storeApi';
 const STEPS = [
   'image',
   'name',
@@ -57,6 +59,7 @@ const STEPS = [
   'contact',
   'content',
   'businessCertificate',
+  'consent',
 ];
 
 const STEP_GUIDES = {
@@ -130,6 +133,14 @@ const STEP_GUIDES = {
     description: '선명한 사업자등록증을 첨부하면 등록 검토가 더 빨라집니다.',
     tipTitle: '첨부 가이드',
     tip: '전체 정보가 잘 보이도록 밝은 곳에서 촬영해 주세요. 등록증은 최신본을 사용해주세요.',
+  },
+  consent: {
+    type: '개인정보 수집 동의',
+    title: '동의가 필요해요',
+    description:
+      '매장 등록 및 사업자 인증을 위해 정보 수집·이용에 동의해주세요.',
+    tipTitle: '왜 필요한가요?',
+    tip: '한잔할까는 사업자 등록증과 신청자 정보를 대조해 간편하게 인증하기 때문에, 본인 확인을 위한 최소한의 정보가 필요해요.',
   },
 };
 
@@ -211,7 +222,6 @@ const StoreOwnershipScreen = ({navigation}) => {
   const [storeNumber, setStoreNumber] = useState('');
   const [storeContent, setStoreContent] = useState('');
   const [businessCertificate, setBusinessCertificate] = useState(null);
-  const [isConsentModalVisible, setIsConsentModalVisible] = useState(false);
   const [isConsentChecked, setIsConsentChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -248,9 +258,8 @@ const StoreOwnershipScreen = ({navigation}) => {
       });
       return;
     }
-    closeConsentModal();
     handleSubmit();
-  }, [isConsentChecked, closeConsentModal, handleSubmit, showAlert]);
+  }, [isConsentChecked, handleSubmit, showAlert]);
 
   const scrollToError = useCallback(ref => {
     if (ref?.current && scrollViewRef.current) {
@@ -328,19 +337,6 @@ const StoreOwnershipScreen = ({navigation}) => {
         </View>
       </View>
     );
-  }, []);
-
-  const openConsentModal = useCallback(() => {
-    setIsConsentChecked(false);
-    setIsConsentModalVisible(true);
-  }, []);
-
-  const closeConsentModal = useCallback(() => {
-    setIsConsentModalVisible(false);
-  }, []);
-
-  const toggleConsentChecked = useCallback(() => {
-    setIsConsentChecked(prev => !prev);
   }, []);
 
   const scrollToTop = useCallback(() => {
@@ -434,6 +430,8 @@ const StoreOwnershipScreen = ({navigation}) => {
         return !!storeContent.trim();
       case 'businessCertificate':
         return !!businessCertificate;
+      case 'consent':
+        return isConsentChecked;
       default:
         return true;
     }
@@ -448,6 +446,7 @@ const StoreOwnershipScreen = ({navigation}) => {
     storeNumber,
     storeContent,
     businessCertificate,
+    isConsentChecked,
   ]);
 
   const adjustTime = time => {
@@ -542,41 +541,38 @@ const StoreOwnershipScreen = ({navigation}) => {
         businessCertificate,
       createStoreRqDto: createStoreDto,
     };
-    console.log(
-      '[CreateStoreWithOwnership] payload (without ownership):',
-      JSON.stringify(payload, null, 2),
-    );
-    // try {
-    //   setLoading(true);
-    //   const response = await Create_store_with_ownership(payload);
-    //   if (response.status === 200) {
-    //     showAlert({
-    //       title: '매장 등록 및 인증 신청 완료',
-    //       message:
-    //         '신청 내용을 확인한 후, 빠른 시일 내에 \n알림으로 안내드릴 예정입니다.',
-    //       onConfirm: () => {
-    //         navigation.reset({
-    //           index: 0,
-    //           routes: [
-    //             {
-    //               name: 'MainBtmbar',
-    //               state: {routes: [{name: 'MainScreen'}]},
-    //             },
-    //           ],
-    //         });
-    //       },
-    //     });
-    //   }
-    // } catch (apiError) {
-    //   console.log('[CreateStoreWithOwnership] error', apiError?.response?.data);
-    //   showAlert({
-    //     title: '등록 실패',
-    //     message:
-    //       '잠시 후 다시 시도해 주세요.\n계속 실패할 경우, 메일로 문의해 주세요.',
-    //   });
-    // } finally {
-    //   setLoading(false);
-    // }
+
+    try {
+      setLoading(true);
+      const response = await Create_store_with_ownership_photoOnly(payload);
+      if (response.status === 200) {
+        showAlert({
+          title: '매장 등록 및 인증 신청 완료',
+          message:
+            '신청 내용을 확인한 후, 빠른 시일 내에\n알림으로 안내드릴 예정입니다.',
+          onConfirm: () => {
+            navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: 'MainBtmbar',
+                  state: {routes: [{name: 'MainScreen'}]},
+                },
+              ],
+            });
+          },
+        });
+      }
+    } catch (apiError) {
+      console.log('[CreateStoreWithOwnership] error', apiError?.response?.data);
+      showAlert({
+        title: '등록 실패',
+        message:
+          '잠시 후 다시 시도해 주세요.\n계속 실패할 경우, 메일로 문의해 주세요.',
+      });
+    } finally {
+      setLoading(false);
+    }
   }, [
     isSubmitDisabled,
     operatingHours,
@@ -699,15 +695,18 @@ const StoreOwnershipScreen = ({navigation}) => {
       return;
     }
 
-    if (stepIndex === STEPS.length - 1) {
-      handleSubmit();
+    if (stepIndex >= STEPS.length - 1) {
       return;
     }
 
-    setStepIndex(prev => prev + 1);
+    const nextIndex = stepIndex + 1;
+    if (STEPS[nextIndex] === 'consent') {
+      setIsConsentChecked(false);
+    }
+    setStepIndex(nextIndex);
     setError('');
     scrollToTop();
-  }, [validateStep, stepIndex, handleSubmit, scrollToTop]);
+  }, [validateStep, stepIndex, scrollToTop]);
 
   const handleStepBack = useCallback(() => {
     if (stepIndex === 0) {
@@ -735,14 +734,12 @@ const StoreOwnershipScreen = ({navigation}) => {
   }, [progressRatio, animateProgress]);
 
   const handlePrimaryAction = useCallback(() => {
-    if (stepIndex === STEPS.length - 1) {
-      if (!isSubmitDisabled && !loading) {
-        openConsentModal();
-      }
+    if (step === 'consent') {
+      handleConsentConfirm();
       return;
     }
     handleNext();
-  }, [stepIndex, isSubmitDisabled, loading, openConsentModal, handleNext]);
+  }, [step, handleConsentConfirm, handleNext]);
 
   useLayoutEffect(() => {
     const isIOS = Platform.OS === 'ios';
@@ -828,7 +825,7 @@ const StoreOwnershipScreen = ({navigation}) => {
                   setDetailedAddress={setDetailedAddress}
                   navigation={navigation}
                   onAddressSelect={handleAddressSelect}
-                  location={location}
+                  location={coords}
                   error={error}
                   screen="StoreRegistrationScreen"
                   type="registration"
@@ -961,29 +958,51 @@ const StoreOwnershipScreen = ({navigation}) => {
               {renderStepTip('businessCertificate')}
             </>
           )}
+          {step === 'consent' && (
+            <>
+              {renderStepIntro('consent')}
+              <View style={styles.consentCard}>
+                <Text style={styles.consentBody}>
+                  한잔할까는 매장 등록 및 사업자 인증을 위해 신청자의 이름,
+                  연락처, 사업자등록증 사본을 수집·이용합니다. 해당 정보는 등록
+                  심사와 사업자 진위 확인 외의 용도로 사용되지 않으며, 심사 완료
+                  후 일정 기간이 지난 후 안전하게 파기됩니다.
+                </Text>
+                <Pressable
+                  style={styles.inlineConsentRow}
+                  onPress={() => setIsConsentChecked(prev => !prev)}>
+                  <View
+                    style={[
+                      styles.inlineCheckbox,
+                      isConsentChecked && styles.inlineCheckboxChecked,
+                    ]}>
+                    {isConsentChecked && (
+                      <Ionicons name="checkmark" size={16} color="#FFF" />
+                    )}
+                  </View>
+                  <Text style={styles.inlineConsentLabel}>
+                    위 내용에 동의합니다. (필수)
+                  </Text>
+                </Pressable>
+              </View>
+              {renderStepTip('consent')}
+            </>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
 
       <BottomActionButton
-        label={stepIndex === STEPS.length - 1 ? '등록' : '다음'}
+        label={step === 'consent' ? '등록' : '다음'}
         disabled={
           loading ||
-          (stepIndex === STEPS.length - 1
-            ? isSubmitDisabled
+          (step === 'consent'
+            ? isSubmitDisabled || !isConsentChecked
             : !isCurrentStepValid)
         }
         cancel
         cancelLabel="이전"
         onPress={handlePrimaryAction}
         onCancel={handleStepBack}
-      />
-      <StoreRegistrationConsentModal
-        visible={isConsentModalVisible}
-        onRequestClose={closeConsentModal}
-        isChecked={isConsentChecked}
-        onToggleChecked={toggleConsentChecked}
-        onConfirm={handleConsentConfirm}
-        loading={loading}
       />
       <Loading loading={loading} />
       <AlertComponent />
@@ -1014,12 +1033,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 100,
   },
-  nextButton: {
-    marginRight: 18,
-    fontSize: 18,
-    fontFamily: 'Pretendard-SemiBold',
-    color: ColorUtil.main,
-  },
+
   sectionIntro: {
     marginHorizontal: 20,
     marginTop: 24,
@@ -1069,40 +1083,26 @@ const styles = StyleSheet.create({
     color: '#24324A',
     lineHeight: 20,
   },
-  consentOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'flex-end',
+  consentCard: {
+    marginHorizontal: 18,
+    padding: 18,
+    borderRadius: 12,
+    backgroundColor: '#F8FBFF',
+    borderWidth: 1,
+    borderColor: '#E1E8F5',
   },
-  consentDim: {
-    flex: 1,
-  },
-  consentModal: {
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingHorizontal: 24,
-    paddingTop: 26,
-    paddingBottom: 30,
-  },
-  consentTitle: {
-    fontSize: 18,
-    fontFamily: 'Pretendard-Bold',
-    color: '#111',
-  },
-  consentDescription: {
-    marginTop: 14,
+  consentBody: {
     fontSize: 14,
-    lineHeight: 22,
-    color: '#444',
+    color: '#333',
+    lineHeight: 21,
     fontFamily: 'Pretendard-Regular',
   },
-  consentCheckboxRow: {
+  inlineConsentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 18,
   },
-  consentCheckbox: {
+  inlineCheckbox: {
     width: 22,
     height: 22,
     borderRadius: 6,
@@ -1113,45 +1113,13 @@ const styles = StyleSheet.create({
     marginRight: 10,
     backgroundColor: '#FFF',
   },
-  consentCheckboxChecked: {
+  inlineCheckboxChecked: {
     backgroundColor: ColorUtil.main,
     borderColor: ColorUtil.main,
   },
-  consentCheckboxLabel: {
+  inlineConsentLabel: {
     fontSize: 15,
     color: '#222',
-    fontFamily: 'Pretendard-SemiBold',
-  },
-  consentButtonRow: {
-    flexDirection: 'row',
-    marginTop: 28,
-  },
-  consentButton: {
-    flex: 1,
-    height: 50,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  consentCancelButton: {
-    borderWidth: 1,
-    borderColor: '#D0D7E2',
-    marginRight: 12,
-  },
-  consentConfirmButton: {
-    backgroundColor: ColorUtil.main,
-  },
-  consentButtonDisabled: {
-    backgroundColor: ColorUtil.mainDisable,
-  },
-  consentCancelText: {
-    fontSize: 15,
-    color: '#415373',
-    fontFamily: 'Pretendard-SemiBold',
-  },
-  consentConfirmText: {
-    fontSize: 15,
-    color: '#FFF',
     fontFamily: 'Pretendard-SemiBold',
   },
 });

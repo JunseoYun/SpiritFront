@@ -35,6 +35,11 @@ import OperateBottomBreakSelector from '../../components/StoreAddScreen/StoreAdd
 import OperateBottomBreakingTimePicker from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomBreakingTimePicker';
 import OperateBottomBreakToggle from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomBreakToggle';
 import OperateBottomConfirmButton from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomConfirmButton';
+import {
+  calculateRangeFromEntry,
+  normalizeOperatingHoursMap,
+  normalizeBreakingHoursMap,
+} from '../../utils/parseOperatingHours';
 
 const days = [
   {label: '월', value: 'MONDAY'},
@@ -63,30 +68,98 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
   } = route.params;
 
   const insets = useSafeAreaInsets();
+  const normalizedOperatingHours = useMemo(
+    () => normalizeOperatingHoursMap(operatingHours),
+    [operatingHours],
+  );
+  const normalizedBreakingHours = useMemo(
+    () =>
+      normalizeBreakingHoursMap(normalizedOperatingHours, breakingHours),
+    [normalizedOperatingHours, breakingHours],
+  );
 
   const convertToMinutes = (hour, minute) =>
     parseInt(hour, 10) * 60 + parseInt(minute, 10);
+
+  const toMinutesSafe = (hour, minute) => {
+    if (hour === '' || minute === '' || hour == null || minute == null) {
+      return null;
+    }
+    const minutes = convertToMinutes(hour, minute);
+    return Number.isNaN(minutes) ? null : minutes;
+  };
+
+  const normalizeBreakMinutes = (hour, minute, opStart, isOvernight) => {
+    const baseMinutes = toMinutesSafe(hour, minute);
+    if (baseMinutes === null) {
+      return null;
+    }
+    if (isOvernight && baseMinutes < opStart) {
+      return baseMinutes + 1440;
+    }
+    return baseMinutes;
+  };
+
 
   const getDefaultTime = (time, defaultValue) => time ?? defaultValue;
 
   const [timeState, setTimeState] = useState({
     sameOpenTime: {
-      openHour: getDefaultTime(operatingHours?.Monday?.openHour, '09'),
-      openMinute: getDefaultTime(operatingHours?.Monday?.openMinute, '00'),
+      openHour: getDefaultTime(normalizedOperatingHours?.Monday?.openHour, '09'),
+      openMinute: getDefaultTime(
+        normalizedOperatingHours?.Monday?.openMinute,
+        '00',
+      ),
     },
     sameCloseTime: {
-      closedHour: getDefaultTime(operatingHours?.Monday?.closedHour, '18'),
-      closedMinute: getDefaultTime(operatingHours?.Monday?.closedMinute, '00'),
+      closedHour: getDefaultTime(
+        normalizedOperatingHours?.Monday?.closedHour,
+        '18',
+      ),
+      closedMinute: getDefaultTime(
+        normalizedOperatingHours?.Monday?.closedMinute,
+        '00',
+      ),
     },
     sameStartTime: {
-      startHour: getDefaultTime(breakingHours?.Monday?.startHour, '15'),
-      startMinute: getDefaultTime(breakingHours?.Monday?.startMinute, '00'),
+      startHour: getDefaultTime(normalizedBreakingHours?.Monday?.startHour, '15'),
+      startMinute: getDefaultTime(
+        normalizedBreakingHours?.Monday?.startMinute,
+        '00',
+      ),
     },
     sameEndTime: {
-      endHour: getDefaultTime(breakingHours?.Monday?.endHour, '17'),
-      endMinute: getDefaultTime(breakingHours?.Monday?.endMinute, '00'),
+      endHour: getDefaultTime(normalizedBreakingHours?.Monday?.endHour, '17'),
+      endMinute: getDefaultTime(
+        normalizedBreakingHours?.Monday?.endMinute,
+        '00',
+      ),
     },
   });
+  const shouldShowSameBreakMeta =
+    hasLocalBreaking &&
+    timeState.sameStartTime.startHour !== '' &&
+    timeState.sameEndTime.endHour !== '';
+  const sameBreakRange =
+    shouldShowSameBreakMeta &&
+    calculateRangeFromEntry(
+      {
+        openHour: timeState.sameStartTime.startHour,
+        openMinute: timeState.sameStartTime.startMinute,
+        closedHour: timeState.sameEndTime.endHour,
+        closedMinute: timeState.sameEndTime.endMinute,
+      },
+      {
+        referenceHour: timeState.sameOpenTime.openHour,
+        referenceMinute: timeState.sameOpenTime.openMinute,
+      },
+    );
+  const isSameBreakStartNextDay = Boolean(
+    sameBreakRange && sameBreakRange.startDayOffset,
+  );
+  const isSameBreakEndNextDay = Boolean(
+    sameBreakRange && sameBreakRange.endDayOffset,
+  );
   const [localClosedDay, setLocalClosedDay] = useState(closedDay || []);
   const [isClosed, setIsClosed] = useState(localClosedDay.length > 0);
   const [isSameEveryday, setIsSameEveryday] = useState(isSameEveryTime);
@@ -111,11 +184,11 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     tempBreaking: {},
   });
   const [localOperatingHours, setLocalOperatingHours] = useState(() => {
-    const hasOperatingHours = Object.values(operatingHours).some(
+    const hasOperatingHours = Object.values(normalizedOperatingHours).some(
       ({openHour, closedHour}) => openHour !== '' && closedHour !== '',
     );
     if (hasOperatingHours === true) {
-      return JSON.parse(JSON.stringify(operatingHours)); // 기존 데이터 복사
+      return JSON.parse(JSON.stringify(normalizedOperatingHours)); // 기존 데이터 복사
     } else {
       const defaultHours = {};
       days.forEach(({value: day}) => {
@@ -131,7 +204,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     }
   });
   const [localBreakingHours, setLocalBreakingHours] = useState(
-    JSON.parse(JSON.stringify(breakingHours)), // 기존 데이터 복사
+    JSON.parse(JSON.stringify(normalizedBreakingHours)), // 기존 데이터 복사
   );
 
   const scrollViewRef = useRef(null);
@@ -211,18 +284,32 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
           };
         }
       });
+      const normalizedOperating = normalizeOperatingHoursMap(
+        updatedOperatingHours,
+      );
+      const normalizedBreaking = normalizeBreakingHoursMap(
+        normalizedOperating,
+        updatedBreakingHours,
+      );
       setClosedDay(localClosedDay);
       setHasBreaking(hasLocalBreaking);
-      setOperatingHours(updatedOperatingHours);
-      setBreakingHours(updatedBreakingHours);
+      setOperatingHours(normalizedOperating);
+      setBreakingHours(normalizedBreaking);
       setIs24Hours(is24);
       setIsSameEveryTime(isSameEveryday);
     } else {
       if (breakError || operateError || emptyTime) {
         return;
       }
-      setOperatingHours(localOperatingHours);
-      setBreakingHours(localBreakingHours);
+      const normalizedOperating = normalizeOperatingHoursMap(
+        localOperatingHours,
+      );
+      const normalizedBreaking = normalizeBreakingHoursMap(
+        normalizedOperating,
+        localBreakingHours,
+      );
+      setOperatingHours(normalizedOperating);
+      setBreakingHours(normalizedBreaking);
       setHasBreaking(false);
       setClosedDay(localClosedDay);
       setIs24Hours(is24);
@@ -300,6 +387,12 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
   };
 
   useEffect(() => {
+    if (!hasLocalBreaking) {
+      setWrongBreak(false);
+      setBreakErrorMessage('');
+      return;
+    }
+
     const opStart = convertToMinutes(
       timeState.sameOpenTime.openHour,
       timeState.sameOpenTime.openMinute,
@@ -308,18 +401,27 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
       timeState.sameCloseTime.closedHour,
       timeState.sameCloseTime.closedMinute,
     );
-    const brStart = convertToMinutes(
+    const isOvernightOperation =
+      Number(timeState.sameCloseTime.closedHour) >= 24;
+    const brStart = normalizeBreakMinutes(
       timeState.sameStartTime.startHour,
       timeState.sameStartTime.startMinute,
+      opStart,
+      isOvernightOperation,
     );
-    const brEnd = convertToMinutes(
+    const brEnd = normalizeBreakMinutes(
       timeState.sameEndTime.endHour,
       timeState.sameEndTime.endMinute,
+      opStart,
+      isOvernightOperation,
     );
 
     let errorMessage = '';
 
-    if (brStart === brEnd) {
+    if (brStart === null || brEnd === null) {
+      errorMessage = '브레이크타임을 정확히 입력해주세요.';
+      setWrongBreak(true);
+    } else if (brStart === brEnd) {
       errorMessage =
         '브레이크타임 시작 시간과 종료 시간을 다르게 설정해주세요.';
       setWrongBreak(true);
@@ -555,14 +657,14 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
   };
 
   useEffect(() => {
-    if (!operatingHours?.Monday?.openHour) {
+    if (!normalizedOperatingHours?.Monday?.openHour) {
       setTimeState(prevState => ({
         ...prevState,
         sameOpenTime: {openHour: '09', openMinute: '00'},
         sameCloseTime: {closedHour: '18', closedMinute: '00'},
       }));
     }
-  }, [operatingHours]);
+  }, [normalizedOperatingHours]);
 
   useEffect(() => {
     if (!isClosed) {
@@ -707,17 +809,35 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     setOperateErrorMessage(operateErrorMessage);
 
     let isBreakInvalid = false;
-    if (localBreakingHours?.[day]) {
-      const brStart = convertToMinutes(
+    if (
+      localBreakingHours?.[day] &&
+      localBreakingHours[day]?.startHour !== '' &&
+      localBreakingHours[day]?.startMinute !== '' &&
+      localBreakingHours[day]?.endHour !== '' &&
+      localBreakingHours[day]?.endMinute !== ''
+    ) {
+      const isOvernightOperation =
+        Number(localOperatingHours[day]?.closedHour) >= 24;
+      const brStart = normalizeBreakMinutes(
         localBreakingHours[day]?.startHour,
         localBreakingHours[day]?.startMinute,
+        opStart,
+        isOvernightOperation,
       );
-      const brEnd = convertToMinutes(
+      const brEnd = normalizeBreakMinutes(
         localBreakingHours[day]?.endHour,
         localBreakingHours[day]?.endMinute,
+        opStart,
+        isOvernightOperation,
       );
 
-      if (brStart <= opStart || brEnd >= opEnd) {
+      if (
+        brStart === null ||
+        brEnd === null ||
+        brStart <= opStart ||
+        brEnd >= opEnd ||
+        brStart >= brEnd
+      ) {
         isBreakInvalid = true;
       }
     }
@@ -881,6 +1001,8 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
                   isEndTime={isEndTime}
                   wrongBreak={wrongBreak}
                   handleTimePickerToggle={handleTimePickerToggle}
+                  isStartNextDay={isSameBreakStartNextDay}
+                  isEndNextDay={isSameBreakEndNextDay}
                 />
 
                 {(isStartTime || isEndTime) && (

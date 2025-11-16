@@ -8,14 +8,14 @@ import ColorUtil from '../../../utils/ColorUtil';
 const InnerOperation = ({
   toggleExpand,
   isExpanded,
-  storedata,
+  isAlwaysOpen,
   operationSchedule,
 }) => {
   return (
     <>
       {isExpanded && (
         <Pressable style={styles.timeView} onPress={toggleExpand}>
-          {operationSchedule && storedata?.isAlwaysOpen == false ? (
+          {operationSchedule && isAlwaysOpen == false ? (
             <>
               {/* <Ionicons name="time-outline" size={20} color="#333" /> */}
               <View style={styles.openView}>
@@ -63,7 +63,7 @@ const InnerOperation = ({
               </View>
             </>
           ) : (
-            storedata?.isAlwaysOpen == true && (
+            isAlwaysOpen == true && (
               <>
                 {/* <Ionicons name="time-outline" size={20} color="#333" /> */}
                 <Text style={styles.infoHidetext}>매일 00:00 - 24:00</Text>

@@ -15,6 +15,7 @@ import {
   View,
   Text,
   findNodeHandle,
+  InteractionManager,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
@@ -45,6 +46,11 @@ import {
 import {StoreMenuget} from '../../api/menuApi';
 import {StoreDrinkget} from '../../api/drinkApi';
 import ColorUtil from '../../utils/ColorUtil';
+import forbiddenWords from '../../hooks/forbiddenWords';
+import {
+  deserializeOperatingTime,
+  deserializeBreakingTime,
+} from '../../utils/parseOperatingHours';
 
 const MOOD_TEMPLATE = {
   QUIET: false,
@@ -80,6 +86,53 @@ const DAY_KEYS = [
   'Saturday',
   'Sunday',
 ];
+
+const STEP_GUIDES = {
+  image: {
+    type: '매장 사진',
+    title: '매장 사진을 등록해주세요',
+    description: '대표 사진을 포함해 최대 5장까지 업로드할 수 있어요.',
+    tipTitle: '사진 가이드',
+    tip: '첫 번째로 추가한 사진이 대표 사진으로 설정돼요.',
+  },
+  address: {
+    type: '매장 주소',
+    title: '매장 주소를 알려주세요',
+    description: '정확한 주소는 고객 방문과 심사에 꼭 필요해요.',
+    tipTitle: '주소 입력 방법',
+    tip: '검색으로 찾기 어렵다면 지도에서 위치를 직접 지정해 보세요.',
+  },
+  mood: {
+    type: '매장 분위기',
+    title: '매장 분위기를 선택해주세요',
+    description:
+      '고객이 매장의 감성을 느낄 수 있도록 최대 4개까지 선택할 수 있어요.',
+  },
+  category: {
+    type: '매장 카테고리',
+    title: '매장 카테고리를 골라주세요',
+    description: '대표되는 업종을 최대 3개까지 선택하면 추천에 도움이 돼요.',
+  },
+  hours: {
+    type: '매장 영업 시간',
+    title: '영업 시간을 등록해주세요',
+    description: '요일별 영업 시간과 휴무일을 정확히 입력해 주세요.',
+    tipTitle: '시간 입력 팁',
+    tip: '브레이크 타임이 있다면 함께 입력하면 고객 문의가 줄어들어요.',
+  },
+  facilities: {
+    type: '매장 편의시설',
+    title: '편의시설 정보를 선택해주세요',
+    description: '제공되는 서비스는 고객 방문 결정에 큰 도움이 됩니다.',
+  },
+  businessCertificate: {
+    type: '사업자등록증',
+    title: '사업자등록증을 첨부해주세요',
+    description: '선명한 사업자등록증을 첨부하면 등록 검토가 더 빨라집니다.',
+    tipTitle: '첨부 가이드',
+    tip: '전체 정보가 잘 보이도록 밝은 곳에서 촬영해 주세요. 등록증은 최신본을 사용해주세요.',
+  },
+};
 
 const DAY_TO_UPPER = DAY_KEYS.reduce((acc, day) => {
   acc[day] = day.toUpperCase();
@@ -233,29 +286,30 @@ const convertOperationInfoDtos = infoDtos => {
       return;
     }
 
-    const [openHour = '00', openMinute = '00'] = (
-      dto.openTime || '00:00'
-    ).split(':');
-    const [closeHour = '00', closeMinute = '00'] = (
-      dto.closeTime || '00:00'
-    ).split(':');
+    const parsedOperating = deserializeOperatingTime({
+      openTime: dto.openTime,
+      closeTime: dto.closeTime,
+    });
 
     operating[dayKey] = {
-      openHour: openHour.padStart(2, '0'),
-      openMinute: openMinute.padStart(2, '0'),
-      closedHour: closeHour.padStart(2, '0'),
-      closedMinute: closeMinute.padStart(2, '0'),
+      openHour: parsedOperating.openHour,
+      openMinute: parsedOperating.openMinute,
+      closedHour: parsedOperating.closedHour,
+      closedMinute: parsedOperating.closedMinute,
     };
 
     if (dto.breakStartTime && dto.breakEndTime) {
-      const [startHour = '00', startMinute = '00'] =
-        dto.breakStartTime.split(':');
-      const [endHour = '00', endMinute = '00'] = dto.breakEndTime.split(':');
+      const parsedBreak = deserializeBreakingTime({
+        startTime: dto.breakStartTime,
+        endTime: dto.breakEndTime,
+        referenceOpenTime: dto.openTime,
+      });
+
       breaking[dayKey] = {
-        startHour: startHour.padStart(2, '0'),
-        startMinute: startMinute.padStart(2, '0'),
-        endHour: endHour.padStart(2, '0'),
-        endMinute: endMinute.padStart(2, '0'),
+        startHour: parsedBreak.startHour,
+        startMinute: parsedBreak.startMinute,
+        endHour: parsedBreak.endHour,
+        endMinute: parsedBreak.endMinute,
       };
       hasBreak = true;
     }
@@ -298,7 +352,7 @@ const StoreUpdateScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const route = useRoute();
   useDoubleBackExit(navigation);
-  const {storeId, initialStoreData} = route.params || {};
+  const {storeId, initialStoreData, type} = route.params || {};
 
   const {showAlert, AlertComponent} = useCustomAlert();
   const allowLeaveRef = useRef(false);
@@ -548,26 +602,6 @@ const StoreUpdateScreen = ({navigation}) => {
     setHasChanges(false);
   }, []);
 
-  const refreshMenuList = useCallback(async () => {
-    if (!storeId) return;
-    try {
-      const menuResponse = await StoreMenuget(storeId);
-      setMenuList(Array.isArray(menuResponse) ? menuResponse : []);
-    } catch (error) {
-      console.error('메뉴 목록을 불러오지 못했습니다.', error);
-    }
-  }, [storeId]);
-
-  const refreshAlcoholList = useCallback(async () => {
-    if (!storeId) return;
-    try {
-      const alcoholResponse = await StoreDrinkget(storeId);
-      setAlcoholList(Array.isArray(alcoholResponse) ? alcoholResponse : []);
-    } catch (error) {
-      console.error('주류 목록을 불러오지 못했습니다.', error);
-    }
-  }, [storeId]);
-
   const fetchStoreInfo = useCallback(async () => {
     if (!storeId) return;
     setLoading(true);
@@ -596,14 +630,22 @@ const StoreUpdateScreen = ({navigation}) => {
       });
       return;
     }
-    fetchStoreInfo();
-  }, [storeId, fetchStoreInfo, navigation, showAlert]);
 
-  useEffect(() => {
-    if (!storeId) return;
-    refreshMenuList();
-    refreshAlcoholList();
-  }, [storeId, refreshMenuList, refreshAlcoholList]);
+    // 이미 initialStoreData가 있을 경우 API 호출 생략
+    if (initialStoreData && Object.keys(initialStoreData).length > 0) {
+      hydrateForm(initialStoreData);
+      return;
+    }
+
+    // 없을 때만 API 호출
+    setLoading(true);
+    const task = InteractionManager.runAfterInteractions(async () => {
+      await fetchStoreInfo();
+      setLoading(false);
+    });
+
+    return () => task.cancel();
+  }, [storeId, initialStoreData, hydrateForm, navigation, showAlert]);
 
   const exitScreen = useCallback(
     action => {
@@ -650,9 +692,40 @@ const StoreUpdateScreen = ({navigation}) => {
     }, [navigation, handleCancelPress, hasChanges]),
   );
 
+  const currentStepTitle = useMemo(() => {
+    switch (type) {
+      case 'image':
+        return '이미지 관리';
+      case 'mainInfo':
+        return '매장 정보 관리';
+      case 'address':
+        return '위치 관리';
+      case 'subInfo':
+        return '부가 정보 관리';
+      case 'hours':
+        return '영업시간 관리';
+      default:
+        return true;
+    }
+  }, [type]);
+
   useLayoutEffect(() => {
+    const isIOS = Platform.OS === 'ios';
     navigation.setOptions({
+      headerTitle: () => (
+        <Text
+          style={{
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          }}
+          allowFontScaling={false}>
+          {currentStepTitle || '매장 등록'}
+        </Text>
+      ),
+
+      headerTitleAlign: 'center',
       gestureEnabled: false,
+      headerShadowVisible: false,
       headerLeft: () => (
         <Pressable
           onPress={() => handleCancelPress()}
@@ -666,7 +739,7 @@ const StoreUpdateScreen = ({navigation}) => {
         </Pressable>
       ),
     });
-  }, [navigation, handleCancelPress]);
+  }, [navigation, handleCancelPress, currentStepTitle]);
 
   useEffect(() => {
     const parent = navigation.getParent?.();
@@ -683,36 +756,14 @@ const StoreUpdateScreen = ({navigation}) => {
     };
   }, [navigation]);
 
-  const handleMenuBoardEdit = useCallback(() => {
-    navigation.navigate('InfoImageEditScreen', {
-      storeId,
-      imgList: boardImages,
-    });
-  }, [navigation, storeId, boardImages]);
-
-  const handleMenuEditNavigate = useCallback(() => {
-    navigation.navigate('MenuEditScreen', {
-      storeId,
-      menus: menuList,
-      onMenuUpdateComplete: refreshMenuList,
-    });
-  }, [navigation, storeId, menuList, refreshMenuList]);
-
-  const handleAlcoholEditNavigate = useCallback(() => {
-    navigation.navigate('AlcoholEditScreen', {
-      storeId,
-      alcohols: alcoholList,
-      onAlcoholUpdateComplete: refreshAlcoholList,
-      onAlcoholDelete: null,
-    });
-  }, [navigation, storeId, alcoholList, refreshAlcoholList]);
-
-  const handleAddressSelect = useCallback(({address, coords}) => {
-    setAddress(address);
-    if (coords) {
-      setCoords(coords);
-    }
-  }, []);
+  const handleAddressSelect = useCallback(
+    ({address, detailedAddress, coords}) => {
+      if (address) setAddress(address);
+      if (detailedAddress) setDetailedAddress(detailedAddress);
+      if (coords) setCoords(coords);
+    },
+    [],
+  );
 
   const storeTimeHandle = useCallback(() => {
     navigation.navigate('StoreAddTimeSetScreen', {
@@ -766,7 +817,17 @@ const StoreUpdateScreen = ({navigation}) => {
   }, [operatingHours, breakingHours, closedDay]);
 
   const validateForm = useCallback(() => {
-    if (!imageUris.length) {
+    const shouldValidate = sectionType => {
+      if (!type) {
+        return true;
+      }
+      if (Array.isArray(sectionType)) {
+        return sectionType.includes(type);
+      }
+      return type === sectionType;
+    };
+
+    if (shouldValidate('image') && !imageUris.length) {
       setError('StoreImage');
       scrollToError(imageRef);
       showAlert({
@@ -776,7 +837,7 @@ const StoreUpdateScreen = ({navigation}) => {
       return false;
     }
 
-    if (!storename.trim()) {
+    if (shouldValidate('mainInfo') && !storename.trim()) {
       setError('storename');
       scrollToError(nameRef);
       showAlert({
@@ -786,7 +847,7 @@ const StoreUpdateScreen = ({navigation}) => {
       return false;
     }
 
-    if (!address.trim()) {
+    if (shouldValidate('address') && !address.trim()) {
       setError('StoreAddress');
       scrollToError(addressRef);
       showAlert({
@@ -796,7 +857,7 @@ const StoreUpdateScreen = ({navigation}) => {
       return false;
     }
 
-    if (!selectedCategory.length) {
+    if (shouldValidate('subInfo') && !selectedCategory.length) {
       setError('StoreCategory');
       scrollToError(categoryRef);
       showAlert({
@@ -806,7 +867,7 @@ const StoreUpdateScreen = ({navigation}) => {
       return false;
     }
 
-    if (!is24Hours && !hasCompletedOperatingHours) {
+    if (shouldValidate('hours') && !is24Hours && !hasCompletedOperatingHours) {
       setError('StoreOperate');
       scrollToError(operatingRef);
       showAlert({
@@ -816,7 +877,7 @@ const StoreUpdateScreen = ({navigation}) => {
       return false;
     }
 
-    if (!alcohol.length) {
+    if (shouldValidate('subInfo') && !alcohol.length) {
       setError('StoreDrink');
       scrollToError(alcoholRef);
       showAlert({
@@ -826,7 +887,7 @@ const StoreUpdateScreen = ({navigation}) => {
       return false;
     }
 
-    if (!storeNumber.trim()) {
+    if (shouldValidate('mainInfo') && !storeNumber.trim()) {
       setError('storeNumber');
       scrollToError(contactRef);
       showAlert({
@@ -836,7 +897,7 @@ const StoreUpdateScreen = ({navigation}) => {
       return false;
     }
 
-    if (!storeContent.trim()) {
+    if (shouldValidate('mainInfo') && !storeContent.trim()) {
       setError('storeContent');
       scrollToError(contentRef);
       showAlert({
@@ -848,6 +909,7 @@ const StoreUpdateScreen = ({navigation}) => {
 
     return true;
   }, [
+    type,
     imageUris.length,
     storename,
     address,
@@ -898,12 +960,18 @@ const StoreUpdateScreen = ({navigation}) => {
         diffPayload.name = current.name;
       }
 
-      if (current.storeNumber !== initial.storeNumber) {
-        diffPayload.contact = current.storeNumber;
+      if (
+        current.storeNumber !== initial.storeNumber ||
+        (initial.storeNumber && current.storeNumber === '')
+      ) {
+        diffPayload.contact = current.storeNumber ?? '';
       }
 
-      if (current.storeContent !== initial.storeContent) {
-        diffPayload.description = current.storeContent;
+      if (
+        current.storeContent !== initial.storeContent ||
+        (initial.storeContent && current.storeContent === '')
+      ) {
+        diffPayload.description = current.storeContent ?? '';
       }
 
       const locationChanged =
@@ -1076,7 +1144,13 @@ const StoreUpdateScreen = ({navigation}) => {
       showAlert({
         title: '저장 완료',
         message: '매장 정보가 수정되었어요.',
-        onConfirm: () => exitScreen(),
+        onConfirm: () => {
+          // 4. If onGoBack is passed, call it with updated name
+          if (route.params?.onGoBack) {
+            route.params.onGoBack({name: currentSnapshot.name});
+          }
+          exitScreen();
+        },
       });
     } catch (error) {
       showAlert({
@@ -1097,6 +1171,172 @@ const StoreUpdateScreen = ({navigation}) => {
     exitScreen,
   ]);
 
+  const renderStepIntro = useCallback(stepKey => {
+    const guide = STEP_GUIDES[stepKey];
+    if (!guide?.title && !guide?.description) {
+      return null;
+    }
+    return (
+      <View style={styles.sectionIntro}>
+        {guide.title && <Text style={styles.sectionTitle}>{guide.title}</Text>}
+        {guide.description && (
+          <Text style={styles.sectionDescription}>{guide.description}</Text>
+        )}
+      </View>
+    );
+  }, []);
+
+  const renderStepTip = useCallback(stepKey => {
+    const guide = STEP_GUIDES[stepKey];
+    if (!guide?.tip) {
+      return null;
+    }
+
+    return (
+      <View style={styles.tipWrapper}>
+        <Text style={styles.tipBadge}>TIP</Text>
+        <View style={styles.tipContent}>
+          {guide.tipTitle && (
+            <Text style={styles.tipTitle}>{guide.tipTitle}</Text>
+          )}
+          <Text style={styles.tipBody}>{guide.tip}</Text>
+        </View>
+      </View>
+    );
+  }, []);
+
+  // Render section function for switching by type
+  const renderSection = React.useCallback(() => {
+    switch (type) {
+      case 'image':
+        return (
+          <View ref={imageRef}>
+            {renderStepIntro('image')}
+            <StoreImage
+              imageUris={imageUris}
+              setImageUris={setImageUris}
+              error={error}
+              setLoading={setLoading}
+              type="registration"
+            />
+            {renderStepTip('image')}
+          </View>
+        );
+      case 'mainInfo':
+        return (
+          <>
+            <View ref={nameRef}>
+              <StoreAddname
+                storename={storename}
+                setStorename={setStorename}
+                error={error}
+              />
+            </View>
+            <View ref={contactRef}>
+              <StorAddeNumber
+                storeNumber={storeNumber}
+                setStoreNumber={setStoreNumber}
+                error={error}
+                onFocusInput={scrollToInput}
+              />
+            </View>
+            <View ref={contentRef}>
+              <StoreAddContent
+                storeContent={storeContent}
+                setStoreContent={setStoreContent}
+                error={error}
+                onFocusInput={scrollToInput}
+              />
+            </View>
+          </>
+        );
+      case 'address':
+        return (
+          <View ref={addressRef}>
+            {renderStepIntro('address')}
+            <StoreAddress
+              address={address}
+              detailedAddress={detailedAddress}
+              setDetailedAddress={setDetailedAddress}
+              navigation={navigation}
+              onAddressSelect={handleAddressSelect}
+              location={coords}
+              error={error}
+              screen="StoreUpdateScreen"
+              type="registration"
+            />
+            {renderStepTip('address')}
+          </View>
+        );
+      case 'subInfo':
+        return (
+          <>
+            <View ref={categoryRef}>
+              <StoreCategory
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                error={error}
+              />
+            </View>
+            <View ref={alcoholRef}>
+              <StoreAlcohol
+                alcohol={alcohol}
+                setAlcohol={setAlcohol}
+                error={error}
+              />
+            </View>
+            <StoreMood moodInfo={moodInfo} setMoodInfo={setMoodInfo} />
+            <View ref={facilitiesRef}>
+              <StoreFacilitiesInfo
+                facilitiesInfo={facilitiesInfo}
+                setFacilitiesInfo={setFacilitiesInfo}
+                error={error}
+              />
+            </View>
+          </>
+        );
+      case 'hours':
+        return (
+          <View ref={operatingRef}>
+            {renderStepIntro('hours')}
+            <OperatingHoursPreview
+              storeTimeHandle={storeTimeHandle}
+              is24Hours={is24Hours}
+              operatingHours={operatingHours}
+              breakingHours={breakingHours}
+              closedDay={closedDay}
+              error={error}
+              type="registration"
+            />
+            {renderStepTip('hours')}
+          </View>
+        );
+      default:
+        return (
+          <View style={{alignItems: 'center', marginTop: 40}}>
+            <Text style={{color: '#666'}}>지원하지 않는 타입입니다.</Text>
+          </View>
+        );
+    }
+  }, [
+    type,
+    imageUris,
+    storename,
+    address,
+    coords,
+    selectedCategory,
+    moodInfo,
+    operatingHours,
+    breakingHours,
+    closedDay,
+    is24Hours,
+    alcohol,
+    facilitiesInfo,
+    storeNumber,
+    storeContent,
+    error,
+  ]);
+
   return (
     <View style={styles.container}>
       <KeyboardAvoidingView
@@ -1109,112 +1349,7 @@ const StoreUpdateScreen = ({navigation}) => {
             styles.scrollContent,
             {paddingBottom: 140 + insets.bottom},
           ]}>
-          {isStoreUpdatable && (
-            <View style={styles.quickActionView}>
-              <Text style={styles.quickActionTitle}>편집 항목</Text>
-              <View style={styles.quickActions}>
-                <Pressable
-                  style={styles.quickActionButton}
-                  onPress={handleMenuBoardEdit}>
-                  <Text style={styles.quickActionText}>메뉴판</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.quickActionButton}
-                  onPress={handleMenuEditNavigate}>
-                  <Text style={styles.quickActionText}>메뉴</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.quickActionButton}
-                  onPress={handleAlcoholEditNavigate}>
-                  <Text style={styles.quickActionText}>주류</Text>
-                </Pressable>
-              </View>
-            </View>
-          )}
-          <View ref={imageRef}>
-            <StoreImage
-              imageUris={imageUris}
-              setImageUris={setImageUris}
-              error={error}
-              setLoading={setLoading}
-            />
-          </View>
-
-          <View ref={nameRef}>
-            <StoreAddname
-              storename={storename}
-              setStorename={setStorename}
-              error={error}
-            />
-          </View>
-
-          <View ref={addressRef}>
-            <StoreAddress
-              address={address}
-              detailedAddress={detailedAddress}
-              setDetailedAddress={setDetailedAddress}
-              navigation={navigation}
-              onAddressSelect={handleAddressSelect}
-              location={coords}
-              error={error}
-              screen="StoreUpdateScreen"
-            />
-          </View>
-
-          <StoreMood moodInfo={moodInfo} setMoodInfo={setMoodInfo} />
-
-          <View ref={categoryRef}>
-            <StoreCategory
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              error={error}
-            />
-          </View>
-
-          <View ref={operatingRef}>
-            <OperatingHoursPreview
-              storeTimeHandle={storeTimeHandle}
-              is24Hours={is24Hours}
-              operatingHours={operatingHours}
-              breakingHours={breakingHours}
-              closedDay={closedDay}
-              error={error}
-            />
-          </View>
-
-          <View ref={alcoholRef}>
-            <StoreAlcohol
-              alcohol={alcohol}
-              setAlcohol={setAlcohol}
-              error={error}
-            />
-          </View>
-
-          <View ref={facilitiesRef}>
-            <StoreFacilitiesInfo
-              facilitiesInfo={facilitiesInfo}
-              setFacilitiesInfo={setFacilitiesInfo}
-              error={error}
-            />
-          </View>
-
-          <View ref={contactRef}>
-            <StorAddeNumber
-              storeNumber={storeNumber}
-              setStoreNumber={setStoreNumber}
-              error={error}
-              onFocusInput={scrollToInput}
-            />
-          </View>
-
-          <View ref={contentRef}>
-            <StoreAddContent
-              storeContent={storeContent}
-              setStoreContent={setStoreContent}
-              error={error}
-              onFocusInput={scrollToInput}
-            />
-          </View>
+          {renderSection()}
         </ScrollView>
 
         <BottomActionButton
@@ -1273,6 +1408,55 @@ const styles = StyleSheet.create({
     color: '#333',
     fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
+  },
+  sectionIntro: {
+    marginHorizontal: 20,
+    marginTop: 24,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    color: '#333',
+    fontFamily: 'Pretendard-Bold',
+  },
+  sectionDescription: {
+    marginTop: 8,
+    fontSize: 16,
+    color: '#6b7280',
+    fontFamily: 'Pretendard-Regular',
+    lineHeight: 22,
+  },
+  tipWrapper: {
+    marginHorizontal: 18,
+    marginTop: 14,
+    // flexDirection: 'row',
+    // alignItems: 'flex-start',
+  },
+  tipBadge: {
+    fontSize: 12,
+    color: '#1789E0',
+    fontFamily: 'Pretendard-Bold',
+    marginRight: 10,
+    paddingVertical: 4,
+  },
+  tipContent: {
+    flex: 1,
+    backgroundColor: '#F3F6FC',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  tipTitle: {
+    fontSize: 14,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#0D47A1',
+    marginBottom: 6,
+  },
+  tipBody: {
+    fontSize: 14,
+    fontFamily: 'Pretendard-Regular',
+    color: '#24324A',
+    lineHeight: 20,
   },
 });
 

@@ -1,4 +1,5 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
+import StaticKakaoMap from '../common/StaticKakaoMap';
 import {
   View,
   Text,
@@ -15,7 +16,6 @@ import Animated, {
 import {useToast} from '../../context/ToastContext';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import ColorUtil from '../../utils/ColorUtil';
-
 const StoreAddress = ({
   address,
   detailedAddress,
@@ -35,6 +35,14 @@ const StoreAddress = ({
   const MAX_DETAIL = 100;
   const [overText, setOverText] = useState(false);
 
+  // Local state for detailed address management
+  const [localDetailedAddress, setLocalDetailedAddress] =
+    useState(detailedAddress);
+
+  useEffect(() => {
+    setLocalDetailedAddress(detailedAddress);
+  }, [detailedAddress]);
+
   const labelAnim = useSharedValue(detailedAddress !== '' ? 1 : 0);
   const isFocused = key => focusedInput === key;
 
@@ -53,6 +61,7 @@ const StoreAddress = ({
       setErrors('비속어 사용 금지');
       return;
     }
+    setLocalDetailedAddress(value);
     setDetailedAddress(value);
     setErrors(null);
   };
@@ -63,9 +72,19 @@ const StoreAddress = ({
     isRegistration && styles.registrationSpacing,
   ];
 
+  const mapView = useMemo(() => {
+    if (!location?.latitude || !location?.longitude) return null;
+    return (
+      <StaticKakaoMap
+        latitude={location.latitude}
+        longitude={location.longitude}
+        labelText={address || '선택한 위치'}
+      />
+    );
+  }, [location?.latitude, location?.longitude, address]);
+
   return (
     <View>
-      {/* ✅ 매장 주소 / 사업장 소재지 */}
       <View style={inputViewStyle}>
         {!isRegistration &&
           (index === 1 ? (
@@ -83,12 +102,20 @@ const StoreAddress = ({
               )}
             </View>
           ))}
-
+        {/* ✅ Kakao Static Map Preview */}
+        {/* ✅ 매장 주소 / 사업장 소재지 */}
+        {/* {location?.latitude && location?.longitude && (
+    
+        )} */}
+        {mapView}
         <View style={styles.inputContainer} ref={storeAddressRef}>
           <TouchableOpacity
             style={styles.inputTouchable}
             onPress={() =>
-              navigation.navigate('StoreAddressSearch', {onAddressSelect})
+              navigation.navigate('StoreAddressSearch', {
+                onAddressSelect,
+                detailedAddress,
+              })
             }>
             {address ? (
               <Text style={styles.inputText}>{address}</Text>
@@ -106,6 +133,7 @@ const StoreAddress = ({
               navigation.navigate('StoreAddMapScreen', {
                 location,
                 onAddressSelect,
+                detailedAddress,
               })
             }
             style={styles.mapIconButton}>
@@ -124,7 +152,7 @@ const StoreAddress = ({
           <View style={styles.inputContainer}>
             <TextInput
               style={[styles.inputField, {paddingRight: 40}]}
-              value={detailedAddress}
+              value={localDetailedAddress}
               placeholder="상세 주소, 건물 층수, 호수 등"
               placeholderTextColor={ColorUtil.placeholderText}
               onChangeText={text => {

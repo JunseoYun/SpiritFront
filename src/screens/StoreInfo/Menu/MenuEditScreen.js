@@ -34,7 +34,7 @@ import {useToast} from '../../../context/ToastContext';
 const BUTTON_HEIGHT = 64;
 
 const MenuEditScreen = ({route, navigation}) => {
-  const {menus, storeId, onMenuUpdateComplete, onMenuDelete} = route.params;
+  const {menus, storeId, onMenuDelete} = route.params;
   const {bottom} = useSafeAndroidInsets();
   const [activeTab, setActiveTab] = useState('MAIN');
   const [isDragging, setIsDragging] = useState(false);
@@ -70,7 +70,7 @@ const MenuEditScreen = ({route, navigation}) => {
       isLast: true,
       isMainEditing: true,
       isUpdatable: true,
-      onUpdateComplete: onMenuUpdateComplete,
+
       storeId,
       onTypeChange: (menuId, newType) => {
         const allMenus = [...mainMenus, ...normalMenus, ...sideMenus];
@@ -200,10 +200,8 @@ const MenuEditScreen = ({route, navigation}) => {
       if (menuIdInOrderList.length !== 0) {
         await MenuUpdateSort(storeId, menuIdInOrderList);
       }
-      if (onMenuUpdateComplete) {
-        await onMenuUpdateComplete();
-      }
-      navigation.popToTop();
+
+      navigation.goBack();
     } catch (error) {
       console.error('순서 저장 실패:', error);
     } finally {
@@ -212,7 +210,9 @@ const MenuEditScreen = ({route, navigation}) => {
   };
 
   const handleMenuAdd = () => {
-    navigation.navigate('MenuAddScreen', {storeId: storeId});
+    navigation.navigate('MenuAddScreen', {
+      storeId: storeId,
+    });
   };
 
   const handleCompletePress = () => {

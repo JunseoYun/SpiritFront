@@ -16,11 +16,6 @@ const {width} = Dimensions.get('window');
 const ImageSlider = ({
   storeId,
   images,
-  interval = 3000,
-  isUpdate = false,
-  handleBottomOpen,
-  onEditKey,
-  onEditValue,
   navigation,
   onToggleLike,
   isLiked,
@@ -77,33 +72,15 @@ const ImageSlider = ({
   };
 
   const handleImagePress = index => {
-    if (isUpdate) {
-      return;
-    }
     navigation.navigate('ImageViewerScreen', {images: images, index: index});
   };
 
   return (
     <View style={styles.container}>
-      {isUpdate && (
-        <Ionicons
-          name="images-sharp"
-          size={50}
-          color="#fff"
-          style={styles.icon}
-          onPress={() => setModalVisible(true)}
-        />
-      )}
       <ImageActionModal
         visible={isModalVisible}
         navigation={navigation}
         onClose={() => setModalVisible(false)}
-        onEdit={() => {
-          setModalVisible(false);
-          handleBottomOpen();
-          onEditKey('images');
-          onEditValue(localImages);
-        }}
         onSort={() => {
           setModalVisible(false);
           navigation.navigate('ImageReorderScreen', {
@@ -179,7 +156,7 @@ const ImageSlider = ({
               ))}
             </View>
           )}
-          {!isUpdate && localImages.length > 0 && onToggleLike && (
+          {localImages.length > 0 && onToggleLike && (
             <Pressable
               style={[
                 styles.likePill,

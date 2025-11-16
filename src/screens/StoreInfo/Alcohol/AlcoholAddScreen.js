@@ -13,7 +13,7 @@ import {
   BackHandler,
   ToastAndroid,
 } from 'react-native';
-import {useRoute, useFocusEffect} from '@react-navigation/native';
+import {useRoute, useFocusEffect, StackActions} from '@react-navigation/native';
 import AlcoholAddForm from '../../../components/AlcoholAddScreen/AlcoholAddForm';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {StoreDrinkcreate} from '../../../api/drinkApi';
@@ -168,12 +168,13 @@ const AlcoholAddScreen = ({navigation}) => {
         title: '주류 등록이 완료되었습니다.',
         onConfirm: () => {
           setConfirm(false);
-          navigation.replace('StoreStack', {
-            screen: 'StoreMainScreen',
-            params: {
-              storeId: storeId,
-            },
-          });
+          // navigation.replace('StoreStack', {
+          //   screen: 'StoreMainScreen',
+          //   params: {
+          //     storeId: storeId,
+          //   },
+          // });
+          navigation.dispatch(StackActions.pop(2));
         },
       });
     } catch (error) {
