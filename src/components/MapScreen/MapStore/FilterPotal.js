@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState, useCallback} from 'react';
 import {
   StyleSheet,
   View,
@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   BackHandler,
+  Animated,
 } from 'react-native';
 import {Dimensions} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -42,11 +43,19 @@ const FilterPotal = ({
   setSelectedFilters,
   initialTab = '거리',
   setRadiusint,
+  onApply,
 }) => {
   const FILTER_TABS = useMemo(
     () => ['거리', '카테고리', '주종', '매장분위기', '방문시간', '편의시설'],
     [],
   );
+  const [draftFilters, setDraftFilters] = useState(selectedFilters);
+
+  useEffect(() => {
+    if (filterModalVisible) {
+      setDraftFilters(selectedFilters);
+    }
+  }, [filterModalVisible, selectedFilters]);
 
   useEffect(() => {
     if (!filterModalVisible) return;
@@ -76,6 +85,7 @@ const FilterPotal = ({
   const [tabPositions, setTabPositions] = useState({});
 
   const screenWidth = Dimensions.get('window').width;
+  const filtersSource = draftFilters || {};
 
   const ensureTabVisible = tab => {
     const pos = tabPositions?.[tab];
@@ -85,21 +95,22 @@ const FilterPotal = ({
   };
 
   // Resolve keys from possibly garbled source
-  const keyDistance = findExistingKey(selectedFilters, '거리');
-  const keyCategory = findExistingKey(selectedFilters, '카테고리');
-  const keyPeople = findExistingKey(selectedFilters, '인원');
-  const keyAlcohol = findExistingKey(selectedFilters, '주종');
-  const keyStoreatm = findExistingKey(selectedFilters, '매장분위기');
-  const keyTime = findExistingKey(selectedFilters, '방문시간');
-  const keyParking = findExistingKey(selectedFilters, '주차');
-  const keyCorkage = findExistingKey(selectedFilters, '콜키지');
-  const keyScreen = findExistingKey(selectedFilters, '스크린');
-  const keyRoom = findExistingKey(selectedFilters, '룸');
-  const keyOutdoor = findExistingKey(selectedFilters, '야장');
+  const keyDistance = findExistingKey(filtersSource, '거리');
+  const keyCategory = findExistingKey(filtersSource, '카테고리');
+  const keyPeople = findExistingKey(filtersSource, '인원');
+  const keyAlcohol = findExistingKey(filtersSource, '주종');
+  const keyPriceOrder = findExistingKey(filtersSource, '가격순');
+  const keyStoreatm = findExistingKey(filtersSource, '매장분위기');
+  const keyTime = findExistingKey(filtersSource, '방문시간');
+  const keyParking = findExistingKey(filtersSource, '주차');
+  const keyCorkage = findExistingKey(filtersSource, '콜키지');
+  const keyScreen = findExistingKey(filtersSource, '스크린');
+  const keyRoom = findExistingKey(filtersSource, '룸');
+  const keyOutdoor = findExistingKey(filtersSource, '야장');
 
-  const getVal = (key, def) => selectedFilters?.[key] ?? def;
+  const getVal = (key, def) => filtersSource?.[key] ?? def;
   const setVal = (key, value) =>
-    setSelectedFilters(prev => ({...prev, [key]: value}));
+    setDraftFilters(prev => ({...(prev || {}), [key]: value}));
   // helpers for toggle behavior and multi-select arrays
   const getArrVal = v => (Array.isArray(v) ? v : v ? [v] : []);
   const toggleSingle = (key, value) =>
@@ -115,6 +126,41 @@ const FilterPotal = ({
       setVal(key, [...prev, value]);
     }
   };
+
+  const selectedAlcohol = getVal(keyAlcohol, '');
+  const priceOrder = getVal(keyPriceOrder, '');
+  const priceOrderLabel =
+    priceOrder === 'ASC'
+      ? '낮은 가격순'
+      : priceOrder === 'DESC'
+      ? '높은 가격순'
+      : '기본순';
+  const [priceOrderAnchor, setPriceOrderAnchor] = useState(null);
+  const priceOrderButtonRef = useRef(null);
+  const [priceOrderDropdownLayout, setPriceOrderDropdownLayout] =
+    useState(null);
+  const priceOrderDropdownPosition = useMemo(() => {
+    if (!priceOrderAnchor) {
+      return null;
+    }
+    const dropdownWidth = priceOrderDropdownLayout?.width ?? 150;
+    const horizontalPadding = 12;
+    const maxLeft = Math.max(
+      horizontalPadding,
+      screenWidth - dropdownWidth - horizontalPadding,
+    );
+    const clampedLeft = Math.min(
+      Math.max(horizontalPadding, priceOrderAnchor.x ?? 0),
+      maxLeft,
+    );
+    const top = (priceOrderAnchor.y ?? 0) + (priceOrderAnchor.height ?? 0) + 6;
+    return {top, left: clampedLeft};
+  }, [priceOrderAnchor, priceOrderDropdownLayout, screenWidth]);
+  useEffect(() => {
+    if (!selectedAlcohol && priceOrder) {
+      setDraftFilters(prev => ({...(prev || {}), [keyPriceOrder]: ''}));
+    }
+  }, [selectedAlcohol, priceOrder, keyPriceOrder]);
 
   const storeAtmSelected = getArrVal(getVal(keyStoreatm, []));
 
@@ -205,19 +251,114 @@ const FilterPotal = ({
     timeScrollRef.current?.scrollTo({x: x, animated: true});
   };
 
+  const [priceOrderModalVisible, setPriceOrderModalVisible] = useState(false);
+  const priceOrderModalAnim = useRef(new Animated.Value(0)).current;
+
+  const priceOrderModalTranslateY = priceOrderModalAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-5, 0],
+  });
+
+  const closePriceOrderModal = useCallback(
+    (animated = true) => {
+      if (!priceOrderModalVisible) {
+        return;
+      }
+      if (animated) {
+        Animated.timing(priceOrderModalAnim, {
+          toValue: 0,
+          duration: 180,
+          useNativeDriver: true,
+        }).start(() => setPriceOrderModalVisible(false));
+      } else {
+        priceOrderModalAnim.setValue(0);
+        setPriceOrderModalVisible(false);
+      }
+    },
+    [priceOrderModalVisible, priceOrderModalAnim],
+  );
+
+  const openPriceOrderModal = useCallback(() => {
+    if (priceOrderModalVisible) {
+      return;
+    }
+    const showMenu = coords => {
+      setPriceOrderAnchor(coords);
+      setPriceOrderModalVisible(true);
+      Animated.timing(priceOrderModalAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    };
+
+    if (priceOrderButtonRef.current?.measureInWindow) {
+      priceOrderButtonRef.current.measureInWindow((x, y, width, height) => {
+        showMenu({x, y, width, height});
+      });
+    } else {
+      showMenu(priceOrderAnchor);
+    }
+  }, [priceOrderModalVisible, priceOrderModalAnim, priceOrderAnchor]);
+
+  const togglePriceOrderModal = () => {
+    if (priceOrderModalVisible) {
+      closePriceOrderModal();
+    } else {
+      openPriceOrderModal();
+    }
+  };
+
+  useEffect(() => {
+    if (!filterModalVisible) {
+      closePriceOrderModal(false);
+      setDraftFilters(selectedFilters);
+    }
+  }, [filterModalVisible, closePriceOrderModal, selectedFilters]);
+
+  useEffect(() => {
+    if (!selectedAlcohol) {
+      closePriceOrderModal(false);
+    }
+  }, [selectedAlcohol, closePriceOrderModal]);
+
+  const handleSelectPriceOrder = value => {
+    setDraftFilters(prev => ({...(prev || {}), [keyPriceOrder]: value}));
+    closePriceOrderModal();
+  };
+
+  const handleCancel = useCallback(() => {
+    setDraftFilters(selectedFilters);
+    closePriceOrderModal(false);
+    setPriceOrderAnchor(null);
+    setFilterModalVisible(false);
+  }, [selectedFilters, closePriceOrderModal, setFilterModalVisible]);
+
+  const handleApply = useCallback(() => {
+    closePriceOrderModal(false);
+    const nextFilters = {...(draftFilters || {})};
+    setSelectedFilters(nextFilters);
+    onApply?.(nextFilters);
+    setPriceOrderAnchor(null);
+    setFilterModalVisible(false);
+  }, [
+    closePriceOrderModal,
+    setSelectedFilters,
+    draftFilters,
+    onApply,
+    setFilterModalVisible,
+  ]);
+
   return (
     <>
       <Portal>
         {filterModalVisible && (
           <View style={styles.modalContainer}>
-            <Pressable
-              style={styles.modalOverlay}
-              onPress={() => setFilterModalVisible(false)}
-            />
+            <Pressable style={styles.modalOverlay} onPress={handleCancel} />
             <View style={styles.modalContentBottom}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>필터</Text>
-                <Pressable onPress={() => setFilterModalVisible(false)}>
+                <Pressable onPress={handleCancel}>
                   <Ionicons name="close" size={22} color="#666" />
                 </Pressable>
               </View>
@@ -275,9 +416,8 @@ const FilterPotal = ({
                     <Text style={styles.categoryTitle}>거리</Text>
                     <Pressable
                       onPress={() => {
-                        setSelectedFilters(prev => ({
-                          ...prev,
-
+                        setDraftFilters(prev => ({
+                          ...(prev || {}),
                           [keyCategory]: '',
                           [keyAlcohol]: '',
                           [keyStoreatm]: '',
@@ -288,6 +428,7 @@ const FilterPotal = ({
                           [keyScreen]: '',
                           [keyRoom]: '',
                           [keyOutdoor]: '',
+                          [keyPriceOrder]: '',
                         }));
                         if (typeof setRadiusint === 'function') setRadiusint(1);
                       }}>
@@ -384,7 +525,24 @@ const FilterPotal = ({
                     }
                   }}
                   style={styles.sectionContainer}>
-                  <Text style={styles.sectionTitle}>주종</Text>
+                  <View style={styles.alcoholHeaderRow}>
+                    <Text style={styles.sectionTitle}>주종</Text>
+                    {selectedAlcohol ? (
+                      <Pressable
+                        ref={priceOrderButtonRef}
+                        style={styles.priceOrderButton}
+                        onPress={togglePriceOrderModal}>
+                        <MaterialCommunityIcons
+                          name="tune-variant"
+                          size={16}
+                          color="#4B5563"
+                        />
+                        <Text style={styles.priceOrderButtonText}>
+                          {priceOrderLabel}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
                   <View style={styles.filterItemsContainer}>
                     {[
                       '소주',
@@ -822,20 +980,81 @@ const FilterPotal = ({
               </ScrollView>
 
               <View style={styles.footer}>
-                <Pressable
-                  style={styles.resetButton}
-                  onPress={() => setFilterModalVisible(false)}>
+                <Pressable style={styles.resetButton} onPress={handleCancel}>
                   <Text style={styles.resetText}>닫기</Text>
                 </Pressable>
-                <Pressable
-                  style={styles.applyButton}
-                  onPress={() => setFilterModalVisible(false)}>
+                <Pressable style={styles.applyButton} onPress={handleApply}>
                   <Text style={styles.applyText}>적용</Text>
                 </Pressable>
               </View>
             </View>
           </View>
         )}
+      </Portal>
+      <Portal>
+        {priceOrderModalVisible && selectedAlcohol ? (
+          <>
+            <Pressable
+              style={styles.priceOrderBackdrop}
+              onPress={() => closePriceOrderModal()}
+            />
+            <Animated.View
+              onLayout={e =>
+                setPriceOrderDropdownLayout(e?.nativeEvent?.layout)
+              }
+              style={[
+                styles.dropdown,
+                styles.priceOrderDropdown,
+                priceOrderDropdownPosition
+                  ? {
+                      top: priceOrderDropdownPosition.top,
+                      left: priceOrderDropdownPosition.left,
+                    }
+                  : null,
+                {
+                  transform: [{translateY: priceOrderModalTranslateY}],
+                },
+              ]}>
+              <Pressable
+                style={styles.dropdownItem}
+                onPress={() => handleSelectPriceOrder('')}>
+                <Text
+                  style={[
+                    styles.dropdownText,
+                    priceOrder === '' && styles.activeDropdownText,
+                  ]}>
+                  기본순
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.dropdownItem}
+                onPress={() => {
+                  handleSelectPriceOrder('ASC');
+                }}>
+                <Text
+                  style={[
+                    styles.dropdownText,
+                    priceOrder === 'ASC' && styles.activeDropdownText,
+                  ]}>
+                  낮은 가격순
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.dropdownItem}
+                onPress={() => handleSelectPriceOrder('DESC')}>
+                <Text
+                  style={[
+                    styles.dropdownText,
+                    priceOrder === 'DESC' && styles.activeDropdownText,
+                  ]}>
+                  높은 가격순
+                </Text>
+              </Pressable>
+            </Animated.View>
+          </>
+        ) : null}
       </Portal>
     </>
   );
@@ -934,11 +1153,29 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Bold',
     marginBottom: 8,
     color: '#333',
-    marginRight: 6,
+    marginRight: 10,
+  },
+  alcoholHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   filterItemsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+  },
+  priceOrderButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginLeft: 10,
+    marginBottom: 8,
+  },
+  priceOrderButtonText: {
+    marginLeft: 4,
+    fontSize: 12,
+    color: '#4B5563',
+    fontFamily: 'Pretendard-Medium',
   },
   filterItem: {
     paddingVertical: 6,
@@ -1049,6 +1286,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginTop: 1,
+    marginRight: 20,
+  },
+
+  dropdown: {
+    position: 'absolute',
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    paddingVertical: 5,
+    zIndex: 20,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    alignItems: 'center',
+  },
+  dropdownText: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
+  },
+  activeDropdownText: {
+    color: '#121212',
+  },
+  priceOrderDropdown: {
+    zIndex: 30,
+    paddingVertical: 6,
+  },
+  priceOrderBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+    zIndex: 15,
   },
 });
 

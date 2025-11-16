@@ -1,4 +1,6 @@
-const generateMapScript = (lat, lng, stores, offsetY = 0) => `
+const generateMapScript = (lat, lng, markerData, offsetY = 0) => {
+  const safeData = JSON.stringify(markerData ?? []);
+  return `
   if (!window.map) {
     var mapContainer = document.getElementById('map');
     var options = {
@@ -117,13 +119,13 @@ const generateMapScript = (lat, lng, stores, offsetY = 0) => `
             overlayContent.addEventListener('click', function(ev){ try{ ev.stopPropagation(); }catch(e){} });
             (grp || []).forEach(function(store, index){
               var storeItem = document.createElement('div');
-              storeItem.innerHTML = '<div style="display:flex; align-items:center; padding:10px; cursor:pointer;"><div style="width:8px; height:8px; background:#5cceff; border-radius:50%; margin-right:8px;"></div>' + '<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;">' + (store.name || '') + '</span>' + '</div>';
+              storeItem.innerHTML = '<div style="display:flex; align-items:center; padding:10px; cursor:pointer;"><div style="width:8px; height:8px; background:#5cceff; border-radius:50%; margin-right:8px;"></div>' + '<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;">' + (store.storeName || '') + '</span>' + '</div>';
               if (index !== (grp.length - 1)) { storeItem.style.borderBottom = '1px solid #eee'; }
               storeItem.onclick = function(ev2){
                 try{ ev2.stopPropagation && ev2.stopPropagation(); }catch(e){}
                 window.isStoreListClicked = true;
                 try {
-                  window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'markerListItemClicked', storeId: store.id, total: grp.length }));
+                  window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'markerListItemClicked', storeId: store.storeId, total: grp.length }));
                 } catch(e){}
               };
               overlayContent.appendChild(storeItem);
@@ -131,7 +133,7 @@ const generateMapScript = (lat, lng, stores, offsetY = 0) => `
             var overlay = new kakao.maps.CustomOverlay({ content: overlayContent, position: pos, map: map, zIndex: 10, yAnchor: 1 });
             window.currentOverlay = overlay;
             try {
-              window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'markerGroupClicked', storeId: grp[0].id, total: grp.length }));
+              window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'markerGroupClicked', storeId: grp[0].storeId, total: grp.length }));
             } catch(e){}
             // when switching from bubble to list, remove bubble but keep marker hidden
             try { if (window.__storeNameOverlay) { window.__storeNameOverlay.setMap(null); window.__storeNameOverlay = null; } } catch(e){}
@@ -224,7 +226,7 @@ var customMarkerUri = "data:image/svg+xml;charset=UTF-8," +
     '</svg>'
   );
 
-  var storesArray = ${JSON.stringify(stores)};
+  var storesArray = ${safeData};
   var storeGroups = null; // will be set per level strategy
 
   try {
@@ -237,10 +239,14 @@ var customMarkerUri = "data:image/svg+xml;charset=UTF-8," +
 
     function coordKeyFromStore(s){
       try{
-        var la = s && s.locationDto && s.locationDto.latitude;
-        var lo = s && s.locationDto && s.locationDto.longitude;
+        var la = (s && s.locationDto && s.locationDto.latitude != null)
+          ? s.locationDto.latitude
+          : s.latitude;
+        var lo = (s && s.locationDto && s.locationDto.longitude != null)
+          ? s.locationDto.longitude
+          : s.longitude;
         if(la==null || lo==null) return null;
-        return la.toFixed(6)+","+lo.toFixed(6);
+        return Number(la).toFixed(6)+","+Number(lo).toFixed(6);
       }catch(_e){return null;}
     }
 
@@ -363,12 +369,21 @@ window.overlayMarkers = [];
 
   for (var addr in storeGroups) {
     var group = storeGroups[addr];
-    var markerPosition = new kakao.maps.LatLng(group[0].locationDto.latitude, group[0].locationDto.longitude);
+    var __groupLat = (group[0].locationDto && group[0].locationDto.latitude != null)
+      ? group[0].locationDto.latitude
+      : group[0].latitude;
+    var __groupLng = (group[0].locationDto && group[0].locationDto.longitude != null)
+      ? group[0].locationDto.longitude
+      : group[0].longitude;
+    if(__groupLat==null || __groupLng==null){
+      continue;
+    }
+    var markerPosition = new kakao.maps.LatLng(__groupLat, __groupLng);
     
     var marker = new kakao.maps.Marker({
       position: markerPosition,
       map: map,
-      title: group[0].name,
+      title: group[0].storeName,
       zIndex: 2,
       image: new kakao.maps.MarkerImage(
         customMarkerUri,
@@ -378,8 +393,12 @@ window.overlayMarkers = [];
 
     // keep a mapping from coordinate key to marker for hide/show management
     try {
-      var __k = (group[0].locationDto.latitude.toFixed(6))+","+(group[0].locationDto.longitude.toFixed(6));
-      window.__markerMap[__k] = marker;
+      var __latKey = (__groupLat!=null) ? Number(__groupLat).toFixed(6) : null;
+      var __lngKey = (__groupLng!=null) ? Number(__groupLng).toFixed(6) : null;
+      if(__latKey!=null && __lngKey!=null){
+        var __k = __latKey+","+__lngKey;
+        window.__markerMap[__k] = marker;
+      }
     } catch(e){}
 
     // ✅ 가게 리스트 오버레이 생성
@@ -401,7 +420,7 @@ window.overlayMarkers = [];
 
       group.forEach((store, index) => {
         var storeItem = document.createElement('div');
-        storeItem.innerHTML = '<div style="display:flex; align-items:center; padding:10px; cursor:pointer;"><div style="width:8px; height:8px; background:#5cceff; border-radius:50%; margin-right:8px;"></div>' +'<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;">' +store.name +'</span>' + '</div>';
+        storeItem.innerHTML = '<div style="display:flex; align-items:center; padding:10px; cursor:pointer;"><div style="width:8px; height:8px; background:#5cceff; border-radius:50%; margin-right:8px;"></div>' +'<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;">' +store.storeName +'</span>' + '</div>';
 
         // ✅ 마지막 아이템의 아래 테두리는 없애기
         if (index !== group.length - 1) {
@@ -415,7 +434,7 @@ window.overlayMarkers = [];
           // ✅ storeId React Native로 전달
           window.ReactNativeWebView.postMessage(JSON.stringify({ 
             action: 'markerListItemClicked', 
-            storeId: store.id,
+            storeId: store.storeId,
             total: (group && group.length) ? group.length : 1
           }));
         };
@@ -449,7 +468,7 @@ window.overlayMarkers = [];
             var ids = group.map(function(s){ return s.id; });
             window.ReactNativeWebView.postMessage(JSON.stringify({
               action: 'markerGroupClicked',
-              storeId: group[0].id,
+              storeId: group[0].storeId,
               total: group.length
             }));
           } catch (e) {}
@@ -457,7 +476,7 @@ window.overlayMarkers = [];
           try {
             window.ReactNativeWebView.postMessage(JSON.stringify({
               action: 'markerClicked',
-              storeId: group[0].id
+              storeId: group[0].storeId
             }));
           } catch (e) {}
         }
@@ -510,5 +529,5 @@ window.overlayMarkers = [];
 
   true;
 `;
-
+};
 export default generateMapScript;

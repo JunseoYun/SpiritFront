@@ -146,12 +146,13 @@ const MapStoreItem = ({
         <Text style={styles.menutext} numberOfLines={1} ellipsizeMode="tail">
           {item.mainDrinkDtos && item.mainDrinkDtos.length > 0
             ? item.mainDrinkDtos
-                .map(
-                  drink =>
-                    `${translateAlcohol(
-                      drink.type,
-                    )} ${drink.price.toLocaleString()}원`,
-                ) // 데이터 형식화
+                .map(drink => {
+                  const priceText =
+                    drink.price != null
+                      ? `${drink.price.toLocaleString()}원`
+                      : '';
+                  return `${translateAlcohol(drink.type)} ${priceText}`;
+                })
                 .join('  ') // 아이템 간 간격 추가
             : '메인주류가 없습니다.'}
         </Text>
