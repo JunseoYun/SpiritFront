@@ -1,6 +1,7 @@
 import React from 'react';
-import {View, Text, Image, Pressable, StyleSheet} from 'react-native';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import FastImage from 'react-native-fast-image';
 
 const MyPageheader = ({
   nickname,
@@ -11,7 +12,7 @@ const MyPageheader = ({
   <View style={styles.profiletopview}>
     {imageuri ? (
       <Pressable onPress={handleImagePress}>
-        <Image
+        <FastImage
           source={
             {uri: imageuri} // 동적으로 설정된 이미지 URI
           }
@@ -19,7 +20,7 @@ const MyPageheader = ({
         />
       </Pressable>
     ) : (
-      <Image
+      <FastImage
         source={
           require('../../assets/default_profile.png') // 기본 이미지
         }
@@ -51,15 +52,15 @@ const styles = StyleSheet.create({
   },
   profileimg: {
     resizeMode: 'cover',
-    width: 60,
-    height: 60,
+    width: 55,
+    height: 55,
     borderRadius: 90,
   },
   Nickname: {
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#121212',
-    marginLeft: 20,
+    color: '#333',
+    marginLeft: 17,
   },
   changenick: {
     marginLeft: 10,

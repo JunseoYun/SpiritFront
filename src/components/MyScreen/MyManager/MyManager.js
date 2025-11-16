@@ -1,9 +1,8 @@
 import React, {useState, useCallback} from 'react';
-import {View, Text, FlatList, Pressable, StyleSheet, Image} from 'react-native';
+import {View, Text, FlatList, Pressable, StyleSheet} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import ColorUtil from '../../../utils/ColorUtil';
-
+import FastImage from 'react-native-fast-image';
 import {Store_getby_managed} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
 
@@ -88,7 +87,7 @@ const MyManager = ({navigation}) => {
         <Pressable
           style={styles.rowContent}
           onPress={() => handleOpenStore(item)}>
-          <Image
+          <FastImage
             source={
               item.mainImgUrl
                 ? {uri: item.mainImgUrl}
