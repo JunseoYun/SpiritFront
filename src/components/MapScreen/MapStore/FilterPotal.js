@@ -456,7 +456,6 @@ const FilterPotal = ({
                               '5km': 5,
                             };
                             const rv = m[dist] ?? 1;
-                            console.log(rv);
                             setRadiusint(rv);
                           }
                         }}>
