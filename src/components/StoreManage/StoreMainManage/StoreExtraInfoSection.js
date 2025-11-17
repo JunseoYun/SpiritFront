@@ -10,10 +10,7 @@ const StoreExtraInfoSection = ({title, items = []}) => {
         {items.map((item, index) => (
           <View
             key={item.key}
-            style={[
-              styles.row,
-              index !== 0 && styles.rowDivider,
-            ]}>
+            style={[styles.row, index !== 0 && styles.rowDivider]}>
             <Text style={styles.rowLabel}>{item.label}</Text>
             <View style={styles.valueWrapper}>
               {item.values.length > 0 ? (

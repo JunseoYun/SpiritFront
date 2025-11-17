@@ -14,13 +14,13 @@ import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import Loading from '../../../hooks/Loading';
 import ManagementButton from '../../../components/StoreManage/ManagementButton';
-import StoreManageActionButtons from '../../../components/StoreMainManage/StoreManageActionButtons';
-import StoreImageManagementSection from '../../../components/StoreMainManage/StoreImageManagementSection';
-import StoreMainInfoSection from '../../../components/StoreMainManage/StoreMainInfoSection';
-import StoreExtraInfoSection from '../../../components/StoreMainManage/StoreExtraInfoSection';
-import StoreLocationSection from '../../../components/StoreMainManage/StoreLocationSection';
-import StoreHoursSection from '../../../components/StoreMainManage/StoreHoursSection';
-import StoreEventSection from '../../../components/StoreMainManage/StoreEventSection';
+import StoreManageActionButtons from '../../../components/StoreManage/StoreMainManage/StoreManageActionButtons';
+import StoreImageManagementSection from '../../../components/StoreManage/StoreMainManage/StoreImageManagementSection';
+import StoreMainInfoSection from '../../../components/StoreManage/StoreMainManage/StoreMainInfoSection';
+import StoreExtraInfoSection from '../../../components/StoreManage/StoreMainManage/StoreExtraInfoSection';
+import StoreLocationSection from '../../../components/StoreManage/StoreMainManage/StoreLocationSection';
+import StoreHoursSection from '../../../components/StoreManage/StoreMainManage/StoreHoursSection';
+import StoreEventSection from '../../../components/StoreManage/StoreMainManage/StoreEventSection';
 
 const dayOrder = [
   'MONDAY',
@@ -298,7 +298,14 @@ const StoreMainManageScreen = ({
           }),
       },
     ],
-    [navigation, storeId, storeImageUrls, menuImageUrls, refreshStoreInfo, storeInfo],
+    [
+      navigation,
+      storeId,
+      storeImageUrls,
+      menuImageUrls,
+      refreshStoreInfo,
+      storeInfo,
+    ],
   );
 
   const eventInfo = useMemo(() => storeInfo?.eventInfoDto, [storeInfo]);

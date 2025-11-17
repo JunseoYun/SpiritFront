@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, Pressable, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {normalizeFont} from '../../hooks/normalizeFont';
+import {normalizeFont} from '../../../hooks/normalizeFont';
 
 const StoreManageActionButtons = ({actions = []}) => {
   if (!actions.length) {

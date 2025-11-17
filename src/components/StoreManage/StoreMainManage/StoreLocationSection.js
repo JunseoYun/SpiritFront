@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, View, Text} from 'react-native';
-import StaticKakaoMap from '../common/StaticKakaoMap';
+import StaticKakaoMap from '../../common/StaticKakaoMap';
 
 const StoreLocationSection = ({title, location, storeName}) => {
   const hasCoordinates = !!location?.latitude && !!location?.longitude;

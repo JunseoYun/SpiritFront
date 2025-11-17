@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import ColorUtil from '../../utils/ColorUtil';
+import ColorUtil from '../../../utils/ColorUtil';
 
 const INFO_FIELDS = [
   {key: 'name', icon: 'storefront'},
@@ -22,11 +22,7 @@ const StoreMainInfoSection = ({storeInfo}) => {
               color="#858B95"
               style={styles.icon}
             />
-            <Text
-              style={[
-                styles.value,
-                !value && styles.placeholderValue,
-              ]}>
+            <Text style={[styles.value, !value && styles.placeholderValue]}>
               {value || '등록된 정보가 없습니다.'}
             </Text>
           </View>
