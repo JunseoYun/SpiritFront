@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ImageBackground,
-  Dimensions,
-  PixelRatio,
-} from 'react-native';
+import {View, Text, Pressable, StyleSheet, Dimensions} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
@@ -16,10 +8,9 @@ import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+
 const {width} = Dimensions.get('window');
-const ITEM_WIDTH = width * 0.9;
 const IMG_WIDTH = width * 0.3;
-const SPACING = width * 0.05;
 
 const MapStoreItem = ({
   item,
@@ -30,16 +21,8 @@ const MapStoreItem = ({
   navigation,
   onItemPress,
 }) => {
-  const {
-    isOpen,
-    isBreak,
-    closed,
-    nextclosed,
-    starttime,
-    endtime,
-    breakstart,
-    breakend,
-  } = useStoreStatus(item?.operationInfoDtos, item?.isAlwaysOpen);
+  const {isOpen, isBreak, closed, nextclosed, starttime, endtime, breakend} =
+    useStoreStatus(item?.operationInfoDtos, item?.isAlwaysOpen);
 
   const {token} = useAuth();
   const {showToast} = useToast();
@@ -48,7 +31,6 @@ const MapStoreItem = ({
     setSelectedStore(item);
     moveCenterMap(item.locationDto.latitude, item.locationDto.longitude, 1);
 
-    // optional: additional behavior (e.g., open detail)
     if (typeof onItemPress === 'function') {
       try {
         onItemPress(item);
@@ -59,12 +41,6 @@ const MapStoreItem = ({
       showToast('로그인 후 이용할 수 있어요!', 'center');
       return;
     }
-    // navigation.navigate('StoreStack', {
-    //   screen: 'StoreMainScreen',
-    //   params: {
-    //     storeId: item.id,
-    //   },
-    // });
   };
 
   const {translateCategory} = useCategoryTranslation();
@@ -77,43 +53,42 @@ const MapStoreItem = ({
       ]}
       onPress={handlePress}>
       <View style={styles.backimageview}>
-        <ImageBackground
+        <FastImage
           source={
             item.mainImgUrl
-              ? {uri: item.mainImgUrl} // ✅ 네트워크 이미지
-              : require('../../../assets/default_store.png') // ✅ 로컬 이미지
+              ? {uri: item.mainImgUrl, priority: FastImage.priority.normal}
+              : require('../../../assets/default_store.png')
           }
           style={styles.backimage}
-          imageStyle={styles.backimagestyle}>
-          {/* ✅ 영업 종료 표시 */}
-          {!isOpen && !nextclosed && !closed && (
-            <View style={styles.overlay}>
-              <Text style={styles.overlayText}>
-                영업 종료{'\n'}
-                {starttime ? `${starttime} 오픈` : ''}
-              </Text>
-            </View>
-          )}
-          {!isOpen && nextclosed && !closed && (
-            <View style={styles.overlay}>
-              <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
-            </View>
-          )}
-          {!isOpen && !nextclosed && closed && (
-            <View style={styles.overlay}>
-              <Text style={styles.overlayText}>금일 휴무</Text>
-            </View>
-          )}
-          {/* ✅ 브레이크 타임 표시 */}
-          {isOpen && isBreak && (
-            <View style={styles.overlay}>
-              <Text style={styles.overlayText}>
-                브레이크 타임{'\n'}
-                {breakend ? `${breakend} 종료` : ''}
-              </Text>
-            </View>
-          )}
-        </ImageBackground>
+        />
+
+        {/* 오버레이 처리 */}
+        {!isOpen && !nextclosed && !closed && (
+          <View style={styles.overlay}>
+            <Text style={styles.overlayText}>
+              영업 종료{'\n'}
+              {starttime ? `${starttime} 오픈` : ''}
+            </Text>
+          </View>
+        )}
+        {!isOpen && nextclosed && !closed && (
+          <View style={styles.overlay}>
+            <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
+          </View>
+        )}
+        {!isOpen && !nextclosed && closed && (
+          <View style={styles.overlay}>
+            <Text style={styles.overlayText}>금일 휴무</Text>
+          </View>
+        )}
+        {isOpen && isBreak && (
+          <View style={styles.overlay}>
+            <Text style={styles.overlayText}>
+              브레이크 타임{'\n'}
+              {breakend ? `${breakend} 종료` : ''}
+            </Text>
+          </View>
+        )}
       </View>
       <View style={styles.titletopview}>
         <View>
@@ -137,7 +112,7 @@ const MapStoreItem = ({
             )}
             <Text
               style={styles.storeName}
-              numberOfLines={1} // 한 줄로 제한
+              numberOfLines={1}
               ellipsizeMode="tail">
               {item.name}
             </Text>
@@ -153,7 +128,7 @@ const MapStoreItem = ({
                       : '';
                   return `${translateAlcohol(drink.type)} ${priceText}`;
                 })
-                .join('  ') // 아이템 간 간격 추가
+                .join('  ')
             : '메인주류가 없습니다.'}
         </Text>
         <View style={styles.timeview}>
@@ -188,29 +163,18 @@ const styles = StyleSheet.create({
   backimageview: {
     width: IMG_WIDTH,
     height: IMG_WIDTH,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12, // ✅ 부모 컨테이너 둥글게
-    overflow: 'hidden', // ✅ 넘치는 부분 숨기기
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginRight: 10,
   },
   backimage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover', // ✅ 이미지가 꽉 차도록
+    borderRadius: 12,
   },
-  backimagestyle: {
-    borderRadius: 12, // ✅ borderRadius 적용
-  },
-
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)', // ✅ 반투명 배경 추가
+    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -224,7 +188,6 @@ const styles = StyleSheet.create({
 
   titletopview: {
     flex: 1,
-    marginLeft: 10,
     justifyContent: 'space-between',
     marginVertical: 3,
   },
@@ -234,7 +197,6 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   imageStyle: {
-    alignSelf: 'center',
     width: 15,
     height: 15,
     marginRight: 4,
@@ -245,16 +207,9 @@ const styles = StyleSheet.create({
     color: '#333',
     width: '90%',
   },
-  storeAddress: {
-    fontSize: normalizeFont(14, 1.5),
-    fontFamily: 'Pretendard-Medium',
-    color: '#666',
-    marginRight: 5,
-  },
   category: {
     flexDirection: 'row',
     marginBottom: 5,
-    alignItems: 'center',
   },
   StoreCategory: {
     fontSize: normalizeFont(14, 1.5),
@@ -262,6 +217,11 @@ const styles = StyleSheet.create({
     marginRight: 5,
     fontFamily: 'Pretendard-Medium',
     marginTop: 2,
+  },
+  menutext: {
+    fontSize: normalizeFont(14, 1.5),
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#3CBBFF',
   },
   timeview: {
     flexDirection: 'row',
@@ -272,10 +232,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     color: '#999',
   },
-  menutext: {
+  storeAddress: {
     fontSize: normalizeFont(14, 1.5),
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#3CBBFF',
+    fontFamily: 'Pretendard-Medium',
+    color: '#666',
+    marginRight: 5,
   },
 });
 

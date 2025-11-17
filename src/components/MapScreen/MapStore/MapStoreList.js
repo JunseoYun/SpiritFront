@@ -33,6 +33,7 @@ import MapDetailItem from './MapDetailItem';
 import {useMapSearch} from '../../../context/MapSearchContext';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useFocusEffect} from '@react-navigation/native';
+import MapDetailItemSkeleton from './MapDetailItemSkeleton';
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 const MapStoreList = ({
@@ -603,7 +604,7 @@ const MapStoreList = ({
                 ) : (
                   <View style={styles.detailLoadingContainer}>
                     {detailStoreLoading ? (
-                      <ActivityIndicator size="small" color="#999" />
+                      <MapDetailItemSkeleton />
                     ) : (
                       <Text style={styles.detailLoadingText}>
                         매장 정보를 불러오지 못했어요.
@@ -681,10 +682,13 @@ const MapStoreList = ({
                   onEndReachedThreshold={0.5}
                   ListFooterComponent={
                     loadingMoreStores ? (
-                      <ActivityIndicator
-                        style={{paddingVertical: 12}}
-                        size="small"
-                        color="#999"
+                      <FlatList
+                        data={[1, 2, 3]}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={() => <MapStoreItemSkeleton />}
+                        showsVerticalScrollIndicator={false}
+                        onViewableItemsChanged={onViewableItemsChanged.current}
+                        viewabilityConfig={viewabilityConfig.current}
                       />
                     ) : null
                   }
