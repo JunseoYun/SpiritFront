@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#F2F4F6',
   },
   dayText: {
-    width: 70,
+    width: 50,
     fontSize: 15,
     fontFamily: 'Pretendard-SemiBold',
     color: '#2C2C2C',
