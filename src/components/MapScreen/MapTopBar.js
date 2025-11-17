@@ -39,50 +39,50 @@ const MapTopBar = ({
             paddingHorizontal: 18,
           },
         ]}>
-        <View
+        {/* <View
           style={{
             flexDirection: 'row',
             gap: 18,
-          }}>
-          <View style={[styles.searchContainer, {flex: 1}]}>
-            <Pressable
-              onPress={() => {
-                navigation.navigate('MainScreen');
-              }}
-              style={styles.backBtn}>
-              <Ionicons name="arrow-back" size={20} color="#555" />
-            </Pressable>
+          }}> */}
+        <View style={[styles.searchContainer, {flex: 1}]}>
+          <Pressable
+            onPress={() => {
+              navigation.navigate('MainScreen');
+            }}
+            style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={20} color="#555" />
+          </Pressable>
 
-            <Pressable
-              style={styles.searchBox}
-              onPress={() => {
-                navigation.navigate('SearchStack', {
-                  screen: 'SearchScreen',
-                });
-              }}>
-              <Text
-                style={[
-                  styles.placeholder,
-                  searchText?.trim()?.length > 0 && {color: 'black'},
-                ]}
-                numberOfLines={1}
-                ellipsizeMode="tail">
-                {searchText?.trim()?.length > 0
-                  ? searchText
-                  : '원하는 술집이나 메뉴를 검색하세요'}
-              </Text>
-              {searchText?.trim()?.length > 0 && (
-                <CancelText
-                  rightnum={0}
-                  topnum={0}
-                  paddingnum={0}
-                  handlecancel={() => setSearchText('')}
-                  size={20}
-                />
-              )}
-            </Pressable>
-          </View>
-          <Pressable onPress={onExplorePress} style={styles.exploreBtnWrap}>
+          <Pressable
+            style={styles.searchBox}
+            onPress={() => {
+              navigation.navigate('SearchStack', {
+                screen: 'SearchScreen',
+              });
+            }}>
+            <Text
+              style={[
+                styles.placeholder,
+                searchText?.trim()?.length > 0 && {color: 'black'},
+              ]}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {searchText?.trim()?.length > 0
+                ? searchText
+                : '원하는 술집이나 메뉴를 검색하세요'}
+            </Text>
+            {searchText?.trim()?.length > 0 && (
+              <CancelText
+                rightnum={0}
+                topnum={0}
+                paddingnum={0}
+                handlecancel={() => setSearchText('')}
+                size={20}
+              />
+            )}
+          </Pressable>
+        </View>
+        {/* <Pressable onPress={onExplorePress} style={styles.exploreBtnWrap}>
             <View style={styles.exploreContainer}>
               <FastImage
                 source={require('../../assets/SearchAiButton.png')}
@@ -93,8 +93,8 @@ const MapTopBar = ({
                 <Text style={styles.exploreLabel}>탐색</Text>
               </View>
             </View>
-          </Pressable>
-        </View>
+          </Pressable> */}
+        {/* </View> */}
         {refresh && <MapSearchBar onPress={() => setcenterrefresh(radius)} />}
       </View>
     </>
@@ -104,6 +104,7 @@ const MapTopBar = ({
 const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
+    height: 46,
     alignItems: 'center',
     backgroundColor: 'white',
     borderRadius: 8,

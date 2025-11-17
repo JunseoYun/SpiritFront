@@ -317,7 +317,9 @@ const MapScreen = ({navigation, route}) => {
         return;
       }
 
-      const offsetY = sheetIndex === 1 ? SCREEN_HEIGHT * 0.18 : 0;
+      const offsetY = 0;
+
+      moveCenterMap(currentLocation.latitude, currentLocation.longitude, 1);
 
       await refreshWithLatLngs(
         currentLocation.latitude,
@@ -327,8 +329,6 @@ const MapScreen = ({navigation, route}) => {
         radius,
         offsetY,
       );
-
-      moveCenterMap(currentLocation.latitude, currentLocation.longitude, 1);
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
       setRefresh(false);
@@ -337,44 +337,16 @@ const MapScreen = ({navigation, route}) => {
     }
   };
 
-  const fetchSaveLocation = async () => {
-    setLoading(true);
-    try {
-      const currentLocation = await getLocation();
-      setLocation(currentLocation);
-      setCenterLatLng(currentLocation);
-
-      if (webViewRef.current) {
-        webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-
-        const script = generateMapScript(
-          currentLocation.latitude,
-          currentLocation.longitude,
-          stores,
-        );
-        webViewRef.current.injectJavaScript(script);
-      }
-      moveCenterMap(
-        currentLocation.latitude,
-        currentLocation.longitude,
-        sheetIndex,
-      );
-    } catch (err) {
-      console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
-    } finally {
-      setRefresh(true);
-      setLoading(false);
-    }
-  };
-
   const roundToPrecision = (value, precision = 7) => {
     return parseFloat(value.toFixed(precision)); //  소수점 8자리까지만 남김
   };
 
   const updateNewLocation = async radius => {
-    bottomSheetRef.current?.snapToIndex(0);
     setLoading(true);
     try {
+      if (!skipInitialOffsetRef.current) {
+        skipInitialOffsetRef.current = true;
+      }
       const {newLocation, address} = await fetchLocationAddress();
       setCenterLatLng(newLocation);
 
@@ -392,10 +364,10 @@ const MapScreen = ({navigation, route}) => {
         roundedCurrentLng === roundedNewLng
       ) {
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-        moveCenterMap(newLocation.latitude, newLocation.longitude, 0);
+        moveCenterMap(newLocation.latitude, newLocation.longitude, 1);
       } else {
         setLocation(newLocation);
-        moveCenterMap(newLocation.latitude, newLocation.longitude, 0);
+        moveCenterMap(newLocation.latitude, newLocation.longitude, 1);
         if (webViewRef.current) {
           webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
           const script = generateMapScript(
@@ -476,7 +448,7 @@ const MapScreen = ({navigation, route}) => {
           effectiveOffset,
         );
         webViewRef.current.injectJavaScript(script);
-        if (skipInitialOffsetRef.current) {
+        if (skipInitialOffsetRef.current && offsetY !== 0) {
           skipInitialOffsetRef.current = false;
         }
       }
@@ -575,7 +547,6 @@ const MapScreen = ({navigation, route}) => {
         : sheetIndex === 10
         ? SCREEN_HEIGHT * -0.18
         : 0;
-    // console.log(sheetIndex);
 
     const roundedPrev = prevCenterLatLng && {
       latitude: roundToPrecision(prevCenterLatLng.latitude),
@@ -596,12 +567,12 @@ const MapScreen = ({navigation, route}) => {
       const script = `
        if (window.map) {
           const map = window.map;
-    const latLng = new kakao.maps.LatLng(${lat}, ${lng});
-    const proj = map.getProjection();
-    const point = proj.containerPointFromCoords(latLng);
-    const adjustedPoint = new kakao.maps.Point(point.x, point.y + ${offsetY});
-    const newCenter = proj.coordsFromContainerPoint(adjustedPoint);
-    map.panTo(newCenter);
+          const latLng = new kakao.maps.LatLng(${lat}, ${lng});
+          const proj = map.getProjection();
+          const point = proj.containerPointFromCoords(latLng);
+          const adjustedPoint = new kakao.maps.Point(point.x, point.y + ${offsetY});
+          const newCenter = proj.coordsFromContainerPoint(adjustedPoint);
+          map.panTo(newCenter);
           }
           true;
         `;
@@ -627,12 +598,11 @@ const MapScreen = ({navigation, route}) => {
       // 기존 메시지 처리
       if (message.action === 'mapLoaded') {
         console.log('Kakao Maps API가 로드되었습니다.');
-        const initialOffset = sheetIndex === 1 ? SCREEN_HEIGHT * 0.18 : 0;
         const script = generateMapScript(
           location.latitude,
           location.longitude,
           [],
-          initialOffset,
+          0,
         );
         webViewRef.current.injectJavaScript(script);
 
@@ -670,6 +640,9 @@ const MapScreen = ({navigation, route}) => {
         if (isProgrammaticPan.current) {
           isProgrammaticPan.current = false;
           return;
+        }
+        if (skipInitialOffsetRef.current) {
+          skipInitialOffsetRef.current = false;
         }
 
         const current = {
@@ -892,12 +865,7 @@ const MapScreen = ({navigation, route}) => {
       if (detailStoreId) {
         setDetailStoreId(null);
       }
-      const offsetY =
-        sheetIndex === 1
-          ? SCREEN_HEIGHT * 0.18
-          : sheetIndex === 10
-          ? SCREEN_HEIGHT * -0.18
-          : 0;
+      const offsetY = sheetIndex === 1 ? SCREEN_HEIGHT * 0.18 : 0;
       const signature = JSON.stringify({
         searchKeyword: (searchText || '').trim(),
         filters: filtersOverride ?? selectedFilters ?? {},
@@ -975,7 +943,6 @@ const MapScreen = ({navigation, route}) => {
       />
       <MapStoreList
         updateNewLocation={() => updateNewLocation()}
-        fetchSaveLocation={() => fetchSaveLocation()}
         flatListAnim={flatListAnim}
         isFlatListVisible={isFlatListVisible}
         stores={stores}

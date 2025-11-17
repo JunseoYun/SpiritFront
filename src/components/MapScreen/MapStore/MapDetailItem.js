@@ -13,6 +13,7 @@ import ColorUtil from '../../../utils/ColorUtil';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import FastImage from 'react-native-fast-image';
 
 const {width} = Dimensions.get('window');
 const H_PADDING = 16;
@@ -181,7 +182,7 @@ const MapDetailItem = ({item, moveCenterMap, onItemPress, navigation}) => {
       {/* section: image mosaic (left big + right two small) */}
       <View style={styles.section}>
         <View style={styles.mosaicRow}>
-          <Image
+          <FastImage
             source={imgSrc}
             style={{
               width: leftW,
@@ -191,7 +192,7 @@ const MapDetailItem = ({item, moveCenterMap, onItemPress, navigation}) => {
             }}
           />
           <View style={{width: rightW, marginLeft: 6}}>
-            <Image
+            <FastImage
               source={imgSrc}
               style={{
                 width: rightW,
@@ -201,7 +202,7 @@ const MapDetailItem = ({item, moveCenterMap, onItemPress, navigation}) => {
                 marginBottom: 6,
               }}
             />
-            <Image
+            <FastImage
               source={imgSrc}
               style={{
                 width: rightW,
@@ -224,7 +225,7 @@ const MapDetailItem = ({item, moveCenterMap, onItemPress, navigation}) => {
               </Text>
               <View style={styles.dots} />
               <Text style={styles.drinkPrice}>
-                {d.price?.toLocaleString()}원
+                {d.price?.toLocaleString() + `원`}
               </Text>
             </View>
           ))}

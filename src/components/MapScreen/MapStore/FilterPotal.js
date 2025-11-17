@@ -25,6 +25,7 @@ import {
   CarFront,
   CheckCircle2,
 } from 'lucide-react-native';
+import BottomActionButton from '../../../utils/BottomActionButton';
 
 // Try to resolve keys that may be mojibake in persisted state
 const findExistingKey = (filters, hint) => {
@@ -402,7 +403,7 @@ const FilterPotal = ({
               <ScrollView
                 ref={scrollRef}
                 style={{flex: 1}}
-                contentContainerStyle={{paddingBottom: 12}}>
+                contentContainerStyle={{paddingBottom: 100}}>
                 {/* 거리 */}
                 <View
                   onLayout={e => {
@@ -979,14 +980,12 @@ const FilterPotal = ({
                 </View>
               </ScrollView>
 
-              <View style={styles.footer}>
-                <Pressable style={styles.resetButton} onPress={handleCancel}>
-                  <Text style={styles.resetText}>닫기</Text>
-                </Pressable>
-                <Pressable style={styles.applyButton} onPress={handleApply}>
-                  <Text style={styles.applyText}>적용</Text>
-                </Pressable>
-              </View>
+              <BottomActionButton
+                label={'적용'}
+                cancel={true}
+                onPress={() => handleApply()}
+                onCancel={() => handleCancel()}
+              />
             </View>
           </View>
         )}
