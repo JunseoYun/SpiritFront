@@ -67,25 +67,15 @@ const StoreHoursSection = ({title, operationInfo = [], isAlwaysOpen}) => {
               return (
                 <View
                   key={item.dayOfWeek}
-                  style={[
-                    styles.row,
-                    index !== 0 && styles.rowDivider,
-                  ]}>
+                  style={[styles.row, index !== 0 && styles.rowDivider]}>
                   <Text
-                    style={[
-                      styles.dayText,
-                      isClosed && styles.dayClosedText,
-                    ]}>
+                    style={[styles.dayText, isClosed && styles.dayClosedText]}>
                     {daysKor[item.dayOfWeek]}
                   </Text>
                   <View style={styles.content}>
                     {isClosed ? (
                       <View style={styles.tag}>
-                        <Text
-                          style={[
-                            styles.tagText,
-                            styles.tagClosedText,
-                          ]}>
+                        <Text style={[styles.tagText, styles.tagClosedText]}>
                           휴무
                         </Text>
                       </View>
@@ -99,14 +89,11 @@ const StoreHoursSection = ({title, operationInfo = [], isAlwaysOpen}) => {
                           <Text style={styles.timeText}>{mainRange}</Text>
                         </View>
                         {breakRange && (
-                          <View
-                            style={[styles.timeLine, styles.timeLineLast]}>
+                          <View style={[styles.timeLine, styles.timeLineLast]}>
                             <View style={styles.tag}>
                               <Text style={styles.tagText}>브레이크</Text>
                             </View>
-                            <Text style={styles.timeText}>
-                              {breakRange}
-                            </Text>
+                            <Text style={styles.timeText}>{breakRange}</Text>
                           </View>
                         )}
                       </>
