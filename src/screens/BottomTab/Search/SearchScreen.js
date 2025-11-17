@@ -19,6 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const SearchScreen = ({navigation}) => {
   const {showToast} = useToast();
@@ -141,8 +142,7 @@ const SearchScreen = ({navigation}) => {
     const key = findFilterKey(hint);
     const val = pendingFilters?.[key];
     const isEmptyArray = Array.isArray(val) && val.length === 0;
-    const isEmptyString =
-      typeof val === 'string' && val.trim().length === 0;
+    const isEmptyString = typeof val === 'string' && val.trim().length === 0;
 
     return val == null || isEmptyArray || isEmptyString ? fallback : val;
   };
@@ -211,7 +211,7 @@ const SearchScreen = ({navigation}) => {
                 <View style={styles.recentLeft}>
                   <View
                     style={{
-                      backgroundColor: '#96c3f3',
+                      backgroundColor: '#f0f2f4',
                       paddingHorizontal: 8,
                       paddingVertical: 7,
                       borderRadius: 50,
@@ -220,9 +220,30 @@ const SearchScreen = ({navigation}) => {
                       alignSelf: 'center',
                       textAlign: 'center',
                     }}>
-                    <FontAwesome name="search" color="#fff" size={14} />
+                    <FontAwesome name="search" color="#666" size={14} />
                   </View>
-                  <Text style={styles.recentText}>{item}</Text>
+                  <View
+                    style={{
+                      flex: 1,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      paddingHorizontal: 8,
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.recentText}>{item}</Text>
+                    <Pressable
+                      hitSlop={10}
+                      onPress={async () => {
+                        const next = recentSearches.filter(t => t !== item);
+                        setRecentSearches(next);
+                        await AsyncStorage.setItem(
+                          RECENT_KEY,
+                          JSON.stringify(next),
+                        );
+                      }}>
+                      <Ionicons name="close" size={20} color="#999" />
+                    </Pressable>
+                  </View>
                 </View>
               </Pressable>
             ))}
@@ -292,6 +313,7 @@ const styles = StyleSheet.create({
     color: '#111',
     fontSize: 17,
     fontFamily: 'Pretendard-Regular',
+    marginLeft: 5,
   },
 
   clearButton: {

@@ -50,10 +50,7 @@ const MapStoreItemSkeleton = () => {
 const styles = StyleSheet.create({
   storeInfo: {
     flexDirection: 'row',
-    width: ITEM_WIDTH,
     backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 12,
     marginHorizontal: SPACING,
   },
   backimageview: {
