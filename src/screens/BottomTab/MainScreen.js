@@ -6,8 +6,14 @@ import {
   Platform,
   Dimensions,
   StatusBar,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
+import Feather from 'react-native-vector-icons/Feather';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
 import {Store_getby_main_banner, Store_getby_popular} from '../../api/storeApi';
@@ -19,7 +25,13 @@ import {useNotification} from '../../context/NotificationContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {has_unread_notification} from '../../api/notificationApi';
 import {useDeepLink} from '../../context/DeepLinkContext';
-import MainScreenLayout from '../../components/MainScreen/MainScreenLayout';
+import FilterHeader from '../../components/MainScreen/FilterHeader';
+import MainSection from '../../components/MainScreen/MainSection';
+import MainSearchBar from '../../components/MainScreen/MainSearchBar';
+import NotificationButton from '../../components/MainScreen/NotificationButton';
+import PopularStoresSection from '../../components/MainScreen/PopularStroe/PopularStoresSection';
+import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
@@ -30,10 +42,22 @@ const MainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef(null);
-  const [showTopView2, setShowTopView2] = useState(false);
-
-  const [showLocation, setShowLocation] = useState(false);
+  const filterHeaderRef = useRef(null);
+  const scrollToTopListenerRef = useRef(null);
+  const topViewScrollListener = useRef(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+
+  const contentTopPadding = useMemo(
+    () => (Platform.OS === 'android' ? insets.top + 20 : insets.top + 10),
+    [insets.top],
+  );
+
+  const [addressHeight, setAddressHeight] = useState(0);
+  const [searchBarHeight, setSearchBarHeight] = useState(0);
+  const [mainSectionHeight, setMainSectionHeight] = useState(0);
+  const [showTopView2, setShowTopView2] = useState(false);
+  const [topView2Height, setTopView2Height] = useState(0);
+  const [touchable, setTouchable] = useState(false);
 
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
@@ -43,7 +67,13 @@ const MainScreen = ({navigation}) => {
 
   const {recommendCategory} = useRecommendation();
   const [unreadNotification, setUnreadNotification] = useState(false);
-  // Popular stores section is extracted to its own component
+
+  const formatAddress = useCallback(addr => {
+    if (addr === '������') {
+      return addr;
+    }
+    return addr;
+  }, []);
 
   const handleScrollToTop = useCallback(() => {
     if (scrollRef.current) {
@@ -57,12 +87,10 @@ const MainScreen = ({navigation}) => {
   }, []);
 
   useEffect(() => {
-    navigation.setParams({
+    navigation.setOptions({
       scrollToTop: handleScrollToTop,
     });
-  }, [navigation, handleScrollToTop]);
-
-  const scrollListener = useRef(null);
+  }, [handleScrollToTop, navigation]);
 
   const scrollToTopThreshold = useMemo(
     () => (Platform.OS === 'ios' ? screenHeight * 0.25 : screenHeight * 0.3),
@@ -71,25 +99,10 @@ const MainScreen = ({navigation}) => {
   const scrollToTopBottom = useMemo(() => 18, []);
 
   useEffect(() => {
-    scrollListener.current = scrollY.addListener(({value}) => {
-      const iosThreshold = insets.top + 30;
-      const androidThreshold = insets.top + 90;
+    scrollToTopListenerRef.current = scrollY.addListener(({value}) => {
+      const iosThreshold = insets.top + 40;
+      const androidThreshold = insets.top + 100;
       const threshold = Platform.OS === 'ios' ? iosThreshold : androidThreshold;
-
-      // 상태 변경이 실제로 필요할 때만 setState
-      setShowTopView2(prev => {
-        if (value >= threshold && !prev) return true;
-        if (value < threshold && prev) return false;
-        return prev;
-      });
-
-      const locationThreshold =
-        Platform.OS === 'ios' ? insets.top + 20 : insets.top + 40;
-      setShowLocation(prev => {
-        if (value >= locationThreshold && !prev) return true;
-        if (value < locationThreshold && prev) return false;
-        return prev;
-      });
 
       setShowScrollToTop(prev => {
         if (value >= scrollToTopThreshold && !prev) return true;
@@ -99,10 +112,104 @@ const MainScreen = ({navigation}) => {
     });
 
     return () => {
-      if (scrollListener.current)
-        scrollY.removeListener(scrollListener.current);
+      if (scrollToTopListenerRef.current)
+        scrollY.removeListener(scrollToTopListenerRef.current);
     };
-  }, [insets.top, scrollToTopThreshold]);
+  }, [insets.top, scrollToTopThreshold, scrollY]);
+
+  useEffect(() => {
+    topViewScrollListener.current = scrollY.addListener(({value}) => {
+      const iosThreshold = insets.top + 30;
+      const androidThreshold = insets.top + 120;
+      const threshold = Platform.OS === 'ios' ? iosThreshold : androidThreshold;
+
+      setShowTopView2(prev => {
+        if (value >= threshold && !prev) return true;
+        if (value < threshold && prev) return false;
+        return prev;
+      });
+    });
+
+    return () => {
+      if (topViewScrollListener.current)
+        scrollY.removeListener(topViewScrollListener.current);
+    };
+  }, [insets.top, scrollY]);
+
+  const stickyTranslateY = 0;
+
+  const filterHeaderThreshold = useMemo(() => {
+    if (!mainSectionHeight) return 100000;
+    return Math.max(
+      0,
+      mainSectionHeight +
+        searchBarHeight +
+        contentTopPadding +
+        addressHeight -
+        topView2Height,
+    );
+  }, [
+    mainSectionHeight,
+    searchBarHeight,
+    addressHeight,
+    contentTopPadding,
+    topView2Height,
+  ]);
+
+  const filterHeaderProgress = scrollY.interpolate({
+    inputRange: [filterHeaderThreshold, filterHeaderThreshold],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const fixedFilterOpacity = filterHeaderProgress;
+  const listFilterOpacity = Animated.subtract(1, filterHeaderProgress);
+
+  const topBarThreshold = useMemo(
+    () => (Platform.OS === 'ios' ? insets.top + 36 : insets.top + 96),
+    [insets.top],
+  );
+
+  const topBarProgress = useMemo(
+    () =>
+      scrollY.interpolate({
+        inputRange: [topBarThreshold - 10, topBarThreshold + 10],
+        outputRange: [0, 1],
+        extrapolate: 'clamp',
+      }),
+    [topBarThreshold, scrollY],
+  );
+
+  const topView2Opacity = topBarProgress;
+  const topView2TranslateY = scrollY.interpolate({
+    inputRange: [topBarThreshold - 10, topBarThreshold + 10],
+    outputRange: [-6, 0],
+    extrapolate: 'clamp',
+  });
+  const topBackgroundColor = topBarProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#3CBBFF', '#F5F5F5'],
+    extrapolate: 'clamp',
+  });
+
+  const shadowOpacity = fixedFilterOpacity.interpolate({
+    inputRange: [0, 0.1],
+    outputRange: [0.1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const elevation = fixedFilterOpacity.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  useEffect(() => {
+    const id = fixedFilterOpacity.addListener(({value}) => {
+      setTouchable(value > 0.01);
+    });
+    return () => fixedFilterOpacity.removeListener(id);
+  }, [fixedFilterOpacity]);
 
   useFocusEffect(
     useCallback(() => {
@@ -111,13 +218,13 @@ const MainScreen = ({navigation}) => {
       const onBackPress = () => {
         const now = Date.now();
         if (now - lastBackPressed < 2000) {
-          BackHandler.exitApp(); // 앱 종료
+          BackHandler.exitApp();
           return true;
         }
 
         lastBackPressed = now;
-        ToastAndroid.show('한 번 더 누르면 종료됩니다.', ToastAndroid.SHORT);
-        return true; // 기본 동작 막기
+        ToastAndroid.show('�� �� �� ������ ����˴ϴ�.', ToastAndroid.SHORT);
+        return true;
       };
 
       const backHandler = BackHandler.addEventListener(
@@ -125,8 +232,22 @@ const MainScreen = ({navigation}) => {
         onBackPress,
       );
 
-      return () => backHandler.remove(); // cleanup
+      return () => backHandler.remove();
     }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'android') {
+        StatusBar.setBackgroundColor(showTopView2 ? 'white' : '#3CBBFF');
+      }
+
+      return () => {
+        if (Platform.OS === 'android') {
+          StatusBar.setBackgroundColor('white');
+        }
+      };
+    }, [showTopView2]),
   );
 
   useEffect(() => {
@@ -160,7 +281,7 @@ const MainScreen = ({navigation}) => {
   }, [pendingStoreId]);
 
   const onRefresh = async () => {
-    setIsRefreshing(true); // 새로 고침 시작
+    setIsRefreshing(true);
 
     try {
       const currentLocation = await getLocation();
@@ -185,9 +306,8 @@ const MainScreen = ({navigation}) => {
         setAddress(currentAddress);
       }
     } catch (error) {
-      console.error('초기 로드 오류:', error);
     } finally {
-      setIsRefreshing(false); // 5초 끝나고 로딩 종료
+      setIsRefreshing(false);
     }
   };
 
@@ -207,7 +327,7 @@ const MainScreen = ({navigation}) => {
     navigation.navigate('SearchStack', {
       screen: 'SearchScreen',
     });
-  }, [navigation, location]);
+  }, [navigation]);
 
   const setLocationHandle = useCallback(() => {
     setTimeout(() => {
@@ -215,23 +335,15 @@ const MainScreen = ({navigation}) => {
     }, 50);
   }, [navigation]);
 
-  const formatAddress = address => {
-    if (address === '강남역') {
-      return address;
-    }
-    return address;
-  };
-
   const [rejectModalData, setRejectModalData] = useState(null);
   const {pendingNotification, setPendingNotification} = useNotification();
   useHandlePendingNotification(
     loading,
     pendingNotification,
     () => setPendingNotification(null),
-    data => setRejectModalData(data), // 모달 데이터 설정
+    data => setRejectModalData(data),
   );
 
-  // ✅ Cold Start 시 AsyncStorage에 저장된 알림 처리
   useEffect(() => {
     const checkStoredNotification = async () => {
       const stored = await AsyncStorage.getItem('PENDING_NOTIFICATION');
@@ -239,30 +351,13 @@ const MainScreen = ({navigation}) => {
         try {
           const data = JSON.parse(stored);
           setPendingNotification(data);
-          await AsyncStorage.removeItem('PENDING_NOTIFICATION'); // 사용 후 삭제
-        } catch (e) {
-          console.warn('⚠️ 저장된 알림 파싱 실패', e);
-        }
+          await AsyncStorage.removeItem('PENDING_NOTIFICATION');
+        } catch (e) {}
       }
     };
 
     checkStoredNotification();
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (Platform.OS === 'android') {
-        StatusBar.setBackgroundColor(showTopView2 ? 'white' : '#3CBBFF');
-      }
-
-      return () => {
-        // 블러(다른 탭으로 이동) 시 → white로 리셋
-        if (Platform.OS === 'android') {
-          StatusBar.setBackgroundColor('white');
-        }
-      };
-    }, [showTopView2]),
-  );
+  }, [setPendingNotification]);
 
   useFocusEffect(
     useCallback(() => {
@@ -271,9 +366,7 @@ const MainScreen = ({navigation}) => {
         try {
           const unread = await has_unread_notification();
           setUnreadNotification(unread.hasUnread);
-        } catch (err) {
-          console.error('데이터 불러오기 실패', err);
-        }
+        } catch (err) {}
       };
 
       fetchUnread();
@@ -288,18 +381,16 @@ const MainScreen = ({navigation}) => {
   const [priceOrder, setPriceOrder] = useState('');
   const [popularloading, setPopularloading] = useState(false);
   const [popularempty, setPopularempty] = useState(false);
-  const filterHeaderRef = useRef(null);
 
   const PopularStores = async (
     currentPage,
     reset = false,
-    location,
-    drinkType = null,
-    priceOrder = '',
+    currentLocation,
+    currentDrinkType = null,
+    currentPriceOrder = '',
   ) => {
     setPopularloading(true);
-    if (location) {
-      // Use popularloading to guard duplicate fetches; don't block by global loading
+    if (currentLocation) {
       if (popularloading || (!hasMore && !reset)) return;
 
       if (reset) {
@@ -308,10 +399,10 @@ const MainScreen = ({navigation}) => {
       try {
         const data = await Store_getby_popular(
           currentPage,
-          location.latitude,
-          location.longitude,
-          drinkType,
-          priceOrder,
+          currentLocation.latitude,
+          currentLocation.longitude,
+          currentDrinkType,
+          currentPriceOrder,
         );
 
         setTotalpage(data.totalPages);
@@ -329,7 +420,7 @@ const MainScreen = ({navigation}) => {
             return uniqueData;
           });
         } else {
-          setHasMore(false); // 더 이상 데이터가 없으면 false로 설정
+          setHasMore(false);
         }
       } catch (error) {
       } finally {
@@ -345,9 +436,9 @@ const MainScreen = ({navigation}) => {
     if (!popularloading && popularstores.length > 0) {
       setTimeout(() => {
         scrollRef.current.scrollToLocation({
-          sectionIndex: 1, // popularStoresheader
-          itemIndex: 1, // 해당 section의 첫 아이템
-          viewPosition: 0, // 0이면 화면 맨 위에 위치
+          sectionIndex: 1,
+          itemIndex: 1,
+          viewPosition: 0,
           viewOffset: insets.top + 40 + populartext,
           animated: true,
         });
@@ -356,12 +447,11 @@ const MainScreen = ({navigation}) => {
   }, [drinkType, priceOrder]);
 
   const loadMoreData = () => {
-    // Trigger next page earlier and avoid blocking by unrelated loading
     if (!popularloading && hasMore && popularpage < totalpage - 1) {
       setPopularpage(prevPage => {
-        const nextPage = prevPage + 1; // 다음 페이지 번호
-        PopularStores(nextPage, false, location); // 그 페이지 번호로 데이터 요청
-        return nextPage; // 상태를 증가된 페이지 번호로 갱신
+        const nextPage = prevPage + 1;
+        PopularStores(nextPage, false, location);
+        return nextPage;
       });
     }
   };
@@ -394,39 +484,259 @@ const MainScreen = ({navigation}) => {
 
   const [populartext, setPopulartext] = useState(0);
 
+  const sectionsData = useMemo(
+    () => [
+      {
+        key: 'mainSection',
+        data: [mainSectionData],
+        renderItem: ({item}) => (
+          <View
+            onLayout={e => {
+              const {height} = e.nativeEvent.layout;
+              setMainSectionHeight(prev =>
+                Math.abs(prev - height) > 1 ? height : prev,
+              );
+            }}>
+            <MainSection
+              {...item}
+              onHeaderLayout={height => setPopulartext(height)}
+            />
+          </View>
+        ),
+      },
+      {
+        key: 'popularStoresCombined',
+        data: [{}],
+        renderItem: () => (
+          <PopularStoresSection
+            popularstores={popularstores}
+            location={stableLocation}
+            navigation={stableNavigation}
+            screenWidth={screenWidth}
+            loading={loading}
+            popularloading={popularloading}
+            popularempty={popularempty}
+            onHeaderLayout={height => setPopulartext(height)}
+          />
+        ),
+      },
+    ],
+    [
+      loading,
+      mainSectionData,
+      popularempty,
+      popularloading,
+      popularstores,
+      screenWidth,
+      setPopulartext,
+      stableLocation,
+      stableNavigation,
+    ],
+  );
+
   return (
     <>
-      <MainScreenLayout
-        insets={insets}
-        showTopView2={showTopView2}
-        scrollY={scrollY}
-        scrollRef={scrollRef}
-        showLocation={showLocation}
-        address={address}
-        formatAddress={formatAddress}
-        setLocationHandle={setLocationHandle}
-        handleSearchPress={handleSearchPress}
-        unreadNotification={unreadNotification}
-        mainSectionData={mainSectionData}
-        popularstores={popularstores}
-        loading={loading}
-        popularloading={popularloading}
-        popularempty={popularempty}
-        setPopulartext={setPopulartext}
-        showScrollToTop={showScrollToTop}
-        scrollToTopBottom={scrollToTopBottom}
-        handleScrollToTop={handleScrollToTop}
-        onRefresh={onRefresh}
-        isRefreshing={isRefreshing}
-        drinkType={drinkType}
-        setDrinkType={setDrinkType}
-        priceOrder={priceOrder}
-        setPriceOrder={setPriceOrder}
-        loadMoreData={loadMoreData}
-        screenWidth={screenWidth}
-        stableLocation={stableLocation}
-        stableNavigation={stableNavigation}
+      <Animated.View
+        pointerEvents="box-none"
+        style={[
+          styles.absoluteTop,
+          {
+            paddingTop: contentTopPadding,
+            backgroundColor: topBackgroundColor,
+          },
+        ]}>
+        <View
+          style={styles.topView}
+          onLayout={e => {
+            const {height} = e.nativeEvent.layout;
+            setAddressHeight(prev =>
+              Math.abs(prev - height) > 1 ? height : prev,
+            );
+          }}>
+          <Animated.View style={[styles.addressContainer]}>
+            <Pressable
+              hitSlop={{
+                left: 15,
+                right: 15,
+                top: 15,
+                bottom: 15,
+              }}
+              style={styles.addressPressable}
+              onPress={setLocationHandle}>
+              <Text
+                allowFontScaling={false}
+                style={styles.todayAddress}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {formatAddress(address)}
+              </Text>
+              {formatAddress(address) && (
+                <Feather name="chevron-right" size={22} color="#fff" />
+              )}
+            </Pressable>
+          </Animated.View>
+          <NotificationButton
+            unreadNotification={unreadNotification}
+            floating={false}
+            iconColor="#fff"
+          />
+        </View>
+
+        <View
+          onLayout={e => {
+            const {height} = e.nativeEvent.layout;
+            setSearchBarHeight(prev =>
+              Math.abs(prev - height) > 1 ? height : prev,
+            );
+          }}>
+          <MainSearchBar handleSearchPress={handleSearchPress} />
+        </View>
+      </Animated.View>
+      <Animated.View
+        pointerEvents={topView2Opacity.__getValue() === 0 ? 'none' : 'auto'}
+        style={[
+          styles.topView2,
+          {paddingTop: insets.top},
+          insets.top === 0 && {height: 50},
+          {
+            opacity: topView2Opacity,
+            transform: [{translateY: topView2TranslateY}],
+            ...Platform.select({
+              ios: {
+                shadowColor: '#000',
+                shadowOffset: {width: 0, height: 1},
+                shadowOpacity,
+                shadowRadius: 1,
+              },
+              android: {
+                elevation,
+              },
+            }),
+          },
+        ]}
+        onLayout={event => {
+          const {height} = event.nativeEvent.layout;
+          setTopView2Height(height);
+        }}>
+        <Pressable
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+          style={styles.addressPressableCompact}
+          onPress={setLocationHandle}>
+          <Text
+            allowFontScaling={false}
+            style={styles.todayAddress2}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {formatAddress(address)}
+          </Text>
+          {address && (
+            <Feather name="chevron-right" size={20} color="#181a1a" />
+          )}
+        </Pressable>
+        <View style={styles.topView2Actions}>
+          <Pressable
+            hitSlop={10}
+            style={{marginRight: 10}}
+            onPress={handleSearchPress}>
+            <Feather name="search" size={20} color="#181a1a" />
+          </Pressable>
+          <NotificationButton
+            unreadNotification={unreadNotification}
+            floating={false}
+            iconColor="#181a1a"
+            badgeColor="#3CBBFF"
+          />
+        </View>
+      </Animated.View>
+
+      <Animated.View
+        pointerEvents={touchable ? 'auto' : 'none'}
+        style={[
+          styles.fixedFilterHeader,
+          {
+            top: topView2Height,
+            opacity: filterHeaderProgress,
+            transform: [{translateY: stickyTranslateY}],
+          },
+        ]}>
+        <FilterHeader
+          ref={filterHeaderRef}
+          navigation={stableNavigation}
+          drinkType={drinkType}
+          setDrinkType={setDrinkType}
+          screenWidth={screenWidth}
+          priceOrder={priceOrder}
+          setPriceOrder={setPriceOrder}
+        />
+      </Animated.View>
+
+      <Animated.SectionList
+        ref={scrollRef}
+        sections={sectionsData}
+        keyExtractor={(item, index) => item.id ?? index.toString()}
+        renderItem={({item, section}) => section.renderItem({item})}
+        onScrollBeginDrag={() => filterHeaderRef.current?.closeDropdown(false)}
+        onMomentumScrollBegin={() =>
+          filterHeaderRef.current?.closeDropdown(false)
+        }
+        onScroll={Animated.event(
+          [{nativeEvent: {contentOffset: {y: scrollY}}}],
+          {
+            useNativeDriver: Platform.OS === 'android',
+          },
+        )}
+        renderSectionHeader={({section}) => {
+          if (section.key === 'popularStoresCombined') {
+            return (
+              <Animated.View style={{opacity: listFilterOpacity}}>
+                <FilterHeader
+                  ref={filterHeaderRef}
+                  navigation={stableNavigation}
+                  drinkType={drinkType}
+                  setDrinkType={setDrinkType}
+                  screenWidth={screenWidth}
+                  priceOrder={priceOrder}
+                  setPriceOrder={setPriceOrder}
+                />
+              </Animated.View>
+            );
+          }
+          return null;
+        }}
+        stickySectionHeadersEnabled={true}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            {...(Platform.OS === 'android'
+              ? {progressViewOffset: insets.top + 110}
+              : {})}
+          />
+        }
+        onEndReached={loadMoreData}
+        onEndReachedThreshold={0.7}
+        contentContainerStyle={{
+          paddingTop:
+            Platform.OS === 'android' ? insets.top + 110 : insets.top + 110,
+        }}
+        automaticallyAdjustContentInsets={false}
+        contentInsetAdjustmentBehavior="never"
+        scrollIndicatorInsets={{top: 0, left: 0, bottom: 0, right: 0}}
+        ListFooterComponent={null}
+        initialNumToRender={4}
+        maxToRenderPerBatch={7}
+        windowSize={4}
+        removeClippedSubviews={Platform.OS === 'android'}
       />
+
+      <ScrollToTopButton
+        visible={showScrollToTop}
+        bottom={scrollToTopBottom}
+        onPress={handleScrollToTop}
+      />
+
       {rejectModalData && !loading && (
         <RejectModal
           data={rejectModalData}
@@ -437,6 +747,82 @@ const MainScreen = ({navigation}) => {
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  absoluteTop: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: screenHeight,
+  },
+  topView: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: 3,
+    marginHorizontal: 18,
+    paddingHorizontal: 4,
+  },
+  todayAddress: {
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#fff',
+    flexShrink: 1,
+  },
+  addressContainer: {
+    flex: 1,
+  },
+  addressPressable: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  addressPressableCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+  },
+  topView2: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 40,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    paddingVertical: 7,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  todayAddress2: {
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#181a1a',
+    flexShrink: 1,
+    marginRight: 3,
+  },
+  topView2Actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 12,
+  },
+  fixedFilterHeader: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 30,
+    backgroundColor: '#fff',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+  },
+});
 
 const screens = [
   'IZAKAYA',
