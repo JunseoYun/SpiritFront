@@ -70,6 +70,7 @@ const MainSection = ({
           backgroundColor: '#fff',
           paddingLeft: 20,
           paddingTop: 20,
+          paddingBottom: 10,
         }}
         onLayout={e => {
           const {height} = e.nativeEvent.layout;
