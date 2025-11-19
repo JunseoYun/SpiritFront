@@ -36,6 +36,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useFocusEffect} from '@react-navigation/native';
 import MapDetailItemSkeleton from './MapDetailItemSkeleton';
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
+const DEFAULT_DETAIL_HEADER_HEIGHT = 110;
 
 const MapStoreList = ({
   updateNewLocation,
@@ -69,9 +70,22 @@ const MapStoreList = ({
   const insets = useSafeAreaInsets();
   const [filterheight, setFilterheight] = useState(0);
   const [detailContentHeight, setDetailContentHeight] = useState(null);
+  const [detailHeaderHeight, setDetailHeaderHeight] = useState(null);
+  const detailRevealProgress = useSharedValue(1);
+  const detailPointerState = useSharedValue(1);
+  const [detailPointerEnabled, setDetailPointerEnabled] = useState(true);
   const initialIndex = stores.length === 0 ? 1 : 1;
   const detailStore = detailStoreData || null;
   const isDetailMode = !!detailStoreId;
+  const detailCollapsedHeight = useMemo(() => {
+    if (!detailStoreId) {
+      return SCREEN_HEIGHT * 0.03 + filterheight + insets.bottom;
+    }
+    const platformOffset = Platform.OS === 'android' ? 10 : 0;
+    const safePadding = insets.bottom + 20 + platformOffset;
+    const headerHeight = detailHeaderHeight ?? DEFAULT_DETAIL_HEADER_HEIGHT;
+    return safePadding + headerHeight;
+  }, [detailStoreId, filterheight, insets.bottom, detailHeaderHeight]);
   const detailSnapPoint = useMemo(() => {
     if (!detailStoreId) return SCREEN_HEIGHT * 0.55;
     const measured = detailContentHeight ?? SCREEN_HEIGHT * 0.55;
@@ -87,7 +101,7 @@ const MapStoreList = ({
     isDetailMode && detailSnapPoint >= SCREEN_HEIGHT * 0.7;
 
   const snapPoints = useMemo(() => {
-    const first = SCREEN_HEIGHT * 0.03 + filterheight + insets.bottom; //
+    const first = detailCollapsedHeight;
     const nonemid = SCREEN_HEIGHT * 0.3;
     const mid = SCREEN_HEIGHT * 0.55;
     const max = SCREEN_HEIGHT * 0.7;
@@ -104,8 +118,7 @@ const MapStoreList = ({
     storegetloading,
     detailStoreId,
     detailSnapPoint,
-    filterheight,
-    insets.bottom,
+    detailCollapsedHeight,
   ]);
 
   const animatedIndex = useSharedValue(0);
@@ -130,10 +143,17 @@ const MapStoreList = ({
   useEffect(() => {
     if (isDetailMode) {
       setFilterheight(0);
-      return;
+    } else {
+      setDetailContentHeight(null);
+      setDetailHeaderHeight(null);
+      detailRevealProgress.value = 1;
+      detailPointerState.value = 1;
+      setDetailPointerEnabled(true);
     }
-    setDetailContentHeight(null);
-  }, [isDetailMode]);
+  }, [isDetailMode, detailRevealProgress, detailPointerState]);
+  const handleDetailPointerState = useCallback(enabled => {
+    setDetailPointerEnabled(prev => (prev === enabled ? prev : enabled));
+  }, []);
 
   useAnimatedReaction(
     () => animatedIndex.value,
@@ -163,6 +183,23 @@ const MapStoreList = ({
       runOnJS(setTranslateY)(newValue);
       runOnJS(setShowListButtons)(index < 2);
     },
+  );
+  useAnimatedReaction(
+    () => animatedIndex.value,
+    value => {
+      'worklet';
+      const raw = detailStoreId ? value ?? 0 : 1;
+      const next = Math.max(0, Math.min(1, raw));
+      if (Math.abs(detailRevealProgress.value - next) > 0.001) {
+        detailRevealProgress.value = next;
+      }
+      const shouldEnable = next >= 0.05 ? 1 : 0;
+      if (detailPointerState.value !== shouldEnable) {
+        detailPointerState.value = shouldEnable;
+        runOnJS(handleDetailPointerState)(!!shouldEnable);
+      }
+    },
+    [detailStoreId, handleDetailPointerState],
   );
 
   const handleSheetChange = useCallback(
@@ -296,6 +333,15 @@ const MapStoreList = ({
       );
     },
     [isDetailMode],
+  );
+  const handleDetailHeaderLayout = useCallback(
+    height => {
+      if (!height || Number.isNaN(height)) return;
+      setDetailHeaderHeight(prev =>
+        prev == null || Math.abs(prev - height) > 2 ? height : prev,
+      );
+    },
+    [setDetailHeaderHeight],
   );
 
   useFocusEffect(
@@ -523,8 +569,7 @@ const MapStoreList = ({
               style={[
                 styles.listButton,
                 {
-                  bottom:
-                    SCREEN_HEIGHT * 0.03 + 20 + filterheight + insets.bottom,
+                  bottom: detailCollapsedHeight + 20,
                 },
               ]}
               onPress={handleShowList}>
@@ -646,14 +691,17 @@ const MapStoreList = ({
                         selectedStoreIndex={selectedStoreIndex}
                         setSelectedStore={setSelectedStore}
                         moveCenterMap={moveCenterMap}
-                        navigation={navigation}
-                        location={location}
-                        loading={loading}
-                        sheetIndex={currentIndex}
-                        onCloseDetail={handleCloseDetail}
-                      />
-                    </View>
-                  </BottomSheetScrollView>
+                      navigation={navigation}
+                      location={location}
+                      loading={loading}
+                      sheetIndex={currentIndex}
+                      onCloseDetail={handleCloseDetail}
+                      onHeaderLayout={handleDetailHeaderLayout}
+                      detailRevealProgressValue={detailRevealProgress}
+                      detailPointerEnabled={detailPointerEnabled}
+                    />
+                  </View>
+                </BottomSheetScrollView>
                 ) : (
                   <View style={styles.detailLoadingContainer}>
                     {detailStoreLoading ? (
