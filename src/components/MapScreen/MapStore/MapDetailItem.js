@@ -8,11 +8,12 @@ import {
   Pressable,
   Share,
   Linking,
-  Animated,
+  Animated as RNAnimated,
   Platform,
   ToastAndroid,
   Dimensions,
 } from 'react-native';
+import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import FastImage from 'react-native-fast-image';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {ShareIcon} from 'lucide-react-native';
@@ -37,7 +38,15 @@ const {width} = Dimensions.get('window');
 const H_PADDING = 16;
 const CONTENT_WIDTH = width - H_PADDING * 2;
 
-const MapDetailItem = ({storeData, navigation, location, onCloseDetail}) => {
+const MapDetailItem = ({
+  storeData,
+  navigation,
+  location,
+  onCloseDetail,
+  onHeaderLayout,
+  detailRevealProgressValue,
+  detailPointerEnabled = true,
+}) => {
   const {translateCategory} = useCategoryTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
   const {token} = useAuth();
@@ -91,9 +100,18 @@ const MapDetailItem = ({storeData, navigation, location, onCloseDetail}) => {
   // 연락처 팝오버 관련
   const [showContactPopover, setShowContactPopover] = useState(false);
   const [contactCopied, setContactCopied] = useState(false);
-  const contactFadeAnim = useRef(new Animated.Value(0)).current;
+  const contactFadeAnim = useRef(new RNAnimated.Value(0)).current;
   const [contactAnchorHeight, setContactAnchorHeight] = useState(0);
   const {openDirectionsModal, DirectionsModal} = useDirectionsModal();
+  const handleHeaderLayout = useCallback(
+    e => {
+      if (!onHeaderLayout) return;
+      const height = e?.nativeEvent?.layout?.height;
+      if (!height || Number.isNaN(height)) return;
+      onHeaderLayout(height);
+    },
+    [onHeaderLayout],
+  );
 
   const openContactPopover = () => {
     if (!storeData?.contact) {
@@ -101,7 +119,7 @@ const MapDetailItem = ({storeData, navigation, location, onCloseDetail}) => {
       return;
     }
     setShowContactPopover(true);
-    Animated.timing(contactFadeAnim, {
+    RNAnimated.timing(contactFadeAnim, {
       toValue: 1,
       duration: 180,
       useNativeDriver: true,
@@ -109,7 +127,7 @@ const MapDetailItem = ({storeData, navigation, location, onCloseDetail}) => {
   };
 
   const closeContactPopover = () => {
-    Animated.timing(contactFadeAnim, {
+    RNAnimated.timing(contactFadeAnim, {
       toValue: 0,
       duration: 150,
       useNativeDriver: true,
@@ -197,6 +215,12 @@ const MapDetailItem = ({storeData, navigation, location, onCloseDetail}) => {
     ? {uri: mainImageUrl}
     : require('../../../assets/default_store.png');
   const showMosaicLayout = hasPhotos && mosaicImages.length === 2;
+  const detailBodyAnimatedStyle = useAnimatedStyle(() => {
+    const progress = detailRevealProgressValue?.value ?? 1;
+    return {
+      opacity: progress,
+    };
+  }, [detailRevealProgressValue]);
 
   return (
     <View style={styles.container}>
@@ -208,130 +232,139 @@ const MapDetailItem = ({storeData, navigation, location, onCloseDetail}) => {
             params: {storeId: storeData.id},
           })
         }>
-        {/* 상단 Row */}
-        <View style={styles.headerRow}>
-          <Text style={styles.categories} numberOfLines={1}>
-            {categoriesText}
-          </Text>
+        <View onLayout={handleHeaderLayout}>
+          {/* 상단 Row */}
+          <View style={styles.headerRow}>
+            <Text style={styles.categories} numberOfLines={1}>
+              {categoriesText}
+            </Text>
 
-          {/* 상단 버튼 */}
-          <View style={styles.headerActions}>
-            <Pressable
-              style={[
-                styles.topButton,
-                isLiked && styles.likeButtonActive,
-                likeLoading && {opacity: 0.5},
-              ]}
-              hitSlop={8}
-              onPress={handleToggleLike}>
-              <Ionicons
-                name={isLiked ? 'heart' : 'heart-outline'}
-                size={18}
-                color={isLiked ? '#FF5E5E' : '#4B5563'}
-              />
-            </Pressable>
+            {/* 상단 버튼 */}
+            <View style={styles.headerActions}>
+              <Pressable
+                style={[
+                  styles.topButton,
+                  isLiked && styles.likeButtonActive,
+                  likeLoading && {opacity: 0.5},
+                ]}
+                hitSlop={8}
+                onPress={handleToggleLike}>
+                <Ionicons
+                  name={isLiked ? 'heart' : 'heart-outline'}
+                  size={18}
+                  color={isLiked ? '#FF5E5E' : '#4B5563'}
+                />
+              </Pressable>
 
-            <Pressable
-              style={styles.topButton}
-              hitSlop={8}
-              onPress={onCloseDetail}>
-              <Ionicons name="close" size={18} color="#4B5563" />
-            </Pressable>
+              <Pressable
+                style={styles.topButton}
+                hitSlop={8}
+                onPress={onCloseDetail}>
+                <Ionicons name="close" size={18} color="#4B5563" />
+              </Pressable>
+            </View>
           </View>
-        </View>
 
-        {/* 매장명 */}
-        <View style={styles.titleView}>
-          {storeData?.isOwner != null && (
-            <FastImage
-              source={require('../../../assets/verifyMaker.png')}
-              style={styles.verifyIcon}
-            />
-          )}
-          <Text style={styles.storeName} numberOfLines={1}>
-            {storeData?.name}
-          </Text>
-        </View>
-
-        {/* 별점 + 영업 시간 */}
-        <View style={styles.infoRow}>
-          <View style={styles.ratingRow}>
-            <FastImage
-              source={require('../../../assets/icon-star.png')}
-              style={styles.starIcon}
-            />
-            <Text style={styles.ratingText}>
-              {storeData?.storeRate} ({storeData?.reviewCount})
+          {/* 매장명 */}
+          <View style={styles.titleView}>
+            {storeData?.isOwner != null && (
+              <FastImage
+                source={require('../../../assets/verifyMaker.png')}
+                style={styles.verifyIcon}
+              />
+            )}
+            <Text style={styles.storeName} numberOfLines={1}>
+              {storeData?.name}
             </Text>
           </View>
-          <Text style={{color: '#D4D4D4', marginRight: -24}}> · </Text>
-          <OperationSchedule
-            type="preview"
-            isAlwaysOpen={storeData?.isAlwaysOpen}
-            isOpen={isOpen}
-            isBreak={isBreak}
-            closed={closed}
-            nextclosed={nextclosed}
-            starttime={starttime}
-            endtime={endtime}
-            breakend={breakend}
-          />
         </View>
 
-        {/* 거리 & 주소 */}
-        <View style={styles.distanceAddressView}>
-          <Text style={styles.distanceAddress}>
-            {distanceInfo.distance}
-            {distanceInfo.unit}
-          </Text>
-          <Text style={{color: '#D4D4D4'}}> · </Text>
-          <Text style={styles.distanceAddress}>
-            {storeData?.locationDto?.address}
-          </Text>
-        </View>
-
-        {/* 주류 */}
-        {storeData?.mainDrinkDtos?.length > 0 && (
-          <Alcohol
-            storeDrinkDtos={storeData.mainDrinkDtos}
-            translateAlcohol={translateAlcohol}
-          />
-        )}
-
-        {/* 이미지 모자이크 */}
-        {hasPhotos &&
-          (showMosaicLayout ? (
-            <View style={styles.mosaicRow}>
+        <Animated.View
+          pointerEvents={detailPointerEnabled ? 'auto' : 'none'}
+          style={[styles.bodyContainer, detailBodyAnimatedStyle]}>
+          {/* 별점 + 영업 시간 */}
+          <View style={styles.infoRow}>
+            <View style={styles.ratingRow}>
               <FastImage
-                source={imgSrc}
-                style={{
-                  width: leftW,
-                  height: leftH,
-                  borderRadius: 6,
-                  backgroundColor: '#F3F4F6',
-                }}
+                source={require('../../../assets/icon-star.png')}
+                style={styles.starIcon}
               />
-              <View style={{width: rightW, marginLeft: 6}}>
-                {mosaicImages.map((url, index) => (
-                  <FastImage
-                    key={`${url}-${index}`}
-                    source={{uri: url}}
-                    style={{
-                      width: rightW,
-                      height: rightH,
-                      borderRadius: 6,
-                      backgroundColor: '#F3F4F6',
-                      marginBottom: index === 0 ? 6 : 0,
-                    }}
-                  />
-                ))}
+              <Text style={styles.ratingText}>
+                {storeData?.storeRate} ({storeData?.reviewCount})
+              </Text>
+            </View>
+            <Text style={{color: '#D4D4D4', marginRight: -24}}> · </Text>
+            <OperationSchedule
+              type="preview"
+              isAlwaysOpen={storeData?.isAlwaysOpen}
+              isOpen={isOpen}
+              isBreak={isBreak}
+              closed={closed}
+              nextclosed={nextclosed}
+              starttime={starttime}
+              endtime={endtime}
+              breakend={breakend}
+            />
+          </View>
+
+          {/* 거리 & 주소 */}
+          <View style={styles.distanceAddressView}>
+            <Text style={styles.distanceAddress}>
+              {distanceInfo.distance}
+              {distanceInfo.unit}
+            </Text>
+            <Text style={{color: '#D4D4D4'}}> · </Text>
+            <Text style={styles.distanceAddress}>
+              {storeData?.locationDto?.address}
+            </Text>
+          </View>
+
+          {/* 주류 */}
+          {storeData?.mainDrinkDtos?.length > 0 && (
+            <Alcohol
+              storeDrinkDtos={storeData.mainDrinkDtos}
+              translateAlcohol={translateAlcohol}
+            />
+          )}
+
+          {/* 이미지 모자이크 */}
+          {hasPhotos &&
+            (showMosaicLayout ? (
+              <View style={styles.mosaicRow}>
+                <FastImage
+                  source={imgSrc}
+                  style={{
+                    width: leftW,
+                    height: leftH,
+                    borderRadius: 6,
+                    backgroundColor: '#F3F4F6',
+                  }}
+                />
+                <View style={{width: rightW, marginLeft: 6}}>
+                  {mosaicImages.map((url, index) => (
+                    <FastImage
+                      key={`${url}-${index}`}
+                      source={{uri: url}}
+                      style={{
+                        width: rightW,
+                        height: rightH,
+                        borderRadius: 6,
+                        backgroundColor: '#F3F4F6',
+                        marginBottom: index === 0 ? 6 : 0,
+                      }}
+                    />
+                  ))}
+                </View>
               </View>
-            </View>
-          ) : (
-            <View style={styles.singleImageWrapper}>
-              <FastImage source={imgSrc} style={[styles.singleImage]} />
-            </View>
-          ))}
+            ) : (
+              <View style={styles.singleImageWrapper}>
+                <FastImage
+                  source={imgSrc}
+                  style={[styles.singleImage, {height: leftH}]}
+                />
+              </View>
+            ))}
+        </Animated.View>
       </Pressable>
 
       {/* 하단 버튼 */}
@@ -381,7 +414,7 @@ const MapDetailItem = ({storeData, navigation, location, onCloseDetail}) => {
             style={styles.contactBackdrop}
             onPress={closeContactPopover}
           />
-          <Animated.View
+          <RNAnimated.View
             style={[
               styles.contactPopover,
               {
@@ -432,7 +465,7 @@ const MapDetailItem = ({storeData, navigation, location, onCloseDetail}) => {
               disabled={!storeData?.contact}>
               <Text style={styles.contactCallButtonText}>전화하기</Text>
             </Pressable>
-          </Animated.View>
+          </RNAnimated.View>
         </>
       )}
 
@@ -534,6 +567,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: 18,
     marginTop: 7,
+  },
+  bodyContainer: {
+    marginTop: 4,
   },
   singleImageWrapper: {
     marginHorizontal: 18,
