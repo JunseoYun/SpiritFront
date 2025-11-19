@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   Storesubtitle: {
-    fontSize: 13,
+    fontSize: 13.5,
     color: ColorUtil.subText,
     textAlign: 'center',
     marginRight: 7,

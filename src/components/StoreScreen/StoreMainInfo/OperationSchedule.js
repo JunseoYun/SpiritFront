@@ -7,7 +7,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import ColorUtil from '../../../utils/ColorUtil';
 const OperationSchedule = ({
   toggleExpand,
-  isExpanded,
+  isExpanded = false,
   isAlwaysOpen,
   isOpen,
   isBreak,
@@ -16,11 +16,17 @@ const OperationSchedule = ({
   starttime,
   endtime,
   breakend,
+  type,
 }) => {
   return (
     <>
-      <Pressable style={styles.timesetview} onPress={toggleExpand}>
-        <Ionicons name="time-outline" size={20} color="#333" />
+      <Pressable
+        style={[styles.timesetview, type === 'preview' && {marginTop: 0}]}
+        onPress={toggleExpand}>
+        {type !== 'preview' && (
+          <Ionicons name="time-outline" size={20} color="#333" />
+        )}
+
         {isOpen && !isBreak && isAlwaysOpen == false && (
           <>
             <Text style={[styles.timetextnow, {color: 'green'}]}>영업 중</Text>
@@ -72,14 +78,17 @@ const OperationSchedule = ({
             <Text style={styles.timetext}>- 연중무휴</Text>
           </>
         )}
-        <View style={styles.togglebtn}>
-          {!isExpanded && (
-            <Entypo name="chevron-small-down" size={20} color="#5F5F5F" />
-          )}
-          {isExpanded && (
-            <Entypo name="chevron-small-up" size={20} color="#5F5F5F" />
-          )}
-        </View>
+
+        {type !== 'preview' && (
+          <View style={styles.togglebtn}>
+            {!isExpanded && (
+              <Entypo name="chevron-small-down" size={20} color="#5F5F5F" />
+            )}
+            {isExpanded && (
+              <Entypo name="chevron-small-up" size={20} color="#5F5F5F" />
+            )}
+          </View>
+        )}
       </Pressable>
     </>
   );
@@ -100,7 +109,7 @@ const styles = StyleSheet.create({
   },
   timetext: {
     fontSize: 15,
-    fontWeight: '500',
+    fontFamily: 'Pretendard-Medium',
     color: ColorUtil.subText,
     marginLeft: 5,
   },

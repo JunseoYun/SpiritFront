@@ -1,322 +1,656 @@
-import React, {useMemo} from 'react';
+// === MapDetailItem.js ===
+
+import React, {useState, useCallback, useRef, useMemo} from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Image,
-  Dimensions,
   Pressable,
+  Share,
+  Linking,
+  Animated,
+  Platform,
+  ToastAndroid,
+  Dimensions,
 } from 'react-native';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import ColorUtil from '../../../utils/ColorUtil';
-import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
-import useStoreStatus from '../../../hooks/useStoreStatus';
-import {normalizeFont} from '../../../hooks/normalizeFont';
 import FastImage from 'react-native-fast-image';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {ShareIcon} from 'lucide-react-native';
+import Clipboard from 'react-native/Libraries/Components/Clipboard/Clipboard';
+import useDirectionsModal from '../../../hooks/useDirectionsModal';
+
+import ColorUtil from '../../../utils/ColorUtil';
+import {normalizeFont} from '../../../hooks/normalizeFont';
+import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
+import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
+import useStoreStatus from '../../../hooks/useStoreStatus';
+import useDistance from '../../../hooks/useDistance';
+import {useAuth} from '../../../context/AuthContext';
+import {useToast} from '../../../context/ToastContext';
+
+import Alcohol from '../../StoreScreen/StoreMainInfo/Alcohol';
+import OperationSchedule from '../../StoreScreen/StoreMainInfo/OperationSchedule';
+
+import {Storelikepost, get_store_share} from '../../../api/storeApi';
 
 const {width} = Dimensions.get('window');
 const H_PADDING = 16;
 const CONTENT_WIDTH = width - H_PADDING * 2;
 
-const alcoholLabel = t =>
-  ({
-    SOJU: '소주',
-    BEER: '맥주',
-    MAKGEOLLI: '막걸리',
-    TRADITIONAL: '전통주',
-    HIGHBALL: '하이볼',
-    WINE: '와인',
-    COCKTAIL: '칵테일',
-    SAKE: '사케',
-    KAOLIANG: '고량주',
-    WHISKEY: '위스키',
-    VODKA: '보드카',
-    TEQUILA: '데킬라',
-  }[t] ||
-  t ||
-  '주류');
-
-const MapDetailItem = ({item, moveCenterMap, onItemPress, navigation}) => {
-  const {isOpen, closed, nextclosed, isBreak, starttime, endtime, breakend} =
-    useStoreStatus(item?.operationInfoDtos, item?.isAlwaysOpen);
+const MapDetailItem = ({storeData, navigation, location, onCloseDetail}) => {
   const {translateCategory} = useCategoryTranslation();
-
-  // Status color + text
-  const {statusText, statusColor} = useMemo(() => {
-    if (item?.isAlwaysOpen)
-      return {statusText: '영업 중 - 연중무휴', statusColor: '#38BDF8'};
-    if (closed) return {statusText: '금일 휴무', statusColor: '#F05650'};
-    if (!isOpen && nextclosed)
-      return {statusText: '영업 종료 · 내일 휴무', statusColor: '#F05650'};
-    if (!isOpen)
-      return {
-        statusText: `영업 종료 · ${starttime} 오픈`,
-        statusColor: '#A3A3A3',
-      };
-    if (isOpen && isBreak)
-      return {
-        statusText: `브레이크 타임 · ${breakend} 종료`,
-        statusColor: '#F05650',
-      };
-    return {statusText: `영업중 · ${endtime} 종료`, statusColor: '#34D399'};
-  }, [
-    item?.isAlwaysOpen,
-    closed,
+  const {translateAlcohol} = useTranslateAlcohol();
+  const {token} = useAuth();
+  const {showToast} = useToast();
+  // 영업 상태 계산
+  const {
     isOpen,
+    isBreak,
+    closed,
     nextclosed,
     starttime,
     endtime,
+    breakstart,
     breakend,
+  } = useStoreStatus(storeData?.operationInfoDtos, storeData?.isAlwaysOpen);
+
+  // 찜 상태
+  const [isLiked, setIsLiked] = useState(!!storeData?.isStoreLiked);
+  const [likeLoading, setLikeLoading] = useState(false);
+
+  // 거리 계산
+  const calcDistance = useDistance();
+  const distanceInfo = useMemo(() => {
+    if (
+      !location ||
+      !storeData?.locationDto ||
+      typeof location.latitude !== 'number' ||
+      typeof location.longitude !== 'number'
+    ) {
+      return {distance: '', unit: 'm'};
+    }
+    const d = calcDistance(
+      location.latitude,
+      location.longitude,
+      storeData.locationDto.latitude,
+      storeData.locationDto.longitude,
+    );
+    if (!Number.isFinite(d)) return {distance: '', unit: 'm'};
+    if (d < 1) {
+      return {distance: (d * 1000).toFixed(0), unit: 'm'};
+    }
+    return {distance: d.toFixed(2), unit: 'km'};
+  }, [
+    calcDistance,
+    location?.latitude,
+    location?.longitude,
+    storeData?.locationDto?.latitude,
+    storeData?.locationDto?.longitude,
   ]);
 
+  // 연락처 팝오버 관련
+  const [showContactPopover, setShowContactPopover] = useState(false);
+  const [contactCopied, setContactCopied] = useState(false);
+  const contactFadeAnim = useRef(new Animated.Value(0)).current;
+  const [contactAnchorHeight, setContactAnchorHeight] = useState(0);
+  const {openDirectionsModal, DirectionsModal} = useDirectionsModal();
+
+  const openContactPopover = () => {
+    if (!storeData?.contact) {
+      showToast?.('전화번호 정보가 없어요.', 'center');
+      return;
+    }
+    setShowContactPopover(true);
+    Animated.timing(contactFadeAnim, {
+      toValue: 1,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeContactPopover = () => {
+    Animated.timing(contactFadeAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => setShowContactPopover(false));
+  };
+
+  const toggleContactPopover = () => {
+    showContactPopover ? closeContactPopover() : openContactPopover();
+  };
+
+  const handleCall = () => {
+    if (!storeData?.contact) return;
+    closeContactPopover();
+    Linking.openURL(`tel:${storeData.contact}`);
+  };
+
+  const handleCopyContact = () => {
+    if (!storeData?.contact) return;
+    Clipboard.setString(storeData.contact);
+    setContactCopied(true);
+
+    if (Platform.OS === 'android') {
+      ToastAndroid.show('전화번호가 복사되었어요.', ToastAndroid.SHORT);
+    } else {
+      showToast?.('전화번호가 복사되었어요.');
+    }
+
+    setTimeout(() => setContactCopied(false), 2000);
+  };
+
+  // 찜 토글
+  const handleToggleLike = async e => {
+    e?.stopPropagation?.();
+    if (!token) {
+      showToast?.('로그인 후 이용할 수 있어요!', 'center');
+      return;
+    }
+    const next = !isLiked;
+    setIsLiked(next);
+    setLikeLoading(true);
+    try {
+      await Storelikepost(storeData.id);
+    } catch {
+      setIsLiked(!next);
+      showToast?.('찜을 변경할 수 없어요.', 'center');
+    } finally {
+      setLikeLoading(false);
+    }
+  };
+
+  // 공유
+  const handleShare = async () => {
+    try {
+      const res = await get_store_share(storeData.id);
+      if (!res?.shareLink) return;
+
+      await Share.share({
+        message: `${storeData?.name}에서 한잔 어때요?\n\n${res.shareLink}`,
+      });
+    } catch {
+      showToast?.('공유에 실패했어요.');
+    }
+  };
+
   const categoriesText =
-    item?.categories?.map(c => translateCategory(c)).join(', ') ||
+    storeData?.categories?.map(c => translateCategory(c)).join(' · ') ||
     '카테고리 미설정';
 
-  // Image mosaic sizes
+  // 이미지 레이아웃
   const leftW = Math.round(CONTENT_WIDTH * 0.66) - 6;
   const rightW = CONTENT_WIDTH - leftW - 6;
   const leftH = 168;
   const rightH = Math.floor((leftH - 6) / 2);
-  const imgSrc = item?.mainImgUrl
-    ? {uri: item.mainImgUrl}
+
+  // Pick main/secondary images for the mosaic section
+  const normalizedImgList = Array.isArray(storeData?.imgUrlList)
+    ? storeData.imgUrlList.filter(Boolean)
+    : [];
+  const mainImageUrl = storeData?.mainImgUrl || normalizedImgList[0] || null;
+  const hasPhotos = !!mainImageUrl;
+  const mosaicImages = normalizedImgList
+    .filter(url => url !== mainImageUrl)
+    .slice(0, 2);
+  const imgSrc = mainImageUrl
+    ? {uri: mainImageUrl}
     : require('../../../assets/default_store.png');
+  const showMosaicLayout = hasPhotos && mosaicImages.length === 2;
 
   return (
-    <Pressable
-      style={[styles.wrap, {paddingHorizontal: 16}]}
-      onPress={() => {
-        navigation.navigate('StoreStack', {
-          screen: 'StoreMainScreen',
-          params: {
-            storeId: item.id,
-          },
-        });
-      }}>
-      {/* section: header */}
-      <View style={styles.section}>
+    <View style={styles.container}>
+      {/* 전체 이동 가능한 영역 */}
+      <Pressable
+        onPress={() =>
+          navigation.navigate('StoreStack', {
+            screen: 'StoreMainScreen',
+            params: {storeId: storeData.id},
+          })
+        }>
+        {/* 상단 Row */}
         <View style={styles.headerRow}>
-          <Text style={styles.storeName} numberOfLines={1}>
-            {item?.name}
+          <Text style={styles.categories} numberOfLines={1}>
+            {categoriesText}
           </Text>
+
+          {/* 상단 버튼 */}
+          <View style={styles.headerActions}>
+            <Pressable
+              style={[
+                styles.topButton,
+                isLiked && styles.likeButtonActive,
+                likeLoading && {opacity: 0.5},
+              ]}
+              hitSlop={8}
+              onPress={handleToggleLike}>
+              <Ionicons
+                name={isLiked ? 'heart' : 'heart-outline'}
+                size={18}
+                color={isLiked ? '#FF5E5E' : '#4B5563'}
+              />
+            </Pressable>
+
+            <Pressable
+              style={styles.topButton}
+              hitSlop={8}
+              onPress={onCloseDetail}>
+              <Ionicons name="close" size={18} color="#4B5563" />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* 매장명 */}
+        <View style={styles.titleView}>
+          {storeData?.isOwner != null && (
+            <FastImage
+              source={require('../../../assets/verifyMaker.png')}
+              style={styles.verifyIcon}
+            />
+          )}
+          <Text style={styles.storeName} numberOfLines={1}>
+            {storeData?.name}
+          </Text>
+        </View>
+
+        {/* 별점 + 영업 시간 */}
+        <View style={styles.infoRow}>
           <View style={styles.ratingRow}>
-            <FontAwesomeIcon name="star" size={14} color="#FFB400" />
+            <FastImage
+              source={require('../../../assets/icon-star.png')}
+              style={styles.starIcon}
+            />
             <Text style={styles.ratingText}>
-              {item?.storeRate} ({item?.reviewCount})
+              {storeData?.storeRate} ({storeData?.reviewCount})
             </Text>
           </View>
-        </View>
-        <Text style={styles.categories} numberOfLines={1}>
-          {categoriesText}
-        </Text>
-        <View style={styles.timeRow}>
-          {isOpen && !isBreak && item?.isAlwaysOpen === false && (
-            <>
-              <Text style={[styles.timeNow, {color: 'green'}]}>영업 중</Text>
-              <Text style={styles.timeText}>
-                영업 종료 - {endtime || '정보 없음'}
-              </Text>
-            </>
-          )}
-          {!isOpen &&
-            !isBreak &&
-            item?.isAlwaysOpen === false &&
-            !closed &&
-            !nextclosed && (
-              <>
-                <Text style={[styles.timeNow, {color: '#F05650'}]}>
-                  영업 종료
-                </Text>
-                <Text style={styles.timeText}>
-                  영업 시작 - {starttime || '정보 없음'}
-                </Text>
-              </>
-            )}
-          {!isOpen &&
-            !isBreak &&
-            item?.isAlwaysOpen === false &&
-            !closed &&
-            nextclosed && (
-              <>
-                <Text style={[styles.timeNow, {color: '#F05650'}]}>
-                  영업 종료
-                </Text>
-                <Text style={styles.timeText}>내일 휴무</Text>
-              </>
-            )}
-          {isOpen && isBreak && item?.isAlwaysOpen === false && (
-            <>
-              <Text style={[styles.timeNow, {color: '#F05650'}]}>
-                브레이크 타임
-              </Text>
-              <Text style={styles.timeText}>
-                영업 시작 - {breakend || '정보 없음'}
-              </Text>
-            </>
-          )}
-          {closed && !isOpen && !isBreak && item?.isAlwaysOpen === false && (
-            <>
-              <Text style={[styles.timeNow, {color: '#F05650'}]}>
-                금일 휴무
-              </Text>
-            </>
-          )}
-          {item?.isAlwaysOpen === true && (
-            <>
-              <Text style={[styles.timeNow, {color: 'green'}]}>영업 중</Text>
-              <Text style={styles.timeText}>- 연중무휴</Text>
-            </>
-          )}
-        </View>
-      </View>
-
-      {/* section: address */}
-      <View style={styles.section}>
-        <Text style={styles.address} numberOfLines={1}>
-          <FontAwesomeIcon name="map-marker" size={12} color="#6B7280" />{' '}
-          {item?.locationDto?.address}
-        </Text>
-      </View>
-
-      {/* section: image mosaic (left big + right two small) */}
-      <View style={styles.section}>
-        <View style={styles.mosaicRow}>
-          <FastImage
-            source={imgSrc}
-            style={{
-              width: leftW,
-              height: leftH,
-              borderRadius: 6,
-              backgroundColor: '#F3F4F6',
-            }}
+          <Text style={{color: '#D4D4D4', marginRight: -24}}> · </Text>
+          <OperationSchedule
+            type="preview"
+            isAlwaysOpen={storeData?.isAlwaysOpen}
+            isOpen={isOpen}
+            isBreak={isBreak}
+            closed={closed}
+            nextclosed={nextclosed}
+            starttime={starttime}
+            endtime={endtime}
+            breakend={breakend}
           />
-          <View style={{width: rightW, marginLeft: 6}}>
-            <FastImage
-              source={imgSrc}
-              style={{
-                width: rightW,
-                height: rightH,
-                borderRadius: 6,
-                backgroundColor: '#F3F4F6',
-                marginBottom: 6,
-              }}
-            />
-            <FastImage
-              source={imgSrc}
-              style={{
-                width: rightW,
-                height: rightH,
-                borderRadius: 6,
-                backgroundColor: '#F3F4F6',
-              }}
-            />
-          </View>
         </View>
-      </View>
 
-      {/* section: drinks (ladder layout) */}
-      {!!item?.mainDrinkDtos?.length && (
-        <View style={styles.section}>
-          {item.mainDrinkDtos.slice(0, 4).map((d, i) => (
-            <View key={`${d.type}-${i}`} style={styles.drinkRow}>
-              <Text style={styles.drinkLabel} numberOfLines={1}>
-                {alcoholLabel(d.type)}
-              </Text>
-              <View style={styles.dots} />
-              <Text style={styles.drinkPrice}>
-                {d.price?.toLocaleString() + `원`}
-              </Text>
+        {/* 거리 & 주소 */}
+        <View style={styles.distanceAddressView}>
+          <Text style={styles.distanceAddress}>
+            {distanceInfo.distance}
+            {distanceInfo.unit}
+          </Text>
+          <Text style={{color: '#D4D4D4'}}> · </Text>
+          <Text style={styles.distanceAddress}>
+            {storeData?.locationDto?.address}
+          </Text>
+        </View>
+
+        {/* 주류 */}
+        {storeData?.mainDrinkDtos?.length > 0 && (
+          <Alcohol
+            storeDrinkDtos={storeData.mainDrinkDtos}
+            translateAlcohol={translateAlcohol}
+          />
+        )}
+
+        {/* 이미지 모자이크 */}
+        {hasPhotos &&
+          (showMosaicLayout ? (
+            <View style={styles.mosaicRow}>
+              <FastImage
+                source={imgSrc}
+                style={{
+                  width: leftW,
+                  height: leftH,
+                  borderRadius: 6,
+                  backgroundColor: '#F3F4F6',
+                }}
+              />
+              <View style={{width: rightW, marginLeft: 6}}>
+                {mosaicImages.map((url, index) => (
+                  <FastImage
+                    key={`${url}-${index}`}
+                    source={{uri: url}}
+                    style={{
+                      width: rightW,
+                      height: rightH,
+                      borderRadius: 6,
+                      backgroundColor: '#F3F4F6',
+                      marginBottom: index === 0 ? 6 : 0,
+                    }}
+                  />
+                ))}
+              </View>
+            </View>
+          ) : (
+            <View style={styles.singleImageWrapper}>
+              <FastImage source={imgSrc} style={[styles.singleImage]} />
             </View>
           ))}
+      </Pressable>
+
+      {/* 하단 버튼 */}
+      <View style={styles.bottomButtonRow}>
+        <View
+          style={styles.bottomButtonGroup}
+          onLayout={e => setContactAnchorHeight(e.nativeEvent.layout.height)}>
+          <Pressable
+            style={styles.iconButton}
+            onPress={() =>
+              navigation.navigate('StoreStack', {
+                screen: 'StoreMainScreen',
+                params: {storeId: storeData.id},
+              })
+            }>
+            <Ionicons name="storefront" size={18} color={ColorUtil.main} />
+          </Pressable>
+
+          <Pressable style={styles.iconButton} onPress={toggleContactPopover}>
+            <Ionicons name="call" size={18} color={ColorUtil.main} />
+          </Pressable>
+
+          <Pressable style={styles.iconButton} onPress={handleShare}>
+            <ShareIcon size={18} color={ColorUtil.main} />
+          </Pressable>
         </View>
+
+        <Pressable
+          style={styles.directionsButton}
+          onPress={() =>
+            openDirectionsModal({
+              startLat: location?.latitude,
+              startLng: location?.longitude,
+              destLat: storeData?.locationDto?.latitude,
+              destLng: storeData?.locationDto?.longitude,
+              destName: storeData?.name,
+            })
+          }>
+          <Text style={styles.directionsText}>길찾기</Text>
+        </Pressable>
+      </View>
+
+      {/* 전화 팝오버 */}
+      {showContactPopover && (
+        <>
+          <Pressable
+            style={styles.contactBackdrop}
+            onPress={closeContactPopover}
+          />
+          <Animated.View
+            style={[
+              styles.contactPopover,
+              {
+                bottom: contactAnchorHeight + 12,
+                opacity: contactFadeAnim,
+                transform: [
+                  {
+                    translateY: contactFadeAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [8, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}>
+            <View style={styles.contactHeader}>
+              <Text style={styles.contactTitle}>
+                매장과 연결되는 번호입니다
+              </Text>
+              <Pressable onPress={closeContactPopover}>
+                <Ionicons name="close" size={18} color="#9AA0AF" />
+              </Pressable>
+            </View>
+
+            <Text style={styles.contactDesc}>
+              예약, 문의 등 필요한 내용을 전화로 바로 확인할 수 있어요.
+            </Text>
+
+            <View style={styles.contactNumberRow}>
+              <Text style={styles.contactNumberLabel}>전화번호</Text>
+              <Text style={styles.contactNumberValue}>
+                {storeData?.contact}
+              </Text>
+
+              <Pressable onPress={handleCopyContact}>
+                <Text style={styles.contactCopyText}>
+                  {contactCopied ? '복사됨' : '복사'}
+                </Text>
+              </Pressable>
+            </View>
+
+            <Pressable
+              style={[
+                styles.contactCallButton,
+                !storeData?.contact && {opacity: 0.5},
+              ]}
+              onPress={handleCall}
+              disabled={!storeData?.contact}>
+              <Text style={styles.contactCallButtonText}>전화하기</Text>
+            </Pressable>
+          </Animated.View>
+        </>
       )}
-    </Pressable>
+
+      <DirectionsModal />
+    </View>
   );
 };
 
+// =========================
+// ======== STYLES =========
+// =========================
+
 const styles = StyleSheet.create({
-  wrap: {
-    paddingBottom: 16,
-  },
-  section: {
-    marginBottom: 12,
-  },
+  container: {backgroundColor: '#fff'},
+
   headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 18,
+    // marginTop: 4,
+    alignItems: 'center',
+  },
+  categories: {
+    fontSize: 14,
+    color: ColorUtil.subText,
+    fontFamily: 'Pretendard-Regular',
+  },
+  headerActions: {flexDirection: 'row', alignItems: 'center'},
+
+  topButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 50,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
+  },
+  likeButtonActive: {
+    backgroundColor: '#FFECEE',
+  },
+
+  titleView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    marginHorizontal: 18,
+  },
+  verifyIcon: {
+    width: 20,
+    height: 20,
+
+    marginRight: 8,
+  },
+  storeName: {
+    fontSize: normalizeFont(20, 1.5),
+
+    color: '#333',
+    fontFamily: 'Pretendard-Bold',
+    maxWidth: '90%',
+  },
+
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 18,
+    marginTop: 6,
+    alignItems: 'center',
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  starIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 4,
+  },
+  ratingText: {
+    fontSize: 14,
+    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  distanceAddressView: {
+    flexDirection: 'row',
+    marginHorizontal: 18,
+    marginTop: 10,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  distanceAddress: {
+    fontSize: 14,
+    color: '#757F8C',
+    fontFamily: 'Pretendard-Regular',
+    textAlign: 'left',
+  },
+
+  mosaicRow: {
+    flexDirection: 'row',
+    marginHorizontal: 18,
+    marginTop: 7,
+  },
+  singleImageWrapper: {
+    marginHorizontal: 18,
+    marginTop: 7,
+  },
+  singleImage: {
+    width: CONTENT_WIDTH,
+    height: (CONTENT_WIDTH / 4) * 2,
+    borderRadius: 6,
+    backgroundColor: '#F3F4F6',
+  },
+
+  bottomButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 18,
+    marginTop: 22,
+  },
+  bottomButtonGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 30,
+    backgroundColor: '#E9F6FF',
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  directionsButton: {
+    backgroundColor: '#E9F6FF',
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  directionsText: {
+    color: ColorUtil.main,
+    fontSize: 14,
+    fontFamily: 'Pretendard-Bold',
+  },
+
+  contactBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    top: -2000,
+    bottom: -2000,
+    left: -2000,
+    right: -2000,
+  },
+
+  contactPopover: {
+    position: 'absolute',
+    left: 18,
+    right: 18,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#F0F2F6',
+  },
+  contactHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  storeName: {
-    fontSize: normalizeFont(18, 1.5),
-    fontFamily: 'Pretendard-Bold',
-    color: '#111827',
-    maxWidth: '70%',
-  },
-  ratingRow: {flexDirection: 'row', alignItems: 'center'},
-  ratingText: {
-    marginLeft: 4,
-    fontSize: normalizeFont(12, 1.5),
-    fontFamily: 'Pretendard-Medium',
-    color: '#6B7280',
-  },
-  categories: {
-    marginTop: 2,
-    fontSize: normalizeFont(12, 1.5),
-    fontFamily: 'Pretendard-Medium',
-    color: '#6B7280',
-  },
-  statusText: {
-    marginTop: 6,
-    fontSize: normalizeFont(12, 1.5),
+  contactTitle: {
+    fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
+    color: '#111',
   },
-  timeRow: {
+  contactDesc: {
+    fontSize: 13,
+    color: '#6C7382',
+    marginTop: 6,
+    fontFamily: 'Pretendard-Regular',
+  },
+  contactNumberRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
+    marginTop: 14,
   },
-  timeNow: {
+  contactNumberLabel: {
     fontSize: 13,
+    color: '#7D8493',
+    fontFamily: 'Pretendard-Regular',
+  },
+  contactNumberValue: {
+    fontSize: 15,
+    marginLeft: 6,
+    color: '#111',
     fontFamily: 'Pretendard-SemiBold',
   },
-  timeText: {
+  contactCopyText: {
     fontSize: 13,
-    fontFamily: 'Pretendard-Medium',
-    color: ColorUtil.subText,
-    marginLeft: 5,
+    color: ColorUtil.main,
+    marginLeft: 8,
+    fontFamily: 'Pretendard-SemiBold',
   },
-  address: {
-    fontSize: normalizeFont(12, 1.5),
-    fontFamily: 'Pretendard-Medium',
-    color: '#4B5563',
-  },
-  mosaicRow: {flexDirection: 'row', justifyContent: 'space-between'},
-  drinkRow: {
-    flexDirection: 'row',
+  contactCallButton: {
+    marginTop: 16,
+    paddingVertical: 11,
+    backgroundColor: ColorUtil.main,
+    borderRadius: 10,
     alignItems: 'center',
-    marginVertical: 2,
   },
-  drinkLabel: {
-    minWidth: 56,
-    fontSize: normalizeFont(13, 1.5),
-    color: '#111827',
+  contactCallButtonText: {
+    color: '#fff',
     fontFamily: 'Pretendard-SemiBold',
+    fontSize: 15,
   },
-  dots: {
-    flex: 1,
-    height: 1,
-    marginHorizontal: 8,
-    backgroundColor: '#E5E7EB',
-  },
-  drinkPrice: {
-    width: 72,
-    textAlign: 'right',
-    fontSize: normalizeFont(13, 1.5),
-    color: '#111827',
-    fontFamily: 'Pretendard-Medium',
-  },
-  actionsRow: {display: 'none'},
 });
 
 export default MapDetailItem;

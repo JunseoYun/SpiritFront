@@ -14,14 +14,15 @@ import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import StoreMapScript from '../../components/StoreMapScreen/StoreMapScript';
 import StoreMapLocation from '../../components/StoreMapScreen/StoreMapLocation';
 import StoreMapCenter from '../../components/StoreMapScreen/StoreMapCenter';
-import {openKakaoMap} from '../../hooks/openKakaoMap';
 import StoreMapNavi from '../../components/StoreMapScreen/StoreMapNavi';
 import {useRoute} from '@react-navigation/native';
+import useDirectionsModal from '../../hooks/useDirectionsModal';
 
 const StoreMapScreen = ({navigation}) => {
   const route = useRoute();
   const {storeLatitude, storeLongitude, innerlatitude, innerlongitude} =
     route.params;
+  const {openDirectionsModal, DirectionsModal} = useDirectionsModal();
 
   const [location, setLocation] = useState({innerlatitude, innerlongitude});
   const webViewRef = useRef(null);
@@ -115,16 +116,6 @@ const StoreMapScreen = ({navigation}) => {
     moveCenterMap(storeLatitude, storeLongitude);
   };
 
-  const openMapHandle = text => {
-    openKakaoMap(
-      location.latitude,
-      location.longitude,
-      storeLatitude,
-      storeLongitude,
-      text,
-    );
-  };
-
   const moveCenterMap = (lat, lng) => {
     const script = `
       if (window.map) {
@@ -164,7 +155,18 @@ const StoreMapScreen = ({navigation}) => {
 
       <StoreMapLocation onPress={updateNewLocation} />
       <StoreMapCenter onPress={storeCenter} />
-      <StoreMapNavi onPress={() => openMapHandle('FOOT')} />
+      <StoreMapNavi
+        onPress={() =>
+          openDirectionsModal({
+            startLat: location?.latitude,
+            startLng: location?.longitude,
+            destLat: storeLatitude,
+            destLng: storeLongitude,
+            destName: route.params?.storename,
+          })
+        }
+      />
+      <DirectionsModal />
     </>
   );
 };

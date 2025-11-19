@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import {View, StyleSheet, Dimensions} from 'react-native';
 import SkeletonBox from '../../../hooks/SkeletonBox';
 
@@ -14,170 +14,222 @@ const rightH = Math.floor((leftH - 6) / 2);
 
 const MapDetailItemSkeleton = () => {
   return (
-    <View style={[styles.wrap, {paddingHorizontal: H_PADDING}]}>
-      {/* ---------------- HEADER ---------------- */}
-      <View style={styles.section}>
-        {/* 첫 줄: 가게명 + 별점 */}
-        <View style={styles.headerRow}>
-          <SkeletonBox style={styles.storeName} />
-          <View style={styles.ratingRow}>
-            <SkeletonBox style={styles.star} />
-            <SkeletonBox style={styles.ratingText} />
-          </View>
-        </View>
-
-        {/* 카테고리 */}
+    <View style={styles.container}>
+      {/* 상단 카테고리 + 액션 */}
+      <View style={styles.headerRow}>
         <SkeletonBox style={styles.categories} />
-
-        {/* 영업상태 + 시간 */}
-        <View style={styles.timeRow}>
-          <SkeletonBox style={styles.timeNow} />
-          <SkeletonBox style={styles.timeText} />
+        <View style={styles.headerActions}>
+          <SkeletonBox style={styles.topButton} />
+          <SkeletonBox style={styles.topButton} />
         </View>
       </View>
 
-      {/* ---------------- ADDRESS ---------------- */}
-      <View style={styles.section}>
-        <SkeletonBox style={styles.address} />
+      {/* 매장명 */}
+      <View style={styles.titleRow}>
+        <SkeletonBox style={styles.verifyIcon} />
+        <SkeletonBox style={styles.storeName} />
       </View>
 
-      {/* ---------------- IMAGE MOSAIC ---------------- */}
-      <View style={styles.section}>
-        <View style={styles.mosaicRow}>
-          {/* Left big image */}
-          <SkeletonBox
-            style={{
-              width: leftW,
-              height: leftH,
-              borderRadius: 6,
-            }}
-          />
-
-          <View style={{width: rightW, marginLeft: 6}}>
-            {/* Right top */}
-            <SkeletonBox
-              style={{
-                width: rightW,
-                height: rightH,
-                borderRadius: 6,
-                marginBottom: 6,
-              }}
-            />
-            {/* Right bottom */}
-            <SkeletonBox
-              style={{
-                width: rightW,
-                height: rightH,
-                borderRadius: 6,
-              }}
-            />
-          </View>
+      {/* 별점 + 영업시간 */}
+      <View style={styles.infoRow}>
+        <View style={styles.ratingRow}>
+          <SkeletonBox style={styles.starIcon} />
+          <SkeletonBox style={styles.ratingText} />
+        </View>
+        <View style={styles.operationRow}>
+          <SkeletonBox style={styles.operationBadge} />
+          <SkeletonBox style={styles.operationTime} />
         </View>
       </View>
 
-      {/* ---------------- DRINK LIST ---------------- */}
-      <View style={styles.section}>
-        {Array.from({length: 4}).map((_, i) => (
-          <View key={i} style={styles.drinkRow}>
-            <SkeletonBox style={styles.drinkLabel} />
-            <SkeletonBox style={styles.dots} />
-            <SkeletonBox style={styles.drinkPrice} />
-          </View>
+      {/* 거리 + 주소 */}
+      <View style={styles.distanceRow}>
+        <SkeletonBox style={styles.distanceText} />
+        <View style={styles.dot} />
+        <SkeletonBox style={styles.addressText} />
+      </View>
+
+      {/* 주류 정보 */}
+      <View style={styles.alcoholRow}>
+        {Array.from({length: 3}).map((_, idx) => (
+          <SkeletonBox key={idx} style={styles.alcoholChip} />
         ))}
+      </View>
+
+      {/* 이미지 모자이크 */}
+      <View style={styles.imageRow}>
+        <SkeletonBox style={styles.mainImage} />
+        <View style={styles.subImageColumn}>
+          <SkeletonBox style={[styles.subImage, styles.subImageFirst]} />
+          <SkeletonBox style={styles.subImage} />
+        </View>
+      </View>
+
+      {/* 하단 버튼 */}
+      <View style={styles.bottomButtonRow}>
+        <View style={styles.bottomButtonGroup}>
+          {Array.from({length: 3}).map((_, idx) => (
+            <SkeletonBox key={idx} style={styles.iconButton} />
+          ))}
+        </View>
+        <SkeletonBox style={styles.directionsButton} />
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  wrap: {
-    paddingBottom: 16,
+  container: {
+    paddingHorizontal: H_PADDING,
+    paddingBottom: 20,
   },
-  section: {
-    marginBottom: 12,
-  },
-
-  /* Header */
   headerRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  categories: {
+    width: '55%',
+    height: 16,
+    borderRadius: 4,
+  },
+  headerActions: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  storeName: {
-    width: '60%',
+  topButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginLeft: 10,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  verifyIcon: {
+    width: 20,
     height: 20,
+    borderRadius: 10,
+    marginRight: 8,
+  },
+  storeName: {
+    width: '70%',
+    height: 22,
     borderRadius: 4,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  star: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+  starIcon: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     marginRight: 6,
   },
   ratingText: {
+    width: 70,
+    height: 14,
+    borderRadius: 4,
+  },
+  operationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  operationBadge: {
+    width: 60,
+    height: 16,
+    borderRadius: 8,
+    marginRight: 6,
+  },
+  operationTime: {
+    width: 80,
+    height: 12,
+    borderRadius: 4,
+  },
+  distanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  distanceText: {
     width: 50,
     height: 14,
     borderRadius: 4,
   },
-  categories: {
-    marginTop: 4,
-    width: '70%',
-    height: 16,
-    borderRadius: 4,
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginHorizontal: 8,
+    backgroundColor: '#E5E7EB',
   },
-
-  timeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  timeNow: {
-    width: 60,
+  addressText: {
+    flex: 1,
     height: 14,
     borderRadius: 4,
+  },
+  alcoholRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  alcoholChip: {
+    width: 70,
+    height: 24,
+    borderRadius: 12,
     marginRight: 8,
   },
-  timeText: {
-    width: 100,
-    height: 14,
-    borderRadius: 4,
+  imageRow: {
+    flexDirection: 'row',
+    marginBottom: 16,
   },
-
-  /* Address */
-  address: {
-    width: '85%',
-    height: 16,
-    borderRadius: 4,
+  mainImage: {
+    width: leftW,
+    height: leftH,
+    borderRadius: 6,
   },
-
-  /* Mosaic */
-  mosaicRow: {flexDirection: 'row', justifyContent: 'space-between'},
-
-  /* Drinks */
-  drinkRow: {
+  subImageColumn: {
+    width: rightW,
+    marginLeft: 6,
+    justifyContent: 'space-between',
+  },
+  subImage: {
+    width: rightW,
+    height: rightH,
+    borderRadius: 6,
+  },
+  subImageFirst: {
+    marginBottom: 6,
+  },
+  bottomButtonRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 2,
+    justifyContent: 'space-between',
   },
-  drinkLabel: {
-    width: 60,
-    height: 14,
-    borderRadius: 4,
+  bottomButtonGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  dots: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'transparent',
-    marginHorizontal: 8,
+  iconButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    marginRight: 10,
   },
-  drinkPrice: {
-    width: 70,
-    height: 14,
-    borderRadius: 4,
+  directionsButton: {
+    width: 100,
+    height: 38,
+    borderRadius: 19,
   },
 });
 

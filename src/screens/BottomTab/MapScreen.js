@@ -1,34 +1,28 @@
 ﻿import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
   StyleSheet,
-  Text,
-  View,
   Animated, // Animated 추가
-  PanResponder, // PanResponder 추가
   Dimensions,
   BackHandler,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
 import {useFocusEffect, useIsFocused} from '@react-navigation/native';
-import {getLocation, saveLocationAddress} from '../../storage/locationStorage';
+import {getLocation} from '../../storage/locationStorage';
 import {fetchLocationAddress} from '../../hooks/useLocation';
 import {useToast} from '../../context/ToastContext';
 import {
   Store_getby_condition_search,
   Store_getby_condition_search_markers,
-  StoreMainget,
+  StoreMainPreviewget,
 } from '../../api/storeApi';
 import throttle from 'lodash/throttle';
-import MapSearchBar from '../../components/MapScreen/MapSearchBar';
-import MapLocation from '../../components/MapScreen/MapLocation';
-import MapDirections from '../../components/MapScreen/MapDirections';
 import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import generateMapScript from '../../components/MapScreen/generateMapScript';
 import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
-import MapRadius from '../../components/MapScreen/MapRadius';
 import Loading from '../../hooks/Loading';
 import MapTopBar from '../../components/MapScreen/MapTopBar';
 import {useMapSearch} from '../../context/MapSearchContext';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   buildConditionSearchDto,
   normalizeStoreResponse,
@@ -103,6 +97,7 @@ const {width, height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 const MapScreen = ({navigation, route}) => {
   const [location, setLocation] = useState(null);
+  const insets = useSafeAreaInsets();
   const [stores, setStores] = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
   const [detailStoreId, setDetailStoreId] = useState(null);
@@ -700,7 +695,7 @@ const MapScreen = ({navigation, route}) => {
       }
       setDetailStoreLoading(true);
       try {
-        const data = await StoreMainget(storeId);
+        const data = await StoreMainPreviewget(storeId);
         if (detailFetchSeqRef.current === seq) {
           setDetailStoreData(data || null);
         }
@@ -935,12 +930,14 @@ const MapScreen = ({navigation, route}) => {
       ) : null}
 
       {/* <MapRadius setRadiusint={setRadiusint} /> */}
+
       <MapTopBar
         navigation={navigation}
         refresh={refresh}
         setcenterrefresh={setcenterrefresh}
         radius={radius}
       />
+
       <MapStoreList
         updateNewLocation={() => updateNewLocation()}
         flatListAnim={flatListAnim}
@@ -985,24 +982,6 @@ const MapScreen = ({navigation, route}) => {
 const styles = StyleSheet.create({
   webview: {
     flex: 1,
-  },
-  loading: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  loadingtext: {
-    textAlign: 'center',
-    marginVertical: 20,
-    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
-    fontSize: 20,
-    color: '#c0c0c0',
   },
 });
 

@@ -10,6 +10,7 @@ import {
   BackHandler,
   Pressable,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import BottomSheet, {
   BottomSheetView,
@@ -67,7 +68,24 @@ const MapStoreList = ({
   // const bottomSheetRef = useRef(null);
   const insets = useSafeAreaInsets();
   const [filterheight, setFilterheight] = useState(0);
+  const [detailContentHeight, setDetailContentHeight] = useState(null);
   const initialIndex = stores.length === 0 ? 1 : 1;
+  const detailStore = detailStoreData || null;
+  const isDetailMode = !!detailStoreId;
+  const detailSnapPoint = useMemo(() => {
+    if (!detailStoreId) return SCREEN_HEIGHT * 0.55;
+    const measured = detailContentHeight ?? SCREEN_HEIGHT * 0.55;
+    const padding = insets.bottom + 30 + (Platform.OS === 'android' && 8);
+    const computed = measured + padding;
+    const safeMax = Math.max(
+      SCREEN_HEIGHT * 0.85,
+      SCREEN_HEIGHT - insets.top - 16,
+    );
+    return Math.min(safeMax, computed);
+  }, [detailStoreId, detailContentHeight, insets.bottom, insets.top]);
+  const hideFloatingButtons =
+    isDetailMode && detailSnapPoint >= SCREEN_HEIGHT * 0.7;
+
   const snapPoints = useMemo(() => {
     const first = SCREEN_HEIGHT * 0.03 + filterheight + insets.bottom; //
     const nonemid = SCREEN_HEIGHT * 0.3;
@@ -78,9 +96,17 @@ const MapStoreList = ({
       return [first, nonemid];
     }
     // 상세보기 모드에서는 80% 스냅 비활성화
-    if (detailStoreId) return [first, mid];
+    if (detailStoreId) return [first, detailSnapPoint];
     return [first, mid, max];
-  }, [stores, loading, storegetloading, detailStoreId]);
+  }, [
+    stores,
+    loading,
+    storegetloading,
+    detailStoreId,
+    detailSnapPoint,
+    filterheight,
+    insets.bottom,
+  ]);
 
   const animatedIndex = useSharedValue(0);
   const [translateY, setTranslateY] = useState(0);
@@ -92,8 +118,6 @@ const MapStoreList = ({
   const currentSheetIndexRef = useRef(null);
   const mapMoveTimerRef = useRef(null);
   const didForceAfterLoadRef = useRef(true);
-  const detailStore = detailStoreData || null;
-  const isDetailMode = !!detailStoreId;
   const groupFilteredStores = useMemo(
     () =>
       Array.isArray(groupStoreIds) && groupStoreIds.length > 0
@@ -102,6 +126,14 @@ const MapStoreList = ({
     [stores, groupStoreIds],
   );
   const isGroupMode = groupFilteredStores.length > 0 && !isDetailMode;
+
+  useEffect(() => {
+    if (isDetailMode) {
+      setFilterheight(0);
+      return;
+    }
+    setDetailContentHeight(null);
+  }, [isDetailMode]);
 
   useAnimatedReaction(
     () => animatedIndex.value,
@@ -132,10 +164,6 @@ const MapStoreList = ({
       runOnJS(setShowListButtons)(index < 2);
     },
   );
-
-  const floatingStyle = useAnimatedStyle(() => ({
-    transform: [{translateY: withTiming(translateY, {duration: 250})}],
-  }));
 
   const handleSheetChange = useCallback(
     index => {
@@ -188,7 +216,13 @@ const MapStoreList = ({
     if ((isDetailMode || isGroupMode) && bottomSheetRef.current) {
       bottomSheetRef.current.snapToIndex(1);
     }
-  }, [isDetailMode, isGroupMode]);
+  }, [isDetailMode, isGroupMode, bottomSheetRef]);
+
+  useEffect(() => {
+    if (isDetailMode && bottomSheetRef.current) {
+      bottomSheetRef.current.snapToIndex(1);
+    }
+  }, [detailSnapPoint, isDetailMode, bottomSheetRef]);
 
   const handleCloseDetail = useCallback(() => {
     onCloseDetail?.();
@@ -251,6 +285,18 @@ const MapStoreList = ({
       });
     });
   }, [onCloseGroup, flatListRef]);
+
+  const handleDetailLayout = useCallback(
+    e => {
+      if (!isDetailMode) return;
+      const height = e?.nativeEvent?.layout?.height;
+      if (!height || Number.isNaN(height)) return;
+      setDetailContentHeight(prev =>
+        Math.abs((prev ?? 0) - height) > 2 ? height : prev,
+      );
+    },
+    [isDetailMode],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -487,10 +533,6 @@ const MapStoreList = ({
             </Pressable>
           )}
 
-          <Animated.View style={[styles.floatingButtons, floatingStyle]}>
-            <MapLocation onPress={updateNewLocation} />
-          </Animated.View>
-
           <BottomSheet
             ref={bottomSheetRef}
             index={initialIndex}
@@ -561,45 +603,56 @@ const MapStoreList = ({
 
                 return null;
               })()}
-              <MapFilterHeader
-                setFilterInitialTab={setFilterInitialTab}
-                setFilterModalVisible={setFilterModalVisible}
-                setFilterheight={setFilterheight}
-                distanceLabel={computedLabels?.distance || distanceLabel}
-                categoryLabel={computedLabels?.category || categoryLabel}
-                peopleLabel={computedLabels?.people || peopleLabel}
-                alcoholLabel={computedLabels?.alcohol || alcoholLabel}
-                timeActive={computedLabels?.time || timeActive}
-                parkingLabel={computedLabels?.parking || parkingLabel}
-                corkageLabel={computedLabels?.corkage || corkageLabel}
-                screenLabel={computedLabels?.screen || screenLabel}
-                roomLabel={computedLabels?.room || roomLabel}
-                outdoorLabel={computedLabels?.outdoor || outdoorLabel}
-                storeatmLabel={computedLabels?.storeatm || storeatmLabel}
-                storeatmCount={computedLabels?.storeatmCount || storeatmCount}
-              />
+
+              {!hideFloatingButtons && (
+                <View style={styles.floatingButtons}>
+                  <MapLocation onPress={updateNewLocation} />
+                </View>
+              )}
+
+              {!isDetailMode && (
+                <MapFilterHeader
+                  setFilterInitialTab={setFilterInitialTab}
+                  setFilterModalVisible={setFilterModalVisible}
+                  setFilterheight={setFilterheight}
+                  distanceLabel={computedLabels?.distance || distanceLabel}
+                  categoryLabel={computedLabels?.category || categoryLabel}
+                  peopleLabel={computedLabels?.people || peopleLabel}
+                  alcoholLabel={computedLabels?.alcohol || alcoholLabel}
+                  timeActive={computedLabels?.time || timeActive}
+                  parkingLabel={computedLabels?.parking || parkingLabel}
+                  corkageLabel={computedLabels?.corkage || corkageLabel}
+                  screenLabel={computedLabels?.screen || screenLabel}
+                  roomLabel={computedLabels?.room || roomLabel}
+                  outdoorLabel={computedLabels?.outdoor || outdoorLabel}
+                  storeatmLabel={computedLabels?.storeatm || storeatmLabel}
+                  storeatmCount={computedLabels?.storeatmCount || storeatmCount}
+                />
+              )}
 
               {detailStoreId ? (
                 detailStore ? (
                   <BottomSheetScrollView
                     contentContainerStyle={{
                       paddingHorizontal: 0,
-                      paddingTop: 8,
                       paddingBottom: insets.bottom,
                     }}
                     showsVerticalScrollIndicator={false}>
                     {/* Back moved to custom handle */}
-                    <MapDetailItem
-                      item={detailStore}
-                      index={selectedStoreIndex}
-                      selectedStoreIndex={selectedStoreIndex}
-                      setSelectedStore={setSelectedStore}
-                      moveCenterMap={moveCenterMap}
-                      navigation={navigation}
-                      location={location}
-                      loading={loading}
-                      sheetIndex={currentIndex}
-                    />
+                    <View onLayout={handleDetailLayout}>
+                      <MapDetailItem
+                        storeData={detailStore}
+                        index={selectedStoreIndex}
+                        selectedStoreIndex={selectedStoreIndex}
+                        setSelectedStore={setSelectedStore}
+                        moveCenterMap={moveCenterMap}
+                        navigation={navigation}
+                        location={location}
+                        loading={loading}
+                        sheetIndex={currentIndex}
+                        onCloseDetail={handleCloseDetail}
+                      />
+                    </View>
                   </BottomSheetScrollView>
                 ) : (
                   <View style={styles.detailLoadingContainer}>
@@ -612,30 +665,7 @@ const MapStoreList = ({
                     )}
                   </View>
                 )
-              ) : // :  isGroupMode ? (
-              //   <View style={{flex: 1}}>
-              //     <TouchableOpacity
-              //       onPress={handleCloseGroup}
-              //       style={styles.detailCloseButton}>
-              //       <Ionicons name="arrow-back" size={18} color="#111" />
-              //     </TouchableOpacity>
-              //     <FlatList
-              //       data={groupFilteredStores}
-              //       keyExtractor={keyExtractor}
-              //       showsVerticalScrollIndicator={false}
-              //       contentContainerStyle={{
-              //         ...styles.listContentContainer,
-              //         ...(currentIndex === 1 && {
-              //           paddingBottom: SCREEN_HEIGHT * 0.25,
-              //         }),
-              //       }}
-              //       renderItem={renderFilteredItem}
-              //       onScroll={handleScrollBeginDrag}
-              //       onScrollEndDrag={handleScrollEndDrag} // ✅ 추가
-              //     />
-              //   </View>
-              // )
-              storegetloading ? (
+              ) : storegetloading ? (
                 currentIndex >= 1 || listfastview ? (
                   <FlatList
                     data={[1, 2, 3]}
@@ -718,12 +748,18 @@ const MapStoreList = ({
 };
 
 const styles = StyleSheet.create({
-  sheet: {zIndex: 3},
+  sheet: {
+    zIndex: 3,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: -4}, // 🔥 위쪽 그림자(-)
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
+    elevation: 10,
+  },
   listContentContainer: {paddingBottom: 18},
   floatingButtons: {
     position: 'absolute',
-    bottom: 20,
-    left: 18,
+    top: -85,
     right: 18,
     flexDirection: 'row',
     justifyContent: 'flex-end',

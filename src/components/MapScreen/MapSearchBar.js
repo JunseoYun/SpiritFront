@@ -10,22 +10,23 @@ import {
   PixelRatio,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-
+import {RotateCw} from 'lucide-react-native';
 const {width} = Dimensions.get('window');
 
 let fontScale = PixelRatio.getFontScale();
 if (fontScale > 1.3) fontScale = 1.3;
 
-import EvilIcons from 'react-native-vector-icons/EvilIcons';
 const MapSearchBar = ({onPress}) => {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.buttonTop]}>
-      <Pressable style={styles.searchView} onPress={onPress}>
-        <EvilIcons name="redo" size={25} color={'#1a1a1a'} />
-        <Text allowFontScaling={false} style={styles.buttonTextTop}>
-          현 지도에서 재검색
-        </Text>
+      <Pressable style={styles.searchButton} onPress={onPress}>
+        <View style={styles.searchView}>
+          <RotateCw size={15} color={'#006EFF'} />
+          <Text allowFontScaling={false} style={styles.buttonTextTop}>
+            현 지도에서 검색
+          </Text>
+        </View>
       </Pressable>
     </View>
   );
@@ -34,25 +35,32 @@ const MapSearchBar = ({onPress}) => {
 const styles = StyleSheet.create({
   buttonTop: {
     alignSelf: 'center', // 부모 뷰를 기준으로 가로 중앙 정렬
+    marginTop: 15,
+  },
+  searchButton: {
+    backgroundColor: '#ffffff',
+    borderRadius: 100,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
+    shadowOffset: {width: 0, height: 2},
+    width: 148,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: Platform.OS === 'android' ? 0.5 : 0,
+    borderColor: '#B5B5B5',
   },
   searchView: {
-    backgroundColor: '#ffffff',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 7,
-    paddingLeft: 5,
-    paddingRight: 9,
-    borderRadius: 20,
-    shadowColor: '#333',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.4,
-    shadowRadius: 2,
-    elevation: 10,
   },
   buttonTextTop: {
-    color: '#1a1a1a',
-    fontSize: 15 * fontScale,
+    color: '#006EFF',
+    fontSize: 14 * fontScale,
     fontFamily: 'Pretendard-Medium',
+    marginLeft: 7,
   },
 });
 
