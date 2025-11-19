@@ -38,6 +38,18 @@ export const StoreMainget = async storeId => {
   }
 };
 
+export const StoreMainPreviewget = async storeId => {
+  try {
+    const response = await axiosInstance.get(
+      `/store/get-by/preview/${storeId}`,
+      {},
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 export const StoreRegister = async data => {
   const formData = new FormData();
 
