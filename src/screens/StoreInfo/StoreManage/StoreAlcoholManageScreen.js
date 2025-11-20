@@ -12,6 +12,7 @@ const StoreAlcoholManageScreen = ({
   storeName,
   navigation,
   children,
+  onSortDirtyChange,
 }) => {
   const [alcohols, setAlcohols] = useState(
     () => alcoholCache.get(storeId) || [],
@@ -100,6 +101,7 @@ const StoreAlcoholManageScreen = ({
           setSectionPositions={setSectionPositions}
           isUpdatable={true}
           onAlcoholUpdateComplete={refreshAlcohols}
+          onSortDirtyChange={onSortDirtyChange}
         />
       )}
       <Loading loading={loading} />

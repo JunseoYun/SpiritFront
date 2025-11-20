@@ -1,11 +1,59 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {StyleSheet, View, Text, Pressable, Platform} from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
 import Feather from 'react-native-vector-icons/Feather';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import {MenuUpdateSort} from '../../api/menuApi';
+import {useToast} from '../../context/ToastContext';
+import useCustomAlert from '../../hooks/useCustomAlert';
+import Loading from '../../hooks/Loading';
 
 const ORDER_SPACER_HEIGHT = 0;
+
+const MENU_TYPE_SEQUENCE = ['MAIN', 'NORMAL', 'SIDE'];
+
+const groupMenusByType = (list = []) =>
+  list.reduce(
+    (acc, menu) => {
+      const type = MENU_TYPE_SEQUENCE.includes(menu.menuType)
+        ? menu.menuType
+        : 'NORMAL';
+      acc[type] = acc[type] ? [...acc[type], menu] : [menu];
+      return acc;
+    },
+    {MAIN: [], NORMAL: [], SIDE: []},
+  );
+
+const flattenGroupedMenus = grouped =>
+  MENU_TYPE_SEQUENCE.reduce(
+    (merged, type) => [...merged, ...(grouped[type] || [])],
+    [],
+  );
+
+const normalizeMenuList = list => flattenGroupedMenus(groupMenusByType(list));
+const mergeMenuListWithServer = (currentList, serverList) => {
+  if (!Array.isArray(currentList) || currentList.length === 0) {
+    return serverList;
+  }
+
+  const serverMap = new Map(serverList.map(menu => [menu.id, menu]));
+
+  const preservedMenus = currentList
+    .map(menu => {
+      const latest = serverMap.get(menu.id);
+      return latest || null;
+    })
+    .filter(Boolean);
+
+  const preservedIds = new Set(preservedMenus.map(menu => menu.id));
+  const appendedMenus = serverList.filter(menu => !preservedIds.has(menu.id));
+
+  return [...preservedMenus, ...appendedMenus];
+};
+
+const getMenuIdsInApiOrder = list =>
+  flattenGroupedMenus(groupMenusByType(list)).map(menu => menu.id);
 
 export const MENU_CATEGORY_OPTIONS = ['전체', '대표', '일반', '사이드'];
 
@@ -59,9 +107,17 @@ const StoreMenuScreen = ({
   onCategoryChange,
   hideCategoryFilter = false,
   categoryFilterProps = {},
+  onSortDirtyChange,
+  setMenutopheight,
 }) => {
-  const [menuList, setMenuList] = useState(menus);
+  const [menuList, setMenuList] = useState(() => normalizeMenuList(menus));
+  const [isSortDirty, setIsSortDirty] = useState(false);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const isSortDirtyRef = useRef(isSortDirty);
   const [uncontrolledCategory, setUncontrolledCategory] = useState('전체');
+  const toastContext = useToast();
+  const {showAlert, AlertComponent} = useCustomAlert();
+  const showToast = toastContext?.showToast;
   const isCategoryControlled =
     typeof controlledCategory === 'string' &&
     typeof onCategoryChange === 'function';
@@ -77,14 +133,15 @@ const StoreMenuScreen = ({
     }
   };
   const filterMenusByCategory = () => {
-    if (currentCategory === '전체') return menuList;
+    const list = Array.isArray(menuList) ? menuList : [];
+    if (currentCategory === '전체') return list;
     if (currentCategory === '대표')
-      return menuList.filter(menu => menu.menuType === 'MAIN');
+      return list.filter(menu => menu.menuType === 'MAIN');
     if (currentCategory === '일반')
-      return menuList.filter(menu => menu.menuType === 'NORMAL');
+      return list.filter(menu => menu.menuType === 'NORMAL');
     if (currentCategory === '사이드')
-      return menuList.filter(menu => menu.menuType === 'SIDE');
-    return menuList;
+      return list.filter(menu => menu.menuType === 'SIDE');
+    return list;
   };
   const {bottom: androidBottom} = useSafeAndroidInsets();
   const {bottom: safeBottom} = useSafeAreaInsets();
@@ -94,8 +151,136 @@ const StoreMenuScreen = ({
     ? ORDER_SPACER_HEIGHT + bottomInset
     : bottomInset;
   useEffect(() => {
-    setMenuList(menus);
+    isSortDirtyRef.current = isSortDirty;
+  }, [isSortDirty]);
+
+  useEffect(() => {
+    const normalizedMenus = normalizeMenuList(menus);
+    setMenuList(prevList => {
+      if (
+        isSortDirtyRef.current &&
+        Array.isArray(prevList) &&
+        prevList.length
+      ) {
+        return mergeMenuListWithServer(prevList, normalizedMenus);
+      }
+      return normalizedMenus;
+    });
   }, [menus]);
+
+  useEffect(() => {
+    if (typeof onSortDirtyChange === 'function') {
+      onSortDirtyChange(isSortDirty);
+    }
+  }, [isSortDirty, onSortDirtyChange]);
+
+  useEffect(() => {
+    return () => {
+      if (typeof onSortDirtyChange === 'function') {
+        onSortDirtyChange(false);
+      }
+    };
+  }, [onSortDirtyChange]);
+
+  const syncSortOrder = useCallback(
+    async orderedList => {
+      if (!storeId || !Array.isArray(orderedList)) {
+        return;
+      }
+
+      const payload = getMenuIdsInApiOrder(orderedList);
+      try {
+        await MenuUpdateSort(storeId, payload);
+      } catch (error) {
+        console.error('Failed to update menu sort order', error);
+        throw error;
+      }
+    },
+    [storeId],
+  );
+
+  // ⭐ 메뉴 순서 변경 기능
+  const moveItem = (menuId, direction, menuType) => {
+    if (!Array.isArray(menuList)) {
+      return;
+    }
+
+    const grouped = groupMenusByType(menuList);
+    const targetGroup = grouped[menuType] || [];
+    if (targetGroup.length === 0) {
+      return;
+    }
+
+    const currentIndex = targetGroup.findIndex(menu => menu.id === menuId);
+    if (currentIndex === -1) {
+      return;
+    }
+
+    const newIndex = currentIndex + direction;
+    if (newIndex < 0 || newIndex >= targetGroup.length) {
+      if (typeof showToast === 'function') {
+        if (direction > 0) {
+          showToast('이 이상 아래로 움직일 수 없습니다.');
+        } else {
+          showToast('이 이상 위로 움직일 수 없습니다.');
+        }
+      }
+      return;
+    }
+
+    const updatedGroup = [...targetGroup];
+    const [movedItem] = updatedGroup.splice(currentIndex, 1);
+    updatedGroup.splice(newIndex, 0, movedItem);
+    grouped[menuType] = updatedGroup;
+
+    const updatedList = flattenGroupedMenus(grouped);
+    setMenuList(updatedList);
+    setIsSortDirty(true);
+  };
+
+  const handleSaveOrder = useCallback(async () => {
+    if (isSavingOrder || !isSortDirty) {
+      return;
+    }
+
+    try {
+      setIsSavingOrder(true);
+      await syncSortOrder(menuList);
+      setIsSortDirty(false);
+      showToast?.('메뉴 순서를 저장했어요.');
+    } catch (error) {
+      showToast?.('순서 저장에 실패했어요. 다시 시도해주세요.');
+    } finally {
+      setIsSavingOrder(false);
+    }
+  }, [isSavingOrder, isSortDirty, menuList, showToast, syncSortOrder]);
+
+  useEffect(() => {
+    if (!isUpdatable || !navigation?.addListener) {
+      return;
+    }
+
+    const unsubscribe = navigation.addListener('beforeRemove', e => {
+      if (!isSortDirtyRef.current) {
+        return;
+      }
+
+      e.preventDefault();
+
+      showAlert({
+        title: '메뉴 순서가 저장되지 않았어요.',
+        message: '변경된 순서를 저장하지 않고 나가면 적용되지 않아요.',
+        type: 'unsavedLeave',
+        confirmText: '나가기',
+        cancelText: '취소',
+        onConfirm: () => {
+          navigation.dispatch(e.data.action);
+        },
+      });
+    });
+
+    return unsubscribe;
+  }, [navigation, isUpdatable, showAlert]);
 
   const renderGroupedMenus = () => {
     const filteredMenus = filterMenusByCategory();
@@ -112,13 +297,19 @@ const StoreMenuScreen = ({
       <>
         {mainAndNormal.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>주 메뉴</Text>
+            {currentCategory === '전체' && (
+              <Text style={styles.sectionTitle}>주 메뉴</Text>
+            )}
             {mainAndNormal.map((menu, idx) => (
               <MenuItem
                 key={menu.id}
                 menu={menu}
                 isLast={idx === mainAndNormal.length - 1}
                 navigation={navigation}
+                isUpdatable={isUpdatable}
+                onMenuUpdateComplete={onMenuUpdateComplete}
+                onMoveUp={() => moveItem(menu.id, -1, menu.menuType)}
+                onMoveDown={() => moveItem(menu.id, 1, menu.menuType)}
               />
             ))}
             <View style={styles.line} />
@@ -127,16 +318,21 @@ const StoreMenuScreen = ({
 
         {sideMenus.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>사이드 메뉴</Text>
+            {currentCategory === '전체' && (
+              <Text style={styles.sectionTitle}>사이드 메뉴</Text>
+            )}
             {sideMenus.map((menu, idx) => (
               <MenuItem
                 key={menu.id}
                 menu={menu}
                 isLast={idx === sideMenus.length - 1}
                 navigation={navigation}
+                isUpdatable={isUpdatable}
+                onMenuUpdateComplete={onMenuUpdateComplete}
+                onMoveUp={() => moveItem(menu.id, -1, menu.menuType)}
+                onMoveDown={() => moveItem(menu.id, 1, menu.menuType)}
               />
             ))}
-
             <View style={styles.line} />
           </View>
         )}
@@ -150,33 +346,51 @@ const StoreMenuScreen = ({
       edges={['bottom']}
       style={[styles.container, {paddingBottom: containerPaddingBottom}]}>
       {isUpdatable && (
-        <>
+        <View
+          style={{marginTop: 10}}
+          onLayout={e => setMenutopheight(e.nativeEvent.layout.height)}>
           <Pressable
             style={styles.reorderButton}
             onPress={() => {
               navigation.navigate('StoreStack', {
                 screen: 'MenuEditScreen',
-                params: {
-                  storeId,
-                  menus: menuList,
-                },
+                params: {storeId},
               });
               const unsubscribe = navigation.addListener('focus', async () => {
                 await onMenuUpdateComplete(); // 뒤로 돌아올 때 새로고침
                 unsubscribe();
               });
             }}>
-            <Text style={styles.menuAddButtonText}>메뉴 관리</Text>
+            <Text style={styles.menuAddButtonText}>메뉴 추가</Text>
           </Pressable>
 
-          {!hideCategoryFilter && (
-            <MenuCategoryRadioGroup
-              selectedCategory={currentCategory}
-              onSelect={handleCategorySelect}
-              {...categoryFilterProps}
-            />
+          {menuList?.length > 0 && (
+            <Pressable
+              style={[
+                styles.saveOrderButton,
+                (!isSortDirty || isSavingOrder) &&
+                  styles.saveOrderButtonDisabled,
+              ]}
+              disabled={!isSortDirty || isSavingOrder}
+              onPress={handleSaveOrder}>
+              <Text
+                style={[
+                  styles.saveOrderText,
+                  (!isSortDirty || isSavingOrder) &&
+                    styles.saveOrderButtonDisabledText,
+                ]}>
+                순서 저장
+              </Text>
+            </Pressable>
           )}
-        </>
+        </View>
+      )}
+      {!hideCategoryFilter && (
+        <MenuCategoryRadioGroup
+          selectedCategory={currentCategory}
+          onSelect={handleCategorySelect}
+          {...categoryFilterProps}
+        />
       )}
       {menuList?.length > 0 ? (
         renderGroupedMenus()
@@ -185,6 +399,8 @@ const StoreMenuScreen = ({
           <Text style={styles.emptyText}>등록된 메뉴가 없어요</Text>
         </View>
       ) : null}
+      <AlertComponent />
+      <Loading loading={isSavingOrder} />
     </SafeAreaView>
   );
 };
@@ -200,7 +416,33 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     alignItems: 'center',
     marginTop: 20,
-    marginBottom: 32,
+    marginBottom: 12,
+  },
+  saveOrderButton: {
+    backgroundColor: '#fff',
+    borderColor: '#3CBBFF',
+    borderWidth: 1,
+    padding: 12,
+    marginHorizontal: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    marginTop: 0,
+    marginBottom: 10,
+  },
+  saveOrderButtonDisabled: {
+    backgroundColor: '#fff',
+    borderColor: '#D0D4DB',
+
+    opacity: 0.5,
+  },
+  saveOrderText: {
+    fontSize: 14,
+    color: '#3CBBFF',
+    fontFamily: 'Pretendard-Bold',
+  },
+  saveOrderButtonDisabledText: {
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
   },
   menuAddButtonText: {
     fontSize: 14,
@@ -254,6 +496,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 18,
     marginBottom: 10,
+    marginTop: 10,
   },
   radioItem: {
     flexDirection: 'row',

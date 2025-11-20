@@ -6,7 +6,12 @@ import StoreMenuScreen from '../StoreMenuScreen';
 
 const menuCache = new Map();
 
-const StoreMenuManageScreen = ({storeId, navigation, children}) => {
+const StoreMenuManageScreen = ({
+  storeId,
+  navigation,
+  children,
+  onSortDirtyChange,
+}) => {
   const initialMenus = menuCache.get(storeId) || [];
   const [menus, setMenus] = useState(initialMenus);
   const [loading, setLoading] = useState(initialMenus.length === 0);
@@ -77,6 +82,7 @@ const StoreMenuManageScreen = ({storeId, navigation, children}) => {
         loading={loading}
         onMenuUpdateComplete={refreshMenus}
         isUpdatable="true"
+        onSortDirtyChange={onSortDirtyChange}
       />
       <Loading loading={loading} />
     </View>

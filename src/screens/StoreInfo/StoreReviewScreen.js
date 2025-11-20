@@ -28,6 +28,7 @@ import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
+import BottomActionButton from '../../utils/BottomActionButton';
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storename, isOwner} = route.params;
@@ -363,11 +364,6 @@ const StoreReviewScreen = ({navigation}) => {
       <SafeAreaView style={[styles.container, , {paddingBottom: bottom}]}>
         {!isWriting ? (
           <View style={{width: '100%'}}>
-            <View style={styles.MenuaddView}>
-              <Pressable style={styles.addButton} onPress={hadleIsWrite}>
-                <Text style={styles.addButtonText}>리뷰 작성하기</Text>
-              </Pressable>
-            </View>
             {firstloading || refreshing ? (
               <FlatList
                 data={[1, 2, 3]} // 임의의 더미 데이터
@@ -425,6 +421,13 @@ const StoreReviewScreen = ({navigation}) => {
               />
             </View>
           </View>
+        )}
+        {!isWriting && (
+          <BottomActionButton
+            label={'리뷰 작성하기'}
+            cancel={false}
+            onPress={hadleIsWrite}
+          />
         )}
       </SafeAreaView>
       <AlertComponent />

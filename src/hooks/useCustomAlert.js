@@ -190,6 +190,24 @@ const useCustomAlert = () => {
                     <Text style={styles.buttonText}>확인</Text>
                   </TouchableOpacity>
                 )}
+
+                {type === 'unsavedLeave' && (
+                  <>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onCancel)}>
+                      <Text style={styles.buttonText}>{cancelText || '취소'}</Text>
+                    </TouchableOpacity>
+                    <View style={styles.divider} />
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onConfirm)}>
+                      <Text style={styles.buttonDeleteText}>
+                        {confirmText || '나가기'}
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
             </Animated.View>
           </View>
