@@ -34,6 +34,8 @@ import ScrollToTopButton from '../../components/common/ScrollToTopButton';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
+const TOP_TOUCHABLE_DISTANCE = 24;
+const POPULAR_SECTION_ITEM = {id: 'popularStoresSection'};
 
 const MainScreen = ({navigation}) => {
   const {pendingStoreId} = useDeepLink();
@@ -45,6 +47,7 @@ const MainScreen = ({navigation}) => {
   const filterHeaderRef = useRef(null);
   const scrollToTopListenerRef = useRef(null);
   const topViewScrollListener = useRef(null);
+  const topOverlayListenerRef = useRef(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   const contentTopPadding = useMemo(
@@ -58,6 +61,7 @@ const MainScreen = ({navigation}) => {
   const [showTopView2, setShowTopView2] = useState(false);
   const [topView2Height, setTopView2Height] = useState(0);
   const [touchable, setTouchable] = useState(false);
+  const [isTopOverlayInteractive, setIsTopOverlayInteractive] = useState(true);
 
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
@@ -69,7 +73,7 @@ const MainScreen = ({navigation}) => {
   const [unreadNotification, setUnreadNotification] = useState(false);
 
   const formatAddress = useCallback(addr => {
-    if (addr === '������') {
+    if (addr === '죽전역') {
       return addr;
     }
     return addr;
@@ -84,6 +88,16 @@ const MainScreen = ({navigation}) => {
         animated: true,
       });
     }
+  }, []);
+
+  const handleAddressLayout = useCallback(event => {
+    const {height} = event.nativeEvent.layout;
+    setAddressHeight(prev => (Math.abs(prev - height) > 1 ? height : prev));
+  }, []);
+
+  const handleSearchBarLayout = useCallback(event => {
+    const {height} = event.nativeEvent.layout;
+    setSearchBarHeight(prev => (Math.abs(prev - height) > 1 ? height : prev));
   }, []);
 
   useEffect(() => {
@@ -146,7 +160,8 @@ const MainScreen = ({navigation}) => {
         searchBarHeight +
         contentTopPadding +
         addressHeight -
-        topView2Height,
+        topView2Height +
+        (Platform.OS === 'ios' ? 14 : 6),
     );
   }, [
     mainSectionHeight,
@@ -211,6 +226,43 @@ const MainScreen = ({navigation}) => {
     return () => fixedFilterOpacity.removeListener(id);
   }, [fixedFilterOpacity]);
 
+  const headerOffsetFallback = useMemo(() => insets.top + 110, [insets.top]);
+  const measuredHeaderHeight = useMemo(
+    () => contentTopPadding + addressHeight + searchBarHeight,
+    [contentTopPadding, addressHeight, searchBarHeight],
+  );
+  const headerOffset = useMemo(
+    () =>
+      measuredHeaderHeight > 0 ? measuredHeaderHeight : headerOffsetFallback,
+    [measuredHeaderHeight, headerOffsetFallback],
+  );
+  const overlayTouchThreshold = useMemo(
+    () => Math.max(TOP_TOUCHABLE_DISTANCE, headerOffset * 0.2),
+    [headerOffset],
+  );
+
+  useEffect(() => {
+    if (topOverlayListenerRef.current) {
+      scrollY.removeListener(topOverlayListenerRef.current);
+      topOverlayListenerRef.current = null;
+    }
+
+    const listenerId = scrollY.addListener(({value}) => {
+      const shouldEnable = value <= overlayTouchThreshold;
+      setIsTopOverlayInteractive(prev =>
+        prev === shouldEnable ? prev : shouldEnable,
+      );
+    });
+
+    topOverlayListenerRef.current = listenerId;
+
+    return () => {
+      if (listenerId) {
+        scrollY.removeListener(listenerId);
+      }
+    };
+  }, [overlayTouchThreshold, scrollY]);
+
   useFocusEffect(
     useCallback(() => {
       let lastBackPressed = 0;
@@ -223,7 +275,7 @@ const MainScreen = ({navigation}) => {
         }
 
         lastBackPressed = now;
-        ToastAndroid.show('�� �� �� ������ ����˴ϴ�.', ToastAndroid.SHORT);
+        ToastAndroid.show('한 번 더 누르면 종료됩니다.', ToastAndroid.SHORT);
         return true;
       };
 
@@ -461,6 +513,7 @@ const MainScreen = ({navigation}) => {
 
   const mainSectionData = useMemo(
     () => ({
+      id: 'mainSectionItem',
       recommCategory,
       recommReason,
       recommStores,
@@ -479,6 +532,8 @@ const MainScreen = ({navigation}) => {
       isRefreshing,
       loading,
       navigation,
+      handlestoreItemClick,
+      catagoryClick,
     ],
   );
 
@@ -489,24 +544,27 @@ const MainScreen = ({navigation}) => {
       {
         key: 'mainSection',
         data: [mainSectionData],
-        renderItem: ({item}) => (
-          <View
-            onLayout={e => {
-              const {height} = e.nativeEvent.layout;
-              setMainSectionHeight(prev =>
-                Math.abs(prev - height) > 1 ? height : prev,
-              );
-            }}>
-            <MainSection
-              {...item}
-              onHeaderLayout={height => setPopulartext(height)}
-            />
-          </View>
-        ),
+        renderItem: ({item}) => {
+          const {id: _unusedId, ...sectionProps} = item || {};
+          return (
+            <View
+              onLayout={e => {
+                const {height} = e.nativeEvent.layout;
+                setMainSectionHeight(prev =>
+                  Math.abs(prev - height) > 1 ? height : prev,
+                );
+              }}>
+              <MainSection
+                {...sectionProps}
+                onHeaderLayout={height => setPopulartext(height)}
+              />
+            </View>
+          );
+        },
       },
       {
         key: 'popularStoresCombined',
-        data: [{}],
+        data: [POPULAR_SECTION_ITEM],
         renderItem: () => (
           <PopularStoresSection
             popularstores={popularstores}
@@ -534,24 +592,15 @@ const MainScreen = ({navigation}) => {
     ],
   );
 
-  return (
-    <>
-      <Animated.View
-        pointerEvents="box-none"
-        style={[
-          styles.absoluteTop,
-          {
-            paddingTop: contentTopPadding,
-            backgroundColor: topBackgroundColor,
-          },
-        ]}>
+  const renderTopStack = useCallback(
+    ({onAddressLayout, onSearchLayout} = {}) => (
+      <>
         <View
           style={styles.topView}
-          onLayout={e => {
-            const {height} = e.nativeEvent.layout;
-            setAddressHeight(prev =>
-              Math.abs(prev - height) > 1 ? height : prev,
-            );
+          onLayout={event => {
+            if (onAddressLayout) {
+              onAddressLayout(event);
+            }
           }}>
           <Animated.View style={[styles.addressContainer]}>
             <Pressable
@@ -583,14 +632,53 @@ const MainScreen = ({navigation}) => {
         </View>
 
         <View
-          onLayout={e => {
-            const {height} = e.nativeEvent.layout;
-            setSearchBarHeight(prev =>
-              Math.abs(prev - height) > 1 ? height : prev,
-            );
+          onLayout={event => {
+            if (onSearchLayout) {
+              onSearchLayout(event);
+            }
           }}>
           <MainSearchBar handleSearchPress={handleSearchPress} />
         </View>
+      </>
+    ),
+    [
+      address,
+      formatAddress,
+      handleSearchPress,
+      setLocationHandle,
+      unreadNotification,
+    ],
+  );
+
+  return (
+    <>
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.absoluteTop,
+          {
+            paddingTop: contentTopPadding,
+            backgroundColor: topBackgroundColor,
+          },
+        ]}>
+        {renderTopStack({
+          onAddressLayout: handleAddressLayout,
+          onSearchLayout: handleSearchBarLayout,
+        })}
+      </Animated.View>
+
+      <Animated.View
+        pointerEvents={isTopOverlayInteractive ? 'box-none' : 'none'}
+        style={[
+          styles.absoluteTop,
+          {
+            paddingTop: contentTopPadding,
+            backgroundColor: 'transparent',
+            zIndex: 60,
+            opacity: 0,
+          },
+        ]}>
+        {renderTopStack()}
       </Animated.View>
       <Animated.View
         pointerEvents={topView2Opacity.__getValue() === 0 ? 'none' : 'auto'}
@@ -673,7 +761,7 @@ const MainScreen = ({navigation}) => {
       <Animated.SectionList
         ref={scrollRef}
         sections={sectionsData}
-        keyExtractor={(item, index) => item.id ?? index.toString()}
+        keyExtractor={(item, index) => item?.id ?? index.toString()}
         renderItem={({item, section}) => section.renderItem({item})}
         onScrollBeginDrag={() => filterHeaderRef.current?.closeDropdown(false)}
         onMomentumScrollBegin={() =>
@@ -711,15 +799,14 @@ const MainScreen = ({navigation}) => {
             refreshing={isRefreshing}
             onRefresh={onRefresh}
             {...(Platform.OS === 'android'
-              ? {progressViewOffset: insets.top + 110}
+              ? {progressViewOffset: headerOffset}
               : {})}
           />
         }
         onEndReached={loadMoreData}
         onEndReachedThreshold={0.7}
         contentContainerStyle={{
-          paddingTop:
-            Platform.OS === 'android' ? insets.top + 110 : insets.top + 110,
+          paddingTop: headerOffset,
         }}
         automaticallyAdjustContentInsets={false}
         contentInsetAdjustmentBehavior="never"
