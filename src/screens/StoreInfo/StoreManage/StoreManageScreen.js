@@ -20,6 +20,7 @@ import StoreManageTabBar from '../../../components/StoreManage/StoreManageTabBar
 import StoreMenuScreen, {MenuCategoryRadioGroup} from '../StoreMenuScreen';
 import StoreAlcoholScreen, {AlcoholTypeRadioGroup} from '../StoreAlcoholScreen';
 import Loading from '../../../hooks/Loading';
+import useCustomAlert from '../../../hooks/useCustomAlert';
 const fontScale = PixelRatio.getFontScale();
 
 const iconSize = fontScale >= 1.5 ? 22 : 16;
@@ -46,12 +47,17 @@ const StoreManageScreen = ({route, navigation}) => {
   const [alcoholTypes, setAlcoholTypes] = useState([]);
   const [isAlcoholFilterSticky, setIsAlcoholFilterSticky] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [hasMenuSortChanges, setHasMenuSortChanges] = useState(false);
+  const [hasAlcoholSortChanges, setHasAlcoholSortChanges] = useState(false);
+  const [menutopheight, setMenutopheight] = useState(0);
+  const [alcoholtopheight, setAlcoholtopheight] = useState(0);
 
   const titleOpacity = scrollY.interpolate({
     inputRange: [35, 70],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
+  const {showAlert, AlertComponent} = useCustomAlert();
 
   const handleMenuFilterLayout = useCallback(e => {
     const {y, height} = e.nativeEvent.layout;
@@ -63,11 +69,69 @@ const StoreManageScreen = ({route, navigation}) => {
     setAlcoholRadioLayout({y, height});
   }, []);
 
+  const handleMenuSortDirtyChange = useCallback(value => {
+    setHasMenuSortChanges(value);
+  }, []);
+
+  const handleAlcoholSortDirtyChange = useCallback(value => {
+    setHasAlcoholSortChanges(value);
+  }, []);
+
+  const handleTabPress = useCallback(
+    nextTab => {
+      if (nextTab === activeTab) {
+        return true;
+      }
+
+      if (activeTab === 'menu' && hasMenuSortChanges) {
+        showAlert({
+          title: '메뉴 순서가 저장되지 않았어요.',
+          message: '변경된 순서를 저장하지 않고 나가면 적용되지 않아요.',
+          type: 'unsavedLeave',
+          confirmText: '나가기',
+          cancelText: '취소',
+          onConfirm: () => {
+            setHasMenuSortChanges(false);
+            setActiveTab(nextTab);
+          },
+        });
+        return false;
+      }
+
+      if (activeTab === 'alcohol' && hasAlcoholSortChanges) {
+        showAlert({
+          title: '주류 순서가 저장되지 않았어요.',
+          message: '변경된 순서를 저장하지 않고 나가면 적용되지 않아요.',
+          type: 'unsavedLeave',
+          confirmText: '나가기',
+          cancelText: '취소',
+          onConfirm: () => {
+            setHasAlcoholSortChanges(false);
+            setActiveTab(nextTab);
+          },
+        });
+        return false;
+      }
+
+      setActiveTab(nextTab);
+      return true;
+    },
+    [
+      activeTab,
+      hasMenuSortChanges,
+      hasAlcoholSortChanges,
+      setActiveTab,
+      showAlert,
+    ],
+  );
+
   useEffect(() => {
     const listenerId = scrollY.addListener(({value}) => {
       if (menuRadioLayout.y > 0 && headerHeight > 0) {
         const menuTriggerPoint = Math.max(
-          menuRadioLayout.y - headerHeight + FILTER_STICKY_DELAY,
+          menutopheight -
+            headerHeight +
+            (Platform.OS === 'ios' ? insets.top + 20 : insets.top + 30),
           0,
         );
         const shouldStickMenu =
@@ -81,7 +145,9 @@ const StoreManageScreen = ({route, navigation}) => {
 
       if (alcoholRadioLayout.y > 0 && headerHeight > 0) {
         const alcoholTriggerPoint = Math.max(
-          alcoholRadioLayout.y - headerHeight + FILTER_STICKY_DELAY,
+          alcoholtopheight -
+            headerHeight +
+            (Platform.OS === 'ios' ? insets.top + 20 : insets.top + 30),
           0,
         );
         const shouldStickAlcohol =
@@ -135,10 +201,11 @@ const StoreManageScreen = ({route, navigation}) => {
           <StoreMenuManageScreen
             navigation={navigation}
             storeId={storeId}
-            storeName={currentStoreName}>
+            storeName={currentStoreName}
+            onSortDirtyChange={handleMenuSortDirtyChange}>
             {({menus, loading, error, refreshMenus}) => (
               <>
-                <StoreManageTitle name={currentStoreName} type={activeTab} />
+                {/* <StoreManageTitle name={currentStoreName} type={activeTab} /> */}
                 {error && <Text style={styles.errorText}>{error}</Text>}
                 <StoreMenuScreen
                   navigation={navigation}
@@ -152,6 +219,8 @@ const StoreManageScreen = ({route, navigation}) => {
                   categoryFilterProps={{
                     onLayout: handleMenuFilterLayout,
                   }}
+                  onSortDirtyChange={handleMenuSortDirtyChange}
+                  setMenutopheight={setMenutopheight}
                 />
                 <Loading loading={loading} />
               </>
@@ -164,7 +233,8 @@ const StoreManageScreen = ({route, navigation}) => {
             navigation={navigation}
             storeId={storeId}
             storeName={currentStoreName}
-            mainDrinks={storedata?.mainDrinkDtos}>
+            mainDrinks={storedata?.mainDrinkDtos}
+            onSortDirtyChange={handleAlcoholSortDirtyChange}>
             {({
               alcohols,
               loading,
@@ -174,7 +244,7 @@ const StoreManageScreen = ({route, navigation}) => {
               setSectionPositions,
             }) => (
               <>
-                <StoreManageTitle name={currentStoreName} type={activeTab} />
+                {/* <StoreManageTitle name={currentStoreName} type={activeTab} /> */}
                 {error && <Text style={styles.errorText}>{error}</Text>}
                 <StoreAlcoholScreen
                   navigation={navigation}
@@ -191,6 +261,8 @@ const StoreManageScreen = ({route, navigation}) => {
                   typeFilterProps={{
                     onLayout: handleAlcoholFilterLayout,
                   }}
+                  onSortDirtyChange={handleAlcoholSortDirtyChange}
+                  setAlcoholtopheight={setAlcoholtopheight}
                 />
                 <Loading loading={loading} />
               </>
@@ -212,7 +284,6 @@ const StoreManageScreen = ({route, navigation}) => {
         storeId={storeId}
         onLayout={e => setHeaderHeight(e.nativeEvent.layout.height)}
       />
-
       {isMenuFilterSticky && activeTab === 'menu' && (
         <View style={[styles.stickyFilterContainer, {top: headerHeight}]}>
           <MenuCategoryRadioGroup
@@ -251,7 +322,8 @@ const StoreManageScreen = ({route, navigation}) => {
       </Animated.ScrollView>
 
       {/* 👇 커스텀 탭바 */}
-      <StoreManageTabBar activeTab={activeTab} onTabPress={setActiveTab} />
+      <StoreManageTabBar activeTab={activeTab} onTabPress={handleTabPress} />
+      <AlertComponent />
     </View>
   );
 };

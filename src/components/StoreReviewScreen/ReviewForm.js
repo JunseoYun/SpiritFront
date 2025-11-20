@@ -21,6 +21,7 @@ import ImagePickermodal from '../../hooks/ImagePickermodal';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useFocusEffect} from '@react-navigation/native';
 import {useToast} from '../../context/ToastContext';
+import BottomActionButton from '../../utils/BottomActionButton';
 const rateTextMap = {
   0: '어땠나요?',
   1: '별로예요',
@@ -249,14 +250,21 @@ const ReviewForm = ({
 
           {/* 버튼 */}
         </ScrollView>
-        <View style={styles.buttonView}>
+        {/* <View style={styles.buttonView}>
           <TouchableOpacity style={styles.resetButton} onPress={hadleNoWrite}>
             <Text style={styles.resetText}>취소</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.applyButton} onPress={confirmbtn}>
             <Text style={styles.applyText}>작성 완료</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
+
+        <BottomActionButton
+          label={'작성 완료'}
+          cancel={true}
+          onPress={confirmbtn}
+          onCancel={hadleNoWrite}
+        />
         <ImagePickermodal
           isBottomSheetVisible={isBottomSheetVisible}
           setBottomSheetVisible={setBottomSheetVisible}

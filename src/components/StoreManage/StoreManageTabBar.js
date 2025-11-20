@@ -23,32 +23,39 @@ const StoreManageTabBar = ({activeTab, onTabPress}) => {
     {label: '주류', icon: 'beer-outline', key: 'alcohol'},
   ];
 
-  const handlePress = key => {
-    const tabIndex = TABS.findIndex(tab => tab.key === key);
+  const animateToKey = targetKey => {
     if (containerWidth === 0) {
-      onTabPress(key);
       return;
     }
+
+    const targetIndex = TABS.findIndex(tab => tab.key === targetKey);
+    if (targetIndex < 0) {
+      return;
+    }
+
     const tabWidth = containerWidth / TABS.length;
     Animated.spring(translateX, {
-      toValue: tabIndex * tabWidth,
+      toValue: targetIndex * tabWidth,
       useNativeDriver: true,
       friction: 8,
       tension: 60,
     }).start();
-    onTabPress(key);
+  };
+
+  const handlePress = key => {
+    const result = onTabPress?.(key);
+
+    if (result === false) {
+      animateToKey(activeTab);
+      return;
+    }
+
+    animateToKey(key);
   };
 
   useEffect(() => {
     if (containerWidth === 0) return;
-    const tabIndex = TABS.findIndex(tab => tab.key === activeTab);
-    const tabWidth = containerWidth / TABS.length;
-    Animated.spring(translateX, {
-      toValue: tabIndex * tabWidth,
-      useNativeDriver: true,
-      friction: 8,
-      tension: 60,
-    }).start();
+    animateToKey(activeTab);
   }, [activeTab, containerWidth]);
 
   return (

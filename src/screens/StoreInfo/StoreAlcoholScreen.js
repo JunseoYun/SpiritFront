@@ -1,9 +1,13 @@
-import React, {useEffect, useState, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, Text, View, Platform, Pressable} from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import AlcoholItem from '../../components/StoreAlcoholScreen/AlcoholItem';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import {DrinkUpdateSort} from '../../api/drinkApi';
+import {useToast} from '../../context/ToastContext';
+import useCustomAlert from '../../hooks/useCustomAlert';
+import Loading from '../../hooks/Loading';
 
 const ORDER_SPACER_HEIGHT = 0;
 
@@ -21,6 +25,57 @@ const alcoholMapping = {
   VODKA: '보드카',
   TEQUILA: '데킬라',
 };
+const ALCOHOL_TYPE_SEQUENCE = Object.keys(alcoholMapping);
+
+const ensureAlcoholTypeKey = type => {
+  if (ALCOHOL_TYPE_SEQUENCE.includes(type)) {
+    return type;
+  }
+  return type || 'UNKNOWN';
+};
+
+const groupAlcoholsByType = (list = []) =>
+  list.reduce((acc, alcohol) => {
+    const typeKey = ensureAlcoholTypeKey(alcohol.type);
+    acc[typeKey] = acc[typeKey] ? [...acc[typeKey], alcohol] : [alcohol];
+    return acc;
+  }, {});
+
+const getOrderedTypeKeys = grouped => [
+  ...ALCOHOL_TYPE_SEQUENCE.filter(type => grouped[type]?.length),
+  ...Object.keys(grouped).filter(
+    type => !ALCOHOL_TYPE_SEQUENCE.includes(type) && grouped[type]?.length,
+  ),
+];
+
+const flattenGroupedAlcohols = grouped =>
+  getOrderedTypeKeys(grouped).reduce(
+    (acc, type) => [...acc, ...(grouped[type] || [])],
+    [],
+  );
+
+const normalizeAlcoholList = list =>
+  flattenGroupedAlcohols(groupAlcoholsByType(list));
+
+const mergeAlcoholListWithServer = (currentList, serverList) => {
+  if (!Array.isArray(currentList) || currentList.length === 0) {
+    return serverList;
+  }
+
+  const serverMap = new Map(serverList.map(item => [item.id, item]));
+
+  const preserved = currentList
+    .map(item => serverMap.get(item.id) || null)
+    .filter(Boolean);
+
+  const preservedIds = new Set(preserved.map(item => item.id));
+  const appended = serverList.filter(item => !preservedIds.has(item.id));
+
+  return [...preserved, ...appended];
+};
+
+const getDrinkIdsInApiOrder = list =>
+  flattenGroupedAlcohols(groupAlcoholsByType(list)).map(drink => drink.id);
 
 export const AlcoholTypeRadioGroup = ({
   types,
@@ -67,8 +122,6 @@ const StoreAlcoholScreen = ({
   navigation,
   storeId,
   alcohols = [],
-  mainDrinks = [],
-  sectionPositions: parentSectionPositions, // 상위에서 관리하는 섹션 위치들
   setSectionPositions: setParentSectionPositions, // 상위에서 섹션 위치 관리 함수
   isUpdatable = false,
   isOrderEnabled,
@@ -78,62 +131,58 @@ const StoreAlcoholScreen = ({
   hideTypeFilter = false,
   onAvailableTypesChange,
   typeFilterProps = {},
+  onSortDirtyChange,
+  setAlcoholtopheight,
 }) => {
-  const [alcoholsState, setAlcoholsState] = useState(alcohols);
+  const [alcoholList, setAlcoholList] = useState(() =>
+    normalizeAlcoholList(alcohols),
+  );
+  const [isSortDirty, setIsSortDirty] = useState(false);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const isSortDirtyRef = useRef(false);
   const [uncontrolledType, setUncontrolledType] = useState('전체');
   const {bottom: androidBottom} = useSafeAndroidInsets();
   const {bottom: safeBottom} = useSafeAreaInsets();
   const bottomInset =
     Platform.OS === 'android' ? androidBottom + 30 : safeBottom;
   const {translateAlcohol} = useTranslateAlcohol();
+  const toastContext = useToast();
+  const showToast = toastContext?.showToast;
+  const {showAlert, AlertComponent} = useCustomAlert();
   const containerPaddingBottom = isOrderEnabled
     ? ORDER_SPACER_HEIGHT + bottomInset
     : bottomInset;
 
   useEffect(() => {
-    setAlcoholsState(alcohols);
+    isSortDirtyRef.current = isSortDirty;
+  }, [isSortDirty]);
+
+  useEffect(() => {
+    const normalized = normalizeAlcoholList(alcohols);
+    setAlcoholList(prevList => {
+      if (
+        isSortDirtyRef.current &&
+        Array.isArray(prevList) &&
+        prevList.length
+      ) {
+        return mergeAlcoholListWithServer(prevList, normalized);
+      }
+      return normalized;
+    });
   }, [alcohols]);
 
-  const groupedAlcohols = useMemo(() => {
-    const mainDrinkTypes = new Set(mainDrinks.map(drink => drink.type));
-    const grouped = alcoholsState.reduce((acc, alcohol) => {
-      const translatedType = translateAlcohol(alcohol.type);
-      const isMainDrink = mainDrinkTypes.has(alcohol.type);
-      if (!acc[translatedType]) {
-        acc[translatedType] = {main: [], regular: []};
-      }
-      if (isMainDrink) {
-        acc[translatedType].main.push(alcohol);
-      } else {
-        acc[translatedType].regular.push(alcohol);
-      }
-      return acc;
-    }, {});
-    return Object.keys(grouped)
-      .sort((a, b) => {
-        const isAMainDrink = mainDrinkTypes.has(
-          Object.keys(alcoholMapping).find(key => alcoholMapping[key] === a),
-        );
-        const isBMainDrink = mainDrinkTypes.has(
-          Object.keys(alcoholMapping).find(key => alcoholMapping[key] === b),
-        );
-        if (isAMainDrink && !isBMainDrink) return -1;
-        if (!isAMainDrink && isBMainDrink) return 1;
-        return (
-          Object.values(alcoholMapping).indexOf(a) -
-          Object.values(alcoholMapping).indexOf(b)
-        );
-      })
-      .reduce((acc, key) => {
-        const {main, regular} = grouped[key];
-        acc[key] = [...main, ...regular];
-        return acc;
-      }, {});
-  }, [alcoholsState, mainDrinks, translateAlcohol]);
+  const groupedSections = useMemo(() => {
+    const grouped = groupAlcoholsByType(alcoholList);
+    return getOrderedTypeKeys(grouped).map(typeKey => ({
+      typeKey,
+      label: translateAlcohol(typeKey) || alcoholMapping[typeKey] || typeKey,
+      items: grouped[typeKey] || [],
+    }));
+  }, [alcoholList, translateAlcohol]);
 
   const availableTypes = useMemo(
-    () => Object.keys(groupedAlcohols),
-    [groupedAlcohols],
+    () => groupedSections.map(section => section.label),
+    [groupedSections],
   );
 
   const isTypeControlled =
@@ -162,15 +211,72 @@ const StoreAlcoholScreen = ({
     onAvailableTypesChange?.(availableTypes);
   }, [availableTypes, onAvailableTypesChange]);
 
-  const filteredTypes = currentType === '전체' ? availableTypes : [currentType];
+  const filteredSections =
+    currentType === '전체'
+      ? groupedSections
+      : groupedSections.filter(section => section.label === currentType);
+
+  const moveItem = (alcoholId, direction, type) => {
+    if (!Array.isArray(alcoholList)) {
+      return;
+    }
+
+    const grouped = groupAlcoholsByType(alcoholList);
+    const typeKey = ensureAlcoholTypeKey(type);
+    const targetGroup = grouped[typeKey] || [];
+    if (targetGroup.length === 0) {
+      return;
+    }
+
+    const currentIndex = targetGroup.findIndex(item => item.id === alcoholId);
+    if (currentIndex === -1) {
+      return;
+    }
+
+    const newIndex = currentIndex + direction;
+    if (newIndex < 0 || newIndex >= targetGroup.length) {
+      if (typeof showToast === 'function') {
+        showToast(
+          direction > 0
+            ? '이 이상 아래로 움직일 수 없습니다.'
+            : '이 이상 위로 움직일 수 없습니다.',
+        );
+      }
+      return;
+    }
+
+    const updatedGroup = [...targetGroup];
+    const [movedItem] = updatedGroup.splice(currentIndex, 1);
+    updatedGroup.splice(newIndex, 0, movedItem);
+    grouped[typeKey] = updatedGroup;
+
+    const updatedList = flattenGroupedAlcohols(grouped);
+    setAlcoholList(updatedList);
+    setIsSortDirty(true);
+  };
+
+  const handleSaveOrder = useCallback(async () => {
+    if (isSavingOrder || !isSortDirty || !storeId) {
+      return;
+    }
+
+    try {
+      setIsSavingOrder(true);
+      await DrinkUpdateSort(storeId, getDrinkIdsInApiOrder(alcoholList));
+      setIsSortDirty(false);
+      showToast?.('주류 순서를 저장했어요.', 'center');
+    } catch (error) {
+      console.error('Failed to save drink order', error);
+      showToast?.('순서 저장에 실패했어요. 다시 시도해주세요.', 'center');
+    } finally {
+      setIsSavingOrder(false);
+    }
+  }, [alcoholList, isSavingOrder, isSortDirty, showToast, storeId]);
 
   const handleAlcoholManagePress = () => {
     navigation.navigate('StoreStack', {
       screen: 'AlcoholEditScreen',
-      params: {
-        storeId,
-        alcohols: alcoholsState,
-      },
+      params: {storeId},
     });
     if (typeof onAlcoholUpdateComplete === 'function') {
       const unsubscribe = navigation.addListener('focus', async () => {
@@ -180,6 +286,44 @@ const StoreAlcoholScreen = ({
     }
   };
 
+  useEffect(() => {
+    if (typeof onSortDirtyChange === 'function') {
+      onSortDirtyChange(isSortDirty);
+    }
+  }, [isSortDirty, onSortDirtyChange]);
+
+  useEffect(() => {
+    return () => {
+      if (typeof onSortDirtyChange === 'function') {
+        onSortDirtyChange(false);
+      }
+    };
+  }, [onSortDirtyChange]);
+
+  useEffect(() => {
+    if (!isUpdatable || !navigation?.addListener) {
+      return;
+    }
+
+    const unsubscribe = navigation.addListener('beforeRemove', e => {
+      if (!isSortDirtyRef.current) {
+        return;
+      }
+
+      e.preventDefault();
+      showAlert({
+        title: '주류 순서가 저장되지 않았어요.',
+        message: '변경된 순서를 저장하지 않고 나가면 적용되지 않아요.',
+        type: 'unsavedLeave',
+        confirmText: '나가기',
+        cancelText: '취소',
+        onConfirm: () => navigation.dispatch(e.data.action),
+      });
+    });
+
+    return unsubscribe;
+  }, [isUpdatable, navigation, showAlert]);
+
   return (
     <SafeAreaView
       edges={['bottom']}
@@ -187,53 +331,85 @@ const StoreAlcoholScreen = ({
       {/* 주류 리스트 */}
       {/* 내부 ScrollView 제거하고 View로 감싸기 */}
       {isUpdatable && (
-        <>
+        <View
+          style={{marginTop: 10}}
+          onLayout={e => setAlcoholtopheight(e.nativeEvent.layout.height)}>
           <Pressable
             style={styles.reorderButton}
             onPress={handleAlcoholManagePress}>
-            <Text style={styles.alcoholAddButtonText}>주류 관리</Text>
+            <Text style={styles.alcoholAddButtonText}>주류 추가</Text>
           </Pressable>
 
-          {availableTypes.length > 0 && !hideTypeFilter && (
-            <AlcoholTypeRadioGroup
-              types={availableTypes}
-              selectedType={currentType}
-              onSelect={handleTypeSelect}
-              {...typeFilterProps}
-            />
+          {alcoholList?.length > 0 && (
+            <Pressable
+              style={[
+                styles.saveOrderButton,
+                (!isSortDirty || isSavingOrder) &&
+                  styles.saveOrderButtonDisabled,
+              ]}
+              disabled={!isSortDirty || isSavingOrder}
+              onPress={handleSaveOrder}>
+              <Text
+                style={[
+                  styles.saveOrderText,
+                  (!isSortDirty || isSavingOrder) &&
+                    styles.saveOrderButtonDisabledText,
+                ]}>
+                순서 저장
+              </Text>
+            </Pressable>
           )}
-        </>
+        </View>
+      )}
+      {availableTypes.length > 0 && !hideTypeFilter && (
+        <AlcoholTypeRadioGroup
+          types={availableTypes}
+          selectedType={currentType}
+          onSelect={handleTypeSelect}
+          {...typeFilterProps}
+        />
       )}
       <View style={{flex: 1}}>
-        {filteredTypes.map(type => (
+        {filteredSections.map(section => (
           <View
-            key={type}
+            key={section.typeKey}
             onLayout={e => {
-              const y = e.nativeEvent.layout.y;
-              setParentSectionPositions(prev => ({
-                ...prev,
-                [type]: y,
-              }));
+              if (typeof setParentSectionPositions === 'function') {
+                const y = e.nativeEvent.layout.y;
+                setParentSectionPositions(prev => ({
+                  ...(prev || {}),
+                  [section.label]: y,
+                }));
+              }
             }}>
-            <Text style={styles.typeLabel}>{type}</Text>
-            {groupedAlcohols[type].map(alcohol => (
+            {currentType === '전체' && (
+              <Text style={styles.typeLabel}>{section.label}</Text>
+            )}
+            {section.items.map((alcohol, idx) => (
               <AlcoholItem
                 key={alcohol.id}
                 alcohol={alcohol}
                 storeId={storeId}
                 navigation={navigation}
+                isUpdatable={isUpdatable}
+                onAlcoholUpdateComplete={onAlcoholUpdateComplete}
+                onMoveUp={() => moveItem(alcohol.id, -1, alcohol.type)}
+                onMoveDown={() => moveItem(alcohol.id, 1, alcohol.type)}
+                isLast={idx === section.items.length - 1}
               />
             ))}
             <View style={styles.line} />
           </View>
         ))}
 
-        {alcohols?.length === 0 && (
+        {alcoholList?.length === 0 && (
           <View style={styles.footer}>
             <Text style={styles.emptyText}>등록된 주류가 없어요</Text>
           </View>
         )}
       </View>
+      <AlertComponent />
+      <Loading loading={isSavingOrder} />
     </SafeAreaView>
   );
 };
@@ -249,7 +425,7 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     alignItems: 'center',
     marginTop: 20,
-    marginBottom: 32,
+    marginBottom: 12,
   },
   alcoholAddButtonText: {
     fontSize: 14,
@@ -316,6 +492,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 18,
     marginBottom: 10,
+    marginTop: 10,
     flexWrap: 'wrap',
   },
   radioItem: {
@@ -351,6 +528,32 @@ const styles = StyleSheet.create({
   radioLabelSelected: {
     color: '#333',
     fontFamily: 'Pretendard-SemiBold',
+  },
+  saveOrderButton: {
+    backgroundColor: '#fff',
+    borderColor: '#3CBBFF',
+    borderWidth: 1,
+    padding: 12,
+    marginHorizontal: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    marginTop: 0,
+    marginBottom: 10,
+  },
+  saveOrderButtonDisabled: {
+    backgroundColor: '#fff',
+    borderColor: '#D0D4DB',
+
+    opacity: 0.5,
+  },
+  saveOrderText: {
+    fontSize: 14,
+    color: '#3CBBFF',
+    fontFamily: 'Pretendard-Bold',
+  },
+  saveOrderButtonDisabledText: {
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 
