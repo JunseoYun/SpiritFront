@@ -99,6 +99,14 @@ const MapStoreList = ({
   }, [detailStoreId, detailContentHeight, insets.bottom, insets.top]);
   const hideFloatingButtons =
     isDetailMode && detailSnapPoint >= SCREEN_HEIGHT * 0.7;
+  const detailCenterOffset = useMemo(() => {
+    if (!isDetailMode) return null;
+    if (typeof detailSnapPoint !== 'number' || detailSnapPoint <= 0) {
+      return null;
+    }
+    // 살짝 덜 올려서 지도 위치가 너무 위로 치우치지 않도록 보정
+    return Math.max(0, detailSnapPoint / 2 - 32);
+  }, [isDetailMode, detailSnapPoint]);
 
   const snapPoints = useMemo(() => {
     const first = detailCollapsedHeight;
@@ -131,6 +139,7 @@ const MapStoreList = ({
   const currentSheetIndexRef = useRef(null);
   const mapMoveTimerRef = useRef(null);
   const didForceAfterLoadRef = useRef(true);
+  const lastDetailCenterKeyRef = useRef(null);
   const groupFilteredStores = useMemo(
     () =>
       Array.isArray(groupStoreIds) && groupStoreIds.length > 0
@@ -451,11 +460,18 @@ const MapStoreList = ({
           const freshStore = refreshedStoreList[topIndex];
           if (!freshStore) return;
 
+          const offsetOverride =
+            currentSheetIndexRef.current === 1 &&
+            typeof detailCenterOffset === 'number'
+              ? detailCenterOffset
+              : undefined;
+
           moveCenterMap(
             freshStore.locationDto.latitude,
             freshStore.locationDto.longitude,
             currentSheetIndexRef.current,
             didForceAfterLoadRef.current,
+            offsetOverride,
           );
           if (didForceAfterLoadRef.current) {
             didForceAfterLoadRef.current = false;
@@ -470,6 +486,7 @@ const MapStoreList = ({
     moveCenterMap, // stores 제거!!
     setSelectedStoreIndex,
     setSelectedStore,
+    detailCenterOffset,
   ]);
 
   // ✅ stores가 변경되면 예약된 이동 취소
@@ -480,6 +497,37 @@ const MapStoreList = ({
       }
     };
   }, [stores]);
+
+  useEffect(() => {
+    if (!isDetailMode) {
+      lastDetailCenterKeyRef.current = null;
+      return;
+    }
+    if (!detailStore) return;
+    const lat = detailStore?.locationDto?.latitude;
+    const lng = detailStore?.locationDto?.longitude;
+    if (
+      typeof lat !== 'number' ||
+      typeof lng !== 'number' ||
+      typeof detailCenterOffset !== 'number'
+    ) {
+      return;
+    }
+    const key = `${detailStoreId}-${detailCenterOffset.toFixed(2)}-${lat.toFixed(
+      5,
+    )}-${lng.toFixed(5)}`;
+    if (lastDetailCenterKeyRef.current === key) {
+      return;
+    }
+    lastDetailCenterKeyRef.current = key;
+    moveCenterMap(lat, lng, 1, true, detailCenterOffset);
+  }, [
+    isDetailMode,
+    detailStore,
+    detailCenterOffset,
+    moveCenterMap,
+    detailStoreId,
+  ]);
 
   const keyExtractor = useCallback(
     item => item.id?.toString?.() ?? String(item.id ?? ''),

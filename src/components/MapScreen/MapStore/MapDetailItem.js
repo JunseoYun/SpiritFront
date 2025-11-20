@@ -517,12 +517,10 @@ const styles = StyleSheet.create({
   verifyIcon: {
     width: 20,
     height: 20,
-
     marginRight: 8,
   },
   storeName: {
     fontSize: normalizeFont(20, 1.5),
-
     color: '#333',
     fontFamily: 'Pretendard-Bold',
     maxWidth: '90%',
@@ -532,7 +530,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginHorizontal: 18,
-    marginTop: 6,
     alignItems: 'center',
   },
   ratingRow: {

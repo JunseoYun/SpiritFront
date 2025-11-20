@@ -533,9 +533,17 @@ const MapScreen = ({navigation, route}) => {
     }
   };
 
-  const moveCenterMap = (lat, lng, sheetIndex, force = false) => {
+  const moveCenterMap = (
+    lat,
+    lng,
+    sheetIndex,
+    force = false,
+    customOffset,
+  ) => {
     const offsetY =
-      sheetIndex === null
+      typeof customOffset === 'number'
+        ? customOffset
+        : sheetIndex === null
         ? 0
         : sheetIndex === 1
         ? SCREEN_HEIGHT * 0.18 // 45%일 때
@@ -649,6 +657,10 @@ const MapScreen = ({navigation, route}) => {
           setCenterLatLng(current);
           setPrevCenterLatLng(current); // 이전 좌표 갱신
           setRefresh(true);
+          if (sheetIndex !== 0) {
+            bottomSheetRef.current?.snapToIndex?.(0);
+            setSheetIndex(0);
+          }
         } else {
         }
       }
