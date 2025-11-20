@@ -74,6 +74,7 @@ const MapStoreList = ({
   const detailRevealProgress = useSharedValue(1);
   const detailPointerState = useSharedValue(1);
   const [detailPointerEnabled, setDetailPointerEnabled] = useState(true);
+  const listRevealProgress = useSharedValue(1);
   const initialIndex = stores.length === 0 ? 1 : 1;
   const detailStore = detailStoreData || null;
   const isDetailMode = !!detailStoreId;
@@ -134,7 +135,7 @@ const MapStoreList = ({
   const [showListButtons, setShowListButtons] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [itemheight, setItemheight] = useState(120);
-  const [listfastview, setListfastview] = useState(null);
+  const [listfastview, setListfastview] = useState(false);
   const lastCenteredIndexRef = useRef(null);
   const currentSheetIndexRef = useRef(null);
   const mapMoveTimerRef = useRef(null);
@@ -158,8 +159,14 @@ const MapStoreList = ({
       detailRevealProgress.value = 1;
       detailPointerState.value = 1;
       setDetailPointerEnabled(true);
+      listRevealProgress.value = 1;
     }
-  }, [isDetailMode, detailRevealProgress, detailPointerState]);
+  }, [
+    isDetailMode,
+    detailRevealProgress,
+    detailPointerState,
+    listRevealProgress,
+  ]);
   const handleDetailPointerState = useCallback(enabled => {
     setDetailPointerEnabled(prev => (prev === enabled ? prev : enabled));
   }, []);
@@ -226,7 +233,7 @@ const MapStoreList = ({
       setCurrentIndex(index);
       currentSheetIndexRef.current = index;
       setSheetIndex?.(index);
-      setListfastview(index >= 1);
+      setListfastview(prev => prev || index >= 1);
     },
     [isDetailMode, setSheetIndex],
   );
@@ -513,9 +520,9 @@ const MapStoreList = ({
     ) {
       return;
     }
-    const key = `${detailStoreId}-${detailCenterOffset.toFixed(2)}-${lat.toFixed(
-      5,
-    )}-${lng.toFixed(5)}`;
+    const key = `${detailStoreId}-${detailCenterOffset.toFixed(
+      2,
+    )}-${lat.toFixed(5)}-${lng.toFixed(5)}`;
     if (lastDetailCenterKeyRef.current === key) {
       return;
     }
@@ -580,6 +587,25 @@ const MapStoreList = ({
   });
 
   const mapSearchCtx = useMapSearch();
+  const listModeCollapsed = !isDetailMode && currentIndex === 0;
+
+  useEffect(() => {
+    if (isDetailMode) return;
+    const target = listModeCollapsed ? 0 : 1;
+    listRevealProgress.value = withTiming(target, {duration: 220});
+  }, [isDetailMode, listModeCollapsed, listRevealProgress]);
+
+  const listBodyAnimatedStyle = useAnimatedStyle(() => {
+    const progress = listRevealProgress.value;
+    return {
+      opacity: progress,
+      transform: [
+        {
+          translateY: (1 - progress) * 12,
+        },
+      ],
+    };
+  }, [listRevealProgress]);
 
   const handleShowList = () => {
     if (!bottomSheetRef.current) return;
@@ -608,6 +634,125 @@ const MapStoreList = ({
   const outdoorLabel = selectedFilters['야장'] || '야장';
 
   let computedLabels = null;
+  const renderSheetBody = () => {
+    if (detailStoreId) {
+      if (detailStore) {
+        return (
+          <BottomSheetScrollView
+            contentContainerStyle={{
+              paddingHorizontal: 0,
+              paddingBottom: insets.bottom,
+            }}
+            showsVerticalScrollIndicator={false}>
+            {/* Back moved to custom handle */}
+            <View onLayout={handleDetailLayout}>
+              <MapDetailItem
+                storeData={detailStore}
+                index={selectedStoreIndex}
+                selectedStoreIndex={selectedStoreIndex}
+                setSelectedStore={setSelectedStore}
+                moveCenterMap={moveCenterMap}
+                navigation={navigation}
+                location={location}
+                loading={loading}
+                sheetIndex={currentIndex}
+                onCloseDetail={handleCloseDetail}
+                onHeaderLayout={handleDetailHeaderLayout}
+                detailRevealProgressValue={detailRevealProgress}
+                detailPointerEnabled={detailPointerEnabled}
+              />
+            </View>
+          </BottomSheetScrollView>
+        );
+      }
+      return (
+        <View style={styles.detailLoadingContainer}>
+          {detailStoreLoading ? (
+            <MapDetailItemSkeleton />
+          ) : (
+            <Text style={styles.detailLoadingText}>
+              매장 정보를 불러오지 못했어요.
+            </Text>
+          )}
+        </View>
+      );
+    }
+
+    let listContent = null;
+    if (storegetloading) {
+      if (currentIndex >= 1 || listfastview) {
+        listContent = (
+          <FlatList
+            data={[1, 2, 3]}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={() => <MapStoreItemSkeleton />}
+            showsVerticalScrollIndicator={false}
+            onViewableItemsChanged={onViewableItemsChanged.current}
+            viewabilityConfig={viewabilityConfig.current}
+          />
+        );
+      } else {
+        listContent = null;
+      }
+    } else if (stores.length === 0 && !loading) {
+      listContent = renderNoStoreView();
+    } else if (currentIndex < 1 && !listfastview) {
+      listContent = <View />;
+    } else {
+      listContent = (
+        <FlatList
+          ref={flatListRef}
+          data={stores}
+          keyExtractor={keyExtractor}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            ...styles.listContentContainer,
+            ...(currentIndex === 1 && {
+              paddingBottom: SCREEN_HEIGHT * 0.25 + insets.bottom,
+            }),
+          }}
+          onScroll={handleScrollBeginDrag}
+          onScrollEndDrag={handleScrollEndDrag}
+          scrollEventThrottle={16}
+          onViewableItemsChanged={onViewableItemsChanged.current}
+          viewabilityConfig={viewabilityConfig.current}
+          renderItem={renderItem}
+          extraData={selectedStoreIndex}
+          initialNumToRender={8}
+          maxToRenderPerBatch={8}
+          windowSize={10}
+          updateCellsBatchingPeriod={16}
+          removeClippedSubviews
+          onEndReached={() => {
+            if (hasMoreStores && !loadingMoreStores) {
+              onLoadMoreStores?.();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMoreStores ? (
+              <FlatList
+                data={[1, 2, 3]}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={() => <MapStoreItemSkeleton />}
+                showsVerticalScrollIndicator={false}
+                onViewableItemsChanged={onViewableItemsChanged.current}
+                viewabilityConfig={viewabilityConfig.current}
+              />
+            ) : null
+          }
+        />
+      );
+    }
+
+    return (
+      <Animated.View
+        style={[styles.listAnimatedContainer, listBodyAnimatedStyle]}
+        pointerEvents={listModeCollapsed ? 'none' : 'auto'}>
+        {listContent}
+      </Animated.View>
+    );
+  };
   return (
     <>
       {isFlatListVisible && (
@@ -723,103 +868,7 @@ const MapStoreList = ({
                 />
               )}
 
-              {detailStoreId ? (
-                detailStore ? (
-                  <BottomSheetScrollView
-                    contentContainerStyle={{
-                      paddingHorizontal: 0,
-                      paddingBottom: insets.bottom,
-                    }}
-                    showsVerticalScrollIndicator={false}>
-                    {/* Back moved to custom handle */}
-                    <View onLayout={handleDetailLayout}>
-                      <MapDetailItem
-                        storeData={detailStore}
-                        index={selectedStoreIndex}
-                        selectedStoreIndex={selectedStoreIndex}
-                        setSelectedStore={setSelectedStore}
-                        moveCenterMap={moveCenterMap}
-                      navigation={navigation}
-                      location={location}
-                      loading={loading}
-                      sheetIndex={currentIndex}
-                      onCloseDetail={handleCloseDetail}
-                      onHeaderLayout={handleDetailHeaderLayout}
-                      detailRevealProgressValue={detailRevealProgress}
-                      detailPointerEnabled={detailPointerEnabled}
-                    />
-                  </View>
-                </BottomSheetScrollView>
-                ) : (
-                  <View style={styles.detailLoadingContainer}>
-                    {detailStoreLoading ? (
-                      <MapDetailItemSkeleton />
-                    ) : (
-                      <Text style={styles.detailLoadingText}>
-                        매장 정보를 불러오지 못했어요.
-                      </Text>
-                    )}
-                  </View>
-                )
-              ) : storegetloading ? (
-                currentIndex >= 1 || listfastview ? (
-                  <FlatList
-                    data={[1, 2, 3]}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={() => <MapStoreItemSkeleton />}
-                    showsVerticalScrollIndicator={false}
-                    onViewableItemsChanged={onViewableItemsChanged.current}
-                    viewabilityConfig={viewabilityConfig.current}
-                  />
-                ) : null
-              ) : stores.length === 0 && !loading ? (
-                renderNoStoreView()
-              ) : currentIndex < 1 && !listfastview ? (
-                <View />
-              ) : (
-                <FlatList
-                  ref={flatListRef}
-                  data={stores}
-                  keyExtractor={keyExtractor}
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{
-                    ...styles.listContentContainer,
-                    ...(currentIndex === 1 && {
-                      paddingBottom: SCREEN_HEIGHT * 0.25 + insets.bottom,
-                    }),
-                  }}
-                  onScroll={handleScrollBeginDrag}
-                  onScrollEndDrag={handleScrollEndDrag} // ✅ 추가
-                  scrollEventThrottle={16}
-                  onViewableItemsChanged={onViewableItemsChanged.current}
-                  viewabilityConfig={viewabilityConfig.current}
-                  renderItem={renderItem}
-                  extraData={selectedStoreIndex}
-                  initialNumToRender={8}
-                  maxToRenderPerBatch={8}
-                  windowSize={10}
-                  updateCellsBatchingPeriod={16}
-                  removeClippedSubviews
-                  onEndReached={() => {
-                    if (hasMoreStores && !loadingMoreStores) {
-                      onLoadMoreStores?.();
-                    }
-                  }}
-                  onEndReachedThreshold={0.5}
-                  ListFooterComponent={
-                    loadingMoreStores ? (
-                      <FlatList
-                        data={[1, 2, 3]}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={() => <MapStoreItemSkeleton />}
-                        showsVerticalScrollIndicator={false}
-                        onViewableItemsChanged={onViewableItemsChanged.current}
-                        viewabilityConfig={viewabilityConfig.current}
-                      />
-                    ) : null
-                  }
-                />
-              )}
+              {renderSheetBody()}
             </BottomSheetView>
           </BottomSheet>
         </>
@@ -847,9 +896,9 @@ const styles = StyleSheet.create({
   sheet: {
     zIndex: 3,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: -4}, // 🔥 위쪽 그림자(-)
-    shadowOpacity: 0.12,
-    shadowRadius: 3,
+    shadowOffset: {width: 0, height: -2}, // 🔥 위쪽 그림자(-)
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 10,
   },
   listContentContainer: {paddingBottom: 18},
@@ -947,6 +996,12 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     backgroundColor: '#E5E7EB',
+  },
+  collapsedSpacer: {
+    width: '100%',
+  },
+  listAnimatedContainer: {
+    flex: 1,
   },
 });
 
