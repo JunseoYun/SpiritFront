@@ -5,10 +5,8 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Octicons from 'react-native-vector-icons/Octicons';
 
 import StoreMainScreen from '../screens/StoreInfo/StoreMainScreen';
-import MenuAddScreen from '../screens/StoreInfo/Menu/MenuAddScreen';
 import StoreMapScreen from '../screens/StoreInfo/StoreMapScreen';
 import StoreReviewScreen from '../screens/StoreInfo/StoreReviewScreen';
-import AlcoholAddScreen from '../screens/StoreInfo/Alcohol/AlcoholAddScreen';
 import StoreReportScreen from '../screens/StoreInfo/Report/StoreReportScreen';
 import ReviewReportScreen from '../screens/StoreInfo/Report/ReviewReportScreen';
 import StoreReportList from '../screens/StoreInfo/Report/StoreReportList';
@@ -171,74 +169,7 @@ export default function StoreStack() {
           ),
         })}
       />
-      <Stack.Screen
-        name="MenuAddScreen"
-        component={MenuAddScreen}
-        options={({navigation}) => ({
-          title: '메뉴 등록하기',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                showAlert({
-                  title: '작성한 내용이 저장되지 않았습니다',
-                  message: '뒤로 가시겠습니까?',
-                  onConfirm: () => {
-                    navigation.goBack();
-                  },
-                  onCancel: null,
-                  type: 'confirm',
-                });
-              }}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-      <Stack.Screen
-        name="AlcoholAddScreen"
-        component={AlcoholAddScreen}
-        options={({navigation}) => ({
-          title: '주류 등록하기',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                showAlert({
-                  title: '작성한 내용이 저장되지 않았습니다',
-                  message: '뒤로 가시겠습니까?',
-                  onConfirm: () => {
-                    navigation.goBack();
-                  },
-                  onCancel: null,
-                  type: 'confirm',
-                });
-              }}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
+
       <Stack.Screen
         name="MenuEditScreen"
         component={MenuEditScreen}
