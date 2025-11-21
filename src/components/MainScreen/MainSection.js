@@ -81,6 +81,7 @@ const MainSection = ({
             fontSize: 18,
             fontFamily: 'Pretendard-SemiBold',
             color: '#181a1a',
+            marginBottom: 10,
           }}>
           현재 인기 매장
         </Text>
