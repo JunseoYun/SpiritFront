@@ -19,6 +19,8 @@ import {
   BackHandler,
   Pressable,
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 
 import {
@@ -47,6 +49,9 @@ import {
   StoreDrinkdelete,
 } from '../../../api/drinkApi';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import ColorUtil from '../../../utils/ColorUtil';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import forbiddenWords from '../../../hooks/forbiddenWords';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -86,8 +91,24 @@ const AlcoholEditScreen = ({route, navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
   const [loading, setLoading] = useState(false);
+  const [isNameFocused, setIsNameFocused] = useState(false);
+  const [isPriceFocused, setIsPirceFocused] = useState(false);
+  const [isDesFocused, setIsDesFocused] = useState(false);
 
   const originalImage = useRef(alcoholImgUrl ?? null);
+
+  const containsForbiddenWord = useCallback(
+    text => {
+      if (typeof text !== 'string') {
+        return false;
+      }
+      const normalized = text.toLowerCase();
+      return forbiddenWords.some(word =>
+        normalized.includes(String(word).toLowerCase()),
+      );
+    },
+    [forbiddenWords],
+  );
 
   const [image, setImage] = useState(originalImage.current);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -97,40 +118,25 @@ const AlcoholEditScreen = ({route, navigation}) => {
   );
   const [nameValue, setNameValue] = useState(alcoholName || '');
   const [descValue, setDescValue] = useState(alcoholdescription || '');
+  const [nameHasForbidden, setNameHasForbidden] = useState(
+    containsForbiddenWord(alcoholName || ''),
+  );
+  const [descHasForbidden, setDescHasForbidden] = useState(
+    containsForbiddenWord(alcoholdescription || ''),
+  );
 
   const [isVariablePrice, setIsVariablePrice] = useState(
     alcoholPrice === '변동',
   );
-  const [priceValue, setPriceValue] = useState(alcoholPrice || '');
+  const [priceValue, setPriceValue] = useState(
+    alcoholPrice === '변동' ? '' : alcoholPrice || '',
+  );
 
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
   const lastBackPressed = useRef(0);
 
   // 뒤로가기 핸들러
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-        const now = Date.now();
-        if (now - lastBackPressed.current < 2000) {
-          navigation.goBack();
-          return true;
-        }
-        lastBackPressed.current = now;
-        ToastAndroid.show(
-          '한 번 더 누르면 작성한 내용이 사라집니다.',
-          ToastAndroid.SHORT,
-        );
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        onBackPress,
-      );
-      return () => backHandler.remove();
-    }, [navigation]),
-  );
 
   // 이미지 선택
   const selectImage = () => setBottomSheetVisible(true);
@@ -235,7 +241,9 @@ const AlcoholEditScreen = ({route, navigation}) => {
     );
   }, [nameValue, alcoholTypeValue, priceValue, isVariablePrice, alcoholId]);
 
-  const isButtonEnabled = alcoholId ? isChanged : isRequiredFilled;
+  const hasForbiddenWords = nameHasForbidden || descHasForbidden;
+  const isButtonEnabled =
+    !hasForbiddenWords && (alcoholId ? isChanged : isRequiredFilled);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -252,6 +260,31 @@ const AlcoholEditScreen = ({route, navigation}) => {
       ),
     });
   }, [navigation, isButtonEnabled]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        const now = Date.now();
+        if (!isChanged) return;
+        if (now - lastBackPressed.current < 2000) {
+          navigation.goBack();
+          return true;
+        }
+        lastBackPressed.current = now;
+        ToastAndroid.show(
+          '한 번 더 누르면 작성한 내용이 사라집니다.',
+          ToastAndroid.SHORT,
+        );
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+      return () => backHandler.remove();
+    }, [navigation, isChanged]),
+  );
 
   // 저장
   const AlcoholAdd = async () => {
@@ -318,153 +351,203 @@ const AlcoholEditScreen = ({route, navigation}) => {
     setPriceValue(value);
   };
 
+  const handleNameChange = text => {
+    setNameValue(text);
+    setNameHasForbidden(containsForbiddenWord(text));
+  };
+
+  const handleDescChange = text => {
+    setDescValue(text);
+    setDescHasForbidden(containsForbiddenWord(text));
+  };
+
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 90 : 0;
+
   return (
     <SafeAreaView style={[styles.safe, {paddingBottom: bottom}]}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* 이미지 영역 */}
-        <View style={styles.imageBoxWrapper}>
-          <View style={styles.imageWrapper}>
-            <View style={styles.imageContainer}>
-              {!image ? (
-                <Pressable style={styles.emptyBox} onPress={selectImage}>
-                  <Ionicons name="image-outline" size={42} color="#9BA5B2" />
+      <KeyboardAvoidingView
+        style={{flex: 1}}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={keyboardVerticalOffset}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled">
+          {/* 이미지 영역 */}
+          <View style={styles.imageBoxWrapper}>
+            <View style={styles.imageWrapper}>
+              <View style={styles.imageContainer}>
+                {!image ? (
+                  <Pressable style={styles.emptyBox} onPress={selectImage}>
+                    <Ionicons name="image-outline" size={42} color="#9BA5B2" />
+                  </Pressable>
+                ) : (
+                  <FastImage source={{uri: image}} style={styles.image} />
+                )}
+              </View>
+
+              {image && (
+                <Pressable style={styles.deleteIcon} onPress={deleteImage}>
+                  <MaterialCommunityIcons name="close" size={18} color="#fff" />
                 </Pressable>
-              ) : (
-                <FastImage source={{uri: image}} style={styles.image} />
               )}
             </View>
-
-            {image && (
-              <Pressable style={styles.deleteIcon} onPress={deleteImage}>
-                <Ionicons name="close-circle" size={25} color="red" />
-              </Pressable>
-            )}
           </View>
-        </View>
 
-        {/* 주종 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>주종</Text>
-          <View style={styles.alcoholGrid}>
-            {alcoholTypes.map(item => {
-              const isSelected = alcoholTypeValue === item.value;
+          {/* 주종 */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>주종</Text>
+            <View style={styles.alcoholGrid}>
+              {alcoholTypes.map(item => {
+                const isSelected = alcoholTypeValue === item.value;
 
-              return (
-                <Pressable
-                  key={item.value}
-                  style={[
-                    styles.alcoholItem,
-                    {width: itemWidth},
-                    isSelected
-                      ? styles.alcoholSelected
-                      : styles.alcoholUnselected,
-                  ]}
-                  onPress={() => setAlcoholTypeValue(item.value)}>
-                  <Text
+                return (
+                  <Pressable
+                    key={item.value}
                     style={[
-                      styles.alcoholLabel,
+                      styles.alcoholItem,
+                      {width: itemWidth},
                       isSelected
-                        ? styles.alcoholLabelSelected
-                        : styles.alcoholLabelUnselected,
-                    ]}>
-                    {item.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
+                        ? styles.alcoholSelected
+                        : styles.alcoholUnselected,
+                    ]}
+                    onPress={() => setAlcoholTypeValue(item.value)}>
+                    <Text
+                      style={[
+                        styles.alcoholLabel,
+                        isSelected
+                          ? styles.alcoholLabelSelected
+                          : styles.alcoholLabelUnselected,
+                      ]}>
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
-        </View>
 
-        {/* 이름 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>주류 이름</Text>
-          <TextInput
-            style={styles.input}
-            value={nameValue}
-            onChangeText={setNameValue}
-            maxLength={50}
-            placeholder="주류 이름을 입력하세요"
-          />
-          <Text style={styles.countText}>{nameValue.length}/50</Text>
-        </View>
+          {/* 이름 */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>주류 이름</Text>
+            <TextInput
+              style={[
+                styles.input,
+                nameHasForbidden && styles.fobiddenerror,
+                isNameFocused && !nameHasForbidden && styles.isFocused,
+              ]}
+              value={nameValue}
+              onChangeText={handleNameChange}
+              maxLength={50}
+              placeholder="주류 이름을 입력하세요"
+              placeholderTextColor={ColorUtil.placeholderText}
+              onFocus={() => setIsNameFocused(true)}
+              onBlur={() => setIsNameFocused(false)}
+            />
+            {nameHasForbidden && (
+              <Text style={styles.forbiddenText}>
+                비속어 및 이용 약관에 위배되는 내용이 포함되어 있습니다.
+              </Text>
+            )}
+            <Text style={styles.countText}>{nameValue.length}/50</Text>
+          </View>
 
-        {/* 가격 */}
-        <View style={styles.section}>
-          <View style={styles.rowBetween}>
-            <Text style={styles.sectionTitle}>주류 가격</Text>
-            <Pressable
-              style={styles.radioItem}
-              onPress={() => setIsVariablePrice(prev => !prev)}>
+          {/* 가격 */}
+          <View style={styles.section}>
+            <View style={styles.rowBetween}>
+              <Text style={styles.sectionTitle}>주류 가격</Text>
+              <Pressable
+                style={styles.radioItem}
+                onPress={() => setIsVariablePrice(prev => !prev)}>
+                <View
+                  style={[
+                    styles.radioCircle,
+                    isVariablePrice && styles.radioSelectedCircle,
+                  ]}>
+                  {isVariablePrice && <View style={styles.radioInnerDot} />}
+                </View>
+                <Text
+                  style={[
+                    styles.radioLabel,
+                    isVariablePrice && styles.radioLabelSelected,
+                  ]}>
+                  변동
+                </Text>
+              </Pressable>
+            </View>
+
+            {!isVariablePrice && (
               <View
                 style={[
-                  styles.radioCircle,
-                  isVariablePrice && styles.radioSelectedCircle,
+                  styles.priceInputBox,
+                  isPriceFocused && styles.isFocused,
                 ]}>
-                {isVariablePrice && <View style={styles.radioInnerDot} />}
+                <TextInput
+                  style={styles.priceInput}
+                  keyboardType="numeric"
+                  placeholder="주류 가격을 입력하세요."
+                  value={priceValue}
+                  onChangeText={handlePriceChange}
+                  placeholderTextColor={ColorUtil.placeholderText}
+                  onFocus={() => setIsPirceFocused(true)}
+                  onBlur={() => setIsPirceFocused(false)}
+                />
+                <Text style={styles.won}>원</Text>
               </View>
-              <Text
-                style={[
-                  styles.radioLabel,
-                  isVariablePrice && styles.radioLabelSelected,
-                ]}>
-                변동
-              </Text>
-            </Pressable>
+            )}
           </View>
 
-          {!isVariablePrice && (
-            <View style={styles.priceInputBox}>
-              <TextInput
-                style={styles.priceInput}
-                keyboardType="numeric"
-                placeholder="주류 가격을 입력하세요."
-                value={priceValue}
-                onChangeText={handlePriceChange}
-              />
-              <Text style={styles.won}>원</Text>
-            </View>
+          {/* 소개 */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>주류 소개 (선택)</Text>
+            <TextInput
+              style={[
+                styles.textarea,
+                descHasForbidden && styles.fobiddenerror,
+                isDesFocused && !descHasForbidden && styles.isFocused,
+              ]}
+              value={descValue}
+              onChangeText={handleDescChange}
+              maxLength={100}
+              multiline
+              placeholder="가격, 특이사항 등 추가 설명을 적어주세요."
+              placeholderTextColor={ColorUtil.placeholderText}
+              onFocus={() => setIsDesFocused(true)}
+              onBlur={() => setIsDesFocused(false)}
+            />
+            {descHasForbidden && (
+              <Text style={styles.forbiddenText}>
+                비속어 및 이용 약관에 위배되는 내용이 포함되어 있습니다.
+              </Text>
+            )}
+            <Text style={styles.countText}>{descValue.length}/100</Text>
+          </View>
+
+          {/* 삭제 버튼 */}
+          {alcoholId && (
+            <Pressable
+              style={styles.deleteMenuBtn}
+              onPress={() =>
+                showAlert({
+                  title: '주류 삭제',
+                  message: '정말 삭제하시겠습니까?',
+                  type: 'delete',
+                  onConfirm: async () => {
+                    try {
+                      await StoreDrinkdelete(alcoholId);
+                      showToast('주류가 삭제되었습니다.');
+                      navigation.goBack();
+                    } catch (e) {
+                      console.log(e);
+                      showToast('삭제 중 문제가 발생했습니다.');
+                    }
+                  },
+                })
+              }>
+              <Text style={styles.deleteMenuText}>삭제하기</Text>
+            </Pressable>
           )}
-        </View>
-
-        {/* 소개 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>주류 소개 (선택)</Text>
-          <TextInput
-            style={styles.textarea}
-            value={descValue}
-            onChangeText={setDescValue}
-            maxLength={100}
-            multiline
-            placeholder="가격, 특이사항 등 추가 설명을 적어주세요."
-          />
-          <Text style={styles.countText}>{descValue.length}/100</Text>
-        </View>
-
-        {/* 삭제 버튼 */}
-        {alcoholId && (
-          <Pressable
-            style={styles.deleteMenuBtn}
-            onPress={() =>
-              showAlert({
-                title: '주류 삭제',
-                message: '정말 삭제하시겠습니까?',
-                type: 'delete',
-                onConfirm: async () => {
-                  try {
-                    await StoreDrinkdelete(alcoholId);
-                    showToast('주류가 삭제되었습니다.');
-                    navigation.goBack();
-                  } catch (e) {
-                    console.log(e);
-                    showToast('삭제 중 문제가 발생했습니다.');
-                  }
-                },
-              })
-            }>
-            <Text style={styles.deleteMenuText}>삭제하기</Text>
-          </Pressable>
-        )}
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       <AlertComponent />
 
@@ -499,8 +582,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
 
-  imageBoxWrapper: {alignItems: 'center', marginTop: 10, marginBottom: 20},
-  imageWrapper: {width: '50%', aspectRatio: 1, position: 'relative'},
+  imageBoxWrapper: {alignItems: 'center', marginBottom: 20},
+  imageWrapper: {width: '45%', aspectRatio: 1, position: 'relative'},
   imageContainer: {
     width: '100%',
     height: '100%',
@@ -510,7 +593,19 @@ const styles = StyleSheet.create({
   },
   emptyBox: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   image: {width: '100%', height: '100%'},
-  deleteIcon: {position: 'absolute', top: -12, right: -12},
+  deleteIcon: {
+    position: 'absolute',
+    top: -7,
+    right: -7,
+    width: 20,
+    height: 20,
+    borderRadius: 100,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
+    elevation: 4,
+  },
 
   alcoholGrid: {
     flexDirection: 'row',
@@ -540,6 +635,12 @@ const styles = StyleSheet.create({
     borderColor: '#E3E7ED',
     fontSize: 15,
   },
+  fobiddenerror: {
+    borderColor: 'red',
+  },
+  isFocused: {
+    borderColor: '#3CBBFF',
+  },
   textarea: {
     height: 120,
     backgroundColor: '#fff',
@@ -552,6 +653,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   countText: {fontSize: 13, color: '#9AA3B2', marginTop: 4, textAlign: 'right'},
+  forbiddenText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#FF4D4F',
+    fontFamily: 'Pretendard-Medium',
+  },
 
   rowBetween: {flexDirection: 'row', alignItems: 'center'},
   radioItem: {flexDirection: 'row', alignItems: 'center', marginBottom: 11},

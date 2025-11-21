@@ -15,6 +15,8 @@ import {
   Pressable,
   ToastAndroid,
   BackHandler,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 
 import {
@@ -45,6 +47,9 @@ import {
 import {useFocusEffect} from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import ColorUtil from '../../../utils/ColorUtil';
+import forbiddenWords from '../../../hooks/forbiddenWords';
 
 const MenuEditScreen = ({route, navigation}) => {
   const {
@@ -61,14 +66,38 @@ const MenuEditScreen = ({route, navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
 
+  const [isNameFocused, setIsNameFocused] = useState(false);
+  const [isPriceFocused, setIsPirceFocused] = useState(false);
+  const [isDesFocused, setIsDesFocused] = useState(false);
+
   // 🟦 원본 이미지 저장
   const originalImage = useRef(menuImgUrl ?? null);
 
   const [menuTypeValue, setMenuTypeValue] = useState(menuType || 'MAIN');
+  const containsForbiddenWord = useCallback(
+    text => {
+      if (typeof text !== 'string') {
+        return false;
+      }
+      const normalized = text.toLowerCase();
+      return forbiddenWords.some(word =>
+        normalized.includes(String(word).toLowerCase()),
+      );
+    },
+    [forbiddenWords],
+  );
   const [nameValue, setNameValue] = useState(menuName || '');
   const [descValue, setDescValue] = useState(menudescription || '');
+  const [nameHasForbidden, setNameHasForbidden] = useState(
+    containsForbiddenWord(menuName || ''),
+  );
+  const [descHasForbidden, setDescHasForbidden] = useState(
+    containsForbiddenWord(menudescription || ''),
+  );
   const [isVariablePrice, setIsVariablePrice] = useState(menuPrice === '변동');
-  const [priceValue, setPriceValue] = useState(menuPrice || '');
+  const [priceValue, setPriceValue] = useState(
+    menuPrice === '변동' ? '' : menuPrice || '',
+  );
 
   const [image, setImage] = useState(originalImage.current);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -76,33 +105,6 @@ const MenuEditScreen = ({route, navigation}) => {
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
   const lastBackPressed = useRef(0);
-
-  // 뒤로가기 두 번 누르기
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-        const now = Date.now();
-
-        if (now - lastBackPressed.current < 2000) {
-          navigation.goBack();
-          return true;
-        }
-
-        lastBackPressed.current = now;
-        ToastAndroid.show(
-          '한 번 더 누르면 작성한 내용이 사라집니다.',
-          ToastAndroid.SHORT,
-        );
-        return true;
-      };
-
-      const handler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        onBackPress,
-      );
-      return () => handler.remove();
-    }, [navigation]),
-  );
 
   // 이미지 선택
   const selectImage = () => {
@@ -210,7 +212,9 @@ const MenuEditScreen = ({route, navigation}) => {
     );
   }, [nameValue, menuTypeValue, priceValue, isVariablePrice, isEditingMode]);
 
-  const isButtonEnabled = isEditingMode ? isChanged : isRequiredFilled;
+  const hasForbiddenWords = nameHasForbidden || descHasForbidden;
+  const isButtonEnabled =
+    !hasForbiddenWords && (isEditingMode ? isChanged : isRequiredFilled);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -227,6 +231,34 @@ const MenuEditScreen = ({route, navigation}) => {
       ),
     });
   }, [navigation, isButtonEnabled]);
+
+  // 뒤로가기 두 번 누르기
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        const now = Date.now();
+        if (!isChanged) return;
+
+        if (now - lastBackPressed.current < 2000) {
+          navigation.goBack();
+          return true;
+        }
+
+        lastBackPressed.current = now;
+        ToastAndroid.show(
+          '한 번 더 누르면 작성한 내용이 사라집니다.',
+          ToastAndroid.SHORT,
+        );
+        return true;
+      };
+
+      const handler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+      return () => handler.remove();
+    }, [navigation, isChanged]),
+  );
 
   // 저장 처리
   const MenuAdd = async () => {
@@ -290,178 +322,228 @@ const MenuEditScreen = ({route, navigation}) => {
     setPriceValue(value);
   };
 
+  const handleNameChange = text => {
+    setNameValue(text);
+    setNameHasForbidden(containsForbiddenWord(text));
+  };
+
+  const handleDescChange = text => {
+    setDescValue(text);
+    setDescHasForbidden(containsForbiddenWord(text));
+  };
+
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 20 : 0;
+
   return (
     <SafeAreaView style={[styles.safe, {paddingBottom: bottom}]}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* 이미지 */}
-        <View style={styles.imageBoxWrapper}>
-          <View style={styles.imageWrapper}>
-            <View style={styles.imageContainer}>
-              {!image ? (
-                <Pressable style={styles.emptyBox} onPress={selectImage}>
-                  <Ionicons name="image-outline" size={42} color="#9BA5B2" />
-                </Pressable>
-              ) : (
-                <FastImage source={{uri: image}} style={styles.image} />
-              )}
-            </View>
-
-            {image && (
-              <Pressable style={styles.deleteIcon} onPress={deleteImage}>
-                <Ionicons name="close-circle" size={25} color="red" />
-              </Pressable>
-            )}
-          </View>
-        </View>
-
-        {/* 메뉴 타입 선택 */}
-        <View style={styles.sectionBlock}>
-          <View style={styles.radioGroup}>
-            {[
-              {label: '대표', value: 'MAIN'},
-              {label: '일반', value: 'NORMAL'},
-              {label: '사이드', value: 'SIDE'},
-            ].map(item => {
-              const selected = menuTypeValue === item.value;
-
-              return (
-                <Pressable
-                  key={item.value}
-                  style={styles.radioItem}
-                  onPress={() => setMenuTypeValue(item.value)}>
-                  <View
-                    style={[
-                      styles.radioCircle,
-                      selected && styles.radioSelectedCircle,
-                    ]}>
-                    {selected && <View style={styles.radioInnerDot} />}
-                  </View>
-
-                  <Text
-                    style={[
-                      styles.radioLabel,
-                      selected && styles.radioLabelSelected,
-                    ]}>
-                    {item.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {menuTypeValue === 'MAIN' && !image && (
-            <View style={styles.typeInfoRow}>
-              <Ionicons
-                name="information-circle-outline"
-                size={15}
-                color="#A5AAB3"
-                style={{marginRight: 4}}
-              />
-              <Text style={styles.typeInfoText}>
-                대표 메뉴는 사진이 없으면 카테고리 탭에 표시되지 않아요.
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* 메뉴 이름 */}
-        <View style={styles.sectionBlock}>
-          <Text style={styles.sectionTitle}>메뉴 이름</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="메뉴 이름을 입력하세요"
-            value={nameValue}
-            onChangeText={setNameValue}
-            maxLength={50}
-          />
-          <View style={styles.textCountRow}>
-            <Text style={styles.countText}>{nameValue.length}/50</Text>
-          </View>
-        </View>
-
-        {/* 가격 */}
-        <View style={styles.sectionBlock}>
-          <View style={styles.priceHeaderRow}>
-            <Text style={[styles.sectionTitle, styles.priceTitle]}>
-              메뉴 가격
-            </Text>
-
-            <Pressable
-              style={styles.radioItem}
-              onPress={() => setIsVariablePrice(prev => !prev)}>
-              <View
-                style={[
-                  styles.radioCircle,
-                  isVariablePrice && styles.radioSelectedCircle,
-                ]}>
-                {isVariablePrice && <View style={styles.radioInnerDot} />}
+      <KeyboardAvoidingView
+        style={{flex: 1}}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={keyboardVerticalOffset}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled">
+          {/* 이미지 */}
+          <View style={styles.imageBoxWrapper}>
+            <View style={styles.imageWrapper}>
+              <View style={styles.imageContainer}>
+                {!image ? (
+                  <Pressable style={styles.emptyBox} onPress={selectImage}>
+                    <Ionicons name="image-outline" size={42} color="#9BA5B2" />
+                  </Pressable>
+                ) : (
+                  <FastImage source={{uri: image}} style={styles.image} />
+                )}
               </View>
 
-              <Text
-                style={[
-                  styles.radioLabel,
-                  isVariablePrice && styles.radioLabelSelected,
-                ]}>
-                변동
-              </Text>
-            </Pressable>
-          </View>
-
-          {!isVariablePrice && (
-            <View style={styles.priceInputBox}>
-              <TextInput
-                style={styles.priceInput}
-                placeholder="메뉴 가격을 입력하세요."
-                keyboardType="numeric"
-                value={priceValue}
-                onChangeText={handlePriceChange}
-              />
-              <Text style={styles.won}>원</Text>
+              {image && (
+                <Pressable style={styles.deleteIcon} onPress={deleteImage}>
+                  <MaterialCommunityIcons name="close" size={18} color="#fff" />
+                </Pressable>
+              )}
             </View>
-          )}
-        </View>
-
-        {/* 설명 */}
-        <View style={styles.sectionBlock}>
-          <Text style={styles.sectionTitle}>메뉴 소개 (선택)</Text>
-          <TextInput
-            style={[styles.input, styles.textarea]}
-            placeholder="가격, 메뉴 특이사항 등 추가 설명을 적어주세요."
-            multiline
-            value={descValue}
-            onChangeText={setDescValue}
-            maxLength={100}
-          />
-          <View style={styles.textCountRow}>
-            <Text style={styles.countText}>{descValue.length}/100</Text>
           </View>
-        </View>
-        {/* 삭제 버튼 */}
-        {menuId && (
-          <Pressable
-            style={styles.deleteMenuBtn}
-            onPress={() =>
-              showAlert({
-                title: '메뉴 삭제',
-                message: '정말 삭제하시겠습니까?',
-                type: 'delete',
-                onConfirm: async () => {
-                  try {
-                    await StoreMenudelete(menuId);
-                    showToast('메뉴가 삭제되었습니다.');
-                    navigation.goBack();
-                  } catch (e) {
-                    console.log(e);
-                    showToast('삭제 중 문제가 발생했습니다.');
-                  }
-                },
-              })
-            }>
-            <Text style={styles.deleteMenuText}>삭제하기</Text>
-          </Pressable>
-        )}
-      </ScrollView>
 
+          {/* 메뉴 타입 선택 */}
+          <View style={styles.sectionBlock}>
+            <View style={styles.radioGroup}>
+              {[
+                {label: '대표', value: 'MAIN'},
+                {label: '일반', value: 'NORMAL'},
+                {label: '사이드', value: 'SIDE'},
+              ].map(item => {
+                const selected = menuTypeValue === item.value;
+
+                return (
+                  <Pressable
+                    key={item.value}
+                    style={styles.radioItem}
+                    onPress={() => setMenuTypeValue(item.value)}>
+                    <View
+                      style={[
+                        styles.radioCircle,
+                        selected && styles.radioSelectedCircle,
+                      ]}>
+                      {selected && <View style={styles.radioInnerDot} />}
+                    </View>
+
+                    <Text
+                      style={[
+                        styles.radioLabel,
+                        selected && styles.radioLabelSelected,
+                      ]}>
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {menuTypeValue === 'MAIN' && !image && (
+              <View style={styles.typeInfoRow}>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={15}
+                  color="#A5AAB3"
+                  style={{marginRight: 4}}
+                />
+                <Text style={styles.typeInfoText}>
+                  대표 메뉴는 사진이 없으면 카테고리 탭에 표시되지 않아요.
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* 메뉴 이름 */}
+          <View style={styles.sectionBlock}>
+            <Text style={styles.sectionTitle}>메뉴 이름</Text>
+            <TextInput
+              style={[
+                styles.input,
+                nameHasForbidden && styles.fobiddenerror,
+                isNameFocused && !nameHasForbidden && styles.isFocused,
+              ]}
+              placeholder="메뉴 이름을 입력하세요"
+              placeholderTextColor={ColorUtil.placeholderText}
+              value={nameValue}
+              onChangeText={handleNameChange}
+              maxLength={50}
+              onFocus={() => setIsNameFocused(true)}
+              onBlur={() => setIsNameFocused(false)}
+            />
+            {nameHasForbidden && (
+              <Text style={styles.forbiddenText}>
+                비속어 및 이용 약관에 위배되는 내용이 포함되어 있습니다.
+              </Text>
+            )}
+            <View style={styles.textCountRow}>
+              <Text style={styles.countText}>{nameValue.length}/50</Text>
+            </View>
+          </View>
+
+          {/* 가격 */}
+          <View style={styles.sectionBlock}>
+            <View style={styles.priceHeaderRow}>
+              <Text style={[styles.sectionTitle, styles.priceTitle]}>
+                메뉴 가격
+              </Text>
+
+              <Pressable
+                style={styles.radioItem}
+                onPress={() => setIsVariablePrice(prev => !prev)}>
+                <View
+                  style={[
+                    styles.radioCircle,
+                    isVariablePrice && styles.radioSelectedCircle,
+                  ]}>
+                  {isVariablePrice && <View style={styles.radioInnerDot} />}
+                </View>
+
+                <Text
+                  style={[
+                    styles.radioLabel,
+                    isVariablePrice && styles.radioLabelSelected,
+                  ]}>
+                  변동
+                </Text>
+              </Pressable>
+            </View>
+
+            {!isVariablePrice && (
+              <View
+                style={[
+                  styles.priceInputBox,
+                  isPriceFocused && styles.isFocused,
+                ]}>
+                <TextInput
+                  style={styles.priceInput}
+                  placeholder="메뉴 가격을 입력하세요."
+                  placeholderTextColor={ColorUtil.placeholderText}
+                  keyboardType="numeric"
+                  value={priceValue}
+                  onChangeText={handlePriceChange}
+                  onFocus={() => setIsPirceFocused(true)}
+                  onBlur={() => setIsPirceFocused(false)}
+                />
+                <Text style={styles.won}>원</Text>
+              </View>
+            )}
+          </View>
+
+          {/* 설명 */}
+          <View style={styles.sectionBlock}>
+            <Text style={styles.sectionTitle}>메뉴 소개 (선택)</Text>
+            <TextInput
+              style={[
+                styles.input,
+                styles.textarea,
+                descHasForbidden && styles.fobiddenerror,
+                isDesFocused && !descHasForbidden && styles.isFocused,
+              ]}
+              placeholder="가격, 메뉴 특이사항 등 추가 설명을 적어주세요."
+              placeholderTextColor={ColorUtil.placeholderText}
+              multiline
+              value={descValue}
+              onChangeText={handleDescChange}
+              maxLength={100}
+              onFocus={() => setIsDesFocused(true)}
+              onBlur={() => setIsDesFocused(false)}
+            />
+            {descHasForbidden && (
+              <Text style={styles.forbiddenText}>
+                비속어 및 이용 약관에 위배되는 내용이 포함되어 있습니다.
+              </Text>
+            )}
+            <View style={styles.textCountRow}>
+              <Text style={styles.countText}>{descValue.length}/100</Text>
+            </View>
+          </View>
+          {/* 삭제 버튼 */}
+          {menuId && (
+            <Pressable
+              style={styles.deleteMenuBtn}
+              onPress={() =>
+                showAlert({
+                  title: '메뉴 삭제',
+                  message: '정말 삭제하시겠습니까?',
+                  type: 'delete',
+                  onConfirm: async () => {
+                    try {
+                      await StoreMenudelete(menuId);
+                      showToast('메뉴가 삭제되었습니다.');
+                      navigation.goBack();
+                    } catch (e) {
+                      console.log(e);
+                      showToast('삭제 중 문제가 발생했습니다.');
+                    }
+                  },
+                })
+              }>
+              <Text style={styles.deleteMenuText}>삭제하기</Text>
+            </Pressable>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
       <AlertComponent />
       <ImagePickermodal
         isBottomSheetVisible={isBottomSheetVisible}
@@ -486,7 +568,7 @@ const styles = StyleSheet.create({
   sectionBlock: {marginTop: 18},
 
   /* 이미지 */
-  imageBoxWrapper: {alignItems: 'center', marginTop: 4, marginBottom: 20},
+  imageBoxWrapper: {alignItems: 'center', marginBottom: 20},
   imageWrapper: {width: '45%', aspectRatio: 1, position: 'relative'},
   imageContainer: {
     width: '100%',
@@ -497,7 +579,19 @@ const styles = StyleSheet.create({
   },
   emptyBox: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   image: {width: '100%', height: '100%'},
-  deleteIcon: {position: 'absolute', top: -10, right: -10, zIndex: 20},
+  deleteIcon: {
+    position: 'absolute',
+    top: -7,
+    right: -7,
+    width: 20,
+    height: 20,
+    borderRadius: 100,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
+    elevation: 4,
+  },
 
   /* 타입 안내 */
   typeInfoRow: {flexDirection: 'row', alignItems: 'center', marginTop: 6},
@@ -521,11 +615,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E3E7ED',
   },
+  fobiddenerror: {
+    borderColor: 'red',
+  },
+  isFocused: {
+    borderColor: '#3CBBFF',
+  },
 
   textarea: {height: 120, textAlignVertical: 'top'},
 
   textCountRow: {alignItems: 'flex-end', marginTop: 4},
   countText: {fontSize: 13, color: '#9AA3B2'},
+  forbiddenText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#FF4D4F',
+    fontFamily: 'Pretendard-Medium',
+  },
 
   /* 라디오 */
   radioGroup: {flexDirection: 'row', alignItems: 'center'},
@@ -533,7 +639,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 20,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   radioCircle: {
     width: 16,

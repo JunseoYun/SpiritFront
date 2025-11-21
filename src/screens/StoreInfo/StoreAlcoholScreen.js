@@ -1,5 +1,12 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {StyleSheet, Text, View, Platform, Pressable} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Platform,
+  Pressable,
+  ScrollView,
+} from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import AlcoholItem from '../../components/StoreAlcoholScreen/AlcoholItem';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
@@ -77,6 +84,18 @@ const mergeAlcoholListWithServer = (currentList, serverList) => {
 const getDrinkIdsInApiOrder = list =>
   flattenGroupedAlcohols(groupAlcoholsByType(list)).map(drink => drink.id);
 
+const areOrdersEqual = (currentList = [], baseList = []) => {
+  if (!Array.isArray(currentList) || !Array.isArray(baseList)) {
+    return false;
+  }
+  if (currentList.length !== baseList.length) {
+    return false;
+  }
+  return currentList.every(
+    (item, index) => item?.id === baseList[index]?.id,
+  );
+};
+
 export const AlcoholTypeRadioGroup = ({
   types,
   selectedType,
@@ -89,32 +108,34 @@ export const AlcoholTypeRadioGroup = ({
   }
   const {style: wrapperStyle, ...restProps} = wrapperProps;
   return (
-    <View
-      style={[styles.radioGroup, containerStyle, wrapperStyle]}
-      {...restProps}>
-      {['전체', ...types].map(type => (
-        <Pressable
-          key={type}
-          style={styles.radioItem}
-          hitSlop={10}
-          onPress={() => onSelect?.(type)}>
-          <View
-            style={[
-              styles.radioCircle,
-              selectedType === type && styles.radioSelectedCircle,
-            ]}>
-            {selectedType === type && <View style={styles.radioInnerDot} />}
-          </View>
-          <Text
-            style={[
-              styles.radioLabel,
-              selectedType === type && styles.radioLabelSelected,
-            ]}>
-            {type}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <View
+        style={[styles.radioGroup, containerStyle, wrapperStyle]}
+        {...restProps}>
+        {['전체', ...types].map(type => (
+          <Pressable
+            key={type}
+            style={styles.radioItem}
+            hitSlop={10}
+            onPress={() => onSelect?.(type)}>
+            <View
+              style={[
+                styles.radioCircle,
+                selectedType === type && styles.radioSelectedCircle,
+              ]}>
+              {selectedType === type && <View style={styles.radioInnerDot} />}
+            </View>
+            <Text
+              style={[
+                styles.radioLabel,
+                selectedType === type && styles.radioLabelSelected,
+              ]}>
+              {type}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    </ScrollView>
   );
 };
 
@@ -141,6 +162,10 @@ const StoreAlcoholScreen = ({
   const [isSavingOrder, setIsSavingOrder] = useState(false);
   const isSortDirtyRef = useRef(false);
   const [uncontrolledType, setUncontrolledType] = useState('전체');
+  const normalizedAlcohols = useMemo(
+    () => normalizeAlcoholList(alcohols),
+    [alcohols],
+  );
   const {bottom: androidBottom} = useSafeAndroidInsets();
   const {bottom: safeBottom} = useSafeAreaInsets();
   const bottomInset =
@@ -158,18 +183,17 @@ const StoreAlcoholScreen = ({
   }, [isSortDirty]);
 
   useEffect(() => {
-    const normalized = normalizeAlcoholList(alcohols);
     setAlcoholList(prevList => {
       if (
         isSortDirtyRef.current &&
         Array.isArray(prevList) &&
         prevList.length
       ) {
-        return mergeAlcoholListWithServer(prevList, normalized);
+        return mergeAlcoholListWithServer(prevList, normalizedAlcohols);
       }
-      return normalized;
+      return normalizedAlcohols;
     });
-  }, [alcohols]);
+  }, [normalizedAlcohols]);
 
   const groupedSections = useMemo(() => {
     const grouped = groupAlcoholsByType(alcoholList);
@@ -252,7 +276,7 @@ const StoreAlcoholScreen = ({
 
     const updatedList = flattenGroupedAlcohols(grouped);
     setAlcoholList(updatedList);
-    setIsSortDirty(true);
+    setIsSortDirty(!areOrdersEqual(updatedList, normalizedAlcohols));
   };
 
   const handleSaveOrder = useCallback(async () => {
@@ -312,12 +336,13 @@ const StoreAlcoholScreen = ({
 
       e.preventDefault();
       showAlert({
-        title: '주류 순서가 저장되지 않았어요.',
-        message: '변경된 순서를 저장하지 않고 나가면 적용되지 않아요.',
-        type: 'unsavedLeave',
-        confirmText: '나가기',
-        cancelText: '취소',
-        onConfirm: () => navigation.dispatch(e.data.action),
+        title: '주류 순서가 저장되지 않았습니다.',
+        message: '뒤로 가시겠습니까?',
+        onConfirm: () => {
+          navigation.dispatch(e.data.action);
+        },
+        onCancel: null,
+        type: 'confirm',
       });
     });
 
@@ -361,7 +386,7 @@ const StoreAlcoholScreen = ({
           )}
         </View>
       )}
-      {availableTypes.length > 0 && !hideTypeFilter && (
+      {availableTypes.length > 0 && !hideTypeFilter && isUpdatable && (
         <AlcoholTypeRadioGroup
           types={availableTypes}
           selectedType={currentType}
@@ -499,7 +524,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 12,
-    marginBottom: 6,
   },
   radioCircle: {
     width: 15,

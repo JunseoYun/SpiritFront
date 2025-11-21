@@ -85,30 +85,28 @@ const StoreManageScreen = ({route, navigation}) => {
 
       if (activeTab === 'menu' && hasMenuSortChanges) {
         showAlert({
-          title: '메뉴 순서가 저장되지 않았어요.',
-          message: '변경된 순서를 저장하지 않고 나가면 적용되지 않아요.',
-          type: 'unsavedLeave',
-          confirmText: '나가기',
-          cancelText: '취소',
+          title: '메뉴 순서가 저장되지 않았습니다.',
+          message: '뒤로 가시겠습니까?',
           onConfirm: () => {
-            setHasMenuSortChanges(false);
+            setHasAlcoholSortChanges(false);
             setActiveTab(nextTab);
           },
+          onCancel: null,
+          type: 'confirm',
         });
         return false;
       }
 
       if (activeTab === 'alcohol' && hasAlcoholSortChanges) {
         showAlert({
-          title: '주류 순서가 저장되지 않았어요.',
-          message: '변경된 순서를 저장하지 않고 나가면 적용되지 않아요.',
-          type: 'unsavedLeave',
-          confirmText: '나가기',
-          cancelText: '취소',
+          title: '주류 순서가 저장되지 않았습니다.',
+          message: '뒤로 가시겠습니까?',
           onConfirm: () => {
             setHasAlcoholSortChanges(false);
             setActiveTab(nextTab);
           },
+          onCancel: null,
+          type: 'confirm',
         });
         return false;
       }
