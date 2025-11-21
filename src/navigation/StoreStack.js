@@ -250,6 +250,12 @@ export default function StoreStack() {
             fontSize: 18,
             color: '#333',
           },
+          headerShadowVisible: false,
+          headerStyle: {
+            borderBottomWidth: 0,
+            elevation: 0,
+            shadowOpacity: 0,
+          },
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -283,6 +289,12 @@ export default function StoreStack() {
             fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
+          },
+          headerShadowVisible: false,
+          headerStyle: {
+            borderBottomWidth: 0,
+            elevation: 0,
+            shadowOpacity: 0,
           },
           headerLeft: () => (
             <Pressable

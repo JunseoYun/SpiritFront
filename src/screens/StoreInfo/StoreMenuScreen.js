@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, View, Text, Pressable, Platform} from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import MenuItem from '../../components/StoreMenuScreen/MenuItem';
@@ -54,6 +54,18 @@ const mergeMenuListWithServer = (currentList, serverList) => {
 
 const getMenuIdsInApiOrder = list =>
   flattenGroupedMenus(groupMenusByType(list)).map(menu => menu.id);
+
+const areOrdersEqual = (currentList = [], baseList = []) => {
+  if (!Array.isArray(currentList) || !Array.isArray(baseList)) {
+    return false;
+  }
+  if (currentList.length !== baseList.length) {
+    return false;
+  }
+  return currentList.every(
+    (item, index) => item?.id === baseList[index]?.id,
+  );
+};
 
 export const MENU_CATEGORY_OPTIONS = ['전체', '대표', '일반', '사이드'];
 
@@ -115,6 +127,7 @@ const StoreMenuScreen = ({
   const [isSavingOrder, setIsSavingOrder] = useState(false);
   const isSortDirtyRef = useRef(isSortDirty);
   const [uncontrolledCategory, setUncontrolledCategory] = useState('전체');
+  const normalizedMenus = useMemo(() => normalizeMenuList(menus), [menus]);
   const toastContext = useToast();
   const {showAlert, AlertComponent} = useCustomAlert();
   const showToast = toastContext?.showToast;
@@ -155,7 +168,6 @@ const StoreMenuScreen = ({
   }, [isSortDirty]);
 
   useEffect(() => {
-    const normalizedMenus = normalizeMenuList(menus);
     setMenuList(prevList => {
       if (
         isSortDirtyRef.current &&
@@ -166,7 +178,7 @@ const StoreMenuScreen = ({
       }
       return normalizedMenus;
     });
-  }, [menus]);
+  }, [normalizedMenus]);
 
   useEffect(() => {
     if (typeof onSortDirtyChange === 'function') {
@@ -235,7 +247,7 @@ const StoreMenuScreen = ({
 
     const updatedList = flattenGroupedMenus(grouped);
     setMenuList(updatedList);
-    setIsSortDirty(true);
+    setIsSortDirty(!areOrdersEqual(updatedList, normalizedMenus));
   };
 
   const handleSaveOrder = useCallback(async () => {
@@ -266,16 +278,14 @@ const StoreMenuScreen = ({
       }
 
       e.preventDefault();
-
       showAlert({
-        title: '메뉴 순서가 저장되지 않았어요.',
-        message: '변경된 순서를 저장하지 않고 나가면 적용되지 않아요.',
-        type: 'unsavedLeave',
-        confirmText: '나가기',
-        cancelText: '취소',
+        title: '메뉴 순서가 저장되지 않았습니다.',
+        message: '뒤로 가시겠습니까?',
         onConfirm: () => {
           navigation.dispatch(e.data.action);
         },
+        onCancel: null,
+        type: 'confirm',
       });
     });
 
@@ -385,7 +395,7 @@ const StoreMenuScreen = ({
           )}
         </View>
       )}
-      {!hideCategoryFilter && (
+      {!hideCategoryFilter && isUpdatable && (
         <MenuCategoryRadioGroup
           selectedCategory={currentCategory}
           onSelect={handleCategorySelect}
