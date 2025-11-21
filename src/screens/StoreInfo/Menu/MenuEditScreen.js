@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useCallback,
   useRef,
+  useEffect,
 } from 'react';
 import {
   View,
@@ -50,6 +51,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ColorUtil from '../../../utils/ColorUtil';
 import forbiddenWords from '../../../hooks/forbiddenWords';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const MenuEditScreen = ({route, navigation}) => {
   const {
@@ -101,6 +103,7 @@ const MenuEditScreen = ({route, navigation}) => {
 
   const [image, setImage] = useState(originalImage.current);
   const [selectedImage, setSelectedImage] = useState(null);
+  const imageCount = Array.isArray(image) ? image.length : image ? 1 : 0;
 
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
@@ -108,6 +111,10 @@ const MenuEditScreen = ({route, navigation}) => {
 
   // 이미지 선택
   const selectImage = () => {
+    if (imageCount >= 1) {
+      showToast('메뉴 사진은 최대 1장입니다.', 'center');
+      return;
+    }
     setBottomSheetVisible(true);
   };
 
@@ -210,11 +217,53 @@ const MenuEditScreen = ({route, navigation}) => {
       menuTypeValue &&
       (isVariablePrice || priceValue.trim().length > 0)
     );
-  }, [nameValue, menuTypeValue, priceValue, isVariablePrice, isEditingMode]);
+  }, [isEditingMode, isVariablePrice, menuTypeValue, nameValue, priceValue]);
+
+  const hasCreateInput = useMemo(() => {
+    if (isEditingMode) return false;
+    return (
+      nameValue.trim().length > 0 ||
+      descValue.trim().length > 0 ||
+      (!isVariablePrice && priceValue.trim().length > 0) ||
+      isVariablePrice ||
+      !!image ||
+      menuTypeValue !== 'MAIN'
+    );
+  }, [
+    descValue,
+    image,
+    isEditingMode,
+    isVariablePrice,
+    menuTypeValue,
+    nameValue,
+    priceValue,
+  ]);
 
   const hasForbiddenWords = nameHasForbidden || descHasForbidden;
   const isButtonEnabled =
     !hasForbiddenWords && (isEditingMode ? isChanged : isRequiredFilled);
+  const hasUnsavedChanges = isEditingMode ? isChanged : hasCreateInput;
+
+  const handleBackPress = useCallback(() => {
+    console.log(hasUnsavedChanges, 'innerhasUnsavedChanges');
+    if (!hasUnsavedChanges) {
+      navigation.goBack();
+      return;
+    }
+    showAlert({
+      title: '작성한 내용이 저장되지 않았습니다.',
+      message: '뒤로 가시겠습니까?',
+      onConfirm: () => {
+        navigation.goBack();
+      },
+      onCancel: null,
+      type: 'confirm',
+    });
+  }, [hasUnsavedChanges, navigation, showAlert]);
+
+  useEffect(() => {
+    navigation.setParams({hasChanges: isChanged});
+  }, [navigation, isChanged, hasCreateInput]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -229,15 +278,25 @@ const MenuEditScreen = ({route, navigation}) => {
           </Text>
         </Pressable>
       ),
+      headerLeft: () => (
+        <Pressable onPress={handleBackPress} hitSlop={10}>
+          <Ionicons
+            name="arrow-back-outline"
+            size={23}
+            color="#333"
+            style={{paddingLeft: 12}}
+          />
+        </Pressable>
+      ),
     });
-  }, [navigation, isButtonEnabled]);
+  }, [navigation, isButtonEnabled, handleBackPress]);
 
   // 뒤로가기 두 번 누르기
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
         const now = Date.now();
-        if (!isChanged) return;
+        if (!hasUnsavedChanges) return;
 
         if (now - lastBackPressed.current < 2000) {
           navigation.goBack();
@@ -257,7 +316,7 @@ const MenuEditScreen = ({route, navigation}) => {
         onBackPress,
       );
       return () => handler.remove();
-    }, [navigation, isChanged]),
+    }, [navigation, hasUnsavedChanges]),
   );
 
   // 저장 처리
@@ -332,36 +391,34 @@ const MenuEditScreen = ({route, navigation}) => {
     setDescHasForbidden(containsForbiddenWord(text));
   };
 
-  const keyboardVerticalOffset = Platform.OS === 'ios' ? 20 : 0;
+  console.log(hasUnsavedChanges, 'outhasUnsavedChanges');
+
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 80;
 
   return (
     <SafeAreaView style={[styles.safe, {paddingBottom: bottom}]}>
       <KeyboardAvoidingView
         style={{flex: 1}}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={keyboardVerticalOffset}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled">
           {/* 이미지 */}
           <View style={styles.imageBoxWrapper}>
-            <View style={styles.imageWrapper}>
-              <View style={styles.imageContainer}>
-                {!image ? (
-                  <Pressable style={styles.emptyBox} onPress={selectImage}>
-                    <Ionicons name="image-outline" size={42} color="#9BA5B2" />
-                  </Pressable>
-                ) : (
-                  <FastImage source={{uri: image}} style={styles.image} />
-                )}
-              </View>
+            <Pressable style={styles.emptyBox} onPress={selectImage}>
+              <MaterialIcons name="photo-camera" size={32} color="#7B8089" />
+              <Text style={styles.countText}>{imageCount}/1</Text>
+            </Pressable>
 
-              {image && (
+            {image && (
+              <View style={styles.imagePreviewWrapper}>
+                <FastImage source={{uri: image}} style={styles.image} />
                 <Pressable style={styles.deleteIcon} onPress={deleteImage}>
                   <MaterialCommunityIcons name="close" size={18} color="#fff" />
                 </Pressable>
-              )}
-            </View>
+              </View>
+            )}
           </View>
 
           {/* 메뉴 타입 선택 */}
@@ -568,21 +625,43 @@ const styles = StyleSheet.create({
   sectionBlock: {marginTop: 18},
 
   /* 이미지 */
-  imageBoxWrapper: {alignItems: 'center', marginBottom: 20},
-  imageWrapper: {width: '45%', aspectRatio: 1, position: 'relative'},
-  imageContainer: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: '#F2F3F5',
+  imageBoxWrapper: {
+    alignItems: 'center',
+    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
   },
-  emptyBox: {flex: 1, justifyContent: 'center', alignItems: 'center'},
-  image: {width: '100%', height: '100%'},
+  emptyBox: {
+    width: 100, // 정사각형 비율 (약 80~90px)
+    aspectRatio: 1,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#CBCDD2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  countText: {
+    marginTop: 6,
+    fontSize: 15,
+    color: '#7B8089',
+    fontFamily: 'Pretendard-Medium',
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#F3F3F3',
+  },
+  imagePreviewWrapper: {
+    position: 'relative',
+    marginRight: 10,
+  },
   deleteIcon: {
     position: 'absolute',
-    top: -7,
-    right: -7,
+    top: -8,
+    right: -8,
     width: 20,
     height: 20,
     borderRadius: 100,
