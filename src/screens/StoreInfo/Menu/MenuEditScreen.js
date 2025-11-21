@@ -245,7 +245,6 @@ const MenuEditScreen = ({route, navigation}) => {
   const hasUnsavedChanges = isEditingMode ? isChanged : hasCreateInput;
 
   const handleBackPress = useCallback(() => {
-    console.log(hasUnsavedChanges, 'innerhasUnsavedChanges');
     if (!hasUnsavedChanges) {
       navigation.goBack();
       return;
@@ -390,8 +389,6 @@ const MenuEditScreen = ({route, navigation}) => {
     setDescValue(text);
     setDescHasForbidden(containsForbiddenWord(text));
   };
-
-  console.log(hasUnsavedChanges, 'outhasUnsavedChanges');
 
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 80;
 
@@ -577,27 +574,29 @@ const MenuEditScreen = ({route, navigation}) => {
           </View>
           {/* 삭제 버튼 */}
           {menuId && (
-            <Pressable
-              style={styles.deleteMenuBtn}
-              onPress={() =>
-                showAlert({
-                  title: '메뉴 삭제',
-                  message: '정말 삭제하시겠습니까?',
-                  type: 'delete',
-                  onConfirm: async () => {
-                    try {
-                      await StoreMenudelete(menuId);
-                      showToast('메뉴가 삭제되었습니다.');
-                      navigation.goBack();
-                    } catch (e) {
-                      console.log(e);
-                      showToast('삭제 중 문제가 발생했습니다.');
-                    }
-                  },
-                })
-              }>
-              <Text style={styles.deleteMenuText}>삭제하기</Text>
-            </Pressable>
+            <View style={styles.deleteMenuBtn}>
+              <Pressable
+                hitSlop={{top: 5, bottom: 5, left: 5, right: 5}}
+                onPress={() =>
+                  showAlert({
+                    title: '메뉴 삭제',
+                    message: '정말 삭제하시겠습니까?',
+                    type: 'delete',
+                    onConfirm: async () => {
+                      try {
+                        await StoreMenudelete(menuId);
+                        showToast('메뉴가 삭제되었습니다.');
+                        navigation.goBack();
+                      } catch (e) {
+                        console.log(e);
+                        showToast('삭제 중 문제가 발생했습니다.');
+                      }
+                    },
+                  })
+                }>
+                <Text style={styles.deleteMenuText}>삭제하기</Text>
+              </Pressable>
+            </View>
           )}
         </ScrollView>
       </KeyboardAvoidingView>
@@ -756,7 +755,11 @@ const styles = StyleSheet.create({
   priceInput: {flex: 1, fontSize: 15},
   won: {fontSize: 15, color: '#555', marginLeft: 4},
 
-  deleteMenuBtn: {marginTop: 20, marginBottom: 40, alignItems: 'flex-start'},
+  deleteMenuBtn: {
+    marginTop: 20,
+    marginBottom: 40,
+    alignItems: 'flex-start',
+  },
   deleteMenuText: {
     fontSize: 13,
     color: 'red',
