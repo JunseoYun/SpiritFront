@@ -978,7 +978,7 @@ const MapScreen = ({navigation, route}) => {
         <MapTopBar
           navigation={navigation}
           onMeasureHeight={handleTopBarHeight}
-          forceWhiteBackground={isListFullyExpanded}
+          forceWhiteBackground={isListModeActive && isListFullyExpanded}
         />
       </View>
 

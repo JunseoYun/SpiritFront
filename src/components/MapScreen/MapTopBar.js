@@ -55,6 +55,12 @@ const MapTopBar = ({
       style={[
         styles.container,
         {
+          backgroundColor: whiteBgAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['rgba(255,255,255,0)', '#fff'],
+          }),
+        },
+        {
           shadowOpacity: whiteBgAnim.interpolate({
             inputRange: [0, 1],
             outputRange: [0.15, 0],
@@ -63,9 +69,6 @@ const MapTopBar = ({
             inputRange: [0, 1],
             outputRange: [2, 0],
           }),
-          ...(Platform.OS === 'android'
-            ? {elevation: forceWhiteBackground ? 0 : 6}
-            : null),
         },
         {
           paddingTop: insets.top + 10,
@@ -141,6 +144,7 @@ const styles = StyleSheet.create({
     height: 48,
     alignItems: 'center',
     backgroundColor: 'white',
+    borderColor: ColorUtil.border,
     borderRadius: 9,
     paddingHorizontal: 12,
     elevation: 3,
