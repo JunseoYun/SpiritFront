@@ -26,7 +26,6 @@ import Animated, {
 import MapStoreItem from './MapStoreItem';
 import MapLocation from '../MapLocation';
 import MapStoreItemSkeleton from './MapStoreItemSkeleton';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import NoneStore from './NoneStore';
 import FilterPotal from './FilterPotal';
 import MapFilterHeader from './MapFilterHeader';
@@ -35,12 +34,15 @@ import {useMapSearch} from '../../../context/MapSearchContext';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useFocusEffect} from '@react-navigation/native';
 import MapDetailItemSkeleton from './MapDetailItemSkeleton';
+import {MenuIcon} from 'lucide-react-native';
+
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 const DEFAULT_DETAIL_HEADER_HEIGHT = 110;
 
 const MapStoreList = ({
   updateNewLocation,
   isFlatListVisible,
+  isListFullyExpanded,
   stores,
   selectedStoreIndex,
   setSelectedStoreIndex,
@@ -65,8 +67,9 @@ const MapStoreList = ({
   onLoadMoreStores,
   loadingMoreStores = false,
   onApplyFilters,
+  topReservedHeight = 0,
+  onListFullExpandChange,
 }) => {
-  // const bottomSheetRef = useRef(null);
   const insets = useSafeAreaInsets();
   const [filterheight, setFilterheight] = useState(0);
   const [detailContentHeight, setDetailContentHeight] = useState(null);
@@ -76,6 +79,11 @@ const MapStoreList = ({
   const [detailPointerEnabled, setDetailPointerEnabled] = useState(true);
   const listRevealProgress = useSharedValue(1);
   const initialIndex = stores.length === 0 ? 1 : 1;
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [translateY, setTranslateY] = useState(0);
+  const [showListButtons, setShowListButtons] = useState(false);
+  const [itemheight, setItemheight] = useState(120);
+  const [listfastview, setListfastview] = useState(false);
   const detailStore = detailStoreData || null;
   const isDetailMode = !!detailStoreId;
   const detailCollapsedHeight = useMemo(() => {
@@ -98,22 +106,14 @@ const MapStoreList = ({
     );
     return Math.min(safeMax, computed);
   }, [detailStoreId, detailContentHeight, insets.bottom, insets.top]);
-  const hideFloatingButtons =
-    isDetailMode && detailSnapPoint >= SCREEN_HEIGHT * 0.7;
-  const detailCenterOffset = useMemo(() => {
-    if (!isDetailMode) return null;
-    if (typeof detailSnapPoint !== 'number' || detailSnapPoint <= 0) {
-      return null;
-    }
-    // 살짝 덜 올려서 지도 위치가 너무 위로 치우치지 않도록 보정
-    return Math.max(0, detailSnapPoint / 2 - 32);
-  }, [isDetailMode, detailSnapPoint]);
-
   const snapPoints = useMemo(() => {
     const first = detailCollapsedHeight;
     const nonemid = SCREEN_HEIGHT * 0.3;
     const mid = SCREEN_HEIGHT * 0.55;
-    const max = SCREEN_HEIGHT * 0.7;
+    const reservedTop =
+      !detailStoreId && topReservedHeight > 0 ? topReservedHeight : 0;
+    const maxBase = Math.max(mid, SCREEN_HEIGHT - reservedTop);
+    const max = Math.min(SCREEN_HEIGHT, maxBase + 20);
     if (loading || storegetloading) return [first, first];
     if (stores.length === 0 && !loading && !storegetloading) {
       return [first, nonemid];
@@ -128,14 +128,66 @@ const MapStoreList = ({
     detailStoreId,
     detailSnapPoint,
     detailCollapsedHeight,
+    topReservedHeight,
   ]);
 
+  const highestSnapIndex = Math.max(0, snapPoints.length - 1);
+  const isCurrentlySnappedToFull =
+    !isDetailMode && highestSnapIndex > 0 && currentIndex === highestSnapIndex;
+  const [isFullListExpanded, setIsFullListExpanded] = useState(
+    isCurrentlySnappedToFull,
+  );
+  const lastFullExpandReportRef = useRef(isCurrentlySnappedToFull);
+  const lastSnapStateRef = useRef(isCurrentlySnappedToFull);
+
+  const reportFullExpandState = useCallback(
+    nextState => {
+      setIsFullListExpanded(prev => (prev === nextState ? prev : nextState));
+      if (lastFullExpandReportRef.current !== nextState) {
+        lastFullExpandReportRef.current = nextState;
+        onListFullExpandChange?.(nextState);
+      }
+    },
+    [onListFullExpandChange],
+  );
+
+  useEffect(() => {
+    if (lastSnapStateRef.current === isCurrentlySnappedToFull) {
+      return;
+    }
+    lastSnapStateRef.current = isCurrentlySnappedToFull;
+    reportFullExpandState(isCurrentlySnappedToFull);
+  }, [isCurrentlySnappedToFull, reportFullExpandState]);
+
+  const FULL_EXPANDED_TOLERANCE = 0.01;
+
+  const handleAnimatedFullExpand = useCallback(
+    animatedValue => {
+      if (typeof animatedValue !== 'number' || Number.isNaN(animatedValue)) {
+        return;
+      }
+      const shouldBeFull =
+        !isDetailMode &&
+        highestSnapIndex > 0 &&
+        animatedValue >= highestSnapIndex - FULL_EXPANDED_TOLERANCE;
+      reportFullExpandState(shouldBeFull);
+    },
+    [highestSnapIndex, isDetailMode, reportFullExpandState],
+  );
+
+  const hideFloatingButtons =
+    (isDetailMode && detailSnapPoint >= SCREEN_HEIGHT * 0.7) ||
+    isFullListExpanded;
+  const detailCenterOffset = useMemo(() => {
+    if (!isDetailMode) return null;
+    if (typeof detailSnapPoint !== 'number' || detailSnapPoint <= 0) {
+      return null;
+    }
+    // 살짝 덜 올려서 지도 위치가 너무 위로 치우치지 않도록 보정
+    return Math.max(0, detailSnapPoint / 2 - 32);
+  }, [isDetailMode, detailSnapPoint]);
+
   const animatedIndex = useSharedValue(0);
-  const [translateY, setTranslateY] = useState(0);
-  const [showListButtons, setShowListButtons] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [itemheight, setItemheight] = useState(120);
-  const [listfastview, setListfastview] = useState(false);
   const lastCenteredIndexRef = useRef(null);
   const currentSheetIndexRef = useRef(null);
   const mapMoveTimerRef = useRef(null);
@@ -218,6 +270,15 @@ const MapStoreList = ({
     [detailStoreId, handleDetailPointerState],
   );
 
+  useAnimatedReaction(
+    () => animatedIndex.value,
+    value => {
+      'worklet';
+      runOnJS(handleAnimatedFullExpand)(value ?? 0);
+    },
+    [handleAnimatedFullExpand],
+  );
+
   const handleSheetChange = useCallback(
     index => {
       if (isDetailMode && index === 2) {
@@ -247,7 +308,7 @@ const MapStoreList = ({
 
   const handleScrollBeginDrag = useCallback(e => {
     const offsetY = e.nativeEvent.contentOffset.y;
-    scrollStartAtTop.current = offsetY === 0;
+    scrollStartAtTop.current = offsetY <= 0;
     userScrollStartedRef.current = true;
     didForceAfterLoadRef.current = true;
     // true = 최상단에서 드래그 시작함
@@ -258,11 +319,19 @@ const MapStoreList = ({
       const offsetY = e.nativeEvent.contentOffset.y;
 
       // 시작도 0, 끝도 0 → 아래로 당겼다 놓은 상황
-      if (scrollStartAtTop.current && offsetY === 0 && currentIndex === 2) {
-        bottomSheetRef.current?.snapToIndex(1);
+      if (
+        scrollStartAtTop.current &&
+        offsetY <= 0 &&
+        currentIndex > 0 &&
+        !isDetailMode
+      ) {
+        const nextIndex = Math.max(currentIndex - 1, 0);
+        if (nextIndex !== currentIndex) {
+          bottomSheetRef.current?.snapToIndex(nextIndex);
+        }
       }
     },
-    [currentIndex],
+    [currentIndex, isDetailMode],
   );
   // 상세 모드 진입 시 45% 스냅 고정
   useEffect(() => {
@@ -687,6 +756,8 @@ const MapStoreList = ({
             keyExtractor={(item, index) => index.toString()}
             renderItem={() => <MapStoreItemSkeleton />}
             showsVerticalScrollIndicator={false}
+            bounces={!isFullListExpanded}
+            overScrollMode={isFullListExpanded ? 'never' : 'always'}
             onViewableItemsChanged={onViewableItemsChanged.current}
             viewabilityConfig={viewabilityConfig.current}
           />
@@ -699,19 +770,23 @@ const MapStoreList = ({
     } else if (currentIndex < 1 && !listfastview) {
       listContent = <View />;
     } else {
+      const disableTopOverscroll =
+        !isDetailMode && (isFullListExpanded || currentIndex === 1);
       listContent = (
         <FlatList
           ref={flatListRef}
           data={stores}
           keyExtractor={keyExtractor}
           showsVerticalScrollIndicator={false}
+          bounces={!disableTopOverscroll}
+          overScrollMode={disableTopOverscroll ? 'never' : 'always'}
           contentContainerStyle={{
             ...styles.listContentContainer,
             ...(currentIndex === 1 && {
               paddingBottom: SCREEN_HEIGHT * 0.25 + insets.bottom,
             }),
           }}
-          onScroll={handleScrollBeginDrag}
+          onScrollBeginDrag={handleScrollBeginDrag}
           onScrollEndDrag={handleScrollEndDrag}
           scrollEventThrottle={16}
           onViewableItemsChanged={onViewableItemsChanged.current}
@@ -766,7 +841,8 @@ const MapStoreList = ({
                 },
               ]}
               onPress={handleShowList}>
-              <Ionicons name="list" color="#000" size={17} />
+              <MenuIcon color="#333" size={17} />
+
               <Text style={styles.listButtonText}>목록보기</Text>
             </Pressable>
           )}
@@ -776,21 +852,16 @@ const MapStoreList = ({
             index={initialIndex}
             snapPoints={snapPoints}
             detached
-            style={styles.sheet}
+            style={[styles.sheet]}
             bottomInset={0}
-            handleIndicatorStyle={{backgroundColor: '#D1D5DB'}}
-            backgroundStyle={{
-              borderTopRightRadius: 16,
-              borderTopLeftRadius: 16,
-              borderBottomLeftRadius: 0,
-              borderBottomRightRadius: 0,
-            }}
+            handleIndicatorStyle={[styles.sheetHandleIndicator]}
+            backgroundStyle={[styles.sheetBackground]}
             enableContentPanningGesture={false}
             enableHandlePanningGesture={!filterModalVisible}
             enableOverDrag={false}
             animatedIndex={animatedIndex}
             onChange={handleSheetChange}>
-            <BottomSheetView style={{flex: 1}}>
+            <BottomSheetView style={styles.sheetContent}>
               {(() => {
                 const filters = mapSearchCtx?.selectedFilters || {};
                 const findExistingKey = (filtersObj, hint) => {
@@ -901,6 +972,24 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 10,
   },
+  sheetExpanded: {
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  sheetBackground: {
+    borderTopRightRadius: 16,
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+
+  sheetHandleIndicator: {
+    backgroundColor: '#D1D5DB',
+  },
+
+  sheetContent: {
+    flex: 1,
+  },
   listContentContainer: {paddingBottom: 18},
   floatingButtons: {
     position: 'absolute',
@@ -910,6 +999,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     zIndex: 1,
   },
+
   detailLoadingContainer: {
     flex: 1,
     alignItems: 'center',

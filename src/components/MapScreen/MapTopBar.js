@@ -1,31 +1,93 @@
-import React from 'react';
-import {StyleSheet, View, Text, Pressable, Platform} from 'react-native';
+import React, {useCallback, useEffect, useRef} from 'react';
+import {StyleSheet, Text, Pressable, Animated, Platform} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useMapSearch} from '../../context/MapSearchContext';
-import MapSearchBar from './MapSearchBar';
 import CancelText from '../CancelText/CancelText';
+import ColorUtil from '../../utils/ColorUtil';
 
 const MapTopBar = ({
   navigation,
   onBackPress,
   onSearchPress,
   onExplorePress,
-  refresh,
-  setcenterrefresh,
-  radius,
+  onMeasureHeight,
+  forceWhiteBackground = false,
 }) => {
   const insets = useSafeAreaInsets();
   const {searchText, setSearchText} = useMapSearch();
+  const lastHeightRef = useRef(null);
+  const whiteBgAnim = useRef(
+    new Animated.Value(forceWhiteBackground ? 1 : 0),
+  ).current;
+
+  useEffect(() => {
+    Animated.timing(whiteBgAnim, {
+      toValue: forceWhiteBackground ? 1 : 0,
+      duration: 220,
+      useNativeDriver: false,
+    }).start();
+  }, [forceWhiteBackground, whiteBgAnim]);
+
+  const handleLayout = useCallback(
+    e => {
+      if (!onMeasureHeight) {
+        return;
+      }
+      const nextHeight = e?.nativeEvent?.layout?.height;
+      if (typeof nextHeight !== 'number') {
+        return;
+      }
+      if (lastHeightRef.current !== null) {
+        const delta = Math.abs(lastHeightRef.current - nextHeight);
+        if (delta < 1) {
+          return;
+        }
+      }
+      lastHeightRef.current = nextHeight;
+      onMeasureHeight(nextHeight);
+    },
+    [onMeasureHeight],
+  );
+
   return (
-    <View
+    <Animated.View
       style={[
         styles.container,
         {
+          shadowOpacity: whiteBgAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0.15, 0],
+          }),
+          shadowRadius: whiteBgAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [2, 0],
+          }),
+          ...(Platform.OS === 'android'
+            ? {elevation: forceWhiteBackground ? 0 : 6}
+            : null),
+        },
+        {
           paddingTop: insets.top + 10,
         },
-      ]}>
-      <View style={[styles.searchContainer, {flex: 1}]}>
+      ]}
+      onLayout={handleLayout}>
+      <Animated.View
+        style={[
+          styles.searchContainer,
+          forceWhiteBackground ? styles.searchContainerSolid : null,
+          {flex: 1},
+          {
+            borderWidth: whiteBgAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, StyleSheet.hairlineWidth * 2],
+            }),
+            shadowOpacity: whiteBgAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0.2, 0],
+            }),
+          },
+        ]}>
         <Pressable
           onPress={() => {
             navigation.navigate('MainScreen');
@@ -62,18 +124,17 @@ const MapTopBar = ({
             />
           )}
         </Pressable>
-      </View>
-
-      {refresh && <MapSearchBar onPress={() => setcenterrefresh(radius)} />}
-    </View>
+      </Animated.View>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    flex: 1,
     width: '100%',
+    zIndex: 10,
+    backgroundColor: 'transparent',
+    shadowColor: '#000',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -88,6 +149,13 @@ const styles = StyleSheet.create({
     shadowRadius: 1.5,
     shadowOffset: {width: 0, height: 2},
     marginHorizontal: 18,
+  },
+  searchContainerSolid: {
+    borderWidth: 1,
+    borderColor: ColorUtil.border,
+    elevation: 0,
+    shadowColor: '#000',
+    shadowOpacity: 0,
   },
   backBtn: {
     marginRight: 6,

@@ -4,6 +4,8 @@ import {
   Animated, // Animated 추가
   Dimensions,
   BackHandler,
+  View,
+  Text,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
 import {useFocusEffect, useIsFocused} from '@react-navigation/native';
@@ -21,6 +23,7 @@ import generateMapScript from '../../components/MapScreen/generateMapScript';
 import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
 import Loading from '../../hooks/Loading';
 import MapTopBar from '../../components/MapScreen/MapTopBar';
+import MapSearchBar from '../../components/MapScreen/MapSearchBar';
 import {useMapSearch} from '../../context/MapSearchContext';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
@@ -28,6 +31,7 @@ import {
   normalizeStoreResponse,
 } from '../../utils/buildConditionSearchDto';
 
+import MapFloatingButton from '../../components/MapScreen/MapFloatingButton';
 const resolveLocationDto = store => {
   if (!store) {
     return null;
@@ -130,6 +134,8 @@ const MapScreen = ({navigation, route}) => {
   const [hasMoreStores, setHasMoreStores] = useState(true);
   const [loadingMoreStores, setLoadingMoreStores] = useState(false);
   const skipInitialOffsetRef = useRef(true);
+  const [topBarHeight, setTopBarHeight] = useState(0);
+  const [isListFullyExpanded, setIsListFullyExpanded] = useState(false);
   const lastQueryRef = useRef({lat: null, lng: null});
   const detailFetchSeqRef = useRef(0);
   const isFocused = useIsFocused();
@@ -533,13 +539,7 @@ const MapScreen = ({navigation, route}) => {
     }
   };
 
-  const moveCenterMap = (
-    lat,
-    lng,
-    sheetIndex,
-    force = false,
-    customOffset,
-  ) => {
+  const moveCenterMap = (lat, lng, sheetIndex, force = false, customOffset) => {
     const offsetY =
       typeof customOffset === 'number'
         ? customOffset
@@ -730,6 +730,18 @@ const MapScreen = ({navigation, route}) => {
     fetchDetailStore(detailStoreId);
   }, [detailStoreId, fetchDetailStore]);
 
+  const handleMapButtonPress = useCallback(() => {
+    if (!bottomSheetRef.current || sheetIndex <= 0) {
+      return;
+    }
+    const nextIndex = Math.max(sheetIndex - 1, 0);
+    if (nextIndex === sheetIndex) {
+      return;
+    }
+    bottomSheetRef.current.snapToIndex?.(nextIndex);
+    setSheetIndex(nextIndex);
+  }, [sheetIndex, setSheetIndex]);
+
   const handleWebViewMessage = throttle(message => {
     if (message.action === 'hideFlatList') {
     } else if (message.action === 'markerGroupClicked' && message.storeId) {
@@ -909,6 +921,18 @@ const MapScreen = ({navigation, route}) => {
     requeryStoresWithCurrentFilters();
   }, [requeryStoresWithCurrentFilters]);
 
+  const handleTopBarHeight = useCallback(height => {
+    if (typeof height !== 'number') {
+      return;
+    }
+    setTopBarHeight(prev => {
+      if (typeof prev === 'number' && Math.abs(prev - height) < 1) {
+        return prev;
+      }
+      return height;
+    });
+  }, []);
+
   useEffect(() => {
     if (!isFocused) {
       return;
@@ -924,6 +948,13 @@ const MapScreen = ({navigation, route}) => {
   useEffect(() => {
     // no-op; placeholder to avoid lint complaints for hooks order
   }, []);
+
+  const isListModeActive =
+    isFlatListVisible &&
+    !detailStoreId &&
+    !(Array.isArray(groupStoreIds) && groupStoreIds.length > 0);
+  const shouldShowMapButton =
+    isListModeActive && isListFullyExpanded && stores.length > 0;
 
   return (
     <>
@@ -943,12 +974,21 @@ const MapScreen = ({navigation, route}) => {
 
       {/* <MapRadius setRadiusint={setRadiusint} /> */}
 
-      <MapTopBar
-        navigation={navigation}
-        refresh={refresh}
-        setcenterrefresh={setcenterrefresh}
-        radius={radius}
-      />
+      <View style={styles.topOverlay} pointerEvents="box-none">
+        <MapTopBar
+          navigation={navigation}
+          onMeasureHeight={handleTopBarHeight}
+          forceWhiteBackground={isListFullyExpanded}
+        />
+      </View>
+
+      {refresh && (
+        <View
+          style={[styles.searchOverlay, {top: topBarHeight || 0}]}
+          pointerEvents="box-none">
+          <MapSearchBar onPress={() => setcenterrefresh(radius)} />
+        </View>
+      )}
 
       <MapStoreList
         updateNewLocation={() => updateNewLocation()}
@@ -984,7 +1024,16 @@ const MapScreen = ({navigation, route}) => {
         loadingMoreStores={loadingMoreStores}
         onLoadMoreStores={handleLoadMoreStores}
         onApplyFilters={requeryStoresWithCurrentFilters}
+        topReservedHeight={topBarHeight}
+        onListFullExpandChange={setIsListFullyExpanded}
       />
+
+      {shouldShowMapButton && (
+        <MapFloatingButton
+          bottom={insets.bottom + 20}
+          onPress={handleMapButtonPress}
+        />
+      )}
 
       <Loading loading={loading} />
     </>
@@ -994,6 +1043,19 @@ const MapScreen = ({navigation, route}) => {
 const styles = StyleSheet.create({
   webview: {
     flex: 1,
+  },
+  topOverlay: {
+    position: 'absolute',
+    width: '100%',
+    zIndex: 10,
+    elevation: 6,
+  },
+  searchOverlay: {
+    position: 'absolute',
+    width: '100%',
+    alignItems: 'center',
+    zIndex: 2,
+    elevation: 2,
   },
 });
 
