@@ -578,27 +578,29 @@ const AlcoholEditScreen = ({route, navigation}) => {
 
           {/* 삭제 버튼 */}
           {alcoholId && (
-            <Pressable
-              style={styles.deleteMenuBtn}
-              onPress={() =>
-                showAlert({
-                  title: '주류 삭제',
-                  message: '정말 삭제하시겠습니까?',
-                  type: 'delete',
-                  onConfirm: async () => {
-                    try {
-                      await StoreDrinkdelete(alcoholId);
-                      showToast('주류가 삭제되었습니다.');
-                      navigation.goBack();
-                    } catch (e) {
-                      console.log(e);
-                      showToast('삭제 중 문제가 발생했습니다.');
-                    }
-                  },
-                })
-              }>
-              <Text style={styles.deleteMenuText}>삭제하기</Text>
-            </Pressable>
+            <View style={styles.deleteMenuBtn}>
+              <Pressable
+                hitSlop={{top: 5, bottom: 5, left: 5, right: 5}}
+                onPress={() =>
+                  showAlert({
+                    title: '주류 삭제',
+                    message: '정말 삭제하시겠습니까?',
+                    type: 'delete',
+                    onConfirm: async () => {
+                      try {
+                        await StoreDrinkdelete(alcoholId);
+                        showToast('주류가 삭제되었습니다.');
+                        navigation.goBack();
+                      } catch (e) {
+                        console.log(e);
+                        showToast('삭제 중 문제가 발생했습니다.');
+                      }
+                    },
+                  })
+                }>
+                <Text style={styles.deleteMenuText}>삭제하기</Text>
+              </Pressable>
+            </View>
           )}
         </ScrollView>
       </KeyboardAvoidingView>
