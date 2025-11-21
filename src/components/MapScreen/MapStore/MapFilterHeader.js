@@ -13,6 +13,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 const MapFilterHeader = ({
   setFilterInitialTab,
   setFilterModalVisible,
+
   setFilterheight = () => {},
   distanceLabel,
   categoryLabel,
@@ -244,7 +245,7 @@ const MapFilterHeader = ({
 const styles = StyleSheet.create({
   headerContainer: {
     backgroundColor: 'white',
-    paddingBottom: 10,
+    paddingBottom: 2,
   },
   headerScroll: {
     paddingHorizontal: 12,
