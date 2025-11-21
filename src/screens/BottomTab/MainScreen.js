@@ -44,7 +44,9 @@ const MainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef(null);
-  const filterHeaderRef = useRef(null);
+  const fixedFilterHeaderRef = useRef(null);
+  const listFilterHeaderRef = useRef(null);
+  const lastFilterScrollX = useRef(0);
   const scrollToTopListenerRef = useRef(null);
   const topViewScrollListener = useRef(null);
   const topOverlayListenerRef = useRef(null);
@@ -62,6 +64,10 @@ const MainScreen = ({navigation}) => {
   const [topView2Height, setTopView2Height] = useState(0);
   const [touchable, setTouchable] = useState(false);
   const [isTopOverlayInteractive, setIsTopOverlayInteractive] = useState(true);
+  const overlayInteractionOpacity = useMemo(
+    () => (Platform.OS === 'ios' ? 0.02 : 0),
+    [],
+  );
 
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
@@ -100,10 +106,46 @@ const MainScreen = ({navigation}) => {
     setSearchBarHeight(prev => (Math.abs(prev - height) > 1 ? height : prev));
   }, []);
 
+  const registerFixedFilterHeader = useCallback(instance => {
+    fixedFilterHeaderRef.current = instance;
+    if (instance?.syncScroll) {
+      instance.syncScroll(lastFilterScrollX.current, false);
+    }
+  }, []);
+
+  const registerListFilterHeader = useCallback(instance => {
+    listFilterHeaderRef.current = instance;
+    if (instance?.syncScroll) {
+      instance.syncScroll(lastFilterScrollX.current, false);
+    }
+  }, []);
+
+  const closeAllFilterDropdowns = useCallback((animated = true) => {
+    fixedFilterHeaderRef.current?.closeDropdown(animated);
+    listFilterHeaderRef.current?.closeDropdown(animated);
+  }, []);
+
+  const syncFilterScroll = useCallback((source, offset) => {
+    lastFilterScrollX.current = offset;
+    if (source === 'fixed') {
+      listFilterHeaderRef.current?.syncScroll(offset);
+    } else {
+      fixedFilterHeaderRef.current?.syncScroll(offset);
+    }
+  }, []);
+
+  const handleFixedFilterScroll = useCallback(
+    offset => syncFilterScroll('fixed', offset),
+    [syncFilterScroll],
+  );
+
+  const handleListFilterScroll = useCallback(
+    offset => syncFilterScroll('list', offset),
+    [syncFilterScroll],
+  );
+
   useEffect(() => {
-    navigation.setOptions({
-      scrollToTop: handleScrollToTop,
-    });
+    navigation.setParams({scrollToTop: handleScrollToTop});
   }, [handleScrollToTop, navigation]);
 
   const scrollToTopThreshold = useMemo(
@@ -160,8 +202,7 @@ const MainScreen = ({navigation}) => {
         searchBarHeight +
         contentTopPadding +
         addressHeight -
-        topView2Height +
-        (Platform.OS === 'ios' ? 14 : 6),
+        topView2Height,
     );
   }, [
     mainSectionHeight,
@@ -181,7 +222,7 @@ const MainScreen = ({navigation}) => {
   const listFilterOpacity = Animated.subtract(1, filterHeaderProgress);
 
   const topBarThreshold = useMemo(
-    () => (Platform.OS === 'ios' ? insets.top + 36 : insets.top + 96),
+    () => (Platform.OS === 'ios' ? insets.top + 20 : insets.top + 50),
     [insets.top],
   );
 
@@ -675,7 +716,7 @@ const MainScreen = ({navigation}) => {
             paddingTop: contentTopPadding,
             backgroundColor: 'transparent',
             zIndex: 60,
-            opacity: 0,
+            opacity: isTopOverlayInteractive ? overlayInteractionOpacity : 0,
           },
         ]}>
         {renderTopStack()}
@@ -748,13 +789,14 @@ const MainScreen = ({navigation}) => {
           },
         ]}>
         <FilterHeader
-          ref={filterHeaderRef}
+          ref={registerFixedFilterHeader}
           navigation={stableNavigation}
           drinkType={drinkType}
           setDrinkType={setDrinkType}
           screenWidth={screenWidth}
           priceOrder={priceOrder}
           setPriceOrder={setPriceOrder}
+          onFilterScroll={handleFixedFilterScroll}
         />
       </Animated.View>
 
@@ -763,10 +805,8 @@ const MainScreen = ({navigation}) => {
         sections={sectionsData}
         keyExtractor={(item, index) => item?.id ?? index.toString()}
         renderItem={({item, section}) => section.renderItem({item})}
-        onScrollBeginDrag={() => filterHeaderRef.current?.closeDropdown(false)}
-        onMomentumScrollBegin={() =>
-          filterHeaderRef.current?.closeDropdown(false)
-        }
+        onScrollBeginDrag={() => closeAllFilterDropdowns(false)}
+        onMomentumScrollBegin={() => closeAllFilterDropdowns(false)}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {
@@ -778,13 +818,14 @@ const MainScreen = ({navigation}) => {
             return (
               <Animated.View style={{opacity: listFilterOpacity}}>
                 <FilterHeader
-                  ref={filterHeaderRef}
+                  ref={registerListFilterHeader}
                   navigation={stableNavigation}
                   drinkType={drinkType}
                   setDrinkType={setDrinkType}
                   screenWidth={screenWidth}
                   priceOrder={priceOrder}
                   setPriceOrder={setPriceOrder}
+                  onFilterScroll={handleListFilterScroll}
                 />
               </Animated.View>
             );
