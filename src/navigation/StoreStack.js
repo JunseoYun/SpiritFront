@@ -25,6 +25,7 @@ import StoreOrderScreen from '../screens/StoreOrder/StoreOrderScreen';
 import StorePaymentScreen from '../screens/StoreOrder/StorePaymentScreen';
 import StoreUpdateScreen from '../screens/StoreInfo/StoreUpdateScreen';
 import StoreManageScreen from '../screens/StoreInfo/StoreManage/StoreManageScreen';
+import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
 const Stack = createStackNavigator();
 
 export default function StoreStack() {
@@ -399,6 +400,50 @@ export default function StoreStack() {
             headerTitleAlign: 'center',
             animation: 'slide_from_right',
             headerShadowVisible: false,
+          };
+        }}
+      />
+      <Stack.Screen
+        name="ReviewEditScreen"
+        component={ReviewEditScreen}
+        options={({navigation, route}) => {
+          const storeName = route.params?.reviewdata?.storeName;
+          const displayTitle = storeName
+            ? `${storeName} 리뷰 수정`
+            : '리뷰 수정';
+
+          return {
+            headerTitle: () => (
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  fontSize: 18,
+                  fontFamily: 'Pretendard-SemiBold',
+                  maxWidth: screenWidth * 0.7,
+                  textAlign: 'center',
+                }}>
+                {displayTitle}
+              </Text>
+            ),
+            headerTitleAlign: 'center',
+            headerStyle: {
+              shadowOpacity: 0,
+              elevation: 0,
+              borderBottomWidth: 0,
+            },
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="close"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
           };
         }}
       />

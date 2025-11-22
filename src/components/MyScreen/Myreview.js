@@ -72,13 +72,16 @@ const MyReview = ({navigation}) => {
   };
 
   const updateReview = reviewdata => {
-    navigation.navigate('ReviewEditScreen', {
-      reviewdata,
-      onRefresh: () => {
-        setMyReview([]); // 기존 데이터 초기화
-        setPage(0);
-        setIsEnd(false);
-        myReviewsget(0); // 첫 페이지 불러오기
+    navigation.navigate('StoreStack', {
+      screen: 'ReviewEditScreen',
+      params: {
+        reviewdata,
+        onRefresh: () => {
+          setMyReview([]); // 기존 데이터 초기화
+          setPage(0);
+          setIsEnd(false);
+          myReviewsget(0); // 첫 페이지 불러오기
+        },
       },
     });
   };
