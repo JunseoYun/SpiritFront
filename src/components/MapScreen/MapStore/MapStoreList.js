@@ -884,7 +884,15 @@ const MapStoreList = ({
 
     return (
       <Animated.View
-        style={[styles.listAnimatedContainer, listBodyAnimatedStyle]}
+        style={[
+          styles.listAnimatedContainer,
+          listBodyAnimatedStyle,
+          !isDetailMode &&
+            currentIndex === 1 && {
+              paddingBottom:
+                insets.bottom + (Platform.OS === 'android' ? 20 : 10),
+            },
+        ]}
         pointerEvents={listModeCollapsed ? 'none' : 'auto'}
         onLayout={handleListContainerLayout}>
         {listContent}
