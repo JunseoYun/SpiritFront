@@ -136,6 +136,8 @@ const MapScreen = ({navigation, route}) => {
   const skipInitialOffsetRef = useRef(true);
   const [topBarHeight, setTopBarHeight] = useState(0);
   const [isListFullyExpanded, setIsListFullyExpanded] = useState(false);
+  const [isMapSearchActive, setIsMapSearchActive] = useState(false);
+  const suppressUserMarkerRef = useRef(false);
   const lastQueryRef = useRef({lat: null, lng: null});
   const detailFetchSeqRef = useRef(0);
   const isFocused = useIsFocused();
@@ -398,7 +400,9 @@ const MapScreen = ({navigation, route}) => {
     offsetY,
     conditionDtoOverride = null,
     querySignatureOverride = null,
+    options = {},
   ) => {
+    const {suppressUserMarker = false} = options || {};
     try {
       const conditionDto = conditionDtoOverride || buildCurrentConditionDto();
       const signature = querySignatureOverride || buildCurrentQuerySignature();
@@ -447,6 +451,7 @@ const MapScreen = ({navigation, route}) => {
           baseLng,
           markerData,
           effectiveOffset,
+          {suppressUserMarker},
         );
         webViewRef.current.injectJavaScript(script);
         if (skipInitialOffsetRef.current && offsetY !== 0) {
@@ -480,6 +485,7 @@ const MapScreen = ({navigation, route}) => {
       setLocation(centerLocation);
 
       if (!lat || !lng) {
+        suppressUserMarkerRef.current = false;
         return;
       }
       const offsetY = sheetIndex === 1 ? SCREEN_HEIGHT * 0.18 : 0;
@@ -531,12 +537,33 @@ const MapScreen = ({navigation, route}) => {
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
         webViewRef.current.injectJavaScript(calcAdjustedScript);
       } else {
-        refreshWithLatLngs(lat, lng, lat, lng, radius, offsetY);
+        const suppressMarker = suppressUserMarkerRef.current;
+        refreshWithLatLngs(
+          lat,
+          lng,
+          lat,
+          lng,
+          radius,
+          offsetY,
+          null,
+          null,
+          {suppressUserMarker: suppressMarker},
+        );
+        if (suppressMarker) {
+          suppressUserMarkerRef.current = false;
+        }
       }
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
+      suppressUserMarkerRef.current = false;
     } finally {
     }
+  };
+
+  const handleSearchThisAreaPress = () => {
+    suppressUserMarkerRef.current = true;
+    setIsMapSearchActive(true);
+    setcenterrefresh(radius);
   };
 
   const moveCenterMap = (lat, lng, sheetIndex, force = false, customOffset) => {
@@ -629,6 +656,7 @@ const MapScreen = ({navigation, route}) => {
             : sheetIndex === 10
             ? SCREEN_HEIGHT * -0.18
             : 0);
+        const suppressMarker = suppressUserMarkerRef.current;
         refreshWithLatLngs(
           baseLat,
           baseLng,
@@ -636,7 +664,13 @@ const MapScreen = ({navigation, route}) => {
           queryLng,
           reqRadius,
           adjOffsetY,
+          null,
+          null,
+          {suppressUserMarker: suppressMarker},
         );
+        if (suppressMarker) {
+          suppressUserMarkerRef.current = false;
+        }
         return;
       }
       if (message.action === 'mapMoved') {
@@ -944,6 +978,12 @@ const MapScreen = ({navigation, route}) => {
     requeryForSearchParamsChange();
   }, [buildCurrentQuerySignature, isFocused, requeryForSearchParamsChange]);
 
+  useEffect(() => {
+    if (!refresh) {
+      setIsMapSearchActive(false);
+    }
+  }, [refresh]);
+
   // Track group total when a marker group is clicked
   useEffect(() => {
     // no-op; placeholder to avoid lint complaints for hooks order
@@ -953,8 +993,12 @@ const MapScreen = ({navigation, route}) => {
     isFlatListVisible &&
     !detailStoreId &&
     !(Array.isArray(groupStoreIds) && groupStoreIds.length > 0);
-  const shouldShowMapButton =
-    isListModeActive && isListFullyExpanded && stores.length > 0;
+  const shouldForceListModeUi =
+    isListModeActive &&
+    isListFullyExpanded &&
+    stores.length > 0 &&
+    !isMapSearchActive;
+  const shouldShowMapButton = shouldForceListModeUi;
 
   return (
     <>
@@ -978,7 +1022,7 @@ const MapScreen = ({navigation, route}) => {
         <MapTopBar
           navigation={navigation}
           onMeasureHeight={handleTopBarHeight}
-          forceWhiteBackground={isListModeActive && isListFullyExpanded}
+          forceWhiteBackground={shouldForceListModeUi}
         />
       </View>
 
@@ -986,7 +1030,7 @@ const MapScreen = ({navigation, route}) => {
         <View
           style={[styles.searchOverlay, {top: topBarHeight || 0}]}
           pointerEvents="box-none">
-          <MapSearchBar onPress={() => setcenterrefresh(radius)} />
+          <MapSearchBar onPress={handleSearchThisAreaPress} />
         </View>
       )}
 

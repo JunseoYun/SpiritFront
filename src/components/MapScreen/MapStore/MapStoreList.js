@@ -5,11 +5,9 @@ import {
   Text,
   Dimensions,
   FlatList,
-  TouchableOpacity,
   InteractionManager,
   BackHandler,
   Pressable,
-  ActivityIndicator,
   Platform,
 } from 'react-native';
 import BottomSheet, {
