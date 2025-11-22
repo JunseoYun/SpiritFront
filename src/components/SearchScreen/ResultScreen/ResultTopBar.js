@@ -37,7 +37,7 @@ const ResultTopBar = ({searchWord, navigation, onSearch}) => {
       <View style={styles.search}>
         <TextInput
           style={styles.searchTextInput}
-          placeholder="원하는 술집이나 메뉴를 검색하세요"
+          placeholder="술집이나 메뉴를 검색하세요"
           placeholderTextColor="#A9A9A9"
           value={tempSearchWord}
           onChangeText={text => {
