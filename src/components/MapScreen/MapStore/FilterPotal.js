@@ -984,6 +984,7 @@ const FilterPotal = ({
                 cancel={true}
                 onPress={() => handleApply()}
                 onCancel={() => handleCancel()}
+                type="simple"
               />
             </View>
           </View>
