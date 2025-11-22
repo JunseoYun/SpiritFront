@@ -1,5 +1,12 @@
-const generateMapScript = (lat, lng, markerData, offsetY = 0) => {
+const generateMapScript = (
+  lat,
+  lng,
+  markerData,
+  offsetY = 0,
+  options = {},
+) => {
   const safeData = JSON.stringify(markerData ?? []);
+  const {suppressUserMarker = false} = options || {};
   return `
   if (!window.map) {
     var mapContainer = document.getElementById('map');
@@ -168,44 +175,46 @@ const generateMapScript = (lat, lng, markerData, offsetY = 0) => {
     markerImageUrl,
     new kakao.maps.Size(28, 42),
     { offset: new kakao.maps.Point(14, 42) }
-  );
+ );
 
- 
-    // Compute adjusted position for current marker so it appears offset from center
-    try {
-      var __offset = ${offsetY};
-      if (!__offset) { __offset = 0; }
-      var __baseLatLng = new kakao.maps.LatLng(${lat}, ${lng});
-      var __proj = map.getProjection();
-      var __pt = __proj.containerPointFromCoords(__baseLatLng);
-      // Move marker UP by offset (subtract Y)
-      var __markerPt = new kakao.maps.Point(__pt.x, __pt.y - __offset);
-      var __markerLatLng = __proj.coordsFromContainerPoint(__markerPt);
-      if (!window.currentMarker) {
-        window.currentMarker = new kakao.maps.Marker({
-          position: __markerLatLng,
-          map: map,
-          title: '현재 위치',
-          image: markerImage,
-          zIndex: 1
-        });
-      } else {
-        window.currentMarker.setPosition(__markerLatLng);
-        window.currentMarker.setMap(map);
-      }
-    } catch (e) {
-      // fallback: place at exact center if projection failed
-      if (!window.currentMarker) {
-        window.currentMarker = new kakao.maps.Marker({
-          position: new kakao.maps.LatLng(${lat}, ${lng}),
-          map: map,
-          title: '현재 위치',
-          image: markerImage,
-          zIndex: 1
-        });
-      } else {
-        window.currentMarker.setPosition(new kakao.maps.LatLng(${lat}, ${lng}));
-        window.currentMarker.setMap(map);
+ var __skipUserMarker = ${suppressUserMarker ? 'true' : 'false'};
+ if (!__skipUserMarker) {
+      // Compute adjusted position for current marker so it appears offset from center
+      try {
+        var __offset = ${offsetY};
+        if (!__offset) { __offset = 0; }
+        var __baseLatLng = new kakao.maps.LatLng(${lat}, ${lng});
+        var __proj = map.getProjection();
+        var __pt = __proj.containerPointFromCoords(__baseLatLng);
+        // Move marker UP by offset (subtract Y)
+        var __markerPt = new kakao.maps.Point(__pt.x, __pt.y - __offset);
+        var __markerLatLng = __proj.coordsFromContainerPoint(__markerPt);
+        if (!window.currentMarker) {
+          window.currentMarker = new kakao.maps.Marker({
+            position: __markerLatLng,
+            map: map,
+            title: '현재 위치',
+            image: markerImage,
+            zIndex: 1
+          });
+        } else {
+          window.currentMarker.setPosition(__markerLatLng);
+          window.currentMarker.setMap(map);
+        }
+      } catch (e) {
+        // fallback: place at exact center if projection failed
+        if (!window.currentMarker) {
+          window.currentMarker = new kakao.maps.Marker({
+            position: new kakao.maps.LatLng(${lat}, ${lng}),
+            map: map,
+            title: '현재 위치',
+            image: markerImage,
+            zIndex: 1
+          });
+        } else {
+          window.currentMarker.setPosition(new kakao.maps.LatLng(${lat}, ${lng}));
+          window.currentMarker.setMap(map);
+        }
       }
     }
 
