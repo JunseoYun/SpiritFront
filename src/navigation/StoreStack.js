@@ -7,6 +7,7 @@ import Octicons from 'react-native-vector-icons/Octicons';
 import StoreMainScreen from '../screens/StoreInfo/StoreMainScreen';
 import StoreMapScreen from '../screens/StoreInfo/StoreMapScreen';
 import StoreReviewScreen from '../screens/StoreInfo/StoreReviewScreen';
+import StoreReviewWriteScreen from '../screens/StoreInfo/StoreReviewWriteScreen';
 import StoreReportScreen from '../screens/StoreInfo/Report/StoreReportScreen';
 import ReviewReportScreen from '../screens/StoreInfo/Report/ReviewReportScreen';
 import StoreReportList from '../screens/StoreInfo/Report/StoreReportList';
@@ -329,6 +330,45 @@ export default function StoreStack() {
         options={({navigation, route}) => {
           const storename = route.params?.storename || '매장';
           const displayTitle = storename + ' 리뷰';
+
+          return {
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+            headerTitle: () => (
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  fontSize: 18,
+                  fontFamily: 'Pretendard-SemiBold',
+                  maxWidth: screenWidth * 0.7,
+                  textAlign: 'center',
+                }}>
+                {displayTitle}
+              </Text>
+            ),
+            headerTitleAlign: 'center',
+            animation: 'slide_from_right',
+            headerShadowVisible: false,
+          };
+        }}
+      />
+      <Stack.Screen
+        name="StoreReviewWriteScreen"
+        component={StoreReviewWriteScreen}
+        options={({navigation, route}) => {
+          const storename = route.params?.storename || '매장';
+          const displayTitle = storename + ' 리뷰 작성';
 
           return {
             headerLeft: () => (
