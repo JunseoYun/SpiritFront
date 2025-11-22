@@ -137,6 +137,7 @@ const MapScreen = ({navigation, route}) => {
   const [topBarHeight, setTopBarHeight] = useState(0);
   const [isListFullyExpanded, setIsListFullyExpanded] = useState(false);
   const [isMapSearchActive, setIsMapSearchActive] = useState(false);
+  const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
   const suppressUserMarkerRef = useRef(false);
   const lastQueryRef = useRef({lat: null, lng: null});
   const detailFetchSeqRef = useRef(0);
@@ -345,6 +346,7 @@ const MapScreen = ({navigation, route}) => {
   };
 
   const updateNewLocation = async radius => {
+    setIsUpdatingLocation(true);
     setLoading(true);
     try {
       if (!skipInitialOffsetRef.current) {
@@ -384,6 +386,7 @@ const MapScreen = ({navigation, route}) => {
     } catch (err) {
       console.error('위치 업데이트 중 오류 발생:', err);
     } finally {
+      setIsUpdatingLocation(false);
       setRefresh(true);
       setLoading(false);
     }
@@ -998,7 +1001,7 @@ const MapScreen = ({navigation, route}) => {
     isListFullyExpanded &&
     stores.length > 0 &&
     !isMapSearchActive;
-  const shouldShowMapButton = shouldForceListModeUi;
+  const shouldShowMapButton = shouldForceListModeUi && !isUpdatingLocation;
 
   return (
     <>
@@ -1022,7 +1025,7 @@ const MapScreen = ({navigation, route}) => {
         <MapTopBar
           navigation={navigation}
           onMeasureHeight={handleTopBarHeight}
-          forceWhiteBackground={shouldForceListModeUi}
+          forceWhiteBackground={shouldForceListModeUi && !isUpdatingLocation}
         />
       </View>
 

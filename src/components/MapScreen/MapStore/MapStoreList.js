@@ -106,9 +106,16 @@ const MapStoreList = ({
     );
     return Math.min(safeMax, computed);
   }, [detailStoreId, detailContentHeight, insets.bottom, insets.top]);
+  const noStoreSnapPoint = useMemo(() => {
+    const minExpanded = SCREEN_HEIGHT * 0.15;
+    const paddedCollapsed = detailCollapsedHeight + SCREEN_HEIGHT * 0.2;
+    return Math.min(SCREEN_HEIGHT, Math.max(minExpanded, paddedCollapsed));
+  }, [detailCollapsedHeight]);
+
   const snapPoints = useMemo(() => {
     const first = detailCollapsedHeight;
-    const nonemid = SCREEN_HEIGHT * 0.3;
+    const nonemid = noStoreSnapPoint;
+
     const mid = SCREEN_HEIGHT * 0.55;
     const reservedTop =
       !detailStoreId && topReservedHeight > 0 ? topReservedHeight : 0;
@@ -129,6 +136,7 @@ const MapStoreList = ({
     detailSnapPoint,
     detailCollapsedHeight,
     topReservedHeight,
+    noStoreSnapPoint,
   ]);
 
   const highestSnapIndex = Math.max(0, snapPoints.length - 1);
@@ -178,7 +186,7 @@ const MapStoreList = ({
 
   const hideFloatingButtons =
     (isDetailMode && detailSnapPoint >= SCREEN_HEIGHT * 0.7) ||
-    isFullListExpanded;
+    (stores.length > 0 && isFullListExpanded);
   const detailCenterOffset = useMemo(() => {
     if (!isDetailMode) return null;
     if (typeof detailSnapPoint !== 'number' || detailSnapPoint <= 0) {
@@ -702,6 +710,23 @@ const MapStoreList = ({
     listRevealProgress.value = withTiming(target, {duration: 220});
   }, [isDetailMode, listModeCollapsed, listRevealProgress]);
 
+  const baseListBottomPadding = useMemo(
+    () => insets.bottom + 32,
+    [insets.bottom],
+  );
+
+  const computedListBottomPadding = useMemo(() => {
+    let padding = baseListBottomPadding;
+    if (currentIndex === 1) {
+      padding += SCREEN_HEIGHT * 0.25;
+    }
+    if (isFullListExpanded) {
+      // Ensure enough space for the floating "지도보기" button
+      padding += insets.bottom + 80;
+    }
+    return padding;
+  }, [baseListBottomPadding, currentIndex, isFullListExpanded, insets.bottom]);
+
   const listBodyAnimatedStyle = useAnimatedStyle(() => {
     const progress = listRevealProgress.value;
     return {
@@ -820,9 +845,7 @@ const MapStoreList = ({
           overScrollMode={disableTopOverscroll ? 'never' : 'always'}
           contentContainerStyle={{
             ...styles.listContentContainer,
-            ...(currentIndex === 1 && {
-              paddingBottom: SCREEN_HEIGHT * 0.25 + insets.bottom,
-            }),
+            paddingBottom: computedListBottomPadding,
           }}
           onScrollBeginDrag={handleScrollBeginDrag}
           onScrollEndDrag={handleScrollEndDrag}
@@ -1030,7 +1053,9 @@ const styles = StyleSheet.create({
   sheetContent: {
     flex: 1,
   },
-  listContentContainer: {paddingBottom: 18},
+  listContentContainer: {
+    paddingBottom: 0,
+  },
   floatingButtons: {
     position: 'absolute',
     top: -85,
