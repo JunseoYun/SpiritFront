@@ -8,9 +8,9 @@ import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import ColorUtil from '../../../utils/ColorUtil';
 
 const {width} = Dimensions.get('window');
-const IMG_WIDTH = width * 0.3;
 
 const MapStoreItem = ({
   item,
@@ -49,7 +49,7 @@ const MapStoreItem = ({
     <Pressable
       style={[
         styles.storeInfo,
-        index === selectedStoreIndex ? styles.selectedStore : null,
+        index === selectedStoreIndex && styles.selectedStore,
       ]}
       onPress={handlePress}>
       <View style={styles.backimageview}>
@@ -118,7 +118,7 @@ const MapStoreItem = ({
             </Text>
           </View>
         </View>
-        <Text style={styles.menutext} numberOfLines={1} ellipsizeMode="tail">
+        <Text style={styles.drinkText} numberOfLines={1} ellipsizeMode="tail">
           {item.mainDrinkDtos && item.mainDrinkDtos.length > 0
             ? item.mainDrinkDtos
                 .map(drink => {
@@ -132,6 +132,12 @@ const MapStoreItem = ({
             : '메인주류가 없습니다.'}
         </Text>
         <View style={styles.timeview}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <FontAwesomeIcon name="star" size={15} color="#FCC104" />
+            <Text style={styles.storeRateText}>
+              {item.storeRate}({item.reviewCount})
+            </Text>
+          </View>
           {item?.isAlwaysOpen == true ? (
             <Text style={styles.timeviewtext}>24시간 영업</Text>
           ) : item?.isAlwaysOpen == false && closed ? (
@@ -141,12 +147,6 @@ const MapStoreItem = ({
               영업 종료 {endtime || '정보 없음'}
             </Text>
           )}
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <FontAwesomeIcon name="star" size={15} color="#FCC104" />
-            <Text style={styles.storeAddress}>
-              {item.storeRate} ({item.reviewCount})
-            </Text>
-          </View>
         </View>
       </View>
     </Pressable>
@@ -158,19 +158,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#fff',
     paddingHorizontal: 15,
-    marginBottom: 20,
+    paddingVertical: 20,
+    borderBottomWidth: 0.5,
+    borderColor: ColorUtil.border,
+  },
+  selectedStore: {
+    backgroundColor: '#F7FBFF',
   },
   backimageview: {
-    width: IMG_WIDTH,
-    height: IMG_WIDTH,
-    borderRadius: 12,
+    width: 100,
+    height: 100,
+    borderRadius: 9,
     overflow: 'hidden',
     marginRight: 10,
+    borderWidth: 0.5,
+    borderColor: ColorUtil.border,
   },
   backimage: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 9,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -181,7 +188,7 @@ const styles = StyleSheet.create({
   overlayText: {
     color: 'white',
     fontSize: normalizeFont(14, 1.5),
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard-SemiBold',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -189,7 +196,7 @@ const styles = StyleSheet.create({
   titletopview: {
     flex: 1,
     justifyContent: 'space-between',
-    marginVertical: 3,
+    marginVertical: 2,
   },
   titleview: {
     flexDirection: 'row',
@@ -202,7 +209,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   storeName: {
-    fontSize: normalizeFont(18, 1.5),
+    fontSize: normalizeFont(16, 1.5),
     fontFamily: 'Pretendard-Bold',
     color: '#333',
     width: '90%',
@@ -213,12 +220,11 @@ const styles = StyleSheet.create({
   },
   StoreCategory: {
     fontSize: normalizeFont(14, 1.5),
-    color: '#999',
+    color: ColorUtil.subText,
     marginRight: 5,
-    fontFamily: 'Pretendard-Medium',
-    marginTop: 2,
+    fontFamily: 'Pretendard-Regular',
   },
-  menutext: {
+  drinkText: {
     fontSize: normalizeFont(14, 1.5),
     fontFamily: 'Pretendard-SemiBold',
     color: '#3CBBFF',
@@ -229,14 +235,14 @@ const styles = StyleSheet.create({
   },
   timeviewtext: {
     fontSize: normalizeFont(13, 1.5),
-    fontFamily: 'Pretendard-Medium',
-    color: '#999',
+    fontFamily: 'Pretendard-Regular',
+    color: ColorUtil.subText,
   },
-  storeAddress: {
-    fontSize: normalizeFont(14, 1.5),
-    fontFamily: 'Pretendard-Medium',
-    color: '#666',
-    marginRight: 5,
+  storeRateText: {
+    fontSize: normalizeFont(13, 1.5),
+    fontFamily: 'Pretendard-Regular',
+    color: ColorUtil.subText,
+    marginLeft: 3,
   },
 });
 
