@@ -1,10 +1,4 @@
-const generateMapScript = (
-  lat,
-  lng,
-  markerData,
-  offsetY = 0,
-  options = {},
-) => {
+const generateMapScript = (lat, lng, markerData, offsetY = 0, options = {}) => {
   const safeData = JSON.stringify(markerData ?? []);
   const {suppressUserMarker = false} = options || {};
   return `
@@ -31,20 +25,21 @@ const generateMapScript = (
   // Name bubble helper overlay (for selected store)
   try {
   if (!window.__nameOverlayStyle) {
-  window.__nameOverlayStyle =
-    "position: relative;" +
-    "background: #3CBBFF;" +
-    "color: #fff;" +
-    "padding: 6px 10px;" +
-    "border-radius: 8px;" +
-    "font-size: 17px;" +
-    "font-family: Arial, sans-serif;" +
-    "font-weight: 600;" +
-    "box-shadow: 0 2px 4px rgba(0,0,0,0.2);" +
-    "white-space: nowrap;" +
-    "pointer-events: auto;" +
-    "cursor: pointer;" +
-    "transform: translateY(-28px);";
+window.__nameOverlayStyle =
+  "position: relative;" +
+  "padding: 8px 14px;" +
+  "border-radius: 14px;" +
+  "font-size: 14px;" +
+  "font-family: Pretendard, Arial, sans-serif;" +
+  "font-weight: 600;" +
+  "color: #ffffff;" +
+  "background: #3CBBFF;" +
+  "box-shadow: 0 3px 8px rgba(60,187,255,0.35);" +
+  "white-space: nowrap;" +
+  "pointer-events: auto;" +
+  "cursor: pointer;" +
+  "transform: translateY(-32px);" +
+  "border: none;";
 }
     // Restore previously hidden marker (if any) and remove bubble
     window.clearStoreLabel = function(){
