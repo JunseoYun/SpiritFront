@@ -82,11 +82,18 @@ export default function MyStack() {
       <Stack.Screen
         name="ReviewEditScreen"
         component={ReviewEditScreen}
-        options={({navigation}) => ({
+        options={({navigation, route}) => ({
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
-          title: '리뷰 수정',
+          title: route?.params?.reviewdata?.storeName
+            ? `${route.params.reviewdata.storeName} 리뷰 수정`
+            : '리뷰 수정',
           headerTitleAlign: 'center',
+          headerStyle: {
+            shadowOpacity: 0,
+            elevation: 0,
+            borderBottomWidth: 0,
+          },
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}

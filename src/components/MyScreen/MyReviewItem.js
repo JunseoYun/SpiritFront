@@ -1,219 +1,243 @@
 import React from 'react';
-import {View, Text, StyleSheet, Image, Pressable} from 'react-native';
+import {View, Text, StyleSheet, Pressable} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
+import ColorUtil from '../../utils/ColorUtil';
+import FastImage from 'react-native-fast-image';
 
 const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
   const formatDate = dateString => {
     if (!dateString) return 'N/A';
-
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // 두 자리
-    const day = String(date.getDate()).padStart(2, '0'); // 두 자리
+    const d = new Date(dateString);
+    const year = d.getFullYear();
     const currentYear = new Date().getFullYear();
-
-    // 올해 날짜면 YY.MM.DD에서 연도를 생략하고 MM.DD만
-    if (year === currentYear) {
-      return `${month}.${day}`;
-    } else {
-      // 다른 해면 YY.MM.DD (연도는 뒤 두자리)
-      const shortYear = String(year).slice(-2);
-      return `${shortYear}.${month}.${day}`;
-    }
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return year === currentYear
+      ? `${mm}.${dd}`
+      : `${String(year).slice(-2)}.${mm}.${dd}`;
   };
 
-  const formattedCreatedDate = formatDate(review.visitedAt);
+  const date = formatDate(review.visitedAt);
   const {translateCategory} = useCategoryTranslation();
 
-  const handleImagePress = index => {
+  const goDetail = () => {
+    navigation.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {storeId: review.storeId},
+    });
+  };
+
+  const openImage = index => {
     navigation.navigate('StoreStack', {
       screen: 'ImageViewerScreen',
-      params: {
-        images: review.imgUrlList,
-        index: index,
-      },
+      params: {images: review.imgUrlList, index},
     });
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.reviewCard}>
-        <Pressable
-          key={review.id}
-          onPress={() => {
-            navigation.navigate('StoreStack', {
-              screen: 'StoreMainScreen',
-              params: {
-                storeId: review.storeId,
-              },
-            });
-          }}>
-          <View style={styles.header}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                flex: 1,
-                alignItems: 'center',
-                paddingBottom: 8,
-              }}>
-              <Text
-                style={styles.storeName}
-                ellipsizeMode="tail"
-                numberOfLines={1}>
-                {review.storeName}
-              </Text>
-              <Text style={styles.date} ellipsizeMode="tail" numberOfLines={1}>
-                {formattedCreatedDate}
-              </Text>
-            </View>
-
-            <View>
-              <Text style={styles.category} ellipsizeMode="tail">
-                {Array.isArray(review.categories) &&
-                review.categories.length > 0
-                  ? review.categories
-                      .map(category => translateCategory(category))
-                      .join(' ')
-                  : '카테고리 미설정'}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.rating}>
-            {[...Array(5)].map((_, index) => (
-              <FontAwesomeIcon
-                key={index}
-                name="star"
-                size={18}
-                color={index < review.rate ? '#FFC107' : '#E0E0E0'}
-              />
-            ))}
-          </View>
-          <Text style={styles.reviewText}>
-            {review.content || '리뷰 내용 없음'}
+    <View style={styles.wrapper}>
+      <Pressable onPress={goDetail} style={styles.card}>
+        {/* Meta Row */}
+        <View style={styles.metaRow}>
+          <Text style={styles.category}>
+            {review.categories?.length > 0
+              ? review.categories.map(c => translateCategory(c)).join(' ')
+              : '카테고리 없음'}
           </Text>
-        </Pressable>
+
+          <View style={styles.metaRight}>
+            <FontAwesomeIcon
+              name="star"
+              size={13}
+              color={'#FFC107'}
+              style={{marginRight: 3}}
+            />
+            <Text style={styles.rate}>{review.rate}</Text>
+          </View>
+        </View>
+
+        {/* Store Name */}
+
+        <Text style={styles.storeName} numberOfLines={1}>
+          {review.storeName}
+        </Text>
+
+        {/* Divider */}
+        <View style={styles.divider} />
+
+        {/* Review Text */}
+        <Text style={styles.reviewText}>
+          {review.content || '리뷰 내용 없음'}
+        </Text>
+
+        {/* Images */}
         {review.imgUrlList.length > 0 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {review.imgUrlList.map((imgUrl, index) => (
-              <Pressable
-                key={index}
-                onPress={() => {
-                  handleImagePress(index);
-                }}>
-                <Image
-                  key={index}
-                  source={{uri: imgUrl}}
-                  style={styles.reviewImage}
-                />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingVertical: 6,
+              paddingHorizontal: 18,
+            }}>
+            {review.imgUrlList.map((uri, idx) => (
+              <Pressable key={idx} onPress={() => openImage(idx)}>
+                <FastImage source={{uri}} style={styles.thumb} />
               </Pressable>
             ))}
           </ScrollView>
         )}
-        <View style={styles.buttons}>
-          <Pressable
-            style={styles.deleteView}
-            onPress={() => updateReview(review)}>
-            <Text style={styles.deleteText}>수정</Text>
-          </Pressable>
-          <Pressable
-            style={styles.deleteView}
-            onPress={() => deleteReview(review.id)}>
-            <Text style={styles.deleteText}>삭제</Text>
-          </Pressable>
+
+        {/* Buttons + Bottom Date */}
+        <View style={styles.actionRow}>
+          <View style={{flexDirection: 'row'}}>
+            <Pressable
+              style={styles.actionBtn}
+              onPress={() => updateReview(review)}>
+              <Text style={styles.actionText}>수정</Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.actionBtn}
+              onPress={() => deleteReview(review.id)}>
+              <Text style={styles.actionText}>삭제</Text>
+            </Pressable>
+          </View>
+
+          <Text style={styles.bottomDate}>{date}</Text>
         </View>
-      </View>
+      </Pressable>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  wrapper: {
+    marginTop: 12,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginVertical: 5,
   },
-  reviewCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    paddingVertical: 18,
+
+    borderWidth: 1,
+    borderColor: '#F1F1F3',
+
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 0},
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2, // Android 그림자
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 3},
+    elevation: 0.3,
   },
-  header: {
-    flexDirection: 'column',
+
+  /* Meta */
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
-  },
-  storeName: {
-    fontSize: 18,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#121212',
-    flexShrink: 1, // 추가
-  },
-  date: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontFamily: 'Pretendard-Medium',
-    flexShrink: 0, // 추가
+    marginHorizontal: 18,
   },
 
   category: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontFamily: 'Pretendard-Medium',
-    marginTop: 0,
+    fontSize: 13,
+    color: ColorUtil.subText,
+    fontFamily: 'Pretendard-Regular',
   },
-  rating: {
+
+  metaRight: {
     flexDirection: 'row',
-    marginBottom: 10,
+    alignItems: 'center',
+
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    backgroundColor: '#FFF8E1',
   },
+
+  rate: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#1D1D1D',
+  },
+
+  /* Store Name */
+  storeName: {
+    fontSize: 18,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#111',
+    marginHorizontal: 18,
+  },
+
+  divider: {
+    backgroundColor: '#EFEFEF',
+    height: 1,
+    marginTop: 12,
+    marginBottom: 14,
+    marginHorizontal: 14,
+  },
+
+  /* Review Text */
   reviewText: {
     fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
-    color: '#121212',
-    lineHeight: 20,
+    lineHeight: 23,
+    color: '#1E1E1E',
+    fontFamily: 'Pretendard-Regular',
+    marginHorizontal: 18,
     marginBottom: 12,
   },
-  footer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-  },
-  reviewImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  buttons: {
-    flexDirection: 'row',
-  },
-  deleteView: {
-    marginTop: 12,
-    alignItems: 'flex-start',
-    marginRight: 12,
-  },
-  deleteText: {
-    borderRadius: 10,
 
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    color: '#5F5F5F',
-    fontFamily: 'Pretendard-Regular',
-    backgroundColor: '#EFEFEF',
-    paddingVertical: 5,
+  /* Images */
+  thumb: {
+    width: 92,
+    height: 92,
+    borderRadius: 12,
+    marginRight: 12,
+
+    backgroundColor: '#FAFAFA',
+    borderWidth: 0.6,
+    borderColor: '#E6E6E6',
+
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: {width: 0, height: 2},
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    marginVertical: 16,
+
+  /* Buttons + Bottom Date */
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+
+    marginTop: 14,
+    marginHorizontal: 18,
+  },
+
+  actionBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 18,
+    marginRight: 8,
+
+    backgroundColor: '#F5F6F7',
+    borderWidth: 1,
+    borderColor: '#ECECEC',
+  },
+
+  actionText: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    color: '#444',
+  },
+
+  bottomDate: {
+    fontSize: 12,
+    fontFamily: 'Pretendard-Regular',
+    color: '#A2A2A2',
   },
 });
 

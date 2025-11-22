@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 7,
     paddingHorizontal: 12,
-    backgroundColor: '#F1F2F3',
+    backgroundColor: '#F5F6F7',
   },
   manageText: {
     color: '#333',
