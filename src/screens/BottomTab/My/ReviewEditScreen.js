@@ -22,7 +22,6 @@ import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../../constants/imagePickerLabels';
-import {useFocusEffect} from '@react-navigation/native';
 
 const ReviewEditScreen = ({route, navigation}) => {
   const {reviewdata} = route.params || {};
@@ -40,16 +39,6 @@ const ReviewEditScreen = ({route, navigation}) => {
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      const parent = navigation.getParent?.();
-      parent?.setOptions({tabBarStyle: {display: 'none'}});
-
-      return () => {
-        parent?.setOptions({tabBarStyle: undefined});
-      };
-    }, [navigation]),
-  );
 
   useEffect(() => {
     if (reviewdata) {
