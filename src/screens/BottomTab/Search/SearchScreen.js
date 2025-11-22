@@ -6,6 +6,8 @@ import {
   BackHandler,
   Pressable,
   ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import SearchBar from '../../../components/SearchScreen/SearchBar';
 import {useToast} from '../../../context/ToastContext';
@@ -20,6 +22,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {normalizeFont} from '../../../hooks/normalizeFont';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import RecentSearchItem from '../../../components/SearchScreen/RecentSearchItem';
 
 const SearchScreen = ({navigation}) => {
   const {showToast} = useToast();
@@ -161,119 +164,94 @@ const SearchScreen = ({navigation}) => {
   const outdoorLabel = getFilterValue('야장', '야장');
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <SearchBar
-        value={searchStoreName}
-        onChangeText={setSearchStoreName}
-        placeholder="원하는 가게나 메뉴를 검색해 보세요"
-        onPress={onPressSearch}
-      />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <SearchBar
+          value={searchStoreName}
+          onChangeText={setSearchStoreName}
+          placeholder="원하는 술집이나 메뉴를 검색해 보세요"
+          onPress={onPressSearch}
+        />
 
-      <MapFilterHeader
-        setFilterInitialTab={setFilterInitialTab}
-        setFilterModalVisible={setFilterModalVisible}
-        distanceLabel={distanceLabel}
-        categoryLabel={categoryLabel}
-        peopleLabel={peopleLabel}
-        alcoholLabel={alcoholLabel}
-        timeActive={timeActive}
-        parkingLabel={parkingLabel}
-        corkageLabel={corkageLabel}
-        screenLabel={screenLabel}
-        roomLabel={roomLabel}
-        outdoorLabel={outdoorLabel}
-        storeatmLabel={storeatmLabel}
-        storeatmCount={
-          Array.isArray(storeatmValue)
-            ? storeatmValue.length
-            : storeatmValue
-            ? 1
-            : 0
-        }
-      />
+        <MapFilterHeader
+          setFilterInitialTab={setFilterInitialTab}
+          setFilterModalVisible={setFilterModalVisible}
+          distanceLabel={distanceLabel}
+          categoryLabel={categoryLabel}
+          peopleLabel={peopleLabel}
+          alcoholLabel={alcoholLabel}
+          timeActive={timeActive}
+          parkingLabel={parkingLabel}
+          corkageLabel={corkageLabel}
+          screenLabel={screenLabel}
+          roomLabel={roomLabel}
+          outdoorLabel={outdoorLabel}
+          storeatmLabel={storeatmLabel}
+          storeatmCount={
+            Array.isArray(storeatmValue)
+              ? storeatmValue.length
+              : storeatmValue
+              ? 1
+              : 0
+          }
+        />
 
-      <MyBanner index={'search'} />
+        <MyBanner index={'search'} />
 
-      {recentSearches.length > 0 && (
-        <View style={styles.recentWrap}>
-          <ScrollView
-            style={{}}
-            contentContainerStyle={{paddingBottom: 40}}
-            showsVerticalScrollIndicator={false}>
-            {recentSearches.map(item => (
+        {recentSearches.length > 0 && (
+          <View style={styles.recentWrap}>
+            <ScrollView
+              style={{}}
+              contentContainerStyle={{paddingBottom: 40}}
+              showsVerticalScrollIndicator={false}
+              keyboardDismissMode="on-drag"
+              keyboardShouldPersistTaps="handled">
+              {recentSearches.map(item => (
+                <RecentSearchItem
+                  key={item}
+                  item={item}
+                  onPress={async term => {
+                    setSearchStoreName(term);
+                    await commitSearchAndFilters(term);
+                  }}
+                  onDelete={async term => {
+                    const next = recentSearches.filter(t => t !== term);
+                    setRecentSearches(next);
+                    await AsyncStorage.setItem(
+                      RECENT_KEY,
+                      JSON.stringify(next),
+                    );
+                  }}
+                />
+              ))}
+
+              {/* 전체 최근 검색어 삭제 */}
               <Pressable
-                key={item}
-                style={styles.recentItem}
+                style={styles.clearButton}
                 onPress={async () => {
-                  setSearchStoreName(item);
-                  await commitSearchAndFilters(item);
+                  await AsyncStorage.removeItem(RECENT_KEY);
+                  setRecentSearches([]);
                 }}>
-                <View style={styles.recentLeft}>
-                  <View
-                    style={{
-                      backgroundColor: '#f0f2f4',
-                      paddingHorizontal: 8,
-                      paddingVertical: 7,
-                      borderRadius: 50,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      alignSelf: 'center',
-                      textAlign: 'center',
-                    }}>
-                    <FontAwesome name="search" color="#666" size={14} />
-                  </View>
-                  <View
-                    style={{
-                      flex: 1,
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      paddingHorizontal: 8,
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.recentText}>{item}</Text>
-                    <Pressable
-                      hitSlop={10}
-                      onPress={async () => {
-                        const next = recentSearches.filter(t => t !== item);
-                        setRecentSearches(next);
-                        await AsyncStorage.setItem(
-                          RECENT_KEY,
-                          JSON.stringify(next),
-                        );
-                      }}>
-                      <Ionicons name="close" size={20} color="#999" />
-                    </Pressable>
-                  </View>
-                </View>
+                <Text style={styles.clearText} allowFontScaling={false}>
+                  최근 검색어 삭제
+                </Text>
               </Pressable>
-            ))}
+            </ScrollView>
+          </View>
+        )}
 
-            {/* 전체 최근 검색어 삭제 */}
-            <Pressable
-              style={styles.clearButton}
-              onPress={async () => {
-                await AsyncStorage.removeItem(RECENT_KEY);
-                setRecentSearches([]);
-              }}>
-              <Text style={styles.clearText} allowFontScaling={false}>
-                최근 검색어 삭제
-              </Text>
-            </Pressable>
-          </ScrollView>
-        </View>
-      )}
-
-      <FilterPotal
-        filterModalVisible={filterModalVisible}
-        setFilterModalVisible={setFilterModalVisible}
-        selectedFilters={pendingFilters}
-        setSelectedFilters={setPendingFilters}
-        initialTab={filterInitialTab}
-        setRadiusint={setPendingRadiusKm}
-        onApply={filters => setPendingFilters(filters)}
-      />
-      <Loading loading={isRefreshing || loading} />
-    </SafeAreaView>
+        <FilterPotal
+          filterModalVisible={filterModalVisible}
+          setFilterModalVisible={setFilterModalVisible}
+          selectedFilters={pendingFilters}
+          setSelectedFilters={setPendingFilters}
+          initialTab={filterInitialTab}
+          setRadiusint={setPendingRadiusKm}
+          onApply={filters => setPendingFilters(filters)}
+        />
+        <Loading loading={isRefreshing || loading} />
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -314,6 +292,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontFamily: 'Pretendard-Regular',
     marginLeft: 5,
+    maxWidth: '90%',
   },
 
   clearButton: {
