@@ -82,6 +82,8 @@ const MapStoreList = ({
   const [showListButtons, setShowListButtons] = useState(false);
   const [itemheight, setItemheight] = useState(120);
   const [listfastview, setListfastview] = useState(false);
+  const [listContainerHeight, setListContainerHeight] = useState(0);
+  const [listContentHeight, setListContentHeight] = useState(0);
   const detailStore = detailStoreData || null;
   const isDetailMode = !!detailStoreId;
   const detailCollapsedHeight = useMemo(() => {
@@ -158,6 +160,7 @@ const MapStoreList = ({
   }, [isCurrentlySnappedToFull, reportFullExpandState]);
 
   const FULL_EXPANDED_TOLERANCE = 0.01;
+  const shouldSkipAutoSelection = !isDetailMode && isFullListExpanded;
 
   const handleAnimatedFullExpand = useCallback(
     animatedValue => {
@@ -182,7 +185,7 @@ const MapStoreList = ({
       return null;
     }
     // 살짝 덜 올려서 지도 위치가 너무 위로 치우치지 않도록 보정
-    return Math.max(0, detailSnapPoint / 2 - 32);
+    return Math.max(0, detailSnapPoint / 2 - 70);
   }, [isDetailMode, detailSnapPoint]);
 
   const animatedIndex = useSharedValue(0);
@@ -517,7 +520,9 @@ const MapStoreList = ({
       const store = latestStoreList[topIndex];
       if (!store) return;
 
-      setSelectedStoreIndex?.(topIndex);
+      if (!shouldSkipAutoSelection) {
+        setSelectedStoreIndex?.(topIndex);
+      }
       setSelectedStore?.(store);
 
       const lat = store?.locationDto?.latitude;
@@ -561,6 +566,7 @@ const MapStoreList = ({
     setSelectedStoreIndex,
     setSelectedStore,
     detailCenterOffset,
+    shouldSkipAutoSelection,
   ]);
 
   // ✅ stores가 변경되면 예약된 이동 취소
@@ -608,12 +614,16 @@ const MapStoreList = ({
     [],
   );
 
+  const listSelectedStoreIndex = shouldSkipAutoSelection
+    ? null
+    : selectedStoreIndex;
+
   const renderItem = useCallback(
     ({item, index}) => (
       <MapStoreItem
         item={item}
         index={index}
-        selectedStoreIndex={selectedStoreIndex}
+        selectedStoreIndex={listSelectedStoreIndex}
         setSelectedStore={setSelectedStore}
         moveCenterMap={moveCenterMap}
         navigation={navigation}
@@ -624,7 +634,7 @@ const MapStoreList = ({
       />
     ),
     [
-      selectedStoreIndex,
+      listSelectedStoreIndex,
       setSelectedStore,
       moveCenterMap,
       navigation,
@@ -636,6 +646,30 @@ const MapStoreList = ({
   const renderNoStoreView = () => (
     <NoneStore navigation={navigation} location={location} />
   );
+
+  const handleListContainerLayout = useCallback(event => {
+    const height = event?.nativeEvent?.layout?.height;
+    if (typeof height !== 'number' || Number.isNaN(height)) {
+      return;
+    }
+    setListContainerHeight(prev =>
+      prev == null || Math.abs(prev - height) > 1 ? height : prev,
+    );
+  }, []);
+
+  const handleListContentSizeChange = useCallback((_, height) => {
+    if (typeof height !== 'number' || Number.isNaN(height)) {
+      return;
+    }
+    setListContentHeight(prev =>
+      prev == null || Math.abs(prev - height) > 1 ? height : prev,
+    );
+  }, []);
+  useEffect(() => {
+    if (detailStoreId || storegetloading || stores.length === 0) {
+      setListContentHeight(0);
+    }
+  }, [detailStoreId, storegetloading, stores.length]);
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filterInitialTab, setFilterInitialTab] = useState('거리');
@@ -655,6 +689,12 @@ const MapStoreList = ({
 
   const mapSearchCtx = useMapSearch();
   const listModeCollapsed = !isDetailMode && currentIndex === 0;
+  const listHasRoomToScroll =
+    listContentHeight > 0 &&
+    listContainerHeight > 0 &&
+    listContentHeight - listContainerHeight > 12;
+  const shouldEnableContentPanGesture =
+    !filterModalVisible && !isDetailMode && !listHasRoomToScroll;
 
   useEffect(() => {
     if (isDetailMode) return;
@@ -789,8 +829,9 @@ const MapStoreList = ({
           scrollEventThrottle={16}
           onViewableItemsChanged={onViewableItemsChanged.current}
           viewabilityConfig={viewabilityConfig.current}
+          onContentSizeChange={handleListContentSizeChange}
           renderItem={renderItem}
-          extraData={selectedStoreIndex}
+          extraData={listSelectedStoreIndex}
           initialNumToRender={8}
           maxToRenderPerBatch={8}
           windowSize={10}
@@ -821,7 +862,8 @@ const MapStoreList = ({
     return (
       <Animated.View
         style={[styles.listAnimatedContainer, listBodyAnimatedStyle]}
-        pointerEvents={listModeCollapsed ? 'none' : 'auto'}>
+        pointerEvents={listModeCollapsed ? 'none' : 'auto'}
+        onLayout={handleListContainerLayout}>
         {listContent}
       </Animated.View>
     );
@@ -854,7 +896,7 @@ const MapStoreList = ({
             bottomInset={0}
             handleIndicatorStyle={[styles.sheetHandleIndicator]}
             backgroundStyle={[styles.sheetBackground]}
-            enableContentPanningGesture={false}
+            enableContentPanningGesture={shouldEnableContentPanGesture}
             enableHandlePanningGesture={!filterModalVisible}
             enableOverDrag={false}
             animatedIndex={animatedIndex}
