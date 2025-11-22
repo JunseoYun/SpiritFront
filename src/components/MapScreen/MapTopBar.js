@@ -1,10 +1,14 @@
 import React, {useCallback, useEffect, useRef} from 'react';
-import {StyleSheet, Text, Pressable, Animated, Platform} from 'react-native';
+import {StyleSheet, Text, Pressable, Animated, View} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useMapSearch} from '../../context/MapSearchContext';
 import CancelText from '../CancelText/CancelText';
 import ColorUtil from '../../utils/ColorUtil';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 const MapTopBar = ({
   navigation,
@@ -20,6 +24,10 @@ const MapTopBar = ({
   const whiteBgAnim = useRef(
     new Animated.Value(forceWhiteBackground ? 1 : 0),
   ).current;
+  const gradientOpacity = whiteBgAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+  });
 
   useEffect(() => {
     Animated.timing(whiteBgAnim, {
@@ -75,59 +83,95 @@ const MapTopBar = ({
         },
       ]}
       onLayout={handleLayout}>
-      <Animated.View
-        style={[
-          styles.searchContainer,
-          forceWhiteBackground ? styles.searchContainerSolid : null,
-          {flex: 1},
-          {
-            borderWidth: whiteBgAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, StyleSheet.hairlineWidth * 2],
-            }),
-            shadowOpacity: whiteBgAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0.2, 0],
-            }),
-          },
-        ]}>
-        <Pressable
+      <View style={styles.contentRow}>
+        <Animated.View
+          style={[
+            styles.searchContainer,
+            styles.searchContainerSpacing,
+            forceWhiteBackground ? styles.searchContainerSolid : null,
+            {
+              borderWidth: whiteBgAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, StyleSheet.hairlineWidth * 2],
+              }),
+              shadowOpacity: whiteBgAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.2, 0],
+              }),
+            },
+          ]}>
+          <Pressable
+            onPress={() => {
+              navigation.navigate('MainScreen');
+            }}
+            style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={20} color="#333" />
+          </Pressable>
+
+          <Pressable
+            style={styles.searchBox}
+            onPress={() => {
+              navigation.navigate('SearchStack', {
+                screen: 'SearchScreen',
+              });
+            }}>
+            <Text
+              style={[
+                styles.placeholder,
+                searchText?.trim()?.length > 0 && {color: 'black'},
+              ]}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {searchText?.trim()?.length > 0
+                ? searchText
+                : '술집이나 메뉴를 검색하세요'}
+            </Text>
+            {searchText?.trim()?.length > 0 && (
+              <CancelText
+                rightnum={0}
+                topnum={0}
+                paddingnum={0}
+                handlecancel={() => setSearchText('')}
+                size={20}
+              />
+            )}
+          </Pressable>
+        </Animated.View>
+
+        <AnimatedPressable
+          style={[
+            styles.homeButton,
+            forceWhiteBackground ? styles.homeButtonSolid : null,
+            {
+              borderWidth: whiteBgAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, StyleSheet.hairlineWidth * 2],
+              }),
+              shadowOpacity: whiteBgAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.2, 0],
+              }),
+            },
+          ]}
           onPress={() => {
             navigation.navigate('MainScreen');
-          }}
-          style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={20} color="#333" />
-        </Pressable>
-
-        <Pressable
-          style={styles.searchBox}
-          onPress={() => {
-            navigation.navigate('SearchStack', {
-              screen: 'SearchScreen',
-            });
           }}>
-          <Text
-            style={[
-              styles.placeholder,
-              searchText?.trim()?.length > 0 && {color: 'black'},
-            ]}
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            {searchText?.trim()?.length > 0
-              ? searchText
-              : '원하는 술집이나 메뉴를 검색하세요'}
-          </Text>
-          {searchText?.trim()?.length > 0 && (
-            <CancelText
-              rightnum={0}
-              topnum={0}
-              paddingnum={0}
-              handlecancel={() => setSearchText('')}
-              size={20}
+          <AnimatedLinearGradient
+            colors={['#3cbbff', '#30d4f9', '#9a6cff']}
+            locations={[0, 0.5, 1]}
+            start={{x: 0, y: 0}}
+            end={{x: 1, y: 1}}
+            style={[styles.homeButtonGradient, {opacity: gradientOpacity}]}
+          />
+          <View style={styles.homeButtonContent}>
+            <Ionicons
+              name="home"
+              size={22}
+              color={forceWhiteBackground ? '#333' : '#fff'}
             />
-          )}
-        </Pressable>
-      </Animated.View>
+          </View>
+        </AnimatedPressable>
+      </View>
     </Animated.View>
   );
 };
@@ -138,6 +182,11 @@ const styles = StyleSheet.create({
     zIndex: 10,
     backgroundColor: 'transparent',
     shadowColor: '#000',
+  },
+  contentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -152,7 +201,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 1.5,
     shadowOffset: {width: 0, height: 2},
-    marginHorizontal: 18,
+  },
+  searchContainerSpacing: {
+    flex: 1,
+    marginRight: 12,
   },
   searchContainerSolid: {
     borderWidth: 1,
@@ -161,19 +213,55 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0,
   },
-  backBtn: {
-    marginRight: 6,
-    paddingRight: 6,
-  },
   searchBox: {
     flex: 1,
     justifyContent: 'center',
+  },
+  backBtn: {
+    marginRight: 6,
+    paddingRight: 6,
   },
   placeholder: {
     color: '#9E9E9E',
     fontSize: 16,
     paddingRight: 30,
     fontFamily: 'Pretendard-Regular',
+  },
+  homeButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 9,
+    backgroundColor: '#fff',
+    borderColor: ColorUtil.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 1.5,
+    shadowOffset: {width: 0, height: 2},
+  },
+  homeButtonGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 9,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+  homeButtonContent: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  homeButtonSolid: {
+    borderWidth: 1,
+    borderColor: ColorUtil.border,
+    elevation: 0,
+    shadowColor: '#000',
+    shadowOpacity: 0,
   },
 });
 

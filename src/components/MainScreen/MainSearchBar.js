@@ -10,7 +10,7 @@ const MainSearchBar = ({handleSearchPress}) => {
       onPress={() => handleSearchPress()}
       style={styles.searchBar}>
       <View style={styles.searchContent}>
-        <Text style={styles.searchText}>원하는 술집이나 메뉴를 검색하세요</Text>
+        <Text style={styles.searchText}>술집이나 메뉴를 검색하세요</Text>
         <Feather name="search" size={18} color="#333" />
       </View>
     </Pressable>
