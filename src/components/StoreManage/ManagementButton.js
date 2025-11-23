@@ -3,7 +3,7 @@ import {Pressable, StyleSheet, View, Text, Share} from 'react-native';
 const ManagementButton = ({onPress = null, title = null}) => {
   return (
     <Pressable style={styles.managementContainer} onPress={onPress}>
-      <Text style={styles.managementText}>{title} 관리</Text>
+      <Text style={styles.managementText}>{title}</Text>
     </Pressable>
   );
 };

@@ -20,6 +20,7 @@ import StoreTabs from '../../components/StoreScreen/StoreTabs';
 import StoreInfoImage from '../../components/StoreScreen/StoreInfoImage';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {StoreMainget, get_store_share, Storelikepost} from '../../api/storeApi';
+import {getEventsByStore} from '../../api/eventApi';
 
 import StoreMenuScreen from './StoreMenuScreen';
 import StoreAlcoholScreen from './StoreAlcoholScreen';
@@ -62,6 +63,7 @@ const StoreMainScreen = ({navigation}) => {
   const [skeletonLoading, setSkeletonLoading] = useState(true);
   const {showToast} = useToast();
   const [sectionPositions, setSectionPositions] = useState({});
+  const [events, setEvents] = useState([]);
 
   const [isOrderEnabled, setIsOrderEnabled] = useState(true);
   const [showOrderForm, setShowOrderForm] = useState(false);
@@ -176,6 +178,14 @@ const StoreMainScreen = ({navigation}) => {
       setStoreLikeCount(storeData?.likeCount ?? 0);
       setLongitude(storeData.locationDto.longitude);
       setLatitude(storeData.locationDto.latitude);
+
+      try {
+        const eventList = await getEventsByStore(storeId);
+        setEvents(Array.isArray(eventList) ? eventList : []);
+      } catch (eventError) {
+        console.log('Failed to load events', eventError);
+        setEvents([]);
+      }
 
       if (storeData.isDeleted) {
         showToast('삭제된 가게입니다.');
@@ -549,6 +559,7 @@ const StoreMainScreen = ({navigation}) => {
 
                   <StoreMainInfo
                     storedata={storedata}
+                    events={events}
                     navigation={navigation}
                     storeTimeEditHandle={storeTimeEditHandle}
                     setLoading={setLoading}

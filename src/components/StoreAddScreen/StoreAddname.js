@@ -1,10 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
+
 import ColorUtil from '../../utils/ColorUtil';
 
 const StoreAddname = ({storename, setStorename, error, type = 'default'}) => {
@@ -15,13 +11,6 @@ const StoreAddname = ({storename, setStorename, error, type = 'default'}) => {
   const [overText, setOverText] = useState(false);
 
   // reanimated shared value
-  const labelAnim = useSharedValue(storename !== '' ? 1 : 0);
-
-  useEffect(() => {
-    labelAnim.value = withTiming(focusedInput || storename !== '' ? 1 : 0, {
-      duration: 120,
-    });
-  }, [focusedInput, storename]);
 
   useEffect(() => {
     if (error === 'storename' && storeNameInputRef.current) {
