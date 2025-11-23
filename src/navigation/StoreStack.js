@@ -25,6 +25,7 @@ import StoreOrderScreen from '../screens/StoreOrder/StoreOrderScreen';
 import StorePaymentScreen from '../screens/StoreOrder/StorePaymentScreen';
 import StoreUpdateScreen from '../screens/StoreInfo/StoreUpdateScreen';
 import StoreManageScreen from '../screens/StoreInfo/StoreManage/StoreManageScreen';
+import StoreEventEditScreen from '../screens/StoreInfo/StoreManage/StoreEventEditScreen';
 import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
 const Stack = createStackNavigator();
 
@@ -119,6 +120,31 @@ export default function StoreStack() {
         name="StoreManageScreen"
         component={StoreManageScreen}
         options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="StoreEventEditScreen"
+        component={StoreEventEditScreen}
+        options={({navigation}) => ({
+          headerTitleAlign: 'center',
+          headerShadowVisible: false,
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-SemiBold',
+            fontSize: 18,
+            color: '#333',
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
       />
 
       <Stack.Screen

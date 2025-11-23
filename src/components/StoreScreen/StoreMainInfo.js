@@ -18,8 +18,11 @@ import Contact from './StoreMainInfo/Contact';
 import Description from './StoreMainInfo/Description';
 import Moods from './StoreMainInfo/Moods';
 import ColorUtil from '../../utils/ColorUtil';
+import StoreEvents from './StoreMainInfo/StoreEvents';
+
 const StoreMainInfo = ({
   storedata = {},
+  events = [],
   navigation,
   startUpdate,
   handleReport,
@@ -119,15 +122,13 @@ const StoreMainInfo = ({
         />
       )}
 
-      <View style={styles.eventContainer}>
-        <View style={styles.eventHeader}>
-          <Text style={styles.eventTitle}>크리스마스 이벤트</Text>
-          <Text style={styles.eventTag}>12/25 예정</Text>
-        </View>
-        <Text style={styles.eventCopy}>
-          {storedata?.eventText ?? '가족 방문 시 와인 1병 제공'}
-        </Text>
-      </View>
+      {events?.length > 0 && (
+        <StoreEvents
+          events={events}
+          fallbackText={storedata?.eventText}
+          navigation={navigation}
+        />
+      )}
 
       {storedata?.mainDrinkDtos?.length > 0 && (
         <Alcohol
@@ -208,43 +209,6 @@ const styles = StyleSheet.create({
     height: 1,
     marginHorizontal: 16,
     marginVertical: 5,
-  },
-  eventContainer: {
-    marginHorizontal: 16,
-    marginTop: 5,
-    marginBottom: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 14,
-    backgroundColor: '#F0F7FF',
-    borderWidth: 1,
-    borderColor: '#D0E6FF',
-  },
-  eventHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  eventTitle: {
-    fontFamily: 'Pretendard-SemiBold',
-    fontSize: 13,
-    color: '#1D5AFF',
-  },
-  eventTag: {
-    fontFamily: 'Pretendard-Bold',
-    fontSize: 11,
-    color: '#1D5AFF',
-    backgroundColor: '#E0ECFF',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 20,
-  },
-  eventCopy: {
-    fontFamily: 'Pretendard-Medium',
-    fontSize: 15,
-    lineHeight: 22,
-    color: '#333',
   },
   infoView: {
     flexDirection: 'row',

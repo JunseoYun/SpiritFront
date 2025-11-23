@@ -18,7 +18,6 @@ import {
   InteractionManager,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Feather from 'react-native-vector-icons/Feather';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -33,6 +32,7 @@ import StoreAlcohol from '../../components/StoreAddScreen/StoreAlcohol';
 import StoreFacilitiesInfo from '../../components/StoreAddScreen/StoreFacilitiesInfo';
 import StorAddeNumber from '../../components/StoreAddScreen/StoreAddNumber';
 import StoreAddContent from '../../components/StoreAddScreen/StoreAddContent';
+import StoreEventManager from '../../components/StoreManage/StoreMainManage/StoreEventManager';
 import Loading from '../../hooks/Loading';
 import BottomActionButton from '../../utils/BottomActionButton';
 import useDoubleBackExit from '../../hooks/useDoubleBackExit';
@@ -132,6 +132,12 @@ const STEP_GUIDES = {
     tipTitle: '첨부 가이드',
     tip: '전체 정보가 잘 보이도록 밝은 곳에서 촬영해 주세요. 등록증은 최신본을 사용해주세요.',
   },
+  event: {
+    type: '매장 이벤트',
+    title: '매장 이벤트를 등록해주세요',
+    description:
+      '진행 중인 할인·행사 정보를 등록하면 고객 관심도가 높아집니다.',
+  },
 };
 
 const DAY_TO_UPPER = DAY_KEYS.reduce((acc, day) => {
@@ -192,9 +198,7 @@ const containsForbiddenText = value => {
   }
   const lowered = value.toLowerCase();
   return forbiddenWords.some(word =>
-    typeof word === 'string'
-      ? lowered.includes(word.toLowerCase())
-      : false,
+    typeof word === 'string' ? lowered.includes(word.toLowerCase()) : false,
   );
 };
 
@@ -364,7 +368,7 @@ const StoreUpdateScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const route = useRoute();
   useDoubleBackExit(navigation);
-  const {storeId, initialStoreData, type} = route.params || {};
+  const {storeId, initialStoreData, events, type} = route.params || {};
 
   const {showAlert, AlertComponent} = useCustomAlert();
   const allowLeaveRef = useRef(false);
@@ -411,6 +415,10 @@ const StoreUpdateScreen = ({navigation}) => {
   const contentRef = useRef(null);
   const initialSnapshotRef = useRef(null);
   const initialSnapshotStringRef = useRef('');
+  const handleEventDirtyChange = useCallback(
+    value => setHasChanges(!!value),
+    [],
+  );
 
   const currentSnapshot = useMemo(
     () =>
@@ -451,10 +459,13 @@ const StoreUpdateScreen = ({navigation}) => {
   );
 
   useEffect(() => {
+    if (type === 'event') {
+      return;
+    }
     if (!initialSnapshotStringRef.current) return;
     const serialized = serializeSnapshot(currentSnapshot);
     setHasChanges(serialized !== initialSnapshotStringRef.current);
-  }, [currentSnapshot]);
+  }, [currentSnapshot, type]);
 
   const scrollToError = useCallback(ref => {
     if (!ref?.current || !scrollViewRef.current) return;
@@ -716,6 +727,8 @@ const StoreUpdateScreen = ({navigation}) => {
         return '부가 정보 관리';
       case 'hours':
         return '영업시간 관리';
+      case 'event':
+        return '이벤트 관리';
       default:
         return true;
     }
@@ -1065,34 +1078,19 @@ const StoreUpdateScreen = ({navigation}) => {
           payload: diffPayload,
         });
         const updateResponse = await UpdateStore(storeId, diffPayload);
-        console.log('[StoreUpdateScreen] 매장 정보 수정 응답', updateResponse);
       }
 
       if (deleted.length) {
-        console.log('[StoreUpdateScreen] 매장 이미지 삭제 요청 페이로드', {
-          storeId,
-          deleted,
-        });
         const deletedResponse = await DeleteStoreImage(storeId, deleted);
-        console.log(
-          '[StoreUpdateScreen] 매장 이미지 삭제 응답',
-          deletedResponse,
-        );
+
         if (deletedResponse?.length) {
           fallbackMainImageUrl = deletedResponse[0];
         }
       }
 
       if (added.length) {
-        console.log('[StoreUpdateScreen] 매장 이미지 업로드 요청 페이로드', {
-          storeId,
-          added,
-        });
         const uploadResponse = await UpdateStoreImage(storeId, added);
-        console.log(
-          '[StoreUpdateScreen] 매장 이미지 업로드 응답',
-          uploadResponse,
-        );
+
         if (Array.isArray(uploadResponse)) {
           if (!fallbackMainImageUrl && uploadResponse.length) {
             fallbackMainImageUrl = uploadResponse[0];
@@ -1137,10 +1135,6 @@ const StoreUpdateScreen = ({navigation}) => {
         (hasImageOrderChanged || added.length > 0 || deleted.length > 0);
 
       if (needsReorderUpdate) {
-        console.log('[StoreUpdateScreen] 매장 이미지 순서 변경 요청', {
-          storeId,
-          order: finalRemoteOrder,
-        });
         await StoreImageUpdateSort(storeId, finalRemoteOrder);
         const representativeImage = finalRemoteOrder[0];
         if (representativeImage) {
@@ -1150,13 +1144,6 @@ const StoreUpdateScreen = ({navigation}) => {
         setImageUris(finalRemoteOrder);
         setOriginalImages(finalRemoteOrder);
       } else if (fallbackMainImageUrl) {
-        console.log(
-          '[StoreUpdateScreen] 메인 이미지 갱신 요청 페이로드(응답 기반)',
-          {
-            storeId,
-            payload: {mainImgUrl: fallbackMainImageUrl},
-          },
-        );
         await UpdateStore(storeId, {mainImgUrl: fallbackMainImageUrl});
       }
 
@@ -1339,6 +1326,17 @@ const StoreUpdateScreen = ({navigation}) => {
             {renderStepTip('hours')}
           </View>
         );
+      case 'event':
+        return (
+          <>
+            {renderStepIntro('event')}
+            <StoreEventManager
+              storeId={storeId}
+              localEvents={events}
+              onDirtyChange={handleEventDirtyChange}
+            />
+          </>
+        );
       default:
         return (
           <View style={{alignItems: 'center', marginTop: 40}}>
@@ -1363,6 +1361,9 @@ const StoreUpdateScreen = ({navigation}) => {
     storeNumber,
     storeContent,
     error,
+    navigation,
+    storeId,
+    handleEventDirtyChange,
   ]);
 
   return (
@@ -1380,14 +1381,21 @@ const StoreUpdateScreen = ({navigation}) => {
           {renderSection()}
         </ScrollView>
 
-        <BottomActionButton
-          label="저장하기"
-          onPress={handleSave}
-          disabled={!hasChanges || loading}
-          cancel
-          cancelLabel="취소"
-          onCancel={() => handleCancelPress()}
-        />
+        {type === 'event' ? (
+          <BottomActionButton
+            label={'완료'}
+            onPress={() => navigation.goBack()}
+          />
+        ) : (
+          <BottomActionButton
+            label={type === 'event' ? '완료' : '저장하기'}
+            onPress={handleSave}
+            disabled={!hasChanges || loading}
+            cancel
+            cancelLabel="취소"
+            onCancel={() => handleCancelPress()}
+          />
+        )}
       </KeyboardAvoidingView>
       <AlertComponent />
       <Loading loading={loading} />

@@ -2,6 +2,7 @@ import React, {useState, useMemo, useCallback} from 'react';
 import {useFocusEffect} from '@react-navigation/native';
 import {StyleSheet, View} from 'react-native';
 import {StoreMainget} from '../../../api/storeApi';
+import {getEventsByStore} from '../../../api/eventApi';
 import {
   ParkingCircle,
   Users,
@@ -104,6 +105,8 @@ const StoreMainManageScreen = ({
 
   const [loading, setLoading] = useState(false);
   const [storeInfo, setStoreInfo] = useState(storedata);
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
 
   const storeImageUrls = useMemo(
     () =>
@@ -127,6 +130,23 @@ const StoreMainManageScreen = ({
     } catch (err) {
       console.log('Failed to refresh store data', err);
       return null;
+    }
+  }, [storeId]);
+
+  const fetchEvents = useCallback(async () => {
+    if (!storeId) {
+      setEvents([]);
+      return;
+    }
+    setEventsLoading(true);
+    try {
+      const list = await getEventsByStore(storeId);
+      setEvents(Array.isArray(list) ? list : []);
+    } catch (error) {
+      console.log('Failed to load store events', error);
+      setEvents([]);
+    } finally {
+      setEventsLoading(false);
     }
   }, [storeId]);
 
@@ -308,13 +328,16 @@ const StoreMainManageScreen = ({
     ],
   );
 
-  const eventInfo = useMemo(() => storeInfo?.eventInfoDto, [storeInfo]);
+  const handleEventManagerGoBack = useCallback(async () => {
+    await fetchEvents();
+  }, [fetchEvents]);
 
   // Refetch store info when screen regains focus
   useFocusEffect(
     useCallback(() => {
       refreshStoreInfo();
-    }, [refreshStoreInfo]),
+      fetchEvents();
+    }, [refreshStoreInfo, fetchEvents]),
   );
 
   return (
@@ -339,7 +362,7 @@ const StoreMainManageScreen = ({
             },
           })
         }
-        title={'매장 정보'}
+        title={'매장 정보 관리'}
       />
 
       <StoreExtraInfoSection title="부가 정보" items={extraInfoItems} />
@@ -355,7 +378,7 @@ const StoreMainManageScreen = ({
             },
           })
         }
-        title={'부가 정보'}
+        title={'부가 정보 관리'}
       />
 
       <StoreLocationSection
@@ -375,7 +398,7 @@ const StoreMainManageScreen = ({
             },
           })
         }
-        title={'위치'}
+        title={'위치 관리'}
       />
 
       <StoreHoursSection
@@ -395,11 +418,29 @@ const StoreMainManageScreen = ({
             },
           })
         }
-        title={'영업시간'}
+        title={'영업시간 관리'}
       />
 
-      <StoreEventSection title="이벤트" event={eventInfo} />
-      <ManagementButton onPress={null} title={'이벤트'} />
+      <StoreEventSection
+        title="이벤트"
+        events={events}
+        loading={eventsLoading}
+      />
+      <ManagementButton
+        onPress={() =>
+          navigation.navigate('StoreStack', {
+            screen: 'StoreUpdateScreen',
+            params: {
+              storeId: storeInfo?.id,
+              initialStoreData: storeInfo,
+              events: events,
+              type: 'event',
+              onGoBack: handleEventManagerGoBack,
+            },
+          })
+        }
+        title={'이벤트 관리'}
+      />
       <Loading loading={loading} />
     </View>
   );
