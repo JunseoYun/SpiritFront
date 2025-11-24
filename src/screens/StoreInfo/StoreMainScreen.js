@@ -333,20 +333,34 @@ const StoreMainScreen = ({navigation}) => {
   const [mainSectionHeight, setMainSectionHeight] = useState(0);
   const [filterHeight, setFilterHeight] = useState(0);
   const [filterHeaderTouchable, setFilterHeaderTouchable] = useState(false);
+  const [tabsLayoutY, setTabsLayoutY] = useState(null);
+  const [tabsHeight, setTabsHeight] = useState(0);
+  const [tabHeaderTouchable, setTabHeaderTouchable] = useState(false);
+  const headerOverlayOffset = useMemo(
+    () => (Platform.OS === 'ios' ? insets.top + 30 : top + 40),
+    [insets.top, top],
+  );
 
   const filterHeaderThreshold = useMemo(() => {
     if (!mainSectionHeight) return 100000; // wait until measured
     // 상단 고정 헤더 높이 보정
-    // console.log(insets.top);
-    const overlayOffset = Platform.OS === 'ios' ? insets.top + 30 : top + 40;
     // 메인 이미지가 없는 경우 목록 헤더가 너무 빨리 붙는 것을 방지하기 위해 추가 지연 적용
     // iOS는 상단 여백이 더 크므로 약간 더 크게 지연
 
     // 조금 더 늦게 붙도록 지연값을 소폭 상향
     const hasImage = !!(storedata?.imgUrlList && storedata.imgUrlList.length);
     const extraDelay = hasImage ? 0 : Platform.OS === 'ios' ? 0 : insets.top;
-    return Math.max(0, mainSectionHeight - overlayOffset + extraDelay);
-  }, [mainSectionHeight, insets.top, top, storedata?.imgUrlList]);
+    return Math.max(
+      0,
+      mainSectionHeight - headerOverlayOffset - tabsHeight + extraDelay,
+    );
+  }, [
+    headerOverlayOffset,
+    insets.top,
+    mainSectionHeight,
+    storedata?.imgUrlList,
+    tabsHeight,
+  ]);
 
   const stickyTranslateY = 0;
 
@@ -359,6 +373,42 @@ const StoreMainScreen = ({navigation}) => {
 
   const [selectedType, setSelectedType] = useState(null);
   const isClickedRef = useRef(false);
+  const tabHeaderThreshold = useMemo(() => {
+    if (tabsLayoutY === null) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+    return Math.max(0, tabsLayoutY - headerOverlayOffset);
+  }, [headerOverlayOffset, tabsLayoutY]);
+
+  const tabHeaderProgress = scrollY.interpolate({
+    inputRange: [tabHeaderThreshold, tabHeaderThreshold + 1],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const tabsInlineOpacity = Animated.subtract(1, tabHeaderProgress);
+  const handleTabPress = useCallback(
+    screen => {
+      if (
+        !scrollViewRef.current ||
+        tabsLayoutY === null ||
+        tabHeaderThreshold >= Number.MAX_SAFE_INTEGER
+      ) {
+        return;
+      }
+      if (
+        screen === 'StoreMenuScreen' ||
+        screen === 'StoreAlcoholScreen'
+      ) {
+        scrollViewRef.current.scrollTo({
+          x: 0,
+          y: tabHeaderThreshold,
+          animated: true,
+        });
+      }
+    },
+    [tabHeaderThreshold, tabsLayoutY],
+  );
 
   // Control sticky filter header touchability without using __getValue()
   useEffect(() => {
@@ -369,6 +419,15 @@ const StoreMainScreen = ({navigation}) => {
     });
     return () => scrollY.removeListener(sub);
   }, [filterHeaderThreshold]);
+
+  useEffect(() => {
+    const hysteresis = 1;
+    const sub = scrollY.addListener(({value}) => {
+      const active = value >= tabHeaderThreshold + hysteresis;
+      setTabHeaderTouchable(prev => (prev !== active ? active : prev));
+    });
+    return () => scrollY.removeListener(sub);
+  }, [tabHeaderThreshold]);
 
   // const handleOrderButtonPress = () => {
   //   setShowOrderForm(true);
@@ -457,13 +516,30 @@ const StoreMainScreen = ({navigation}) => {
                 likeDisabled={isLikeProcessing}
               />
             )}
+            <Animated.View
+              pointerEvents={tabHeaderTouchable ? 'auto' : 'none'}
+              style={[
+                styles.fixedTabsHeader,
+                {
+                  top: headerOverlayOffset,
+                  opacity: tabHeaderProgress,
+                  transform: [{translateY: stickyTranslateY}],
+                },
+              ]}>
+              <StoreTabs
+                changePage={setCurrentPage}
+                currentPage={currentPage}
+                onTabPress={handleTabPress}
+                showBottomBorder
+              />
+            </Animated.View>
             {currentPage === 'StoreAlcoholScreen' && (
               <Animated.View
                 pointerEvents={filterHeaderTouchable ? 'auto' : 'none'}
                 style={[
                   styles.fixedFilterHeader,
                   {
-                    top: Platform.OS === 'ios' ? insets.top + 30 : top + 40,
+                    top: headerOverlayOffset + tabsHeight,
                     opacity: filterHeaderProgress,
                     transform: [{translateY: stickyTranslateY}],
                   },
@@ -575,12 +651,27 @@ const StoreMainScreen = ({navigation}) => {
                     likeCount={storeLikeCount}
                     likeDisabled={isLikeProcessing}
                   />
-                  <View style={{backgroundColor: '#F2F2F2', height: 10}} />
-
-                  <StoreTabs
-                    changePage={setCurrentPage}
-                    currentPage={currentPage}
+                  <View
+                    style={{
+                      backgroundColor: '#F2F2F2',
+                      height: 7,
+                      marginBottom: 3,
+                    }}
                   />
+
+                  <Animated.View
+                    onLayout={e => {
+                      const {y, height} = e.nativeEvent.layout;
+                      setTabsLayoutY(y);
+                      setTabsHeight(height);
+                    }}
+                    style={{opacity: tabsInlineOpacity}}>
+                    <StoreTabs
+                      changePage={setCurrentPage}
+                      currentPage={currentPage}
+                      onTabPress={handleTabPress}
+                    />
+                  </Animated.View>
 
                   <StoreInfoImage
                     storeId={storeId}
@@ -628,11 +719,6 @@ const StoreMainScreen = ({navigation}) => {
                       storeId={storeId}
                       alcohols={alcohols}
                       mainDrinks={storedata.mainDrinkDtos}
-                      // scrollViewRef={scrollViewRef}
-                      // isUpdatable={storedata?.isUpdatable}
-                      // onAlcoholUpdateComplete={refresAlcohols}
-                      // imagelist={storedata?.imgUrlList?.length}
-                      // onScrollTo={scrollToHandler}
                       sectionPositions={sectionPositions}
                       setSectionPositions={setSectionPositions}
                       isOrderEnabled={isOrderEnabled}
@@ -773,11 +859,15 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 1,
     backgroundColor: '#fff',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E1E1E1',
+  },
+  fixedTabsHeader: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 2,
+    backgroundColor: '#fff',
   },
   nonimgstickyActive: {
     paddingTop: 10,

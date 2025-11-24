@@ -9,8 +9,17 @@ import {
 } from 'react-native';
 
 const {width} = Dimensions.get('window'); // 화면 너비
+const TAB_WIDTH = width / 3;
+const UNDERLINE_BASE_REDUCTION = 70;
+const UNDERLINE_WIDTH = Math.max(0, TAB_WIDTH - UNDERLINE_BASE_REDUCTION);
+const UNDERLINE_OFFSET = (TAB_WIDTH - UNDERLINE_WIDTH) / 2;
 
-const StoreTabs = ({changePage, currentPage}) => {
+const StoreTabs = ({
+  changePage,
+  currentPage,
+  showBottomBorder = false,
+  onTabPress,
+}) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const animatedValue = useRef(new Animated.Value(0)).current;
 
@@ -25,31 +34,29 @@ const StoreTabs = ({changePage, currentPage}) => {
     const index = tabs.findIndex(tab => tab.screen === currentPage);
     if (index !== -1) {
       setSelectedTab(index);
-      Animated.timing(animatedValue, {
-        toValue: index,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
+      animatedValue.setValue(index);
     }
-  }, [currentPage]);
+  }, [animatedValue, currentPage]);
 
   const handlePress = index => {
+    const targetScreen = tabs[index].screen;
+    onTabPress?.(targetScreen);
     setSelectedTab(index);
-    Animated.timing(animatedValue, {
-      toValue: index,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-    changePage(tabs[index].screen);
+    animatedValue.setValue(index);
+    changePage(targetScreen);
   };
 
   const underlinePosition = animatedValue.interpolate({
     inputRange: [0, 1, 2],
-    outputRange: [0, width / 3, (2 * width) / 3],
+    outputRange: [0, TAB_WIDTH, 2 * TAB_WIDTH],
   });
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        showBottomBorder && styles.containerBottomBorder,
+      ]}>
       <View style={styles.tabContainer}>
         {tabs.map((tab, index) => (
           <Pressable
@@ -81,7 +88,10 @@ const StoreTabs = ({changePage, currentPage}) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    marginBottom: 5,
+  },
+  containerBottomBorder: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E1E1E1',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -92,7 +102,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingTop: 15,
-    paddingBottom: 17,
+    paddingBottom: 12,
   },
   tabText: {
     fontSize: 16,
@@ -101,16 +111,15 @@ const styles = StyleSheet.create({
   },
   selectedTabText: {
     fontFamily: 'Pretendard-Bold',
-    color: '#1a1a1a', // 여긴
+    color: '#333', // 여긴
   },
   underline: {
-    height: 3,
-    width: width / 3 - 60, // ✅ 각 탭에 맞는 밑줄 너비 설정
-    backgroundColor: '#1a1a1a', // 여기
+    height: 2.5,
+    width: UNDERLINE_WIDTH, // ✅ 각 탭에 맞는 밑줄 너비 설정
+    backgroundColor: '#333', // 여기
     position: 'absolute',
-    bottom: 5,
-    left: 30,
-    borderRadius: 1,
+    bottom: 0,
+    left: UNDERLINE_OFFSET,
   },
 });
 
