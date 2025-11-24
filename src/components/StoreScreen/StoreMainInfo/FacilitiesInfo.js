@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import {
   SunMedium,
   DoorOpen,
@@ -27,30 +27,34 @@ const DEFAULT_FACILITIES = FACILITY_ITEMS.reduce((acc, item) => {
 const FacilitiesInfo = ({facilitiesInfoDto}) => {
   const facilities = {...DEFAULT_FACILITIES, ...(facilitiesInfoDto || {})};
 
+  // true인 것만 필터링
+  const activeItems = FACILITY_ITEMS.filter(item => facilities[item.key]);
+
+  // 아무것도 없을 때 처리
+  if (activeItems.length === 0) {
+    return (
+      <View style={styles.emptyBox}>
+        <Text style={styles.emptyText}>등록된 편의시설이 없어요.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <View style={styles.grid}>
-        {FACILITY_ITEMS.map(({key, label, icon: Icon}) => {
-          const isAvailable = !!facilities[key];
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{paddingHorizontal: 20}}>
+        {activeItems.map(item => {
+          const Icon = item.icon;
           return (
-            <View key={key} style={styles.item}>
-              <View
-                style={[styles.iconBox, isAvailable && styles.iconBoxActive]}>
-                <Icon
-                  size={20}
-                  color={isAvailable ? '#3CBBFF' : '#C2C7D1'}
-                  strokeWidth={2}
-                />
-              </View>
-              <Text
-                style={[styles.label, isAvailable && styles.labelActive]}
-                numberOfLines={1}>
-                {label}
-              </Text>
+            <View key={item.key} style={styles.chip}>
+              <Icon size={18} color={'#333'} style={{marginRight: 5}} />
+              <Text style={styles.label}>{item.label}</Text>
             </View>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -59,48 +63,31 @@ export default FacilitiesInfo;
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 18,
-    marginTop: 12,
-    marginBottom: 16,
+    marginTop: 5,
+    marginBottom: 15,
   },
 
-  grid: {
+  chip: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    rowGap: 22,
-  },
-  item: {
-    width: '30%',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    marginRight: 20,
   },
-  iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#FAFBFC',
-    borderWidth: 1,
-    borderColor: '#E7E9EE',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  iconBoxActive: {
-    backgroundColor: '#F3FAFF',
-    borderColor: '#CDEBFF',
-    shadowColor: '#3CBBFF',
-    shadowOpacity: 0.06,
-    shadowOffset: {width: 0, height: 1},
-    shadowRadius: 3,
-  },
+
   label: {
-    fontFamily: 'Pretendard-Regular',
-    fontSize: 12.5,
-    color: '#A1A8B3',
-    textAlign: 'center',
+    color: '#333',
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 15,
   },
-  labelActive: {
-    color: '#222',
+
+  emptyBox: {
+    marginHorizontal: 18,
+    marginTop: 10,
+    paddingVertical: 6,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#9CA3AF',
     fontFamily: 'Pretendard-Medium',
   },
 });

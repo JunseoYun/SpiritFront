@@ -58,15 +58,33 @@ const CARD_WIDTH = SCREEN_WIDTH - 32;
 /* ===============================================
    메인 컴포넌트
 =============================================== */
+const isEventActive = endAt => {
+  if (!endAt) return true;
+  const end = new Date(endAt);
+  if (Number.isNaN(end.getTime())) return true;
+  return end.getTime() >= Date.now();
+};
+
 const StoreEvents = ({
   events = [],
   navigation,
   storeName,
   fullView = false,
 }) => {
-  const sorted = useMemo(
-    () => [...events].sort((a, b) => new Date(a.startAt) - new Date(b.startAt)),
+  const activeEvents = useMemo(
+    () =>
+      (Array.isArray(events) ? events : []).filter(item =>
+        isEventActive(item?.endAt),
+      ),
     [events],
+  );
+
+  const sorted = useMemo(
+    () =>
+      [...activeEvents].sort(
+        (a, b) => new Date(a.startAt) - new Date(b.startAt),
+      ),
+    [activeEvents],
   );
 
   const openViewer = uri => {
@@ -144,6 +162,10 @@ const StoreEvents = ({
         snapToInterval: CARD_WIDTH + 5,
         decelerationRate: 'fast',
       };
+
+  if (sorted.length === 0) {
+    return null;
+  }
 
   return (
     <FlatList

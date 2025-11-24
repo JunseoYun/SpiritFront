@@ -13,7 +13,14 @@ const StoreMainInfoSection = ({storeInfo}) => {
   return (
     <View style={styles.container}>
       {INFO_FIELDS.map(field => {
-        const value = storeInfo?.[field.key];
+        let value = storeInfo?.[field.key];
+        if (field.key === 'contact' && typeof value === 'string') {
+          const digitsOnly = value.replace(/[^0-9]/g, '');
+          const match = digitsOnly.match(/^(\d{2,3})(\d{3,4})(\d{4})$/);
+          if (match) {
+            value = `${match[1]}-${match[2]}-${match[3]}`;
+          }
+        }
         return (
           <View key={field.key} style={styles.row}>
             <Ionicons

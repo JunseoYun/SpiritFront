@@ -127,23 +127,38 @@ const StoreEventSection = ({
             const imageUri =
               item?.eventImageUrl || item?.imageUrl || item?.imgUrl || '';
             const showActions = type === 'update';
+            const ended = isEventEnded(item?.endAt);
             return (
               <View
                 key={item?.id?.toString() || `${item?.title}-${item?.startAt}`}
                 style={styles.eventCard}>
                 <View style={styles.eventRow}>
                   <View style={styles.eventInfo}>
-                    <Text style={styles.eventTitle}>
+                    <Text
+                      style={[
+                        styles.eventTitle,
+                        ended && styles.eventEndedText,
+                      ]}>
                       {item?.title || '이벤트'}
                     </Text>
                     {!!item?.content && (
-                      <Text style={styles.eventContent}>{item.content}</Text>
+                      <Text
+                        style={[
+                          styles.eventContent,
+                          ended && styles.eventEndedText,
+                        ]}>
+                        {item.content}
+                      </Text>
                     )}
                     <View style={styles.eventPeriodRow}>
-                      <Text style={styles.eventPeriod}>
+                      <Text
+                        style={[
+                          styles.eventPeriod,
+                          ended && styles.eventEndedText,
+                        ]}>
                         {formatEventPeriod(item?.startAt, item?.endAt)}
                       </Text>
-                      {isEventEnded(item?.endAt) ? (
+                      {ended ? (
                         <Text
                           style={[styles.eventPeriod, styles.eventEndedLabel]}>
                           종료된 이벤트
@@ -155,7 +170,10 @@ const StoreEventSection = ({
                     <Pressable onPress={() => openViewer(imageUri)}>
                       <FastImage
                         source={{uri: imageUri}}
-                        style={styles.eventImage}
+                        style={[
+                          styles.eventImage,
+                          ended && styles.eventImageEnded,
+                        ]}
                       />
                     </Pressable>
                   ) : null}
@@ -234,6 +252,9 @@ const styles = StyleSheet.create({
     marginLeft: 14,
     backgroundColor: '#E9EEF5',
   },
+  eventImageEnded: {
+    opacity: 0.45,
+  },
 
   placeholderText: {
     fontSize: 11,
@@ -270,6 +291,9 @@ const styles = StyleSheet.create({
   eventEndedLabel: {
     color: '#CCC',
     marginTop: 0,
+  },
+  eventEndedText: {
+    color: '#CCC',
   },
   actionRow: {
     flexDirection: 'row',

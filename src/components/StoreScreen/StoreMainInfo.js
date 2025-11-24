@@ -154,13 +154,11 @@ const StoreMainInfo = ({
         isAlwaysOpen={storedata?.isAlwaysOpen}
         operationSchedule={operationSchedule}
       />
+      {storedata?.contact && <Contact contact={storedata?.contact} />}
 
-      <Contact contact={storedata?.contact} />
-
-      <View style={[styles.division, !storedata?.contact && {marginTop: 15}]} />
-
-      <FacilitiesInfo facilitiesInfoDto={storedata?.facilitiesInfoDto} />
-
+      {storedata?.facilitiesInfoDto && (
+        <FacilitiesInfo facilitiesInfoDto={storedata?.facilitiesInfoDto} />
+      )}
       {events?.length > 0 && (
         <StoreEvents
           events={events}

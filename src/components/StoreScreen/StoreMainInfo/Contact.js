@@ -25,6 +25,18 @@ const Contact = ({contact}) => {
 
   const {showToast} = useToast();
 
+  const formatNumber = value => {
+    if (typeof value !== 'string') return value;
+    const digitsOnly = value.replace(/[^0-9]/g, '');
+    const match = digitsOnly.match(/^(\d{2,3})(\d{3,4})(\d{4})$/);
+    if (match) {
+      return `${match[1]}-${match[2]}-${match[3]}`;
+    }
+    return value;
+  };
+
+  const formattedContact = formatNumber(contact);
+
   const handleCall = () => {
     Linking.openURL(`tel:${contact}`);
   };
@@ -73,13 +85,7 @@ const Contact = ({contact}) => {
         onLayout={event => setTriggerHeight(event.nativeEvent.layout.height)}>
         <Ionicons name="call-outline" size={20} color="#333" />
         <View style={styles.triggerLabelWrapper}>
-          <Text style={styles.triggerLabel}>전화번호 보기</Text>
-          <Ionicons
-            name="information-circle-outline"
-            size={16}
-            color="#B3B8C4"
-            style={styles.infoIcon}
-          />
+          <Text style={styles.triggerLabel}>{formattedContact}</Text>
         </View>
       </Pressable>
 
@@ -117,7 +123,7 @@ const Contact = ({contact}) => {
             <View style={styles.numberRow}>
               <Text style={styles.numberLabel}>전화번호</Text>
               <Text selectable style={styles.numberValue}>
-                {contact}
+                {formattedContact}
               </Text>
               <Pressable onPress={handleCopy}>
                 <Text style={styles.copyText}>
