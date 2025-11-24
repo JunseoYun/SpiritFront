@@ -1,10 +1,11 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useMemo, useCallback} from 'react';
 import {
   Text,
   View,
   StyleSheet,
+  Platform,
   TouchableOpacity,
-  SafeAreaView,
+  TouchableWithoutFeedback,
 } from 'react-native';
 
 import {WebView} from 'react-native-webview';
@@ -17,15 +18,31 @@ import StoreMapCenter from '../../components/StoreMapScreen/StoreMapCenter';
 import StoreMapNavi from '../../components/StoreMapScreen/StoreMapNavi';
 import {useRoute} from '@react-navigation/native';
 import useDirectionsModal from '../../hooks/useDirectionsModal';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import useDistance from '../../hooks/useDistance';
+import Clipboard from 'react-native/Libraries/Components/Clipboard/Clipboard';
+import {useToast} from '../../context/ToastContext';
 
 const StoreMapScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeLatitude, storeLongitude, innerlatitude, innerlongitude} =
-    route.params;
+  const {
+    storeLatitude,
+    storeLongitude,
+    innerlatitude,
+    innerlongitude,
+    storename,
+    storeAddress,
+    storeAddressDetail,
+  } = route.params;
   const {openDirectionsModal, DirectionsModal} = useDirectionsModal();
+  const insets = useSafeAreaInsets();
 
   const [location, setLocation] = useState({innerlatitude, innerlongitude});
+  const [infoHeight, setInfoHeight] = useState(null);
   const webViewRef = useRef(null);
+  const calculateDistance = useDistance();
+  const {showToast} = useToast();
+  const [showAddressOverlay, setShowAddressOverlay] = useState(false);
 
   useEffect(() => {
     let isMounted = true; // ✅ cleanup을 위한 변수 추가
@@ -40,6 +57,7 @@ const StoreMapScreen = ({navigation}) => {
               currentLocation.longitude,
               storeLatitude,
               storeLongitude,
+              storename,
             );
             webViewRef.current.injectJavaScript(script);
           }
@@ -66,6 +84,7 @@ const StoreMapScreen = ({navigation}) => {
           currentLocation.longitude,
           storeLatitude,
           storeLongitude,
+          storename,
         );
         webViewRef.current.injectJavaScript(script);
       }
@@ -129,45 +148,190 @@ const StoreMapScreen = ({navigation}) => {
   const updateMap = (lat, lng, storeLatitude, storeLongitude) => {
     if (webViewRef.current) {
       webViewRef.current.injectJavaScript(
-        StoreMapScript(lat, lng, storeLatitude, storeLongitude),
+        StoreMapScript(lat, lng, storeLatitude, storeLongitude, storename),
       );
     }
   };
 
-  return (
-    <>
-      {location ? (
-        <WebView
-          ref={webViewRef}
-          originWhitelist={['*']}
-          source={{html: KakaoMapHTML()}}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          nestedScrollEnabled={true} // 제스처 전달 허용
-          onLoadEnd={fetchSaveLocation}
-          style={styles.webview}
-        />
-      ) : (
-        <View style={styles.loading}>
-          <Text>Loading Map...</Text>
-        </View>
-      )}
+  const resolvedAddress = useMemo(() => {
+    const base =
+      typeof storeAddress === 'string' && storeAddress.trim().length > 0
+        ? storeAddress.trim()
+        : '';
+    const detail =
+      typeof storeAddressDetail === 'string' &&
+      storeAddressDetail.trim().length > 0
+        ? storeAddressDetail.trim()
+        : '';
+    if (base && detail) {
+      return `${base}, ${detail}`;
+    }
+    return base || detail || '';
+  }, [storeAddress, storeAddressDetail]);
+  const distanceLabel = useMemo(() => {
+    if (
+      !location ||
+      typeof location.latitude !== 'number' ||
+      typeof location.longitude !== 'number' ||
+      typeof storeLatitude !== 'number' ||
+      typeof storeLongitude !== 'number'
+    ) {
+      return '';
+    }
+    const dist = calculateDistance(
+      location.latitude,
+      location.longitude,
+      storeLatitude,
+      storeLongitude,
+    );
+    if (!Number.isFinite(dist)) {
+      return '';
+    }
+    if (dist < 1) {
+      return `${Math.round(dist * 1000)}m`;
+    }
+    return `${dist.toFixed(2)}km`;
+  }, [
+    calculateDistance,
+    location?.latitude,
+    location?.longitude,
+    storeLatitude,
+    storeLongitude,
+  ]);
+  const hasDetailLine = Boolean(resolvedAddress) || Boolean(distanceLabel);
+  const handleCopyAddress = useCallback(() => {
+    const base =
+      typeof storeAddress === 'string' && storeAddress.trim().length > 0
+        ? storeAddress.trim()
+        : '';
+    if (!base) {
+      return;
+    }
+    Clipboard.setString(base);
+    showToast?.('주소를 복사했어요.', 'center');
+  }, [storeAddress, showToast]);
+  const infoPaddingBottom = Math.max(16, insets.bottom + 8);
+  const defaultInfoHeight = hasDetailLine ? 120 : 96;
+  const controlsBottom = (infoHeight ?? defaultInfoHeight) + 24;
 
-      <StoreMapLocation onPress={updateNewLocation} />
-      <StoreMapCenter onPress={storeCenter} />
-      <StoreMapNavi
-        onPress={() =>
-          openDirectionsModal({
-            startLat: location?.latitude,
-            startLng: location?.longitude,
-            destLat: storeLatitude,
-            destLng: storeLongitude,
-            destName: route.params?.storename,
-          })
+  return (
+    <TouchableWithoutFeedback
+      onPress={() => {
+        if (showAddressOverlay) {
+          setShowAddressOverlay(false);
         }
-      />
-      <DirectionsModal />
-    </>
+      }}>
+      <View style={styles.container}>
+        {location ? (
+          <WebView
+            ref={webViewRef}
+            originWhitelist={['*']}
+            source={{html: KakaoMapHTML()}}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            nestedScrollEnabled={true} // 제스처 전달 허용
+            onLoadEnd={fetchSaveLocation}
+            style={styles.webview}
+          />
+        ) : (
+          <View style={styles.loading}>
+            <Text>Loading Map...</Text>
+          </View>
+        )}
+
+        <StoreMapLocation
+          onPress={() => {
+            setShowAddressOverlay(false);
+            updateNewLocation();
+          }}
+          style={{bottom: controlsBottom}}
+        />
+        <StoreMapCenter
+          onPress={() => {
+            setShowAddressOverlay(false);
+            storeCenter();
+          }}
+          style={{bottom: controlsBottom}}
+        />
+        <StoreMapNavi
+          onPress={() => {
+            setShowAddressOverlay(false);
+            openDirectionsModal({
+              startLat: location?.latitude,
+              startLng: location?.longitude,
+              destLat: storeLatitude,
+              destLng: storeLongitude,
+              destName: route.params?.storename,
+            });
+          }}
+          style={{bottom: controlsBottom}}
+        />
+        <View
+          style={[
+            styles.storeInfoContainer,
+            {paddingBottom: infoPaddingBottom},
+          ]}
+          onLayout={({nativeEvent}) => {
+            const height = nativeEvent?.layout?.height;
+            if (typeof height === 'number' && height !== infoHeight) {
+              setInfoHeight(height);
+            }
+          }}>
+          <Text style={styles.storeInfoName} numberOfLines={1}>
+            {storename || '매장 정보'}
+          </Text>
+          {hasDetailLine ? (
+            <>
+              <View style={styles.infoDetailRow}>
+                {distanceLabel ? (
+                  <>
+                    <Text style={styles.storeInfoDistance}>
+                      {distanceLabel}
+                    </Text>
+                    {resolvedAddress ? (
+                      <Text style={styles.dotSeparator}> · </Text>
+                    ) : null}
+                  </>
+                ) : null}
+                {resolvedAddress ? (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => setShowAddressOverlay(prev => !prev)}>
+                    <Text style={styles.storeInfoAddress} numberOfLines={2}>
+                      {resolvedAddress}
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+              {resolvedAddress && showAddressOverlay ? (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={styles.addressPanel}
+                  onPress={event => event.stopPropagation()}>
+                  <View style={styles.addressPanelHeader}>
+                    <Text style={styles.addressOverlayTitle}>주소</Text>
+                    <TouchableOpacity
+                      onPress={() => setShowAddressOverlay(false)}
+                      hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
+                      <Text style={styles.addressOverlayClose}>×</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.addressPanelContent}
+                    onPress={handleCopyAddress}>
+                    <Text style={styles.addressPanelText}>
+                      {resolvedAddress}
+                    </Text>
+                    <Text style={styles.addressOverlayCopy}>복사</Text>
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              ) : null}
+            </>
+          ) : null}
+        </View>
+        <DirectionsModal />
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -199,6 +363,95 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  storeInfoContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#e5e5e5',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  storeInfoName: {
+    fontSize: 18,
+    fontFamily: 'Pretendard-Bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  infoDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  storeInfoDistance: {
+    fontSize: 14,
+    color: '#3CBBFF',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  dotSeparator: {
+    color: '#D4D4D4',
+    marginHorizontal: 4,
+  },
+  storeInfoAddress: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 18,
+    fontFamily: 'Pretendard-Medium',
+  },
+  addressPanel: {
+    marginTop: 10,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  addressPanelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  addressOverlayTitle: {
+    fontSize: 14,
+    fontFamily: 'Pretendard-Bold',
+    color: '#111',
+  },
+  addressOverlayClose: {
+    fontSize: 18,
+    color: '#999',
+    marginLeft: 8,
+  },
+  addressPanelContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  addressPanelText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#222',
+    marginRight: 12,
+  },
+  addressOverlayCopy: {
+    fontSize: 14,
+    color: '#0A7CC1',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 
