@@ -2,9 +2,9 @@ import React from 'react';
 import {Pressable, StyleSheet} from 'react-native';
 
 import Feather from 'react-native-vector-icons/Feather';
-const StoreMapLocation = ({onPress}) => {
+const StoreMapLocation = ({onPress, style}) => {
   return (
-    <Pressable style={styles.buttonBottom} onPress={onPress}>
+    <Pressable style={[styles.buttonBottom, style]} onPress={onPress}>
       <Feather name="crosshair" size={22} color="#1a1a1a" />
     </Pressable>
   );
@@ -13,7 +13,7 @@ const StoreMapLocation = ({onPress}) => {
 const styles = StyleSheet.create({
   buttonBottom: {
     position: 'absolute',
-    bottom: '20%',
+    bottom: 140,
     left: '21%',
     width: 42,
     borderRadius: 42,

@@ -124,6 +124,8 @@ const StoreMainScreen = ({navigation}) => {
           storeLongitude: longitude,
           innerlatitude: innerlatitude,
           innerlongitude: innerlongitude,
+          storeAddress: storedata?.locationDto?.address ?? '',
+          storeAddressDetail: storedata?.locationDto?.addressDetail ?? '',
         });
       }, 0);
     }
