@@ -13,16 +13,20 @@ const NonImageHeader = ({
   isLiked,
   onToggleLike,
   likeDisabled,
+  isAbsolute = true,
+  containerStyle,
 }) => {
   const insets = useSafeAreaInsets();
   return (
     <Animated.View
       style={[
         styles.navigateView,
+        isAbsolute ? styles.absoluteContainer : styles.relativeContainer,
         {
           backgroundColor: headerBackgroundColor,
           paddingTop: Platform.OS === 'android' ? insets.top + 10 : insets.top,
         },
+        containerStyle,
       ]}>
       <Animated.View
         style={{
@@ -89,17 +93,23 @@ const NonImageHeader = ({
 
 const styles = StyleSheet.create({
   navigateView: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 18,
-    zIndex: 10,
     paddingBottom: 10,
+  },
+  absoluteContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  relativeContainer: {
+    position: 'relative',
+    zIndex: 1,
   },
   headerTitle: {
     fontSize: 20,

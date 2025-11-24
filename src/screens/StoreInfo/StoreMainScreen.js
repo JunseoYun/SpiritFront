@@ -68,6 +68,7 @@ const StoreMainScreen = ({navigation}) => {
   const [isOrderEnabled, setIsOrderEnabled] = useState(true);
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [orderBarHeight, setOrderBarHeight] = useState(0);
+  const [pendingScrollToTabs, setPendingScrollToTabs] = useState(false);
 
   const {
     visible: showScrollToTop,
@@ -114,6 +115,19 @@ const StoreMainScreen = ({navigation}) => {
       };
     }, [currentPage]),
   );
+  const handleTabSelectFromMap = useCallback(
+    screen => {
+      if (
+        screen === 'StoreMenuScreen' ||
+        screen === 'StoreAlcoholScreen'
+      ) {
+        setCurrentPage(screen);
+        setPendingScrollToTabs(true);
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
     if (!token) return;
     if (currentPage === 'StoreMapScreen') {
@@ -126,10 +140,28 @@ const StoreMainScreen = ({navigation}) => {
           innerlongitude: innerlongitude,
           storeAddress: storedata?.locationDto?.address ?? '',
           storeAddressDetail: storedata?.locationDto?.addressDetail ?? '',
+          storeId: storeId,
+          isStoreLiked: isStoreLiked,
+          onSelectTab: handleTabSelectFromMap,
         });
       }, 0);
     }
   }, [currentPage]);
+
+  useEffect(() => {
+    const targetTab = route.params?.targetTab;
+    if (!targetTab) {
+      return;
+    }
+    if (
+      targetTab === 'StoreMenuScreen' ||
+      targetTab === 'StoreAlcoholScreen'
+    ) {
+      setCurrentPage(targetTab);
+      setPendingScrollToTabs(true);
+    }
+    navigation.setParams({targetTab: undefined});
+  }, [navigation, route.params?.targetTab]);
 
   // 처음 진입 시 전체 fetch
   const isFirstLoad = useRef(true);
@@ -387,28 +419,46 @@ const StoreMainScreen = ({navigation}) => {
   });
 
   const tabsInlineOpacity = Animated.subtract(1, tabHeaderProgress);
+  const scrollTabsToStickyPosition = useCallback(() => {
+    if (
+      !scrollViewRef.current ||
+      tabsLayoutY === null ||
+      tabHeaderThreshold >= Number.MAX_SAFE_INTEGER
+    ) {
+      return false;
+    }
+    scrollViewRef.current.scrollTo({
+      x: 0,
+      y: tabHeaderThreshold,
+      animated: true,
+    });
+    return true;
+  }, [tabHeaderThreshold, tabsLayoutY]);
+
   const handleTabPress = useCallback(
     screen => {
-      if (
-        !scrollViewRef.current ||
-        tabsLayoutY === null ||
-        tabHeaderThreshold >= Number.MAX_SAFE_INTEGER
-      ) {
-        return;
-      }
       if (
         screen === 'StoreMenuScreen' ||
         screen === 'StoreAlcoholScreen'
       ) {
-        scrollViewRef.current.scrollTo({
-          x: 0,
-          y: tabHeaderThreshold,
-          animated: true,
-        });
+        const didScroll = scrollTabsToStickyPosition();
+        if (!didScroll) {
+          setPendingScrollToTabs(true);
+        }
       }
     },
-    [tabHeaderThreshold, tabsLayoutY],
+    [scrollTabsToStickyPosition],
   );
+
+  useEffect(() => {
+    if (!pendingScrollToTabs) {
+      return;
+    }
+    const didScroll = scrollTabsToStickyPosition();
+    if (didScroll) {
+      setPendingScrollToTabs(false);
+    }
+  }, [pendingScrollToTabs, scrollTabsToStickyPosition]);
 
   // Control sticky filter header touchability without using __getValue()
   useEffect(() => {

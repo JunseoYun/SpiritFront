@@ -346,40 +346,10 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreMapScreen"
         component={StoreMapScreen}
-        options={({navigation, route}) => {
-          const storename = route.params?.storename || '매장';
-          const displayTitle = storename + ' 길찾기';
-
-          return {
-            headerLeft: () => (
-              <Pressable
-                onPress={() => navigation.goBack()}
-                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-                <Ionicons
-                  name="arrow-back-outline"
-                  size={23}
-                  color="#333"
-                  style={{paddingLeft: 12}}
-                />
-              </Pressable>
-            ),
-            headerTitle: () => (
-              <Text
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                style={{
-                  fontSize: 18,
-                  fontFamily: 'Pretendard-SemiBold',
-                  maxWidth: screenWidth * 0.7,
-                  textAlign: 'center',
-                }}>
-                {displayTitle}
-              </Text>
-            ),
-            headerTitleAlign: 'center',
-            gestureDirection: 'vertical',
-            animation: 'slide_from_bottom',
-          };
+        options={{
+          headerShown: false,
+          gestureDirection: 'vertical',
+          animation: 'slide_from_bottom',
         }}
       />
       <Stack.Screen
