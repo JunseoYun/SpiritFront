@@ -138,6 +138,7 @@ const MapScreen = ({navigation, route}) => {
   const [isListFullyExpanded, setIsListFullyExpanded] = useState(false);
   const [isMapSearchActive, setIsMapSearchActive] = useState(false);
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
+  const [isListRestoring, setIsListRestoring] = useState(false);
   const suppressUserMarkerRef = useRef(false);
   const lastQueryRef = useRef({lat: null, lng: null});
   const detailFetchSeqRef = useRef(0);
@@ -541,17 +542,9 @@ const MapScreen = ({navigation, route}) => {
         webViewRef.current.injectJavaScript(calcAdjustedScript);
       } else {
         const suppressMarker = suppressUserMarkerRef.current;
-        refreshWithLatLngs(
-          lat,
-          lng,
-          lat,
-          lng,
-          radius,
-          offsetY,
-          null,
-          null,
-          {suppressUserMarker: suppressMarker},
-        );
+        refreshWithLatLngs(lat, lng, lat, lng, radius, offsetY, null, null, {
+          suppressUserMarker: suppressMarker,
+        });
         if (suppressMarker) {
           suppressUserMarkerRef.current = false;
         }
@@ -625,7 +618,7 @@ const MapScreen = ({navigation, route}) => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
       if (message && message.action) {
-        // console.log('WebView action:', message.action, message);
+        //console.log('WebView action:', message.action, message);
       }
 
       // 기존 메시지 처리
@@ -856,8 +849,7 @@ const MapScreen = ({navigation, route}) => {
         // single marker: do not show list count badge
         setResultCount(null);
         lastGroupCountRef.current = null;
-        bottomSheetRef.current?.snapToIndex(1);
-        moveCenterMap(location.latitude, location.longitude, 1, true);
+
         try {
           const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${
             location.latitude
@@ -866,6 +858,8 @@ const MapScreen = ({navigation, route}) => {
           )}, null); } }catch(e){}; true;`;
           webViewRef.current?.injectJavaScript(js);
         } catch (e) {}
+        bottomSheetRef.current?.snapToIndex(1);
+        moveCenterMap(location.latitude, location.longitude, 1, true);
       }
     }
   }, 500);
@@ -1000,8 +994,10 @@ const MapScreen = ({navigation, route}) => {
     isListModeActive &&
     isListFullyExpanded &&
     stores.length > 0 &&
-    !isMapSearchActive;
-  const shouldShowMapButton = shouldForceListModeUi && !isUpdatingLocation;
+    !isMapSearchActive &&
+    !isListRestoring;
+  const shouldShowMapButton =
+    shouldForceListModeUi && !isUpdatingLocation && !isListRestoring;
 
   return (
     <>
@@ -1059,6 +1055,7 @@ const MapScreen = ({navigation, route}) => {
         detailStoreLoading={detailStoreLoading}
         groupStoreIds={groupStoreIds}
         onOpenDetail={id => {
+          console.log(id);
           setDetailStoreId(id);
           setGroupStoreIds(null);
           setLastChosenStoreId(id);
@@ -1073,6 +1070,7 @@ const MapScreen = ({navigation, route}) => {
         onApplyFilters={requeryStoresWithCurrentFilters}
         topReservedHeight={topBarHeight}
         onListFullExpandChange={setIsListFullyExpanded}
+        onListRestoringChange={setIsListRestoring}
       />
 
       {shouldShowMapButton && (
