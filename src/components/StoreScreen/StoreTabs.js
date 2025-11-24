@@ -26,7 +26,7 @@ const StoreTabs = ({
   const tabs = [
     {name: '메뉴', screen: 'StoreMenuScreen'},
     {name: '주류', screen: 'StoreAlcoholScreen'},
-    {name: '길찾기', screen: 'StoreMapScreen'},
+    {name: '지도', screen: 'StoreMapScreen'},
   ];
 
   // 🔹 currentPage 변경 시 탭 자동 변경

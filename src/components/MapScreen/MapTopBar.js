@@ -1,20 +1,15 @@
 import React, {useCallback, useEffect, useRef} from 'react';
 import {StyleSheet, Text, Pressable, Animated, View} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import LinearGradient from 'react-native-linear-gradient';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useMapSearch} from '../../context/MapSearchContext';
 import CancelText from '../CancelText/CancelText';
 import ColorUtil from '../../utils/ColorUtil';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 const MapTopBar = ({
   navigation,
-  onBackPress,
-  onSearchPress,
-  onExplorePress,
   onMeasureHeight,
   forceWhiteBackground = false,
 }) => {
@@ -24,10 +19,6 @@ const MapTopBar = ({
   const whiteBgAnim = useRef(
     new Animated.Value(forceWhiteBackground ? 1 : 0),
   ).current;
-  const gradientOpacity = whiteBgAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0],
-  });
 
   useEffect(() => {
     Animated.timing(whiteBgAnim, {
@@ -142,33 +133,12 @@ const MapTopBar = ({
           style={[
             styles.homeButton,
             forceWhiteBackground ? styles.homeButtonSolid : null,
-            {
-              borderWidth: whiteBgAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, StyleSheet.hairlineWidth * 2],
-              }),
-              shadowOpacity: whiteBgAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0.2, 0],
-              }),
-            },
           ]}
           onPress={() => {
             navigation.navigate('MainScreen');
           }}>
-          <AnimatedLinearGradient
-            colors={['#3cbbff', '#30d4f9', '#9a6cff']}
-            locations={[0, 0.5, 1]}
-            start={{x: 0, y: 0}}
-            end={{x: 1, y: 1}}
-            style={[styles.homeButtonGradient, {opacity: gradientOpacity}]}
-          />
           <View style={styles.homeButtonContent}>
-            <Ionicons
-              name="home"
-              size={22}
-              color={forceWhiteBackground ? '#333' : '#fff'}
-            />
+            <Ionicons name="home" size={22} color="#333" />
           </View>
         </AnimatedPressable>
       </View>
@@ -232,6 +202,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 9,
     backgroundColor: '#fff',
+    borderWidth: 1,
     borderColor: ColorUtil.border,
     justifyContent: 'center',
     alignItems: 'center',
@@ -241,14 +212,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 1.5,
     shadowOffset: {width: 0, height: 2},
-  },
-  homeButtonGradient: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 9,
-    position: 'absolute',
-    top: 0,
-    left: 0,
   },
   homeButtonContent: {
     width: '100%',

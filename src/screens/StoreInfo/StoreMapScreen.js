@@ -127,10 +127,8 @@ const StoreMapScreen = ({navigation}) => {
         roundedCurrentLat === roundedNewLat &&
         roundedCurrentLng === roundedNewLng
       ) {
-        console.log('true');
         moveCenterMap(newLocation.latitude, newLocation.longitude);
       } else {
-        console.log('false');
         setLocation(newLocation);
         updateMap(
           newLocation.latitude,
@@ -338,14 +336,14 @@ const StoreMapScreen = ({navigation}) => {
               setShowAddressOverlay(false);
               updateNewLocation();
             }}
-            style={{bottom: controlsBottom}}
+            style={[styles.mapControl, {bottom: controlsBottom + 52}]}
           />
           <StoreMapCenter
             onPress={() => {
               setShowAddressOverlay(false);
               storeCenter();
             }}
-            style={{bottom: controlsBottom}}
+            style={[styles.mapControl, {bottom: controlsBottom}]}
           />
           <StoreMapNavi
             onPress={() => {
@@ -473,6 +471,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  mapControl: {
+    position: 'absolute',
+    left: '7%',
   },
   storeInfoContainer: {
     position: 'absolute',
