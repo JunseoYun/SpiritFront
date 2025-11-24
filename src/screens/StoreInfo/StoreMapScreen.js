@@ -6,6 +6,7 @@ import {
   Platform,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  Share,
 } from 'react-native';
 
 import {WebView} from 'react-native-webview';
@@ -22,6 +23,9 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import useDistance from '../../hooks/useDistance';
 import Clipboard from 'react-native/Libraries/Components/Clipboard/Clipboard';
 import {useToast} from '../../context/ToastContext';
+import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
+import StoreTabs from '../../components/StoreScreen/StoreTabs';
+import {Storelikepost, get_store_share} from '../../api/storeApi';
 
 const StoreMapScreen = ({navigation}) => {
   const route = useRoute();
@@ -33,6 +37,9 @@ const StoreMapScreen = ({navigation}) => {
     storename,
     storeAddress,
     storeAddressDetail,
+    storeId,
+    isStoreLiked: initialIsStoreLiked,
+    onSelectTab,
   } = route.params;
   const {openDirectionsModal, DirectionsModal} = useDirectionsModal();
   const insets = useSafeAreaInsets();
@@ -43,6 +50,14 @@ const StoreMapScreen = ({navigation}) => {
   const calculateDistance = useDistance();
   const {showToast} = useToast();
   const [showAddressOverlay, setShowAddressOverlay] = useState(false);
+  const [isStoreLiked, setIsStoreLiked] = useState(
+    Boolean(initialIsStoreLiked),
+  );
+  const [isLikeProcessing, setIsLikeProcessing] = useState(false);
+
+  useEffect(() => {
+    setIsStoreLiked(Boolean(initialIsStoreLiked));
+  }, [initialIsStoreLiked]);
 
   useEffect(() => {
     let isMounted = true; // ✅ cleanup을 위한 변수 추가
@@ -153,6 +168,63 @@ const StoreMapScreen = ({navigation}) => {
     }
   };
 
+  const handleShare = useCallback(async () => {
+    if (!storeId) {
+      showToast?.('매장 정보를 불러오지 못했어요.', 'center');
+      return;
+    }
+    try {
+      const response = await get_store_share(storeId);
+      if (!response?.shareLink) {
+        showToast?.('공유할 링크를 가져오지 못했어요.', 'center');
+        return;
+      }
+      const storeLabel = storename || '한잔할까';
+      await Share.share({
+        message: `${storeLabel}에서 한잔 어때요?\n한잔할까에서 매장 정보를 확인하세요.\n\n${response.shareLink}`,
+        shareLink: response.shareLink,
+      });
+    } catch (error) {
+      console.error('onShare error:', error);
+      showToast?.('공유 도중 문제가 발생했어요.', 'center');
+    }
+  }, [showToast, storeId, storename]);
+
+  const handleToggleLike = useCallback(async () => {
+    if (!storeId || isLikeProcessing) {
+      return;
+    }
+    setIsLikeProcessing(true);
+    try {
+      await Storelikepost(storeId);
+      setIsStoreLiked(prev => !prev);
+    } catch (error) {
+      console.error('toggle like error:', error);
+      showToast?.('찜 상태를 변경하지 못했어요.', 'center');
+    } finally {
+      setIsLikeProcessing(false);
+    }
+  }, [storeId, isLikeProcessing, showToast]);
+
+  const handleTabChange = useCallback(
+    screenName => {
+      if (screenName === 'StoreMapScreen') {
+        return;
+      }
+      if (onSelectTab) {
+        onSelectTab(screenName);
+        navigation.goBack();
+        return;
+      }
+      navigation.navigate({
+        name: 'StoreMainScreen',
+        params: {targetTab: screenName},
+        merge: true,
+      });
+    },
+    [navigation, onSelectTab],
+  );
+
   const resolvedAddress = useMemo(() => {
     const base =
       typeof storeAddress === 'string' && storeAddress.trim().length > 0
@@ -215,127 +287,165 @@ const StoreMapScreen = ({navigation}) => {
   const controlsBottom = (infoHeight ?? defaultInfoHeight) + 24;
 
   return (
-    <TouchableWithoutFeedback
-      onPress={() => {
-        if (showAddressOverlay) {
-          setShowAddressOverlay(false);
-        }
-      }}>
-      <View style={styles.container}>
-        {location ? (
-          <WebView
-            ref={webViewRef}
-            originWhitelist={['*']}
-            source={{html: KakaoMapHTML()}}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            nestedScrollEnabled={true} // 제스처 전달 허용
-            onLoadEnd={fetchSaveLocation}
-            style={styles.webview}
+    <View style={styles.screen}>
+      <View style={styles.headerContainer}>
+        <NonImageHeader
+          navigation={navigation}
+          headerBackgroundColor="#fff"
+          iconColor="#333"
+          title={storename}
+          onShare={handleShare}
+          isLiked={isStoreLiked}
+          onToggleLike={handleToggleLike}
+          likeDisabled={isLikeProcessing || !storeId}
+          isAbsolute={false}
+          containerStyle={styles.inlineHeader}
+        />
+        <View style={styles.tabsWrapper}>
+          <StoreTabs
+            changePage={handleTabChange}
+            currentPage="StoreMapScreen"
+            showBottomBorder
           />
-        ) : (
-          <View style={styles.loading}>
-            <Text>Loading Map...</Text>
-          </View>
-        )}
-
-        <StoreMapLocation
-          onPress={() => {
-            setShowAddressOverlay(false);
-            updateNewLocation();
-          }}
-          style={{bottom: controlsBottom}}
-        />
-        <StoreMapCenter
-          onPress={() => {
-            setShowAddressOverlay(false);
-            storeCenter();
-          }}
-          style={{bottom: controlsBottom}}
-        />
-        <StoreMapNavi
-          onPress={() => {
-            setShowAddressOverlay(false);
-            openDirectionsModal({
-              startLat: location?.latitude,
-              startLng: location?.longitude,
-              destLat: storeLatitude,
-              destLng: storeLongitude,
-              destName: route.params?.storename,
-            });
-          }}
-          style={{bottom: controlsBottom}}
-        />
-        <View
-          style={[
-            styles.storeInfoContainer,
-            {paddingBottom: infoPaddingBottom},
-          ]}
-          onLayout={({nativeEvent}) => {
-            const height = nativeEvent?.layout?.height;
-            if (typeof height === 'number' && height !== infoHeight) {
-              setInfoHeight(height);
-            }
-          }}>
-          <Text style={styles.storeInfoName} numberOfLines={1}>
-            {storename || '매장 정보'}
-          </Text>
-          {hasDetailLine ? (
-            <>
-              <View style={styles.infoDetailRow}>
-                {distanceLabel ? (
-                  <>
-                    <Text style={styles.storeInfoDistance}>
-                      {distanceLabel}
-                    </Text>
-                    {resolvedAddress ? (
-                      <Text style={styles.dotSeparator}> · </Text>
-                    ) : null}
-                  </>
-                ) : null}
-                {resolvedAddress ? (
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => setShowAddressOverlay(prev => !prev)}>
-                    <Text style={styles.storeInfoAddress} numberOfLines={2}>
-                      {resolvedAddress}
-                    </Text>
-                  </TouchableOpacity>
-                ) : null}
-              </View>
-              {resolvedAddress && showAddressOverlay ? (
-                <TouchableOpacity
-                  activeOpacity={1}
-                  style={styles.addressPanel}
-                  onPress={event => event.stopPropagation()}>
-                  <View style={styles.addressPanelHeader}>
-                    <Text style={styles.addressOverlayTitle}>주소</Text>
-                    <TouchableOpacity
-                      onPress={() => setShowAddressOverlay(false)}
-                      hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
-                      <Text style={styles.addressOverlayClose}>×</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.addressPanelContent}
-                    onPress={handleCopyAddress}>
-                    <Text style={styles.addressPanelText}>
-                      {resolvedAddress}
-                    </Text>
-                    <Text style={styles.addressOverlayCopy}>복사</Text>
-                  </TouchableOpacity>
-                </TouchableOpacity>
-              ) : null}
-            </>
-          ) : null}
         </View>
-        <DirectionsModal />
       </View>
-    </TouchableWithoutFeedback>
+      <TouchableWithoutFeedback
+        onPress={() => {
+          if (showAddressOverlay) {
+            setShowAddressOverlay(false);
+          }
+        }}>
+        <View style={styles.container}>
+          {location ? (
+            <WebView
+              ref={webViewRef}
+              originWhitelist={['*']}
+              source={{html: KakaoMapHTML()}}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              nestedScrollEnabled={true} // 제스처 전달 허용
+              onLoadEnd={fetchSaveLocation}
+              style={styles.webview}
+            />
+          ) : (
+            <View style={styles.loading}>
+              <Text>Loading Map...</Text>
+            </View>
+          )}
+
+          <StoreMapLocation
+            onPress={() => {
+              setShowAddressOverlay(false);
+              updateNewLocation();
+            }}
+            style={{bottom: controlsBottom}}
+          />
+          <StoreMapCenter
+            onPress={() => {
+              setShowAddressOverlay(false);
+              storeCenter();
+            }}
+            style={{bottom: controlsBottom}}
+          />
+          <StoreMapNavi
+            onPress={() => {
+              setShowAddressOverlay(false);
+              openDirectionsModal({
+                startLat: location?.latitude,
+                startLng: location?.longitude,
+                destLat: storeLatitude,
+                destLng: storeLongitude,
+                destName: route.params?.storename,
+              });
+            }}
+            style={{bottom: controlsBottom}}
+          />
+          <View
+            style={[
+              styles.storeInfoContainer,
+              {paddingBottom: infoPaddingBottom},
+            ]}
+            onLayout={({nativeEvent}) => {
+              const height = nativeEvent?.layout?.height;
+              if (typeof height === 'number' && height !== infoHeight) {
+                setInfoHeight(height);
+              }
+            }}>
+            <Text style={styles.storeInfoName} numberOfLines={1}>
+              {storename || '매장 정보'}
+            </Text>
+            {hasDetailLine ? (
+              <>
+                <View style={styles.infoDetailRow}>
+                  {distanceLabel ? (
+                    <>
+                      <Text style={styles.storeInfoDistance}>
+                        {distanceLabel}
+                      </Text>
+                      {resolvedAddress ? (
+                        <Text style={styles.dotSeparator}> · </Text>
+                      ) : null}
+                    </>
+                  ) : null}
+                  {resolvedAddress ? (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => setShowAddressOverlay(prev => !prev)}>
+                      <Text style={styles.storeInfoAddress} numberOfLines={2}>
+                        {resolvedAddress}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+                {resolvedAddress && showAddressOverlay ? (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    style={styles.addressPanel}
+                    onPress={event => event.stopPropagation()}>
+                    <View style={styles.addressPanelHeader}>
+                      <Text style={styles.addressOverlayTitle}>주소</Text>
+                      <TouchableOpacity
+                        onPress={() => setShowAddressOverlay(false)}
+                        hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
+                        <Text style={styles.addressOverlayClose}>×</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.addressPanelContent}
+                      onPress={handleCopyAddress}>
+                      <Text style={styles.addressPanelText}>
+                        {resolvedAddress}
+                      </Text>
+                      <Text style={styles.addressOverlayCopy}>복사</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                ) : null}
+              </>
+            ) : null}
+          </View>
+          <DirectionsModal />
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  headerContainer: {
+    backgroundColor: '#fff',
+    borderBottomColor: '#EDEDED',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  tabsWrapper: {
+    backgroundColor: '#fff',
+  },
+  inlineHeader: {
+    paddingBottom: 6,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
