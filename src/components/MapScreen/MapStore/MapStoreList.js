@@ -33,6 +33,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useFocusEffect} from '@react-navigation/native';
 import MapDetailItemSkeleton from './MapDetailItemSkeleton';
 import {MenuIcon} from 'lucide-react-native';
+import Loading from '../../../hooks/Loading';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 const DEFAULT_DETAIL_HEADER_HEIGHT = 110;
@@ -67,6 +68,7 @@ const MapStoreList = ({
   onApplyFilters,
   topReservedHeight = 0,
   onListFullExpandChange,
+  onListRestoringChange,
 }) => {
   const insets = useSafeAreaInsets();
   const [filterheight, setFilterheight] = useState(0);
@@ -81,11 +83,23 @@ const MapStoreList = ({
   const [translateY, setTranslateY] = useState(0);
   const [showListButtons, setShowListButtons] = useState(false);
   const [itemheight, setItemheight] = useState(120);
+  const lastScrollOffsetRef = useRef(0);
+  const wasDetailModeRef = useRef(false);
+  const detailEntryScrollOffsetRef = useRef(null);
   const [listfastview, setListfastview] = useState(false);
   const [listContainerHeight, setListContainerHeight] = useState(0);
   const [listContentHeight, setListContentHeight] = useState(0);
   const detailStore = detailStoreData || null;
   const isDetailMode = !!detailStoreId;
+  const detailSnapPointsRef = useRef(null);
+  const pendingScrollRestoreRef = useRef(null);
+  const restoreAttemptRef = useRef(0);
+  const [pendingListRestore, setPendingListRestore] = useState(false);
+  const [requiresScrollUnlock, setRequiresScrollUnlock] = useState(false);
+  const [preserveDetailSnapPoints, setPreserveDetailSnapPoints] =
+    useState(false);
+  const detailClosingRef = useRef(false);
+  const [isDetailRestorePending, setIsDetailRestorePending] = useState(false);
   const detailCollapsedHeight = useMemo(() => {
     if (!detailStoreId) {
       return SCREEN_HEIGHT * 0.03 + filterheight + insets.bottom;
@@ -112,7 +126,7 @@ const MapStoreList = ({
     return Math.min(SCREEN_HEIGHT, Math.max(minExpanded, paddedCollapsed));
   }, [detailCollapsedHeight]);
 
-  const snapPoints = useMemo(() => {
+  const computedSnapPoints = useMemo(() => {
     const first = detailCollapsedHeight;
     const nonemid = noStoreSnapPoint;
 
@@ -138,6 +152,20 @@ const MapStoreList = ({
     topReservedHeight,
     noStoreSnapPoint,
   ]);
+
+  const snapPoints = useMemo(() => {
+    if (preserveDetailSnapPoints && detailSnapPointsRef.current) {
+      return detailSnapPointsRef.current;
+    }
+    return computedSnapPoints;
+  }, [computedSnapPoints, preserveDetailSnapPoints]);
+
+  useEffect(() => {
+    if (isDetailMode) {
+      detailSnapPointsRef.current = computedSnapPoints;
+      setPreserveDetailSnapPoints(false);
+    }
+  }, [isDetailMode, computedSnapPoints]);
 
   const highestSnapIndex = Math.max(0, snapPoints.length - 1);
   const isCurrentlySnappedToFull =
@@ -292,7 +320,7 @@ const MapStoreList = ({
     index => {
       if (isDetailMode && index === 2) {
         // 상세보기 모드에서는 80% 스냅 금지 → 바로 45%로 고정
-        bottomSheetRef.current?.snapToIndex(1);
+        // bottomSheetRef.current?.snapToIndex(1);
         setCurrentIndex(1);
         currentSheetIndexRef.current = 1;
         setSheetIndex?.(1);
@@ -315,13 +343,19 @@ const MapStoreList = ({
   const scrollStartAtTop = useRef(false);
   const userScrollStartedRef = useRef(false);
 
-  const handleScrollBeginDrag = useCallback(e => {
-    const offsetY = e.nativeEvent.contentOffset.y;
-    scrollStartAtTop.current = offsetY <= 0;
-    userScrollStartedRef.current = true;
-    didForceAfterLoadRef.current = true;
-    // true = 최상단에서 드래그 시작함
-  }, []);
+  const handleScrollBeginDrag = useCallback(
+    e => {
+      const offsetY = e.nativeEvent.contentOffset.y;
+      scrollStartAtTop.current = offsetY <= 0;
+      userScrollStartedRef.current = true;
+      didForceAfterLoadRef.current = true;
+      if (requiresScrollUnlock) {
+        setRequiresScrollUnlock(false);
+      }
+      // true = ???????? ????? ??????
+    },
+    [requiresScrollUnlock],
+  );
 
   const handleScrollEndDrag = useCallback(
     e => {
@@ -356,35 +390,14 @@ const MapStoreList = ({
   }, [detailSnapPoint, isDetailMode, bottomSheetRef]);
 
   const handleCloseDetail = useCallback(() => {
+    if (detailClosingRef.current) {
+      return;
+    }
+    detailClosingRef.current = true;
+    setIsDetailRestorePending(true);
+    bottomSheetRef.current?.snapToIndex?.(1);
     onCloseDetail?.();
-    // FlatList가 다시 마운트된 후 인덱스로 스크롤
-    const tryScrollTop = () => {
-      if (!flatListRef?.current) return false;
-      try {
-        flatListRef.current.scrollToOffset({offset: 0, animated: false});
-        return true;
-      } catch (e) {
-        try {
-          flatListRef.current.scrollToIndex?.({index: 0, animated: false});
-          return true;
-        } catch (_ignored) {
-          return false;
-        }
-      }
-    };
-
-    if (tryScrollTop()) return;
-
-    requestAnimationFrame(() => {
-      if (tryScrollTop()) return;
-      requestAnimationFrame(() => {
-        if (tryScrollTop()) return;
-        InteractionManager.runAfterInteractions(() => {
-          tryScrollTop();
-        });
-      });
-    });
-  }, [onCloseDetail, flatListRef]);
+  }, [bottomSheetRef, onCloseDetail]);
 
   const handleCloseGroup = useCallback(() => {
     onCloseGroup?.();
@@ -511,7 +524,7 @@ const MapStoreList = ({
         viewableItems.length === 0 ||
         (!bypass && storegetloading) ||
         (!bypass && loading) ||
-        storesRef.current.length === 0 // ✅ 여기서도 최신 ref 사용 추천
+        storesRef.current.length === 0 // ? 여기서도 최신 ref 사용 추천
       ) {
         return;
       }
@@ -524,7 +537,7 @@ const MapStoreList = ({
       if (lastCenteredIndexRef.current === topIndex) return;
       lastCenteredIndexRef.current = topIndex;
 
-      const latestStoreList = storesRef.current; // ✅ 최신 stores
+      const latestStoreList = storesRef.current; // ? 최신 stores
       const store = latestStoreList[topIndex];
       if (!store) return;
 
@@ -537,13 +550,13 @@ const MapStoreList = ({
       const lng = store?.locationDto?.longitude;
 
       if (typeof lat === 'number' && typeof lng === 'number') {
-        // 🔥 이전 타이머 취소
+        // ?? 이전 타이머 취소
         if (mapMoveTimerRef.current) {
           clearTimeout(mapMoveTimerRef.current);
         }
 
         mapMoveTimerRef.current = setTimeout(() => {
-          const refreshedStoreList = storesRef.current; // ✅ 1초 뒤에도 최신값
+          const refreshedStoreList = storesRef.current; // ? 1초 뒤에도 최신값
           const freshStore = refreshedStoreList[topIndex];
           if (!freshStore) return;
 
@@ -577,7 +590,7 @@ const MapStoreList = ({
     shouldSkipAutoSelection,
   ]);
 
-  // ✅ stores가 변경되면 예약된 이동 취소
+  // ? stores가 변경되면 예약된 이동 취소
   useEffect(() => {
     return () => {
       if (mapMoveTimerRef.current) {
@@ -608,7 +621,6 @@ const MapStoreList = ({
       return;
     }
     lastDetailCenterKeyRef.current = key;
-    moveCenterMap(lat, lng, 1, true, detailCenterOffset);
   }, [
     isDetailMode,
     detailStore,
@@ -626,6 +638,14 @@ const MapStoreList = ({
     ? null
     : selectedStoreIndex;
 
+  const handleOpenDetailFromList = useCallback(
+    storeId => {
+      detailEntryScrollOffsetRef.current = lastScrollOffsetRef.current;
+      onOpenDetail?.(storeId);
+    },
+    [onOpenDetail],
+  );
+
   const renderItem = useCallback(
     ({item, index}) => (
       <MapStoreItem
@@ -637,8 +657,9 @@ const MapStoreList = ({
         navigation={navigation}
         location={location}
         loading={loading}
-        onItemPress={() => onOpenDetail?.(item.id)}
+        onItemPress={() => handleOpenDetailFromList(item.id)}
         setItemheight={setItemheight}
+        isListRestoring={isListRestoring}
       />
     ),
     [
@@ -648,6 +669,8 @@ const MapStoreList = ({
       navigation,
       location,
       loading,
+      isListRestoring,
+      handleOpenDetailFromList,
     ],
   );
 
@@ -665,19 +688,164 @@ const MapStoreList = ({
     );
   }, []);
 
-  const handleListContentSizeChange = useCallback((_, height) => {
-    if (typeof height !== 'number' || Number.isNaN(height)) {
-      return;
-    }
-    setListContentHeight(prev =>
-      prev == null || Math.abs(prev - height) > 1 ? height : prev,
-    );
-  }, []);
+  const handleListContentSizeChange = useCallback(
+    (_, height) => {
+      if (typeof height !== 'number' || Number.isNaN(height)) {
+        return;
+      }
+      setListContentHeight(prev =>
+        prev == null || Math.abs(prev - height) > 1 ? height : prev,
+      );
+      const hasScrollRoom =
+        typeof listContainerHeight === 'number' &&
+        height - listContainerHeight > 12;
+      if (
+        requiresScrollUnlock &&
+        !pendingListRestore &&
+        !isDetailMode &&
+        hasScrollRoom
+      ) {
+        setRequiresScrollUnlock(false);
+      }
+    },
+    [
+      listContainerHeight,
+      requiresScrollUnlock,
+      pendingListRestore,
+      isDetailMode,
+    ],
+  );
   useEffect(() => {
     if (detailStoreId || storegetloading || stores.length === 0) {
       setListContentHeight(0);
     }
   }, [detailStoreId, storegetloading, stores.length]);
+
+  const handleListScroll = useCallback(event => {
+    const offsetY = event?.nativeEvent?.contentOffset?.y;
+    if (typeof offsetY === 'number' && offsetY >= 0) {
+      lastScrollOffsetRef.current = offsetY;
+    }
+  }, []);
+
+  const restoreListScrollPosition = useCallback(
+    offset => {
+      if (!flatListRef?.current || typeof offset !== 'number') {
+        return false;
+      }
+      const target = Math.max(0, offset);
+      try {
+        flatListRef.current.scrollToOffset({offset: target, animated: false});
+        return true;
+      } catch (err) {
+        return false;
+      }
+    },
+    [flatListRef],
+  );
+
+  useEffect(() => {
+    const wasDetail = wasDetailModeRef.current;
+    const isDetail = !!detailStoreId;
+
+    if (!wasDetail && isDetail) {
+      detailClosingRef.current = false;
+      setIsDetailRestorePending(false);
+      if (detailEntryScrollOffsetRef.current == null) {
+        detailEntryScrollOffsetRef.current = lastScrollOffsetRef.current;
+      }
+      setRequiresScrollUnlock(false);
+    } else if (wasDetail && !isDetail) {
+      const targetOffset =
+        detailEntryScrollOffsetRef.current ?? lastScrollOffsetRef.current;
+      detailEntryScrollOffsetRef.current = null;
+      if (typeof targetOffset === 'number') {
+        pendingScrollRestoreRef.current = targetOffset;
+        restoreAttemptRef.current = 0;
+        setPendingListRestore(true);
+        setPreserveDetailSnapPoints(true);
+        setRequiresScrollUnlock(true);
+      }
+    }
+
+    wasDetailModeRef.current = isDetail;
+  }, [detailStoreId, lastScrollOffsetRef]);
+
+  useEffect(() => {
+    if (!pendingListRestore || isDetailMode) return;
+
+    let cancelled = false;
+
+    const finishRestore = () => {
+      if (cancelled) {
+        return;
+      }
+      pendingScrollRestoreRef.current = null;
+      restoreAttemptRef.current = 0;
+      setPendingListRestore(false);
+      setPreserveDetailSnapPoints(false);
+      setIsDetailRestorePending(false);
+      detailClosingRef.current = false;
+    };
+
+    const attemptRestore = () => {
+      if (cancelled) {
+        return;
+      }
+      const targetOffset = pendingScrollRestoreRef.current;
+      if (typeof targetOffset !== 'number') {
+        finishRestore();
+        return;
+      }
+      if (!flatListRef?.current) {
+        scheduleRetry();
+        return;
+      }
+      const success = restoreListScrollPosition(targetOffset);
+      if (success) {
+        finishRestore();
+      } else {
+        scheduleRetry();
+      }
+    };
+
+    const scheduleRetry = () => {
+      if (cancelled) {
+        return;
+      }
+      if (restoreAttemptRef.current++ < 5) {
+        requestAnimationFrame(attemptRestore);
+      } else {
+        InteractionManager.runAfterInteractions(() => {
+          if (cancelled) {
+            return;
+          }
+          const targetOffset = pendingScrollRestoreRef.current;
+          if (typeof targetOffset !== 'number') {
+            finishRestore();
+            return;
+          }
+          if (restoreListScrollPosition(targetOffset)) {
+            finishRestore();
+          } else {
+            restoreAttemptRef.current = 0;
+            requestAnimationFrame(attemptRestore);
+          }
+        });
+      }
+    };
+
+    requestAnimationFrame(attemptRestore);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    pendingListRestore,
+    isDetailMode,
+    flatListRef,
+    restoreListScrollPosition,
+  ]);
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filterInitialTab, setFilterInitialTab] = useState('거리');
@@ -695,14 +863,53 @@ const MapStoreList = ({
     야장: '',
   });
 
+  useEffect(() => {
+    if (isDetailMode) {
+      return;
+    }
+    if (!pendingListRestore) {
+      detailClosingRef.current = false;
+      setIsDetailRestorePending(false);
+    }
+  }, [isDetailMode, pendingListRestore]);
+
   const mapSearchCtx = useMapSearch();
   const listModeCollapsed = !isDetailMode && currentIndex === 0;
   const listHasRoomToScroll =
     listContentHeight > 0 &&
     listContainerHeight > 0 &&
     listContentHeight - listContainerHeight > 12;
+  const isListRestoring =
+    (requiresScrollUnlock && !isDetailMode) ||
+    isDetailRestorePending ||
+    (pendingListRestore && !isDetailMode);
   const shouldEnableContentPanGesture =
-    !filterModalVisible && !isDetailMode && !listHasRoomToScroll;
+    !filterModalVisible &&
+    !isDetailMode &&
+    !listHasRoomToScroll &&
+    !isListRestoring;
+
+  useEffect(() => {
+    if (
+      requiresScrollUnlock &&
+      !isDetailMode &&
+      !pendingListRestore &&
+      !isDetailRestorePending &&
+      listHasRoomToScroll
+    ) {
+      setRequiresScrollUnlock(false);
+    }
+  }, [
+    requiresScrollUnlock,
+    isDetailMode,
+    pendingListRestore,
+    isDetailRestorePending,
+    listHasRoomToScroll,
+  ]);
+
+  useEffect(() => {
+    onListRestoringChange?.(isListRestoring);
+  }, [isListRestoring, onListRestoringChange]);
 
   useEffect(() => {
     if (isDetailMode) return;
@@ -745,7 +952,6 @@ const MapStoreList = ({
     setListfastview(true);
     bottomSheetRef.current.snapToIndex(1);
   };
-
   const distanceLabel = selectedFilters['거리'] || '1km';
   const categoryLabel = selectedFilters['카테고리'] || '카테고리';
   const peopleLabel = selectedFilters['인원'] || '인원';
@@ -767,49 +973,60 @@ const MapStoreList = ({
 
   let computedLabels = null;
   const renderSheetBody = () => {
+    let detailContent = null;
     if (detailStoreId) {
       if (detailStore) {
-        return (
-          <BottomSheetScrollView
-            contentContainerStyle={{
-              paddingHorizontal: 0,
-              paddingBottom: insets.bottom,
-            }}
-            showsVerticalScrollIndicator={false}>
-            {/* Back moved to custom handle */}
-            <View onLayout={handleDetailLayout}>
-              <MapDetailItem
-                storeData={detailStore}
-                index={selectedStoreIndex}
-                selectedStoreIndex={selectedStoreIndex}
-                setSelectedStore={setSelectedStore}
-                moveCenterMap={moveCenterMap}
-                navigation={navigation}
-                location={location}
-                loading={loading}
-                sheetIndex={currentIndex}
-                onCloseDetail={handleCloseDetail}
-                onHeaderLayout={handleDetailHeaderLayout}
-                detailRevealProgressValue={detailRevealProgress}
-                detailPointerEnabled={detailPointerEnabled}
-              />
+        if (detailStoreLoading) {
+          detailContent = (
+            <View style={[styles.detailLoadingContainer, styles.detailOverlay]}>
+              <MapDetailItemSkeleton />
             </View>
-          </BottomSheetScrollView>
+          );
+        } else {
+          detailContent = (
+            <BottomSheetScrollView
+              contentContainerStyle={{
+                paddingHorizontal: 0,
+                paddingBottom: insets.bottom,
+              }}
+              showsVerticalScrollIndicator={false}
+              style={styles.detailOverlay}>
+              {/* Back moved to custom handle */}
+              <View onLayout={handleDetailLayout}>
+                <MapDetailItem
+                  storeData={detailStore}
+                  index={selectedStoreIndex}
+                  selectedStoreIndex={selectedStoreIndex}
+                  setSelectedStore={setSelectedStore}
+                  moveCenterMap={moveCenterMap}
+                  navigation={navigation}
+                  location={location}
+                  loading={loading}
+                  sheetIndex={currentIndex}
+                  onCloseDetail={handleCloseDetail}
+                  onHeaderLayout={handleDetailHeaderLayout}
+                  detailRevealProgressValue={detailRevealProgress}
+                  detailPointerEnabled={detailPointerEnabled}
+                />
+              </View>
+            </BottomSheetScrollView>
+          );
+        }
+      } else {
+        detailContent = (
+          <View style={[styles.detailLoadingContainer, styles.detailOverlay]}>
+            {detailStoreLoading ? (
+              <MapDetailItemSkeleton />
+            ) : (
+              <Text style={styles.detailLoadingText}>
+                매장 정보를 불러오지 못했어요.
+              </Text>
+            )}
+          </View>
         );
       }
-      return (
-        <View style={styles.detailLoadingContainer}>
-          {detailStoreLoading ? (
-            <MapDetailItemSkeleton />
-          ) : (
-            <Text style={styles.detailLoadingText}>
-              매장 정보를 불러오지 못했어요.
-            </Text>
-          )}
-        </View>
-      );
     }
-
+    console.log(detailStoreLoading);
     let listContent = null;
     if (storegetloading) {
       if (currentIndex >= 1 || listfastview) {
@@ -850,6 +1067,7 @@ const MapStoreList = ({
           onScrollBeginDrag={handleScrollBeginDrag}
           onScrollEndDrag={handleScrollEndDrag}
           scrollEventThrottle={16}
+          onScroll={handleListScroll}
           onViewableItemsChanged={onViewableItemsChanged.current}
           viewabilityConfig={viewabilityConfig.current}
           onContentSizeChange={handleListContentSizeChange}
@@ -883,20 +1101,27 @@ const MapStoreList = ({
     }
 
     return (
-      <Animated.View
-        style={[
-          styles.listAnimatedContainer,
-          listBodyAnimatedStyle,
-          !isDetailMode &&
-            currentIndex === 1 && {
-              paddingBottom:
-                insets.bottom + (Platform.OS === 'android' ? 20 : 10),
-            },
-        ]}
-        pointerEvents={listModeCollapsed ? 'none' : 'auto'}
-        onLayout={handleListContainerLayout}>
-        {listContent}
-      </Animated.View>
+      <>
+        <Animated.View
+          style={[
+            styles.listAnimatedContainer,
+            listBodyAnimatedStyle,
+            detailStoreId ? styles.listHiddenWhenDetail : null,
+            !isDetailMode &&
+              currentIndex === 1 && {
+                paddingBottom:
+                  insets.bottom + (Platform.OS === 'android' ? 20 : 10),
+              },
+          ]}
+          pointerEvents={listModeCollapsed || isListRestoring ? 'none' : 'auto'}
+          onLayout={handleListContainerLayout}>
+          <View style={styles.listContentWrapper}>
+            {listContent}
+            {isListRestoring && <View />}
+          </View>
+        </Animated.View>
+        {detailContent}
+      </>
     );
   };
   return (
@@ -928,7 +1153,7 @@ const MapStoreList = ({
             handleIndicatorStyle={[styles.sheetHandleIndicator]}
             backgroundStyle={[styles.sheetBackground]}
             enableContentPanningGesture={shouldEnableContentPanGesture}
-            enableHandlePanningGesture={!filterModalVisible}
+            enableHandlePanningGesture={!filterModalVisible && !isListRestoring}
             enableOverDrag={false}
             animatedIndex={animatedIndex}
             onChange={handleSheetChange}>
@@ -984,7 +1209,7 @@ const MapStoreList = ({
                 return null;
               })()}
 
-              {!hideFloatingButtons && (
+              {(!hideFloatingButtons || isListRestoring) && (
                 <View style={styles.floatingButtons}>
                   <MapLocation onPress={updateNewLocation} />
                 </View>
@@ -1038,7 +1263,7 @@ const styles = StyleSheet.create({
   sheet: {
     zIndex: 3,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: -2}, // 🔥 위쪽 그림자(-)
+    shadowOffset: {width: 0, height: -2}, // ?? 위쪽 그림자(-)
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 10,
@@ -1164,6 +1389,29 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   listAnimatedContainer: {
+    flex: 1,
+  },
+  listContentWrapper: {
+    flex: 1,
+  },
+  listRestoreOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  listRestoreText: {
+    marginTop: 6,
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    color: '#4B5563',
+  },
+  listHiddenWhenDetail: {
+    flex: 0,
+    height: 0,
+    opacity: 0,
+  },
+  detailOverlay: {
     flex: 1,
   },
 });
