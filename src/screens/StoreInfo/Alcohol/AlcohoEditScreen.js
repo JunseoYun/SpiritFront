@@ -132,6 +132,8 @@ const AlcoholEditScreen = ({route, navigation}) => {
     alcoholPrice === '변동' ? '' : alcoholPrice || '',
   );
 
+  const [priceerror, setPriceerror] = useState(false);
+
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 
   // 뒤로가기 핸들러
@@ -192,19 +194,11 @@ const AlcoholEditScreen = ({route, navigation}) => {
       message: '이미지를 삭제하시겠습니까?',
       type: 'delete',
       onConfirm: () => {
-        // 원래 이미지 없었으면 null로 복귀
-        if (!originalImage.current) {
-          setImage(null);
-        } else {
-          // 원래 이미지 있었으면 원래 이미지로 복귀
-          setImage(originalImage.current);
-        }
+        setImage(null);
         setSelectedImage(null);
       },
     });
   };
-
-  const normalize = v => (!v ? '' : v.split('?')[0]);
 
   // 변경 여부 계산
   const isChanged = useMemo(() => {
@@ -213,8 +207,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
     const initialPrice = alcoholPrice === '변동' ? '변동' : alcoholPrice;
     const currentPrice = isVariablePrice ? '변동' : priceValue;
 
-    const hasImageChanged =
-      normalize(image) !== normalize(originalImage.current);
+    const hasImageChanged = image !== originalImage.current;
 
     return (
       nameValue !== alcoholName ||
@@ -290,61 +283,12 @@ const AlcoholEditScreen = ({route, navigation}) => {
     navigation.setParams({hasChanges: isChanged});
   }, [navigation, isChanged, hasUnsavedChanges]);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <Pressable onPress={isButtonEnabled ? AlcoholAdd : null}>
-          <Text
-            style={[
-              styles.headerButton,
-              {color: isButtonEnabled ? '#3CBBFF' : '#A5AAB3'},
-            ]}>
-            완료
-          </Text>
-        </Pressable>
-      ),
-      headerLeft: () => (
-        <Pressable onPress={handleBackPress} hitSlop={10}>
-          <Ionicons
-            name="arrow-back-outline"
-            size={23}
-            color="#333"
-            style={{paddingLeft: 12}}
-          />
-        </Pressable>
-      ),
-    });
-  }, [navigation, isButtonEnabled, handleBackPress]);
-
-  const lastBackPressed = useRef(0);
-
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-        const now = Date.now();
-        if (!hasUnsavedChanges) return;
-        if (now - lastBackPressed.current < 2000) {
-          navigation.goBack();
-          return true;
-        }
-        lastBackPressed.current = now;
-        ToastAndroid.show(
-          '한 번 더 누르면 작성한 내용이 사라집니다.',
-          ToastAndroid.SHORT,
-        );
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        onBackPress,
-      );
-      return () => backHandler.remove();
-    }, [navigation, hasUnsavedChanges]),
-  );
-
   // 저장
-  const AlcoholAdd = async () => {
+  const AlcoholAdd = useCallback(async () => {
+    if (priceValue == '') {
+      setPriceerror(true);
+      return;
+    }
     setLoading(true);
     try {
       if (alcoholId) {
@@ -358,7 +302,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
 
         await DrinkUpdate(alcoholId, payload);
 
-        if (normalize(image) !== normalize(originalImage.current)) {
+        if (image !== originalImage.current) {
           // 이미지 변경됨
           if (!image) {
             await DrinkDeleteImage(alcoholId);
@@ -393,7 +337,72 @@ const AlcoholEditScreen = ({route, navigation}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    descValue,
+    image,
+    isVariablePrice,
+    alcoholId,
+    alcoholType,
+    nameValue,
+    navigation,
+    priceValue,
+    selectedImage,
+    showToast,
+    storeId,
+  ]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={isButtonEnabled ? AlcoholAdd : null}>
+          <Text
+            style={[
+              styles.headerButton,
+              {color: isButtonEnabled ? '#3CBBFF' : '#A5AAB3'},
+            ]}>
+            완료
+          </Text>
+        </Pressable>
+      ),
+      headerLeft: () => (
+        <Pressable onPress={handleBackPress} hitSlop={10}>
+          <Ionicons
+            name="arrow-back-outline"
+            size={23}
+            color="#333"
+            style={{paddingLeft: 12}}
+          />
+        </Pressable>
+      ),
+    });
+  }, [navigation, isButtonEnabled, handleBackPress, AlcoholAdd]);
+
+  const lastBackPressed = useRef(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        const now = Date.now();
+        if (!hasUnsavedChanges) return;
+        if (now - lastBackPressed.current < 2000) {
+          navigation.goBack();
+          return true;
+        }
+        lastBackPressed.current = now;
+        ToastAndroid.show(
+          '한 번 더 누르면 작성한 내용이 사라집니다.',
+          ToastAndroid.SHORT,
+        );
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+      return () => backHandler.remove();
+    }, [navigation, hasUnsavedChanges]),
+  );
 
   const handlePriceChange = text => {
     const cleaned = text.replace(/[^0-9]/g, '');
@@ -530,23 +539,29 @@ const AlcoholEditScreen = ({route, navigation}) => {
             </View>
 
             {!isVariablePrice && (
-              <View
-                style={[
-                  styles.priceInputBox,
-                  isPriceFocused && styles.isFocused,
-                ]}>
-                <TextInput
-                  style={styles.priceInput}
-                  keyboardType="numeric"
-                  placeholder="주류 가격을 입력하세요."
-                  value={priceValue}
-                  onChangeText={handlePriceChange}
-                  placeholderTextColor={ColorUtil.placeholderText}
-                  onFocus={() => setIsPirceFocused(true)}
-                  onBlur={() => setIsPirceFocused(false)}
-                />
-                <Text style={styles.won}>원</Text>
-              </View>
+              <>
+                <View
+                  style={[
+                    styles.priceInputBox,
+                    isPriceFocused && !priceerror && styles.isFocused,
+                    priceerror && styles.fobiddenerror,
+                  ]}>
+                  <TextInput
+                    style={styles.priceInput}
+                    keyboardType="numeric"
+                    placeholder="주류 가격을 입력하세요."
+                    value={priceValue}
+                    onChangeText={handlePriceChange}
+                    placeholderTextColor={ColorUtil.placeholderText}
+                    onFocus={() => setIsPirceFocused(true)}
+                    onBlur={() => setIsPirceFocused(false)}
+                  />
+                  <Text style={styles.won}>원</Text>
+                </View>
+                {priceerror && (
+                  <Text style={styles.forbiddenText}>가격을 입력해주세요.</Text>
+                )}
+              </>
             )}
           </View>
 

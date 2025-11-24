@@ -100,6 +100,7 @@ const MenuEditScreen = ({route, navigation}) => {
   const [priceValue, setPriceValue] = useState(
     menuPrice === '변동' ? '' : menuPrice || '',
   );
+  const [priceerror, setPriceerror] = useState(false);
 
   const [image, setImage] = useState(originalImage.current);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -165,17 +166,11 @@ const MenuEditScreen = ({route, navigation}) => {
       message: '이미지를 삭제하시겠습니까?',
       type: 'delete',
       onConfirm: () => {
-        if (!originalImage.current) {
-          setImage(null);
-        } else {
-          setImage(originalImage.current);
-        }
+        setImage(null);
         setSelectedImage(null);
       },
     });
   };
-
-  const normalize = v => (!v ? '' : v.split('?')[0]);
 
   const isEditingMode = Boolean(menuId);
 
@@ -186,8 +181,7 @@ const MenuEditScreen = ({route, navigation}) => {
     const initialPrice = menuPrice === '변동' ? '변동' : menuPrice;
     const currentPrice = isVariablePrice ? '변동' : priceValue;
 
-    const hasImageChanged =
-      normalize(image) !== normalize(originalImage.current);
+    const hasImageChanged = image !== originalImage.current;
 
     return (
       nameValue !== menuName ||
@@ -264,6 +258,69 @@ const MenuEditScreen = ({route, navigation}) => {
     navigation.setParams({hasChanges: isChanged});
   }, [navigation, isChanged, hasCreateInput]);
 
+  const MenuAdd = useCallback(async () => {
+    if (priceValue == '') {
+      setPriceerror(true);
+      return;
+    }
+    try {
+      if (menuId) {
+        // 수정
+        const payload = {
+          name: nameValue,
+          description: descValue,
+          price: isVariablePrice ? '변동' : priceValue,
+          menuType: menuTypeValue,
+        };
+
+        await MenuUpdate(menuId, payload);
+
+        if (image !== originalImage.current) {
+          if (!image) {
+            await MenuDeleteImage(menuId);
+          } else {
+            await MenuUpdateImage(menuId, image);
+          }
+        }
+
+        showToast('메뉴가 수정되었어요');
+        navigation.goBack();
+        return;
+      }
+
+      // 신규 등록
+      const data = {
+        file: selectedImage?.path ?? null,
+        createMenuDto: {
+          name: nameValue,
+          description: descValue,
+          price: isVariablePrice ? '변동' : priceValue,
+          storeId,
+          menuType: menuTypeValue,
+        },
+      };
+
+      await StoreMenucreate(data);
+      showToast('메뉴가 추가되었어요');
+      navigation.goBack();
+    } catch (error) {
+      console.log('MenuAdd error:', error);
+      showToast('문제가 발생했습니다.');
+    }
+  }, [
+    descValue,
+    image,
+    isVariablePrice,
+    menuId,
+    menuTypeValue,
+    nameValue,
+    navigation,
+    priceValue,
+    selectedImage,
+    showToast,
+    storeId,
+  ]);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -288,7 +345,7 @@ const MenuEditScreen = ({route, navigation}) => {
         </Pressable>
       ),
     });
-  }, [navigation, isButtonEnabled, handleBackPress]);
+  }, [navigation, isButtonEnabled, handleBackPress, MenuAdd]);
 
   // 뒤로가기 두 번 누르기
   useFocusEffect(
@@ -317,55 +374,6 @@ const MenuEditScreen = ({route, navigation}) => {
       return () => handler.remove();
     }, [navigation, hasUnsavedChanges]),
   );
-
-  // 저장 처리
-  const MenuAdd = async () => {
-    try {
-      if (menuId) {
-        // 수정
-        const payload = {
-          name: nameValue,
-          description: descValue,
-          price: isVariablePrice ? '변동' : priceValue,
-          menuType: menuTypeValue,
-        };
-
-        await MenuUpdate(menuId, payload);
-
-        // 이미지 변경 처리
-        if (normalize(image) !== normalize(originalImage.current)) {
-          if (!image) {
-            await MenuDeleteImage(menuId);
-          } else {
-            await MenuUpdateImage(menuId, image);
-          }
-        }
-
-        showToast('메뉴가 수정되었습니다.');
-        navigation.goBack();
-        return;
-      }
-
-      // 신규 등록
-      const data = {
-        file: selectedImage?.path ?? null,
-        createMenuDto: {
-          name: nameValue,
-          description: descValue,
-          price: isVariablePrice ? '변동' : priceValue,
-          storeId,
-          menuType: menuTypeValue,
-        },
-      };
-
-      await StoreMenucreate(data);
-      showToast('메뉴가 추가되었습니다.');
-      navigation.goBack();
-    } catch (error) {
-      console.log('MenuAdd error:', error);
-      showToast('문제가 발생했습니다.');
-    }
-  };
 
   const handlePriceChange = text => {
     const cleaned = text.replace(/[^0-9]/g, '');
@@ -524,23 +532,29 @@ const MenuEditScreen = ({route, navigation}) => {
             </View>
 
             {!isVariablePrice && (
-              <View
-                style={[
-                  styles.priceInputBox,
-                  isPriceFocused && styles.isFocused,
-                ]}>
-                <TextInput
-                  style={styles.priceInput}
-                  placeholder="메뉴 가격을 입력하세요."
-                  placeholderTextColor={ColorUtil.placeholderText}
-                  keyboardType="numeric"
-                  value={priceValue}
-                  onChangeText={handlePriceChange}
-                  onFocus={() => setIsPirceFocused(true)}
-                  onBlur={() => setIsPirceFocused(false)}
-                />
-                <Text style={styles.won}>원</Text>
-              </View>
+              <>
+                <View
+                  style={[
+                    styles.priceInputBox,
+                    isPriceFocused && !priceerror && styles.isFocused,
+                    priceerror && styles.fobiddenerror,
+                  ]}>
+                  <TextInput
+                    style={styles.priceInput}
+                    placeholder="메뉴 가격을 입력하세요."
+                    placeholderTextColor={ColorUtil.placeholderText}
+                    keyboardType="numeric"
+                    value={priceValue}
+                    onChangeText={handlePriceChange}
+                    onFocus={() => setIsPirceFocused(true)}
+                    onBlur={() => setIsPirceFocused(false)}
+                  />
+                  <Text style={styles.won}>원</Text>
+                </View>
+                {priceerror && (
+                  <Text style={styles.forbiddenText}>가격을 입력해주세요.</Text>
+                )}
+              </>
             )}
           </View>
 
