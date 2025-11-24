@@ -1055,7 +1055,6 @@ const MapScreen = ({navigation, route}) => {
         detailStoreLoading={detailStoreLoading}
         groupStoreIds={groupStoreIds}
         onOpenDetail={id => {
-          console.log(id);
           setDetailStoreId(id);
           setGroupStoreIds(null);
           setLastChosenStoreId(id);
