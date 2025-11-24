@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, View, Text, Image, Pressable} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 const formatEventPeriod = (start, end) => {
   const normalize = value => {
@@ -29,16 +30,20 @@ const formatEventPeriod = (start, end) => {
     return '일정 미정';
   }
 
-  if (
-    startInfo &&
-    endInfo &&
-    startInfo.monthDay === endInfo.monthDay &&
-    startInfo.hh === '00' &&
-    startInfo.mi === '00' &&
-    endInfo.hh === '23' &&
-    endInfo.mi === '59'
-  ) {
-    return startInfo.monthDay;
+  if (startInfo && endInfo && startInfo.monthDay === endInfo.monthDay) {
+    const fullDay =
+      startInfo.hh === '00' &&
+      startInfo.mi === '00' &&
+      endInfo.hh === '23' &&
+      endInfo.mi === '59';
+    if (fullDay) {
+      return startInfo.monthDay;
+    }
+    return `${startInfo.full} ~ ${endInfo.hh}:${endInfo.mi}`;
+  }
+
+  if (startInfo && endInfo && startInfo.monthDay !== endInfo.monthDay) {
+    return `${startInfo.monthDay} ~ ${endInfo.monthDay}`;
   }
 
   if (startInfo && endInfo) {
@@ -68,6 +73,7 @@ const StoreEventSection = ({
   type,
   onEditEvent,
   onDeleteEvent,
+  navigation,
 }) => {
   const hasEvents = Array.isArray(events) && events.length > 0;
   const sortedEvents = hasEvents
@@ -96,11 +102,18 @@ const StoreEventSection = ({
       })
     : [];
 
+  const openViewer = uri => {
+    if (!uri || !navigation?.navigate) return;
+    navigation.navigate('ImageViewerScreen', {
+      images: [uri],
+      index: 0,
+    });
+  };
+
   return (
     <>
       {type !== 'update' && (
         <>
-          <View style={styles.divider} />
           <Text style={styles.label}>{title}</Text>
         </>
       )}
@@ -139,7 +152,12 @@ const StoreEventSection = ({
                     </View>
                   </View>
                   {imageUri ? (
-                    <Image source={{uri: imageUri}} style={styles.eventImage} />
+                    <Pressable onPress={() => openViewer(imageUri)}>
+                      <FastImage
+                        source={{uri: imageUri}}
+                        style={styles.eventImage}
+                      />
+                    </Pressable>
                   ) : null}
                 </View>
                 {showActions && (
@@ -172,12 +190,6 @@ const StoreEventSection = ({
 };
 
 const styles = StyleSheet.create({
-  divider: {
-    backgroundColor: '#EFEFEF',
-    height: 1,
-    marginHorizontal: 16,
-    marginVertical: 30,
-  },
   label: {
     fontFamily: 'Pretendard-Bold',
     color: '#333',

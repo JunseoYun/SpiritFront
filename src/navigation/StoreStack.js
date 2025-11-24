@@ -27,6 +27,7 @@ import StoreUpdateScreen from '../screens/StoreInfo/StoreUpdateScreen';
 import StoreManageScreen from '../screens/StoreInfo/StoreManage/StoreManageScreen';
 import StoreEventEditScreen from '../screens/StoreInfo/StoreManage/StoreEventEditScreen';
 import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
+import StoreEventsScreen from '../screens/StoreInfo/StoreEventsScreen';
 const Stack = createStackNavigator();
 
 export default function StoreStack() {
@@ -145,6 +146,36 @@ export default function StoreStack() {
             </Pressable>
           ),
         })}
+      />
+      <Stack.Screen
+        name="StoreEventsScreen"
+        component={StoreEventsScreen}
+        options={({navigation, route}) => {
+          const storeName = route.params?.storeName;
+          const title = storeName ? `${storeName} 이벤트` : '이벤트 전체보기';
+          return {
+            title,
+            headerTitleAlign: 'center',
+            headerShadowVisible: false,
+            headerTitleStyle: {
+              fontFamily: 'Pretendard-SemiBold',
+              fontSize: 18,
+              color: '#333',
+            },
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+          };
+        }}
       />
 
       <Stack.Screen
