@@ -184,7 +184,7 @@ const Alcoholcategorytab = ({
 
 const styles = StyleSheet.create({
   tabContainer: {
-    paddingTop: 10,
+    paddingTop: 5,
     backgroundColor: '#fff',
     paddingBottom: 5,
   },
