@@ -421,10 +421,12 @@ const StoreMainManageScreen = ({
         title={'영업시간 관리'}
       />
 
+      <View style={styles.divider} />
       <StoreEventSection
         title="이벤트"
         events={events}
         loading={eventsLoading}
+        navigation={navigation}
       />
       <ManagementButton
         onPress={() =>
@@ -448,6 +450,12 @@ const StoreMainManageScreen = ({
 
 const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: '#FFF'},
+  divider: {
+    backgroundColor: '#EFEFEF',
+    height: 1,
+    marginHorizontal: 16,
+    marginVertical: 30,
+  },
 });
 
 export default StoreMainManageScreen;

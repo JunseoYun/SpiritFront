@@ -122,14 +122,6 @@ const StoreMainInfo = ({
         />
       )}
 
-      {events?.length > 0 && (
-        <StoreEvents
-          events={events}
-          fallbackText={storedata?.eventText}
-          navigation={navigation}
-        />
-      )}
-
       {storedata?.mainDrinkDtos?.length > 0 && (
         <Alcohol
           storeDrinkDtos={storedata?.mainDrinkDtos}
@@ -168,6 +160,15 @@ const StoreMainInfo = ({
       <View style={[styles.division, !storedata?.contact && {marginTop: 15}]} />
 
       <FacilitiesInfo facilitiesInfoDto={storedata?.facilitiesInfoDto} />
+
+      {events?.length > 0 && (
+        <StoreEvents
+          events={events}
+          fallbackText={storedata?.eventText}
+          navigation={navigation}
+          storeName={storedata?.name}
+        />
+      )}
     </View>
   );
 };

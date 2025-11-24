@@ -109,6 +109,7 @@ const StoreEventManager = ({storeId, onDirtyChange, localEvents = []}) => {
           type="update"
           onEditEvent={handleEditEvent}
           onDeleteEvent={handleDeleteEvent}
+          navigation={navigation}
         />
       ) : (
         <View style={styles.emptyState}>
