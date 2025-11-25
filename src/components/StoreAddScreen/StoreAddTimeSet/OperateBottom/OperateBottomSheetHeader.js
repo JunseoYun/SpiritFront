@@ -1,11 +1,12 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../../../common/CustomText';
 
 const OperateBottomSheetHeader = ({title, onClose}) => {
   return (
     <View style={styles.bottomSheetHeader}>
-      <Text style={styles.sheetTitle}>{title}</Text>
+      <CustomText style={styles.sheetTitle}>{title}</CustomText>
       <Pressable onPress={onClose} style={styles.closeButton}>
         <Ionicons name="close" size={25} color="4B4B4B" />
       </Pressable>

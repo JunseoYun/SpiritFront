@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, View, Text} from 'react-native';
+import CustomText from '../../common/CustomText';
 
 const daysKor = {
   MONDAY: '월요일',
@@ -53,10 +54,10 @@ const StoreHoursSection = ({title, operationInfo = [], isAlwaysOpen}) => {
   return (
     <>
       <View style={styles.divider} />
-      <Text style={styles.label}>{title}</Text>
+      <CustomText style={styles.label}>{title}</CustomText>
       {isAlwaysOpen ? (
         <View style={styles.hoursBadge}>
-          <Text style={styles.hoursBadgeText}>24시간 영업</Text>
+          <CustomText style={styles.hoursBadgeText}>24시간 영업</CustomText>
         </View>
       ) : (
         <View style={styles.card}>
@@ -68,16 +69,18 @@ const StoreHoursSection = ({title, operationInfo = [], isAlwaysOpen}) => {
                 <View
                   key={item.dayOfWeek}
                   style={[styles.row, index !== 0 && styles.rowDivider]}>
-                  <Text
+                  <CustomText
+                    maxScale={1.25}
                     style={[styles.dayText, isClosed && styles.dayClosedText]}>
                     {daysKor[item.dayOfWeek]}
-                  </Text>
+                  </CustomText>
                   <View style={styles.content}>
                     {isClosed ? (
                       <View style={styles.tag}>
-                        <Text style={[styles.tagText, styles.tagClosedText]}>
+                        <CustomText
+                          style={[styles.tagText, styles.tagClosedText]}>
                           휴무
-                        </Text>
+                        </CustomText>
                       </View>
                     ) : (
                       <>
@@ -86,14 +89,20 @@ const StoreHoursSection = ({title, operationInfo = [], isAlwaysOpen}) => {
                             styles.timeLine,
                             !breakRange && styles.timeLineCompact,
                           ]}>
-                          <Text style={styles.timeText}>{mainRange}</Text>
+                          <CustomText style={styles.timeText}>
+                            {mainRange}
+                          </CustomText>
                         </View>
                         {breakRange && (
                           <View style={[styles.timeLine, styles.timeLineLast]}>
                             <View style={styles.tag}>
-                              <Text style={styles.tagText}>브레이크</Text>
+                              <CustomText style={styles.tagText}>
+                                브레이크
+                              </CustomText>
                             </View>
-                            <Text style={styles.timeText}>{breakRange}</Text>
+                            <CustomText style={styles.timeText}>
+                              {breakRange}
+                            </CustomText>
                           </View>
                         )}
                       </>
@@ -103,7 +112,9 @@ const StoreHoursSection = ({title, operationInfo = [], isAlwaysOpen}) => {
               );
             })
           ) : (
-            <Text style={styles.emptyText}>등록된 정보가 없습니다.</Text>
+            <CustomText style={styles.emptyText}>
+              등록된 정보가 없습니다.
+            </CustomText>
           )}
         </View>
       )}

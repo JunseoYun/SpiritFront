@@ -4,6 +4,7 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import AgreementItem from '../../components/OAuthRegister/AgreementItem';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../../components/common/CustomText';
 
 const AgreeScreen = ({route, navigation}) => {
   const {
@@ -91,20 +92,13 @@ const AgreeScreen = ({route, navigation}) => {
     <View style={[styles.container, {paddingTop: insets.top}]}>
       <View style={styles.titleView}>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Text style={styles.titleNameText} allowFontScaling={false}>
-            한잔할까
-          </Text>
-          <Text style={styles.titleText} allowFontScaling={false}>
-            {' '}
-            서비스 이용을 위해
-          </Text>
+          <CustomText style={styles.titleNameText}>한잔할까</CustomText>
+          <CustomText style={styles.titleText}> 서비스 이용을 위해</CustomText>
         </View>
-        <Text style={styles.titleText} allowFontScaling={false}>
-          약관에 동의해 주세요
-        </Text>
-        <Text style={styles.subText}>
+        <CustomText style={styles.titleText}>약관에 동의해 주세요</CustomText>
+        <CustomText style={styles.subText}>
           더 편리한 기능을 제공하기 위해 약관 동의가 필요해요!
-        </Text>
+        </CustomText>
       </View>
 
       <View style={styles.allAgreeView}>
@@ -120,7 +114,7 @@ const AgreeScreen = ({route, navigation}) => {
               <Ionicons name="checkmark" size={20} color="#fff" />
             )}
           </View>
-          <Text style={styles.allAgreeText}>전체 동의</Text>
+          <CustomText style={styles.allAgreeText}>전체 동의</CustomText>
         </TouchableOpacity>
       </View>
       <AgreementItem
@@ -153,7 +147,7 @@ const AgreeScreen = ({route, navigation}) => {
           disabled={
             !(agreements.terms && agreements.privacy && agreements.location)
           }>
-          <Text style={styles.nextButtonText}>다음</Text>
+          <CustomText style={styles.nextButtonText}>다음</CustomText>
         </TouchableOpacity>
       </View>
 

@@ -8,6 +8,7 @@ import {MenuUpdateSort} from '../../api/menuApi';
 import {useToast} from '../../context/ToastContext';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import Loading from '../../hooks/Loading';
+import CustomText from '../../components/common/CustomText';
 
 const ORDER_SPACER_HEIGHT = 0;
 
@@ -62,9 +63,7 @@ const areOrdersEqual = (currentList = [], baseList = []) => {
   if (currentList.length !== baseList.length) {
     return false;
   }
-  return currentList.every(
-    (item, index) => item?.id === baseList[index]?.id,
-  );
+  return currentList.every((item, index) => item?.id === baseList[index]?.id);
 };
 
 export const MENU_CATEGORY_OPTIONS = ['전체', '대표', '일반', '사이드'];
@@ -94,13 +93,13 @@ export const MenuCategoryRadioGroup = ({
             ]}>
             {selectedCategory === item && <View style={styles.radioInnerDot} />}
           </View>
-          <Text
+          <CustomText
             style={[
               styles.radioLabel,
               selectedCategory === item && styles.radioLabelSelected,
             ]}>
             {item}
-          </Text>
+          </CustomText>
         </Pressable>
       ))}
     </View>
@@ -308,7 +307,7 @@ const StoreMenuScreen = ({
         {mainAndNormal.length > 0 && (
           <View style={styles.section}>
             {currentCategory === '전체' && (
-              <Text style={styles.sectionTitle}>주 메뉴</Text>
+              <CustomText style={styles.sectionTitle}>주 메뉴</CustomText>
             )}
             {mainAndNormal.map((menu, idx) => (
               <MenuItem
@@ -329,7 +328,7 @@ const StoreMenuScreen = ({
         {sideMenus.length > 0 && (
           <View style={styles.section}>
             {currentCategory === '전체' && (
-              <Text style={styles.sectionTitle}>사이드 메뉴</Text>
+              <CustomText style={styles.sectionTitle}>사이드 메뉴</CustomText>
             )}
             {sideMenus.map((menu, idx) => (
               <MenuItem
@@ -371,7 +370,7 @@ const StoreMenuScreen = ({
                 unsubscribe();
               });
             }}>
-            <Text style={styles.menuAddButtonText}>메뉴 추가</Text>
+            <CustomText style={styles.menuAddButtonText}>메뉴 추가</CustomText>
           </Pressable>
 
           {menuList?.length > 0 && (
@@ -383,14 +382,14 @@ const StoreMenuScreen = ({
               ]}
               disabled={!isSortDirty || isSavingOrder}
               onPress={handleSaveOrder}>
-              <Text
+              <CustomText
                 style={[
                   styles.saveOrderText,
                   (!isSortDirty || isSavingOrder) &&
                     styles.saveOrderButtonDisabledText,
                 ]}>
                 순서 저장
-              </Text>
+              </CustomText>
             </Pressable>
           )}
         </View>
@@ -406,7 +405,7 @@ const StoreMenuScreen = ({
         renderGroupedMenus()
       ) : !loading ? (
         <View style={styles.footer}>
-          <Text style={styles.emptyText}>등록된 메뉴가 없어요</Text>
+          <CustomText style={styles.emptyText}>등록된 메뉴가 없어요</CustomText>
         </View>
       ) : null}
       <AlertComponent />

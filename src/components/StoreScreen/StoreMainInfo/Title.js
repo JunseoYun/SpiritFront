@@ -1,6 +1,7 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {View, Text, Pressable, StyleSheet, Animated} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../../common/CustomText';
 
 const Title = ({
   storeName,
@@ -38,7 +39,7 @@ const Title = ({
   return (
     <View style={styles.Storetitleview}>
       <View style={styles.titleView2}>
-        <Text style={styles.Storetitle}>{storeName}</Text>
+        <CustomText style={styles.Storetitle}>{storeName}</CustomText>
       </View>
 
       <View>
@@ -69,7 +70,7 @@ const Title = ({
                   toggleDropdown();
                   startUpdate();
                 }}>
-                <Text style={styles.dropdownText}>매장 관리</Text>
+                <CustomText style={styles.dropdownText}>매장 관리</CustomText>
               </Pressable>
             )}
 
@@ -79,7 +80,9 @@ const Title = ({
                 toggleDropdown();
                 handleReport();
               }}>
-              <Text style={styles.dropdownText}>매장 제보·신고</Text>
+              <CustomText style={styles.dropdownText}>
+                매장 제보·신고
+              </CustomText>
             </Pressable>
           </Animated.View>
         )}

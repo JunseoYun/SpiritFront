@@ -4,6 +4,8 @@ import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포�
 import {useToast} from '../../context/ToastContext';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const UpdateStoreName = ({updatedValue, setUpdatedValue, onCancel, onSave}) => {
   const {showToast} = useToast();
@@ -13,9 +15,9 @@ const UpdateStoreName = ({updatedValue, setUpdatedValue, onCancel, onSave}) => {
 
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>매장 이름</Text>
+      <CustomText style={styles.title}>매장 이름</CustomText>
       <View>
-        <TextInput
+        <CustomTextInput
           style={styles.input}
           defaultValue={updatedValue}
           onChangeText={text => {
@@ -40,9 +42,9 @@ const UpdateStoreName = ({updatedValue, setUpdatedValue, onCancel, onSave}) => {
         )}
       </View>
       {overText && (
-        <Text style={styles.errorText}>
+        <CustomText style={styles.errorText}>
           매장 이름은 최대 50자까지 입력 가능합니다.
-        </Text>
+        </CustomText>
       )}
       <ActionButtons onCancel={onCancel} onSave={onSave} />
     </View>

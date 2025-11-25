@@ -7,6 +7,7 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+import CustomText from '../common/CustomText';
 
 const {width} = Dimensions.get('window'); // 화면 너비
 const TAB_WIDTH = width / 3;
@@ -63,13 +64,13 @@ const StoreTabs = ({
             key={tab.name}
             style={styles.tabButton}
             onPress={() => handlePress(index)}>
-            <Text
+            <CustomText
               style={[
                 styles.tabText,
                 selectedTab === index && styles.selectedTabText,
               ]}>
               {tab.name}
-            </Text>
+            </CustomText>
           </Pressable>
         ))}
       </View>

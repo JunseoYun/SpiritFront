@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../common/CustomText';
 const OperatingHoursToggle = ({
   isSameEveryday,
   setIsSameEveryday,
@@ -11,7 +12,9 @@ const OperatingHoursToggle = ({
 }) => {
   return (
     <View>
-      <Text style={styles.sectionTitle}>영업 시간을 알려주세요</Text>
+      <CustomText style={styles.sectionTitle}>
+        영업 시간을 알려주세요
+      </CustomText>
       <View style={styles.toggleContainer}>
         <Pressable
           style={[styles.toggleButton, isSameEveryday && styles.selectedToggle]}
@@ -21,12 +24,12 @@ const OperatingHoursToggle = ({
 
             handleBottomClose();
           }}>
-          <Text
+          <CustomText
             style={
               isSameEveryday ? styles.selectedText : styles.unselectedText
             }>
             매일 같음
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[
@@ -39,12 +42,12 @@ const OperatingHoursToggle = ({
             handleBottomClose();
             setIs24(false);
           }}>
-          <Text
+          <CustomText
             style={
               !isSameEveryday ? styles.selectedText : styles.unselectedText
             }>
             요일마다 다름
-          </Text>
+          </CustomText>
         </Pressable>
       </View>
     </View>

@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../common/CustomText';
 
 const MOOD_LABELS = {
   QUIET: '조용한',
@@ -23,9 +24,9 @@ const Moods = ({moods = []}) => {
   if (!activeMoods.length) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>
+        <CustomText style={styles.emptyText}>
           사장님이 아직 분위기 정보를 등록하지 않았어요.
-        </Text>
+        </CustomText>
       </View>
     );
   }
@@ -35,7 +36,9 @@ const Moods = ({moods = []}) => {
       <View style={styles.labelRow}>
         {activeMoods.map(mood => (
           <View key={mood} style={styles.moodChip}>
-            <Text style={styles.moodText}>#{MOOD_LABELS[mood] || mood}</Text>
+            <CustomText style={styles.moodText}>
+              #{MOOD_LABELS[mood] || mood}
+            </CustomText>
           </View>
         ))}
       </View>

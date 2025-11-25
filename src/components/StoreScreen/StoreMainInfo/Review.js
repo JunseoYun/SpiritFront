@@ -4,6 +4,7 @@ import {View, Text, StyleSheet, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import Entypo from 'react-native-vector-icons/Entypo';
+import CustomText from '../../common/CustomText';
 
 const Review = ({navigation, storeData}) => {
   return (
@@ -25,8 +26,12 @@ const Review = ({navigation, storeData}) => {
           source={require('../../../assets/icon-star.png')}
           resizeMode={FastImage.resizeMode.cover}></FastImage>
         <View style={styles.reviewRateView}>
-          <Text style={styles.reviewRatetext}>{storeData?.rate}</Text>
-          <Text style={styles.reviewtext}>({storeData?.reviewCount})</Text>
+          <CustomText style={styles.reviewRatetext}>
+            {storeData?.rate}
+          </CustomText>
+          <CustomText style={styles.reviewtext}>
+            ({storeData?.reviewCount})
+          </CustomText>
         </View>
         <Entypo
           name="chevron-right"

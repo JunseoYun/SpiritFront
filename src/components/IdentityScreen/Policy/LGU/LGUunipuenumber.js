@@ -1,10 +1,11 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import CustomText from '../../../common/CustomText';
 
 const LGUunipuenumber = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.text}>
+      <CustomText style={styles.text}>
         고유식별정보처리 동의{'\n'}
         {'\n'}
         [LG유플러스㈜ 귀중]{'\n'}
@@ -28,7 +29,7 @@ const LGUunipuenumber = () => {
         {'\n'}
         5. 상기 고유식별정보 처리에 대한 내용에 동의하지 않으실 경우, ‘서비스’를
         이용할 수 없습니다. 상기와 같이 고유식별정보 이용 및 처리에 동의합니다.
-      </Text>
+      </CustomText>
     </ScrollView>
   );
 };

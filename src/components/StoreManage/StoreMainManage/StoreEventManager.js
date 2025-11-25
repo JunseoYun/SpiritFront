@@ -5,6 +5,7 @@ import {deleteEvent, getEventsByStore} from '../../../api/eventApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import StoreEventSection from './StoreEventSection';
 import ManagementButton from '../ManagementButton';
+import CustomText from '../../common/CustomText';
 
 const StoreEventManager = ({storeId, onDirtyChange, localEvents = []}) => {
   const navigation = useNavigation();
@@ -113,9 +114,9 @@ const StoreEventManager = ({storeId, onDirtyChange, localEvents = []}) => {
         />
       ) : (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>
+          <CustomText style={styles.emptyStateText}>
             등록된 이벤트가 아직 없어요.
-          </Text>
+          </CustomText>
         </View>
       )}
       <AlertComponent />
@@ -146,6 +147,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
   },
   emptyStateText: {
+    fontSize: 12,
     textAlign: 'center',
     color: '#6b7280',
   },

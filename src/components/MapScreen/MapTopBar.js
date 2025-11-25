@@ -5,6 +5,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useMapSearch} from '../../context/MapSearchContext';
 import CancelText from '../CancelText/CancelText';
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../common/CustomText';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -106,7 +107,8 @@ const MapTopBar = ({
                 screen: 'SearchScreen',
               });
             }}>
-            <Text
+            <CustomText
+              maxScale={1.2}
               style={[
                 styles.placeholder,
                 searchText?.trim()?.length > 0 && {color: 'black'},
@@ -116,7 +118,7 @@ const MapTopBar = ({
               {searchText?.trim()?.length > 0
                 ? searchText
                 : '술집이나 메뉴를 검색하세요'}
-            </Text>
+            </CustomText>
             {searchText?.trim()?.length > 0 && (
               <CancelText
                 rightnum={0}

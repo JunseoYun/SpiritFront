@@ -27,6 +27,7 @@ import CarrierModal from '../../components/IdentityScreen/CarrierModal';
 import CarrierInput from '../../components/IdentityScreen/CarrierInput';
 import OTPInput from '../../components/IdentityScreen/OTPInput';
 import PolicyModal from '../../components/IdentityScreen/PolicyModal';
+import CustomText from '../../components/common/CustomText';
 
 const CARRIER_OPTIONS = [
   'SKT',
@@ -461,13 +462,25 @@ const IdentityScreen = ({route, navigation}) => {
 
   const getTitleText = () => {
     if (!nameStepDone)
-      return <Text>휴대폰 인증을 진행할게요{'\n'}이름을 입력해주세요</Text>;
+      return (
+        <CustomText>
+          휴대폰 인증을 진행할게요{'\n'}이름을 입력해주세요
+        </CustomText>
+      );
     if (!isRRNStepDone)
-      return <Text>생년월일 포함{'\n'}앞 7자리를 입력해주세요</Text>;
-    if (!isPhoneEntered) return <Text>휴대폰 번호를 입력해주세요</Text>;
-    if (!selectedCarrier) return <Text>통신사를 선택해주세요</Text>;
-    if (sendToMsg) return <Text>문자로 받은{'\n'}인증번호를 입력해주세요</Text>;
-    return <Text>정보가 맞다면{'\n'}본인 인증하기 버튼을 눌러주세요</Text>;
+      return (
+        <CustomText>생년월일 포함{'\n'}앞 7자리를 입력해주세요</CustomText>
+      );
+    if (!isPhoneEntered)
+      return <CustomText>휴대폰 번호를 입력해주세요</CustomText>;
+    if (!selectedCarrier) return <CustomText>통신사를 선택해주세요</CustomText>;
+    if (sendToMsg)
+      return <CustomText>문자로 받은{'\n'}인증번호를 입력해주세요</CustomText>;
+    return (
+      <CustomText>
+        정보가 맞다면{'\n'}본인 인증하기 버튼을 눌러주세요
+      </CustomText>
+    );
   };
 
   return (
@@ -484,7 +497,7 @@ const IdentityScreen = ({route, navigation}) => {
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
-          <Text style={styles.titleText}>{getTitleText()}</Text>
+          <CustomText style={styles.titleText}>{getTitleText()}</CustomText>
           {!sendToMsg ? (
             <>
               {nameStepDone && isRRNStepDone && isPhoneStepVisible && (
@@ -557,7 +570,9 @@ const IdentityScreen = ({route, navigation}) => {
                         setIsPolicyModalVisible(true);
                       }, 10);
                     }}>
-                    <Text style={styles.authButtonText}>본인 인증하기</Text>
+                    <CustomText style={styles.authButtonText}>
+                      본인 인증하기
+                    </CustomText>
                   </TouchableOpacity>
                 )}
             </>
@@ -605,6 +620,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#000',
     marginBottom: 30,
+    paddingTop: 5,
     lineHeight: 28,
     fontFamily: 'Pretendard-Bold',
   },

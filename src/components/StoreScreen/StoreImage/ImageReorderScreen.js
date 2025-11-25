@@ -16,6 +16,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {StoreImageUpdateSort, UpdateStore} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+import CustomText from '../../common/CustomText';
 
 const {width} = Dimensions.get('window');
 const IMAGE_WIDTH = width - 120;
@@ -104,7 +105,7 @@ const ImageReorderScreen = ({navigation, route}) => {
           />
           {index === 0 && (
             <View style={styles.representativeBadge}>
-              <Text style={styles.representativeText}>대표</Text>
+              <CustomText style={styles.representativeText}>대표</CustomText>
             </View>
           )}
         </View>
@@ -128,9 +129,9 @@ const ImageReorderScreen = ({navigation, route}) => {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <Ionicons name="reorder-three-outline" size={24} color="#999" />
-          <Text style={styles.headerText}>
+          <CustomText style={styles.headerText}>
             아이콘을 꾹 눌러 원하는 순서로 바꿔보세요
-          </Text>
+          </CustomText>
         </View>
         <View style={styles.listWrapper}>
           <DraggableFlatList
@@ -146,7 +147,7 @@ const ImageReorderScreen = ({navigation, route}) => {
 
         <View style={styles.fixedButtonWrapper}>
           <Pressable onPress={handleSave} style={styles.saveButton}>
-            <Text style={styles.saveText}>변경 완료</Text>
+            <CustomText style={styles.saveText}>변경 완료</CustomText>
           </Pressable>
         </View>
         <Loading loading={loading} />

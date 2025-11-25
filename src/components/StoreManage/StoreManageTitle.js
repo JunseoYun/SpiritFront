@@ -4,6 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../common/CustomText';
 const StoreManageTitle = ({
   iconSize = null,
   storeRate = null,
@@ -17,10 +18,10 @@ const StoreManageTitle = ({
       {type === 'main' ? (
         <View style={styles.titleView}>
           <FontAwesomeIcon name="star" size={iconSize} color="#FED348" />
-          <Text style={[styles.infoText]}>
+          <CustomText style={[styles.infoText]}>
             {' '}
             {storeRate || 0} ({reviewCount || 0})
-          </Text>
+          </CustomText>
 
           <Ionicons
             name="heart"
@@ -28,20 +29,20 @@ const StoreManageTitle = ({
             color={'#F85656'}
             style={{marginLeft: 7}}
           />
-          <Text style={[styles.infoText, {marginLeft: 3}]}>
+          <CustomText style={[styles.infoText, {marginLeft: 3}]}>
             {likeCount || 0}
-          </Text>
+          </CustomText>
         </View>
       ) : (
         <View style={styles.titleView}>
-          <Text style={[styles.infoText]}>
+          <CustomText style={[styles.infoText]}>
             {type === 'menu' ? '메뉴' : '주류'}
-          </Text>
+          </CustomText>
         </View>
       )}
 
       {/* 매장명 */}
-      <Text style={styles.title}>{name}</Text>
+      <CustomText style={styles.title}>{name}</CustomText>
     </>
   );
 };

@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, Text, View, Pressable, ScrollView} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../../common/CustomText';
 
 const OwnerStoreList = ({
   OWNER_STORES,
@@ -11,7 +12,7 @@ const OwnerStoreList = ({
 }) => (
   <>
     <View style={styles.storesHeaderRow}>
-      <Text style={styles.storesHeaderText}>운영 매장</Text>
+      <CustomText style={styles.storesHeaderText}>운영 매장</CustomText>
     </View>
     <ScrollView
       horizontal
@@ -35,13 +36,13 @@ const OwnerStoreList = ({
               color={selected ? '#3CBBFF' : '#6B7280'}
               style={{marginRight: 6}}
             />
-            <Text
+            <CustomText
               style={[
                 styles.storeChipText,
                 selected && styles.storeChipTextActive,
               ]}>
               {s.name}
-            </Text>
+            </CustomText>
           </Pressable>
         );
       })}

@@ -21,6 +21,7 @@ import {
 let fontScale = PixelRatio.getFontScale(); // let으로 변경
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import CustomText from '../common/CustomText';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -202,13 +203,13 @@ const FilterHeader = forwardRef(
                 styles.filterButton,
                 drinkType === value && styles.activeFilter,
               ]}>
-              <Text
+              <CustomText
                 style={[
                   styles.filterText,
                   drinkType === value && styles.activeFilterText,
                 ]}>
                 {label}
-              </Text>
+              </CustomText>
             </Pressable>
           ))}
         </ScrollView>
@@ -223,13 +224,13 @@ const FilterHeader = forwardRef(
               size={fontScale >= 1.5 ? 20 : 17}
               color="#555"
             />
-            <Text style={styles.choicetext}>
+            <CustomText style={styles.choicetext}>
               {priceOrder === 'ASC'
                 ? '낮은 가격순'
                 : priceOrder === 'DESC'
                 ? '높은 가격순'
                 : '기본순'}
-            </Text>
+            </CustomText>
             <View
               style={[
                 {
@@ -258,13 +259,13 @@ const FilterHeader = forwardRef(
                 toggleDropdown();
                 togglepriceOrder('');
               }}>
-              <Text
+              <CustomText
                 style={[
                   styles.dropdownText,
                   priceOrder === '' && styles.activeDropdownText,
                 ]}>
                 기본순
-              </Text>
+              </CustomText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -273,13 +274,13 @@ const FilterHeader = forwardRef(
                 toggleDropdown();
                 togglepriceOrder('ASC');
               }}>
-              <Text
+              <CustomText
                 style={[
                   styles.dropdownText,
                   priceOrder === 'ASC' && styles.activeDropdownText,
                 ]}>
                 낮은 가격순
-              </Text>
+              </CustomText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -288,13 +289,13 @@ const FilterHeader = forwardRef(
                 toggleDropdown();
                 togglepriceOrder('DESC');
               }}>
-              <Text
+              <CustomText
                 style={[
                   styles.dropdownText,
                   priceOrder === 'DESC' && styles.activeDropdownText,
                 ]}>
                 높은 가격순
-              </Text>
+              </CustomText>
             </TouchableOpacity>
           </Animated.View>
         )}

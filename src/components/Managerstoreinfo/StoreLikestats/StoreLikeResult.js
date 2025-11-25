@@ -11,6 +11,7 @@ import GroupBySelector from '../GroupBySelector';
 import GenderPieChart from '../GenderPieChart';
 import AgeDistributionTable from '../AgeDistributionTable';
 import StoreLikeBarGraph from './StoreLikeBarGraph';
+import CustomText from '../../common/CustomText';
 const genders = ['MALE', 'FEMALE'];
 const genderColor = [
   {label: '남자', color: '#3CA5FF'},
@@ -110,17 +111,17 @@ const StoreLikeResult = ({result, setLoading, groupBy, toggleGroupBy}) => {
   return (
     <View>
       {data.length === 0 && (
-        <Text style={styles.nulltext}>
+        <CustomText style={styles.nulltext}>
           해당 조건에 해당하는 데이터가 없어요{'\n\n'}조건을 변경하여
           확인해보세요!
-        </Text>
+        </CustomText>
       )}
 
       {/* 나이대 + 성별 있을 때 막대 차트 */}
       {ageGenderStats.length > 0 && (
         <>
           <View style={styles.titleView}>
-            <Text style={styles.subtitle}>성별 · 연령대</Text>
+            <CustomText style={styles.subtitle}>성별 · 연령대</CustomText>
             <GroupBySelector groupBy={groupBy} toggleGroupBy={toggleGroupBy} />
           </View>
           <View style={[styles.genderView]}>
@@ -132,7 +133,7 @@ const StoreLikeResult = ({result, setLoading, groupBy, toggleGroupBy}) => {
                       styles.genderPoint,
                       {backgroundColor: gen.color},
                     ]}></View>
-                  <Text style={styles.genderText}>{gen.label}</Text>
+                  <CustomText style={styles.genderText}>{gen.label}</CustomText>
                 </View>
               );
             })}
@@ -172,7 +173,7 @@ const StoreLikeResult = ({result, setLoading, groupBy, toggleGroupBy}) => {
       {ageGenderStats.length === 0 && hasGenderOnly && (
         <>
           <View style={styles.titleView}>
-            <Text style={styles.subtitle}>성별</Text>
+            <CustomText style={styles.subtitle}>성별</CustomText>
             <GroupBySelector groupBy={groupBy} toggleGroupBy={toggleGroupBy} />
           </View>
           <View style={[styles.genderView]}>
@@ -184,14 +185,14 @@ const StoreLikeResult = ({result, setLoading, groupBy, toggleGroupBy}) => {
                       styles.genderPoint,
                       {backgroundColor: gen.color},
                     ]}></View>
-                  <Text style={styles.genderText}>
+                  <CustomText style={styles.genderText}>
                     {gen.label}{' '}
                     {gen.label === '남자'
                       ? `${data.find(d => d.gender === 'MALE')?.count ?? 0}명`
                       : `${
                           data.find(d => d.gender === 'FEMALE')?.count ?? 0
                         }명`}
-                  </Text>
+                  </CustomText>
                 </View>
               );
             })}
@@ -209,7 +210,7 @@ const StoreLikeResult = ({result, setLoading, groupBy, toggleGroupBy}) => {
         ageDistributionData.length > 0 && (
           <>
             <View style={styles.titleView}>
-              <Text style={styles.subtitle}>연령대별</Text>
+              <CustomText style={styles.subtitle}>연령대별</CustomText>
               <GroupBySelector
                 groupBy={groupBy}
                 toggleGroupBy={toggleGroupBy}

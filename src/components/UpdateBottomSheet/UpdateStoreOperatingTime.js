@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
+import CustomText from '../common/CustomText';
 
 const UpdateStoreOperatingTime = ({
   hours,
@@ -13,11 +14,11 @@ const UpdateStoreOperatingTime = ({
 }) => {
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>영업 시간</Text>
-      <Text style={styles.title}>
+      <CustomText style={styles.title}>영업 시간</CustomText>
+      <CustomText style={styles.title}>
         {updatedValue?.openTime?.slice(0, 5)} -{' '}
         {updatedValue?.closeTime?.slice(0, 5)}
-      </Text>
+      </CustomText>
       <View style={styles.pickerSection}>
         {/* 오픈 시간 Picker */}
         <View style={styles.pickerTopView}>
@@ -38,7 +39,7 @@ const UpdateStoreOperatingTime = ({
               ))}
             </Picker>
           </View>
-          <Text style={styles.pickerColon}>:</Text>
+          <CustomText style={styles.pickerColon}>:</CustomText>
           <View style={styles.pickerWrapper}>
             <Picker
               itemStyle={styles.pickerItem}
@@ -77,7 +78,7 @@ const UpdateStoreOperatingTime = ({
               ))}
             </Picker>
           </View>
-          <Text style={styles.pickerColon}>:</Text>
+          <CustomText style={styles.pickerColon}>:</CustomText>
           <View style={styles.pickerWrapper}>
             <Picker
               itemStyle={styles.pickerItem}

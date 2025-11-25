@@ -47,6 +47,7 @@ import {
   Create_store_with_ownership,
   Create_store_with_ownership_photoOnly,
 } from '../../api/storeApi';
+import CustomText from '../../components/common/CustomText';
 const STEPS = [
   'image',
   'name',
@@ -312,9 +313,13 @@ const StoreOwnershipScreen = ({navigation}) => {
     }
     return (
       <View style={styles.sectionIntro}>
-        {guide.title && <Text style={styles.sectionTitle}>{guide.title}</Text>}
+        {guide.title && (
+          <CustomText style={styles.sectionTitle}>{guide.title}</CustomText>
+        )}
         {guide.description && (
-          <Text style={styles.sectionDescription}>{guide.description}</Text>
+          <CustomText style={styles.sectionDescription}>
+            {guide.description}
+          </CustomText>
         )}
       </View>
     );
@@ -328,12 +333,12 @@ const StoreOwnershipScreen = ({navigation}) => {
 
     return (
       <View style={styles.tipWrapper}>
-        <Text style={styles.tipBadge}>TIP</Text>
+        <CustomText style={styles.tipBadge}>TIP</CustomText>
         <View style={styles.tipContent}>
           {guide.tipTitle && (
-            <Text style={styles.tipTitle}>{guide.tipTitle}</Text>
+            <CustomText style={styles.tipTitle}>{guide.tipTitle}</CustomText>
           )}
-          <Text style={styles.tipBody}>{guide.tip}</Text>
+          <CustomText style={styles.tipBody}>{guide.tip}</CustomText>
         </View>
       </View>
     );
@@ -746,14 +751,13 @@ const StoreOwnershipScreen = ({navigation}) => {
 
     navigation.setOptions({
       headerTitle: () => (
-        <Text
+        <CustomText
           style={{
             fontFamily: 'Pretendard-Bold',
             fontSize: 18,
-          }}
-          allowFontScaling={false}>
+          }}>
           {currentStepTitle || '매장 등록'}
-        </Text>
+        </CustomText>
       ),
       headerTitleAlign: 'center',
       gestureEnabled: !isIOS || stepIndex === 0,
@@ -962,12 +966,12 @@ const StoreOwnershipScreen = ({navigation}) => {
             <>
               {renderStepIntro('consent')}
               <View style={styles.consentCard}>
-                <Text style={styles.consentBody}>
+                <CustomText style={styles.consentBody}>
                   한잔할까는 매장 등록 및 사업자 인증을 위해 신청자의 이름,
                   연락처, 사업자등록증 사본을 수집·이용합니다. 해당 정보는 등록
                   심사와 사업자 진위 확인 외의 용도로 사용되지 않으며, 심사 완료
                   후 일정 기간이 지난 후 안전하게 파기됩니다.
-                </Text>
+                </CustomText>
                 <Pressable
                   style={styles.inlineConsentRow}
                   onPress={() => setIsConsentChecked(prev => !prev)}>
@@ -980,9 +984,9 @@ const StoreOwnershipScreen = ({navigation}) => {
                       <Ionicons name="checkmark" size={16} color="#FFF" />
                     )}
                   </View>
-                  <Text style={styles.inlineConsentLabel}>
+                  <CustomText style={styles.inlineConsentLabel}>
                     위 내용에 동의합니다. (필수)
-                  </Text>
+                  </CustomText>
                 </Pressable>
               </View>
               {renderStepTip('consent')}
@@ -1045,7 +1049,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Bold',
   },
   sectionDescription: {
-    marginTop: 8,
+    paddingTop: 8,
     fontSize: 16,
     color: '#6b7280',
     fontFamily: 'Pretendard-Regular',
@@ -1075,9 +1079,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
     color: '#0D47A1',
-    marginBottom: 6,
+    marginBottom: 3,
   },
   tipBody: {
+    paddingTop: 3,
     fontSize: 14,
     fontFamily: 'Pretendard-Regular',
     color: '#24324A',

@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, Text, View, Pressable, ScrollView} from 'react-native';
+import CustomText from '../../common/CustomText';
 
 const TABS = [
   '접수 진행중',
@@ -27,9 +28,10 @@ const UserHeaderTabs = ({activeTab, tabsRef, onTabsScroll, handleTabPress}) => (
             onPress={() => handleTabPress(idx)}
             style={[styles.tab, selected && styles.tabActive]}
             hitSlop={8}>
-            <Text style={[styles.tabText, selected && styles.tabTextActive]}>
+            <CustomText
+              style={[styles.tabText, selected && styles.tabTextActive]}>
               {label}
-            </Text>
+            </CustomText>
           </Pressable>
         );
       })}

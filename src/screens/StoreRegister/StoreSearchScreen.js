@@ -16,6 +16,7 @@ import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import {normalizeFont} from '../../hooks/normalizeFont';
 import BottomActionButton from '../../utils/BottomActionButton';
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../../components/common/CustomText';
 
 const {width} = Dimensions.get('window');
 
@@ -61,16 +62,16 @@ const StoreSearchScreen = ({navigation}) => {
           <Pressable
             onPress={!isDisabled ? handleSearch : null}
             disabled={isDisabled}>
-            <Text
+            <CustomText
+              scale={1.5}
               style={[
                 styles.searchButton,
                 {
                   color: isDisabled ? ColorUtil.mainDisable : ColorUtil.main,
                 },
-              ]}
-              allowFontScaling={false}>
+              ]}>
               검색
-            </Text>
+            </CustomText>
           </Pressable>
         );
       },
@@ -87,9 +88,9 @@ const StoreSearchScreen = ({navigation}) => {
       />
 
       {trimmedSearchWord.length === 0 && (
-        <Text style={styles.infoText}>
+        <CustomText style={styles.infoText}>
           한잔할까에 등록된 매장인지 확인해보세요!
-        </Text>
+        </CustomText>
       )}
 
       <StoreResultList
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     marginRight: 18,
-    fontSize: normalizeFont(18, 1.5),
+    fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
   },
   infoText: {

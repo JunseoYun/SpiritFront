@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
+import CustomText from '../common/CustomText';
 
 const UpdateStoreClosedDays = ({
   days,
@@ -29,7 +30,7 @@ const UpdateStoreClosedDays = ({
 
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>매장 휴무일</Text>
+      <CustomText style={styles.title}>매장 휴무일</CustomText>
       {/* 선택 가능한 휴무일 */}
       <View style={styles.daysContainer}>
         {days.map((day, index) => (
@@ -40,13 +41,13 @@ const UpdateStoreClosedDays = ({
               updatedValue.includes(day.value) && styles.selectedDayButton,
             ]}
             onPress={() => toggleDay(day.value)}>
-            <Text
+            <CustomText
               style={[
                 styles.dayText,
                 updatedValue.includes(day.value) && styles.selectedDayText,
               ]}>
               {day.label}
-            </Text>
+            </CustomText>
           </TouchableOpacity>
         ))}
       </View>

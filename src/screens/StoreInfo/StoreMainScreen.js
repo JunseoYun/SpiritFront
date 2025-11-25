@@ -38,6 +38,7 @@ import StoreMainSkeleton from './StoreMainSkeleton';
 import ScrollToTopButton from '../../components/common/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 import OrderForm from '../../components/StoreScreen/OrderForm';
+import CustomText from '../../components/common/CustomText';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
@@ -115,18 +116,12 @@ const StoreMainScreen = ({navigation}) => {
       };
     }, [currentPage]),
   );
-  const handleTabSelectFromMap = useCallback(
-    screen => {
-      if (
-        screen === 'StoreMenuScreen' ||
-        screen === 'StoreAlcoholScreen'
-      ) {
-        setCurrentPage(screen);
-        setPendingScrollToTabs(true);
-      }
-    },
-    [],
-  );
+  const handleTabSelectFromMap = useCallback(screen => {
+    if (screen === 'StoreMenuScreen' || screen === 'StoreAlcoholScreen') {
+      setCurrentPage(screen);
+      setPendingScrollToTabs(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -153,10 +148,7 @@ const StoreMainScreen = ({navigation}) => {
     if (!targetTab) {
       return;
     }
-    if (
-      targetTab === 'StoreMenuScreen' ||
-      targetTab === 'StoreAlcoholScreen'
-    ) {
+    if (targetTab === 'StoreMenuScreen' || targetTab === 'StoreAlcoholScreen') {
       setCurrentPage(targetTab);
       setPendingScrollToTabs(true);
     }
@@ -437,10 +429,7 @@ const StoreMainScreen = ({navigation}) => {
 
   const handleTabPress = useCallback(
     screen => {
-      if (
-        screen === 'StoreMenuScreen' ||
-        screen === 'StoreAlcoholScreen'
-      ) {
+      if (screen === 'StoreMenuScreen' || screen === 'StoreAlcoholScreen') {
         const didScroll = scrollTabsToStickyPosition();
         if (!didScroll) {
           setPendingScrollToTabs(true);
@@ -521,7 +510,7 @@ const StoreMainScreen = ({navigation}) => {
   if (!storeId) {
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text>가게 정보를 불러오는 중...</Text>
+        <CustomText>가게 정보를 불러오는 중...</CustomText>
       </View>
     );
   }
@@ -801,7 +790,7 @@ const StoreMainScreen = ({navigation}) => {
             <Pressable
               style={styles.storeOrderButton}
               onPress={handleOrderButtonPress}>
-              <Text style={styles.storeOrderText}>실시간 주문하기</Text>
+              <CustomText style={styles.storeOrderText}>실시간 주문하기</CustomText>
             </Pressable>
           </View>
           {showOrderForm && (
@@ -829,9 +818,9 @@ const StoreMainScreen = ({navigation}) => {
                       {transform: [{translateY: orderSlideAnim}]},
                     ]}>
                     <View style={styles.orderModalHeader}>
-                      <Text style={styles.orderModalTitle}>
+                      <CustomText style={styles.orderModalTitle}>
                         실시간 주문하기
-                      </Text>
+                      </CustomText>
                       <TouchableOpacity onPress={handleOrderCancel}>
                         <Ionicons name="close" size={22} color="#666" />
                       </TouchableOpacity>

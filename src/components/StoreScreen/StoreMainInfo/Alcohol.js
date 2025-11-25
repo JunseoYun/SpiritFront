@@ -2,6 +2,7 @@ import React from 'react';
 
 import {View, Text, StyleSheet} from 'react-native';
 import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../common/CustomText';
 const Alcohol = ({storeDrinkDtos, translateAlcohol}) => {
   const drinkText =
     storeDrinkDtos && storeDrinkDtos.length > 0
@@ -20,9 +21,9 @@ const Alcohol = ({storeDrinkDtos, translateAlcohol}) => {
 
   return (
     <View style={styles.timeview}>
-      <Text style={[styles.timetextnow, {color: ColorUtil.main}]}>
+      <CustomText style={[styles.timetextnow, {color: ColorUtil.main}]}>
         {drinkText || '대표 주종 미설정'}
-      </Text>
+      </CustomText>
     </View>
   );
 };

@@ -30,6 +30,7 @@ import NotificationScreen from '../screens/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/Notification/NotificationSetScreen';
 import OrderDetailScreen from '../screens/BottomTab/Order/OrderDetailScreen';
 import {normalizeFont} from '../hooks/normalizeFont';
+import CustomText from '../components/common/CustomText';
 
 const Stack = createStackNavigator();
 
@@ -312,18 +313,18 @@ export default function MainStack() {
         options={({navigation, route}) => ({
           headerTitleAlign: 'center',
           headerTitle: () => (
-            <Text
+            <CustomText
               style={{
                 fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
+                fontSize: 18,
                 color: '#333',
               }}
-              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+              // 확실하게 폰트 스케일 차단
             >
               {route.params?.index === 0
                 ? '매장 제보 조회'
                 : '사장님 인증 조회'}
-            </Text>
+            </CustomText>
           ),
           headerLeft: () => (
             <Pressable
@@ -345,15 +346,14 @@ export default function MainStack() {
         options={({navigation}) => ({
           headerTitleAlign: 'center',
           headerTitle: () => (
-            <Text
+            <CustomText
               style={{
                 fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
+                fontSize: 18,
                 color: '#333',
-              }}
-              allowFontScaling={false}>
+              }}>
               사장님 인증 신청
-            </Text>
+            </CustomText>
           ),
         })}
       />

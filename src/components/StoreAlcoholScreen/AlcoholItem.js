@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Feather from 'react-native-vector-icons/Feather';
+import CustomText from '../common/CustomText';
 
 const ICON_WIDTH = 45;
 const AlcoholItem = ({
@@ -83,18 +84,18 @@ const AlcoholItem = ({
             alcohol.description == '' && {justifyContent: 'space-evenly'},
           ]}>
           <View style={styles.menuTitleRow}>
-            <Text style={styles.nameText}>{alcohol.name}</Text>
+            <CustomText style={styles.nameText}>{alcohol.name}</CustomText>
           </View>
 
           {alcohol.description && (
-            <Text style={styles.desc}>{alcohol.description}</Text>
+            <CustomText style={styles.desc}>{alcohol.description}</CustomText>
           )}
 
-          <Text style={styles.priceText}>
+          <CustomText style={styles.priceText}>
             {alcohol.price === '변동'
               ? '변동'
               : `${Number(alcohol.price).toLocaleString()}원`}
-          </Text>
+          </CustomText>
         </View>
 
         <View style={styles.ImageContainer}>

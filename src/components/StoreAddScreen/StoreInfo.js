@@ -9,6 +9,8 @@ import forbiddenWords from '../../hooks/forbiddenWords';
 import ColorUtil from '../../utils/ColorUtil';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const StoreInfo = ({storeData, setStoreData, error}) => {
   const [focusedInput, setFocusedInput] = useState(null);
@@ -64,9 +66,9 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
       {/* 전화번호 입력 */}
       <View style={styles.storeinputview}>
         <View style={{position: 'relative'}}>
-          <Text style={styles.label}>매장 번호</Text>
+          <CustomText style={styles.label}>매장 번호</CustomText>
           <View style={styles.inputContainer}>
-            <TextInput
+            <CustomTextInput
               style={[
                 styles.storeinput,
                 isFocused('storeNumber') && styles.focusedInput,
@@ -93,15 +95,15 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
           </View>
         </View>
         {errors.storeNumber && (
-          <Text style={styles.errorText}>{errors.storeNumber}</Text>
+          <CustomText style={styles.errorText}>{errors.storeNumber}</CustomText>
         )}
       </View>
 
       {/* 매장 소개 입력 */}
       <View style={[styles.storeinputview, {marginTop: 50}]}>
         <View style={{position: 'relative'}}>
-          <Text style={styles.label}>매장 소개</Text>
-          <TextInput
+          <CustomText style={styles.label}>매장 소개</CustomText>
+          <CustomTextInput
             style={[
               styles.textarea,
               isFocused('storeContent') && styles.focusedInput,
@@ -127,10 +129,14 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
           />
         </View>
         {errors.storeContent && (
-          <Text style={styles.errorText}>{errors.storeContent}</Text>
+          <CustomText style={styles.errorText}>
+            {errors.storeContent}
+          </CustomText>
         )}
         {overText && (
-          <Text style={styles.errorText}>매장 소개는 최대 500자입니다.</Text>
+          <CustomText style={styles.errorText}>
+            매장 소개는 최대 500자입니다.
+          </CustomText>
         )}
       </View>
     </View>

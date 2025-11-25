@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import CustomText from '../common/CustomText';
 
 export default function StorePaymentModal({
   visible,
@@ -107,7 +108,7 @@ export default function StorePaymentModal({
                 : insets.bottom + 10,
           },
         ]}>
-        <Text style={styles.title}>결제수단</Text>
+        <CustomText style={styles.title}>결제수단</CustomText>
 
         <View style={styles.cardBlock}>
           <TouchableOpacity
@@ -119,7 +120,7 @@ export default function StorePaymentModal({
               size={20}
               color={method === 'card' ? '#3CBBFF' : '#94A3B8'}
             />
-            <Text style={styles.methodText}>신용/체크카드</Text>
+            <CustomText style={styles.methodText}>신용/체크카드</CustomText>
           </TouchableOpacity>
           <View style={styles.divider} />
 
@@ -155,7 +156,9 @@ export default function StorePaymentModal({
                     ]}
                     onPress={onAddCard}>
                     <Ionicons name="add" size={22} color="#6B7280" />
-                    <Text style={styles.addCardText}>카드 추가</Text>
+                    <CustomText style={styles.addCardText}>
+                      카드 추가
+                    </CustomText>
                   </TouchableOpacity>
                 );
               }
@@ -174,15 +177,15 @@ export default function StorePaymentModal({
                       color="#ffffff"
                     />
                   </View>
-                  <Text style={styles.cardTitle} numberOfLines={1}>
+                  <CustomText style={styles.cardTitle} numberOfLines={1}>
                     {item.label ||
                       `${item.brand ?? '카드'} ${
                         item.last4 ? `사용불가${item.last4}` : ''
                       }`}
-                  </Text>
+                  </CustomText>
                   {item.disabled ? (
                     <View style={styles.badge}>
-                      <Text style={styles.badgeText}>사용불가</Text>
+                      <CustomText style={styles.badgeText}>사용불가</CustomText>
                     </View>
                   ) : null}
                 </View>
@@ -203,21 +206,25 @@ export default function StorePaymentModal({
 
         {/* ?�단 ?�약 �?버튼 */}
         <View style={styles.summaryWrap}>
-          <Text style={styles.summaryLabel}>예상 결제 금액</Text>
-          <Text style={styles.summaryAmount}>{currency}</Text>
+          <CustomText style={styles.summaryLabel}>예상 결제 금액</CustomText>
+          <CustomText style={styles.summaryAmount}>{currency}</CustomText>
         </View>
 
         <View style={styles.actionRow}>
           <TouchableOpacity
             style={[styles.actionBtn, styles.cancelBtn]}
             onPress={onClose}>
-            <Text style={[styles.actionText, styles.cancelText]}>취소</Text>
+            <CustomText style={[styles.actionText, styles.cancelText]}>
+              취소
+            </CustomText>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionBtn, styles.applyBtn]}
             onPress={onConfirm}
             activeOpacity={0.9}>
-            <Text style={[styles.actionText, styles.applyText]}>결제</Text>
+            <CustomText style={[styles.actionText, styles.applyText]}>
+              결제
+            </CustomText>
           </TouchableOpacity>
         </View>
       </Animated.View>

@@ -2,6 +2,8 @@ import React from 'react';
 import {View, Text, TextInput, StyleSheet, Keyboard} from 'react-native';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const RRNInput = ({
   showrrfLabel,
@@ -25,7 +27,7 @@ const RRNInput = ({
       <View style={styles.rrnContainer}>
         <View style={[styles.labeledInputContainer, {flex: 6}]}>
           {showrrfLabel && (
-            <Text
+            <CustomText
               style={[
                 styles.inputLabel,
                 (isrrnfFocused || isrrnbFocused) && {
@@ -33,9 +35,9 @@ const RRNInput = ({
                 },
               ]}>
               주민등록번호
-            </Text>
+            </CustomText>
           )}
-          <TextInput
+          <CustomTextInput
             ref={rrnFrontRef}
             style={[
               styles.input,
@@ -62,22 +64,22 @@ const RRNInput = ({
           {rrnFront.length > 0 && isrrnfFocused && (
             <CancelText
               rightnum={10}
-              topnum={normalizeFont(12)}
+              topnum={12}
               paddingnum={4}
               handlecancel={setRrnFront}
               size={normalizeFont(20)}
             />
           )}
         </View>
-        <Text
+        <CustomText
           style={{
             alignSelf: 'center',
             flex: 1,
             textAlign: 'center',
           }}>
           -
-        </Text>
-        <TextInput
+        </CustomText>
+        <CustomTextInput
           ref={rrnBackRef}
           style={[
             styles.input,
@@ -101,7 +103,7 @@ const RRNInput = ({
           onBlur={() => setIsrrnbFocused(false)}
           maxLength={1}
         />
-        <Text
+        <CustomText
           style={{
             flex: 4,
             textAlign: 'center',
@@ -109,14 +111,15 @@ const RRNInput = ({
             textAlignVertical: 'center',
             fontSize: 12,
           }}
-          allowFontScaling={false}
           numberOfLines={1}
           ellipsizeMode="clip">
           ● ● ● ● ● ●
-        </Text>
+        </CustomText>
       </View>
       {(error === 'rrnFront' || error === 'rrnBack') && (
-        <Text style={styles.errorMessage}>올바른 주민번호를 입력해주세요.</Text>
+        <CustomText style={styles.errorMessage}>
+          올바른 주민번호를 입력해주세요.
+        </CustomText>
       )}
     </View>
   );

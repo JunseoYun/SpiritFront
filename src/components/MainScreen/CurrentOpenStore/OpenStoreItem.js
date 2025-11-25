@@ -7,6 +7,7 @@ import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../../common/CustomText';
 
 let fontScale = PixelRatio.getFontScale(); // let으로 변경
 
@@ -79,10 +80,10 @@ const OpenStoreItem = ({store, location, navigation}) => {
             imageStyle={styles.backimagestyle}>
             {isOpen && isBreak && (
               <View style={styles.overlay}>
-                <Text style={styles.overlayText}>
+                <CustomText style={styles.overlayText}>
                   브레이크 타임{'\n'}
                   {breakend ? `${breakend} 종료` : ''}
-                </Text>
+                </CustomText>
               </View>
             )}
           </FastImage>
@@ -95,16 +96,16 @@ const OpenStoreItem = ({store, location, navigation}) => {
               style={styles.imageStyle}
             />
           )}
-          <Text
+          <CustomText
             style={styles.storMainInfo}
             numberOfLines={1} // 한 줄로 제한
             ellipsizeMode="tail">
             {store.name}
-          </Text>
+          </CustomText>
         </View>
         {/* ✅ 가게 카테고리 */}
         <View style={styles.storeViewInfo}>
-          <Text
+          <CustomText
             style={styles.StoreCategory}
             numberOfLines={1}
             ellipsizeMode="tail">
@@ -113,7 +114,7 @@ const OpenStoreItem = ({store, location, navigation}) => {
                   .map(category => translateCategory(category))
                   .join('  ')
               : '카테고리 미설정'}
-          </Text>
+          </CustomText>
         </View>
         <View
           style={[
@@ -124,27 +125,27 @@ const OpenStoreItem = ({store, location, navigation}) => {
             },
           ]}>
           {endtime && !store.isAlwaysOpen && (
-            <Text
+            <CustomText
               style={styles.storeSubInfo}
               numberOfLines={1}
               ellipsizeMode="tail">
               {endtime || '정보 없음'} 종료
-            </Text>
+            </CustomText>
           )}
 
           {!endtime && store.isAlwaysOpen && (
-            <Text
+            <CustomText
               style={styles.storeSubInfo}
               numberOfLines={1}
               ellipsizeMode="tail">
               24시간
-            </Text>
+            </CustomText>
           )}
 
-          <Text style={styles.storeSubInfo}>
+          <CustomText style={styles.storeSubInfo}>
             {distance}
             {unit}
-          </Text>
+          </CustomText>
         </View>
       </Pressable>
     </>

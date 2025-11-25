@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, Text, Image, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../../common/CustomText';
 
 const formatEventPeriod = (start, end) => {
   const normalize = value => {
@@ -114,7 +115,7 @@ const StoreEventSection = ({
     <>
       {type !== 'update' && (
         <>
-          <Text style={styles.label}>{title}</Text>
+          <CustomText style={styles.label}>{title}</CustomText>
         </>
       )}
       {!loading && hasEvents && (
@@ -134,35 +135,35 @@ const StoreEventSection = ({
                 style={styles.eventCard}>
                 <View style={styles.eventRow}>
                   <View style={styles.eventInfo}>
-                    <Text
+                    <CustomText
                       style={[
                         styles.eventTitle,
                         ended && styles.eventEndedText,
                       ]}>
                       {item?.title || '이벤트'}
-                    </Text>
+                    </CustomText>
                     {!!item?.content && (
-                      <Text
+                      <CustomText
                         style={[
                           styles.eventContent,
                           ended && styles.eventEndedText,
                         ]}>
                         {item.content}
-                      </Text>
+                      </CustomText>
                     )}
                     <View style={styles.eventPeriodRow}>
-                      <Text
+                      <CustomText
                         style={[
                           styles.eventPeriod,
                           ended && styles.eventEndedText,
                         ]}>
                         {formatEventPeriod(item?.startAt, item?.endAt)}
-                      </Text>
+                      </CustomText>
                       {ended ? (
-                        <Text
+                        <CustomText
                           style={[styles.eventPeriod, styles.eventEndedLabel]}>
                           종료된 이벤트
-                        </Text>
+                        </CustomText>
                       ) : null}
                     </View>
                   </View>
@@ -183,14 +184,15 @@ const StoreEventSection = ({
                     <Pressable
                       style={[styles.actionButton]}
                       onPress={() => onEditEvent?.(item)}>
-                      <Text style={styles.actionText}>수정</Text>
+                      <CustomText style={styles.actionText}>수정</CustomText>
                     </Pressable>
                     <Pressable
                       style={[styles.actionButton]}
                       onPress={() => onDeleteEvent?.(item)}>
-                      <Text style={[styles.actionText, styles.deleteText]}>
+                      <CustomText
+                        style={[styles.actionText, styles.deleteText]}>
                         삭제
-                      </Text>
+                      </CustomText>
                     </Pressable>
                   </View>
                 )}
@@ -201,7 +203,7 @@ const StoreEventSection = ({
       )}
 
       {!loading && !hasEvents && (
-        <Text style={styles.text}>등록된 정보가 없습니다.</Text>
+        <CustomText style={styles.text}>등록된 정보가 없습니다.</CustomText>
       )}
     </>
   );

@@ -10,6 +10,7 @@ import {
 import FastImage from 'react-native-fast-image';
 
 import Feather from 'react-native-vector-icons/Feather';
+import CustomText from '../common/CustomText';
 
 const {width} = Dimensions.get('window');
 
@@ -42,9 +43,9 @@ const StoreInfoImage = ({imageList, navigation, storeId}) => {
                   resizeMode={FastImage.resizeMode.cover}
                 />
                 <View style={styles.label}>
-                  <Text style={styles.labelText}>
+                  <CustomText style={styles.labelText}>
                     {img.boardType === 'DRINK' ? '주류' : '메뉴'}
-                  </Text>
+                  </CustomText>
                 </View>
               </View>
             </Pressable>

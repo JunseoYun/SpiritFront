@@ -11,6 +11,7 @@ import {
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import CustomText from '../common/CustomText';
 
 const alcoholMapping = {
   SOJU: '소주',
@@ -168,13 +169,13 @@ const Alcoholcategorytab = ({
                 console.warn();
               }
             }}>
-            <Text
+            <CustomText
               style={[
                 styles.tabText,
                 selectedType === type && styles.tabTextActive, // ???좏깮???띿뒪???ㅽ???
               ]}>
               {type}
-            </Text>
+            </CustomText>
           </TouchableOpacity>
         ))}
       </ScrollView>

@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {Text, View, Pressable, StyleSheet} from 'react-native';
+import CustomText from '../common/CustomText';
 
 const GroupBySelector = ({groupBy, toggleGroupBy, setDropdownVisible}) => {
   return (
@@ -17,10 +18,10 @@ const GroupBySelector = ({groupBy, toggleGroupBy, setDropdownVisible}) => {
               styles.resultGroupButton,
               isSelected && styles.chipSelected,
             ]}>
-            <Text
+            <CustomText
               style={[styles.resultGroupText, isSelected && styles.selectText]}>
               {gb === 'gender' ? '성별' : '연령대'}
-            </Text>
+            </CustomText>
           </Pressable>
         );
       })}

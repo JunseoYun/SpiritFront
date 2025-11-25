@@ -6,30 +6,31 @@ import {
   SafeAreaView,
   StyleSheet,
 } from 'react-native';
+import CustomText from '../../../../components/common/CustomText';
 
 // Empty list UI
 const MyCardScreen = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>등록된 카드</Text>
+        <CustomText style={styles.headerTitle}>등록된 카드</CustomText>
         <View style={styles.countBadge}>
-          <Text style={styles.countText}>0</Text>
+          <CustomText style={styles.countText}>0</CustomText>
         </View>
       </View>
 
       <View style={styles.emptyWrap}>
         <View style={styles.emptyCard} />
-        <Text style={styles.emptyTitle}>자주 사용하는 카드</Text>
-        <Text style={styles.emptySub}>
+        <CustomText style={styles.emptyTitle}>자주 사용하는 카드</CustomText>
+        <CustomText style={styles.emptySub}>
           카드를 등록하면 더 빠르게 결제할 수 있어요
-        </Text>
+        </CustomText>
         <TouchableOpacity
           style={styles.cta}
           onPress={() =>
             navigation.navigate('CardRegisterScreen', {mode: 'MyCard'})
           }>
-          <Text style={styles.ctaText}>카드 등록</Text>
+          <CustomText style={styles.ctaText}>카드 등록</CustomText>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

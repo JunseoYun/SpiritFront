@@ -51,6 +51,7 @@ import {
   deserializeOperatingTime,
   deserializeBreakingTime,
 } from '../../utils/parseOperatingHours';
+import CustomText from '../../components/common/CustomText';
 
 const MOOD_TEMPLATE = {
   QUIET: false,
@@ -738,14 +739,13 @@ const StoreUpdateScreen = ({navigation}) => {
     const isIOS = Platform.OS === 'ios';
     navigation.setOptions({
       headerTitle: () => (
-        <Text
+        <CustomText
           style={{
             fontFamily: 'Pretendard-Bold',
             fontSize: 18,
-          }}
-          allowFontScaling={false}>
+          }}>
           {currentStepTitle || '매장 등록'}
-        </Text>
+        </CustomText>
       ),
 
       headerTitleAlign: 'center',
@@ -1193,9 +1193,13 @@ const StoreUpdateScreen = ({navigation}) => {
     }
     return (
       <View style={styles.sectionIntro}>
-        {guide.title && <Text style={styles.sectionTitle}>{guide.title}</Text>}
+        {guide.title && (
+          <CustomText style={styles.sectionTitle}>{guide.title}</CustomText>
+        )}
         {guide.description && (
-          <Text style={styles.sectionDescription}>{guide.description}</Text>
+          <CustomText style={styles.sectionDescription}>
+            {guide.description}
+          </CustomText>
         )}
       </View>
     );
@@ -1209,12 +1213,12 @@ const StoreUpdateScreen = ({navigation}) => {
 
     return (
       <View style={styles.tipWrapper}>
-        <Text style={styles.tipBadge}>TIP</Text>
+        <CustomText style={styles.tipBadge}>TIP</CustomText>
         <View style={styles.tipContent}>
           {guide.tipTitle && (
-            <Text style={styles.tipTitle}>{guide.tipTitle}</Text>
+            <CustomText style={styles.tipTitle}>{guide.tipTitle}</CustomText>
           )}
-          <Text style={styles.tipBody}>{guide.tip}</Text>
+          <CustomText style={styles.tipBody}>{guide.tip}</CustomText>
         </View>
       </View>
     );
@@ -1340,7 +1344,9 @@ const StoreUpdateScreen = ({navigation}) => {
       default:
         return (
           <View style={{alignItems: 'center', marginTop: 40}}>
-            <Text style={{color: '#666'}}>지원하지 않는 타입입니다.</Text>
+            <CustomText style={{color: '#666'}}>
+              지원하지 않는 타입입니다.
+            </CustomText>
           </View>
         );
     }
@@ -1456,7 +1462,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Bold',
   },
   sectionDescription: {
-    marginTop: 8,
+    marginTop: 5,
+    paddingTop: 3,
     fontSize: 16,
     color: '#6b7280',
     fontFamily: 'Pretendard-Regular',
@@ -1486,9 +1493,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
     color: '#0D47A1',
-    marginBottom: 6,
+    marginBottom: 3,
   },
   tipBody: {
+    paddingTop: 3,
     fontSize: 14,
     fontFamily: 'Pretendard-Regular',
     color: '#24324A',

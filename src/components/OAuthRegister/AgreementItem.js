@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, Pressable} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
+import CustomText from '../common/CustomText';
 
 const AgreementItem = ({onPress, checked, text, onInfoPress}) => {
   return (
@@ -21,7 +22,7 @@ const AgreementItem = ({onPress, checked, text, onInfoPress}) => {
           size={25}
           color={checked ? '#5CCEFF' : '#E7E7E7'}
         />
-        <Text
+        <CustomText
           style={{
             fontSize: 15,
             color: '#181A1A',
@@ -29,7 +30,7 @@ const AgreementItem = ({onPress, checked, text, onInfoPress}) => {
             marginLeft: 10,
           }}>
           {text}
-        </Text>
+        </CustomText>
       </TouchableOpacity>
       <Pressable onPress={onInfoPress}>
         <Entypo name="chevron-small-right" size={25} color="#999" />

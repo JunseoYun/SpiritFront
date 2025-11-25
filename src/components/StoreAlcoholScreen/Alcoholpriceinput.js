@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import {TextInput, Text, View, StyleSheet, Pressable} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const Alcoholpriceinput = ({
   label,
@@ -15,11 +17,11 @@ const Alcoholpriceinput = ({
 
   return (
     <View style={styles.inputContainer}>
-      <Text style={styles.label}>{label}</Text>
+      <CustomText style={styles.label}>{label}</CustomText>
 
       <View style={styles.inputRow}>
         {!isVariable && (
-          <TextInput
+          <CustomTextInput
             style={[
               isMultiline ? styles.inputMultiline : styles.input,
               {borderBottomColor: isFocused ? '#3CBBFF' : '#F2F2F2'},
@@ -42,10 +44,10 @@ const Alcoholpriceinput = ({
         <View style={[styles.checkBox, isVariable && styles.checkBoxChecked]}>
           {isVariable && <Icon name="check" size={16} color="#fff" />}
         </View>
-        <Text
+        <CustomText
           style={[styles.checkLabel, isVariable && styles.checkLabelActive]}>
           변동
-        </Text>
+        </CustomText>
       </Pressable>
     </View>
   );

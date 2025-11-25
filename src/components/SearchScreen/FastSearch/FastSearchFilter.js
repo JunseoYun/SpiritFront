@@ -10,6 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+import CustomText from '../../common/CustomText';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const FILTER_TABS = ['카테고리', '인원', '방문 시간', '주종'];
@@ -152,7 +153,7 @@ export default function FastSearchFilter({
     <View onLayout={e => handleLayout(tab, e)} style={styles.sectionContainer}>
       {tab == '카테고리' ? (
         <View style={styles.categoryContainer}>
-          <Text style={styles.categoryTitle}>{tab}</Text>
+          <CustomText style={styles.categoryTitle}>{tab}</CustomText>
           <TouchableOpacity
             onPress={() => {
               setSelectedFilters({
@@ -162,11 +163,11 @@ export default function FastSearchFilter({
                 주종: '',
               });
             }}>
-            <Text style={styles.inittext}>초기화</Text>
+            <CustomText style={styles.inittext}>초기화</CustomText>
           </TouchableOpacity>
         </View>
       ) : (
-        <Text style={styles.sectionTitle}>{tab}</Text>
+        <CustomText style={styles.sectionTitle}>{tab}</CustomText>
       )}
 
       <View style={styles.filterItemsContainer}>
@@ -182,13 +183,13 @@ export default function FastSearchFilter({
                 styles.filterItem,
                 isSelected && styles.filterItemSelected,
               ]}>
-              <Text
+              <CustomText
                 style={[
                   styles.filterItemText,
                   isSelected && styles.filterItemTextSelected,
                 ]}>
                 {label}
-              </Text>
+              </CustomText>
             </TouchableOpacity>
           );
         })}
@@ -202,7 +203,7 @@ export default function FastSearchFilter({
       <View
         onLayout={e => handleLayout('방문 시간', e)}
         style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>방문 시간</Text>
+        <CustomText style={styles.sectionTitle}>방문 시간</CustomText>
 
         <View style={styles.timeTabContainer}>
           <TouchableOpacity
@@ -214,13 +215,13 @@ export default function FastSearchFilter({
               styles.timeTab,
               timePeriod === 'AM' && styles.timeTabActive,
             ]}>
-            <Text
+            <CustomText
               style={[
                 styles.timeTabText,
                 timePeriod === 'AM' && styles.timeTabTextActive,
               ]}>
               오전
-            </Text>
+            </CustomText>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
@@ -231,13 +232,13 @@ export default function FastSearchFilter({
               styles.timeTab,
               timePeriod === 'PM' && styles.timeTabActive,
             ]}>
-            <Text
+            <CustomText
               style={[
                 styles.timeTabText,
                 timePeriod === 'PM' && styles.timeTabTextActive,
               ]}>
               오후
-            </Text>
+            </CustomText>
           </TouchableOpacity>
         </View>
 
@@ -277,13 +278,13 @@ export default function FastSearchFilter({
                   styles.filterItem,
                   isSelected && styles.filterItemSelected,
                 ]}>
-                <Text
+                <CustomText
                   style={[
                     styles.filterItemText,
                     isSelected && styles.filterItemTextSelected,
                   ]}>
                   {label}
-                </Text>
+                </CustomText>
               </TouchableOpacity>
             );
           })}
@@ -303,13 +304,13 @@ export default function FastSearchFilter({
               styles.tabButton,
               activeTab === tab && styles.tabButtonActive,
             ]}>
-            <Text
+            <CustomText
               style={[
                 styles.tabText,
                 activeTab === tab && styles.tabTextActive,
               ]}>
               {tab}
-            </Text>
+            </CustomText>
           </TouchableOpacity>
         ))}
       </View>
@@ -329,10 +330,10 @@ export default function FastSearchFilter({
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.resetButton} onPress={() => onClose()}>
-          <Text style={styles.resetText}>닫기</Text>
+          <CustomText style={styles.resetText}>닫기</CustomText>
         </TouchableOpacity>
         <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-          <Text style={styles.applyText}>검색</Text>
+          <CustomText style={styles.applyText}>검색</CustomText>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

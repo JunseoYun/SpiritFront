@@ -7,6 +7,7 @@ import {
   Keyboard,
   StyleSheet,
 } from 'react-native';
+import CustomText from '../common/CustomText';
 
 const DAY_ORDER = [
   'SUNDAY',
@@ -227,7 +228,7 @@ const OrderForm = ({
   return (
     <View style={styles.container}>
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>방문 예정 시간</Text>
+        <CustomText style={styles.sectionLabel}>방문 예정 시간</CustomText>
         {timeSlots.length > 0 ? (
           <ScrollView
             horizontal
@@ -243,26 +244,26 @@ const OrderForm = ({
                     styles.timeChip,
                     isSelected && styles.timeChipSelected,
                   ]}>
-                  <Text
+                  <CustomText
                     style={[
                       styles.timeChipText,
                       isSelected && styles.timeChipTextSelected,
                     ]}>
                     {time}
-                  </Text>
+                  </CustomText>
                 </TouchableOpacity>
               );
             })}
           </ScrollView>
         ) : (
-          <Text style={styles.emptyText}>
+          <CustomText style={styles.emptyText}>
             오늘은 주문 가능한 시간이 없습니다.
-          </Text>
+          </CustomText>
         )}
       </View>
 
       <View style={[styles.section, styles.sectionSpacing]}>
-        <Text style={styles.sectionLabel}>인원</Text>
+        <CustomText style={styles.sectionLabel}>인원</CustomText>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -277,34 +278,34 @@ const OrderForm = ({
                   styles.peopleChip,
                   isSelected && styles.peopleChipSelected,
                 ]}>
-                <Text
+                <CustomText
                   style={[
                     styles.peopleChipText,
                     isSelected && styles.peopleChipTextSelected,
                   ]}>
                   {number}명
-                </Text>
+                </CustomText>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
-        <Text style={styles.peopleHint}>
+        <CustomText style={styles.peopleHint}>
           최소 {MIN_ORDER_PEOPLE}명, 최대 {MAX_ORDER_PEOPLE}명 선택 가능
-        </Text>
+        </CustomText>
       </View>
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelText}>취소</Text>
+          <CustomText style={styles.cancelText}>취소</CustomText>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.applyButton, !canSubmitOrder && styles.applyDisabled]}
           onPress={handleSubmit}
           disabled={!canSubmitOrder}>
-          <Text
+          <CustomText
             style={[styles.applyText, !canSubmitOrder && styles.applyTextDim]}>
             주문 진행하기
-          </Text>
+          </CustomText>
         </TouchableOpacity>
       </View>
     </View>

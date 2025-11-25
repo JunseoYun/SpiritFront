@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import CustomText from '../common/CustomText';
 
 const StoreTV = ({
   selectedscreenOption,
@@ -18,11 +19,11 @@ const StoreTV = ({
   return (
     <View>
       <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>
+        <CustomText style={styles.storeinputtext}>
           {index
             ? '매장 내 스크린(TV) 설치 여부*'
             : '매장 내 스크린(TV) 설치 여부'}
-        </Text>
+        </CustomText>
       </View>
       <View style={styles.storeCheckView}>
         <TouchableOpacity
@@ -31,13 +32,13 @@ const StoreTV = ({
             selectedscreenOption === true && styles.checkboxSelected,
           ]}
           onPress={() => handleCheckBoxscreenChange(0)}>
-          <Text
+          <CustomText
             style={[
               styles.checkboxText,
               selectedscreenOption === true && styles.checkboxTextSelected,
             ]}>
             설치
-          </Text>
+          </CustomText>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -45,19 +46,19 @@ const StoreTV = ({
             selectedscreenOption === false && styles.checkboxSelected,
           ]}
           onPress={() => handleCheckBoxscreenChange(1)}>
-          <Text
+          <CustomText
             style={[
               styles.checkboxText,
               selectedscreenOption === false && styles.checkboxTextSelected,
             ]}>
             미설치
-          </Text>
+          </CustomText>
         </TouchableOpacity>
       </View>
       {error === 'StoreScreen' && selectedscreenOption === null && (
-        <Text style={styles.errorMessage}>
+        <CustomText style={styles.errorMessage}>
           매장 내 스크린(TV) 설치 여부를 선택해 주세요.
-        </Text>
+        </CustomText>
       )}
     </View>
   );

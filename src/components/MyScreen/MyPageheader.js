@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../common/CustomText';
 
 const MyPageheader = ({
   nickname,
@@ -29,7 +30,7 @@ const MyPageheader = ({
     )}
 
     <Pressable style={styles.pressView} onPress={onProfilePress}>
-      <Text style={[styles.Nickname]}>{nickname}</Text>
+      <CustomText style={[styles.Nickname]}>{nickname}</CustomText>
 
       <FontAwesomeIcon
         name={'angle-right'}

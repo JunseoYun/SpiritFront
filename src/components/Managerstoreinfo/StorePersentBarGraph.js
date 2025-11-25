@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
+import CustomText from '../common/CustomText';
 
 const BAR_HEIGHT = 170;
 
@@ -29,7 +30,9 @@ const StorePersentBarGraph = ({ageGenderStats = []}) => {
 
   const renderGuideLine = (percent, top, key) => (
     <View key={key} style={[styles.guideLine, {top}]}>
-      {percent !== '0%' && <Text style={styles.guideLabel}>{percent}</Text>}
+      {percent !== '0%' && (
+        <CustomText style={styles.guideLabel}>{percent}</CustomText>
+      )}
       <View style={styles.line} />
     </View>
   );
@@ -45,7 +48,7 @@ const StorePersentBarGraph = ({ageGenderStats = []}) => {
             alignItems: 'center',
           },
         ]}>
-        <Text style={{color: '#aaa'}}>데이터 없음</Text>
+        <CustomText style={{color: '#aaa'}}>데이터 없음</CustomText>
       </View>
     );
   }
@@ -88,7 +91,7 @@ const StorePersentBarGraph = ({ageGenderStats = []}) => {
                 ]}
               />
             </View>
-            <Text style={styles.ageLabel}>{item.age}</Text>
+            <CustomText style={styles.ageLabel}>{item.age}</CustomText>
           </View>
         ))}
       </View>

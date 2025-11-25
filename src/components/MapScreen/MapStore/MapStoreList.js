@@ -34,6 +34,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import MapDetailItemSkeleton from './MapDetailItemSkeleton';
 import {MenuIcon} from 'lucide-react-native';
 import Loading from '../../../hooks/Loading';
+import CustomText from '../../common/CustomText';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 const DEFAULT_DETAIL_HEADER_HEIGHT = 110;
@@ -1018,9 +1019,9 @@ const MapStoreList = ({
             {detailStoreLoading ? (
               <MapDetailItemSkeleton />
             ) : (
-              <Text style={styles.detailLoadingText}>
+              <CustomText style={styles.detailLoadingText}>
                 매장 정보를 불러오지 못했어요.
-              </Text>
+              </CustomText>
             )}
           </View>
         );
@@ -1139,7 +1140,7 @@ const MapStoreList = ({
               onPress={handleShowList}>
               <MenuIcon color="#333" size={17} />
 
-              <Text style={styles.listButtonText}>목록보기</Text>
+              <CustomText style={styles.listButtonText}>목록보기</CustomText>
             </Pressable>
           )}
 

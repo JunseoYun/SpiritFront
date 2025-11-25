@@ -3,6 +3,8 @@ import {View, Text, TextInput, StyleSheet} from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태
@@ -48,9 +50,11 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
       {/* 매장 이름 입력 */}
       <View style={styles.storeinputview}>
         {storeData.storeName && (
-          <Text style={styles.storeinputtext}>매장 이름(상호명)</Text>
+          <CustomText style={styles.storeinputtext}>
+            매장 이름(상호명)
+          </CustomText>
         )}
-        <TextInput
+        <CustomTextInput
           style={[
             styles.storeinput,
             isFocused('storeName') && styles.focusedInput,
@@ -84,16 +88,16 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
           />
         )}
         {errors.storeName && (
-          <Text style={styles.errorText}>{errors.storeName}</Text>
+          <CustomText style={styles.errorText}>{errors.storeName}</CustomText>
         )}
       </View>
 
       {/* 전화번호 입력 */}
       <View style={styles.storeinputview}>
         {storeData.storeNumber && (
-          <Text style={styles.storeinputtext}>매장 연락처</Text>
+          <CustomText style={styles.storeinputtext}>매장 연락처</CustomText>
         )}
-        <TextInput
+        <CustomTextInput
           style={[
             styles.storeinput,
             isFocused('storeNumber') && styles.focusedInput,
@@ -125,15 +129,15 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
           />
         )}
         {errors.storeNumber && (
-          <Text style={styles.errorText}>{errors.storeNumber}</Text>
+          <CustomText style={styles.errorText}>{errors.storeNumber}</CustomText>
         )}
       </View>
 
       <View style={styles.storeinputview}>
         {storeData.userContact && (
-          <Text style={styles.storeinputtext}>신청자 연락처</Text>
+          <CustomText style={styles.storeinputtext}>신청자 연락처</CustomText>
         )}
-        <TextInput
+        <CustomTextInput
           style={[
             styles.storeinput,
             isFocused('userContact') && styles.focusedInput,
@@ -157,7 +161,7 @@ const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
           />
         )}
         {errors.userContact && (
-          <Text style={styles.errorText}>{errors.userContact}</Text>
+          <CustomText style={styles.errorText}>{errors.userContact}</CustomText>
         )}
       </View>
     </View>

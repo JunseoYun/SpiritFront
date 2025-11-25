@@ -12,6 +12,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Clipboard from 'react-native/Libraries/Components/Clipboard/Clipboard';
 import {useToast} from '../../../context/ToastContext';
+import CustomText from '../../common/CustomText';
 
 const Contact = ({contact}) => {
   if (!contact) {
@@ -85,7 +86,9 @@ const Contact = ({contact}) => {
         onLayout={event => setTriggerHeight(event.nativeEvent.layout.height)}>
         <Ionicons name="call-outline" size={20} color="#333" />
         <View style={styles.triggerLabelWrapper}>
-          <Text style={styles.triggerLabel}>{formattedContact}</Text>
+          <CustomText style={styles.triggerLabel}>
+            {formattedContact}
+          </CustomText>
         </View>
       </Pressable>
 
@@ -109,30 +112,30 @@ const Contact = ({contact}) => {
               },
             ]}>
             <View style={styles.popoverHeader}>
-              <Text style={styles.popoverTitle}>
+              <CustomText style={styles.popoverTitle}>
                 매장과 직접 연결되는 번호입니다.
-              </Text>
+              </CustomText>
               <Pressable onPress={closePopover}>
                 <Ionicons name="close" size={18} color="#9AA0AF" />
               </Pressable>
             </View>
-            <Text style={styles.popoverDescription}>
+            <CustomText style={styles.popoverDescription}>
               예약, 문의 등 필요한 내용을 전화로 바로 확인할 수 있어요.
-            </Text>
+            </CustomText>
 
             <View style={styles.numberRow}>
-              <Text style={styles.numberLabel}>전화번호</Text>
-              <Text selectable style={styles.numberValue}>
+              <CustomText style={styles.numberLabel}>전화번호</CustomText>
+              <CustomText selectable style={styles.numberValue}>
                 {formattedContact}
-              </Text>
+              </CustomText>
               <Pressable onPress={handleCopy}>
-                <Text style={styles.copyText}>
+                <CustomText style={styles.copyText}>
                   {copied ? '복사됨' : '복사'}
-                </Text>
+                </CustomText>
               </Pressable>
             </View>
             <Pressable style={styles.callButton} onPress={handleCall}>
-              <Text style={styles.callButtonText}>전화하기</Text>
+              <CustomText style={styles.callButtonText}>전화하기</CustomText>
             </Pressable>
           </Animated.View>
         </>

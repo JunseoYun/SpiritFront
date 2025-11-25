@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, Text} from 'react-native';
 import StaticKakaoMap from '../../common/StaticKakaoMap';
+import CustomText from '../../common/CustomText';
 
 const StoreLocationSection = ({title, location, storeName}) => {
   const hasCoordinates = !!location?.latitude && !!location?.longitude;
@@ -13,8 +14,8 @@ const StoreLocationSection = ({title, location, storeName}) => {
   return (
     <>
       <View style={styles.divider} />
-      <Text style={styles.label}>{title}</Text>
-      <Text style={styles.addressText}>{addressText}</Text>
+      <CustomText style={styles.label}>{title}</CustomText>
+      <CustomText style={styles.addressText}>{addressText}</CustomText>
       {hasCoordinates && (
         <View style={styles.mapContainer}>
           <StaticKakaoMap

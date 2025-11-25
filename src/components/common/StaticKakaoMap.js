@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useMemo} from 'react';
-import {StyleSheet, View, Platform, Dimensions} from 'react-native';
+import {StyleSheet, View, Platform, Dimensions, PixelRatio} from 'react-native';
 import {WebView} from 'react-native-webview';
 import Config from 'react-native-config';
 
@@ -7,12 +7,19 @@ const StaticKakaoMap = ({latitude, longitude, labelText = '매장 위치'}) => {
   const lat = parseFloat(latitude);
   const lng = parseFloat(longitude);
   const screenHeight = Dimensions.get('window').height;
-
+  let fontScale = PixelRatio.getFontScale();
+  let fontasd;
+  if (fontScale > 1.5) {
+    fontasd = 1.5;
+  }
   if (!lat || !lng || isNaN(lat) || isNaN(lng)) return null;
 
   // 플랫폼별 중심 보정값 — Android는 더 위로 밀림 현상 대비
   const offset = 0.00025;
   const adjustedLat = lat + offset;
+
+  const baseFontSize = 15; // 기본 폰트 크기
+  const scaledFontSize = (baseFontSize / fontScale) * fontasd;
 
   const html = `
     <!DOCTYPE html>
@@ -88,7 +95,7 @@ const StaticKakaoMap = ({latitude, longitude, labelText = '매장 위치'}) => {
           label.style.marginTop = '6px';
           label.style.padding = '3px 6px';
           label.style.borderRadius = '6px';
-          label.style.fontSize = '15px';
+          label.style.fontSize = '${scaledFontSize}px';
           label.style.fontWeight = 700;
           label.style.color = '#333';
           label.style.textShadow =

@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import {Portal} from 'react-native-paper';
+import CustomText from '../components/common/CustomText';
 
 const useCustomAlert = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -93,8 +94,12 @@ const useCustomAlert = () => {
           onRequestClose={() => closeAlert()}>
           <View style={styles.overlay}>
             <Animated.View style={[styles.alertBox, {opacity}]}>
-              {title && <Text style={styles.alertTitle}>{title}</Text>}
-              {message && <Text style={styles.alertMessage}>{message}</Text>}
+              {title && (
+                <CustomText style={styles.alertTitle}>{title}</CustomText>
+              )}
+              {message && (
+                <CustomText style={styles.alertMessage}>{message}</CustomText>
+              )}
 
               <View style={styles.buttonContainer}>
                 {/* ✅ 일반 확인/취소 */}
@@ -103,13 +108,17 @@ const useCustomAlert = () => {
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>{cancelText}</Text>
+                      <CustomText style={styles.buttonText}>
+                        {cancelText}
+                      </CustomText>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonText}>{confirmText}</Text>
+                      <CustomText style={styles.buttonText}>
+                        {confirmText}
+                      </CustomText>
                     </TouchableOpacity>
                   </>
                 )}
@@ -120,13 +129,15 @@ const useCustomAlert = () => {
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>거절</Text>
+                      <CustomText style={styles.buttonText}>거절</CustomText>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonText}>동의하기</Text>
+                      <CustomText style={styles.buttonText}>
+                        동의하기
+                      </CustomText>
                     </TouchableOpacity>
                   </>
                 )}
@@ -137,13 +148,15 @@ const useCustomAlert = () => {
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>취소</Text>
+                      <CustomText style={styles.buttonText}>취소</CustomText>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonDeleteText}>삭제</Text>
+                      <CustomText style={styles.buttonDeleteText}>
+                        삭제
+                      </CustomText>
                     </TouchableOpacity>
                   </>
                 )}
@@ -154,13 +167,15 @@ const useCustomAlert = () => {
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>취소</Text>
+                      <CustomText style={styles.buttonText}>취소</CustomText>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonDeleteText}>탈퇴하기</Text>
+                      <CustomText style={styles.buttonDeleteText}>
+                        탈퇴하기
+                      </CustomText>
                     </TouchableOpacity>
                   </>
                 )}
@@ -171,13 +186,15 @@ const useCustomAlert = () => {
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>취소</Text>
+                      <CustomText style={styles.buttonText}>취소</CustomText>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonText}>설정 이동</Text>
+                      <CustomText style={styles.buttonText}>
+                        설정 이동
+                      </CustomText>
                     </TouchableOpacity>
                   </>
                 )}
@@ -187,7 +204,7 @@ const useCustomAlert = () => {
                   <TouchableOpacity
                     style={styles.button}
                     onPress={() => closeAlert(onConfirm)}>
-                    <Text style={styles.buttonText}>확인</Text>
+                    <CustomText style={styles.buttonText}>확인</CustomText>
                   </TouchableOpacity>
                 )}
 
@@ -196,15 +213,17 @@ const useCustomAlert = () => {
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>{cancelText || '취소'}</Text>
+                      <CustomText style={styles.buttonText}>
+                        {cancelText || '취소'}
+                      </CustomText>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonDeleteText}>
+                      <CustomText style={styles.buttonDeleteText}>
                         {confirmText || '나가기'}
-                      </Text>
+                      </CustomText>
                     </TouchableOpacity>
                   </>
                 )}
@@ -238,20 +257,23 @@ const styles = StyleSheet.create({
   alertTitle: {
     fontSize: 17,
     fontFamily: 'Pretendard-SemiBold',
-    lineHeight: 20,
-    marginBottom: 15,
-    marginTop: 20,
+    lineHeight: 24,
+    paddingBottom: 10,
+    paddingTop: 20,
     color: '#181A1A',
+    textAlign: 'center',
   },
   alertMessage: {
     fontSize: 16,
     textAlign: 'center',
     fontFamily: 'Pretendard-Regular',
-    marginBottom: 20,
-    marginHorizontal: 18,
+    paddingBottom: 20,
+    paddingHorizontal: 18,
     flexWrap: 'wrap',
     color: '#181A1A',
-    lineHeight: 22,
+    lineHeight: 24,
+    paddingTop: 5,
+    textAlign: 'center',
   },
   buttonContainer: {
     height: 50,

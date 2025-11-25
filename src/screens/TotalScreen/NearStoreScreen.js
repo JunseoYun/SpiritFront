@@ -24,6 +24,7 @@ import TotalItemSkeleton from '../../components/TotalScreen/TotalSkeleton/TotalI
 import NearStoreTotalItem from '../../components/TotalScreen/NearStoreTotalItem';
 import ScrollToTopButton from '../../components/common/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
+import CustomText from '../../components/common/CustomText';
 
 const NearStoreScreen = ({navigation}) => {
   const route = useRoute();
@@ -155,7 +156,9 @@ const NearStoreScreen = ({navigation}) => {
         />
       )}
       {distancestores.length === 0 && !loading && (
-        <Text style={styles.emptyText}>주변에 등록된 술집이 없어요</Text>
+        <CustomText style={styles.emptyText}>
+          주변에 등록된 술집이 없어요
+        </CustomText>
       )}
       <ScrollToTopButton
         visible={showScrollToTop}

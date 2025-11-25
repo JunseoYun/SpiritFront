@@ -2,6 +2,7 @@ import React, {useCallback} from 'react';
 import {StyleSheet, View, Pressable, Text} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../../common/CustomText';
 
 const StoreImageManagementSection = ({cards = []}) => {
   const renderImagePreview = useCallback(imageUrls => {
@@ -92,12 +93,13 @@ const StoreImageManagementSection = ({cards = []}) => {
             onPress={card.onPress}>
             {extraCount > 0 && (
               <View style={styles.imageBadge}>
-                <Text style={styles.imageBadgeText}>{`+${extraCount}`}</Text>
+                <CustomText
+                  style={styles.imageBadgeText}>{`+${extraCount}`}</CustomText>
               </View>
             )}
             {renderImagePreview(imageUrls)}
 
-            <Text style={styles.title}>{card.title}</Text>
+            <CustomText style={styles.title}>{card.title}</CustomText>
           </Pressable>
         );
       })}

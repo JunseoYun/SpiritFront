@@ -22,6 +22,7 @@ import FastImage from 'react-native-fast-image';
 import {useToast} from '../../context/ToastContext';
 import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
 import Loading from '../../hooks/Loading';
+import CustomText from '../../components/common/CustomText';
 const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
   const {loginauth} = useAuth();
   const {showToast} = useToast();
@@ -176,9 +177,9 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
           resizeMode={FastImage.resizeMode.contain}
         />
 
-        <Text style={styles.subText} allowFontScaling={false}>
+        <CustomText style={styles.subText}>
           한잔하고 싶은 당신을 위한 서비스
-        </Text>
+        </CustomText>
       </View>
       <View style={styles.loginView}>
         <View
@@ -188,9 +189,7 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
             marginBottom: 10,
           }}>
           <View style={styles.line} />
-          <Text style={styles.loginText} allowFontScaling={false}>
-            다음으로 시작하기
-          </Text>
+          <CustomText style={styles.loginText}>다음으로 시작하기</CustomText>
           <View style={styles.line} />
         </View>
         <TouchableOpacity
@@ -204,9 +203,7 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
                 resizeMode={FastImage.resizeMode.contain}
               />
             </View>
-            <Text style={styles.googleText} allowFontScaling={false}>
-              카카오 로그인
-            </Text>
+            <CustomText style={styles.googleText}>카카오 로그인</CustomText>
             <View style={{width: 30}} />
           </View>
         </TouchableOpacity>
@@ -221,9 +218,7 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
                 resizeMode={FastImage.resizeMode.contain}
               />
             </View>
-            <Text style={styles.googleText} allowFontScaling={false}>
-              Google 로그인
-            </Text>
+            <CustomText style={styles.googleText}>Google 로그인</CustomText>
             <View style={{width: 30}} />
           </View>
         </TouchableOpacity>
@@ -239,18 +234,16 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
                   resizeMode={FastImage.resizeMode.contain}
                 />
               </View>
-              <Text style={styles.appleText} allowFontScaling={false}>
-                Apple 로그인
-              </Text>
+              <CustomText style={styles.appleText}>Apple 로그인</CustomText>
               <View style={{width: 30, marginTop: 20}} />
             </View>
           </TouchableOpacity>
         )}
         {isTestEnabled && Platform.OS === 'ios' && (
           <TouchableOpacity onPress={() => handleAppleSignIn(true)}>
-            <Text style={{color: '#333', fontFamily: 'Pretendard-Bold'}}>
+            <CustomText style={{color: '#333', fontFamily: 'Pretendard-Bold'}}>
               APPLE TESTER
-            </Text>
+            </CustomText>
           </TouchableOpacity>
         )}
       </View>

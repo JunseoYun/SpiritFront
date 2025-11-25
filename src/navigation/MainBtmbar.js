@@ -9,17 +9,18 @@ import LikeScreen from '../screens/BottomTab/LikeScreen';
 import OrderScreen from '../screens/BottomTab/Order/OrderScreen';
 import SearchStack from './SearchStack';
 import MyStack from './MyStack';
+import CustomText from '../components/common/CustomText';
 
 const Tab = createBottomTabNavigator();
 
 const MainBtmbar = () => {
   // 탭 라벨을 커스텀 Text로 반환
   const renderLabel = (label, color) => (
-    <Text
-      style={{color, fontFamily: 'Pretendard-Medium', fontSize: 12}}
-      allowFontScaling={false}>
+    <CustomText
+      maxScale={1}
+      style={{color, fontFamily: 'Pretendard-Medium', fontSize: 12}}>
       {label}
-    </Text>
+    </CustomText>
   );
 
   return (

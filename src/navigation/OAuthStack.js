@@ -17,6 +17,7 @@ import ThirdPartyInfo from '../components/IdentityScreen/Policy/ThirdPartyInfo';
 
 import MainBtmbar from './MainBtmbar';
 import {normalizeFont} from '../hooks/normalizeFont';
+import CustomText from '../components/common/CustomText';
 const Stack = createStackNavigator();
 
 export default function OAuthStack({isTestEnabled}) {
@@ -77,16 +78,16 @@ export default function OAuthStack({isTestEnabled}) {
         options={({navigation}) => ({
           headerTitleAlign: 'center',
           headerTitle: () => (
-            <Text
+            <CustomText
               style={{
                 fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
+                fontSize: 18,
                 color: '#333',
               }}
-              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+              // 확실하게 폰트 스케일 차단
             >
               한잔할까 서비스 이용약관
-            </Text>
+            </CustomText>
           ),
           headerLeft: () => (
             <Pressable
@@ -163,16 +164,16 @@ export default function OAuthStack({isTestEnabled}) {
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
           headerTitle: () => (
-            <Text
+            <CustomText
               style={{
                 fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
+                fontSize: 18,
                 color: '#333',
               }}
-              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+              // 확실하게 폰트 스케일 차단
             >
               개인정보 수집/이용 동의
-            </Text>
+            </CustomText>
           ),
           headerLeft: () => (
             <Pressable
@@ -197,16 +198,16 @@ export default function OAuthStack({isTestEnabled}) {
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
           headerTitle: () => (
-            <Text
+            <CustomText
               style={{
                 fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
+                fontSize: 18,
                 color: '#333',
               }}
-              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+              // 확실하게 폰트 스케일 차단
             >
               고유식별번호 처리 동의
-            </Text>
+            </CustomText>
           ),
           headerLeft: () => (
             <Pressable
@@ -231,16 +232,16 @@ export default function OAuthStack({isTestEnabled}) {
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
           headerTitle: () => (
-            <Text
+            <CustomText
               style={{
                 fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
+                fontSize: 18,
                 color: '#333',
               }}
-              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+              // 확실하게 폰트 스케일 차단
             >
               통신사 이용약관 동의
-            </Text>
+            </CustomText>
           ),
           headerLeft: () => (
             <Pressable
@@ -265,16 +266,16 @@ export default function OAuthStack({isTestEnabled}) {
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
           headerTitle: () => (
-            <Text
+            <CustomText
               style={{
                 fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
+                fontSize: 18,
                 color: '#333',
               }}
-              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+              // 확실하게 폰트 스케일 차단
             >
               서비스 이용약관 동의
-            </Text>
+            </CustomText>
           ),
           headerLeft: () => (
             <Pressable
@@ -300,16 +301,16 @@ export default function OAuthStack({isTestEnabled}) {
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
           headerTitle: () => (
-            <Text
+            <CustomText
               style={{
                 fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
+                fontSize: 18,
                 color: '#333',
               }}
-              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+              // 확실하게 폰트 스케일 차단
             >
               개인정보 제3자 제공 동의
-            </Text>
+            </CustomText>
           ),
           headerLeft: () => (
             <Pressable

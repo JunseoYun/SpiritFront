@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, Pressable, Dimensions} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../../common/CustomText';
 
 const ViewedStoreItem = ({store, location, navigation}) => {
   const handlePress = () => {
@@ -34,9 +35,9 @@ const ViewedStoreItem = ({store, location, navigation}) => {
           }}
           imageStyle={styles.backimagestyle}></FastImage>
 
-        <Text style={styles.titletext} numberOfLines={1}>
+        <CustomText style={styles.titletext} numberOfLines={1}>
           {store.name}
-        </Text>
+        </CustomText>
       </Pressable>
     </View>
   );

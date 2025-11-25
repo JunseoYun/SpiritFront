@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, ScrollView, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../../components/common/CustomText';
 
 const StoreEventsScreen = ({route, navigation}) => {
   const events = route?.params?.events ?? [];
@@ -9,7 +10,9 @@ const StoreEventsScreen = ({route, navigation}) => {
   if (events.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>등록된 이벤트가 없어요.</Text>
+        <CustomText style={styles.emptyText}>
+          등록된 이벤트가 없어요.
+        </CustomText>
       </View>
     );
   }
@@ -45,13 +48,13 @@ const StoreEventsScreen = ({route, navigation}) => {
           )}
         </Pressable>
         <View style={styles.infoBox}>
-          <Text style={styles.title}>{event.title}</Text>
+          <CustomText style={styles.title}>{event.title}</CustomText>
           {!!event?.content && (
-            <Text style={styles.content}>{event.content}</Text>
+            <CustomText style={styles.content}>{event.content}</CustomText>
           )}
-          <Text style={styles.date}>
+          <CustomText style={styles.date}>
             {formatEventPeriod(event.startAt, event.endAt)}
-          </Text>
+          </CustomText>
         </View>
       </View>
     );

@@ -15,6 +15,7 @@ import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../../common/CustomText';
 const fontScale = PixelRatio.getFontScale();
 
 const iconSize = fontScale >= 1.5 ? 22 : 16;
@@ -111,7 +112,9 @@ const PopularStoreItem = ({store, location, navigation}) => {
 
                   return (
                     <View style={overlayStyle}>
-                      <Text style={styles.overlayText}>{overlayText}</Text>
+                      <CustomText maxScale={1.3} style={styles.overlayText}>
+                        {overlayText}
+                      </CustomText>
                     </View>
                   );
                 })()}
@@ -176,7 +179,9 @@ const PopularStoreItem = ({store, location, navigation}) => {
 
                   return (
                     <View style={overlayStyle}>
-                      <Text style={styles.overlayText}>{overlayText}</Text>
+                      <CustomText maxScale={1.3} style={styles.overlayText}>
+                        {overlayText}
+                      </CustomText>
                     </View>
                   );
                 })()}
@@ -231,22 +236,20 @@ const PopularStoreItem = ({store, location, navigation}) => {
                           style={styles.gradientTop}
                           pointerEvents="none"
                         />
-                        <Text
+                        <CustomText
                           style={styles.menuName}
-                          allowFontScaling={false}
                           numberOfLines={1}
                           ellipsizeMode="tail">
                           {menu.name}
-                        </Text>
-                        <Text
+                        </CustomText>
+                        <CustomText
                           style={styles.menuPrice}
-                          allowFontScaling={false}
                           numberOfLines={1}
                           ellipsizeMode="tail">
                           {/^\d+$/.test(menu?.price)
                             ? Number(menu.price).toLocaleString() + '원'
                             : menu?.price}
-                        </Text>
+                        </CustomText>
                       </View>
                     )}
                   </FastImage>
@@ -257,9 +260,9 @@ const PopularStoreItem = ({store, location, navigation}) => {
 
       <Pressable onPress={handleStorePress} style={styles.infoTopView}>
         {!!store?.categories?.length && (
-          <Text style={styles.category} numberOfLines={1}>
+          <CustomText style={styles.category} numberOfLines={1}>
             {store.categories.map(c => translateCategory(c)).join(', ')}
-          </Text>
+          </CustomText>
         )}
         <View style={styles.infoTitleView}>
           <View style={[styles.infoTitleViewSection, {flex: 1}]}>
@@ -272,17 +275,20 @@ const PopularStoreItem = ({store, location, navigation}) => {
                 ]}
               />
             )}
-            <Text
+            <CustomText
               style={styles.storeName}
               numberOfLines={1}
               ellipsizeMode="tail">
               {store.name}
-            </Text>
+            </CustomText>
           </View>
           <View style={styles.infoTitleViewSection}>
             <FontAwesomeIcon name="star" size={iconSize} color="#FED348" />
-            <Text style={styles.infoText}> {store.storeRate || 0}</Text>
-            <Text
+            <CustomText style={styles.infoText}>
+              {' '}
+              {store.storeRate || 0}
+            </CustomText>
+            <CustomText
               style={[
                 styles.infoText,
                 {
@@ -292,7 +298,7 @@ const PopularStoreItem = ({store, location, navigation}) => {
                 },
               ]}>
               ({Number(store.reviewCount ?? 0).toLocaleString('ko-KR')})
-            </Text>
+            </CustomText>
           </View>
         </View>
 
@@ -305,26 +311,28 @@ const PopularStoreItem = ({store, location, navigation}) => {
           ]}>
           <View style={styles.infoView}>
             {store?.isAlwaysOpen == true ? (
-              <Text style={styles.subInfoText}>24시간 영업</Text>
+              <CustomText style={styles.subInfoText}>24시간 영업</CustomText>
             ) : store?.isAlwaysOpen == false && closed ? (
-              <Text style={styles.subInfoText}>금일 휴무</Text>
+              <CustomText style={styles.subInfoText}>금일 휴무</CustomText>
             ) : !isOpen && nextclosed && !closed ? (
-              <Text style={styles.subInfoText}>영업 종료 익일 휴무</Text>
+              <CustomText style={styles.subInfoText}>
+                영업 종료 익일 휴무
+              </CustomText>
             ) : !isOpen && !nextclosed && !closed ? (
-              <Text style={styles.subInfoText}>
+              <CustomText style={styles.subInfoText}>
                 영업 전 {starttime ? `${starttime} 영업 시작` : ''}
-              </Text>
+              </CustomText>
             ) : (
-              <Text style={styles.subInfoText}>
+              <CustomText style={styles.subInfoText}>
                 영업 중 {`${starttime} - ${endtime}` || '정보 없음'}
-              </Text>
+              </CustomText>
             )}
           </View>
           {breakstart && breakend && (
             <View style={styles.infoView}>
-              <Text style={styles.subInfoText}>
+              <CustomText style={styles.subInfoText}>
                 휴게시간 {breakstart} ~ {breakend}
-              </Text>
+              </CustomText>
             </View>
           )}
         </View>
@@ -340,13 +348,13 @@ const PopularStoreItem = ({store, location, navigation}) => {
                   styles.drinkBadge,
                   isLast ? {flexShrink: 1} : {}, // 마지막만 줄어들게
                 ]}>
-                <Text
+                <CustomText
                   style={styles.drinkBadgeText}
                   {...(isLast
                     ? {numberOfLines: 1, ellipsizeMode: 'tail'}
                     : {})}>
                   {translateAlcohol(drink.type)} {drink.price}
-                </Text>
+                </CustomText>
               </View>
             );
           })}
@@ -520,7 +528,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    maxWidth: '100%',
+    maxWidth: '95%',
   },
   alcoholText: {
     fontSize: 14,

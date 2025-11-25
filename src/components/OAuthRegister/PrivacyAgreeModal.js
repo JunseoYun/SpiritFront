@@ -1,5 +1,6 @@
 import React from 'react';
 import {Modal, View, Text, Pressable, StyleSheet} from 'react-native';
+import CustomText from '../common/CustomText';
 
 const PrivacyAgreeModal = ({visible, onPressClose}) => {
   return (
@@ -8,7 +9,7 @@ const PrivacyAgreeModal = ({visible, onPressClose}) => {
         <View
           style={styles.modalContainer}
           onStartShouldSetResponder={() => true}>
-          <Text style={styles.topText}>privacyAgreeModal</Text>
+          <CustomText style={styles.topText}>privacyAgreeModal</CustomText>
         </View>
       </Pressable>
     </Modal>

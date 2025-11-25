@@ -1,10 +1,11 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import CustomText from '../../../common/CustomText';
 
 const SKTcarrieruse = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.text}>
+      <CustomText style={styles.text}>
         통신사 이용 약관 동의{'\n'}
         {'\n'}
         [SK텔레콤 본인확인서비스 이용 약관]{'\n'}
@@ -259,7 +260,7 @@ const SKTcarrieruse = () => {
         {'\n'}
         부칙{'\n'}
         (시행일) 이 약관은 공지한 날로부터 시행합니다.{'\n'}
-      </Text>
+      </CustomText>
     </ScrollView>
   );
 };

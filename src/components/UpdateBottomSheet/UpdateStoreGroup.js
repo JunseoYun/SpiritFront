@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import CustomText from '../common/CustomText';
 
 const UpdateStoreGroup = ({
   updatedValue,
@@ -11,7 +12,7 @@ const UpdateStoreGroup = ({
 }) => {
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>단체 방문 가능 여부</Text>
+      <CustomText style={styles.title}>단체 방문 가능 여부</CustomText>
       <View style={styles.storeCheckView}>
         <TouchableOpacity
           style={styles.storeCheckView}
@@ -25,7 +26,7 @@ const UpdateStoreGroup = ({
               <MaterialIcons name="check" size={25} color="#fff" />
             )}
           </View>
-          <Text style={styles.checkboxText}>가능</Text>
+          <CustomText style={styles.checkboxText}>가능</CustomText>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -40,7 +41,7 @@ const UpdateStoreGroup = ({
               <MaterialIcons name="check" size={25} color="#fff" />
             )}
           </View>
-          <Text style={styles.checkboxText}>불가능</Text>
+          <CustomText style={styles.checkboxText}>불가능</CustomText>
         </TouchableOpacity>
       </View>
       <ActionButtons onCancel={onCancel} onSave={onSave} />

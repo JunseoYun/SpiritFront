@@ -13,6 +13,7 @@ import ResultItemSkeleton from './ResultItemSkeleton';
 import Loading from '../../../hooks/Loading';
 import useScrollToTopVisibility from '../../../hooks/useScrollToTopVisibility';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import CustomText from '../../common/CustomText';
 
 const ResultList = ({trimmedSearchWord, location, navigation}) => {
   const [searchingStores, setSearchingStores] = useState([]); // 검색된 가게 목록
@@ -126,7 +127,9 @@ const ResultList = ({trimmedSearchWord, location, navigation}) => {
           onEndReachedThreshold={0.5}
           ListEmptyComponent={
             !loading && searchingStores.length === 0 ? (
-              <Text style={styles.emptyText}>주변에 검색된 술집이 없어요</Text>
+              <CustomText style={styles.emptyText}>
+                주변에 검색된 술집이 없어요
+              </CustomText>
             ) : null
           }
           onScroll={handleScroll}

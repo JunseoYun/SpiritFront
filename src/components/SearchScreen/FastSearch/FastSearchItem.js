@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import CustomText from '../../common/CustomText';
 
 const FastSearchItem = ({label, isSelected, onPress}) => {
   return (
@@ -10,10 +11,10 @@ const FastSearchItem = ({label, isSelected, onPress}) => {
         isSelected && styles.selectedContainer,
       ]}
       onPress={onPress}>
-      <Text
+      <CustomText
         style={[styles.choiceText, isSelected && styles.choiceSelectedText]}>
         {label}
-      </Text>
+      </CustomText>
       <MaterialIcons
         name="keyboard-arrow-down"
         size={20}

@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../common/CustomText';
 
 const StoreOrderFooter = ({
   visible,
@@ -61,7 +62,9 @@ const StoreOrderFooter = ({
             <Ionicons name="time-outline" size={20} color="#1F2937" />
           </View>
           <View style={styles.metaChipText}>
-            <Text style={styles.metaChipValue}>{visitTime || '미지정'}</Text>
+            <CustomText style={styles.metaChipValue}>
+              {visitTime || '미지정'}
+            </CustomText>
           </View>
         </View>
         <View style={styles.metaChip}>
@@ -69,41 +72,42 @@ const StoreOrderFooter = ({
             <Ionicons name={peopleIconName} size={20} color="#1F2937" />
           </View>
           <View style={styles.metaChipText}>
-            <Text style={styles.metaChipValue}>
+            <CustomText style={styles.metaChipValue}>
               {peopleCountLabel}
               {perPersonPrice !== undefined && perPersonPrice < 10000000 && (
-                <Text style={styles.metaChipSubValue}>
+                <CustomText style={styles.metaChipSubValue}>
                   {` 인당 ${perPersonPrice.toLocaleString()}원`}
-                </Text>
+                </CustomText>
               )}
-            </Text>
+            </CustomText>
           </View>
         </View>
       </View>
       <View style={styles.totalRow}>
-        <Text style={styles.totalLabel}>예상 결제 금액</Text>
-        <Text style={[styles.totalValue, totalPrice < 1 && {color: '#F0F9FD'}]}>
+        <CustomText style={styles.totalLabel}>예상 결제 금액</CustomText>
+        <CustomText
+          style={[styles.totalValue, totalPrice < 1 && {color: '#F0F9FD'}]}>
           {totalPrice > 0 ? `${totalPrice.toLocaleString()}원` : '-'}
-        </Text>
+        </CustomText>
       </View>
       <TouchableOpacity
         style={[styles.submitButton, !canSubmit && styles.submitButtonDisabled]}
         onPress={onSubmit}
         disabled={!canSubmit}>
         <View style={styles.buttonContent}>
-          <Text
+          <CustomText
             style={[
               styles.submitButtonText,
               !canSubmit && styles.submitButtonTextDim,
             ]}>
             주문 요청하기
-          </Text>
+          </CustomText>
           {totalCount > 0 && (
             <View style={[styles.badge, !canSubmit && styles.badgeDisabled]}>
-              <Text
+              <CustomText
                 style={[styles.badgeText, !canSubmit && styles.badgeTextDim]}>
                 {totalCount}
-              </Text>
+              </CustomText>
             </View>
           )}
         </View>

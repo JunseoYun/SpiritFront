@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Pressable, Text, StyleSheet} from 'react-native';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import CustomText from '../common/CustomText';
 
 const ActionButtons = ({onCancel, onSave, option}) => {
   const {bottom} = useSafeAndroidInsets();
@@ -8,16 +9,20 @@ const ActionButtons = ({onCancel, onSave, option}) => {
   return (
     <View style={[styles.buttonView, {paddingBottom: bottom}]}>
       <Pressable style={styles.cancelButton} onPress={onCancel}>
-        <Text style={styles.buttonText}>취소</Text>
+        <CustomText style={styles.buttonText}>취소</CustomText>
       </Pressable>
 
       {option !== 'delete' ? (
         <Pressable style={styles.saveButton} onPress={onSave}>
-          <Text style={[styles.buttonText, {color: '#fff'}]}>저장</Text>
+          <CustomText style={[styles.buttonText, {color: '#fff'}]}>
+            저장
+          </CustomText>
         </Pressable>
       ) : (
         <Pressable style={styles.saveButton} onPress={onSave}>
-          <Text style={[styles.buttonText, {color: '#fff'}]}>삭제</Text>
+          <CustomText style={[styles.buttonText, {color: '#fff'}]}>
+            삭제
+          </CustomText>
         </Pressable>
       )}
     </View>

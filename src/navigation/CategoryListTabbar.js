@@ -8,6 +8,7 @@ import Loading from '../hooks/Loading';
 import {AlcoholFilterProvider} from '../context/AlcoholFilterContext';
 import FilterBar from '../components/CategoryTapScreen/FilterBar';
 import {MaterialTopTabBar} from '@react-navigation/material-top-tabs';
+import CustomText from '../components/common/CustomText';
 
 const categories = [
   {name: 'IZAKAYA', title: '이자카야', categoryname: 'IZAKAYA'},
@@ -98,20 +99,17 @@ const CategoryListTabbar = ({route}) => {
             component={CategoryTapScreen}
             options={{
               tabBarLabel: ({color}) => {
-                const fontScale = PixelRatio.getFontScale();
-                const baseSize = 16;
-
-                const fontSize = fontScale >= 1.5 ? 19 : baseSize;
+                const fontSize = 16;
                 return (
-                  <Text
-                    allowFontScaling={false} // ✅ 시스템 비율 무시
+                  <CustomText
+                    maxScale={1.1}
                     style={{
                       color,
                       fontFamily: 'Pretendard-Bold',
                       fontSize,
                     }}>
                     {title}
-                  </Text>
+                  </CustomText>
                 );
               },
             }}

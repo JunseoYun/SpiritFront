@@ -1,6 +1,8 @@
 import React from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const UpdateStoreContact = ({
   updatedValue,
@@ -15,8 +17,8 @@ const UpdateStoreContact = ({
 
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>매장 번호</Text>
-      <TextInput
+      <CustomText style={styles.title}>매장 번호</CustomText>
+      <CustomTextInput
         style={styles.input}
         value={updatedValue} // defaultValue 대신 value 사용
         onChangeText={handleInputChange}

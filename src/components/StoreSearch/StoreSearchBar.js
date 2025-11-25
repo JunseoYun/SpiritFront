@@ -11,6 +11,8 @@ import Feather from 'react-native-vector-icons/Feather';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -79,7 +81,8 @@ const StoreSearchBar = ({value, onChangeText, placeholder, onPress}) => {
         {borderColor: animatedBorderColor},
         focused && styles.focusedContainer,
       ]}>
-      <TextInput
+      <CustomTextInput
+        maxScale={1.3}
         style={styles.textInput}
         placeholder={placeholder || '어떤 술집을 찾고 계신가요?'}
         placeholderTextColor={ColorUtil.placeholderText}
@@ -87,7 +90,6 @@ const StoreSearchBar = ({value, onChangeText, placeholder, onPress}) => {
         onChangeText={onChangeText}
         returnKeyType="search"
         onSubmitEditing={onPress}
-        allowFontScaling={false}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
@@ -118,7 +120,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    fontSize: normalizeFont(16, 1.3),
+    fontSize: 16,
     color: '#222',
     fontFamily: 'Pretendard-Medium',
     paddingRight: 28,

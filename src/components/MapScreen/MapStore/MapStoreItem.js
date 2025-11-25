@@ -13,6 +13,7 @@ import {
   TapGestureHandler,
   State as GestureState,
 } from 'react-native-gesture-handler';
+import CustomText from '../../common/CustomText';
 
 const {width} = Dimensions.get('window');
 
@@ -102,28 +103,30 @@ const MapStoreItem = ({
           {/* 오버레이 처리 */}
           {!isOpen && !nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>
+              <CustomText style={styles.overlayText}>
                 영업 종료{'\n'}
                 {starttime ? `${starttime} 오픈` : ''}
-              </Text>
+              </CustomText>
             </View>
           )}
           {!isOpen && nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
+              <CustomText style={styles.overlayText}>
+                영업 종료 익일 휴무
+              </CustomText>
             </View>
           )}
           {!isOpen && !nextclosed && closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>금일 휴무</Text>
+              <CustomText style={styles.overlayText}>금일 휴무</CustomText>
             </View>
           )}
           {isOpen && isBreak && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>
+              <CustomText style={styles.overlayText}>
                 브레이크 타임{'\n'}
                 {breakend ? `${breakend} 종료` : ''}
-              </Text>
+              </CustomText>
             </View>
           )}
         </View>
@@ -132,12 +135,14 @@ const MapStoreItem = ({
             <View style={styles.category}>
               {Array.isArray(item.categories) && item.categories.length > 0 ? (
                 item.categories.map((category, index) => (
-                  <Text key={index} style={styles.StoreCategory}>
+                  <CustomText key={index} style={styles.StoreCategory}>
                     {translateCategory(category)}
-                  </Text>
+                  </CustomText>
                 ))
               ) : (
-                <Text style={styles.StoreCategory}>카테고리 미설정</Text>
+                <CustomText style={styles.StoreCategory}>
+                  카테고리 미설정
+                </CustomText>
               )}
             </View>
             <View style={styles.titleview}>
@@ -147,15 +152,18 @@ const MapStoreItem = ({
                   style={styles.imageStyle}
                 />
               )}
-              <Text
+              <CustomText
                 style={styles.storeName}
                 numberOfLines={1}
                 ellipsizeMode="tail">
                 {item.name}
-              </Text>
+              </CustomText>
             </View>
           </View>
-          <Text style={styles.drinkText} numberOfLines={1} ellipsizeMode="tail">
+          <CustomText
+            style={styles.drinkText}
+            numberOfLines={1}
+            ellipsizeMode="tail">
             {item.mainDrinkDtos && item.mainDrinkDtos.length > 0
               ? item.mainDrinkDtos
                   .map(drink => {
@@ -167,22 +175,22 @@ const MapStoreItem = ({
                   })
                   .join('  ')
               : '메인주류가 없습니다.'}
-          </Text>
+          </CustomText>
           <View style={styles.timeview}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <FontAwesomeIcon name="star" size={15} color="#FCC104" />
-              <Text style={styles.storeRateText}>
+              <CustomText style={styles.storeRateText}>
                 {item.storeRate}({item.reviewCount})
-              </Text>
+              </CustomText>
             </View>
             {item?.isAlwaysOpen == true ? (
-              <Text style={styles.timeviewtext}>24시간 영업</Text>
+              <CustomText style={styles.timeviewtext}>24시간 영업</CustomText>
             ) : item?.isAlwaysOpen == false && closed ? (
-              <Text style={styles.timeviewtext}>금일 휴무</Text>
+              <CustomText style={styles.timeviewtext}>금일 휴무</CustomText>
             ) : (
-              <Text style={styles.timeviewtext}>
+              <CustomText style={styles.timeviewtext}>
                 영업 종료 {endtime || '정보 없음'}
-              </Text>
+              </CustomText>
             )}
           </View>
         </View>
@@ -225,7 +233,7 @@ const styles = StyleSheet.create({
   },
   overlayText: {
     color: 'white',
-    fontSize: normalizeFont(14, 1.5),
+    fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
     textAlign: 'center',
     lineHeight: 22,
@@ -247,7 +255,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   storeName: {
-    fontSize: normalizeFont(16, 1.5),
+    fontSize: 16,
     fontFamily: 'Pretendard-Bold',
     color: '#333',
     width: '90%',
@@ -257,13 +265,13 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   StoreCategory: {
-    fontSize: normalizeFont(14, 1.5),
+    fontSize: 14,
     color: ColorUtil.subText,
     marginRight: 5,
     fontFamily: 'Pretendard-Regular',
   },
   drinkText: {
-    fontSize: normalizeFont(14, 1.5),
+    fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
     color: '#3CBBFF',
   },
@@ -272,12 +280,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   timeviewtext: {
-    fontSize: normalizeFont(13, 1.5),
+    fontSize: 13,
     fontFamily: 'Pretendard-Regular',
     color: ColorUtil.subText,
   },
   storeRateText: {
-    fontSize: normalizeFont(13, 1.5),
+    fontSize: 13,
     fontFamily: 'Pretendard-Regular',
     color: ColorUtil.subText,
     marginLeft: 3,

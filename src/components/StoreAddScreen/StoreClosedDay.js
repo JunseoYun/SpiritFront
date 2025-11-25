@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import CustomText from '../common/CustomText';
 
 // 표시될 값과 실제 저장될 값을 객체로 정의
 const days = [
@@ -35,7 +36,7 @@ const StoreClosedDay = ({closedDay, setClosedDay}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>휴무일</Text>
+      <CustomText style={styles.title}>휴무일</CustomText>
       <View style={styles.daysContainer}>
         {days.map((day, index) => (
           <TouchableOpacity
@@ -45,13 +46,13 @@ const StoreClosedDay = ({closedDay, setClosedDay}) => {
               closedDay.includes(day.value) && styles.selectedDayButton,
             ]}
             onPress={() => toggleDay(day.value)}>
-            <Text
+            <CustomText
               style={[
                 styles.dayText,
                 closedDay.includes(day.value) && styles.selectedDayText,
               ]}>
               {day.label}
-            </Text>
+            </CustomText>
           </TouchableOpacity>
         ))}
       </View>

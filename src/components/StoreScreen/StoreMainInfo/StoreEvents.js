@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../common/CustomText';
 
 const {width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -131,19 +132,19 @@ const StoreEvents = ({
           )}
 
           <View style={styles.infoView}>
-            <Text numberOfLines={1} style={styles.title}>
+            <CustomText numberOfLines={1} style={styles.title}>
               {item?.title || '이벤트'}
-            </Text>
+            </CustomText>
 
             {!!item?.content && (
-              <Text numberOfLines={1} style={styles.content}>
+              <CustomText numberOfLines={1} style={styles.content}>
                 {item.content}
-              </Text>
+              </CustomText>
             )}
 
-            <Text style={styles.dateTag}>
+            <CustomText style={styles.dateTag}>
               {formatEventPeriod(item?.startAt, item?.endAt)}
-            </Text>
+            </CustomText>
           </View>
         </View>
       </Pressable>

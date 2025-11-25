@@ -15,6 +15,7 @@ import {DrinkUpdateSort} from '../../api/drinkApi';
 import {useToast} from '../../context/ToastContext';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import Loading from '../../hooks/Loading';
+import CustomText from '../../components/common/CustomText';
 
 const ORDER_SPACER_HEIGHT = 0;
 
@@ -91,9 +92,7 @@ const areOrdersEqual = (currentList = [], baseList = []) => {
   if (currentList.length !== baseList.length) {
     return false;
   }
-  return currentList.every(
-    (item, index) => item?.id === baseList[index]?.id,
-  );
+  return currentList.every((item, index) => item?.id === baseList[index]?.id);
 };
 
 export const AlcoholTypeRadioGroup = ({
@@ -125,13 +124,13 @@ export const AlcoholTypeRadioGroup = ({
               ]}>
               {selectedType === type && <View style={styles.radioInnerDot} />}
             </View>
-            <Text
+            <CustomText
               style={[
                 styles.radioLabel,
                 selectedType === type && styles.radioLabelSelected,
               ]}>
               {type}
-            </Text>
+            </CustomText>
           </Pressable>
         ))}
       </View>
@@ -362,7 +361,9 @@ const StoreAlcoholScreen = ({
           <Pressable
             style={styles.reorderButton}
             onPress={handleAlcoholManagePress}>
-            <Text style={styles.alcoholAddButtonText}>주류 추가</Text>
+            <CustomText style={styles.alcoholAddButtonText}>
+              주류 추가
+            </CustomText>
           </Pressable>
 
           {alcoholList?.length > 0 && (
@@ -374,14 +375,14 @@ const StoreAlcoholScreen = ({
               ]}
               disabled={!isSortDirty || isSavingOrder}
               onPress={handleSaveOrder}>
-              <Text
+              <CustomText
                 style={[
                   styles.saveOrderText,
                   (!isSortDirty || isSavingOrder) &&
                     styles.saveOrderButtonDisabledText,
                 ]}>
                 순서 저장
-              </Text>
+              </CustomText>
             </Pressable>
           )}
         </View>
@@ -408,7 +409,7 @@ const StoreAlcoholScreen = ({
               }
             }}>
             {currentType === '전체' && (
-              <Text style={styles.typeLabel}>{section.label}</Text>
+              <CustomText style={styles.typeLabel}>{section.label}</CustomText>
             )}
             {section.items.map((alcohol, idx) => (
               <AlcoholItem
@@ -429,7 +430,9 @@ const StoreAlcoholScreen = ({
 
         {alcoholList?.length === 0 && (
           <View style={styles.footer}>
-            <Text style={styles.emptyText}>등록된 주류가 없어요</Text>
+            <CustomText style={styles.emptyText}>
+              등록된 주류가 없어요
+            </CustomText>
           </View>
         )}
       </View>

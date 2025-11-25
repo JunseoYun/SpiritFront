@@ -5,6 +5,7 @@ import {useToast} from '../../../context/ToastContext';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {ReportMainget, completeReport} from '../../../api/reportApi';
 import Loading from '../../../hooks/Loading';
+import CustomText from '../../../components/common/CustomText';
 
 const REPORT_TYPES = {
   report: [
@@ -97,25 +98,33 @@ const StoreReportList = () => {
       <ScrollView contentContainerStyle={styles.container}>
         {['신고', '제보'].map(type => (
           <View key={type} style={styles.section}>
-            <Text style={styles.sectionTitle}>{type} 내역</Text>
+            <CustomText style={styles.sectionTitle}>{type} 내역</CustomText>
             {reportsByType[type].length === 0 ? (
-              <Text style={styles.noItemText}>{type} 내역이 없습니다.</Text>
+              <CustomText style={styles.noItemText}>
+                {type} 내역이 없습니다.
+              </CustomText>
             ) : (
               reportsByType[type].map(report => (
                 <View key={report.reportId} style={styles.card}>
-                  <Text style={styles.descriptionTitle}>{type} 사유</Text>
-                  <Text style={styles.descriptionText}>
+                  <CustomText style={styles.descriptionTitle}>
+                    {type} 사유
+                  </CustomText>
+                  <CustomText style={styles.descriptionText}>
                     {report.description}
-                  </Text>
+                  </CustomText>
                   <View style={styles.metaContainer}>
-                    <Text style={styles.metaText}>{report.date}</Text>
+                    <CustomText style={styles.metaText}>
+                      {report.date}
+                    </CustomText>
                     <Pressable
                       style={({pressed}) => [
                         styles.button,
                         pressed && styles.buttonPressed,
                       ]}
                       onPress={() => handleComplete(report.reportId)}>
-                      <Text style={styles.buttonText}>처리 완료</Text>
+                      <CustomText style={styles.buttonText}>
+                        처리 완료
+                      </CustomText>
                     </Pressable>
                   </View>
                 </View>

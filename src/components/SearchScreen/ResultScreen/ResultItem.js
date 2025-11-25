@@ -16,6 +16,7 @@ import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import CustomText from '../../common/CustomText';
 const fontScale = PixelRatio.getFontScale();
 const ResultItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();
@@ -79,31 +80,31 @@ const ResultItem = ({store, navigation, location}) => {
           {/* ✅ 영업 종료 표시 */}
           {!isOpen && !nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText} allowFontScaling={false}>
+              <CustomText maxScale={1.3} style={styles.overlayText}>
                 영업 종료 {starttime ? `\n${starttime} 오픈` : ''}
-              </Text>
+              </CustomText>
             </View>
           )}
           {!isOpen && nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText} allowFontScaling={false}>
+              <CustomText maxScale={1.3} style={styles.overlayText}>
                 영업 종료 익일 휴무
-              </Text>
+              </CustomText>
             </View>
           )}
           {!isOpen && !nextclosed && closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText} allowFontScaling={false}>
+              <CustomText maxScale={1.3} style={styles.overlayText}>
                 금일 휴무
-              </Text>
+              </CustomText>
             </View>
           )}
           {/* ✅ 브레이크 타임 표시 */}
           {isOpen && isBreak && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText} allowFontScaling={false}>
+              <CustomText maxScale={1.3} style={styles.overlayText}>
                 브레이크 타임 {breakend ? `\n${breakend} 종료` : ''}
-              </Text>
+              </CustomText>
             </View>
           )}
         </ImageBackground>
@@ -119,25 +120,25 @@ const ResultItem = ({store, navigation, location}) => {
                   ]}
                 />
               )}
-              <Text
+              <CustomText
                 style={styles.StoreTitle}
                 numberOfLines={1}
                 ellipsizeMode="tail">
                 {store.name}
-              </Text>
+              </CustomText>
             </View>
 
             <View style={styles.StoreScore}>
               {store.categories.slice(0, 3).map((category, index) => (
-                <Text key={index} style={styles.StoreCategory}>
+                <CustomText key={index} style={styles.StoreCategory}>
                   {translateCategory(category)}
-                </Text>
+                </CustomText>
               ))}
             </View>
           </View>
 
           <View style={styles.StoreAlcoholList}>
-            <Text
+            <CustomText
               style={styles.StoreAlcohol}
               numberOfLines={1}
               ellipsizeMode="tail">
@@ -148,7 +149,7 @@ const ResultItem = ({store, navigation, location}) => {
                     ) // 데이터 형식화
                     .join('  ') // 아이템 간 간격 추가
                 : '메인주류가 없습니다.'}
-            </Text>
+            </CustomText>
           </View>
 
           <View
@@ -162,17 +163,17 @@ const ResultItem = ({store, navigation, location}) => {
                 },
             ]}>
             {store?.isAlwaysOpen === true ? (
-              <Text style={styles.StoreClose}>24시간 영업</Text>
+              <CustomText style={styles.StoreClose}>24시간 영업</CustomText>
             ) : store?.isAlwaysOpen === false && closed ? (
-              <Text style={styles.StoreClose}>금일 휴무</Text>
+              <CustomText style={styles.StoreClose}>금일 휴무</CustomText>
             ) : (
-              <Text style={styles.StoreClose}>
+              <CustomText style={styles.StoreClose}>
                 영업 종료 {endtime || '정보 없음'}
-              </Text>
+              </CustomText>
             )}
-            <Text style={styles.StoreClose}>
+            <CustomText style={styles.StoreClose}>
               {distance} {unit}
-            </Text>
+            </CustomText>
           </View>
         </View>
       </View>
@@ -216,7 +217,7 @@ const styles = StyleSheet.create({
   },
   overlayText: {
     color: 'white',
-    fontSize: normalizeFont(14, 1.3),
+    fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
     textAlign: 'center',
     lineHeight: 22,

@@ -1,10 +1,11 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import CustomText from '../../../common/CustomText';
 
 const KTpersonalinfo = () => {
   return (
     <View contentContainerStyle={styles.container}>
-      <Text style={styles.text}>
+      <CustomText style={styles.text}>
         개인정보 이용 동의 [(주)케이티 귀중]{'\n'}
         {'\n'}
         (주)케이티(이하 ‘회사’라 함)가 제공하는 본인확인서비스를 이용하기 위해,
@@ -81,7 +82,7 @@ const KTpersonalinfo = () => {
         {'\n'}- 제공 항목: 휴대폰번호, 이동통신사{'\n'}
         {'\n'}※ 개인정보 수집·이용 및 제공에 따른 동의는 거부할 수 있습니다.
         다만, 동의 거부 시에는 서비스 이용이 제한될 수 있습니다.
-      </Text>
+      </CustomText>
     </View>
   );
 };

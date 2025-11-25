@@ -3,6 +3,7 @@ import {View, Text, StyleSheet, Pressable, Linking, Alert} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {Storelikepost} from '../../api/storeApi';
+import CustomText from '../common/CustomText';
 
 const StoreActions = ({storeData, navigation, storename}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -45,7 +46,7 @@ const StoreActions = ({storeData, navigation, storename}) => {
       <Pressable onPress={storeNumberHandle}>
         <View style={styles.View}>
           <Ionicons name="call-outline" size={20} color="#333" />
-          <Text style={styles.CallViewtext}> 전화</Text>
+          <CustomText style={styles.CallViewtext}> 전화</CustomText>
         </View>
       </Pressable>
 
@@ -66,7 +67,7 @@ const StoreActions = ({storeData, navigation, storename}) => {
             />
           )}
 
-          <Text style={styles.CallViewtext}> 찜</Text>
+          <CustomText style={styles.CallViewtext}> 찜</CustomText>
         </View>
       </Pressable>
       <View style={styles.separator} />
@@ -82,7 +83,7 @@ const StoreActions = ({storeData, navigation, storename}) => {
         }}
         style={styles.View}>
         <Ionicons name="reader-outline" size={20} color="#333" />
-        <Text style={styles.CallViewtext}> 리뷰</Text>
+        <CustomText style={styles.CallViewtext}> 리뷰</CustomText>
       </Pressable>
       <AlertComponent />
     </View>

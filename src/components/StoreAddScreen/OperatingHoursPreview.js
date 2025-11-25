@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import ColorUtil from '../../utils/ColorUtil';
 import {calculateRangeFromEntry} from '../../utils/parseOperatingHours';
+import CustomText from '../common/CustomText';
 const OperatingHoursPreview = ({
   is24Hours,
   operatingHours,
@@ -33,9 +34,11 @@ const OperatingHoursPreview = ({
     <>
       {!isRegistration && (
         <View style={styles.storeinputview}>
-          <Text style={styles.label}>영업 시간</Text>
+          <CustomText style={styles.label}>영업 시간</CustomText>
           <Pressable onPress={storeTimeHandle}>
-            <Text style={[styles.storeinputtext, {color: '#333'}]}>편집</Text>
+            <CustomText style={[styles.storeinputtext, {color: '#333'}]}>
+              편집
+            </CustomText>
           </Pressable>
         </View>
       )}
@@ -48,7 +51,7 @@ const OperatingHoursPreview = ({
             isRegistration && styles.registrationSpacing,
           ]}
           onPress={storeTimeHandle}>
-          <Text style={styles.emptyText}>등록</Text>
+          <CustomText style={styles.emptyText}>등록</CustomText>
         </Pressable>
       )}
 
@@ -60,7 +63,7 @@ const OperatingHoursPreview = ({
             isRegistration && styles.registrationSpacing,
           ]}
           onPress={storeTimeHandle}>
-          <Text style={styles.emptyText}>24시간 영업</Text>
+          <CustomText style={styles.emptyText}>24시간 영업</CustomText>
         </Pressable>
       )}
       {hasValidOperatingHours && !is24Hours && (
@@ -108,10 +111,10 @@ const OperatingHoursPreview = ({
                   : breakRange.closeTime;
 
                 breakDisplay = (
-                  <Text style={styles.breakTimeText}>
+                  <CustomText style={styles.breakTimeText}>
                     {`브레이크타임 ${breakStartLabel} ~ `}
-                    <Text>{breakEndLabel}</Text>
-                  </Text>
+                    <CustomText>{breakEndLabel}</CustomText>
+                  </CustomText>
                 );
               }
 
@@ -119,24 +122,24 @@ const OperatingHoursPreview = ({
                 <View key={day} style={styles.dayRow}>
                   <View
                     style={[styles.dayChip, isClosed && styles.closedDayChip]}>
-                    <Text
+                    <CustomText
                       style={[
                         styles.dayText,
                         isClosed && {color: ColorUtil.chipText},
                       ]}>
                       {koreanDay}
-                    </Text>
+                    </CustomText>
                   </View>
                   {isClosed ? (
-                    <Text style={styles.closedText}>휴무</Text>
+                    <CustomText style={styles.closedText}>휴무</CustomText>
                   ) : (
                     <View style={styles.timeContainer}>
-                      <Text style={styles.operatingHoursText}>
+                      <CustomText style={styles.operatingHoursText}>
                         {`${openTime} ~ `}
-                        <Text>
+                        <CustomText>
                           {isNextDay ? `다음날 ${closeTime}` : closeTime}
-                        </Text>
-                      </Text>
+                        </CustomText>
+                      </CustomText>
                       {breakDisplay}
                     </View>
                   )}
@@ -147,7 +150,9 @@ const OperatingHoursPreview = ({
         </Pressable>
       )}
       {!hasValidOperatingHours && !is24Hours && error === 'StoreOperate' && (
-        <Text style={styles.errorMessage}>매장 영업 시간을 등록해 주세요.</Text>
+        <CustomText style={styles.errorMessage}>
+          매장 영업 시간을 등록해 주세요.
+        </CustomText>
       )}
     </>
   );

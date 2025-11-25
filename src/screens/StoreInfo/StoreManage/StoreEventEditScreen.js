@@ -39,6 +39,8 @@ import {
 } from '../../../constants/imagePickerLabels';
 import FastImage from 'react-native-fast-image';
 import Loading from '../../../hooks/Loading';
+import CustomTextInput from '../../../components/common/CustomTextInput';
+import CustomText from '../../../components/common/CustomText';
 const EMPTY_FORM = {
   title: '',
   content: '',
@@ -65,8 +67,7 @@ const toISOStringWithZone = date => {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 };
 
-const DATE_ORDER_ERROR_MESSAGE =
-  '이벤트 종료 시간이 시작 시간보다 빠릅니다.';
+const DATE_ORDER_ERROR_MESSAGE = '이벤트 종료 시간이 시작 시간보다 빠릅니다.';
 
 const formatReadableDate = date => {
   if (!date) {
@@ -185,14 +186,13 @@ const StoreEventEditScreen = ({route, navigation}) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: () => (
-        <Text
+        <CustomText
           style={{
             fontFamily: 'Pretendard-Bold',
             fontSize: 18,
-          }}
-          allowFontScaling={false}>
+          }}>
           {initialEvent ? '이벤트 수정' : '이벤트 등록'}
-        </Text>
+        </CustomText>
       ),
 
       headerTitleAlign: 'center',
@@ -276,10 +276,7 @@ const StoreEventEditScreen = ({route, navigation}) => {
       }
       if (field === 'startAt' || field === 'endAt') {
         if (nextForm.startAt && nextForm.endAt) {
-          const dateError = validateDateOrder(
-            nextForm.startAt,
-            nextForm.endAt,
-          );
+          const dateError = validateDateOrder(nextForm.startAt, nextForm.endAt);
           setFormErrors(prevErrors => {
             if (dateError) {
               if (prevErrors.date === dateError) {
@@ -628,9 +625,9 @@ const StoreEventEditScreen = ({route, navigation}) => {
     trimmedTitle,
   ]);
 
-  const canSubmitAction = (isEditing
-    ? hasBaseFields && hasFormChanged
-    : hasBaseFields) && !isDateOrderInvalid;
+  const canSubmitAction =
+    (isEditing ? hasBaseFields && hasFormChanged : hasBaseFields) &&
+    !isDateOrderInvalid;
 
   const actionLabel = useMemo(
     () => (isEditing ? '이벤트 수정하기' : '이벤트 생성하기'),
@@ -648,7 +645,9 @@ const StoreEventEditScreen = ({route, navigation}) => {
   if (!storeId) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.centeredText}>매장 정보가 필요합니다.</Text>
+        <CustomText style={styles.centeredText}>
+          매장 정보가 필요합니다.
+        </CustomText>
       </View>
     );
   }
@@ -656,9 +655,9 @@ const StoreEventEditScreen = ({route, navigation}) => {
   if (isEditing && !selectedEvent) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.centeredText}>
+        <CustomText style={styles.centeredText}>
           수정할 이벤트를 찾을 수 없습니다.
-        </Text>
+        </CustomText>
       </View>
     );
   }
@@ -667,8 +666,8 @@ const StoreEventEditScreen = ({route, navigation}) => {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>이벤트 제목</Text>
-          <TextInput
+          <CustomText style={styles.inputLabel}>이벤트 제목</CustomText>
+          <CustomTextInput
             style={[
               styles.input,
               isTitleFocused && styles.focusedInput,
@@ -685,12 +684,12 @@ const StoreEventEditScreen = ({route, navigation}) => {
             returnKeyType="done"
           />
           {formErrors.title ? (
-            <Text style={styles.errorText}>{formErrors.title}</Text>
+            <CustomText style={styles.errorText}>{formErrors.title}</CustomText>
           ) : null}
         </View>
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>이벤트 내용</Text>
-          <TextInput
+          <CustomText style={styles.inputLabel}>이벤트 내용</CustomText>
+          <CustomTextInput
             style={[
               styles.contentInput,
               isContentFocused && styles.focusedInput,
@@ -709,15 +708,17 @@ const StoreEventEditScreen = ({route, navigation}) => {
             returnKeyType="done"
           />
           {formErrors.content ? (
-            <Text style={styles.errorText}>{formErrors.content}</Text>
+            <CustomText style={styles.errorText}>
+              {formErrors.content}
+            </CustomText>
           ) : null}
         </View>
         <View style={styles.rowInputs}>
           <View style={[styles.inputGroup, styles.half]}>
             <View style={styles.startLabelRow}>
-              <Text style={[styles.inputLabel, styles.startLabelText]}>
+              <CustomText style={[styles.inputLabel, styles.startLabelText]}>
                 시작일
-              </Text>
+              </CustomText>
               <Pressable
                 style={styles.sameDayToggle}
                 onPress={handleSameDayToggle}>
@@ -728,19 +729,19 @@ const StoreEventEditScreen = ({route, navigation}) => {
                   ]}>
                   {isSameDayEvent && <View style={styles.sameDayRadioDot} />}
                 </View>
-                <Text
+                <CustomText
                   style={[
                     styles.sameDayToggleText,
                     isSameDayEvent && styles.sameDayToggleTextSelected,
                   ]}>
                   당일 이벤트
-                </Text>
+                </CustomText>
               </Pressable>
             </View>
             <Pressable
               style={[styles.input, styles.dateButton]}
               onPress={() => setIsStartPickerOpen(true)}>
-              <Text
+              <CustomText
                 style={[
                   styles.dateButtonText,
                   !startDate && styles.placeholderText,
@@ -752,7 +753,7 @@ const StoreEventEditScreen = ({route, navigation}) => {
                   : isSameDayEvent
                   ? '날짜를 선택하세요'
                   : '시작일을 선택하세요'}
-              </Text>
+              </CustomText>
               <MaterialCommunityIcons
                 name="calendar-month-outline"
                 size={18}
@@ -783,17 +784,17 @@ const StoreEventEditScreen = ({route, navigation}) => {
         </View>
         {!isSameDayEvent && (
           <View style={[styles.inputGroup, styles.half, styles.endDateGroup]}>
-            <Text style={styles.inputLabel}>종료일</Text>
+            <CustomText style={styles.inputLabel}>종료일</CustomText>
             <Pressable
               style={[styles.input, styles.dateButton]}
               onPress={() => setIsEndPickerOpen(true)}>
-              <Text
+              <CustomText
                 style={[
                   styles.dateButtonText,
                   !endDate && styles.placeholderText,
                 ]}>
                 {endDate ? formatReadableDate(endDate) : '종료일을 선택하세요'}
-              </Text>
+              </CustomText>
               <MaterialCommunityIcons
                 name="calendar-clock-outline"
                 size={18}
@@ -819,12 +820,12 @@ const StoreEventEditScreen = ({route, navigation}) => {
           </View>
         )}
         {formErrors.date ? (
-          <Text style={[styles.errorText, styles.dateErrorText]}>
+          <CustomText style={[styles.errorText, styles.dateErrorText]}>
             {formErrors.date}
-          </Text>
+          </CustomText>
         ) : null}
         <View style={styles.previewContainer}>
-          <Text style={styles.inputLabel}>이벤트 이미지</Text>
+          <CustomText style={styles.inputLabel}>이벤트 이미지</CustomText>
           <View style={styles.previewRow}>
             <ImageAddButton
               currentCount={previewUri ? 1 : 0}

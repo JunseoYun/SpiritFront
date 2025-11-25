@@ -12,6 +12,7 @@ import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../common/CustomText';
 
 const windowWidth = Dimensions.get('window').width;
 const H_MARGIN = 18;
@@ -85,9 +86,9 @@ const LikedItem = ({store, navigation}) => {
                 size={12}
                 style={styles.chipIcon}
               />
-              <Text style={styles.chipText} numberOfLines={1}>
+              <CustomText style={styles.chipText} numberOfLines={1}>
                 브레이크 ~ {breakend || ''}
-              </Text>
+              </CustomText>
             </View>
           </View>
         ) : !isOpen ? (
@@ -98,13 +99,13 @@ const LikedItem = ({store, navigation}) => {
                 size={12}
                 style={styles.chipIcon}
               />
-              <Text style={styles.chipText} numberOfLines={1}>
+              <CustomText style={styles.chipText} numberOfLines={1}>
                 {nextclosed
                   ? '영업종료 · 익일 휴무'
                   : closed
                   ? '금일 휴무'
                   : `영업종료 · ${starttime || ''} 오픈`}
-              </Text>
+              </CustomText>
             </View>
           </View>
         ) : null}
@@ -117,9 +118,9 @@ const LikedItem = ({store, navigation}) => {
                 size={12}
                 style={styles.chipIcon}
               />
-              <Text style={styles.chipText} numberOfLines={1}>
+              <CustomText style={styles.chipText} numberOfLines={1}>
                 영업중
-              </Text>
+              </CustomText>
             </View>
           </View>
         )}
@@ -134,29 +135,29 @@ const LikedItem = ({store, navigation}) => {
       <View style={styles.info}>
         {/* 카테고리 */}
         {!!store?.categories?.length && (
-          <Text style={styles.category} numberOfLines={1}>
+          <CustomText style={styles.category} numberOfLines={1}>
             {store.categories.map(c => translateCategory(c)).join(', ')}
-          </Text>
+          </CustomText>
         )}
 
         {/* 상단: 이름 + 평점/리뷰수 */}
         <View style={styles.titleRow}>
-          <Text style={styles.title} numberOfLines={1}>
+          <CustomText style={styles.title} numberOfLines={1}>
             {store?.name || '가게 이름'}
-          </Text>
-          <Text style={styles.rate} numberOfLines={1}>
+          </CustomText>
+          <CustomText style={styles.rate} numberOfLines={1}>
             <FontAwesomeIcon name="star" size={16} color="#FED348" /> {rateText}{' '}
-            <Text style={styles.rateLight}>{reviewCountText}</Text>
-          </Text>
+            <CustomText style={styles.rateLight}>{reviewCountText}</CustomText>
+          </CustomText>
         </View>
 
         {/* 영업시간(보조) */}
         {store?.isAlwaysOpen ? (
-          <Text style={styles.timeText} numberOfLines={1}>
+          <CustomText style={styles.timeText} numberOfLines={1}>
             24시간 영업
-          </Text>
+          </CustomText>
         ) : (
-          <Text style={styles.timeText} numberOfLines={1}>
+          <CustomText style={styles.timeText} numberOfLines={1}>
             {isOpen
               ? endtime
                 ? `${endtime} 마감`
@@ -164,7 +165,7 @@ const LikedItem = ({store, navigation}) => {
               : starttime && endtime
               ? `${starttime} ~ ${endtime}`
               : '영업 정보 없음'}
-          </Text>
+          </CustomText>
         )}
 
         {/* 메인 주류 배지 */}
@@ -180,13 +181,13 @@ const LikedItem = ({store, navigation}) => {
                     styles.drinkBadge,
                     isLast ? {flexShrink: 1} : {}, // 마지막만 줄어들게
                   ]}>
-                  <Text
+                  <CustomText
                     style={styles.drinkBadgeText}
                     {...(isLast
                       ? {numberOfLines: 1, ellipsizeMode: 'tail'}
                       : {})}>
                     {translateAlcohol(drink.type)} {drink.price}
-                  </Text>
+                  </CustomText>
                 </View>
               );
             })}

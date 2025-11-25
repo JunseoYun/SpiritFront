@@ -8,6 +8,7 @@ import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStor
 import NearStoreList from '../../components/MainScreen/NearStore/NearStoreList';
 import ViewedStoreList from './ViewedStore/ViewedStoreList';
 import MyBanner from '../Ads/MyBanner';
+import CustomText from '../common/CustomText';
 
 const MainSection = ({
   recommCategory,
@@ -76,7 +77,7 @@ const MainSection = ({
           const {height} = e.nativeEvent.layout;
           onHeaderLayout(height);
         }}>
-        <Text
+        <CustomText
           style={{
             fontSize: 18,
             fontFamily: 'Pretendard-SemiBold',
@@ -84,7 +85,7 @@ const MainSection = ({
             marginBottom: 10,
           }}>
           현재 인기 매장
-        </Text>
+        </CustomText>
       </View>
     </View>
   );

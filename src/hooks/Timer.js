@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {Text} from 'react-native';
 
 import styles from '../styles/SignUpPageStyle';
+import CustomText from '../components/common/CustomText';
 
 export const Timer = () => {
   const [seconds, setSeconds] = useState(300); // 5분을 초 단위로 표현
@@ -23,9 +24,9 @@ export const Timer = () => {
   const remainingSeconds = seconds % 60;
 
   return (
-    <Text style={styles.linkOrange}>
+    <CustomText style={styles.linkOrange}>
       {minutes < 10 ? `0${minutes}` : minutes}:
       {remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds}
-    </Text>
+    </CustomText>
   );
 };

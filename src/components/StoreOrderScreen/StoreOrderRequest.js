@@ -1,6 +1,8 @@
 import React, {useEffect, useMemo, useRef} from 'react';
 import {StyleSheet, Text, TextInput, View} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const StoreOrderRequest = ({
   noteSectionOffset,
@@ -15,8 +17,8 @@ const StoreOrderRequest = ({
       key="note-section"
       style={styles.noteSection}
       onLayout={({nativeEvent}) => setNoteSectionOffset(nativeEvent.layout.y)}>
-      <Text style={styles.sectionTitle}>요청 사항</Text>
-      <TextInput
+      <CustomText style={styles.sectionTitle}>요청 사항</CustomText>
+      <CustomTextInput
         style={styles.noteInput}
         value={requestNote}
         onChangeText={setRequestNote}
@@ -38,7 +40,9 @@ const StoreOrderRequest = ({
           pendingNoteScrollRef.current = false;
         }}
       />
-      <Text style={styles.noteCount}>{requestNote?.length}/200</Text>
+      <CustomText style={styles.noteCount}>
+        {requestNote?.length}/200
+      </CustomText>
     </View>
   );
 };

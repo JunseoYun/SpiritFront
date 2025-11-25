@@ -10,6 +10,7 @@ import {
   CarFront,
   CheckCircle2,
 } from 'lucide-react-native';
+import CustomText from '../common/CustomText';
 
 const FACILITY_OPTIONS = [
   {text: '스크린(TV)', key: 'hasScreen', icon: TvMinimal},
@@ -38,7 +39,9 @@ const StoreFacilitiesInfo = ({
     <View
       style={[styles.container, isRegistration && styles.registrationSpacing]}>
       {/* ✅ 상단 라벨 */}
-      {!isRegistration && <Text style={styles.label}>매장 편의시설</Text>}
+      {!isRegistration && (
+        <CustomText style={styles.label}>매장 편의시설</CustomText>
+      )}
 
       {/* ✅ 칩 버튼 리스트 */}
       <View style={styles.facilityGrid}>
@@ -67,13 +70,13 @@ const StoreFacilitiesInfo = ({
                   style={{marginRight: 6}}
                 />
               )}
-              <Text
+              <CustomText
                 style={[
                   styles.facilityText,
                   isSelected && styles.facilityTextSelected,
                 ]}>
                 {text}
-              </Text>
+              </CustomText>
             </Pressable>
           );
         })}
@@ -81,9 +84,9 @@ const StoreFacilitiesInfo = ({
 
       {/* ✅ 에러 메시지 (옵션) */}
       {error === 'FacilitiesInfo' && (
-        <Text style={styles.errorMessage}>
+        <CustomText style={styles.errorMessage}>
           편의시설을 하나 이상 선택해주세요.
-        </Text>
+        </CustomText>
       )}
     </View>
   );

@@ -11,6 +11,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Clipboard from 'react-native/Libraries/Components/Clipboard/Clipboard';
 import {useToast} from '../../../context/ToastContext';
+import CustomText from '../../common/CustomText';
 
 const Address = ({locationDto}) => {
   const addressText = useMemo(() => {
@@ -76,9 +77,9 @@ const Address = ({locationDto}) => {
         onLayout={event => setTriggerHeight(event.nativeEvent.layout.height)}>
         <Ionicons name="storefront-outline" size={20} color="#333" />
         <View style={styles.textWrapper}>
-          <Text style={styles.infoHidetext} numberOfLines={2}>
+          <CustomText style={styles.infoHidetext} numberOfLines={2}>
             {addressText}
-          </Text>
+          </CustomText>
         </View>
       </Pressable>
 
@@ -102,16 +103,18 @@ const Address = ({locationDto}) => {
               },
             ]}>
             <View style={styles.overlayHeader}>
-              <Text style={styles.overlayTitle}>주소</Text>
+              <CustomText style={styles.overlayTitle}>주소</CustomText>
               <Pressable onPress={closeOverlay} hitSlop={8}>
                 <Ionicons name="close" size={18} color="#9AA0AF" />
               </Pressable>
             </View>
 
             <View style={styles.overlayAddressRow}>
-              <Text style={styles.overlayAddressText}>{addressText}</Text>
+              <CustomText style={styles.overlayAddressText}>
+                {addressText}
+              </CustomText>
               <Pressable onPress={handleCopy} style={styles.copyButton}>
-                <Text style={styles.copyButtonText}>복사</Text>
+                <CustomText style={styles.copyButtonText}>복사</CustomText>
               </Pressable>
             </View>
           </Animated.View>

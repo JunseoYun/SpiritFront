@@ -11,6 +11,8 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {normalizeFont} from '../../hooks/normalizeFont';
 import CancelText from '../CancelText/CancelText';
 import {useFocusEffect} from '@react-navigation/native';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const SearchBar = ({value, onChangeText, placeholder, onPress}) => {
   const [focused, setFocused] = useState(false);
@@ -32,7 +34,7 @@ const SearchBar = ({value, onChangeText, placeholder, onPress}) => {
 
       {/* ✅ 검색창 */}
       <View style={styles.search}>
-        <TextInput
+        <CustomTextInput
           ref={inputRef}
           style={styles.textInput}
           placeholder={placeholder || '검색어를 입력해주세요.'}
@@ -41,7 +43,6 @@ const SearchBar = ({value, onChangeText, placeholder, onPress}) => {
           onChangeText={onChangeText}
           returnKeyType="search" // ✅ 키보드에 '검색' 버튼 표시 (iOS & Android)
           onSubmitEditing={onPress}
-          allowFontScaling={false}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    fontSize: normalizeFont(16, 1.3),
+    fontSize: 16,
     color: '#121212', // 입력 텍스트 색상
     fontFamily: 'Pretendard-Medium',
     paddingRight: 30,

@@ -2,6 +2,7 @@ import React from 'react';
 import {Pressable, StyleSheet, Text} from 'react-native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../common/CustomText';
 const StoreMapCenter = ({onPress, style}) => (
   <Pressable style={[styles.button, style]} onPress={onPress}>
     <Ionicons
@@ -10,7 +11,7 @@ const StoreMapCenter = ({onPress, style}) => (
       color="#F97316"
       style={styles.icon}
     />
-    <Text style={styles.label}>매장 위치</Text>
+    <CustomText style={styles.label}>매장 위치</CustomText>
   </Pressable>
 );
 

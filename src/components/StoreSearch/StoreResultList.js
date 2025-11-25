@@ -11,6 +11,7 @@ import StoreResultItem from './StoreResultItem';
 import {Store_getby_store} from '../../api/storeApi';
 import StoreResultItemSkeleton from './StoreResultItemSkeleton';
 import Loading from '../../hooks/Loading';
+import CustomText from '../common/CustomText';
 const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
   const [searchingStores, setSearchingStores] = useState([]);
   const [page, setPage] = useState(0);
@@ -128,9 +129,9 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
           ) : (
             isWord &&
             !loading && (
-              <Text style={styles.emptyText}>
+              <CustomText style={styles.emptyText}>
                 주변에 검색된 술집이 없습니다
-              </Text>
+              </CustomText>
             )
           )
         }

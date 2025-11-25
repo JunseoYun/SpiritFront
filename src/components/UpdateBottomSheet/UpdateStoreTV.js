@@ -2,11 +2,12 @@ import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import CustomText from '../common/CustomText';
 
 const UpdateStoreTV = ({updatedValue, setUpdatedValue, onCancel, onSave}) => {
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>스크린 설치 여부</Text>
+      <CustomText style={styles.title}>스크린 설치 여부</CustomText>
 
       {/* 스크린 설치 여부 선택 */}
       <View style={styles.storeCheckView}>
@@ -22,7 +23,7 @@ const UpdateStoreTV = ({updatedValue, setUpdatedValue, onCancel, onSave}) => {
               <MaterialIcons name="check" size={25} color="#fff" />
             )}
           </View>
-          <Text style={styles.checkboxText}>설치</Text>
+          <CustomText style={styles.checkboxText}>설치</CustomText>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -37,7 +38,7 @@ const UpdateStoreTV = ({updatedValue, setUpdatedValue, onCancel, onSave}) => {
               <MaterialIcons name="check" size={25} color="#fff" />
             )}
           </View>
-          <Text style={styles.checkboxText}>미설치</Text>
+          <CustomText style={styles.checkboxText}>미설치</CustomText>
         </TouchableOpacity>
       </View>
 

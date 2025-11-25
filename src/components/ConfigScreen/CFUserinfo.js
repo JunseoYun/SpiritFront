@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Pressable, Image} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import CustomText from '../common/CustomText';
 
 const CFUserinfo = ({userdata, navigation}) => {
   return (
@@ -10,9 +11,9 @@ const CFUserinfo = ({userdata, navigation}) => {
         <Pressable
           style={styles.row}
           onPress={() => navigation.navigate('Mynickchange', {userdata})}>
-          <Text style={styles.label}>닉네임</Text>
+          <CustomText style={styles.label}>닉네임</CustomText>
           <View style={styles.info}>
-            <Text style={styles.value}>{userdata.nickname}</Text>
+            <CustomText style={styles.value}>{userdata.nickname}</CustomText>
             <View>
               <FontAwesomeIcon name="angle-right" size={18} color="#999" />
             </View>
@@ -30,9 +31,9 @@ const CFUserinfo = ({userdata, navigation}) => {
               },
             })
           }>
-          <Text style={styles.label}>이름</Text>
+          <CustomText style={styles.label}>이름</CustomText>
           <View style={styles.info}>
-            <Text style={styles.value}>{userdata?.name}</Text>
+            <CustomText style={styles.value}>{userdata?.name}</CustomText>
             <View>
               <FontAwesomeIcon name="angle-right" size={18} color="#999" />
             </View>
@@ -50,7 +51,7 @@ const CFUserinfo = ({userdata, navigation}) => {
               },
             })
           }>
-          <Text style={styles.label}>휴대폰 번호 변경</Text>
+          <CustomText style={styles.label}>휴대폰 번호 변경</CustomText>
           <View style={styles.info}>
             <View>
               <FontAwesomeIcon name="angle-right" size={18} color="#999" />
@@ -62,7 +63,7 @@ const CFUserinfo = ({userdata, navigation}) => {
         <Pressable
           style={styles.row}
           onPress={() => navigation.navigate('MyCardScreen')}>
-          <Text style={styles.label}>내 카드 관리</Text>
+          <CustomText style={styles.label}>내 카드 관리</CustomText>
           <View style={styles.info}>
             <View>
               <FontAwesomeIcon name="angle-right" size={18} color="#999" />
@@ -72,7 +73,7 @@ const CFUserinfo = ({userdata, navigation}) => {
       </View> */}
       <View style={styles.socialcontainer}>
         <View style={styles.row}>
-          <Text style={styles.label}>연동된 소셜 계정</Text>
+          <CustomText style={styles.label}>연동된 소셜 계정</CustomText>
           <View style={styles.info}>
             {(() => {
               const SOCIAL_ORDER = ['KAKAO', 'GOOGLE', 'APPLE'];

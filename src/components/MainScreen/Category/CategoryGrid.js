@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Pressable, Image, Text, StyleSheet} from 'react-native';
+import CustomText from '../../common/CustomText';
 
 const CategoryGrid = ({onPress, style}) => {
   return (
@@ -17,9 +18,7 @@ const CategoryGrid = ({onPress, style}) => {
                 <View style={styles.iconWrapper}>
                   <Image source={source} style={styles.icon} />
                 </View>
-                <Text style={styles.text} allowFontScaling={false}>
-                  {text}
-                </Text>
+                <CustomText style={styles.text}>{text}</CustomText>
               </Pressable>,
             );
             return acc;

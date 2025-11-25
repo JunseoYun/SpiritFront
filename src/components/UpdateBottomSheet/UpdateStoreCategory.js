@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
+import CustomText from '../common/CustomText';
 
 const UpdateStoreCategory = ({
   innerCategories,
@@ -19,9 +20,9 @@ const UpdateStoreCategory = ({
   return (
     <View style={styles.bottomSheetContent}>
       <View style={{flexDirection: 'row', alignItems: 'flex-end'}}>
-        <Text style={styles.title}>카테고리* </Text>
+        <CustomText style={styles.title}>카테고리* </CustomText>
 
-        <Text style={styles.subTitle}>최대 3개</Text>
+        <CustomText style={styles.subTitle}>최대 3개</CustomText>
       </View>
       <ScrollView>
         <View style={styles.categoryContainer}>
@@ -43,7 +44,9 @@ const UpdateStoreCategory = ({
                 }
               }}>
               <Image source={category.source} style={styles.categoryImage} />
-              <Text style={styles.categoryText}>{category.text}</Text>
+              <CustomText style={styles.categoryText}>
+                {category.text}
+              </CustomText>
             </Pressable>
           ))}
         </View>

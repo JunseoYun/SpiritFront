@@ -1,6 +1,7 @@
 // CategoryTranslator.js
 import React from 'react';
 import {Text} from 'react-native';
+import CustomText from '../components/common/CustomText';
 
 // 카테고리 영어 -> 한글 매핑 객체
 const categoryMap = {
@@ -34,9 +35,9 @@ const MapCategory = ({categories, style}) => {
   return (
     <>
       {translatedCategories.map((category, index) => (
-        <Text key={index} style={style}>
+        <CustomText key={index} style={style}>
           {category}
-        </Text>
+        </CustomText>
       ))}
     </>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../common/CustomText';
 
 const MOOD_OPTIONS = [
   {text: '대화하기 좋은', key: 'QUIET'},
@@ -33,11 +34,13 @@ const StoreMood = ({moodInfo, setMoodInfo, type = 'default'}) => {
       {/* ✅ 상단 라벨 */}
       {!isRegistration && (
         <View style={styles.labelView}>
-          <Text style={styles.label}>매장 분위기</Text>
+          <CustomText style={styles.label}>매장 분위기</CustomText>
           {selectedCount < 1 ? (
-            <Text style={styles.subLabel}>(선택)</Text>
+            <CustomText style={styles.subLabel}>(선택)</CustomText>
           ) : (
-            <Text style={styles.subLabel}>(선택 {selectedCount}/4)</Text>
+            <CustomText style={styles.subLabel}>
+              (선택 {selectedCount}/4)
+            </CustomText>
           )}
         </View>
       )}
@@ -58,14 +61,14 @@ const StoreMood = ({moodInfo, setMoodInfo, type = 'default'}) => {
               ]}
               onPress={() => toggleMood(key)}
               disabled={disabled}>
-              <Text
+              <CustomText
                 style={[
                   styles.moodText,
                   isSelected && styles.moodTextSelected,
                   disabled && styles.moodTextDisabled,
                 ]}>
                 {text}
-              </Text>
+              </CustomText>
             </Pressable>
           );
         })}

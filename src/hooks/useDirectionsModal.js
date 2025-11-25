@@ -13,6 +13,7 @@ import {useToast} from '../context/ToastContext';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 import {openKakaoMap} from './openKakaoMap';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../components/common/CustomText';
 
 const APP_NAME_PARAM = Platform.select({
   ios: 'com.spiritfront',
@@ -208,7 +209,7 @@ const useDirectionsModal = () => {
         <Pressable style={styles.backdrop} onPress={closeModal} />
 
         <View style={[styles.sheet]}>
-          <Text style={styles.title}>길찾기</Text>
+          <CustomText style={styles.title}>길찾기</CustomText>
 
           {options.map(option => {
             const meta = ICON_META[option.key];
@@ -225,13 +226,15 @@ const useDirectionsModal = () => {
                     resizeMode={FastImage.resizeMode.contain}
                   />
                 </View>
-                <Text style={styles.optionText}>{option.label}</Text>
+                <CustomText style={styles.optionText}>
+                  {option.label}
+                </CustomText>
               </Pressable>
             );
           })}
 
           <Pressable style={styles.cancelButton} onPress={closeModal}>
-            <Text style={styles.cancelText}>취소</Text>
+            <CustomText style={styles.cancelText}>취소</CustomText>
           </Pressable>
         </View>
       </Modal>

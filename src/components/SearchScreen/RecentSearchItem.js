@@ -4,6 +4,7 @@ import {View, Text, Pressable, StyleSheet} from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {SearchIcon} from 'lucide-react-native';
+import CustomText from '../common/CustomText';
 
 const RecentSearchItem = ({item, onPress, onDelete}) => {
   return (
@@ -14,12 +15,12 @@ const RecentSearchItem = ({item, onPress, onDelete}) => {
         </View>
 
         <View style={styles.textRow}>
-          <Text
+          <CustomText
             style={styles.recentText}
             numberOfLines={1}
             ellipsizeMode="tail">
             {item}
-          </Text>
+          </CustomText>
 
           <Pressable hitSlop={10} onPress={() => onDelete(item)}>
             <Ionicons name="close" size={20} color="#595959" />

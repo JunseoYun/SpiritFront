@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import CustomText from '../../common/CustomText';
 
 const MapFilterHeader = ({
   setFilterInitialTab,
@@ -53,9 +54,9 @@ const MapFilterHeader = ({
             setFilterInitialTab('거리');
             setFilterModalVisible(true);
           }}>
-          <Text style={[styles.filterText, styles.filterTextActive]}>
+          <CustomText style={[styles.filterText, styles.filterTextActive]}>
             {distanceLabel}
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[
@@ -66,13 +67,13 @@ const MapFilterHeader = ({
             setFilterInitialTab('카테고리');
             setFilterModalVisible(true);
           }}>
-          <Text
+          <CustomText
             style={[
               styles.filterText,
               categoryLabel !== '카테고리' && styles.filterTextActive,
             ]}>
             {categoryLabel}
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[
@@ -83,13 +84,13 @@ const MapFilterHeader = ({
             setFilterInitialTab('주종');
             setFilterModalVisible(true);
           }}>
-          <Text
+          <CustomText
             style={[
               styles.filterText,
               alcoholLabel !== '주종' && styles.filterTextActive,
             ]}>
             {alcoholLabel}
-          </Text>
+          </CustomText>
         </Pressable>
         <View>
           <Pressable
@@ -101,19 +102,17 @@ const MapFilterHeader = ({
               setFilterInitialTab('매장분위기');
               setFilterModalVisible(true);
             }}>
-            <Text
+            <CustomText
               style={[
                 styles.filterText,
                 storeatmCount > 0 && styles.filterTextActive,
               ]}>
               매장분위기
-            </Text>
+            </CustomText>
           </Pressable>
           {storeatmCount > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText} allowFontScaling={false}>
-                {storeatmCount}
-              </Text>
+              <CustomText style={styles.badgeText}>{storeatmCount}</CustomText>
             </View>
           )}
         </View>
@@ -127,13 +126,13 @@ const MapFilterHeader = ({
             setFilterInitialTab('방문시간');
             setFilterModalVisible(true);
           }}>
-          <Text
+          <CustomText
             style={[
               styles.filterText,
               timeActive !== '방문시간' && styles.filterTextActive,
             ]}>
             {timeActive}
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[
@@ -144,13 +143,13 @@ const MapFilterHeader = ({
             setFilterInitialTab('편의시설');
             setFilterModalVisible(true);
           }}>
-          <Text
+          <CustomText
             style={[
               styles.filterText,
               peopleLabel !== '인원' && styles.filterTextActive,
             ]}>
             {peopleLabel}
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[
@@ -161,13 +160,13 @@ const MapFilterHeader = ({
             setFilterInitialTab('편의시설');
             setFilterModalVisible(true);
           }}>
-          <Text
+          <CustomText
             style={[
               styles.filterText,
               parkingLabel == '가능' && styles.filterTextActive,
             ]}>
             주차
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[
@@ -178,13 +177,13 @@ const MapFilterHeader = ({
             setFilterInitialTab('편의시설');
             setFilterModalVisible(true);
           }}>
-          <Text
+          <CustomText
             style={[
               styles.filterText,
               corkageLabel == '가능' && styles.filterTextActive,
             ]}>
             콜키지
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[
@@ -195,13 +194,13 @@ const MapFilterHeader = ({
             setFilterInitialTab('편의시설');
             setFilterModalVisible(true);
           }}>
-          <Text
+          <CustomText
             style={[
               styles.filterText,
               screenLabel == '설치' && styles.filterTextActive,
             ]}>
             스크린
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[
@@ -212,13 +211,13 @@ const MapFilterHeader = ({
             setFilterInitialTab('편의시설');
             setFilterModalVisible(true);
           }}>
-          <Text
+          <CustomText
             style={[
               styles.filterText,
               roomLabel == '가능' && styles.filterTextActive,
             ]}>
             룸
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[
@@ -229,13 +228,13 @@ const MapFilterHeader = ({
             setFilterInitialTab('편의시설');
             setFilterModalVisible(true);
           }}>
-          <Text
+          <CustomText
             style={[
               styles.filterText,
               outdoorLabel == '가능' && styles.filterTextActive,
             ]}>
             야장
-          </Text>
+          </CustomText>
         </Pressable>
       </ScrollView>
     </View>

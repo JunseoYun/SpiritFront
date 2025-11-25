@@ -51,6 +51,8 @@ import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
+import CustomText from '../../components/common/CustomText';
+import CustomTextInput from '../../components/common/CustomTextInput';
 
 const {width} = Dimensions.get('window');
 const IMAGE_WIDTH = width - 120;
@@ -179,14 +181,14 @@ const InfoImageEditScreen = ({navigation, route}) => {
           }}
           hitSlop={10}
           style={{paddingHorizontal: 16, justifyContent: 'center'}}>
-          <Text
+          <CustomText
             style={{
               color: '#121212',
               fontFamily: 'Pretendard-Medium',
               fontSize: 17,
             }}>
             {inlineOrderMode ? '적용' : '도구'}
-          </Text>
+          </CustomText>
         </TouchableOpacity>
       ),
     });
@@ -751,7 +753,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
               toggleDropdown();
               sortByBoardTypeStable('MENU');
             }}>
-            <Text style={styles.dropdownText}>메뉴 우선 정렬</Text>
+            <CustomText style={styles.dropdownText}>메뉴 우선 정렬</CustomText>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -760,7 +762,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
               toggleDropdown();
               sortByBoardTypeStable('DRINK');
             }}>
-            <Text style={styles.dropdownText}>주류 우선 정렬</Text>
+            <CustomText style={styles.dropdownText}>주류 우선 정렬</CustomText>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.dropdownItem}
@@ -768,7 +770,9 @@ const InfoImageEditScreen = ({navigation, route}) => {
               toggleDropdown();
               setInlineOrderMode(true);
             }}>
-            <Text style={styles.dropdownText}>메뉴판 순서 설정</Text>
+            <CustomText style={styles.dropdownText}>
+              메뉴판 순서 설정
+            </CustomText>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.dropdownItem}
@@ -780,20 +784,20 @@ const InfoImageEditScreen = ({navigation, route}) => {
                 cancelSelectDelete(); // 이미 checkDelete 상태일 경우 삭제 시도
               }
             }}>
-            <Text style={styles.dropdownText}>
+            <CustomText style={styles.dropdownText}>
               {checkDelete ? '선택 삭제 취소' : '선택 삭제'}
-            </Text>
+            </CustomText>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.dropdownItem} onPress={reset}>
-            <Text style={styles.dropdownText}>초기화</Text>
+            <CustomText style={styles.dropdownText}>초기화</CustomText>
           </TouchableOpacity>
           {/* 필요한 기능 더 추가 가능 */}
         </Animated.View>
       )}
       {checkDelete ? (
         <View style={[styles.header]}>
-          <Text
+          <CustomText
             style={[
               styles.headerText,
               {
@@ -803,16 +807,16 @@ const InfoImageEditScreen = ({navigation, route}) => {
             {selectedForDelete.length === 0
               ? '삭제할 사진을 선택해주세요'
               : `${selectedForDelete.length}장의 사진이 선택되었어요`}
-          </Text>
+          </CustomText>
         </View>
       ) : (
         !inlineOrderMode && (
           <View style={styles.header}>
             <Ionicons name="reorder-three-outline" size={24} color="#999" />
 
-            <Text style={styles.headerText}>
+            <CustomText style={styles.headerText}>
               사진을 꾹 눌러 원하는 순서로 바꿔보세요
-            </Text>
+            </CustomText>
           </View>
         )
       )}
@@ -824,7 +828,9 @@ const InfoImageEditScreen = ({navigation, route}) => {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={{flex: 1}}>
             <View style={styles.madalTitleView}>
-              <Text style={styles.modalTitle}>메뉴판 순서 설정</Text>
+              <CustomText style={styles.modalTitle}>
+                메뉴판 순서 설정
+              </CustomText>
               <Pressable
                 onPress={() => (setRankInputs({}), setInlineOrderMode(false))}>
                 <Ionicons name="close" size={23} color="#121212" />
@@ -852,7 +858,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
                 return (
                   <View style={styles.orderCell}>
                     <FastImage source={{uri}} style={styles.orderThumb} />
-                    <TextInput
+                    <CustomTextInput
                       keyboardType="number-pad"
                       placeholder="순서"
                       placeholderTextColor="#aaa"
@@ -986,7 +992,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
                 editedAtRef.current = {};
                 editSeqRef.current = 0;
               }}>
-              <Text style={styles.resetText}>초기화</Text>
+              <CustomText style={styles.resetText}>초기화</CustomText>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.applyButton}
@@ -994,7 +1000,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
                 applyNumericOrder();
                 setInlineOrderMode(false);
               }}>
-              <Text style={styles.applyText}>적용</Text>
+              <CustomText style={styles.applyText}>적용</CustomText>
             </TouchableOpacity>
           </View>
         ) : checkDelete ? (

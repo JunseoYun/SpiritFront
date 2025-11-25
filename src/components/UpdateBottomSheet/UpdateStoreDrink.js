@@ -18,6 +18,7 @@ import {
 import {UpdateStore} from '../../api/storeApi';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
+import CustomText from '../common/CustomText';
 
 const ALCOHOL_TYPES = [
   {label: '소주', value: 'SOJU'},
@@ -108,13 +109,14 @@ const UpdateStoreDrink = ({navigation, route}) => {
         <Pressable
           onPress={handleComplete}
           disabled={loading || selectedAlcohols.length === 0}>
-          <Text
+          <CustomText
             style={[
               styles.headerButton,
-              (loading || selectedAlcohols.length === 0) && styles.headerButtonDisabled,
+              (loading || selectedAlcohols.length === 0) &&
+                styles.headerButtonDisabled,
             ]}>
             완료
-          </Text>
+          </CustomText>
         </Pressable>
       ),
     });
@@ -130,8 +132,10 @@ const UpdateStoreDrink = ({navigation, route}) => {
           contentContainerStyle={styles.contentContainer}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>대표 주종 선택</Text>
-          <Text style={styles.subtitle}>최대 3개까지 선택할 수 있습니다.</Text>
+          <CustomText style={styles.title}>대표 주종 선택</CustomText>
+          <CustomText style={styles.subtitle}>
+            최대 3개까지 선택할 수 있습니다.
+          </CustomText>
 
           <View style={styles.alcoholGrid}>
             {ALCOHOL_TYPES.map(({label, value}) => {
@@ -149,14 +153,14 @@ const UpdateStoreDrink = ({navigation, route}) => {
                   ]}
                   disabled={disabled}
                   onPress={() => toggleAlcohol(value)}>
-                  <Text
+                  <CustomText
                     style={[
                       styles.alcoholLabel,
                       isSelected && styles.alcoholLabelSelected,
                       disabled && styles.alcoholLabelDisabled,
                     ]}>
                     {label}
-                  </Text>
+                  </CustomText>
                 </Pressable>
               );
             })}

@@ -27,6 +27,7 @@ import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
+import CustomText from '../common/CustomText';
 
 const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -201,8 +202,8 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
 
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>매장 이미지</Text>
-      <Text style={styles.subtitle}>*최대 5장</Text>
+      <CustomText style={styles.title}>매장 이미지</CustomText>
+      <CustomText style={styles.subtitle}>*최대 5장</CustomText>
 
       <BottomSheetScrollView
         showsVerticalScrollIndicator={false}
@@ -224,7 +225,9 @@ const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
             {/* 첫 번째 이미지에 '대표' 태그 추가 */}
             {index === 0 && (
               <View style={styles.representativeBadge}>
-                <Text style={styles.representativeText}>대표 사진</Text>
+                <CustomText style={styles.representativeText}>
+                  대표 사진
+                </CustomText>
               </View>
             )}
             <TouchableOpacity
