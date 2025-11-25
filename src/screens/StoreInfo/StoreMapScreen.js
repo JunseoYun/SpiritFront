@@ -26,6 +26,7 @@ import {useToast} from '../../context/ToastContext';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
 import {Storelikepost, get_store_share} from '../../api/storeApi';
+import CustomText from '../../components/common/CustomText';
 
 const StoreMapScreen = ({navigation}) => {
   const route = useRoute();
@@ -327,7 +328,7 @@ const StoreMapScreen = ({navigation}) => {
             />
           ) : (
             <View style={styles.loading}>
-              <Text>Loading Map...</Text>
+              <CustomText>Loading Map...</CustomText>
             </View>
           )}
 
@@ -369,19 +370,19 @@ const StoreMapScreen = ({navigation}) => {
                 setInfoHeight(height);
               }
             }}>
-            <Text style={styles.storeInfoName} numberOfLines={1}>
+            <CustomText style={styles.storeInfoName} numberOfLines={1}>
               {storename || '매장 정보'}
-            </Text>
+            </CustomText>
             {hasDetailLine ? (
               <>
                 <View style={styles.infoDetailRow}>
                   {distanceLabel ? (
                     <>
-                      <Text style={styles.storeInfoDistance}>
+                      <CustomText style={styles.storeInfoDistance}>
                         {distanceLabel}
-                      </Text>
+                      </CustomText>
                       {resolvedAddress ? (
-                        <Text style={styles.dotSeparator}> · </Text>
+                        <CustomText style={styles.dotSeparator}> · </CustomText>
                       ) : null}
                     </>
                   ) : null}
@@ -389,9 +390,11 @@ const StoreMapScreen = ({navigation}) => {
                     <TouchableOpacity
                       activeOpacity={0.7}
                       onPress={() => setShowAddressOverlay(prev => !prev)}>
-                      <Text style={styles.storeInfoAddress} numberOfLines={2}>
+                      <CustomText
+                        style={styles.storeInfoAddress}
+                        numberOfLines={2}>
                         {resolvedAddress}
-                      </Text>
+                      </CustomText>
                     </TouchableOpacity>
                   ) : null}
                 </View>
@@ -401,20 +404,26 @@ const StoreMapScreen = ({navigation}) => {
                     style={styles.addressPanel}
                     onPress={event => event.stopPropagation()}>
                     <View style={styles.addressPanelHeader}>
-                      <Text style={styles.addressOverlayTitle}>주소</Text>
+                      <CustomText style={styles.addressOverlayTitle}>
+                        주소
+                      </CustomText>
                       <TouchableOpacity
                         onPress={() => setShowAddressOverlay(false)}
                         hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
-                        <Text style={styles.addressOverlayClose}>×</Text>
+                        <CustomText style={styles.addressOverlayClose}>
+                          ×
+                        </CustomText>
                       </TouchableOpacity>
                     </View>
                     <TouchableOpacity
                       style={styles.addressPanelContent}
                       onPress={handleCopyAddress}>
-                      <Text style={styles.addressPanelText}>
+                      <CustomText style={styles.addressPanelText}>
                         {resolvedAddress}
-                      </Text>
-                      <Text style={styles.addressOverlayCopy}>복사</Text>
+                      </CustomText>
+                      <CustomText style={styles.addressOverlayCopy}>
+                        복사
+                      </CustomText>
                     </TouchableOpacity>
                   </TouchableOpacity>
                 ) : null}
@@ -518,6 +527,7 @@ const styles = StyleSheet.create({
     color: '#555',
     lineHeight: 18,
     fontFamily: 'Pretendard-Medium',
+    paddingTop: 4,
   },
   addressPanel: {
     marginTop: 10,

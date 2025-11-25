@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
+import CustomText from '../../common/CustomText';
 
 const FastSearch = ({title, selectedFilters, handleBottomOpen, isHeader}) => {
   const {translateCategory} = useCategoryTranslation();
@@ -21,10 +22,10 @@ const FastSearch = ({title, selectedFilters, handleBottomOpen, isHeader}) => {
       style={[styles.container, isHeader === false && styles.fastcontainer]}>
       {title ? (
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subTitle}>
+          <CustomText style={styles.title}>{title}</CustomText>
+          <CustomText style={styles.subTitle}>
             원하는 조건으로 내 주변 술집을 빠르게 찾아보세요
-          </Text>
+          </CustomText>
         </View>
       ) : null}
 
@@ -39,13 +40,13 @@ const FastSearch = ({title, selectedFilters, handleBottomOpen, isHeader}) => {
               key={index}
               style={[styles.optionButton, isSelected && styles.optionSelected]}
               onPress={handleBottomOpen}>
-              <Text
+              <CustomText
                 style={[
                   styles.optionText,
                   isSelected && styles.optionTextSelected,
                 ]}>
                 {label}
-              </Text>
+              </CustomText>
             </TouchableOpacity>
           );
         })}

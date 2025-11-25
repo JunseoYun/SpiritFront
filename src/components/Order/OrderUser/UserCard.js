@@ -2,6 +2,7 @@ import React from 'react';
 import {StyleSheet, Text, View, Pressable, Image, Alert} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
+import CustomText from '../../common/CustomText';
 
 const UserCard = ({order, onPressDetail}) => {
   const isPending = order.status === 'pending';
@@ -19,11 +20,11 @@ const UserCard = ({order, onPressDetail}) => {
   return (
     <View style={styles.card}>
       <View style={styles.topRow}>
-        <Text style={styles.reservationText} numberOfLines={1}>
+        <CustomText style={styles.reservationText} numberOfLines={1}>
           예약 {order.reservationTime} · 인원 {order.people}명
-        </Text>
+        </CustomText>
         <Pressable hitSlop={8} style={styles.detailBtn} onPress={onPressDetail}>
-          <Text style={styles.detailBtnText}>주문 상세</Text>
+          <CustomText style={styles.detailBtnText}>주문 상세</CustomText>
           <Feather name={'chevron-right'} size={15} color="#333" />
         </Pressable>
       </View>
@@ -31,10 +32,10 @@ const UserCard = ({order, onPressDetail}) => {
       <View style={styles.cardHeader}>
         <Image source={{uri: order.thumbnail}} style={styles.thumb} />
         <View style={{flex: 1}}>
-          <Text style={styles.storeName}>{order.storeName}</Text>
-          <Text style={styles.subText} numberOfLines={1}>
+          <CustomText style={styles.storeName}>{order.storeName}</CustomText>
+          <CustomText style={styles.subText} numberOfLines={1}>
             {order.itemsSummary}
-          </Text>
+          </CustomText>
         </View>
       </View>
 
@@ -42,11 +43,11 @@ const UserCard = ({order, onPressDetail}) => {
         <View style={styles.rowBetween}>
           <View style={styles.inlineBadge}>
             <Ionicons name="time-outline" size={14} color="#6B7280" />
-            <Text style={styles.inlineBadgeText}>
+            <CustomText style={styles.inlineBadgeText}>
               {isPending && `접수 대기 · 수령 ${order.receivedAt || '-'}`}
               {isOnHold && '매장 결제 진행 중(on hold)'}
               {isWaitingPay && '결제 요청'}
-            </Text>
+            </CustomText>
           </View>
           {isPending && (
             <Pressable
@@ -59,7 +60,7 @@ const UserCard = ({order, onPressDetail}) => {
                   [{text: '닫기'}],
                 )
               }>
-              <Text style={styles.ghostBtnText}>주문 취소</Text>
+              <CustomText style={styles.ghostBtnText}>주문 취소</CustomText>
             </Pressable>
           )}
         </View>
@@ -68,16 +69,16 @@ const UserCard = ({order, onPressDetail}) => {
       {(isInPrepare || isWaitingPay) && (
         <View style={styles.receiptBox}>
           {isWaitingPay ? null : (
-            <Text style={styles.receiptText}>
+            <CustomText style={styles.receiptText}>
               {isInPrepare && `준비 중 · 접수번호 ${order.receiptNo ?? '-'}`}
-            </Text>
+            </CustomText>
           )}
           {isWaitingPay && (
             <Pressable
               style={[styles.primaryBtn]}
               onPress={() => Alert.alert('결제', '결제를 진행할까요?')}
               hitSlop={8}>
-              <Text style={styles.primaryBtnText}>결제하기</Text>
+              <CustomText style={styles.primaryBtnText}>결제하기</CustomText>
             </Pressable>
           )}
         </View>
@@ -85,7 +86,7 @@ const UserCard = ({order, onPressDetail}) => {
 
       {isCompleted && (
         <View style={styles.reviewBox}>
-          <Text style={styles.reviewTitle}>방문 완료</Text>
+          <CustomText style={styles.reviewTitle}>방문 완료</CustomText>
           <View style={styles.starsRow}>
             <View style={{flexDirection: 'row', gap: 4}}>
               <Ionicons name="star-outline" size={18} color="#9CA3AF" />
@@ -94,7 +95,9 @@ const UserCard = ({order, onPressDetail}) => {
               <Ionicons name="star-outline" size={18} color="#9CA3AF" />
               <Ionicons name="star-outline" size={18} color="#9CA3AF" />
             </View>
-            <Text style={styles.inlineBadgeText}>리뷰를 남겨보세요</Text>
+            <CustomText style={styles.inlineBadgeText}>
+              리뷰를 남겨보세요
+            </CustomText>
           </View>
         </View>
       )}
@@ -102,10 +105,10 @@ const UserCard = ({order, onPressDetail}) => {
       {isCanceled && (
         <View style={styles.cancelBox}>
           <Ionicons name="close-circle" size={16} color="#EF4444" />
-          <Text style={styles.cancelText} numberOfLines={2}>
+          <CustomText style={styles.cancelText} numberOfLines={2}>
             {order.status === 'refunded' ? '환불 사유' : '취소/거절 사유'} ·{' '}
             {order.cancelReason || '-'}
-          </Text>
+          </CustomText>
         </View>
       )}
     </View>

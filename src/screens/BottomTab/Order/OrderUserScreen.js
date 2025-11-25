@@ -3,6 +3,7 @@ import {StyleSheet, Text, View, FlatList} from 'react-native';
 import UserCard from '../../../components/Order/OrderUser/UserCard';
 import UserSortSummary from '../../../components/Order/OrderUser/UserSortSummary';
 import UserHeaderTabs from '../../../components/Order/OrderUser/UserHeaderTabs';
+import CustomText from '../../../components/common/CustomText';
 
 const OrderUserScreen = ({navigation}) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -75,7 +76,7 @@ const OrderUserScreen = ({navigation}) => {
     if (item && item.__type === 'header') {
       return (
         <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionHeaderText}>{item.title}</Text>
+          <CustomText style={styles.sectionHeaderText}>{item.title}</CustomText>
         </View>
       );
     }
@@ -115,7 +116,9 @@ const OrderUserScreen = ({navigation}) => {
         onScroll={onScroll}
         scrollEventThrottle={16}
         ListEmptyComponent={() => (
-          <Text style={styles.emptyText}>표시할 주문이 없습니다</Text>
+          <CustomText style={styles.emptyText}>
+            표시할 주문이 없습니다
+          </CustomText>
         )}
         contentContainerStyle={{paddingHorizontal: 16, paddingBottom: 24}}
       />

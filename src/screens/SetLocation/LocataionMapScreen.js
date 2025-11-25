@@ -25,6 +25,7 @@ import {log_access_create} from '../../api/userApi';
 import BottomActionButton from '../../utils/BottomActionButton';
 
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import CustomText from '../../components/common/CustomText';
 const LocataionMapScreen = ({navigation}) => {
   const route = useRoute();
   const [loading, setLoading] = useState(false);
@@ -189,7 +190,9 @@ const LocataionMapScreen = ({navigation}) => {
       <TouchableOpacity
         style={[styles.locationbtn, {bottom: 40 + bottom}]}
         onPress={setcenterrefresh}>
-        <Text style={styles.locationbtntext}>이 위치로 주소 설정</Text>
+        <CustomText style={styles.locationbtntext}>
+          이 위치로 주소 설정
+        </CustomText>
       </TouchableOpacity> */}
 
       <TouchableOpacity

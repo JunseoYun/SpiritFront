@@ -11,10 +11,8 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RotateCw} from 'lucide-react-native';
+import CustomText from '../common/CustomText';
 const {width} = Dimensions.get('window');
-
-let fontScale = PixelRatio.getFontScale();
-if (fontScale > 1.3) fontScale = 1.3;
 
 const MapSearchBar = ({onPress}) => {
   const insets = useSafeAreaInsets();
@@ -23,9 +21,9 @@ const MapSearchBar = ({onPress}) => {
       <Pressable style={styles.searchButton} onPress={onPress}>
         <View style={styles.searchView}>
           <RotateCw size={15} color={'#006EFF'} />
-          <Text allowFontScaling={false} style={styles.buttonTextTop}>
+          <CustomText maxScale={1.3} style={styles.buttonTextTop}>
             현 지도에서 검색
-          </Text>
+          </CustomText>
         </View>
       </Pressable>
     </View>
@@ -58,7 +56,7 @@ const styles = StyleSheet.create({
   },
   buttonTextTop: {
     color: '#006EFF',
-    fontSize: 14 * fontScale,
+    fontSize: 14,
     fontFamily: 'Pretendard-Medium',
     marginLeft: 7,
   },

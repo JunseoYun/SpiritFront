@@ -3,6 +3,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Feather from 'react-native-vector-icons/Feather';
+import CustomText from '../common/CustomText';
 
 const ICON_WIDTH = 45; // 좌측 정렬 아이콘 공간 고정값
 
@@ -79,21 +80,21 @@ const MenuItem = ({
             menu.description == '' && {justifyContent: 'space-evenly'},
           ]}>
           <View style={styles.menuTitleRow}>
-            <Text style={styles.nameText}>{menu.name}</Text>
+            <CustomText style={styles.nameText}>{menu.name}</CustomText>
             {menu?.menuType === 'MAIN' && (
-              <Text style={styles.mainMenu}>대표</Text>
+              <CustomText style={styles.mainMenu}>대표</CustomText>
             )}
           </View>
 
           {menu.description && (
-            <Text style={styles.desc}>{menu.description}</Text>
+            <CustomText style={styles.desc}>{menu.description}</CustomText>
           )}
 
-          <Text style={styles.priceText}>
+          <CustomText style={styles.priceText}>
             {menu.price === '변동'
               ? '변동'
               : `${Number(menu.price).toLocaleString()}원`}
-          </Text>
+          </CustomText>
         </View>
 
         <View style={styles.ImageContainer}>

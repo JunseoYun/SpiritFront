@@ -23,6 +23,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {normalizeFont} from '../../../hooks/normalizeFont';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import RecentSearchItem from '../../../components/SearchScreen/RecentSearchItem';
+import CustomText from '../../../components/common/CustomText';
 
 const SearchScreen = ({navigation}) => {
   const {showToast} = useToast();
@@ -232,9 +233,9 @@ const SearchScreen = ({navigation}) => {
                   await AsyncStorage.removeItem(RECENT_KEY);
                   setRecentSearches([]);
                 }}>
-                <Text style={styles.clearText} allowFontScaling={false}>
+                <CustomText style={styles.clearText}>
                   최근 검색어 삭제
-                </Text>
+                </CustomText>
               </Pressable>
             </ScrollView>
           </View>
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
   clearText: {
     marginTop: 40,
     color: '#999',
-    fontSize: normalizeFont(13, 1.5),
+    fontSize: 13,
     fontFamily: 'Pretendard-Medium',
   },
 });

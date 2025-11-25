@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
+import CustomText from '../common/CustomText';
 
 const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
   const [visible, setVisible] = useState(false);
@@ -60,17 +61,19 @@ const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
         <TouchableOpacity style={styles.storeinput} onPress={openHandle}>
           {isBreakingHoursSet ? (
             <>
-              <Text style={styles.storeinputtext}>브레이킹 시간</Text>
-              <Text style={styles.inputText}>
+              <CustomText style={styles.storeinputtext}>
+                브레이킹 시간
+              </CustomText>
+              <CustomText style={styles.inputText}>
                 {`${breakingHours.startHour || '00'}:${
                   breakingHours.startMinute || '00'
                 } - ${breakingHours.endHour || '00'}:${
                   breakingHours.endMinute || '00'
                 }`}
-              </Text>
+              </CustomText>
             </>
           ) : (
-            <Text style={styles.inputHideText}>브레이크 시간</Text>
+            <CustomText style={styles.inputHideText}>브레이크 시간</CustomText>
           )}
         </TouchableOpacity>
       </View>
@@ -80,9 +83,11 @@ const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
             style={styles.modalContainer}
             onStartShouldSetResponder={() => true} // 이벤트 차단
           >
-            <Text style={styles.modalTopText}>매장 브레이크 타임</Text>
+            <CustomText style={styles.modalTopText}>
+              매장 브레이크 타임
+            </CustomText>
             <View style={styles.pickerTopView}>
-              <Text style={styles.pickerLabel}>오픈</Text>
+              <CustomText style={styles.pickerLabel}>오픈</CustomText>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={breakingHours.startHour}
@@ -94,7 +99,7 @@ const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
                   ))}
                 </Picker>
               </View>
-              <Text style={styles.pickerColon}>:</Text>
+              <CustomText style={styles.pickerColon}>:</CustomText>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={breakingHours.startMinute}
@@ -108,7 +113,7 @@ const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
               </View>
             </View>
             <View style={styles.pickerTopView}>
-              <Text style={styles.pickerLabel}>마감</Text>
+              <CustomText style={styles.pickerLabel}>마감</CustomText>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={breakingHours.endHour}
@@ -120,7 +125,7 @@ const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
                   ))}
                 </Picker>
               </View>
-              <Text style={styles.pickerColon}>:</Text>
+              <CustomText style={styles.pickerColon}>:</CustomText>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={breakingHours.endMinute}
@@ -134,7 +139,7 @@ const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
               </View>
             </View>
             <Pressable onPress={closeHandle} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>확인</Text>
+              <CustomText style={styles.closeButtonText}>확인</CustomText>
             </Pressable>
           </View>
         </Pressable>

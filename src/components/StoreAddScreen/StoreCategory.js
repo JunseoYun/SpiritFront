@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../common/CustomText';
 
 const StoreCategory = ({
   selectedCategory,
@@ -29,8 +30,10 @@ const StoreCategory = ({
       {/* ✅ 상단 라벨 영역 */}
       {!isRegistration && (
         <View style={styles.labelView}>
-          <Text style={styles.label}>카테고리</Text>
-          <Text style={[styles.countLabel]}>({selectedCategory.length}/3)</Text>
+          <CustomText style={styles.label}>카테고리</CustomText>
+          <CustomText style={[styles.countLabel]}>
+            ({selectedCategory.length}/3)
+          </CustomText>
         </View>
       )}
 
@@ -50,14 +53,14 @@ const StoreCategory = ({
               ]}
               onPress={() => toggleCategory(value)}
               disabled={disabled}>
-              <Text
+              <CustomText
                 style={[
                   styles.categoryText,
                   isSelected && styles.categoryTextSelected,
                   disabled && styles.categoryTextDisabled,
                 ]}>
                 {text}
-              </Text>
+              </CustomText>
             </Pressable>
           );
         })}
@@ -65,9 +68,9 @@ const StoreCategory = ({
 
       {/* ✅ 에러 문구 */}
       {error === 'StoreCategory' && selectedCategory.length === 0 && (
-        <Text style={styles.errorMessage}>
+        <CustomText style={styles.errorMessage}>
           매장 카테고리를 하나 이상 선택해주세요.
-        </Text>
+        </CustomText>
       )}
     </View>
   );

@@ -25,6 +25,7 @@ import ResultModalItemSkeleton from '../../../components/SearchScreen/FastSearch
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../../../components/common/CustomText';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
@@ -155,9 +156,9 @@ const SearchFastScreen = ({navigation}) => {
   const renderEmptyComponent = () => {
     if (!loading) {
       return (
-        <Text style={styles.emptyText}>
+        <CustomText style={styles.emptyText}>
           주변에 조건과 일치하는 술집이 없어요
-        </Text>
+        </CustomText>
       );
     }
     return null;
@@ -172,7 +173,7 @@ const SearchFastScreen = ({navigation}) => {
           onPress={() => navigation.goBack()}>
           <AntDesign name="arrowleft" size={22} color={'black'} />
         </Pressable>
-        <Text style={styles.headerTitle}>내 주변 빠른 검색</Text>
+        <CustomText style={styles.headerTitle}>내 주변 빠른 검색</CustomText>
       </View>
 
       {/* 필터 Chips */}
@@ -231,7 +232,9 @@ const SearchFastScreen = ({navigation}) => {
         <Animated.View
           style={[styles.modalContent, {transform: [{translateY: slideAnim}]}]}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>내 주변 술집 빠른 검색</Text>
+            <CustomText style={styles.modalTitle}>
+              내 주변 술집 빠른 검색
+            </CustomText>
             <Pressable onPress={() => setBottomModalVisible(false)}>
               <Ionicons name="close" size={22} color="#666" />
             </Pressable>

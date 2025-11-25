@@ -13,6 +13,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import CustomText from '../../common/CustomText';
 
 const {width} = Dimensions.get('window');
 
@@ -160,9 +161,9 @@ const DraggableImageItem = ({
               style={[styles.menuTypeButton, {backgroundColor: '#E9F5FB'}]}
               disabled // ??�� 모드?�선 비활?�화
             >
-              <Text style={[styles.menuTypeText, {color: '#3CBBFF'}]}>
+              <CustomText style={[styles.menuTypeText, {color: '#3CBBFF'}]}>
                 {item.boardType === 'MENU' ? '메뉴' : '주류'}
-              </Text>
+              </CustomText>
             </Pressable>
           ) : (
             // ?�소??????보여�?
@@ -173,13 +174,13 @@ const DraggableImageItem = ({
                   item.boardType === 'MENU' && styles.selectedButton,
                 ]}
                 onPress={() => toggleBoardTypeImage(item, 'MENU')}>
-                <Text
+                <CustomText
                   style={[
                     styles.menuTypeText,
                     item.boardType === 'MENU' && styles.selectedText,
                   ]}>
                   메뉴
-                </Text>
+                </CustomText>
               </Pressable>
 
               <Pressable
@@ -188,13 +189,13 @@ const DraggableImageItem = ({
                   item.boardType === 'DRINK' && styles.selectedButton,
                 ]}
                 onPress={() => toggleBoardTypeImage(item, 'DRINK')}>
-                <Text
+                <CustomText
                   style={[
                     styles.menuTypeText,
                     item.boardType === 'DRINK' && styles.selectedText,
                   ]}>
                   주류
-                </Text>
+                </CustomText>
               </Pressable>
             </>
           )}

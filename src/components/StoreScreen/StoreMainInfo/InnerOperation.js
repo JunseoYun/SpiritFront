@@ -4,6 +4,7 @@ import {View, Text, StyleSheet, Pressable} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Entypo from 'react-native-vector-icons/Entypo';
 import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../common/CustomText';
 
 const InnerOperation = ({
   toggleExpand,
@@ -22,7 +23,7 @@ const InnerOperation = ({
                 {operationSchedule.map((dayInfo, index) =>
                   index === 0 ? (
                     <View key={index} style={{}}>
-                      <Text
+                      <CustomText
                         style={[
                           styles.infoHidetext,
                           {fontFamily: 'Pretendard-SemiBold'},
@@ -31,31 +32,31 @@ const InnerOperation = ({
                         {dayInfo.isClosed
                           ? '휴무일'
                           : `${dayInfo.open} ~ ${dayInfo.close}`}
-                      </Text>
+                      </CustomText>
                       {!dayInfo.isClosed &&
                         dayInfo.breakStart &&
                         dayInfo.breakEnd && (
-                          <Text style={styles.infoHidetext}>
+                          <CustomText style={styles.infoHidetext}>
                             브레이크 타임 {dayInfo.breakStart} ~{' '}
                             {dayInfo.breakEnd}
-                          </Text>
+                          </CustomText>
                         )}
                     </View>
                   ) : (
                     <View key={index} style={{marginTop: 5}}>
-                      <Text style={styles.infoHidendaytext}>
+                      <CustomText style={styles.infoHidendaytext}>
                         {dayInfo.day}{' '}
                         {dayInfo.isClosed
                           ? '휴무일'
                           : `${dayInfo.open} ~ ${dayInfo.close}`}
-                      </Text>
+                      </CustomText>
                       {!dayInfo.isClosed &&
                         dayInfo.breakStart &&
                         dayInfo.breakEnd && (
-                          <Text style={styles.infoHidendaytext}>
+                          <CustomText style={styles.infoHidendaytext}>
                             브레이크 타임 {dayInfo.breakStart} ~{' '}
                             {dayInfo.breakEnd}
-                          </Text>
+                          </CustomText>
                         )}
                     </View>
                   ),
@@ -66,7 +67,9 @@ const InnerOperation = ({
             isAlwaysOpen == true && (
               <>
                 {/* <Ionicons name="time-outline" size={20} color="#333" /> */}
-                <Text style={styles.infoHidetext}>매일 00:00 - 24:00</Text>
+                <CustomText style={styles.infoHidetext}>
+                  매일 00:00 - 24:00
+                </CustomText>
               </>
             )
           )}

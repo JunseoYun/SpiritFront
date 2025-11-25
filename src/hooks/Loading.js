@@ -70,6 +70,7 @@ const Loading = ({loading}) => {
           dotRefs.current.map((dot, idx) => (
             <Animated.Text
               key={idx}
+              allowFontScaling={false}
               style={[
                 styles.dot,
                 {transform: [{translateY: dot}], color: dotColors[idx]},

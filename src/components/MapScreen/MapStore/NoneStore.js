@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet, Dimensions} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import CustomText from '../../common/CustomText';
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
 const BUTON_WIDTH = width * 0.4;
@@ -11,7 +12,9 @@ const NoneStore = ({navigation, location}) => {
     <View style={styles.noneViewContent}>
       <View style={styles.storeInfo}>
         <View style={styles.titleview}>
-          <Text style={styles.noDataText}>주변에 등록된 술집이 없어요</Text>
+          <CustomText style={styles.noDataText}>
+            주변에 등록된 술집이 없어요
+          </CustomText>
           <View style={styles.noticeView}>
             <Ionicons
               name="information-circle-outline"
@@ -19,9 +22,9 @@ const NoneStore = ({navigation, location}) => {
               color="#6B7280"
               style={{marginRight: 3}}
             />
-            <Text style={styles.noDatasubText}>
+            <CustomText style={styles.noDatasubText}>
               현재 한잔할까는 용인시를 중심으로 운영 중입니다.
-            </Text>
+            </CustomText>
           </View>
         </View>
 
@@ -31,13 +34,13 @@ const NoneStore = ({navigation, location}) => {
             onPress={() => {
               navigation.navigate('StoreSearchScreen', {index: 0, location});
             }}>
-            <Text style={styles.noneText2}>매장 제보하기</Text>
+            <CustomText style={styles.noneText2}>매장 제보하기</CustomText>
           </Pressable>
 
           <Pressable
             style={styles.button}
             onPress={() => navigation.navigate('SetLocationScreen')}>
-            <Text style={styles.noneText}>위치 변경하기</Text>
+            <CustomText style={styles.noneText}>위치 변경하기</CustomText>
           </Pressable>
         </View>
       </View>
@@ -56,7 +59,7 @@ const styles = StyleSheet.create({
   titleview: {marginTop: 2, gap: 7, width: '100%'},
   noDataText: {
     alignSelf: 'center',
-    fontSize: normalizeFont(15, 1.3),
+    fontSize: 15,
     color: '#888',
     fontFamily: 'Pretendard-Regular',
   },
@@ -68,7 +71,7 @@ const styles = StyleSheet.create({
   },
   noDatasubText: {
     alignSelf: 'center',
-    fontSize: normalizeFont(14, 1.3),
+    fontSize: 14,
     color: '#888',
     fontFamily: 'Pretendard-Regular',
   },
@@ -98,7 +101,7 @@ const styles = StyleSheet.create({
   noneText2: {
     alignSelf: 'center',
     color: '#3CBBFF',
-    fontSize: normalizeFont(15, 1.3),
+    fontSize: 15,
     fontFamily: 'Pretendard-SemiBold',
   },
   noneText: {

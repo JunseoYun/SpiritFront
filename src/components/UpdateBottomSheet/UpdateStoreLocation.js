@@ -9,6 +9,8 @@ import {
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useToast} from '../../context/ToastContext';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const UpdateStoreLocation = ({
   updatedValue,
@@ -22,7 +24,7 @@ const UpdateStoreLocation = ({
   const [overText, setOverText] = useState(false);
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>매장 주소</Text>
+      <CustomText style={styles.title}>매장 주소</CustomText>
       <View style={styles.storeinputmap}>
         <TouchableOpacity
           style={styles.addressTouchable}
@@ -38,9 +40,11 @@ const UpdateStoreLocation = ({
             })
           }>
           {updatedValue.address ? (
-            <Text style={styles.inputText}>{updatedValue.address}</Text>
+            <CustomText style={styles.inputText}>
+              {updatedValue.address}
+            </CustomText>
           ) : (
-            <Text style={styles.inputHideText}>매장 주소*</Text>
+            <CustomText style={styles.inputHideText}>매장 주소*</CustomText>
           )}
         </TouchableOpacity>
         <TouchableOpacity
@@ -65,9 +69,9 @@ const UpdateStoreLocation = ({
       </View>
       <View style={styles.storeinputview}>
         {updatedValue.addressDetail && (
-          <Text style={styles.storeinputtext}>상세 주소</Text>
+          <CustomText style={styles.storeinputtext}>상세 주소</CustomText>
         )}
-        <TextInput
+        <CustomTextInput
           style={[
             styles.storeinput,
             updatedValue.addressDetail && styles.focusedInput,
@@ -82,9 +86,9 @@ const UpdateStoreLocation = ({
           maxLength={MAX_DETAIL}
         />
         {overText && (
-          <Text style={styles.errorText}>
+          <CustomText style={styles.errorText}>
             상세 주소는 최대 100자까지 입력 가능합니다.
-          </Text>
+          </CustomText>
         )}
       </View>
       <ActionButtons onCancel={onCancel} onSave={onSave} />

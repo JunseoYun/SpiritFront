@@ -23,6 +23,8 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import StorePaymentModal from '../../components/StorePaymentScreen/StorePaymentModal';
+import CustomText from '../../components/common/CustomText';
+import CustomTextInput from '../../components/common/CustomTextInput';
 
 // ----- utils -----
 const formatCurrency = n => (Number(n) || 0).toLocaleString('ko-KR');
@@ -42,10 +44,12 @@ const CartItemRow = ({item, onInc, onDec, onRemove}) => {
   return (
     <View style={styles.itemRow}>
       <View style={styles.itemInfo}>
-        <Text style={styles.itemName} numberOfLines={2}>
+        <CustomText style={styles.itemName} numberOfLines={2}>
           {item.name}
-        </Text>
-        <Text style={styles.itemPrice}>{formatCurrency(item.price)}원</Text>
+        </CustomText>
+        <CustomText style={styles.itemPrice}>
+          {formatCurrency(item.price)}원
+        </CustomText>
       </View>
 
       <View style={styles.itemControls}>
@@ -60,7 +64,7 @@ const CartItemRow = ({item, onInc, onDec, onRemove}) => {
             <Feather name="minus" size={16} color="#1F2937" />
           )}
         </TouchableOpacity>
-        <Text style={styles.qtyText}>{item.quantity}</Text>
+        <CustomText style={styles.qtyText}>{item.quantity}</CustomText>
         <TouchableOpacity
           accessibilityLabel="증가"
           onPress={onInc}
@@ -205,34 +209,36 @@ const StorePaymentScreen = () => {
             <View style={styles.mapThumb}>
               {/* 지도 썸네일 대체 박스 */}
               <Ionicons name="map-outline" size={18} color="#6B7280" />
-              <Text style={styles.mapText}>지도</Text>
+              <CustomText style={styles.mapText}>지도</CustomText>
             </View>
             <View style={styles.storeInfo}>
               <View style={styles.storeInfoHeader}>
-                <Text style={styles.storeName} numberOfLines={1}>
+                <CustomText style={styles.storeName} numberOfLines={1}>
                   {storeName || '매장명 미지정'}
-                </Text>
+                </CustomText>
                 {visitTime && peopleCount ? (
-                  <Text style={styles.storeMeta}>
+                  <CustomText style={styles.storeMeta}>
                     {visitTime} · {peopleCount}명
-                  </Text>
+                  </CustomText>
                 ) : null}
               </View>
-              <Text style={styles.storeAddress} numberOfLines={1}>
+              <CustomText style={styles.storeAddress} numberOfLines={1}>
                 주소정보는 추후 연동 예정
-              </Text>
+              </CustomText>
             </View>
           </View>
         </View>
 
         {/* 주문 상품 리스트 */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>주문 내역</Text>
+          <CustomText style={styles.sectionLabel}>주문 내역</CustomText>
           <View style={styles.card}>
             {cartItems.length === 0 ? (
               <View style={styles.emptyBox}>
                 <Ionicons name="cart-outline" size={20} color="#9AA2AE" />
-                <Text style={styles.emptyText}>담긴 상품이 없습니다.</Text>
+                <CustomText style={styles.emptyText}>
+                  담긴 상품이 없습니다.
+                </CustomText>
               </View>
             ) : (
               cartItems.map(it => (
@@ -253,16 +259,16 @@ const StorePaymentScreen = () => {
               onPress={handleAddMore}
               activeOpacity={0.85}>
               <Ionicons name="add-circle-outline" size={18} color="#3B82F6" />
-              <Text style={styles.addMoreText}>메뉴 더 담기</Text>
+              <CustomText style={styles.addMoreText}>메뉴 더 담기</CustomText>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* 요청사항 */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>요청 사항</Text>
+          <CustomText style={styles.sectionLabel}>요청 사항</CustomText>
           <View style={styles.card}>
-            <TextInput
+            <CustomTextInput
               placeholder="매장에 전달할 요청사항이 있다면 입력해주세요"
               value={requestNote}
               onChangeText={setRequestNote}
@@ -286,10 +292,10 @@ const StorePaymentScreen = () => {
           },
         ]}>
         <View style={styles.footerTermsWrap}>
-          <Text style={styles.footerTerms}>
+          <CustomText style={styles.footerTerms}>
             결제 진행 시 이용약관 및 개인정보 처리방침에 동의한 것으로
             간주됩니다.
-          </Text>
+          </CustomText>
         </View>
         <TouchableOpacity
           style={[
@@ -299,15 +305,15 @@ const StorePaymentScreen = () => {
           disabled={cartItems.length === 0}
           onPress={() => setShowPaymentModal(true)}
           activeOpacity={0.9}>
-          <Text style={styles.payBtnText}>
+          <CustomText style={styles.payBtnText}>
             {cartItems.length === 0
               ? '상품을 담아주세요'
               : `${formatCurrency(totalPrice)}원 결제하기`}
-          </Text>
+          </CustomText>
           {/* {perPerson ? (
-            <Text style={styles.payBtnSubText}>
+            <CustomText style={styles.payBtnSubText}>
               1인당 약 {formatCurrency(perPerson)}원 · {peopleCount}명 기준
-            </Text>
+            </CustomText>
           ) : null} */}
         </TouchableOpacity>
       </View>

@@ -17,6 +17,7 @@ import StoreAreastats from '../../../components/Managerstoreinfo/StoreAreastats/
 import StoreLikestats from '../../../components/Managerstoreinfo/StoreLikestats/StoreLikestats';
 import StoreViewstats from '../../../components/Managerstoreinfo/StoreViewstats/StoreViewstats';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+import CustomText from '../../../components/common/CustomText';
 
 const tabs = [
   {
@@ -76,14 +77,16 @@ const ManagerStoreInfoScreen = () => {
     <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       {/* 선택된 탭 부가설명 영역 */}
       <View style={styles.subLabelContainer}>
-        <View style={{flexDirection: 'row'}}>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <Ionicons
             name={currentTab.icon}
             size={20}
             color="#999"
             style={styles.subLabelIcon}
           />
-          <Text style={styles.subLabelText}>{currentTab.subLabel}</Text>
+          <CustomText maxScale={1.3} style={styles.subLabelText}>
+            {currentTab.subLabel}
+          </CustomText>
         </View>
 
         {selectedTab === 'around' && (
@@ -96,9 +99,11 @@ const ManagerStoreInfoScreen = () => {
               alignItems: 'center',
               alignContent: 'center',
             }}>
-            <Text style={[styles.subLabelText, {marginRight: 3, fontSize: 14}]}>
+            <CustomText
+              maxScale={1.3}
+              style={[styles.subLabelText, {marginRight: 3, fontSize: 14}]}>
               {radius}km
-            </Text>
+            </CustomText>
             <Feather
               name={dropdownVisible ? 'chevron-up' : 'chevron-down'}
               size={17}
@@ -118,13 +123,13 @@ const ManagerStoreInfoScreen = () => {
                 toggleDropdown();
                 setRadius('2');
               }}>
-              <Text
+              <CustomText
                 style={[
                   styles.dropdownText,
                   radius === '2' && {color: '#121212'},
                 ]}>
                 2km
-              </Text>
+              </CustomText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -133,13 +138,13 @@ const ManagerStoreInfoScreen = () => {
                 toggleDropdown();
                 setRadius('3');
               }}>
-              <Text
+              <CustomText
                 style={[
                   styles.dropdownText,
                   radius === '3' && {color: '#121212'},
                 ]}>
                 3km
-              </Text>
+              </CustomText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -148,13 +153,13 @@ const ManagerStoreInfoScreen = () => {
                 toggleDropdown();
                 setRadius('5');
               }}>
-              <Text
+              <CustomText
                 style={[
                   styles.dropdownText,
                   radius === '5' && {color: '#121212'},
                 ]}>
                 5km
-              </Text>
+              </CustomText>
             </TouchableOpacity>
 
             {/* 필요한 기능 더 추가 가능 */}
@@ -196,10 +201,10 @@ const ManagerStoreInfoScreen = () => {
                 color={focused ? '#3CBBFF' : '#999'}
                 style={{marginBottom: 4}}
               />
-              <Text
+              <CustomText
                 style={[styles.tabLabel, focused && styles.tabLabelFocused]}>
                 {tab.label}
-              </Text>
+              </CustomText>
             </Pressable>
           );
         })}
@@ -234,6 +239,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     lineHeight: 18,
     whiteSpace: 'pre-line', // 줄바꿈 허용
+    textAlign: 'center',
   },
   contentContainer: {
     flex: 1,

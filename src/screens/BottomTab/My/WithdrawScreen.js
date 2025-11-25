@@ -14,6 +14,7 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import {user_withdraw} from '../../../api/userApi';
 import {removeNotification} from '../../../storage/notificationStorage';
 import Loading from '../../../hooks/Loading';
+import CustomText from '../../../components/common/CustomText';
 const WithdrawScreen = () => {
   const navigation = useNavigation();
   const {logout} = useAuth();
@@ -63,13 +64,13 @@ const WithdrawScreen = () => {
       <ScrollView
         contentContainerStyle={{paddingBottom: 20}}
         showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>회원탈퇴 안내</Text>
-        <Text style={styles.description}>
+        <CustomText style={styles.title}>회원탈퇴 안내</CustomText>
+        <CustomText style={styles.description}>
           • 회원탈퇴 시 작성한 게시물은 한잔할까 서비스에 귀속됩니다. {'\n\n'}•
           회원정보는 탈퇴 즉시 파기되며, 부정 이용 방지를 위해 회원 식별 정보는
           탈퇴 후 일정기간 보관됩니다. {'\n\n'}• 자세한 내용은 한잔할까
           이용약관과 개인정보 처리방침 약관을 확인해주세요.
-        </Text>
+        </CustomText>
 
         <View style={styles.line} />
         <TouchableOpacity
@@ -81,19 +82,19 @@ const WithdrawScreen = () => {
             color={isChecked ? '#3CBBFF' : '#888'}
           />
 
-          <Text style={styles.checkboxText}>
+          <CustomText style={styles.checkboxText}>
             회원탈퇴 안내를 모두 확인하였습니다.
-          </Text>
+          </CustomText>
         </TouchableOpacity>
         {/* 회원탈퇴 버튼 */}
         <TouchableOpacity
           style={[styles.withdrawButton, !isChecked && styles.disabledButton]}
           onPress={handleWithdraw}
           disabled={!isChecked}>
-          <Text
+          <CustomText
             style={[styles.withdrawText, !isChecked && styles.disabledText]}>
             회원탈퇴
-          </Text>
+          </CustomText>
         </TouchableOpacity>
       </ScrollView>
       <AlertComponent />

@@ -40,6 +40,7 @@ import {
   normalizeOperatingHoursMap,
   normalizeBreakingHoursMap,
 } from '../../utils/parseOperatingHours';
+import CustomText from '../../components/common/CustomText';
 
 const days = [
   {label: '월', value: 'MONDAY'},
@@ -73,8 +74,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     [operatingHours],
   );
   const normalizedBreakingHours = useMemo(
-    () =>
-      normalizeBreakingHoursMap(normalizedOperatingHours, breakingHours),
+    () => normalizeBreakingHoursMap(normalizedOperatingHours, breakingHours),
     [normalizedOperatingHours, breakingHours],
   );
 
@@ -100,12 +100,14 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     return baseMinutes;
   };
 
-
   const getDefaultTime = (time, defaultValue) => time ?? defaultValue;
 
   const [timeState, setTimeState] = useState({
     sameOpenTime: {
-      openHour: getDefaultTime(normalizedOperatingHours?.Monday?.openHour, '09'),
+      openHour: getDefaultTime(
+        normalizedOperatingHours?.Monday?.openHour,
+        '09',
+      ),
       openMinute: getDefaultTime(
         normalizedOperatingHours?.Monday?.openMinute,
         '00',
@@ -122,7 +124,10 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
       ),
     },
     sameStartTime: {
-      startHour: getDefaultTime(normalizedBreakingHours?.Monday?.startHour, '15'),
+      startHour: getDefaultTime(
+        normalizedBreakingHours?.Monday?.startHour,
+        '15',
+      ),
       startMinute: getDefaultTime(
         normalizedBreakingHours?.Monday?.startMinute,
         '00',
@@ -213,7 +218,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleComplete}>
-          <Text
+          <CustomText
             style={[
               styles.searchButton,
               (wrongBreak || isSameOperating) &&
@@ -225,7 +230,7 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
               !isSameEveryday && emptyTime && {color: '#999'}, // 🔥 운영시간이 없으면 버튼 비활성화
             ]}>
             완료
-          </Text>
+          </CustomText>
         </Pressable>
       ),
     });
@@ -301,9 +306,8 @@ const StoreAddTimeSetScreen = ({navigation, route}) => {
       if (breakError || operateError || emptyTime) {
         return;
       }
-      const normalizedOperating = normalizeOperatingHoursMap(
-        localOperatingHours,
-      );
+      const normalizedOperating =
+        normalizeOperatingHoursMap(localOperatingHours);
       const normalizedBreaking = normalizeBreakingHoursMap(
         normalizedOperating,
         localBreakingHours,

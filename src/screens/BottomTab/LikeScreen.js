@@ -18,6 +18,7 @@ import MyBanner from '../../components/Ads/MyBanner';
 import ScrollToTopButton from '../../components/common/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import CustomText from '../../components/common/CustomText';
 
 const LikeScreen = ({navigation}) => {
   const {token} = useAuth();
@@ -148,7 +149,9 @@ const LikeScreen = ({navigation}) => {
                 refreshing={refreshing}
                 ListEmptyComponent={
                   !loading && stores.length === 0 ? (
-                    <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
+                    <CustomText style={styles.emptyText}>
+                      찜한 술집이 없어요
+                    </CustomText>
                   ) : null
                 }
                 onScroll={handleScroll}
@@ -157,7 +160,11 @@ const LikeScreen = ({navigation}) => {
             )}
           </>
         )}
-        {!token && <Text style={styles.emptyText}>로그인 후 이용해주세요</Text>}
+        {!token && (
+          <CustomText style={styles.emptyText}>
+            로그인 후 이용해주세요
+          </CustomText>
+        )}
         <ScrollToTopButton
           visible={showScrollToTop}
           bottom={18}

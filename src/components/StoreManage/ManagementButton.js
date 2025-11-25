@@ -1,9 +1,10 @@
 import React from 'react';
 import {Pressable, StyleSheet, View, Text, Share} from 'react-native';
+import CustomText from '../common/CustomText';
 const ManagementButton = ({onPress = null, title = null}) => {
   return (
     <Pressable style={styles.managementContainer} onPress={onPress}>
-      <Text style={styles.managementText}>{title}</Text>
+      <CustomText style={styles.managementText}>{title}</CustomText>
     </Pressable>
   );
 };

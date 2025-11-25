@@ -5,6 +5,7 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import ColorUtil from '../../utils/ColorUtil';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../common/CustomText';
 
 const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
   const formatDate = dateString => {
@@ -41,11 +42,11 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
       <Pressable onPress={goDetail} style={styles.card}>
         {/* Meta Row */}
         <View style={styles.metaRow}>
-          <Text style={styles.category}>
+          <CustomText style={styles.category}>
             {review.categories?.length > 0
               ? review.categories.map(c => translateCategory(c)).join(' ')
               : '카테고리 없음'}
-          </Text>
+          </CustomText>
 
           <View style={styles.metaRight}>
             <FontAwesomeIcon
@@ -54,23 +55,23 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
               color={'#FFC107'}
               style={{marginRight: 3}}
             />
-            <Text style={styles.rate}>{review.rate}</Text>
+            <CustomText style={styles.rate}>{review.rate}</CustomText>
           </View>
         </View>
 
         {/* Store Name */}
 
-        <Text style={styles.storeName} numberOfLines={1}>
+        <CustomText style={styles.storeName} numberOfLines={1}>
           {review.storeName}
-        </Text>
+        </CustomText>
 
         {/* Divider */}
         <View style={styles.divider} />
 
         {/* Review Text */}
-        <Text style={styles.reviewText}>
+        <CustomText style={styles.reviewText}>
           {review.content || '리뷰 내용 없음'}
-        </Text>
+        </CustomText>
 
         {/* Images */}
         {review.imgUrlList.length > 0 && (
@@ -95,17 +96,17 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
             <Pressable
               style={styles.actionBtn}
               onPress={() => updateReview(review)}>
-              <Text style={styles.actionText}>수정</Text>
+              <CustomText style={styles.actionText}>수정</CustomText>
             </Pressable>
 
             <Pressable
               style={styles.actionBtn}
               onPress={() => deleteReview(review.id)}>
-              <Text style={styles.actionText}>삭제</Text>
+              <CustomText style={styles.actionText}>삭제</CustomText>
             </Pressable>
           </View>
 
-          <Text style={styles.bottomDate}>{date}</Text>
+          <CustomText style={styles.bottomDate}>{date}</CustomText>
         </View>
       </Pressable>
     </View>

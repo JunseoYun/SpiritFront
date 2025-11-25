@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../../../components/common/CustomText';
 
 const normalizeStatus = status => {
   if (!status) return 'unknown';
@@ -42,11 +43,11 @@ const Row = ({icon, label, value}) => (
           style={{marginRight: 8}}
         />
       )}
-      <Text style={styles.infoLabel}>{label}</Text>
+      <CustomText style={styles.infoLabel}>{label}</CustomText>
     </View>
-    <Text style={styles.infoValue} numberOfLines={2}>
+    <CustomText style={styles.infoValue} numberOfLines={2}>
       {value ?? '-'}
-    </Text>
+    </CustomText>
   </View>
 );
 
@@ -56,7 +57,7 @@ const Section = ({title, open, onToggle, children}) => (
       style={styles.sectionHeaderBtn}
       onPress={onToggle}
       hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
-      <Text style={styles.sectionHeader}>{title}</Text>
+      <CustomText style={styles.sectionHeader}>{title}</CustomText>
       <Ionicons
         name={open ? 'chevron-up' : 'chevron-down'}
         size={18}
@@ -73,7 +74,9 @@ const Step = ({active, done, label}) => {
   return (
     <View style={styles.stepItem}>
       <View style={[styles.stepDot, {backgroundColor: dotColor}]} />
-      <Text style={[styles.stepLabel, {color: textColor}]}>{label}</Text>
+      <CustomText style={[styles.stepLabel, {color: textColor}]}>
+        {label}
+      </CustomText>
     </View>
   );
 };
@@ -166,27 +169,28 @@ export default function OrderUserDetailScreen({route, navigation}) {
         showsVerticalScrollIndicator={false}>
         <View style={styles.headerWrap}>
           <View style={[styles.statusChip, {backgroundColor: statusStyle.bg}]}>
-            <Text style={[styles.statusChipText, {color: statusStyle.fg}]}>
+            <CustomText
+              style={[styles.statusChipText, {color: statusStyle.fg}]}>
               {statusLabelMap[status]}
-            </Text>
+            </CustomText>
           </View>
-          <Text style={styles.receivedText}>
+          <CustomText style={styles.receivedText}>
             접수 시간 {order.receivedAt || '-'}
-          </Text>
-          <Text style={styles.storeName}>{order.storeName}</Text>
+          </CustomText>
+          <CustomText style={styles.storeName}>{order.storeName}</CustomText>
         </View>
 
         <View style={styles.actionsRow}>
           <Pressable style={styles.pillBtn} onPress={handleCall} hitSlop={8}>
             <Ionicons name="call-outline" size={16} color="#111827" />
-            <Text style={styles.pillBtnText}>전화</Text>
+            <CustomText style={styles.pillBtnText}>전화</CustomText>
           </Pressable>
           <Pressable
             style={styles.pillBtn}
             onPress={handleLocation}
             hitSlop={8}>
             <Ionicons name="location-outline" size={16} color="#111827" />
-            <Text style={styles.pillBtnText}>위치</Text>
+            <CustomText style={styles.pillBtnText}>위치</CustomText>
           </Pressable>
         </View>
 
@@ -212,10 +216,10 @@ export default function OrderUserDetailScreen({route, navigation}) {
           ) : (
             <View style={[styles.centerBox, {paddingVertical: 6}]}>
               <Ionicons name="close-circle" size={18} color="#DC2626" />
-              <Text
+              <CustomText
                 style={[styles.centerText, {marginLeft: 6, color: '#DC2626'}]}>
                 취소/거절/환불
-              </Text>
+              </CustomText>
             </View>
           )}
         </View>
@@ -271,7 +275,9 @@ export default function OrderUserDetailScreen({route, navigation}) {
                   paddingVertical: 6,
                 }}>
                 <View style={styles.bullet} />
-                <Text style={styles.menuText}>{formatItemLine(it)}</Text>
+                <CustomText style={styles.menuText}>
+                  {formatItemLine(it)}
+                </CustomText>
               </View>
             ))}
           </Section>
@@ -282,11 +288,11 @@ export default function OrderUserDetailScreen({route, navigation}) {
           open={openMyRequest}
           onToggle={() => setOpenMyRequest(v => !v)}>
           <View style={styles.noteBox}>
-            <Text style={styles.noteText}>
+            <CustomText style={styles.noteText}>
               {order.userRequestNote ||
                 order.requestNote ||
                 '작성된 요청사항이 없습니다.'}
-            </Text>
+            </CustomText>
           </View>
         </Section>
 
@@ -296,18 +302,18 @@ export default function OrderUserDetailScreen({route, navigation}) {
             open={openStoreNotice}
             onToggle={() => setOpenStoreNotice(v => !v)}>
             <View style={styles.noteBox}>
-              <Text style={styles.noteText}>
+              <CustomText style={styles.noteText}>
                 {order.storeNotice || order.notice || order.storeNote}
-              </Text>
+              </CustomText>
             </View>
           </Section>
         )}
 
         {isCanceled && (
           <View style={[styles.centerBox, {marginTop: 8}]}>
-            <Text style={styles.centerText}>
+            <CustomText style={styles.centerText}>
               사유: {order.cancelReason || '-'}
-            </Text>
+            </CustomText>
           </View>
         )}
 
@@ -317,7 +323,9 @@ export default function OrderUserDetailScreen({route, navigation}) {
               style={[styles.primaryBtn]}
               onPress={handleDeleteHistory}
               hitSlop={8}>
-              <Text style={styles.primaryBtnText}>이용내역 삭제</Text>
+              <CustomText style={styles.primaryBtnText}>
+                이용내역 삭제
+              </CustomText>
             </Pressable>
           </View>
         )}
@@ -333,21 +341,21 @@ export default function OrderUserDetailScreen({route, navigation}) {
             <Pressable
               style={[styles.primaryBtn, {flex: 1}]}
               onPress={() => {}}>
-              <Text style={styles.primaryBtnText}>주문 취소</Text>
+              <CustomText style={styles.primaryBtnText}>주문 취소</CustomText>
             </Pressable>
           )}
           {isWaitingPay && (
             <Pressable
               style={[styles.secondaryBtn, {flex: 1}]}
               onPress={() => {}}>
-              <Text style={styles.secondaryBtnText}>결제하기</Text>
+              <CustomText style={styles.secondaryBtnText}>결제하기</CustomText>
             </Pressable>
           )}
           {isCompleted && (
             <Pressable
               style={[styles.secondaryBtn, {flex: 1}]}
               onPress={() => {}}>
-              <Text style={styles.secondaryBtnText}>리뷰 작성</Text>
+              <CustomText style={styles.secondaryBtnText}>리뷰 작성</CustomText>
             </Pressable>
           )}
         </View>

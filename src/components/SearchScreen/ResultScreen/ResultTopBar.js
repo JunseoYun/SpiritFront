@@ -11,6 +11,8 @@ import {
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {normalizeFont} from '../../../hooks/normalizeFont';
 import CancelText from '../../CancelText/CancelText';
+import CustomText from '../../common/CustomText';
+import CustomTextInput from '../../common/CustomTextInput';
 
 const ResultTopBar = ({searchWord, navigation, onSearch}) => {
   const [tempSearchWord, setTempSearchWord] = useState(searchWord); // 검색어 입력값 (즉시 반영 안됨)
@@ -35,7 +37,7 @@ const ResultTopBar = ({searchWord, navigation, onSearch}) => {
 
       {/* ✅ 검색창 */}
       <View style={styles.search}>
-        <TextInput
+        <CustomTextInput
           style={styles.searchTextInput}
           placeholder="술집이나 메뉴를 검색하세요"
           placeholderTextColor="#A9A9A9"
@@ -45,7 +47,6 @@ const ResultTopBar = ({searchWord, navigation, onSearch}) => {
           }}
           returnKeyType="search" // ✅ 키보드에 '검색' 버튼 표시 (iOS & Android)
           onSubmitEditing={onSearchPress}
-          allowFontScaling={false}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
   },
 
   searchTextInput: {
-    fontSize: normalizeFont(16, 1.3),
+    fontSize: 16,
     color: '#121212',
     flex: 1, // 입력 필드가 남은 공간을 차지하도록 설정
     paddingRight: 20,

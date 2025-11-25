@@ -5,6 +5,7 @@ import ColorUtil from '../../../utils/ColorUtil';
 import FastImage from 'react-native-fast-image';
 import {Store_getby_managed} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
+import CustomText from '../../common/CustomText';
 
 const MyManager = ({navigation}) => {
   const [page, setPage] = useState(0);
@@ -96,20 +97,20 @@ const MyManager = ({navigation}) => {
             style={styles.storeImage}
           />
           <View style={styles.textWrapper}>
-            <Text style={styles.storeName} numberOfLines={1}>
+            <CustomText style={styles.storeName} numberOfLines={1}>
               {item.storeName || '매장 이름 없음'}
-            </Text>
-            <Text style={styles.storeAddress} numberOfLines={1}>
+            </CustomText>
+            <CustomText style={styles.storeAddress} numberOfLines={1}>
               {address}
               {detail ? `,${detail}` : null}
-            </Text>
+            </CustomText>
           </View>
         </Pressable>
         <Pressable
           style={styles.manageButton}
           hitSlop={15}
           onPress={() => handleManageStore(item)}>
-          <Text style={styles.manageText}>매장 관리</Text>
+          <CustomText style={styles.manageText}>매장 관리</CustomText>
         </Pressable>
       </View>
     );
@@ -117,10 +118,10 @@ const MyManager = ({navigation}) => {
 
   const renderEmptyComponent = () => (
     <View style={styles.emptyState}>
-      <Text style={styles.emptyTitle}>등록된 매장이 없습니다.</Text>
-      <Text style={styles.emptySubtitle}>
+      <CustomText style={styles.emptyTitle}>등록된 매장이 없습니다.</CustomText>
+      <CustomText style={styles.emptySubtitle}>
         매장을 등록하면 이곳에서 빠르게 관리할 수 있어요.
-      </Text>
+      </CustomText>
     </View>
   );
 

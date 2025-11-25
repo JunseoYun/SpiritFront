@@ -1,27 +1,28 @@
 import React from 'react';
 import {StyleSheet, Text, View, Pressable} from 'react-native';
+import CustomText from '../../common/CustomText';
 
 const OwnerModeBtn = ({setManualMode, manualMode}) => (
   <View style={styles.modeRow}>
-    <Text style={styles.modeLabel}>확인 모드</Text>
+    <CustomText style={styles.modeLabel}>확인 모드</CustomText>
     <View style={styles.modeSegment}>
       <Pressable
         onPress={() => setManualMode(true)}
         style={[styles.modeBtn, manualMode && styles.modeBtnActive]}
         hitSlop={8}>
-        <Text
+        <CustomText
           style={[styles.modeBtnText, manualMode && styles.modeBtnTextActive]}>
           수동 확인
-        </Text>
+        </CustomText>
       </Pressable>
       <Pressable
         onPress={() => setManualMode(false)}
         style={[styles.modeBtn, !manualMode && styles.modeBtnActive]}
         hitSlop={8}>
-        <Text
+        <CustomText
           style={[styles.modeBtnText, !manualMode && styles.modeBtnTextActive]}>
           자동 확인
-        </Text>
+        </CustomText>
       </Pressable>
     </View>
   </View>

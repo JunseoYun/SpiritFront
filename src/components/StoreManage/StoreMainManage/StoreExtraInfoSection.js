@@ -1,17 +1,20 @@
 import React from 'react';
 import {StyleSheet, View, Text} from 'react-native';
+import CustomText from '../../common/CustomText';
 
 const StoreExtraInfoSection = ({title, items = []}) => {
   return (
     <>
       <View style={styles.divider} />
-      <Text style={styles.label}>{title}</Text>
+      <CustomText style={styles.label}>{title}</CustomText>
       <View style={styles.card}>
         {items.map((item, index) => (
           <View
             key={item.key}
             style={[styles.row, index !== 0 && styles.rowDivider]}>
-            <Text style={styles.rowLabel}>{item.label}</Text>
+            <CustomText maxScale={1.3} style={styles.rowLabel}>
+              {item.label}
+            </CustomText>
             <View style={styles.valueWrapper}>
               {item.values.length > 0 ? (
                 <View style={styles.pillContainer}>
@@ -19,14 +22,14 @@ const StoreExtraInfoSection = ({title, items = []}) => {
                     <View
                       key={`${item.key}-${value}-${valueIndex}`}
                       style={styles.pill}>
-                      <Text style={styles.pillText}>{value}</Text>
+                      <CustomText style={styles.pillText}>{value}</CustomText>
                     </View>
                   ))}
                 </View>
               ) : (
-                <Text style={[styles.valueText, styles.valueEmpty]}>
+                <CustomText style={[styles.valueText, styles.valueEmpty]}>
                   {item.placeholder}
-                </Text>
+                </CustomText>
               )}
             </View>
           </View>

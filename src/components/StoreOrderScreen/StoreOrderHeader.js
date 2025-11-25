@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../common/CustomText';
 
 const StoreOrderHeader = ({
   insets,
@@ -35,12 +36,14 @@ const StoreOrderHeader = ({
         ]}
         onPress={() => setActiveTab(key)}
         activeOpacity={0.9}>
-        <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
+        <CustomText
+          style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
           {label}
-        </Text>
-        <Text style={[styles.tabCount, isActive && styles.tabCountActive]}>
+        </CustomText>
+        <CustomText
+          style={[styles.tabCount, isActive && styles.tabCountActive]}>
           {displayCount}
-        </Text>
+        </CustomText>
       </TouchableOpacity>
     );
   };
@@ -61,9 +64,9 @@ const StoreOrderHeader = ({
         hitSlop={{top: 10, bottom: 10, left: 16, right: 16}}>
         <Ionicons name="arrow-back-outline" size={22} color="#1F2937" />
       </TouchableOpacity>
-      <Text style={styles.storeTitle} numberOfLines={1}>
+      <CustomText style={styles.storeTitle} numberOfLines={1}>
         {storeName || '한잔할까'}
-      </Text>
+      </CustomText>
       <View style={styles.headerTabsContainer}>
         {renderTabButton('menu', '메뉴', totalMenuCount)}
         {renderTabButton('alcohol', '주류', totalAlcoholCount)}

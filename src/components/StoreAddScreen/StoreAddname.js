@@ -2,6 +2,8 @@ import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const StoreAddname = ({storename, setStorename, error, type = 'default'}) => {
   const isRegistration = type === 'registration';
@@ -26,9 +28,11 @@ const StoreAddname = ({storename, setStorename, error, type = 'default'}) => {
           isRegistration && styles.registrationSpacing,
         ]}>
         <View style={styles.inputWrapper}>
-          {!isRegistration && <Text style={styles.label}>매장 이름</Text>}
+          {!isRegistration && (
+            <CustomText style={styles.label}>매장 이름</CustomText>
+          )}
           <View style={styles.inputContainer}>
-            <TextInput
+            <CustomTextInput
               ref={storeNameInputRef}
               style={[
                 styles.storeinput,
@@ -58,16 +62,18 @@ const StoreAddname = ({storename, setStorename, error, type = 'default'}) => {
         </View>
 
         {overText && (
-          <Text style={styles.errorText}>
+          <CustomText style={styles.errorText}>
             매장 이름은 최대 50자까지 입력 가능합니다.
-          </Text>
+          </CustomText>
         )}
         {errors.storename && (
-          <Text style={styles.errorText}>{errors.storename}</Text>
+          <CustomText style={styles.errorText}>{errors.storename}</CustomText>
         )}
       </View>
       {error === 'storename' && storename === '' && (
-        <Text style={styles.errorMessage}>매장이름을 입력해주세요.</Text>
+        <CustomText style={styles.errorMessage}>
+          매장이름을 입력해주세요.
+        </CustomText>
       )}
     </View>
   );

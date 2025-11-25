@@ -10,6 +10,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
 import ImageActionModal from './ImageActionModal';
+import CustomText from '../../common/CustomText';
 
 const {width} = Dimensions.get('window');
 
@@ -171,9 +172,10 @@ const ImageSlider = ({
                 color={isLiked ? '#FF5E5E' : '#4F5663'}
                 style={{marginRight: 6}}
               />
-              <Text style={[styles.likeText, isLiked && styles.likeTextActive]}>
+              <CustomText
+                style={[styles.likeText, isLiked && styles.likeTextActive]}>
                 {likeCount ?? 0}
-              </Text>
+              </CustomText>
             </Pressable>
           )}
         </View>

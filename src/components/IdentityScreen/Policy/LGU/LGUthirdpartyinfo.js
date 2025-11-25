@@ -1,10 +1,11 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import CustomText from '../../../common/CustomText';
 
 const LGUthirdpartyinfo = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.text}>
+      <CustomText style={styles.text}>
         본인확인서비스 제3자 정보제공 동의{'\n'}
         "알뜰폰(MVNO)"사업자는 다음과 같이 개인정보를 제3자에게 제공하고
         있습니다.{'\n'}
@@ -32,7 +33,7 @@ const LGUthirdpartyinfo = () => {
         이동통신사에서 보유중인 정보로서 별도 이용기간은 없습니다.{'\n'}
         {'\n'}위 개인정보 수집,이용 및 취급위탁에 동의하지 않을 권리가 있으며,
         동의하지 않으실 경우 서비스를 이용할 수 없습니다.
-      </Text>
+      </CustomText>
     </ScrollView>
   );
 };

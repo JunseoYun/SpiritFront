@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
 import {TextInput, Text, View, StyleSheet} from 'react-native';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const AlcoholInput = ({
   label,
@@ -12,8 +14,8 @@ const AlcoholInput = ({
 
   return (
     <View>
-      {value && <Text style={styles.inputText}>{label}</Text>}
-      <TextInput
+      {value && <CustomText style={styles.inputText}>{label}</CustomText>}
+      <CustomTextInput
         style={[
           isMultiline ? styles.inputMultiline : styles.input,
           {borderBottomColor: isFocused ? '#3CBBFF' : '#F2F2F2'},

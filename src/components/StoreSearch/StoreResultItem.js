@@ -5,6 +5,7 @@ import useStoreStatus from '../../hooks/useStoreStatus';
 import Feather from 'react-native-vector-icons/Feather';
 import FastImage from 'react-native-fast-image';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CustomText from '../common/CustomText';
 
 const StoreResultItem = ({store, navigation, index}) => {
   const {translateCategory} = useCategoryTranslation();
@@ -45,38 +46,38 @@ const StoreResultItem = ({store, navigation, index}) => {
           {/* ✅ 영업 종료 표시 */}
           {!isOpen && !nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText} allowFontScaling={false}>
+              <CustomText maxScale={1.3} style={styles.overlayText}>
                 영업 종료 {starttime ? `\n${starttime} 오픈` : ''}
-              </Text>
+              </CustomText>
             </View>
           )}
           {!isOpen && nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText} allowFontScaling={false}>
+              <CustomText maxScale={1.3} style={styles.overlayText}>
                 영업 종료 익일 휴무
-              </Text>
+              </CustomText>
             </View>
           )}
           {!isOpen && !nextclosed && closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText} allowFontScaling={false}>
+              <CustomText maxScale={1.3} style={styles.overlayText}>
                 금일 휴무
-              </Text>
+              </CustomText>
             </View>
           )}
           {/* ✅ 브레이크 타임 표시 */}
           {isOpen && isBreak && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText} allowFontScaling={false}>
+              <CustomText maxScale={1.3} style={styles.overlayText}>
                 브레이크 타임 {breakend ? `\n${breakend} 종료` : ''}
-              </Text>
+              </CustomText>
             </View>
           )}
           {/* ✅ 브레이크 타임 표시 */}
         </ImageBackground>
         <View style={styles.StoreTextView}>
           <View>
-            <Text
+            <CustomText
               style={styles.StoreCategory}
               numberOfLines={1}
               ellipsizeMode="tail">
@@ -84,17 +85,17 @@ const StoreResultItem = ({store, navigation, index}) => {
                 .slice(0, 3)
                 .map(category => translateCategory(category))
                 .join(' ')}
-            </Text>
+            </CustomText>
 
-            <Text
+            <CustomText
               style={styles.StoreTitle}
               numberOfLines={1}
               ellipsizeMode="tail">
               {store.name}
-            </Text>
+            </CustomText>
           </View>
 
-          <Text
+          <CustomText
             style={styles.StoreAddressText}
             numberOfLines={1}
             ellipsizeMode="tail">
@@ -102,17 +103,17 @@ const StoreResultItem = ({store, navigation, index}) => {
             {store.locationDto.addressDetail
               ? `, ${store.locationDto.addressDetail}`
               : ''}
-          </Text>
+          </CustomText>
 
           <View style={styles.subView}>
             {store?.isAlwaysOpen == true ? (
-              <Text style={styles.StoreClose}>24시간 영업</Text>
+              <CustomText style={styles.StoreClose}>24시간 영업</CustomText>
             ) : store?.isAlwaysOpen == false && closed ? (
-              <Text style={styles.StoreClose}>금일 휴무</Text>
+              <CustomText style={styles.StoreClose}>금일 휴무</CustomText>
             ) : (
-              <Text style={styles.StoreClose}>
+              <CustomText style={styles.StoreClose}>
                 영업 종료 {endtime || '정보 없음'}
-              </Text>
+              </CustomText>
             )}
           </View>
         </View>
@@ -125,9 +126,9 @@ const StoreResultItem = ({store, navigation, index}) => {
               source={require('../../assets/verifyMaker.png')}
               style={styles.imageStyle}
             />
-            <Text style={styles.completeText}>
+            <CustomText style={styles.completeText}>
               사장님 인증 완료된 매장이에요
-            </Text>
+            </CustomText>
           </View>
         ) : (
           // 버튼으로 사장님 인증하기
@@ -141,7 +142,9 @@ const StoreResultItem = ({store, navigation, index}) => {
               });
             }}
             style={styles.applyButton}>
-            <Text style={styles.applyButtonText}>사장님 인증하기</Text>
+            <CustomText style={styles.applyButtonText}>
+              사장님 인증하기
+            </CustomText>
             {/* <View style={{marginRight: 18}}>
               <Feather name="chevron-right" size={23} color="#3CBBFF" />
             </View> */}
@@ -181,7 +184,7 @@ const styles = StyleSheet.create({
   },
   overlayText: {
     color: 'white',
-    fontSize: normalizeFont(14, 1.3),
+    fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
     textAlign: 'center',
     lineHeight: 22,

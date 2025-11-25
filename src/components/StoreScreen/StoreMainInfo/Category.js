@@ -3,6 +3,7 @@ import {View, Text, StyleSheet} from 'react-native';
 
 import FastImage from 'react-native-fast-image';
 import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../common/CustomText';
 
 const Category = ({categories, translateCategory, isOwner, isMoods}) => {
   if (categories === null) {
@@ -19,9 +20,9 @@ const Category = ({categories, translateCategory, isOwner, isMoods}) => {
       )}
       {Array.isArray(categories) &&
         categories?.map((category, index) => (
-          <Text key={index} style={styles.Storesubtitle}>
+          <CustomText key={index} style={styles.Storesubtitle}>
             {translateCategory(category)}
-          </Text>
+          </CustomText>
         ))}
     </View>
   );

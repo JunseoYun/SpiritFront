@@ -28,6 +28,7 @@ import StoreManageScreen from '../screens/StoreInfo/StoreManage/StoreManageScree
 import StoreEventEditScreen from '../screens/StoreInfo/StoreManage/StoreEventEditScreen';
 import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
 import StoreEventsScreen from '../screens/StoreInfo/StoreEventsScreen';
+import CustomText from '../components/common/CustomText';
 const Stack = createStackNavigator();
 
 export default function StoreStack() {
@@ -373,7 +374,7 @@ export default function StoreStack() {
               </Pressable>
             ),
             headerTitle: () => (
-              <Text
+              <CustomText
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
@@ -383,7 +384,7 @@ export default function StoreStack() {
                   textAlign: 'center',
                 }}>
                 {displayTitle}
-              </Text>
+              </CustomText>
             ),
             headerTitleAlign: 'center',
             animation: 'slide_from_right',
@@ -412,7 +413,7 @@ export default function StoreStack() {
               </Pressable>
             ),
             headerTitle: () => (
-              <Text
+              <CustomText
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
@@ -422,7 +423,7 @@ export default function StoreStack() {
                   textAlign: 'center',
                 }}>
                 {displayTitle}
-              </Text>
+              </CustomText>
             ),
             headerTitleAlign: 'center',
             animation: 'slide_from_right',
@@ -441,7 +442,7 @@ export default function StoreStack() {
 
           return {
             headerTitle: () => (
-              <Text
+              <CustomText
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
@@ -451,7 +452,7 @@ export default function StoreStack() {
                   textAlign: 'center',
                 }}>
                 {displayTitle}
-              </Text>
+              </CustomText>
             ),
             headerTitleAlign: 'center',
             headerStyle: {
@@ -495,7 +496,7 @@ export default function StoreStack() {
               </Pressable>
             ),
             headerTitle: () => (
-              <Text
+              <CustomText
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
@@ -505,7 +506,7 @@ export default function StoreStack() {
                   textAlign: 'center',
                 }}>
                 {displayTitle}
-              </Text>
+              </CustomText>
             ),
             headerTitleAlign: 'center',
             animation: 'slide_from_right',
@@ -626,7 +627,7 @@ export default function StoreStack() {
               </Pressable>
             ),
             headerTitle: () => (
-              <Text
+              <CustomText
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
@@ -636,7 +637,7 @@ export default function StoreStack() {
                   textAlign: 'center',
                 }}>
                 {displayTitle}
-              </Text>
+              </CustomText>
             ),
             headerTitleAlign: 'center',
             animation: 'slide_from_right',
@@ -665,7 +666,7 @@ export default function StoreStack() {
               </Pressable>
             ),
             headerTitle: () => (
-              <Text
+              <CustomText
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
@@ -675,7 +676,7 @@ export default function StoreStack() {
                   textAlign: 'center',
                 }}>
                 {displayTitle}
-              </Text>
+              </CustomText>
             ),
             headerTitleAlign: 'center',
             animation: 'slide_from_right',

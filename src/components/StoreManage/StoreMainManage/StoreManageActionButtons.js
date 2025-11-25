@@ -2,6 +2,7 @@ import React from 'react';
 import {StyleSheet, View, Pressable, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import CustomText from '../../common/CustomText';
 
 const StoreManageActionButtons = ({actions = []}) => {
   if (!actions.length) {
@@ -19,7 +20,7 @@ const StoreManageActionButtons = ({actions = []}) => {
               color={action.icon?.color ?? '#525D6F'}
             />
           </Pressable>
-          <Text style={styles.buttonLabel}>{action.label}</Text>
+          <CustomText style={styles.buttonLabel}>{action.label}</CustomText>
         </View>
       ))}
     </View>
@@ -47,7 +48,7 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     color: '#333',
-    fontSize: normalizeFont(13, 1.5),
+    fontSize: 13,
     fontFamily: 'Pretendard-Regular',
   },
 });

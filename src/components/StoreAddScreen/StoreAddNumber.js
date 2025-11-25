@@ -6,6 +6,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const StorAddeNumber = ({
   storeNumber,
@@ -43,9 +45,11 @@ const StorAddeNumber = ({
           isRegistration && styles.registrationSpacing,
         ]}>
         <View style={styles.inputWrapper}>
-          {!isRegistration && <Text style={styles.label}>매장 연락처</Text>}
+          {!isRegistration && (
+            <CustomText style={styles.label}>매장 연락처</CustomText>
+          )}
           <View style={styles.inputContainer}>
-            <TextInput
+            <CustomTextInput
               ref={storeNumberInputRef}
               style={[
                 styles.storeinput,
@@ -79,16 +83,18 @@ const StorAddeNumber = ({
         </View>
 
         {overText && (
-          <Text style={styles.errorText}>
+          <CustomText style={styles.errorText}>
             매장 번호는 최대 50자까지 입력 가능합니다.
-          </Text>
+          </CustomText>
         )}
         {errors.storeNumber && (
-          <Text style={styles.errorText}>{errors.storeNumber}</Text>
+          <CustomText style={styles.errorText}>{errors.storeNumber}</CustomText>
         )}
       </View>
       {error === 'storeNumber' && storeNumber === '' && (
-        <Text style={styles.errorMessage}>매장 번호를 입력해주세요.</Text>
+        <CustomText style={styles.errorMessage}>
+          매장 번호를 입력해주세요.
+        </CustomText>
       )}
     </View>
   );

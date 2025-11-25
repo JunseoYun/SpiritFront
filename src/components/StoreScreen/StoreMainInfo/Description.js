@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../common/CustomText';
 
 const Description = ({description, descripexpanded, toggleDescription}) => {
   const [lineCount, setLineCount] = useState(0);
@@ -17,16 +18,16 @@ const Description = ({description, descripexpanded, toggleDescription}) => {
   return (
     <Pressable onPress={toggleDescription} style={styles.container}>
       <View>
-        <Text
+        <CustomText
           style={[styles.text, styles.measure]}
           onTextLayout={handleTextLayout}>
           {description}
-        </Text>
-        <Text
+        </CustomText>
+        <CustomText
           style={styles.text}
           numberOfLines={descripexpanded ? undefined : 2}>
           {description}
-        </Text>
+        </CustomText>
       </View>
       {lineCount > 2 && (
         <View style={styles.toggleIcon}>

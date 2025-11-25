@@ -31,6 +31,7 @@ import ColorUtil from '../../../utils/ColorUtil';
 import {StoreSuggestion} from '../../../api/storeApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import useDoubleBackExit from '../../../hooks/useDoubleBackExit';
+import CustomText from '../../../components/common/CustomText';
 const StoreSuggestionScreen = ({navigation}) => {
   useDoubleBackExit(navigation);
 
@@ -175,7 +176,7 @@ const StoreSuggestionScreen = ({navigation}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable disabled={isDisabled || loading} onPress={handleSubmit}>
-          <Text
+          <CustomText
             style={[
               styles.nextButton,
               (isDisabled || loading) && {
@@ -183,7 +184,7 @@ const StoreSuggestionScreen = ({navigation}) => {
               },
             ]}>
             제보
-          </Text>
+          </CustomText>
         </Pressable>
       ),
     });
@@ -199,7 +200,7 @@ const StoreSuggestionScreen = ({navigation}) => {
           contentContainerStyle={styles.scrollContent}
           ref={scrollViewRef}>
           {/* <Pressable onPress={handleModalConfirm}>
-            <Text>ㅇㅇㅇ</Text>
+            <CustomText >ㅇㅇㅇ</CustomText>
           </Pressable> */}
 
           <View ref={storeImageRef}>
@@ -249,21 +250,27 @@ const StoreSuggestionScreen = ({navigation}) => {
             <View style={styles.modalIconWrapper}>
               <Ionicons name="checkmark" size={26} color="#fff" />
             </View>
-            <Text style={styles.modalTitle}>매장 제보가 완료되었어요 🎉</Text>
-            <Text style={styles.modalDescription}>
+            <CustomText style={styles.modalTitle}>
+              매장 제보가 완료되었어요 🎉
+            </CustomText>
+            <CustomText style={styles.modalDescription}>
               제보해주셔서 감사합니다!{'\n'}
               조금만 더 알려주시면 검토가 더 빨라져요.
-            </Text>
+            </CustomText>
             <View style={styles.modalButtonGroup}>
               <Pressable
                 style={styles.modalPrimaryButton}
                 onPress={handleModalConfirm}>
-                <Text style={styles.modalPrimaryLabel}>추가 입력하기</Text>
+                <CustomText style={styles.modalPrimaryLabel}>
+                  추가 입력하기
+                </CustomText>
               </Pressable>
               <Pressable
                 style={styles.modalSecondaryButton}
                 onPress={handleModalCancel}>
-                <Text style={styles.modalSecondaryLabel}>나중에</Text>
+                <CustomText style={styles.modalSecondaryLabel}>
+                  나중에
+                </CustomText>
               </Pressable>
             </View>
           </View>
@@ -350,7 +357,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modalDescription: {
-    marginTop: 12,
+    paddingTop: 12,
     fontSize: 15,
     fontFamily: 'Pretendard-Regular',
     color: '#555',

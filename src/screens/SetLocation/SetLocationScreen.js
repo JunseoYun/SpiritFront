@@ -19,6 +19,7 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
 import {log_access_create} from '../../api/userApi';
+import CustomText from '../../components/common/CustomText';
 
 const SetLocationScreen = ({navigation}) => {
   const [currentAddress, setCurrentAddress] = useState('');
@@ -110,10 +111,10 @@ const SetLocationScreen = ({navigation}) => {
       <View style={styles.card}>
         <Ionicons name="location-outline" size={24} color="#3CBBFF" />
         <View style={{marginLeft: 12}}>
-          <Text style={styles.cardLabel}>현재 설정된 위치</Text>
-          <Text style={styles.cardText}>
+          <CustomText style={styles.cardLabel}>현재 설정된 위치</CustomText>
+          <CustomText style={styles.cardText}>
             {currentAddress || '저장된 주소가 없습니다.'}
-          </Text>
+          </CustomText>
         </View>
       </View>
       <View style={styles.noticeView}>
@@ -123,9 +124,9 @@ const SetLocationScreen = ({navigation}) => {
           color="#6B7280"
           style={{marginRight: 3}}
         />
-        <Text style={styles.noticeText}>
+        <CustomText style={styles.noticeText}>
           현재 한잔할까는 용인시를 중심으로 운영 중입니다.
-        </Text>
+        </CustomText>
       </View>
 
       <TouchableOpacity
@@ -137,7 +138,7 @@ const SetLocationScreen = ({navigation}) => {
           color="#1a1a1a"
           style={{marginRight: 6}}
         />
-        <Text style={styles.buttonTextWhite}>현재 위치로 설정</Text>
+        <CustomText style={styles.buttonTextWhite}>현재 위치로 설정</CustomText>
       </TouchableOpacity>
       <TouchableOpacity style={styles.grayButton} onPress={handleSearch}>
         <Ionicons
@@ -146,11 +147,11 @@ const SetLocationScreen = ({navigation}) => {
           color="#333"
           style={{marginRight: 6}}
         />
-        <Text style={styles.buttonText}>주소 검색하기</Text>
+        <CustomText style={styles.buttonText}>주소 검색하기</CustomText>
       </TouchableOpacity>
       {/* 주소 삭제 */}
       <Pressable onPress={handleClearLocation} style={styles.deleteButton}>
-        <Text style={styles.deleteButtonText}>현재 위치 삭제</Text>
+        <CustomText style={styles.deleteButtonText}>현재 위치 삭제</CustomText>
       </Pressable>
 
       <AlertComponent />

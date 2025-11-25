@@ -8,6 +8,7 @@ import {
   FlatList,
   Modal,
 } from 'react-native';
+import CustomText from '../common/CustomText';
 
 const CarrierModal = ({
   isCarrierModalVisible,
@@ -25,14 +26,14 @@ const CarrierModal = ({
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text
+              <CustomText
                 style={{
                   fontSize: 16,
                   fontWeight: 'bold',
                   marginBottom: 10,
                 }}>
                 통신사를 선택해주세요
-              </Text>
+              </CustomText>
               <FlatList
                 data={CARRIER_OPTIONS}
                 keyExtractor={item => item}
@@ -43,7 +44,7 @@ const CarrierModal = ({
                       setSelectedCarrier(item);
                       setIsCarrierModalVisible(false);
                     }}>
-                    <Text style={{fontSize: 17}}>{item}</Text>
+                    <CustomText style={{fontSize: 17}}>{item}</CustomText>
                   </TouchableOpacity>
                 )}
               />

@@ -52,6 +52,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import ColorUtil from '../../../utils/ColorUtil';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import CustomText from '../../../components/common/CustomText';
+import CustomTextInput from '../../../components/common/CustomTextInput';
 
 const MenuEditScreen = ({route, navigation}) => {
   const {
@@ -330,13 +332,13 @@ const MenuEditScreen = ({route, navigation}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={isButtonEnabled ? MenuAdd : null}>
-          <Text
+          <CustomText
             style={[
               styles.headerButton,
               {color: isButtonEnabled ? '#3CBBFF' : '#A5AAB3'},
             ]}>
             완료
-          </Text>
+          </CustomText>
         </Pressable>
       ),
       headerLeft: () => (
@@ -418,7 +420,7 @@ const MenuEditScreen = ({route, navigation}) => {
           <View style={styles.imageBoxWrapper}>
             <Pressable style={styles.emptyBox} onPress={selectImage}>
               <MaterialIcons name="photo-camera" size={32} color="#7B8089" />
-              <Text style={styles.countText}>{imageCount}/1</Text>
+              <CustomText style={styles.countText}>{imageCount}/1</CustomText>
             </Pressable>
 
             {image && (
@@ -454,13 +456,13 @@ const MenuEditScreen = ({route, navigation}) => {
                       {selected && <View style={styles.radioInnerDot} />}
                     </View>
 
-                    <Text
+                    <CustomText
                       style={[
                         styles.radioLabel,
                         selected && styles.radioLabelSelected,
                       ]}>
                       {item.label}
-                    </Text>
+                    </CustomText>
                   </Pressable>
                 );
               })}
@@ -474,17 +476,17 @@ const MenuEditScreen = ({route, navigation}) => {
                   color="#A5AAB3"
                   style={{marginRight: 4}}
                 />
-                <Text style={styles.typeInfoText}>
+                <CustomText style={styles.typeInfoText}>
                   대표 메뉴는 사진이 없으면 카테고리 탭에 표시되지 않아요.
-                </Text>
+                </CustomText>
               </View>
             )}
           </View>
 
           {/* 메뉴 이름 */}
           <View style={styles.sectionBlock}>
-            <Text style={styles.sectionTitle}>메뉴 이름</Text>
-            <TextInput
+            <CustomText style={styles.sectionTitle}>메뉴 이름</CustomText>
+            <CustomTextInput
               style={[
                 styles.input,
                 (nameHasForbidden || nameerror) && styles.fobiddenerror,
@@ -502,26 +504,28 @@ const MenuEditScreen = ({route, navigation}) => {
               onBlur={() => setIsNameFocused(false)}
             />
             {nameHasForbidden && (
-              <Text style={styles.forbiddenText}>
+              <CustomText style={styles.forbiddenText}>
                 비속어 및 이용 약관에 위배되는 내용이 포함되어 있습니다.
-              </Text>
+              </CustomText>
             )}
             {nameerror && (
-              <Text style={styles.forbiddenText}>
+              <CustomText style={styles.forbiddenText}>
                 메뉴 이름을 입력해주세요.
-              </Text>
+              </CustomText>
             )}
             <View style={styles.textCountRow}>
-              <Text style={styles.countText}>{nameValue.length}/50</Text>
+              <CustomText style={styles.countText}>
+                {nameValue.length}/50
+              </CustomText>
             </View>
           </View>
 
           {/* 가격 */}
           <View style={styles.sectionBlock}>
             <View style={styles.priceHeaderRow}>
-              <Text style={[styles.sectionTitle, styles.priceTitle]}>
+              <CustomText style={[styles.sectionTitle, styles.priceTitle]}>
                 메뉴 가격
-              </Text>
+              </CustomText>
 
               <Pressable
                 style={styles.radioItem}
@@ -534,13 +538,13 @@ const MenuEditScreen = ({route, navigation}) => {
                   {isVariablePrice && <View style={styles.radioInnerDot} />}
                 </View>
 
-                <Text
+                <CustomText
                   style={[
                     styles.radioLabel,
                     isVariablePrice && styles.radioLabelSelected,
                   ]}>
                   변동
-                </Text>
+                </CustomText>
               </Pressable>
             </View>
 
@@ -552,7 +556,7 @@ const MenuEditScreen = ({route, navigation}) => {
                     isPriceFocused && !priceerror && styles.isFocused,
                     priceerror && styles.fobiddenerror,
                   ]}>
-                  <TextInput
+                  <CustomTextInput
                     style={styles.priceInput}
                     placeholder="메뉴 가격을 입력하세요."
                     placeholderTextColor={ColorUtil.placeholderText}
@@ -562,10 +566,12 @@ const MenuEditScreen = ({route, navigation}) => {
                     onFocus={() => setIsPirceFocused(true)}
                     onBlur={() => setIsPirceFocused(false)}
                   />
-                  <Text style={styles.won}>원</Text>
+                  <CustomText style={styles.won}>원</CustomText>
                 </View>
                 {priceerror && (
-                  <Text style={styles.forbiddenText}>가격을 입력해주세요.</Text>
+                  <CustomText style={styles.forbiddenText}>
+                    가격을 입력해주세요.
+                  </CustomText>
                 )}
               </>
             )}
@@ -573,8 +579,10 @@ const MenuEditScreen = ({route, navigation}) => {
 
           {/* 설명 */}
           <View style={styles.sectionBlock}>
-            <Text style={styles.sectionTitle}>메뉴 소개 (선택)</Text>
-            <TextInput
+            <CustomText style={styles.sectionTitle}>
+              메뉴 소개 (선택)
+            </CustomText>
+            <CustomTextInput
               style={[
                 styles.input,
                 styles.textarea,
@@ -591,12 +599,14 @@ const MenuEditScreen = ({route, navigation}) => {
               onBlur={() => setIsDesFocused(false)}
             />
             {descHasForbidden && (
-              <Text style={styles.forbiddenText}>
+              <CustomText style={styles.forbiddenText}>
                 비속어 및 이용 약관에 위배되는 내용이 포함되어 있습니다.
-              </Text>
+              </CustomText>
             )}
             <View style={styles.textCountRow}>
-              <Text style={styles.countText}>{descValue.length}/100</Text>
+              <CustomText style={styles.countText}>
+                {descValue.length}/100
+              </CustomText>
             </View>
           </View>
           {/* 삭제 버튼 */}
@@ -621,7 +631,7 @@ const MenuEditScreen = ({route, navigation}) => {
                     },
                   })
                 }>
-                <Text style={styles.deleteMenuText}>삭제하기</Text>
+                <CustomText style={styles.deleteMenuText}>삭제하기</CustomText>
               </Pressable>
             </View>
           )}

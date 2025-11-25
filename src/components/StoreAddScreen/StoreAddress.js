@@ -16,6 +16,8 @@ import Animated, {
 import {useToast} from '../../context/ToastContext';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 const StoreAddress = ({
   address,
   detailedAddress,
@@ -89,16 +91,16 @@ const StoreAddress = ({
         {!isRegistration &&
           (index === 1 ? (
             <View style={styles.labelView}>
-              <Text style={styles.label}>사업장 소재지</Text>
-              <Text style={styles.subLabel}>(매장 주소)</Text>
+              <CustomText style={styles.label}>사업장 소재지</CustomText>
+              <CustomText style={styles.subLabel}>(매장 주소)</CustomText>
             </View>
           ) : (
             <View style={styles.labelView}>
-              <Text style={styles.label}>매장 주소</Text>
+              <CustomText style={styles.label}>매장 주소</CustomText>
               {screen === 'StoreSuggestionScreen' && (
-                <Text style={styles.subLabel}>
+                <CustomText style={styles.subLabel}>
                   · 대략적인 위치만 알려주셔도 괜찮아요
-                </Text>
+                </CustomText>
               )}
             </View>
           ))}
@@ -118,13 +120,13 @@ const StoreAddress = ({
               })
             }>
             {address ? (
-              <Text style={styles.inputText}>{address}</Text>
+              <CustomText style={styles.inputText}>{address}</CustomText>
             ) : (
-              <Text style={styles.placeholderText}>
+              <CustomText style={styles.placeholderText}>
                 {index === 1
                   ? '사업장 소재지를 입력해주세요'
                   : '매장 주소를 입력해주세요'}
-              </Text>
+              </CustomText>
             )}
           </TouchableOpacity>
 
@@ -143,14 +145,16 @@ const StoreAddress = ({
       </View>
 
       {error === 'StoreAddress' && address === '' && (
-        <Text style={styles.errorMessage}>매장 주소를 입력해주세요.</Text>
+        <CustomText style={styles.errorMessage}>
+          매장 주소를 입력해주세요.
+        </CustomText>
       )}
 
       {/* ✅ 상세 주소 (매장 주소 구조 동일) */}
       {screen !== 'StoreSuggestionScreen' && (
         <View style={[styles.detailedAddressView]}>
           <View style={styles.inputContainer}>
-            <TextInput
+            <CustomTextInput
               style={[styles.inputField, {paddingRight: 40}]}
               value={localDetailedAddress}
               placeholder="상세 주소, 건물 층수, 호수 등"
@@ -167,11 +171,11 @@ const StoreAddress = ({
           </View>
 
           {overText && (
-            <Text style={styles.errorText}>
+            <CustomText style={styles.errorText}>
               상세 주소는 최대 100자까지 입력 가능합니다.
-            </Text>
+            </CustomText>
           )}
-          {errors && <Text style={styles.errorText}>{errors}</Text>}
+          {errors && <CustomText style={styles.errorText}>{errors}</CustomText>}
         </View>
       )}
     </View>
@@ -222,7 +226,7 @@ const styles = StyleSheet.create({
     borderColor: ColorUtil.placeholderBorder,
     borderWidth: 1,
     borderRadius: 9,
-    height: 52,
+    minHeight: 52,
     paddingHorizontal: 14,
   },
   inputTouchable: {

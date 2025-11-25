@@ -6,6 +6,7 @@ import {ReviewRecentGet, ReviewDelete} from '../../api/reviewApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
+import CustomText from '../common/CustomText';
 
 const MyReview = ({navigation}) => {
   const [myReview, setMyReview] = useState([]); // 검색된 가게 목록
@@ -119,7 +120,9 @@ const MyReview = ({navigation}) => {
         ListEmptyComponent={
           !loading && myReview.length === 0 ? (
             <View style={styles.footer}>
-              <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
+              <CustomText style={styles.emptyText}>
+                등록된 리뷰가 없어요
+              </CustomText>
             </View>
           ) : null
         }

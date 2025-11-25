@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../common/CustomText';
 
 const alcohols = [
   {label: '소주', value: 'SOJU'},
@@ -49,8 +50,10 @@ const StoreAlcohol = ({
       style={[styles.container, isRegistration && styles.registrationSpacing]}>
       {!isRegistration && (
         <View style={styles.labelView}>
-          <Text style={styles.label}>대표 주종</Text>
-          <Text style={styles.countLabel}>({selectedAlcohols.length}/3)</Text>
+          <CustomText style={styles.label}>대표 주종</CustomText>
+          <CustomText style={styles.countLabel}>
+            ({selectedAlcohols.length}/3)
+          </CustomText>
         </View>
       )}
       <View style={styles.categoryGrid}>
@@ -68,22 +71,22 @@ const StoreAlcohol = ({
               ]}
               onPress={() => toggleAlcohol(value)}
               disabled={isDisabled}>
-              <Text
+              <CustomText
                 style={[
                   styles.alcoholText,
                   isSelected && styles.alcoholTextSelected,
                   isDisabled && styles.alcoholTextDisabled,
                 ]}>
                 {label}
-              </Text>
+              </CustomText>
             </Pressable>
           );
         })}
       </View>
       {error === 'StoreDrink' && selectedAlcohols.length === 0 && (
-        <Text style={styles.errorMessage}>
+        <CustomText style={styles.errorMessage}>
           대표 주종을 하나 이상 선택해 주세요.
-        </Text>
+        </CustomText>
       )}
     </View>
   );

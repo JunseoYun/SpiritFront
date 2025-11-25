@@ -10,6 +10,7 @@ import {
 
 const {width} = Dimensions.get('window');
 import useSafeAndroidInsets from './useSafeAndroidInsets';
+import CustomText from '../components/common/CustomText';
 const Toastmessage = ({
   message,
   isShowToast,
@@ -58,7 +59,7 @@ const Toastmessage = ({
     <Animated.View
       style={[styles.container, positionStyle, {opacity: fadeAnim}]}>
       <Pressable onPress={onDismiss}>
-        <Text style={styles.toastText}>{message}</Text>
+        <CustomText style={styles.toastText}>{message}</CustomText>
       </Pressable>
     </Animated.View>
   );

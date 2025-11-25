@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const MenuInput = ({
   label, // 입력 필드의 라벨
@@ -22,8 +24,8 @@ const MenuInput = ({
 
   return (
     <View style={styles.container}>
-      {value && <Text style={styles.label}>{label}</Text>}
-      <TextInput
+      {value && <CustomText style={styles.label}>{label}</CustomText>}
+      <CustomTextInput
         style={[
           multiline ? styles.inputMultiline : styles.input,
           {borderBottomColor: isFocused ? '#3CBBFF' : '#F2F2F2'},

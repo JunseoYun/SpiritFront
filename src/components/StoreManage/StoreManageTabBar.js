@@ -11,6 +11,7 @@ import {BlurView} from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import CustomText from '../common/CustomText';
 
 const StoreManageTabBar = ({activeTab, onTabPress}) => {
   const insets = useSafeAreaInsets();
@@ -99,10 +100,10 @@ const StoreManageTabBar = ({activeTab, onTabPress}) => {
                   size={22}
                   color={focused ? '#000' : '#999'}
                 />
-                <Text
+                <CustomText
                   style={[styles.label, {color: focused ? '#000' : '#999'}]}>
                   {tab.label}
-                </Text>
+                </CustomText>
               </View>
             </TouchableOpacity>
           );

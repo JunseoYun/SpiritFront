@@ -1,15 +1,16 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
+import CustomText from '../common/CustomText';
 
 const StoreInfoCard = ({storeData}) => {
   return (
     <View style={styles.card}>
-      <Text style={styles.label}>매장 이름(상호명)</Text>
-      <Text style={styles.value}>{storeData.storeName}</Text>
-      <Text style={styles.label}>매장 연락처</Text>
-      <Text style={styles.value}>{storeData.storeNumber}</Text>
-      <Text style={styles.label}>신청자 연락처</Text>
-      <Text style={styles.value}>{storeData.userContact}</Text>
+      <CustomText style={styles.label}>매장 이름(상호명)</CustomText>
+      <CustomText style={styles.value}>{storeData.storeName}</CustomText>
+      <CustomText style={styles.label}>매장 연락처</CustomText>
+      <CustomText style={styles.value}>{storeData.storeNumber}</CustomText>
+      <CustomText style={styles.label}>신청자 연락처</CustomText>
+      <CustomText style={styles.value}>{storeData.userContact}</CustomText>
     </View>
   );
 };

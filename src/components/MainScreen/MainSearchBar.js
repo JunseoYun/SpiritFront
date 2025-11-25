@@ -2,6 +2,7 @@ import React from 'react';
 import {Pressable, View, Text, StyleSheet} from 'react-native';
 
 import Feather from 'react-native-vector-icons/Feather';
+import CustomText from '../common/CustomText';
 
 const MainSearchBar = ({handleSearchPress}) => {
   return (
@@ -10,7 +11,9 @@ const MainSearchBar = ({handleSearchPress}) => {
       onPress={() => handleSearchPress()}
       style={styles.searchBar}>
       <View style={styles.searchContent}>
-        <Text style={styles.searchText}>술집이나 메뉴를 검색하세요</Text>
+        <CustomText style={styles.searchText}>
+          술집이나 메뉴를 검색하세요
+        </CustomText>
         <Feather name="search" size={18} color="#333" />
       </View>
     </Pressable>
@@ -33,6 +36,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 18,
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   searchText: {
     fontFamily: 'Pretendard-Regular',

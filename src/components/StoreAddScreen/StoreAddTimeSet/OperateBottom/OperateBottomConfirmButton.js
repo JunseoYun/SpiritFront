@@ -1,5 +1,6 @@
 import React from 'react';
 import {Pressable, Text, StyleSheet, View} from 'react-native';
+import CustomText from '../../../common/CustomText';
 
 const OperateBottomConfirmButton = ({onPress, disabled}) => {
   return (
@@ -8,7 +9,7 @@ const OperateBottomConfirmButton = ({onPress, disabled}) => {
         onPress={onPress}
         disabled={disabled}
         style={[styles.pickerOkView, disabled && {backgroundColor: '#F2F2F2'}]}>
-        <Text style={styles.pickerOkText}>확인</Text>
+        <CustomText style={styles.pickerOkText}>확인</CustomText>
       </Pressable>
     </View>
   );

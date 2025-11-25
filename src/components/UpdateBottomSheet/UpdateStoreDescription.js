@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const UpdateStoreDescription = ({
   updatedValue,
@@ -12,8 +14,8 @@ const UpdateStoreDescription = ({
 
   return (
     <View style={styles.bottomSheetContent}>
-      <Text style={styles.title}>매장 소개</Text>
-      <TextInput
+      <CustomText style={styles.title}>매장 소개</CustomText>
+      <CustomTextInput
         multiline
         style={styles.input}
         value={updatedValue} // 🔥 `defaultValue` 대신 `value` 사용
@@ -32,9 +34,9 @@ const UpdateStoreDescription = ({
         placeholderTextColor="#999"
       />
       {overText && (
-        <Text style={styles.errorText}>
+        <CustomText style={styles.errorText}>
           매장 소개는 최대 500자까지 입력 가능합니다.
-        </Text>
+        </CustomText>
       )}
       <ActionButtons onCancel={onCancel} onSave={onSave} />
     </View>

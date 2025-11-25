@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Pressable, Text, StyleSheet, Platform} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ColorUtil from './ColorUtil';
+import CustomText from '../components/common/CustomText';
 
 /**
  * BottomActionButton (실시간 주문하기 UI + 2:8 비율)
@@ -29,9 +30,7 @@ const BottomActionButton = ({
       <View style={styles.row}>
         {cancel && (
           <Pressable style={styles.cancelButton} onPress={onCancel}>
-            <Text style={styles.cancelLabel} allowFontScaling={false}>
-              {cancelLabel}
-            </Text>
+            <CustomText style={styles.cancelLabel}>{cancelLabel}</CustomText>
           </Pressable>
         )}
 
@@ -39,11 +38,9 @@ const BottomActionButton = ({
           style={[styles.button, disabled && styles.disabledButton]}
           onPress={onPress}
           disabled={disabled}>
-          <Text
-            style={[styles.label, disabled && styles.disabledLabel]}
-            allowFontScaling={false}>
+          <CustomText style={[styles.label, disabled && styles.disabledLabel]}>
             {label}
-          </Text>
+          </CustomText>
         </Pressable>
       </View>
     </View>

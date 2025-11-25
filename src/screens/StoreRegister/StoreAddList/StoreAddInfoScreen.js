@@ -31,6 +31,7 @@ import StoreInfo from '../../../components/StoreAddScreen/StoreInfo';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+import CustomText from '../../../components/common/CustomText';
 
 const StoreAddInfoScreen = ({navigation}) => {
   const {bottom} = useSafeAndroidInsets();
@@ -169,7 +170,9 @@ const StoreAddInfoScreen = ({navigation}) => {
         <Pressable
           onPress={loading || confirm ? null : confirmSubmission}
           disabled={loading || confirm}>
-          <Text style={[styles.nextButton]}>{index ? '등록' : '제보'}</Text>
+          <CustomText style={[styles.nextButton]}>
+            {index ? '등록' : '제보'}
+          </CustomText>
         </Pressable>
       ),
     });
@@ -459,11 +462,11 @@ const StoreAddInfoScreen = ({navigation}) => {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           ref={scrollViewRef}>
-          <Text style={styles.title}>
+          <CustomText style={styles.title}>
             {index
               ? '상세정보를 입력해주세요*'
               : '상세정보를 입력해주세요 (선택)'}
-          </Text>
+          </CustomText>
 
           <View ref={storeCategoryRef}>
             <StoreCategory
@@ -518,9 +521,9 @@ const StoreAddInfoScreen = ({navigation}) => {
           <Pressable
             style={styles.storeAddButtonsearch}
             onPress={confirmSubmission}>
-            <Text style={styles.storeAddText}>
+            <CustomText style={styles.storeAddText}>
               {index ? '매장 등록' : '매장 제보'}
-            </Text>
+            </CustomText>
           </Pressable>
         </View>
         <AlertComponent />

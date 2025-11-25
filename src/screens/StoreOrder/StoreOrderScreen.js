@@ -30,6 +30,7 @@ import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import StoreOrderHeader from '../../components/StoreOrderScreen/StoreOrderHeader';
 import StoreOrderRequest from '../../components/StoreOrderScreen/StoreOrderRequest';
 import StoreOrderSection from '../../components/StoreOrderScreen/StoreOrderSection';
+import CustomText from '../../components/common/CustomText';
 const ensureArray = value => (Array.isArray(value) ? value : []);
 
 const mapWithQuantity = (items, previous = []) => {
@@ -564,7 +565,7 @@ const StoreOrderScreen = () => {
         {loadingMenus && (
           <View style={styles.loadingGroup}>
             <ActivityIndicator size="small" color="#3CBBFF" />
-            <Text style={styles.loadingText}>메뉴 갱신 중</Text>
+            <CustomText style={styles.loadingText}>메뉴 갱신 중</CustomText>
           </View>
         )}
       </View>,
@@ -585,7 +586,7 @@ const StoreOrderScreen = () => {
         {loadingAlcohols && (
           <View style={styles.loadingGroup}>
             <ActivityIndicator size="small" color="#3CBBFF" />
-            <Text style={styles.loadingText}>주류 갱신 중</Text>
+            <CustomText style={styles.loadingText}>주류 갱신 중</CustomText>
           </View>
         )}
       </View>,
@@ -634,13 +635,13 @@ const StoreOrderScreen = () => {
                   ]}
                   onPress={() => handleSelectAlcoholCategory(section.type)}
                   activeOpacity={0.85}>
-                  <Text
+                  <CustomText
                     style={[
                       styles.alcoholCategoryText,
                       isSelected && styles.alcoholCategoryTextActive,
                     ]}>
                     {section.label}
-                  </Text>
+                  </CustomText>
                 </TouchableOpacity>
               );
             })}
@@ -669,7 +670,9 @@ const StoreOrderScreen = () => {
     } else {
       scrollChildren.push(
         <View key="alcohol-empty" style={styles.section}>
-          <Text style={styles.emptyMessage}>등록된 항목이 없습니다.</Text>
+          <CustomText style={styles.emptyMessage}>
+            등록된 항목이 없습니다.
+          </CustomText>
         </View>,
       );
     }

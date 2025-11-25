@@ -10,6 +10,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import OrderUserScreen from './OrderUserScreen';
 import OrderOwnerScreen from './OrderOwnerScreen';
+import CustomText from '../../../components/common/CustomText';
 
 const OrderScreen = ({navigation}) => {
   const [ownerMode, setOwnerMode] = useState(false);
@@ -72,13 +73,13 @@ const OrderScreen = ({navigation}) => {
                 color={!ownerMode ? '#111827' : '#6B7280'}
                 style={{marginRight: 6}}
               />
-              <Text
+              <CustomText
                 style={[
                   styles.segmentText,
                   !ownerMode && styles.segmentTextActive,
                 ]}>
                 내 주문
-              </Text>
+              </CustomText>
             </View>
           </Pressable>
 
@@ -95,13 +96,13 @@ const OrderScreen = ({navigation}) => {
                 color={ownerMode ? '#111827' : '#6B7280'}
                 style={{marginRight: 6}}
               />
-              <Text
+              <CustomText
                 style={[
                   styles.segmentText,
                   ownerMode && styles.segmentTextActive,
                 ]}>
                 사장님
-              </Text>
+              </CustomText>
             </View>
           </Pressable>
         </View>

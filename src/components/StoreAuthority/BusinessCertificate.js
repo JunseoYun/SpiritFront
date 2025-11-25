@@ -13,6 +13,7 @@ import {
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
 import ImageAddButton from '../../utils/ImageAddButton';
+import CustomText from '../common/CustomText';
 
 const BusinessCertificate = ({
   business_registration_certificate,
@@ -77,7 +78,7 @@ const BusinessCertificate = ({
   return (
     <View>
       {!isRegistration && (
-        <Text style={styles.sectionTitle}>사업자등록증 첨부</Text>
+        <CustomText style={styles.sectionTitle}>사업자등록증 첨부</CustomText>
       )}
 
       <View
@@ -112,9 +113,9 @@ const BusinessCertificate = ({
         {(error === 'business_registration_certificate' ||
           error === 'businessCertificate') &&
           !currentPreviewUri && (
-            <Text style={styles.errorText}>
+            <CustomText style={styles.errorText}>
               {errorMessage || '사업자등록증을 첨부해주세요.'}
-            </Text>
+            </CustomText>
           )}
       </View>
 

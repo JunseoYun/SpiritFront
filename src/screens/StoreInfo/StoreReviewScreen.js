@@ -16,6 +16,7 @@ import Loading from '../../hooks/Loading';
 import ReviewItemSkeleton from '../../components/StoreReviewScreen/ReviewItemSkeleton';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import BottomActionButton from '../../utils/BottomActionButton';
+import CustomText from '../../components/common/CustomText';
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storename, isOwner} = route.params;
@@ -46,7 +47,9 @@ const StoreReviewScreen = ({navigation}) => {
           setReviewdata(prevReviews => {
             const mergedReviews = [...prevReviews, ...reviewData.content];
             const uniqueReviews = Array.from(
-              new Map(mergedReviews.map(review => [review.id, review])).values(),
+              new Map(
+                mergedReviews.map(review => [review.id, review]),
+              ).values(),
             );
             return uniqueReviews;
           });
@@ -95,7 +98,6 @@ const StoreReviewScreen = ({navigation}) => {
       }
     }, [handleRefresh, navigation, shouldRefresh]),
   );
-
 
   const handleDeleteReply = reviewId => {
     showAlert({
@@ -165,9 +167,11 @@ const StoreReviewScreen = ({navigation}) => {
               ListFooterComponent={
                 <View style={styles.footer}>
                   {loading && !isEnd ? (
-                    <Text style={styles.emptyText}>Loading...</Text>
+                    <CustomText style={styles.emptyText}>Loading...</CustomText>
                   ) : !loading && reviewdata.length === 0 ? (
-                    <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
+                    <CustomText style={styles.emptyText}>
+                      등록된 리뷰가 없어요
+                    </CustomText>
                   ) : null}
                 </View>
               }

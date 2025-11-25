@@ -26,6 +26,7 @@ import {
   CheckCircle2,
 } from 'lucide-react-native';
 import BottomActionButton from '../../../utils/BottomActionButton';
+import CustomText from '../../common/CustomText';
 
 // Try to resolve keys that may be mojibake in persisted state
 const findExistingKey = (filters, hint) => {
@@ -358,7 +359,7 @@ const FilterPotal = ({
             <Pressable style={styles.modalOverlay} onPress={handleCancel} />
             <View style={styles.modalContentBottom}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>필터</Text>
+                <CustomText style={styles.modalTitle}>필터</CustomText>
                 <Pressable onPress={handleCancel}>
                   <Ionicons name="close" size={22} color="#666" />
                 </Pressable>
@@ -389,13 +390,13 @@ const FilterPotal = ({
                         styles.tabButton,
                         activeTab === tab && styles.tabButtonActive,
                       ]}>
-                      <Text
+                      <CustomText
                         style={[
                           styles.tabText,
                           activeTab === tab && styles.tabTextActive,
                         ]}>
                         {tab}
-                      </Text>
+                      </CustomText>
                     </Pressable>
                   ))}
                 </ScrollView>
@@ -414,7 +415,7 @@ const FilterPotal = ({
                   }}
                   style={styles.sectionContainer}>
                   <View style={styles.categoryContainer}>
-                    <Text style={styles.categoryTitle}>거리</Text>
+                    <CustomText style={styles.categoryTitle}>거리</CustomText>
                     <Pressable
                       onPress={() => {
                         setDraftFilters(prev => ({
@@ -433,7 +434,7 @@ const FilterPotal = ({
                         }));
                         if (typeof setRadiusint === 'function') setRadiusint(1);
                       }}>
-                      <Text style={styles.inittext}>초기화</Text>
+                      <CustomText style={styles.inittext}>초기화</CustomText>
                     </Pressable>
                   </View>
                   <View style={styles.filterItemsContainer}>
@@ -459,14 +460,14 @@ const FilterPotal = ({
                             setRadiusint(rv);
                           }
                         }}>
-                        <Text
+                        <CustomText
                           style={[
                             styles.filterItemText,
                             getVal(keyDistance, '1km') === dist &&
                               styles.filterItemTextSelected,
                           ]}>
                           {dist}
-                        </Text>
+                        </CustomText>
                       </Pressable>
                     ))}
                   </View>
@@ -481,7 +482,7 @@ const FilterPotal = ({
                     }
                   }}
                   style={styles.sectionContainer}>
-                  <Text style={styles.sectionTitle}>카테고리</Text>
+                  <CustomText style={styles.sectionTitle}>카테고리</CustomText>
                   <View style={styles.filterItemsContainer}>
                     {[
                       '이자카야',
@@ -503,14 +504,14 @@ const FilterPotal = ({
                             styles.filterItemSelected,
                         ]}
                         onPress={() => toggleSingle(keyCategory, cat)}>
-                        <Text
+                        <CustomText
                           style={[
                             styles.filterItemText,
                             getVal(keyCategory, '') === cat &&
                               styles.filterItemTextSelected,
                           ]}>
                           {cat}
-                        </Text>
+                        </CustomText>
                       </Pressable>
                     ))}
                   </View>
@@ -526,7 +527,7 @@ const FilterPotal = ({
                   }}
                   style={styles.sectionContainer}>
                   <View style={styles.alcoholHeaderRow}>
-                    <Text style={styles.sectionTitle}>주종</Text>
+                    <CustomText style={styles.sectionTitle}>주종</CustomText>
                     {selectedAlcohol ? (
                       <Pressable
                         ref={priceOrderButtonRef}
@@ -537,9 +538,9 @@ const FilterPotal = ({
                           size={16}
                           color="#4B5563"
                         />
-                        <Text style={styles.priceOrderButtonText}>
+                        <CustomText style={styles.priceOrderButtonText}>
                           {priceOrderLabel}
-                        </Text>
+                        </CustomText>
                       </Pressable>
                     ) : null}
                   </View>
@@ -566,14 +567,14 @@ const FilterPotal = ({
                             styles.filterItemSelected,
                         ]}
                         onPress={() => toggleSingle(keyAlcohol, al)}>
-                        <Text
+                        <CustomText
                           style={[
                             styles.filterItemText,
                             getVal(keyAlcohol, '') === al &&
                               styles.filterItemTextSelected,
                           ]}>
                           {al}
-                        </Text>
+                        </CustomText>
                       </Pressable>
                     ))}
                   </View>
@@ -591,11 +592,13 @@ const FilterPotal = ({
                     style={{
                       flexDirection: 'row',
                     }}>
-                    <Text style={styles.sectionTitle}>매장분위기</Text>
+                    <CustomText style={styles.sectionTitle}>
+                      매장분위기
+                    </CustomText>
                     {storeAtmSelected.length > 0 && (
-                      <Text style={styles.sectionCount}>
+                      <CustomText style={styles.sectionCount}>
                         {storeAtmSelected.length}/4
-                      </Text>
+                      </CustomText>
                     )}
                   </View>
                   <View style={styles.filterItemsContainer}>
@@ -621,14 +624,14 @@ const FilterPotal = ({
                             styles.filterItemSelected,
                         ]}
                         onPress={() => toggleInArray(keyStoreatm, st, 4)}>
-                        <Text
+                        <CustomText
                           style={[
                             styles.filterItemText,
                             getArrVal(getVal(keyStoreatm, []))?.includes(st) &&
                               styles.filterItemTextSelected,
                           ]}>
                           {st}
-                        </Text>
+                        </CustomText>
                       </Pressable>
                     ))}
                   </View>
@@ -642,7 +645,7 @@ const FilterPotal = ({
                     }
                   }}
                   style={styles.sectionContainer}>
-                  <Text style={styles.sectionTitle}>방문시간</Text>
+                  <CustomText style={styles.sectionTitle}>방문시간</CustomText>
 
                   <View style={styles.timeTabContainer}>
                     <Pressable
@@ -655,13 +658,13 @@ const FilterPotal = ({
                         styles.timeTab,
                         timePeriod === 'AM' && styles.timeTabActive,
                       ]}>
-                      <Text
+                      <CustomText
                         style={[
                           styles.timeTabText,
                           timePeriod === 'AM' && styles.timeTabTextActive,
                         ]}>
                         오전
-                      </Text>
+                      </CustomText>
                     </Pressable>
                     <Pressable
                       onPress={() => {
@@ -673,13 +676,13 @@ const FilterPotal = ({
                         styles.timeTab,
                         timePeriod === 'PM' && styles.timeTabActive,
                       ]}>
-                      <Text
+                      <CustomText
                         style={[
                           styles.timeTabText,
                           timePeriod === 'PM' && styles.timeTabTextActive,
                         ]}>
                         오후
-                      </Text>
+                      </CustomText>
                     </Pressable>
                   </View>
 
@@ -729,13 +732,13 @@ const FilterPotal = ({
                             styles.filterItem,
                             isSelected && styles.filterItemSelected,
                           ]}>
-                          <Text
+                          <CustomText
                             style={[
                               styles.filterItemText,
                               isSelected && styles.filterItemTextSelected,
                             ]}>
                             {label}
-                          </Text>
+                          </CustomText>
                         </Pressable>
                       );
                     })}
@@ -748,7 +751,7 @@ const FilterPotal = ({
                     setSectionPositions(p => ({...p, ['편의시설']: y}));
                   }}
                   style={styles.sectionContainer}>
-                  <Text style={styles.sectionTitle}>편의시설</Text>
+                  <CustomText style={styles.sectionTitle}>편의시설</CustomText>
                   <View style={styles.filterItemsContainer}>
                     <Pressable
                       style={[
@@ -779,15 +782,14 @@ const FilterPotal = ({
                           style={{marginRight: 6}}
                         />
                       )}
-                      <Text
-                        allowFontScaling={false}
+                      <CustomText
                         style={[
                           styles.filterfaciItemText,
                           getVal(keyPeople, '') === '단체 방문' &&
                             styles.filterItemTextSelected,
                         ]}>
                         단체 방문
-                      </Text>
+                      </CustomText>
                     </Pressable>
                     <Pressable
                       style={[
@@ -816,15 +818,14 @@ const FilterPotal = ({
                           style={{marginRight: 6}}
                         />
                       )}
-                      <Text
-                        allowFontScaling={false}
+                      <CustomText
                         style={[
                           styles.filterfaciItemText,
                           getVal(keyParking, '') === '가능' &&
                             styles.filterItemTextSelected,
                         ]}>
                         주차
-                      </Text>
+                      </CustomText>
                     </Pressable>
                     <Pressable
                       style={[
@@ -853,15 +854,14 @@ const FilterPotal = ({
                           style={{marginRight: 6}}
                         />
                       )}
-                      <Text
-                        allowFontScaling={false}
+                      <CustomText
                         style={[
                           styles.filterfaciItemText,
                           getVal(keyCorkage, '') === '가능' &&
                             styles.filterItemTextSelected,
                         ]}>
                         콜키지
-                      </Text>
+                      </CustomText>
                     </Pressable>
                     <Pressable
                       style={[
@@ -891,15 +891,14 @@ const FilterPotal = ({
                         />
                       )}
 
-                      <Text
-                        allowFontScaling={false}
+                      <CustomText
                         style={[
                           styles.filterfaciItemText,
                           getVal(keyScreen, '') === '설치' &&
                             styles.filterItemTextSelected,
                         ]}>
                         스크린(TV)
-                      </Text>
+                      </CustomText>
                     </Pressable>
                     <Pressable
                       style={[
@@ -928,15 +927,14 @@ const FilterPotal = ({
                           style={{marginRight: 6}}
                         />
                       )}
-                      <Text
-                        allowFontScaling={false}
+                      <CustomText
                         style={[
                           styles.filterfaciItemText,
                           getVal(keyRoom, '') === '가능' &&
                             styles.filterItemTextSelected,
                         ]}>
                         룸
-                      </Text>
+                      </CustomText>
                     </Pressable>
                     <Pressable
                       style={[
@@ -965,15 +963,14 @@ const FilterPotal = ({
                           style={{marginRight: 6}}
                         />
                       )}
-                      <Text
-                        allowFontScaling={false}
+                      <CustomText
                         style={[
                           styles.filterfaciItemText,
                           getVal(keyOutdoor, '') === '가능' &&
                             styles.filterItemTextSelected,
                         ]}>
                         야외 좌석·테라스
-                      </Text>
+                      </CustomText>
                     </Pressable>
                   </View>
                 </View>
@@ -1017,13 +1014,13 @@ const FilterPotal = ({
               <Pressable
                 style={styles.dropdownItem}
                 onPress={() => handleSelectPriceOrder('')}>
-                <Text
+                <CustomText
                   style={[
                     styles.dropdownText,
                     priceOrder === '' && styles.activeDropdownText,
                   ]}>
                   기본순
-                </Text>
+                </CustomText>
               </Pressable>
 
               <Pressable
@@ -1031,25 +1028,25 @@ const FilterPotal = ({
                 onPress={() => {
                   handleSelectPriceOrder('ASC');
                 }}>
-                <Text
+                <CustomText
                   style={[
                     styles.dropdownText,
                     priceOrder === 'ASC' && styles.activeDropdownText,
                   ]}>
                   낮은 가격순
-                </Text>
+                </CustomText>
               </Pressable>
 
               <Pressable
                 style={styles.dropdownItem}
                 onPress={() => handleSelectPriceOrder('DESC')}>
-                <Text
+                <CustomText
                   style={[
                     styles.dropdownText,
                     priceOrder === 'DESC' && styles.activeDropdownText,
                   ]}>
                   높은 가격순
-                </Text>
+                </CustomText>
               </Pressable>
             </Animated.View>
           </>
@@ -1208,7 +1205,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
   },
   filterfaciItemText: {
-    fontSize: normalizeFont(12, 1.5),
+    fontSize: 12,
     color: '#444',
     fontFamily: 'Pretendard-Regular',
     textAlign: 'center',

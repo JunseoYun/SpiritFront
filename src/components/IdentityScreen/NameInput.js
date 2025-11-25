@@ -9,6 +9,8 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const NameInput = ({
   name,
@@ -26,12 +28,13 @@ const NameInput = ({
   return (
     <View style={[styles.labeledInputContainer, {marginBottom: 20}]}>
       {shownameLabel && (
-        <Text style={[styles.inputLabel, isnameFocused && {color: 'black'}]}>
+        <CustomText
+          style={[styles.inputLabel, isnameFocused && {color: 'black'}]}>
           이름
-        </Text>
+        </CustomText>
       )}
 
-      <TextInput
+      <CustomTextInput
         ref={nameRef}
         style={[
           styles.input,
@@ -53,17 +56,19 @@ const NameInput = ({
       {name?.length > 0 && isnameFocused && (
         <CancelText
           rightnum={10}
-          topnum={normalizeFont(12)}
+          topnum={12}
           paddingnum={4}
           handlecancel={handlenamechange}
           size={normalizeFont(20)}
         />
       )}
       {nameerror.name && (
-        <Text style={styles.errorMessage}>{nameerror.name}</Text>
+        <CustomText style={styles.errorMessage}>{nameerror.name}</CustomText>
       )}
       {error === 'name' && (
-        <Text style={styles.errorMessage}>이름을 입력해주세요.</Text>
+        <CustomText style={styles.errorMessage}>
+          이름을 입력해주세요.
+        </CustomText>
       )}
     </View>
   );

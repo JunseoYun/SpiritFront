@@ -9,6 +9,7 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import CustomText from '../components/common/CustomText';
 
 const {width, height} = Dimensions.get('window');
 
@@ -21,7 +22,7 @@ const MySplashScreen = ({isVersionValid}) => {
   return (
     <View style={styles.container}>
       <Image source={require('../assets/logoWhite.png')} style={styles.logo} />
-      <Text style={styles.text}>TEAM SPIRIT</Text>
+      <CustomText style={styles.text}>TEAM SPIRIT</CustomText>
 
       {!isVersionValid && (
         <View style={styles.overlay}>
@@ -30,14 +31,18 @@ const MySplashScreen = ({isVersionValid}) => {
               source={require('../assets/logoWhite.png')} // 앱 아이콘 이미지
               style={styles.modalIcon}
             />
-            <Text style={styles.modalTitle}>한잔할까 업데이트 안내</Text>
-            <Text style={styles.modalDesc}>
+            <CustomText style={styles.modalTitle}>
+              한잔할까 업데이트 안내
+            </CustomText>
+            <CustomText style={styles.modalDesc}>
               더 나은 서비스 이용을 위해{'\n'}앱 업데이트가 필요해요.
-            </Text>
+            </CustomText>
             <Pressable
               style={styles.modalButton}
               onPress={() => Linking.openURL(storeUrl)}>
-              <Text style={styles.modalButtonText}>앱 업데이트</Text>
+              <CustomText style={styles.modalButtonText}>
+                앱 업데이트
+              </CustomText>
             </Pressable>
           </View>
         </View>

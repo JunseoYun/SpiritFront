@@ -12,13 +12,9 @@ import {
 } from 'react-native';
 import {AlcoholFilterContext} from '../../context/AlcoholFilterContext';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import CustomText from '../common/CustomText';
 
 const screenWidth = Dimensions.get('window').width;
-
-const fontScale = PixelRatio.getFontScale();
-const baseSize = 14;
-
-const fontSize = fontScale >= 1.5 ? 19 : baseSize;
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -154,15 +150,13 @@ const FilterBar = () => {
               styles.filterButton,
               drinkType === value && styles.activeFilter,
             ]}>
-            <Text
-              allowFontScaling={false}
+            <CustomText
               style={[
                 styles.filterText,
                 drinkType === value && styles.activeFilterText,
-                {fontSize},
               ]}>
               {label}
-            </Text>
+            </CustomText>
           </Pressable>
         ))}
       </ScrollView>
@@ -174,15 +168,13 @@ const FilterBar = () => {
           onPress={toggleDropdown}
           onLayout={e => setChoiceBtnWidth(e.nativeEvent.layout.width)}>
           <MaterialCommunityIcons name="tune-variant" size={17} color="#555" />
-          <Text
-            style={[styles.choicetext, {fontSize}]}
-            allowFontScaling={false}>
+          <CustomText style={[styles.choicetext]}>
             {priceOrder === 'ASC'
               ? '낮은 가격순'
               : priceOrder === 'DESC'
               ? '높은 가격순'
               : '기본순'}
-          </Text>
+          </CustomText>
         </Pressable>
       )}
 
@@ -199,15 +191,13 @@ const FilterBar = () => {
               toggleDropdown();
               handlePriceOrderPress('');
             }}>
-            <Text
-              allowFontScaling={false}
+            <CustomText
               style={[
                 styles.dropdownText,
                 priceOrder === '' && styles.activeDropdownText,
-                {fontSize},
               ]}>
               기본순
-            </Text>
+            </CustomText>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -216,15 +206,13 @@ const FilterBar = () => {
               toggleDropdown();
               handlePriceOrderPress('ASC');
             }}>
-            <Text
-              allowFontScaling={false}
+            <CustomText
               style={[
                 styles.dropdownText,
                 priceOrder === 'ASC' && styles.activeDropdownText,
-                {fontSize},
               ]}>
               낮은 가격순
-            </Text>
+            </CustomText>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -233,15 +221,13 @@ const FilterBar = () => {
               toggleDropdown();
               handlePriceOrderPress('DESC');
             }}>
-            <Text
-              allowFontScaling={false}
+            <CustomText
               style={[
                 styles.dropdownText,
                 priceOrder === 'DESC' && styles.activeDropdownText,
-                {fontSize},
               ]}>
               높은 가격순
-            </Text>
+            </CustomText>
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -302,6 +288,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   filterText: {
+    fontSize: 14,
     color: '#555',
     fontFamily: 'Pretendard-Regular',
     textAlign: 'center',

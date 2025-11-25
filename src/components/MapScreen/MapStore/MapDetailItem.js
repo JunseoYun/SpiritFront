@@ -33,6 +33,7 @@ import Alcohol from '../../StoreScreen/StoreMainInfo/Alcohol';
 import OperationSchedule from '../../StoreScreen/StoreMainInfo/OperationSchedule';
 
 import {Storelikepost, get_store_share} from '../../../api/storeApi';
+import CustomText from '../../common/CustomText';
 
 const {width} = Dimensions.get('window');
 const H_PADDING = 16;
@@ -235,9 +236,9 @@ const MapDetailItem = ({
         <View onLayout={handleHeaderLayout}>
           {/* 상단 Row */}
           <View style={styles.headerRow}>
-            <Text style={styles.categories} numberOfLines={1}>
+            <CustomText style={styles.categories} numberOfLines={1}>
               {categoriesText}
-            </Text>
+            </CustomText>
 
             {/* 상단 버튼 */}
             <View style={styles.headerActions}>
@@ -273,9 +274,9 @@ const MapDetailItem = ({
                 style={styles.verifyIcon}
               />
             )}
-            <Text style={styles.storeName} numberOfLines={1}>
+            <CustomText style={styles.storeName} numberOfLines={1}>
               {storeData?.name}
-            </Text>
+            </CustomText>
           </View>
         </View>
 
@@ -289,11 +290,14 @@ const MapDetailItem = ({
                 source={require('../../../assets/icon-star.png')}
                 style={styles.starIcon}
               />
-              <Text style={styles.ratingText}>
+              <CustomText style={styles.ratingText}>
                 {storeData?.storeRate} ({storeData?.reviewCount})
-              </Text>
+              </CustomText>
             </View>
-            <Text style={{color: '#D4D4D4', marginRight: -24}}> · </Text>
+            <CustomText style={{color: '#D4D4D4', marginRight: -24}}>
+              {' '}
+              ·{' '}
+            </CustomText>
             <OperationSchedule
               type="preview"
               isAlwaysOpen={storeData?.isAlwaysOpen}
@@ -309,14 +313,14 @@ const MapDetailItem = ({
 
           {/* 거리 & 주소 */}
           <View style={styles.distanceAddressView}>
-            <Text style={styles.distanceAddress}>
+            <CustomText style={styles.distanceAddress}>
               {distanceInfo.distance}
               {distanceInfo.unit}
-            </Text>
-            <Text style={{color: '#D4D4D4'}}> · </Text>
-            <Text style={styles.distanceAddress}>
+            </CustomText>
+            <CustomText style={{color: '#D4D4D4'}}> · </CustomText>
+            <CustomText style={styles.distanceAddress}>
               {storeData?.locationDto?.address}
-            </Text>
+            </CustomText>
           </View>
 
           {/* 주류 */}
@@ -403,7 +407,7 @@ const MapDetailItem = ({
               destName: storeData?.name,
             })
           }>
-          <Text style={styles.directionsText}>길찾기</Text>
+          <CustomText style={styles.directionsText}>길찾기</CustomText>
         </Pressable>
       </View>
 
@@ -431,28 +435,30 @@ const MapDetailItem = ({
               },
             ]}>
             <View style={styles.contactHeader}>
-              <Text style={styles.contactTitle}>
+              <CustomText style={styles.contactTitle}>
                 매장과 연결되는 번호입니다
-              </Text>
+              </CustomText>
               <Pressable onPress={closeContactPopover}>
                 <Ionicons name="close" size={18} color="#9AA0AF" />
               </Pressable>
             </View>
 
-            <Text style={styles.contactDesc}>
+            <CustomText style={styles.contactDesc}>
               예약, 문의 등 필요한 내용을 전화로 바로 확인할 수 있어요.
-            </Text>
+            </CustomText>
 
             <View style={styles.contactNumberRow}>
-              <Text style={styles.contactNumberLabel}>전화번호</Text>
-              <Text style={styles.contactNumberValue}>
+              <CustomText style={styles.contactNumberLabel}>
+                전화번호
+              </CustomText>
+              <CustomText style={styles.contactNumberValue}>
                 {storeData?.contact}
-              </Text>
+              </CustomText>
 
               <Pressable onPress={handleCopyContact}>
-                <Text style={styles.contactCopyText}>
+                <CustomText style={styles.contactCopyText}>
                   {contactCopied ? '복사됨' : '복사'}
-                </Text>
+                </CustomText>
               </Pressable>
             </View>
 
@@ -463,7 +469,9 @@ const MapDetailItem = ({
               ]}
               onPress={handleCall}
               disabled={!storeData?.contact}>
-              <Text style={styles.contactCallButtonText}>전화하기</Text>
+              <CustomText style={styles.contactCallButtonText}>
+                전화하기
+              </CustomText>
             </Pressable>
           </RNAnimated.View>
         </>
@@ -520,7 +528,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   storeName: {
-    fontSize: normalizeFont(20, 1.5),
+    fontSize: 20,
     color: '#333',
     fontFamily: 'Pretendard-Bold',
     maxWidth: '90%',

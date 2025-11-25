@@ -17,6 +17,8 @@ import BottomActionButton from '../../utils/BottomActionButton';
 import ImageAddButton from '../../utils/ImageAddButton';
 import FastImage from 'react-native-fast-image';
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 const rateTextMap = {
   0: '어땠나요?',
   1: '별로예요',
@@ -117,18 +119,22 @@ const ReviewForm = ({
           showsVerticalScrollIndicator={false}>
           {/* 별점 */}
           <View style={[styles.section, {paddingHorizontal: 20}]}>
-            <Text style={styles.rateLabel}>{rateTextMap[currentRate]}</Text>
+            <CustomText style={styles.rateLabel}>
+              {rateTextMap[currentRate]}
+            </CustomText>
             <View style={styles.starRow}>
               {renderStars(rate => setCurrentRate(rate))}
             </View>
             {errorrate && (
-              <Text style={styles.errorMessage}>리뷰 별점을 입력해주세요!</Text>
+              <CustomText style={styles.errorMessage}>
+                리뷰 별점을 입력해주세요!
+              </CustomText>
             )}
           </View>
 
           {/* 리뷰 내용 */}
           <View style={[styles.section, {paddingHorizontal: 20}]}>
-            <TextInput
+            <CustomTextInput
               style={[
                 styles.textarea,
                 contentFocused && styles.inputFocused,
@@ -152,30 +158,32 @@ const ReviewForm = ({
               onBlur={() => setContentFocused(false)}
             />
             {errorcontent && (
-              <Text style={styles.errorMessage}>
+              <CustomText style={styles.errorMessage}>
                 리뷰 별점 이유를 작성해 주세요!
-              </Text>
+              </CustomText>
             )}
             {overText && (
-              <Text style={styles.errorMessage}>
+              <CustomText style={styles.errorMessage}>
                 리뷰는 최대 2000자까지 입력 가능합니다.
-              </Text>
+              </CustomText>
             )}
           </View>
 
           {/* 방문 날짜 */}
           <View style={[styles.section, {paddingHorizontal: 20}]}>
-            <Text style={styles.sectionTitle}>방문 날짜를 선택해주세요!</Text>
+            <CustomText style={styles.sectionTitle}>
+              방문 날짜를 선택해주세요!
+            </CustomText>
             <TouchableOpacity
               style={styles.dateBtn}
               onPress={() => setIsDatePickerOpen(true)}>
-              <Text style={styles.dateTxt}>
+              <CustomText style={styles.dateTxt}>
                 {visitDate.toLocaleDateString('ko-KR', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
                 })}
-              </Text>
+              </CustomText>
               <MaterialCommunityIcons
                 name="calendar-month-outline"
                 size={20}
@@ -203,17 +211,17 @@ const ReviewForm = ({
           {/* 사진 */}
           {/* 사진 */}
           <View style={[styles.section]}>
-            <Text style={[styles.sectionTitle, {paddingHorizontal: 20}]}>
+            <CustomText style={[styles.sectionTitle, {paddingHorizontal: 20}]}>
               사진을 추가해주세요!{' '}
-              <Text
+              <CustomText
                 style={{
                   color: '#999',
                   fontSize: 13,
                   fontFamily: 'Pretendard-Regular',
                 }}>
                 (선택)
-              </Text>
-            </Text>
+              </CustomText>
+            </CustomText>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}

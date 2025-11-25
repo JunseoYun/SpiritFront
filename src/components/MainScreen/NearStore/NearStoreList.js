@@ -11,12 +11,7 @@ import {
 import NearStoreItem from './NearStoreItem';
 import {Store_getby_distance} from '../../../api/storeApi';
 import Feather from 'react-native-vector-icons/Feather';
-
-let fontScale = PixelRatio.getFontScale(); // let으로 변경
-if (fontScale > 1.7) fontScale = 1.7;
-
-const fontSize = 18 * fontScale;
-const subfontSize = 13 * fontScale;
+import CustomText from '../../common/CustomText';
 
 const NearStoreList = ({refresh, navigation, location}) => {
   const [stores, setStores] = useState([]);
@@ -88,7 +83,7 @@ const NearStoreList = ({refresh, navigation, location}) => {
     if (!loading) return null;
     return (
       <View style={styles.footer}>
-        <Text style={styles.emptyText}>Loading...</Text>
+        <CustomText style={styles.emptyText}>Loading...</CustomText>
       </View>
     );
   };
@@ -97,7 +92,9 @@ const NearStoreList = ({refresh, navigation, location}) => {
     if (!loading) {
       return (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>주변에 등록된 술집이 없어요</Text>
+          <CustomText style={styles.emptyText}>
+            주변에 등록된 술집이 없어요
+          </CustomText>
         </View>
       );
     }
@@ -120,23 +117,19 @@ const NearStoreList = ({refresh, navigation, location}) => {
             marginRight: 40,
             alignItems: 'center',
           }}>
-          <Text style={[styles.storeText, {fontSize}]} allowFontScaling={false}>
+          <CustomText style={[styles.storeText]}>
             제일 가까운 술집은?
-          </Text>
+          </CustomText>
           {stores.length >= 3 && (
             <View style={styles.totalView}>
-              <Text
-                style={[styles.totalText, {fontSize: subfontSize}]}
-                allowFontScaling={false}>
-                전체보기
-              </Text>
+              <CustomText style={[styles.totalText]}>전체보기</CustomText>
               <Feather name={'chevron-right'} size={15} color="#333" />
             </View>
           )}
         </View>
-        <Text style={styles.storeSubText}>
+        <CustomText style={styles.storeSubText}>
           현재 위치에서 가장 가까운 술집을 알려드려요
-        </Text>
+        </CustomText>
       </Pressable>
       <FlatList
         data={stores}
@@ -170,7 +163,9 @@ const NearStoreList = ({refresh, navigation, location}) => {
       />
       {stores.length === 0 && !loading && (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>주변에 등록된 술집이 없어요</Text>
+          <CustomText style={styles.emptyText}>
+            주변에 등록된 술집이 없어요
+          </CustomText>
         </View>
       )}
     </View>

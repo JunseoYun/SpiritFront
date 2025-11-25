@@ -21,6 +21,7 @@ import StoreMenuScreen, {MenuCategoryRadioGroup} from '../StoreMenuScreen';
 import StoreAlcoholScreen, {AlcoholTypeRadioGroup} from '../StoreAlcoholScreen';
 import Loading from '../../../hooks/Loading';
 import useCustomAlert from '../../../hooks/useCustomAlert';
+import CustomText from '../../../components/common/CustomText';
 const fontScale = PixelRatio.getFontScale();
 
 const iconSize = fontScale >= 1.5 ? 22 : 16;
@@ -204,7 +205,9 @@ const StoreManageScreen = ({route, navigation}) => {
             {({menus, loading, error, refreshMenus}) => (
               <>
                 {/* <StoreManageTitle name={currentStoreName} type={activeTab} /> */}
-                {error && <Text style={styles.errorText}>{error}</Text>}
+                {error && (
+                  <CustomText style={styles.errorText}>{error}</CustomText>
+                )}
                 <StoreMenuScreen
                   navigation={navigation}
                   storeId={storeId}
@@ -243,7 +246,9 @@ const StoreManageScreen = ({route, navigation}) => {
             }) => (
               <>
                 {/* <StoreManageTitle name={currentStoreName} type={activeTab} /> */}
-                {error && <Text style={styles.errorText}>{error}</Text>}
+                {error && (
+                  <CustomText style={styles.errorText}>{error}</CustomText>
+                )}
                 <StoreAlcoholScreen
                   navigation={navigation}
                   storeId={storeId}

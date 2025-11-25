@@ -2,6 +2,7 @@ import React from 'react';
 import {StyleSheet, Text, View, Pressable, Image} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
+import CustomText from '../../common/CustomText';
 
 const OwnerCard = ({order, onApprove, onReject, onMarkDone, onPressDetail}) => {
   const isPending = order.status === 'pending';
@@ -19,11 +20,11 @@ const OwnerCard = ({order, onApprove, onReject, onMarkDone, onPressDetail}) => {
   return (
     <View style={styles.card}>
       <View style={styles.topRow}>
-        <Text style={styles.reservationText} numberOfLines={1}>
+        <CustomText style={styles.reservationText} numberOfLines={1}>
           예약 {order.reservationTime} · 인원 {order.people}명
-        </Text>
+        </CustomText>
         <Pressable hitSlop={8} style={styles.detailBtn} onPress={onPressDetail}>
-          <Text style={styles.detailBtnText}>주문 상세</Text>
+          <CustomText style={styles.detailBtnText}>주문 상세</CustomText>
           <Feather name={'chevron-right'} size={15} color="#333" />
         </Pressable>
       </View>
@@ -31,10 +32,10 @@ const OwnerCard = ({order, onApprove, onReject, onMarkDone, onPressDetail}) => {
       <View style={styles.cardHeader}>
         <Image source={{uri: order.thumbnail}} style={styles.thumb} />
         <View style={{flex: 1}}>
-          <Text style={styles.storeName}>{order.storeName}</Text>
-          <Text style={styles.subText} numberOfLines={1}>
+          <CustomText style={styles.storeName}>{order.storeName}</CustomText>
+          <CustomText style={styles.subText} numberOfLines={1}>
             {order.itemsSummary}
-          </Text>
+          </CustomText>
         </View>
       </View>
 
@@ -42,18 +43,18 @@ const OwnerCard = ({order, onApprove, onReject, onMarkDone, onPressDetail}) => {
         <View style={styles.rowBetween}>
           <View style={styles.inlineBadge}>
             <Ionicons name="time-outline" size={14} color="#6B7280" />
-            <Text style={styles.inlineBadgeText}>신규 요청</Text>
+            <CustomText style={styles.inlineBadgeText}>신규 요청</CustomText>
           </View>
           <View style={{flexDirection: 'row', gap: 8}}>
             <Pressable style={styles.ghostBtn} hitSlop={8} onPress={onReject}>
-              <Text style={[styles.ghostBtnText, {color: '#EF4444'}]}>
+              <CustomText style={[styles.ghostBtnText, {color: '#EF4444'}]}>
                 거절
-              </Text>
+              </CustomText>
             </Pressable>
             <Pressable style={styles.ghostBtn} hitSlop={8} onPress={onApprove}>
-              <Text style={[styles.ghostBtnText, {color: '#10B981'}]}>
+              <CustomText style={[styles.ghostBtnText, {color: '#10B981'}]}>
                 승인
-              </Text>
+              </CustomText>
             </Pressable>
           </View>
         </View>
@@ -63,31 +64,33 @@ const OwnerCard = ({order, onApprove, onReject, onMarkDone, onPressDetail}) => {
         <View style={styles.rowbillBetween}>
           <View style={styles.inlineBadge}>
             <Ionicons name="card-outline" size={14} color="#6B7280" />
-            <Text style={styles.inlineBadgeText}>결제 요청/대기</Text>
+            <CustomText style={styles.inlineBadgeText}>
+              결제 요청/대기
+            </CustomText>
           </View>
         </View>
       )}
 
       {isInPrepare && (
         <View style={styles.receiptBox}>
-          <Text style={styles.receiptText}>
+          <CustomText style={styles.receiptText}>
             준비 중 · 영수번호 {order.receiptNo ?? '-'}
-          </Text>
+          </CustomText>
           <View style={{height: 8}} />
           <Pressable style={styles.ghostBtn} hitSlop={8} onPress={onMarkDone}>
-            <Text style={[styles.ghostBtnText, {color: '#111827'}]}>
+            <CustomText style={[styles.ghostBtnText, {color: '#111827'}]}>
               이용 완료
-            </Text>
+            </CustomText>
           </Pressable>
         </View>
       )}
 
       {isCompleted && (
         <View style={styles.reviewBox}>
-          <Text style={styles.reviewTitle}>이용 완료</Text>
+          <CustomText style={styles.reviewTitle}>이용 완료</CustomText>
           <View style={styles.starsRow}>
             <Ionicons name="checkmark-circle" size={18} color="#10B981" />
-            <Text style={styles.inlineBadgeText}>처리 완료</Text>
+            <CustomText style={styles.inlineBadgeText}>처리 완료</CustomText>
           </View>
         </View>
       )}
@@ -95,9 +98,9 @@ const OwnerCard = ({order, onApprove, onReject, onMarkDone, onPressDetail}) => {
       {isCanceled && (
         <View style={styles.cancelBox}>
           <Ionicons name="close-circle" size={16} color="#EF4444" />
-          <Text style={styles.cancelText} numberOfLines={2}>
+          <CustomText style={styles.cancelText} numberOfLines={2}>
             취소/거절/환불 사유 · {order.cancelReason || '-'}
-          </Text>
+          </CustomText>
         </View>
       )}
     </View>

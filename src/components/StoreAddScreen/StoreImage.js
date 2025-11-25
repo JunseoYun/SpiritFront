@@ -24,6 +24,7 @@ import {
 import ImageAddButton from '../../utils/ImageAddButton';
 
 import {useToast} from '../../context/ToastContext';
+import CustomText from '../common/CustomText';
 const resolveDisplayUri = value => {
   if (!value) {
     return '';
@@ -225,7 +226,7 @@ const StoreImage = ({
           isRegistration && styles.registrationSpacing,
         ]}>
         {!isRegistration && (
-          <Text style={styles.storeinputtext}>매장 이미지</Text>
+          <CustomText style={styles.storeinputtext}>매장 이미지</CustomText>
         )}
       </View>
 
@@ -254,7 +255,9 @@ const StoreImage = ({
             {/* 대표 배지 (좌상단) */}
             {index === 0 && (
               <View style={styles.representativeBadge}>
-                <Text style={styles.representativeText}>대표 사진</Text>
+                <CustomText style={styles.representativeText}>
+                  대표 사진
+                </CustomText>
               </View>
             )}
 
@@ -290,18 +293,18 @@ const StoreImage = ({
         ))}
       </ScrollView>
       {error === 'StoreImage' && images.length === 0 && (
-        <Text style={styles.errorMessage}>
+        <CustomText style={styles.errorMessage}>
           매장 사진을 최소 1개 이상 업로드해 주세요.
-        </Text>
+        </CustomText>
       )}
       {!isRegistration && (
         <View style={styles.tipView}>
           <View style={styles.tipbadge}>
-            <Text style={styles.tipbadgeText}>Tip</Text>
+            <CustomText style={styles.tipbadgeText}>Tip</CustomText>
           </View>
-          <Text style={styles.tipText}>
+          <CustomText style={styles.tipText}>
             첫 번째로 추가한 사진이 대표 사진으로 설정돼요
-          </Text>
+          </CustomText>
         </View>
       )}
 

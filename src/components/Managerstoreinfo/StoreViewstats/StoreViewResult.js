@@ -15,6 +15,7 @@ import StorePersentBarGraph from '../StorePersentBarGraph';
 import GenderPieChart from '../GenderPieChart';
 import AgeDistributionTable from '../AgeDistributionTable';
 import Feather from 'react-native-vector-icons/Feather';
+import CustomText from '../../common/CustomText';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_WIDTH_HALF = SCREEN_WIDTH / 2;
@@ -206,7 +207,7 @@ const StoreViewResult = ({
         {subtitleFlags.hasGenderOnly && (
           <>
             <View style={styles.titleView}>
-              <Text style={styles.subtitle}>성별 (비율)</Text>
+              <CustomText style={styles.subtitle}>성별 (비율)</CustomText>
               <GroupBySelector
                 groupBy={groupBy}
                 toggleGroupBy={toggleGroupBy}
@@ -217,7 +218,7 @@ const StoreViewResult = ({
         )}
         {subtitleFlags.hasAgeOnly && (
           <View style={styles.titleView}>
-            <Text style={styles.subtitle}>연령대별 (비율)</Text>
+            <CustomText style={styles.subtitle}>연령대별 (비율)</CustomText>
             <GroupBySelector
               groupBy={groupBy}
               toggleGroupBy={toggleGroupBy}
@@ -228,7 +229,9 @@ const StoreViewResult = ({
         {subtitleFlags.hasAllFilters && (
           <>
             <View style={styles.titleView}>
-              <Text style={styles.subtitle}>성별 · 연령대 (비율)</Text>
+              <CustomText style={styles.subtitle}>
+                성별 · 연령대 (비율)
+              </CustomText>
               <GroupBySelector
                 groupBy={groupBy}
                 toggleGroupBy={toggleGroupBy}
@@ -238,10 +241,10 @@ const StoreViewResult = ({
           </>
         )}
         {dataByDate.length === 0 && (
-          <Text style={styles.nulltext}>
+          <CustomText style={styles.nulltext}>
             해당 조건에 해당하는 데이터가 없어요{'\n\n'}조건을 변경하여
             확인해보세요!
-          </Text>
+          </CustomText>
         )}
       </View>
 
@@ -273,9 +276,9 @@ const StoreViewResult = ({
               const {width} = e.nativeEvent.layout;
               setDropdownWidth(width + 30);
             }}>
-            <Text style={styles.dateText}>
+            <CustomText style={styles.dateText}>
               {formatDateToKorean(dataByDate[currentIndex]?.date)}
-            </Text>
+            </CustomText>
           </Pressable>
 
           {/* 오른쪽 화살표 */}
@@ -315,7 +318,7 @@ const StoreViewResult = ({
                   <View
                     style={[styles.genderPoint, {backgroundColor: gen.color}]}
                   />
-                  <Text style={styles.genderText}>{gen.label}</Text>
+                  <CustomText style={styles.genderText}>{gen.label}</CustomText>
                 </View>
               ))}
             </View>
@@ -333,13 +336,13 @@ const StoreViewResult = ({
                     if (dropdownVisible) setDropdownVisible(false);
                     onShowByChange(option.value);
                   }}>
-                  <Text
+                  <CustomText
                     style={[
                       styles.showByButtonText,
                       isSelected && styles.showByButtonTextSelected,
                     ]}>
                     {option.label}
-                  </Text>
+                  </CustomText>
                 </Pressable>
               );
             })}
@@ -407,9 +410,9 @@ const StoreViewResult = ({
                       scrollTo(actualIndex);
                       toggleDropdown();
                     }}>
-                    <Text style={styles.dropdownText}>
+                    <CustomText style={styles.dropdownText}>
                       {formatDateToKorean(item.date)}
-                    </Text>
+                    </CustomText>
                   </TouchableOpacity>
                 );
               })}

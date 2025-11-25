@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../common/CustomText';
 const ClosedDaySelector = ({
   days,
   isClosed,
@@ -66,21 +67,23 @@ const ClosedDaySelector = ({
 
   return (
     <View>
-      <Text style={styles.sectionTitle}>휴무일이 있나요?</Text>
+      <CustomText style={styles.sectionTitle}>휴무일이 있나요?</CustomText>
       <View style={styles.toggleContainer}>
         <Pressable
           style={[styles.toggleButton, isClosed && styles.selectedToggle]}
           onPress={handleClosedToggle}>
-          <Text style={isClosed ? styles.selectedText : styles.unselectedText}>
+          <CustomText
+            style={isClosed ? styles.selectedText : styles.unselectedText}>
             있음
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[styles.toggleButton, !isClosed && styles.selectedToggle]}
           onPress={handleClosedToggle}>
-          <Text style={!isClosed ? styles.selectedText : styles.unselectedText}>
+          <CustomText
+            style={!isClosed ? styles.selectedText : styles.unselectedText}>
             없음
-          </Text>
+          </CustomText>
         </Pressable>
       </View>
       {isClosed && (
@@ -103,23 +106,23 @@ const ClosedDaySelector = ({
                     styles.selectedDayButton,
                 ]}
                 onPress={() => toggleDay(day.value)}>
-                <Text
+                <CustomText
                   style={[
                     styles.dayText,
                     localClosedDay.includes(day.value) &&
                       styles.selectedDayText,
                   ]}>
                   {day.label}
-                </Text>
+                </CustomText>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
       )}
       {isClosed && localClosedDay.length === days.length && (
-        <Text style={styles.wrongText}>
+        <CustomText style={styles.wrongText}>
           모든 요일을 휴일로 설정할 수 없어요
-        </Text>
+        </CustomText>
       )}
     </View>
   );

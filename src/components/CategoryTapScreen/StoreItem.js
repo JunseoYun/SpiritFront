@@ -10,6 +10,7 @@ import useStoreStatus from '../../hooks/useStoreStatus';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../common/CustomText';
 
 const fontScale = PixelRatio.getFontScale();
 
@@ -109,9 +110,11 @@ const StoreItem = ({store, location, navigation}) => {
 
                   return (
                     <View style={overlayStyle}>
-                      <Text style={Categorystyles.overlayText}>
+                      <CustomText
+                        maxScale={1.3}
+                        style={Categorystyles.overlayText}>
                         {overlayText}
-                      </Text>
+                      </CustomText>
                     </View>
                   );
                 })()}
@@ -176,9 +179,11 @@ const StoreItem = ({store, location, navigation}) => {
 
                   return (
                     <View style={overlayStyle}>
-                      <Text style={Categorystyles.overlayText}>
+                      <CustomText
+                        maxScale={1.3}
+                        style={Categorystyles.overlayText}>
                         {overlayText}
-                      </Text>
+                      </CustomText>
                     </View>
                   );
                 })()}
@@ -233,22 +238,20 @@ const StoreItem = ({store, location, navigation}) => {
                           style={Categorystyles.gradientTop}
                           pointerEvents="none"
                         />
-                        <Text
+                        <CustomText
                           style={Categorystyles.menuName}
-                          allowFontScaling={false}
                           numberOfLines={1}
                           ellipsizeMode="tail">
                           {menu.name}
-                        </Text>
-                        <Text
+                        </CustomText>
+                        <CustomText
                           style={Categorystyles.menuPrice}
-                          allowFontScaling={false}
                           numberOfLines={1}
                           ellipsizeMode="tail">
                           {/^\d+$/.test(menu?.price)
                             ? Number(menu.price).toLocaleString() + '원'
                             : menu?.price}
-                        </Text>
+                        </CustomText>
                       </View>
                     )}
                   </FastImage>
@@ -264,21 +267,21 @@ const StoreItem = ({store, location, navigation}) => {
                 const isLast = index === store.mainDrinkDtos.length - 1;
                 return (
                   <React.Fragment key={index}>
-                    <Text
+                    <CustomText
                       style={Categorystyles.drinkText}
                       {...(isLast
                         ? {numberOfLines: 1, ellipsizeMode: 'tail', flex: 1}
                         : {})} // 마지막만 적용
                     >
                       {translateAlcohol(drink.type)} {drink.price}
-                    </Text>
+                    </CustomText>
                     {index !== store.mainDrinkDtos.length - 1 && (
                       <View style={Categorystyles.division} />
                     )}
                   </React.Fragment>
                 );
               })
-            : '메인주류가 없습니다.'}
+            : null}
         </View>
         <View style={Categorystyles.infoTitleView}>
           {store.isCertified == true && (
@@ -290,32 +293,35 @@ const StoreItem = ({store, location, navigation}) => {
               ]}
             />
           )}
-          <Text
+          <CustomText
             style={Categorystyles.storeName}
             numberOfLines={1}
             ellipsizeMode="tail">
             {store.name}
-          </Text>
+          </CustomText>
         </View>
         <View style={Categorystyles.infoReviewView}>
           <FontAwesomeIcon name="star" size={iconSize} color="#FED348" />
-          <Text style={Categorystyles.infoText}> {store.storeRate || 0}</Text>
-          <Text
+          <CustomText style={Categorystyles.infoText}>
+            {' '}
+            {store.storeRate || 0}
+          </CustomText>
+          <CustomText
             style={[
               Categorystyles.infoText,
               {color: '#999', fontFamily: 'Pretendard-Regular', marginLeft: 3},
             ]}>
             ({store.reviewCount || 0})
-          </Text>
+          </CustomText>
           <Ionicons
             name="heart"
             size={iconSize}
             color={'#F85656'}
             style={{marginLeft: 7}}
           />
-          <Text style={[Categorystyles.infoText, {marginLeft: 3}]}>
+          <CustomText style={[Categorystyles.infoText, {marginLeft: 3}]}>
             {store.storeLikeCount || 0}
-          </Text>
+          </CustomText>
         </View>
         <View
           style={[
@@ -326,28 +332,32 @@ const StoreItem = ({store, location, navigation}) => {
           ]}>
           <View style={Categorystyles.infoView}>
             {store?.isAlwaysOpen == true ? (
-              <Text style={Categorystyles.subInfoText}>24시간 영업</Text>
+              <CustomText style={Categorystyles.subInfoText}>
+                24시간 영업
+              </CustomText>
             ) : store?.isAlwaysOpen == false && closed ? (
-              <Text style={Categorystyles.subInfoText}>금일 휴무</Text>
+              <CustomText style={Categorystyles.subInfoText}>
+                금일 휴무
+              </CustomText>
             ) : !isOpen && nextclosed && !closed ? (
-              <Text style={Categorystyles.subInfoText}>
+              <CustomText style={Categorystyles.subInfoText}>
                 영업 종료 익일 휴무
-              </Text>
+              </CustomText>
             ) : !isOpen && !nextclosed && !closed ? (
-              <Text style={Categorystyles.subInfoText}>
+              <CustomText style={Categorystyles.subInfoText}>
                 영업 전 {starttime ? `${starttime} 영업 시작` : ''}
-              </Text>
+              </CustomText>
             ) : (
-              <Text style={Categorystyles.subInfoText}>
+              <CustomText style={Categorystyles.subInfoText}>
                 영업 중 {`${starttime} - ${endtime}` || '정보 없음'}
-              </Text>
+              </CustomText>
             )}
           </View>
           {breakstart && breakend && (
             <View style={Categorystyles.infoView}>
-              <Text style={Categorystyles.subInfoText}>
+              <CustomText style={Categorystyles.subInfoText}>
                 휴게시간 {breakstart} ~ {breakend}
-              </Text>
+              </CustomText>
             </View>
           )}
         </View>

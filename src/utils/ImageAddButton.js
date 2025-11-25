@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet, Dimensions} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import CustomText from '../components/common/CustomText';
 
 const {width} = Dimensions.get('window');
 
@@ -17,9 +18,9 @@ const ImageAddButton = ({
       onPress={onPress}
       disabled={disabled}>
       <MaterialIcons name="photo-camera" size={32} color="#7B8089" />
-      <Text style={styles.countText}>
+      <CustomText style={styles.countText}>
         {currentCount}/{maxCount}
-      </Text>
+      </CustomText>
     </Pressable>
   );
 };

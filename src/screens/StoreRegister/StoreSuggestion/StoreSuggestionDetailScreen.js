@@ -32,6 +32,7 @@ import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 import BottomActionButton from '../../../utils/BottomActionButton';
 import ColorUtil from '../../../utils/ColorUtil';
 import useDoubleBackExit from '../../../hooks/useDoubleBackExit';
+import CustomText from '../../../components/common/CustomText';
 const StoreSuggestionDetailScreen = ({navigation}) => {
   useDoubleBackExit(navigation);
   const {bottom} = useSafeAndroidInsets();
@@ -166,7 +167,7 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
         <Pressable
           onPress={confirmSubmission}
           disabled={!preStoreId || !isChanged || loading}>
-          <Text
+          <CustomText
             style={[
               styles.nextButton,
               (!preStoreId || !isChanged || loading) && {
@@ -174,7 +175,7 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
               },
             ]}>
             {'제보'}
-          </Text>
+          </CustomText>
         </Pressable>
       ),
     });
@@ -346,11 +347,11 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
           keyboardShouldPersistTaps="handled">
           <View style={styles.tipView}>
             <View style={styles.tipbadge}>
-              <Text style={styles.tipbadgeText}>Tip</Text>
+              <CustomText style={styles.tipbadgeText}>Tip</CustomText>
             </View>
-            <Text style={styles.tipText}>
+            <CustomText style={styles.tipText}>
               항목은 선택적으로 입력할 수 있습니다
-            </Text>
+            </CustomText>
           </View>
           <StoreCategory
             selectedCategory={selectedCategory}
@@ -411,15 +412,17 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
             <View style={styles.modalIconWrapper}>
               <Ionicons name="checkmark" size={26} color="#fff" />
             </View>
-            <Text style={styles.modalTitle}>매장 제보가 완료되었어요 🎉</Text>
-            <Text style={styles.modalDescription}>
+            <CustomText style={styles.modalTitle}>
+              매장 제보가 완료되었어요 🎉
+            </CustomText>
+            <CustomText style={styles.modalDescription}>
               매장 제보를 해주셔서 감사합니다.
-            </Text>
+            </CustomText>
             <View style={styles.modalButtonGroup}>
               <Pressable
                 style={styles.modalPrimaryButton}
                 onPress={handleModalConfirm}>
-                <Text style={styles.modalPrimaryLabel}>확인</Text>
+                <CustomText style={styles.modalPrimaryLabel}>확인</CustomText>
               </Pressable>
             </View>
           </View>
@@ -536,7 +539,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modalDescription: {
-    marginTop: 12,
+    paddingTop: 12,
     fontSize: 15,
     fontFamily: 'Pretendard-Regular',
     color: '#555',

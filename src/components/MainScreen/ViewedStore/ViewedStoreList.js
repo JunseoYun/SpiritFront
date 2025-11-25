@@ -12,19 +12,9 @@ import ViewedStoreItem from './ViewedStoreItem';
 import {Store_getby_viewed} from '../../../api/storeApi';
 import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
+import CustomText from '../../common/CustomText';
 
-let fontScale = PixelRatio.getFontScale(); // let으로 변경
-if (fontScale > 1.7) fontScale = 1.7;
-
-const fontSize = 18 * fontScale;
-const subfontSize = 13 * fontScale;
-
-const ViewedStoreList = ({
-  refresh,
-  navigation,
-  location,
-  loaded,
-}) => {
+const ViewedStoreList = ({refresh, navigation, location, loaded}) => {
   const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -110,18 +100,10 @@ const ViewedStoreList = ({
                 marginRight: 20,
                 alignItems: 'center',
               }}>
-              <Text
-                allowFontScaling={false}
-                style={[styles.storeText, {fontSize}]}>
-                최근 본 매장
-              </Text>
+              <CustomText style={[styles.storeText]}>최근 본 매장</CustomText>
               {stores.length >= 4 && (
                 <View style={styles.totalView}>
-                  <Text
-                    allowFontScaling={false}
-                    style={[styles.totalText, {fontSize: subfontSize}]}>
-                    전체보기
-                  </Text>
+                  <CustomText style={[styles.totalText]}>전체보기</CustomText>
                   <Feather name={'chevron-right'} size={15} color="#333" />
                 </View>
               )}
@@ -170,6 +152,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   storeText: {
+    fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#181a1a',
   },
@@ -182,6 +165,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalText: {
+    fontSize: 13,
     fontFamily: 'Pretendard-Regular',
     color: '#333',
   },

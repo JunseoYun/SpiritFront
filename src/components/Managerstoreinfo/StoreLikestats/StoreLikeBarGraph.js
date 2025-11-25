@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
+import CustomText from '../../common/CustomText';
 
 const BAR_HEIGHT = 170;
 
@@ -25,7 +26,9 @@ const StoreLikeBarGraph = ({ageGenderStats = []}) => {
   const maxCount = Math.max(...groupedData.flatMap(d => [d.male, d.female]), 0);
   const renderGuideLine = (value, top, key) => (
     <View key={key} style={[styles.guideLine, {top}]}>
-      {value !== '0명' && <Text style={styles.guideLabel}>{value}</Text>}
+      {value !== '0명' && (
+        <CustomText style={styles.guideLabel}>{value}</CustomText>
+      )}
       <View style={styles.line} />
     </View>
   );
@@ -41,7 +44,7 @@ const StoreLikeBarGraph = ({ageGenderStats = []}) => {
             alignItems: 'center',
           },
         ]}>
-        <Text style={{color: '#aaa'}}>데이터 없음</Text>
+        <CustomText style={{color: '#aaa'}}>데이터 없음</CustomText>
       </View>
     );
   }
@@ -79,7 +82,7 @@ const StoreLikeBarGraph = ({ageGenderStats = []}) => {
                 ]}
               />
             </View>
-            <Text style={styles.ageLabel}>{item.age}</Text>
+            <CustomText style={styles.ageLabel}>{item.age}</CustomText>
           </View>
         ))}
       </View>

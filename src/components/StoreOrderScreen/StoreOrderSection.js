@@ -8,6 +8,7 @@ import {
   Image,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../common/CustomText';
 
 const StoreOrderSection = ({
   ensureArray,
@@ -32,10 +33,12 @@ const StoreOrderSection = ({
   return (
     <View key={sectionKey} style={styles.section} onLayout={handleLayout}>
       {sectionTitle && list.length > 0 ? (
-        <Text style={styles.sectionTitle}>{sectionTitle}</Text>
+        <CustomText style={styles.sectionTitle}>{sectionTitle}</CustomText>
       ) : null}
       {list.length === 0 ? (
-        <Text style={styles.emptyMessage}>등록된 항목이 없습니다.</Text>
+        <CustomText style={styles.emptyMessage}>
+          등록된 항목이 없습니다.
+        </CustomText>
       ) : (
         <View>
           {list.map(item => {
@@ -78,17 +81,23 @@ const StoreOrderSection = ({
                         : styles.itemMainCompact,
                     ]}>
                     <View style={styles.itemNameRow}>
-                      <Text style={styles.itemName}>{item.name}</Text>
+                      <CustomText style={styles.itemName}>
+                        {item.name}
+                      </CustomText>
                       {tagLabel ? (
                         <View style={styles.itemBadge}>
-                          <Text style={styles.itemBadgeText}>{tagLabel}</Text>
+                          <CustomText style={styles.itemBadgeText}>
+                            {tagLabel}
+                          </CustomText>
                         </View>
                       ) : null}
                     </View>
                     {description ? (
-                      <Text style={styles.itemDescription} numberOfLines={2}>
+                      <CustomText
+                        style={styles.itemDescription}
+                        numberOfLines={2}>
                         {description}
-                      </Text>
+                      </CustomText>
                     ) : null}
                   </View>
 
@@ -109,7 +118,9 @@ const StoreOrderSection = ({
 
                 <View style={styles.itemFooter}>
                   <View style={styles.footerPrice}>
-                    <Text style={styles.itemPriceText}>{formattedPrice}</Text>
+                    <CustomText style={styles.itemPriceText}>
+                      {formattedPrice}
+                    </CustomText>
                   </View>
 
                   {item.quantity === 0 ? (
@@ -118,7 +129,9 @@ const StoreOrderSection = ({
                       onPress={() => onChange(item.id, 1)}
                       activeOpacity={0.92}>
                       <Ionicons name="add" size={16} color="#1F2937" />
-                      <Text style={styles.addButtonLabel}>담기</Text>
+                      <CustomText style={styles.addButtonLabel}>
+                        담기
+                      </CustomText>
                     </TouchableOpacity>
                   ) : (
                     <View style={styles.stepper}>
@@ -131,7 +144,9 @@ const StoreOrderSection = ({
                         activeOpacity={0.85}>
                         <Ionicons name="remove" size={16} color="#1F2937" />
                       </TouchableOpacity>
-                      <Text style={styles.stepperValue}>{item.quantity}</Text>
+                      <CustomText style={styles.stepperValue}>
+                        {item.quantity}
+                      </CustomText>
                       <TouchableOpacity
                         style={[styles.stepperButton, styles.stepperButtonPlus]}
                         onPress={() => onChange(item.id, 1)}

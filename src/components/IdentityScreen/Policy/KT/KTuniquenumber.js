@@ -1,10 +1,11 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import CustomText from '../../../common/CustomText';
 
 const KTuniquenumber = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.text}>
+      <CustomText style={styles.text}>
         고유식별정보처리 동의{'\n'}
         {'\n'}
         [(주)케이티 귀중]{'\n'}
@@ -41,7 +42,7 @@ const KTuniquenumber = () => {
         {'\n'}
         6. 위 개인정보 수집,이용 및 취급위탁에 동의하지 않을 권리가 있으며,
         동의하지 않으실 경우 서비스를 이용할 수 없습니다.
-      </Text>
+      </CustomText>
     </ScrollView>
   );
 };

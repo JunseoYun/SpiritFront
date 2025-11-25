@@ -15,6 +15,8 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FastImage from 'react-native-fast-image';
 import {review_set_reply} from '../../api/reviewApi';
 import Loading from '../../hooks/Loading';
+import CustomText from '../common/CustomText';
+import CustomTextInput from '../common/CustomTextInput';
 
 const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -136,29 +138,31 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
           resizeMode={FastImage.resizeMode.cover}
         />
         <View style={styles.reviewHeaderText}>
-          <Text
+          <CustomText
             style={[
               styles.writerName,
               item.writerNickname === '탈퇴한 사용자' && {color: '#999'},
             ]}>
             {item.writerNickname}
-          </Text>
+          </CustomText>
           <View style={styles.infoView}>
             <FontAwesomeIcon name="star" size={17} color="#FCC104" />
-            <Text style={styles.reviewInfo}> {item.rate}</Text>
+            <CustomText style={styles.reviewInfo}> {item.rate}</CustomText>
           </View>
         </View>
-        <Text style={styles.reviewDate}>{formattedVisitedDate} 방문</Text>
+        <CustomText style={styles.reviewDate}>
+          {formattedVisitedDate} 방문
+        </CustomText>
       </View>
 
       {/* 리뷰 본문 */}
       <View style={styles.contentView}>
-        <Text style={styles.reviewContent}>{displayedContent}</Text>
+        <CustomText style={styles.reviewContent}>{displayedContent}</CustomText>
         {isLongText && (
           <Pressable onPress={() => setIsExpanded(!isExpanded)}>
-            <Text style={styles.moreText}>
+            <CustomText style={styles.moreText}>
               {isExpanded ? '간략히 보기' : '더보기'}
-            </Text>
+            </CustomText>
           </Pressable>
         )}
       </View>
@@ -184,12 +188,14 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
 
       {/* 하단 날짜/신고 */}
       <View style={styles.bottomView}>
-        <Text style={styles.datetimeText}>작성 {formattedCreatedDate}</Text>
+        <CustomText style={styles.datetimeText}>
+          작성 {formattedCreatedDate}
+        </CustomText>
         <Pressable
           onPress={() => {
             navigation.navigate('ReviewReportScreen', {reviewId: item.id});
           }}>
-          <Text style={styles.datetimeText}>신고하기</Text>
+          <CustomText style={styles.datetimeText}>신고하기</CustomText>
         </Pressable>
       </View>
 
@@ -200,14 +206,14 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
             style={styles.recommentView}
             onPress={() => setIsReplying(prev => !prev)}>
             <Feather name="corner-down-right" size={17} color="#333" />
-            <Text style={styles.recommentText}>
+            <CustomText style={styles.recommentText}>
               {isReplying ? '취소' : '답글달기'}
-            </Text>
+            </CustomText>
           </Pressable>
 
           {isReplying && (
             <View style={styles.replyForm}>
-              <TextInput
+              <CustomTextInput
                 style={styles.replyInput}
                 placeholder="답글을 입력하세요"
                 value={replyText}
@@ -224,12 +230,12 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
                 multiline
               />
               {overText && (
-                <Text style={styles.errorText}>
+                <CustomText style={styles.errorText}>
                   답글은 최대 2000자까지 입력 가능합니다.
-                </Text>
+                </CustomText>
               )}
               <Pressable style={styles.replyButton} onPress={handleReplySubmit}>
-                <Text style={styles.replyButtonText}>등록</Text>
+                <CustomText style={styles.replyButtonText}>등록</CustomText>
               </Pressable>
             </View>
           )}
@@ -250,13 +256,15 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
 
             <View style={{flex: 1}}>
               <View style={styles.replyHeader}>
-                <Text style={styles.replyOwnerName}>사장님</Text>
-                <Text style={styles.replyDate}>{formatDate(repliedAt)}</Text>
+                <CustomText style={styles.replyOwnerName}>사장님</CustomText>
+                <CustomText style={styles.replyDate}>
+                  {formatDate(repliedAt)}
+                </CustomText>
               </View>
 
               {isEditing ? (
                 <View style={styles.editBox}>
-                  <TextInput
+                  <CustomTextInput
                     ref={editInputRef}
                     style={[styles.replyInput, {backgroundColor: '#fff'}]}
                     value={editText}
@@ -272,14 +280,17 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
                     <Pressable
                       style={[styles.replyButton, {marginRight: 6}]}
                       onPress={handleReplySave}>
-                      <Text style={styles.replyButtonText}>저장</Text>
+                      <CustomText style={styles.replyButtonText}>
+                        저장
+                      </CustomText>
                     </Pressable>
                     <Pressable
                       style={[styles.replyButton, {backgroundColor: '#eee'}]}
                       onPress={() => setIsEditing(false)}>
-                      <Text style={[styles.replyButtonText, {color: '#333'}]}>
+                      <CustomText
+                        style={[styles.replyButtonText, {color: '#333'}]}>
                         취소
-                      </Text>
+                      </CustomText>
                     </Pressable>
                   </View>
                 </View>
@@ -287,7 +298,7 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
                 <View style={styles.replyBubble}>
                   {!isEditing && (
                     <>
-                      <Text style={styles.replyText}>{reply}</Text>
+                      <CustomText style={styles.replyText}>{reply}</CustomText>
                       {isOwner && (
                         <View style={styles.editView}>
                           <Pressable
@@ -296,7 +307,9 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
                               setIsEditing(true);
                               setEditText(reply);
                             }}>
-                            <Text style={styles.actionBtnText}>수정</Text>
+                            <CustomText style={styles.actionBtnText}>
+                              수정
+                            </CustomText>
                           </Pressable>
                           <Pressable
                             style={[
@@ -312,10 +325,10 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
                               setIsEditing(false);
                               setIsReplying(false);
                             }}>
-                            <Text
+                            <CustomText
                               style={[styles.actionBtnText, {color: '#333'}]}>
                               삭제
-                            </Text>
+                            </CustomText>
                           </Pressable>
                         </View>
                       )}
@@ -323,7 +336,7 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
                   )}
 
                   <View style={{display: isEditing ? 'flex' : 'none'}}>
-                    <TextInput
+                    <CustomTextInput
                       ref={editInputRef}
                       style={[styles.replyInput, {backgroundColor: '#fff'}]}
                       value={editText}
@@ -334,14 +347,17 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
                       <Pressable
                         style={[styles.replyButton, {marginRight: 6}]}
                         onPress={handleReplySave}>
-                        <Text style={styles.replyButtonText}>저장</Text>
+                        <CustomText style={styles.replyButtonText}>
+                          저장
+                        </CustomText>
                       </Pressable>
                       <Pressable
                         style={[styles.replyButton, {backgroundColor: '#eee'}]}
                         onPress={() => setIsEditing(false)}>
-                        <Text style={[styles.replyButtonText, {color: '#333'}]}>
+                        <CustomText
+                          style={[styles.replyButtonText, {color: '#333'}]}>
                           취소
-                        </Text>
+                        </CustomText>
                       </Pressable>
                     </View>
                   </View>

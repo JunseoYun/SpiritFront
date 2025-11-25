@@ -16,6 +16,7 @@ import {Userdataget, user_marketing_consent} from '../../api/userApi';
 import Loading from '../../hooks/Loading';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import CustomText from '../../components/common/CustomText';
 
 const Toggle = ({value, onToggle}) => {
   const translateX = useState(new Animated.Value(value ? 22 : 2))[0];
@@ -103,40 +104,44 @@ const NotificationSetScreen = ({navigation}) => {
     <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
       <View style={styles.section}>
         <View style={styles.row1}>
-          <Text style={styles.label}>시스템 알림</Text>
+          <CustomText style={styles.label}>시스템 알림</CustomText>
 
-          <Text
+          <CustomText
             style={[
               styles.statusText,
               {color: notificationEnabled ? '#80D2F4' : '#999'},
             ]}>
             {notificationEnabled ? 'ON' : 'OFF'}
-          </Text>
+          </CustomText>
         </View>
 
-        <Text style={styles.guide}>
+        <CustomText style={styles.guide}>
           시스템 알림은 휴대폰의 알림 설정에서 변경할 수 있어요.
-        </Text>
+        </CustomText>
         {!notificationEnabled && (
           <Pressable onPress={handleGoToSettings}>
-            <Text style={styles.underlineButton}>설정으로 이동</Text>
+            <CustomText style={styles.underlineButton}>
+              설정으로 이동
+            </CustomText>
           </Pressable>
         )}
       </View>
       {notificationEnabled && (
         <View style={styles.section}>
           <View style={styles.row}>
-            <Text style={styles.label}>마케팅 알림 수신 (선택)</Text>
+            <CustomText style={styles.label}>
+              마케팅 알림 수신 (선택)
+            </CustomText>
 
             <Toggle value={marketingEnabled} onToggle={handleMarketingToggle} />
           </View>
           {marketingEnabled && (
-            <Text style={styles.label2}>
+            <CustomText style={styles.label2}>
               {new Date(
                 userdata.marketingAgreedAt || Date.now(),
               ).toLocaleDateString()}{' '}
               동의
-            </Text>
+            </CustomText>
           )}
         </View>
       )}

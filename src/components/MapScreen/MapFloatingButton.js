@@ -2,6 +2,7 @@ import React from 'react';
 import {Pressable, StyleSheet, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../common/CustomText';
 
 const hitSlop = {top: 12, bottom: 12, left: 12, right: 12};
 
@@ -12,7 +13,7 @@ const MapFloatingButton = ({bottom = 20, onPress}) => {
       onPress={onPress}
       hitSlop={hitSlop}>
       <Ionicons name="map" size={17} color={ColorUtil.main} />
-      <Text style={styles.text}>지도보기</Text>
+      <CustomText style={styles.text}>지도보기</CustomText>
     </Pressable>
   );
 };

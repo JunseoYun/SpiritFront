@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet, PixelRatio} from 'react-native';
 import Octicons from 'react-native-vector-icons/Octicons';
 import {normalizeFont} from '../../../hooks/normalizeFont';
+import CustomText from '../../common/CustomText';
 const fontScale = PixelRatio.getFontScale();
 const OperatingDayItem = ({
   day,
@@ -31,20 +32,19 @@ const OperatingDayItem = ({
             alignItems: 'center',
           },
       ]}>
-      <Text style={[styles.operateDayText, isClosedDay && {color: '#6b7280'}]}>
+      <CustomText
+        style={[styles.operateDayText, isClosedDay && {color: '#6b7280'}]}>
         {day.label}요일
-      </Text>
+      </CustomText>
       <View style={[styles.timeContainer]}>
         <View>
           <View style={styles.timeInputView}>
             {isClosedDay ? (
-              <Text style={styles.holidayText}>휴무</Text>
+              <CustomText style={styles.holidayText}>휴무</CustomText>
             ) : (
               <>
-                <Text style={styles.timeInputTitle} allowFontScaling={false}>
-                  영업 시간
-                </Text>
-                <Text style={styles.timeInputText} allowFontScaling={false}>
+                <CustomText style={styles.timeInputTitle}>영업 시간</CustomText>
+                <CustomText style={styles.timeInputText}>
                   {openHour
                     ? `${openHour}:${openMinute} ~ ${
                         closeHour >= 24
@@ -52,7 +52,7 @@ const OperatingDayItem = ({
                           : String(closeHour).padStart(2, '0')
                       }:${closeMinute}`
                     : '미설정'}
-                </Text>
+                </CustomText>
               </>
             )}
           </View>
@@ -60,10 +60,10 @@ const OperatingDayItem = ({
             ? null
             : breakStartHour && (
                 <View style={styles.timeInputView}>
-                  <Text style={styles.timeInputTitle} allowFontScaling={false}>
+                  <CustomText style={styles.timeInputTitle}>
                     브레이크타임
-                  </Text>
-                  <Text style={styles.timeInputText} allowFontScaling={false}>
+                  </CustomText>
+                  <CustomText style={styles.timeInputText}>
                     {breakStartHour
                       ? `${breakStartHour}:${breakStartMinute} ~ ${
                           breakEndHour >= 24
@@ -74,7 +74,7 @@ const OperatingDayItem = ({
                             : String(breakEndHour).padStart(2, '0')
                         }:${breakEndMinute}`
                       : '미설정'}
-                  </Text>
+                  </CustomText>
                 </View>
               )}
         </View>
@@ -121,13 +121,13 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     color: '#999',
     fontFamily: 'Pretendard-Regular',
-    fontSize: normalizeFont(15, 1.7),
+    fontSize: 15,
     marginRight: 7,
   },
   timeInputText: {
     lineHeight: 30,
     fontFamily: 'Pretendard-Medium',
-    fontSize: normalizeFont(15, 1.7),
+    fontSize: 15,
     color: '#333',
   },
   holidayText: {

@@ -1,5 +1,6 @@
 import React, {useMemo} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
+import CustomText from '../common/CustomText';
 
 const AgeDistributionTable = ({ageDistributionData, option}) => {
   const maxPopulation = useMemo(
@@ -11,11 +12,11 @@ const AgeDistributionTable = ({ageDistributionData, option}) => {
     <View style={styles.container}>
       <View style={styles.card}>
         <View style={styles.headerRow}>
-          <Text style={[styles.label, styles.headerText]}>
+          <CustomText style={[styles.label, styles.headerText]}>
             {option === 'storeLike' ? '연령대 (인원)' : '연령대'}
-          </Text>
+          </CustomText>
           <View style={{flex: 1}}>
-            <Text style={styles.headerText}>비율 그래프</Text>
+            <CustomText style={styles.headerText}>비율 그래프</CustomText>
           </View>
         </View>
         {ageDistributionData.map((item, index) => {
@@ -26,9 +27,9 @@ const AgeDistributionTable = ({ageDistributionData, option}) => {
 
           return (
             <View key={item.name} style={styles.dataRow}>
-              <Text style={[styles.label, isMax && styles.boldText]}>
+              <CustomText style={[styles.label, isMax && styles.boldText]}>
                 {item.name} {option === 'storeLike' && `(${item.count})`}
-              </Text>
+              </CustomText>
               <View style={styles.barContainer}>
                 <View
                   style={[
@@ -39,13 +40,13 @@ const AgeDistributionTable = ({ageDistributionData, option}) => {
                     },
                   ]}
                 />
-                <Text
+                <CustomText
                   style={[
                     styles.barText,
                     {color: item.population < 5 ? '#777' : '#ffffff'},
                   ]}>
                   {percentStr}
-                </Text>
+                </CustomText>
               </View>
             </View>
           );

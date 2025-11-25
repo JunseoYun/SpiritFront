@@ -53,6 +53,8 @@ import ColorUtil from '../../../utils/ColorUtil';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import CustomTextInput from '../../../components/common/CustomTextInput';
+import CustomText from '../../../components/common/CustomText';
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
   {label: '맥주', value: 'BEER'},
@@ -360,13 +362,13 @@ const AlcoholEditScreen = ({route, navigation}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={isButtonEnabled ? AlcoholAdd : null}>
-          <Text
+          <CustomText
             style={[
               styles.headerButton,
               {color: isButtonEnabled ? '#3CBBFF' : '#A5AAB3'},
             ]}>
             완료
-          </Text>
+          </CustomText>
         </Pressable>
       ),
       headerLeft: () => (
@@ -448,7 +450,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
           <View style={styles.imageBoxWrapper}>
             <Pressable style={styles.emptyBox} onPress={selectImage}>
               <MaterialIcons name="photo-camera" size={32} color="#7B8089" />
-              <Text style={styles.countText}>{imageCount}/1</Text>
+              <CustomText style={styles.countText}>{imageCount}/1</CustomText>
             </Pressable>
 
             {image && (
@@ -463,7 +465,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
 
           {/* 주종 */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>주종</Text>
+            <CustomText style={styles.sectionTitle}>주종</CustomText>
             <View style={styles.alcoholGrid}>
               {alcoholTypes.map(item => {
                 const isSelected = alcoholTypeValue === item.value;
@@ -479,7 +481,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
                         : styles.alcoholUnselected,
                     ]}
                     onPress={() => setAlcoholTypeValue(item.value)}>
-                    <Text
+                    <CustomText
                       style={[
                         styles.alcoholLabel,
                         isSelected
@@ -487,7 +489,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
                           : styles.alcoholLabelUnselected,
                       ]}>
                       {item.label}
-                    </Text>
+                    </CustomText>
                   </Pressable>
                 );
               })}
@@ -496,8 +498,8 @@ const AlcoholEditScreen = ({route, navigation}) => {
 
           {/* 이름 */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>주류 이름</Text>
-            <TextInput
+            <CustomText style={styles.sectionTitle}>주류 이름</CustomText>
+            <CustomTextInput
               style={[
                 styles.input,
                 (nameHasForbidden || nameerror) && styles.fobiddenerror,
@@ -515,22 +517,24 @@ const AlcoholEditScreen = ({route, navigation}) => {
               onBlur={() => setIsNameFocused(false)}
             />
             {nameHasForbidden && (
-              <Text style={styles.forbiddenText}>
+              <CustomText style={styles.forbiddenText}>
                 비속어 및 이용 약관에 위배되는 내용이 포함되어 있습니다.
-              </Text>
+              </CustomText>
             )}
             {nameerror && (
-              <Text style={styles.forbiddenText}>
+              <CustomText style={styles.forbiddenText}>
                 주류 이름을 입력해주세요.
-              </Text>
+              </CustomText>
             )}
-            <Text style={styles.countText}>{nameValue.length}/50</Text>
+            <CustomText style={styles.countText}>
+              {nameValue.length}/50
+            </CustomText>
           </View>
 
           {/* 가격 */}
           <View style={styles.section}>
             <View style={styles.rowBetween}>
-              <Text style={styles.sectionTitle}>주류 가격</Text>
+              <CustomText style={styles.sectionTitle}>주류 가격</CustomText>
               <Pressable
                 style={styles.radioItem}
                 onPress={() => setIsVariablePrice(prev => !prev)}>
@@ -541,13 +545,13 @@ const AlcoholEditScreen = ({route, navigation}) => {
                   ]}>
                   {isVariablePrice && <View style={styles.radioInnerDot} />}
                 </View>
-                <Text
+                <CustomText
                   style={[
                     styles.radioLabel,
                     isVariablePrice && styles.radioLabelSelected,
                   ]}>
                   변동
-                </Text>
+                </CustomText>
               </Pressable>
             </View>
 
@@ -559,7 +563,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
                     isPriceFocused && !priceerror && styles.isFocused,
                     priceerror && styles.fobiddenerror,
                   ]}>
-                  <TextInput
+                  <CustomTextInput
                     style={styles.priceInput}
                     keyboardType="numeric"
                     placeholder="주류 가격을 입력하세요."
@@ -569,10 +573,12 @@ const AlcoholEditScreen = ({route, navigation}) => {
                     onFocus={() => setIsPirceFocused(true)}
                     onBlur={() => setIsPirceFocused(false)}
                   />
-                  <Text style={styles.won}>원</Text>
+                  <CustomText style={styles.won}>원</CustomText>
                 </View>
                 {priceerror && (
-                  <Text style={styles.forbiddenText}>가격을 입력해주세요.</Text>
+                  <CustomText style={styles.forbiddenText}>
+                    가격을 입력해주세요.
+                  </CustomText>
                 )}
               </>
             )}
@@ -580,8 +586,10 @@ const AlcoholEditScreen = ({route, navigation}) => {
 
           {/* 소개 */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>주류 소개 (선택)</Text>
-            <TextInput
+            <CustomText style={styles.sectionTitle}>
+              주류 소개 (선택)
+            </CustomText>
+            <CustomTextInput
               style={[
                 styles.textarea,
                 descHasForbidden && styles.fobiddenerror,
@@ -597,11 +605,13 @@ const AlcoholEditScreen = ({route, navigation}) => {
               onBlur={() => setIsDesFocused(false)}
             />
             {descHasForbidden && (
-              <Text style={styles.forbiddenText}>
+              <CustomText style={styles.forbiddenText}>
                 비속어 및 이용 약관에 위배되는 내용이 포함되어 있습니다.
-              </Text>
+              </CustomText>
             )}
-            <Text style={styles.countText}>{descValue.length}/100</Text>
+            <CustomText style={styles.countText}>
+              {descValue.length}/100
+            </CustomText>
           </View>
 
           {/* 삭제 버튼 */}
@@ -626,7 +636,7 @@ const AlcoholEditScreen = ({route, navigation}) => {
                     },
                   })
                 }>
-                <Text style={styles.deleteMenuText}>삭제하기</Text>
+                <CustomText style={styles.deleteMenuText}>삭제하기</CustomText>
               </Pressable>
             </View>
           )}

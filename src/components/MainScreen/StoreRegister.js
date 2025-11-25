@@ -4,6 +4,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import {iniBasictNotification} from '../../hooks/notification/useNotificationPermission';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {openSettings} from 'react-native-permissions';
+import CustomText from '../common/CustomText';
 
 const StoreRegister = ({handlestoreItemClick}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -57,7 +58,7 @@ const StoreRegister = ({handlestoreItemClick}) => {
             accessibilityLabel={option.title}>
             <View style={[styles.cover]}>
               <Feather name={option.icon} size={22} color={'#3CBBFF'} />
-              <Text style={styles.title}>{option.title}</Text>
+              <CustomText style={styles.title}>{option.title}</CustomText>
             </View>
           </Pressable>
         );

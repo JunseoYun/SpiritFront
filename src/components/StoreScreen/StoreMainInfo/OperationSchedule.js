@@ -5,6 +5,7 @@ import {View, Text, StyleSheet, Pressable} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../common/CustomText';
 const OperationSchedule = ({
   toggleExpand,
   isExpanded = false,
@@ -29,8 +30,12 @@ const OperationSchedule = ({
 
         {isOpen && !isBreak && isAlwaysOpen == false && (
           <>
-            <Text style={[styles.timetextnow, {color: 'green'}]}>영업 중</Text>
-            <Text style={styles.timetext}>영업 종료 - {endtime}</Text>
+            <CustomText style={[styles.timetextnow, {color: 'green'}]}>
+              영업 중
+            </CustomText>
+            <CustomText style={styles.timetext}>
+              영업 종료 - {endtime}
+            </CustomText>
           </>
         )}
         {!isOpen &&
@@ -39,10 +44,12 @@ const OperationSchedule = ({
           !closed &&
           !nextclosed && (
             <>
-              <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+              <CustomText style={[styles.timetextnow, {color: '#F05650'}]}>
                 영업 종료
-              </Text>
-              <Text style={styles.timetext}>영업 시작 - {starttime}</Text>
+              </CustomText>
+              <CustomText style={styles.timetext}>
+                영업 시작 - {starttime}
+              </CustomText>
             </>
           )}
         {!isOpen &&
@@ -51,31 +58,35 @@ const OperationSchedule = ({
           !closed &&
           nextclosed && (
             <>
-              <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+              <CustomText style={[styles.timetextnow, {color: '#F05650'}]}>
                 영업 종료
-              </Text>
-              <Text style={styles.timetext}>익일 휴무</Text>
+              </CustomText>
+              <CustomText style={styles.timetext}>익일 휴무</CustomText>
             </>
           )}
         {isOpen && isBreak && isAlwaysOpen == false && (
           <>
-            <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+            <CustomText style={[styles.timetextnow, {color: '#F05650'}]}>
               브레이크 타임
-            </Text>
-            <Text style={styles.timetext}>영업 시작 - {breakend}</Text>
+            </CustomText>
+            <CustomText style={styles.timetext}>
+              영업 시작 - {breakend}
+            </CustomText>
           </>
         )}
         {closed && !isOpen && !isBreak && isAlwaysOpen == false && (
           <>
-            <Text style={[styles.timetextnow, {color: '#F05650'}]}>
+            <CustomText style={[styles.timetextnow, {color: '#F05650'}]}>
               금일 휴무
-            </Text>
+            </CustomText>
           </>
         )}
         {isAlwaysOpen == true && (
           <>
-            <Text style={[styles.timetextnow, {color: 'green'}]}>영업 중</Text>
-            <Text style={styles.timetext}>- 연중무휴</Text>
+            <CustomText style={[styles.timetextnow, {color: 'green'}]}>
+              영업 중
+            </CustomText>
+            <CustomText style={styles.timetext}>- 연중무휴</CustomText>
           </>
         )}
 

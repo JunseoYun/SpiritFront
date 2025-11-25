@@ -31,6 +31,7 @@ import MainSearchBar from '../../components/MainScreen/MainSearchBar';
 import NotificationButton from '../../components/MainScreen/NotificationButton';
 import PopularStoresSection from '../../components/MainScreen/PopularStroe/PopularStoresSection';
 import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import CustomText from '../../components/common/CustomText';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -653,13 +654,13 @@ const MainScreen = ({navigation}) => {
               }}
               style={styles.addressPressable}
               onPress={setLocationHandle}>
-              <Text
-                allowFontScaling={false}
+              <CustomText
+                maxScale={1.0}
                 style={styles.todayAddress}
                 numberOfLines={1}
                 ellipsizeMode="tail">
                 {formatAddress(address)}
-              </Text>
+              </CustomText>
               {formatAddress(address) && (
                 <Feather name="chevron-right" size={22} color="#fff" />
               )}
@@ -751,13 +752,13 @@ const MainScreen = ({navigation}) => {
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
           style={styles.addressPressableCompact}
           onPress={setLocationHandle}>
-          <Text
-            allowFontScaling={false}
+          <CustomText
+            maxScale={1.0}
             style={styles.todayAddress2}
             numberOfLines={1}
             ellipsizeMode="tail">
             {formatAddress(address)}
-          </Text>
+          </CustomText>
           {address && (
             <Feather name="chevron-right" size={20} color="#181a1a" />
           )}

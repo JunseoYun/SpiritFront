@@ -9,6 +9,7 @@ import {
   CarFront,
 } from 'lucide-react-native';
 import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../common/CustomText';
 
 const FACILITY_ITEMS = [
   {key: 'hasScreen', label: '스크린·TV', icon: TvMinimal},
@@ -34,7 +35,9 @@ const FacilitiesInfo = ({facilitiesInfoDto}) => {
   if (activeItems.length === 0) {
     return (
       <View style={styles.emptyBox}>
-        <Text style={styles.emptyText}>등록된 편의시설이 없어요.</Text>
+        <CustomText style={styles.emptyText}>
+          등록된 편의시설이 없어요.
+        </CustomText>
       </View>
     );
   }
@@ -50,7 +53,7 @@ const FacilitiesInfo = ({facilitiesInfoDto}) => {
           return (
             <View key={item.key} style={styles.chip}>
               <Icon size={18} color={'#333'} style={{marginRight: 5}} />
-              <Text style={styles.label}>{item.label}</Text>
+              <CustomText style={styles.label}>{item.label}</CustomText>
             </View>
           );
         })}
