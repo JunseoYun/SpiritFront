@@ -100,6 +100,7 @@ const MenuEditScreen = ({route, navigation}) => {
   const [priceValue, setPriceValue] = useState(
     menuPrice === '변동' ? '' : menuPrice || '',
   );
+  const [nameerror, setNameerror] = useState(false);
   const [priceerror, setPriceerror] = useState(false);
 
   const [image, setImage] = useState(originalImage.current);
@@ -261,6 +262,10 @@ const MenuEditScreen = ({route, navigation}) => {
   const MenuAdd = useCallback(async () => {
     if (priceValue == '') {
       setPriceerror(true);
+      return;
+    }
+    if (nameValue == '') {
+      setNameerror(true);
       return;
     }
     try {
@@ -482,8 +487,11 @@ const MenuEditScreen = ({route, navigation}) => {
             <TextInput
               style={[
                 styles.input,
-                nameHasForbidden && styles.fobiddenerror,
-                isNameFocused && !nameHasForbidden && styles.isFocused,
+                (nameHasForbidden || nameerror) && styles.fobiddenerror,
+                isNameFocused &&
+                  !nameHasForbidden &&
+                  !nameerror &&
+                  styles.isFocused,
               ]}
               placeholder="메뉴 이름을 입력하세요"
               placeholderTextColor={ColorUtil.placeholderText}
@@ -496,6 +504,11 @@ const MenuEditScreen = ({route, navigation}) => {
             {nameHasForbidden && (
               <Text style={styles.forbiddenText}>
                 비속어 및 이용 약관에 위배되는 내용이 포함되어 있습니다.
+              </Text>
+            )}
+            {nameerror && (
+              <Text style={styles.forbiddenText}>
+                메뉴 이름을 입력해주세요.
               </Text>
             )}
             <View style={styles.textCountRow}>
