@@ -99,7 +99,7 @@ const MapFilterHeader = ({
               storeatmCount > 0 && styles.filterChipActive,
             ]}
             onPress={() => {
-              setFilterInitialTab('매장분위기');
+              setFilterInitialTab('분위기');
               setFilterModalVisible(true);
             }}>
             <CustomText
@@ -107,7 +107,7 @@ const MapFilterHeader = ({
                 styles.filterText,
                 storeatmCount > 0 && styles.filterTextActive,
               ]}>
-              매장분위기
+              분위기
             </CustomText>
           </Pressable>
           {storeatmCount > 0 && (

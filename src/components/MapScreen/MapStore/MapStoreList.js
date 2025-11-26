@@ -851,11 +851,11 @@ const MapStoreList = ({
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filterInitialTab, setFilterInitialTab] = useState('거리');
   const [selectedFilters, setSelectedFilters] = useState({
-    거리: '1km',
+    거리: '2km',
     카테고리: '',
     주종: '',
     방문시간: '',
-    매장분위기: '',
+    분위기: '',
     인원: '',
     주차: '',
     콜키지: '',
@@ -953,18 +953,18 @@ const MapStoreList = ({
     setListfastview(true);
     bottomSheetRef.current.snapToIndex(1);
   };
-  const distanceLabel = selectedFilters['거리'] || '1km';
+  const distanceLabel = selectedFilters['거리'] || '2km';
   const categoryLabel = selectedFilters['카테고리'] || '카테고리';
   const peopleLabel = selectedFilters['인원'] || '인원';
   const alcoholLabel = selectedFilters['주종'] || '주종';
-  const storeatmVal = selectedFilters['매장분위기'];
+  const storeatmVal = selectedFilters['분위기'];
   const storeatmCount = Array.isArray(storeatmVal)
     ? storeatmVal.length
     : storeatmVal
     ? 1
     : 0;
   const storeatmLabel =
-    storeatmCount > 0 ? `매장분위기 ${storeatmCount}` : '매장분위기';
+    storeatmCount > 0 ? `분위기 ${storeatmCount}` : '분위기';
   const timeActive = selectedFilters['방문시간'] || '방문시간';
   const parkingLabel = selectedFilters['주차'] || '주차';
   const corkageLabel = selectedFilters['콜키지'] || '콜키지';
@@ -1175,7 +1175,7 @@ const MapStoreList = ({
                 const keyCategory = findExistingKey(filters, '카테고리');
                 const keyPeople = findExistingKey(filters, '인원');
                 const keyAlcohol = findExistingKey(filters, '주종');
-                const keyStoreatm = findExistingKey(filters, '매장분위기');
+                const keyStoreatm = findExistingKey(filters, '분위기');
                 const keyTime = findExistingKey(filters, '방문시간');
                 const keyParking = findExistingKey(filters, '주차');
                 const keyCorkage = findExistingKey(filters, '콜키지');
@@ -1196,7 +1196,7 @@ const MapStoreList = ({
                   category: getVal(keyCategory, '카테고리'),
                   people: getVal(keyPeople, '인원'),
                   alcohol: getVal(keyAlcohol, '주종'),
-                  storeatm: getVal(keyStoreatm, '매장분위기'),
+                  storeatm: getVal(keyStoreatm, '분위기'),
                   time: getVal(keyTime, '방문시간'),
                   parking: getVal(keyParking, '주차'),
                   corkage: getVal(keyCorkage, '콜키지'),
