@@ -1,14 +1,22 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {View, StyleSheet, Pressable, ScrollView, Animated} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
 import CustomText from '../../utils/CustomText';
 
-const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+const MyReviewItem = ({
+  review,
+  navigation,
+  deleteReview,
+  updateReview,
+  isDropdownOpen,
+  onDropdownOpen,
+  onDropdownClose,
+}) => {
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const [shouldCollapseContent, setShouldCollapseContent] = useState(false);
+  const [renderDropdown, setRenderDropdown] = useState(false);
   const dropdownAnim = useRef(new Animated.Value(0)).current;
 
   const goDetail = () => {
@@ -56,20 +64,28 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
     );
   };
 
-  const toggleDropdown = () => {
-    if (dropdownVisible) {
-      Animated.timing(dropdownAnim, {
-        toValue: 0,
-        duration: 160,
-        useNativeDriver: true,
-      }).start(() => setDropdownVisible(false));
-    } else {
-      setDropdownVisible(true);
+  useEffect(() => {
+    if (isDropdownOpen) {
+      setRenderDropdown(true);
       Animated.timing(dropdownAnim, {
         toValue: 1,
         duration: 180,
         useNativeDriver: true,
       }).start();
+    } else if (renderDropdown) {
+      Animated.timing(dropdownAnim, {
+        toValue: 0,
+        duration: 160,
+        useNativeDriver: true,
+      }).start(() => setRenderDropdown(false));
+    }
+  }, [isDropdownOpen, dropdownAnim, renderDropdown]);
+
+  const handleDropdownToggle = () => {
+    if (isDropdownOpen) {
+      onDropdownClose?.();
+    } else {
+      onDropdownOpen?.();
     }
   };
 
@@ -120,21 +136,21 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
 
           <View style={styles.actionWrapper}>
             <Pressable
-              onPress={toggleDropdown}
+              onPress={handleDropdownToggle}
               style={styles.menuButton}
               hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
               <Ionicons name="ellipsis-vertical" size={14} color="#333" />
             </Pressable>
 
-            {dropdownVisible && (
+            {renderDropdown && (
               <Pressable
                 style={styles.backdrop}
-                onPress={toggleDropdown}
+                onPress={onDropdownClose}
                 accessibilityLabel="Close menu"
               />
             )}
 
-            {dropdownVisible && (
+            {renderDropdown && (
               <Animated.View
                 style={[
                   styles.dropdown,
@@ -149,7 +165,7 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
                 <Pressable
                   style={[styles.dropdownButton]}
                   onPress={() => {
-                    toggleDropdown();
+                    onDropdownClose?.();
                     updateReview(review);
                   }}>
                   <CustomText style={styles.dropdownButtonText}>
@@ -160,7 +176,7 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
                 <Pressable
                   style={[styles.dropdownButton]}
                   onPress={() => {
-                    toggleDropdown();
+                    onDropdownClose?.();
                     deleteReview(review.id);
                   }}>
                   <CustomText
