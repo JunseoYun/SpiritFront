@@ -14,6 +14,7 @@ const MyReview = ({navigation}) => {
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
   const [totalpage, setTotalpage] = useState(0);
+  const [openDropdownReviewId, setOpenDropdownReviewId] = useState(null);
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
 
@@ -50,6 +51,7 @@ const MyReview = ({navigation}) => {
       setMyReview([]); // 기존 데이터 초기화
       setPage(0);
       setIsEnd(false);
+      setOpenDropdownReviewId(null);
       myReviewsget(0); // 첫 페이지 불러오기
     }, []),
   );
@@ -94,6 +96,13 @@ const MyReview = ({navigation}) => {
       navigation={navigation}
       deleteReview={() => deleteReview(item.id)}
       updateReview={() => updateReview(item)}
+      isDropdownOpen={openDropdownReviewId === item.id}
+      onDropdownOpen={() => setOpenDropdownReviewId(item.id)}
+      onDropdownClose={() => {
+        if (openDropdownReviewId === item.id) {
+          setOpenDropdownReviewId(null);
+        }
+      }}
     />
   );
   return (

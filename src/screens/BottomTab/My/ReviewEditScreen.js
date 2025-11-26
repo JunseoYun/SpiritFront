@@ -1,11 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import ImagePicker from 'react-native-image-crop-picker';
 import {
@@ -330,9 +324,7 @@ const ReviewEditScreen = ({route, navigation}) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{flex: 1}}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <View style={{flex: 1}}>
       <View style={styles.container}>
         <ReviewForm
           newReviewContent={reviewContent}
@@ -358,7 +350,7 @@ const ReviewEditScreen = ({route, navigation}) => {
 
       <AlertComponent />
       <Loading loading={loading} />
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
