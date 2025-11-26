@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: ColorUtil.subText,
     marginBottom: 5,
+    paddingTop: 5,
   },
   measure: {
     position: 'absolute',

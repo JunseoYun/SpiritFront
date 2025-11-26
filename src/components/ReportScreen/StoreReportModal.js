@@ -91,7 +91,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 17,
     fontWeight: '600',
-    marginBottom: 20,
     marginTop: 30,
     color: '#333',
   },
@@ -101,7 +100,7 @@ const styles = StyleSheet.create({
   modalMessage: {
     fontSize: 16,
     textAlign: 'center',
-    marginTop: -15,
+    paddingTop: 20,
     marginBottom: 20,
     fontWeight: '400',
     marginHorizontal: 18,
