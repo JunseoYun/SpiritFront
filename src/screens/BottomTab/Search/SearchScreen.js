@@ -197,7 +197,7 @@ const SearchScreen = ({navigation}) => {
           }
         />
 
-        <MyBanner index={'search'} />
+        {/* <MyBanner index={'search'} /> */}
 
         {recentSearches.length > 0 && (
           <View style={styles.recentWrap}>

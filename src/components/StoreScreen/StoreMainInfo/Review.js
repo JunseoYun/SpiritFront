@@ -49,7 +49,8 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
+    marginTop: 10,
+    marginBottom: 5,
     marginHorizontal: 18,
   },
   iconStar: {
