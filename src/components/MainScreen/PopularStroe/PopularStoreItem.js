@@ -337,28 +337,30 @@ const PopularStoreItem = ({store, location, navigation}) => {
           )}
         </View>
 
-        <View style={styles.mainDrinkView}>
-          {store?.mainDrinkDtos?.slice(0, 3)?.map((drink, idx, arr) => {
-            const isLast = idx === arr.length - 1;
+        {store?.mainDrinkDtos?.length > 0 && (
+          <View style={styles.mainDrinkView}>
+            {store?.mainDrinkDtos?.slice(0, 3)?.map((drink, idx, arr) => {
+              const isLast = idx === arr.length - 1;
 
-            return (
-              <View
-                key={idx}
-                style={[
-                  styles.drinkBadge,
-                  isLast ? {flexShrink: 1} : {}, // 마지막만 줄어들게
-                ]}>
-                <CustomText
-                  style={styles.drinkBadgeText}
-                  {...(isLast
-                    ? {numberOfLines: 1, ellipsizeMode: 'tail'}
-                    : {})}>
-                  {translateAlcohol(drink.type)} {drink.price}
-                </CustomText>
-              </View>
-            );
-          })}
-        </View>
+              return (
+                <View
+                  key={idx}
+                  style={[
+                    styles.drinkBadge,
+                    isLast ? {flexShrink: 1} : {}, // 마지막만 줄어들게
+                  ]}>
+                  <CustomText
+                    style={styles.drinkBadgeText}
+                    {...(isLast
+                      ? {numberOfLines: 1, ellipsizeMode: 'tail'}
+                      : {})}>
+                    {translateAlcohol(drink.type)} {drink.price}
+                  </CustomText>
+                </View>
+              );
+            })}
+          </View>
+        )}
       </Pressable>
     </View>
   );
