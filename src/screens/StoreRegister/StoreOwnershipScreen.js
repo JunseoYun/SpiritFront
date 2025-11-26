@@ -47,7 +47,7 @@ import {
   Create_store_with_ownership,
   Create_store_with_ownership_photoOnly,
 } from '../../api/storeApi';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 const STEPS = [
   'image',
   'name',

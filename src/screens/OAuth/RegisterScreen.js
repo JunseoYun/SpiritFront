@@ -22,8 +22,8 @@ import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
 import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
 import CancelText from '../../components/CancelText/CancelText';
-import CustomText from '../../components/common/CustomText';
-import CustomTextInput from '../../components/common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const RegisterScreen = ({route, navigation}) => {
   // route.params를 통해 전달된 데이터 접근

@@ -17,7 +17,7 @@ import ThirdPartyInfo from '../components/IdentityScreen/Policy/ThirdPartyInfo';
 
 import MainBtmbar from './MainBtmbar';
 import {normalizeFont} from '../hooks/normalizeFont';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 const Stack = createStackNavigator();
 
 export default function OAuthStack({isTestEnabled}) {

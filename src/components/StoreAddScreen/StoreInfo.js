@@ -9,8 +9,8 @@ import forbiddenWords from '../../hooks/forbiddenWords';
 import ColorUtil from '../../utils/ColorUtil';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const StoreInfo = ({storeData, setStoreData, error}) => {
   const [focusedInput, setFocusedInput] = useState(null);

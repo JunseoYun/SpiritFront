@@ -1,6 +1,6 @@
 import React from 'react';
 import {Text, SafeAreaView, ScrollView, Pressable} from 'react-native';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const Terms_v20241226 = ({navigation}) => {
   return (
     <SafeAreaView>

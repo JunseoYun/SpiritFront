@@ -24,7 +24,7 @@ import {
 import ImageAddButton from '../../utils/ImageAddButton';
 
 import {useToast} from '../../context/ToastContext';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 const resolveDisplayUri = value => {
   if (!value) {
     return '';

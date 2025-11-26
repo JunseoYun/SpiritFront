@@ -53,8 +53,8 @@ import ColorUtil from '../../../utils/ColorUtil';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import CustomTextInput from '../../../components/common/CustomTextInput';
-import CustomText from '../../../components/common/CustomText';
+import CustomTextInput from '../../../utils/CustomTextInput';
+import CustomText from '../../../utils/CustomText';
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
   {label: '맥주', value: 'BEER'},

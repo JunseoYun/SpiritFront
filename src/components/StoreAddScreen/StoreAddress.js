@@ -16,8 +16,8 @@ import Animated, {
 import {useToast} from '../../context/ToastContext';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import ColorUtil from '../../utils/ColorUtil';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 const StoreAddress = ({
   address,
   detailedAddress,

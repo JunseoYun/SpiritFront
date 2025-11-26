@@ -6,7 +6,7 @@ import {ReviewRecentGet, ReviewDelete} from '../../api/reviewApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const MyReview = ({navigation}) => {
   const [myReview, setMyReview] = useState([]); // 검색된 가게 목록

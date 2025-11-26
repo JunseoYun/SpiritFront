@@ -9,7 +9,7 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 
 const {width, height} = Dimensions.get('window');
 

@@ -34,7 +34,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import MapDetailItemSkeleton from './MapDetailItemSkeleton';
 import {MenuIcon} from 'lucide-react-native';
 import Loading from '../../../hooks/Loading';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 const DEFAULT_DETAIL_HEADER_HEIGHT = 110;

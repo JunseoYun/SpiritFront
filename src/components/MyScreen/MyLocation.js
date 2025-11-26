@@ -10,7 +10,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import {getAddress} from '../../storage/locationStorage';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const MyLocation = ({navigation}) => {
   const [address, setAddress] = useState('');

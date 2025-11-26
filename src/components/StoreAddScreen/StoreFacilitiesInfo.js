@@ -10,7 +10,7 @@ import {
   CarFront,
   CheckCircle2,
 } from 'lucide-react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const FACILITY_OPTIONS = [
   {text: '스크린(TV)', key: 'hasScreen', icon: TvMinimal},

@@ -17,7 +17,7 @@ import Loading from '../../hooks/Loading';
 import StoreItemSkeleton from '../../components/CategoryTapScreen/StoreItemSkeleton';
 import {normalizeFont} from '../../hooks/normalizeFont';
 import Feather from 'react-native-vector-icons/Feather';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const CategoryTapScreen = ({navigation, route}) => {
   const {categoryname, location} = route.params;

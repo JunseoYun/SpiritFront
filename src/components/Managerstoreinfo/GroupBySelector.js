@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {Text, View, Pressable, StyleSheet} from 'react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const GroupBySelector = ({groupBy, toggleGroupBy, setDropdownVisible}) => {
   return (

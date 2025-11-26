@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const CarrierInput = ({
   carrierRef,
@@ -19,7 +19,6 @@ const CarrierInput = ({
           error === 'selectedCarrier' && styles.errorFocused,
         ]}>
         <CustomText
-       
           style={{
             color: selectedCarrier ? '#000' : '#aaa',
             fontSize: 16,

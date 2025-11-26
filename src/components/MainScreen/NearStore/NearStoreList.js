@@ -11,7 +11,7 @@ import {
 import NearStoreItem from './NearStoreItem';
 import {Store_getby_distance} from '../../../api/storeApi';
 import Feather from 'react-native-vector-icons/Feather';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const NearStoreList = ({refresh, navigation, location}) => {
   const [stores, setStores] = useState([]);

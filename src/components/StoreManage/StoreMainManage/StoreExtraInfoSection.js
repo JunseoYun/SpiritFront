@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, View, Text} from 'react-native';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const StoreExtraInfoSection = ({title, items = []}) => {
   return (

@@ -5,7 +5,7 @@ import useStoreStatus from '../../hooks/useStoreStatus';
 import Feather from 'react-native-vector-icons/Feather';
 import FastImage from 'react-native-fast-image';
 import {normalizeFont} from '../../hooks/normalizeFont';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreResultItem = ({store, navigation, index}) => {
   const {translateCategory} = useCategoryTranslation();

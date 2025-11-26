@@ -4,7 +4,7 @@ import {View, Text, StyleSheet, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import Entypo from 'react-native-vector-icons/Entypo';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const Review = ({navigation, storeData}) => {
   return (

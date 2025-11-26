@@ -22,7 +22,7 @@ import FastImage from 'react-native-fast-image';
 import {useToast} from '../../context/ToastContext';
 import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
 import Loading from '../../hooks/Loading';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
   const {loginauth} = useAuth();
   const {showToast} = useToast();

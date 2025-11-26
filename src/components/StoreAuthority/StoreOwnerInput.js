@@ -4,8 +4,8 @@ import {View, Text, Pressable, TextInput, StyleSheet} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 const StoreOwnerInput = ({
   owners,
   hasCoRepresentative,

@@ -26,7 +26,7 @@ import {useToast} from '../../context/ToastContext';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
 import {Storelikepost, get_store_share} from '../../api/storeApi';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreMapScreen = ({navigation}) => {
   const route = useRoute();

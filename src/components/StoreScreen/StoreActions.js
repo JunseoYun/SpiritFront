@@ -3,7 +3,7 @@ import {View, Text, StyleSheet, Pressable, Linking, Alert} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {Storelikepost} from '../../api/storeApi';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreActions = ({storeData, navigation, storename}) => {
   const {showAlert, AlertComponent} = useCustomAlert();

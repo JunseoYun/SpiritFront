@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Pressable, Text, StyleSheet, Platform} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ColorUtil from './ColorUtil';
-import CustomText from '../components/common/CustomText';
+import CustomText from './CustomText';
 
 /**
  * BottomActionButton (실시간 주문하기 UI + 2:8 비율)

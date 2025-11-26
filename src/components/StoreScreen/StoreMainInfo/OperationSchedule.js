@@ -5,7 +5,7 @@ import {View, Text, StyleSheet, Pressable} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ColorUtil from '../../../utils/ColorUtil';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const OperationSchedule = ({
   toggleExpand,
   isExpanded = false,

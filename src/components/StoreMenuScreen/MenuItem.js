@@ -3,7 +3,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Feather from 'react-native-vector-icons/Feather';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const ICON_WIDTH = 45; // 좌측 정렬 아이콘 공간 고정값
 

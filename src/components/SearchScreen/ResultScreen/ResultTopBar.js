@@ -11,8 +11,8 @@ import {
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {normalizeFont} from '../../../hooks/normalizeFont';
 import CancelText from '../../CancelText/CancelText';
-import CustomText from '../../common/CustomText';
-import CustomTextInput from '../../common/CustomTextInput';
+import CustomText from '../../../utils/CustomText';
+import CustomTextInput from '../../../utils/CustomTextInput';
 
 const ResultTopBar = ({searchWord, navigation, onSearch}) => {
   const [tempSearchWord, setTempSearchWord] = useState(searchWord); // 검색어 입력값 (즉시 반영 안됨)

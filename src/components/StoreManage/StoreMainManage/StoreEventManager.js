@@ -5,7 +5,7 @@ import {deleteEvent, getEventsByStore} from '../../../api/eventApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import StoreEventSection from './StoreEventSection';
 import ManagementButton from '../ManagementButton';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const StoreEventManager = ({storeId, onDirtyChange, localEvents = []}) => {
   const navigation = useNavigation();

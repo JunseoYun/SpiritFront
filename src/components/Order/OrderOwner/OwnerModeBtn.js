@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, Text, View, Pressable} from 'react-native';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const OwnerModeBtn = ({setManualMode, manualMode}) => (
   <View style={styles.modeRow}>

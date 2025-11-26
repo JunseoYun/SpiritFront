@@ -8,7 +8,7 @@ import Loading from '../hooks/Loading';
 import {AlcoholFilterProvider} from '../context/AlcoholFilterContext';
 import FilterBar from '../components/CategoryTapScreen/FilterBar';
 import {MaterialTopTabBar} from '@react-navigation/material-top-tabs';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 
 const categories = [
   {name: 'IZAKAYA', title: '이자카야', categoryname: 'IZAKAYA'},

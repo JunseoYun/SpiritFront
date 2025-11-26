@@ -30,7 +30,7 @@ import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import StoreOrderHeader from '../../components/StoreOrderScreen/StoreOrderHeader';
 import StoreOrderRequest from '../../components/StoreOrderScreen/StoreOrderRequest';
 import StoreOrderSection from '../../components/StoreOrderScreen/StoreOrderSection';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 const ensureArray = value => (Array.isArray(value) ? value : []);
 
 const mapWithQuantity = (items, previous = []) => {

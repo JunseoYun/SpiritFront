@@ -16,7 +16,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {StoreImageUpdateSort, UpdateStore} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 const IMAGE_WIDTH = width - 120;

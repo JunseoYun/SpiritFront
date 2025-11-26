@@ -4,7 +4,7 @@ import {View, Text, Pressable, StyleSheet} from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {SearchIcon} from 'lucide-react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const RecentSearchItem = ({item, onPress, onDelete}) => {
   return (

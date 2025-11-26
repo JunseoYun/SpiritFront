@@ -3,7 +3,7 @@ import {StyleSheet, Text, View, FlatList} from 'react-native';
 import UserCard from '../../../components/Order/OrderUser/UserCard';
 import UserSortSummary from '../../../components/Order/OrderUser/UserSortSummary';
 import UserHeaderTabs from '../../../components/Order/OrderUser/UserHeaderTabs';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const OrderUserScreen = ({navigation}) => {
   const [activeTab, setActiveTab] = useState(0);

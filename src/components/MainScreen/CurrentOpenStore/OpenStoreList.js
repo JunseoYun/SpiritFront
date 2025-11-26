@@ -11,7 +11,7 @@ import {
 import OpenStoreItem from './OpenStoreItem';
 import {Store_getby_business_hours} from '../../../api/storeApi';
 import Feather from 'react-native-vector-icons/Feather';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const OpenStoreList = ({location, navigation, refresh}) => {
   const [distancestores, setDistancestores] = useState([]);

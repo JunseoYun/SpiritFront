@@ -2,7 +2,7 @@ import React from 'react';
 import {StyleSheet, Text, View, Pressable, Image, Alert} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const UserCard = ({order, onPressDetail}) => {
   const isPending = order.status === 'pending';

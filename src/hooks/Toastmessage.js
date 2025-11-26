@@ -10,7 +10,7 @@ import {
 
 const {width} = Dimensions.get('window');
 import useSafeAndroidInsets from './useSafeAndroidInsets';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 const Toastmessage = ({
   message,
   isShowToast,

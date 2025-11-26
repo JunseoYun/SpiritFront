@@ -17,8 +17,8 @@ import BottomActionButton from '../../utils/BottomActionButton';
 import ImageAddButton from '../../utils/ImageAddButton';
 import FastImage from 'react-native-fast-image';
 import ColorUtil from '../../utils/ColorUtil';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 const rateTextMap = {
   0: '어땠나요?',
   1: '별로예요',

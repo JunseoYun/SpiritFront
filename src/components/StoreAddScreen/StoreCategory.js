@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import ColorUtil from '../../utils/ColorUtil';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreCategory = ({
   selectedCategory,

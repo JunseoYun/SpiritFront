@@ -15,7 +15,7 @@ import {useToast} from '../../context/ToastContext';
 import {ReviewgetbyGet} from '../../api/reviewApi';
 import {has_unread_notification} from '../../api/notificationApi';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const NotificationCard = ({title, message, date, hasRead}) => {
   const textColorStyle = hasRead ? styles.readText : styles.unreadText;

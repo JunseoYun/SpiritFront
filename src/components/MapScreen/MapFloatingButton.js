@@ -2,7 +2,7 @@ import React from 'react';
 import {Pressable, StyleSheet, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ColorUtil from '../../utils/ColorUtil';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const hitSlop = {top: 12, bottom: 12, left: 12, right: 12};
 

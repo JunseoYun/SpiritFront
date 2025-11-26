@@ -13,7 +13,7 @@ import {
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
 import ImageAddButton from '../../utils/ImageAddButton';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const BusinessCertificate = ({
   business_registration_certificate,

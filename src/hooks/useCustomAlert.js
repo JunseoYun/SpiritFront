@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import {Portal} from 'react-native-paper';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 
 const useCustomAlert = () => {
   const [isVisible, setIsVisible] = useState(false);

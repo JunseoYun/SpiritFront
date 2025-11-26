@@ -30,8 +30,8 @@ import MainSection from '../../components/MainScreen/MainSection';
 import MainSearchBar from '../../components/MainScreen/MainSearchBar';
 import NotificationButton from '../../components/MainScreen/NotificationButton';
 import PopularStoresSection from '../../components/MainScreen/PopularStroe/PopularStoresSection';
-import ScrollToTopButton from '../../components/common/ScrollToTopButton';
-import CustomText from '../../components/common/CustomText';
+import ScrollToTopButton from '../../utils/ScrollToTopButton';
+import CustomText from '../../utils/CustomText';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;

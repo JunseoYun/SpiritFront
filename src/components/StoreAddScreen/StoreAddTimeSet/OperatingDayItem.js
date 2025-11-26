@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet, PixelRatio} from 'react-native';
 import Octicons from 'react-native-vector-icons/Octicons';
 import {normalizeFont} from '../../../hooks/normalizeFont';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const fontScale = PixelRatio.getFontScale();
 const OperatingDayItem = ({
   day,

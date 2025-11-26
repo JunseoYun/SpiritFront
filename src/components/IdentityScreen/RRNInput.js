@@ -2,8 +2,8 @@ import React from 'react';
 import {View, Text, TextInput, StyleSheet, Keyboard} from 'react-native';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const RRNInput = ({
   showrrfLabel,

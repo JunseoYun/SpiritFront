@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, Text, Image, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const formatEventPeriod = (start, end) => {
   const normalize = value => {

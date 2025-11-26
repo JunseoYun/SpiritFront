@@ -3,7 +3,7 @@ import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import SKTpersonalinfo from './SKT/SKTpersonalinfo';
 import KTpersonalinfo from './KT/KTpersonalinfo';
 import LGUpersonalinfo from './LGU/LGUpersonalinfo';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const PersonalInfo = ({route}) => {
   const {carrier} = route.params || {}; // ⭐️ carrier를 route에서 받아오기

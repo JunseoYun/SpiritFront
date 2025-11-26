@@ -1,7 +1,7 @@
 import React, {useRef, useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import WheelPicker from './WheelPicker';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 
 const CloseTimePicker = ({
   selectedHour,

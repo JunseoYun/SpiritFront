@@ -11,7 +11,7 @@ import {BlurView} from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreManageTabBar = ({activeTab, onTabPress}) => {
   const insets = useSafeAreaInsets();

@@ -7,7 +7,7 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const {width} = Dimensions.get('window'); // 화면 너비
 const TAB_WIDTH = width / 3;

@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const OTPInput = ({
   isotpcodeFocused,

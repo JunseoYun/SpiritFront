@@ -2,8 +2,8 @@ import React, {useState, useEffect, useRef} from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 
 import ColorUtil from '../../utils/ColorUtil';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const StoreAddname = ({storename, setStorename, error, type = 'default'}) => {
   const isRegistration = type === 'registration';

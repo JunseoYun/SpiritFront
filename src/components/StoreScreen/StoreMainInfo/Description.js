@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import ColorUtil from '../../../utils/ColorUtil';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const Description = ({description, descripexpanded, toggleDescription}) => {
   const [lineCount, setLineCount] = useState(0);

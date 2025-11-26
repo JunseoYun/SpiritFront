@@ -12,7 +12,7 @@ import ViewedStoreItem from './ViewedStoreItem';
 import {Store_getby_viewed} from '../../../api/storeApi';
 import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const ViewedStoreList = ({refresh, navigation, location, loaded}) => {
   const [stores, setStores] = useState([]);

@@ -3,7 +3,7 @@ import React, {useState, useEffect, useCallback} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import StoreAlcoholScreen from '../StoreAlcoholScreen';
 import Loading from '../../../hooks/Loading';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const alcoholCache = new Map();
 const sectionPositionsCache = new Map();

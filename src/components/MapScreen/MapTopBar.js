@@ -5,7 +5,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useMapSearch} from '../../context/MapSearchContext';
 import CancelText from '../CancelText/CancelText';
 import ColorUtil from '../../utils/ColorUtil';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 

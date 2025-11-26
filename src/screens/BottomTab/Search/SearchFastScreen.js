@@ -25,7 +25,7 @@ import ResultModalItemSkeleton from '../../../components/SearchScreen/FastSearch
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 

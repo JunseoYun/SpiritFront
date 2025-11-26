@@ -51,8 +51,8 @@ import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
-import CustomText from '../../components/common/CustomText';
-import CustomTextInput from '../../components/common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const {width} = Dimensions.get('window');
 const IMAGE_WIDTH = width - 120;

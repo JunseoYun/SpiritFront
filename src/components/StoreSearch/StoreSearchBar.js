@@ -11,8 +11,8 @@ import Feather from 'react-native-vector-icons/Feather';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
 import ColorUtil from '../../utils/ColorUtil';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const screenWidth = Dimensions.get('window').width;
 

@@ -9,7 +9,7 @@ import LikeScreen from '../screens/BottomTab/LikeScreen';
 import OrderScreen from '../screens/BottomTab/Order/OrderScreen';
 import SearchStack from './SearchStack';
 import MyStack from './MyStack';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 
 const Tab = createBottomTabNavigator();
 

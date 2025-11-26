@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import ColorUtil from '../../utils/ColorUtil';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const MOOD_OPTIONS = [
   {text: '대화하기 좋은', key: 'QUIET'},

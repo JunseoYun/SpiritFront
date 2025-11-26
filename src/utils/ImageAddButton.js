@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet, Dimensions} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import CustomText from '../components/common/CustomText';
+import CustomText from './CustomText';
 
 const {width} = Dimensions.get('window');
 

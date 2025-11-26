@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const OperatingHoursCheckbox = ({isSameEveryday, is24, toggle24Hours}) => {
   return (

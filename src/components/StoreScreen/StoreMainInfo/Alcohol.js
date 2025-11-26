@@ -2,7 +2,7 @@ import React from 'react';
 
 import {View, Text, StyleSheet} from 'react-native';
 import ColorUtil from '../../../utils/ColorUtil';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const Alcohol = ({storeDrinkDtos, translateAlcohol}) => {
   const drinkText =
     storeDrinkDtos && storeDrinkDtos.length > 0

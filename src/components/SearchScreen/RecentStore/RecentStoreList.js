@@ -4,7 +4,7 @@ import RecentStoreItem from './RecentStoreItem';
 import {Store_getby_recent} from '../../../api/storeApi';
 import {useAuth} from '../../../context/AuthContext';
 import RecentStoreItemSkeleton from './RecentStoreItemSkeleton';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const RecentStoreList = ({
   refresh,
   setRefresh,

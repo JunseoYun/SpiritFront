@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Modal, TouchableOpacity} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import useSafeAndroidInsets from './useSafeAndroidInsets';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 
 const ImagePickermodal = ({
   isBottomSheetVisible,

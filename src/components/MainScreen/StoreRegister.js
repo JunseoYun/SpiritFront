@@ -4,7 +4,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import {iniBasictNotification} from '../../hooks/notification/useNotificationPermission';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {openSettings} from 'react-native-permissions';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreRegister = ({handlestoreItemClick}) => {
   const {showAlert, AlertComponent} = useCustomAlert();

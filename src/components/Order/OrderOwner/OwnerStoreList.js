@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, Text, View, Pressable, ScrollView} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const OwnerStoreList = ({
   OWNER_STORES,

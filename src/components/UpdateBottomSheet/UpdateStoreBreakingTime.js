@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const UpdateStoreBreakingTime = ({
   hours,

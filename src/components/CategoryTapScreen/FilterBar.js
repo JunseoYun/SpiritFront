@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import {AlcoholFilterContext} from '../../context/AlcoholFilterContext';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const screenWidth = Dimensions.get('window').width;
 

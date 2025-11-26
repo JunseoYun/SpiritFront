@@ -17,7 +17,7 @@ import StoreAreastats from '../../../components/Managerstoreinfo/StoreAreastats/
 import StoreLikestats from '../../../components/Managerstoreinfo/StoreLikestats/StoreLikestats';
 import StoreViewstats from '../../../components/Managerstoreinfo/StoreViewstats/StoreViewstats';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const tabs = [
   {

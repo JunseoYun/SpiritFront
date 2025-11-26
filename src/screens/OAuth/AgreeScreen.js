@@ -4,7 +4,7 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import AgreementItem from '../../components/OAuthRegister/AgreementItem';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const AgreeScreen = ({route, navigation}) => {
   const {

@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import ColorUtil from '../../../utils/ColorUtil';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const ClosedDaySelector = ({
   days,
   isClosed,

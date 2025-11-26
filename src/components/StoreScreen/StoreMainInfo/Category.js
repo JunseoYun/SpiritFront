@@ -3,7 +3,7 @@ import {View, Text, StyleSheet} from 'react-native';
 
 import FastImage from 'react-native-fast-image';
 import ColorUtil from '../../../utils/ColorUtil';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const Category = ({categories, translateCategory, isOwner, isMoods}) => {
   if (categories === null) {

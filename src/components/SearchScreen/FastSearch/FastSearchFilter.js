@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const FILTER_TABS = ['카테고리', '인원', '방문 시간', '주종'];

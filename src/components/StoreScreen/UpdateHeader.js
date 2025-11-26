@@ -3,7 +3,7 @@ import {Pressable, StyleSheet, View, Platform, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const UpdateHeader = ({endUpdate}) => {
   const {top} = useSafeAndroidInsets();

@@ -1,8 +1,8 @@
 import React from 'react';
 import {View, Text, TextInput, StyleSheet} from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const UpdateStoreContact = ({
   updatedValue,

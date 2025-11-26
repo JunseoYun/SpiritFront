@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, Text, View, Pressable, ScrollView} from 'react-native';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const TABS = ['신규 요청', '결제/대기', '준비 중', '완료', '취소/거절/환불'];
 

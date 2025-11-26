@@ -1,6 +1,6 @@
 import React from 'react';
 import {Pressable, StyleSheet, View, Text, Share} from 'react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 const ManagementButton = ({onPress = null, title = null}) => {
   return (
     <Pressable style={styles.managementContainer} onPress={onPress}>

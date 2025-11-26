@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import ColorUtil from '../../utils/ColorUtil';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const alcohols = [
   {label: '소주', value: 'SOJU'},

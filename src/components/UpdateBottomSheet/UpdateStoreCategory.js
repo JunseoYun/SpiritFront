@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const UpdateStoreCategory = ({
   innerCategories,

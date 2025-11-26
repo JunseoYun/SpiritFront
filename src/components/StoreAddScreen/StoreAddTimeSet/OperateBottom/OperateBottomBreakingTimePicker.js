@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import TimePicker from '../../../../hooks/TimePicker';
 import CloseTimePicker from '../../../../hooks/CloseTimePicker';
-import CustomText from '../../../common/CustomText';
+import CustomText from '../../../../utils/CustomText';
 
 const OperateBottomBreakingTimePicker = ({
   isStartTime,

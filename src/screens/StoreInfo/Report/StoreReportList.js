@@ -5,7 +5,7 @@ import {useToast} from '../../../context/ToastContext';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import {ReportMainget, completeReport} from '../../../api/reportApi';
 import Loading from '../../../hooks/Loading';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const REPORT_TYPES = {
   report: [

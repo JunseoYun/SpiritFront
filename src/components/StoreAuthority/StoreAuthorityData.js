@@ -3,8 +3,8 @@ import {View, Text, TextInput, StyleSheet} from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const StoreAuthorityData = ({storeData, setStoreData, errors, setErrors}) => {
   const [focusedInput, setFocusedInput] = useState(null); // 활성화된 입력 필드 상태

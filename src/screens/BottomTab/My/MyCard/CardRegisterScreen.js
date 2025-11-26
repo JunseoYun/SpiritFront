@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CancelText from '../../../../components/CancelText/CancelText';
-import CustomTextInput from '../../../../components/common/CustomTextInput';
+import CustomTextInput from '../../../../utils/CustomTextInput';
 
 // Utils
 const onlyDigits = v => (v || '').replace(/\D+/g, '');

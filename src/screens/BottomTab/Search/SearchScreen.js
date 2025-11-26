@@ -23,7 +23,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {normalizeFont} from '../../../hooks/normalizeFont';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import RecentSearchItem from '../../../components/SearchScreen/RecentSearchItem';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const SearchScreen = ({navigation}) => {
   const {showToast} = useToast();

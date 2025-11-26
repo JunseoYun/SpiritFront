@@ -13,7 +13,7 @@ import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
 import FastImage from 'react-native-fast-image';
 import TodayRecommItemSkeleton from './TodayRecommItemSkeleton';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;

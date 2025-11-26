@@ -1,6 +1,6 @@
 import React, {forwardRef} from 'react';
 import {TextInput} from 'react-native';
-import {normalizeFont} from '../../hooks/normalizeFont';
+import {normalizeFont} from '../hooks/normalizeFont';
 
 const CustomTextInput = forwardRef(({style, maxScale = 1.3, ...props}, ref) => {
   const flattened = Array.isArray(style)

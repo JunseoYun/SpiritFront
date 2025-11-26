@@ -13,8 +13,8 @@ import ReportModal from '../../../components/ReportScreen/ReportModal';
 import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
 import {report_create} from '../../../api/reportApi';
-import CustomTextInput from '../../../components/common/CustomTextInput';
-import CustomText from '../../../components/common/CustomText';
+import CustomTextInput from '../../../utils/CustomTextInput';
+import CustomText from '../../../utils/CustomText';
 
 const ReviewReportScreen = ({navigation}) => {
   const route = useRoute();

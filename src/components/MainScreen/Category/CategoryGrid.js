@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Pressable, Image, Text, StyleSheet} from 'react-native';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const CategoryGrid = ({onPress, style}) => {
   return (

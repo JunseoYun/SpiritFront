@@ -21,7 +21,7 @@ import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const ReceiptImage = ({receiptimageUris, setReceiptImageUris, error}) => {
   const [images, setImage] = useState([]);

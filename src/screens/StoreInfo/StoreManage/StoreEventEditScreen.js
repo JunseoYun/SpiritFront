@@ -39,8 +39,8 @@ import {
 } from '../../../constants/imagePickerLabels';
 import FastImage from 'react-native-fast-image';
 import Loading from '../../../hooks/Loading';
-import CustomTextInput from '../../../components/common/CustomTextInput';
-import CustomText from '../../../components/common/CustomText';
+import CustomTextInput from '../../../utils/CustomTextInput';
+import CustomText from '../../../utils/CustomText';
 const EMPTY_FORM = {
   title: '',
   content: '',
