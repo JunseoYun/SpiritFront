@@ -304,14 +304,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     elevation: 2,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 6},
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.12,
-    shadowRadius: 16,
+    shadowRadius: 2,
     zIndex: 999,
     borderWidth: 1,
     borderColor: '#EFEFF3',
     gap: 10,
-    minWidth: 90,
+    minWidth: 120,
   },
   backdrop: {
     position: 'absolute',
@@ -327,6 +327,8 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   dropdownButtonText: {
