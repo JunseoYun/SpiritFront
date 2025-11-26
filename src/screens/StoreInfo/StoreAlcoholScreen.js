@@ -42,6 +42,28 @@ const ensureAlcoholTypeKey = type => {
   return type || 'UNKNOWN';
 };
 
+const getMainDrinkTypeSet = (mainDrinks = []) =>
+  new Set(
+    (mainDrinks || [])
+      .map(drink => ensureAlcoholTypeKey(drink?.type))
+      .filter(type => type && type !== 'UNKNOWN'),
+  );
+
+const buildTypeSequence = mainDrinks => {
+  const prioritizedSet = getMainDrinkTypeSet(mainDrinks);
+  if (!prioritizedSet.size) {
+    return ALCOHOL_TYPE_SEQUENCE;
+  }
+
+  const prioritized = ALCOHOL_TYPE_SEQUENCE.filter(type =>
+    prioritizedSet.has(type),
+  );
+  const remainder = ALCOHOL_TYPE_SEQUENCE.filter(
+    type => !prioritizedSet.has(type),
+  );
+  return [...prioritized, ...remainder];
+};
+
 const groupAlcoholsByType = (list = []) =>
   list.reduce((acc, alcohol) => {
     const typeKey = ensureAlcoholTypeKey(alcohol.type);
@@ -49,21 +71,24 @@ const groupAlcoholsByType = (list = []) =>
     return acc;
   }, {});
 
-const getOrderedTypeKeys = grouped => [
-  ...ALCOHOL_TYPE_SEQUENCE.filter(type => grouped[type]?.length),
+const getOrderedTypeKeys = (
+  grouped,
+  typeSequence = ALCOHOL_TYPE_SEQUENCE,
+) => [
+  ...typeSequence.filter(type => grouped[type]?.length),
   ...Object.keys(grouped).filter(
-    type => !ALCOHOL_TYPE_SEQUENCE.includes(type) && grouped[type]?.length,
+    type => !typeSequence.includes(type) && grouped[type]?.length,
   ),
 ];
 
-const flattenGroupedAlcohols = grouped =>
-  getOrderedTypeKeys(grouped).reduce(
+const flattenGroupedAlcohols = (grouped, typeSequence) =>
+  getOrderedTypeKeys(grouped, typeSequence).reduce(
     (acc, type) => [...acc, ...(grouped[type] || [])],
     [],
   );
 
-const normalizeAlcoholList = list =>
-  flattenGroupedAlcohols(groupAlcoholsByType(list));
+const normalizeAlcoholList = (list, typeSequence) =>
+  flattenGroupedAlcohols(groupAlcoholsByType(list), typeSequence);
 
 const mergeAlcoholListWithServer = (currentList, serverList) => {
   if (!Array.isArray(currentList) || currentList.length === 0) {
@@ -82,8 +107,10 @@ const mergeAlcoholListWithServer = (currentList, serverList) => {
   return [...preserved, ...appended];
 };
 
-const getDrinkIdsInApiOrder = list =>
-  flattenGroupedAlcohols(groupAlcoholsByType(list)).map(drink => drink.id);
+const getDrinkIdsInApiOrder = (list, typeSequence) =>
+  flattenGroupedAlcohols(groupAlcoholsByType(list), typeSequence).map(
+    drink => drink.id,
+  );
 
 const areOrdersEqual = (currentList = [], baseList = []) => {
   if (!Array.isArray(currentList) || !Array.isArray(baseList)) {
@@ -142,6 +169,7 @@ const StoreAlcoholScreen = ({
   navigation,
   storeId,
   alcohols = [],
+  mainDrinks = [],
   setSectionPositions: setParentSectionPositions, // 상위에서 섹션 위치 관리 함수
   isUpdatable = false,
   isOrderEnabled,
@@ -154,16 +182,20 @@ const StoreAlcoholScreen = ({
   onSortDirtyChange,
   setAlcoholtopheight,
 }) => {
+  const typeSequence = useMemo(
+    () => buildTypeSequence(mainDrinks),
+    [mainDrinks],
+  );
   const [alcoholList, setAlcoholList] = useState(() =>
-    normalizeAlcoholList(alcohols),
+    normalizeAlcoholList(alcohols, typeSequence),
   );
   const [isSortDirty, setIsSortDirty] = useState(false);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
   const isSortDirtyRef = useRef(false);
   const [uncontrolledType, setUncontrolledType] = useState('전체');
   const normalizedAlcohols = useMemo(
-    () => normalizeAlcoholList(alcohols),
-    [alcohols],
+    () => normalizeAlcoholList(alcohols, typeSequence),
+    [alcohols, typeSequence],
   );
   const {bottom: androidBottom} = useSafeAndroidInsets();
   const {bottom: safeBottom} = useSafeAreaInsets();
@@ -196,12 +228,12 @@ const StoreAlcoholScreen = ({
 
   const groupedSections = useMemo(() => {
     const grouped = groupAlcoholsByType(alcoholList);
-    return getOrderedTypeKeys(grouped).map(typeKey => ({
+    return getOrderedTypeKeys(grouped, typeSequence).map(typeKey => ({
       typeKey,
       label: translateAlcohol(typeKey) || alcoholMapping[typeKey] || typeKey,
       items: grouped[typeKey] || [],
     }));
-  }, [alcoholList, translateAlcohol]);
+  }, [alcoholList, translateAlcohol, typeSequence]);
 
   const availableTypes = useMemo(
     () => groupedSections.map(section => section.label),
@@ -273,7 +305,7 @@ const StoreAlcoholScreen = ({
     updatedGroup.splice(newIndex, 0, movedItem);
     grouped[typeKey] = updatedGroup;
 
-    const updatedList = flattenGroupedAlcohols(grouped);
+    const updatedList = flattenGroupedAlcohols(grouped, typeSequence);
     setAlcoholList(updatedList);
     setIsSortDirty(!areOrdersEqual(updatedList, normalizedAlcohols));
   };
@@ -285,7 +317,10 @@ const StoreAlcoholScreen = ({
 
     try {
       setIsSavingOrder(true);
-      await DrinkUpdateSort(storeId, getDrinkIdsInApiOrder(alcoholList));
+      await DrinkUpdateSort(
+        storeId,
+        getDrinkIdsInApiOrder(alcoholList, typeSequence),
+      );
       setIsSortDirty(false);
       showToast?.('주류 순서를 저장했어요.', 'center');
     } catch (error) {
@@ -294,7 +329,7 @@ const StoreAlcoholScreen = ({
     } finally {
       setIsSavingOrder(false);
     }
-  }, [alcoholList, isSavingOrder, isSortDirty, showToast, storeId]);
+  }, [alcoholList, isSavingOrder, isSortDirty, showToast, storeId, typeSequence]);
 
   const handleAlcoholManagePress = () => {
     navigation.navigate('StoreStack', {
