@@ -136,7 +136,6 @@ const MapStoreList = ({
       !detailStoreId && topReservedHeight > 0 ? topReservedHeight : 0;
     const maxBase = Math.max(mid, SCREEN_HEIGHT - reservedTop);
     const max = Math.min(SCREEN_HEIGHT, maxBase + 20);
-    if (loading || storegetloading) return [first, first];
     if (stores.length === 0 && !loading && !storegetloading) {
       return [first, nonemid];
     }
@@ -154,12 +153,32 @@ const MapStoreList = ({
     noStoreSnapPoint,
   ]);
 
-  const snapPoints = useMemo(() => {
+  const baseSnapPoints = useMemo(() => {
     if (preserveDetailSnapPoints && detailSnapPointsRef.current) {
       return detailSnapPointsRef.current;
     }
     return computedSnapPoints;
   }, [computedSnapPoints, preserveDetailSnapPoints]);
+
+  const [stableSnapPoints, setStableSnapPoints] = useState(baseSnapPoints);
+
+  useEffect(() => {
+    if (!loading && !storegetloading) {
+      setStableSnapPoints(baseSnapPoints);
+    }
+  }, [baseSnapPoints, loading, storegetloading]);
+
+  const snapPoints = useMemo(() => {
+    if (loading || storegetloading) {
+      return stableSnapPoints || baseSnapPoints;
+    }
+    return baseSnapPoints;
+  }, [
+    baseSnapPoints,
+    loading,
+    storegetloading,
+    stableSnapPoints,
+  ]);
 
   useEffect(() => {
     if (isDetailMode) {
