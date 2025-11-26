@@ -1027,7 +1027,6 @@ const MapStoreList = ({
         );
       }
     }
-    console.log(detailStoreLoading);
     let listContent = null;
     if (storegetloading) {
       if (currentIndex >= 1 || listfastview) {
