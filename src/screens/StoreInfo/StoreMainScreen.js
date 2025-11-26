@@ -71,7 +71,6 @@ const StoreMainScreen = ({navigation}) => {
   const [orderBarHeight, setOrderBarHeight] = useState(0);
   const [pendingScrollToTabs, setPendingScrollToTabs] = useState(false);
 
-  console.log(storedata);
   const {
     visible: showScrollToTop,
     scrollToTop,

@@ -120,7 +120,7 @@ const MapScreen = ({navigation, route}) => {
   const {showToast} = useToast();
   const [isFlatListVisible, setIsFlatListVisible] = useState(true); // 플랫리스트 상태
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
-  const [radius, setRadiusint] = useState(1);
+  const [radius, setRadiusint] = useState(2);
   const {radiusKm, selectedFilters, searchText} = useMapSearch();
   const prevRadiusRef = useRef(radius);
   const [storegetloading, setStoregetloading] = useState(true);
@@ -134,6 +134,7 @@ const MapScreen = ({navigation, route}) => {
   const [hasMoreStores, setHasMoreStores] = useState(true);
   const [loadingMoreStores, setLoadingMoreStores] = useState(false);
   const skipInitialOffsetRef = useRef(true);
+  const mapmovedOffsetRef = useRef(false);
   const [topBarHeight, setTopBarHeight] = useState(0);
   const [isListFullyExpanded, setIsListFullyExpanded] = useState(false);
   const [isMapSearchActive, setIsMapSearchActive] = useState(false);
@@ -160,7 +161,14 @@ const MapScreen = ({navigation, route}) => {
   }, [selectedFilters, searchText]);
 
   const fetchStoreListPage = useCallback(
-    async ({page = 0, append = false, lat, lng, conditionDto} = {}) => {
+    async ({
+      page = 0,
+      append = false,
+      lat,
+      lng,
+      conditionDto,
+      reqRadius,
+    } = {}) => {
       const targetLat =
         typeof lat === 'number' ? lat : lastQueryRef.current.lat;
       const targetLng =
@@ -177,13 +185,14 @@ const MapScreen = ({navigation, route}) => {
       } else {
         setStoregetloading(true);
       }
+      console.log(dto);
       try {
         const response = await Store_getby_condition_search(
           targetLat,
           targetLng,
           dto,
           page,
-          radius,
+          reqRadius,
         );
         const normalized = normalizeStoreResponse(response);
         setStores(prevStores =>
@@ -353,6 +362,9 @@ const MapScreen = ({navigation, route}) => {
       if (!skipInitialOffsetRef.current) {
         skipInitialOffsetRef.current = true;
       }
+      if (mapmovedOffsetRef.current) {
+        mapmovedOffsetRef.current = false;
+      }
       const {newLocation, address} = await fetchLocationAddress();
       setCenterLatLng(newLocation);
 
@@ -411,7 +423,6 @@ const MapScreen = ({navigation, route}) => {
       const conditionDto = conditionDtoOverride || buildCurrentConditionDto();
       const signature = querySignatureOverride || buildCurrentQuerySignature();
       lastAppliedQueryRef.current = signature;
-
       const markerResponse = await Store_getby_condition_search_markers(
         queryLat,
         queryLng,
@@ -444,6 +455,7 @@ const MapScreen = ({navigation, route}) => {
         lat: queryLat,
         lng: queryLng,
         conditionDto,
+        reqRadius: reqRadius,
       });
 
       if (webViewRef.current) {
@@ -458,7 +470,11 @@ const MapScreen = ({navigation, route}) => {
           {suppressUserMarker},
         );
         webViewRef.current.injectJavaScript(script);
-        if (skipInitialOffsetRef.current && offsetY !== 0) {
+        if (
+          skipInitialOffsetRef.current &&
+          offsetY !== 0 &&
+          mapmovedOffsetRef.current
+        ) {
           skipInitialOffsetRef.current = false;
         }
       }
@@ -674,8 +690,8 @@ const MapScreen = ({navigation, route}) => {
           isProgrammaticPan.current = false;
           return;
         }
-        if (skipInitialOffsetRef.current) {
-          skipInitialOffsetRef.current = false;
+        if (!mapmovedOffsetRef.current) {
+          mapmovedOffsetRef.current = true;
         }
 
         const current = {

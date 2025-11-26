@@ -54,7 +54,7 @@ const MOOD_OPTIONS = [
 const FACILITY_OPTIONS = [
   {key: 'isParkingAvailable', text: '주차 가능', icon: ParkingCircle},
   {key: 'isGroupAvailable', text: '단체 방문', icon: Users},
-  {key: 'hasRoom', text: '개별 룸', icon: DoorOpen},
+  {key: 'hasRoom', text: '룸', icon: DoorOpen},
   {key: 'hasOutdoor', text: '야외 좌석/테라스', icon: Sun},
   {key: 'isCorkageAvailable', text: '콜키지 가능', icon: Wine},
   {key: 'hasScreen', text: '스크린/TV', icon: Tv2},

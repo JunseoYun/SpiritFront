@@ -36,7 +36,7 @@ const SearchScreen = ({navigation}) => {
     radiusKm,
   } = useMapSearch();
 
-  const [searchStoreName, setSearchStoreName] = useState(searchText || '');
+  const [searchStoreName, setSearchStoreName] = useState('');
   const [pendingFilters, setPendingFilters] = useState(selectedFilters);
   const [pendingRadiusKm, setPendingRadiusKm] = useState(radiusKm);
   const [loading] = useState(false);
@@ -60,7 +60,7 @@ const SearchScreen = ({navigation}) => {
   useFocusEffect(
     useCallback(() => {
       loadRecentSearches();
-      setSearchStoreName(searchText || '');
+      setSearchStoreName('');
       setPendingFilters(selectedFilters);
       setPendingRadiusKm(radiusKm);
     }, [loadRecentSearches, searchText, selectedFilters, radiusKm]),

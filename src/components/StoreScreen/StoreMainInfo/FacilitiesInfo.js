@@ -14,7 +14,7 @@ import CustomText from '../../../utils/CustomText';
 const FACILITY_ITEMS = [
   {key: 'hasScreen', label: '스크린·TV', icon: TvMinimal},
   {key: 'isGroupAvailable', label: '단체 방문', icon: UsersRound},
-  {key: 'hasRoom', label: '개별 룸', icon: DoorOpen},
+  {key: 'hasRoom', label: '룸', icon: DoorOpen},
   {key: 'hasOutdoor', label: '야외 좌석·테라스', icon: SunMedium},
   {key: 'isCorkageAvailable', label: '콜키지 가능', icon: Wine},
   {key: 'isParkingAvailable', label: '주차 가능', icon: CarFront},

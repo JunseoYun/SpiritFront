@@ -48,7 +48,7 @@ const FilterPotal = ({
   onApply,
 }) => {
   const FILTER_TABS = useMemo(
-    () => ['거리', '카테고리', '주종', '매장분위기', '방문시간', '편의시설'],
+    () => ['거리', '카테고리', '주종', '분위기', '방문시간', '편의시설'],
     [],
   );
   const [draftFilters, setDraftFilters] = useState(selectedFilters);
@@ -102,14 +102,13 @@ const FilterPotal = ({
   const keyPeople = findExistingKey(filtersSource, '인원');
   const keyAlcohol = findExistingKey(filtersSource, '주종');
   const keyPriceOrder = findExistingKey(filtersSource, '가격순');
-  const keyStoreatm = findExistingKey(filtersSource, '매장분위기');
+  const keyStoreatm = findExistingKey(filtersSource, '분위기');
   const keyTime = findExistingKey(filtersSource, '방문시간');
   const keyParking = findExistingKey(filtersSource, '주차');
   const keyCorkage = findExistingKey(filtersSource, '콜키지');
   const keyScreen = findExistingKey(filtersSource, '스크린');
   const keyRoom = findExistingKey(filtersSource, '룸');
   const keyOutdoor = findExistingKey(filtersSource, '야장');
-
   const getVal = (key, def) => filtersSource?.[key] ?? def;
   const setVal = (key, value) =>
     setDraftFilters(prev => ({...(prev || {}), [key]: value}));
@@ -438,32 +437,31 @@ const FilterPotal = ({
                     </Pressable>
                   </View>
                   <View style={styles.filterItemsContainer}>
-                    {['500m', '1km', '2km', '3km', '5km'].map(dist => (
+                    {['1km', '2km', '3km', '5km'].map(dist => (
                       <Pressable
                         key={dist}
                         style={[
                           styles.filterItem,
-                          getVal(keyDistance, '1km') === dist &&
+                          getVal(keyDistance, '2km') === dist &&
                             styles.filterItemSelected,
                         ]}
                         onPress={() => {
                           setVal(keyDistance, dist);
                           if (typeof setRadiusint === 'function') {
                             const m = {
-                              '500m': 0.5,
                               '1km': 1,
                               '2km': 2,
                               '3km': 3,
                               '5km': 5,
                             };
-                            const rv = m[dist] ?? 1;
+                            const rv = m[dist] ?? 2;
                             setRadiusint(rv);
                           }
                         }}>
                         <CustomText
                           style={[
                             styles.filterItemText,
-                            getVal(keyDistance, '1km') === dist &&
+                            getVal(keyDistance, '2km') === dist &&
                               styles.filterItemTextSelected,
                           ]}>
                           {dist}
@@ -490,11 +488,11 @@ const FilterPotal = ({
                       '양식',
                       '중식',
                       '감성주점',
-                      '구이/전골',
-                      '치킨/호프',
-                      '회/해산물',
-                      '펍/바',
-                      '포차',
+                      '구이·찜',
+                      '치킨·호프',
+                      '회·해산물',
+                      '펍·바',
+                      '포장마차',
                     ].map(cat => (
                       <Pressable
                         key={cat}
@@ -549,14 +547,14 @@ const FilterPotal = ({
                       '소주',
                       '맥주',
                       '막걸리',
+                      '전통주',
+                      '하이볼',
                       '와인',
                       '칵테일',
                       '사케',
                       '고량주',
                       '위스키',
                       '보드카',
-                      '전통주',
-                      '하이볼',
                       '데킬라',
                     ].map(al => (
                       <Pressable
@@ -579,12 +577,12 @@ const FilterPotal = ({
                     ))}
                   </View>
                 </View>
-                {/* 매장분위기 */}
+                {/* 분위기 */}
                 <View
                   onLayout={e => {
                     const y = e?.nativeEvent?.layout?.y;
                     if (y != null) {
-                      setSectionPositions(p => ({...p, 매장분위기: y}));
+                      setSectionPositions(p => ({...p, 분위기: y}));
                     }
                   }}
                   style={styles.sectionContainer}>
@@ -592,9 +590,7 @@ const FilterPotal = ({
                     style={{
                       flexDirection: 'row',
                     }}>
-                    <CustomText style={styles.sectionTitle}>
-                      매장분위기
-                    </CustomText>
+                    <CustomText style={styles.sectionTitle}>분위기</CustomText>
                     {storeAtmSelected.length > 0 && (
                       <CustomText style={styles.sectionCount}>
                         {storeAtmSelected.length}/4
@@ -610,7 +606,7 @@ const FilterPotal = ({
                       '파티·이벤트',
                       '전통적인',
                       '이국적인',
-                      '모던·깔끔함',
+                      '모던·깔끔한',
                       '노포 감성',
                       '뷰 맛집',
                       '로컬 맛집',
@@ -656,12 +652,16 @@ const FilterPotal = ({
                       }}
                       style={[
                         styles.timeTab,
-                        timePeriod === 'AM' && styles.timeTabActive,
+                        getVal(keyTime, '') !== '' &&
+                          timePeriod === 'AM' &&
+                          styles.timeTabActive,
                       ]}>
                       <CustomText
                         style={[
                           styles.timeTabText,
-                          timePeriod === 'AM' && styles.timeTabTextActive,
+                          getVal(keyTime, '') !== '' &&
+                            timePeriod === 'AM' &&
+                            styles.timeTabTextActive,
                         ]}>
                         오전
                       </CustomText>
@@ -674,12 +674,16 @@ const FilterPotal = ({
                       }}
                       style={[
                         styles.timeTab,
-                        timePeriod === 'PM' && styles.timeTabActive,
+                        getVal(keyTime, '') !== '' &&
+                          timePeriod === 'PM' &&
+                          styles.timeTabActive,
                       ]}>
                       <CustomText
                         style={[
                           styles.timeTabText,
-                          timePeriod === 'PM' && styles.timeTabTextActive,
+                          getVal(keyTime, '') !== '' &&
+                            timePeriod === 'PM' &&
+                            styles.timeTabTextActive,
                         ]}>
                         오후
                       </CustomText>
@@ -753,6 +757,115 @@ const FilterPotal = ({
                   style={styles.sectionContainer}>
                   <CustomText style={styles.sectionTitle}>편의시설</CustomText>
                   <View style={styles.filterItemsContainer}>
+                    <Pressable
+                      style={[
+                        styles.filterfaciItem,
+                        getVal(keyScreen, '') === '설치' &&
+                          styles.filterItemSelected,
+                      ]}
+                      onPress={() =>
+                        setVal(
+                          keyScreen,
+                          getVal(keyScreen, '') === '설치' ? '' : '설치',
+                        )
+                      }>
+                      {getVal(keyScreen, '') === '설치' ? (
+                        <CheckCircle2
+                          size={18}
+                          color="#3CBBFF"
+                          strokeWidth={2.2}
+                          style={{marginRight: 6}}
+                        />
+                      ) : (
+                        <TvMinimal
+                          size={18}
+                          color="#999"
+                          strokeWidth={1.7}
+                          style={{marginRight: 6}}
+                        />
+                      )}
+
+                      <CustomText
+                        style={[
+                          styles.filterfaciItemText,
+                          getVal(keyScreen, '') === '설치' &&
+                            styles.filterItemTextSelected,
+                        ]}>
+                        스크린(TV)
+                      </CustomText>
+                    </Pressable>
+                    <Pressable
+                      style={[
+                        styles.filterfaciItem,
+                        getVal(keyRoom, '') === '가능' &&
+                          styles.filterItemSelected,
+                      ]}
+                      onPress={() =>
+                        setVal(
+                          keyRoom,
+                          getVal(keyRoom, '') === '가능' ? '' : '가능',
+                        )
+                      }>
+                      {getVal(keyRoom, '') === '가능' ? (
+                        <CheckCircle2
+                          size={18}
+                          color="#3CBBFF"
+                          strokeWidth={2.2}
+                          style={{marginRight: 6}}
+                        />
+                      ) : (
+                        <DoorOpen
+                          size={18}
+                          color="#999"
+                          strokeWidth={1.7}
+                          style={{marginRight: 6}}
+                        />
+                      )}
+                      <CustomText
+                        style={[
+                          styles.filterfaciItemText,
+                          getVal(keyRoom, '') === '가능' &&
+                            styles.filterItemTextSelected,
+                        ]}>
+                        룸
+                      </CustomText>
+                    </Pressable>
+                    <Pressable
+                      style={[
+                        styles.filterfaciItem,
+                        getVal(keyOutdoor, '') === '가능' &&
+                          styles.filterItemSelected,
+                      ]}
+                      onPress={() =>
+                        setVal(
+                          keyOutdoor,
+                          getVal(keyOutdoor, '') === '가능' ? '' : '가능',
+                        )
+                      }>
+                      {getVal(keyOutdoor, '') === '가능' ? (
+                        <CheckCircle2
+                          size={18}
+                          color="#3CBBFF"
+                          strokeWidth={2.2}
+                          style={{marginRight: 6}}
+                        />
+                      ) : (
+                        <SunMedium
+                          size={18}
+                          color="#999"
+                          strokeWidth={1.7}
+                          style={{marginRight: 6}}
+                        />
+                      )}
+                      <CustomText
+                        style={[
+                          styles.filterfaciItemText,
+                          getVal(keyOutdoor, '') === '가능' &&
+                            styles.filterItemTextSelected,
+                        ]}>
+                        야외 좌석·테라스
+                      </CustomText>
+                    </Pressable>
                     <Pressable
                       style={[
                         styles.filterfaciItem,
@@ -861,115 +974,6 @@ const FilterPotal = ({
                             styles.filterItemTextSelected,
                         ]}>
                         콜키지
-                      </CustomText>
-                    </Pressable>
-                    <Pressable
-                      style={[
-                        styles.filterfaciItem,
-                        getVal(keyScreen, '') === '설치' &&
-                          styles.filterItemSelected,
-                      ]}
-                      onPress={() =>
-                        setVal(
-                          keyScreen,
-                          getVal(keyScreen, '') === '설치' ? '' : '설치',
-                        )
-                      }>
-                      {getVal(keyScreen, '') === '설치' ? (
-                        <CheckCircle2
-                          size={18}
-                          color="#3CBBFF"
-                          strokeWidth={2.2}
-                          style={{marginRight: 6}}
-                        />
-                      ) : (
-                        <TvMinimal
-                          size={18}
-                          color="#999"
-                          strokeWidth={1.7}
-                          style={{marginRight: 6}}
-                        />
-                      )}
-
-                      <CustomText
-                        style={[
-                          styles.filterfaciItemText,
-                          getVal(keyScreen, '') === '설치' &&
-                            styles.filterItemTextSelected,
-                        ]}>
-                        스크린(TV)
-                      </CustomText>
-                    </Pressable>
-                    <Pressable
-                      style={[
-                        styles.filterfaciItem,
-                        getVal(keyRoom, '') === '가능' &&
-                          styles.filterItemSelected,
-                      ]}
-                      onPress={() =>
-                        setVal(
-                          keyRoom,
-                          getVal(keyRoom, '') === '가능' ? '' : '가능',
-                        )
-                      }>
-                      {getVal(keyRoom, '') === '가능' ? (
-                        <CheckCircle2
-                          size={18}
-                          color="#3CBBFF"
-                          strokeWidth={2.2}
-                          style={{marginRight: 6}}
-                        />
-                      ) : (
-                        <DoorOpen
-                          size={18}
-                          color="#999"
-                          strokeWidth={1.7}
-                          style={{marginRight: 6}}
-                        />
-                      )}
-                      <CustomText
-                        style={[
-                          styles.filterfaciItemText,
-                          getVal(keyRoom, '') === '가능' &&
-                            styles.filterItemTextSelected,
-                        ]}>
-                        룸
-                      </CustomText>
-                    </Pressable>
-                    <Pressable
-                      style={[
-                        styles.filterfaciItem,
-                        getVal(keyOutdoor, '') === '가능' &&
-                          styles.filterItemSelected,
-                      ]}
-                      onPress={() =>
-                        setVal(
-                          keyOutdoor,
-                          getVal(keyOutdoor, '') === '가능' ? '' : '가능',
-                        )
-                      }>
-                      {getVal(keyOutdoor, '') === '가능' ? (
-                        <CheckCircle2
-                          size={18}
-                          color="#3CBBFF"
-                          strokeWidth={2.2}
-                          style={{marginRight: 6}}
-                        />
-                      ) : (
-                        <SunMedium
-                          size={18}
-                          color="#999"
-                          strokeWidth={1.7}
-                          style={{marginRight: 6}}
-                        />
-                      )}
-                      <CustomText
-                        style={[
-                          styles.filterfaciItemText,
-                          getVal(keyOutdoor, '') === '가능' &&
-                            styles.filterItemTextSelected,
-                        ]}>
-                        야외 좌석·테라스
                       </CustomText>
                     </Pressable>
                   </View>
