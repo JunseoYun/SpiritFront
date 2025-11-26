@@ -16,10 +16,10 @@ const categories = [
   {name: 'WESTERN', title: '양식', categoryname: 'WESTERN'},
   {name: 'CHINESE', title: '중식', categoryname: 'CHINESE'},
   {name: 'GAMSEONG', title: '감성주점', categoryname: 'GAMSEONG'},
-  {name: 'GRILLED_STEW', title: '구이 찜', categoryname: 'GRILLED_STEW'},
-  {name: 'CHICKEN_HOF', title: '치킨 호프', categoryname: 'CHICKEN_HOF'},
+  {name: 'GRILLED_STEW', title: '구이·찜', categoryname: 'GRILLED_STEW'},
+  {name: 'CHICKEN_HOF', title: '치킨·호프', categoryname: 'CHICKEN_HOF'},
   {name: 'RAW_SEAFOOD', title: '회 해산물', categoryname: 'RAW_SEAFOOD'},
-  {name: 'PUB_BAR', title: '펍 바', categoryname: 'PUB_BAR'},
+  {name: 'PUB_BAR', title: '펍·바', categoryname: 'PUB_BAR'},
   {name: 'POCHA', title: '포장마차', categoryname: 'POCHA'},
 ];
 
@@ -99,13 +99,13 @@ const CategoryListTabbar = ({route}) => {
             component={CategoryTapScreen}
             options={{
               tabBarLabel: ({color}) => {
-                const fontSize = 16;
+                const fontSize = 15;
                 return (
                   <CustomText
                     maxScale={1.1}
                     style={{
                       color,
-                      fontFamily: 'Pretendard-Bold',
+                      fontFamily: 'Pretendard-SemiBold',
                       fontSize,
                     }}>
                     {title}
