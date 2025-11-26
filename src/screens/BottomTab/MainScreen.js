@@ -97,6 +97,12 @@ const MainScreen = ({navigation}) => {
     }
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setParams({scrollToTop: handleScrollToTop});
+    }, [navigation, handleScrollToTop]),
+  );
+
   const handleAddressLayout = useCallback(event => {
     const {height} = event.nativeEvent.layout;
     setAddressHeight(prev => (Math.abs(prev - height) > 1 ? height : prev));
@@ -144,10 +150,6 @@ const MainScreen = ({navigation}) => {
     offset => syncFilterScroll('list', offset),
     [syncFilterScroll],
   );
-
-  useEffect(() => {
-    navigation.setParams({scrollToTop: handleScrollToTop});
-  }, [handleScrollToTop, navigation]);
 
   const scrollToTopThreshold = useMemo(
     () => (Platform.OS === 'ios' ? screenHeight * 0.25 : screenHeight * 0.3),

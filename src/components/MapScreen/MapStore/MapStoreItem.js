@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {View, Text, Pressable, StyleSheet, Dimensions} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
@@ -6,6 +6,7 @@ import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
+import {useMapSearch} from '../../../context/MapSearchContext';
 import FastImage from 'react-native-fast-image';
 import {normalizeFont} from '../../../hooks/normalizeFont';
 import ColorUtil from '../../../utils/ColorUtil';
@@ -16,6 +17,15 @@ import {
 import CustomText from '../../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
+
+const findExistingKey = (filters, hint) => {
+  if (!filters) return hint;
+  if (Object.prototype.hasOwnProperty.call(filters, hint)) return hint;
+  const keys = Object.keys(filters || {});
+  const compact = s => (s || '').replace(/\s/g, '');
+  const found = keys.find(k => compact(k).includes(compact(hint)));
+  return found || hint;
+};
 
 const MapStoreItem = ({
   item,
@@ -32,6 +42,7 @@ const MapStoreItem = ({
 
   const {token} = useAuth();
   const {showToast} = useToast();
+  const {selectedFilters} = useMapSearch();
   const pressLockRef = useRef(false);
   const resetTimerRef = useRef(null);
 
@@ -78,6 +89,35 @@ const MapStoreItem = ({
 
   const {translateCategory} = useCategoryTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
+
+  const selectedAlcohol = useMemo(() => {
+    const filters = selectedFilters || {};
+    const keyAlcohol = findExistingKey(filters, '주종');
+    const val = filters?.[keyAlcohol];
+    if (typeof val === 'string') {
+      return val.trim();
+    }
+    return '';
+  }, [selectedFilters]);
+
+  const orderedMainDrinks = useMemo(() => {
+    const drinks = Array.isArray(item?.mainDrinkDtos) ? item.mainDrinkDtos : [];
+    if (!selectedAlcohol) {
+      return drinks;
+    }
+    const matched = [];
+    const others = [];
+    drinks.forEach(drink => {
+      const translatedType = translateAlcohol(drink.type);
+      if (translatedType === selectedAlcohol) {
+        matched.push(drink);
+      } else {
+        others.push(drink);
+      }
+    });
+    return [...matched, ...others];
+  }, [item?.mainDrinkDtos, selectedAlcohol, translateAlcohol]);
+
   return (
     <TapGestureHandler
       onHandlerStateChange={handleTapStateChange}
@@ -164,8 +204,8 @@ const MapStoreItem = ({
             style={styles.drinkText}
             numberOfLines={1}
             ellipsizeMode="tail">
-            {item.mainDrinkDtos && item.mainDrinkDtos.length > 0
-              ? item.mainDrinkDtos
+            {orderedMainDrinks && orderedMainDrinks.length > 0
+              ? orderedMainDrinks
                   .map(drink => {
                     const priceText =
                       drink.price != null

@@ -185,7 +185,6 @@ const MapScreen = ({navigation, route}) => {
       } else {
         setStoregetloading(true);
       }
-      console.log(dto);
       try {
         const response = await Store_getby_condition_search(
           targetLat,
