@@ -35,7 +35,7 @@ const CategoryGrid = ({onPress, style}) => {
 
 const styles = StyleSheet.create({
   contanier: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
   },
   categoryItem: {
     alignItems: 'center',
