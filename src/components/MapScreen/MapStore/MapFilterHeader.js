@@ -284,6 +284,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#3CBBFF',
     zIndex: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   badgeText: {
     fontSize: 10,
