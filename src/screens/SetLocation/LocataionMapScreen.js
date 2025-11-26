@@ -25,7 +25,7 @@ import {log_access_create} from '../../api/userApi';
 import BottomActionButton from '../../utils/BottomActionButton';
 
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 const LocataionMapScreen = ({navigation}) => {
   const route = useRoute();
   const [loading, setLoading] = useState(false);

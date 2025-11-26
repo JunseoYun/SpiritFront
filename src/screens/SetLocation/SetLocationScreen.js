@@ -19,7 +19,7 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
 import {log_access_create} from '../../api/userApi';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const SetLocationScreen = ({navigation}) => {
   const [currentAddress, setCurrentAddress] = useState('');

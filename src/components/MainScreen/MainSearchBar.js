@@ -2,7 +2,7 @@ import React from 'react';
 import {Pressable, View, Text, StyleSheet} from 'react-native';
 
 import Feather from 'react-native-vector-icons/Feather';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const MainSearchBar = ({handleSearchPress}) => {
   return (

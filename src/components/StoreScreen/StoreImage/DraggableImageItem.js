@@ -13,7 +13,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 

@@ -16,7 +16,7 @@ import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import {normalizeFont} from '../../hooks/normalizeFont';
 import BottomActionButton from '../../utils/BottomActionButton';
 import ColorUtil from '../../utils/ColorUtil';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 

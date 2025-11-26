@@ -1,6 +1,6 @@
 import React from 'react';
 import {Pressable, Text, StyleSheet, View} from 'react-native';
-import CustomText from '../../../common/CustomText';
+import CustomText from '../../../../utils/CustomText';
 
 const OperateBottomConfirmButton = ({onPress, disabled}) => {
   return (

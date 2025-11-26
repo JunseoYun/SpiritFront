@@ -21,7 +21,7 @@ import {
 let fontScale = PixelRatio.getFontScale(); // let으로 변경
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},

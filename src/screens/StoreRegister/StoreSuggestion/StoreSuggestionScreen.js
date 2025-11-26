@@ -31,7 +31,7 @@ import ColorUtil from '../../../utils/ColorUtil';
 import {StoreSuggestion} from '../../../api/storeApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import useDoubleBackExit from '../../../hooks/useDoubleBackExit';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const StoreSuggestionScreen = ({navigation}) => {
   useDoubleBackExit(navigation);
 

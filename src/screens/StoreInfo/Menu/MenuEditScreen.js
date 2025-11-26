@@ -52,8 +52,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import ColorUtil from '../../../utils/ColorUtil';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import CustomText from '../../../components/common/CustomText';
-import CustomTextInput from '../../../components/common/CustomTextInput';
+import CustomText from '../../../utils/CustomText';
+import CustomTextInput from '../../../utils/CustomTextInput';
 
 const MenuEditScreen = ({route, navigation}) => {
   const {

@@ -13,7 +13,7 @@ import {useToast} from '../context/ToastContext';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 import {openKakaoMap} from './openKakaoMap';
 import FastImage from 'react-native-fast-image';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 
 const APP_NAME_PARAM = Platform.select({
   ios: 'com.spiritfront',

@@ -8,7 +8,7 @@ import {
   FlatList,
   Modal,
 } from 'react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const CarrierModal = ({
   isCarrierModalVisible,

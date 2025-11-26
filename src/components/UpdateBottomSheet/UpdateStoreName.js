@@ -4,8 +4,8 @@ import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포�
 import {useToast} from '../../context/ToastContext';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const UpdateStoreName = ({updatedValue, setUpdatedValue, onCancel, onSave}) => {
   const {showToast} = useToast();

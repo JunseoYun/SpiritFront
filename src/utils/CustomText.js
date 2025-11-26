@@ -1,6 +1,6 @@
 import React from 'react';
 import {Text} from 'react-native';
-import {normalizeFont} from '../../hooks/normalizeFont';
+import {normalizeFont} from '../hooks/normalizeFont';
 
 const CustomText = ({
   children,

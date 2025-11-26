@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const FastSearch = ({title, selectedFilters, handleBottomOpen, isHeader}) => {
   const {translateCategory} = useCategoryTranslation();

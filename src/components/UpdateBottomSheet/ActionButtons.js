@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Pressable, Text, StyleSheet} from 'react-native';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const ActionButtons = ({onCancel, onSave, option}) => {
   const {bottom} = useSafeAndroidInsets();

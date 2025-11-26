@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
-import CustomText from '../../../common/CustomText';
+import CustomText from '../../../../utils/CustomText';
 
 const OperateBottomBreakSelector = ({
   isStartTime,

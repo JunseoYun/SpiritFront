@@ -32,7 +32,7 @@ import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 import BottomActionButton from '../../../utils/BottomActionButton';
 import ColorUtil from '../../../utils/ColorUtil';
 import useDoubleBackExit from '../../../hooks/useDoubleBackExit';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const StoreSuggestionDetailScreen = ({navigation}) => {
   useDoubleBackExit(navigation);
   const {bottom} = useSafeAndroidInsets();

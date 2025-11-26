@@ -14,7 +14,7 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import {user_withdraw} from '../../../api/userApi';
 import {removeNotification} from '../../../storage/notificationStorage';
 import Loading from '../../../hooks/Loading';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const WithdrawScreen = () => {
   const navigation = useNavigation();
   const {logout} = useAuth();

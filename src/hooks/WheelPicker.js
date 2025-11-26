@@ -1,6 +1,6 @@
 import React, {useRef, useState, useEffect} from 'react';
 import {View, Text, ScrollView, Pressable, StyleSheet} from 'react-native';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 
 const WheelPicker = ({
   data,

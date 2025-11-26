@@ -27,7 +27,7 @@ import CarrierModal from '../../components/IdentityScreen/CarrierModal';
 import CarrierInput from '../../components/IdentityScreen/CarrierInput';
 import OTPInput from '../../components/IdentityScreen/OTPInput';
 import PolicyModal from '../../components/IdentityScreen/PolicyModal';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const CARRIER_OPTIONS = [
   'SKT',

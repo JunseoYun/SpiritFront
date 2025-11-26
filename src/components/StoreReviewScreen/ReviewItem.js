@@ -15,8 +15,8 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FastImage from 'react-native-fast-image';
 import {review_set_reply} from '../../api/reviewApi';
 import Loading from '../../hooks/Loading';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
   const [isExpanded, setIsExpanded] = useState(false);

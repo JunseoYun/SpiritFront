@@ -27,7 +27,7 @@ import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const UpdateStoreImage = ({images, setUpdatedImgValue, onCancel, onSave}) => {
   const {showAlert, AlertComponent} = useCustomAlert();

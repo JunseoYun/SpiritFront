@@ -6,7 +6,7 @@ import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 let fontScale = PixelRatio.getFontScale();
 

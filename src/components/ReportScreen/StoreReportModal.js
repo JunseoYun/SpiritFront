@@ -1,6 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 import {View, Text, Pressable, Modal, StyleSheet, Animated} from 'react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreReportModal = ({
   isModalVisible,

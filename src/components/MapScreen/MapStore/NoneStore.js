@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet, Dimensions} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {normalizeFont} from '../../../hooks/normalizeFont';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
 const BUTON_WIDTH = width * 0.4;

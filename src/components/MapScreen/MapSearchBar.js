@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RotateCw} from 'lucide-react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 const {width} = Dimensions.get('window');
 
 const MapSearchBar = ({onPress}) => {

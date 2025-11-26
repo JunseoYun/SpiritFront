@@ -15,10 +15,10 @@ import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
 import LikedItemSkeleton from '../../components/LikedScreen/LikedItemSkeleton';
 import MyBanner from '../../components/Ads/MyBanner';
-import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const LikeScreen = ({navigation}) => {
   const {token} = useAuth();

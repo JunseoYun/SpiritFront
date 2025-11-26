@@ -1,6 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 import {View, Text, Pressable, Modal, StyleSheet, Animated} from 'react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const ReportModal = ({isModalVisible, onPressModalClose, startUpdate}) => {
   const opacity = useRef(new Animated.Value(0)).current;

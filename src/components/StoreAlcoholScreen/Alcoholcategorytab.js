@@ -11,7 +11,7 @@ import {
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const alcoholMapping = {
   SOJU: '소주',

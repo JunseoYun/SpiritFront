@@ -23,8 +23,8 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import StorePaymentModal from '../../components/StorePaymentScreen/StorePaymentModal';
-import CustomText from '../../components/common/CustomText';
-import CustomTextInput from '../../components/common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 // ----- utils -----
 const formatCurrency = n => (Number(n) || 0).toLocaleString('ko-KR');

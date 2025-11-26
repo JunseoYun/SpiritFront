@@ -14,9 +14,9 @@ import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import ViewedStoreTotalItem from '../../components/TotalScreen/ViewedStoreTotalItem';
 import {Store_getby_viewed} from '../../api/storeApi';
 import ViewedStoreItemSkeleton from '../../components/TotalScreen/TotalSkeleton/ViewedStoreItemSkeleton';
-import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 const ViewedStoreScreen = ({navigation}) => {
   const {bottom} = useSafeAndroidInsets();
   const [distancestores, setDistancestores] = useState([]);

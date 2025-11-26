@@ -15,7 +15,7 @@ import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const fontScale = PixelRatio.getFontScale();
 
 const iconSize = fontScale >= 1.5 ? 22 : 16;

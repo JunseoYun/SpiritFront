@@ -13,7 +13,7 @@ import {
 import {store_view_stats_get} from '../../../api/logstats';
 import StoreViewResult from './StoreViewResult';
 import Loading from '../../../hooks/Loading';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const period = [
   {label: '오늘', value: 'day'},

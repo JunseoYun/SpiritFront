@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, ScrollView, Pressable} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import ColorUtil from '../../utils/ColorUtil';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreEventsScreen = ({route, navigation}) => {
   const events = route?.params?.events ?? [];

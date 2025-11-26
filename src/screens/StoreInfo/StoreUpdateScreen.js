@@ -51,7 +51,7 @@ import {
   deserializeOperatingTime,
   deserializeBreakingTime,
 } from '../../utils/parseOperatingHours';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const MOOD_TEMPLATE = {
   QUIET: false,

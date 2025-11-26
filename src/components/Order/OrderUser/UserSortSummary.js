@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, Text, View, Pressable} from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const UserSortSummary = ({isCompletedTab, filtered, sortDesc, setSortDesc}) => {
   if (!isCompletedTab) return null;

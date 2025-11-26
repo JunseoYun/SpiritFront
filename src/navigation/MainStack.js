@@ -30,7 +30,7 @@ import NotificationScreen from '../screens/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/Notification/NotificationSetScreen';
 import OrderDetailScreen from '../screens/BottomTab/Order/OrderDetailScreen';
 import {normalizeFont} from '../hooks/normalizeFont';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 
 const Stack = createStackNavigator();
 

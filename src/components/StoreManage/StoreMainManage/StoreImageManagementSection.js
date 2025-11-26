@@ -2,7 +2,7 @@ import React, {useCallback} from 'react';
 import {StyleSheet, View, Pressable, Text} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const StoreImageManagementSection = ({cards = []}) => {
   const renderImagePreview = useCallback(imageUrls => {

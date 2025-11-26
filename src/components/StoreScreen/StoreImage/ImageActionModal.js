@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Pressable,
 } from 'react-native';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const ImageActionModal = ({visible, onClose, onEdit, onSort}) => {
   return (

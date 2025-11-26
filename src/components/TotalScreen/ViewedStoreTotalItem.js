@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const ViewedStoreTotalItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();

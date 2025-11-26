@@ -9,7 +9,7 @@ import {
   CarFront,
 } from 'lucide-react-native';
 import ColorUtil from '../../../utils/ColorUtil';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const FACILITY_ITEMS = [
   {key: 'hasScreen', label: '스크린·TV', icon: TvMinimal},

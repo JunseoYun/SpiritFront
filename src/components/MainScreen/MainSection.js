@@ -8,7 +8,7 @@ import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStor
 import NearStoreList from '../../components/MainScreen/NearStore/NearStoreList';
 import ViewedStoreList from './ViewedStore/ViewedStoreList';
 import MyBanner from '../Ads/MyBanner';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const MainSection = ({
   recommCategory,

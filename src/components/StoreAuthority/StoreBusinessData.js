@@ -3,8 +3,8 @@ import {View, Text, TextInput, StyleSheet} from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 // validateDate 함수 정의 (예시)
 const validateDate = dateStr => {

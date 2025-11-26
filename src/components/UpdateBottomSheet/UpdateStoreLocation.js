@@ -9,8 +9,8 @@ import {
 import ActionButtons from './ActionButtons'; // 분리된 ActionButtons 컴포넌트
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useToast} from '../../context/ToastContext';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const UpdateStoreLocation = ({
   updatedValue,

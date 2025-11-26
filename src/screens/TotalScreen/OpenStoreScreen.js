@@ -22,9 +22,9 @@ import Loading from '../../hooks/Loading';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import OpenStoreTotalItem from '../../components/TotalScreen/OpenStoreTotalItem';
 import TotalItemSkeleton from '../../components/TotalScreen/TotalSkeleton/TotalItemSkeleton';
-import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const OpenStoreScreen = ({navigation}) => {
   const route = useRoute();

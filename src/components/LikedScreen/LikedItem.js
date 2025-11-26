@@ -12,7 +12,7 @@ import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
 import FastImage from 'react-native-fast-image';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const windowWidth = Dimensions.get('window').width;
 const H_MARGIN = 18;

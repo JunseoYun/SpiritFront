@@ -26,7 +26,7 @@ import {
   delete_store_manager,
   store_owner_change,
 } from '../../api/storeApi';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreManagerScreen = ({navigation}) => {
   const route = useRoute();

@@ -16,7 +16,7 @@ import Loading from '../../hooks/Loading';
 import ReviewItemSkeleton from '../../components/StoreReviewScreen/ReviewItemSkeleton';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import BottomActionButton from '../../utils/BottomActionButton';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storename, isOwner} = route.params;

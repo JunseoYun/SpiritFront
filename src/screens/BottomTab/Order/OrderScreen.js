@@ -10,7 +10,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import OrderUserScreen from './OrderUserScreen';
 import OrderOwnerScreen from './OrderOwnerScreen';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const OrderScreen = ({navigation}) => {
   const [ownerMode, setOwnerMode] = useState(false);

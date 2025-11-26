@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Pressable, Image} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const CFUserinfo = ({userdata, navigation}) => {
   return (

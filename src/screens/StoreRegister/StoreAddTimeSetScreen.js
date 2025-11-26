@@ -40,7 +40,7 @@ import {
   normalizeOperatingHoursMap,
   normalizeBreakingHoursMap,
 } from '../../utils/parseOperatingHours';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const days = [
   {label: '월', value: 'MONDAY'},

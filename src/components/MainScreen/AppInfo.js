@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {View, Pressable, Text, StyleSheet, Animated} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import {normalizeFont} from '../../hooks/normalizeFont';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const AppInfo = ({scrollRef, navigation}) => {
   const [toggle, setToggle] = useState(false);

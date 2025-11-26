@@ -16,7 +16,7 @@ import {Userdataget, user_marketing_consent} from '../../api/userApi';
 import Loading from '../../hooks/Loading';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const Toggle = ({value, onToggle}) => {
   const translateX = useState(new Animated.Value(value ? 22 : 2))[0];

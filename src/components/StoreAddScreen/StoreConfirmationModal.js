@@ -10,7 +10,7 @@ import {
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useDayTranslation from '../../hooks/useDayTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreConfirmationModal = ({
   visible,

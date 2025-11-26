@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, Platform} from 'react-native';
 import PopularStoreItem from './PopularStoreItem';
 import PopularItemSkeleton from './PopularItemSkeleton';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const PopularStoresSection = ({
   popularstores = [],

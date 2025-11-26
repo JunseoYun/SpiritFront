@@ -19,7 +19,7 @@ import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 import Loading from '../../../hooks/Loading';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const StoreAddPhotoScreen = ({navigation}) => {
   const {token} = useAuth();

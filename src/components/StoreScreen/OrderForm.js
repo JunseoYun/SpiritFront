@@ -7,7 +7,7 @@ import {
   Keyboard,
   StyleSheet,
 } from 'react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const DAY_ORDER = [
   'SUNDAY',

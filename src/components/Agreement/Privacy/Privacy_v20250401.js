@@ -1,7 +1,7 @@
 import React from 'react';
 import {Text, SafeAreaView, ScrollView, View, StyleSheet} from 'react-native';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const Privacy_v20250401 = () => {
   const {bottom} = useSafeAndroidInsets();

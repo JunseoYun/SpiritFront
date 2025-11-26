@@ -13,7 +13,7 @@ import {
 import {store_like_stats_get} from '../../../api/logstats';
 import StoreLikeResult from './StoreLikeResult';
 import Loading from '../../../hooks/Loading';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 if (
   Platform.OS === 'android' &&

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 const basePolicyList = [
   '[필수] 개인정보 수집/이용 동의',
   '[필수] 고유식별정보 처리 동의',

@@ -3,7 +3,7 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const Location = ({isUpdate, distance, unit}) => {
   return (

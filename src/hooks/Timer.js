@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {Text} from 'react-native';
 
 import styles from '../styles/SignUpPageStyle';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 
 export const Timer = () => {
   const [seconds, setSeconds] = useState(300); // 5분을 초 단위로 표현

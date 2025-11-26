@@ -5,7 +5,7 @@ import ColorUtil from '../../../utils/ColorUtil';
 import FastImage from 'react-native-fast-image';
 import {Store_getby_managed} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const MyManager = ({navigation}) => {
   const [page, setPage] = useState(0);

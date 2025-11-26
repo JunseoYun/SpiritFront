@@ -15,7 +15,7 @@ import {DrinkUpdateSort} from '../../api/drinkApi';
 import {useToast} from '../../context/ToastContext';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import Loading from '../../hooks/Loading';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const ORDER_SPACER_HEIGHT = 0;
 

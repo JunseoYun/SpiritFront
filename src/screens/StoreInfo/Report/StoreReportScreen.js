@@ -13,8 +13,8 @@ import StoreReportModal from '../../../components/ReportScreen/StoreReportModal'
 import {report_create} from '../../../api/reportApi';
 import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
-import CustomTextInput from '../../../components/common/CustomTextInput';
-import CustomText from '../../../components/common/CustomText';
+import CustomTextInput from '../../../utils/CustomTextInput';
+import CustomText from '../../../utils/CustomText';
 
 const StoreReportScreen = ({navigation}) => {
   const route = useRoute();

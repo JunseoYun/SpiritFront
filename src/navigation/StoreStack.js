@@ -28,7 +28,7 @@ import StoreManageScreen from '../screens/StoreInfo/StoreManage/StoreManageScree
 import StoreEventEditScreen from '../screens/StoreInfo/StoreManage/StoreEventEditScreen';
 import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
 import StoreEventsScreen from '../screens/StoreInfo/StoreEventsScreen';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 const Stack = createStackNavigator();
 
 export default function StoreStack() {

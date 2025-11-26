@@ -11,7 +11,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Clipboard from 'react-native/Libraries/Components/Clipboard/Clipboard';
 import {useToast} from '../../../context/ToastContext';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const Address = ({locationDto}) => {
   const addressText = useMemo(() => {

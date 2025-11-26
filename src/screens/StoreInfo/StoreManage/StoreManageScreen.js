@@ -21,7 +21,7 @@ import StoreMenuScreen, {MenuCategoryRadioGroup} from '../StoreMenuScreen';
 import StoreAlcoholScreen, {AlcoholTypeRadioGroup} from '../StoreAlcoholScreen';
 import Loading from '../../../hooks/Loading';
 import useCustomAlert from '../../../hooks/useCustomAlert';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const fontScale = PixelRatio.getFontScale();
 
 const iconSize = fontScale >= 1.5 ? 22 : 16;

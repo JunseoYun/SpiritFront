@@ -10,7 +10,7 @@ import {
 import FastImage from 'react-native-fast-image';
 
 import Feather from 'react-native-vector-icons/Feather';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 

@@ -26,7 +26,7 @@ import {
   CheckCircle2,
 } from 'lucide-react-native';
 import BottomActionButton from '../../../utils/BottomActionButton';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 // Try to resolve keys that may be mojibake in persisted state
 const findExistingKey = (filters, hint) => {

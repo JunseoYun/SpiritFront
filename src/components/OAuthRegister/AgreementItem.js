@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, Pressable} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const AgreementItem = ({onPress, checked, text, onInfoPress}) => {
   return (

@@ -19,7 +19,7 @@ import Loading from './Loading';
 import {useToast} from '../context/ToastContext';
 import LinearGradient from 'react-native-linear-gradient';
 import {navigationRef} from '../navigation/NavigationService';
-import CustomText from '../components/common/CustomText';
+import CustomText from '../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 const CARD_WIDTH = Math.min(width * 0.88, 420);

@@ -1,8 +1,8 @@
 import React, {useEffect, useMemo, useRef} from 'react';
 import {StyleSheet, Text, TextInput, View} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const StoreOrderRequest = ({
   noteSectionOffset,

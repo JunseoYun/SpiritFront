@@ -5,7 +5,7 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import ColorUtil from '../../utils/ColorUtil';
 import FastImage from 'react-native-fast-image';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
   const formatDate = dateString => {

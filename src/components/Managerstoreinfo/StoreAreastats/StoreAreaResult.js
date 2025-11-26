@@ -4,7 +4,7 @@ import GroupBySelector from '../GroupBySelector';
 import StorePersentBarGraph from '../StorePersentBarGraph'; // 필요시 주석 해제
 import GenderPieChart from '../GenderPieChart';
 import AgeDistributionTable from '../AgeDistributionTable';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const genders = ['MALE', 'FEMALE'];
 const genderColor = [

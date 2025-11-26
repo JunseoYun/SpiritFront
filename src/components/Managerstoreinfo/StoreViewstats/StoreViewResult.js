@@ -15,7 +15,7 @@ import StorePersentBarGraph from '../StorePersentBarGraph';
 import GenderPieChart from '../GenderPieChart';
 import AgeDistributionTable from '../AgeDistributionTable';
 import Feather from 'react-native-vector-icons/Feather';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_WIDTH_HALF = SCREEN_WIDTH / 2;

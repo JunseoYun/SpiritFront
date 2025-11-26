@@ -33,7 +33,7 @@ import Alcohol from '../../StoreScreen/StoreMainInfo/Alcohol';
 import OperationSchedule from '../../StoreScreen/StoreMainInfo/OperationSchedule';
 
 import {Storelikepost, get_store_share} from '../../../api/storeApi';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 const H_PADDING = 16;

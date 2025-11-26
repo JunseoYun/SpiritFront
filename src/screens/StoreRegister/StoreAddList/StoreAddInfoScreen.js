@@ -31,7 +31,7 @@ import StoreInfo from '../../../components/StoreAddScreen/StoreInfo';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const StoreAddInfoScreen = ({navigation}) => {
   const {bottom} = useSafeAndroidInsets();

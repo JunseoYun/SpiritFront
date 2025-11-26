@@ -11,7 +11,7 @@ import {
 import Entypo from 'react-native-vector-icons/Entypo';
 
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 

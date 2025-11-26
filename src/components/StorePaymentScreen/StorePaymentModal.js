@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 export default function StorePaymentModal({
   visible,

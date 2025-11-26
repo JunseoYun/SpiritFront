@@ -10,7 +10,7 @@ import OwnerStoreList from '../../../components/Order/OrderOwner/OwnerStoreList'
 import OwnerModeBtn from '../../../components/Order/OrderOwner/OwnerModeBtn';
 import OwnerHeaderTabs from '../../../components/Order/OrderOwner/OwnerHeaderTabs';
 import OwnerCard from '../../../components/Order/OrderOwner/OwnerCard';
-import CustomText from '../../../components/common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const OrderOwnerScreen = ({navigation}) => {
   const [activeTab, setActiveTab] = useState(0);

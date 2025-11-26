@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreBreakingHours = ({breakingHours, setBreakingHours}) => {
   const [visible, setVisible] = useState(false);

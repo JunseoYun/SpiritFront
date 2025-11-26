@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, TextInput, StyleSheet, ScrollView} from 'react-native';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const Service = () => {
   return (

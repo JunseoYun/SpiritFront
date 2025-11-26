@@ -34,7 +34,7 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import useDoubleBackExit from '../../hooks/useDoubleBackExit';
 import {Create_ownership_photoOnly} from '../../api/storeApi';
 import Loading from '../../hooks/Loading';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 const STEP_FLOW = [
   'storeName',
   'storeNumber',

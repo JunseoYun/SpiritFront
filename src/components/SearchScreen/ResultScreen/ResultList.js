@@ -13,7 +13,7 @@ import ResultItemSkeleton from './ResultItemSkeleton';
 import Loading from '../../../hooks/Loading';
 import useScrollToTopVisibility from '../../../hooks/useScrollToTopVisibility';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const ResultList = ({trimmedSearchWord, location, navigation}) => {
   const [searchingStores, setSearchingStores] = useState([]); // 검색된 가게 목록

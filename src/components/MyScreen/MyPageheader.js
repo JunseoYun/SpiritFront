@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import FastImage from 'react-native-fast-image';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const MyPageheader = ({
   nickname,

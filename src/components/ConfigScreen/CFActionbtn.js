@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Pressable, Text, StyleSheet, Platform} from 'react-native';
 import {useAuth} from '../../context/AuthContext';
 import useCustomAlert from '../../hooks/useCustomAlert';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const CFActionbtn = ({navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();

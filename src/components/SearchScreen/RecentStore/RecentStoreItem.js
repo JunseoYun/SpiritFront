@@ -12,7 +12,7 @@ import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import FastImage from 'react-native-fast-image';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const fontScale = PixelRatio.getFontScale();
 

@@ -5,7 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 let fontScale = PixelRatio.getFontScale(); // let으로 변경
 if (fontScale >= 1.7) fontScale = 1.7;

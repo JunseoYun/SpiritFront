@@ -11,8 +11,8 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {normalizeFont} from '../../hooks/normalizeFont';
 import CancelText from '../CancelText/CancelText';
 import {useFocusEffect} from '@react-navigation/native';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const SearchBar = ({value, onChangeText, placeholder, onPress}) => {
   const [focused, setFocused] = useState(false);

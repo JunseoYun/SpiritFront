@@ -1,7 +1,7 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {View, Text, Pressable, StyleSheet, Animated} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const Title = ({
   storeName,

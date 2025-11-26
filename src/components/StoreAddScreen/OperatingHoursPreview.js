@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
 import ColorUtil from '../../utils/ColorUtil';
 import {calculateRangeFromEntry} from '../../utils/parseOperatingHours';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 const OperatingHoursPreview = ({
   is24Hours,
   operatingHours,

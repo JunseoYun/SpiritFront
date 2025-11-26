@@ -1,6 +1,6 @@
 import React from 'react';
 import {Modal, View, Text, Pressable, StyleSheet} from 'react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const RejectModal = ({data, onClose}) => {
   const body = data?.body || '';

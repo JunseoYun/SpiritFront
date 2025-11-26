@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const StoreGroup = ({selectedOption, setSelectedOption, index, error}) => {
   const handleCheckBoxChange = index => {

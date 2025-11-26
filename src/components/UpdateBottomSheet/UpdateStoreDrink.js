@@ -18,7 +18,7 @@ import {
 import {UpdateStore} from '../../api/storeApi';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const ALCOHOL_TYPES = [
   {label: '소주', value: 'SOJU'},

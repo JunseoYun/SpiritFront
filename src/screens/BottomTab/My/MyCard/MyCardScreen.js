@@ -6,7 +6,7 @@ import {
   SafeAreaView,
   StyleSheet,
 } from 'react-native';
-import CustomText from '../../../../components/common/CustomText';
+import CustomText from '../../../../utils/CustomText';
 
 // Empty list UI
 const MyCardScreen = ({navigation}) => {

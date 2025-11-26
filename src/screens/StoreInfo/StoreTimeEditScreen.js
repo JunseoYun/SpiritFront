@@ -33,7 +33,7 @@ import OperateBottomBreakToggle from '../../components/StoreAddScreen/StoreAddTi
 import OperateBottomConfirmButton from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomConfirmButton';
 
 import {UpdateStore} from '../../api/storeApi';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const days = [
   {label: '월', value: 'MONDAY'},

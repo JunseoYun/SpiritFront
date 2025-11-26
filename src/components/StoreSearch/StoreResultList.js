@@ -11,7 +11,7 @@ import StoreResultItem from './StoreResultItem';
 import {Store_getby_store} from '../../api/storeApi';
 import StoreResultItemSkeleton from './StoreResultItemSkeleton';
 import Loading from '../../hooks/Loading';
-import CustomText from '../common/CustomText';
+import CustomText from '../../utils/CustomText';
 const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
   const [searchingStores, setSearchingStores] = useState([]);
   const [page, setPage] = useState(0);

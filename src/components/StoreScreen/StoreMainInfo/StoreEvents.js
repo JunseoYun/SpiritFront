@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import ColorUtil from '../../../utils/ColorUtil';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const {width: SCREEN_WIDTH} = Dimensions.get('window');
 

@@ -11,7 +11,7 @@ import GroupBySelector from '../GroupBySelector';
 import GenderPieChart from '../GenderPieChart';
 import AgeDistributionTable from '../AgeDistributionTable';
 import StoreLikeBarGraph from './StoreLikeBarGraph';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 const genders = ['MALE', 'FEMALE'];
 const genderColor = [
   {label: '남자', color: '#3CA5FF'},

@@ -35,10 +35,10 @@ import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcateg
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import StoreMainSkeleton from './StoreMainSkeleton';
-import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 import OrderForm from '../../components/StoreScreen/OrderForm';
-import CustomText from '../../components/common/CustomText';
+import CustomText from '../../utils/CustomText';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 

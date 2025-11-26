@@ -9,8 +9,8 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
-import CustomText from '../common/CustomText';
-import CustomTextInput from '../common/CustomTextInput';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const NameInput = ({
   name,

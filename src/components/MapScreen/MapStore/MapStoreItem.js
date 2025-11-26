@@ -13,7 +13,7 @@ import {
   TapGestureHandler,
   State as GestureState,
 } from 'react-native-gesture-handler';
-import CustomText from '../../common/CustomText';
+import CustomText from '../../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 
