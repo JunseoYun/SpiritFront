@@ -13,6 +13,7 @@ const PopularStoresSection = ({
   popularloading = false,
   popularempty = false,
   onHeaderLayout = () => {},
+  drinkType = null,
 }) => {
   return (
     <View>
@@ -24,6 +25,7 @@ const PopularStoresSection = ({
           location={location}
           navigation={navigation}
           screenWidth={screenWidth}
+          drinkType={drinkType}
         />
       ))}
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import {
   View,
   Text,
@@ -20,7 +20,7 @@ const fontScale = PixelRatio.getFontScale();
 
 const iconSize = fontScale >= 1.5 ? 22 : 16;
 
-const PopularStoreItem = ({store, location, navigation}) => {
+const PopularStoreItem = ({store, location, navigation, drinkType}) => {
   const {translateAlcohol} = useTranslateAlcohol();
   const {translateCategory} = useCategoryTranslation();
   const {
@@ -47,6 +47,22 @@ const PopularStoreItem = ({store, location, navigation}) => {
       params: {storeId: store.id},
     });
   };
+
+  const prioritizedDrinks = useMemo(() => {
+    if (!store?.mainDrinkDtos?.length) {
+      return [];
+    }
+    if (!drinkType) {
+      return store.mainDrinkDtos;
+    }
+    const matched = store.mainDrinkDtos.filter(
+      drink => drink.type === drinkType,
+    );
+    const others = store.mainDrinkDtos.filter(
+      drink => drink.type !== drinkType,
+    );
+    return [...matched, ...others];
+  }, [drinkType, store?.mainDrinkDtos]);
 
   return (
     <View style={styles.itemContainer}>
@@ -337,9 +353,9 @@ const PopularStoreItem = ({store, location, navigation}) => {
           )}
         </View>
 
-        {store?.mainDrinkDtos?.length > 0 && (
+        {prioritizedDrinks.length > 0 && (
           <View style={styles.mainDrinkView}>
-            {store?.mainDrinkDtos?.slice(0, 3)?.map((drink, idx, arr) => {
+            {prioritizedDrinks.map((drink, idx, arr) => {
               const isLast = idx === arr.length - 1;
 
               return (

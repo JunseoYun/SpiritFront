@@ -617,11 +617,13 @@ const MainScreen = ({navigation}) => {
             popularloading={popularloading}
             popularempty={popularempty}
             onHeaderLayout={height => setPopulartext(height)}
+            drinkType={drinkType}
           />
         ),
       },
     ],
     [
+      drinkType,
       loading,
       mainSectionData,
       popularempty,
