@@ -22,7 +22,7 @@ const NoneStore = ({navigation, location}) => {
               color="#6B7280"
               style={{marginRight: 3}}
             />
-            <CustomText style={styles.noDatasubText}>
+            <CustomText maxScale={1.2} style={styles.noDatasubText}>
               현재 한잔할까는 용인시를 중심으로 운영 중입니다.
             </CustomText>
           </View>
@@ -107,6 +107,7 @@ const styles = StyleSheet.create({
   noneText: {
     alignSelf: 'center',
     color: 'white',
+    fontSize: 15,
     fontFamily: 'Pretendard-SemiBold',
   },
 });

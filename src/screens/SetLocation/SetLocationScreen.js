@@ -124,7 +124,7 @@ const SetLocationScreen = ({navigation}) => {
           color="#6B7280"
           style={{marginRight: 3}}
         />
-        <CustomText style={styles.noticeText}>
+        <CustomText maxScale={1.3} style={styles.noticeText}>
           현재 한잔할까는 용인시를 중심으로 운영 중입니다.
         </CustomText>
       </View>
