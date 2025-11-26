@@ -1099,7 +1099,6 @@ const MapStoreList = ({
         />
       );
     }
-
     return (
       <>
         <Animated.View
@@ -1152,7 +1151,7 @@ const MapStoreList = ({
             bottomInset={0}
             handleIndicatorStyle={[styles.sheetHandleIndicator]}
             backgroundStyle={[styles.sheetBackground]}
-            enableContentPanningGesture={shouldEnableContentPanGesture}
+            enableContentPanningGesture={false}
             enableHandlePanningGesture={!filterModalVisible && !isListRestoring}
             enableOverDrag={false}
             animatedIndex={animatedIndex}
