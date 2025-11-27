@@ -770,29 +770,13 @@ const FilterPotal = ({
                           getVal(keyScreen, '') === '설치' ? '' : '설치',
                         )
                       }>
-                      {getVal(keyScreen, '') === '설치' ? (
-                        <CheckCircle2
-                          size={18}
-                          color="#3CBBFF"
-                          strokeWidth={2.2}
-                          style={{marginRight: 6}}
-                        />
-                      ) : (
-                        <TvMinimal
-                          size={18}
-                          color="#999"
-                          strokeWidth={1.7}
-                          style={{marginRight: 6}}
-                        />
-                      )}
-
                       <CustomText
                         style={[
                           styles.filterfaciItemText,
                           getVal(keyScreen, '') === '설치' &&
                             styles.filterItemTextSelected,
                         ]}>
-                        스크린(TV)
+                        스크린·TV
                       </CustomText>
                     </Pressable>
                     <Pressable
@@ -807,21 +791,6 @@ const FilterPotal = ({
                           getVal(keyRoom, '') === '가능' ? '' : '가능',
                         )
                       }>
-                      {getVal(keyRoom, '') === '가능' ? (
-                        <CheckCircle2
-                          size={18}
-                          color="#3CBBFF"
-                          strokeWidth={2.2}
-                          style={{marginRight: 6}}
-                        />
-                      ) : (
-                        <DoorOpen
-                          size={18}
-                          color="#999"
-                          strokeWidth={1.7}
-                          style={{marginRight: 6}}
-                        />
-                      )}
                       <CustomText
                         style={[
                           styles.filterfaciItemText,
@@ -843,21 +812,6 @@ const FilterPotal = ({
                           getVal(keyOutdoor, '') === '가능' ? '' : '가능',
                         )
                       }>
-                      {getVal(keyOutdoor, '') === '가능' ? (
-                        <CheckCircle2
-                          size={18}
-                          color="#3CBBFF"
-                          strokeWidth={2.2}
-                          style={{marginRight: 6}}
-                        />
-                      ) : (
-                        <SunMedium
-                          size={18}
-                          color="#999"
-                          strokeWidth={1.7}
-                          style={{marginRight: 6}}
-                        />
-                      )}
                       <CustomText
                         style={[
                           styles.filterfaciItemText,
@@ -881,28 +835,13 @@ const FilterPotal = ({
                             : '단체 방문',
                         )
                       }>
-                      {getVal(keyPeople, '') === '단체 방문' ? (
-                        <CheckCircle2
-                          size={18}
-                          color="#3CBBFF"
-                          strokeWidth={2.2}
-                          style={{marginRight: 6}}
-                        />
-                      ) : (
-                        <UsersRound
-                          size={18}
-                          color="#999"
-                          strokeWidth={1.7}
-                          style={{marginRight: 6}}
-                        />
-                      )}
                       <CustomText
                         style={[
                           styles.filterfaciItemText,
                           getVal(keyPeople, '') === '단체 방문' &&
                             styles.filterItemTextSelected,
                         ]}>
-                        단체 방문
+                        단체 방문 가능
                       </CustomText>
                     </Pressable>
                     <Pressable
@@ -917,28 +856,13 @@ const FilterPotal = ({
                           getVal(keyParking, '') === '가능' ? '' : '가능',
                         )
                       }>
-                      {getVal(keyParking, '') === '가능' ? (
-                        <CheckCircle2
-                          size={18}
-                          color="#3CBBFF"
-                          strokeWidth={2.2}
-                          style={{marginRight: 6}}
-                        />
-                      ) : (
-                        <CarFront
-                          size={18}
-                          color="#999"
-                          strokeWidth={1.7}
-                          style={{marginRight: 6}}
-                        />
-                      )}
                       <CustomText
                         style={[
                           styles.filterfaciItemText,
                           getVal(keyParking, '') === '가능' &&
                             styles.filterItemTextSelected,
                         ]}>
-                        주차
+                        주차 가능
                       </CustomText>
                     </Pressable>
                     <Pressable
@@ -953,28 +877,13 @@ const FilterPotal = ({
                           getVal(keyCorkage, '') === '가능' ? '' : '가능',
                         )
                       }>
-                      {getVal(keyCorkage, '') === '가능' ? (
-                        <CheckCircle2
-                          size={18}
-                          color="#3CBBFF"
-                          strokeWidth={2.2}
-                          style={{marginRight: 6}}
-                        />
-                      ) : (
-                        <Wine
-                          size={18}
-                          color="#999"
-                          strokeWidth={1.7}
-                          style={{marginRight: 6}}
-                        />
-                      )}
                       <CustomText
                         style={[
                           styles.filterfaciItemText,
                           getVal(keyCorkage, '') === '가능' &&
                             styles.filterItemTextSelected,
                         ]}>
-                        콜키지
+                        콜키지 가능
                       </CustomText>
                     </Pressable>
                   </View>

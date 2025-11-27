@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useRef, useEffect} from 'react';
 import {
   StyleSheet,
   View,
@@ -16,7 +16,11 @@ import MyBanner from '../../../components/Ads/MyBanner';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import MapFilterHeader from '../../../components/MapScreen/MapStore/MapFilterHeader';
 import FilterPotal from '../../../components/MapScreen/MapStore/FilterPotal';
-import {useMapSearch} from '../../../context/MapSearchContext';
+import {
+  useMapSearch,
+  buildInitialSelectedFilters,
+  INITIAL_RADIUS_KM,
+} from '../../../context/MapSearchContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -25,16 +29,18 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import RecentSearchItem from '../../../components/SearchScreen/RecentSearchItem';
 import CustomText from '../../../utils/CustomText';
 
-const SearchScreen = ({navigation}) => {
+const SearchScreen = ({navigation, route}) => {
   const {showToast} = useToast();
   const {
     searchText,
     setSearchText,
     selectedFilters,
     setSelectedFilters,
-    setRadiusKm,
     radiusKm,
+    setRadiusKm,
   } = useMapSearch();
+  const selectedFiltersRef = useRef(selectedFilters);
+  const radiusKmRef = useRef(radiusKm);
 
   const [searchStoreName, setSearchStoreName] = useState('');
   const [pendingFilters, setPendingFilters] = useState(selectedFilters);
@@ -44,8 +50,27 @@ const SearchScreen = ({navigation}) => {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filterInitialTab, setFilterInitialTab] = useState('거리');
   const [recentSearches, setRecentSearches] = useState([]);
+  const preserveFiltersRef = useRef(route?.params?.preserveFilters === true);
+
+  useEffect(() => {
+    selectedFiltersRef.current = selectedFilters;
+  }, [selectedFilters]);
+
+  useEffect(() => {
+    radiusKmRef.current = radiusKm;
+  }, [radiusKm]);
+
+  useEffect(() => {
+    preserveFiltersRef.current = route?.params?.preserveFilters === true;
+  }, [route?.params?.preserveFilters]);
 
   const RECENT_KEY = 'RECENT_SEARCHES';
+
+  const resetFiltersToInitial = useCallback(() => {
+    const initialFilters = buildInitialSelectedFilters();
+    setPendingFilters(initialFilters);
+    setPendingRadiusKm(INITIAL_RADIUS_KM);
+  }, []);
 
   const loadRecentSearches = useCallback(async () => {
     try {
@@ -60,10 +85,24 @@ const SearchScreen = ({navigation}) => {
   useFocusEffect(
     useCallback(() => {
       loadRecentSearches();
-      setSearchStoreName('');
-      setPendingFilters(selectedFilters);
-      setPendingRadiusKm(radiusKm);
-    }, [loadRecentSearches, searchText, selectedFilters, radiusKm]),
+      const shouldPreserve = preserveFiltersRef.current;
+      if (shouldPreserve) {
+        setPendingFilters(selectedFiltersRef.current);
+        setPendingRadiusKm(radiusKmRef.current);
+        setSearchStoreName(searchText?.trim() ? searchText : '');
+        navigation.setParams({preserveFilters: false});
+      } else {
+        resetFiltersToInitial();
+        setSearchStoreName('');
+        setSearchText('');
+      }
+    }, [
+      loadRecentSearches,
+      navigation,
+      resetFiltersToInitial,
+      searchText,
+      setSearchText,
+    ]),
   );
 
   useFocusEffect(
