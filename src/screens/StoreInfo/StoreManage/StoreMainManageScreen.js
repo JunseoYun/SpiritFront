@@ -52,12 +52,12 @@ const MOOD_OPTIONS = [
 // Facility options
 
 const FACILITY_OPTIONS = [
-  {key: 'isParkingAvailable', text: '주차 가능', icon: ParkingCircle},
-  {key: 'isGroupAvailable', text: '단체 방문', icon: Users},
+  {key: 'hasScreen', text: '스크린·TV', icon: Tv2},
   {key: 'hasRoom', text: '룸', icon: DoorOpen},
-  {key: 'hasOutdoor', text: '야외 좌석/테라스', icon: Sun},
+  {key: 'hasOutdoor', text: '야외 좌석·테라스', icon: Sun},
+  {key: 'isGroupAvailable', text: '단체 방문 가능', icon: Users},
+  {key: 'isParkingAvailable', text: '주차 가능', icon: ParkingCircle},
   {key: 'isCorkageAvailable', text: '콜키지 가능', icon: Wine},
-  {key: 'hasScreen', text: '스크린/TV', icon: Tv2},
 ];
 
 const formatImageList = (list, options = {}) => {
