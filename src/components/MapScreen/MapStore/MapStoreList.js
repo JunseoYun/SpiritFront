@@ -195,6 +195,8 @@ const MapStoreList = ({
   );
   const lastFullExpandReportRef = useRef(isCurrentlySnappedToFull);
   const lastSnapStateRef = useRef(isCurrentlySnappedToFull);
+  const prevHasStoresRef = useRef(stores.length > 0);
+  const prevWasFullRef = useRef(isCurrentlySnappedToFull);
 
   const reportFullExpandState = useCallback(
     nextState => {
@@ -214,6 +216,33 @@ const MapStoreList = ({
     lastSnapStateRef.current = isCurrentlySnappedToFull;
     reportFullExpandState(isCurrentlySnappedToFull);
   }, [isCurrentlySnappedToFull, reportFullExpandState]);
+
+  useEffect(() => {
+    const hadStores = prevHasStoresRef.current;
+    const hasStores = stores.length > 0;
+    const wasFull = prevWasFullRef.current;
+
+    if (
+      hadStores &&
+      !hasStores &&
+      wasFull &&
+      !isDetailMode &&
+      !loading &&
+      !storegetloading
+    ) {
+      bottomSheetRef.current?.snapToIndex?.(1);
+    }
+
+    prevHasStoresRef.current = hasStores;
+    prevWasFullRef.current = isFullListExpanded;
+  }, [
+    stores.length,
+    isFullListExpanded,
+    isDetailMode,
+    loading,
+    storegetloading,
+    bottomSheetRef,
+  ]);
 
   const FULL_EXPANDED_TOLERANCE = 0.01;
   const shouldSkipAutoSelection = !isDetailMode && isFullListExpanded;
