@@ -217,12 +217,6 @@ const MapStoreItem = ({
               : '메인주류가 없습니다.'}
           </CustomText>
           <View style={styles.timeview}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <FontAwesomeIcon name="star" size={15} color="#FCC104" />
-              <CustomText style={styles.storeRateText}>
-                {item.storeRate}({item.reviewCount})
-              </CustomText>
-            </View>
             {item?.isAlwaysOpen == true ? (
               <CustomText style={styles.timeviewtext}>24시간 영업</CustomText>
             ) : item?.isAlwaysOpen == false && closed ? (
@@ -232,6 +226,12 @@ const MapStoreItem = ({
                 영업 종료 {endtime || '정보 없음'}
               </CustomText>
             )}
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <FontAwesomeIcon name="star" size={15} color="#FCC104" />
+              <CustomText style={styles.storeRateText}>
+                {item.storeRate}({item.reviewCount})
+              </CustomText>
+            </View>
           </View>
         </View>
       </Pressable>

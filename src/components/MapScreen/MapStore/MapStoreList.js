@@ -173,12 +173,7 @@ const MapStoreList = ({
       return stableSnapPoints || baseSnapPoints;
     }
     return baseSnapPoints;
-  }, [
-    baseSnapPoints,
-    loading,
-    storegetloading,
-    stableSnapPoints,
-  ]);
+  }, [baseSnapPoints, loading, storegetloading, stableSnapPoints]);
 
   useEffect(() => {
     if (isDetailMode) {
@@ -1199,7 +1194,7 @@ const MapStoreList = ({
             bottomInset={0}
             handleIndicatorStyle={[styles.sheetHandleIndicator]}
             backgroundStyle={[styles.sheetBackground]}
-            enableContentPanningGesture={shouldEnableContentPanGesture}
+            enableContentPanningGesture={false}
             enableHandlePanningGesture={!filterModalVisible && !isListRestoring}
             enableOverDrag={false}
             animatedIndex={animatedIndex}
