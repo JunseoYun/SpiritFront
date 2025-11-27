@@ -82,11 +82,11 @@ const innerCategories = [
   {text: '양식', value: 'WESTERN'},
   {text: '중식', value: 'CHINESE'},
   {text: '감성주점', value: 'GAMSEONG'},
-  {text: '구이/찜', value: 'GRILLED_STEW'},
-  {text: '치킨/호프', value: 'CHICKEN_HOF'},
-  {text: '회/해산물', value: 'RAW_SEAFOOD'},
-  {text: '펍/바', value: 'PUB_BAR'},
-  {text: '포차', value: 'POCHA'},
+  {text: '구이·찜', value: 'GRILLED_STEW'},
+  {text: '치킨·호프', value: 'CHICKEN_HOF'},
+  {text: '회·해산물', value: 'RAW_SEAFOOD'},
+  {text: '펍·바', value: 'PUB_BAR'},
+  {text: '포장마차', value: 'POCHA'},
 ];
 
 const styles = StyleSheet.create({

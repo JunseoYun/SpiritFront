@@ -13,12 +13,12 @@ import {
 import CustomText from '../../utils/CustomText';
 
 const FACILITY_OPTIONS = [
-  {text: '스크린(TV)', key: 'hasScreen', icon: TvMinimal},
-  {text: '단체 방문', key: 'isGroupAvailable', icon: UsersRound},
+  {text: '스크린·TV', key: 'hasScreen', icon: TvMinimal},
   {text: '룸', key: 'hasRoom', icon: DoorOpen},
   {text: '야외 좌석·테라스', key: 'hasOutdoor', icon: SunMedium},
-  {text: '콜키지', key: 'isCorkageAvailable', icon: Wine},
-  {text: '주차', key: 'isParkingAvailable', icon: CarFront},
+  {text: '단체 방문 가능', key: 'isGroupAvailable', icon: UsersRound},
+  {text: '주차 가능', key: 'isParkingAvailable', icon: CarFront},
+  {text: '콜키지 가능', key: 'isCorkageAvailable', icon: Wine},
 ];
 
 const StoreFacilitiesInfo = ({
