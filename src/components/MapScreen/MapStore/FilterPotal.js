@@ -419,6 +419,7 @@ const FilterPotal = ({
                       onPress={() => {
                         setDraftFilters(prev => ({
                           ...(prev || {}),
+                          [keyDistance]: '2km',
                           [keyCategory]: '',
                           [keyAlcohol]: '',
                           [keyStoreatm]: '',
@@ -431,7 +432,7 @@ const FilterPotal = ({
                           [keyOutdoor]: '',
                           [keyPriceOrder]: '',
                         }));
-                        if (typeof setRadiusint === 'function') setRadiusint(1);
+                        if (typeof setRadiusint === 'function') setRadiusint(2);
                       }}>
                       <CustomText style={styles.inittext}>초기화</CustomText>
                     </Pressable>

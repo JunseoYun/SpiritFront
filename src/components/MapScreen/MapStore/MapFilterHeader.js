@@ -49,12 +49,19 @@ const MapFilterHeader = ({
           <MaterialCommunityIcons name="tune-variant" size={17} color="#555" />
         </Pressable>
         <Pressable
-          style={[styles.filterChip, styles.filterChipActive]}
+          style={[
+            styles.filterChip,
+            distanceLabel != '2km' && styles.filterChipActive,
+          ]}
           onPress={() => {
             setFilterInitialTab('거리');
             setFilterModalVisible(true);
           }}>
-          <CustomText style={[styles.filterText, styles.filterTextActive]}>
+          <CustomText
+            style={[
+              styles.filterText,
+              distanceLabel != '2km' && styles.filterTextActive,
+            ]}>
             {distanceLabel}
           </CustomText>
         </Pressable>
