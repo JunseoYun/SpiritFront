@@ -105,6 +105,7 @@ const MapTopBar = ({
             onPress={() => {
               navigation.navigate('SearchStack', {
                 screen: 'SearchScreen',
+                params: {preserveFilters: true},
               });
             }}>
             <CustomText
