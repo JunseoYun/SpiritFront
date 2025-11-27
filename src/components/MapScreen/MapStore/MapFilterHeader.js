@@ -259,8 +259,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: 'white',
+    borderColor: '#DDDDDD',
+    backgroundColor: '#FFF',
   },
   filterChipActive: {
     backgroundColor: '#E9F5FB',
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   },
   filterTextActive: {
     color: '#3CBBFF',
-    fontFamily: 'Pretendard-Bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   badge: {
     position: 'absolute',

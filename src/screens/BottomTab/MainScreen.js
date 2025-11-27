@@ -491,6 +491,7 @@ const MainScreen = ({navigation}) => {
 
       if (reset) {
         setPopularpage(0);
+        setHasMore(true);
       }
       try {
         const data = await Store_getby_popular(
@@ -546,7 +547,7 @@ const MainScreen = ({navigation}) => {
     if (!popularloading && hasMore && popularpage < totalpage - 1) {
       setPopularpage(prevPage => {
         const nextPage = prevPage + 1;
-        PopularStores(nextPage, false, location);
+        PopularStores(nextPage, false, location, drinkType, priceOrder);
         return nextPage;
       });
     }
