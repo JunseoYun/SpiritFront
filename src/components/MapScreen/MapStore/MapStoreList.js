@@ -212,33 +212,6 @@ const MapStoreList = ({
     reportFullExpandState(isCurrentlySnappedToFull);
   }, [isCurrentlySnappedToFull, reportFullExpandState]);
 
-  useEffect(() => {
-    const hadStores = prevHasStoresRef.current;
-    const hasStores = stores.length > 0;
-    const wasFull = prevWasFullRef.current;
-
-    if (
-      hadStores &&
-      !hasStores &&
-      wasFull &&
-      !isDetailMode &&
-      !loading &&
-      !storegetloading
-    ) {
-      bottomSheetRef.current?.snapToIndex?.(1);
-    }
-
-    prevHasStoresRef.current = hasStores;
-    prevWasFullRef.current = isFullListExpanded;
-  }, [
-    stores.length,
-    isFullListExpanded,
-    isDetailMode,
-    loading,
-    storegetloading,
-    bottomSheetRef,
-  ]);
-
   const FULL_EXPANDED_TOLERANCE = 0.01;
   const shouldSkipAutoSelection = !isDetailMode && isFullListExpanded;
 
@@ -969,7 +942,7 @@ const MapStoreList = ({
   const computedListBottomPadding = useMemo(() => {
     let padding = baseListBottomPadding;
     if (currentIndex === 1) {
-      padding += SCREEN_HEIGHT * 0.25;
+      padding += SCREEN_HEIGHT * 0.4;
     }
     if (isFullListExpanded) {
       // Ensure enough space for the floating "지도보기" button
@@ -977,7 +950,6 @@ const MapStoreList = ({
     }
     return padding;
   }, [baseListBottomPadding, currentIndex, isFullListExpanded, insets.bottom]);
-
   const listBodyAnimatedStyle = useAnimatedStyle(() => {
     const progress = listRevealProgress.value;
     return {
