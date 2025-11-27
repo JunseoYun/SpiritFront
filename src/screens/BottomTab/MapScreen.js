@@ -347,6 +347,7 @@ const MapScreen = ({navigation, route}) => {
         currentLocation.latitude,
         currentLocation.longitude,
         radius,
+        0,
         null,
         null,
         {allowUserMarker: true},
@@ -461,7 +462,8 @@ const MapScreen = ({navigation, route}) => {
         return normalized;
       });
       setMarkerStores(markerData);
-      lastQueryRef.current = {lat: queryLat, lng: queryLng};
+      // keep radius so pagination can reuse it
+      lastQueryRef.current = {lat: queryLat, lng: queryLng, radius: reqRadius};
       setHasMoreStores(true);
       await fetchStoreListPage({
         page: 0,

@@ -71,6 +71,7 @@ const MapStoreList = ({
   onListFullExpandChange,
   onListRestoringChange,
 }) => {
+  console.log(hasMoreStores, loadingMoreStores, 'asdasd');
   const insets = useSafeAreaInsets();
   const [filterheight, setFilterheight] = useState(0);
   const [detailContentHeight, setDetailContentHeight] = useState(null);
@@ -211,6 +212,22 @@ const MapStoreList = ({
     lastSnapStateRef.current = isCurrentlySnappedToFull;
     reportFullExpandState(isCurrentlySnappedToFull);
   }, [isCurrentlySnappedToFull, reportFullExpandState]);
+
+  useEffect(() => {
+    const hadStores = prevHasStoresRef.current;
+    const hasStores = stores.length > 0;
+    const wasFull = prevWasFullRef.current;
+
+    prevHasStoresRef.current = hasStores;
+    prevWasFullRef.current = isFullListExpanded;
+  }, [
+    stores.length,
+    isFullListExpanded,
+    isDetailMode,
+    loading,
+    storegetloading,
+    bottomSheetRef,
+  ]);
 
   const FULL_EXPANDED_TOLERANCE = 0.01;
   const shouldSkipAutoSelection = !isDetailMode && isFullListExpanded;
