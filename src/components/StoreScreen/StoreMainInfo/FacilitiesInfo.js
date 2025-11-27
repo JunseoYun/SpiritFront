@@ -66,8 +66,7 @@ export default FacilitiesInfo;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 5,
-    marginBottom: 15,
+    marginTop: 17,
   },
 
   chip: {

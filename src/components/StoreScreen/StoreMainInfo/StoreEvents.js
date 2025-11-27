@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   carouselContent: {
     paddingHorizontal: 16,
     gap: 5,
-    marginTop: 7,
+    marginTop: 15,
     marginBottom: 12,
   },
   fullListContent: {

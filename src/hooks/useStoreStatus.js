@@ -10,6 +10,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
   const [starttime, setStarttime] = useState(null);
   const [endtime, setEndtime] = useState(null);
   const [operationSchedule, setOperationSchedule] = useState(null);
+  const [nextOpenTime, setNextOpenTime] = useState(null);
 
   const formatTime = time => (time ? time.slice(0, 5) : null);
 
@@ -90,6 +91,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
     const checkStoreStatus = () => {
       if (isAlwaysOpen) {
         setIsOpen(true);
+        setNextOpenTime(null);
         return;
       }
 
@@ -120,6 +122,26 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       const yesterdayInfo = operationInfoDtos.find(
         info => info.dayOfWeek === yesterdayDay,
       );
+
+      const nextday = new Date(now);
+      nextday.setDate(nextday.getDate() + 1);
+      nextday.setHours(nextday.getHours() - 9);
+      const nextdayDay = new Intl.DateTimeFormat('en-US', {
+        weekday: 'long',
+        timeZone: 'Asia/Seoul',
+      })
+        .format(nextday)
+        .toUpperCase();
+
+      const nextdayInfo = operationInfoDtos.find(
+        info => info.dayOfWeek === nextdayDay,
+      );
+
+      const formattedNextOpenTime =
+        nextdayInfo && !nextdayInfo.isClosed && nextdayInfo.openTime
+          ? `익일 ${nextdayInfo.openTime.slice(0, 5)} 오픈`
+          : '익일 휴무';
+      setNextOpenTime(formattedNextOpenTime);
 
       if (
         yesterdayInfo &&
@@ -204,19 +226,6 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         setIsBreak(false);
         return;
       }
-
-      let nextdayInfo = operationInfoDtos.find((info, index, array) => {
-        let nextday = new Date(now);
-        nextday.setDate(now.getDate() + 1);
-        nextday.setHours(nextday.getHours() - 9);
-        let nextdayDay = new Intl.DateTimeFormat('en-US', {
-          weekday: 'long',
-          timeZone: 'Asia/Seoul',
-        })
-          .format(nextday)
-          .toUpperCase();
-        return info.dayOfWeek === nextdayDay;
-      });
 
       let {openTime, closeTime, breakStartTime, breakEndTime, isClosed} =
         todayInfo;
@@ -319,6 +328,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
     breakstart,
     breakend,
     operationSchedule,
+    nextOpenTime,
   };
 };
 
