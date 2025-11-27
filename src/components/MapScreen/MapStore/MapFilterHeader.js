@@ -144,57 +144,6 @@ const MapFilterHeader = ({
         <Pressable
           style={[
             styles.filterChip,
-            peopleLabel !== '인원' && styles.filterChipActive,
-          ]}
-          onPress={() => {
-            setFilterInitialTab('편의시설');
-            setFilterModalVisible(true);
-          }}>
-          <CustomText
-            style={[
-              styles.filterText,
-              peopleLabel !== '인원' && styles.filterTextActive,
-            ]}>
-            {peopleLabel}
-          </CustomText>
-        </Pressable>
-        <Pressable
-          style={[
-            styles.filterChip,
-            parkingLabel == '가능' && styles.filterChipActive,
-          ]}
-          onPress={() => {
-            setFilterInitialTab('편의시설');
-            setFilterModalVisible(true);
-          }}>
-          <CustomText
-            style={[
-              styles.filterText,
-              parkingLabel == '가능' && styles.filterTextActive,
-            ]}>
-            주차
-          </CustomText>
-        </Pressable>
-        <Pressable
-          style={[
-            styles.filterChip,
-            corkageLabel == '가능' && styles.filterChipActive,
-          ]}
-          onPress={() => {
-            setFilterInitialTab('편의시설');
-            setFilterModalVisible(true);
-          }}>
-          <CustomText
-            style={[
-              styles.filterText,
-              corkageLabel == '가능' && styles.filterTextActive,
-            ]}>
-            콜키지
-          </CustomText>
-        </Pressable>
-        <Pressable
-          style={[
-            styles.filterChip,
             screenLabel == '설치' && styles.filterChipActive,
           ]}
           onPress={() => {
@@ -240,7 +189,58 @@ const MapFilterHeader = ({
               styles.filterText,
               outdoorLabel == '가능' && styles.filterTextActive,
             ]}>
-            야장
+            야외 좌석·테라스
+          </CustomText>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.filterChip,
+            peopleLabel !== '인원' && styles.filterChipActive,
+          ]}
+          onPress={() => {
+            setFilterInitialTab('편의시설');
+            setFilterModalVisible(true);
+          }}>
+          <CustomText
+            style={[
+              styles.filterText,
+              peopleLabel !== '인원' && styles.filterTextActive,
+            ]}>
+            단체 방문
+          </CustomText>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.filterChip,
+            parkingLabel == '가능' && styles.filterChipActive,
+          ]}
+          onPress={() => {
+            setFilterInitialTab('편의시설');
+            setFilterModalVisible(true);
+          }}>
+          <CustomText
+            style={[
+              styles.filterText,
+              parkingLabel == '가능' && styles.filterTextActive,
+            ]}>
+            주차
+          </CustomText>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.filterChip,
+            corkageLabel == '가능' && styles.filterChipActive,
+          ]}
+          onPress={() => {
+            setFilterInitialTab('편의시설');
+            setFilterModalVisible(true);
+          }}>
+          <CustomText
+            style={[
+              styles.filterText,
+              corkageLabel == '가능' && styles.filterTextActive,
+            ]}>
+            콜키지
           </CustomText>
         </Pressable>
       </ScrollView>

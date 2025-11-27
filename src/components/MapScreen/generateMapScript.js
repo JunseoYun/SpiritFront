@@ -235,7 +235,7 @@ var customMarkerUri = "data:image/svg+xml;charset=UTF-8," +
 
   try {
     var level = map.getLevel();
-    var gridSize =  level >= 6 ? 40 :level >= 5 ? 30 : level >= 4 ? 15 : 0;
+    var gridSize = 0;
     var proj = map.getProjection();
     var center = map.getCenter();
     var centerPt = proj.containerPointFromCoords(center);

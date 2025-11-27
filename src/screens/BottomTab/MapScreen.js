@@ -141,7 +141,7 @@ const MapScreen = ({navigation, route}) => {
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
   const [isListRestoring, setIsListRestoring] = useState(false);
   const suppressUserMarkerRef = useRef(false);
-  const lastQueryRef = useRef({lat: null, lng: null});
+  const lastQueryRef = useRef({lat: null, lng: null, radius: null});
   const detailFetchSeqRef = useRef(0);
   const isFocused = useIsFocused();
   const buildCurrentQuerySignature = useCallback(
@@ -173,10 +173,17 @@ const MapScreen = ({navigation, route}) => {
         typeof lat === 'number' ? lat : lastQueryRef.current.lat;
       const targetLng =
         typeof lng === 'number' ? lng : lastQueryRef.current.lng;
-      if (typeof targetLat !== 'number' || typeof targetLng !== 'number') {
+      const radius =
+        typeof reqRadius === 'number' ? reqRadius : lastQueryRef.current.radius;
+      if (
+        typeof targetLat !== 'number' ||
+        typeof targetLng !== 'number' ||
+        typeof radius !== 'number'
+      ) {
         return;
       }
       const dto = conditionDto || buildCurrentConditionDto();
+
       if (append) {
         if (loadingMoreStores || !hasMoreStores) {
           return;
@@ -191,7 +198,7 @@ const MapScreen = ({navigation, route}) => {
           targetLng,
           dto,
           page,
-          reqRadius,
+          radius,
         );
         const normalized = normalizeStoreResponse(response);
         setStores(prevStores =>
@@ -340,7 +347,9 @@ const MapScreen = ({navigation, route}) => {
         currentLocation.latitude,
         currentLocation.longitude,
         radius,
-        offsetY,
+        null,
+        null,
+        {allowUserMarker: true},
       );
     } catch (err) {
       console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
@@ -358,6 +367,7 @@ const MapScreen = ({navigation, route}) => {
     setIsUpdatingLocation(true);
     setLoading(true);
     try {
+      bottomSheetRef.current?.snapToIndex(0);
       if (!skipInitialOffsetRef.current) {
         skipInitialOffsetRef.current = true;
       }
@@ -381,10 +391,10 @@ const MapScreen = ({navigation, route}) => {
         roundedCurrentLng === roundedNewLng
       ) {
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-        moveCenterMap(newLocation.latitude, newLocation.longitude, 1);
+        moveCenterMap(newLocation.latitude, newLocation.longitude, 0);
       } else {
         setLocation(newLocation);
-        moveCenterMap(newLocation.latitude, newLocation.longitude, 1);
+        moveCenterMap(newLocation.latitude, newLocation.longitude, 0);
         if (webViewRef.current) {
           webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
           const script = generateMapScript(
@@ -417,7 +427,12 @@ const MapScreen = ({navigation, route}) => {
     querySignatureOverride = null,
     options = {},
   ) => {
-    const {suppressUserMarker = false} = options || {};
+    const {
+      allowUserMarker = false,
+      suppressUserMarker: suppressUserMarkerOption = false,
+    } = options || {};
+    const suppressUserMarker =
+      allowUserMarker === true ? suppressUserMarkerOption === true : true;
     try {
       const conditionDto = conditionDtoOverride || buildCurrentConditionDto();
       const signature = querySignatureOverride || buildCurrentQuerySignature();
@@ -483,6 +498,7 @@ const MapScreen = ({navigation, route}) => {
     } finally {
       setRefresh(false);
       setLoading(false);
+      bottomSheetRef.current?.snapToIndex(1);
     }
   };
 
@@ -507,7 +523,7 @@ const MapScreen = ({navigation, route}) => {
         suppressUserMarkerRef.current = false;
         return;
       }
-      const offsetY = sheetIndex === 1 ? SCREEN_HEIGHT * 0.18 : 0;
+      const offsetY = 0;
 
       if (webViewRef.current) {
         const calcAdjustedScript = `

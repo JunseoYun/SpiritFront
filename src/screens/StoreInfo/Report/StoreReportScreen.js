@@ -115,7 +115,12 @@ const StoreReportScreen = ({navigation}) => {
     };
     try {
       await report_create(payloadData);
-      showToast('완료되었습니다.');
+      if (selectedReportReason) {
+        showToast('신고 완료되었습니다.');
+      } else {
+        showToast('제보 완료되었습니다.');
+      }
+
       navigation.goBack();
     } catch (error) {
       showToast('잠시 후 다시 시도해주세요.');

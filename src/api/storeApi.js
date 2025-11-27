@@ -741,7 +741,7 @@ export const Store_getby_condition_search = async (
   longitude,
   conditionSearchDto,
   page,
-  radius,
+  reqRadius,
 ) => {
   try {
     const payload = normalizeConditionSearchArgs(
@@ -749,7 +749,7 @@ export const Store_getby_condition_search = async (
       longitude,
       conditionSearchDto,
       page,
-      radius,
+      reqRadius,
     );
     const params = buildConditionSearchParams(payload);
     const response = await axiosInstance.get(`/store/get-by/condition-search`, {
@@ -776,6 +776,7 @@ export const Store_getby_condition_search_markers = async (
       null,
       reqRadius,
     );
+
     const params = buildConditionSearchParams(payload);
     const response = await axiosInstance.get(
       `/store/get-by/condition-search/markers`,
