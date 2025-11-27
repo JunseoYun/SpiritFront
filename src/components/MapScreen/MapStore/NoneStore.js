@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   storeInfo: {
     justifyContent: 'space-between',
     width: ITEM_WIDTH,
-    backgroundColor: '#fdfdfd',
+    backgroundColor: '#FFF',
     padding: 15,
   },
   titleview: {marginTop: 2, gap: 7, width: '100%'},
