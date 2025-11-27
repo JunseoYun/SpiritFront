@@ -23,8 +23,16 @@ const LikedItem = ({store, navigation}) => {
   const {translateCategory} = useCategoryTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
 
-  const {isOpen, isBreak, closed, nextclosed, starttime, endtime, breakend} =
-    useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
+  const {
+    isOpen,
+    isBreak,
+    closed,
+    nextclosed,
+    starttime,
+    endtime,
+    breakend,
+    nextOpenTime,
+  } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
 
   const handlePress = () => {
     navigation.navigate('StoreStack', {
@@ -164,7 +172,7 @@ const LikedItem = ({store, navigation}) => {
                 : '영업중'
               : starttime && endtime
               ? `${starttime} ~ ${endtime}`
-              : '영업 정보 없음'}
+              : !nextclosed && `${nextOpenTime}`}
           </CustomText>
         )}
 

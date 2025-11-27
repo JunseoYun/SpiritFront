@@ -149,7 +149,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
     marginTop: 16,
     position: 'relative',
-    marginBottom: 12,
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,

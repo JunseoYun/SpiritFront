@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginHorizontal: 18,
     alignItems: 'center',
-    marginBottom: 7,
+    marginVertical: 7,
   },
   timetextnow: {
     fontSize: 15,
