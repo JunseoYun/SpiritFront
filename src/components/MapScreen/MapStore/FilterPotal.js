@@ -27,6 +27,7 @@ import {
 } from 'lucide-react-native';
 import BottomActionButton from '../../../utils/BottomActionButton';
 import CustomText from '../../../utils/CustomText';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 // Try to resolve keys that may be mojibake in persisted state
 const findExistingKey = (filters, hint) => {
@@ -52,7 +53,7 @@ const FilterPotal = ({
     [],
   );
   const [draftFilters, setDraftFilters] = useState(selectedFilters);
-
+  const insets = useSafeAreaInsets();
   useEffect(() => {
     if (filterModalVisible) {
       setDraftFilters(selectedFilters);
@@ -356,7 +357,7 @@ const FilterPotal = ({
         {filterModalVisible && (
           <View style={styles.modalContainer}>
             <Pressable style={styles.modalOverlay} onPress={handleCancel} />
-            <View style={styles.modalContentBottom}>
+            <View style={[styles.modalContentBottom]}>
               <View style={styles.modalHeader}>
                 <CustomText style={styles.modalTitle}>필터</CustomText>
                 <Pressable onPress={handleCancel}>
@@ -371,7 +372,7 @@ const FilterPotal = ({
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={styles.tabBar}
-                  contentContainerStyle={styles.tabContainer}>
+                  contentContainerStyle={[styles.tabContainer]}>
                   {FILTER_TABS.map(tab => (
                     <Pressable
                       key={tab}
@@ -403,7 +404,7 @@ const FilterPotal = ({
               <ScrollView
                 ref={scrollRef}
                 style={{flex: 1}}
-                contentContainerStyle={{paddingBottom: 100}}>
+                contentContainerStyle={{paddingBottom: insets.bottom + 100}}>
                 {/* 거리 */}
                 <View
                   onLayout={e => {
@@ -992,7 +993,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 12,
-    paddingBottom: 16,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: -3},
     shadowOpacity: 0.2,
