@@ -3,7 +3,7 @@ import {StyleSheet, Text, Pressable, Animated, View} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useMapSearch} from '../../context/MapSearchContext';
-import CancelText from '../CancelText/CancelText';
+
 import ColorUtil from '../../utils/ColorUtil';
 import CustomText from '../../utils/CustomText';
 
@@ -94,7 +94,12 @@ const MapTopBar = ({
           ]}>
           <Pressable
             onPress={() => {
-              navigation.navigate('MainScreen');
+              const trimmed = (searchText || '').trim();
+              if (trimmed.length > 0) {
+                setSearchText('');
+              } else {
+                navigation.navigate('MainScreen');
+              }
             }}
             style={styles.backBtn}>
             <Ionicons name="arrow-back" size={20} color="#333" />
@@ -103,10 +108,7 @@ const MapTopBar = ({
           <Pressable
             style={styles.searchBox}
             onPress={() => {
-              navigation.navigate('SearchStack', {
-                screen: 'SearchScreen',
-                params: {preserveFilters: true},
-              });
+              navigation.navigate('SearchScreen', {preserveFilters: true});
             }}>
             <CustomText
               maxScale={1.2}
@@ -120,15 +122,6 @@ const MapTopBar = ({
                 ? searchText
                 : '술집이나 메뉴를 검색하세요'}
             </CustomText>
-            {searchText?.trim()?.length > 0 && (
-              <CancelText
-                rightnum={0}
-                topnum={0}
-                paddingnum={0}
-                handlecancel={() => setSearchText('')}
-                size={20}
-              />
-            )}
           </Pressable>
         </Animated.View>
 

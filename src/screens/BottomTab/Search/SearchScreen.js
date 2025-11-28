@@ -21,7 +21,7 @@ import {
   INITIAL_RADIUS_KM,
 } from '../../../context/MapSearchContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, CommonActions} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import RecentSearchItem from '../../../components/SearchScreen/RecentSearchItem';
 import CustomText from '../../../utils/CustomText';
@@ -102,7 +102,7 @@ const SearchScreen = ({navigation, route}) => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        navigation.navigate('MainScreen');
+        navigation.goBack();
         return true;
       };
 
@@ -147,7 +147,17 @@ const SearchScreen = ({navigation, route}) => {
         typeof pendingRadiusKm === 'number' ? pendingRadiusKm : radiusKm,
       );
       await persistRecent(trimmed);
-      navigation.navigate('MapScreen', {skipAutoSnap: true});
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'MainBtmbar',
+              params: {screen: 'MapScreen', params: {skipAutoSnap: true}},
+            },
+          ],
+        }),
+      );
     },
     [
       navigation,
@@ -247,8 +257,17 @@ const SearchScreen = ({navigation, route}) => {
         <SearchBar
           value={searchStoreName}
           onChangeText={setSearchStoreName}
-          placeholder="술집이나 메뉴를 검색해 보세요"
+          placeholder="술집이나 메뉴를 검색하세요"
           onPress={onPressSearch}
+          onBackPress={() => navigation.goBack()}
+          onHomePress={() =>
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{name: 'MainBtmbar', params: {screen: 'MainScreen'}}],
+              }),
+            )
+          }
         />
 
         <MapFilterHeader

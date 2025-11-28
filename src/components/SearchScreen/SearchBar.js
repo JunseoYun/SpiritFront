@@ -1,20 +1,20 @@
 import React, {useCallback, useRef, useState} from 'react';
-import {
-  View,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
-} from 'react-native';
-
+import {View, TouchableOpacity, StyleSheet, Pressable} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {normalizeFont} from '../../hooks/normalizeFont';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import CancelText from '../CancelText/CancelText';
 import {useFocusEffect} from '@react-navigation/native';
-import CustomText from '../../utils/CustomText';
 import CustomTextInput from '../../utils/CustomTextInput';
+import ColorUtil from '../../utils/ColorUtil';
 
-const SearchBar = ({value, onChangeText, placeholder, onPress}) => {
+const SearchBar = ({
+  value,
+  onChangeText,
+  placeholder,
+  onPress,
+  onBackPress,
+  onHomePress,
+}) => {
   const [focused, setFocused] = useState(false);
   const inputRef = useRef(null);
 
@@ -26,73 +26,111 @@ const SearchBar = ({value, onChangeText, placeholder, onPress}) => {
     }, []),
   );
   return (
-    <View
-      style={[styles.topView, Platform.OS === 'android' && {paddingTop: 10}]}>
-      <TouchableOpacity style={styles.searchButton}>
-        <AntDesign name="search1" size={20} color={'#A9A9A9'} />
-      </TouchableOpacity>
+    <View style={[styles.container, {paddingTop: 10}]}>
+      <View style={styles.contentRow}>
+        <View style={styles.searchContainer}>
+          <Pressable
+            style={styles.backBtn}
+            onPress={() => onBackPress && onBackPress()}
+            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+            <Ionicons name="arrow-back" size={20} color="#333" />
+          </Pressable>
 
-      {/* ✅ 검색창 */}
-      <View style={styles.search}>
-        <CustomTextInput
-          ref={inputRef}
-          style={styles.textInput}
-          placeholder={placeholder || '검색어를 입력해주세요.'}
-          placeholderTextColor="#A9A9A9"
-          value={value}
-          onChangeText={onChangeText}
-          returnKeyType="search" // ✅ 키보드에 '검색' 버튼 표시 (iOS & Android)
-          onSubmitEditing={onPress}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-        />
-        {value.length > 0 && focused && (
-          <CancelText
-            rightnum={5}
-            topnum={14}
-            paddingnum={0}
-            handlecancel={onChangeText}
-            size={20}
-          />
-        )}
+          <View style={styles.inputWrapper}>
+            {/* <AntDesign name="search1" size={18} color={'#A9A9A9'} /> */}
+            <CustomTextInput
+              ref={inputRef}
+              style={styles.textInput}
+              placeholder={placeholder || '검색어를 입력해주세요.'}
+              placeholderTextColor="#9E9E9E"
+              value={value}
+              onChangeText={onChangeText}
+              returnKeyType="search"
+              onSubmitEditing={onPress}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+            />
+            {value.length > 0 && focused && (
+              <CancelText
+                rightnum={6}
+                paddingnum={0}
+                centerVertical
+                handlecancel={onChangeText}
+                size={18}
+              />
+            )}
+          </View>
+        </View>
+        <Pressable
+          style={[styles.homeButton]}
+          onPress={() => onHomePress && onHomePress()}
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+          <View style={styles.homeButtonContent}>
+            <Ionicons name="home" size={22} color="#333" />
+          </View>
+        </Pressable>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  topView: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderColor: '#E5E5E5',
+  container: {
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 3},
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    marginBottom: 10,
   },
-  searchButton: {
-    marginLeft: 18,
-  },
-
-  search: {
+  contentRow: {
     flexDirection: 'row',
-    // backgroundColor: '#333',
-    flex: 1,
-    borderRadius: 7,
     alignItems: 'center',
-    height: 50,
-    marginHorizontal: 12,
+    paddingHorizontal: 18,
+    marginBottom: 5,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    height: 48,
+    borderRadius: 9,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: ColorUtil.border,
+    paddingHorizontal: 12,
+
+    flex: 1,
+    marginRight: 12,
+  },
+  backBtn: {
+    marginRight: 8,
+    paddingRight: 6,
+  },
+  inputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
   },
   textInput: {
     flex: 1,
     fontSize: 16,
-    color: '#121212', // 입력 텍스트 색상
-    fontFamily: 'Pretendard-Medium',
+    color: '#121212',
+    fontFamily: 'Pretendard-Regular',
     paddingRight: 30,
+  },
+  homeButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 9,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    borderWidth: 1,
+    borderColor: ColorUtil.border,
+  },
+  homeButtonContent: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
