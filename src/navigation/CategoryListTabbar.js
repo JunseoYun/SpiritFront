@@ -8,6 +8,7 @@ import Loading from '../hooks/Loading';
 import {AlcoholFilterProvider} from '../context/AlcoholFilterContext';
 import FilterBar from '../components/CategoryTapScreen/FilterBar';
 import {MaterialTopTabBar} from '@react-navigation/material-top-tabs';
+import CustomText from '../utils/CustomText';
 
 const categories = [
   {name: 'IZAKAYA', title: '이자카야', categoryname: 'IZAKAYA'},
@@ -15,10 +16,10 @@ const categories = [
   {name: 'WESTERN', title: '양식', categoryname: 'WESTERN'},
   {name: 'CHINESE', title: '중식', categoryname: 'CHINESE'},
   {name: 'GAMSEONG', title: '감성주점', categoryname: 'GAMSEONG'},
-  {name: 'GRILLED_STEW', title: '구이 찜', categoryname: 'GRILLED_STEW'},
-  {name: 'CHICKEN_HOF', title: '치킨 호프', categoryname: 'CHICKEN_HOF'},
+  {name: 'GRILLED_STEW', title: '구이·찜', categoryname: 'GRILLED_STEW'},
+  {name: 'CHICKEN_HOF', title: '치킨·호프', categoryname: 'CHICKEN_HOF'},
   {name: 'RAW_SEAFOOD', title: '회 해산물', categoryname: 'RAW_SEAFOOD'},
-  {name: 'PUB_BAR', title: '펍 바', categoryname: 'PUB_BAR'},
+  {name: 'PUB_BAR', title: '펍·바', categoryname: 'PUB_BAR'},
   {name: 'POCHA', title: '포장마차', categoryname: 'POCHA'},
 ];
 
@@ -82,7 +83,7 @@ const CategoryListTabbar = ({route}) => {
           swipeEnabled: true,
           unmountOnBlur: false,
           tabBarActiveTintColor: '#80D2F4',
-          tabBarIndicatorStyle: {backgroundColor: '#45C9FF'},
+          tabBarIndicatorStyle: {backgroundColor: '#3CBBFF'},
           tabBarInactiveTintColor: '#CFCFCF',
           tabBarLabelStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -98,20 +99,17 @@ const CategoryListTabbar = ({route}) => {
             component={CategoryTapScreen}
             options={{
               tabBarLabel: ({color}) => {
-                const fontScale = PixelRatio.getFontScale();
-                const baseSize = 16;
-
-                const fontSize = fontScale >= 1.5 ? 19 : baseSize;
+                const fontSize = 15;
                 return (
-                  <Text
-                    allowFontScaling={false} // ✅ 시스템 비율 무시
+                  <CustomText
+                    maxScale={1.1}
                     style={{
                       color,
-                      fontFamily: 'Pretendard-Bold',
+                      fontFamily: 'Pretendard-SemiBold',
                       fontSize,
                     }}>
                     {title}
-                  </Text>
+                  </CustomText>
                 );
               },
             }}

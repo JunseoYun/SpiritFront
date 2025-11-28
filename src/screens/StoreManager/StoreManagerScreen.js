@@ -26,6 +26,7 @@ import {
   delete_store_manager,
   store_owner_change,
 } from '../../api/storeApi';
+import CustomText from '../../utils/CustomText';
 
 const StoreManagerScreen = ({navigation}) => {
   const route = useRoute();
@@ -191,10 +192,12 @@ const StoreManagerScreen = ({navigation}) => {
           </View>
 
           <View>
-            <Text style={[styles.managerName]}>{item.nickname}</Text>
-            <Text style={styles.managerDate}>
+            <CustomText style={[styles.managerName]}>
+              {item.nickname}
+            </CustomText>
+            <CustomText style={styles.managerDate}>
               {formatDate(item.approvedAt)} ~
-            </Text>
+            </CustomText>
           </View>
         </View>
 
@@ -202,9 +205,9 @@ const StoreManagerScreen = ({navigation}) => {
           <Pressable
             hitSlop={30}
             onPress={() => toggleManagerOptions(item.storeManagerId)}>
-            <Text style={styles.editText}>
+            <CustomText style={styles.editText}>
               {selectedManagerId === item.storeManagerId ? '취소' : '편집'}
-            </Text>
+            </CustomText>
           </Pressable>
         )}
       </View>
@@ -214,7 +217,7 @@ const StoreManagerScreen = ({navigation}) => {
             <Pressable
               style={[styles.optionButton, {marginRight: 5}]}
               onPress={() => handleButton('change_owner', item.nickname)}>
-              <Text style={styles.optionText}>사장님 위임</Text>
+              <CustomText style={styles.optionText}>사장님 위임</CustomText>
             </Pressable>
 
             <Pressable
@@ -223,9 +226,9 @@ const StoreManagerScreen = ({navigation}) => {
                 {backgroundColor: '#FF5A5F', marginLeft: 5},
               ]}
               onPress={() => handleButton('delete', item.nickname)}>
-              <Text style={[styles.optionText, {color: '#fff'}]}>
+              <CustomText style={[styles.optionText, {color: '#fff'}]}>
                 운영진 삭제
-              </Text>
+              </CustomText>
             </Pressable>
           </View>
         )}
@@ -249,7 +252,7 @@ const StoreManagerScreen = ({navigation}) => {
         contentContainerStyle={{flexGrow: 1}}>
         {owner && (
           <View style={styles.section}>
-            <Text style={styles.title}>사장님</Text>
+            <CustomText style={styles.title}>사장님</CustomText>
             {renderManagerItem({item: owner})}
           </View>
         )}
@@ -258,7 +261,7 @@ const StoreManagerScreen = ({navigation}) => {
 
         {staff.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.title}>운영진</Text>
+            <CustomText style={styles.title}>운영진</CustomText>
             <FlatList
               data={staff}
               scrollEnabled={false}
@@ -274,7 +277,7 @@ const StoreManagerScreen = ({navigation}) => {
         <Pressable
           style={styles.invitationButton}
           onPress={onCreate_invitationLink}>
-          <Text style={styles.invitationText}>운영진 초대</Text>
+          <CustomText style={styles.invitationText}>운영진 초대</CustomText>
         </Pressable>
       </View>
 
@@ -342,7 +345,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 9,
   },
   invitationText: {

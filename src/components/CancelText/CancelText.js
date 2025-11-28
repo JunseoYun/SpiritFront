@@ -1,28 +1,46 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import {StyleSheet, TouchableOpacity} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {normalizeFont} from '../../hooks/normalizeFont';
 
-const CancelText = ({rightnum, topnum, paddingnum, handlecancel, size}) => {
+const CancelText = ({
+  rightnum,
+  topnum,
+  paddingnum,
+  handlecancel,
+  size,
+  centerVertical = false,
+}) => {
+  const positioningStyle =
+    centerVertical
+      ? styles.centerVertical
+      : topnum !== undefined && topnum !== null
+      ? {top: topnum}
+      : null;
+
   return (
     <TouchableOpacity
       accessibilityLabel="clear name"
-      style={{
-        position: 'absolute',
-        right: rightnum,
-        top: topnum,
-        padding: paddingnum,
-      }}
+      style={[
+        styles.container,
+        {right: rightnum, padding: paddingnum},
+        positioningStyle,
+      ]}
       onPress={() => handlecancel('')}>
       <MaterialIcons name="cancel" size={size} color="#999" />
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+  },
+  centerVertical: {
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
 
 export default CancelText;

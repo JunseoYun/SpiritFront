@@ -1,5 +1,6 @@
 import React from 'react';
 import {Modal, View, Text, Pressable, StyleSheet} from 'react-native';
+import CustomText from '../../utils/CustomText';
 
 const TermsAgreeModal = ({visible, onPressClose}) => {
   return (
@@ -8,7 +9,7 @@ const TermsAgreeModal = ({visible, onPressClose}) => {
         <View
           style={styles.modalContainer}
           onStartShouldSetResponder={() => true}>
-          <Text style={styles.topText}>termsAgreeModal</Text>
+          <CustomText style={styles.topText}>termsAgreeModal</CustomText>
         </View>
       </Pressable>
     </Modal>

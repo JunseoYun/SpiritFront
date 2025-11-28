@@ -1,11 +1,12 @@
 import React from 'react';
 import {View, Text, TextInput, StyleSheet, ScrollView} from 'react-native';
+import CustomText from '../../../utils/CustomText';
 
 const Service = () => {
   return (
     <View style={{backgroundColor: '#fff'}}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.text}>
+        <CustomText style={styles.text}>
           서비스 이용약관{'\n'}
           {'\n'}제 1장 총칙{'\n'}
           {'\n'}
@@ -158,7 +159,7 @@ const Service = () => {
           {'\n'}
           부칙{'\n'}
           (시행일) 이 약관은 2024년 08월 21일부터 시행합니다.{'\n'}
-        </Text>
+        </CustomText>
       </ScrollView>
     </View>
   );

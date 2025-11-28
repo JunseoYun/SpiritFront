@@ -1,5 +1,6 @@
 import React from 'react';
 import {Modal, View, Text, Pressable, StyleSheet} from 'react-native';
+import CustomText from '../../utils/CustomText';
 
 const RejectModal = ({data, onClose}) => {
   const body = data?.body || '';
@@ -17,21 +18,23 @@ const RejectModal = ({data, onClose}) => {
     <Modal statusBarTranslucent={true} transparent animationType="fade" visible>
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          <Text style={styles.title}>매장 인증 거절됨</Text>
+          <CustomText style={styles.title}>매장 인증 거절됨</CustomText>
 
           {/* 굵은 매장명 + 이어지는 문장 */}
-          <Text style={styles.mainText}>
-            <Text style={styles.storeName}>{storeName}</Text>
+          <CustomText style={styles.mainText}>
+            <CustomText style={styles.storeName}>{storeName}</CustomText>
             {firstLineSuffix}
-          </Text>
+          </CustomText>
 
           {/* 줄바꿈 후 거절 사유 */}
-          {secondLine !== '' && <Text style={styles.reason}>{secondLine}</Text>}
-          <Text style={{color: '#999', paddingVertical: 4}}>
+          {secondLine !== '' && (
+            <CustomText style={styles.reason}>{secondLine}</CustomText>
+          )}
+          <CustomText style={{color: '#999', paddingVertical: 4}}>
             스피릿에 문의{'\n'}team19spirit@gmail.com
-          </Text>
+          </CustomText>
           <Pressable style={styles.button} onPress={onClose}>
-            <Text style={styles.buttonText}>확인</Text>
+            <CustomText style={styles.buttonText}>확인</CustomText>
           </Pressable>
         </View>
       </View>
@@ -76,7 +79,7 @@ const styles = StyleSheet.create({
     color: '#121212',
   },
   button: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     paddingVertical: 10,
     borderRadius: 7,
     alignItems: 'center',

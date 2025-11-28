@@ -16,6 +16,7 @@ import useStoreStatus from '../../hooks/useStoreStatus';
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../../utils/CustomText';
 
 const windowWidth = Dimensions.get('window').width;
 const H_MARGIN = 18;
@@ -125,9 +126,9 @@ const NearStoreTotalItem = ({store, location, navigation}) => {
                   size={12}
                   style={styles.chipIcon}
                 />
-                <Text style={styles.chipText} numberOfLines={1}>
+                <CustomText style={styles.chipText} numberOfLines={1}>
                   {distance}
-                </Text>
+                </CustomText>
               </View>
             )}
             {isOpen && isBreak && (
@@ -137,9 +138,9 @@ const NearStoreTotalItem = ({store, location, navigation}) => {
                   size={12}
                   style={styles.chipIcon}
                 />
-                <Text style={styles.chipText} numberOfLines={1}>
+                <CustomText style={styles.chipText} numberOfLines={1}>
                   브레이크 ~ {breakend || ''}
-                </Text>
+                </CustomText>
               </View>
             )}
           </View>
@@ -151,7 +152,7 @@ const NearStoreTotalItem = ({store, location, navigation}) => {
                 size={12}
                 style={styles.chipIcon}
               />
-              <Text style={styles.statusChipText}>{distance}</Text>
+              <CustomText style={styles.statusChipText}>{distance}</CustomText>
             </View>
           )
         )}
@@ -165,9 +166,9 @@ const NearStoreTotalItem = ({store, location, navigation}) => {
                   size={12}
                   style={styles.chipIcon}
                 />
-                <Text style={styles.chipText} numberOfLines={1}>
+                <CustomText style={styles.chipText} numberOfLines={1}>
                   {distance}
-                </Text>
+                </CustomText>
               </View>
             )}
 
@@ -177,9 +178,9 @@ const NearStoreTotalItem = ({store, location, navigation}) => {
                 size={12}
                 style={styles.chipIcon}
               />
-              <Text style={styles.chipText} numberOfLines={1}>
+              <CustomText style={styles.chipText} numberOfLines={1}>
                 영업종료 · {starttime} 오픈
-              </Text>
+              </CustomText>
             </View>
           </View>
         )}
@@ -193,33 +194,33 @@ const NearStoreTotalItem = ({store, location, navigation}) => {
       <View style={styles.info}>
         {/* 카테고리 */}
         {!!store?.categories?.length && (
-          <Text style={styles.category} numberOfLines={1}>
+          <CustomText style={styles.category} numberOfLines={1}>
             {store.categories.map(c => translateCategory(c)).join(', ')}
-          </Text>
+          </CustomText>
         )}
         {/* 상단: 이름 + 평점 */}
         <View style={styles.titleRow}>
-          <Text style={styles.title} numberOfLines={1}>
+          <CustomText style={styles.title} numberOfLines={1}>
             {store?.name || '가게 이름'}
-          </Text>
-          <Text style={styles.rate} numberOfLines={1}>
+          </CustomText>
+          <CustomText style={styles.rate} numberOfLines={1}>
             <FontAwesomeIcon name="star" size={16} color="#FED348" />{' '}
             {typeof store?.storeRate === 'number'
               ? store.storeRate.toFixed(1)
               : '0'}
-          </Text>
+          </CustomText>
         </View>
 
         {/* 영업시간 간단 표기(24시간은 위 배지로 대체, 여기엔 보조 정보) */}
         {store?.isAlwaysOpen ? (
-          <Text style={styles.timeText} numberOfLines={1}>
+          <CustomText style={styles.timeText} numberOfLines={1}>
             24시간 영업
-          </Text>
+          </CustomText>
         ) : (
-          <Text style={styles.timeText} numberOfLines={1}>
+          <CustomText style={styles.timeText} numberOfLines={1}>
             {isOpen && endtime && `${endtime} 마감`}
             {!isOpen && starttime && `${starttime} ~ ${endtime}`}
-          </Text>
+          </CustomText>
         )}
 
         <View style={styles.mainDrinkView}>
@@ -233,13 +234,13 @@ const NearStoreTotalItem = ({store, location, navigation}) => {
                   styles.drinkBadge,
                   isLast ? {flexShrink: 1} : {}, // 마지막만 줄어들게
                 ]}>
-                <Text
+                <CustomText
                   style={styles.drinkBadgeText}
                   {...(isLast
                     ? {numberOfLines: 1, ellipsizeMode: 'tail'}
                     : {})}>
                   {translateAlcohol(drink.type)} {drink.price}
-                </Text>
+                </CustomText>
               </View>
             );
           })}

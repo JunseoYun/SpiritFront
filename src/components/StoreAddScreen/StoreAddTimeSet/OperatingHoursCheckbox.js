@@ -1,11 +1,12 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import CustomText from '../../../utils/CustomText';
 
 const OperatingHoursCheckbox = ({isSameEveryday, is24, toggle24Hours}) => {
   return (
     <View style={styles.checkboxHeader}>
-      <Text style={styles.checkboxLabel}>영업 시간</Text>
+      <CustomText style={styles.checkboxLabel}>영업 시간</CustomText>
       <Pressable
         style={[
           styles.checkboxContainer,
@@ -16,7 +17,7 @@ const OperatingHoursCheckbox = ({isSameEveryday, is24, toggle24Hours}) => {
         <View style={is24 ? styles.checkedBox : styles.uncheckedBox}>
           {is24 && <MaterialIcons name="check" size={15} color="#fff" />}
         </View>
-        <Text style={styles.checkboxLabel24}>24시간 영업</Text>
+        <CustomText style={styles.checkboxLabel24}>24시간 영업</CustomText>
       </Pressable>
     </View>
   );
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 4,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     marginRight: 7,
     alignItems: 'center',
     justifyContent: 'center',
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     marginRight: 7,
   },
   checkboxLabel24: {

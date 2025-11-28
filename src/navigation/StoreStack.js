@@ -5,24 +5,29 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Octicons from 'react-native-vector-icons/Octicons';
 
 import StoreMainScreen from '../screens/StoreInfo/StoreMainScreen';
-import MenuAddScreen from '../screens/StoreInfo/Menu/MenuAddScreen';
 import StoreMapScreen from '../screens/StoreInfo/StoreMapScreen';
 import StoreReviewScreen from '../screens/StoreInfo/StoreReviewScreen';
-import AlcoholAddScreen from '../screens/StoreInfo/Alcohol/AlcoholAddScreen';
+import StoreReviewWriteScreen from '../screens/StoreInfo/StoreReviewWriteScreen';
 import StoreReportScreen from '../screens/StoreInfo/Report/StoreReportScreen';
 import ReviewReportScreen from '../screens/StoreInfo/Report/ReviewReportScreen';
 import StoreReportList from '../screens/StoreInfo/Report/StoreReportList';
 import StoreTimeEditScreen from '../screens/StoreInfo/StoreTimeEditScreen';
 import AlcoholEditScreen from '../screens/StoreInfo/Alcohol/AlcohoEditScreen';
-import UpdateStoreDrink from '../components/UpdateBottomSheet/UpdateStoreDrink';
 import MenuEditScreen from '../screens/StoreInfo/Menu/MenuEditScreen';
 import ImageReorderScreen from '../components/StoreScreen/StoreImage/ImageReorderScreen';
-import InfoImageEditScreen from '../components/StoreScreen/StoreImage/InfoImageEditScreen';
+import InfoImageEditScreen from '../screens/StoreInfo/InfoImageEditScreen';
 import {getGlobalShowAlert} from '../context/CustomAlertContext';
 import ImageViewerScreen from '../hooks/ImageViewerScreen';
 import ManagerStoreInfoScreen from '../screens/BottomTab/My/ManagerStoreInfoScreen';
 import StoreManagerScreen from '../screens/StoreManager/StoreManagerScreen';
-
+import StoreOrderScreen from '../screens/StoreOrder/StoreOrderScreen';
+import StorePaymentScreen from '../screens/StoreOrder/StorePaymentScreen';
+import StoreUpdateScreen from '../screens/StoreInfo/StoreUpdateScreen';
+import StoreManageScreen from '../screens/StoreInfo/StoreManage/StoreManageScreen';
+import StoreEventEditScreen from '../screens/StoreInfo/StoreManage/StoreEventEditScreen';
+import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
+import StoreEventsScreen from '../screens/StoreInfo/StoreEventsScreen';
+import CustomText from '../utils/CustomText';
 const Stack = createStackNavigator();
 
 export default function StoreStack() {
@@ -37,10 +42,142 @@ export default function StoreStack() {
         options={{headerShown: false}}
       />
       <Stack.Screen
+        name="StoreOrderScreen"
+        component={StoreOrderScreen}
+        options={({navigation, route}) => {
+          const storeName = route.params?.storeName;
+          const title = storeName ? `${storeName} 주문` : '주문 진행하기';
+          return {
+            title,
+            headerTitleAlign: 'center',
+            headerTitleStyle: {
+              fontFamily: 'Pretendard-SemiBold',
+              fontSize: 18,
+              color: '#333',
+            },
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+          };
+        }}
+      />
+      <Stack.Screen
+        name="StorePaymentScreen"
+        component={StorePaymentScreen}
+        options={({navigation, route}) => {
+          const storeName = route.params?.storeName;
+          const title = storeName ? `${storeName} 주문내역` : '주문내역';
+          return {
+            title,
+            headerTitleAlign: 'center',
+            headerTitleStyle: {
+              fontFamily: 'Pretendard-SemiBold',
+              fontSize: 18,
+              color: '#333',
+            },
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+          };
+        }}
+      />
+      <Stack.Screen
         name="ImageViewerScreen"
         component={ImageViewerScreen}
         options={{headerShown: false}}
       />
+      <Stack.Screen
+        name="StoreUpdateScreen"
+        component={StoreUpdateScreen}
+        options={({navigation}) => ({
+          title: '매장 수정',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-SemiBold',
+            fontSize: 18,
+            color: '#333',
+          },
+        })}
+      />
+      <Stack.Screen
+        name="StoreManageScreen"
+        component={StoreManageScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="StoreEventEditScreen"
+        component={StoreEventEditScreen}
+        options={({navigation}) => ({
+          headerTitleAlign: 'center',
+          headerShadowVisible: false,
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-SemiBold',
+            fontSize: 18,
+            color: '#333',
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="StoreEventsScreen"
+        component={StoreEventsScreen}
+        options={({navigation, route}) => {
+          const storeName = route.params?.storeName;
+          const title = storeName ? `${storeName} 이벤트` : '이벤트 전체보기';
+          return {
+            title,
+            headerTitleAlign: 'center',
+            headerShadowVisible: false,
+            headerTitleStyle: {
+              fontFamily: 'Pretendard-SemiBold',
+              fontSize: 18,
+              color: '#333',
+            },
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+          };
+        }}
+      />
+
       <Stack.Screen
         name="StoreTimeEditScreen"
         component={StoreTimeEditScreen}
@@ -66,112 +203,23 @@ export default function StoreStack() {
           ),
         })}
       />
-      <Stack.Screen
-        name="UpdateStoreDrink"
-        component={UpdateStoreDrink}
-        options={({navigation}) => ({
-          title: '대표 주류 수정',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-
-      <Stack.Screen
-        name="MenuAddScreen"
-        component={MenuAddScreen}
-        options={({navigation}) => ({
-          title: '메뉴 등록하기',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                showAlert({
-                  title: '작성한 내용이 저장되지 않았습니다',
-                  message: '뒤로 가시겠습니까?',
-                  onConfirm: () => {
-                    navigation.goBack();
-                  },
-                  onCancel: null,
-                  type: 'confirm',
-                });
-              }}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-
-      <Stack.Screen
-        name="AlcoholAddScreen"
-        component={AlcoholAddScreen}
-        options={({navigation}) => ({
-          title: '주류 등록하기',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                showAlert({
-                  title: '작성한 내용이 저장되지 않았습니다',
-                  message: '뒤로 가시겠습니까?',
-                  onConfirm: () => {
-                    navigation.goBack();
-                  },
-                  onCancel: null,
-                  type: 'confirm',
-                });
-              }}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
 
       <Stack.Screen
         name="MenuEditScreen"
         component={MenuEditScreen}
         options={({navigation}) => ({
-          title: '메뉴 편집',
+          title: '메뉴 관리',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
+          },
+          headerShadowVisible: false,
+          headerStyle: {
+            borderBottomWidth: 0,
+            elevation: 0,
+            shadowOpacity: 0,
           },
           headerLeft: () => (
             <Pressable
@@ -196,17 +244,22 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="AlcoholEditScreen"
         component={AlcoholEditScreen}
         options={({navigation}) => ({
-          title: '주류 편집',
+          title: '주류 관리',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-SemiBold',
             fontSize: 18,
             color: '#333',
+          },
+          headerShadowVisible: false,
+          headerStyle: {
+            borderBottomWidth: 0,
+            elevation: 0,
+            shadowOpacity: 0,
           },
           headerLeft: () => (
             <Pressable
@@ -231,7 +284,6 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="ImageReorderScreen"
         component={ImageReorderScreen}
@@ -266,44 +318,11 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="StoreMapScreen"
         component={StoreMapScreen}
-        options={({navigation, route}) => {
-          const storename = route.params?.storename || '매장';
-          const displayTitle = storename + ' 길찾기';
-
-          return {
-            headerLeft: () => (
-              <Pressable
-                onPress={() => navigation.goBack()}
-                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-                <Ionicons
-                  name="arrow-back-outline"
-                  size={23}
-                  color="#333"
-                  style={{paddingLeft: 12}}
-                />
-              </Pressable>
-            ),
-            headerTitle: () => (
-              <Text
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                style={{
-                  fontSize: 18,
-                  fontFamily: 'Pretendard-SemiBold',
-                  maxWidth: screenWidth * 0.7,
-                  textAlign: 'center',
-                }}>
-                {displayTitle}
-              </Text>
-            ),
-            headerTitleAlign: 'center',
-            gestureDirection: 'vertical',
-            animation: 'slide_from_bottom',
-          };
+        options={{
+          headerShown: false,
         }}
       />
       <Stack.Screen
@@ -327,7 +346,7 @@ export default function StoreStack() {
               </Pressable>
             ),
             headerTitle: () => (
-              <Text
+              <CustomText
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
@@ -337,7 +356,7 @@ export default function StoreStack() {
                   textAlign: 'center',
                 }}>
                 {displayTitle}
-              </Text>
+              </CustomText>
             ),
             headerTitleAlign: 'center',
             animation: 'slide_from_right',
@@ -345,7 +364,89 @@ export default function StoreStack() {
           };
         }}
       />
+      <Stack.Screen
+        name="StoreReviewWriteScreen"
+        component={StoreReviewWriteScreen}
+        options={({navigation, route}) => {
+          const storename = route.params?.storename || '매장';
+          const displayTitle = storename + ' 리뷰 작성';
 
+          return {
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="arrow-back-outline"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+            headerTitle: () => (
+              <CustomText
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  fontSize: 18,
+                  fontFamily: 'Pretendard-SemiBold',
+                  maxWidth: screenWidth * 0.7,
+                  textAlign: 'center',
+                }}>
+                {displayTitle}
+              </CustomText>
+            ),
+            headerTitleAlign: 'center',
+            animation: 'slide_from_right',
+            headerShadowVisible: false,
+          };
+        }}
+      />
+      <Stack.Screen
+        name="ReviewEditScreen"
+        component={ReviewEditScreen}
+        options={({navigation, route}) => {
+          const storeName = route.params?.reviewdata?.storeName;
+          const displayTitle = storeName
+            ? `${storeName} 리뷰 수정`
+            : '리뷰 수정';
+
+          return {
+            headerTitle: () => (
+              <CustomText
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  fontSize: 18,
+                  fontFamily: 'Pretendard-SemiBold',
+                  maxWidth: screenWidth * 0.7,
+                  textAlign: 'center',
+                }}>
+                {displayTitle}
+              </CustomText>
+            ),
+            headerTitleAlign: 'center',
+            headerStyle: {
+              shadowOpacity: 0,
+              elevation: 0,
+              borderBottomWidth: 0,
+            },
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+                <Ionicons
+                  name="close"
+                  size={23}
+                  color="#333"
+                  style={{paddingLeft: 12}}
+                />
+              </Pressable>
+            ),
+          };
+        }}
+      />
       <Stack.Screen
         name="StoreReportList"
         component={StoreReportList}
@@ -367,7 +468,7 @@ export default function StoreStack() {
               </Pressable>
             ),
             headerTitle: () => (
-              <Text
+              <CustomText
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
@@ -377,7 +478,7 @@ export default function StoreStack() {
                   textAlign: 'center',
                 }}>
                 {displayTitle}
-              </Text>
+              </CustomText>
             ),
             headerTitleAlign: 'center',
             animation: 'slide_from_right',
@@ -385,7 +486,6 @@ export default function StoreStack() {
           };
         }}
       />
-
       <Stack.Screen
         name="StoreReportScreen"
         component={StoreReportScreen}
@@ -405,7 +505,7 @@ export default function StoreStack() {
               hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
               <Ionicons
                 name="close"
-                size={23}
+                size={24}
                 color="#333"
                 style={{paddingLeft: 12}}
               />
@@ -413,7 +513,6 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="ReviewReportScreen"
         component={ReviewReportScreen}
@@ -443,7 +542,6 @@ export default function StoreStack() {
           ),
         })}
       />
-
       <Stack.Screen
         name="InfoImageEditScreen"
         component={InfoImageEditScreen}
@@ -480,7 +578,6 @@ export default function StoreStack() {
           };
         }}
       />
-
       <Stack.Screen
         name="ManagerStoreInfoScreen"
         component={ManagerStoreInfoScreen}
@@ -502,7 +599,7 @@ export default function StoreStack() {
               </Pressable>
             ),
             headerTitle: () => (
-              <Text
+              <CustomText
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
@@ -512,7 +609,7 @@ export default function StoreStack() {
                   textAlign: 'center',
                 }}>
                 {displayTitle}
-              </Text>
+              </CustomText>
             ),
             headerTitleAlign: 'center',
             animation: 'slide_from_right',
@@ -520,7 +617,6 @@ export default function StoreStack() {
           };
         }}
       />
-
       <Stack.Screen
         name="StoreManagerScreen"
         component={StoreManagerScreen}
@@ -542,7 +638,7 @@ export default function StoreStack() {
               </Pressable>
             ),
             headerTitle: () => (
-              <Text
+              <CustomText
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
@@ -552,7 +648,7 @@ export default function StoreStack() {
                   textAlign: 'center',
                 }}>
                 {displayTitle}
-              </Text>
+              </CustomText>
             ),
             headerTitleAlign: 'center',
             animation: 'slide_from_right',

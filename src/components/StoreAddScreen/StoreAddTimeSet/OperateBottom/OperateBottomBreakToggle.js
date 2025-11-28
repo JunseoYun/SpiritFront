@@ -1,12 +1,13 @@
 import React from 'react';
 import {Pressable, Text, StyleSheet} from 'react-native';
+import CustomText from '../../../../utils/CustomText';
 
 const OperateBottomBreakToggle = ({onPress, hasBreakTime}) => {
   return (
     <Pressable onPress={onPress} style={styles.addBreakButton}>
-      <Text style={styles.addBreakText}>
+      <CustomText style={styles.addBreakText}>
         {hasBreakTime ? '- 브레이크타임 제거' : '+ 브레이크타임 추가'}
-      </Text>
+      </CustomText>
     </Pressable>
   );
 };
@@ -17,7 +18,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addBreakText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontSize: 16,
     fontFamily: 'Pretendard-Medium',
   },

@@ -1,6 +1,7 @@
 import React, {useRef, useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import WheelPicker from './WheelPicker';
+import CustomText from '../utils/CustomText';
 
 const TimePicker = ({
   selectedHour = '00',
@@ -66,7 +67,7 @@ const TimePicker = ({
 
       {/* 콜론(:) */}
       <View style={styles.colonView}>
-        <Text style={styles.colon}>:</Text>
+        <CustomText style={styles.colon}>:</CustomText>
       </View>
       <WheelPicker
         data={minutes}

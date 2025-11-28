@@ -8,6 +8,7 @@ import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStor
 import NearStoreList from '../../components/MainScreen/NearStore/NearStoreList';
 import ViewedStoreList from './ViewedStore/ViewedStoreList';
 import MyBanner from '../Ads/MyBanner';
+import CustomText from '../../utils/CustomText';
 
 const MainSection = ({
   recommCategory,
@@ -25,9 +26,14 @@ const MainSection = ({
     <View
       style={{
         backgroundColor: '#fff',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingTop: 24,
+        borderTopLeftRadius: 18,
+        borderTopRightRadius: 18,
+        paddingTop: 14,
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: -3}, // 👈 위쪽 방향
+        shadowOpacity: 0.15,
+        shadowRadius: 3,
+        elevation: 3,
       }}>
       <TodayRecomm
         recommCategory={recommCategory}
@@ -65,19 +71,21 @@ const MainSection = ({
           backgroundColor: '#fff',
           paddingLeft: 20,
           paddingTop: 20,
+          paddingBottom: 10,
         }}
         onLayout={e => {
           const {height} = e.nativeEvent.layout;
           onHeaderLayout(height);
         }}>
-        <Text
+        <CustomText
           style={{
             fontSize: 18,
             fontFamily: 'Pretendard-SemiBold',
             color: '#181a1a',
+            marginBottom: 10,
           }}>
           현재 인기 매장
-        </Text>
+        </CustomText>
       </View>
     </View>
   );

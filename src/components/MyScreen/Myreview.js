@@ -6,6 +6,7 @@ import {ReviewRecentGet, ReviewDelete} from '../../api/reviewApi';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
+import CustomText from '../../utils/CustomText';
 
 const MyReview = ({navigation}) => {
   const [myReview, setMyReview] = useState([]); // 검색된 가게 목록
@@ -13,6 +14,7 @@ const MyReview = ({navigation}) => {
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
   const [totalpage, setTotalpage] = useState(0);
+  const [openDropdownReviewId, setOpenDropdownReviewId] = useState(null);
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
 
@@ -49,6 +51,7 @@ const MyReview = ({navigation}) => {
       setMyReview([]); // 기존 데이터 초기화
       setPage(0);
       setIsEnd(false);
+      setOpenDropdownReviewId(null);
       myReviewsget(0); // 첫 페이지 불러오기
     }, []),
   );
@@ -72,13 +75,16 @@ const MyReview = ({navigation}) => {
   };
 
   const updateReview = reviewdata => {
-    navigation.navigate('ReviewEditScreen', {
-      reviewdata,
-      onRefresh: () => {
-        setMyReview([]); // 기존 데이터 초기화
-        setPage(0);
-        setIsEnd(false);
-        myReviewsget(0); // 첫 페이지 불러오기
+    navigation.navigate('StoreStack', {
+      screen: 'ReviewEditScreen',
+      params: {
+        reviewdata,
+        onRefresh: () => {
+          setMyReview([]); // 기존 데이터 초기화
+          setPage(0);
+          setIsEnd(false);
+          myReviewsget(0); // 첫 페이지 불러오기
+        },
       },
     });
   };
@@ -90,6 +96,13 @@ const MyReview = ({navigation}) => {
       navigation={navigation}
       deleteReview={() => deleteReview(item.id)}
       updateReview={() => updateReview(item)}
+      isDropdownOpen={openDropdownReviewId === item.id}
+      onDropdownOpen={() => setOpenDropdownReviewId(item.id)}
+      onDropdownClose={() => {
+        if (openDropdownReviewId === item.id) {
+          setOpenDropdownReviewId(null);
+        }
+      }}
     />
   );
   return (
@@ -100,6 +113,7 @@ const MyReview = ({navigation}) => {
         keyExtractor={item => item.id.toString()}
         initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
         maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
+        contentContainerStyle={{paddingBottom: 30}}
         windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
         removeClippedSubviews={Platform.OS === 'android'} // iOS에서는 화면이 잘려 렌더링 오류가 발생해 안드로이드에서만 사용
         onEndReached={() => {
@@ -115,7 +129,9 @@ const MyReview = ({navigation}) => {
         ListEmptyComponent={
           !loading && myReview.length === 0 ? (
             <View style={styles.footer}>
-              <Text style={styles.emptyText}>등록된 리뷰가 없어요</Text>
+              <CustomText style={styles.emptyText}>
+                등록된 리뷰가 없어요
+              </CustomText>
             </View>
           ) : null
         }

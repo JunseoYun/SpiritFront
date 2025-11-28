@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, Pressable, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import {getLocation} from '../../storage/locationStorage';
 import useDistance from '../../hooks/useDistance';
@@ -13,32 +13,22 @@ import Location from './StoreMainInfo/Location';
 import Address from './StoreMainInfo/Address';
 import OperationSchedule from './StoreMainInfo/OperationSchedule';
 import InnerOperation from './StoreMainInfo/InnerOperation';
-import Introduce from './StoreMainInfo/Introduce';
+import FacilitiesInfo from './StoreMainInfo/FacilitiesInfo';
+import Contact from './StoreMainInfo/Contact';
+import Description from './StoreMainInfo/Description';
+import Moods from './StoreMainInfo/Moods';
+import ColorUtil from '../../utils/ColorUtil';
+import StoreEvents from './StoreMainInfo/StoreEvents';
 
-import Entypo from 'react-native-vector-icons/Entypo';
-import StoreExtraInfo from './StoreMainInfo/StoreExtraInfo';
 const StoreMainInfo = ({
   storedata = {},
-  isUpdate,
-  handleBottomOpen,
-  onEditKey,
-  onEditValue,
+  events = [],
   navigation,
-  storeTimeEditHandle,
-  storeupdatedrink,
-  setLoading,
-  loading,
   startUpdate,
   handleReport,
   handleReportList,
   handleStoreInfo,
 }) => {
-  const handleEdit = (key, value) => {
-    onEditKey(key); // 수정 키와 값을 부모 컴포넌트로 전달
-    onEditValue(value);
-    handleBottomOpen(); // 바텀 시트 열기
-  };
-
   const {
     isOpen,
     isBreak,
@@ -60,34 +50,14 @@ const StoreMainInfo = ({
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [descripexpanded, setDescripexpanded] = useState(false);
-  const [descLineCount, setDescLineCount] = useState(0);
-
-  const handleTextLayout = e => {
-    setDescLineCount(e.nativeEvent.lines.length);
-  };
 
   const toggleExpand = () => {
-    if (isUpdate) {
-      setIsExpanded(true);
-    } else {
-      setIsExpanded(prev => !prev);
-    }
+    setIsExpanded(prev => !prev);
   };
 
   const toggleDescription = () => {
-    if (isUpdate) {
-      setDescripexpanded(true);
-    } else {
-      setDescripexpanded(prev => !prev);
-    }
+    setDescripexpanded(prev => !prev);
   };
-
-  useEffect(() => {
-    if (isUpdate) {
-      setIsExpanded(true);
-      setDescripexpanded(true);
-    }
-  }, [isUpdate]);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -111,28 +81,30 @@ const StoreMainInfo = ({
     fetchLocation();
   }, [storedata]);
 
+  // 몇미터 떨어져 있는지 distance
   return (
-    <View style={[styles.StoreTopView, isUpdate && {paddingBottom: 120}]}>
-      <Category
-        handleEdit={handleEdit}
-        storedata={storedata}
-        translateCategory={translateCategory}
-        isUpdate={isUpdate}
-        isOwner={storedata?.isOwner}
-      />
-      <Title
-        handleEdit={handleEdit}
-        storeName={storedata?.name}
-        isUpdate={isUpdate}
-        startUpdate={startUpdate}
-        handleReport={handleReport}
-        handleReportList={handleReportList}
-        handleStoreInfo={handleStoreInfo}
-        isUpdatable={storedata?.isUpdatable}
-      />
+    <View style={[styles.StoreTopView]}>
+      {storedata?.moods.length > 0 && <Moods moods={storedata?.moods} />}
+      {storedata?.categories?.length > 0 && (
+        <Category
+          categories={storedata?.categories}
+          translateCategory={translateCategory}
+          isMoods={storedata?.moods.length > 0}
+          isOwner={storedata?.isOwner}
+        />
+      )}
+      {storedata?.name && (
+        <Title
+          storeName={storedata?.name}
+          startUpdate={startUpdate}
+          handleReport={handleReport}
+          handleReportList={handleReportList}
+          handleStoreInfo={handleStoreInfo}
+          isUpdatable={storedata?.isUpdatable}
+        />
+      )}
 
       <Review
-        isUpdate={isUpdate}
         navigation={navigation}
         storeData={{
           name: storedata?.name,
@@ -142,63 +114,31 @@ const StoreMainInfo = ({
           isOwner: storedata?.isOwner,
         }}
       />
-
-      <Alcohol
-        isUpdate={isUpdate}
-        storeDrinkDtos={storedata?.mainDrinkDtos}
-        handleEdit={handleEdit}
-        translateAlcohol={translateAlcohol}
-        storeupdatedrink={storeupdatedrink}
-      />
-      {!isUpdate && storedata?.description && (
-        <Pressable onPress={toggleDescription} style={styles.infoView}>
-          <View>
-            {storedata?.description && (
-              <View>
-                {/* 라인 수 측정용 (숨김 처리) */}
-                <Text
-                  style={[
-                    styles.infoText,
-                    {position: 'absolute', opacity: 0, zIndex: -1},
-                  ]}
-                  onTextLayout={handleTextLayout}>
-                  {storedata?.description}
-                </Text>
-
-                {/* 실제 노출용 */}
-                <Text
-                  style={styles.infoText}
-                  numberOfLines={descripexpanded ? undefined : 2}>
-                  {storedata?.description}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {descLineCount > 2 && (
-            <View style={styles.togglebtn}>
-              {descripexpanded ? (
-                <Entypo name="chevron-small-up" size={20} color="#767676" />
-              ) : (
-                <Entypo name="chevron-small-down" size={20} color="#767676" />
-              )}
-            </View>
-          )}
-        </Pressable>
+      {storedata?.description?.length > 0 && (
+        <Description
+          description={storedata?.description}
+          descripexpanded={descripexpanded}
+          toggleDescription={toggleDescription}
+        />
       )}
-      {!isUpdate && <View style={styles.division} />}
 
-      <Address
-        handleEdit={handleEdit}
-        isUpdate={isUpdate}
-        storedata={storedata}
-      />
+      {storedata?.mainDrinkDtos?.length > 0 && (
+        <Alcohol
+          storeDrinkDtos={storedata?.mainDrinkDtos}
+          translateAlcohol={translateAlcohol}
+        />
+      )}
+
+      <View style={styles.division} />
+
+      {storedata?.locationDto?.address && (
+        <Address locationDto={storedata?.locationDto} />
+      )}
 
       <OperationSchedule
         toggleExpand={toggleExpand}
         isExpanded={isExpanded}
-        isUpdate={isUpdate}
-        storedata={storedata}
+        isAlwaysOpen={storedata?.isAlwaysOpen}
         isOpen={isOpen}
         isBreak={isBreak}
         closed={closed}
@@ -211,45 +151,21 @@ const StoreMainInfo = ({
       <InnerOperation
         toggleExpand={toggleExpand}
         isExpanded={isExpanded}
-        isUpdate={isUpdate}
-        storedata={storedata}
+        isAlwaysOpen={storedata?.isAlwaysOpen}
         operationSchedule={operationSchedule}
-        storeTimeEditHandle={storeTimeEditHandle}
       />
+      {storedata?.contact && <Contact contact={storedata?.contact} />}
 
-      {!isUpdate && (
-        <StoreExtraInfo
-          navigation={navigation}
-          storeData={{
-            contact: storedata?.contact,
-            isStoreLiked: storedata?.isStoreLiked,
-            likeCount: storedata?.likeCount,
-            id: storedata?.id,
-            reviewCount: storedata?.reviewCount,
-            isGroupAvailable: storedata?.isGroupAvailable,
-            hasScreen: storedata?.hasScreen,
-            name: storedata.name,
-            isOwner: storedata?.isOwner,
-          }}
-          distance={distance}
-          unit={unit}
-          setLoading={setLoading}
-          loading={loading}
-        />
+      {storedata?.facilitiesInfoDto.length > 0 && (
+        <FacilitiesInfo facilitiesInfoDto={storedata?.facilitiesInfoDto} />
       )}
-
-      {isUpdate && (
-        <>
-          <Location isUpdate={isUpdate} distance={distance} unit={unit} />
-
-          <Introduce
-            isUpdate={isUpdate}
-            handleEdit={handleEdit}
-            storedata={storedata}
-            descripexpanded={descripexpanded}
-            toggleDescription={toggleDescription}
-          />
-        </>
+      {events?.length > 0 && (
+        <StoreEvents
+          events={events}
+          fallbackText={storedata?.eventText}
+          navigation={navigation}
+          storeName={storedata?.name}
+        />
       )}
     </View>
   );
@@ -303,7 +219,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     fontSize: 15,
     lineHeight: 20,
-    color: '#767676',
+    color: ColorUtil.subText,
     marginTop: 3,
     marginBottom: 5,
   },

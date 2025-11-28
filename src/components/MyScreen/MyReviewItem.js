@@ -1,128 +1,243 @@
-import React from 'react';
-import {View, Text, StyleSheet, Image, Pressable} from 'react-native';
-import {ScrollView} from 'react-native-gesture-handler';
+import React, {useState, useRef, useEffect} from 'react';
+import {View, StyleSheet, Pressable, ScrollView, Animated} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import useCategoryTranslation from '../../hooks/useCategoryTranslation';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import FastImage from 'react-native-fast-image';
+import CustomText from '../../utils/CustomText';
 
-const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
-  const formatDate = dateString => {
-    if (!dateString) return 'N/A';
+const MyReviewItem = ({
+  review,
+  navigation,
+  deleteReview,
+  updateReview,
+  isDropdownOpen,
+  onDropdownOpen,
+  onDropdownClose,
+}) => {
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
+  const [shouldCollapseContent, setShouldCollapseContent] = useState(false);
+  const [renderDropdown, setRenderDropdown] = useState(false);
+  const dropdownAnim = useRef(new Animated.Value(0)).current;
 
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // 두 자리
-    const day = String(date.getDate()).padStart(2, '0'); // 두 자리
-    const currentYear = new Date().getFullYear();
-
-    // 올해 날짜면 YY.MM.DD에서 연도를 생략하고 MM.DD만
-    if (year === currentYear) {
-      return `${month}.${day}`;
-    } else {
-      // 다른 해면 YY.MM.DD (연도는 뒤 두자리)
-      const shortYear = String(year).slice(-2);
-      return `${shortYear}.${month}.${day}`;
-    }
-  };
-
-  const formattedCreatedDate = formatDate(review.visitedAt);
-  const {translateCategory} = useCategoryTranslation();
-
-  const handleImagePress = index => {
+  const goDetail = () => {
     navigation.navigate('StoreStack', {
-      screen: 'ImageViewerScreen',
-      params: {
-        images: review.imgUrlList,
-        index: index,
-      },
+      screen: 'StoreMainScreen',
+      params: {storeId: review.storeId},
     });
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.reviewCard}>
-        <Pressable
-          key={review.id}
-          onPress={() => {
-            navigation.navigate('StoreStack', {
-              screen: 'StoreMainScreen',
-              params: {
-                storeId: review.storeId,
-              },
-            });
-          }}>
-          <View style={styles.header}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                flex: 1,
-                alignItems: 'center',
-                paddingBottom: 8,
-              }}>
-              <Text
-                style={styles.storeName}
-                ellipsizeMode="tail"
-                numberOfLines={1}>
-                {review.storeName}
-              </Text>
-              <Text style={styles.date} ellipsizeMode="tail" numberOfLines={1}>
-                {formattedCreatedDate}
-              </Text>
-            </View>
+  const openImage = index => {
+    navigation.navigate('StoreStack', {
+      screen: 'ImageViewerScreen',
+      params: {images: review.imgUrlList, index},
+    });
+  };
 
-            <View>
-              <Text style={styles.category} ellipsizeMode="tail">
-                {Array.isArray(review.categories) &&
-                review.categories.length > 0
-                  ? review.categories
-                      .map(category => translateCategory(category))
-                      .join(' ')
-                  : '카테고리 미설정'}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.rating}>
-            {[...Array(5)].map((_, index) => (
-              <FontAwesomeIcon
-                key={index}
-                name="star"
-                size={18}
-                color={index < review.rate ? '#FFC107' : '#E0E0E0'}
-              />
-            ))}
-          </View>
-          <Text style={styles.reviewText}>
-            {review.content || '리뷰 내용 없음'}
-          </Text>
-        </Pressable>
-        {review.imgUrlList.length > 0 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {review.imgUrlList.map((imgUrl, index) => (
+  const formatDate = dateString => {
+    if (!dateString) return 'N/A';
+    const d = new Date(dateString);
+    const year = d.getFullYear();
+    const currentYear = new Date().getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return year === currentYear
+      ? `${mm}.${dd}`
+      : `${String(year).slice(-2)}.${mm}.${dd}`;
+  };
+
+  const date = formatDate(review.visitedAt);
+
+  // ⭐️ 별점 렌더링 (5점 만점)
+  const renderStars = rate => {
+    return (
+      <View style={{flexDirection: 'row', marginHorizontal: 18}}>
+        {[1, 2, 3, 4, 5].map(star => (
+          <FontAwesomeIcon
+            key={star}
+            name="star"
+            size={14}
+            color={rate >= star ? '#FFC107' : '#D4D4D4'}
+            style={{marginRight: 2}}
+          />
+        ))}
+      </View>
+    );
+  };
+
+  useEffect(() => {
+    if (isDropdownOpen) {
+      setRenderDropdown(true);
+      Animated.timing(dropdownAnim, {
+        toValue: 1,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    } else if (renderDropdown) {
+      Animated.timing(dropdownAnim, {
+        toValue: 0,
+        duration: 160,
+        useNativeDriver: true,
+      }).start(() => setRenderDropdown(false));
+    }
+  }, [isDropdownOpen, dropdownAnim, renderDropdown]);
+
+  const handleDropdownToggle = () => {
+    if (isDropdownOpen) {
+      onDropdownClose?.();
+    } else {
+      onDropdownOpen?.();
+    }
+  };
+
+  const dropdownTranslateY = dropdownAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-8, 0],
+  });
+
+  const dropdownScale = dropdownAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.9, 1],
+  });
+
+  const onReviewTextLayout = e => {
+    if (shouldCollapseContent) {
+      return;
+    }
+    if (e?.nativeEvent?.lines?.length > 2) {
+      setShouldCollapseContent(true);
+    }
+  };
+
+  const toggleContentCollapse = () => {
+    if (!shouldCollapseContent) {
+      return;
+    }
+    setIsContentExpanded(prev => !prev);
+  };
+
+  return (
+    <View style={styles.wrapper}>
+      <View style={styles.card}>
+        {/* 🔥 (1) 카테고리 제거 → 대신 상단에 StoreName + 화살표 + 별점 */}
+        <View style={styles.topBar}>
+          <Pressable
+            onPress={goDetail}
+            style={{flexDirection: 'row', alignItems: 'center'}}>
+            <CustomText style={styles.storeName} numberOfLines={1}>
+              {review.storeName}
+            </CustomText>
+            <FontAwesomeIcon
+              name="angle-right"
+              size={20}
+              color="#333"
+              style={{marginLeft: 7}}
+            />
+          </Pressable>
+
+          <View style={styles.actionWrapper}>
+            <Pressable
+              onPress={handleDropdownToggle}
+              style={styles.menuButton}
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+              <Ionicons name="ellipsis-vertical" size={14} color="#333" />
+            </Pressable>
+
+            {renderDropdown && (
               <Pressable
-                key={index}
-                onPress={() => {
-                  handleImagePress(index);
-                }}>
-                <Image
-                  key={index}
-                  source={{uri: imgUrl}}
-                  style={styles.reviewImage}
-                />
+                style={styles.backdrop}
+                onPress={onDropdownClose}
+                accessibilityLabel="Close menu"
+              />
+            )}
+
+            {renderDropdown && (
+              <Animated.View
+                style={[
+                  styles.dropdown,
+                  {
+                    opacity: dropdownAnim,
+                    transform: [
+                      {translateY: dropdownTranslateY},
+                      {scale: dropdownScale},
+                    ],
+                  },
+                ]}>
+                <Pressable
+                  style={[styles.dropdownButton]}
+                  onPress={() => {
+                    onDropdownClose?.();
+                    updateReview(review);
+                  }}>
+                  <CustomText style={styles.dropdownButtonText}>
+                    수정하기
+                  </CustomText>
+                </Pressable>
+                <View style={styles.dropdownDivider} />
+                <Pressable
+                  style={[styles.dropdownButton]}
+                  onPress={() => {
+                    onDropdownClose?.();
+                    deleteReview(review.id);
+                  }}>
+                  <CustomText
+                    style={[
+                      styles.dropdownButtonText,
+                      styles.dropdownButtonDangerText,
+                    ]}>
+                    삭제하기
+                  </CustomText>
+                </Pressable>
+              </Animated.View>
+            )}
+          </View>
+        </View>
+        {renderStars(review.rate)}
+        {/* Divider */}
+        <View style={styles.divider} />
+
+        {/* Review Text */}
+        <Pressable
+          onPress={toggleContentCollapse}
+          disabled={!shouldCollapseContent}
+          hitSlop={{top: 4, bottom: 4}}>
+          <CustomText
+            style={styles.reviewText}
+            numberOfLines={
+              isContentExpanded || !shouldCollapseContent ? undefined : 2
+            }
+            ellipsizeMode="tail"
+            onTextLayout={onReviewTextLayout}>
+            {review.content || '리뷰 내용 없음'}
+          </CustomText>
+        </Pressable>
+        {shouldCollapseContent && (
+          <Pressable
+            onPress={toggleContentCollapse}
+            hitSlop={{top: 4, bottom: 4}}
+            style={styles.contentToggleWrapper}>
+            <CustomText style={styles.contentToggleText}>
+              {isContentExpanded ? '닫기' : '더보기'}
+            </CustomText>
+          </Pressable>
+        )}
+
+        {/* Images */}
+        {review.imgUrlList.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{paddingVertical: 6, paddingHorizontal: 18}}>
+            {review.imgUrlList.map((uri, idx) => (
+              <Pressable key={idx} onPress={() => openImage(idx)}>
+                <FastImage source={{uri}} style={styles.thumb} />
               </Pressable>
             ))}
           </ScrollView>
         )}
-        <View style={styles.buttons}>
-          <Pressable
-            style={styles.deleteView}
-            onPress={() => updateReview(review)}>
-            <Text style={styles.deleteText}>수정</Text>
-          </Pressable>
-          <Pressable
-            style={styles.deleteView}
-            onPress={() => deleteReview(review.id)}>
-            <Text style={styles.deleteText}>삭제</Text>
-          </Pressable>
+
+        {/* 하단 행 — ⭐️ 수정/삭제 대신 날짜 표시 */}
+        <View style={styles.bottomRow}>
+          <CustomText style={styles.bottomDate}>{date}</CustomText>
         </View>
       </View>
     </View>
@@ -130,90 +245,121 @@ const MyReviewItem = ({review, navigation, deleteReview, updateReview}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginVertical: 5,
-  },
-  reviewCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+  wrapper: {marginTop: 12, paddingHorizontal: 16},
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    paddingVertical: 18,
+    borderWidth: 1,
+    borderColor: '#F1F1F3',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 0},
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2, // Android 그림자
-  },
-  header: {
-    flexDirection: 'column',
-    marginBottom: 8,
-  },
-  storeName: {
-    fontSize: 18,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#121212',
-    flexShrink: 1, // 추가
-  },
-  date: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontFamily: 'Pretendard-Medium',
-    flexShrink: 0, // 추가
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 3},
+    elevation: 0.3,
   },
 
-  category: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontFamily: 'Pretendard-Medium',
-    marginTop: 0,
-  },
-  rating: {
+  /* ⭐ Top Layout 변경 */
+  topBar: {
     flexDirection: 'row',
-    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 18,
+    marginBottom: 6,
   },
-  reviewText: {
-    fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
-    color: '#121212',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  footer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-  },
-  reviewImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  buttons: {
-    flexDirection: 'row',
-  },
-  deleteView: {
-    marginTop: 12,
-    alignItems: 'flex-start',
-    marginRight: 12,
-  },
-  deleteText: {
-    borderRadius: 10,
 
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    color: '#5F5F5F',
-    fontFamily: 'Pretendard-Regular',
-    backgroundColor: '#EFEFEF',
-    paddingVertical: 5,
-  },
+  storeName: {fontSize: 17, fontFamily: 'Pretendard-SemiBold', color: '#111'},
+  actionWrapper: {position: 'relative', justifyContent: 'center'},
+  menuButton: {},
+
   divider: {
     height: 1,
-    backgroundColor: '#E0E0E0',
-    marginVertical: 16,
+    backgroundColor: '#EFEFEF',
+    marginVertical: 14,
+    marginHorizontal: 14,
+  },
+
+  reviewText: {
+    fontSize: 15,
+    lineHeight: 23,
+    color: '#1E1E1E',
+    fontFamily: 'Pretendard-Regular',
+    marginHorizontal: 18,
+    marginBottom: 12,
+  },
+  contentToggleWrapper: {
+    alignSelf: 'flex-start',
+    marginTop: -4,
+    marginBottom: 12,
+    marginHorizontal: 18,
+  },
+  contentToggleText: {
+    fontSize: 13,
+    color: '#7A7A7A',
+    fontFamily: 'Pretendard-Medium',
+  },
+
+  thumb: {
+    width: 92,
+    height: 92,
+    borderRadius: 12,
+    marginRight: 12,
+    backgroundColor: '#FAFAFA',
+    borderWidth: 0.6,
+    borderColor: '#E6E6E6',
+  },
+
+  bottomRow: {marginTop: 4, marginHorizontal: 18},
+  bottomDate: {fontSize: 12, color: '#A2A2A2'},
+  dropdown: {
+    position: 'absolute',
+    top: 20,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.12,
+    shadowRadius: 2,
+    zIndex: 999,
+    borderWidth: 1,
+    borderColor: '#EFEFF3',
+    gap: 10,
+    minWidth: 120,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: -1000,
+    bottom: -1000,
+    left: -1000,
+    right: -1000,
+    backgroundColor: 'transparent',
+    zIndex: 998,
+  },
+  dropdownButton: {
+    alignSelf: 'stretch',
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  dropdownButtonText: {
+    fontSize: 14,
+    color: '#333',
+    fontFamily: 'Pretendard-Medium',
+    textAlign: 'center',
+  },
+  dropdownButtonDangerText: {
+    color: '#D62828',
+  },
+  dropdownDivider: {
+    width: '100%',
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#E5E5EA',
   },
 });
 

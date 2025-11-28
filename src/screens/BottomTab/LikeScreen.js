@@ -15,9 +15,10 @@ import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
 import LikedItemSkeleton from '../../components/LikedScreen/LikedItemSkeleton';
 import MyBanner from '../../components/Ads/MyBanner';
-import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import CustomText from '../../utils/CustomText';
 
 const LikeScreen = ({navigation}) => {
   const {token} = useAuth();
@@ -121,7 +122,6 @@ const LikeScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* <MyBanner index={'like'} /> */}
       {token && (
         <>
           {firstloading || refreshing ? (
@@ -146,19 +146,23 @@ const LikeScreen = ({navigation}) => {
               onEndReachedThreshold={0.5}
               onRefresh={handleRefresh}
               refreshing={refreshing}
-              ListHeaderComponent={<MyBanner index={'like'} />}
               ListEmptyComponent={
                 !loading && stores.length === 0 ? (
-                  <Text style={styles.emptyText}>찜한 술집이 없어요</Text>
+                  <CustomText style={styles.emptyText}>
+                    찜한 술집이 없어요
+                  </CustomText>
                 ) : null
               }
+              ListHeaderComponent={<MyBanner index={'like'} />}
               onScroll={handleScroll}
               scrollEventThrottle={16}
             />
           )}
         </>
       )}
-      {!token && <Text style={styles.emptyText}>로그인 후 이용해주세요</Text>}
+      {!token && (
+        <CustomText style={styles.emptyText}>로그인 후 이용해주세요</CustomText>
+      )}
       <ScrollToTopButton
         visible={showScrollToTop}
         bottom={18}
@@ -171,9 +175,8 @@ const LikeScreen = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'white',
+    flex: 1,
+    backgroundColor: '#FEFEFE',
   },
 
   emptyText: {

@@ -5,6 +5,7 @@ import React, {
   useState,
   forwardRef,
   useImperativeHandle,
+  useCallback,
 } from 'react';
 import {
   View,
@@ -20,6 +21,7 @@ import {
 let fontScale = PixelRatio.getFontScale(); // let으로 변경
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import CustomText from '../../utils/CustomText';
 
 const alcoholTypes = [
   {label: '소주', value: 'SOJU'},
@@ -37,10 +39,21 @@ const alcoholTypes = [
 ];
 
 const FilterHeader = forwardRef(
-  ({drinkType, setDrinkType, priceOrder, setPriceOrder, screenWidth}, ref) => {
+  (
+    {
+      drinkType,
+      setDrinkType,
+      priceOrder,
+      setPriceOrder,
+      screenWidth,
+      onFilterScroll,
+    },
+    ref,
+  ) => {
     const scrollRef = useRef(null);
     const buttonLayouts = useRef({});
     const filterScrollX = useRef(0);
+    const isSyncingRef = useRef(false);
 
     const [dropdownVisible, setDropdownVisible] = useState(false);
     const dropdownAnim = useRef(new Animated.Value(0)).current;
@@ -66,21 +79,23 @@ const FilterHeader = forwardRef(
       if (drinkType && scrollRef.current && buttonLayouts.current[drinkType]) {
         const {x, width} = buttonLayouts.current[drinkType];
         const scrollToX = x + width / 2 - screenWidth / 2 + 30;
+        filterScrollX.current = scrollToX > 0 ? scrollToX : 0;
         scrollRef.current.scrollTo({
           x: scrollToX > 0 ? scrollToX : 0,
           animated: true,
         });
       } else if (scrollRef.current) {
+        const nextOffset = Math.max(filterScrollX.current - choiceBtnWidth, 0);
+        filterScrollX.current = nextOffset;
         scrollRef.current.scrollTo({
-          x: filterScrollX.current - choiceBtnWidth,
+          x: nextOffset,
           animated: false,
         });
       }
     }, [drinkType]);
 
-    // 드롭다운 닫기 유틸
-    useImperativeHandle(ref, () => ({
-      closeDropdown: (animated = true) => {
+    const closeDropdownInternal = useCallback(
+      (animated = true) => {
         if (!dropdownVisible) return;
         if (animated) {
           Animated.timing(dropdownAnim, {
@@ -93,11 +108,35 @@ const FilterHeader = forwardRef(
           setDropdownVisible(false);
         }
       },
+      [dropdownAnim, dropdownVisible],
+    );
+
+    // 드롭다운 닫기 유틸
+    useImperativeHandle(ref, () => ({
+      closeDropdown: closeDropdownInternal,
+      syncScroll: (offset = 0, animated = false) => {
+        if (!scrollRef.current) {
+          filterScrollX.current = offset;
+          return;
+        }
+        if (Math.abs(filterScrollX.current - offset) < 1) {
+          return;
+        }
+        isSyncingRef.current = true;
+        filterScrollX.current = offset;
+        scrollRef.current.scrollTo({
+          x: offset,
+          animated,
+        });
+        requestAnimationFrame(() => {
+          isSyncingRef.current = false;
+        });
+      },
     }));
 
     const toggleDropdown = () => {
       if (dropdownVisible) {
-        ref?.current?.closeDropdown();
+        closeDropdownInternal();
       } else {
         setDropdownVisible(true);
         Animated.timing(dropdownAnim, {
@@ -109,7 +148,7 @@ const FilterHeader = forwardRef(
     };
 
     const toggleAlcohol = value => {
-      ref?.current?.closeDropdown(false);
+      closeDropdownInternal(false);
       setDrinkType(prev => {
         if (prev === value) {
           setPriceOrder(''); // alcohol 해제 시 priceOrder 초기화
@@ -126,7 +165,7 @@ const FilterHeader = forwardRef(
       <View
         style={{
           paddingBottom: 10,
-          backgroundColor: '#fff',
+          backgroundColor: '#FFF',
         }}>
         <ScrollView
           ref={scrollRef}
@@ -134,18 +173,21 @@ const FilterHeader = forwardRef(
           showsHorizontalScrollIndicator={false}
           style={styles.filterBar}
           onStartShouldSetResponder={() => true}
-          onTouchStart={() => ref?.current?.closeDropdown(false)}
-          onScrollBeginDrag={() => ref?.current?.closeDropdown()}
-          onMomentumScrollBegin={() => ref?.current?.closeDropdown()} // 관성 스크롤 시작 시 닫기
+          onTouchStart={() => closeDropdownInternal(false)}
+          onScrollBeginDrag={() => closeDropdownInternal()}
+          onMomentumScrollBegin={() => closeDropdownInternal()} // 관성 스크롤 시작 시 닫기
           contentContainerStyle={{
             paddingHorizontal: 20,
-            paddingTop: 10,
             gap: 7,
             paddingLeft: drinkType != null ? choiceBtnWidth + OVERLAP_GAP : 12,
           }}
           onScroll={e => {
             filterScrollX.current = e.nativeEvent.contentOffset.x;
-          }}>
+            if (!isSyncingRef.current) {
+              onFilterScroll?.(filterScrollX.current);
+            }
+          }}
+          scrollEventThrottle={16}>
           {alcoholTypes.map(({label, value}) => (
             <Pressable
               key={value}
@@ -161,19 +203,19 @@ const FilterHeader = forwardRef(
                 styles.filterButton,
                 drinkType === value && styles.activeFilter,
               ]}>
-              <Text
+              <CustomText
                 style={[
                   styles.filterText,
                   drinkType === value && styles.activeFilterText,
                 ]}>
                 {label}
-              </Text>
+              </CustomText>
             </Pressable>
           ))}
         </ScrollView>
         {drinkType != null && (
           <Pressable
-            style={[styles.choicebtn, {top: 10}]}
+            style={[styles.choicebtn]}
             onPress={toggleDropdown}
             onStartShouldSetResponder={() => true}
             onLayout={e => setChoiceBtnWidth(e.nativeEvent.layout.width)}>
@@ -182,13 +224,13 @@ const FilterHeader = forwardRef(
               size={fontScale >= 1.5 ? 20 : 17}
               color="#555"
             />
-            <Text style={styles.choicetext}>
+            <CustomText style={styles.choicetext}>
               {priceOrder === 'ASC'
                 ? '낮은 가격순'
                 : priceOrder === 'DESC'
                 ? '높은 가격순'
                 : '기본순'}
-            </Text>
+            </CustomText>
             <View
               style={[
                 {
@@ -217,13 +259,13 @@ const FilterHeader = forwardRef(
                 toggleDropdown();
                 togglepriceOrder('');
               }}>
-              <Text
+              <CustomText
                 style={[
                   styles.dropdownText,
                   priceOrder === '' && styles.activeDropdownText,
                 ]}>
                 기본순
-              </Text>
+              </CustomText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -232,13 +274,13 @@ const FilterHeader = forwardRef(
                 toggleDropdown();
                 togglepriceOrder('ASC');
               }}>
-              <Text
+              <CustomText
                 style={[
                   styles.dropdownText,
                   priceOrder === 'ASC' && styles.activeDropdownText,
                 ]}>
                 낮은 가격순
-              </Text>
+              </CustomText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -247,13 +289,13 @@ const FilterHeader = forwardRef(
                 toggleDropdown();
                 togglepriceOrder('DESC');
               }}>
-              <Text
+              <CustomText
                 style={[
                   styles.dropdownText,
                   priceOrder === 'DESC' && styles.activeDropdownText,
                 ]}>
                 높은 가격순
-              </Text>
+              </CustomText>
             </TouchableOpacity>
           </Animated.View>
         )}
@@ -266,7 +308,6 @@ const styles = StyleSheet.create({
   // 버튼을 덮어씌우기 위해 컨테이너를 상대배치로
   container: {
     position: 'relative',
-    backgroundColor: 'white',
     paddingVertical: 10,
     minHeight: 55,
   },
@@ -312,10 +353,10 @@ const styles = StyleSheet.create({
   },
   activeFilter: {
     backgroundColor: '#E8F7FF',
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   activeFilterText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Medium',
   },
 

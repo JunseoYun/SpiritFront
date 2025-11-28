@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Pressable,
 } from 'react-native';
+import CustomText from '../../../utils/CustomText';
 
 const ImageActionModal = ({visible, onClose, onEdit, onSort}) => {
   return (
@@ -19,10 +20,10 @@ const ImageActionModal = ({visible, onClose, onEdit, onSort}) => {
       <Pressable style={styles.overlay} onPress={onClose}>
         <View style={styles.modal}>
           <TouchableOpacity style={styles.option} onPress={onSort}>
-            <Text style={styles.optionText}>이미지 순서 변경</Text>
+            <CustomText style={styles.optionText}>이미지 순서 변경</CustomText>
           </TouchableOpacity>
           <TouchableOpacity style={styles.option} onPress={onEdit}>
-            <Text style={styles.optionText}>이미지 편집</Text>
+            <CustomText style={styles.optionText}>이미지 편집</CustomText>
           </TouchableOpacity>
         </View>
       </Pressable>

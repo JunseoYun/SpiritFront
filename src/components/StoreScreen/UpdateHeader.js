@@ -3,6 +3,7 @@ import {Pressable, StyleSheet, View, Platform, Text} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import CustomText from '../../utils/CustomText';
 
 const UpdateHeader = ({endUpdate}) => {
   const {top} = useSafeAndroidInsets();
@@ -19,7 +20,7 @@ const UpdateHeader = ({endUpdate}) => {
         />
       </Pressable>
 
-      <Text style={styles.text}>매장 수정하기</Text>
+      <CustomText style={styles.text}>매장 수정하기</CustomText>
       <Ionicons
         name="arrow-back-outline"
         size={25}

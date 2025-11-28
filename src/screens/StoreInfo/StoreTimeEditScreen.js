@@ -33,6 +33,7 @@ import OperateBottomBreakToggle from '../../components/StoreAddScreen/StoreAddTi
 import OperateBottomConfirmButton from '../../components/StoreAddScreen/StoreAddTimeSet/OperateBottom/OperateBottomConfirmButton';
 
 import {UpdateStore} from '../../api/storeApi';
+import CustomText from '../../utils/CustomText';
 
 const days = [
   {label: '월', value: 'MONDAY'},
@@ -99,7 +100,7 @@ const StoreTimeEditScreen = ({navigation, route}) => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable onPress={handleComplete}>
-          <Text
+          <CustomText
             style={[
               styles.searchButton,
               (wrongBreak || isSameOperating) &&
@@ -111,7 +112,7 @@ const StoreTimeEditScreen = ({navigation, route}) => {
               !isSameEveryday && emptyTime && {color: '#999'}, // 🔥 운영시간이 없으면 버튼 비활성화
             ]}>
             완료
-          </Text>
+          </CustomText>
         </Pressable>
       ),
     });
@@ -1317,7 +1318,7 @@ const styles = StyleSheet.create({
     marginRight: 18,
     fontSize: 18,
     fontWeight: '500',
-    color: '#16BBFF',
+    color: '#3CBBFF',
   },
 });
 

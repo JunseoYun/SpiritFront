@@ -13,6 +13,7 @@ import {
 import {store_like_stats_get} from '../../../api/logstats';
 import StoreLikeResult from './StoreLikeResult';
 import Loading from '../../../hooks/Loading';
+import CustomText from '../../../utils/CustomText';
 
 if (
   Platform.OS === 'android' &&
@@ -140,16 +141,16 @@ const StoreLikestats = ({storeId}) => {
                     <View
                       style={[
                         styles.genderPoint,
-                        isSelected && {backgroundColor: '#45C9FF'},
+                        isSelected && {backgroundColor: '#3CBBFF'},
                       ]}
                     />
-                    <Text
+                    <CustomText
                       style={[
                         styles.genderText,
                         isSelected && styles.chipTextSelected,
                       ]}>
                       {gen.label}
-                    </Text>
+                    </CustomText>
                   </Pressable>
                 );
               })}
@@ -167,19 +168,21 @@ const StoreLikestats = ({storeId}) => {
                   <Pressable
                     onPress={() => toggleAgeGroup(item.value)}
                     style={[styles.chip, isSelected && styles.chipSelected]}>
-                    <Text
+                    <CustomText
                       style={[
                         styles.chipText,
                         isSelected && styles.chipTextSelected,
                       ]}>
                       {item.label}
-                    </Text>
+                    </CustomText>
                   </Pressable>
                 );
               }}
             />
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? (
+              <CustomText style={styles.error}>{error}</CustomText>
+            ) : null}
           </View>
 
           {result && (
@@ -233,7 +236,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   chipSelected: {
-    borderColor: '#16BBFF',
+    borderColor: '#3CBBFF',
   },
   chipText: {
     fontFamily: 'Pretendard-Medium',
@@ -241,7 +244,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   chipTextSelected: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Bold',
   },
   genderView: {

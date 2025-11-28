@@ -5,8 +5,10 @@ import {
   Pressable,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
-
+import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../../utils/CustomText';
 const ClosedDaySelector = ({
   days,
   isClosed,
@@ -65,48 +67,62 @@ const ClosedDaySelector = ({
 
   return (
     <View>
-      <Text style={styles.sectionTitle}>휴무일이 있나요?</Text>
+      <CustomText style={styles.sectionTitle}>휴무일이 있나요?</CustomText>
       <View style={styles.toggleContainer}>
         <Pressable
           style={[styles.toggleButton, isClosed && styles.selectedToggle]}
           onPress={handleClosedToggle}>
-          <Text style={isClosed ? styles.selectedText : styles.unselectedText}>
+          <CustomText
+            style={isClosed ? styles.selectedText : styles.unselectedText}>
             있음
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[styles.toggleButton, !isClosed && styles.selectedToggle]}
           onPress={handleClosedToggle}>
-          <Text style={!isClosed ? styles.selectedText : styles.unselectedText}>
+          <CustomText
+            style={!isClosed ? styles.selectedText : styles.unselectedText}>
             없음
-          </Text>
+          </CustomText>
         </Pressable>
       </View>
       {isClosed && (
         <View style={styles.daysContainer}>
-          {days.map((day, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.dayButton,
-                localClosedDay.includes(day.value) && styles.selectedDayButton,
-              ]}
-              onPress={() => toggleDay(day.value)}>
-              <Text
+          <ScrollView
+            horizontal
+            // nestedScrollEnabled={true}
+            showsHorizontalScrollIndicator={false}
+            // onStartShouldSetResponder={() => true}
+            contentContainerStyle={{
+              paddingHorizontal: 18,
+              gap: 10,
+            }}>
+            {days.map((day, index) => (
+              <TouchableOpacity
+                key={index}
                 style={[
-                  styles.dayText,
-                  localClosedDay.includes(day.value) && styles.selectedDayText,
-                ]}>
-                {day.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                  styles.dayButton,
+                  localClosedDay.includes(day.value) &&
+                    styles.selectedDayButton,
+                ]}
+                onPress={() => toggleDay(day.value)}>
+                <CustomText
+                  style={[
+                    styles.dayText,
+                    localClosedDay.includes(day.value) &&
+                      styles.selectedDayText,
+                  ]}>
+                  {day.label}
+                </CustomText>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
       )}
       {isClosed && localClosedDay.length === days.length && (
-        <Text style={styles.wrongText}>
+        <CustomText style={styles.wrongText}>
           모든 요일을 휴일로 설정할 수 없어요
-        </Text>
+        </CustomText>
       )}
     </View>
   );
@@ -129,47 +145,49 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#aaa',
+    borderColor: ColorUtil.border,
     paddingHorizontal: 15,
     borderRadius: 100,
     marginRight: 7,
   },
   selectedToggle: {
-    backgroundColor: '#45C9FF',
-    borderColor: '#45C9FF',
+    backgroundColor: ColorUtil.main,
+    borderColor: ColorUtil.main,
   },
   selectedText: {
-    color: '#fff',
-    fontFamily: 'Pretendard-SemiBold',
+    color: '#FFF',
+    fontFamily: 'Pretendard-Medium',
   },
   unselectedText: {
-    color: '#aaa',
-    fontFamily: 'Pretendard-SemiBold',
+    color: ColorUtil.chipText,
+    fontFamily: 'Pretendard-Medium',
   },
   daysContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginVertical: 12,
-    marginHorizontal: 18,
+    marginBottom: 12,
+    marginTop: 5,
   },
   dayButton: {
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 20,
-    backgroundColor: '#F2F2F2',
-    marginTop: -10,
+    borderWidth: 1,
+    borderColor: ColorUtil.border,
   },
   selectedDayButton: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: ColorUtil.mainChip,
+    borderColor: ColorUtil.main,
+    borderWidth: 1,
   },
   dayText: {
     fontSize: 15,
-    color: '#333',
     fontFamily: 'Pretendard-Medium',
+
+    color: ColorUtil.chipText,
   },
   selectedDayText: {
-    color: '#FFF',
+    color: ColorUtil.main,
   },
   wrongText: {
     marginHorizontal: 18,

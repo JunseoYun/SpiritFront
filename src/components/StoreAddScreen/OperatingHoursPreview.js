@@ -1,6 +1,8 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {View, Text, StyleSheet, Pressable} from 'react-native';
-
+import ColorUtil from '../../utils/ColorUtil';
+import {calculateRangeFromEntry} from '../../utils/parseOperatingHours';
+import CustomText from '../../utils/CustomText';
 const OperatingHoursPreview = ({
   is24Hours,
   operatingHours,
@@ -9,7 +11,9 @@ const OperatingHoursPreview = ({
   storeTimeHandle,
   error,
   index,
+  type = 'default',
 }) => {
+  const isRegistration = type === 'registration';
   const dayMapping = {
     Monday: '월',
     Tuesday: '화',
@@ -28,32 +32,47 @@ const OperatingHoursPreview = ({
 
   return (
     <>
-      <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>
-          {index ? '영업시간*' : '영업시간'}
-        </Text>
-        <Pressable onPress={storeTimeHandle}>
-          <Text style={[styles.storeinputtext, {color: '#16BBFF'}]}>편집</Text>
-        </Pressable>
-      </View>
+      {!isRegistration && (
+        <View style={styles.storeinputview}>
+          <CustomText style={styles.label}>영업 시간</CustomText>
+          <Pressable onPress={storeTimeHandle}>
+            <CustomText style={[styles.storeinputtext, {color: '#333'}]}>
+              편집
+            </CustomText>
+          </Pressable>
+        </View>
+      )}
 
       {/* 영업 시간 설정 전 */}
-      {!hasValidOperatingHours && (
-        <Pressable style={styles.emptyContainer} onPress={storeTimeHandle}>
-          <Text style={styles.emptyText}>영업 시간을 설정하세요</Text>
+      {!hasValidOperatingHours && !is24Hours && (
+        <Pressable
+          style={[
+            styles.emptyContainer,
+            isRegistration && styles.registrationSpacing,
+          ]}
+          onPress={storeTimeHandle}>
+          <CustomText style={styles.emptyText}>등록</CustomText>
         </Pressable>
       )}
 
       {/* ⏳ 유효한 영업 시간이 있을 때만 표시 */}
-      {hasValidOperatingHours && is24Hours && (
-        <Pressable style={styles.emptyContainer} onPress={storeTimeHandle}>
-          <Text style={styles.allDayText}>24시간 영업</Text>
+      {is24Hours && (
+        <Pressable
+          style={[
+            styles.emptyContainer,
+            isRegistration && styles.registrationSpacing,
+          ]}
+          onPress={storeTimeHandle}>
+          <CustomText style={styles.emptyText}>24시간 영업</CustomText>
         </Pressable>
       )}
       {hasValidOperatingHours && !is24Hours && (
         <Pressable
           onPress={storeTimeHandle}
-          style={styles.operatingHoursContainer}>
+          style={[
+            styles.operatingHoursContainer,
+            isRegistration && styles.registrationSpacing,
+          ]}>
           {Object.entries(operatingHours).map(
             (
               [day, {openHour, openMinute, closedHour, closedMinute}],
@@ -62,48 +81,66 @@ const OperatingHoursPreview = ({
               const koreanDay = dayMapping[day];
               const isClosed = closedDay.includes(day.toUpperCase());
               const breakTime = breakingHours[day];
+              const {isNextDay, openTime, closeTime} = calculateRangeFromEntry({
+                openHour,
+                openMinute,
+                closedHour,
+                closedMinute,
+              });
+
+              let breakDisplay = null;
+              if (breakTime?.startHour && breakTime?.endHour) {
+                const breakRange = calculateRangeFromEntry(
+                  {
+                    openHour: breakTime.startHour,
+                    openMinute: breakTime.startMinute,
+                    closedHour: breakTime.endHour,
+                    closedMinute: breakTime.endMinute,
+                  },
+                  {
+                    referenceHour: openHour,
+                    referenceMinute: openMinute,
+                  },
+                );
+
+                const breakStartLabel = breakRange.startDayOffset
+                  ? `다음날 ${breakRange.openTime}`
+                  : breakRange.openTime;
+                const breakEndLabel = breakRange.endDayOffset
+                  ? `다음날 ${breakRange.closeTime}`
+                  : breakRange.closeTime;
+
+                breakDisplay = (
+                  <CustomText style={styles.breakTimeText}>
+                    {`브레이크타임 ${breakStartLabel} ~ `}
+                    <CustomText>{breakEndLabel}</CustomText>
+                  </CustomText>
+                );
+              }
 
               return (
                 <View key={day} style={styles.dayRow}>
                   <View
                     style={[styles.dayChip, isClosed && styles.closedDayChip]}>
-                    <Text style={[styles.dayText]}>{koreanDay}</Text>
+                    <CustomText
+                      style={[
+                        styles.dayText,
+                        isClosed && {color: ColorUtil.chipText},
+                      ]}>
+                      {koreanDay}
+                    </CustomText>
                   </View>
                   {isClosed ? (
-                    <Text style={styles.closedText}>휴무</Text>
+                    <CustomText style={styles.closedText}>휴무</CustomText>
                   ) : (
                     <View style={styles.timeContainer}>
-                      <Text style={styles.operatingHoursText}>
-                        {`${openHour.padStart(2, '0')}:${openMinute.padStart(
-                          2,
-                          '0',
-                        )} ~ `}
-                        <Text>
-                          {closedHour >= 24
-                            ? `다음날 ${String(closedHour - 24).padStart(
-                                2,
-                                '0',
-                              )}`
-                            : String(closedHour).padStart(2, '0')}
-                        </Text>
-                        :{closedMinute.padStart(2, '0')}
-                      </Text>
-                      {breakTime?.startHour && breakTime?.endHour && (
-                        <Text style={styles.breakTimeText}>
-                          {`브레이크타임 ${breakTime.startHour.padStart(
-                            2,
-                            '0',
-                          )}:${breakTime.startMinute.padStart(2, '0')} ~ `}
-                          <Text>
-                            {breakTime.endHour >= 24
-                              ? `다음날 ${String(
-                                  breakTime.endHour - 24,
-                                ).padStart(2, '0')}`
-                              : String(breakTime.endHour).padStart(2, '0')}
-                          </Text>
-                          :{breakTime.endMinute.padStart(2, '0')}
-                        </Text>
-                      )}
+                      <CustomText style={styles.operatingHoursText}>
+                        {`${openTime} ~ `}
+                        <CustomText>
+                          {isNextDay ? `다음날 ${closeTime}` : closeTime}
+                        </CustomText>
+                      </CustomText>
+                      {breakDisplay}
                     </View>
                   )}
                 </View>
@@ -113,7 +150,9 @@ const OperatingHoursPreview = ({
         </Pressable>
       )}
       {!hasValidOperatingHours && !is24Hours && error === 'StoreOperate' && (
-        <Text style={styles.errorMessage}>매장 영업 시간을 등록해 주세요.</Text>
+        <CustomText style={styles.errorMessage}>
+          매장 영업 시간을 등록해 주세요.
+        </CustomText>
       )}
     </>
   );
@@ -122,36 +161,39 @@ const OperatingHoursPreview = ({
 const styles = StyleSheet.create({
   storeinputview: {
     marginTop: 50,
-    marginHorizontal: 20,
+    marginHorizontal: 18,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  storeinputtext: {
-    fontFamily: 'Pretendard-Medium',
-    color: '#999',
-    fontSize: 16,
-    marginBottom: 10,
+  registrationSpacing: {
+    marginTop: 0,
+  },
+  label: {
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
+    fontSize: 15,
+    marginRight: 6,
   },
   editButton: {
     fontSize: 15,
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Medium',
   },
   emptyContainer: {
-    backgroundColor: '#F7F8FA',
+    backgroundColor: '#F1F2F3',
     padding: 15,
-    marginHorizontal: 20,
-    borderRadius: 10,
+    marginHorizontal: 18,
+    borderRadius: 9,
     alignItems: 'center',
     marginTop: 10,
   },
   emptyText: {
     fontSize: 15,
-    color: '#999',
+    color: '#333',
     fontFamily: 'Pretendard-Medium',
   },
   operatingHoursContainer: {
-    marginHorizontal: 20,
+    marginHorizontal: 18,
     paddingVertical: 5,
   },
   dayRow: {
@@ -162,18 +204,22 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5E5',
   },
   dayChip: {
-    backgroundColor: '#45C9FF',
     borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 14,
     marginRight: 10,
+    borderWidth: 1,
+    backgroundColor: ColorUtil.mainChip,
+
+    borderColor: ColorUtil.main,
   },
   closedDayChip: {
-    backgroundColor: '#D0D0D0', // 휴무일 배경 색상 변경
+    borderColor: ColorUtil.border,
+    backgroundColor: '#FFF',
   },
   dayText: {
     fontSize: 14,
-    color: '#fff',
+    color: ColorUtil.main,
     fontFamily: 'Pretendard-SemiBold',
   },
 
@@ -191,25 +237,18 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   closedText: {
-    fontSize: 15,
-    color: '#4b4b4b',
-    fontFamily: 'Pretendard-SemiBold',
-    flex: 1,
-  },
-
-  allDayText: {
     fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#45C9FF',
-    textAlign: 'center',
-    paddingVertical: 10,
+    color: ColorUtil.chipText,
+    fontFamily: 'Pretendard-Medium',
+    flex: 1,
   },
   toggleButton: {
     alignSelf: 'flex-end',
   },
   errorMessage: {
     color: '#FF4816',
-    fontSize: 15,
+    fontSize: 14,
+    fontFamily: 'Pretendard-Regular',
     marginTop: 5,
     marginHorizontal: 18,
   },

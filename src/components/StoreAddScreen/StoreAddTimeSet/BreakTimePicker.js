@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 import TimePicker from '../../../hooks/TimePicker';
 import CloseTimePicker from '../../../hooks/CloseTimePicker';
+import CustomText from '../../../utils/CustomText';
 const BreakTimePicker = ({
   isStartTime,
   sameStartTime,
@@ -39,7 +40,9 @@ const BreakTimePicker = ({
           )}
         </View>
       </View>
-      {wrongBreak && <Text style={styles.wrongText}>{breakErrorMessage}</Text>}
+      {wrongBreak && (
+        <CustomText style={styles.wrongText}>{breakErrorMessage}</CustomText>
+      )}
     </>
   );
 };

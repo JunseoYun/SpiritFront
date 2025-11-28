@@ -10,6 +10,7 @@ import {
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useDayTranslation from '../../hooks/useDayTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
+import CustomText from '../../utils/CustomText';
 
 const StoreConfirmationModal = ({
   visible,
@@ -45,44 +46,52 @@ const StoreConfirmationModal = ({
     <Modal visible={visible} transparent={true} animationType="fade">
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>등록 전 매장 정보 확인</Text>
+          <CustomText style={styles.modalTitle}>
+            등록 전 매장 정보 확인
+          </CustomText>
           <ScrollView
             contentContainerStyle={styles.scrollContainer}
             showsVerticalScrollIndicator={false}>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>매장 이름</Text>
-              <Text style={styles.infoValue}>{storeData.storeName}</Text>
+              <CustomText style={styles.infoLabel}>매장 이름</CustomText>
+              <CustomText style={styles.infoValue}>
+                {storeData.storeName}
+              </CustomText>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>매장 번호</Text>
-              <Text style={styles.infoValue}>{storeData.storeNumber}</Text>
+              <CustomText style={styles.infoLabel}>매장 번호</CustomText>
+              <CustomText style={styles.infoValue}>
+                {storeData.storeNumber}
+              </CustomText>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>주소</Text>
-              <Text style={styles.infoValue}>{address}</Text>
+              <CustomText style={styles.infoLabel}>주소</CustomText>
+              <CustomText style={styles.infoValue}>{address}</CustomText>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>상세 주소</Text>
-              <Text style={styles.infoValue}>{detailedAddress}</Text>
+              <CustomText style={styles.infoLabel}>상세 주소</CustomText>
+              <CustomText style={styles.infoValue}>
+                {detailedAddress}
+              </CustomText>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>카테고리</Text>
-              <Text style={styles.infoValue}>
+              <CustomText style={styles.infoLabel}>카테고리</CustomText>
+              <CustomText style={styles.infoValue}>
                 {selectedCategory.length > 0
                   ? selectedCategory
                       .map(category => translateCategory(category))
                       .join(', ')
                   : '카테고리가 없습니다'}
-              </Text>
+              </CustomText>
             </View>
 
             {/* ✅ 영업 시간 미리보기 개선 */}
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>영업 시간</Text>
+              <CustomText style={styles.infoLabel}>영업 시간</CustomText>
             </View>
             <View style={styles.operatingHoursContainer}>
               {is24Hours ? (
-                <Text style={styles.allDayText}>24시간 영업</Text>
+                <CustomText style={styles.allDayText}>24시간 영업</CustomText>
               ) : (
                 Object.entries(operatingHours).map(
                   ([day, {openHour, openMinute, closedHour, closedMinute}]) => {
@@ -97,13 +106,17 @@ const StoreConfirmationModal = ({
                             styles.dayChip,
                             isClosed && styles.closedDayChip,
                           ]}>
-                          <Text style={styles.dayText}>{koreanDay}</Text>
+                          <CustomText style={styles.dayText}>
+                            {koreanDay}
+                          </CustomText>
                         </View>
                         {isClosed ? (
-                          <Text style={styles.closedText}>휴무</Text>
+                          <CustomText style={styles.closedText}>
+                            휴무
+                          </CustomText>
                         ) : (
                           <View style={styles.timeContainer}>
-                            <Text style={styles.operatingHoursText}>
+                            <CustomText style={styles.operatingHoursText}>
                               {`${openHour.padStart(
                                 2,
                                 '0',
@@ -115,9 +128,9 @@ const StoreConfirmationModal = ({
                                   )}`
                                 : String(closedHour).padStart(2, '0')}
                               :{closedMinute.padStart(2, '0')}
-                            </Text>
+                            </CustomText>
                             {breakTime?.startHour && breakTime?.endHour && (
-                              <Text style={styles.breakTimeText}>
+                              <CustomText style={styles.breakTimeText}>
                                 브레이크타임{' '}
                                 {breakTime.startHour.padStart(2, '0')}:
                                 {breakTime.startMinute.padStart(2, '0')} ~{' '}
@@ -127,7 +140,7 @@ const StoreConfirmationModal = ({
                                     ).padStart(2, '0')}`
                                   : String(breakTime.endHour).padStart(2, '0')}
                                 :{breakTime.endMinute.padStart(2, '0')}
-                              </Text>
+                              </CustomText>
                             )}
                           </View>
                         )}
@@ -142,12 +155,14 @@ const StoreConfirmationModal = ({
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={onClose}>
-                <Text style={styles.modalCancelButtonText}>취소</Text>
+                <CustomText style={styles.modalCancelButtonText}>
+                  취소
+                </CustomText>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton]}
                 onPress={onConfirm}>
-                <Text style={styles.modalButtonText}>완료</Text>
+                <CustomText style={styles.modalButtonText}>완료</CustomText>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -196,7 +211,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   dayChip: {
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -232,7 +247,7 @@ const styles = StyleSheet.create({
   allDayText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#16BBFF',
+    color: '#3CBBFF',
     textAlign: 'center',
     paddingVertical: 10,
   },

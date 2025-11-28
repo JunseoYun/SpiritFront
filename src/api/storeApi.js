@@ -38,6 +38,18 @@ export const StoreMainget = async storeId => {
   }
 };
 
+export const StoreMainPreviewget = async storeId => {
+  try {
+    const response = await axiosInstance.get(
+      `/store/get-by/preview/${storeId}`,
+      {},
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 export const StoreRegister = async data => {
   const formData = new FormData();
 
@@ -134,6 +146,44 @@ export const Create_store_with_ownership = async data => {
   }
 };
 
+export const Create_store_with_ownership_photoOnly = async data => {
+  const formData = new FormData();
+  // 사업자 등록증 이미지
+  const cert = toFileField(
+    data.businessRegistrationCertificateImage,
+    'business_certificate',
+  );
+  if (cert) {
+    formData.append('businessRegistrationCertificateImage', cert);
+  }
+  const images = Array.isArray(data.storeImages) ? data.storeImages : [];
+  images.forEach((img, idx) => {
+    const f = toFileField(img, `store_${idx}`);
+    if (f) formData.append('storeImages', f);
+  });
+
+  formData.append('createStoreRqDto', {
+    string: JSON.stringify(data.createStoreRqDto),
+    type: 'application/json',
+  });
+
+  try {
+    const response = await axiosInstance.post(
+      '/store/create/with-ownership/photo-only',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data', // 파일 업로드는 multipart/form-data
+        },
+      },
+    );
+
+    return response;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 export const CreateOwnership = async data => {
   const formData = new FormData();
   const cert = toFileField(data.file, 'file');
@@ -151,6 +201,39 @@ export const CreateOwnership = async data => {
   try {
     const response = await axiosInstance.post(
       '/store/ownership/create',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data', // 파일 업로드는 multipart/form-data
+        },
+      },
+    );
+
+    return response;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const Create_ownership_photoOnly = async data => {
+  const formData = new FormData();
+  const cert = toFileField(data.file, 'file');
+
+  if (cert) {
+    formData.append('file', cert);
+  }
+  const createOwnershipPhotoOnlyDto = JSON.stringify(
+    data.createOwnershipPhotoOnlyDto,
+  );
+
+  formData.append('createOwnershipPhotoOnlyDto', {
+    string: createOwnershipPhotoOnlyDto,
+    type: 'application/json',
+  });
+
+  try {
+    const response = await axiosInstance.post(
+      '/store/ownership/create/photo-only',
       formData,
       {
         headers: {
@@ -404,44 +487,6 @@ export const Store_getby_business_hours = async (page, latitude, longitude) => {
   }
 };
 
-export const Store_getby_condition_search = async requestData => {
-  const {latitude, longitude, page, conditionSearchDto} = requestData;
-
-  try {
-    // 기본 필수 파라미터
-    const params = {
-      latitude,
-      longitude,
-      page,
-    };
-
-    // 선택 파라미터는 값이 있을 때만 추가
-    if (conditionSearchDto.category) {
-      params.category = conditionSearchDto.category;
-    }
-    if (
-      conditionSearchDto.isGroupAvailable !== undefined &&
-      conditionSearchDto.isGroupAvailable !== ''
-    ) {
-      params.isGroupAvailable = conditionSearchDto.isGroupAvailable;
-    }
-    if (conditionSearchDto.conditionTime) {
-      params.conditionTime = conditionSearchDto.conditionTime;
-    }
-    if (conditionSearchDto.alcoholType) {
-      params.drinkType = conditionSearchDto.alcoholType;
-    }
-
-    const response = await axiosInstance.get(`/store/get-by/condition-search`, {
-      params,
-    });
-
-    return response.data.data;
-  } catch (error) {
-    functionError(error);
-  }
-};
-
 export const Store_getby_main_banner = async (latitude, longitude) => {
   try {
     const response = await axiosInstance.get(`/store/get-by/main-banner`, {
@@ -636,6 +681,112 @@ export const StoreBoardImageUpdateSort = async (
     );
     return response.data.data;
   } catch (error) {
+    functionError(error);
+  }
+};
+
+const normalizeConditionSearchArgs = (
+  latitudeOrPayload,
+  longitude,
+  conditionSearchDto,
+  page,
+  radius,
+) => {
+  if (
+    latitudeOrPayload &&
+    typeof latitudeOrPayload === 'object' &&
+    !Array.isArray(latitudeOrPayload)
+  ) {
+    return {
+      latitude: latitudeOrPayload.latitude ?? null,
+      longitude: latitudeOrPayload.longitude ?? null,
+      conditionSearchDto: latitudeOrPayload.conditionSearchDto ?? null,
+      page: latitudeOrPayload.page ?? null,
+      radius: latitudeOrPayload.radius ?? null,
+    };
+  }
+  return {
+    latitude: latitudeOrPayload ?? null,
+    longitude: longitude ?? null,
+    conditionSearchDto: conditionSearchDto ?? null,
+    page: page ?? null,
+    radius: radius ?? null,
+  };
+};
+
+const buildConditionSearchParams = payload => {
+  const dto = payload.conditionSearchDto || {};
+  return {
+    latitude: payload.latitude ?? null,
+    longitude: payload.longitude ?? null,
+    page: payload.page ?? null,
+    radius: payload.radius ?? null,
+    category: dto.category ?? null,
+    searchKeyword: dto.searchKeyword ?? null,
+    hasScreen: dto.hasScreen ?? null,
+    hasRoom: dto.hasRoom ?? null,
+    hasOutdoor: dto.hasOutdoor ?? null,
+    isGroupAvailable: dto.isGroupAvailable ?? null,
+    isParkingAvailable: dto.isParkingAvailable ?? null,
+    isCorkageAvailable: dto.isCorkageAvailable ?? null,
+    conditionTime: dto.conditionTime ?? null,
+    drinkType: dto.drinkType ?? null,
+    moods: dto.moods ?? null,
+    priceOrder: dto.priceOrder ?? '',
+  };
+};
+
+export const Store_getby_condition_search = async (
+  latitudeOrPayload,
+  longitude,
+  conditionSearchDto,
+  page,
+  reqRadius,
+) => {
+  try {
+    const payload = normalizeConditionSearchArgs(
+      latitudeOrPayload,
+      longitude,
+      conditionSearchDto,
+      page,
+      reqRadius,
+    );
+    const params = buildConditionSearchParams(payload);
+    const response = await axiosInstance.get(`/store/get-by/condition-search`, {
+      params,
+    });
+    return response.data.data.content;
+  } catch (error) {
+    console.log(error);
+    functionError(error);
+  }
+};
+
+export const Store_getby_condition_search_markers = async (
+  latitudeOrPayload,
+  longitude,
+  conditionSearchDto,
+  reqRadius,
+) => {
+  try {
+    const payload = normalizeConditionSearchArgs(
+      latitudeOrPayload,
+      longitude,
+      conditionSearchDto,
+      null,
+      reqRadius,
+    );
+
+    const params = buildConditionSearchParams(payload);
+    const response = await axiosInstance.get(
+      `/store/get-by/condition-search/markers`,
+      {
+        params,
+      },
+    );
+    return response.data.data;
+  } catch (error) {
+    console.log(error);
     functionError(error);
   }
 };

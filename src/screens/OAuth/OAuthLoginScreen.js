@@ -1,7 +1,6 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Platform,
@@ -15,6 +14,7 @@ import {
 } from '@react-native-seoul/kakao-login';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {appleAuth} from '@invertase/react-native-apple-authentication';
+
 import {user_login} from '../../api/userApi';
 import {useAuth} from '../../context/AuthContext';
 import Config from 'react-native-config';
@@ -22,6 +22,8 @@ import FastImage from 'react-native-fast-image';
 import {useToast} from '../../context/ToastContext';
 import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
 import Loading from '../../hooks/Loading';
+import CustomText from '../../utils/CustomText';
+
 const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
   const {loginauth} = useAuth();
   const {showToast} = useToast();
@@ -29,13 +31,14 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: Config.GOOGLE_WEB_CLIENT_ID, // Web 클라이언트 ID (idToken 용)
-      iosClientId: Config.GOOGLE_CLIENT_ID, // iOS 클라이언트 ID (iOS면 필수)
-      offlineAccess: true, // 필요한 경우만 유지
+      webClientId: Config.GOOGLE_WEB_CLIENT_ID,
+      iosClientId: Config.GOOGLE_CLIENT_ID,
+      offlineAccess: true,
       forceCodeForRefreshToken: true,
     });
   }, []);
 
+  /** ======================= 🔥 공통 로그인 로직 ======================= **/
   const handleLogin = async ({
     socialType,
     socialId,
@@ -55,15 +58,16 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
         authorizationCode,
       );
 
-      if (response.isVerified === false) {
+      // 🔹 인증 미완료 → 본인인증
+      if (!response.isVerified) {
         navigation.navigate('IdentityScreen', {
-          socialType: socialType,
-          socialId: socialId,
-          identityToken: identityToken,
-          authorizationCode: authorizationCode,
+          socialType,
+          socialId,
+          identityToken,
+          authorizationCode,
           beforeScreen: 'Login',
           token: response,
-          fcmToken: fcmToken,
+          fcmToken,
         });
       } else {
         await loginauth(
@@ -73,311 +77,244 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
         );
       }
     } catch (error) {
-      if (error.response) {
-        const {status, data, headers} = error.response;
-        if (status === 404) {
-          navigation.navigate('AgreeScreen', {
-            socialType: socialType,
-            socialId: socialId,
-            identityToken: identityToken,
-            authorizationCode: authorizationCode,
-            fcmToken: fcmToken,
-            isTestEnabled: tester,
-          });
-        }
+      if (error.response?.status === 404) {
+        navigation.navigate('AgreeScreen', {
+          socialType,
+          socialId,
+          identityToken,
+          authorizationCode,
+          fcmToken,
+          isTestEnabled: tester,
+        });
       }
     } finally {
       setLoading(false);
     }
   };
 
+  /** ======================= 🟡 Kakao Login ======================= **/
   const handleKaKaoLogin = async () => {
     try {
-      let token;
-
-      if (Platform.OS === 'android') {
-        token = await login();
-      } else if (Platform.OS === 'ios') {
-        try {
-          token = await login(); // 앱 로그인 시도
-        } catch (e) {
-          token = await loginWithKakaoAccount(); // 앱 로그인 실패 시, 웹 로그인 fallback
-        }
-      }
+      let token = await login().catch(() => loginWithKakaoAccount());
       const profile = await getProfile();
-      const socialType = 'KAKAO';
-      const socialId = profile.id;
-      const identityToken = token.accessToken;
-
-      handleLogin({socialType, socialId, identityToken});
-    } catch (err) {}
+      handleLogin({
+        socialType: 'KAKAO',
+        socialId: profile.id,
+        identityToken: token.accessToken,
+      });
+    } catch (_) {}
   };
 
+  /** ======================= 🔵 Google Login ======================= **/
   const handleGoogleSignIn = async () => {
     try {
       await GoogleSignin.signOut();
       const userInfo = await GoogleSignin.signIn();
       const tokens = await GoogleSignin.getTokens();
 
-      const socialType = 'GOOGLE';
-      const socialId = userInfo.data.user.id;
-      const identityToken = userInfo.data.idToken;
-      const authorizationCode = userInfo.data.serverAuthCode;
-      handleLogin({socialType, socialId, identityToken, authorizationCode});
+      handleLogin({
+        socialType: 'GOOGLE',
+        socialId: userInfo.data.user.id,
+        identityToken: userInfo.data.idToken,
+        authorizationCode: userInfo.data.serverAuthCode,
+      });
     } catch (error) {
-      if (error.code === '7') {
+      if (error.code === '7')
         showToast('인터넷 연결을 확인해 주세요.', 'center');
-      }
     }
   };
 
+  /** ======================= ⚪ Apple Login ======================= **/
   const handleAppleSignIn = async (tester = false) => {
-    if (Platform.OS === 'ios') {
-      try {
-        const appleAuthRequestResponse = await appleAuth.performRequest({
-          requestedOperation: appleAuth.Operation.LOGIN,
-          requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+    if (Platform.OS !== 'ios') return;
+
+    try {
+      const res = await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGIN,
+        requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+      });
+
+      if (
+        (await appleAuth.getCredentialStateForUser(res.user)) ===
+        appleAuth.State.AUTHORIZED
+      ) {
+        handleLogin({
+          socialType: 'APPLE',
+          socialId: res.user,
+          identityToken: res.identityToken,
+          authorizationCode: res.authorizationCode,
+          tester,
         });
-        const credentialState = await appleAuth.getCredentialStateForUser(
-          appleAuthRequestResponse.user,
-        );
-        // Check if the user is authorized
-        if (credentialState === appleAuth.State.AUTHORIZED) {
-          const socialType = 'APPLE';
-          const socialId = appleAuthRequestResponse.user;
-          const identityToken = appleAuthRequestResponse.identityToken;
-          const authorizationCode = appleAuthRequestResponse.authorizationCode;
-          handleLogin({
-            socialType,
-            socialId,
-            identityToken,
-            tester,
-            authorizationCode,
-          });
-        }
-      } catch (error) {}
-    } else {
-      //Android apple Login
-    }
+      }
+    } catch (_) {}
   };
 
+  /** ======================= UI ======================= **/
   return (
-    <SafeAreaView style={styles.background}>
+    <SafeAreaView style={styles.container}>
       {Platform.OS === 'android' && (
-        <StatusBar
-          barStyle="dark-content" // 상태바 글자/아이콘 색
-          backgroundColor="#FAFAFA" // 상태바 배경색
-        />
+        <StatusBar barStyle="dark-content" backgroundColor="#FAFAFA" />
       )}
-      <View style={styles.logoView}>
+
+      {/* ============= TOP LOGO ============= */}
+      <View style={styles.logoArea}>
         <FastImage
           source={require('../../assets/AppName.png')}
-          style={styles.LogoName}
-          resizeMode={FastImage.resizeMode.contain}
+          style={styles.logo}
+          resizeMode="contain"
         />
-
-        <Text style={styles.subText} allowFontScaling={false}>
+        <CustomText style={styles.subtitle}>
           한잔하고 싶은 당신을 위한 서비스
-        </Text>
+        </CustomText>
       </View>
-      <View style={styles.loginView}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginBottom: 10,
-          }}>
-          <View style={styles.line} />
-          <Text style={styles.loginText} allowFontScaling={false}>
-            다음으로 시작하기
-          </Text>
-          <View style={styles.line} />
+
+      {/* ============= LOGIN BUTTONS ============= */}
+      <View style={styles.buttonSection}>
+        {/* Divider */}
+        <View style={styles.dividerRow}>
+          <View style={styles.divider} />
+          <CustomText style={styles.dividerText}>다음으로 로그인</CustomText>
+          <View style={styles.divider} />
         </View>
+
+        {/* Kakao */}
         <TouchableOpacity
           onPress={handleKaKaoLogin}
-          style={styles.kakaoButtonContainer}>
-          <View style={styles.kakaoButton}>
-            <View style={styles.googleLogoContainer}>
-              <FastImage
-                source={require('../../assets/kakao-symbol.png')}
-                style={styles.googleLogo}
-                resizeMode={FastImage.resizeMode.contain}
-              />
-            </View>
-            <Text style={styles.googleText} allowFontScaling={false}>
-              카카오 로그인
-            </Text>
-            <View style={{width: 30}} />
-          </View>
+          style={[styles.btn, {backgroundColor: '#FEE500'}]}>
+          <FastImage
+            source={require('../../assets/kakao-symbol.png')}
+            style={styles.icon}
+          />
+          <CustomText style={styles.btnText}>카카오로 로그인</CustomText>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleGoogleSignIn}
-          style={styles.googleButtonContainer}>
-          <View style={styles.googleView}>
-            <View style={styles.googleLogoContainer}>
-              <FastImage
-                source={require('../../assets/g-logo.png')}
-                style={styles.googleLogo}
-                resizeMode={FastImage.resizeMode.contain}
-              />
-            </View>
-            <Text style={styles.googleText} allowFontScaling={false}>
-              Google 로그인
-            </Text>
-            <View style={{width: 30}} />
-          </View>
+
+        {/* Google */}
+        <TouchableOpacity onPress={handleGoogleSignIn} style={styles.btn}>
+          <FastImage
+            source={require('../../assets/g-logo.png')}
+            style={styles.icon}
+          />
+          <CustomText style={styles.btnText}>Google 로그인</CustomText>
         </TouchableOpacity>
+
+        {/* Apple */}
         {Platform.OS === 'ios' && (
           <TouchableOpacity
             onPress={() => handleAppleSignIn(false)}
-            style={[styles.googleButtonContainer, {marginBottom: 20}]}>
-            <View style={styles.googleView}>
-              <View style={styles.googleLogoContainer}>
-                <FastImage
-                  source={require('../../assets/appleLogo.png')}
-                  style={styles.appleLogo}
-                  resizeMode={FastImage.resizeMode.contain}
-                />
-              </View>
-              <Text style={styles.appleText} allowFontScaling={false}>
-                Apple 로그인
-              </Text>
-              <View style={{width: 30, marginTop: 20}} />
-            </View>
+            style={[styles.btn, {gap: 1}]}>
+            <FastImage
+              source={require('../../assets/appleLogo.png')}
+              style={styles.appleIcon}
+            />
+            <CustomText style={[styles.btnText, styles.appleText]}>
+              Apple 로그인
+            </CustomText>
           </TouchableOpacity>
         )}
+
+        {/* Tester Button */}
         {isTestEnabled && Platform.OS === 'ios' && (
-          <TouchableOpacity onPress={() => handleAppleSignIn(true)}>
-            <Text style={{color: '#333', fontFamily: 'Pretendard-Bold'}}>
+          <TouchableOpacity
+            onPress={() => handleAppleSignIn(true)}
+            style={{marginTop: 10}}>
+            <CustomText
+              style={{
+                color: '#555',
+                fontFamily: 'Pretendard-SemiBold',
+                alignSelf: 'center',
+              }}>
               APPLE TESTER
-            </Text>
+            </CustomText>
           </TouchableOpacity>
         )}
       </View>
-      {loading && <Loading loading={true} />}
+
+      {loading && <Loading loading />}
     </SafeAreaView>
   );
 };
 
+/* ======================= 🎨 DESIGN STYLE ======================= */
 const styles = StyleSheet.create({
-  background: {
+  container: {
     flex: 1,
-    alignItems: 'center',
     backgroundColor: '#FAFAFA',
-  },
-  LogoName: {
-    width: 210,
-    height: 70,
-  },
-  logoView: {
-    marginTop: 130,
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
 
-  subText: {
-    fontSize: 18,
-    color: '#181A1A',
-    textAlign: 'center',
-    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
-    marginTop: 10,
-    lineHeight: 30,
-  },
-  loginView: {
+  logoArea: {
+    // marginTop: 120,
+    alignItems: 'center',
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 70 : 120, // OS별 높이 설정
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    top: '25%',
   },
-  line: {
-    width: 100,
-    marginHorizontal: 1,
-    backgroundColor: '#333',
-    borderRadius: 10,
+  logo: {
+    width: 210,
+    height: 75,
   },
-  loginText: {
-    fontSize: 17,
-    color: '#333',
-    marginHorizontal: 3,
-    fontFamily: 'Pretendard-SemiBold', // 커스텀 폰트 적용
-  },
-  kakaoButtonContainer: {
-    width: 340,
-    height: 50,
-    marginTop: 20,
-    shadowColor: '#333',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.4,
-    shadowRadius: 2,
-    elevation: 5,
-    borderRadius: 10,
-    backgroundColor: '#FEE500',
-  },
-  kakaoButton: {
-    width: 340,
-    height: 50,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    alignContent: 'center',
-    textAlign: 'center',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: '#FEE500',
-  },
-  googleButtonContainer: {
-    width: 340,
-    height: 50,
-    marginTop: 20,
-    shadowColor: '#333',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.4,
-    shadowRadius: 2,
-    borderRadius: 10,
-    elevation: 5,
-  },
-  googleLogo: {
-    width: 23,
-    height: 23,
-    resizeMode: 'contain',
-  },
-  googleView: {
-    width: 340,
-    height: 50,
-    backgroundColor: 'white',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    alignContent: 'center',
-    textAlign: 'center',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    padding: 10,
-    borderRadius: 10,
-  },
-  googleText: {
-    color: '#333',
+  subtitle: {
     fontSize: 16,
-    marginHorizontal: 50,
-
-    fontFamily: 'Pretendard-SemiBold', // 커스텀 폰트 적용
+    marginTop: 8,
+    color: '#333',
+    opacity: 0.8,
+    lineHeight: 26,
+    fontFamily: 'Pretendard-Medium',
   },
-  appleLogo: {
-    width: 50,
-    height: 50,
-    marginLeft: -10,
-    borderRadius: 10,
+
+  buttonSection: {
+    width: '100%',
+    paddingHorizontal: 24,
+    // paddingBottom: Platform.OS === 'ios' ? 120 : 120,
+    position: 'absolute',
+
+    top: Platform.OS === 'ios' ? '65%' : '55%',
+  },
+
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  divider: {
+    flex: 1,
+    height: 0.8,
+    backgroundColor: '#ddd',
+  },
+  dividerText: {
+    marginHorizontal: 12,
+    fontSize: 15,
+    color: '#444',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+
+  btn: {
+    height: 54,
+    borderRadius: 14,
+    marginBottom: 14,
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: {width: 0, height: 4},
+    elevation: 1.5,
+  },
+
+  icon: {width: 18, height: 18},
+  appleIcon: {width: 40, height: 40},
+
+  btnText: {
+    fontSize: 15.5,
+    color: '#333',
+    fontFamily: 'Pretendard-SemiBold',
   },
   appleText: {
-    color: '#333',
-    fontSize: 16,
-    paddingRight: 10,
-    fontFamily: 'Pretendard-SemiBold', // 커스텀 폰트 적용
-  },
-  unLoginText: {
-    color: '#999',
-    fontSize: 14,
-    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
-    marginTop: 30,
+    marginRight: 15,
   },
 });
 

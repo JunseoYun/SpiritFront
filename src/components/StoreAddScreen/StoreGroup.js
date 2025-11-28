@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import CustomText from '../../utils/CustomText';
 
 const StoreGroup = ({selectedOption, setSelectedOption, index, error}) => {
   const handleCheckBoxChange = index => {
@@ -13,9 +14,9 @@ const StoreGroup = ({selectedOption, setSelectedOption, index, error}) => {
   return (
     <View>
       <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>
+        <CustomText style={styles.storeinputtext}>
           {index ? '단체 방문 가능 여부*' : '단체 방문 가능 여부'}
-        </Text>
+        </CustomText>
       </View>
 
       <View style={styles.storeCheckView}>
@@ -25,13 +26,13 @@ const StoreGroup = ({selectedOption, setSelectedOption, index, error}) => {
             selectedOption === true && styles.checkboxSelected,
           ]}
           onPress={() => handleCheckBoxChange(0)}>
-          <Text
+          <CustomText
             style={[
               styles.checkboxText,
               selectedOption === true && styles.checkboxTextSelected,
             ]}>
             가능
-          </Text>
+          </CustomText>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -39,19 +40,19 @@ const StoreGroup = ({selectedOption, setSelectedOption, index, error}) => {
             selectedOption === false && styles.checkboxSelected,
           ]}
           onPress={() => handleCheckBoxChange(1)}>
-          <Text
+          <CustomText
             style={[
               styles.checkboxText,
               selectedOption === false && styles.checkboxTextSelected,
             ]}>
             불가능
-          </Text>
+          </CustomText>
         </TouchableOpacity>
       </View>
       {error === 'StoreGroup' && selectedOption === null && (
-        <Text style={styles.errorMessage}>
+        <CustomText style={styles.errorMessage}>
           단체 방문 가능 여부를 선택해 주세요.
-        </Text>
+        </CustomText>
       )}
     </View>
   );
@@ -83,10 +84,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
   checkboxText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontSize: 18,
     fontFamily: 'Pretendard-Medium',
     padding: 3,

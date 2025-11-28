@@ -1,10 +1,11 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import CustomText from '../../../../utils/CustomText';
 
 const SKTpersonalinfo = () => {
   return (
     <View contentContainerStyle={styles.container}>
-      <Text style={styles.text}>
+      <CustomText style={styles.text}>
         개인정보 이용 동의{'\n'}
         [SK텔레콤 귀중]{'\n'}
         {'\n'}
@@ -96,7 +97,7 @@ const SKTpersonalinfo = () => {
         보관){'\n'}
         {'\n'}※ 개인정보 수집•이용 및 제공에 따른 동의는 거부할 수 있습니다.
         다만, 동의 거부 시에는 서비스 이용이 제한될 수 있습니다.{'\n'}
-      </Text>
+      </CustomText>
     </View>
   );
 };

@@ -14,6 +14,7 @@ import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
+import CustomText from '../../utils/CustomText';
 
 const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
   const handleImagePick = async () => {
@@ -50,11 +51,13 @@ const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
       <Pressable style={styles.overlay} onPress={onClose}>
         <View style={styles.container}>
           <Pressable style={styles.button} onPress={handleImagePick}>
-            <Text style={styles.text}>프로필 수정</Text>
+            <CustomText style={styles.text}>프로필 수정</CustomText>
           </Pressable>
           <View style={styles.separator} />
           <Pressable style={styles.button} onPress={onDelete}>
-            <Text style={[styles.text, styles.deleteText]}>프로필 삭제</Text>
+            <CustomText style={[styles.text, styles.deleteText]}>
+              프로필 삭제
+            </CustomText>
           </Pressable>
         </View>
       </Pressable>

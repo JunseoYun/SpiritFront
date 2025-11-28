@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Pressable, Image, Text, StyleSheet} from 'react-native';
+import CustomText from '../../../utils/CustomText';
 
 const CategoryGrid = ({onPress, style}) => {
   return (
@@ -17,9 +18,7 @@ const CategoryGrid = ({onPress, style}) => {
                 <View style={styles.iconWrapper}>
                   <Image source={source} style={styles.icon} />
                 </View>
-                <Text style={styles.text} allowFontScaling={false}>
-                  {text}
-                </Text>
+                <CustomText style={styles.text}>{text}</CustomText>
               </Pressable>,
             );
             return acc;
@@ -46,14 +45,9 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 17, // 완전한 원형
-    backgroundColor: '#f5f5f5', // 부드러운 배경색
+
     justifyContent: 'center',
     alignItems: 'center',
-    // shadowColor: '#000',
-    // shadowOffset: {width: 0, height: 2},
-    // shadowOpacity: 0.1,
-    // shadowRadius: 5,
-    // elevation: 1, // Android 그림자
   },
   icon: {
     width: 30,
@@ -61,9 +55,8 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   text: {
-    marginTop: 5,
     fontSize: 12,
-    color: '#181a1a',
+    color: '#333',
     textAlign: 'center',
     fontFamily: 'Pretendard-Medium',
     marginHorizontal: 2,
@@ -71,7 +64,7 @@ const styles = StyleSheet.create({
   categoryRow: {
     flexDirection: 'row',
     justifyContent: 'space-evenly', // 간격 고르게 분배
-    marginVertical: 15,
+    marginVertical: 10,
   },
 });
 
@@ -98,19 +91,19 @@ const categories = [
   },
   {
     source: require('../../../assets/category/Grilled.png'),
-    text: '구이 찜',
+    text: '구이·찜',
   },
   {
     source: require('../../../assets/category/Hope.png'),
-    text: '치킨 호프',
+    text: '치킨·호프',
   },
   {
     source: require('../../../assets/category/Seafood.png'),
-    text: '회 해산물',
+    text: '회·해산물',
   },
   {
     source: require('../../../assets/category/Pupbar.png'),
-    text: '펍 바',
+    text: '펍·바',
   },
   {
     source: require('../../../assets/category/Pocha.png'),

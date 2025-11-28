@@ -31,6 +31,7 @@ import StoreInfo from '../../../components/StoreAddScreen/StoreInfo';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import Loading from '../../../hooks/Loading';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
+import CustomText from '../../../utils/CustomText';
 
 const StoreAddInfoScreen = ({navigation}) => {
   const {bottom} = useSafeAndroidInsets();
@@ -142,9 +143,7 @@ const StoreAddInfoScreen = ({navigation}) => {
       return;
     }
 
-    const hasValidAlcohol = alcohol.some(
-      item => item.type.trim() && item.price > 0,
-    );
+    const hasValidAlcohol = (alcohol || []).length > 0;
 
     if (!hasValidAlcohol && index) {
       setError('StoreDrink');
@@ -171,7 +170,9 @@ const StoreAddInfoScreen = ({navigation}) => {
         <Pressable
           onPress={loading || confirm ? null : confirmSubmission}
           disabled={loading || confirm}>
-          <Text style={[styles.nextButton]}>{index ? '등록' : '제보'}</Text>
+          <CustomText style={[styles.nextButton]}>
+            {index ? '등록' : '제보'}
+          </CustomText>
         </Pressable>
       ),
     });
@@ -263,7 +264,7 @@ const StoreAddInfoScreen = ({navigation}) => {
             longitude: coords.longitude,
           },
           name: storename,
-          mainDrinkDtos: alcohol.filter(d => d.type && d.price > 0),
+          mainDrinkTypes: alcohol,
           isGroupAvailable: selectedOption,
           categories: selectedCategory.filter(c => c !== '-'),
           description: storeData.storeContent,
@@ -304,9 +305,9 @@ const StoreAddInfoScreen = ({navigation}) => {
         if (coords?.longitude)
           createStoreDto.locationDto.longitude = coords.longitude;
       }
-      const validDrinks = alcohol.filter(d => d.type && d.price > 0);
+      const validDrinks = alcohol.filter(Boolean);
       if (validDrinks.length > 0) {
-        createStoreDto.mainDrinkDtos = validDrinks;
+        createStoreDto.mainDrinkTypes = validDrinks;
       }
       createStoreDto.isGroupAvailable = selectedOption;
       createStoreDto.hasScreen = selectedscreenOption;
@@ -461,11 +462,11 @@ const StoreAddInfoScreen = ({navigation}) => {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           ref={scrollViewRef}>
-          <Text style={styles.title}>
+          <CustomText style={styles.title}>
             {index
               ? '상세정보를 입력해주세요*'
               : '상세정보를 입력해주세요 (선택)'}
-          </Text>
+          </CustomText>
 
           <View ref={storeCategoryRef}>
             <StoreCategory
@@ -520,9 +521,9 @@ const StoreAddInfoScreen = ({navigation}) => {
           <Pressable
             style={styles.storeAddButtonsearch}
             onPress={confirmSubmission}>
-            <Text style={styles.storeAddText}>
+            <CustomText style={styles.storeAddText}>
               {index ? '매장 등록' : '매장 제보'}
-            </Text>
+            </CustomText>
           </Pressable>
         </View>
         <AlertComponent />
@@ -552,7 +553,7 @@ const styles = StyleSheet.create({
     marginRight: 18,
     fontSize: 19,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#16BBFF',
+    color: '#3CBBFF',
   },
 
   storeAddTextview: {
@@ -567,7 +568,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 10,
     elevation: 3, // Android shadow
     shadowColor: '#000', // iOS shadow

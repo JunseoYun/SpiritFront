@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, Platform} from 'react-native';
 import PopularStoreItem from './PopularStoreItem';
 import PopularItemSkeleton from './PopularItemSkeleton';
+import CustomText from '../../../utils/CustomText';
 
 const PopularStoresSection = ({
   popularstores = [],
@@ -12,6 +13,7 @@ const PopularStoresSection = ({
   popularloading = false,
   popularempty = false,
   onHeaderLayout = () => {},
+  drinkType = null,
 }) => {
   return (
     <View>
@@ -23,6 +25,7 @@ const PopularStoresSection = ({
           location={location}
           navigation={navigation}
           screenWidth={screenWidth}
+          drinkType={drinkType}
         />
       ))}
 
@@ -37,7 +40,7 @@ const PopularStoresSection = ({
         !loading &&
         !popularloading &&
         popularempty && (
-          <Text
+          <CustomText
             style={{
               width: '100%',
               backgroundColor: '#fff',
@@ -49,7 +52,7 @@ const PopularStoresSection = ({
               alignSelf: 'center',
             }}>
             조건에 해당하는 매장이 없어요.
-          </Text>
+          </CustomText>
         )
       )}
     </View>

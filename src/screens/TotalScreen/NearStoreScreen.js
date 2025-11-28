@@ -22,8 +22,9 @@ import Loading from '../../hooks/Loading';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import TotalItemSkeleton from '../../components/TotalScreen/TotalSkeleton/TotalItemSkeleton';
 import NearStoreTotalItem from '../../components/TotalScreen/NearStoreTotalItem';
-import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
+import CustomText from '../../utils/CustomText';
 
 const NearStoreScreen = ({navigation}) => {
   const route = useRoute();
@@ -155,7 +156,9 @@ const NearStoreScreen = ({navigation}) => {
         />
       )}
       {distancestores.length === 0 && !loading && (
-        <Text style={styles.emptyText}>주변에 등록된 술집이 없어요</Text>
+        <CustomText style={styles.emptyText}>
+          주변에 등록된 술집이 없어요
+        </CustomText>
       )}
       <ScrollToTopButton
         visible={showScrollToTop}

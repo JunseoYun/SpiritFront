@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const OTPInput = ({
   isotpcodeFocused,
@@ -20,12 +22,13 @@ const OTPInput = ({
 }) => {
   return (
     <View style={[styles.labeledInputContainer, {marginBottom: 20}]}>
-      <Text style={[styles.inputLabel, isotpcodeFocused && {color: 'black'}]}>
+      <CustomText
+        style={[styles.inputLabel, isotpcodeFocused && {color: 'black'}]}>
         인증번호
-      </Text>
+      </CustomText>
 
       <View style={styles.inputWithTimerWrapper}>
-        <TextInput
+        <CustomTextInput
           ref={otpcodeRef}
           style={[
             styles.input,
@@ -44,14 +47,18 @@ const OTPInput = ({
           maxLength={6}
         />
         <View style={styles.timerInsideInput}>
-          <Text style={styles.timerText}>{formatTimeLeft(timeLeft)}</Text>
+          <CustomText style={styles.timerText}>
+            {formatTimeLeft(timeLeft)}
+          </CustomText>
           <TouchableOpacity style={styles.resendbtn} onPress={handleResend}>
-            <Text style={styles.resendText}>다시 받기</Text>
+            <CustomText style={styles.resendText}>다시 받기</CustomText>
           </TouchableOpacity>
         </View>
       </View>
       {error === 'otpcode' && (
-        <Text style={styles.errorMessage}>인증번호가 올바르지 않습니다.</Text>
+        <CustomText style={styles.errorMessage}>
+          인증번호가 올바르지 않습니다.
+        </CustomText>
       )}
     </View>
   );

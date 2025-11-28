@@ -3,6 +3,8 @@ import {View, Text, TextInput, StyleSheet} from 'react-native';
 import forbiddenWords from '../../hooks/forbiddenWords';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 // validateDate 함수 정의 (예시)
 const validateDate = dateStr => {
@@ -84,9 +86,9 @@ const StoreBusinessData = ({
       {/* 사업자등록번호 입력 */}
       <View style={styles.storeinputview}>
         {businessData.businessNumber && (
-          <Text style={styles.storeinputtext}>사업자등록번호*</Text>
+          <CustomText style={styles.storeinputtext}>사업자등록번호*</CustomText>
         )}
-        <TextInput
+        <CustomTextInput
           style={[
             styles.storeinput,
             isFocused('businessNumber') && styles.focusedInput,
@@ -118,16 +120,16 @@ const StoreBusinessData = ({
           )}
         {error === 'businessData.businessNumber' &&
           !businessData.businessNumber && (
-            <Text style={styles.errorText}>{errorMessage}</Text>
+            <CustomText style={styles.errorText}>{errorMessage}</CustomText>
           )}
       </View>
 
       {/* 개업연월일 입력 */}
       <View style={styles.storeinputview}>
         {businessData.openDate && (
-          <Text style={styles.storeinputtext}>개업연월일*</Text>
+          <CustomText style={styles.storeinputtext}>개업연월일*</CustomText>
         )}
-        <TextInput
+        <CustomTextInput
           style={[
             styles.storeinput,
             isFocused('openDate') && styles.focusedInput,
@@ -161,21 +163,23 @@ const StoreBusinessData = ({
           />
         )}
         {errors.openDate && (
-          <Text style={styles.errorText}>{errors.openDate}</Text>
+          <CustomText style={styles.errorText}>{errors.openDate}</CustomText>
         )}
         {error === 'businessData.openDate' &&
           !businessData.openDate &&
           !errors.openDate && (
-            <Text style={styles.errorText}>{errorMessage}</Text>
+            <CustomText style={styles.errorText}>{errorMessage}</CustomText>
           )}
       </View>
 
       {/* 주류판매신고번호 입력 */}
       <View style={styles.storeinputview}>
         {businessData.drink_sales_number && (
-          <Text style={styles.storeinputtext}>주류판매신고번호*</Text>
+          <CustomText style={styles.storeinputtext}>
+            주류판매신고번호*
+          </CustomText>
         )}
-        <TextInput
+        <CustomTextInput
           style={[
             styles.storeinput,
             isFocused('drink_sales_number') && styles.focusedInput,
@@ -190,7 +194,7 @@ const StoreBusinessData = ({
           onBlur={() => setFocusedInput(null)}
         />
         {/* {errors.drink_sales_number && (
-          <Text style={styles.errorText}>{errors.drink_sales_number}</Text>
+          <CustomText style={styles.errorText}>{errors.drink_sales_number}</CustomText>
         )} */}
         {businessData.drink_sales_number.length > 0 &&
           isFocused('drink_sales_number') && (
@@ -204,7 +208,7 @@ const StoreBusinessData = ({
           )}
         {error === 'businessData.drink_sales_number' &&
           !businessData.drink_sales_number && (
-            <Text style={styles.errorText}>{errorMessage}</Text>
+            <CustomText style={styles.errorText}>{errorMessage}</CustomText>
           )}
       </View>
     </View>
@@ -233,7 +237,7 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   focusedInput: {
-    borderBottomColor: '#16BBFF',
+    borderBottomColor: '#3CBBFF',
     borderBottomWidth: 2,
   },
   errorText: {

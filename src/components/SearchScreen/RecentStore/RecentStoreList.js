@@ -4,6 +4,7 @@ import RecentStoreItem from './RecentStoreItem';
 import {Store_getby_recent} from '../../../api/storeApi';
 import {useAuth} from '../../../context/AuthContext';
 import RecentStoreItemSkeleton from './RecentStoreItemSkeleton';
+import CustomText from '../../../utils/CustomText';
 const RecentStoreList = ({
   refresh,
   setRefresh,
@@ -93,10 +94,12 @@ const RecentStoreList = ({
   return (
     <View>
       <View style={styles.todayPhrasesView}>
-        <Text style={styles.mylocationlivetext}>최근 방문한 술집</Text>
-        <Text style={styles.mylocationlivesubtext}>
+        <CustomText style={styles.mylocationlivetext}>
+          최근 방문한 술집
+        </CustomText>
+        <CustomText style={styles.mylocationlivesubtext}>
           다시 방문하고 싶은 술집을 확인해보세요
-        </Text>
+        </CustomText>
       </View>
       {token && (
         <>
@@ -130,14 +133,16 @@ const RecentStoreList = ({
 
       {token && stores.length === 0 && !loading && (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>최근 방문한 술집이 없어요</Text>
+          <CustomText style={styles.emptyText}>
+            최근 방문한 술집이 없어요
+          </CustomText>
         </View>
       )}
       {!token && (
         <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyText, {marginTop: 20}]}>
+          <CustomText style={[styles.emptyText, {marginTop: 20}]}>
             로그인 후 이용해주세요
-          </Text>
+          </CustomText>
         </View>
       )}
     </View>

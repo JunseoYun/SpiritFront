@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
+import CustomText from '../../../utils/CustomText';
 
 const OperatingHoursInput = ({
   sameOpenTime,
@@ -22,17 +23,17 @@ const OperatingHoursInput = ({
             isSameOperating && {backgroundColor: 'rgba(255, 50, 50, 0.2)'},
         ]}
         onPress={() => handleTimePickerToggle('open')}>
-        <Text
+        <CustomText
           style={[
             styles.timeText,
-            isOpenTime && {color: '#45C9FF'},
+            isOpenTime && {color: '#3CBBFF'},
             isOpenTime && wrongBreak && {color: '#FF4816'},
             isOpenTime && isSameOperating && {color: '#FF4816'},
           ]}>
           {`${sameOpenTime.openHour}:${sameOpenTime.openMinute}`}
-        </Text>
+        </CustomText>
       </Pressable>
-      <Text style={styles.separator}>~</Text>
+      <CustomText style={styles.separator}>~</CustomText>
       <Pressable
         style={[
           styles.timeInput,
@@ -44,7 +45,7 @@ const OperatingHoursInput = ({
         ]}
         onPress={() => handleTimePickerToggle('close')}>
         {sameCloseTime.closedHour >= 24 && (
-          <Text
+          <CustomText
             style={[
               styles.nextText,
 
@@ -54,13 +55,13 @@ const OperatingHoursInput = ({
                 isSameOperating && {color: '#FF4816', borderColor: '#FF4816'},
             ]}>
             {'다음날'}
-          </Text>
+          </CustomText>
         )}
 
-        <Text
+        <CustomText
           style={[
             styles.timeText,
-            isCloseTime && {color: '#45C9FF'},
+            isCloseTime && {color: '#3CBBFF'},
             isCloseTime && wrongBreak && {color: '#FF4816'},
             isCloseTime && isSameOperating && {color: '#FF4816'},
           ]}>
@@ -69,7 +70,7 @@ const OperatingHoursInput = ({
               ? (sameCloseTime.closedHour - 24).toString().padStart(2, '0')
               : sameCloseTime.closedHour.toString().padStart(2, '0')
           }:${sameCloseTime.closedMinute.toString().padStart(2, '0')}`}
-        </Text>
+        </CustomText>
       </Pressable>
     </View>
   );
@@ -96,10 +97,10 @@ const styles = StyleSheet.create({
   },
   nextText: {
     fontSize: 12,
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     padding: 3,
     marginRight: 5,
     borderRadius: 3,

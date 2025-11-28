@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useMemo} from 'react';
+import React, {useEffect, useState, useRef, useMemo, useCallback} from 'react';
 import {
   View,
   Animated,
@@ -11,76 +11,73 @@ import {
   Share,
   Modal,
   TouchableOpacity,
+  Dimensions,
+  Easing,
 } from 'react-native';
 import ImageSlider from '../../components/StoreScreen/StoreImage/ImageSlider';
 import StoreMainInfo from '../../components/StoreScreen/StoreMainInfo';
 import StoreTabs from '../../components/StoreScreen/StoreTabs';
-import StorePriceImage from '../../components/StoreScreen/StorePriceImage';
+import StoreInfoImage from '../../components/StoreScreen/StoreInfoImage';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
-import {
-  StoreMainget,
-  UpdateStore,
-  DeleteStoreImage,
-  UpdateStoreImage,
-  get_store_share,
-} from '../../api/storeApi';
+import {StoreMainget, get_store_share, Storelikepost} from '../../api/storeApi';
+import {getEventsByStore} from '../../api/eventApi';
 
-import Feather from 'react-native-vector-icons/Feather';
 import StoreMenuScreen from './StoreMenuScreen';
 import StoreAlcoholScreen from './StoreAlcoholScreen';
 import StoreHeader from '../../components/StoreScreen/StoreHeader';
 import {StoreMenuget} from '../../api/menuApi';
 import {StoreDrinkget} from '../../api/drinkApi';
-import UpdateHeader from '../../components/StoreScreen/UpdateHeader';
-import BottomSheet from '@gorhom/bottom-sheet';
-import UpdateBottomSheet from '../../components/StoreScreen/UpdateBottomSheet';
-import useCustomAlert from '../../hooks/useCustomAlert';
-import forbiddenWords from '../../hooks/forbiddenWords';
 import {useToast} from '../../context/ToastContext';
 import {useAuth} from '../../context/AuthContext';
 import Loading from '../../hooks/Loading';
 import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
 import Alcoholcategorytab from '../../components/StoreAlcoholScreen/Alcoholcategorytab';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import StoreMainSkeleton from './StoreMainSkeleton';
-import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
+import OrderForm from '../../components/StoreScreen/OrderForm';
+import CustomText from '../../utils/CustomText';
+
+const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 const StoreMainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const {top, bottom} = useSafeAndroidInsets();
   const {token} = useAuth();
   const route = useRoute();
-  const {showAlert, AlertComponent} = useCustomAlert();
-  const bottomSheetRef = useRef(null);
-  const snapPoints = useMemo(() => ['50%', '70%', '85%'], []);
   const {storeId, innerlatitude, innerlongitude} = route.params;
 
   const [menus, setMenus] = useState([]);
   const [alcohols, setAlcohols] = useState([]);
   const [storedata, setStoredata] = useState('');
+  const [isStoreLiked, setIsStoreLiked] = useState(false);
+  const [storeLikeCount, setStoreLikeCount] = useState(0);
+  const [isLikeProcessing, setIsLikeProcessing] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const [longitude, setLongitude] = useState('');
   const [latitude, setLatitude] = useState('');
   const [currentPage, setCurrentPage] = useState('StoreMenuScreen');
-  const [isUpdate, setIsUpdate] = useState(false);
-  const [updatedKey, setUpdatedKey] = useState(null);
-  const [updatedValue, setUpdatedValue] = useState(null);
-  const [updatedImgValue, setUpdatedImgValue] = useState([]);
   const scrollViewRef = useRef(null); // ScrollView 참조 추가
   const [loading, setLoading] = useState(true);
   const [skeletonLoading, setSkeletonLoading] = useState(true);
   const {showToast} = useToast();
-  const [bottomSheetIndex, setBottomSheetIndex] = useState(-1);
   const [sectionPositions, setSectionPositions] = useState({});
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [events, setEvents] = useState([]);
+
+  const [isOrderEnabled, setIsOrderEnabled] = useState(true);
+  const [showOrderForm, setShowOrderForm] = useState(false);
+  const [orderBarHeight, setOrderBarHeight] = useState(0);
+  const [pendingScrollToTabs, setPendingScrollToTabs] = useState(false);
+
   const {
     visible: showScrollToTop,
     scrollToTop,
     updateVisibility,
   } = useScrollToTopVisibility({externalRef: scrollViewRef});
   const scrollButtonBottom = (bottom || 16) + 34;
+  const orderSlideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   // 상위 scrollTo 함수
   const scrollToHandler = params => {
     if (scrollViewRef.current) {
@@ -105,31 +102,6 @@ const StoreMainScreen = ({navigation}) => {
     });
   };
 
-  const refreshMenus = async () => {
-    try {
-      const Menus = await StoreMenuget(storeId);
-      setMenus(Menus);
-    } catch (error) {
-      console.error('메뉴 다시 불러오기 실패', error);
-    }
-  };
-
-  const refresAlcohols = async () => {
-    try {
-      const Drinks = await StoreDrinkget(storeId);
-      setAlcohols(Drinks);
-    } catch (error) {
-      console.error('메뉴 다시 불러오기 실패', error);
-    }
-  };
-
-  const storeupdatedrink = () => {
-    navigation.navigate('UpdateStoreDrink', {
-      storeId: storedata.id,
-      mainDrinkDtos: storedata.mainDrinkDtos,
-    });
-  };
-
   useFocusEffect(
     React.useCallback(() => {
       if (!token) return;
@@ -144,6 +116,13 @@ const StoreMainScreen = ({navigation}) => {
       };
     }, [currentPage]),
   );
+  const handleTabSelectFromMap = useCallback(screen => {
+    if (screen === 'StoreMenuScreen' || screen === 'StoreAlcoholScreen') {
+      setCurrentPage(screen);
+      setPendingScrollToTabs(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (!token) return;
     if (currentPage === 'StoreMapScreen') {
@@ -154,10 +133,27 @@ const StoreMainScreen = ({navigation}) => {
           storeLongitude: longitude,
           innerlatitude: innerlatitude,
           innerlongitude: innerlongitude,
+          storeAddress: storedata?.locationDto?.address ?? '',
+          storeAddressDetail: storedata?.locationDto?.addressDetail ?? '',
+          storeId: storeId,
+          isStoreLiked: isStoreLiked,
+          onSelectTab: handleTabSelectFromMap,
         });
       }, 0);
     }
   }, [currentPage]);
+
+  useEffect(() => {
+    const targetTab = route.params?.targetTab;
+    if (!targetTab) {
+      return;
+    }
+    if (targetTab === 'StoreMenuScreen' || targetTab === 'StoreAlcoholScreen') {
+      setCurrentPage(targetTab);
+      setPendingScrollToTabs(true);
+    }
+    navigation.setParams({targetTab: undefined});
+  }, [navigation, route.params?.targetTab]);
 
   // 처음 진입 시 전체 fetch
   const isFirstLoad = useRef(true);
@@ -173,12 +169,30 @@ const StoreMainScreen = ({navigation}) => {
     if (!token) return;
     const unsubscribe = navigation.addListener('focus', () => {
       if (!isFirstLoad.current) {
-        fetchStoreDataOnly();
+        fetchInitialStoreData();
       }
     });
 
     return unsubscribe;
   }, [navigation]);
+
+  useEffect(() => {
+    if (showOrderForm) {
+      Animated.timing(orderSlideAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(orderSlideAnim, {
+        toValue: SCREEN_HEIGHT,
+        duration: 300,
+        easing: Easing.in(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showOrderForm, orderSlideAnim]);
 
   const fetchStoreDataOnly = async () => {
     setLoading(true);
@@ -186,8 +200,18 @@ const StoreMainScreen = ({navigation}) => {
       const storeData = await StoreMainget(storeId);
 
       setStoredata(storeData);
+      setIsStoreLiked(!!storeData?.isStoreLiked);
+      setStoreLikeCount(storeData?.likeCount ?? 0);
       setLongitude(storeData.locationDto.longitude);
       setLatitude(storeData.locationDto.latitude);
+
+      try {
+        const eventList = await getEventsByStore(storeId);
+        setEvents(Array.isArray(eventList) ? eventList : []);
+      } catch (eventError) {
+        console.log('Failed to load events', eventError);
+        setEvents([]);
+      }
 
       if (storeData.isDeleted) {
         showToast('삭제된 가게입니다.');
@@ -218,182 +242,21 @@ const StoreMainScreen = ({navigation}) => {
   };
 
   const startUpdate = () => {
-    setIsUpdate(true);
-  };
-  const endUpdate = () => {
-    setIsUpdate(false);
-    handleBottomClose();
-  };
-
-  const handleBottomOpen = () => {
-    bottomSheetRef.current?.expand();
-  };
-
-  const handleBottomClose = () => {
-    Keyboard.dismiss();
-    setTimeout(() => {
-      bottomSheetRef.current?.close();
-    }, 300);
-  };
-
-  const handleEditKey = key => {
-    setUpdatedKey(key);
-  };
-
-  const handleEditValue = value => {
-    setUpdatedValue(value);
-  };
-
-  const handleUpdate = async () => {
-    const containsForbiddenWord = value =>
-      typeof value === 'string' &&
-      forbiddenWords.some(word => value.includes(word));
-
-    const showErrorAndExit = message => {
-      showAlert({
-        title: '가이드 위반',
-        message,
-      });
-      return;
-    };
-
-    const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-
-    if (isEqual(storedata[updatedKey], updatedValue)) {
-      handleBottomClose();
+    if (!storedata?.id) {
+      showToast('매장 정보를 불러온 후 다시 시도해주세요.');
       return;
     }
 
-    if (containsForbiddenWord(updatedValue)) {
-      showErrorAndExit(
-        '비속어 및 이용 약관에 위배되는\n내용이 포함되어 있습니다.',
-      );
-      return;
-    }
-
-    if (
-      updatedKey === 'locationDto' &&
-      containsForbiddenWord(updatedValue?.addressDetail)
-    ) {
-      showErrorAndExit(
-        '비속어 및 이용 약관에 위배되는\n내용이 포함되어 있습니다.',
-      );
-      return;
-    }
-
-    const performUpdate = async (key, value) => {
-      try {
-        Keyboard.dismiss();
-        setLoading(true);
-        if (key === 'images') {
-          const {addedImages, deletedImages} = value;
-          try {
-            if (addedImages.length === 0 && deletedImages.length > 0) {
-              const response = await DeleteStoreImage(storeId, deletedImages);
-              await UpdateStore(storeId, {['mainImgUrl']: response[0]});
-            }
-            if (addedImages.length > 0 && deletedImages.length === 0) {
-              const response = await UpdateStoreImage(storeId, addedImages);
-              await UpdateStore(storeId, {['mainImgUrl']: response[0]});
-            }
-            if (addedImages.length > 0 && deletedImages.length > 0) {
-              await UpdateStoreImage(storeId, addedImages);
-              const response = await DeleteStoreImage(storeId, deletedImages);
-              await UpdateStore(storeId, {['mainImgUrl']: response[0]});
-            }
-          } catch (error) {
-            console.log(error);
-          }
-        } else {
-          await UpdateStore(storeId, {[key]: value});
-        }
-
-        await fetchStoreDataOnly();
-      } catch (error) {
-        handleError();
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    switch (updatedKey) {
-      case 'description':
-        await performUpdate(updatedKey, removeLineBreaks(updatedValue));
-        break;
-      case 'locationDto':
-        await performUpdate(updatedKey, updatedValue);
-        break;
-      case 'images':
-        await performUpdate(updatedKey, updatedImgValue);
-        break;
-
-      default:
-        await performUpdate(updatedKey, updatedValue);
-        break;
-    }
-
-    handleBottomClose();
-  };
-
-  const handleError = () => {
-    showAlert({
-      title: '잘못된 요청입니다.',
-      message: '잠시 후 다시 시도해주세요.',
+    navigation.navigate('StoreStack', {
+      screen: 'StoreManageScreen',
+      params: {
+        storeId: storedata.id,
+        storedata: storedata,
+        storeName: storedata?.name,
+      },
     });
   };
 
-  const removeLineBreaks = value => {
-    if (typeof value === 'string') {
-      return value
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line !== '')
-        .join('\n');
-    }
-    return value;
-  };
-
-  useEffect(() => {
-    if (!token) return;
-    if (isUpdate) {
-      showToast('원하는 항목을 클릭해 수정하세요!', 'center');
-    }
-  }, [isUpdate]);
-
-  // 뒤로가기(스와이프 포함) 시 편집 종료로 대체
-  useEffect(() => {
-    const sub = navigation.addListener('beforeRemove', e => {
-      if (!isUpdate) return; // 편집 중이 아니면 기본 동작
-      e.preventDefault(); // 뒤로가기 취소
-      endUpdate(); // 편집 종료 및 바텀시트 닫기
-    });
-    return sub;
-  }, [navigation, isUpdate]);
-
-  // iOS 제스처 자체를 편집 중에는 비활성화해 '밀고 돌아가기' 애니메이션 방지
-  // 중첩 네비게이터(자신/부모/상위부모)까지 순차적으로 적용
-  useEffect(() => {
-    if (Platform.OS !== 'ios') return;
-    try {
-      navigation.setOptions({gestureEnabled: !isUpdate});
-      const parent = navigation.getParent?.();
-      parent?.setOptions?.({gestureEnabled: !isUpdate});
-      const grand = parent?.getParent?.();
-      grand?.setOptions?.({gestureEnabled: !isUpdate});
-    } catch (e) {
-      // no-op
-    }
-  }, [navigation, isUpdate]);
-
-  const handleMenuDelete = id => {
-    setMenus(prevMenus => prevMenus.filter(menu => menu.id !== id));
-  };
-
-  const handleAlcoholDelete = id => {
-    setAlcohols(prevAlcohols =>
-      prevAlcohols.filter(alcohol => alcohol.id !== id),
-    );
-  };
   const imageSliderData =
     storedata.imgUrlList?.map(url => ({imageUrl: url})) || [];
 
@@ -411,12 +274,6 @@ const StoreMainScreen = ({navigation}) => {
 
   const titleOpacity = scrollY.interpolate({
     inputRange: [100, 250],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
-
-  const stickyProgress = scrollY.interpolate({
-    inputRange: [250, 251], // 250 이후는 1, 그 전은 0
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
@@ -474,23 +331,60 @@ const StoreMainScreen = ({navigation}) => {
     });
   };
 
+  const handleToggleLike = async () => {
+    if (!storedata?.id || isLikeProcessing) {
+      return;
+    }
+    const nextLikeState = !isStoreLiked;
+    const previousCount = storeLikeCount ?? 0;
+    const delta = nextLikeState ? 1 : -1;
+
+    setIsStoreLiked(nextLikeState);
+    setStoreLikeCount(Math.max(0, previousCount + delta));
+    setIsLikeProcessing(true);
+
+    try {
+      await Storelikepost(storedata.id);
+    } catch (error) {
+      setIsStoreLiked(!nextLikeState);
+      setStoreLikeCount(previousCount);
+      showToast('찜 상태를 변경하지 못했어요.', 'center');
+    } finally {
+      setIsLikeProcessing(false);
+    }
+  };
+
   const [mainSectionHeight, setMainSectionHeight] = useState(0);
   const [filterHeight, setFilterHeight] = useState(0);
   const [filterHeaderTouchable, setFilterHeaderTouchable] = useState(false);
+  const [tabsLayoutY, setTabsLayoutY] = useState(null);
+  const [tabsHeight, setTabsHeight] = useState(0);
+  const [tabHeaderTouchable, setTabHeaderTouchable] = useState(false);
+  const headerOverlayOffset = useMemo(
+    () => (Platform.OS === 'ios' ? insets.top + 30 : top + 40),
+    [insets.top, top],
+  );
 
   const filterHeaderThreshold = useMemo(() => {
     if (!mainSectionHeight) return 100000; // wait until measured
     // 상단 고정 헤더 높이 보정
-    // console.log(insets.top);
-    const overlayOffset = Platform.OS === 'ios' ? insets.top + 30 : top + 40;
     // 메인 이미지가 없는 경우 목록 헤더가 너무 빨리 붙는 것을 방지하기 위해 추가 지연 적용
     // iOS는 상단 여백이 더 크므로 약간 더 크게 지연
 
     // 조금 더 늦게 붙도록 지연값을 소폭 상향
     const hasImage = !!(storedata?.imgUrlList && storedata.imgUrlList.length);
     const extraDelay = hasImage ? 0 : Platform.OS === 'ios' ? 0 : insets.top;
-    return Math.max(0, mainSectionHeight - overlayOffset + extraDelay);
-  }, [mainSectionHeight, insets.top, top, storedata?.imgUrlList]);
+    return Math.max(
+      0,
+      mainSectionHeight - headerOverlayOffset - tabsHeight + extraDelay,
+    );
+  }, [
+    headerOverlayOffset,
+    insets.top,
+    mainSectionHeight,
+    storedata?.imgUrlList,
+    tabsHeight,
+  ]);
 
   const stickyTranslateY = 0;
 
@@ -503,6 +397,57 @@ const StoreMainScreen = ({navigation}) => {
 
   const [selectedType, setSelectedType] = useState(null);
   const isClickedRef = useRef(false);
+  const tabHeaderThreshold = useMemo(() => {
+    if (tabsLayoutY === null) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+    return Math.max(0, tabsLayoutY - headerOverlayOffset);
+  }, [headerOverlayOffset, tabsLayoutY]);
+
+  const tabHeaderProgress = scrollY.interpolate({
+    inputRange: [tabHeaderThreshold, tabHeaderThreshold + 1],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const tabsInlineOpacity = Animated.subtract(1, tabHeaderProgress);
+  const scrollTabsToStickyPosition = useCallback(() => {
+    if (
+      !scrollViewRef.current ||
+      tabsLayoutY === null ||
+      tabHeaderThreshold >= Number.MAX_SAFE_INTEGER
+    ) {
+      return false;
+    }
+    scrollViewRef.current.scrollTo({
+      x: 0,
+      y: tabHeaderThreshold,
+      animated: true,
+    });
+    return true;
+  }, [tabHeaderThreshold, tabsLayoutY]);
+
+  const handleTabPress = useCallback(
+    screen => {
+      if (screen === 'StoreMenuScreen' || screen === 'StoreAlcoholScreen') {
+        const didScroll = scrollTabsToStickyPosition();
+        if (!didScroll) {
+          setPendingScrollToTabs(true);
+        }
+      }
+    },
+    [scrollTabsToStickyPosition],
+  );
+
+  useEffect(() => {
+    if (!pendingScrollToTabs) {
+      return;
+    }
+    const didScroll = scrollTabsToStickyPosition();
+    if (didScroll) {
+      setPendingScrollToTabs(false);
+    }
+  }, [pendingScrollToTabs, scrollTabsToStickyPosition]);
 
   // Control sticky filter header touchability without using __getValue()
   useEffect(() => {
@@ -513,6 +458,63 @@ const StoreMainScreen = ({navigation}) => {
     });
     return () => scrollY.removeListener(sub);
   }, [filterHeaderThreshold]);
+
+  useEffect(() => {
+    const hysteresis = 1;
+    const sub = scrollY.addListener(({value}) => {
+      const active = value >= tabHeaderThreshold + hysteresis;
+      setTabHeaderTouchable(prev => (prev !== active ? active : prev));
+    });
+    return () => scrollY.removeListener(sub);
+  }, [tabHeaderThreshold]);
+
+  // const handleOrderButtonPress = () => {
+  //   setShowOrderForm(true);
+  // };
+
+  // const handleOrderCancel = () => {
+  //   Keyboard.dismiss();
+  //   setShowOrderForm(false);
+  // };
+
+  // const handleOrderBarLayout = useCallback(({nativeEvent}) => {
+  //   const {height} = nativeEvent.layout;
+  //   setOrderBarHeight(prev => (Math.abs(prev - height) > 2 ? height : prev));
+  // }, []);
+
+  useEffect(() => {
+    if (!isOrderEnabled) {
+      setOrderBarHeight(0);
+    }
+  }, [isOrderEnabled]);
+
+  const orderBarOffset = isOrderEnabled
+    ? Math.max(0, orderBarHeight - insets.bottom)
+    : 0;
+  const scrollButtonBottomValue = scrollButtonBottom + orderBarOffset;
+
+  const handleOrderSubmit = ({visitTime, peopleCount}) => {
+    Keyboard.dismiss();
+    setShowOrderForm(false);
+    navigation.navigate('StoreOrderScreen', {
+      storeId,
+      storeName: storedata?.name ?? '',
+      initialMenus: menus ?? [],
+      initialAlcohols: alcohols ?? [],
+      mainDrinkDtos: storedata?.mainDrinkDtos ?? [],
+      visitTime,
+      peopleCount,
+    });
+  };
+
+  if (!storeId) {
+    return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <CustomText>가게 정보를 불러오는 중...</CustomText>
+      </View>
+    );
+  }
+
   return (
     <View style={{flex: 1}}>
       {loading && skeletonLoading ? (
@@ -523,10 +525,12 @@ const StoreMainScreen = ({navigation}) => {
             style={{
               backgroundColor: 'white',
               flex: 1,
-              ...(!storedata?.imgUrlList?.length > 0 &&
-                !isUpdate && {paddingTop: top, paddingBottom: bottom}),
+              ...(!storedata?.imgUrlList?.length > 0 && {
+                paddingTop: top,
+                paddingBottom: bottom,
+              }),
             }}>
-            {!isUpdate && storedata?.imgUrlList && (
+            {storedata?.imgUrlList && (
               <StoreHeader
                 navigation={navigation}
                 headerBackgroundColor={headerBackgroundColor}
@@ -534,32 +538,47 @@ const StoreMainScreen = ({navigation}) => {
                 titleOpacity={titleOpacity}
                 title={storedata?.name}
                 onShare={onShare}
+                isLiked={isStoreLiked}
+                onToggleLike={handleToggleLike}
+                likeDisabled={isLikeProcessing}
               />
             )}
-            {isUpdate && (
-              <UpdateHeader
+            {(!storedata?.imgUrlList || storedata.imgUrlList.length === 0) && (
+              <NonImageHeader
                 navigation={navigation}
-                endUpdate={endUpdate}
-                handleBottomClose={handleBottomClose}
+                headerBackgroundColor={'#fff'}
+                iconColor={'#333'}
+                title={storedata?.name}
+                onShare={onShare}
+                isLiked={isStoreLiked}
+                onToggleLike={handleToggleLike}
+                likeDisabled={isLikeProcessing}
               />
             )}
-            {(!storedata?.imgUrlList || storedata.imgUrlList.length === 0) &&
-              !isUpdate && (
-                <NonImageHeader
-                  navigation={navigation}
-                  headerBackgroundColor={'#fff'}
-                  iconColor={'#333'}
-                  title={storedata?.name}
-                  onShare={onShare}
-                />
-              )}
-            {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
+            <Animated.View
+              pointerEvents={tabHeaderTouchable ? 'auto' : 'none'}
+              style={[
+                styles.fixedTabsHeader,
+                {
+                  top: headerOverlayOffset,
+                  opacity: tabHeaderProgress,
+                  transform: [{translateY: stickyTranslateY}],
+                },
+              ]}>
+              <StoreTabs
+                changePage={setCurrentPage}
+                currentPage={currentPage}
+                onTabPress={handleTabPress}
+                showBottomBorder
+              />
+            </Animated.View>
+            {currentPage === 'StoreAlcoholScreen' && (
               <Animated.View
                 pointerEvents={filterHeaderTouchable ? 'auto' : 'none'}
                 style={[
                   styles.fixedFilterHeader,
                   {
-                    top: Platform.OS === 'ios' ? insets.top + 30 : top + 40,
+                    top: headerOverlayOffset + tabsHeight,
                     opacity: filterHeaderProgress,
                     transform: [{translateY: stickyTranslateY}],
                   },
@@ -570,6 +589,7 @@ const StoreMainScreen = ({navigation}) => {
                   imagelist={storedata?.imgUrlList?.length}
                   onScrollTo={scrollToHandler}
                   sectionPositions={sectionPositions}
+                  setSectionPositions={setSectionPositions}
                   scrollY={scrollY}
                   selectedType={selectedType}
                   setSelectedType={setSelectedType}
@@ -613,7 +633,7 @@ const StoreMainScreen = ({navigation}) => {
                 style={{
                   backgroundColor: 'white',
                   width: '100%',
-                  paddingBottom: 100,
+                  paddingBottom: isOrderEnabled ? 60 : 100,
                 }}
                 keyboardShouldPersistTaps="always"
                 scrollEnabled={true}
@@ -631,7 +651,7 @@ const StoreMainScreen = ({navigation}) => {
                     const {height} = e.nativeEvent.layout;
                     setMainSectionHeight(height);
                   }}>
-                  {(storedata?.imgUrlList?.length > 0 || isUpdate) && (
+                  {storedata?.imgUrlList?.length > 0 && (
                     <View
                       style={[
                         {
@@ -640,91 +660,66 @@ const StoreMainScreen = ({navigation}) => {
                           justifyContent: 'center',
                           backgroundColor: 'black',
                         },
-                        isUpdate && {
-                          marginTop: Platform.OS === 'ios' ? 100 : 60,
-                        }, // 조건부 스타일
-                        isUpdate &&
-                          !storedata?.imgUrlList?.length > 0 && {
-                            marginTop: Platform.OS === 'ios' ? 20 : 30,
-                          },
                       ]}>
                       <ImageSlider
                         storeId={storeId}
                         images={imageSliderData}
                         interval={4000}
-                        isUpdate={isUpdate}
-                        handleBottomOpen={handleBottomOpen}
-                        onEditKey={handleEditKey}
-                        onEditValue={handleEditValue}
                         navigation={navigation}
+                        onToggleLike={handleToggleLike}
+                        isLiked={isStoreLiked}
+                        likeCount={storeLikeCount}
+                        likeDisabled={isLikeProcessing}
                       />
                     </View>
                   )}
-                  {!storedata?.imgUrlList?.length > 0 &&
-                    !isUpdate &&
-                    storedata?.isUpdatable === true && (
-                      <Pressable
-                        style={[styles.addImageButton, {}]}
-                        onPress={startUpdate}>
-                        <Text style={styles.addImageText}>
-                          매장 이미지 추가하기
-                        </Text>
-                        <Feather name="chevron-right" size={23} color="#999" />
-                      </Pressable>
-                    )}
 
                   <StoreMainInfo
                     storedata={storedata}
+                    events={events}
                     navigation={navigation}
-                    isUpdate={isUpdate}
-                    endUpdate={endUpdate}
-                    handleBottomOpen={handleBottomOpen}
-                    onEditKey={handleEditKey}
-                    onEditValue={handleEditValue}
                     storeTimeEditHandle={storeTimeEditHandle}
-                    storeupdatedrink={storeupdatedrink}
                     setLoading={setLoading}
                     loading={loading}
                     startUpdate={startUpdate}
                     handleReport={handleReport}
                     handleReportList={handleReportList}
                     handleStoreInfo={handleStoreInfo}
+                    onToggleLike={handleToggleLike}
+                    isLiked={isStoreLiked}
+                    likeCount={storeLikeCount}
+                    likeDisabled={isLikeProcessing}
                   />
-                  {!isUpdate && (
-                    <View style={{backgroundColor: '#F2F2F2', height: 10}} />
-                  )}
+                  <View
+                    style={{
+                      backgroundColor: '#F2F2F2',
+                      height: 7,
+                      marginBottom: 3,
+                    }}
+                  />
 
-                  {!isUpdate && (
+                  <Animated.View
+                    onLayout={e => {
+                      const {y, height} = e.nativeEvent.layout;
+                      setTabsLayoutY(y);
+                      setTabsHeight(height);
+                    }}
+                    style={{opacity: tabsInlineOpacity}}>
                     <StoreTabs
                       changePage={setCurrentPage}
                       currentPage={currentPage}
+                      onTabPress={handleTabPress}
                     />
-                  )}
+                  </Animated.View>
 
-                  {!isUpdate && (
-                    <StorePriceImage
-                      storeId={storeId}
-                      isUpdatable={storedata?.isUpdatable}
-                      imageList={storedata?.boardImageDtoList}
-                      navigation={navigation}
-                    />
-                  )}
-                  {!isUpdate &&
-                    storedata?.isUpdatable &&
-                    currentPage === 'StoreAlcoholScreen' && (
-                      <>
-                        <Pressable
-                          style={styles.reorderButton}
-                          onPress={() => setModalVisible(true)}>
-                          <Text style={styles.alcoholAddButtonText}>
-                            주류 편집
-                          </Text>
-                        </Pressable>
-                      </>
-                    )}
+                  <StoreInfoImage
+                    storeId={storeId}
+                    imageList={storedata?.boardImageDtoList}
+                    navigation={navigation}
+                  />
                 </View>
 
-                {!isUpdate && currentPage === 'StoreAlcoholScreen' && (
+                {currentPage === 'StoreAlcoholScreen' && (
                   <Animated.View
                     style={{opacity: listFilterOpacity}}
                     onLayout={e => {
@@ -737,6 +732,7 @@ const StoreMainScreen = ({navigation}) => {
                       imagelist={storedata?.imgUrlList?.length}
                       onScrollTo={scrollToHandler}
                       sectionPositions={sectionPositions}
+                      setSectionPositions={setSectionPositions}
                       scrollY={scrollY}
                       selectedType={selectedType}
                       setSelectedType={setSelectedType}
@@ -747,127 +743,101 @@ const StoreMainScreen = ({navigation}) => {
                   </Animated.View>
                 )}
 
-                {!isUpdate && (
-                  <>
-                    {currentPage === 'StoreMenuScreen' && (
-                      <StoreMenuScreen
-                        navigation={navigation}
-                        storeId={storeId}
-                        menus={menus}
-                        onMenuDelete={handleMenuDelete}
-                        isUpdatable={storedata?.isUpdatable}
-                        onMenuUpdateComplete={refreshMenus}
-                        images={imageSliderData}
-                      />
-                    )}
-                    {currentPage === 'StoreAlcoholScreen' && (
-                      <StoreAlcoholScreen
-                        navigation={navigation}
-                        storeId={storeId}
-                        alcohols={alcohols}
-                        mainDrinks={storedata.mainDrinkDtos}
-                        scrollViewRef={scrollViewRef}
-                        onAlcoholDelete={handleAlcoholDelete}
-                        isUpdatable={storedata?.isUpdatable}
-                        onAlcoholUpdateComplete={refresAlcohols}
-                        imagelist={storedata?.imgUrlList?.length}
-                        onScrollTo={scrollToHandler}
-                        sectionPositions={sectionPositions}
-                        setSectionPositions={setSectionPositions}
-                      />
-                    )}
-                  </>
-                )}
+                <>
+                  {currentPage === 'StoreMenuScreen' && (
+                    <StoreMenuScreen
+                      navigation={navigation}
+                      storeId={storeId}
+                      menus={menus}
+                      isOrderEnabled={isOrderEnabled}
+                    />
+                  )}
+                  {currentPage === 'StoreAlcoholScreen' && (
+                    <StoreAlcoholScreen
+                      navigation={navigation}
+                      storeId={storeId}
+                      alcohols={alcohols}
+                      mainDrinks={storedata.mainDrinkDtos}
+                      sectionPositions={sectionPositions}
+                      setSectionPositions={setSectionPositions}
+                      isOrderEnabled={isOrderEnabled}
+                    />
+                  )}
+                </>
               </Animated.ScrollView>
             </KeyboardAvoidingView>
             <ScrollToTopButton
-              visible={!isUpdate && showScrollToTop}
-              bottom={scrollButtonBottom}
+              visible={showScrollToTop}
+              bottom={scrollButtonBottomValue}
               onPress={scrollToTop}
             />
-            <Modal
-              transparent
-              visible={isModalVisible}
-              animationType="fade"
-              statusBarTranslucent={true}>
-              <Pressable
-                style={styles.overlay}
-                onPress={() => setModalVisible(false)}>
-                <View style={styles.modal}>
-                  <TouchableOpacity
-                    style={styles.option}
-                    onPress={() => {
-                      navigation.navigate('AlcoholEditScreen', {
-                        storeId,
-                        alcohols,
-                        onAlcoholUpdateComplete: refresAlcohols,
-                        onAlcoholDelete: handleAlcoholDelete,
-                      });
-                      setModalVisible(false);
-                    }}>
-                    <Text style={styles.optionText}>주류 수정/삭제</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.option}
-                    onPress={() => {
-                      navigation.navigate('AlcoholAddScreen', {storeId});
-                      setModalVisible(false);
-                    }}>
-                    <Text style={styles.optionText}>새 주류 추가</Text>
-                  </TouchableOpacity>
-                </View>
-              </Pressable>
-            </Modal>
           </View>
-          {isUpdate && (
-            <View
-              style={[
-                styles.endUpdateButton,
-                {paddingBottom: Platform.OS === 'ios' ? 30 : 10 + bottom},
-              ]}>
-              <Pressable
-                onPress={endUpdate}
-                style={styles.storeAddButtonsearch}>
-                <Text style={styles.endUpdateText}>완료</Text>
-              </Pressable>
-            </View>
-          )}
-          <BottomSheet
-            ref={bottomSheetRef}
-            index={-1}
-            snapPoints={snapPoints}
-            onChange={index => setBottomSheetIndex(index)}
-            enablePanDownToClose={true}
-            gestureEnabled={true}
-            keyboardShouldPersistTaps="handled"
-            keyboardBehavior={Platform.OS === 'ios' ? 'interactive' : 'extend'}
-            keyboardBlurBehavior="restore"
-            backgroundStyle={{
-              backgroundColor: '#F7F7F7',
-              borderTopLeftRadius: 35,
-              borderTopRightRadius: 35,
-              shadowColor: '#000',
-              shadowOffset: {width: 0, height: -3},
-              shadowOpacity: 0.2,
-              shadowRadius: 5,
-              elevation: 10,
-            }}>
-            <UpdateBottomSheet
-              isUpdate={isUpdate}
-              updatedKey={updatedKey}
-              updatedValue={updatedValue}
-              setUpdatedValue={setUpdatedValue}
-              setUpdatedImgValue={setUpdatedImgValue}
-              handleUpdate={handleUpdate}
-              handleBottomClose={handleBottomClose}
-              navigation={navigation}
-              endUpdate={endUpdate}
-              bottomSheetIndex={bottomSheetIndex}
-            />
-          </BottomSheet>
-          <AlertComponent />
         </>
       )}
+      {/* {isOrderEnabled && (
+        <>
+          <View
+            style={[
+              styles.storeOrderview,
+              {
+                paddingBottom:
+                  Platform.OS === 'android'
+                    ? insets.bottom + 20
+                    : insets.bottom + 10,
+              },
+            ]}
+            onLayout={handleOrderBarLayout}>
+            <Pressable
+              style={styles.storeOrderButton}
+              onPress={handleOrderButtonPress}>
+              <CustomText style={styles.storeOrderText}>실시간 주문하기</CustomText>
+            </Pressable>
+          </View>
+          {showOrderForm && (
+            <SafeAreaView>
+              <Modal
+                animationType="fade"
+                transparent
+                visible={showOrderForm}
+                statusBarTranslucent={true}
+                onRequestClose={handleOrderCancel}>
+                <View style={styles.orderModalContainer}>
+                  <Pressable
+                    style={styles.orderModalOverlay}
+                    onPress={handleOrderCancel}
+                  />
+                  <Animated.View
+                    style={[
+                      styles.orderModalContent,
+                      {
+                        paddingBottom:
+                          Platform.OS === 'android'
+                            ? insets.bottom + 20
+                            : insets.bottom + 10,
+                      },
+                      {transform: [{translateY: orderSlideAnim}]},
+                    ]}>
+                    <View style={styles.orderModalHeader}>
+                      <CustomText style={styles.orderModalTitle}>
+                        실시간 주문하기
+                      </CustomText>
+                      <TouchableOpacity onPress={handleOrderCancel}>
+                        <Ionicons name="close" size={22} color="#666" />
+                      </TouchableOpacity>
+                    </View>
+                    <OrderForm
+                      operationInfoDtos={storedata?.operationInfoDtos}
+                      isAlwaysOpen={storedata?.isAlwaysOpen}
+                      onCancel={handleOrderCancel}
+                      onSubmit={handleOrderSubmit}
+                    />
+                  </Animated.View>
+                </View>
+              </Modal>
+            </SafeAreaView>
+          )}
+        </>
+      )} */}
 
       <Loading loading={loading} />
     </View>
@@ -908,7 +878,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 10,
     elevation: 3, // Android shadow
     shadowColor: '#000', // iOS shadow
@@ -921,30 +891,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
   },
-  addImageButton: {
-    marginTop: 20,
-    marginHorizontal: 18,
-    paddingTop: 10,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  addImageText: {
-    color: '#999',
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-  },
+
   fixedFilterHeader: {
     position: 'absolute',
     left: 0,
     right: 0,
     zIndex: 1,
     backgroundColor: '#fff',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E1E1E1',
+  },
+  fixedTabsHeader: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 2,
+    backgroundColor: '#fff',
   },
   nonimgstickyActive: {
     paddingTop: 10,
@@ -960,34 +922,80 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9F5FB',
   },
   alcoholAddButtonText: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
     padding: 16,
   },
-  overlay: {
+  orderModalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    position: 'relative',
+  },
+  orderModalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    zIndex: 1,
+  },
+  orderModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: -3},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 10,
+    zIndex: 2,
+  },
+  orderModalHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderColor: '#EFEFEF',
+    paddingHorizontal: 16,
   },
-  modal: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    paddingVertical: 20,
-    paddingHorizontal: 24,
-    width: 260,
+  orderModalTitle: {
+    fontSize: 17,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#121212',
   },
-  option: {
-    paddingVertical: 12,
+  storeOrderview: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#fff',
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: -1},
+    shadowOpacity: 0.13,
+    shadowRadius: 4,
+    elevation: 8,
+    zIndex: 10,
+  },
+  storeOrderButton: {
+    paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#3CBBFF',
+    borderRadius: 9,
+    width: '100%',
+    height: 50,
   },
-  optionText: {
+  storeOrderText: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-    textAlign: 'center',
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#fff',
   },
 });
 

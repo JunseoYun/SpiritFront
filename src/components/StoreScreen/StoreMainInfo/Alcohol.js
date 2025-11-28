@@ -1,48 +1,30 @@
 import React from 'react';
 
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-
-import Entypo from 'react-native-vector-icons/Entypo';
-
-const Alcohol = ({
-  isUpdate,
-  storeDrinkDtos,
-  translateAlcohol,
-  storeupdatedrink,
-}) => {
+import {View, Text, StyleSheet} from 'react-native';
+import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../../utils/CustomText';
+const Alcohol = ({storeDrinkDtos, translateAlcohol}) => {
   const drinkText =
     storeDrinkDtos && storeDrinkDtos.length > 0
       ? storeDrinkDtos
-          .map(
-            drink =>
-              `${translateAlcohol(
-                drink.type,
-              )} ${drink.price.toLocaleString()}원`,
-          )
+          .map(drink => {
+            const typeText = translateAlcohol(drink.type);
+            // price가 존재하고 0 이상일 때만 가격 표시
+            const priceText =
+              drink.price && drink.price > 0
+                ? ` ${drink.price.toLocaleString()}원`
+                : '';
+            return `${typeText}${priceText}`;
+          })
           .join('   ')
       : null;
 
   return (
-    <>
-      {isUpdate ? (
-        <TouchableOpacity
-          style={[styles.timeview, {marginTop: 12}]}
-          onPress={storeupdatedrink}>
-          <Text style={[styles.timetextnow, {color: '#333'}]}>
-            {drinkText || '대표 주종 미설정'}
-          </Text>
-          <View style={{right: 30, position: 'absolute', alignSelf: 'center'}}>
-            <Entypo name="chevron-small-right" size={25} color="#333" />
-          </View>
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.timeview}>
-          <Text style={[styles.timetextnow, {color: '#5CCEFF'}]}>
-            {drinkText || '대표 주종 미설정'}
-          </Text>
-        </View>
-      )}
-    </>
+    <View style={styles.timeview}>
+      <CustomText style={[styles.timetextnow, {color: ColorUtil.main}]}>
+        {drinkText || '대표 주종 미설정'}
+      </CustomText>
+    </View>
   );
 };
 
@@ -52,11 +34,12 @@ const styles = StyleSheet.create({
     width: '100%',
     marginHorizontal: 18,
     alignItems: 'center',
+    marginVertical: 7,
   },
   timetextnow: {
     fontSize: 15,
     width: '85%',
-    fontFamily: 'Pretendard-Bold',
+    fontFamily: 'Pretendard-SemiBold',
   },
   alcoholText: {
     fontSize: 15,

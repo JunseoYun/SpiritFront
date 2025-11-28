@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {View, Pressable, Text, StyleSheet, Animated} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CustomText from '../../utils/CustomText';
 
 const AppInfo = ({scrollRef, navigation}) => {
   const [toggle, setToggle] = useState(false);
@@ -60,11 +61,9 @@ const AppInfo = ({scrollRef, navigation}) => {
           alignItems: 'center',
           paddingVertical: 5,
         }}>
-        <Text
-          style={[styles.toggletext, {marginRight: 1}]}
-          allowFontScaling={false}>
+        <CustomText style={[styles.toggletext, {marginRight: 1}]}>
           스피릿 사업자 정보
-        </Text>
+        </CustomText>
         {!toggle ? (
           <Entypo name="chevron-small-right" size={20} color="#777" />
         ) : (
@@ -85,54 +84,44 @@ const AppInfo = ({scrollRef, navigation}) => {
             const {height} = event.nativeEvent.layout;
             if (contentHeight === 0) setContentHeight(height);
           }}>
-          <Text style={styles.buttonText} allowFontScaling={false}>
-            사업자: 스피릿
-          </Text>
-          <Text style={styles.buttonText} allowFontScaling={false}>
+          <CustomText style={styles.buttonText}>사업자: 스피릿</CustomText>
+          <CustomText style={styles.buttonText}>
             대표자: 윤준서 김경모 김민
-          </Text>
-          <Text style={styles.buttonText} allowFontScaling={false}>
+          </CustomText>
+          <CustomText style={styles.buttonText}>
             주소: 경기 용인시 기흥구 사은로 126번길 48
-          </Text>
-          <Text style={styles.buttonText} allowFontScaling={false}>
+          </CustomText>
+          <CustomText style={styles.buttonText}>
             연락처: team19spirit@gmail.com
-          </Text>
+          </CustomText>
         </View>
 
         {/* 실제 보이는 뷰 */}
         <View>
-          <Text style={styles.buttonText} allowFontScaling={false}>
-            사업자: 스피릿
-          </Text>
-          <Text style={styles.buttonText} allowFontScaling={false}>
+          <CustomText style={styles.buttonText}>사업자: 스피릿</CustomText>
+          <CustomText style={styles.buttonText}>
             대표자: 윤준서 김경모 김민
-          </Text>
-          <Text style={styles.buttonText} allowFontScaling={false}>
+          </CustomText>
+          <CustomText style={styles.buttonText}>
             주소: 경기 용인시 기흥구 사은로 126번길 48
-          </Text>
-          <Text style={styles.buttonText} allowFontScaling={false}>
+          </CustomText>
+          <CustomText style={styles.buttonText}>
             연락처: team19spirit@gmail.com
-          </Text>
+          </CustomText>
         </View>
       </Animated.View>
 
       <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
         <Pressable onPress={() => handleAgreeScreen('terms')}>
-          <Text style={styles.buttonText} allowFontScaling={false}>
-            서비스 이용약관
-          </Text>
+          <CustomText style={styles.buttonText}>서비스 이용약관</CustomText>
         </Pressable>
         <View style={styles.divider} />
         <Pressable onPress={() => handleAgreeScreen('privacy')}>
-          <Text style={styles.buttonText} allowFontScaling={false}>
-            개인정보 처리방침
-          </Text>
+          <CustomText style={styles.buttonText}>개인정보 처리방침</CustomText>
         </Pressable>
         <View style={styles.divider} />
         <Pressable onPress={() => handleAgreeScreen('location')}>
-          <Text style={styles.buttonText} allowFontScaling={false}>
-            위치정보 이용약관
-          </Text>
+          <CustomText style={styles.buttonText}>위치정보 이용약관</CustomText>
         </Pressable>
       </View>
     </View>
@@ -144,9 +133,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
   },
-  toggletext: {fontSize: normalizeFont(12, 1.7), color: '#777'},
+  toggletext: {fontSize: 12, color: '#777'},
   buttonText: {
-    fontSize: normalizeFont(12, 1.7),
+    fontSize: 12,
     color: '#777',
     paddingVertical: 5,
   },

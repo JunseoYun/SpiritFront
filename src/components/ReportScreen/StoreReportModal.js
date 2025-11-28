@@ -1,5 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 import {View, Text, Pressable, Modal, StyleSheet, Animated} from 'react-native';
+import CustomText from '../../utils/CustomText';
 
 const StoreReportModal = ({
   isModalVisible,
@@ -44,26 +45,26 @@ const StoreReportModal = ({
         <Animated.View
           style={[styles.modalContainer, {opacity}]}
           onStartShouldSetResponder={() => true}>
-          <Text style={styles.modalTitle}>
+          <CustomText style={styles.modalTitle}>
             {isPropose ? '제보 확인' : '신고 확인'}
-          </Text>
-          <Text style={styles.modalMessage}>
+          </CustomText>
+          <CustomText style={styles.modalMessage}>
             정말로 {isPropose ? '제보' : '신고'}하시겠습니까?
-          </Text>
+          </CustomText>
 
           <View style={styles.buttonContainer}>
             <Pressable style={styles.button} onPress={() => handleClose()}>
-              <Text style={styles.cancelText}>취소</Text>
+              <CustomText style={styles.cancelText}>취소</CustomText>
             </Pressable>
 
             <View style={styles.divider} />
             <Pressable
               style={styles.button}
               onPress={() => handleClose(startUpdate)}>
-              <Text
+              <CustomText
                 style={[styles.confirmText, isPropose && styles.proposeText]}>
                 {isPropose ? '제보' : '신고'}
-              </Text>
+              </CustomText>
             </Pressable>
           </View>
         </Animated.View>
@@ -90,7 +91,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 17,
     fontWeight: '600',
-    marginBottom: 20,
     marginTop: 30,
     color: '#333',
   },
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   modalMessage: {
     fontSize: 16,
     textAlign: 'center',
-    marginTop: -15,
+    paddingTop: 20,
     marginBottom: 20,
     fontWeight: '400',
     marginHorizontal: 18,

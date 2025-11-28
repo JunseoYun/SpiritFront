@@ -10,16 +10,23 @@ const NonImageHeader = ({
   iconColor,
   title,
   onShare,
+  isLiked,
+  onToggleLike,
+  likeDisabled,
+  isAbsolute = true,
+  containerStyle,
 }) => {
   const insets = useSafeAreaInsets();
   return (
     <Animated.View
       style={[
         styles.navigateView,
+        isAbsolute ? styles.absoluteContainer : styles.relativeContainer,
         {
           backgroundColor: headerBackgroundColor,
           paddingTop: Platform.OS === 'android' ? insets.top + 10 : insets.top,
         },
+        containerStyle,
       ]}>
       <Animated.View
         style={{
@@ -46,7 +53,21 @@ const NonImageHeader = ({
           </Animated.Text>
         </Animated.View>
       </Animated.View>
-      <Animated.View style={{flexDirection: 'row'}}>
+      <Animated.View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <Pressable
+          onPress={onToggleLike}
+          disabled={likeDisabled}
+          hitSlop={8}
+          style={styles.headerIconButton}>
+          <Animated.Text
+            allowFontScaling={false}
+            style={[
+              {color: isLiked ? '#FF5E5E' : iconColor},
+              likeDisabled && {opacity: 0.5},
+            ]}>
+            <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={25} />
+          </Animated.Text>
+        </Pressable>
         <Pressable onPress={() => onShare()}>
           <Animated.Text
             allowFontScaling={false}
@@ -72,22 +93,31 @@ const NonImageHeader = ({
 
 const styles = StyleSheet.create({
   navigateView: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 18,
-    zIndex: 10,
     paddingBottom: 10,
+  },
+  absoluteContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  relativeContainer: {
+    position: 'relative',
+    zIndex: 1,
   },
   headerTitle: {
     fontSize: 20,
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
+  },
+  headerIconButton: {
+    marginRight: 12,
   },
   imageStyle: {
     alignSelf: 'center',

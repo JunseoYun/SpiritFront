@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Pressable, Text, StyleSheet, Platform} from 'react-native';
 import {useAuth} from '../../context/AuthContext';
 import useCustomAlert from '../../hooks/useCustomAlert';
+import CustomText from '../../utils/CustomText';
 
 const CFActionbtn = ({navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -34,11 +35,11 @@ const CFActionbtn = ({navigation}) => {
     <>
       <View style={styles.container}>
         <Pressable onPress={handleLogout}>
-          <Text style={styles.label}>로그아웃</Text>
+          <CustomText style={styles.label}>로그아웃</CustomText>
         </Pressable>
         <View style={styles.line} />
         <Pressable onPress={handleWhithdraw}>
-          <Text style={styles.label}>회원탈퇴</Text>
+          <CustomText style={styles.label}>회원탈퇴</CustomText>
         </Pressable>
         <AlertComponent />
       </View>

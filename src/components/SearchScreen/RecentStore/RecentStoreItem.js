@@ -12,6 +12,7 @@ import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import useDistance from '../../../hooks/useDistance';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../../../utils/CustomText';
 
 const fontScale = PixelRatio.getFontScale();
 
@@ -75,27 +76,29 @@ const RecentStoreItem = ({store, navigation, location}) => {
           {/* ✅ 영업 종료 표시 */}
           {!isOpen && !nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>
+              <CustomText style={styles.overlayText}>
                 영업 종료 {starttime ? `${starttime} 오픈` : ''}
-              </Text>
+              </CustomText>
             </View>
           )}
           {!isOpen && nextclosed && !closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>영업 종료 익일 휴무</Text>
+              <CustomText style={styles.overlayText}>
+                영업 종료 익일 휴무
+              </CustomText>
             </View>
           )}
           {!isOpen && !nextclosed && closed && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>금일 휴무</Text>
+              <CustomText style={styles.overlayText}>금일 휴무</CustomText>
             </View>
           )}
           {/* ✅ 브레이크 타임 표시 */}
           {isOpen && isBreak && (
             <View style={styles.overlay}>
-              <Text style={styles.overlayText}>
+              <CustomText style={styles.overlayText}>
                 브레이크 타임 {breakend ? `${breakend} 종료` : ''}
-              </Text>
+              </CustomText>
             </View>
           )}
         </FastImage>
@@ -109,21 +112,21 @@ const RecentStoreItem = ({store, navigation, location}) => {
               style={styles.imageStyle}
             />
           )}
-          <Text
+          <CustomText
             style={styles.storeName}
             numberOfLines={1} // 한 줄로 제한
             ellipsizeMode="tail">
             {store.name}
-          </Text>
+          </CustomText>
         </View>
         <View style={styles.storeViewInfo}>
-          <Text style={styles.StoreCategory}>
+          <CustomText style={styles.StoreCategory}>
             {store.categories && store.categories.length > 0
               ? store.categories
                   .map(category => translateCategory(category))
                   .join('  ')
               : '카테고리 미설정'}
-          </Text>
+          </CustomText>
         </View>
         <View
           style={[
@@ -134,18 +137,18 @@ const RecentStoreItem = ({store, navigation, location}) => {
             },
           ]}>
           {store?.isAlwaysOpen == true ? (
-            <Text style={styles.store24TimeInfo}>24시간 영업</Text>
+            <CustomText style={styles.store24TimeInfo}>24시간 영업</CustomText>
           ) : store?.isAlwaysOpen == false && closed ? (
-            <Text style={styles.storeTimeInfo}>금일 휴무</Text>
+            <CustomText style={styles.storeTimeInfo}>금일 휴무</CustomText>
           ) : (
-            <Text style={styles.storeTimeInfo}>
+            <CustomText style={styles.storeTimeInfo}>
               영업 종료 {endtime || '정보 없음'}
-            </Text>
+            </CustomText>
           )}
-          <Text style={styles.storeSubInfo}>
+          <CustomText style={styles.storeSubInfo}>
             {distance}
             {unit}
-          </Text>
+          </CustomText>
         </View>
       </View>
     </Pressable>

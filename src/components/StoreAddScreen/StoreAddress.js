@@ -1,4 +1,5 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
+import StaticKakaoMap from '../common/StaticKakaoMap';
 import {
   View,
   Text,
@@ -14,7 +15,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import {useToast} from '../../context/ToastContext';
 import forbiddenWords from '../../hooks/forbiddenWords';
-
+import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 const StoreAddress = ({
   address,
   detailedAddress,
@@ -25,15 +28,24 @@ const StoreAddress = ({
   error,
   location,
   storeAddressRef,
+  screen,
+  type = 'default',
 }) => {
+  const isRegistration = type === 'registration';
   const [focusedInput, setFocusedInput] = useState(null);
   const [errors, setErrors] = useState(null);
-  const {showToast} = useToast();
   const MAX_DETAIL = 100;
   const [overText, setOverText] = useState(false);
 
-  const labelAnim = useSharedValue(detailedAddress !== '' ? 1 : 0);
+  // Local state for detailed address management
+  const [localDetailedAddress, setLocalDetailedAddress] =
+    useState(detailedAddress);
 
+  useEffect(() => {
+    setLocalDetailedAddress(detailedAddress);
+  }, [detailedAddress]);
+
+  const labelAnim = useSharedValue(detailedAddress !== '' ? 1 : 0);
   const isFocused = key => focusedInput === key;
 
   useEffect(() => {
@@ -43,184 +55,218 @@ const StoreAddress = ({
     );
   }, [focusedInput, detailedAddress]);
 
-  const animatedLabelStyle = useAnimatedStyle(() => {
-    const isActive = labelAnim.value === 1;
-    return {
-      position: 'absolute',
-      left: 1,
-      transform: [
-        {
-          translateY: withTiming(isActive ? -8 : 16, {
-            duration: 120,
-          }),
-        },
-      ],
-      fontSize: withTiming(isActive ? 16 : 22, {
-        duration: 120,
-      }),
-      color: detailedAddress !== '' ? '#121212' : '#999', // ← 값 있을 때 검정
-      fontFamily: 'Pretendard-Medium',
-    };
-  });
-
   const handleDetailedAddressChange = value => {
     const containsForbiddenWord = forbiddenWords.some(word =>
       value.includes(word),
     );
-
     if (containsForbiddenWord) {
       setErrors('비속어 사용 금지');
       return;
     }
+    setLocalDetailedAddress(value);
     setDetailedAddress(value);
     setErrors(null);
   };
 
   const inputViewStyle = [
     styles.storeinputview,
-    index === 1 && {marginTop: 40},
+    index === 1 && !isRegistration && {marginTop: 40},
+    isRegistration && styles.registrationSpacing,
   ];
+
+  const mapView = useMemo(() => {
+    if (!location?.latitude || !location?.longitude) return null;
+    return (
+      <StaticKakaoMap
+        latitude={location.latitude}
+        longitude={location.longitude}
+        labelText={address || '선택한 위치'}
+      />
+    );
+  }, [location?.latitude, location?.longitude, address]);
 
   return (
     <View>
-      {/* 매장 주소/사업장 소재지 */}
       <View style={inputViewStyle}>
-        <View style={styles.storeinput} ref={storeAddressRef}>
+        {!isRegistration &&
+          (index === 1 ? (
+            <View style={styles.labelView}>
+              <CustomText style={styles.label}>사업장 소재지</CustomText>
+              <CustomText style={styles.subLabel}>(매장 주소)</CustomText>
+            </View>
+          ) : (
+            <View style={styles.labelView}>
+              <CustomText style={styles.label}>매장 주소</CustomText>
+              {screen === 'StoreSuggestionScreen' && (
+                <CustomText style={styles.subLabel}>
+                  · 대략적인 위치만 알려주셔도 괜찮아요
+                </CustomText>
+              )}
+            </View>
+          ))}
+        {/* ✅ Kakao Static Map Preview */}
+        {/* ✅ 매장 주소 / 사업장 소재지 */}
+        {/* {location?.latitude && location?.longitude && (
+    
+        )} */}
+        {mapView}
+        <View style={styles.inputContainer} ref={storeAddressRef}>
           <TouchableOpacity
-            style={styles.addressTouchable}
+            style={styles.inputTouchable}
             onPress={() =>
-              navigation.navigate('StoreAddressSearch', {onAddressSelect})
+              navigation.navigate('StoreAddressSearch', {
+                onAddressSelect,
+                detailedAddress,
+              })
             }>
             {address ? (
-              <>
-                <Text
-                  style={[
-                    styles.storeinputtext,
-                    index === 1 && {color: '#333'},
-                  ]}>
-                  {index === 1 ? '사업장 소재지*' : '매장 주소*'}
-                </Text>
-                <Text style={styles.inputText}>{address}</Text>
-              </>
+              <CustomText style={styles.inputText}>{address}</CustomText>
             ) : (
-              <Text style={styles.inputHideText}>
-                {index === 1 ? '사업장 소재지*' : '매장 주소*'}
-              </Text>
+              <CustomText style={styles.placeholderText}>
+                {index === 1
+                  ? '사업장 소재지를 입력해주세요'
+                  : '매장 주소를 입력해주세요'}
+              </CustomText>
             )}
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() =>
               navigation.navigate('StoreAddMapScreen', {
                 location,
                 onAddressSelect,
+                detailedAddress,
               })
             }
             style={styles.mapIconButton}>
-            <Ionicons name="map-outline" size={30} color="#999" />
+            <Ionicons name="map-outline" size={20} color="#666" />
           </TouchableOpacity>
         </View>
       </View>
 
       {error === 'StoreAddress' && address === '' && (
-        <Text style={styles.errorMessage}>매장주소를 입력해주세요.</Text>
+        <CustomText style={styles.errorMessage}>
+          매장 주소를 입력해주세요.
+        </CustomText>
       )}
 
-      {/* 상세주소 */}
-      <View style={inputViewStyle}>
-        <View style={{position: 'relative'}}>
-          <Animated.Text style={animatedLabelStyle}>
-            상세 주소, 건물 층수, 호수 등
-          </Animated.Text>
-          <TextInput
-            style={[
-              styles.storeinput,
-              isFocused('detailedAddress') && styles.focusedInput,
-              {paddingBottom: 7, paddingTop: 20, paddingLeft: 1},
-            ]}
-            placeholder=""
-            placeholderTextColor="#999"
-            value={detailedAddress}
-            onChangeText={text => {
-              handleDetailedAddressChange(text);
-              setOverText(text.length >= MAX_DETAIL);
-            }}
-            onFocus={() => setFocusedInput('detailedAddress')}
-            onBlur={() => setFocusedInput(null)}
-            returnKeyType="done"
-            maxLength={MAX_DETAIL}
-          />
-          {overText && (
-            <Text style={styles.errorText}>
-              상세 주소는 최대 100자까지 입력 가능합니다.
-            </Text>
-          )}
-        </View>
+      {/* ✅ 상세 주소 (매장 주소 구조 동일) */}
+      {screen !== 'StoreSuggestionScreen' && (
+        <View style={[styles.detailedAddressView]}>
+          <View style={styles.inputContainer}>
+            <CustomTextInput
+              style={[styles.inputField, {paddingRight: 40}]}
+              value={localDetailedAddress}
+              placeholder="상세 주소, 건물 층수, 호수 등"
+              placeholderTextColor={ColorUtil.placeholderText}
+              onChangeText={text => {
+                handleDetailedAddressChange(text);
+                setOverText(text.length >= MAX_DETAIL);
+              }}
+              onFocus={() => setFocusedInput('detailedAddress')}
+              onBlur={() => setFocusedInput(null)}
+              returnKeyType="done"
+              maxLength={MAX_DETAIL}
+            />
+          </View>
 
-        {errors && <Text style={styles.errorText}>{errors}</Text>}
-      </View>
+          {overText && (
+            <CustomText style={styles.errorText}>
+              상세 주소는 최대 100자까지 입력 가능합니다.
+            </CustomText>
+          )}
+          {errors && <CustomText style={styles.errorText}>{errors}</CustomText>}
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   storeinputview: {
-    marginTop: 50,
-    marginHorizontal: 20,
+    marginTop: 40,
+    marginHorizontal: 18,
   },
-  storeinputtext: {
-    fontFamily: 'Pretendard-Medium',
-    color: '#999',
-    fontSize: 16,
-    marginBottom: 10,
+  registrationSpacing: {
+    marginTop: 0,
   },
-  addressTouchable: {
-    flex: 1,
-  },
-  storeinput: {
-    width: '100%',
+  // label: {
+  //   fontFamily: 'Pretendard-SemiBold',
+  //   color: '#333',
+  //   fontSize: 16,
+  //   marginBottom: 12,
+  // },
+
+  labelView: {
     flexDirection: 'row',
-    borderBottomColor: '#F2F2F2',
-    borderBottomWidth: 1,
-    fontSize: 22,
-    fontFamily: 'Pretendard-Medium',
-    paddingVertical: 7,
-    paddingLeft: 1,
-    color: 'black',
+    alignItems: 'flex-end',
+    marginBottom: 12,
   },
-  inputHideText: {
-    fontSize: 22,
-    fontFamily: 'Pretendard-Medium',
-    paddingVertical: 1,
-    paddingLeft: 1,
+  label: {
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
+    fontSize: 15,
+    marginRight: 6,
+  },
+  subLabel: {
+    fontFamily: 'Pretendard-Regular',
     color: '#999',
+    fontSize: 14,
+    marginRight: 4,
+    paddingBottom: 1,
+  },
+  detailedAddressView: {
+    marginHorizontal: 18,
+    marginTop: 7,
+  },
+
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: ColorUtil.placeholderBorder,
+    borderWidth: 1,
+    borderRadius: 9,
+    minHeight: 52,
+    paddingHorizontal: 14,
+  },
+  inputTouchable: {
+    flex: 1,
+    justifyContent: 'center',
   },
   inputText: {
-    fontSize: 22,
-    fontFamily: 'Pretendard-Medium',
-    paddingVertical: 1,
-    paddingLeft: 1,
+    fontSize: 16,
+    fontFamily: 'Pretendard-Regular',
+    color: '#333',
   },
-  focusedInput: {
-    borderBottomColor: '#16BBFF',
-    borderBottomWidth: 2,
+  placeholderText: {
+    fontFamily: 'Pretendard-Regular',
+    color: ColorUtil.placeholderText,
+    fontSize: 16,
+  },
+  inputField: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'Pretendard-Regular',
+    color: '#333',
+  },
+  mapIconButton: {
+    marginLeft: 8,
+    padding: 6,
+    borderRadius: 20,
+    backgroundColor: '#F8F8F8',
   },
   errorText: {
-    color: 'red',
+    color: '#FF4816',
     fontSize: 14,
-    marginTop: 5,
+    marginTop: 6,
     fontFamily: 'Pretendard-Medium',
   },
   errorMessage: {
     color: '#FF4816',
-    fontSize: 15,
     marginTop: 5,
     marginHorizontal: 18,
-    fontFamily: 'Pretendard-Medium',
-  },
-  mapIconButton: {
-    alignSelf: 'flex-end',
-    paddingVertical: 1,
-    paddingLeft: 1,
+    fontSize: 14,
+    fontFamily: 'Pretendard-Regular',
   },
 });
 

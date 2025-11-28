@@ -22,6 +22,8 @@ import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
 import {getFcmToken} from '../../hooks/notification/useNotificationPermission';
 import CancelText from '../../components/CancelText/CancelText';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const RegisterScreen = ({route, navigation}) => {
   // route.params를 통해 전달된 데이터 접근
@@ -195,16 +197,10 @@ const RegisterScreen = ({route, navigation}) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.titleView}>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Text style={styles.titleNameText} allowFontScaling={false}>
-            한잔할까
-          </Text>
-          <Text style={styles.titleText} allowFontScaling={false}>
-            에서 활동할
-          </Text>
+          <CustomText style={styles.titleNameText}>한잔할까</CustomText>
+          <CustomText style={styles.titleText}>에서 활동할</CustomText>
         </View>
-        <Text style={styles.titleText} allowFontScaling={false}>
-          닉네임을 입력해 주세요
-        </Text>
+        <CustomText style={styles.titleText}>닉네임을 입력해 주세요</CustomText>
       </View>
 
       <View
@@ -218,8 +214,7 @@ const RegisterScreen = ({route, navigation}) => {
             !nicknamelength &&
             styles.checkInputView,
         ]}>
-        <TextInput
-          allowFontScaling={false}
+        <CustomTextInput
           style={styles.nicknameInput}
           value={nickname}
           onChangeText={handleNicknameChange}
@@ -242,25 +237,27 @@ const RegisterScreen = ({route, navigation}) => {
 
       {/* 비속어 경고 메시지 */}
       {nicknameError && (
-        <Text style={styles.errorText}>
+        <CustomText style={styles.errorText}>
           비속어 및 이용약관에 위배된 닉네임은 사용할 수 없습니다.
-        </Text>
+        </CustomText>
       )}
       {nicknamefilter && (
-        <Text style={styles.errorText}>초성 닉네임은 사용할 수 없습니다.</Text>
+        <CustomText style={styles.errorText}>
+          초성 닉네임은 사용할 수 없습니다.
+        </CustomText>
       )}
       {isSameNick && (
-        <Text style={styles.errorText}>중복된 닉네임 입니다.</Text>
+        <CustomText style={styles.errorText}>중복된 닉네임 입니다.</CustomText>
       )}
       {nicknamelength && (
-        <Text style={styles.errorText}>
+        <CustomText style={styles.errorText}>
           닉네임 최대 글자 수는 12글자 입니다.
-        </Text>
+        </CustomText>
       )}
       {checking && (
-        <Text style={[styles.errorText, {color: '#333'}]}>
+        <CustomText style={[styles.errorText, {color: '#333'}]}>
           이미 등록된 닉네임입니다.
-        </Text>
+        </CustomText>
       )}
 
       <TouchableOpacity
@@ -273,9 +270,9 @@ const RegisterScreen = ({route, navigation}) => {
           !nickname || nicknameError || nicknamefilter || nicknamelength
         }
         onPress={nicknameCheck ? handleRegister : handleCheckNickname}>
-        <Text style={styles.checkButtonText}>
+        <CustomText style={styles.checkButtonText}>
           {nicknameCheck ? '시작하기' : '중복 검사'}
-        </Text>
+        </CustomText>
       </TouchableOpacity>
 
       <AlertComponent />
@@ -333,7 +330,7 @@ const styles = StyleSheet.create({
     borderColor: '#FF0000', // 빨간 테두리
   },
   checkInputView: {
-    borderColor: '#16BBFF', // 빨간 테두리
+    borderColor: '#3CBBFF', // 빨간 테두리
   },
   errorText: {
     color: '#FF0000',

@@ -22,8 +22,10 @@ import {
 } from '../../hooks/useLocation';
 import Loading from '../../hooks/Loading';
 import {log_access_create} from '../../api/userApi';
-import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import BottomActionButton from '../../utils/BottomActionButton';
 
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import CustomText from '../../utils/CustomText';
 const LocataionMapScreen = ({navigation}) => {
   const route = useRoute();
   const [loading, setLoading] = useState(false);
@@ -35,8 +37,7 @@ const LocataionMapScreen = ({navigation}) => {
   const {showToast} = useToast();
   const webViewRef = useRef(null);
 
-  const {bottom} = useSafeAndroidInsets();
-
+  const insets = useSafeAreaInsets();
   useEffect(() => {
     if (location) {
       updateNewLocation();
@@ -167,7 +168,7 @@ const LocataionMapScreen = ({navigation}) => {
   };
 
   return (
-    <View style={{flex: 1, paddingBottom: bottom}}>
+    <View style={{flex: 1}}>
       {location ? (
         <WebView
           ref={webViewRef}
@@ -181,17 +182,31 @@ const LocataionMapScreen = ({navigation}) => {
         />
       ) : null}
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={[styles.buttonRoute, {bottom: 110 + bottom}]}
         onPress={updateNewLocation}>
-        <Feather name="crosshair" size={30} color="#16BBFF" />
+        <Feather name="crosshair" size={30} color="#3CBBFF" />
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.locationbtn, {bottom: 40 + bottom}]}
         onPress={setcenterrefresh}>
-        <Text style={styles.locationbtntext}>이 위치로 주소 설정</Text>
+        <CustomText style={styles.locationbtntext}>
+          이 위치로 주소 설정
+        </CustomText>
+      </TouchableOpacity> */}
+
+      <TouchableOpacity
+        style={[styles.buttonRoute, {bottom: insets.bottom + 100}]}
+        onPress={updateNewLocation}>
+        <Feather name="crosshair" size={22} color="#3CBBFF" />
       </TouchableOpacity>
 
+      <BottomActionButton
+        label={'이 위치로 주소 설정'}
+        cancel={true}
+        onPress={setcenterrefresh}
+        onCancel={() => navigation.goBack()}
+      />
       <Loading loading={loading} />
     </View>
   );
@@ -212,7 +227,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '90%',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 7,
   },
   locationbtntext: {
@@ -223,13 +238,20 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   buttonRoute: {
-    position: 'absolute',
-    left: '7%',
-    borderRadius: 50,
+    width: 42,
+    borderRadius: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 9,
-    backgroundColor: 'rgba(22, 187, 255, 0.2)',
+    padding: 10,
+    backgroundColor: '#fff',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 0},
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+
+    position: 'absolute',
+    right: '7%',
   },
 });
 

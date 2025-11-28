@@ -11,6 +11,7 @@ import {
 import Entypo from 'react-native-vector-icons/Entypo';
 
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import CustomText from '../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 
@@ -43,10 +44,10 @@ const MapRadius = ({setRadiusint}) => {
         <Pressable
           style={styles.searchView}
           onPress={() => setDropdownVisible(prev => !prev)}>
-          <Text style={styles.buttonTextTop} allowFontScaling={false}>
+          <CustomText maxScale={1.3} style={styles.buttonTextTop}>
             {' '}
             {selectedDistance == 0.5 ? '500m' : `${selectedDistance}km`}
-          </Text>
+          </CustomText>
           <Entypo
             name="chevron-small-down"
             size={20}
@@ -62,14 +63,14 @@ const MapRadius = ({setRadiusint}) => {
                 key={item}
                 style={[styles.option]}
                 onPress={() => handleSelect(item)}>
-                <Text
-                  allowFontScaling={false}
+                <CustomText
+                  maxScale={1.3}
                   style={[
                     styles.optionText,
                     item === selectedDistance && styles.selectedOptionText,
                   ]}>
                   {item == 0.5 ? '500m' : `${item}km`}
-                </Text>
+                </CustomText>
               </Pressable>
             ))}
           </View>
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
   },
   buttonTextTop: {
     color: '#121212',
-    fontSize: 15 * fontScale,
+    fontSize: 15,
     paddingRight: 7,
     borderRightWidth: 0.5,
     borderColor: 'gray',
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   optionText: {
-    fontSize: 16 * fontScale,
+    fontSize: 16,
     fontFamily: 'Pretendard-Medium',
     color: '#999',
   },

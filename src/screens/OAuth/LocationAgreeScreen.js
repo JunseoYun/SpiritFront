@@ -4,6 +4,7 @@ import React, {useState} from 'react';
 import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
 import LocationMenu from '../../components/Agreement/Location/LocationMenu';
 import Location_v20250401 from '../../components/Agreement/Location/Location_v20250401';
+import CustomText from '../../utils/CustomText';
 
 const LocationAgreeScreen = ({navigation}) => {
   const [selected, setSelected] = useState('[현행] 2025년 4월 1일 시행안'); // 선택된 메뉴
@@ -21,7 +22,7 @@ const LocationAgreeScreen = ({navigation}) => {
       //   setActiveComponent(<Location_v20241226 />);
       //   break;
       default:
-        setActiveComponent(<Text>선택된 약관이 없습니다.</Text>);
+        setActiveComponent(<CustomText>선택된 약관이 없습니다.</CustomText>);
     }
   };
 

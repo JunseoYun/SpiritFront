@@ -4,6 +4,7 @@ import React, {useState} from 'react';
 import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
 import PrivacyMenu from '../../components/Agreement/Privacy/PrivacyMenu';
 import Privacy_v20250401 from '../../components/Agreement/Privacy/Privacy_v20250401';
+import CustomText from '../../utils/CustomText';
 
 const PrivacyAgreeScreen = ({}) => {
   const [selected, setSelected] = useState('[현행] 2025년 1월 28일 시행안'); // 선택된 메뉴
@@ -19,7 +20,7 @@ const PrivacyAgreeScreen = ({}) => {
       //   setActiveComponent(<Privacy_v20241226 />);
       //   break;
       default:
-        setActiveComponent(<Text>선택된 약관이 없습니다.</Text>);
+        setActiveComponent(<CustomText>선택된 약관이 없습니다.</CustomText>);
     }
   };
 
