@@ -119,7 +119,7 @@ const MapFilterHeader = ({
                 styles.filterText,
                 storeatmCount > 0 && styles.filterTextActive,
               ]}>
-              {storeatmLabel}
+              분위기
             </CustomText>
           </Pressable>
           {storeatmCount > 0 && (
