@@ -157,7 +157,7 @@ const MapFilterHeader = ({
               styles.filterText,
               screenLabel == '설치' && styles.filterTextActive,
             ]}>
-            스크린
+            스크린·TV
           </CustomText>
         </Pressable>
         <Pressable
@@ -208,7 +208,7 @@ const MapFilterHeader = ({
               styles.filterText,
               peopleLabel !== '인원' && styles.filterTextActive,
             ]}>
-            단체 방문
+            단체 방문 가능
           </CustomText>
         </Pressable>
         <Pressable
@@ -225,7 +225,7 @@ const MapFilterHeader = ({
               styles.filterText,
               parkingLabel == '가능' && styles.filterTextActive,
             ]}>
-            주차
+            주차 가능
           </CustomText>
         </Pressable>
         <Pressable
@@ -242,7 +242,7 @@ const MapFilterHeader = ({
               styles.filterText,
               corkageLabel == '가능' && styles.filterTextActive,
             ]}>
-            콜키지
+            콜키지 가능
           </CustomText>
         </Pressable>
       </ScrollView>
