@@ -169,6 +169,7 @@ const SearchScreen = ({navigation, route}) => {
                 params: {skipAutoSnap: true, prevTab: lastTab},
                 initialTab: 'MapScreen',
                 lastFocusedTab: lastTab,
+                lastNonMapTab: lastTab,
               },
             },
           ],
