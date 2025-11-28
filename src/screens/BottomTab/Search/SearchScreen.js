@@ -234,8 +234,8 @@ const SearchScreen = ({navigation, route}) => {
   const categoryLabel = getFilterValue('카테고리', '카테고리');
   const peopleLabel = getFilterValue('인원', '인원');
   const alcoholLabel = getFilterValue('주종', '주종');
-  const storeatmValue = getFilterValue('매장분위기', '');
-  const storeatmLabel = storeatmValue || '매장분위기';
+  const storeatmValue = getFilterValue('분위기', '');
+  const storeatmLabel = storeatmValue || '분위기';
   const timeActive = getFilterValue('방문시간', '방문시간');
   const parkingLabel = getFilterValue('주차', '주차');
   const corkageLabel = getFilterValue('콜키지', '콜키지');
