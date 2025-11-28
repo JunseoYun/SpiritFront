@@ -121,7 +121,7 @@ const MapScreen = ({navigation, route}) => {
   const [isFlatListVisible, setIsFlatListVisible] = useState(true); // 플랫리스트 상태
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
   const [radius, setRadiusint] = useState(2);
-  const {radiusKm, selectedFilters, searchText} = useMapSearch();
+  const {radiusKm, selectedFilters, searchText, setSearchText} = useMapSearch();
   const prevRadiusRef = useRef(radius);
   const [storegetloading, setStoregetloading] = useState(true);
   const [sheetIndex, setSheetIndex] = useState(1);
@@ -245,6 +245,11 @@ const MapScreen = ({navigation, route}) => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
+        const trimmed = (searchText || '').trim();
+        if (trimmed.length > 0) {
+          setSearchText('');
+          return true;
+        }
         navigation.navigate('MainScreen'); // MainScreen 탭으로 전환
         return true; // 기본 뒤로가기 방지
       };
@@ -255,7 +260,7 @@ const MapScreen = ({navigation, route}) => {
       );
 
       return () => backHandler.remove();
-    }, [navigation]),
+    }, [navigation, searchText, setSearchText]),
   );
 
   useEffect(() => {
