@@ -35,7 +35,7 @@ import {
 } from '../../hooks/usePhotopermis';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
 import Loading from '../../hooks/Loading';
-import ActionButtons from '../../components/UpdateBottomSheet/ActionButtons';
+import BottomActionButton from '../../utils/BottomActionButton';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import {
   StoreBoardimage,
@@ -928,7 +928,7 @@ const InfoImageEditScreen = ({navigation, route}) => {
             renderItem={renderItem}
             activationDistance={Platform.OS === 'ios' ? 12 : 28}
             scrollPercent={5}
-            contentContainerStyle={{paddingBottom: 0}}
+            contentContainerStyle={{paddingBottom: bottom + 140}}
             ListFooterComponent={
               <>
                 {!checkDelete && (
@@ -960,24 +960,24 @@ const InfoImageEditScreen = ({navigation, route}) => {
         )}
       </View>
 
-      <View
-        style={{
-          paddingHorizontal: 18,
-          paddingBottom: Platform.OS === 'ios' ? 7 : 18,
-          backgroundColor: '#fff',
-          ...Platform.select({
-            ios: {
-              shadowColor: '#000',
-              shadowOffset: {width: 0, height: -8}, // 위쪽 그림자
-              shadowOpacity: 0.03,
-              shadowRadius: 4,
-            },
-            android: {
-              elevation: 8, // 안드로이드는 이거 하나면 됨
-            },
-          }),
-        }}>
-        {inlineOrderMode ? (
+      {inlineOrderMode ? (
+        <View
+          style={{
+            paddingHorizontal: 18,
+            paddingBottom: Platform.OS === 'ios' ? 7 : 18,
+            backgroundColor: '#fff',
+            ...Platform.select({
+              ios: {
+                shadowColor: '#000',
+                shadowOffset: {width: 0, height: -8}, // 위쪽 그림자
+                shadowOpacity: 0.03,
+                shadowRadius: 4,
+              },
+              android: {
+                elevation: 8, // 안드로이드는 이거 하나면 됨
+              },
+            }),
+          }}>
           <View style={[styles.footer, {paddingBottom: bottom}]}>
             <TouchableOpacity
               style={styles.resetButton}
@@ -1003,16 +1003,24 @@ const InfoImageEditScreen = ({navigation, route}) => {
               <CustomText style={styles.applyText}>적용</CustomText>
             </TouchableOpacity>
           </View>
-        ) : checkDelete ? (
-          <ActionButtons
-            onCancel={cancelSelectDelete}
-            onSave={handleDeleteSelected}
-            option="delete"
-          />
-        ) : (
-          <ActionButtons onCancel={handleCancel} onSave={handleSave} />
-        )}
-      </View>
+        </View>
+      ) : checkDelete ? (
+        <BottomActionButton
+          cancel
+          cancelLabel="취소"
+          onCancel={cancelSelectDelete}
+          label="삭제"
+          onPress={handleDeleteSelected}
+        />
+      ) : (
+        <BottomActionButton
+          cancel
+          cancelLabel="취소"
+          onCancel={handleCancel}
+          label="저장"
+          onPress={handleSave}
+        />
+      )}
 
       <AlertComponent />
       {(loading || !loadingimg) && <Loading loading={true} />}
