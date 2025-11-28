@@ -6,6 +6,7 @@ import SearchScreen from '../screens/BottomTab/Search/SearchScreen';
 const Stack = createStackNavigator();
 
 export default function SearchStack() {
+  //frist commit - planned for deletion
   return (
     <Stack.Navigator initialRouteName="SearchScreen">
       <Stack.Screen
