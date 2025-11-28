@@ -17,12 +17,12 @@ const StoreMapScript = (lat, lng, storeLat, storeLong, storeName = '') =>
          encodeURIComponent(\`
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 400 400">
   <!-- Outer translucent circle -->
-  <circle cx="200" cy="200" r="200" fill="rgba(60, 187, 255, 0.25)" />
+  <circle cx="200" cy="200" r="200" fill="rgba(0, 109, 254, 0.2)" />
 
   <!-- Center white dot -->
   <circle cx="200" cy="200" r="90" fill="#ffffff" />
   <!-- Middle solid circle -->
-  <circle cx="200" cy="200" r="60" fill="#3CBBFF" />
+  <circle cx="200" cy="200" r="60" fill="#006DFE" />
 
 </svg>
 \`);
