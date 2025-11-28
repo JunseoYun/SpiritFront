@@ -4,7 +4,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import MainScreen from '../screens/BottomTab/MainScreen';
 import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
-import SearchStack from './SearchStack';
 import MyStack from './MyStack';
 import CustomText from '../utils/CustomText';
 
@@ -38,8 +37,6 @@ const MainBtmbar = () => {
             iconName = focused ? 'home' : 'home-outline';
           else if (route.name === 'MapScreen')
             iconName = focused ? 'map' : 'map-outline';
-          else if (route.name === 'SearchStack')
-            iconName = focused ? 'search' : 'search-outline';
           else if (route.name === 'LikeScreen') {
             iconName = focused ? 'heart' : 'heart-outline';
           } else if (route.name === 'MyStack')
@@ -47,23 +44,6 @@ const MainBtmbar = () => {
           return <Ionicons name={iconName} size={25} color={color} />;
         },
       })}>
-      <Tab.Screen
-        name="SearchStack"
-        component={SearchStack}
-        options={{
-          tabBarLabel: ({color}) => renderLabel('검색', color),
-          headerShown: false,
-        }}
-      />
-      <Tab.Screen
-        name="MapScreen"
-        component={MapScreen}
-        options={{
-          tabBarLabel: ({color}) => renderLabel('주변', color),
-          headerShown: false,
-          tabBarStyle: {display: 'none'},
-        }}
-      />
       <Tab.Screen
         name="MainScreen"
         component={MainScreen}
@@ -80,6 +60,15 @@ const MainBtmbar = () => {
             }
           },
         })}
+      />
+      <Tab.Screen
+        name="MapScreen"
+        component={MapScreen}
+        options={{
+          tabBarLabel: ({color}) => renderLabel('주변', color),
+          headerShown: false,
+          tabBarStyle: {display: 'none'},
+        }}
       />
       <Tab.Screen
         name="LikeScreen"
