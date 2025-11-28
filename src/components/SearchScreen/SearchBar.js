@@ -6,7 +6,8 @@ import CancelText from '../CancelText/CancelText';
 import {useFocusEffect} from '@react-navigation/native';
 import CustomTextInput from '../../utils/CustomTextInput';
 import ColorUtil from '../../utils/ColorUtil';
-
+import {AILogoIcon} from '../../assets/svg/AILogoIcon';
+import CustomText from '../../utils/CustomText';
 const SearchBar = ({
   value,
   onChangeText,
@@ -66,7 +67,8 @@ const SearchBar = ({
           onPress={() => onHomePress && onHomePress()}
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
           <View style={styles.homeButtonContent}>
-            <Ionicons name="home" size={22} color="#333" />
+            <AILogoIcon size={19} />
+            <CustomText style={[styles.exploreText]}>탐색</CustomText>
           </View>
         </Pressable>
       </View>
@@ -129,8 +131,14 @@ const styles = StyleSheet.create({
   homeButtonContent: {
     width: '100%',
     height: '100%',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 6,
+  },
+  exploreText: {
+    fontSize: 12,
+    color: '#3CBBFF',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

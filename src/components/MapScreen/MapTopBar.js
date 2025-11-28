@@ -1,8 +1,10 @@
 import React, {useCallback, useEffect, useRef} from 'react';
 import {StyleSheet, Text, Pressable, Animated, View} from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useMapSearch} from '../../context/MapSearchContext';
+import {AILogoIcon, AIEmptyLogoIcon} from '../../assets/svg/AILogoIcon';
+import LinearGradient from 'react-native-linear-gradient';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import ColorUtil from '../../utils/ColorUtil';
 import CustomText from '../../utils/CustomText';
@@ -21,6 +23,7 @@ const MapTopBar = ({
   const whiteBgAnim = useRef(
     new Animated.Value(forceWhiteBackground ? 1 : 0),
   ).current;
+  const isFullScreen = !forceWhiteBackground;
 
   useEffect(() => {
     Animated.timing(whiteBgAnim, {
@@ -143,9 +146,26 @@ const MapTopBar = ({
           onPress={() => {
             navigation.navigate('MainScreen');
           }}>
-          <View style={styles.homeButtonContent}>
-            <Ionicons name="home" size={22} color="#333" />
-          </View>
+          {!forceWhiteBackground ? (
+            <LinearGradient
+              colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
+              locations={[0, 0.5, 1]}
+              start={{x: 0, y: 0}}
+              end={{x: 1, y: 1}}
+              style={styles.homeGradient}>
+              <View style={styles.homeButtonContent}>
+                <AIEmptyLogoIcon size={19} />
+                <CustomText style={styles.exploreText}>탐색</CustomText>
+              </View>
+            </LinearGradient>
+          ) : (
+            <View style={styles.homeButtonContent}>
+              <AILogoIcon size={19} />
+              <CustomText style={[styles.exploreText, {color: '#3cbbff'}]}>
+                탐색
+              </CustomText>
+            </View>
+          )}
         </AnimatedPressable>
       </View>
     </Animated.View>
@@ -207,9 +227,10 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 9,
-    backgroundColor: '#fff',
+    backgroundColor: '#3CBBFF',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
 
     elevation: 3,
     shadowColor: '#000',
@@ -220,15 +241,26 @@ const styles = StyleSheet.create({
   homeButtonContent: {
     width: '100%',
     height: '100%',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 6,
+  },
+  exploreText: {
+    fontSize: 12,
+    color: '#FFF',
+    fontFamily: 'Pretendard-Medium',
+  },
+  homeGradient: {
+    width: '100%',
+    height: '100%',
   },
   homeButtonSolid: {
-    borderWidth: 1,
-    borderColor: ColorUtil.border,
     elevation: 0,
     shadowColor: '#000',
     shadowOpacity: 0,
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: ColorUtil.border,
   },
 });
 
