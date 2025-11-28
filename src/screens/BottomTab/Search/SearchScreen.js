@@ -312,9 +312,7 @@ const SearchScreen = ({navigation, route}) => {
                   await AsyncStorage.removeItem(RECENT_KEY);
                   setRecentSearches([]);
                 }}>
-                <CustomText style={styles.clearText}>
-                  최근 검색어 전체 삭제
-                </CustomText>
+                <CustomText style={styles.clearText}>검색 기록 삭제</CustomText>
               </Pressable>
             </ScrollView>
           </View>

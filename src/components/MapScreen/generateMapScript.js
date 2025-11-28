@@ -390,7 +390,7 @@ window.overlayMarkers = [];
     var count = group.length;
 var numberText =
   count > 1
-    ? '<text x="16" y="14" font-size="10" font-weight="700" font-family="Pretendard, Arial" fill="#3CBBFF" text-anchor="middle" dominant-baseline="central">' 
+    ? '<text x="16" y="13.5" font-size="10" font-weight="700" font-family="Pretendard, Arial" fill="#3CBBFF" text-anchor="middle" dominant-baseline="central">' 
         + count + 
       '</text>'
     : '';
