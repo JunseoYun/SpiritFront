@@ -9,6 +9,8 @@ import ColorUtil from '../../utils/ColorUtil';
 import CustomText from '../../utils/CustomText';
 import CustomTextInput from '../../utils/CustomTextInput';
 
+const MAX_CONTENT_LENGTH = 500;
+
 const StoreAddContent = ({
   storeContent,
   setStoreContent,
@@ -20,7 +22,6 @@ const StoreAddContent = ({
   const [focusedInput, setFocusedInput] = useState(false);
   const [errors, setErrors] = useState({});
   const storeContentInputRef = useRef(null);
-  const [overText, setOverText] = useState(false);
 
   // reanimated shared value
   const labelAnim = useSharedValue(storeContent !== '' ? 1 : 0);
@@ -67,17 +68,9 @@ const StoreAddContent = ({
               ]}
               multiline
               value={storeContent}
-              onChangeText={text => {
-                const maxChars = 500;
-                if (text.length > maxChars) {
-                  setOverText(true);
-                  return; // 초과 입력 무시
-                } else {
-                  setOverText(false);
-                }
-                setStoreContent(text);
-              }}
-              placeholder="매장 소개는 최대 500자입니다."
+              onChangeText={setStoreContent}
+              maxLength={MAX_CONTENT_LENGTH}
+              placeholder="매장 소개는 최대 500자입니다.(선택)"
               placeholderTextColor={ColorUtil.placeholderText}
               onFocus={() => {
                 setFocusedInput(true);
@@ -87,24 +80,19 @@ const StoreAddContent = ({
               returnKeyType="done"
             />
           </View>
+          <View style={styles.charCountRow}>
+            <CustomText style={styles.charCountText}>
+              {storeContent.length}/{MAX_CONTENT_LENGTH}
+            </CustomText>
+          </View>
         </View>
 
-        {overText && (
-          <CustomText style={styles.errorText}>
-            매장 소개는 최대 500자까지 입력 가능합니다.
-          </CustomText>
-        )}
         {errors.storeContent && (
           <CustomText style={styles.errorText}>
             {errors.storeContent}
           </CustomText>
         )}
       </View>
-      {error === 'storeContent' && storeContent === '' && (
-        <CustomText style={styles.errorMessage}>
-          매장 소개를 입력해주세요.
-        </CustomText>
-      )}
     </View>
   );
 };
@@ -139,13 +127,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     borderRadius: 9,
     paddingHorizontal: 14,
-    paddingRight: 42,
+    paddingRight: 14,
     paddingTop: 16,
     paddingBottom: 16,
     textAlignVertical: 'top',
   },
   focusedInput: {
     borderColor: '#333',
+  },
+  charCountRow: {
+    marginTop: 8,
+    alignSelf: 'flex-end',
+  },
+  charCountText: {
+    color: '#666',
+    fontSize: 13,
+    fontFamily: 'Pretendard-Regular',
   },
 
   errorText: {
