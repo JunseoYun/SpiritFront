@@ -15,7 +15,11 @@ const INITIAL_TAB = 'MainScreen';
 const MainBtmbar = ({route}) => {
   const initialLastFocused = route?.params?.lastFocusedTab || INITIAL_TAB;
   const initialTab = route?.params?.initialTab || INITIAL_TAB;
+  const initialLastNonMap =
+    route?.params?.lastNonMapTab ||
+    (initialTab === 'MapScreen' ? INITIAL_TAB : initialTab);
   const lastFocusedTabRef = useRef(initialLastFocused);
+  const lastNonMapTabRef = useRef(initialLastNonMap);
 
   // 탭 라벨을 커스텀 Text로 반환
   const renderLabel = (label, color) => (
@@ -34,7 +38,9 @@ const MainBtmbar = ({route}) => {
         focus: () => {
           const current = route.name;
           if (current === 'MapScreen') {
-            navigation.setParams({prevTab: lastFocusedTabRef.current});
+            navigation.setParams({prevTab: lastNonMapTabRef.current});
+          } else {
+            lastNonMapTabRef.current = current;
           }
           lastFocusedTabRef.current = current;
         },
