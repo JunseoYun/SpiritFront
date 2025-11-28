@@ -244,8 +244,10 @@ const styles = StyleSheet.create({
   },
 
   logoArea: {
-    marginTop: 120,
+    // marginTop: 120,
     alignItems: 'center',
+    position: 'absolute',
+    top: '25%',
   },
   logo: {
     width: 210,
@@ -263,7 +265,10 @@ const styles = StyleSheet.create({
   buttonSection: {
     width: '100%',
     paddingHorizontal: 24,
-    paddingBottom: Platform.OS === 'ios' ? 50 : 70,
+    // paddingBottom: Platform.OS === 'ios' ? 120 : 120,
+    position: 'absolute',
+
+    top: Platform.OS === 'ios' ? '65%' : '55%',
   },
 
   dividerRow: {
