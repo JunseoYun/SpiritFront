@@ -728,7 +728,6 @@ const MapScreen = ({navigation, route}) => {
               : sheetIndex === 10
               ? SCREEN_HEIGHT * -0.18
               : 0;
-          console.log(nextLat, nextLng);
           const script = generateMapScript(
             nextLat,
             nextLng,

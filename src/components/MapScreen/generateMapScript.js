@@ -175,19 +175,27 @@ window.__nameOverlayStyle =
 
    var markerImageUrl = "data:image/svg+xml;charset=UTF-8," +
       encodeURIComponent(\`
-<svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
-  <path d="M14 0C6.27 0 0 6.8 0 15.2C0 24.2 14 42 14 42C14 42 28 24.2 28 15.2C28 6.8 21.73 0 14 0Z" fill="#3CBBFF"/>
-  <circle cx="14" cy="15" r="8" fill="white"/>
-  <path d="M14 18 l-3 -4 h6 z" fill="#3CBBFF"/>
-</svg>\`);
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 400 400">
+  <!-- Outer translucent circle -->
+  <circle cx="200" cy="200" r="200" fill="rgba(60, 187, 255, 0.25)" />
+
+  <!-- Center white dot -->
+  <circle cx="200" cy="200" r="90" fill="#ffffff" />
+  <!-- Middle solid circle -->
+  <circle cx="200" cy="200" r="60" fill="#3CBBFF" />
+
+</svg>
+\`);
 
  var markerImage = new kakao.maps.MarkerImage(
     markerImageUrl,
-    new kakao.maps.Size(28, 42),
-    { offset: new kakao.maps.Point(14, 42) }
+    new kakao.maps.Size(40, 40),
+    { offset: new kakao.maps.Point(20, 20) }
  );
 
- var __skipUserMarker = ${suppressUserMarker ? 'true' : 'false'} || ${allowUserMarker ? 'false' : 'true'};
+ var __skipUserMarker = ${suppressUserMarker ? 'true' : 'false'} || ${
+    allowUserMarker ? 'false' : 'true'
+  };
  if (!__skipUserMarker) {
       // Compute adjusted position for current marker so it appears offset from center
       try {
@@ -235,15 +243,6 @@ window.__nameOverlayStyle =
 if (window.overlayMarkers) {
   window.overlayMarkers.forEach(customOverlay => customOverlay.setMap(null));
 }
-
-var customMarkerUri = "data:image/svg+xml;charset=UTF-8," +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">' +
-      '<circle cx="18" cy="18" r="17" fill="white"/>' +
-      '<circle cx="18" cy="18" r="14" fill="#3CBBFF"/>' +
-      '<circle cx="18" cy="18" r="4" fill="white"/>' +
-    '</svg>'
-  );
 
   var storesArray = ${safeData};
   var storeGroups = null; // will be set per level strategy
@@ -388,6 +387,25 @@ window.overlayMarkers = [];
 
   for (var addr in storeGroups) {
     var group = storeGroups[addr];
+    var count = group.length;
+var numberText =
+  count > 1
+    ? '<text x="16" y="14" font-size="10" font-weight="700" font-family="Pretendard, Arial" fill="#3CBBFF" text-anchor="middle" dominant-baseline="central">' 
+        + count + 
+      '</text>'
+    : '';
+
+var circleRadius = count > 1 ? 7 : 6;
+
+var customMarkerSvg =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 32 36">' +
+    '<path d="M16 1 C9 1 4 6 4 12 C4 17 8 22 11 25 L16 30 L21 25 C24 22 28 17 28 12 C28 6 23 1 16 1 Z" fill="#3CBBFF"/>' +
+    '<circle cx="16" cy="13" r="' + circleRadius + '" fill="white"/>' +
+    numberText +
+  '</svg>';
+
+var customMarkerUri =
+  "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(customMarkerSvg);
     var __groupLat = (group[0].locationDto && group[0].locationDto.latitude != null)
       ? group[0].locationDto.latitude
       : group[0].latitude;
@@ -406,7 +424,8 @@ window.overlayMarkers = [];
       zIndex: 2,
       image: new kakao.maps.MarkerImage(
         customMarkerUri,
-        new kakao.maps.Size(24, 24)
+    new kakao.maps.Size(34, 36),
+    { offset: new kakao.maps.Point(17, 36) }
       )
     });
 
@@ -503,23 +522,23 @@ window.overlayMarkers = [];
     })(group, markerPosition);
 
     // 🔹 마커 개수 표시 (그룹이 2개 이상일 경우)
-    if (group.length > 1) {
-      var overlayElement = document.createElement('div');
-      overlayElement.style.cssText = "pointer-events:none; position:relative; transform:translate(12px, -4px); background:#5cceff; color:white; width:14px; height:14px; border-radius:50%; border:0.5px solid #ffffff; display:flex; align-items:center; justify-content:center; font-size:10px; font-family:Arial,sans-serif; font-weight:bold;";
-      overlayElement.innerText = group.length;
+    // if (group.length > 1) {
+    //   var overlayElement = document.createElement('div');
+    //   overlayElement.style.cssText = "pointer-events:none; position:relative; transform:translate(12px, -4px); background:#5cceff; color:white; width:14px; height:14px; border-radius:50%; border:0.5px solid #ffffff; display:flex; align-items:center; justify-content:center; font-size:10px; font-family:Arial,sans-serif; font-weight:bold;";
+    //   overlayElement.innerText = group.length;
       
-      var customOverlay = new kakao.maps.CustomOverlay({
-        position: markerPosition,
-        content: overlayElement,
-        map: map,
-        zIndex: 3
-      });
-      window.overlayMarkers.push(customOverlay);
-      try {
-        var __ovk = (group[0].locationDto.latitude.toFixed(6))+","+(group[0].locationDto.longitude.toFixed(6));
-        window.__overlayMap[__ovk] = customOverlay;
-      } catch(e){}
-    }
+    //   var customOverlay = new kakao.maps.CustomOverlay({
+    //     position: markerPosition,
+    //     content: overlayElement,
+    //     map: map,
+    //     zIndex: 3
+    //   });
+    //   window.overlayMarkers.push(customOverlay);
+    //   try {
+    //     var __ovk = (group[0].locationDto.latitude.toFixed(6))+","+(group[0].locationDto.longitude.toFixed(6));
+    //     window.__overlayMap[__ovk] = customOverlay;
+    //   } catch(e){}
+    // }
     
     window.storeMarkers.push(marker);
   }
