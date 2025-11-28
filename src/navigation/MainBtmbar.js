@@ -91,6 +91,8 @@ const MainBtmbar = () => {
           tabBarLabel: ({color}) => renderLabel('찜', color),
           headerShown: true,
           headerTitleAlign: 'center',
+
+          headerShadowVisible: false,
           title: '찜',
           headerTitleStyle: {
             fontSize: 19,

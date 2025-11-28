@@ -5,7 +5,7 @@ import {normalizeFont} from '../hooks/normalizeFont';
 const CustomText = ({
   children,
   style,
-  maxScale = 1.5, // 🔹추가: 원하는 배율
+  maxScale = 1.3, // 🔹추가: 원하는 배율
   ...props
 }) => {
   const flattened = Array.isArray(style)

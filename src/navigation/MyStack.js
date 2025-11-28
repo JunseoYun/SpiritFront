@@ -32,6 +32,7 @@ export default function MyStack() {
         options={({navigation}) => ({
           headerShown: true,
           headerTitleAlign: 'center',
+          headerShadowVisible: false,
           title: '마이프로필',
           headerTitleStyle: {
             fontSize: 19,
@@ -44,6 +45,7 @@ export default function MyStack() {
         name="ConfigScreen"
         component={ConfigScreen}
         options={({navigation}) => ({
+          headerShadowVisible: false,
           ...getScreenOptions('프로필 수정'), // getScreenOptions 객체를 펼쳐 병합
           headerLeft: () => (
             <Pressable
@@ -63,6 +65,7 @@ export default function MyStack() {
         name="Mynickchange"
         component={Mynickchange}
         options={({navigation}) => ({
+          headerShadowVisible: false,
           ...getScreenOptions('닉네임 변경'), // getScreenOptions 객체를 펼쳐 병합
           headerLeft: () => (
             <Pressable
@@ -84,6 +87,8 @@ export default function MyStack() {
         options={({navigation}) => ({
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
+
+          headerShadowVisible: false,
           title: '회원탈퇴',
           headerTitleAlign: 'center',
           headerLeft: () => (
