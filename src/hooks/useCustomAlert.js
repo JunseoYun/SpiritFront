@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useCallback} from 'react';
 import {
   Modal,
   View,
@@ -7,8 +7,10 @@ import {
   StyleSheet,
   Animated,
   StatusBar,
+  Platform,
 } from 'react-native';
 import {Portal} from 'react-native-paper';
+import CustomText from '../utils/CustomText';
 
 const useCustomAlert = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -19,35 +21,68 @@ const useCustomAlert = () => {
     onConfirm: () => {},
     onCancel: () => {},
     type: 'confirm',
+    confirmText: '확인',
+    cancelText: '취소',
   });
 
-  // 모달 열기
-  const showAlert = ({title, message, onConfirm, onCancel, type = 'ok'}) => {
-    setAlertConfig({title, message, onConfirm, onCancel, type});
-    setIsVisible(true);
-    Animated.timing(opacity, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  };
+  // ✅ 모달 열기
+  const showAlert = useCallback(
+    ({
+      title,
+      message,
+      onConfirm,
+      onCancel,
+      type = 'ok',
+      confirmText = '확인',
+      cancelText = '취소',
+    }) => {
+      setAlertConfig({
+        title,
+        message,
+        onConfirm,
+        onCancel,
+        type,
+        confirmText,
+        cancelText,
+      });
+      setIsVisible(true);
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    },
+    [opacity],
+  );
 
-  // 모달 닫기 (애니메이션 후 onClose 실행)
-  const closeAlert = callback => {
-    Animated.timing(opacity, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => {
-      setIsVisible(false);
-      if (callback) callback(); // 모달이 완전히 닫힌 후 실행
-    });
-  };
+  // ✅ 모달 닫기
+  const closeAlert = useCallback(
+    callback => {
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => {
+        setIsVisible(false);
+        if (callback) callback(); // 모달 완전히 닫힌 후 실행
+      });
+    },
+    [opacity],
+  );
 
+  // ✅ Alert 컴포넌트
   const AlertComponent = () => {
     if (!isVisible) return null;
 
-    const {title, message, onConfirm, onCancel, type} = alertConfig;
+    const {
+      title,
+      message,
+      onConfirm,
+      onCancel,
+      type,
+      confirmText = '확인',
+      cancelText = '취소',
+    } = alertConfig;
 
     return (
       <Portal>
@@ -57,94 +92,140 @@ const useCustomAlert = () => {
           animationType="none"
           statusBarTranslucent={true}
           onRequestClose={() => closeAlert()}>
-          <View style={[styles.overlay]}>
+          <View style={styles.overlay}>
             <Animated.View style={[styles.alertBox, {opacity}]}>
-              {title && <Text style={styles.alertTitle}>{title}</Text>}
-              {message && <Text style={styles.alertMessage}>{message}</Text>}
+              {title && (
+                <CustomText style={styles.alertTitle}>{title}</CustomText>
+              )}
+              {message && (
+                <CustomText style={styles.alertMessage}>{message}</CustomText>
+              )}
 
               <View style={styles.buttonContainer}>
+                {/* ✅ 일반 확인/취소 */}
                 {type === 'confirm' && (
                   <>
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>취소</Text>
+                      <CustomText style={styles.buttonText}>
+                        {cancelText}
+                      </CustomText>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonText}>확인</Text>
+                      <CustomText style={styles.buttonText}>
+                        {confirmText}
+                      </CustomText>
                     </TouchableOpacity>
                   </>
                 )}
+
+                {/* ✅ 마케팅 동의 */}
                 {type === 'marketingConsent' && (
                   <>
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>거절</Text>
+                      <CustomText style={styles.buttonText}>거절</CustomText>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonText}>동의하기</Text>
+                      <CustomText style={styles.buttonText}>
+                        동의하기
+                      </CustomText>
                     </TouchableOpacity>
                   </>
                 )}
+
+                {/* ✅ 삭제 */}
                 {type === 'delete' && (
                   <>
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>취소</Text>
+                      <CustomText style={styles.buttonText}>취소</CustomText>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonDeleteText}>삭제</Text>
+                      <CustomText style={styles.buttonDeleteText}>
+                        삭제
+                      </CustomText>
                     </TouchableOpacity>
                   </>
                 )}
+
+                {/* ✅ 회원 탈퇴 */}
                 {type === 'withdraw' && (
                   <>
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>취소</Text>
+                      <CustomText style={styles.buttonText}>취소</CustomText>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonDeleteText}>탈퇴하기</Text>
+                      <CustomText style={styles.buttonDeleteText}>
+                        탈퇴하기
+                      </CustomText>
                     </TouchableOpacity>
                   </>
                 )}
+
+                {/* ✅ 알림 설정 */}
                 {type === 'notificationSetting' && (
                   <>
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onCancel)}>
-                      <Text style={styles.buttonText}>취소</Text>
+                      <CustomText style={styles.buttonText}>취소</CustomText>
                     </TouchableOpacity>
                     <View style={styles.divider} />
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => closeAlert(onConfirm)}>
-                      <Text style={styles.buttonText}>설정 이동</Text>
+                      <CustomText style={styles.buttonText}>
+                        설정 이동
+                      </CustomText>
                     </TouchableOpacity>
                   </>
                 )}
 
+                {/* ✅ 단일 확인 버튼 */}
                 {type === 'ok' && (
                   <TouchableOpacity
                     style={styles.button}
                     onPress={() => closeAlert(onConfirm)}>
-                    <Text style={styles.buttonText}>확인</Text>
+                    <CustomText style={styles.buttonText}>확인</CustomText>
                   </TouchableOpacity>
+                )}
+
+                {type === 'unsavedLeave' && (
+                  <>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onCancel)}>
+                      <CustomText style={styles.buttonText}>
+                        {cancelText || '취소'}
+                      </CustomText>
+                    </TouchableOpacity>
+                    <View style={styles.divider} />
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => closeAlert(onConfirm)}>
+                      <CustomText style={styles.buttonDeleteText}>
+                        {confirmText || '나가기'}
+                      </CustomText>
+                    </TouchableOpacity>
+                  </>
                 )}
               </View>
             </Animated.View>
@@ -176,23 +257,23 @@ const styles = StyleSheet.create({
   alertTitle: {
     fontSize: 17,
     fontFamily: 'Pretendard-SemiBold',
-    lineHeight: 20,
-    marginBottom: 15,
-    marginTop: 20,
+    lineHeight: 24,
+    paddingBottom: 10,
+    paddingTop: 20,
     color: '#181A1A',
+    textAlign: 'center',
   },
   alertMessage: {
     fontSize: 16,
     textAlign: 'center',
     fontFamily: 'Pretendard-Regular',
-    marginBottom: 20,
-    marginHorizontal: 18,
+    paddingBottom: 20,
+    paddingHorizontal: 18,
     flexWrap: 'wrap',
     color: '#181A1A',
-    height: 'auto',
-    lineHeight: 22,
-    alignSelf: 'center',
-    justifyContent: 'center',
+    lineHeight: 24,
+    paddingTop: 5,
+    textAlign: 'center',
   },
   buttonContainer: {
     height: 50,
@@ -207,16 +288,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  buttonDeleteText: {
-    color: '#f44336',
-
-    fontFamily: 'Pretendard-Regular',
-    fontSize: 16,
-  },
   buttonText: {
     color: '#007AFF',
     fontSize: 16,
     fontFamily: 'Pretendard-Regular',
+  },
+  buttonDeleteText: {
+    color: '#f44336',
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 16,
   },
   divider: {
     width: 1,

@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
+import CustomText from '../../../../utils/CustomText';
 
 const OperateBottomHoursSelector = ({
   openHour,
@@ -14,7 +15,7 @@ const OperateBottomHoursSelector = ({
 }) => {
   return (
     <View>
-      <Text style={styles.boldText}>영업 시간</Text>
+      <CustomText style={styles.boldText}>영업 시간</CustomText>
       <View style={styles.timeInputContainer}>
         <Pressable
           style={[
@@ -26,17 +27,17 @@ const OperateBottomHoursSelector = ({
               operateError && {backgroundColor: 'rgba(255, 50, 50, 0.2)'},
           ]}
           onPress={() => handleTimePickerToggle('open')}>
-          <Text
+          <CustomText
             style={[
               styles.timeText,
-              isOpenTime && {color: '#45C9FF'},
+              isOpenTime && {color: '#3CBBFF'},
               isOpenTime && breakError && {color: '#FF4816'},
               isOpenTime && operateError && {color: '#FF4816'},
             ]}>
             {`${openHour}:${openMinute}`}
-          </Text>
+          </CustomText>
         </Pressable>
-        <Text style={styles.separator}>~</Text>
+        <CustomText style={styles.separator}>~</CustomText>
         <Pressable
           style={[
             styles.timeInput,
@@ -49,29 +50,29 @@ const OperateBottomHoursSelector = ({
           ]}
           onPress={() => handleTimePickerToggle('close')}>
           {closeHour >= 24 && (
-            <Text
+            <CustomText
               style={[
                 styles.nextText,
-                isCloseTime && {color: '#45C9FF'},
+                isCloseTime && {color: '#3CBBFF'},
                 isCloseTime &&
                   breakError && {color: '#FF4816', borderColor: '#FF4816'},
                 isCloseTime &&
                   operateError && {color: '#FF4816', borderColor: '#FF4816'},
               ]}>
               다음날
-            </Text>
+            </CustomText>
           )}
-          <Text
+          <CustomText
             style={[
               styles.timeText,
-              isCloseTime && {color: '#45C9FF'},
+              isCloseTime && {color: '#3CBBFF'},
               isCloseTime && breakError && {color: '#FF4816'},
               isCloseTime && operateError && {color: '#FF4816'},
             ]}>
             {closeHour >= 24
               ? `${String(closeHour - 24).padStart(2, '0')}:${closeMinute}`
               : `${String(closeHour).padStart(2, '0')}:${closeMinute}`}
-          </Text>
+          </CustomText>
         </Pressable>
       </View>
     </View>
@@ -105,10 +106,10 @@ const styles = StyleSheet.create({
   },
   nextText: {
     fontSize: 12,
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     padding: 3,
     marginRight: 5,
     borderRadius: 3,

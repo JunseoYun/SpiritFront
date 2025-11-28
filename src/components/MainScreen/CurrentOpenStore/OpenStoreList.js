@@ -11,12 +11,7 @@ import {
 import OpenStoreItem from './OpenStoreItem';
 import {Store_getby_business_hours} from '../../../api/storeApi';
 import Feather from 'react-native-vector-icons/Feather';
-
-let fontScale = PixelRatio.getFontScale(); // let으로 변경
-if (fontScale > 1.7) fontScale = 1.7;
-
-const fontSize = 18 * fontScale;
-const subfontSize = 13 * fontScale;
+import CustomText from '../../../utils/CustomText';
 
 const OpenStoreList = ({location, navigation, refresh}) => {
   const [distancestores, setDistancestores] = useState([]);
@@ -99,25 +94,19 @@ const OpenStoreList = ({location, navigation, refresh}) => {
             marginRight: 20,
             alignItems: 'center',
           }}>
-          <Text
-            style={[styles.mylocationlivetext, {fontSize}]}
-            allowFontScaling={false}>
+          <CustomText style={[styles.mylocationlivetext]}>
             현재 영업 중인 술집은?
-          </Text>
+          </CustomText>
           {distancestores.length >= 3 && (
             <View style={styles.totalView}>
-              <Text
-                style={[styles.totalText, {fontSize: subfontSize}]}
-                allowFontScaling={false}>
-                전체보기
-              </Text>
+              <CustomText style={[styles.totalText]}>전체보기</CustomText>
               <Feather name={'chevron-right'} size={15} color="#333" />
             </View>
           )}
         </View>
-        <Text style={styles.mylocationlivesubtext}>
+        <CustomText style={styles.mylocationlivesubtext}>
           내 주변 늦게까지 영업하는 술집을 알려드려요
-        </Text>
+        </CustomText>
       </Pressable>
 
       <FlatList
@@ -144,14 +133,16 @@ const OpenStoreList = ({location, navigation, refresh}) => {
         ListFooterComponent={
           loading ? (
             <View style={styles.footer}>
-              <Text style={styles.emptyText}>Loading...</Text>
+              <CustomText style={styles.emptyText}>Loading...</CustomText>
             </View>
           ) : null
         }
       />
       {distancestores.length === 0 && !loading && (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>주변에 영업 중인 술집이 없어요</Text>
+          <CustomText style={styles.emptyText}>
+            주변에 영업 중인 술집이 없어요
+          </CustomText>
         </View>
       )}
     </View>
@@ -170,6 +161,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   mylocationlivetext: {
+    fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#121212',
   },
@@ -178,6 +170,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalText: {
+    fontSize: 13,
     fontFamily: 'Pretendard-Regular',
     color: '#333',
   },

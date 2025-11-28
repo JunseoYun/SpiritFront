@@ -2,6 +2,8 @@ import React from 'react';
 import {View, Text, TextInput, StyleSheet, Keyboard} from 'react-native';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const PhoneInput = ({
   showphoneLabel,
@@ -18,7 +20,7 @@ const PhoneInput = ({
   return (
     <View style={[styles.labeledInputContainer, {marginBottom: 20}]}>
       {showphoneLabel && (
-        <Text
+        <CustomText
           style={[
             styles.inputLabel,
             isphoneFocused && {
@@ -26,9 +28,9 @@ const PhoneInput = ({
             },
           ]}>
           휴대폰 번호
-        </Text>
+        </CustomText>
       )}
-      <TextInput
+      <CustomTextInput
         ref={phoneRef}
         style={[
           styles.input,
@@ -55,12 +57,14 @@ const PhoneInput = ({
         maxLength={11}
       />
       {error === 'phoneNumber' && (
-        <Text style={styles.errorMessage}>정확한 번호를 작성해주세요.</Text>
+        <CustomText style={styles.errorMessage}>
+          정확한 번호를 작성해주세요.
+        </CustomText>
       )}
       {phoneNumber.length > 0 && isphoneFocused && (
         <CancelText
           rightnum={10}
-          topnum={normalizeFont(12)}
+          topnum={12}
           paddingnum={4}
           handlecancel={setPhoneNumber}
           size={normalizeFont(20)}

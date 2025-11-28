@@ -5,8 +5,9 @@ import {createStackNavigator} from '@react-navigation/stack';
 import ConfigScreen from '../screens/BottomTab/My/ConfigScreen';
 import Mynickchange from '../screens/BottomTab/My/Mynickchange';
 import MyScreen from '../screens/BottomTab/My/MyScreen';
-import ReviewEditScreen from '../screens/BottomTab/My/ReviewEditScreen';
 import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
+import MyCardScreen from '../screens/BottomTab/My/MyCard/MyCardScreen';
+import CardRegisterScreen from '../screens/BottomTab/My/MyCard/CardRegisterScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 const Stack = createStackNavigator();
 
@@ -31,6 +32,7 @@ export default function MyStack() {
         options={({navigation}) => ({
           headerShown: true,
           headerTitleAlign: 'center',
+          headerShadowVisible: false,
           title: '마이프로필',
           headerTitleStyle: {
             fontSize: 19,
@@ -43,6 +45,7 @@ export default function MyStack() {
         name="ConfigScreen"
         component={ConfigScreen}
         options={({navigation}) => ({
+          headerShadowVisible: false,
           ...getScreenOptions('프로필 수정'), // getScreenOptions 객체를 펼쳐 병합
           headerLeft: () => (
             <Pressable
@@ -62,6 +65,7 @@ export default function MyStack() {
         name="Mynickchange"
         component={Mynickchange}
         options={({navigation}) => ({
+          headerShadowVisible: false,
           ...getScreenOptions('닉네임 변경'), // getScreenOptions 객체를 펼쳐 병합
           headerLeft: () => (
             <Pressable
@@ -78,12 +82,14 @@ export default function MyStack() {
         })}
       />
       <Stack.Screen
-        name="ReviewEditScreen"
-        component={ReviewEditScreen}
+        name="WithdrawScreen"
+        component={WithdrawScreen}
         options={({navigation}) => ({
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
-          title: '리뷰 수정',
+
+          headerShadowVisible: false,
+          title: '회원탈퇴',
           headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
@@ -100,12 +106,12 @@ export default function MyStack() {
         })}
       />
       <Stack.Screen
-        name="WithdrawScreen"
-        component={WithdrawScreen}
+        name="MyCardScreen"
+        component={MyCardScreen}
         options={({navigation}) => ({
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
-          title: '회원탈퇴',
+          title: '내 카드 관리',
           headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
@@ -113,6 +119,27 @@ export default function MyStack() {
               hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
               <Ionicons
                 name="close"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="CardRegisterScreen"
+        component={CardRegisterScreen}
+        options={({navigation}) => ({
+          title: '카드 등록',
+          headerTitleAlign: 'center',
+          animation: 'slide_from_bottom',
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
                 size={23}
                 color="#333"
                 style={{paddingLeft: 12}}

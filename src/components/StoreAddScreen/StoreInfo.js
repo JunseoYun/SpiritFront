@@ -6,11 +6,17 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import forbiddenWords from '../../hooks/forbiddenWords';
+import ColorUtil from '../../utils/ColorUtil';
+import CancelText from '../CancelText/CancelText';
+import {normalizeFont} from '../../hooks/normalizeFont';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 
 const StoreInfo = ({storeData, setStoreData, error}) => {
   const [focusedInput, setFocusedInput] = useState(null);
   const [errors, setErrors] = useState({});
   const [overText, setOverText] = useState(false);
+  const storeNumberInputRef = useRef(null);
 
   const storeNumberLabelAnim = useSharedValue(
     storeData.storeNumber !== '' ? 1 : 0,
@@ -48,64 +54,56 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
     );
   }, [focusedInput, storeData.storeContent]);
 
-  const animatedLabelStyle = sharedValue =>
-    useAnimatedStyle(() => {
-      const isFocused = sharedValue.value === 1;
-      return {
-        position: 'absolute',
-        left: 1,
-        transform: [
-          {
-            translateY: withTiming(isFocused ? -8 : 16, {
-              duration: 120,
-            }),
-          },
-        ],
-        fontSize: withTiming(isFocused ? 16 : 22, {
-          duration: 120,
-        }),
-      };
+  const handleClearStoreNumber = () => {
+    handleChange('storeNumber', '');
+    requestAnimationFrame(() => {
+      storeNumberInputRef.current?.focus();
     });
-
-  const storeNumberLabelStyle = animatedLabelStyle(storeNumberLabelAnim);
-  const storeContentLabelStyle = animatedLabelStyle(storeContentLabelAnim);
+  };
 
   return (
     <View>
       {/* 전화번호 입력 */}
       <View style={styles.storeinputview}>
         <View style={{position: 'relative'}}>
-          <Animated.Text style={[styles.animatedLabel, storeNumberLabelStyle]}>
-            전화번호
-          </Animated.Text>
-          <TextInput
-            style={[
-              styles.storeinput,
-              isFocused('storeNumber') && styles.focusedInput,
-              {paddingBottom: 7, paddingTop: 20, paddingLeft: 1},
-            ]}
-            value={storeData.storeNumber}
-            onChangeText={text => handleChange('storeNumber', text)}
-            keyboardType="number-pad"
-            placeholder=""
-            placeholderTextColor="#999"
-            onFocus={() => setFocusedInput('storeNumber')}
-            onBlur={() => setFocusedInput(null)}
-            returnKeyType="done"
-          />
+          <CustomText style={styles.label}>매장 번호</CustomText>
+          <View style={styles.inputContainer}>
+            <CustomTextInput
+              style={[
+                styles.storeinput,
+                isFocused('storeNumber') && styles.focusedInput,
+              ]}
+              ref={storeNumberInputRef}
+              value={storeData.storeNumber}
+              onChangeText={text => handleChange('storeNumber', text)}
+              keyboardType="number-pad"
+              placeholder="매장 번호를 입력해주세요"
+              placeholderTextColor={ColorUtil.placeholderText}
+              onFocus={() => setFocusedInput('storeNumber')}
+              onBlur={() => setFocusedInput(null)}
+              returnKeyType="done"
+            />
+            {storeData.storeNumber?.length > 0 && isFocused('storeNumber') && (
+              <CancelText
+                rightnum={12}
+                paddingnum={0}
+                handlecancel={handleClearStoreNumber}
+                size={normalizeFont(22)}
+                centerVertical
+              />
+            )}
+          </View>
         </View>
         {errors.storeNumber && (
-          <Text style={styles.errorText}>{errors.storeNumber}</Text>
+          <CustomText style={styles.errorText}>{errors.storeNumber}</CustomText>
         )}
       </View>
 
       {/* 매장 소개 입력 */}
       <View style={[styles.storeinputview, {marginTop: 50}]}>
         <View style={{position: 'relative'}}>
-          <Animated.Text style={[styles.animatedLabel, storeContentLabelStyle]}>
-            매장을 간단하게 소개해주세요.
-          </Animated.Text>
-          <TextInput
+          <CustomText style={styles.label}>매장 소개</CustomText>
+          <CustomTextInput
             style={[
               styles.textarea,
               isFocused('storeContent') && styles.focusedInput,
@@ -131,10 +129,14 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
           />
         </View>
         {errors.storeContent && (
-          <Text style={styles.errorText}>{errors.storeContent}</Text>
+          <CustomText style={styles.errorText}>
+            {errors.storeContent}
+          </CustomText>
         )}
         {overText && (
-          <Text style={styles.errorText}>매장 소개는 최대 500자입니다.</Text>
+          <CustomText style={styles.errorText}>
+            매장 소개는 최대 500자입니다.
+          </CustomText>
         )}
       </View>
     </View>
@@ -143,16 +145,30 @@ const StoreInfo = ({storeData, setStoreData, error}) => {
 
 const styles = StyleSheet.create({
   storeinputview: {
-    marginTop: 10,
-    marginHorizontal: 20,
+    marginTop: 30,
+    marginHorizontal: 18,
+  },
+  inputContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  label: {
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
+    fontSize: 16,
+    marginBottom: 12,
   },
   storeinput: {
-    width: '100%',
-    borderBottomColor: '#F2F2F2',
-    borderBottomWidth: 1,
-    fontSize: 22,
-    fontFamily: 'Pretendard-Medium',
-    color: 'black',
+    flex: 1,
+    height: 52,
+    borderColor: ColorUtil.placeholderBorder,
+    borderWidth: 1,
+    fontSize: 16,
+    fontFamily: 'Pretendard-Regular',
+    borderRadius: 9,
+    paddingHorizontal: 14,
+    paddingRight: 42,
   },
   textarea: {
     width: '100%',
@@ -166,8 +182,7 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   focusedInput: {
-    borderBottomColor: '#16BBFF',
-    borderBottomWidth: 2,
+    borderColor: '#333',
   },
   animatedLabel: {
     color: '#999',

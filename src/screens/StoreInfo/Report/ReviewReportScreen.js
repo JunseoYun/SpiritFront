@@ -13,6 +13,8 @@ import ReportModal from '../../../components/ReportScreen/ReportModal';
 import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
 import {report_create} from '../../../api/reportApi';
+import CustomTextInput from '../../../utils/CustomTextInput';
+import CustomText from '../../../utils/CustomText';
 
 const ReviewReportScreen = ({navigation}) => {
   const route = useRoute();
@@ -84,6 +86,7 @@ const ReviewReportScreen = ({navigation}) => {
 
     try {
       await report_create(payloadData);
+      showToast('신고가 완료되었습니다.');
       navigation.goBack();
     } catch (error) {
       showToast('잠시 후 다시 시도해주세요.');
@@ -102,20 +105,20 @@ const ReviewReportScreen = ({navigation}) => {
               key={index}
               style={[styles.reasonButton]}
               onPress={() => handleSelectReason(reason)}>
-              <Text
+              <CustomText
                 style={[
                   styles.reasonText,
                   selectedReason === reason && styles.selectedText,
                 ]}>
                 {reason}
-              </Text>
+              </CustomText>
             </Pressable>
           ))}
         </View>
 
         {/* "기타 문제" 선택 시 텍스트 입력 */}
         {selectedReason === '기타 문제' && (
-          <TextInput
+          <CustomTextInput
             style={styles.textInput}
             placeholder="신고 사유를 입력하세요"
             placeholderTextColor="#aaa"
@@ -138,10 +141,10 @@ const ReviewReportScreen = ({navigation}) => {
             !selectedReason ||
             (selectedReason === '기타 문제' && !customReason.trim())
           }>
-          <Text style={styles.submitButtonText}>신고 제출</Text>
+          <CustomText style={styles.submitButtonText}>신고 제출</CustomText>
         </Pressable>
         <View style={styles.reportView}>
-          <Text style={styles.reportText}>
+          <CustomText style={styles.reportText}>
             신고 기능은 플랫폼의 건전한 운영을 위해 제공됩니다. 허위 신고,
             악의적인 반복 신고는 서비스 이용에 제한을 받을 수 있습니다. {'\n\n'}
             신고 접수 시 신고자의 정보가 저장되며, 허위 신고 또는 반복 신고가
@@ -152,7 +155,7 @@ const ReviewReportScreen = ({navigation}) => {
             취해질 수 있습니다. {'\n\n'}신고를 제출하면 운영 정책에 따라 검토 후
             처리됩니다. 거짓 신고 또는 악의적인 신고가 확인될 경우, 해당 신고는
             무효 처리되며 불이익이 있을 수 있습니다.
-          </Text>
+          </CustomText>
         </View>
       </ScrollView>
 
@@ -245,6 +248,7 @@ const styles = StyleSheet.create({
     marginVertical: 30,
   },
   reportText: {
+    fontSize: 14,
     color: '#777',
     fontWeight: 500,
   },

@@ -1,31 +1,43 @@
 import React from 'react';
-import {Pressable, StyleSheet} from 'react-native';
+import {Pressable, StyleSheet, Text} from 'react-native';
 
-import Feather from 'react-native-vector-icons/Feather';
-const StoreMapCenter = ({onPress}) => {
-  return (
-    <Pressable style={styles.buttonBottom} onPress={onPress}>
-      <Feather name="home" size={22} color="#1a1a1a" />
-    </Pressable>
-  );
-};
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../../utils/CustomText';
+const StoreMapCenter = ({onPress, style}) => (
+  <Pressable style={[styles.button, style]} onPress={onPress}>
+    <Ionicons
+      name="storefront-outline"
+      size={18}
+      color="#F97316"
+      style={styles.icon}
+    />
+    <CustomText style={styles.label}>매장 위치</CustomText>
+  </Pressable>
+);
 
 const styles = StyleSheet.create({
-  buttonBottom: {
-    position: 'absolute',
-    bottom: '50%',
-    right: '7%',
-    width: 42,
-    borderRadius: 42,
+  button: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     backgroundColor: '#fff',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#E3E8EF',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 1},
     shadowOpacity: 0.2,
     shadowRadius: 3,
+  },
+  label: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#0F172A',
+  },
+  icon: {
+    marginRight: 6,
   },
 });
 

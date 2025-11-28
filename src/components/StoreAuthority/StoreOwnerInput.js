@@ -4,6 +4,8 @@ import {View, Text, Pressable, TextInput, StyleSheet} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import CancelText from '../CancelText/CancelText';
 import {normalizeFont} from '../../hooks/normalizeFont';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 const StoreOwnerInput = ({
   owners,
   hasCoRepresentative,
@@ -24,17 +26,17 @@ const StoreOwnerInput = ({
   const [isfocused, setIsFocused] = useState({});
   return (
     <View style={styles.container}>
-      <Text ref={owneRef} style={styles.sectionTitle}>
+      <CustomText ref={owneRef} style={styles.sectionTitle}>
         대표자
-      </Text>
+      </CustomText>
       {hasCoRepresentative ? (
-        <Text style={styles.guidetext}>
+        <CustomText style={styles.guidetext}>
           ※ 신청자는 주 대표자 또는 공동 대표자여야 합니다.
-        </Text>
+        </CustomText>
       ) : (
-        <Text style={styles.guidetext}>
+        <CustomText style={styles.guidetext}>
           ※ 신청자는 해당 사업자의 대표자여야 합니다.
-        </Text>
+        </CustomText>
       )}
       {/* 단일/공동 대표 토글 */}
       <View style={styles.toggleContainer}>
@@ -44,13 +46,13 @@ const StoreOwnerInput = ({
             styles.toggleButton,
             !hasCoRepresentative && styles.selectedToggleButton,
           ]}>
-          <Text
+          <CustomText
             style={[
               styles.toggleButtonText,
               !hasCoRepresentative && styles.selectedToggleButtonText,
             ]}>
             단일 대표
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           onPress={() => setHasCoRepresentative(true)}
@@ -58,13 +60,13 @@ const StoreOwnerInput = ({
             styles.toggleButton,
             hasCoRepresentative && styles.selectedToggleButton,
           ]}>
-          <Text
+          <CustomText
             style={[
               styles.toggleButtonText,
               hasCoRepresentative && styles.selectedToggleButtonText,
             ]}>
             공동 대표
-          </Text>
+          </CustomText>
         </Pressable>
       </View>
 
@@ -75,9 +77,9 @@ const StoreOwnerInput = ({
               <View style={styles.inputHeaderContainer}>
                 <View style={styles.labelContainer}>
                   {owner.name ? (
-                    <Text style={styles.inputLabel}>
+                    <CustomText style={styles.inputLabel}>
                       {index === 0 ? '주 대표자' : `공동 대표`}
-                    </Text>
+                    </CustomText>
                   ) : null}
                 </View>
                 {owners.length > 1 && (
@@ -89,7 +91,7 @@ const StoreOwnerInput = ({
                   </Pressable>
                 )}
               </View>
-              <TextInput
+              <CustomTextInput
                 ref={ref => (ownerRefs.current[index] = ref)}
                 style={styles.input}
                 placeholder={index === 0 ? '주 대표자 성명' : '공동 대표 성명'}
@@ -121,22 +123,26 @@ const StoreOwnerInput = ({
                 />
               )}
               {error === 'ownerGroup' && !owner.name && (
-                <Text style={styles.errorText}>{errorMessage}</Text>
+                <CustomText style={styles.errorText}>{errorMessage}</CustomText>
               )}
             </View>
           ))}
           <Pressable style={styles.addButton} onPress={addOwner}>
-            <Text style={styles.addButtonText}>대표자 추가하기</Text>
+            <CustomText style={styles.addButtonText}>
+              대표자 추가하기
+            </CustomText>
           </Pressable>
         </>
       ) : (
         <View style={styles.inputContainer}>
           <View style={styles.inputHeaderContainer}>
             <View style={styles.labelContainer}>
-              {owners[0].name && <Text style={styles.inputLabel}>성명</Text>}
+              {owners[0].name && (
+                <CustomText style={styles.inputLabel}>성명</CustomText>
+              )}
             </View>
           </View>
-          <TextInput
+          <CustomTextInput
             style={styles.input}
             ref={nameRef}
             placeholder="성명"
@@ -162,7 +168,7 @@ const StoreOwnerInput = ({
             />
           )}
           {error === 'owner' && !owners[0].name && (
-            <Text style={styles.errorText}>{errorMessage}</Text>
+            <CustomText style={styles.errorText}>{errorMessage}</CustomText>
           )}
         </View>
       )}
@@ -197,16 +203,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginHorizontal: 5,
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     borderRadius: 4,
     alignItems: 'center',
   },
   selectedToggleButton: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
   },
   toggleButtonText: {
     fontSize: 14,
-    color: '#45C9FF',
+    color: '#3CBBFF',
   },
   selectedToggleButtonText: {
     color: '#fff',
@@ -238,7 +244,7 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   addButton: {
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 7,

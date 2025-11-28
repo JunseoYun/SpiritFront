@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, Pressable, ImageBackground, StyleSheet} from 'react-native';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
+import CustomText from '../../utils/CustomText';
 
 const ViewedStoreTotalItem = ({store, navigation, location}) => {
   const {translateCategory} = useCategoryTranslation();
@@ -27,28 +28,28 @@ const ViewedStoreTotalItem = ({store, navigation, location}) => {
         <View style={styles.StoreTextView}>
           <View style={styles.StoreScore}>
             {store.categories.slice(0, 3).map((category, index) => (
-              <Text key={index} style={styles.StoreCategory}>
+              <CustomText key={index} style={styles.StoreCategory}>
                 {translateCategory(category)}
-              </Text>
+              </CustomText>
             ))}
           </View>
           <View style={styles.StoreTitleView}>
-            <Text
+            <CustomText
               style={styles.StoreTitle}
               numberOfLines={1}
               ellipsizeMode="tail">
               {store.name}
-            </Text>
+            </CustomText>
           </View>
           <View style={{marginTop: 3}}>
-            <Text
+            <CustomText
               style={{
                 maxWidth: '95%',
                 color: '#555',
                 fontFamily: 'Pretendard-Medium',
               }}>
               {store.locationDto.address}
-            </Text>
+            </CustomText>
           </View>
         </View>
       </View>

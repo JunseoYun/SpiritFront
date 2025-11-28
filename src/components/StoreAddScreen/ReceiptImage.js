@@ -21,6 +21,7 @@ import {
   IMAGE_CROPPER_TEXTS,
   IMAGE_PICKER_TEXTS,
 } from '../../constants/imagePickerLabels';
+import CustomText from '../../utils/CustomText';
 
 const ReceiptImage = ({receiptimageUris, setReceiptImageUris, error}) => {
   const [images, setImage] = useState([]);
@@ -105,11 +106,13 @@ const ReceiptImage = ({receiptimageUris, setReceiptImageUris, error}) => {
   return (
     <View>
       <View style={styles.storeinputview}>
-        <Text style={styles.storeinputtext}>영수증 사진 추가하기* (1장)</Text>
+        <CustomText style={styles.storeinputtext}>
+          영수증 사진 추가하기* (1장)
+        </CustomText>
         {error === 'StoreImage' && images.length === 0 && (
-          <Text style={styles.errorMessage}>
+          <CustomText style={styles.errorMessage}>
             영수증 사진을 업로드해 주세요.
-          </Text>
+          </CustomText>
         )}
       </View>
       <View style={styles.storeImageView}>
@@ -196,7 +199,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 5,
     left: 5,
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     paddingVertical: 2,
     paddingHorizontal: 8,
     borderRadius: 5,

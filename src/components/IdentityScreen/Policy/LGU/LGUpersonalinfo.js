@@ -1,10 +1,11 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import CustomText from '../../../../utils/CustomText';
 
 const LGUpersonalinfo = () => {
   return (
     <View contentContainerStyle={styles.container}>
-      <Text style={styles.text}>
+      <CustomText style={styles.text}>
         개인정보 이용 동의{'\n'}
         [LG유플러스㈜ 귀중]{'\n'}
         {'\n'}
@@ -25,49 +26,59 @@ const LGUpersonalinfo = () => {
         기간에 한하여 보유 및 이용을 원칙으로 하되, 법률에서 정하는 경우 해당
         기간까지 보유 및 이용{'\n'}
         (세부사항은 ‘회사’의 개인정보취급방침에 따름){'\n'}
-      </Text>
+      </CustomText>
 
       {/* ✅ 표 형태 삽입 */}
       <View style={{marginTop: 20}}>
-        <Text style={styles.tableTitle}>
+        <CustomText style={styles.tableTitle}>
           4. 본인확인서비스 제공을 위한 개인정보의 처리 위탁
-        </Text>
+        </CustomText>
 
         {/* 표 헤더 */}
         <View style={[styles.tableRow, styles.tableHeader]}>
-          <Text style={[styles.tableCell, {flex: 1}]}>위탁수탁자</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>위탁업무내용</Text>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>
+            위탁수탁자
+          </CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
+            위탁업무내용
+          </CustomText>
         </View>
 
         {/* 표 내용 */}
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>㈜드림시큐리티</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>
+            ㈜드림시큐리티
+          </CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
             본인확인 서비스 중계 업무 제공
-          </Text>
+          </CustomText>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>
             씨에스리더, LB휴넷,{'\n'}㈜씨에스원파트너, 아인텔레서비스
-          </Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>고객센터 운영</Text>
+          </CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
+            고객센터 운영
+          </CustomText>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>미디어로그</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>
+            미디어로그
+          </CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
             PASS 어플리케이션 및 웹사이트 운영/관리
-          </Text>
+          </CustomText>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>아톤</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>아톤</CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
             PASS 서비스 장애 및 VOC 처리
-          </Text>
+          </CustomText>
         </View>
       </View>
 
       {/* 이어지는 텍스트 */}
-      <Text style={styles.text}>
+      <CustomText style={styles.text}>
         {'\n'}
         5. 고객은 개인정보 수집 및 이용 동의를 거부할 권리가 있습니다.{'\n'}
         다만 동의하지 않을 경우 서비스를 이용할 수 없습니다.{'\n'}
@@ -115,7 +126,7 @@ const LGUpersonalinfo = () => {
         {'\n'}※ 개인정보 수집•이용 및 제공에 따른 동의는 거부할 수 있습니다.
         {'\n'}
         다만, 동의 거부 시에는 서비스 이용이 제한될 수 있습니다.
-      </Text>
+      </CustomText>
     </View>
   );
 };

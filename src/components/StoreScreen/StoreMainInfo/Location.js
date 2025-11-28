@@ -3,6 +3,7 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../../../utils/CustomText';
 
 const Location = ({isUpdate, distance, unit}) => {
   return (
@@ -10,9 +11,9 @@ const Location = ({isUpdate, distance, unit}) => {
       {!isUpdate && (
         <View style={styles.locationview}>
           <Ionicons name="location-outline" size={20} color="#333" />
-          <Text style={styles.locationtext}>
+          <CustomText style={styles.locationtext}>
             {distance} {unit}
-          </Text>
+          </CustomText>
         </View>
       )}
     </>

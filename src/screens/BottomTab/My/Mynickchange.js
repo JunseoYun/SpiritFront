@@ -21,6 +21,8 @@ import {Userputnickname, check_nickName} from '../../../api/userApi';
 import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
 import CancelText from '../../../components/CancelText/CancelText';
+import CustomText from '../../../utils/CustomText';
+import CustomTextInput from '../../../utils/CustomTextInput';
 
 const Mynickchange = () => {
   const route = useRoute();
@@ -158,7 +160,7 @@ const Mynickchange = () => {
             contentContainerStyle={{flexGrow: 1}}
             keyboardShouldPersistTaps="handled">
             <View style={styles.topview}>
-              <Text style={styles.nickname}>새로운 닉네임</Text>
+              <CustomText style={styles.nickname}>새로운 닉네임</CustomText>
               <View
                 style={[
                   styles.nicknameInputView,
@@ -170,7 +172,7 @@ const Mynickchange = () => {
                     !nicknamefilter &&
                     styles.checkInputView,
                 ]}>
-                <TextInput
+                <CustomTextInput
                   style={styles.input}
                   value={newnickname}
                   placeholder={userdata.nickname}
@@ -188,7 +190,7 @@ const Mynickchange = () => {
                   onBlur={() => setFocused(false)}
                 />
                 {nicknameCheck && !nicknameError && !nicknamelength && (
-                  <Entypo name="check" size={25} color="#16BBFF" />
+                  <Entypo name="check" size={25} color="#3CBBFF" />
                 )}
                 {newnickname.length > 0 &&
                   focused &&
@@ -208,27 +210,27 @@ const Mynickchange = () => {
                   (nicknameError || nicknamelength) && styles.errorview,
                 ]}>
                 {nicknameError && (
-                  <Text style={styles.errorText}>
+                  <CustomText style={styles.errorText}>
                     비속어 및 이용약관에 위배된 닉네임은 사용할 수 없습니다.
-                  </Text>
+                  </CustomText>
                 )}
                 {nicknamefilter && (
-                  <Text style={styles.errorText}>
+                  <CustomText style={styles.errorText}>
                     초성 닉네임은 사용할 수 없습니다.
-                  </Text>
+                  </CustomText>
                 )}
                 {nicknamelength && (
-                  <Text style={styles.errorText}>
+                  <CustomText style={styles.errorText}>
                     최대 글자 수는 12글자 입니다.
-                  </Text>
+                  </CustomText>
                 )}
-                <Text
+                <CustomText
                   style={[
                     styles.lengthtext,
                     nicknamelength && styles.errorText,
                   ]}>
                   {newnickname.length}/12
-                </Text>
+                </CustomText>
               </View>
             </View>
           </ScrollView>
@@ -248,9 +250,9 @@ const Mynickchange = () => {
               nicknamefilter
             }
             onPress={nicknameCheck ? handlePutnick : handleCheckNickname}>
-            <Text style={styles.completebtntext}>
+            <CustomText style={styles.completebtntext}>
               {nicknameCheck ? '완료' : '중복 검사'}
-            </Text>
+            </CustomText>
           </Pressable>
 
           <AlertComponent />
@@ -287,7 +289,7 @@ const styles = StyleSheet.create({
   },
   completebtn: {
     width: '90%',
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
@@ -315,7 +317,7 @@ const styles = StyleSheet.create({
     borderColor: '#FF0000',
   },
   checkInputView: {
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   errorText: {
     color: '#FF0000',
@@ -327,7 +329,7 @@ const styles = StyleSheet.create({
     marginTop: 7,
     fontSize: 14,
     fontFamily: 'Pretendard-Medium',
-    color: '#45C9FF',
+    color: '#3CBBFF',
     alignSelf: 'flex-end',
   },
   lengthview: {

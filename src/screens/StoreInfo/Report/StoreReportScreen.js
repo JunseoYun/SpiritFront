@@ -13,6 +13,8 @@ import StoreReportModal from '../../../components/ReportScreen/StoreReportModal'
 import {report_create} from '../../../api/reportApi';
 import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
+import CustomTextInput from '../../../utils/CustomTextInput';
+import CustomText from '../../../utils/CustomText';
 
 const StoreReportScreen = ({navigation}) => {
   const route = useRoute();
@@ -113,6 +115,12 @@ const StoreReportScreen = ({navigation}) => {
     };
     try {
       await report_create(payloadData);
+      if (selectedReportReason) {
+        showToast('신고 완료되었습니다.');
+      } else {
+        showToast('제보 완료되었습니다.');
+      }
+
       navigation.goBack();
     } catch (error) {
       showToast('잠시 후 다시 시도해주세요.');
@@ -144,13 +152,13 @@ const StoreReportScreen = ({navigation}) => {
     <SafeAreaView style={styles.container}>
       <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.storeInfo}>매장명</Text>
-          <Text style={styles.title}>{storeName}</Text>
+          <CustomText style={styles.storeInfo}>매장명</CustomText>
+          <CustomText style={styles.title}>{storeName}</CustomText>
         </View>
 
         {/* 제보 */}
         <View style={styles.reasonView}>
-          <Text style={styles.reasonTitle}>제보</Text>
+          <CustomText style={styles.reasonTitle}>제보</CustomText>
         </View>
         <View style={styles.reasonContainer}>
           {proposeReasons.map((reason, index) => (
@@ -168,19 +176,19 @@ const StoreReportScreen = ({navigation}) => {
                   }
                 }, 100); // 렌더링 여유
               }}>
-              <Text
+              <CustomText
                 style={[
                   styles.reasonText,
                   selectedProposeReason === reason &&
                     styles.selectedProposeText,
                 ]}>
                 {reason}
-              </Text>
+              </CustomText>
             </Pressable>
           ))}
         </View>
         {selectedProposeReason && (
-          <TextInput
+          <CustomTextInput
             style={[styles.textInput]}
             placeholder="상세 제보 내용을 입력하세요 (선택)"
             placeholderTextColor="#aaa"
@@ -201,7 +209,7 @@ const StoreReportScreen = ({navigation}) => {
           />
         )}
         <View style={styles.reasonView}>
-          <Text style={styles.reasonTitle}>신고</Text>
+          <CustomText style={styles.reasonTitle}>신고</CustomText>
         </View>
         <View style={styles.reasonContainer}>
           {reportReasons.map((reason, index) => (
@@ -209,20 +217,20 @@ const StoreReportScreen = ({navigation}) => {
               key={index}
               style={[styles.reasonButton]}
               onPress={() => handleSelectReportReason(reason)}>
-              <Text
+              <CustomText
                 style={[
                   styles.reasonText,
                   selectedReportReason === reason && styles.selectedText,
                 ]}>
                 {reason}
-              </Text>
+              </CustomText>
             </Pressable>
           ))}
         </View>
 
         {/* "기타 문제" 선택 시 텍스트 입력 */}
         {selectedReportReason === '기타 신고 문제' && (
-          <TextInput
+          <CustomTextInput
             style={styles.textInput}
             placeholder="신고 사유를 입력하세요"
             placeholderTextColor="#aaa"
@@ -241,16 +249,16 @@ const StoreReportScreen = ({navigation}) => {
           ]}
           onPress={onSubmitReport}
           disabled={isSubmitDisabled}>
-          <Text style={styles.submitButtonText}>
+          <CustomText style={styles.submitButtonText}>
             {selectedProposeReason
               ? '제보 제출'
               : selectedReportReason
               ? '신고 제출'
               : '제출하기'}
-          </Text>
+          </CustomText>
         </Pressable>
         <View style={styles.reportView}>
-          <Text style={styles.reportText}>
+          <CustomText style={styles.reportText}>
             제보·신고 기능은 플랫폼의 건전한 운영을 위해 제공됩니다. 허위
             제보·신고, 악의적인 반복 제보·신고는 서비스 이용에 제한을 받을 수
             있습니다. {'\n\n'}
@@ -264,7 +272,7 @@ const StoreReportScreen = ({navigation}) => {
             따라 검토 후 처리됩니다. 거짓 제보·신고 또는 악의적인 제보·신고가
             확인될 경우, 해당 제보·신고는 무효 처리되며 불이익이 있을 수
             있습니다.
-          </Text>
+          </CustomText>
         </View>
       </ScrollView>
 
@@ -375,6 +383,7 @@ const styles = StyleSheet.create({
     marginVertical: 30,
   },
   reportText: {
+    fontSize: 14,
     color: '#777',
     fontWeight: 500,
   },

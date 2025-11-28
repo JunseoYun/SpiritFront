@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import TimePicker from '../../../../hooks/TimePicker';
 import CloseTimePicker from '../../../../hooks/CloseTimePicker';
+import CustomText from '../../../../utils/CustomText';
 
 const OperateBottomBreakingTimePicker = ({
   isStartTime,
@@ -42,7 +43,7 @@ const OperateBottomBreakingTimePicker = ({
         )}
 
         {breakError && (
-          <Text style={styles.wrongText}>{breakErrorMessage}</Text>
+          <CustomText style={styles.wrongText}>{breakErrorMessage}</CustomText>
         )}
       </View>
     </View>

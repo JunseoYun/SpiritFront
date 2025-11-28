@@ -19,6 +19,7 @@ import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import useSafeAndroidInsets from '../../../hooks/useSafeAndroidInsets';
 import Loading from '../../../hooks/Loading';
+import CustomText from '../../../utils/CustomText';
 
 const StoreAddPhotoScreen = ({navigation}) => {
   const {token} = useAuth();
@@ -99,7 +100,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
           onPress={() => {
             handleNext();
           }}>
-          <Text style={styles.nextButton}>다음</Text>
+          <CustomText style={styles.nextButton}>다음</CustomText>
         </Pressable>
       ),
     });
@@ -135,7 +136,9 @@ const StoreAddPhotoScreen = ({navigation}) => {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.scrollContent}
           ref={scrollViewRef}>
-          <Text style={styles.title}>사진 및 매장 내용을 등록 해주세요.</Text>
+          <CustomText style={styles.title}>
+            사진 및 매장 내용을 등록 해주세요.
+          </CustomText>
           <View ref={storeImageRef}>
             <StoreImage
               imageUris={imageUris}
@@ -172,7 +175,7 @@ const StoreAddPhotoScreen = ({navigation}) => {
             onPress={() => {
               handleNext();
             }}>
-            <Text style={styles.storeAddText}>다음</Text>
+            <CustomText style={styles.storeAddText}>다음</CustomText>
           </Pressable>
         </View>
         <Loading loading={loading} />
@@ -201,7 +204,7 @@ const styles = StyleSheet.create({
     marginRight: 18,
     fontSize: 19,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#16BBFF',
+    color: '#3CBBFF',
   },
 
   storeAddTextview: {
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#45C9FF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 10,
     elevation: 3, // Android shadow
     shadowColor: '#000', // iOS shadow

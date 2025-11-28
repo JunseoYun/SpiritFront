@@ -15,15 +15,22 @@ import {useToast} from '../../context/ToastContext';
 import {ReviewgetbyGet} from '../../api/reviewApi';
 import {has_unread_notification} from '../../api/notificationApi';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import CustomText from '../../utils/CustomText';
 
 const NotificationCard = ({title, message, date, hasRead}) => {
   const textColorStyle = hasRead ? styles.readText : styles.unreadText;
 
   return (
     <View style={styles.card}>
-      <Text style={[styles.cardTitle, textColorStyle]}>{title}</Text>
-      <Text style={[styles.cardMessage, textColorStyle]}>{message}</Text>
-      <Text style={[styles.cardDate, textColorStyle]}>{formatDate(date)}</Text>
+      <CustomText style={[styles.cardTitle, textColorStyle]}>
+        {title}
+      </CustomText>
+      <CustomText style={[styles.cardMessage, textColorStyle]}>
+        {message}
+      </CustomText>
+      <CustomText style={[styles.cardDate, textColorStyle]}>
+        {formatDate(date)}
+      </CustomText>
     </View>
   );
 };
@@ -258,7 +265,7 @@ const NotificationScreen = ({navigation}) => {
         ListEmptyComponent={
           !loading && notifidata.length === 0 ? (
             <View style={styles.footer}>
-              <Text style={styles.emptyText}>알림이 없어요</Text>
+              <CustomText style={styles.emptyText}>알림이 없어요</CustomText>
             </View>
           ) : null
         }
@@ -266,7 +273,7 @@ const NotificationScreen = ({navigation}) => {
           <Pressable
             disabled={!unreadNotification || loading}
             onPress={unreadNotification && !loading ? readallnotifi : null}>
-            <Text
+            <CustomText
               style={[
                 styles.allReadText,
                 unreadNotification && !loading
@@ -274,7 +281,7 @@ const NotificationScreen = ({navigation}) => {
                   : {color: '#c0c0c0'},
               ]}>
               알림 전체 읽기
-            </Text>
+            </CustomText>
           </Pressable>
         }
       />

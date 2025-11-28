@@ -13,6 +13,7 @@ import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
 import FastImage from 'react-native-fast-image';
 import TodayRecommItemSkeleton from './TodayRecommItemSkeleton';
+import CustomText from '../../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
@@ -80,11 +81,9 @@ const TodayRecomm = ({
   return (
     <>
       <View style={styles.todayPhrasesView}>
-        <Text
-          allowFontScaling={false}
-          style={[styles.todayReason, fontScale >= 1.5 && {fontSize: 20}]}>
+        <CustomText maxScale={1.3} style={[styles.todayReason]}>
           {recommReason}
-        </Text>
+        </CustomText>
       </View>
 
       {recommStores && ( // ready가 true일 때만 FlatList 렌더링
@@ -160,9 +159,9 @@ const TodayRecomm = ({
             style={styles.imageStyle}
             resizeMode={FastImage.resizeMode.contain}
           />
-          <Text style={styles.noDataText}>
+          <CustomText style={styles.noDataText}>
             추천 카테고리에 등록된 술집이 없어요
-          </Text>
+          </CustomText>
         </View>
       )}
     </>

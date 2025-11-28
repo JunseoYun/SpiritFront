@@ -167,7 +167,7 @@ const Categorystyles = StyleSheet.create({
   alcoholText: {
     fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#45C9FF',
+    color: '#3CBBFF',
     width: '50%',
     textAlign: 'right',
   },

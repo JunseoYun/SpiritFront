@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import CustomText from '../../utils/CustomText';
 const basePolicyList = [
   '[필수] 개인정보 수집/이용 동의',
   '[필수] 고유식별정보 처리 동의',
@@ -79,20 +80,20 @@ const PolicyModal = ({
       <Pressable style={styles.backdrop} onPress={handleClose} />
       <Animated.View style={[styles.container, {transform: [{translateY}]}]}>
         <View style={styles.header}>
-          <Text style={styles.title}>서비스 이용을 위해</Text>
+          <CustomText style={styles.title}>서비스 이용을 위해</CustomText>
           <Pressable onPress={handleClose}>
             <Ionicons name="close" size={23} color="#333" />
           </Pressable>
         </View>
 
-        <Text style={[styles.title, {marginBottom: 15}]}>
+        <CustomText style={[styles.title, {marginBottom: 15}]}>
           꼭 필요한 약관만 추렸어요
-        </Text>
-        <Text style={styles.subtitle}>드림시큐리티 약관</Text>
+        </CustomText>
+        <CustomText style={styles.subtitle}>드림시큐리티 약관</CustomText>
 
         {policyList.map((item, index) => (
           <View key={index} style={styles.policyRow}>
-            <Text style={styles.policyText}>{item}</Text>
+            <CustomText style={styles.policyText}>{item}</CustomText>
             <TouchableOpacity
               style={styles.viewButton}
               onPress={() =>
@@ -100,13 +101,15 @@ const PolicyModal = ({
                   carrier: selectedCarrier, // ⭐️ carrier를 route param으로 같이 전달
                 })
               }>
-              <Text style={styles.viewButtonText}>보기</Text>
+              <CustomText style={styles.viewButtonText}>보기</CustomText>
             </TouchableOpacity>
           </View>
         ))}
 
         <TouchableOpacity style={styles.confirmButton} onPress={handleAuth}>
-          <Text style={styles.confirmText}>전체 동의하고 인증번호 받기</Text>
+          <CustomText style={styles.confirmText}>
+            전체 동의하고 인증번호 받기
+          </CustomText>
         </TouchableOpacity>
       </Animated.View>
     </View>

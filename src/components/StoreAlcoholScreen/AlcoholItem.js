@@ -1,469 +1,124 @@
-import React, {useState, useEffect} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  Pressable,
-} from 'react-native';
-import {
-  DrinkUpdate,
-  DrinkUpdateImage,
-  DrinkDeleteImage,
-} from '../../api/drinkApi';
-import useCustomAlert from '../../hooks/useCustomAlert';
-import ImagePicker from 'react-native-image-crop-picker';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import RptAlcoholPicker from '../AlcoholAddScreen/RptAlcoholPicker';
-import Loading from '../../hooks/Loading';
-import {useToast} from '../../context/ToastContext';
-import {
-  requestCameraPermission,
-  requestPhotoPermission,
-} from '../../hooks/usePhotopermis';
-import ImagePickermodal from '../../hooks/ImagePickermodal';
-import forbiddenWords from '../../hooks/forbiddenWords';
-import {
-  IMAGE_CROPPER_TEXTS,
-  IMAGE_PICKER_TEXTS,
-} from '../../constants/imagePickerLabels';
+import React from 'react';
+import {View, Text, StyleSheet, Pressable} from 'react-native';
+import FastImage from 'react-native-fast-image';
+import Feather from 'react-native-vector-icons/Feather';
+import CustomText from '../../utils/CustomText';
 
+const ICON_WIDTH = 45;
 const AlcoholItem = ({
   isLast,
   alcohol,
-  onDelete,
-  onUpdate,
   isUpdatable,
-  isMainEditing,
-  onTypeChange,
   navigation,
-  expose,
-  autoEdit,
-  draft,
-  onDraftChange,
+  onAlcoholUpdateComplete,
+  onMoveUp,
+  onMoveDown,
 }) => {
-  // Initialize editing true when parent edit mode with autoEdit/draft
-  const [isEditing, setIsEditing] = useState(
-    () => !!(isMainEditing && (autoEdit || !!draft)),
-  );
-  const [name, setName] = useState(alcohol.name);
-  const [description, setDescription] = useState(alcohol.description);
-  const [price, setPrice] = useState(alcohol.price);
-  const [type, setType] = useState(alcohol.type);
-  const [imgUrl, setImgUrl] = useState(alcohol.imgUrl);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [isImageDeleted, setIsImageDeleted] = useState(false);
-  const [isVariable, setIsVariable] = useState(alcohol.price === '변동');
-  const [original, setOriginal] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
-  const [overText, setOverText] = useState(false);
-  const [overdesText, setOverdesText] = useState(false);
-  const [overnameText, setOvernameText] = useState(false);
-
-  const {showAlert, AlertComponent} = useCustomAlert();
-  const {showToast} = useToast();
-
-  const onEditStart = () => {
-    setOriginal({name, description, price, type, imgUrl, isVariable});
-    setIsEditing(true);
-  };
-
-  // auto-start editing when requested by parent (e.g., edit screen)
-  useEffect(() => {
-    if (autoEdit && !isEditing) {
-      onEditStart();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoEdit]);
-
-  // Ensure editing stays on after remount if draft/autoEdit present
-  useEffect(() => {
-    if (isMainEditing && (autoEdit || draft) && !isEditing) {
-      setIsEditing(true);
-    }
-  }, [isMainEditing, autoEdit, draft, isEditing]);
-
-  useEffect(() => {
-    if (isEditing) return;
-    setName(alcohol.name);
-    setDescription(alcohol.description);
-    setPrice(alcohol.price);
-    setType(alcohol.type);
-    setImgUrl(alcohol.imgUrl);
-    setIsVariable(alcohol.price === '변동');
-  }, [alcohol, isEditing]);
-
-  // hydrate from parent draft if present (handles remounts)
-  useEffect(() => {
-    if (!isMainEditing) return;
-    if (draft) {
-      setName(draft.name ?? alcohol.name);
-      setDescription(draft.description ?? alcohol.description);
-      setPrice(draft.price ?? alcohol.price);
-      setType(draft.type ?? alcohol.type);
-      setImgUrl(draft.imgUrl ?? alcohol.imgUrl);
-      setIsVariable(
-        draft.isVariable !== undefined
-          ? draft.isVariable
-          : alcohol.price === '변동',
-      );
-      if (draft?.selectedImage !== undefined)
-        setSelectedImage(draft.selectedImage);
-      if (draft?.isImageDeleted !== undefined)
-        setIsImageDeleted(draft.isImageDeleted);
-      setIsEditing(true);
-    }
-  }, [draft]);
-
-  // persist draft upward while editing so parent can restore after list changes
-  useEffect(() => {
-    if (!isMainEditing) return;
-    if (!onDraftChange) return;
-    onDraftChange(alcohol.id, {
-      name,
-      description,
-      price,
-      type,
-      imgUrl,
-      isVariable,
-      selectedImage,
-      isImageDeleted,
-    });
-  }, [
-    name,
-    description,
-    price,
-    type,
-    imgUrl,
-    isVariable,
-    selectedImage,
-    isImageDeleted,
-  ]);
-
-  const onCancelEdit = () => {
-    setName(original.name);
-    setDescription(original.description);
-    setPrice(original.price);
-    setType(original.type);
-    setImgUrl(original.imgUrl);
-    setIsImageDeleted(false);
-    setSelectedImage(null);
-    setIsVariable(original.isVariable);
-    setIsEditing(false);
-  };
-
-  const selectImage = () => setBottomSheetVisible(true);
-
-  const handleCameraPick = async () => {
-    if (!(await requestCameraPermission())) return;
-    ImagePicker.openCamera({
-      width: 1024,
-      height: 1024,
-      cropping: true,
-      ...IMAGE_PICKER_TEXTS,
-      ...IMAGE_CROPPER_TEXTS,
-    })
-      .then(image => {
-        setSelectedImage(image);
-        setImgUrl(image.path);
-        setIsImageDeleted(false);
-      })
-      .catch(() => {});
-  };
-
-  const handleGalleryPick = async () => {
-    if (!(await requestPhotoPermission())) return;
-    ImagePicker.openPicker({
-      width: 1024,
-      height: 1024,
-      cropping: true,
-      ...IMAGE_PICKER_TEXTS,
-      ...IMAGE_CROPPER_TEXTS,
-    })
-      .then(image => {
-        setSelectedImage(image);
-        setImgUrl(image.path);
-        setIsImageDeleted(false);
-      })
-      .catch(() => {});
-  };
-
-  const deleteImage = () => {
-    showAlert({
-      title: '이미지 삭제',
-      message: '이미지를 삭제하시겠습니까?',
-      onConfirm: () => {
-        setImgUrl('');
-        setSelectedImage(null);
-        setIsImageDeleted(true);
-      },
-      type: 'delete',
-    });
-  };
-
-  const handleSave = async () => {
-    if (!name.trim()) return showToast('주류 이름을 입력해주세요.');
-    if (!isVariable && !price.trim())
-      return showToast('주류 가격을 입력해주세요.');
-
-    if (!type.trim()) return showToast('주류 주종을 선택해주세요.');
-
-    const isImageChanged = selectedImage !== null;
-    const isImageRemoved = isImageDeleted && !!alcohol.imgUrl;
-    const isImageAddedAndRemoved =
-      !alcohol.imgUrl && selectedImage === null && isImageDeleted;
-
-    const isInfoChanged =
-      name !== alcohol.name ||
-      description !== alcohol.description ||
-      (isVariable ? '변동' : price) !== alcohol.price ||
-      type !== alcohol.type;
-
-    if (
-      !isImageChanged &&
-      !isImageRemoved &&
-      !isInfoChanged &&
-      !isImageAddedAndRemoved
-    ) {
-      setIsEditing(false);
-      return;
-    }
-
-    let updated = {...alcohol};
-
-    try {
-      setLoading(true);
-      if (isImageChanged) {
-        await DrinkUpdateImage(alcohol.id, selectedImage);
-        updated.imgUrl = selectedImage.path;
-      }
-      if (isImageRemoved) {
-        await DrinkDeleteImage(alcohol.id);
-        updated.imgUrl = '';
-      }
-      if (isInfoChanged || isImageChanged || isImageRemoved) {
-        updated = {
-          ...updated,
-          name,
-          description,
-          price: isVariable ? '변동' : price,
-          type,
-        };
-        await DrinkUpdate(alcohol.id, updated);
-      }
-
-      if (onTypeChange && type !== alcohol.type) {
-        onTypeChange(alcohol.id, type);
-      }
-      if (onUpdate) onUpdate(updated);
-      showToast('주류가 수정되었습니다.');
-      setIsEditing(false);
-    } catch (error) {
-      showToast('주류 수정에 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const Wrapper = isUpdatable ? Pressable : View;
 
   const handleImagePress = () => {
-    if (isEditing) return;
-    navigation.navigate('ImageViewerScreen', {images: imgUrl});
+    navigation.navigate('ImageViewerScreen', {images: alcohol.imgUrl});
   };
 
-  // expose imperative-like API to parent if requested
-  useEffect(() => {
-    if (!expose) return;
-    const api = {
-      save: handleSave,
-      cancel: onCancelEdit,
-      isEditing: () => isEditing,
-    };
-    expose(api);
-    return () => expose(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    expose,
-    isEditing,
-    name,
-    description,
-    price,
-    type,
-    imgUrl,
-    isImageDeleted,
-    selectedImage,
-  ]);
+  const handleMoveUp = () => {
+    if (typeof onMoveUp === 'function') {
+      onMoveUp();
+    }
+  };
+
+  const handleMoveDown = () => {
+    if (typeof onMoveDown === 'function') {
+      onMoveDown();
+    }
+  };
+
+  const handlePress = () => {
+    if (!isUpdatable) return;
+    navigation.navigate('StoreStack', {
+      screen: 'AlcoholEditScreen',
+      params: {
+        alcoholId: alcohol.id,
+        alcoholName: alcohol.name,
+        alcoholType: alcohol.type,
+        alcoholPrice: alcohol.price,
+        alcoholImgUrl: alcohol.imgUrl,
+        alcoholdescription: alcohol.description,
+      },
+    });
+
+    const unsubscribe = navigation.addListener('focus', async () => {
+      if (typeof onAlcoholUpdateComplete === 'function') {
+        await onAlcoholUpdateComplete();
+      }
+      unsubscribe();
+    });
+  };
 
   return (
     <View style={[styles.container, isLast && {borderBottomWidth: 0}]}>
-      <View
-        style={[
-          styles.contentRow,
-          isMainEditing && {paddingHorizontal: 0},
-          isEditing && {paddingBottom: 0},
-        ]}>
-        <View
-          style={[
-            styles.textWrap,
-            description == '' && {justifyContent: 'space-evenly'},
-          ]}>
-          {isEditing ? (
-            <>
-              <TextInput
-                style={styles.input}
-                value={name}
-                onChangeText={text => {
-                  const maxChars = 50;
-                  if (text.length > maxChars) {
-                    setOvernameText(true);
-                    return; // 초과 입력 무시
-                  } else {
-                    setOvernameText(false);
-                  }
-                  setName(text);
-                }}
-                placeholder="주류 이름"
-                placeholderTextColor="#999"
-                multiline
-              />
-              {overnameText && (
-                <Text style={styles.errorText}>
-                  주류 이름은 최대 50자까지 입력 가능합니다.
-                </Text>
-              )}
-
-              <TextInput
-                style={[styles.input]}
-                value={description}
-                onChangeText={text => {
-                  const maxChars = 100;
-                  if (text.length > maxChars) {
-                    setOverdesText(true);
-                    return; // 초과 입력 무시
-                  } else {
-                    setOverdesText(false);
-                  }
-                  setDescription(text);
-                }}
-                placeholder="주류 설명을 입력하세요"
-                placeholderTextColor="#999"
-                multiline
-              />
-              {overdesText && (
-                <Text style={styles.errorText}>
-                  주류 설명은 최대 100자까지 입력 가능합니다.
-                </Text>
-              )}
-              <View style={styles.rowBetween}>
-                <TextInput
-                  style={[styles.input, {flex: 1}]}
-                  placeholder="가격 입력"
-                  value={isVariable ? '변동' : price}
-                  onChangeText={t => {
-                    const cleaned = t.replace(/[^0-9]/g, '');
-                    if (cleaned === '') {
-                      setPrice('');
-                      return;
-                    }
-                    let num = parseInt(cleaned, 10);
-                    if (!isNaN(num) && num > 100000000) {
-                      num = 100000000;
-                      setOverText(true);
-                    } else {
-                      setOverText(false);
-                    }
-                    setPrice(String(num));
-                  }}
-                  editable={!isVariable}
-                  keyboardType="numeric"
-                  placeholderTextColor="#999"
-                />
-                <Pressable
-                  style={styles.checkRow}
-                  onPress={() => {
-                    setIsVariable(prev => !prev);
-                    setPrice('');
-                    setOverText(false);
-                  }}>
-                  <View
-                    style={[
-                      styles.checkBox,
-                      isVariable && styles.checkBoxChecked,
-                    ]}>
-                    {isVariable && (
-                      <MaterialIcons name="check" size={16} color="#fff" />
-                    )}
-                  </View>
-                  <Text
-                    style={[
-                      styles.checkLabel,
-                      isVariable && styles.checkLabelActive,
-                    ]}>
-                    변동
-                  </Text>
-                </Pressable>
-              </View>
-              {overText && (
-                <Text style={styles.errorText}>
-                  가격은 최대 1억원까지 입력 가능합니다
-                </Text>
-              )}
-            </>
-          ) : (
-            <>
-              <Text style={styles.name}>{name}</Text>
-              {description && <Text style={styles.desc}>{description}</Text>}
-              <Text style={styles.price}>
-                {price === '변동'
-                  ? '변동'
-                  : `${Number(price).toLocaleString()}원`}
-              </Text>
-            </>
-          )}
+      {/* 🔵 왼쪽 정렬 버튼 고정 공간 */}
+      {isUpdatable && (
+        <View style={styles.sortIconBox}>
+          <Pressable
+            hitSlop={{top: 10}}
+            style={styles.sortButton}
+            onPress={handleMoveUp}>
+            <Feather name="chevron-up" size={20} color="#B5BAC3" />
+          </Pressable>
+          <Pressable
+            hitSlop={{bottom: 10}}
+            style={styles.sortButton}
+            onPress={handleMoveDown}>
+            <Feather name="chevron-down" size={20} color="#B5BAC3" />
+          </Pressable>
         </View>
-        <View style={styles.imgWrap}>
-          {imgUrl && (
-            <Pressable onPress={handleImagePress}>
-              <Image source={{uri: imgUrl}} style={styles.image} />
-            </Pressable>
-          )}
-          {!imgUrl && isMainEditing && !isEditing && (
-            <View style={styles.emptyImage}>
-              <Text style={{color: '#aaa'}}>사진 없음</Text>
-            </View>
-          )}
-          {!imgUrl && isMainEditing && isEditing && (
-            <Pressable onPress={selectImage} style={styles.emptyImage}>
-              <MaterialCommunityIcons name="plus" size={25} color="#ccc" />
-            </Pressable>
-          )}
-          {isEditing && imgUrl && (
-            <TouchableOpacity style={styles.deleteIcon} onPress={deleteImage}>
-              <Ionicons name="close-circle" size={22} color="red" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-      {isUpdatable && isMainEditing && isEditing && (
-        <RptAlcoholPicker
-          selectedType={type}
-          onTypeChange={setType}
-          isUpdate={true}
-        />
       )}
 
-      <AlertComponent />
-      <ImagePickermodal
-        isBottomSheetVisible={isBottomSheetVisible}
-        setBottomSheetVisible={setBottomSheetVisible}
-        handleCameraPick={handleCameraPick}
-        handleGalleryPick={handleGalleryPick}
-      />
-      <Loading loading={loading} />
+      {/* 🔵 메뉴 내용 영역 */}
+      <Wrapper
+        onPress={isUpdatable ? handlePress : undefined}
+        style={styles.menuContainer}>
+        <View
+          style={[
+            styles.textView,
+            alcohol.description == '' && {justifyContent: 'space-evenly'},
+          ]}>
+          <View style={styles.menuTitleRow}>
+            <CustomText style={styles.nameText}>{alcohol.name}</CustomText>
+          </View>
+
+          {alcohol.description && (
+            <CustomText style={styles.desc}>{alcohol.description}</CustomText>
+          )}
+
+          <CustomText style={styles.priceText}>
+            {alcohol.price === '변동'
+              ? '변동'
+              : `${Number(alcohol.price).toLocaleString()}원`}
+          </CustomText>
+        </View>
+
+        <View style={styles.ImageContainer}>
+          {alcohol.imgUrl &&
+            (isUpdatable ? (
+              <FastImage source={{uri: alcohol.imgUrl}} style={styles.image} />
+            ) : (
+              <Pressable onPress={handleImagePress}>
+                <FastImage
+                  source={{uri: alcohol.imgUrl}}
+                  style={styles.image}
+                />
+              </Pressable>
+            ))}
+
+          {/* 🔵 오른쪽 화살표 (수정 화면 안내) */}
+          {isUpdatable && (
+            <View style={styles.arrowBox}>
+              <Feather name="chevron-right" size={25} color="#ccc" />
+            </View>
+          )}
+        </View>
+      </Wrapper>
     </View>
   );
 };
@@ -473,148 +128,94 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 0.7,
     borderColor: '#eee',
-  },
-  contentRow: {
-    width: '100%',
     flexDirection: 'row',
-    paddingVertical: 20,
-    paddingHorizontal: 18,
+    paddingLeft: 6, // 왼쪽 좀 더 여백
+  },
+
+  // 🔵 왼쪽 정렬 아이콘 (고정폭)
+  sortIconBox: {
+    width: ICON_WIDTH,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4, // 전체 영역 기본 패딩
+    gap: 8,
+  },
+
+  sortButton: {
+    width: '100%', // 좌측 전체 영역에서 터치 가능
+    alignItems: 'center',
+  },
+
+  menuContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    paddingVertical: 18,
+    paddingHorizontal: 10,
     backgroundColor: '#fff',
   },
-  textWrap: {
+
+  textView: {
     flex: 1,
     justifyContent: 'space-between',
   },
-  input: {
-    backgroundColor: '#F7F7F7',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 8,
-    fontSize: 14,
-    color: '#333',
-    marginRight: 10,
-    fontFamily: 'Pretendard-Medium',
+
+  menuTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
   },
-  name: {
+
+  nameText: {
     fontSize: 18,
     color: '#333',
     fontFamily: 'Pretendard-SemiBold',
   },
+
+  mainMenu: {
+    fontSize: 10,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#fff',
+    marginLeft: 7,
+    backgroundColor: 'rgba(16, 190, 251, 0.7)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 5,
+  },
+
   desc: {
     paddingVertical: 5,
-    width: '90%',
-    fontSize: 14,
+    width: '97%',
+    fontSize: 15,
     color: '#999',
     fontFamily: 'Pretendard-Medium',
-    marginTop: 1,
     lineHeight: 22,
   },
-  price: {
+
+  priceText: {
     marginTop: 7,
     fontSize: 16,
     color: '#333',
     fontFamily: 'Pretendard-SemiBold',
   },
-  imgWrap: {
-    // width: 100,
-    // height: 100,
-    // borderRadius: 10,
+
+  ImageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
+
   image: {
-    width: 100,
-    height: 100,
+    width: 90,
+    height: 90,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#E7E7E7',
+    marginHorizontal: 10,
   },
-  emptyImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
-    backgroundColor: '#f2f2f2',
+
+  arrowBox: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  deleteIcon: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
-    paddingBottom: 12,
-  },
-  btn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 7,
-  },
-  save: {
-    backgroundColor: '#45C9FF',
-  },
-  cancel: {
-    backgroundColor: '#f5f5f5',
-  },
-  edit: {
-    backgroundColor: '#45C9FF',
-  },
-  delete: {
-    backgroundColor: '#f5f5f5',
-  },
-  editbtnText: {
-    fontSize: 14,
-    color: '#fff',
-    fontFamily: 'Pretendard-Bold',
-  },
-  deletebtnText: {
-    fontSize: 14,
-    color: '#666',
-    fontFamily: 'Pretendard-Medium',
-  },
-  rowBetween: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center', // ✅ 수직 가운데 정렬
-    marginBottom: 8,
-    marginRight: 8,
-    justifyContent: 'space-between',
-  },
-  checkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  checkBox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
-    marginRight: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkBoxChecked: {
-    backgroundColor: '#16BBFF',
-    borderColor: '#16BBFF',
-  },
-  checkLabel: {
-    fontSize: 14,
-    color: '#999',
-    fontFamily: 'Pretendard-Medium',
-  },
-  checkLabelActive: {
-    color: '#16BBFF',
-    fontFamily: 'Pretendard-Medium',
-  },
-  errorText: {
-    color: '#FF4816',
-    fontSize: 14,
-    marginTop: -8,
-    marginBottom: 8,
+    paddingRight: 6,
   },
 });
 

@@ -9,9 +9,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
 
 import StoreSearchScreen from '../screens/StoreRegister/StoreSearchScreen';
-import StoreCheckScreen from '../screens/StoreRegister/StoreCheckScreen';
 import StoreAuthorityScreen from '../screens/StoreRegister/StoreAuthorityScreen';
-import StoreAuthConfirm from '../screens/StoreRegister/StoreAuthConfirm';
 import StoreAddressSearch from '../screens/StoreRegister/StoreAddressSearch';
 import StoreAddTimeSetScreen from '../screens/StoreRegister/StoreAddTimeSetScreen';
 import CategoryListTabbar from './CategoryListTabbar';
@@ -19,8 +17,10 @@ import StoreStack from './StoreStack';
 import MyStack from './MyStack';
 import OAuthStack from './OAuthStack';
 import StoreAddMapScreen from '../screens/StoreRegister/StoreAddMapScreen';
-import StoreAddCheckScreen from '../screens/StoreRegister/StoreAddList/StoreAddCheckScreen';
 import StoreAddPhotoScreen from '../screens/StoreRegister/StoreAddList/StoreAddPhotoScreen';
+import StoreOwnershipScreen from '../screens/StoreRegister/StoreOwnershipScreen';
+import StoreSuggestionScreen from '../screens/StoreRegister/StoreSuggestion/StoreSuggestionScreen';
+import StoreSuggestionDetailScreen from '../screens/StoreRegister/StoreSuggestion/StoreSuggestionDetailScreen';
 import StoreAddInfoScreen from '../screens/StoreRegister/StoreAddList/StoreAddInfoScreen';
 import LocataionMapScreen from '../screens/SetLocation/LocataionMapScreen';
 import OpenStoreScreen from '../screens/TotalScreen/OpenStoreScreen';
@@ -28,7 +28,9 @@ import NearStoreScreen from '../screens/TotalScreen/NearStoreScreen';
 import ViewedStoreScreen from '../screens/TotalScreen/ViewedStoreScreen';
 import NotificationScreen from '../screens/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/Notification/NotificationSetScreen';
+import OrderDetailScreen from '../screens/BottomTab/Order/OrderDetailScreen';
 import {normalizeFont} from '../hooks/normalizeFont';
+import CustomText from '../utils/CustomText';
 
 const Stack = createStackNavigator();
 
@@ -154,12 +156,13 @@ export default function MainStack() {
           ),
         })}
       />
-
       <Stack.Screen
-        name="StoreAddCheckScreen"
-        component={StoreAddCheckScreen}
-        options={({navigation}) => ({
-          title: '매장 제보 1/3',
+        name="StoreAddPhotoScreen"
+        component={StoreAddPhotoScreen}
+        options={({navigation, route}) => ({
+          title: `${
+            route.params?.index === 0 ? '매장 제보 1/2' : '매장 등록 1/2'
+          }`,
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -179,13 +182,50 @@ export default function MainStack() {
           ),
         })}
       />
+
       <Stack.Screen
-        name="StoreAddPhotoScreen"
-        component={StoreAddPhotoScreen}
+        name="StoreOwnershipScreen"
+        component={StoreOwnershipScreen}
         options={({navigation, route}) => ({
-          title: `${
-            route.params?.index === 0 ? '매장 제보 1/2' : '매장 등록 1/2'
-          }`,
+          title: `매장 등록`,
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+        })}
+      />
+
+      <Stack.Screen
+        name="StoreSuggestionScreen"
+        component={StoreSuggestionScreen}
+        options={({navigation, route}) => ({
+          title: `매장 제보`,
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="StoreSuggestionDetailScreen"
+        component={StoreSuggestionDetailScreen}
+        options={({navigation, route}) => ({
+          title: `${route.params?.storename} 매장 제보`,
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -273,18 +313,18 @@ export default function MainStack() {
         options={({navigation, route}) => ({
           headerTitleAlign: 'center',
           headerTitle: () => (
-            <Text
+            <CustomText
               style={{
                 fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
+                fontSize: 18,
                 color: '#333',
               }}
-              allowFontScaling={false} // 확실하게 폰트 스케일 차단
+              // 확실하게 폰트 스케일 차단
             >
               {route.params?.index === 0
                 ? '매장 제보 조회'
                 : '사장님 인증 조회'}
-            </Text>
+            </CustomText>
           ),
           headerLeft: () => (
             <Pressable
@@ -300,98 +340,24 @@ export default function MainStack() {
           ),
         })}
       />
-      <Stack.Screen
-        name="StoreCheckScreen"
-        component={StoreCheckScreen}
-        options={({navigation}) => ({
-          headerTitleAlign: 'center',
-          headerTitle: () => (
-            <Text
-              style={{
-                fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
-                color: '#333',
-              }}
-              allowFontScaling={false}>
-              사장님 인증 신청 1/3
-            </Text>
-          ),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-
       <Stack.Screen
         name="StoreAuthorityScreen"
         component={StoreAuthorityScreen}
         options={({navigation}) => ({
           headerTitleAlign: 'center',
           headerTitle: () => (
-            <Text
+            <CustomText
               style={{
                 fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
+                fontSize: 18,
                 color: '#333',
-              }}
-              allowFontScaling={false}>
-              사장님 인증 신청 2/3
-            </Text>
-          ),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
+              }}>
+              사장님 인증 신청
+            </CustomText>
           ),
         })}
       />
 
-      <Stack.Screen
-        name="StoreAuthConfirm"
-        component={StoreAuthConfirm}
-        options={({navigation}) => ({
-          headerTitleAlign: 'center',
-          headerTitle: () => (
-            <Text
-              style={{
-                fontFamily: 'Pretendard-Bold',
-                fontSize: normalizeFont(18, 1.5),
-                color: '#333',
-              }}
-              allowFontScaling={false}>
-              사장님 인증 신청 3/3
-            </Text>
-          ),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
       <Stack.Screen
         name="StoreStack"
         component={StoreStack}
@@ -411,7 +377,7 @@ export default function MainStack() {
         name="StoreAddMapScreen"
         component={StoreAddMapScreen}
         options={({navigation}) => ({
-          title: '주소 설정',
+          title: '주소 검색',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
@@ -560,6 +526,27 @@ export default function MainStack() {
             fontFamily: 'Pretendard-Bold',
             fontSize: 18,
           },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="OrderDetailScreen"
+        component={OrderDetailScreen}
+        options={({navigation}) => ({
+          title: '주문 상세',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {fontFamily: 'Pretendard-Bold', fontSize: 18},
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}

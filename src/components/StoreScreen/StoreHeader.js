@@ -11,6 +11,9 @@ const StoreHeader = ({
   titleOpacity,
   title,
   onShare,
+  isLiked,
+  onToggleLike,
+  likeDisabled,
 }) => {
   const insets = useSafeAreaInsets();
   return (
@@ -47,7 +50,21 @@ const StoreHeader = ({
           </Animated.Text>
         </Animated.View>
       </Animated.View>
-      <Animated.View style={{flexDirection: 'row'}}>
+      <Animated.View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <Animated.View
+          style={[styles.headerIconButton, {opacity: titleOpacity}]}
+          pointerEvents="box-none">
+          <Pressable onPress={onToggleLike} disabled={likeDisabled} hitSlop={8}>
+            <Animated.Text
+              allowFontScaling={false}
+              style={[
+                {color: isLiked ? '#FF5E5E' : iconColor},
+                likeDisabled && {opacity: 0.5},
+              ]}>
+              <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={25} />
+            </Animated.Text>
+          </Pressable>
+        </Animated.View>
         <Pressable onPress={() => onShare()}>
           <Animated.Text
             allowFontScaling={false}
@@ -90,6 +107,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
+  },
+  headerIconButton: {
+    marginRight: 12,
   },
   imageStyle: {
     alignSelf: 'center',

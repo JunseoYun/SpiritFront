@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
+import CustomText from '../../../utils/CustomText';
 
 const BreakTimeInput = ({
   sameStartTime,
@@ -8,11 +9,25 @@ const BreakTimeInput = ({
   isEndTime,
   wrongBreak,
   handleTimePickerToggle,
+  isStartNextDay = false,
+  isEndNextDay = false,
 }) => {
+  const startHourNumber = Number(sameStartTime.startHour || 0);
+  const endHourNumber = Number(sameEndTime.endHour || 0);
+  const shouldShowStartNext = isStartNextDay || startHourNumber >= 24;
+  const shouldShowEndNext = isEndNextDay || endHourNumber >= 24;
+
+  const formatHour = (value, showNext) =>
+    (showNext ? value % 24 : value).toString().padStart(2, '0');
+  const formatMinute = value =>
+    Number(value || 0)
+      .toString()
+      .padStart(2, '0');
+
   return (
     <View>
       <View style={styles.checkboxHeader}>
-        <Text style={styles.checkboxLabel}>브레이크타임</Text>
+        <CustomText style={styles.checkboxLabel}>브레이크타임</CustomText>
       </View>
       <View style={styles.timeInputContainer}>
         <Pressable
@@ -23,16 +38,29 @@ const BreakTimeInput = ({
               wrongBreak && {backgroundColor: 'rgba(255, 50, 50, 0.2)'},
           ]}
           onPress={() => handleTimePickerToggle('start')}>
-          <Text
+          {shouldShowStartNext && (
+            <CustomText
+              style={[
+                styles.nextText,
+                isStartTime &&
+                  wrongBreak && {color: '#FF4816', borderColor: '#FF4816'},
+              ]}>
+              {'다음날'}
+            </CustomText>
+          )}
+          <CustomText
             style={[
               styles.timeText,
-              isStartTime && {color: '#45C9FF'},
+              isStartTime && {color: '#3CBBFF'},
               isStartTime && wrongBreak && {color: '#FF4816'},
             ]}>
-            {`${sameStartTime.startHour}:${sameStartTime.startMinute}`}
-          </Text>
+            {`${formatHour(
+              startHourNumber,
+              shouldShowStartNext,
+            )}:${formatMinute(sameStartTime.startMinute)}`}
+          </CustomText>
         </Pressable>
-        <Text style={styles.separator}>~</Text>
+        <CustomText style={styles.separator}>~</CustomText>
         <Pressable
           style={[
             styles.timeInput,
@@ -41,29 +69,27 @@ const BreakTimeInput = ({
               wrongBreak && {backgroundColor: 'rgba(255, 50, 50, 0.2)'},
           ]}
           onPress={() => handleTimePickerToggle('end')}>
-          {sameEndTime.endHour >= 24 && (
-            <Text
+          {shouldShowEndNext && (
+            <CustomText
               style={[
                 styles.nextText,
                 isEndTime &&
                   wrongBreak && {color: '#FF4816', borderColor: '#FF4816'},
               ]}>
               {'다음날'}
-            </Text>
+            </CustomText>
           )}
 
-          <Text
+          <CustomText
             style={[
               styles.timeText,
-              isEndTime && {color: '#45C9FF'},
+              isEndTime && {color: '#3CBBFF'},
               isEndTime && wrongBreak && {color: '#FF4816'},
             ]}>
-            {`${
-              sameEndTime.endHour >= 24
-                ? (sameEndTime.endHour - 24).toString().padStart(2, '0')
-                : sameEndTime.endHour.toString().padStart(2, '0')
-            }:${sameEndTime.endMinute.toString().padStart(2, '0')}`}
-          </Text>
+            {`${formatHour(endHourNumber, shouldShowEndNext)}:${formatMinute(
+              sameEndTime.endMinute,
+            )}`}
+          </CustomText>
         </Pressable>
       </View>
     </View>
@@ -103,10 +129,10 @@ const styles = StyleSheet.create({
   },
   nextText: {
     fontSize: 12,
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     padding: 3,
     marginRight: 5,
     borderRadius: 3,

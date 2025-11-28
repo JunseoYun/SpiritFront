@@ -1,26 +1,23 @@
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
-  Text,
-  TextInput,
+  Platform,
   TouchableOpacity,
-  Image,
   Pressable,
   StyleSheet,
   Keyboard,
   ScrollView,
   TouchableWithoutFeedback,
-  ToastAndroid,
-  BackHandler,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import DatePicker from 'react-native-date-picker';
-import forbiddenWords from '../../hooks/forbiddenWords';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import DatePicker from 'react-native-date-picker';
 import ImagePickermodal from '../../hooks/ImagePickermodal';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {useFocusEffect} from '@react-navigation/native';
-import {useToast} from '../../context/ToastContext';
+import BottomActionButton from '../../utils/BottomActionButton';
+import ImageAddButton from '../../utils/ImageAddButton';
+import FastImage from 'react-native-fast-image';
+import ColorUtil from '../../utils/ColorUtil';
+import CustomText from '../../utils/CustomText';
+import CustomTextInput from '../../utils/CustomTextInput';
 const rateTextMap = {
   0: '어땠나요?',
   1: '별로예요',
@@ -31,7 +28,6 @@ const rateTextMap = {
 };
 
 const ReviewForm = ({
-  storeName,
   newReviewContent,
   onChangeText,
   renderStars,
@@ -48,38 +44,34 @@ const ReviewForm = ({
   hadleNoWrite,
   setBottomSheetVisible,
   handleGalleryPick,
+  submitLabel = '작성 완료',
+  showCancelButton = true,
+  initialRate = 0,
 }) => {
   const [contentFocused, setContentFocused] = useState(false);
-  const [currentRate, setCurrentRate] = useState(0);
+  const [currentRate, setCurrentRate] = useState(initialRate || 0);
   const [errorcontent, setErrorcontent] = useState(false);
   const [errorrate, setErrorrate] = useState(false);
-  const [forbiddenerror, setForbiddenerror] = useState(false);
   const [overText, setOverText] = useState(false);
 
+  useEffect(() => {
+    setCurrentRate(initialRate || 0);
+  }, [initialRate]);
+
   const validateReview = () => {
-    const containsForbiddenWord = forbiddenWords.some(word =>
-      newReviewContent.includes(word),
-    );
+    const hasContent = newReviewContent && newReviewContent.trim();
 
-    if (containsForbiddenWord) {
-      setErrorcontent(false);
-      setForbiddenerror(true);
-      return false;
-    }
-
-    if (!newReviewContent || !newReviewContent.trim()) {
+    if (!hasContent) {
       setErrorcontent(true);
-      setForbiddenerror(false);
       return false;
     }
+
     if (currentRate == 0) {
       setErrorrate(true);
-      setForbiddenerror(false);
       return false;
     }
 
     setErrorcontent(false);
-    setForbiddenerror(false);
     setErrorrate(false);
     return true;
   };
@@ -90,34 +82,30 @@ const ReviewForm = ({
     }
   };
 
-  const lastBackPressed = useRef(0);
+  const resolveImageUri = image => {
+    if (!image) {
+      return '';
+    }
 
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-        const now = Date.now();
+    const candidate = image.uri || image.path;
 
-        if (now - lastBackPressed.current < 2000) {
-          hadleNoWrite();
-          return true;
-        }
+    if (!candidate) {
+      return '';
+    }
 
-        lastBackPressed.current = now;
-        ToastAndroid.show(
-          '한 번 더 누르면 작성한 내용이 사라집니다.',
-          ToastAndroid.SHORT,
-        );
-        return true; // 기본 동작 막기
-      };
+    if (
+      candidate.startsWith('file://') ||
+      candidate.startsWith('content://') ||
+      candidate.startsWith('ph://') ||
+      candidate.startsWith('assets-library://') ||
+      candidate.startsWith('http://') ||
+      candidate.startsWith('https://')
+    ) {
+      return candidate;
+    }
 
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        onBackPress,
-      );
-
-      return () => backHandler.remove(); // cleanup
-    }, []),
-  );
+    return `file://${candidate}`;
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -130,22 +118,26 @@ const ReviewForm = ({
           showsVerticalScrollIndicator={false}>
           {/* 별점 */}
           <View style={[styles.section, {paddingHorizontal: 20}]}>
-            <Text style={styles.rateLabel}>{rateTextMap[currentRate]}</Text>
+            <CustomText style={styles.rateLabel}>
+              {rateTextMap[currentRate]}
+            </CustomText>
             <View style={styles.starRow}>
               {renderStars(rate => setCurrentRate(rate))}
             </View>
             {errorrate && (
-              <Text style={styles.errorMessage}>리뷰 별점을 입력해주세요!</Text>
+              <CustomText style={styles.errorMessage}>
+                리뷰 별점을 입력해주세요!
+              </CustomText>
             )}
           </View>
 
           {/* 리뷰 내용 */}
           <View style={[styles.section, {paddingHorizontal: 20}]}>
-            <TextInput
+            <CustomTextInput
               style={[
                 styles.textarea,
                 contentFocused && styles.inputFocused,
-                (errorcontent || forbiddenerror) && styles.errorFocused,
+                errorcontent && styles.errorFocused,
               ]}
               multiline
               value={newReviewContent}
@@ -165,35 +157,37 @@ const ReviewForm = ({
               onBlur={() => setContentFocused(false)}
             />
             {errorcontent && (
-              <Text style={styles.errorMessage}>
+              <CustomText style={styles.errorMessage}>
                 리뷰 별점 이유를 작성해 주세요!
-              </Text>
+              </CustomText>
             )}
             {overText && (
-              <Text style={styles.errorMessage}>
+              <CustomText style={styles.errorMessage}>
                 리뷰는 최대 2000자까지 입력 가능합니다.
-              </Text>
-            )}
-            {forbiddenerror && (
-              <Text style={styles.errorMessage}>
-                비속어 및 이용 약관에 위배되는 내용이 포함되어 있습니다.
-              </Text>
+              </CustomText>
             )}
           </View>
 
           {/* 방문 날짜 */}
           <View style={[styles.section, {paddingHorizontal: 20}]}>
-            <Text style={styles.sectionTitle}>방문 날짜를 선택해주세요!</Text>
+            <CustomText style={styles.sectionTitle}>
+              방문 날짜를 선택해주세요!
+            </CustomText>
             <TouchableOpacity
               style={styles.dateBtn}
               onPress={() => setIsDatePickerOpen(true)}>
-              <Text style={styles.dateTxt}>
+              <CustomText style={styles.dateTxt}>
                 {visitDate.toLocaleDateString('ko-KR', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
                 })}
-              </Text>
+              </CustomText>
+              <MaterialCommunityIcons
+                name="calendar-month-outline"
+                size={20}
+                color="#666"
+              />
             </TouchableOpacity>
             <DatePicker
               modal
@@ -215,48 +209,67 @@ const ReviewForm = ({
 
           {/* 사진 */}
           {/* 사진 */}
-          <View style={[styles.section, {paddingHorizontal: 0}]}>
-            <Text style={[styles.sectionTitle, {paddingHorizontal: 20}]}>
-              사진을 추가해주세요! (선택)
-            </Text>
+          <View style={[styles.section]}>
+            <CustomText style={[styles.sectionTitle, {paddingHorizontal: 20}]}>
+              사진을 추가해주세요!{' '}
+              <CustomText
+                style={{
+                  color: '#999',
+                  fontSize: 13,
+                  fontFamily: 'Pretendard-Regular',
+                }}>
+                (선택)
+              </CustomText>
+            </CustomText>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.imagesRow}>
               {images.map((image, index) => (
-                <Pressable
-                  key={index}
-                  onPress={() => handleImagePress(index)}
-                  style={[
-                    styles.imageBox,
-                    index === selectedImageIndex && styles.imageSelected,
-                  ]}>
-                  <Image
-                    source={{uri: `file://${image.path}`}}
-                    style={styles.image}
-                  />
-                </Pressable>
+                <View key={index} style={styles.imageWrapper}>
+                  <View
+                    style={[
+                      styles.imageBox,
+                      index === selectedImageIndex && styles.imageSelected,
+                    ]}>
+                    {resolveImageUri(image) !== '' && (
+                      <FastImage
+                        source={{uri: resolveImageUri(image)}}
+                        style={styles.image}
+                      />
+                    )}
+                  </View>
+                  <Pressable
+                    style={styles.imageDeleteButton}
+                    onPress={() => handleImagePress(index)}
+                    hitSlop={{top: 8, right: 8, bottom: 8, left: 8}}>
+                    <MaterialCommunityIcons
+                      name="close"
+                      size={18}
+                      color="#fff"
+                    />
+                  </Pressable>
+                </View>
               ))}
               {images.length < 5 && (
-                <Pressable
-                  style={styles.addImage}
-                  onPress={() => setBottomSheetVisible(true)}>
-                  <MaterialCommunityIcons name="plus" size={28} color="#888" />
-                </Pressable>
+                <ImageAddButton
+                  currentCount={images.length}
+                  maxCount={5}
+                  onPress={() => setBottomSheetVisible(true)}
+                />
               )}
             </ScrollView>
           </View>
 
           {/* 버튼 */}
         </ScrollView>
-        <View style={styles.buttonView}>
-          <TouchableOpacity style={styles.resetButton} onPress={hadleNoWrite}>
-            <Text style={styles.resetText}>취소</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.applyButton} onPress={confirmbtn}>
-            <Text style={styles.applyText}>작성 완료</Text>
-          </TouchableOpacity>
-        </View>
+
+        <BottomActionButton
+          label={submitLabel}
+          cancel={showCancelButton}
+          onPress={confirmbtn}
+          onCancel={hadleNoWrite}
+        />
         <ImagePickermodal
           isBottomSheetVisible={isBottomSheetVisible}
           setBottomSheetVisible={setBottomSheetVisible}
@@ -292,15 +305,16 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 17,
-    fontFamily: 'Pretendard-Medium',
-    marginBottom: 12,
+    fontSize: 15,
+    fontFamily: 'Pretendard-SemiBold',
+
+    marginVertical: 7,
     color: '#222',
   },
   rateLabel: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#333',
-    fontFamily: 'Pretendard-Medium',
+    fontFamily: 'Pretendard-SemiBold',
     marginBottom: 10,
   },
   starRow: {
@@ -308,17 +322,25 @@ const styles = StyleSheet.create({
   },
   textarea: {
     backgroundColor: '#fff',
+    minHeight: 130,
+    maxHeight: 150,
     borderRadius: 12,
-    padding: 14,
+    paddingHorizontal: 14,
     fontSize: 16,
     minHeight: 120,
     textAlignVertical: 'top',
     borderWidth: 1,
     borderColor: '#ebebeb',
     width: '100%',
+    ...Platform.select({
+      ios: {
+        paddingTop: 16,
+        paddingBottom: 16,
+      },
+    }),
   },
   inputFocused: {
-    borderColor: '#45C9FF',
+    borderColor: '#333',
   },
   errorFocused: {
     borderColor: '#FF4816',
@@ -331,96 +353,58 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   dateBtn: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    backgroundColor: '#FAFAFA',
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ebebeb',
-    width: '100%',
+    borderColor: '#E3E3E3',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    marginTop: 7,
   },
   dateTxt: {
-    fontSize: 18,
-    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 16,
+    fontFamily: 'Pretendard-Medium',
     color: '#333',
   },
   imagesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingVertical: 10,
     paddingHorizontal: 20,
   },
+  imageWrapper: {
+    position: 'relative',
+    marginRight: 14,
+  },
   imageBox: {
-    borderRadius: 10,
+    borderRadius: 9,
     overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: 'transparent',
-    marginRight: 10, // 각 이미지 사이 간격
+    borderWidth: 0.5,
+    borderColor: ColorUtil.border,
   },
   imageSelected: {
     borderColor: '#FF6B6B',
   },
   image: {
-    width: 90,
-    height: 90,
+    width: 100,
+    height: 100,
     borderRadius: 8,
   },
-  addImage: {
-    width: 90,
-    height: 90,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    borderStyle: 'dashed',
+  imageDeleteButton: {
+    position: 'absolute',
+    top: -7,
+    right: -10,
+    width: 20,
+    height: 20,
+    borderRadius: 100,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-
-  buttonView: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderColor: '#eee',
-    paddingTop: 12,
-    paddingHorizontal: 12,
-    backgroundColor: '#fff',
-    paddingBottom: Platform.OS === 'android' && 10,
-  },
-  resetButton: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-    height: 44,
-  },
-  resetText: {
-    fontSize: 14,
-    color: '#666',
-    fontFamily: 'Pretendard-Medium',
-  },
-  applyButton: {
-    flex: 2,
-    backgroundColor: '#45C9FF',
-    borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 44,
-  },
-  applyText: {
-    fontSize: 16,
-    color: '#fff',
-    fontFamily: 'Pretendard-Bold',
-  },
-  cancelBtn: {
-    flex: 1,
-    backgroundColor: '#EAEAEA',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginRight: 8,
+    zIndex: 5,
+    elevation: 4,
   },
 });
 

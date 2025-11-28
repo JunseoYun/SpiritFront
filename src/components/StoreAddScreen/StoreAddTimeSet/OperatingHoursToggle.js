@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
-
+import ColorUtil from '../../../utils/ColorUtil';
+import CustomText from '../../../utils/CustomText';
 const OperatingHoursToggle = ({
   isSameEveryday,
   setIsSameEveryday,
@@ -11,7 +12,9 @@ const OperatingHoursToggle = ({
 }) => {
   return (
     <View>
-      <Text style={styles.sectionTitle}>영업 시간을 알려주세요</Text>
+      <CustomText style={styles.sectionTitle}>
+        영업 시간을 알려주세요
+      </CustomText>
       <View style={styles.toggleContainer}>
         <Pressable
           style={[styles.toggleButton, isSameEveryday && styles.selectedToggle]}
@@ -21,12 +24,12 @@ const OperatingHoursToggle = ({
 
             handleBottomClose();
           }}>
-          <Text
+          <CustomText
             style={
               isSameEveryday ? styles.selectedText : styles.unselectedText
             }>
             매일 같음
-          </Text>
+          </CustomText>
         </Pressable>
         <Pressable
           style={[
@@ -39,12 +42,12 @@ const OperatingHoursToggle = ({
             handleBottomClose();
             setIs24(false);
           }}>
-          <Text
+          <CustomText
             style={
               !isSameEveryday ? styles.selectedText : styles.unselectedText
             }>
             요일마다 다름
-          </Text>
+          </CustomText>
         </Pressable>
       </View>
     </View>
@@ -68,24 +71,24 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#aaa',
+    borderColor: ColorUtil.border,
     paddingHorizontal: 15,
     borderRadius: 100,
     marginRight: 7,
   },
   selectedToggle: {
-    backgroundColor: '#45C9FF',
-    borderColor: '#45C9FF',
+    backgroundColor: ColorUtil.main,
+    borderColor: ColorUtil.main,
   },
   selectedText: {
     color: '#fff',
     fontSize: 15,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
   unselectedText: {
-    color: '#aaa',
+    color: ColorUtil.chipText,
     fontSize: 15,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
   },
 });
 

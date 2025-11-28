@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet, Modal, TouchableOpacity} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import useSafeAndroidInsets from './useSafeAndroidInsets';
+import CustomText from '../utils/CustomText';
 
 const ImagePickermodal = ({
   isBottomSheetVisible,
@@ -37,7 +38,9 @@ const ImagePickermodal = ({
               color="#333"
               style={{paddingRight: 7}}
             />
-            <Text style={styles.sheetButtonText}>카메라로 촬영</Text>
+            <CustomText style={styles.sheetButtonText}>
+              카메라로 촬영
+            </CustomText>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.sheetButton}
@@ -53,14 +56,16 @@ const ImagePickermodal = ({
               color="#333"
               style={{paddingRight: 7}}
             />
-            <Text style={styles.sheetButtonText}>앨범에서 선택</Text>
+            <CustomText style={styles.sheetButtonText}>
+              앨범에서 선택
+            </CustomText>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.sheetButton, styles.cancelButton]}
             onPress={close}>
-            <Text style={[styles.sheetButtonText, styles.cancelText]}>
+            <CustomText style={[styles.sheetButtonText, styles.cancelText]}>
               닫기
-            </Text>
+            </CustomText>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>

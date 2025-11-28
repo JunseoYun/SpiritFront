@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import CustomText from '../../utils/CustomText';
 
 const CarrierInput = ({
   carrierRef,
@@ -9,7 +10,7 @@ const CarrierInput = ({
 }) => {
   return (
     <View style={[styles.labeledInputContainer, {marginBottom: 20}]}>
-      <Text style={styles.inputLabel}>통신사</Text>
+      <CustomText style={styles.inputLabel}>통신사</CustomText>
       <TouchableOpacity
         ref={carrierRef}
         onPress={() => setIsCarrierModalVisible(true)}
@@ -17,16 +18,18 @@ const CarrierInput = ({
           styles.input,
           error === 'selectedCarrier' && styles.errorFocused,
         ]}>
-        <Text
+        <CustomText
           style={{
             color: selectedCarrier ? '#000' : '#aaa',
             fontSize: 16,
           }}>
           {selectedCarrier || '통신사 선택'}
-        </Text>
+        </CustomText>
       </TouchableOpacity>
       {error === 'selectedCarrier' && selectedCarrier === '' && (
-        <Text style={styles.errorMessage}>통신사를 선택 해주세요.</Text>
+        <CustomText style={styles.errorMessage}>
+          통신사를 선택 해주세요.
+        </CustomText>
       )}
     </View>
   );

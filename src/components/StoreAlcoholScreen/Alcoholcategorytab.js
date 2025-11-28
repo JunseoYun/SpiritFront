@@ -11,6 +11,7 @@ import {
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
+import CustomText from '../../utils/CustomText';
 
 const alcoholMapping = {
   SOJU: '소주',
@@ -38,7 +39,7 @@ const Alcoholcategorytab = ({
   setSelectedType,
   isClickedRef,
   filterHeight,
-  mainSectionHeight,
+  mainSectionHeight = 0,
 }) => {
   const [alcoholsState, setAlcoholsState] = useState(alcohols);
   const {height: windowHeight} = Dimensions.get('window');
@@ -168,13 +169,13 @@ const Alcoholcategorytab = ({
                 console.warn();
               }
             }}>
-            <Text
+            <CustomText
               style={[
                 styles.tabText,
                 selectedType === type && styles.tabTextActive, // ???좏깮???띿뒪???ㅽ???
               ]}>
               {type}
-            </Text>
+            </CustomText>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -184,7 +185,7 @@ const Alcoholcategorytab = ({
 
 const styles = StyleSheet.create({
   tabContainer: {
-    paddingTop: 10,
+    paddingTop: 5,
     backgroundColor: '#fff',
     paddingBottom: 5,
   },
@@ -210,11 +211,11 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   tabButtonActive: {
-    backgroundColor: '#E8F7FF', // ?좏깮 ??諛곌꼍??
-    borderColor: '#45C9FF',
+    backgroundColor: '#E8F7FF',
+    borderColor: '#3CBBFF',
   },
   tabTextActive: {
-    color: '#45C9FF', // ?좏깮 ??湲?먯깋
+    color: '#3CBBFF',
   },
 });
 

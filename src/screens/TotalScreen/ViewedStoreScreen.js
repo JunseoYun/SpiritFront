@@ -14,8 +14,9 @@ import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import ViewedStoreTotalItem from '../../components/TotalScreen/ViewedStoreTotalItem';
 import {Store_getby_viewed} from '../../api/storeApi';
 import ViewedStoreItemSkeleton from '../../components/TotalScreen/TotalSkeleton/ViewedStoreItemSkeleton';
-import ScrollToTopButton from '../../components/common/ScrollToTopButton';
+import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
+import CustomText from '../../utils/CustomText';
 const ViewedStoreScreen = ({navigation}) => {
   const {bottom} = useSafeAndroidInsets();
   const [distancestores, setDistancestores] = useState([]);
@@ -131,7 +132,9 @@ const ViewedStoreScreen = ({navigation}) => {
       )}
       {distancestores.length === 0 && !loading && (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>주변에 등록된 술집이 없어요</Text>
+          <CustomText style={styles.emptyText}>
+            주변에 등록된 술집이 없어요
+          </CustomText>
         </View>
       )}
       <ScrollToTopButton

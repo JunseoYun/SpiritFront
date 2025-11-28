@@ -1,10 +1,11 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import CustomText from '../../../../utils/CustomText';
 
 const LGUcarrieruse = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.text}>
+      <CustomText style={styles.text}>
         통신사 이용 약관 동의{'\n'}
         {'\n'}
         [LG유플러스 휴대폰 본인확인서비스 이용약관]{'\n'}
@@ -157,73 +158,91 @@ const LGUcarrieruse = () => {
         1. 회사는 서비스 제공을 위하여 수집된 본인확인정보의 취급 및 관리 등의
         업무를 스스로 수행함을 원칙으로 하나, 필요한 경우 아래 표와 같이 회사가
         선정한 사업자에게 위탁할 수 있습니다.{'\n'}
-      </Text>
+      </CustomText>
 
       {/* ✅ 표 형태 삽입 */}
       <View style={{marginTop: 20}}>
-        <Text style={styles.tableTitle}>[개인정보의 취급 위탁]</Text>
+        <CustomText style={styles.tableTitle}>
+          [개인정보의 취급 위탁]
+        </CustomText>
 
         {/* 표 헤더 */}
         <View style={[styles.tableRow, styles.tableHeader]}>
-          <Text style={[styles.tableCell, {flex: 1}]}>수탁자</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>위탁업무내용</Text>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>수탁자</CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
+            위탁업무내용
+          </CustomText>
         </View>
 
         {/* 표 내용 */}
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>서울평가정보㈜</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>
+            서울평가정보㈜
+          </CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
             연계정보, 중복가입확인정보 생성 및 전송{'\n'}
             본인확인 서비스 중계 업무 제공
-          </Text>
+          </CustomText>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>한국모바일인증㈜</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>
+            한국모바일인증㈜
+          </CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
             본인확인 서비스 중계 업무 제공
-          </Text>
+          </CustomText>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>코리아크레딧뷰로㈜</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>
+            코리아크레딧뷰로㈜
+          </CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
             본인확인 서비스 중계 업무 제공
-          </Text>
+          </CustomText>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>NICE평가정보㈜</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>
+            NICE평가정보㈜
+          </CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
             연계정보, 중복가입확인정보 생성 및 전송{'\n'}
             본인확인 서비스 중계 업무 제공
-          </Text>
+          </CustomText>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>㈜ 다날</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>㈜ 다날</CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
             본인확인 서비스 중계 업무 제공
-          </Text>
+          </CustomText>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>㈜NHN한국사이버결제</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>
+            ㈜NHN한국사이버결제
+          </CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
             본인확인 서비스 중계 업무 제공
-          </Text>
+          </CustomText>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>㈜드림시큐리티</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>
+            ㈜드림시큐리티
+          </CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
             본인확인 서비스 중계 업무 제공
-          </Text>
+          </CustomText>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, {flex: 1}]}>KG모빌리언스</Text>
-          <Text style={[styles.tableCell, {flex: 2}]}>
+          <CustomText style={[styles.tableCell, {flex: 1}]}>
+            KG모빌리언스
+          </CustomText>
+          <CustomText style={[styles.tableCell, {flex: 2}]}>
             본인확인 서비스 중계 업무 제공
-          </Text>
+          </CustomText>
         </View>
       </View>
 
       {/* 이어지는 텍스트 */}
-      <Text style={styles.text}>
+      <CustomText style={styles.text}>
         {'\n'}
         2. 회사는 서비스 제공 시 수집된 식별정보(중복가입확인정보, 연계정보)는
         본인 식별 및 확인 위한 목적으로 회사 또는 인증 대행사를 통해
@@ -237,7 +256,7 @@ const LGUcarrieruse = () => {
         {'\n'}
         부칙{'\n'}
         (시행일) 이 약관은 공시한 날로부터 시행합니다.{'\n'}
-      </Text>
+      </CustomText>
     </ScrollView>
   );
 };

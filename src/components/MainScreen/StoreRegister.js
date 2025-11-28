@@ -4,6 +4,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import {iniBasictNotification} from '../../hooks/notification/useNotificationPermission';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {openSettings} from 'react-native-permissions';
+import CustomText from '../../utils/CustomText';
 
 const StoreRegister = ({handlestoreItemClick}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
@@ -56,8 +57,8 @@ const StoreRegister = ({handlestoreItemClick}) => {
             accessibilityRole="button"
             accessibilityLabel={option.title}>
             <View style={[styles.cover]}>
-              <Feather name={option.icon} size={22} color={'#45C9FF'} />
-              <Text style={styles.title}>{option.title}</Text>
+              <Feather name={option.icon} size={22} color={'#3CBBFF'} />
+              <CustomText style={styles.title}>{option.title}</CustomText>
             </View>
           </Pressable>
         );
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
   cardPressed: {
     transform: [{scale: 0.98}],
     opacity: Platform.OS === 'ios' ? 0.9 : 0.9,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   cover: {
     flexDirection: 'row',

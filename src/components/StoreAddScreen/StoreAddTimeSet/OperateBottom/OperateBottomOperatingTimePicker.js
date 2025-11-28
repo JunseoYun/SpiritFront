@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import TimePicker from '../../../../hooks/TimePicker';
 import CloseTimePicker from '../../../../hooks/CloseTimePicker';
+import CustomText from '../../../../utils/CustomText';
 
 const OperateBottomOperatingTimePicker = ({
   isOpenTime,
@@ -45,12 +46,12 @@ const OperateBottomOperatingTimePicker = ({
         </View>
       </View>
       {breakError && (
-        <Text style={styles.wrongText}>
+        <CustomText style={styles.wrongText}>
           영업 시간은 브레이크타임을 포함하도록 설정해주세요.
-        </Text>
+        </CustomText>
       )}
       {operateError && (
-        <Text style={styles.wrongText}>{operateErrorMessage}</Text>
+        <CustomText style={styles.wrongText}>{operateErrorMessage}</CustomText>
       )}
     </>
   );

@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
+import CustomText from '../../../../utils/CustomText';
 
 const OperateBottomBreakSelector = ({
   isStartTime,
@@ -13,7 +14,9 @@ const OperateBottomBreakSelector = ({
 }) => {
   return (
     <>
-      <Text style={[styles.boldText, {marginTop: 20}]}>브레이크타임</Text>
+      <CustomText style={[styles.boldText, {marginTop: 20}]}>
+        브레이크타임
+      </CustomText>
       <View style={styles.timeInputContainer}>
         <Pressable
           style={[
@@ -23,16 +26,16 @@ const OperateBottomBreakSelector = ({
               breakError && {backgroundColor: 'rgba(255, 50, 50, 0.2)'},
           ]}
           onPress={() => handleTimePickerToggle('start')}>
-          <Text
+          <CustomText
             style={[
               styles.timeText,
-              isStartTime && {color: '#45C9FF'},
+              isStartTime && {color: '#3CBBFF'},
               breakError && {color: '#FF4816'},
             ]}>
             {`${breakStartHour}:${breakStartMinute}`}
-          </Text>
+          </CustomText>
         </Pressable>
-        <Text style={styles.separator}>~</Text>
+        <CustomText style={styles.separator}>~</CustomText>
         <Pressable
           style={[
             styles.timeInput,
@@ -42,19 +45,19 @@ const OperateBottomBreakSelector = ({
           ]}
           onPress={() => handleTimePickerToggle('end')}>
           {breakEndHour >= 24 && (
-            <Text
+            <CustomText
               style={[
                 styles.nextText,
-                isEndTime && {color: '#45C9FF'},
+                isEndTime && {color: '#3CBBFF'},
                 breakError && {color: '#FF4816', borderColor: '#FF4816'},
               ]}>
               다음날
-            </Text>
+            </CustomText>
           )}
-          <Text
+          <CustomText
             style={[
               styles.timeText,
-              isEndTime && {color: '#45C9FF'},
+              isEndTime && {color: '#3CBBFF'},
               breakError && {color: '#FF4816'},
             ]}>
             {breakEndHour >= 24
@@ -63,7 +66,7 @@ const OperateBottomBreakSelector = ({
                   '0',
                 )}:${breakEndMinute}`
               : `${String(breakEndHour).padStart(2, '0')}:${breakEndMinute}`}
-          </Text>
+          </CustomText>
         </Pressable>
       </View>
     </>
@@ -97,10 +100,10 @@ const styles = StyleSheet.create({
   },
   nextText: {
     fontSize: 12,
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
     borderWidth: 1,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
     padding: 3,
     marginRight: 5,
     borderRadius: 3,

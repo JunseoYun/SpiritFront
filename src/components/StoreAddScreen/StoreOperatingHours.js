@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
+import CustomText from '../../utils/CustomText';
 
 const StoreOperatingHours = ({operatingHours, setOperatingHours}) => {
   const [visible, setVisible] = useState(false);
@@ -60,17 +61,17 @@ const StoreOperatingHours = ({operatingHours, setOperatingHours}) => {
         <TouchableOpacity style={styles.storeinput} onPress={openHandle}>
           {isOperatingHoursSet ? (
             <>
-              <Text style={styles.storeinputtext}>영업 시간*</Text>
-              <Text style={styles.inputText}>
+              <CustomText style={styles.storeinputtext}>영업 시간*</CustomText>
+              <CustomText style={styles.inputText}>
                 {`${operatingHours.openHour || '00'}:${
                   operatingHours.openMinute || '00'
                 } - ${operatingHours.closedHour || '00'}:${
                   operatingHours.closedMinute || '00'
                 }`}
-              </Text>
+              </CustomText>
             </>
           ) : (
-            <Text style={styles.inputHideText}>영업 시간*</Text>
+            <CustomText style={styles.inputHideText}>영업 시간*</CustomText>
           )}
         </TouchableOpacity>
       </View>
@@ -80,9 +81,9 @@ const StoreOperatingHours = ({operatingHours, setOperatingHours}) => {
             style={styles.modalContainer}
             onStartShouldSetResponder={() => true} // 이벤트 차단
           >
-            <Text style={styles.modalTopText}>매장 영업 시간</Text>
+            <CustomText style={styles.modalTopText}>매장 영업 시간</CustomText>
             <View style={styles.pickerTopView}>
-              <Text style={styles.pickerLabel}>오픈</Text>
+              <CustomText style={styles.pickerLabel}>오픈</CustomText>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={operatingHours.openHour}
@@ -94,7 +95,7 @@ const StoreOperatingHours = ({operatingHours, setOperatingHours}) => {
                   ))}
                 </Picker>
               </View>
-              <Text style={styles.pickerColon}>:</Text>
+              <CustomText style={styles.pickerColon}>:</CustomText>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={operatingHours.openMinute}
@@ -108,7 +109,7 @@ const StoreOperatingHours = ({operatingHours, setOperatingHours}) => {
               </View>
             </View>
             <View style={styles.pickerTopView}>
-              <Text style={styles.pickerLabel}>마감</Text>
+              <CustomText style={styles.pickerLabel}>마감</CustomText>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={operatingHours.closedHour}
@@ -120,7 +121,7 @@ const StoreOperatingHours = ({operatingHours, setOperatingHours}) => {
                   ))}
                 </Picker>
               </View>
-              <Text style={styles.pickerColon}>:</Text>
+              <CustomText style={styles.pickerColon}>:</CustomText>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={operatingHours.closedMinute}
@@ -134,7 +135,7 @@ const StoreOperatingHours = ({operatingHours, setOperatingHours}) => {
               </View>
             </View>
             <Pressable onPress={closeHandle} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>확인</Text>
+              <CustomText style={styles.closeButtonText}>확인</CustomText>
             </Pressable>
           </View>
         </Pressable>
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
   storeinputtext: {
     fontWeight: '500',
     color: '#999',
-    fontSize: 16,
+    fontSize: 15,
     marginBottom: 10,
   },
   storeinput: {
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     paddingVertical: 10,
     paddingHorizontal: 30,
-    backgroundColor: '#16BBFF',
+    backgroundColor: '#3CBBFF',
     borderRadius: 5,
   },
   closeButtonText: {

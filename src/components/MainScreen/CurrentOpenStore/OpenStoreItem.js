@@ -7,6 +7,8 @@ import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../../../utils/CustomText';
+import ColorUtil from '../../../utils/ColorUtil';
 
 let fontScale = PixelRatio.getFontScale(); // let으로 변경
 
@@ -79,10 +81,10 @@ const OpenStoreItem = ({store, location, navigation}) => {
             imageStyle={styles.backimagestyle}>
             {isOpen && isBreak && (
               <View style={styles.overlay}>
-                <Text style={styles.overlayText}>
+                <CustomText style={styles.overlayText}>
                   브레이크 타임{'\n'}
                   {breakend ? `${breakend} 종료` : ''}
-                </Text>
+                </CustomText>
               </View>
             )}
           </FastImage>
@@ -95,16 +97,16 @@ const OpenStoreItem = ({store, location, navigation}) => {
               style={styles.imageStyle}
             />
           )}
-          <Text
+          <CustomText
             style={styles.storMainInfo}
             numberOfLines={1} // 한 줄로 제한
             ellipsizeMode="tail">
             {store.name}
-          </Text>
+          </CustomText>
         </View>
         {/* ✅ 가게 카테고리 */}
         <View style={styles.storeViewInfo}>
-          <Text
+          <CustomText
             style={styles.StoreCategory}
             numberOfLines={1}
             ellipsizeMode="tail">
@@ -113,7 +115,7 @@ const OpenStoreItem = ({store, location, navigation}) => {
                   .map(category => translateCategory(category))
                   .join('  ')
               : '카테고리 미설정'}
-          </Text>
+          </CustomText>
         </View>
         <View
           style={[
@@ -124,27 +126,27 @@ const OpenStoreItem = ({store, location, navigation}) => {
             },
           ]}>
           {endtime && !store.isAlwaysOpen && (
-            <Text
+            <CustomText
               style={styles.storeSubInfo}
               numberOfLines={1}
               ellipsizeMode="tail">
               {endtime || '정보 없음'} 종료
-            </Text>
+            </CustomText>
           )}
 
           {!endtime && store.isAlwaysOpen && (
-            <Text
+            <CustomText
               style={styles.storeSubInfo}
               numberOfLines={1}
               ellipsizeMode="tail">
               24시간
-            </Text>
+            </CustomText>
           )}
 
-          <Text style={styles.storeSubInfo}>
+          <CustomText style={styles.storeSubInfo}>
             {distance}
             {unit}
-          </Text>
+          </CustomText>
         </View>
       </Pressable>
     </>
@@ -163,11 +165,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 7,
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
+    borderWidth: 0.5,
+    borderColor: ColorUtil.border,
     overflow: 'hidden', // ✅ overlay가 이미지 밖으로 나가지 않도록 처리
   },
   backimage: {
@@ -194,37 +193,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 3,
-    paddingHorizontal: 1,
+    marginTop: 4,
+    paddingHorizontal: 2,
     maxWidth: 160,
   },
 
   storMainInfo: {
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#181A1A',
+    color: '#333',
     flex: 1,
-  },
-  storRate: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-Medium',
-    color: '#FCC104',
-  },
-  storRateInfo: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#999',
   },
 
   StoreCategory: {
     fontSize: 14,
-    color: '#999',
-    fontFamily: 'Pretendard-Medium',
+    color: ColorUtil.subText,
+    fontFamily: 'Pretendard-Regular',
   },
   storeSubInfo: {
     fontSize: 14,
-    color: '#999',
-    fontFamily: 'Pretendard-Medium',
+    color: ColorUtil.subText,
+    fontFamily: 'Pretendard-Regular',
   },
   imageStyle: {
     alignSelf: 'center',

@@ -5,11 +5,10 @@ import LinearGradient from 'react-native-linear-gradient';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
+import CustomText from '../../../utils/CustomText';
 
 let fontScale = PixelRatio.getFontScale(); // let으로 변경
 if (fontScale >= 1.7) fontScale = 1.7;
-
-const fontSize = 12 * fontScale;
 
 const drinkColors = {
   SOJU: '#9BE7C5', // 민트 그린
@@ -105,16 +104,12 @@ const TodayRecommItem = ({store, navigation}) => {
                 ]}
               />
             )}
-            <Text
-              allowFontScaling={false}
-              style={[
-                styles.storeName,
-                fontScale >= 1.5 ? {fontSize: 34} : {fontSize: 24},
-              ]}
+            <CustomText
+              style={[styles.storeName]}
               numberOfLines={3}
               ellipsizeMode="tail">
               {store.name}
-            </Text>
+            </CustomText>
           </View>
         </View>
 
@@ -131,17 +126,16 @@ const TodayRecommItem = ({store, navigation}) => {
 
             return (
               <React.Fragment key={index}>
-                <Text
-                  allowFontScaling={false}
+                <CustomText
                   {...(isLast ? {numberOfLines: 1, ellipsizeMode: 'tail'} : {})}
                   style={[
                     styles.drinkText,
                     {color: baseColor, backgroundColor: 'rgba(0,0,0,0.40)'},
-                    {fontSize},
                     isLast && {flexShrink: 1}, // 남은 공간 차지
                   ]}>
-                  {translateAlcohol(drink.type)} {drink.price}
-                </Text>
+                  {translateAlcohol(drink.type)}
+                  {drink.price ? ` ${drink.price}` : ''}
+                </CustomText>
                 {index !== store.mainDrinkDtos.length - 1 && (
                   <View style={styles.division} />
                 )}
@@ -196,6 +190,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   storeName: {
+    fontSize: 24,
     color: '#fff',
     fontFamily: 'Pretendard-Bold',
   },
@@ -212,6 +207,7 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     paddingHorizontal: 8,
     paddingVertical: 5,
+    fontSize: 12,
   },
   division: {
     height: 12,

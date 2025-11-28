@@ -6,6 +6,8 @@ import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
+import CustomText from '../../../utils/CustomText';
+import ColorUtil from '../../../utils/ColorUtil';
 
 let fontScale = PixelRatio.getFontScale();
 
@@ -74,29 +76,31 @@ const NearStoreItem = ({store, navigation, location}) => {
             {/* ✅ 영업 종료 표시 */}
             {!isOpen && !nextclosed && !closed && (
               <View style={styles.overlay}>
-                <Text style={styles.overlayText}>
+                <CustomText style={styles.overlayText}>
                   영업 종료{'\n'}
                   {starttime ? `${starttime} 오픈` : ''}
-                </Text>
+                </CustomText>
               </View>
             )}
             {!isOpen && nextclosed && !closed && (
               <View style={styles.overlay}>
-                <Text style={styles.overlayText}>영업 종료{'\n'}익일 휴무</Text>
+                <CustomText style={styles.overlayText}>
+                  영업 종료{'\n'}익일 휴무
+                </CustomText>
               </View>
             )}
             {!isOpen && !nextclosed && closed && (
               <View style={styles.overlay}>
-                <Text style={styles.overlayText}>금일 휴무</Text>
+                <CustomText style={styles.overlayText}>금일 휴무</CustomText>
               </View>
             )}
             {/* ✅ 브레이크 타임 표시 */}
             {isOpen && isBreak && (
               <View style={styles.overlay}>
-                <Text style={styles.overlayText}>
+                <CustomText style={styles.overlayText}>
                   브레이크 타임{'\n'}
                   {breakend ? `${breakend} 종료` : ''}
-                </Text>
+                </CustomText>
               </View>
             )}
           </FastImage>
@@ -110,17 +114,17 @@ const NearStoreItem = ({store, navigation, location}) => {
               style={styles.imageStyle}
             />
           )}
-          <Text
+          <CustomText
             style={styles.storMainInfo}
             numberOfLines={1} // 한 줄로 제한
             ellipsizeMode="tail">
             {store.name}
-          </Text>
+          </CustomText>
         </View>
 
         {/* ✅ 가게 카테고리 */}
         <View style={styles.storeViewInfo}>
-          <Text
+          <CustomText
             style={styles.StoreCategory}
             numberOfLines={1} // 한 줄로 제한
             ellipsizeMode="tail">
@@ -129,7 +133,7 @@ const NearStoreItem = ({store, navigation, location}) => {
                   .map(category => translateCategory(category))
                   .join('  ')
               : '카테고리 미설정'}
-          </Text>
+          </CustomText>
         </View>
 
         {/* ✅ 영업 종료 시간 & 거리 표시 */}
@@ -142,19 +146,19 @@ const NearStoreItem = ({store, navigation, location}) => {
             },
           ]}>
           {store?.isAlwaysOpen == true ? (
-            <Text style={styles.storeSubInfo}>24시간</Text>
+            <CustomText style={styles.storeSubInfo}>24시간</CustomText>
           ) : store?.isAlwaysOpen == false && closed ? (
-            <Text style={styles.storeSubInfo}>금일 휴무</Text>
+            <CustomText style={styles.storeSubInfo}>금일 휴무</CustomText>
           ) : (
-            <Text style={styles.storeSubInfo}>
+            <CustomText style={styles.storeSubInfo}>
               {endtime || '정보 없음'} 종료
-            </Text>
+            </CustomText>
           )}
 
-          <Text style={styles.storeSubInfo}>
+          <CustomText style={styles.storeSubInfo}>
             {distance}
             {unit}
-          </Text>
+          </CustomText>
         </View>
       </View>
     </Pressable>
@@ -172,12 +176,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
+    borderWidth: 0.5,
+    borderColor: ColorUtil.border,
+
     borderRadius: 7,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
     overflow: 'hidden', // ✅ overlay가 이미지 밖으로 나가지 않도록 처리
   },
   backimage: {
@@ -203,36 +205,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 3,
-    paddingHorizontal: 1,
+    marginTop: 4,
+    paddingHorizontal: 2,
     maxWidth: 160,
   },
   storMainInfo: {
     flex: 1,
     fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#181A1A',
-  },
-  storRate: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-Medium',
-    color: '#FCC104',
-  },
-  storRateInfo: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#999',
+    color: '#333',
   },
 
   StoreCategory: {
     fontSize: 14,
-    color: '#999',
-    fontFamily: 'Pretendard-Medium',
+    color: ColorUtil.subText,
+    fontFamily: 'Pretendard-Regular',
   },
   storeSubInfo: {
     fontSize: 14,
-    color: '#999',
-    fontFamily: 'Pretendard-Medium',
+    color: ColorUtil.subText,
+    fontFamily: 'Pretendard-Regular',
   },
   imageStyle: {
     alignSelf: 'center',

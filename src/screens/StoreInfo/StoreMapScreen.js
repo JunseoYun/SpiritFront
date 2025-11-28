@@ -1,10 +1,13 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useMemo, useCallback} from 'react';
 import {
   Text,
   View,
   StyleSheet,
+  Platform,
   TouchableOpacity,
-  SafeAreaView,
+  TouchableWithoutFeedback,
+  Share,
+  PixelRatio,
 } from 'react-native';
 
 import {WebView} from 'react-native-webview';
@@ -14,19 +17,54 @@ import KakaoMapHTML from '../../components/MapScreen/KakaoMapHTML';
 import StoreMapScript from '../../components/StoreMapScreen/StoreMapScript';
 import StoreMapLocation from '../../components/StoreMapScreen/StoreMapLocation';
 import StoreMapCenter from '../../components/StoreMapScreen/StoreMapCenter';
-import {openKakaoMap} from '../../hooks/openKakaoMap';
-import StoreMapFoot from '../../components/StoreMapScreen/StoreMapFoot';
-import StoreMapBus from '../../components/StoreMapScreen/StoreMapBus';
-import StoreMapCar from '../../components/StoreMapScreen/StoreMapCar';
+import StoreMapNavi from '../../components/StoreMapScreen/StoreMapNavi';
 import {useRoute} from '@react-navigation/native';
+import useDirectionsModal from '../../hooks/useDirectionsModal';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import useDistance from '../../hooks/useDistance';
+import Clipboard from 'react-native/Libraries/Components/Clipboard/Clipboard';
+import {useToast} from '../../context/ToastContext';
+import NonImageHeader from '../../components/StoreScreen/NonImageHeader';
+import StoreTabs from '../../components/StoreScreen/StoreTabs';
+import {Storelikepost, get_store_share} from '../../api/storeApi';
+import CustomText from '../../utils/CustomText';
 
 const StoreMapScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeLatitude, storeLongitude, innerlatitude, innerlongitude} =
-    route.params;
+  const {
+    storeLatitude,
+    storeLongitude,
+    innerlatitude,
+    innerlongitude,
+    storename,
+    storeAddress,
+    storeAddressDetail,
+    storeId,
+    isStoreLiked: initialIsStoreLiked,
+    onSelectTab,
+  } = route.params;
+  const fontScale = PixelRatio.getFontScale() || 1;
+  const clampedFontScale = Math.min(fontScale, 1.3);
+
+  const baseFontSize = 14; // 기본 폰트 크기
+  const scaledFontSize = (baseFontSize / fontScale) * clampedFontScale;
+
+  const {openDirectionsModal, DirectionsModal} = useDirectionsModal();
+  const insets = useSafeAreaInsets();
 
   const [location, setLocation] = useState({innerlatitude, innerlongitude});
+  const [infoHeight, setInfoHeight] = useState(null);
   const webViewRef = useRef(null);
+  const calculateDistance = useDistance();
+  const {showToast} = useToast();
+  const [isStoreLiked, setIsStoreLiked] = useState(
+    Boolean(initialIsStoreLiked),
+  );
+  const [isLikeProcessing, setIsLikeProcessing] = useState(false);
+
+  useEffect(() => {
+    setIsStoreLiked(Boolean(initialIsStoreLiked));
+  }, [initialIsStoreLiked]);
 
   useEffect(() => {
     let isMounted = true; // ✅ cleanup을 위한 변수 추가
@@ -41,6 +79,8 @@ const StoreMapScreen = ({navigation}) => {
               currentLocation.longitude,
               storeLatitude,
               storeLongitude,
+              storename,
+              scaledFontSize,
             );
             webViewRef.current.injectJavaScript(script);
           }
@@ -67,6 +107,8 @@ const StoreMapScreen = ({navigation}) => {
           currentLocation.longitude,
           storeLatitude,
           storeLongitude,
+          storename,
+          scaledFontSize,
         );
         webViewRef.current.injectJavaScript(script);
       }
@@ -94,10 +136,8 @@ const StoreMapScreen = ({navigation}) => {
         roundedCurrentLat === roundedNewLat &&
         roundedCurrentLng === roundedNewLng
       ) {
-        console.log('true');
         moveCenterMap(newLocation.latitude, newLocation.longitude);
       } else {
-        console.log('false');
         setLocation(newLocation);
         updateMap(
           newLocation.latitude,
@@ -117,16 +157,6 @@ const StoreMapScreen = ({navigation}) => {
     moveCenterMap(storeLatitude, storeLongitude);
   };
 
-  const openMapHandle = text => {
-    openKakaoMap(
-      location.latitude,
-      location.longitude,
-      storeLatitude,
-      storeLongitude,
-      text,
-    );
-  };
-
   const moveCenterMap = (lat, lng) => {
     const script = `
       if (window.map) {
@@ -140,40 +170,267 @@ const StoreMapScreen = ({navigation}) => {
   const updateMap = (lat, lng, storeLatitude, storeLongitude) => {
     if (webViewRef.current) {
       webViewRef.current.injectJavaScript(
-        StoreMapScript(lat, lng, storeLatitude, storeLongitude),
+        StoreMapScript(
+          lat,
+          lng,
+          storeLatitude,
+          storeLongitude,
+          storename,
+          scaledFontSize,
+        ),
       );
     }
   };
 
-  return (
-    <>
-      {location ? (
-        <WebView
-          ref={webViewRef}
-          originWhitelist={['*']}
-          source={{html: KakaoMapHTML()}}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          nestedScrollEnabled={true} // 제스처 전달 허용
-          onLoadEnd={fetchSaveLocation}
-          style={styles.webview}
-        />
-      ) : (
-        <View style={styles.loading}>
-          <Text>Loading Map...</Text>
-        </View>
-      )}
+  const handleShare = useCallback(async () => {
+    if (!storeId) {
+      showToast?.('매장 정보를 불러오지 못했어요.', 'center');
+      return;
+    }
+    try {
+      const response = await get_store_share(storeId);
+      if (!response?.shareLink) {
+        showToast?.('공유할 링크를 가져오지 못했어요.', 'center');
+        return;
+      }
+      const storeLabel = storename || '한잔할까';
+      await Share.share({
+        message: `${storeLabel}에서 한잔 어때요?\n한잔할까에서 매장 정보를 확인하세요.\n\n${response.shareLink}`,
+        shareLink: response.shareLink,
+      });
+    } catch (error) {
+      console.error('onShare error:', error);
+      showToast?.('공유 도중 문제가 발생했어요.', 'center');
+    }
+  }, [showToast, storeId, storename]);
 
-      <StoreMapLocation onPress={updateNewLocation} />
-      <StoreMapCenter onPress={storeCenter} />
-      <StoreMapFoot onPress={() => openMapHandle('FOOT')} />
-      <StoreMapBus onPress={() => openMapHandle('PUBLICTRANSIT')} />
-      <StoreMapCar onPress={() => openMapHandle('CAR')} />
-    </>
+  const handleToggleLike = useCallback(async () => {
+    if (!storeId || isLikeProcessing) {
+      return;
+    }
+    setIsLikeProcessing(true);
+    try {
+      await Storelikepost(storeId);
+      setIsStoreLiked(prev => !prev);
+    } catch (error) {
+      console.error('toggle like error:', error);
+      showToast?.('찜 상태를 변경하지 못했어요.', 'center');
+    } finally {
+      setIsLikeProcessing(false);
+    }
+  }, [storeId, isLikeProcessing, showToast]);
+
+  const handleTabChange = useCallback(
+    screenName => {
+      if (screenName === 'StoreMapScreen') {
+        return;
+      }
+      if (onSelectTab) {
+        onSelectTab(screenName);
+        navigation.goBack();
+        return;
+      }
+      navigation.navigate({
+        name: 'StoreMainScreen',
+        params: {targetTab: screenName},
+        merge: true,
+      });
+    },
+    [navigation, onSelectTab],
+  );
+
+  const resolvedAddress = useMemo(() => {
+    const base =
+      typeof storeAddress === 'string' && storeAddress.trim().length > 0
+        ? storeAddress.trim()
+        : '';
+    const detail =
+      typeof storeAddressDetail === 'string' &&
+      storeAddressDetail.trim().length > 0
+        ? storeAddressDetail.trim()
+        : '';
+    if (base && detail) {
+      return `${base}, ${detail}`;
+    }
+    return base || detail || '';
+  }, [storeAddress, storeAddressDetail]);
+  const distanceLabel = useMemo(() => {
+    if (
+      !location ||
+      typeof location.latitude !== 'number' ||
+      typeof location.longitude !== 'number' ||
+      typeof storeLatitude !== 'number' ||
+      typeof storeLongitude !== 'number'
+    ) {
+      return '';
+    }
+    const dist = calculateDistance(
+      location.latitude,
+      location.longitude,
+      storeLatitude,
+      storeLongitude,
+    );
+    if (!Number.isFinite(dist)) {
+      return '';
+    }
+    if (dist < 1) {
+      return `${Math.round(dist * 1000)}m`;
+    }
+    return `${dist.toFixed(2)}km`;
+  }, [
+    calculateDistance,
+    location?.latitude,
+    location?.longitude,
+    storeLatitude,
+    storeLongitude,
+  ]);
+  const hasDetailLine = Boolean(resolvedAddress) || Boolean(distanceLabel);
+  const handleCopyAddress = useCallback(() => {
+    if (!resolvedAddress) {
+      return;
+    }
+    Clipboard.setString(resolvedAddress);
+    showToast?.('주소를 복사했어요.', 'center');
+  }, [resolvedAddress, showToast]);
+  const infoPaddingBottom = Math.max(
+    16,
+    insets.bottom + (Platform.OS === 'android' ? 20 : 0),
+  );
+  const defaultInfoHeight = hasDetailLine ? 120 : 96;
+  const controlsBottom = (infoHeight ?? defaultInfoHeight) + 24;
+
+  return (
+    <View style={styles.screen}>
+      <View style={styles.headerContainer}>
+        <NonImageHeader
+          navigation={navigation}
+          headerBackgroundColor="#fff"
+          iconColor="#333"
+          title={storename}
+          onShare={handleShare}
+          isLiked={isStoreLiked}
+          onToggleLike={handleToggleLike}
+          likeDisabled={isLikeProcessing || !storeId}
+          isAbsolute={false}
+          containerStyle={styles.inlineHeader}
+        />
+        <View style={styles.tabsWrapper}>
+          <StoreTabs
+            changePage={handleTabChange}
+            currentPage="StoreMapScreen"
+            showBottomBorder
+          />
+        </View>
+      </View>
+      <TouchableWithoutFeedback onPress={() => {}}>
+        <View style={styles.container}>
+          {location ? (
+            <WebView
+              ref={webViewRef}
+              originWhitelist={['*']}
+              source={{html: KakaoMapHTML()}}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              nestedScrollEnabled={true} // 제스처 전달 허용
+              onLoadEnd={fetchSaveLocation}
+              style={styles.webview}
+            />
+          ) : (
+            <View style={styles.loading}>
+              <CustomText>Loading Map...</CustomText>
+            </View>
+          )}
+
+          <StoreMapLocation
+            onPress={updateNewLocation}
+            style={[styles.mapControl, {bottom: controlsBottom + 52}]}
+          />
+          <StoreMapCenter
+            onPress={storeCenter}
+            style={[styles.mapControl, {bottom: controlsBottom}]}
+          />
+          <StoreMapNavi
+            onPress={() => {
+              openDirectionsModal({
+                startLat: location?.latitude,
+                startLng: location?.longitude,
+                destLat: storeLatitude,
+                destLng: storeLongitude,
+                destName: route.params?.storename,
+              });
+            }}
+            style={{bottom: controlsBottom}}
+          />
+          <View
+            style={[
+              styles.storeInfoContainer,
+              {paddingBottom: infoPaddingBottom},
+            ]}
+            onLayout={({nativeEvent}) => {
+              const height = nativeEvent?.layout?.height;
+              if (typeof height === 'number' && height !== infoHeight) {
+                setInfoHeight(height);
+              }
+            }}>
+            <CustomText style={styles.storeInfoName} numberOfLines={1}>
+              {storename || '매장 정보'}
+            </CustomText>
+            {hasDetailLine ? (
+              <>
+                <View style={styles.infoDetailRow}>
+                  {distanceLabel ? (
+                    <>
+                      <CustomText style={styles.storeInfoDistance}>
+                        {distanceLabel}
+                      </CustomText>
+                      {resolvedAddress ? (
+                        <CustomText style={styles.dotSeparator}> · </CustomText>
+                      ) : null}
+                    </>
+                  ) : null}
+                  {resolvedAddress ? (
+                    <View style={styles.addressWrapper}>
+                      <CustomText
+                        style={styles.storeInfoAddress}
+                        numberOfLines={2}>
+                        {resolvedAddress}
+                      </CustomText>
+                      <TouchableOpacity
+                        onPress={handleCopyAddress}
+                        hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                        <CustomText style={styles.inlineCopyText}>
+                          복사
+                        </CustomText>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                </View>
+              </>
+            ) : null}
+          </View>
+          <DirectionsModal />
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  headerContainer: {
+    backgroundColor: '#fff',
+    borderBottomColor: '#EDEDED',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  tabsWrapper: {
+    backgroundColor: '#fff',
+  },
+  inlineHeader: {
+    paddingBottom: 6,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -201,6 +458,69 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  mapControl: {
+    position: 'absolute',
+    left: '7%',
+  },
+  storeInfoContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#e5e5e5',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  storeInfoName: {
+    fontSize: 18,
+    fontFamily: 'Pretendard-Bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  infoDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginTop: 7,
+  },
+  storeInfoDistance: {
+    fontSize: 14,
+    color: '#3CBBFF',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  dotSeparator: {
+    color: '#D4D4D4',
+    marginHorizontal: 4,
+  },
+  storeInfoAddress: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 22,
+    fontFamily: 'Pretendard-Medium',
+    flexShrink: 1,
+  },
+  addressWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+    flex: 1,
+    paddingRight: 12,
+    textAlign: 'center',
+  },
+  inlineCopyText: {
+    fontSize: 14,
+    color: '#0A7CC1',
+    fontFamily: 'Pretendard-SemiBold',
+    marginLeft: 6,
   },
 });
 

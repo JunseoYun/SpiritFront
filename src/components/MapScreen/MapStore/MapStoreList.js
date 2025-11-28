@@ -1,31 +1,53 @@
-import React from 'react';
+﻿import React, {useMemo, useRef, useEffect, useState, useCallback} from 'react';
 import {
-  Animated,
-  FlatList,
   StyleSheet,
   View,
-  Image,
   Text,
-  Pressable,
   Dimensions,
+  FlatList,
+  InteractionManager,
+  BackHandler,
+  Pressable,
+  Platform,
 } from 'react-native';
+import BottomSheet, {
+  BottomSheetView,
+  BottomSheetScrollView,
+} from '@gorhom/bottom-sheet';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  runOnJS,
+  useAnimatedReaction,
+  withTiming,
+} from 'react-native-reanimated';
 import MapStoreItem from './MapStoreItem';
 import MapLocation from '../MapLocation';
-import MapDirections from '../MapDirections';
 import MapStoreItemSkeleton from './MapStoreItemSkeleton';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import {normalizeFont} from '../../../hooks/normalizeFont';
-const {width} = Dimensions.get('window');
-const ITEM_WIDTH = width * 0.9;
-const BUTON_WIDTH = width * 0.4;
-const SPACING = width * 0.05;
+import NoneStore from './NoneStore';
+import FilterPotal from './FilterPotal';
+import MapFilterHeader from './MapFilterHeader';
+import MapDetailItem from './MapDetailItem';
+import {useMapSearch} from '../../../context/MapSearchContext';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useFocusEffect} from '@react-navigation/native';
+import MapDetailItemSkeleton from './MapDetailItemSkeleton';
+import {MenuIcon} from 'lucide-react-native';
+import Loading from '../../../hooks/Loading';
+import CustomText from '../../../utils/CustomText';
+
+const {height: SCREEN_HEIGHT} = Dimensions.get('window');
+const DEFAULT_FILTER_HEIGHT = 49;
+const MIN_VALID_FILTER_HEIGHT = 10;
+const DEFAULT_DETAIL_HEADER_HEIGHT = 110;
+const AVAILABLE_VALUE = '가능';
+const GROUP_VALUE = '단체 방문';
+const SCREEN_VALUE = '설치';
 
 const MapStoreList = ({
   updateNewLocation,
-  fetchSaveLocation,
-  panHandlers,
-  flatListAnim,
   isFlatListVisible,
+  isListFullyExpanded,
   stores,
   selectedStoreIndex,
   setSelectedStoreIndex,
@@ -36,215 +58,1501 @@ const MapStoreList = ({
   location,
   loading,
   storegetloading,
+  setRadiusint,
+  setSheetIndex,
+  detailStoreId,
+  detailStoreData,
+  detailStoreLoading = false,
+  onCloseDetail,
+  groupStoreIds,
+  onOpenDetail,
+  onCloseGroup,
+  bottomSheetRef,
+  hasMoreStores = false,
+  onLoadMoreStores,
+  loadingMoreStores = false,
+  onApplyFilters,
+  topReservedHeight = 0,
+  onListFullExpandChange,
+  onListRestoringChange,
 }) => {
-  const handleScroll = event => {
-    const offsetX = event.nativeEvent.contentOffset.x; // 스크롤 위치
-    const index = Math.round(offsetX / width); // 현재 중앙 아이템 인덱스 계산
+  const insets = useSafeAreaInsets();
+  const [filterheight, setFilterheight] = useState(DEFAULT_FILTER_HEIGHT);
+  const lastValidFilterHeightRef = useRef(DEFAULT_FILTER_HEIGHT);
+  const [detailContentHeight, setDetailContentHeight] = useState(null);
+  const [detailHeaderHeight, setDetailHeaderHeight] = useState(null);
+  const detailRevealProgress = useSharedValue(1);
+  const detailPointerState = useSharedValue(1);
+  const [detailPointerEnabled, setDetailPointerEnabled] = useState(true);
+  const listRevealProgress = useSharedValue(1);
+  const initialIndex = stores.length === 0 ? 1 : 1;
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [translateY, setTranslateY] = useState(0);
+  const [showListButtons, setShowListButtons] = useState(false);
+  const [itemheight, setItemheight] = useState(120);
+  const lastScrollOffsetRef = useRef(0);
+  const wasDetailModeRef = useRef(false);
+  const detailEntryScrollOffsetRef = useRef(null);
+  const [listfastview, setListfastview] = useState(false);
+  const [listContainerHeight, setListContainerHeight] = useState(0);
+  const [listContentHeight, setListContentHeight] = useState(0);
+  const detailStore = detailStoreData || null;
+  const isDetailMode = !!detailStoreId;
+  const detailSnapPointsRef = useRef(null);
+  const pendingScrollRestoreRef = useRef(null);
+  const restoreAttemptRef = useRef(0);
+  const [pendingListRestore, setPendingListRestore] = useState(false);
+  const [requiresScrollUnlock, setRequiresScrollUnlock] = useState(false);
+  const [preserveDetailSnapPoints, setPreserveDetailSnapPoints] =
+    useState(false);
+  const detailClosingRef = useRef(false);
+  const [isDetailRestorePending, setIsDetailRestorePending] = useState(false);
+  const detailCollapsedHeight = useMemo(() => {
+    const effectiveFilterHeight =
+      filterheight >= MIN_VALID_FILTER_HEIGHT
+        ? filterheight
+        : lastValidFilterHeightRef.current;
+    if (!detailStoreId) {
+      return SCREEN_HEIGHT * 0.03 + effectiveFilterHeight + insets.bottom;
+    }
+    const platformOffset = Platform.OS === 'android' ? 10 : 0;
+    const safePadding = insets.bottom + 20 + platformOffset;
+    const headerHeight = detailHeaderHeight ?? DEFAULT_DETAIL_HEADER_HEIGHT;
+    return safePadding + headerHeight;
+  }, [
+    detailStoreId,
+    filterheight,
+    insets.bottom,
+    detailHeaderHeight,
+    lastValidFilterHeightRef,
+  ]);
 
-    // 중앙 아이템이 바뀌었을 때만 처리
-    if (index !== selectedStoreIndex) {
-      setSelectedStoreIndex(index); // 중앙 아이템 인덱스 업데이트
+  const detailSnapPoint = useMemo(() => {
+    if (!detailStoreId) return SCREEN_HEIGHT * 0.55;
+    const measured = detailContentHeight ?? SCREEN_HEIGHT * 0.55;
+    const padding = insets.bottom + 30 + (Platform.OS === 'android' && 8);
+    const computed = measured + padding;
+    const safeMax = Math.max(
+      SCREEN_HEIGHT * 0.85,
+      SCREEN_HEIGHT - insets.top - 16,
+    );
+    return Math.min(safeMax, computed);
+  }, [detailStoreId, detailContentHeight, insets.bottom, insets.top]);
+  const noStoreSnapPoint = useMemo(() => {
+    const minExpanded = SCREEN_HEIGHT * 0.15;
+    const paddedCollapsed = detailCollapsedHeight + SCREEN_HEIGHT * 0.2;
+    return Math.min(SCREEN_HEIGHT, Math.max(minExpanded, paddedCollapsed));
+  }, [detailCollapsedHeight]);
 
-      // 해당 인덱스의 좌표로 지도 이동
-      const store = stores[index];
-      setSelectedStore(store);
-      if (store) {
-        moveCenterMap(store.locationDto.latitude, store.locationDto.longitude); // 지도 이동 함수 호출
+  const computedSnapPoints = useMemo(() => {
+    const first = detailCollapsedHeight;
+    const nonemid = noStoreSnapPoint;
+
+    const mid = SCREEN_HEIGHT * 0.55;
+    const reservedTop =
+      !detailStoreId && topReservedHeight > 0 ? topReservedHeight : 0;
+    const maxBase = Math.max(mid, SCREEN_HEIGHT - reservedTop);
+    const max = Math.min(SCREEN_HEIGHT, maxBase + 20);
+    if (stores.length === 0 && !loading && !storegetloading) {
+      return [first, nonemid];
+    }
+    // 상세보기 모드에서는 80% 스냅 비활성화
+    if (detailStoreId) return [first, detailSnapPoint];
+    return [first, mid, max];
+  }, [
+    stores,
+    loading,
+    storegetloading,
+    detailStoreId,
+    detailSnapPoint,
+    detailCollapsedHeight,
+    topReservedHeight,
+    noStoreSnapPoint,
+  ]);
+
+  const baseSnapPoints = useMemo(() => {
+    if (preserveDetailSnapPoints && detailSnapPointsRef.current) {
+      return detailSnapPointsRef.current;
+    }
+    return computedSnapPoints;
+  }, [computedSnapPoints, preserveDetailSnapPoints]);
+
+  const [stableSnapPoints, setStableSnapPoints] = useState(baseSnapPoints);
+
+  useEffect(() => {
+    if (!loading && !storegetloading) {
+      setStableSnapPoints(baseSnapPoints);
+    }
+  }, [baseSnapPoints, loading, storegetloading]);
+
+  const snapPoints = useMemo(() => {
+    if (loading || storegetloading) {
+      return stableSnapPoints || baseSnapPoints;
+    }
+    return baseSnapPoints;
+  }, [baseSnapPoints, loading, storegetloading, stableSnapPoints]);
+
+  useEffect(() => {
+    if (isDetailMode) {
+      detailSnapPointsRef.current = computedSnapPoints;
+      setPreserveDetailSnapPoints(false);
+    }
+  }, [isDetailMode, computedSnapPoints]);
+
+  const highestSnapIndex = Math.max(0, snapPoints.length - 1);
+  const isCurrentlySnappedToFull =
+    !isDetailMode && highestSnapIndex > 0 && currentIndex === highestSnapIndex;
+  const [isFullListExpanded, setIsFullListExpanded] = useState(
+    isCurrentlySnappedToFull,
+  );
+  const lastFullExpandReportRef = useRef(isCurrentlySnappedToFull);
+  const lastSnapStateRef = useRef(isCurrentlySnappedToFull);
+  const prevHasStoresRef = useRef(stores.length > 0);
+  const prevWasFullRef = useRef(isCurrentlySnappedToFull);
+
+  const reportFullExpandState = useCallback(
+    nextState => {
+      setIsFullListExpanded(prev => (prev === nextState ? prev : nextState));
+      if (lastFullExpandReportRef.current !== nextState) {
+        lastFullExpandReportRef.current = nextState;
+        onListFullExpandChange?.(nextState);
+      }
+    },
+    [onListFullExpandChange],
+  );
+
+  useEffect(() => {
+    if (lastSnapStateRef.current === isCurrentlySnappedToFull) {
+      return;
+    }
+    lastSnapStateRef.current = isCurrentlySnappedToFull;
+    reportFullExpandState(isCurrentlySnappedToFull);
+  }, [isCurrentlySnappedToFull, reportFullExpandState]);
+
+  useEffect(() => {
+    const hadStores = prevHasStoresRef.current;
+    const hasStores = stores.length > 0;
+    const wasFull = prevWasFullRef.current;
+
+    prevHasStoresRef.current = hasStores;
+    prevWasFullRef.current = isFullListExpanded;
+  }, [
+    stores.length,
+    isFullListExpanded,
+    isDetailMode,
+    loading,
+    storegetloading,
+    bottomSheetRef,
+  ]);
+
+  const FULL_EXPANDED_TOLERANCE = 0.01;
+  const shouldSkipAutoSelection = !isDetailMode && isFullListExpanded;
+
+  const handleAnimatedFullExpand = useCallback(
+    animatedValue => {
+      if (typeof animatedValue !== 'number' || Number.isNaN(animatedValue)) {
+        return;
+      }
+      const shouldBeFull =
+        !isDetailMode &&
+        highestSnapIndex > 0 &&
+        animatedValue >= highestSnapIndex - FULL_EXPANDED_TOLERANCE;
+      reportFullExpandState(shouldBeFull);
+    },
+    [highestSnapIndex, isDetailMode, reportFullExpandState],
+  );
+
+  const hideFloatingButtons =
+    (isDetailMode && detailSnapPoint >= SCREEN_HEIGHT * 0.7) ||
+    (stores.length > 0 && isFullListExpanded);
+  const detailCenterOffset = useMemo(() => {
+    if (!isDetailMode) return null;
+    if (typeof detailSnapPoint !== 'number' || detailSnapPoint <= 0) {
+      return null;
+    }
+    // 살짝 덜 올려서 지도 위치가 너무 위로 치우치지 않도록 보정
+    return Math.max(0, detailSnapPoint / 2 - 70);
+  }, [isDetailMode, detailSnapPoint]);
+
+  const animatedIndex = useSharedValue(0);
+  const lastCenteredIndexRef = useRef(null);
+  const currentSheetIndexRef = useRef(null);
+  const mapMoveTimerRef = useRef(null);
+  const didForceAfterLoadRef = useRef(true);
+  const lastDetailCenterKeyRef = useRef(null);
+  const groupFilteredStores = useMemo(
+    () =>
+      Array.isArray(groupStoreIds) && groupStoreIds.length > 0
+        ? stores.filter(s => groupStoreIds.includes(s.id))
+        : [],
+    [stores, groupStoreIds],
+  );
+  const isGroupMode = groupFilteredStores.length > 0 && !isDetailMode;
+
+  useEffect(() => {
+    if (isDetailMode) {
+      setFilterheight(0);
+      return;
+    }
+    setDetailContentHeight(null);
+    setDetailHeaderHeight(null);
+    detailRevealProgress.value = 1;
+    detailPointerState.value = 1;
+    setDetailPointerEnabled(true);
+    listRevealProgress.value = 1;
+    if (filterheight < MIN_VALID_FILTER_HEIGHT) {
+      setFilterheight(lastValidFilterHeightRef.current);
+    }
+  }, [
+    isDetailMode,
+    detailRevealProgress,
+    detailPointerState,
+    listRevealProgress,
+    filterheight,
+    lastValidFilterHeightRef,
+  ]);
+  useEffect(() => {
+    if (filterheight >= MIN_VALID_FILTER_HEIGHT) {
+      lastValidFilterHeightRef.current = filterheight;
+    }
+  }, [filterheight]);
+
+  const handleFilterHeight = useCallback(height => {
+    if (typeof height !== 'number' || Number.isNaN(height)) {
+      return;
+    }
+    if (height < MIN_VALID_FILTER_HEIGHT) {
+      return;
+    }
+    setFilterheight(prev => (Math.abs(prev - height) < 1 ? prev : height));
+  }, []);
+  const handleDetailPointerState = useCallback(enabled => {
+    setDetailPointerEnabled(prev => (prev === enabled ? prev : enabled));
+  }, []);
+
+  useAnimatedReaction(
+    () => animatedIndex.value,
+    index => {
+      'worklet';
+      let newValue;
+
+      if (snapPoints.length === 2) {
+        if (index === 0)
+          newValue = -SCREEN_HEIGHT * 0.03 - filterheight - insets.bottom;
+        if (index === 1) {
+          if (detailStoreId) {
+            if (index === 1) newValue = -SCREEN_HEIGHT * 0.55;
+          } else {
+            newValue = -SCREEN_HEIGHT * 0.3;
+          }
+        }
+      } else {
+        if (index === 0)
+          newValue = -SCREEN_HEIGHT * 0.03 - filterheight - insets.bottom;
+        if (index === 1) newValue = -SCREEN_HEIGHT * 0.55;
+        if (index === 2) newValue = 0;
+      }
+
+      if (newValue === undefined) return;
+
+      runOnJS(setTranslateY)(newValue);
+      runOnJS(setShowListButtons)(index < 2);
+    },
+  );
+  useAnimatedReaction(
+    () => animatedIndex.value,
+    value => {
+      'worklet';
+      const raw = detailStoreId ? value ?? 0 : 1;
+      const next = Math.max(0, Math.min(1, raw));
+      if (Math.abs(detailRevealProgress.value - next) > 0.001) {
+        detailRevealProgress.value = next;
+      }
+      const shouldEnable = next >= 0.05 ? 1 : 0;
+      if (detailPointerState.value !== shouldEnable) {
+        detailPointerState.value = shouldEnable;
+        runOnJS(handleDetailPointerState)(!!shouldEnable);
+      }
+    },
+    [detailStoreId, handleDetailPointerState],
+  );
+
+  useAnimatedReaction(
+    () => animatedIndex.value,
+    value => {
+      'worklet';
+      runOnJS(handleAnimatedFullExpand)(value ?? 0);
+    },
+    [handleAnimatedFullExpand],
+  );
+
+  const handleSheetChange = useCallback(
+    index => {
+      if (isDetailMode && index === 2) {
+        // 상세보기 모드에서는 80% 스냅 금지 → 바로 45%로 고정
+        // bottomSheetRef.current?.snapToIndex(1);
+        setCurrentIndex(1);
+        currentSheetIndexRef.current = 1;
+        setSheetIndex?.(1);
+        setListfastview(true);
+        return;
+      }
+
+      setCurrentIndex(index);
+      currentSheetIndexRef.current = index;
+      setSheetIndex?.(index);
+      setListfastview(prev => prev || index >= 1);
+    },
+    [isDetailMode, setSheetIndex],
+  );
+  // initialize sheet index so offset can be applied before onChange fires
+  useEffect(() => {
+    currentSheetIndexRef.current = initialIndex;
+    setSheetIndex?.(initialIndex);
+  }, [initialIndex, setSheetIndex]);
+  const scrollStartAtTop = useRef(false);
+  const userScrollStartedRef = useRef(false);
+
+  const handleScrollBeginDrag = useCallback(
+    e => {
+      const offsetY = e.nativeEvent.contentOffset.y;
+      scrollStartAtTop.current = offsetY <= 0;
+      userScrollStartedRef.current = true;
+      didForceAfterLoadRef.current = true;
+      if (requiresScrollUnlock) {
+        setRequiresScrollUnlock(false);
+      }
+      // true = ???????? ????? ??????
+    },
+    [requiresScrollUnlock],
+  );
+
+  const handleScrollEndDrag = useCallback(
+    e => {
+      const offsetY = e.nativeEvent.contentOffset.y;
+
+      // 시작도 0, 끝도 0 → 아래로 당겼다 놓은 상황
+      if (
+        scrollStartAtTop.current &&
+        offsetY <= 0 &&
+        currentIndex > 0 &&
+        !isDetailMode
+      ) {
+        const nextIndex = Math.max(currentIndex - 1, 0);
+        if (nextIndex !== currentIndex) {
+          bottomSheetRef.current?.snapToIndex(nextIndex);
+        }
+      }
+    },
+    [currentIndex, isDetailMode],
+  );
+  // 상세 모드 진입 시 45% 스냅 고정
+  useEffect(() => {
+    if ((isDetailMode || isGroupMode) && bottomSheetRef.current) {
+      bottomSheetRef.current.snapToIndex(1);
+    }
+  }, [isDetailMode, isGroupMode, bottomSheetRef]);
+
+  useEffect(() => {
+    if (isDetailMode && bottomSheetRef.current) {
+      bottomSheetRef.current.snapToIndex(1);
+    }
+  }, [detailSnapPoint, isDetailMode, bottomSheetRef]);
+
+  const handleCloseDetail = useCallback(() => {
+    if (detailClosingRef.current) {
+      return;
+    }
+    detailClosingRef.current = true;
+    setIsDetailRestorePending(true);
+    bottomSheetRef.current?.snapToIndex?.(1);
+    onCloseDetail?.();
+  }, [bottomSheetRef, onCloseDetail]);
+
+  const handleCloseGroup = useCallback(() => {
+    onCloseGroup?.();
+
+    const tryScrollTop = () => {
+      if (!flatListRef?.current) return false;
+      try {
+        flatListRef.current.scrollToOffset({offset: 0, animated: false});
+        return true;
+      } catch (e) {
+        try {
+          flatListRef.current.scrollToIndex?.({index: 0, animated: false});
+          return true;
+        } catch (_ignored) {
+          return false;
+        }
+      }
+    };
+
+    if (tryScrollTop()) return;
+
+    requestAnimationFrame(() => {
+      if (tryScrollTop()) return;
+      requestAnimationFrame(() => {
+        if (tryScrollTop()) return;
+        InteractionManager.runAfterInteractions(() => {
+          tryScrollTop();
+        });
+      });
+    });
+  }, [onCloseGroup, flatListRef]);
+
+  const handleDetailLayout = useCallback(
+    e => {
+      if (!isDetailMode) return;
+      const height = e?.nativeEvent?.layout?.height;
+      if (!height || Number.isNaN(height)) return;
+      setDetailContentHeight(prev =>
+        Math.abs((prev ?? 0) - height) > 2 ? height : prev,
+      );
+    },
+    [isDetailMode],
+  );
+  const handleDetailHeaderLayout = useCallback(
+    height => {
+      if (!height || Number.isNaN(height)) return;
+      setDetailHeaderHeight(prev =>
+        prev == null || Math.abs(prev - height) > 2 ? height : prev,
+      );
+    },
+    [setDetailHeaderHeight],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isDetailMode && !isGroupMode) return undefined;
+
+      const onBackPress = () => {
+        if (isDetailMode) {
+          handleCloseDetail();
+          return true; // consume when closing detail
+        }
+        if (isGroupMode) {
+          handleCloseGroup();
+          return true; // consume when closing group
+        }
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      const navBeforeRemove = navigation?.addListener?.('beforeRemove', e => {
+        if (!isDetailMode && !isGroupMode) return;
+        e.preventDefault();
+        if (isDetailMode) handleCloseDetail();
+        else if (isGroupMode) handleCloseGroup();
+      });
+
+      return () => {
+        subscription.remove();
+        navBeforeRemove && navBeforeRemove();
+      };
+    }, [
+      isDetailMode,
+      isGroupMode,
+      handleCloseDetail,
+      handleCloseGroup,
+      navigation,
+    ]),
+  );
+
+  // Track top visible item and center map when sheet is at 45%
+  const viewabilityConfig = useRef({itemVisiblePercentThreshold: 25});
+
+  const storesRef = useRef(stores);
+  useEffect(() => {
+    storesRef.current = stores;
+  }, [stores]);
+
+  // 새 스토어 목록으로 갱신되면, 첫 스크롤에서 패닝을 강제하고
+  // 이전 topIndex 중복 스킵 상태를 초기화한다.
+  useEffect(() => {
+    lastCenteredIndexRef.current = null;
+    didForceAfterLoadRef.current = false; // 스크롤 시작 전에는 강제 패닝 비활성화
+    // 데이터가 새로 바뀌면 사용자 스크롤 다시 요구
+    userScrollStartedRef.current = false;
+  }, [stores]);
+
+  const onViewableItemsChanged = useRef(() => {});
+
+  useEffect(() => {
+    onViewableItemsChanged.current = ({viewableItems}) => {
+      // 사용자가 스크롤을 시작한 이후에만 지도 중심 이동 허용
+      if (!userScrollStartedRef.current) {
+        return;
+      }
+      const bypass = didForceAfterLoadRef.current === true;
+      if (
+        currentSheetIndexRef.current !== 1 ||
+        !Array.isArray(viewableItems) ||
+        viewableItems.length === 0 ||
+        (!bypass && storegetloading) ||
+        (!bypass && loading) ||
+        storesRef.current.length === 0 // ? 여기서도 최신 ref 사용 추천
+      ) {
+        return;
+      }
+
+      const topItem = viewableItems.reduce((prev, curr) =>
+        prev.index < curr.index ? prev : curr,
+      );
+      const topIndex = topItem?.index ?? 0;
+
+      if (lastCenteredIndexRef.current === topIndex) return;
+      lastCenteredIndexRef.current = topIndex;
+
+      const latestStoreList = storesRef.current; // ? 최신 stores
+      const store = latestStoreList[topIndex];
+      if (!store) return;
+
+      if (!shouldSkipAutoSelection) {
+        setSelectedStoreIndex?.(topIndex);
+      }
+      setSelectedStore?.(store);
+
+      const lat = store?.locationDto?.latitude;
+      const lng = store?.locationDto?.longitude;
+
+      if (typeof lat === 'number' && typeof lng === 'number') {
+        // ?? 이전 타이머 취소
+        if (mapMoveTimerRef.current) {
+          clearTimeout(mapMoveTimerRef.current);
+        }
+
+        mapMoveTimerRef.current = setTimeout(() => {
+          const refreshedStoreList = storesRef.current; // ? 1초 뒤에도 최신값
+          const freshStore = refreshedStoreList[topIndex];
+          if (!freshStore) return;
+
+          const offsetOverride =
+            currentSheetIndexRef.current === 1 &&
+            typeof detailCenterOffset === 'number'
+              ? detailCenterOffset
+              : undefined;
+
+          moveCenterMap(
+            freshStore.locationDto.latitude,
+            freshStore.locationDto.longitude,
+            currentSheetIndexRef.current,
+            didForceAfterLoadRef.current,
+            offsetOverride,
+          );
+          if (didForceAfterLoadRef.current) {
+            didForceAfterLoadRef.current = false;
+          }
+        }, 500);
+      }
+    };
+  }, [
+    currentIndex,
+    storegetloading,
+    loading,
+    moveCenterMap, // stores 제거!!
+    setSelectedStoreIndex,
+    setSelectedStore,
+    detailCenterOffset,
+    shouldSkipAutoSelection,
+  ]);
+
+  // ? stores가 변경되면 예약된 이동 취소
+  useEffect(() => {
+    return () => {
+      if (mapMoveTimerRef.current) {
+        clearTimeout(mapMoveTimerRef.current);
+      }
+    };
+  }, [stores]);
+
+  useEffect(() => {
+    if (!isDetailMode) {
+      lastDetailCenterKeyRef.current = null;
+      return;
+    }
+    if (!detailStore) return;
+    const lat = detailStore?.locationDto?.latitude;
+    const lng = detailStore?.locationDto?.longitude;
+    if (
+      typeof lat !== 'number' ||
+      typeof lng !== 'number' ||
+      typeof detailCenterOffset !== 'number'
+    ) {
+      return;
+    }
+    const key = `${detailStoreId}-${detailCenterOffset.toFixed(
+      2,
+    )}-${lat.toFixed(5)}-${lng.toFixed(5)}`;
+    if (lastDetailCenterKeyRef.current === key) {
+      return;
+    }
+    lastDetailCenterKeyRef.current = key;
+  }, [
+    isDetailMode,
+    detailStore,
+    detailCenterOffset,
+    moveCenterMap,
+    detailStoreId,
+  ]);
+
+  const keyExtractor = useCallback(
+    item => item.id?.toString?.() ?? String(item.id ?? ''),
+    [],
+  );
+
+  const listSelectedStoreIndex = shouldSkipAutoSelection
+    ? null
+    : selectedStoreIndex;
+
+  const handleOpenDetailFromList = useCallback(
+    storeId => {
+      detailEntryScrollOffsetRef.current = lastScrollOffsetRef.current;
+      onOpenDetail?.(storeId);
+    },
+    [onOpenDetail],
+  );
+
+  const renderItem = useCallback(
+    ({item, index}) => (
+      <MapStoreItem
+        item={item}
+        index={index}
+        selectedStoreIndex={listSelectedStoreIndex}
+        setSelectedStore={setSelectedStore}
+        moveCenterMap={moveCenterMap}
+        navigation={navigation}
+        location={location}
+        loading={loading}
+        onItemPress={() => handleOpenDetailFromList(item.id)}
+        setItemheight={setItemheight}
+        isListRestoring={isListRestoring}
+      />
+    ),
+    [
+      listSelectedStoreIndex,
+      setSelectedStore,
+      moveCenterMap,
+      navigation,
+      location,
+      loading,
+      isListRestoring,
+      handleOpenDetailFromList,
+    ],
+  );
+
+  const renderNoStoreView = () => (
+    <NoneStore navigation={navigation} location={location} />
+  );
+
+  const handleListContainerLayout = useCallback(event => {
+    const height = event?.nativeEvent?.layout?.height;
+    if (typeof height !== 'number' || Number.isNaN(height)) {
+      return;
+    }
+    setListContainerHeight(prev =>
+      prev == null || Math.abs(prev - height) > 1 ? height : prev,
+    );
+  }, []);
+
+  const handleListContentSizeChange = useCallback(
+    (_, height) => {
+      if (typeof height !== 'number' || Number.isNaN(height)) {
+        return;
+      }
+      setListContentHeight(prev =>
+        prev == null || Math.abs(prev - height) > 1 ? height : prev,
+      );
+      const hasScrollRoom =
+        typeof listContainerHeight === 'number' &&
+        height - listContainerHeight > 12;
+      if (
+        requiresScrollUnlock &&
+        !pendingListRestore &&
+        !isDetailMode &&
+        hasScrollRoom
+      ) {
+        setRequiresScrollUnlock(false);
+      }
+    },
+    [
+      listContainerHeight,
+      requiresScrollUnlock,
+      pendingListRestore,
+      isDetailMode,
+    ],
+  );
+  useEffect(() => {
+    if (detailStoreId || storegetloading || stores.length === 0) {
+      setListContentHeight(0);
+    }
+  }, [detailStoreId, storegetloading, stores.length]);
+
+  const handleListScroll = useCallback(event => {
+    const offsetY = event?.nativeEvent?.contentOffset?.y;
+    if (typeof offsetY === 'number' && offsetY >= 0) {
+      lastScrollOffsetRef.current = offsetY;
+    }
+  }, []);
+
+  const restoreListScrollPosition = useCallback(
+    offset => {
+      if (!flatListRef?.current || typeof offset !== 'number') {
+        return false;
+      }
+      const target = Math.max(0, offset);
+      try {
+        flatListRef.current.scrollToOffset({offset: target, animated: false});
+        return true;
+      } catch (err) {
+        return false;
+      }
+    },
+    [flatListRef],
+  );
+
+  useEffect(() => {
+    const wasDetail = wasDetailModeRef.current;
+    const isDetail = !!detailStoreId;
+
+    if (!wasDetail && isDetail) {
+      detailClosingRef.current = false;
+      setIsDetailRestorePending(false);
+      if (detailEntryScrollOffsetRef.current == null) {
+        detailEntryScrollOffsetRef.current = lastScrollOffsetRef.current;
+      }
+      setRequiresScrollUnlock(false);
+    } else if (wasDetail && !isDetail) {
+      const targetOffset =
+        detailEntryScrollOffsetRef.current ?? lastScrollOffsetRef.current;
+      detailEntryScrollOffsetRef.current = null;
+      if (typeof targetOffset === 'number') {
+        pendingScrollRestoreRef.current = targetOffset;
+        restoreAttemptRef.current = 0;
+        setPendingListRestore(true);
+        setPreserveDetailSnapPoints(true);
+        setRequiresScrollUnlock(true);
       }
     }
-  };
 
+    wasDetailModeRef.current = isDetail;
+  }, [detailStoreId, lastScrollOffsetRef]);
+
+  useEffect(() => {
+    if (!pendingListRestore || isDetailMode) return;
+
+    let cancelled = false;
+
+    const finishRestore = () => {
+      if (cancelled) {
+        return;
+      }
+      pendingScrollRestoreRef.current = null;
+      restoreAttemptRef.current = 0;
+      setPendingListRestore(false);
+      setPreserveDetailSnapPoints(false);
+      setIsDetailRestorePending(false);
+      detailClosingRef.current = false;
+    };
+
+    const attemptRestore = () => {
+      if (cancelled) {
+        return;
+      }
+      const targetOffset = pendingScrollRestoreRef.current;
+      if (typeof targetOffset !== 'number') {
+        finishRestore();
+        return;
+      }
+      if (!flatListRef?.current) {
+        scheduleRetry();
+        return;
+      }
+      const success = restoreListScrollPosition(targetOffset);
+      if (success) {
+        finishRestore();
+      } else {
+        scheduleRetry();
+      }
+    };
+
+    const scheduleRetry = () => {
+      if (cancelled) {
+        return;
+      }
+      if (restoreAttemptRef.current++ < 5) {
+        requestAnimationFrame(attemptRestore);
+      } else {
+        InteractionManager.runAfterInteractions(() => {
+          if (cancelled) {
+            return;
+          }
+          const targetOffset = pendingScrollRestoreRef.current;
+          if (typeof targetOffset !== 'number') {
+            finishRestore();
+            return;
+          }
+          if (restoreListScrollPosition(targetOffset)) {
+            finishRestore();
+          } else {
+            restoreAttemptRef.current = 0;
+            requestAnimationFrame(attemptRestore);
+          }
+        });
+      }
+    };
+
+    requestAnimationFrame(attemptRestore);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    pendingListRestore,
+    isDetailMode,
+    flatListRef,
+    restoreListScrollPosition,
+  ]);
+
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [filterInitialTab, setFilterInitialTab] = useState('거리');
+  const [selectedFilters, setSelectedFilters] = useState({
+    거리: '2km',
+    카테고리: '',
+    주종: '',
+    방문시간: '',
+    분위기: '',
+    인원: '',
+    주차: '',
+    콜키지: '',
+    스크린: '',
+    룸: '',
+    야장: '',
+  });
+
+  useEffect(() => {
+    if (isDetailMode) {
+      return;
+    }
+    if (!pendingListRestore) {
+      detailClosingRef.current = false;
+      setIsDetailRestorePending(false);
+    }
+  }, [isDetailMode, pendingListRestore]);
+
+  const mapSearchCtx = useMapSearch();
+  const resolveFilterKey = useCallback(
+    hint => {
+      const filters = mapSearchCtx?.selectedFilters || {};
+      const keys = Object.keys(filters);
+      const normalizedHint = (hint || '').replace(/\s/g, '');
+      return (
+        keys.find(k => (k || '').replace(/\s/g, '').includes(normalizedHint)) ||
+        hint
+      );
+    },
+    [mapSearchCtx?.selectedFilters],
+  );
+
+  const applyFilters = useCallback(
+    nextFilters => {
+      mapSearchCtx?.setSelectedFilters?.(nextFilters);
+      onApplyFilters?.(nextFilters);
+    },
+    [mapSearchCtx, onApplyFilters],
+  );
+
+  const handleAmenityQuickToggle = useCallback(
+    type => {
+      const current = mapSearchCtx?.selectedFilters || {};
+      const next = {...current};
+      const toggleValue = (hint, activeValue) => {
+        const key = resolveFilterKey(hint);
+        const currentVal = next?.[key];
+        next[key] = currentVal === activeValue ? '' : activeValue;
+      };
+
+      switch (type) {
+        case 'screen':
+          toggleValue('스크린', SCREEN_VALUE);
+          break;
+        case 'room':
+          toggleValue('룸', AVAILABLE_VALUE);
+          break;
+        case 'outdoor':
+          toggleValue('야장', AVAILABLE_VALUE);
+          break;
+        case 'people':
+          toggleValue('인원', GROUP_VALUE);
+          break;
+        case 'parking':
+          toggleValue('주차', AVAILABLE_VALUE);
+          break;
+        case 'corkage':
+          toggleValue('콜키지', AVAILABLE_VALUE);
+          break;
+        default:
+          return;
+      }
+
+      applyFilters(next);
+    },
+    [applyFilters, mapSearchCtx?.selectedFilters, resolveFilterKey],
+  );
+  const listModeCollapsed = !isDetailMode && currentIndex === 0;
+  const listHasRoomToScroll =
+    listContentHeight > 0 &&
+    listContainerHeight > 0 &&
+    listContentHeight - listContainerHeight > 12;
+  const isListRestoring =
+    (requiresScrollUnlock && !isDetailMode) ||
+    isDetailRestorePending ||
+    (pendingListRestore && !isDetailMode);
+  const shouldEnableContentPanGesture =
+    !filterModalVisible &&
+    !isDetailMode &&
+    !listHasRoomToScroll &&
+    !isListRestoring;
+
+  useEffect(() => {
+    if (
+      requiresScrollUnlock &&
+      !isDetailMode &&
+      !pendingListRestore &&
+      !isDetailRestorePending &&
+      listHasRoomToScroll
+    ) {
+      setRequiresScrollUnlock(false);
+    }
+  }, [
+    requiresScrollUnlock,
+    isDetailMode,
+    pendingListRestore,
+    isDetailRestorePending,
+    listHasRoomToScroll,
+  ]);
+
+  useEffect(() => {
+    onListRestoringChange?.(isListRestoring);
+  }, [isListRestoring, onListRestoringChange]);
+
+  useEffect(() => {
+    if (isDetailMode) return;
+    const target = listModeCollapsed ? 0 : 1;
+    listRevealProgress.value = withTiming(target, {duration: 220});
+  }, [isDetailMode, listModeCollapsed, listRevealProgress]);
+
+  const baseListBottomPadding = useMemo(
+    () => insets.bottom + 32,
+    [insets.bottom],
+  );
+  const midIndexPaddingRatio = useMemo(() => {
+    const low = {height: 780, ratio: 0.25};
+    const high = {height: 835, ratio: 0.35};
+    if (SCREEN_HEIGHT <= low.height) return low.ratio;
+    if (SCREEN_HEIGHT >= high.height) return high.ratio;
+    const progress = (SCREEN_HEIGHT - low.height) / (high.height - low.height);
+    return low.ratio + progress * (high.ratio - low.ratio);
+  }, []);
+  const computedListBottomPadding = useMemo(() => {
+    let padding = baseListBottomPadding;
+    if (currentIndex === 1) {
+      padding +=
+        SCREEN_HEIGHT * midIndexPaddingRatio - (Platform.OS === 'ios' ? 70 : 0);
+    }
+    if (isFullListExpanded) {
+      // Ensure enough space for the floating "지도보기" button
+      padding += insets.bottom + 80;
+    }
+    return padding;
+  }, [
+    baseListBottomPadding,
+    currentIndex,
+    isFullListExpanded,
+    insets.bottom,
+    midIndexPaddingRatio,
+  ]);
+  const listBodyAnimatedStyle = useAnimatedStyle(() => {
+    const progress = listRevealProgress.value;
+    return {
+      opacity: progress,
+      transform: [
+        {
+          translateY: (1 - progress) * 12,
+        },
+      ],
+    };
+  }, [listRevealProgress]);
+
+  const handleShowList = () => {
+    if (!bottomSheetRef.current) return;
+    // Ensure list view shows and mount list immediately
+    setListfastview(true);
+    bottomSheetRef.current.snapToIndex(1);
+  };
+  const distanceLabel = selectedFilters['거리'] || '2km';
+  const categoryLabel = selectedFilters['카테고리'] || '카테고리';
+  const peopleLabel = selectedFilters['인원'] || '인원';
+  const alcoholLabel = selectedFilters['주종'] || '주종';
+  const storeatmVal = selectedFilters['분위기'];
+  const storeatmCount = Array.isArray(storeatmVal)
+    ? storeatmVal.length
+    : storeatmVal
+    ? 1
+    : 0;
+  const storeatmLabel =
+    storeatmCount > 0 ? `분위기 ${storeatmCount}` : '분위기';
+  const timeActive = selectedFilters['방문시간'] || '방문시간';
+  const parkingLabel = selectedFilters['주차'] || '주차';
+  const corkageLabel = selectedFilters['콜키지'] || '콜키지';
+  const screenLabel = selectedFilters['스크린'] || '스크린';
+  const roomLabel = selectedFilters['룸'] || '룸';
+  const outdoorLabel = selectedFilters['야장'] || '야장';
+
+  let computedLabels = null;
+  const renderSheetBody = () => {
+    let detailContent = null;
+    if (detailStoreId) {
+      if (detailStore) {
+        if (detailStoreLoading) {
+          detailContent = (
+            <View style={[styles.detailLoadingContainer, styles.detailOverlay]}>
+              <MapDetailItemSkeleton />
+            </View>
+          );
+        } else {
+          detailContent = (
+            <BottomSheetScrollView
+              contentContainerStyle={{
+                paddingHorizontal: 0,
+                paddingBottom: insets.bottom,
+              }}
+              showsVerticalScrollIndicator={false}
+              style={styles.detailOverlay}>
+              {/* Back moved to custom handle */}
+              <View onLayout={handleDetailLayout}>
+                <MapDetailItem
+                  storeData={detailStore}
+                  index={selectedStoreIndex}
+                  selectedStoreIndex={selectedStoreIndex}
+                  setSelectedStore={setSelectedStore}
+                  moveCenterMap={moveCenterMap}
+                  navigation={navigation}
+                  location={location}
+                  loading={loading}
+                  sheetIndex={currentIndex}
+                  onCloseDetail={handleCloseDetail}
+                  onHeaderLayout={handleDetailHeaderLayout}
+                  detailRevealProgressValue={detailRevealProgress}
+                  detailPointerEnabled={detailPointerEnabled}
+                />
+              </View>
+            </BottomSheetScrollView>
+          );
+        }
+      } else {
+        detailContent = (
+          <View style={[styles.detailLoadingContainer, styles.detailOverlay]}>
+            {detailStoreLoading ? (
+              <MapDetailItemSkeleton />
+            ) : (
+              <CustomText style={styles.detailLoadingText}>
+                매장 정보를 불러오지 못했어요.
+              </CustomText>
+            )}
+          </View>
+        );
+      }
+    }
+    let listContent = null;
+    if (storegetloading) {
+      if (currentIndex >= 1 || listfastview) {
+        listContent = (
+          <FlatList
+            data={[1, 2, 3]}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={() => <MapStoreItemSkeleton />}
+            showsVerticalScrollIndicator={false}
+            bounces={!isFullListExpanded}
+            overScrollMode={isFullListExpanded ? 'never' : 'always'}
+            onViewableItemsChanged={onViewableItemsChanged.current}
+            viewabilityConfig={viewabilityConfig.current}
+          />
+        );
+      } else {
+        listContent = null;
+      }
+    } else if (stores.length === 0 && !loading) {
+      listContent = renderNoStoreView();
+    } else if (currentIndex < 1 && !listfastview) {
+      listContent = <View />;
+    } else {
+      const disableTopOverscroll =
+        !isDetailMode && (isFullListExpanded || currentIndex === 1);
+      listContent = (
+        <FlatList
+          ref={flatListRef}
+          data={stores}
+          keyExtractor={keyExtractor}
+          showsVerticalScrollIndicator={false}
+          bounces={!disableTopOverscroll}
+          overScrollMode={disableTopOverscroll ? 'never' : 'always'}
+          contentContainerStyle={{
+            ...styles.listContentContainer,
+            paddingBottom: computedListBottomPadding,
+          }}
+          onScrollBeginDrag={handleScrollBeginDrag}
+          onScrollEndDrag={handleScrollEndDrag}
+          scrollEventThrottle={16}
+          onScroll={handleListScroll}
+          onViewableItemsChanged={onViewableItemsChanged.current}
+          viewabilityConfig={viewabilityConfig.current}
+          onContentSizeChange={handleListContentSizeChange}
+          renderItem={renderItem}
+          extraData={listSelectedStoreIndex}
+          initialNumToRender={8}
+          maxToRenderPerBatch={8}
+          windowSize={10}
+          updateCellsBatchingPeriod={16}
+          removeClippedSubviews
+          onEndReached={() => {
+            if (hasMoreStores && !loadingMoreStores) {
+              onLoadMoreStores?.();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMoreStores ? (
+              <FlatList
+                data={[1, 2, 3]}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={() => <MapStoreItemSkeleton />}
+                showsVerticalScrollIndicator={false}
+                onViewableItemsChanged={onViewableItemsChanged.current}
+                viewabilityConfig={viewabilityConfig.current}
+              />
+            ) : null
+          }
+        />
+      );
+    }
+    return (
+      <>
+        <Animated.View
+          style={[
+            styles.listAnimatedContainer,
+            listBodyAnimatedStyle,
+            detailStoreId ? styles.listHiddenWhenDetail : null,
+            !isDetailMode &&
+              currentIndex === 1 && {
+                paddingBottom:
+                  insets.bottom + (Platform.OS === 'android' ? 20 : 10),
+              },
+          ]}
+          pointerEvents={listModeCollapsed || isListRestoring ? 'none' : 'auto'}
+          onLayout={handleListContainerLayout}>
+          <View style={styles.listContentWrapper}>
+            {listContent}
+            {isListRestoring && <View />}
+          </View>
+        </Animated.View>
+        {detailContent}
+      </>
+    );
+  };
   return (
     <>
-      <Animated.View
-        {...panHandlers} // PanResponder 연결
-        style={[
-          styles.flatListContainer,
-          {transform: [{translateY: flatListAnim}], zIndex: 10}, // 위치 애니메이션
-        ]}>
-        {stores.length > 0 && (
-          <View style={styles.buttonView}>
-            <MapLocation onPress={updateNewLocation} />
-            <MapDirections onPress={fetchSaveLocation} />
-          </View>
-        )}
+      {isFlatListVisible && (
+        <>
+          {stores.length > 0 && currentIndex === 0 && (
+            <Pressable
+              style={[
+                styles.listButton,
+                {
+                  bottom: detailCollapsedHeight + 20,
+                },
+              ]}
+              onPress={handleShowList}>
+              <MenuIcon color="#333" size={17} />
 
-        {isFlatListVisible && (
-          <>
-            {storegetloading ? (
-              <MapStoreItemSkeleton />
-            ) : (
-              <FlatList
-                ref={flatListRef}
-                data={stores}
-                horizontal
-                keyExtractor={item => item.id.toString()}
-                showsHorizontalScrollIndicator={false}
-                snapToAlignment="center"
-                snapToInterval={width} // 아이템 너비(350) + 간격(60)
-                decelerationRate="fast"
-                onScroll={handleScroll}
-                scrollEventThrottle={16} // 스크롤 이벤트 호출 빈도
-                renderItem={({item, index}) => (
-                  <MapStoreItem
-                    item={item}
-                    index={index}
-                    selectedStoreIndex={selectedStoreIndex}
-                    setSelectedStore={setSelectedStore}
-                    moveCenterMap={moveCenterMap}
-                    navigation={navigation}
-                    location={location}
-                    loading={loading}
-                  />
-                )}
-                getItemLayout={(data, index) => ({
-                  length: width,
-                  offset: width * index,
-                  index,
-                })}
-                onScrollToIndexFailed={({index}) => {
-                  setTimeout(() => {
-                    flatListRef.current?.scrollToIndex({index, animated: true});
-                  }, 300);
-                }}
-              />
-            )}
-          </>
-        )}
-      </Animated.View>
-      {stores.length === 0 && !loading && !storegetloading && (
-        <View style={styles.noneView}>
-          <View style={[styles.buttonView, {marginHorizontal: 0}]}>
-            <MapLocation onPress={updateNewLocation} />
-            <MapDirections onPress={fetchSaveLocation} />
-          </View>
-          <View style={styles.storeInfo}>
-            <View style={styles.titleview}>
-              <Text style={styles.noDataText}>주변에 등록된 술집이 없어요</Text>
-              <View style={styles.noticeView}>
-                <Ionicons
-                  name="information-circle-outline"
-                  size={15}
-                  color="#6B7280"
-                  style={{marginRight: 3}}
+              <CustomText style={styles.listButtonText}>목록보기</CustomText>
+            </Pressable>
+          )}
+
+          <BottomSheet
+            ref={bottomSheetRef}
+            index={initialIndex}
+            snapPoints={snapPoints}
+            detached
+            style={[styles.sheet]}
+            bottomInset={0}
+            handleIndicatorStyle={[styles.sheetHandleIndicator]}
+            backgroundStyle={[styles.sheetBackground]}
+            enableContentPanningGesture={false}
+            enableHandlePanningGesture={!filterModalVisible && !isListRestoring}
+            enableOverDrag={false}
+            animatedIndex={animatedIndex}
+            onChange={handleSheetChange}>
+            <BottomSheetView style={styles.sheetContent}>
+              {(() => {
+                const filters = mapSearchCtx?.selectedFilters || {};
+                const findExistingKey = (filtersObj, hint) => {
+                  if (!filtersObj) return hint;
+                  if (Object.prototype.hasOwnProperty.call(filtersObj, hint))
+                    return hint;
+                  const keys = Object.keys(filtersObj || {});
+                  const compact = s => (s || '').replace(/\s/g, '');
+                  const found = keys.find(k =>
+                    compact(k).includes(compact(hint)),
+                  );
+                  return found || hint;
+                };
+                const keyDistance = findExistingKey(filters, '거리');
+                const keyCategory = findExistingKey(filters, '카테고리');
+                const keyPeople = findExistingKey(filters, '인원');
+                const keyAlcohol = findExistingKey(filters, '주종');
+                const keyStoreatm = findExistingKey(filters, '분위기');
+                const keyTime = findExistingKey(filters, '방문시간');
+                const keyParking = findExistingKey(filters, '주차');
+                const keyCorkage = findExistingKey(filters, '콜키지');
+                const keyScreen = findExistingKey(filters, '스크린');
+                const keyRoom = findExistingKey(filters, '룸');
+                const keyOutdoor = findExistingKey(filters, '야장');
+                const getVal = (key, def) => filters?.[key] ?? def;
+
+                // expose computed labels into JSX via closure variables
+                const storeatmVal = getVal(keyStoreatm, []);
+                const storeatmCount = Array.isArray(storeatmVal)
+                  ? storeatmVal.length
+                  : storeatmVal
+                  ? 1
+                  : 0;
+                computedLabels = {
+                  distance: getVal(keyDistance, '1km'),
+                  category: getVal(keyCategory, '카테고리'),
+                  people: getVal(keyPeople, '인원'),
+                  alcohol: getVal(keyAlcohol, '주종'),
+                  storeatm: getVal(keyStoreatm, '분위기'),
+                  time: getVal(keyTime, '방문시간'),
+                  parking: getVal(keyParking, '주차'),
+                  corkage: getVal(keyCorkage, '콜키지'),
+                  screen: getVal(keyScreen, '스크린'),
+                  room: getVal(keyRoom, '룸'),
+                  outdoor: getVal(keyOutdoor, '야장'),
+                  storeatmCount: storeatmCount,
+                };
+
+                return null;
+              })()}
+
+              {(!hideFloatingButtons || isListRestoring) && (
+                <View style={styles.floatingButtons}>
+                  <MapLocation onPress={updateNewLocation} />
+                </View>
+              )}
+
+              {!isDetailMode && (
+                <MapFilterHeader
+                  setFilterInitialTab={setFilterInitialTab}
+                  setFilterModalVisible={setFilterModalVisible}
+                  setFilterheight={handleFilterHeight}
+                  distanceLabel={computedLabels?.distance || distanceLabel}
+                  categoryLabel={computedLabels?.category || categoryLabel}
+                  peopleLabel={computedLabels?.people || peopleLabel}
+                  alcoholLabel={computedLabels?.alcohol || alcoholLabel}
+                  timeActive={computedLabels?.time || timeActive}
+                  parkingLabel={computedLabels?.parking || parkingLabel}
+                  corkageLabel={computedLabels?.corkage || corkageLabel}
+                  screenLabel={computedLabels?.screen || screenLabel}
+                  roomLabel={computedLabels?.room || roomLabel}
+                  outdoorLabel={computedLabels?.outdoor || outdoorLabel}
+                  storeatmLabel={computedLabels?.storeatm || storeatmLabel}
+                  storeatmCount={computedLabels?.storeatmCount || storeatmCount}
+                  onAmenityToggle={handleAmenityQuickToggle}
                 />
-                <Text style={styles.noDatasubText}>
-                  현재 한잔할까는 용인시를 중심으로 운영 중입니다.
-                </Text>
-              </View>
-            </View>
+              )}
 
-            <View style={styles.noneView2}>
-              <Pressable
-                style={styles.button2}
-                onPress={() => {
-                  navigation.navigate('StoreSearchScreen', {
-                    index: 0,
-                    location: location,
-                  });
-                }}>
-                <Text style={styles.noneText2}>매장 제보하기</Text>
-              </Pressable>
-              <Pressable
-                style={styles.button}
-                onPress={() => {
-                  navigation.navigate('SetLocationScreen');
-                }}>
-                <Text style={styles.noneText}>위치 변경하기</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
+              {renderSheetBody()}
+            </BottomSheetView>
+          </BottomSheet>
+        </>
       )}
+
+      <FilterPotal
+        filterModalVisible={filterModalVisible}
+        setFilterModalVisible={setFilterModalVisible}
+        selectedFilters={mapSearchCtx?.selectedFilters || {}}
+        setSelectedFilters={mapSearchCtx?.setSelectedFilters}
+        initialTab={filterInitialTab}
+        setRadiusint={v => {
+          try {
+            setRadiusint?.(v);
+            mapSearchCtx?.setRadiusKm?.(v);
+          } catch (e) {}
+        }}
+        onApply={filters => onApplyFilters?.(filters)}
+      />
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  flatListContainer: {
-    borderTopLeftRadius: 15,
-    position: 'absolute',
-    bottom: '3%',
-  },
-  buttonView: {
-    flexDirection: 'row',
-    marginHorizontal: 18,
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  noneView: {
-    position: 'absolute',
-    bottom: '3%',
-    alignSelf: 'center',
-  },
-  storeInfo: {
-    justifyContent: 'space-between',
-    width: ITEM_WIDTH,
-    height: 155,
-    backgroundColor: '#fdfdfd',
-    padding: 15,
-    borderRadius: 12,
+  sheet: {
+    zIndex: 3,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
+    shadowOffset: {width: 0, height: -2}, // ?? 위쪽 그림자(-)
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowRadius: 4,
+    elevation: 10,
   },
-  titleview: {
-    marginTop: 2,
-    gap: 7,
-    width: '100%',
+  sheetExpanded: {
+    shadowOpacity: 0,
+    elevation: 0,
   },
-  noDataText: {
+  sheetBackground: {
+    borderTopRightRadius: 16,
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+
+  sheetHandleIndicator: {
+    backgroundColor: '#D1D5DB',
+  },
+
+  sheetContent: {
+    flex: 1,
+  },
+  listContentContainer: {
+    paddingBottom: 0,
+  },
+  floatingButtons: {
+    position: 'absolute',
+    top: -85,
+    right: 18,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    zIndex: 1,
+  },
+
+  detailLoadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+  },
+  detailLoadingText: {
+    marginTop: 8,
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    color: '#6B7280',
+  },
+  listButton: {
+    position: 'absolute',
     alignSelf: 'center',
-    fontSize: normalizeFont(15, 1.3),
-    color: '#888',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    zIndex: 2,
+    borderRadius: 17,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    gap: 4,
+    elevation: 3,
+    shadowColor: '#333',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
+  },
+  listButtonText: {
+    fontSize: 15,
     fontFamily: 'Pretendard-Regular',
   },
-  noticeView: {
-    flexDirection: 'row',
+  detailCloseButton: {
+    position: 'absolute',
+    alignSelf: 'flex-end',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 6,
+    marginBottom: 6,
+    zIndex: 4,
+    bottom: 50,
+    right: 30,
+    elevation: 2,
+  },
+  handleRow: {
+    height: 44,
+    paddingHorizontal: 12,
     alignItems: 'center',
-    textAlign: 'center',
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+  },
+  handleContainer: {
+    height: 44,
+    width: '100%',
     justifyContent: 'center',
   },
-  noDatasubText: {
-    alignSelf: 'center',
-    fontSize: normalizeFont(14, 1.3),
-    color: '#888',
-    fontFamily: 'Pretendard-Regular',
-  },
-  noneView2: {
+  handleBack: {
     flexDirection: 'row',
+    alignItems: 'center',
+  },
+  handleTitle: {
+    marginLeft: 6,
+    maxWidth: '80%',
+    fontSize: 14,
+    color: '#111',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+  handleCenter: {
+    display: 'none',
+  },
+  handleCenterOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  handleIndicator: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E5E7EB',
+  },
+  collapsedSpacer: {
     width: '100%',
-    justifyContent: 'space-around',
   },
-  button: {
-    width: BUTON_WIDTH,
-    paddingHorizontal: 17,
-    paddingVertical: 17,
-    borderWidth: 2,
-    borderColor: '#45c9ff',
-    borderRadius: 10,
-    backgroundColor: '#45c9ff',
+  listAnimatedContainer: {
+    flex: 1,
   },
-  button2: {
-    width: BUTON_WIDTH,
-    paddingHorizontal: 17,
-    paddingVertical: 17,
-    borderWidth: 2,
-    borderColor: '#45c9ff',
-    borderRadius: 10,
+  listContentWrapper: {
+    flex: 1,
   },
-  noneText2: {
-    alignSelf: 'center',
-    color: '#45c9ff',
-    fontSize: normalizeFont(15, 1.3),
-    fontFamily: 'Pretendard-SemiBold',
+  listRestoreOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  noneText: {
-    alignSelf: 'center',
-    color: 'white',
-    fontFamily: 'Pretendard-SemiBold',
+  listRestoreText: {
+    marginTop: 6,
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    color: '#4B5563',
+  },
+  listHiddenWhenDetail: {
+    flex: 0,
+    height: 0,
+    opacity: 0,
+  },
+  detailOverlay: {
+    flex: 1,
   },
 });
 

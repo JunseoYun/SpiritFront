@@ -13,6 +13,7 @@ import {
 import {store_stats_get} from '../../../api/logstats';
 import StoreAreaResult from './StoreAreaResult';
 import Loading from '../../../hooks/Loading';
+import CustomText from '../../../utils/CustomText';
 
 const period = [
   {label: '오늘', value: 'day'},
@@ -162,13 +163,13 @@ const StoreAreastats = ({locationDto, radius, onScrollCloseDropdown}) => {
                       isSelected && styles.periodSelected,
                       isNextToSelected && {borderLeftWidth: 0},
                     ]}>
-                    <Text
+                    <CustomText
                       style={[
                         styles.periodText,
                         isSelected && styles.chipTextSelected,
                       ]}>
                       {per.label}
-                    </Text>
+                    </CustomText>
                   </Pressable>
                 );
               })}
@@ -185,16 +186,16 @@ const StoreAreastats = ({locationDto, radius, onScrollCloseDropdown}) => {
                     <View
                       style={[
                         styles.genderPoint,
-                        isSelected && {backgroundColor: '#45C9FF'},
+                        isSelected && {backgroundColor: '#3CBBFF'},
                       ]}
                     />
-                    <Text
+                    <CustomText
                       style={[
                         styles.genderText,
                         isSelected && styles.chipTextSelected,
                       ]}>
                       {gen.label}
-                    </Text>
+                    </CustomText>
                   </Pressable>
                 );
               })}
@@ -212,19 +213,21 @@ const StoreAreastats = ({locationDto, radius, onScrollCloseDropdown}) => {
                   <Pressable
                     onPress={() => toggleAgeGroup(item.value)}
                     style={[styles.chip, isSelected && styles.chipSelected]}>
-                    <Text
+                    <CustomText
                       style={[
                         styles.chipText,
                         isSelected && styles.chipTextSelected,
                       ]}>
                       {item.label}
-                    </Text>
+                    </CustomText>
                   </Pressable>
                 );
               }}
             />
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? (
+              <CustomText style={styles.error}>{error}</CustomText>
+            ) : null}
           </View>
 
           {result && (
@@ -277,7 +280,7 @@ const styles = StyleSheet.create({
   periodSelected: {
     borderWidth: 1.2,
     borderRightWidth: 1.2,
-    borderColor: '#45C9FF',
+    borderColor: '#3CBBFF',
   },
   genderView: {
     marginHorizontal: 16,
@@ -331,7 +334,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   chipSelected: {
-    borderColor: '#16BBFF',
+    borderColor: '#3CBBFF',
   },
   chipText: {
     fontFamily: 'Pretendard-Medium',
@@ -339,7 +342,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   chipTextSelected: {
-    color: '#45C9FF',
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-Bold',
   },
   error: {

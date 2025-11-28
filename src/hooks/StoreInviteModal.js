@@ -19,6 +19,7 @@ import Loading from './Loading';
 import {useToast} from '../context/ToastContext';
 import LinearGradient from 'react-native-linear-gradient';
 import {navigationRef} from '../navigation/NavigationService';
+import CustomText from '../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 const CARD_WIDTH = Math.min(width * 0.88, 420);
@@ -157,9 +158,9 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
               />
 
               <View style={styles.coverTextWrap}>
-                <Text style={styles.storeName} numberOfLines={1}>
+                <CustomText style={styles.storeName} numberOfLines={1}>
                   {previewData?.storeName ?? '가게 정보'}
-                </Text>
+                </CustomText>
               </View>
             </View>
           )}
@@ -167,14 +168,14 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
           {/* 본문 */}
           {!loading && previewData && !loadError && (
             <View style={styles.body}>
-              <Text style={styles.subtitle} numberOfLines={1}>
+              <CustomText style={styles.subtitle} numberOfLines={1}>
                 운영진 초대
-              </Text>
-              <Text style={styles.message} numberOfLines={3}>
+              </CustomText>
+              <CustomText style={styles.message} numberOfLines={3}>
                 {previewData?.storeName} 매장의 운영진으로 초대되었습니다.{`\n`}
                 초대를 수락하면 {previewData?.storeName} 매장을 관리할 수
                 있습니다.
-              </Text>
+              </CustomText>
 
               <View style={styles.ctaRow}>
                 <TouchableOpacity
@@ -183,9 +184,9 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
                   accessibilityLabel="초대 거절"
                   style={[styles.btn, styles.btnOutline]}
                   activeOpacity={0.8}>
-                  <Text style={[styles.btnText, styles.btnOutlineText]}>
+                  <CustomText style={[styles.btnText, styles.btnOutlineText]}>
                     거절
-                  </Text>
+                  </CustomText>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -194,9 +195,9 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
                   accessibilityLabel="초대 수락"
                   style={[styles.btn, styles.btnPrimary]}
                   activeOpacity={0.9}>
-                  <Text style={[styles.btnText, styles.btnPrimaryText]}>
+                  <CustomText style={[styles.btnText, styles.btnPrimaryText]}>
                     수락
-                  </Text>
+                  </CustomText>
                 </TouchableOpacity>
               </View>
             </View>
@@ -216,7 +217,7 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
 
 export default StoreInviteModal;
 
-const BRAND = '#45C9FF';
+const BRAND = '#3CBBFF';
 
 const styles = StyleSheet.create({
   overlay: {

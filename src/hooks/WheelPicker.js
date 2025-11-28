@@ -1,5 +1,6 @@
 import React, {useRef, useState, useEffect} from 'react';
 import {View, Text, ScrollView, Pressable, StyleSheet} from 'react-native';
+import CustomText from '../utils/CustomText';
 
 const WheelPicker = ({
   data,
@@ -100,7 +101,7 @@ const WheelPicker = ({
         {type === 'minute' && selectedHour === '33' ? (
           <Pressable onPress={() => onValueChange?.('00')}>
             <View style={[styles.itemContainer, style]}>
-              <Text
+              <CustomText
                 style={{
                   fontSize: 18,
                   color: '#000',
@@ -109,14 +110,14 @@ const WheelPicker = ({
                   paddingHorizontal: 5,
                 }}>
                 00
-              </Text>
+              </CustomText>
             </View>
           </Pressable>
         ) : (
           data.map((item, idx) => (
             <Pressable key={idx} onPress={() => handleItemPress(idx)}>
               <View style={[styles.itemContainer, style]}>
-                <Text
+                <CustomText
                   style={{
                     fontSize: 18,
                     color: idx === selectedIndex ? '#000' : '#999',
@@ -127,7 +128,9 @@ const WheelPicker = ({
                   {type === 'hour' && item >= 24 ? (
                     idx === selectedIndex ? (
                       <>
-                        <Text style={styles.nextText}>{'다음날  '}</Text>
+                        <CustomText style={styles.nextText}>
+                          {'다음날  '}
+                        </CustomText>
                         {(item - 24).toString().padStart(2, '0')}
                       </>
                     ) : (
@@ -136,7 +139,7 @@ const WheelPicker = ({
                   ) : (
                     item.toString().padStart(2, '0')
                   )}
-                </Text>
+                </CustomText>
               </View>
             </Pressable>
           ))
