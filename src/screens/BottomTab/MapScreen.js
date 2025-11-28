@@ -250,8 +250,17 @@ const MapScreen = ({navigation, route}) => {
           setSearchText('');
           return true;
         }
-        navigation.navigate('MainScreen'); // MainScreen 탭으로 전환
-        return true; // 기본 뒤로가기 방지
+        const prevTab = route?.params?.prevTab;
+        if (prevTab && prevTab !== 'MapScreen') {
+          navigation.navigate(prevTab);
+          return true;
+        }
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+          return true;
+        }
+        navigation.navigate('MainScreen'); // 탭 루트에서는 홈으로 이동
+        return true;
       };
 
       const backHandler = BackHandler.addEventListener(
@@ -260,7 +269,7 @@ const MapScreen = ({navigation, route}) => {
       );
 
       return () => backHandler.remove();
-    }, [navigation, searchText, setSearchText]),
+    }, [navigation, route?.params?.prevTab, searchText, setSearchText]),
   );
 
   useEffect(() => {
@@ -1095,6 +1104,7 @@ const MapScreen = ({navigation, route}) => {
       <View style={styles.topOverlay} pointerEvents="box-none">
         <MapTopBar
           navigation={navigation}
+          prevTab={route?.params?.prevTab}
           onMeasureHeight={handleTopBarHeight}
           forceWhiteBackground={shouldForceListModeUi && !isUpdatingLocation}
         />

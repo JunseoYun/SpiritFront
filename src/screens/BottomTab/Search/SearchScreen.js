@@ -52,6 +52,9 @@ const SearchScreen = ({navigation, route}) => {
   const [filterInitialTab, setFilterInitialTab] = useState('거리');
   const [recentSearches, setRecentSearches] = useState([]);
   const preserveFiltersRef = useRef(route?.params?.preserveFilters === true);
+  const originTabRef = useRef(
+    route?.params?.prevTab || route?.params?.lastFocusedTab || null,
+  );
 
   useEffect(() => {
     selectedFiltersRef.current = selectedFilters;
@@ -64,6 +67,13 @@ const SearchScreen = ({navigation, route}) => {
   useEffect(() => {
     preserveFiltersRef.current = route?.params?.preserveFilters === true;
   }, [route?.params?.preserveFilters]);
+
+  useEffect(() => {
+    if (route?.params?.prevTab || route?.params?.lastFocusedTab) {
+      originTabRef.current =
+        route?.params?.prevTab || route?.params?.lastFocusedTab;
+    }
+  }, [route?.params?.lastFocusedTab, route?.params?.prevTab]);
 
   const RECENT_KEY = 'RECENT_SEARCHES';
 
@@ -147,13 +157,19 @@ const SearchScreen = ({navigation, route}) => {
         typeof pendingRadiusKm === 'number' ? pendingRadiusKm : radiusKm,
       );
       await persistRecent(trimmed);
+      const lastTab = originTabRef.current || 'MainScreen';
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
           routes: [
             {
               name: 'MainBtmbar',
-              params: {screen: 'MapScreen', params: {skipAutoSnap: true}},
+              params: {
+                screen: 'MapScreen',
+                params: {skipAutoSnap: true, prevTab: lastTab},
+                initialTab: 'MapScreen',
+                lastFocusedTab: lastTab,
+              },
             },
           ],
         }),
