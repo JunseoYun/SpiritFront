@@ -32,7 +32,7 @@ export default function MyBanner({index}) {
   let prodUnitId = mainBannerId; // 기본값
   if (index === 'search') {
     prodUnitId = searchBannerId;
-  } else if (index === 'order') {
+  } else if (index === 'like') {
     prodUnitId = likeBannerId;
   }
 
