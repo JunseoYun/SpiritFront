@@ -4,18 +4,18 @@ import ColorUtil from '../../../utils/ColorUtil';
 import CustomText from '../../../utils/CustomText';
 
 const MOOD_LABELS = {
-  QUIET: '조용한',
+  QUIET: '대화하기 좋은',
   LIVELY: '활기찬',
-  SOLO_FRIENDLY: '혼술하기 좋은',
-  DATE: '데이트하기 좋은',
-  PARTY_EVENT: '모임/파티 분위기',
+  SOLO_FRIENDLY: '혼술',
+  DATE: '데이트',
+  PARTY_EVENT: '파티·이벤트',
   TRADITIONAL: '전통적인',
   EXOTIC: '이국적인',
-  MODERN: '모던한',
+  MODERN: '모던·깔끔한',
   OLD_SCHOOL: '노포 감성',
-  VIEW_SPOT: '뷰가 좋은',
+  VIEW_SPOT: '뷰 맛집',
   LOCAL_FAVORITE: '로컬 맛집',
-  SECOND_ROUND: '2차로 좋은',
+  SECOND_ROUND: '2차 맛집',
 };
 
 const Moods = ({moods = []}) => {

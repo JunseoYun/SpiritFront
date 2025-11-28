@@ -50,7 +50,6 @@ const StoreMapScreen = ({navigation}) => {
   const webViewRef = useRef(null);
   const calculateDistance = useDistance();
   const {showToast} = useToast();
-  const [showAddressOverlay, setShowAddressOverlay] = useState(false);
   const [isStoreLiked, setIsStoreLiked] = useState(
     Boolean(initialIsStoreLiked),
   );
@@ -271,17 +270,16 @@ const StoreMapScreen = ({navigation}) => {
   ]);
   const hasDetailLine = Boolean(resolvedAddress) || Boolean(distanceLabel);
   const handleCopyAddress = useCallback(() => {
-    const base =
-      typeof storeAddress === 'string' && storeAddress.trim().length > 0
-        ? storeAddress.trim()
-        : '';
-    if (!base) {
+    if (!resolvedAddress) {
       return;
     }
-    Clipboard.setString(base);
+    Clipboard.setString(resolvedAddress);
     showToast?.('주소를 복사했어요.', 'center');
-  }, [storeAddress, showToast]);
-  const infoPaddingBottom = Math.max(16, insets.bottom + 8);
+  }, [resolvedAddress, showToast]);
+  const infoPaddingBottom = Math.max(
+    16,
+    insets.bottom + (Platform.OS === 'android' ? 20 : 0),
+  );
   const defaultInfoHeight = hasDetailLine ? 120 : 96;
   const controlsBottom = (infoHeight ?? defaultInfoHeight) + 24;
 
@@ -308,12 +306,7 @@ const StoreMapScreen = ({navigation}) => {
           />
         </View>
       </View>
-      <TouchableWithoutFeedback
-        onPress={() => {
-          if (showAddressOverlay) {
-            setShowAddressOverlay(false);
-          }
-        }}>
+      <TouchableWithoutFeedback onPress={() => {}}>
         <View style={styles.container}>
           {location ? (
             <WebView
@@ -333,22 +326,15 @@ const StoreMapScreen = ({navigation}) => {
           )}
 
           <StoreMapLocation
-            onPress={() => {
-              setShowAddressOverlay(false);
-              updateNewLocation();
-            }}
+            onPress={updateNewLocation}
             style={[styles.mapControl, {bottom: controlsBottom + 52}]}
           />
           <StoreMapCenter
-            onPress={() => {
-              setShowAddressOverlay(false);
-              storeCenter();
-            }}
+            onPress={storeCenter}
             style={[styles.mapControl, {bottom: controlsBottom}]}
           />
           <StoreMapNavi
             onPress={() => {
-              setShowAddressOverlay(false);
               openDirectionsModal({
                 startLat: location?.latitude,
                 startLng: location?.longitude,
@@ -387,46 +373,22 @@ const StoreMapScreen = ({navigation}) => {
                     </>
                   ) : null}
                   {resolvedAddress ? (
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      onPress={() => setShowAddressOverlay(prev => !prev)}>
+                    <View style={styles.addressWrapper}>
                       <CustomText
                         style={styles.storeInfoAddress}
                         numberOfLines={2}>
                         {resolvedAddress}
                       </CustomText>
-                    </TouchableOpacity>
-                  ) : null}
-                </View>
-                {resolvedAddress && showAddressOverlay ? (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    style={styles.addressPanel}
-                    onPress={event => event.stopPropagation()}>
-                    <View style={styles.addressPanelHeader}>
-                      <CustomText style={styles.addressOverlayTitle}>
-                        주소
-                      </CustomText>
                       <TouchableOpacity
-                        onPress={() => setShowAddressOverlay(false)}
-                        hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
-                        <CustomText style={styles.addressOverlayClose}>
-                          ×
+                        onPress={handleCopyAddress}
+                        hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                        <CustomText style={styles.inlineCopyText}>
+                          복사
                         </CustomText>
                       </TouchableOpacity>
                     </View>
-                    <TouchableOpacity
-                      style={styles.addressPanelContent}
-                      onPress={handleCopyAddress}>
-                      <CustomText style={styles.addressPanelText}>
-                        {resolvedAddress}
-                      </CustomText>
-                      <CustomText style={styles.addressOverlayCopy}>
-                        복사
-                      </CustomText>
-                    </TouchableOpacity>
-                  </TouchableOpacity>
-                ) : null}
+                  ) : null}
+                </View>
               </>
             ) : null}
           </View>
@@ -512,6 +474,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
+    marginTop: 7,
   },
   storeInfoDistance: {
     fontSize: 14,
@@ -527,53 +490,22 @@ const styles = StyleSheet.create({
     color: '#555',
     lineHeight: 18,
     fontFamily: 'Pretendard-Medium',
-    paddingTop: 4,
+    // paddingTop: 4,
+    flexShrink: 1,
   },
-  addressPanel: {
-    marginTop: 10,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 3},
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  addressPanelHeader: {
+  addressWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  addressOverlayTitle: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-Bold',
-    color: '#111',
-  },
-  addressOverlayClose: {
-    fontSize: 18,
-    color: '#999',
-    marginLeft: 8,
-  },
-  addressPanelContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  addressPanelText: {
+    flexShrink: 1,
     flex: 1,
-    fontSize: 14,
-    color: '#222',
-    marginRight: 12,
+    paddingRight: 12,
+    textAlign: 'center',
   },
-  addressOverlayCopy: {
+  inlineCopyText: {
     fontSize: 14,
     color: '#0A7CC1',
     fontFamily: 'Pretendard-SemiBold',
+    marginLeft: 6,
   },
 });
 

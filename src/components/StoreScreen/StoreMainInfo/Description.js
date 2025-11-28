@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginHorizontal: 18,
+    paddingRight: 10,
   },
   text: {
     fontFamily: 'Pretendard-Regular',
