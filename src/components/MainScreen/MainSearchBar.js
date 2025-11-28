@@ -7,7 +7,7 @@ import CustomText from '../../utils/CustomText';
 const MainSearchBar = ({handleSearchPress}) => {
   return (
     <Pressable
-      hitSlop={15}
+      hitSlop={10}
       onPress={() => handleSearchPress()}
       style={styles.searchBar}>
       <View style={styles.searchContent}>
