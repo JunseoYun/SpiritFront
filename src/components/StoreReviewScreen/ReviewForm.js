@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {
   View,
-  Text,
-  TextInput,
+  Platform,
   TouchableOpacity,
   Pressable,
   StyleSheet,
@@ -323,17 +322,25 @@ const styles = StyleSheet.create({
   },
   textarea: {
     backgroundColor: '#fff',
+    minHeight: 130,
+    maxHeight: 150,
     borderRadius: 12,
-    padding: 14,
+    paddingHorizontal: 14,
     fontSize: 16,
     minHeight: 120,
     textAlignVertical: 'top',
     borderWidth: 1,
     borderColor: '#ebebeb',
     width: '100%',
+    ...Platform.select({
+      ios: {
+        paddingTop: 16,
+        paddingBottom: 16,
+      },
+    }),
   },
   inputFocused: {
-    borderColor: '#3CBBFF',
+    borderColor: '#333',
   },
   errorFocused: {
     borderColor: '#FF4816',

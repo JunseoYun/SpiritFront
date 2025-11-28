@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, TextInput, StyleSheet} from 'react-native';
+import {View, Platform, StyleSheet} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -121,15 +121,19 @@ const styles = StyleSheet.create({
   },
   storeinput: {
     minHeight: 130,
+    maxHeight: 150,
     borderColor: ColorUtil.placeholderBorder,
     borderWidth: 1,
     fontSize: 16,
     fontFamily: 'Pretendard-Regular',
     borderRadius: 9,
     paddingHorizontal: 14,
-    paddingRight: 14,
-    paddingTop: 16,
-    paddingBottom: 16,
+    ...Platform.select({
+      ios: {
+        paddingTop: 16,
+        paddingBottom: 16,
+      },
+    }),
     textAlignVertical: 'top',
   },
   focusedInput: {
