@@ -94,14 +94,12 @@ const SearchScreen = ({navigation, route}) => {
       } else {
         resetFiltersToInitial();
         setSearchStoreName('');
-        setSearchText('');
       }
     }, [
       loadRecentSearches,
       navigation,
       resetFiltersToInitial,
       searchText,
-      setSearchText,
     ]),
   );
 
