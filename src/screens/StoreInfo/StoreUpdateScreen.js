@@ -1073,10 +1073,6 @@ const StoreUpdateScreen = ({navigation}) => {
     try {
       setLoading(true);
       if (shouldUpdateStore) {
-        console.log('[StoreUpdateScreen] 매장 정보 수정 요청 페이로드', {
-          storeId,
-          payload: diffPayload,
-        });
         const updateResponse = await UpdateStore(storeId, diffPayload);
       }
 
