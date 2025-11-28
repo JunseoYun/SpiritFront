@@ -2,7 +2,6 @@ import React, {useState, useCallback, useRef, useEffect} from 'react';
 import {
   StyleSheet,
   View,
-  Text,
   BackHandler,
   Pressable,
   ScrollView,
@@ -28,6 +27,10 @@ import {normalizeFont} from '../../../hooks/normalizeFont';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import RecentSearchItem from '../../../components/SearchScreen/RecentSearchItem';
 import CustomText from '../../../utils/CustomText';
+
+const AVAILABLE_VALUE = '가능';
+const GROUP_VALUE = '단체 방문';
+const SCREEN_VALUE = '설치';
 
 const SearchScreen = ({navigation, route}) => {
   const {showToast} = useToast();
@@ -95,19 +98,14 @@ const SearchScreen = ({navigation, route}) => {
         resetFiltersToInitial();
         setSearchStoreName('');
       }
-    }, [
-      loadRecentSearches,
-      navigation,
-      resetFiltersToInitial,
-      searchText,
-    ]),
+    }, [loadRecentSearches, navigation, resetFiltersToInitial, searchText]),
   );
 
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        navigation.navigate('MainScreen'); // MainScreen 화면으로 전환
-        return true; // 기본 뒤로가기를 방지
+        navigation.navigate('MainScreen');
+        return true;
       };
 
       const backHandler = BackHandler.addEventListener(
@@ -142,7 +140,7 @@ const SearchScreen = ({navigation, route}) => {
     async keyword => {
       const trimmed = (keyword || '').trim();
       if (!trimmed.length) {
-        showToast('검색어를 입력해 주세요', 'center');
+        showToast('검색어를 입력해주세요', 'center');
         return;
       }
       setSearchText(trimmed);
@@ -170,23 +168,67 @@ const SearchScreen = ({navigation, route}) => {
     await commitSearchAndFilters(searchStoreName);
   };
 
-  const findFilterKey = hint => {
-    const keys = Object.keys(pendingFilters || {});
-    const normalizedHint = (hint || '').replace(/\s/g, '');
-    return (
-      keys.find(k => (k || '').replace(/\s/g, '').includes(normalizedHint)) ||
-      hint
-    );
-  };
+  const resolveFilterKey = useCallback(
+    (hint, source = pendingFilters) => {
+      const keys = Object.keys(source || {});
+      const normalizedHint = (hint || '').replace(/\s/g, '');
+      return (
+        keys.find(k => (k || '').replace(/\s/g, '').includes(normalizedHint)) ||
+        hint
+      );
+    },
+    [pendingFilters],
+  );
 
   const getFilterValue = (hint, fallback = '') => {
-    const key = findFilterKey(hint);
+    const key = resolveFilterKey(hint);
     const val = pendingFilters?.[key];
     const isEmptyArray = Array.isArray(val) && val.length === 0;
     const isEmptyString = typeof val === 'string' && val.trim().length === 0;
 
     return val == null || isEmptyArray || isEmptyString ? fallback : val;
   };
+
+  const handleAmenityToggle = useCallback(
+    type => {
+      setPendingFilters(prev => {
+        const base = prev || {};
+        const next = {...base};
+        const resolveKey = hint => resolveFilterKey(hint, base);
+        const toggleValue = (hint, activeValue) => {
+          const key = resolveKey(hint);
+          const currentVal = next?.[key];
+          next[key] = currentVal === activeValue ? '' : activeValue;
+        };
+
+        switch (type) {
+          case 'screen':
+            toggleValue('스크린', SCREEN_VALUE);
+            break;
+          case 'room':
+            toggleValue('룸', AVAILABLE_VALUE);
+            break;
+          case 'outdoor':
+            toggleValue('야장', AVAILABLE_VALUE);
+            break;
+          case 'people':
+            toggleValue('인원', GROUP_VALUE);
+            break;
+          case 'parking':
+            toggleValue('주차', AVAILABLE_VALUE);
+            break;
+          case 'corkage':
+            toggleValue('콜키지', AVAILABLE_VALUE);
+            break;
+          default:
+            return base;
+        }
+
+        return next;
+      });
+    },
+    [resolveFilterKey],
+  );
 
   const distanceLabel = getFilterValue('거리', '1km');
   const categoryLabel = getFilterValue('카테고리', '카테고리');
@@ -232,6 +274,7 @@ const SearchScreen = ({navigation, route}) => {
               ? 1
               : 0
           }
+          onAmenityToggle={handleAmenityToggle}
         />
 
         {/* <MyBanner index={'search'} /> */}
@@ -239,7 +282,6 @@ const SearchScreen = ({navigation, route}) => {
         {recentSearches.length > 0 && (
           <View style={styles.recentWrap}>
             <ScrollView
-              style={{}}
               contentContainerStyle={{paddingBottom: 40}}
               showsVerticalScrollIndicator={false}
               keyboardDismissMode="on-drag"
@@ -271,7 +313,7 @@ const SearchScreen = ({navigation, route}) => {
                   setRecentSearches([]);
                 }}>
                 <CustomText style={styles.clearText}>
-                  최근 검색어 삭제
+                  최근 검색어 전체 삭제
                 </CustomText>
               </Pressable>
             </ScrollView>

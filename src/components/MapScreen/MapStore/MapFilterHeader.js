@@ -1,12 +1,5 @@
-import React, {useMemo, useRef, useEffect, useState, useCallback} from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Pressable,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import React, {useCallback} from 'react';
+import {StyleSheet, View, Pressable, ScrollView} from 'react-native';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import CustomText from '../../../utils/CustomText';
@@ -14,7 +7,6 @@ import CustomText from '../../../utils/CustomText';
 const MapFilterHeader = ({
   setFilterInitialTab,
   setFilterModalVisible,
-
   setFilterheight = () => {},
   distanceLabel,
   categoryLabel,
@@ -28,7 +20,20 @@ const MapFilterHeader = ({
   outdoorLabel,
   storeatmLabel,
   storeatmCount = 0,
+  onAmenityToggle,
 }) => {
+  const handleAmenityPress = useCallback(
+    type => {
+      if (typeof onAmenityToggle === 'function') {
+        onAmenityToggle(type);
+        return;
+      }
+      setFilterInitialTab('편의시설');
+      setFilterModalVisible(true);
+    },
+    [onAmenityToggle, setFilterInitialTab, setFilterModalVisible],
+  );
+
   return (
     <View
       style={styles.headerContainer}
@@ -51,7 +56,7 @@ const MapFilterHeader = ({
         <Pressable
           style={[
             styles.filterChip,
-            distanceLabel != '2km' && styles.filterChipActive,
+            distanceLabel !== '2km' && styles.filterChipActive,
           ]}
           onPress={() => {
             setFilterInitialTab('거리');
@@ -60,7 +65,7 @@ const MapFilterHeader = ({
           <CustomText
             style={[
               styles.filterText,
-              distanceLabel != '2km' && styles.filterTextActive,
+              distanceLabel !== '2km' && styles.filterTextActive,
             ]}>
             {distanceLabel}
           </CustomText>
@@ -114,7 +119,7 @@ const MapFilterHeader = ({
                 styles.filterText,
                 storeatmCount > 0 && styles.filterTextActive,
               ]}>
-              분위기
+              {storeatmLabel}
             </CustomText>
           </Pressable>
           {storeatmCount > 0 && (
@@ -146,16 +151,13 @@ const MapFilterHeader = ({
         <Pressable
           style={[
             styles.filterChip,
-            screenLabel == '설치' && styles.filterChipActive,
+            screenLabel === '설치' && styles.filterChipActive,
           ]}
-          onPress={() => {
-            setFilterInitialTab('편의시설');
-            setFilterModalVisible(true);
-          }}>
+          onPress={() => handleAmenityPress('screen')}>
           <CustomText
             style={[
               styles.filterText,
-              screenLabel == '설치' && styles.filterTextActive,
+              screenLabel === '설치' && styles.filterTextActive,
             ]}>
             스크린·TV
           </CustomText>
@@ -163,16 +165,13 @@ const MapFilterHeader = ({
         <Pressable
           style={[
             styles.filterChip,
-            roomLabel == '가능' && styles.filterChipActive,
+            roomLabel === '가능' && styles.filterChipActive,
           ]}
-          onPress={() => {
-            setFilterInitialTab('편의시설');
-            setFilterModalVisible(true);
-          }}>
+          onPress={() => handleAmenityPress('room')}>
           <CustomText
             style={[
               styles.filterText,
-              roomLabel == '가능' && styles.filterTextActive,
+              roomLabel === '가능' && styles.filterTextActive,
             ]}>
             룸
           </CustomText>
@@ -180,16 +179,13 @@ const MapFilterHeader = ({
         <Pressable
           style={[
             styles.filterChip,
-            outdoorLabel == '가능' && styles.filterChipActive,
+            outdoorLabel === '가능' && styles.filterChipActive,
           ]}
-          onPress={() => {
-            setFilterInitialTab('편의시설');
-            setFilterModalVisible(true);
-          }}>
+          onPress={() => handleAmenityPress('outdoor')}>
           <CustomText
             style={[
               styles.filterText,
-              outdoorLabel == '가능' && styles.filterTextActive,
+              outdoorLabel === '가능' && styles.filterTextActive,
             ]}>
             야외 좌석·테라스
           </CustomText>
@@ -197,16 +193,13 @@ const MapFilterHeader = ({
         <Pressable
           style={[
             styles.filterChip,
-            peopleLabel !== '인원' && styles.filterChipActive,
+            peopleLabel === '단체 방문' && styles.filterChipActive,
           ]}
-          onPress={() => {
-            setFilterInitialTab('편의시설');
-            setFilterModalVisible(true);
-          }}>
+          onPress={() => handleAmenityPress('people')}>
           <CustomText
             style={[
               styles.filterText,
-              peopleLabel !== '인원' && styles.filterTextActive,
+              peopleLabel === '단체 방문' && styles.filterTextActive,
             ]}>
             단체 방문 가능
           </CustomText>
@@ -214,16 +207,13 @@ const MapFilterHeader = ({
         <Pressable
           style={[
             styles.filterChip,
-            parkingLabel == '가능' && styles.filterChipActive,
+            parkingLabel === '가능' && styles.filterChipActive,
           ]}
-          onPress={() => {
-            setFilterInitialTab('편의시설');
-            setFilterModalVisible(true);
-          }}>
+          onPress={() => handleAmenityPress('parking')}>
           <CustomText
             style={[
               styles.filterText,
-              parkingLabel == '가능' && styles.filterTextActive,
+              parkingLabel === '가능' && styles.filterTextActive,
             ]}>
             주차 가능
           </CustomText>
@@ -231,16 +221,13 @@ const MapFilterHeader = ({
         <Pressable
           style={[
             styles.filterChip,
-            corkageLabel == '가능' && styles.filterChipActive,
+            corkageLabel === '가능' && styles.filterChipActive,
           ]}
-          onPress={() => {
-            setFilterInitialTab('편의시설');
-            setFilterModalVisible(true);
-          }}>
+          onPress={() => handleAmenityPress('corkage')}>
           <CustomText
             style={[
               styles.filterText,
-              corkageLabel == '가능' && styles.filterTextActive,
+              corkageLabel === '가능' && styles.filterTextActive,
             ]}>
             콜키지 가능
           </CustomText>
