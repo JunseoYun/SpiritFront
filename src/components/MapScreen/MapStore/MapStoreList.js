@@ -38,6 +38,9 @@ import CustomText from '../../../utils/CustomText';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 const DEFAULT_DETAIL_HEADER_HEIGHT = 110;
+const AVAILABLE_VALUE = '가능';
+const GROUP_VALUE = '단체 방문';
+const SCREEN_VALUE = '설치';
 
 const MapStoreList = ({
   updateNewLocation,
@@ -907,6 +910,65 @@ const MapStoreList = ({
   }, [isDetailMode, pendingListRestore]);
 
   const mapSearchCtx = useMapSearch();
+  const resolveFilterKey = useCallback(
+    hint => {
+      const filters = mapSearchCtx?.selectedFilters || {};
+      const keys = Object.keys(filters);
+      const normalizedHint = (hint || '').replace(/\s/g, '');
+      return (
+        keys.find(k =>
+          (k || '').replace(/\s/g, '').includes(normalizedHint),
+        ) || hint
+      );
+    },
+    [mapSearchCtx?.selectedFilters],
+  );
+
+  const applyFilters = useCallback(
+    nextFilters => {
+      mapSearchCtx?.setSelectedFilters?.(nextFilters);
+      onApplyFilters?.(nextFilters);
+    },
+    [mapSearchCtx, onApplyFilters],
+  );
+
+  const handleAmenityQuickToggle = useCallback(
+    type => {
+      const current = mapSearchCtx?.selectedFilters || {};
+      const next = {...current};
+      const toggleValue = (hint, activeValue) => {
+        const key = resolveFilterKey(hint);
+        const currentVal = next?.[key];
+        next[key] = currentVal === activeValue ? '' : activeValue;
+      };
+
+      switch (type) {
+        case 'screen':
+          toggleValue('스크린', SCREEN_VALUE);
+          break;
+        case 'room':
+          toggleValue('룸', AVAILABLE_VALUE);
+          break;
+        case 'outdoor':
+          toggleValue('야장', AVAILABLE_VALUE);
+          break;
+        case 'people':
+          toggleValue('인원', GROUP_VALUE);
+          break;
+        case 'parking':
+          toggleValue('주차', AVAILABLE_VALUE);
+          break;
+        case 'corkage':
+          toggleValue('콜키지', AVAILABLE_VALUE);
+          break;
+        default:
+          return;
+      }
+
+      applyFilters(next);
+    },
+    [applyFilters, mapSearchCtx?.selectedFilters, resolveFilterKey],
+  );
   const listModeCollapsed = !isDetailMode && currentIndex === 0;
   const listHasRoomToScroll =
     listContentHeight > 0 &&
@@ -1262,6 +1324,7 @@ const MapStoreList = ({
                   outdoorLabel={computedLabels?.outdoor || outdoorLabel}
                   storeatmLabel={computedLabels?.storeatm || storeatmLabel}
                   storeatmCount={computedLabels?.storeatmCount || storeatmCount}
+                  onAmenityToggle={handleAmenityQuickToggle}
                 />
               )}
 
