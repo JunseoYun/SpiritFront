@@ -37,6 +37,8 @@ import Loading from '../../../hooks/Loading';
 import CustomText from '../../../utils/CustomText';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
+const DEFAULT_FILTER_HEIGHT = 49;
+const MIN_VALID_FILTER_HEIGHT = 10;
 const DEFAULT_DETAIL_HEADER_HEIGHT = 110;
 const AVAILABLE_VALUE = '가능';
 const GROUP_VALUE = '단체 방문';
@@ -75,7 +77,8 @@ const MapStoreList = ({
   onListRestoringChange,
 }) => {
   const insets = useSafeAreaInsets();
-  const [filterheight, setFilterheight] = useState(0);
+  const [filterheight, setFilterheight] = useState(DEFAULT_FILTER_HEIGHT);
+  const lastValidFilterHeightRef = useRef(DEFAULT_FILTER_HEIGHT);
   const [detailContentHeight, setDetailContentHeight] = useState(null);
   const [detailHeaderHeight, setDetailHeaderHeight] = useState(null);
   const detailRevealProgress = useSharedValue(1);
@@ -105,14 +108,25 @@ const MapStoreList = ({
   const detailClosingRef = useRef(false);
   const [isDetailRestorePending, setIsDetailRestorePending] = useState(false);
   const detailCollapsedHeight = useMemo(() => {
+    const effectiveFilterHeight =
+      filterheight >= MIN_VALID_FILTER_HEIGHT
+        ? filterheight
+        : lastValidFilterHeightRef.current;
     if (!detailStoreId) {
-      return SCREEN_HEIGHT * 0.03 + filterheight + insets.bottom;
+      return SCREEN_HEIGHT * 0.03 + effectiveFilterHeight + insets.bottom;
     }
     const platformOffset = Platform.OS === 'android' ? 10 : 0;
     const safePadding = insets.bottom + 20 + platformOffset;
     const headerHeight = detailHeaderHeight ?? DEFAULT_DETAIL_HEADER_HEIGHT;
     return safePadding + headerHeight;
-  }, [detailStoreId, filterheight, insets.bottom, detailHeaderHeight]);
+  }, [
+    detailStoreId,
+    filterheight,
+    insets.bottom,
+    detailHeaderHeight,
+    lastValidFilterHeightRef,
+  ]);
+
   const detailSnapPoint = useMemo(() => {
     if (!detailStoreId) return SCREEN_HEIGHT * 0.55;
     const measured = detailContentHeight ?? SCREEN_HEIGHT * 0.55;
@@ -278,20 +292,40 @@ const MapStoreList = ({
   useEffect(() => {
     if (isDetailMode) {
       setFilterheight(0);
-    } else {
-      setDetailContentHeight(null);
-      setDetailHeaderHeight(null);
-      detailRevealProgress.value = 1;
-      detailPointerState.value = 1;
-      setDetailPointerEnabled(true);
-      listRevealProgress.value = 1;
+      return;
+    }
+    setDetailContentHeight(null);
+    setDetailHeaderHeight(null);
+    detailRevealProgress.value = 1;
+    detailPointerState.value = 1;
+    setDetailPointerEnabled(true);
+    listRevealProgress.value = 1;
+    if (filterheight < MIN_VALID_FILTER_HEIGHT) {
+      setFilterheight(lastValidFilterHeightRef.current);
     }
   }, [
     isDetailMode,
     detailRevealProgress,
     detailPointerState,
     listRevealProgress,
+    filterheight,
+    lastValidFilterHeightRef,
   ]);
+  useEffect(() => {
+    if (filterheight >= MIN_VALID_FILTER_HEIGHT) {
+      lastValidFilterHeightRef.current = filterheight;
+    }
+  }, [filterheight]);
+
+  const handleFilterHeight = useCallback(height => {
+    if (typeof height !== 'number' || Number.isNaN(height)) {
+      return;
+    }
+    if (height < MIN_VALID_FILTER_HEIGHT) {
+      return;
+    }
+    setFilterheight(prev => (Math.abs(prev - height) < 1 ? prev : height));
+  }, []);
   const handleDetailPointerState = useCallback(enabled => {
     setDetailPointerEnabled(prev => (prev === enabled ? prev : enabled));
   }, []);
@@ -1324,7 +1358,7 @@ const MapStoreList = ({
                 <MapFilterHeader
                   setFilterInitialTab={setFilterInitialTab}
                   setFilterModalVisible={setFilterModalVisible}
-                  setFilterheight={setFilterheight}
+                  setFilterheight={handleFilterHeight}
                   distanceLabel={computedLabels?.distance || distanceLabel}
                   categoryLabel={computedLabels?.category || categoryLabel}
                   peopleLabel={computedLabels?.people || peopleLabel}
