@@ -11,6 +11,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const MapTopBar = ({
   navigation,
+  prevTab,
   onMeasureHeight,
   forceWhiteBackground = false,
 }) => {
@@ -98,7 +99,13 @@ const MapTopBar = ({
               if (trimmed.length > 0) {
                 setSearchText('');
               } else {
-                navigation.navigate('MainScreen');
+                if (prevTab && prevTab !== 'MapScreen') {
+                  navigation.navigate(prevTab);
+                } else if (navigation.canGoBack()) {
+                  navigation.goBack();
+                } else {
+                  navigation.navigate('MainScreen');
+                }
               }
             }}
             style={styles.backBtn}>
@@ -108,7 +115,10 @@ const MapTopBar = ({
           <Pressable
             style={styles.searchBox}
             onPress={() => {
-              navigation.navigate('SearchScreen', {preserveFilters: true});
+              navigation.navigate('SearchScreen', {
+                preserveFilters: true,
+                prevTab,
+              });
             }}>
             <CustomText
               maxScale={1.2}

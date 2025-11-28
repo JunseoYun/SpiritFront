@@ -1,15 +1,22 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MainScreen from '../screens/BottomTab/MainScreen';
 import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
+import AIExploreScreen from '../screens/BottomTab/AIExploreScreen';
 import MyStack from './MyStack';
 import CustomText from '../utils/CustomText';
+import {AIFullIcon, AIEmptyIcon} from '../assets/svg/AiTabIcon';
 
 const Tab = createBottomTabNavigator();
+const INITIAL_TAB = 'MainScreen';
 
-const MainBtmbar = () => {
+const MainBtmbar = ({route}) => {
+  const initialLastFocused = route?.params?.lastFocusedTab || INITIAL_TAB;
+  const initialTab = route?.params?.initialTab || INITIAL_TAB;
+  const lastFocusedTabRef = useRef(initialLastFocused);
+
   // 탭 라벨을 커스텀 Text로 반환
   const renderLabel = (label, color) => (
     <CustomText
@@ -21,7 +28,17 @@ const MainBtmbar = () => {
 
   return (
     <Tab.Navigator
-      initialRouteName="MainScreen"
+      initialRouteName={initialTab}
+      backBehavior="none"
+      screenListeners={({route, navigation}) => ({
+        focus: () => {
+          const current = route.name;
+          if (current === 'MapScreen') {
+            navigation.setParams({prevTab: lastFocusedTabRef.current});
+          }
+          lastFocusedTabRef.current = current;
+        },
+      })}
       screenOptions={({route}) => ({
         tabBarStyle: {
           display: 'flex',
@@ -37,7 +54,13 @@ const MainBtmbar = () => {
             iconName = focused ? 'home' : 'home-outline';
           else if (route.name === 'MapScreen')
             iconName = focused ? 'map' : 'map-outline';
-          else if (route.name === 'LikeScreen') {
+          else if (route.name === 'AIExploreScreen') {
+            return focused ? (
+              <AIFullIcon size={25} />
+            ) : (
+              <AIEmptyIcon size={25} />
+            );
+          } else if (route.name === 'LikeScreen') {
             iconName = focused ? 'heart' : 'heart-outline';
           } else if (route.name === 'MyStack')
             iconName = focused ? 'person' : 'person-outline';
@@ -68,6 +91,15 @@ const MainBtmbar = () => {
           tabBarLabel: ({color}) => renderLabel('주변', color),
           headerShown: false,
           tabBarStyle: {display: 'none'},
+        }}
+      />
+      <Tab.Screen
+        name="AIExploreScreen"
+        component={AIExploreScreen}
+        options={{
+          tabBarLabel: ({color, focused}) =>
+            renderLabel('탐색', focused ? '#3CBBFF' : color),
+          headerShown: false,
         }}
       />
       <Tab.Screen
