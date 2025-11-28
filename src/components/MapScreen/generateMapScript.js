@@ -177,12 +177,12 @@ window.__nameOverlayStyle =
       encodeURIComponent(\`
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 400 400">
   <!-- Outer translucent circle -->
-  <circle cx="200" cy="200" r="200" fill="rgba(60, 187, 255, 0.25)" />
+  <circle cx="200" cy="200" r="200" fill="rgba(0, 109, 254, 0.2)" />
 
   <!-- Center white dot -->
   <circle cx="200" cy="200" r="90" fill="#ffffff" />
   <!-- Middle solid circle -->
-  <circle cx="200" cy="200" r="60" fill="#3CBBFF" />
+  <circle cx="200" cy="200" r="60" fill="#006DFE" />
 
 </svg>
 \`);
@@ -213,7 +213,7 @@ window.__nameOverlayStyle =
             map: map,
             title: '현재 위치',
             image: markerImage,
-            zIndex: 1
+            zIndex: 2
           });
         } else {
           window.currentMarker.setPosition(__markerLatLng);
@@ -227,7 +227,7 @@ window.__nameOverlayStyle =
             map: map,
             title: '현재 위치',
             image: markerImage,
-            zIndex: 1
+            zIndex: 2
           });
         } else {
           window.currentMarker.setPosition(new kakao.maps.LatLng(${lat}, ${lng}));
@@ -421,7 +421,7 @@ var customMarkerUri =
       position: markerPosition,
       map: map,
       title: group[0].storeName,
-      zIndex: 2,
+      zIndex: 1,
       image: new kakao.maps.MarkerImage(
         customMarkerUri,
     new kakao.maps.Size(34, 36),
