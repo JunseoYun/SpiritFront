@@ -922,16 +922,6 @@ const StoreUpdateScreen = ({navigation}) => {
       return false;
     }
 
-    if (shouldValidate('mainInfo') && !storeContent.trim()) {
-      setError('storeContent');
-      scrollToError(contentRef);
-      showAlert({
-        title: '매장 소개를 입력해주세요',
-        message: '매장만의 특징을 자유롭게 작성해주세요.',
-      });
-      return false;
-    }
-
     return true;
   }, [
     type,
@@ -943,7 +933,6 @@ const StoreUpdateScreen = ({navigation}) => {
     hasCompletedOperatingHours,
     alcohol.length,
     storeNumber,
-    storeContent,
     scrollToError,
     imageRef,
     nameRef,
