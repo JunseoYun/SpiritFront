@@ -156,7 +156,7 @@ const StoreMainInfo = ({
       />
       {storedata?.contact && <Contact contact={storedata?.contact} />}
 
-      {storedata?.facilitiesInfoDto && (
+      {storedata?.facilitiesInfoDto.length > 0 && (
         <FacilitiesInfo facilitiesInfoDto={storedata?.facilitiesInfoDto} />
       )}
       {events?.length > 0 && (
