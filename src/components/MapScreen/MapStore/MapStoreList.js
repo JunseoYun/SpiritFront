@@ -916,9 +916,8 @@ const MapStoreList = ({
       const keys = Object.keys(filters);
       const normalizedHint = (hint || '').replace(/\s/g, '');
       return (
-        keys.find(k =>
-          (k || '').replace(/\s/g, '').includes(normalizedHint),
-        ) || hint
+        keys.find(k => (k || '').replace(/\s/g, '').includes(normalizedHint)) ||
+        hint
       );
     },
     [mapSearchCtx?.selectedFilters],
@@ -1016,18 +1015,32 @@ const MapStoreList = ({
     () => insets.bottom + 32,
     [insets.bottom],
   );
-
+  const midIndexPaddingRatio = useMemo(() => {
+    const low = {height: 780, ratio: 0.25};
+    const high = {height: 835, ratio: 0.35};
+    if (SCREEN_HEIGHT <= low.height) return low.ratio;
+    if (SCREEN_HEIGHT >= high.height) return high.ratio;
+    const progress = (SCREEN_HEIGHT - low.height) / (high.height - low.height);
+    return low.ratio + progress * (high.ratio - low.ratio);
+  }, []);
   const computedListBottomPadding = useMemo(() => {
     let padding = baseListBottomPadding;
     if (currentIndex === 1) {
-      padding += SCREEN_HEIGHT * 0.4;
+      padding +=
+        SCREEN_HEIGHT * midIndexPaddingRatio - (Platform.OS === 'ios' ? 70 : 0);
     }
     if (isFullListExpanded) {
       // Ensure enough space for the floating "지도보기" button
       padding += insets.bottom + 80;
     }
     return padding;
-  }, [baseListBottomPadding, currentIndex, isFullListExpanded, insets.bottom]);
+  }, [
+    baseListBottomPadding,
+    currentIndex,
+    isFullListExpanded,
+    insets.bottom,
+    midIndexPaddingRatio,
+  ]);
   const listBodyAnimatedStyle = useAnimatedStyle(() => {
     const progress = listRevealProgress.value;
     return {
