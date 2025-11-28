@@ -400,7 +400,6 @@ const StoreOwnershipScreen = ({navigation}) => {
       !hasCompletedOperatingHours ||
       alcohol.length === 0 ||
       !storeNumber.trim() ||
-      !storeContent.trim() ||
       !businessCertificate,
     [
       imageUris.length,
@@ -410,7 +409,6 @@ const StoreOwnershipScreen = ({navigation}) => {
       hasCompletedOperatingHours,
       alcohol.length,
       storeNumber,
-      storeContent,
       businessCertificate,
     ],
   );
@@ -431,8 +429,6 @@ const StoreOwnershipScreen = ({navigation}) => {
         return alcohol.length > 0;
       case 'contact':
         return !!storeNumber.trim();
-      case 'content':
-        return !!storeContent.trim();
       case 'businessCertificate':
         return !!businessCertificate;
       case 'consent':
@@ -449,7 +445,6 @@ const StoreOwnershipScreen = ({navigation}) => {
     hasCompletedOperatingHours,
     alcohol.length,
     storeNumber,
-    storeContent,
     businessCertificate,
     isConsentChecked,
   ]);
@@ -654,13 +649,6 @@ const StoreOwnershipScreen = ({navigation}) => {
           return false;
         }
         break;
-      case 'content':
-        if (!storeContent.trim()) {
-          setError('storeContent');
-          scrollToError(storeContentRef);
-          return false;
-        }
-        break;
       case 'businessCertificate':
         if (!businessCertificate) {
           setError('businessCertificate');
@@ -683,7 +671,6 @@ const StoreOwnershipScreen = ({navigation}) => {
     hasCompletedOperatingHours,
     alcohol.length,
     storeNumber,
-    storeContent,
     scrollToError,
     businessCertificate,
   ]);
