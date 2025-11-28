@@ -9,8 +9,8 @@ const StaticKakaoMap = ({latitude, longitude, labelText = '매장 위치'}) => {
   const screenHeight = Dimensions.get('window').height;
   let fontScale = PixelRatio.getFontScale();
   let fontasd;
-  if (fontScale > 1.5) {
-    fontasd = 1.5;
+  if (fontScale > 1.3) {
+    fontasd = 1.3;
   }
   if (!lat || !lng || isNaN(lat) || isNaN(lng)) return null;
 

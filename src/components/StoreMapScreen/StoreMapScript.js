@@ -1,5 +1,11 @@
-const StoreMapScript = (lat, lng, storeLat, storeLong, storeName = '') =>
-  `
+const StoreMapScript = (
+  lat,
+  lng,
+  storeLat,
+  storeLong,
+  storeName = '',
+  scaledFontSize,
+) => `
 
   if (!window.map) {
     var mapContainer = document.getElementById('map');
@@ -58,7 +64,7 @@ const StoreMapScript = (lat, lng, storeLat, storeLong, storeName = '') =>
       "position: relative;" +
       "padding: 8px 14px;" +
       "border-radius: 14px;" +
-      "font-size: 14px;" +
+      "font-size: ${scaledFontSize}px;" +
       "font-family: Pretendard, Arial, sans-serif;" +
       "font-weight: 600;" +
       "color: #ffffff;" +

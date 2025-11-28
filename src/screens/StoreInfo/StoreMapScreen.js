@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Share,
+  PixelRatio,
 } from 'react-native';
 
 import {WebView} from 'react-native-webview';
@@ -42,6 +43,12 @@ const StoreMapScreen = ({navigation}) => {
     isStoreLiked: initialIsStoreLiked,
     onSelectTab,
   } = route.params;
+  const fontScale = PixelRatio.getFontScale() || 1;
+  const clampedFontScale = Math.min(fontScale, 1.3);
+
+  const baseFontSize = 14; // 기본 폰트 크기
+  const scaledFontSize = (baseFontSize / fontScale) * clampedFontScale;
+
   const {openDirectionsModal, DirectionsModal} = useDirectionsModal();
   const insets = useSafeAreaInsets();
 
@@ -73,6 +80,7 @@ const StoreMapScreen = ({navigation}) => {
               storeLatitude,
               storeLongitude,
               storename,
+              scaledFontSize,
             );
             webViewRef.current.injectJavaScript(script);
           }
@@ -100,6 +108,7 @@ const StoreMapScreen = ({navigation}) => {
           storeLatitude,
           storeLongitude,
           storename,
+          scaledFontSize,
         );
         webViewRef.current.injectJavaScript(script);
       }
@@ -161,7 +170,14 @@ const StoreMapScreen = ({navigation}) => {
   const updateMap = (lat, lng, storeLatitude, storeLongitude) => {
     if (webViewRef.current) {
       webViewRef.current.injectJavaScript(
-        StoreMapScript(lat, lng, storeLatitude, storeLongitude, storename),
+        StoreMapScript(
+          lat,
+          lng,
+          storeLatitude,
+          storeLongitude,
+          storename,
+          scaledFontSize,
+        ),
       );
     }
   };
@@ -488,9 +504,8 @@ const styles = StyleSheet.create({
   storeInfoAddress: {
     fontSize: 14,
     color: '#555',
-    lineHeight: 18,
+    lineHeight: 22,
     fontFamily: 'Pretendard-Medium',
-    // paddingTop: 4,
     flexShrink: 1,
   },
   addressWrapper: {
