@@ -135,6 +135,7 @@ const MapScreen = ({navigation, route}) => {
   const [loadingMoreStores, setLoadingMoreStores] = useState(false);
   const skipInitialOffsetRef = useRef(true);
   const mapmovedOffsetRef = useRef(false);
+  const lastRenderOffsetRef = useRef(0);
   const [topBarHeight, setTopBarHeight] = useState(0);
   const [isListFullyExpanded, setIsListFullyExpanded] = useState(false);
   const [isMapSearchActive, setIsMapSearchActive] = useState(false);
@@ -403,6 +404,7 @@ const MapScreen = ({navigation, route}) => {
             newLocation.longitude,
             stores,
           );
+          lastRenderOffsetRef.current = 0;
           webViewRef.current.injectJavaScript(script);
         }
       }
@@ -485,6 +487,7 @@ const MapScreen = ({navigation, route}) => {
           effectiveOffset,
           {suppressUserMarker},
         );
+        lastRenderOffsetRef.current = effectiveOffset;
         webViewRef.current.injectJavaScript(script);
         if (
           skipInitialOffsetRef.current &&
@@ -663,6 +666,7 @@ const MapScreen = ({navigation, route}) => {
           [],
           0,
         );
+        lastRenderOffsetRef.current = 0;
         webViewRef.current.injectJavaScript(script);
 
         getStorelist(radius);
@@ -699,6 +703,40 @@ const MapScreen = ({navigation, route}) => {
         );
         if (suppressMarker) {
           suppressUserMarkerRef.current = false;
+        }
+        return;
+      }
+      if (message.action === 'mapZoomChanged') {
+        const nextLat =
+          typeof message.latitude === 'number'
+            ? message.latitude
+            : centerLatLng?.latitude ?? location?.latitude;
+        const nextLng =
+          typeof message.longitude === 'number'
+            ? message.longitude
+            : centerLatLng?.longitude ?? location?.longitude;
+        if (
+          typeof nextLat === 'number' &&
+          typeof nextLng === 'number' &&
+          webViewRef.current
+        ) {
+          const offsetForRender =
+            typeof lastRenderOffsetRef.current === 'number'
+              ? lastRenderOffsetRef.current
+              : sheetIndex === 1
+              ? SCREEN_HEIGHT * 0.18
+              : sheetIndex === 10
+              ? SCREEN_HEIGHT * -0.18
+              : 0;
+          console.log(nextLat, nextLng);
+          const script = generateMapScript(
+            nextLat,
+            nextLng,
+            markerStores,
+            offsetForRender,
+            {suppressUserMarker: false, allowUserMarker: false},
+          );
+          webViewRef.current.injectJavaScript(script);
         }
         return;
       }

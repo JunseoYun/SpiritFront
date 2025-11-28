@@ -1,6 +1,9 @@
 const generateMapScript = (lat, lng, markerData, offsetY = 0, options = {}) => {
   const safeData = JSON.stringify(markerData ?? []);
-  const {suppressUserMarker = false} = options || {};
+  const {
+    suppressUserMarker = false,
+    allowUserMarker = true, // optional flag to explicitly control user marker rendering
+  } = options || {};
   return `
   if (!window.map) {
     var mapContainer = document.getElementById('map');
@@ -17,6 +20,18 @@ const generateMapScript = (lat, lng, markerData, offsetY = 0, options = {}) => {
         latitude: parseFloat(center.getLat().toFixed(5)),
         longitude: parseFloat(center.getLng().toFixed(5))
       }));
+    });
+
+    kakao.maps.event.addListener(window.map, 'zoom_changed', function () {
+      try {
+        var center = window.map.getCenter();
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          action: 'mapZoomChanged',
+          latitude: parseFloat(center.getLat().toFixed(5)),
+          longitude: parseFloat(center.getLng().toFixed(5)),
+          level: window.map.getLevel()
+        }));
+      } catch (_e) {}
     });
   }
 
@@ -172,7 +187,7 @@ window.__nameOverlayStyle =
     { offset: new kakao.maps.Point(14, 42) }
  );
 
- var __skipUserMarker = ${suppressUserMarker ? 'true' : 'false'};
+ var __skipUserMarker = ${suppressUserMarker ? 'true' : 'false'} || ${allowUserMarker ? 'false' : 'true'};
  if (!__skipUserMarker) {
       // Compute adjusted position for current marker so it appears offset from center
       try {
@@ -235,7 +250,7 @@ var customMarkerUri = "data:image/svg+xml;charset=UTF-8," +
 
   try {
     var level = map.getLevel();
-    var gridSize = 0;
+    var gridSize =  level >= 6 ? 30 :level >= 5 ? 20:level >= 4 ? 10  : 0;
     var proj = map.getProjection();
     var center = map.getCenter();
     var centerPt = proj.containerPointFromCoords(center);
