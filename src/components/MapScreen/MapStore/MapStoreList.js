@@ -71,7 +71,6 @@ const MapStoreList = ({
   onListFullExpandChange,
   onListRestoringChange,
 }) => {
-  console.log(hasMoreStores, loadingMoreStores, 'asdasd');
   const insets = useSafeAreaInsets();
   const [filterheight, setFilterheight] = useState(0);
   const [detailContentHeight, setDetailContentHeight] = useState(null);

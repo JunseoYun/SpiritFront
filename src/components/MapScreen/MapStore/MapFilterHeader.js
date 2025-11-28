@@ -119,7 +119,9 @@ const MapFilterHeader = ({
           </Pressable>
           {storeatmCount > 0 && (
             <View style={styles.badge}>
-              <CustomText style={styles.badgeText}>{storeatmCount}</CustomText>
+              <CustomText maxScale={1.2} style={styles.badgeText}>
+                {storeatmCount}
+              </CustomText>
             </View>
           )}
         </View>
