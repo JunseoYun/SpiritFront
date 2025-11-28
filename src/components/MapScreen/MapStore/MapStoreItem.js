@@ -180,8 +180,8 @@ const MapStoreItem = ({
                   </CustomText>
                 ))
               ) : (
-                <CustomText style={styles.StoreCategory}>
-                  카테고리 미설정
+                <CustomText style={[styles.StoreCategory, {color: '#999'}]}>
+                  카테고리 미등록
                 </CustomText>
               )}
             </View>
@@ -200,22 +200,29 @@ const MapStoreItem = ({
               </CustomText>
             </View>
           </View>
-          <CustomText
-            style={styles.drinkText}
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            {orderedMainDrinks && orderedMainDrinks.length > 0
-              ? orderedMainDrinks
-                  .map(drink => {
-                    const priceText =
-                      drink.price != null
-                        ? `${drink.price.toLocaleString()}원`
-                        : '';
-                    return `${translateAlcohol(drink.type)} ${priceText}`;
-                  })
-                  .join('  ')
-              : '메인주류가 없습니다.'}
-          </CustomText>
+          {orderedMainDrinks && orderedMainDrinks.length > 0 ? (
+            <CustomText
+              style={styles.drinkText}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {orderedMainDrinks
+                .map(drink => {
+                  const priceText =
+                    drink.price != null
+                      ? `${drink.price.toLocaleString()}원`
+                      : '';
+                  return `${translateAlcohol(drink.type)} ${priceText}`;
+                })
+                .join('  ')}
+            </CustomText>
+          ) : (
+            <CustomText
+              style={[styles.drinkText, styles.unknownText]}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              대표주종 미등록
+            </CustomText>
+          )}
           <View style={styles.timeview}>
             {item?.isAlwaysOpen == true ? (
               <CustomText style={styles.timeviewtext}>24시간 영업</CustomText>
@@ -223,7 +230,7 @@ const MapStoreItem = ({
               <CustomText style={styles.timeviewtext}>금일 휴무</CustomText>
             ) : (
               <CustomText style={styles.timeviewtext}>
-                영업 종료 {endtime || '정보 없음'}
+                영업 종료 {endtime || ''}
               </CustomText>
             )}
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -314,6 +321,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
     color: '#3CBBFF',
+  },
+  unknownText: {
+    fontFamily: 'Pretendard-Medium',
+    color: '#999',
   },
   timeview: {
     flexDirection: 'row',

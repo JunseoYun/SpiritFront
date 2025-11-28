@@ -370,7 +370,8 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
                     {...(isLast
                       ? {numberOfLines: 1, ellipsizeMode: 'tail'}
                       : {})}>
-                    {translateAlcohol(drink.type)} {drink.price}
+                    {translateAlcohol(drink.type)}
+                    {drink.price ? ` ${drink.price}` : ''}
                   </CustomText>
                 </View>
               );

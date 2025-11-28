@@ -1,12 +1,9 @@
 import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {Text, PixelRatio} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Octicons from 'react-native-vector-icons/Octicons';
 import MainScreen from '../screens/BottomTab/MainScreen';
 import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
-import OrderScreen from '../screens/BottomTab/Order/OrderScreen';
 import SearchStack from './SearchStack';
 import MyStack from './MyStack';
 import CustomText from '../utils/CustomText';

@@ -133,7 +133,8 @@ const TodayRecommItem = ({store, navigation}) => {
                     {color: baseColor, backgroundColor: 'rgba(0,0,0,0.40)'},
                     isLast && {flexShrink: 1}, // 남은 공간 차지
                   ]}>
-                  {translateAlcohol(drink.type)} {drink.price}
+                  {translateAlcohol(drink.type)}
+                  {drink.price ? ` ${drink.price}` : ''}
                 </CustomText>
                 {index !== store.mainDrinkDtos.length - 1 && (
                   <View style={styles.division} />

@@ -23,8 +23,6 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {normalizeFont} from '../../../hooks/normalizeFont';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import RecentSearchItem from '../../../components/SearchScreen/RecentSearchItem';
 import CustomText from '../../../utils/CustomText';
 
