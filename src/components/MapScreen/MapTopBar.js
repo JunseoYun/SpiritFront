@@ -140,11 +140,11 @@ const MapTopBar = ({
 
         <AnimatedPressable
           style={[
-            styles.homeButton,
-            forceWhiteBackground ? styles.homeButtonSolid : null,
+            styles.exploreButton,
+            forceWhiteBackground ? styles.exploreButtonSolid : null,
           ]}
           onPress={() => {
-            navigation.navigate('MainScreen');
+            navigation.navigate('AIExploreScreen');
           }}>
           {!forceWhiteBackground ? (
             <LinearGradient
@@ -152,14 +152,14 @@ const MapTopBar = ({
               locations={[0, 0.5, 1]}
               start={{x: 0, y: 0}}
               end={{x: 1, y: 1}}
-              style={styles.homeGradient}>
-              <View style={styles.homeButtonContent}>
+              style={styles.exploreGradient}>
+              <View style={styles.exploreButtonContent}>
                 <AIEmptyLogoIcon size={19} />
                 <CustomText style={styles.exploreText}>탐색</CustomText>
               </View>
             </LinearGradient>
           ) : (
-            <View style={styles.homeButtonContent}>
+            <View style={styles.exploreButtonContent}>
               <AILogoIcon size={19} />
               <CustomText style={[styles.exploreText, {color: '#3cbbff'}]}>
                 탐색
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     paddingRight: 30,
     fontFamily: 'Pretendard-Regular',
   },
-  homeButton: {
+  exploreButton: {
     width: 48,
     height: 48,
     borderRadius: 9,
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     shadowRadius: 1.5,
     shadowOffset: {width: 0, height: 2},
   },
-  homeButtonContent: {
+  exploreButtonContent: {
     width: '100%',
     height: '100%',
     justifyContent: 'space-between',
@@ -250,11 +250,11 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontFamily: 'Pretendard-Medium',
   },
-  homeGradient: {
+  exploreGradient: {
     width: '100%',
     height: '100%',
   },
-  homeButtonSolid: {
+  exploreButtonSolid: {
     elevation: 0,
     shadowColor: '#000',
     shadowOpacity: 0,

@@ -63,10 +63,10 @@ const SearchBar = ({
           </View>
         </View>
         <Pressable
-          style={[styles.homeButton]}
+          style={[styles.exploreButton]}
           onPress={() => onHomePress && onHomePress()}
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-          <View style={styles.homeButtonContent}>
+          <View style={styles.exploreButtonContent}>
             <AILogoIcon size={19} />
             <CustomText style={[styles.exploreText]}>탐색</CustomText>
           </View>
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     paddingRight: 30,
   },
-  homeButton: {
+  exploreButton: {
     width: 48,
     height: 48,
     borderRadius: 9,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: ColorUtil.border,
   },
-  homeButtonContent: {
+  exploreButtonContent: {
     width: '100%',
     height: '100%',
     justifyContent: 'space-between',
