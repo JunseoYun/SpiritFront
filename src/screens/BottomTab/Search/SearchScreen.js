@@ -281,7 +281,15 @@ const SearchScreen = ({navigation, route}) => {
             navigation.dispatch(
               CommonActions.reset({
                 index: 0,
-                routes: [{name: 'MainBtmbar', params: {screen: 'MainScreen'}}],
+                routes: [
+                  {
+                    name: 'MainBtmbar',
+                    params: {
+                      screen: 'AIExploreScreen',
+                      initialTab: 'AIExploreScreen',
+                    },
+                  },
+                ],
               }),
             )
           }
