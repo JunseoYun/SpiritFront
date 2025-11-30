@@ -8,23 +8,23 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
-import SearchBar from '../../../components/SearchScreen/SearchBar';
-import {useToast} from '../../../context/ToastContext';
-import Loading from '../../../hooks/Loading';
-import MyBanner from '../../../components/Ads/MyBanner';
+import SearchBar from '../../components/SearchScreen/SearchBar';
+import {useToast} from '../../context/ToastContext';
+import Loading from '../../hooks/Loading';
+import MyBanner from '../../components/Ads/MyBanner';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import MapFilterHeader from '../../../components/MapScreen/MapStore/MapFilterHeader';
-import FilterPotal from '../../../components/MapScreen/MapStore/FilterPotal';
+import MapFilterHeader from '../../components/MapScreen/MapStore/MapFilterHeader';
+import FilterPotal from '../../components/MapScreen/MapStore/FilterPotal';
 import {
   useMapSearch,
   buildInitialSelectedFilters,
   INITIAL_RADIUS_KM,
-} from '../../../context/MapSearchContext';
+} from '../../context/MapSearchContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect, CommonActions} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import RecentSearchItem from '../../../components/SearchScreen/RecentSearchItem';
-import CustomText from '../../../utils/CustomText';
+import RecentSearchItem from '../../components/SearchScreen/RecentSearchItem';
+import CustomText from '../../utils/CustomText';
 
 const AVAILABLE_VALUE = '가능';
 const GROUP_VALUE = '단체 방문';
@@ -270,7 +270,7 @@ const SearchScreen = ({navigation, route}) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container}>
         <SearchBar
           value={searchStoreName}
           onChangeText={setSearchStoreName}
