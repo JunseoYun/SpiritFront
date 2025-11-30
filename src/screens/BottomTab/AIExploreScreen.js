@@ -1,6 +1,6 @@
 // -------------------- AIExploreScreen (사진 동일하게 리디자인) -----------------------
 
-import React, {useState, useLayoutEffect} from 'react';
+import React, {useState, useLayoutEffect, useEffect, useRef} from 'react';
 import {
   Platform,
   Pressable,
@@ -8,8 +8,13 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   View,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Animated,
+  Easing,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useHeaderHeight} from '@react-navigation/elements';
 import CustomText from '../../utils/CustomText';
 import CustomTextInput from '../../utils/CustomTextInput';
 import LinearGradient from 'react-native-linear-gradient';
@@ -17,10 +22,18 @@ import {useToast} from '../../context/ToastContext';
 import ColorUtil from '../../utils/ColorUtil';
 import AIMicIcon from '../../assets/svg/AIMicIcon';
 import MenuIcon from '../../assets/svg/MenuIcon';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const AIExploreScreen = ({navigation}) => {
   const {showToast} = useToast();
   const [prompt, setPrompt] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const headerHeight = useHeaderHeight();
+  const hasPrompt = prompt.trim().length > 0;
+  const titleAnim = useRef(new Animated.Value(1)).current;
+  const chipAnim = useRef(new Animated.Value(1)).current;
+  const [showTitle, setShowTitle] = useState(true);
+  const [showChips, setShowChips] = useState(true);
 
   const suggestions = [
     {keyword: '늦게까지 하는', subtext: '호프집 알려줘'},
@@ -54,74 +67,143 @@ const AIExploreScreen = ({navigation}) => {
     });
   }, [navigation]);
 
+  useEffect(() => {
+    const animateVisibility = (anim, visible, setVisible) => {
+      if (visible) setVisible(true);
+      Animated.timing(anim, {
+        toValue: visible ? 1 : 0,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start(() => {
+        if (!visible) setVisible(false);
+      });
+    };
+
+    animateVisibility(titleAnim, !isInputFocused && !hasPrompt, setShowTitle);
+  }, [isInputFocused, hasPrompt, titleAnim]);
+
+  useEffect(() => {
+    const animateVisibility = (anim, visible, setVisible) => {
+      if (visible) setVisible(true);
+      Animated.timing(anim, {
+        toValue: visible ? 1 : 0,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start(() => {
+        if (!visible) setVisible(false);
+      });
+    };
+
+    animateVisibility(chipAnim, !hasPrompt, setShowChips);
+  }, [hasPrompt, chipAnim]);
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        {/** ─────────── MAIN CONTENT ─────────── */}
-        <View style={styles.center}>
-          <CustomText style={styles.title}>
-            오늘은 어디서 한잔할까요?
-          </CustomText>
-        </View>
-
-        <View style={styles.suggestionWrap}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chipRow}>
-            {suggestions.map(({keyword, subtext}) => {
-              const fullText = `${keyword} ${subtext}`;
-              return (
-                <LinearGradient
-                  key={keyword}
-                  colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 0}}
-                  style={styles.chipBorder}>
-                  <Pressable
-                    style={styles.chip}
-                    onPress={() => setPrompt(fullText)}>
-                    <CustomText style={styles.chipKeyword}>
-                      {keyword}
-                    </CustomText>
-                    <CustomText style={styles.chipSubtext}>
-                      {subtext}
-                    </CustomText>
-                  </Pressable>
-                </LinearGradient>
-              );
-            })}
-          </ScrollView>
-        </View>
-
-        {/** ─────────── INPUT FIELD ─────────── */}
-        <View style={[styles.bottomInput]}>
-          <View style={styles.inputBox}>
-            <CustomTextInput
-              placeholder="한잔하고 싶은 술집을 입력하세요"
-              value={prompt}
-              onChangeText={setPrompt}
-              returnKeyType="send"
-              onSubmitEditing={submit}
-              placeholderTextColor="#b0b0b0"
-              style={styles.input}
-            />
-            <AIMicIcon size={18} />
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior="padding"
+      keyboardVerticalOffset={headerHeight}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <SafeAreaView style={styles.container} edges={['top']}>
+          {/** ─────────── MAIN CONTENT ─────────── */}
+          <View style={styles.center}>
+            {showTitle && (
+              <Animated.View
+                style={[
+                  styles.titleWrap,
+                  {
+                    opacity: titleAnim,
+                  },
+                ]}>
+                <CustomText style={styles.title}>
+                  오늘은 어디서 한잔할까요?
+                </CustomText>
+              </Animated.View>
+            )}
           </View>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+          {showChips && (
+            <Animated.View
+              style={[
+                styles.suggestionWrap,
+                {
+                  opacity: chipAnim,
+                },
+              ]}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chipRow}>
+                {suggestions.map(({keyword, subtext}) => {
+                  const fullText = `${keyword} ${subtext}`;
+                  return (
+                    <LinearGradient
+                      key={keyword}
+                      colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
+                      start={{x: 0, y: 0}}
+                      end={{x: 1, y: 0}}
+                      style={styles.chipBorder}>
+                      <Pressable
+                        style={styles.chip}
+                        onPress={() => setPrompt(fullText)}>
+                        <CustomText style={styles.chipKeyword}>
+                          {keyword}
+                        </CustomText>
+                        <CustomText style={styles.chipSubtext}>
+                          {subtext}
+                        </CustomText>
+                      </Pressable>
+                    </LinearGradient>
+                  );
+                })}
+              </ScrollView>
+            </Animated.View>
+          )}
+
+          {/** ─────────── INPUT FIELD ─────────── */}
+          <View style={[styles.bottomInput]}>
+            <View style={styles.inputBox}>
+              <CustomTextInput
+                placeholder="한잔하고 싶은 술집을 입력하세요"
+                value={prompt}
+                onChangeText={setPrompt}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+                onSubmitEditing={submit}
+                placeholderTextColor={ColorUtil.placeholderText}
+                style={styles.input}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+              />
+              <View
+                style={[
+                  styles.trailingAction,
+                  hasPrompt ? styles.sendAlign : styles.micAlign,
+                ]}>
+                {hasPrompt ? (
+                  <Pressable style={styles.sendButton} onPress={submit}>
+                    <Ionicons name="arrow-up" size={20} color="#333" />
+                  </Pressable>
+                ) : (
+                  <AIMicIcon size={22} />
+                )}
+              </View>
+            </View>
+          </View>
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
   },
   flex: {
+    backgroundColor: '#FFF',
     flex: 1,
   },
 
@@ -141,6 +223,10 @@ const styles = StyleSheet.create({
 
   chipRow: {
     paddingHorizontal: 12,
+  },
+  titleWrap: {
+    width: '100%',
+    alignItems: 'center',
   },
   chipBorder: {
     marginHorizontal: 6,
@@ -180,20 +266,49 @@ const styles = StyleSheet.create({
   },
   inputBox: {
     flex: 1,
-    height: 48,
+    minHeight: 28,
     backgroundColor: '#FFF',
-    borderRadius: 100,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: '#e5e5e5',
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignItems: 'center',
   },
   input: {
-    fontSize: 14,
+    flex: 1,
+    fontSize: 16,
     color: '#333',
     fontFamily: 'Pretendard-Regular',
+    ...Platform.select({
+      ios: {
+        paddingVertical: 12,
+      },
+    }),
+
+    marginLeft: 6,
+    maxHeight: 80,
+  },
+  trailingAction: {
+    marginLeft: 10,
+    marginRight: 4,
+  },
+  sendAlign: {
+    alignSelf: 'flex-end',
+    paddingBottom: 6,
+    marginRight: -4,
+  },
+  micAlign: {
+    alignSelf: 'center',
+  },
+  sendButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 100,
+    backgroundColor: '#ececec',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
