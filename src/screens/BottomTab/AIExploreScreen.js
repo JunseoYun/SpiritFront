@@ -1,97 +1,114 @@
-import React, {useMemo, useState} from 'react';
+// -------------------- AIExploreScreen (사진 동일하게 리디자인) -----------------------
+
+import React, {useState, useLayoutEffect} from 'react';
 import {
   Platform,
   Pressable,
   StyleSheet,
-  TextInput,
-  View,
   KeyboardAvoidingView,
+  ScrollView,
+  View,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import CustomText from '../../utils/CustomText';
-import ColorUtil from '../../utils/ColorUtil';
+import CustomTextInput from '../../utils/CustomTextInput';
+import LinearGradient from 'react-native-linear-gradient';
 import {useToast} from '../../context/ToastContext';
+import ColorUtil from '../../utils/ColorUtil';
+import AIMicIcon from '../../assets/svg/AIMicIcon';
+import MenuIcon from '../../assets/svg/MenuIcon';
 
-const AIExploreScreen = () => {
+const AIExploreScreen = ({navigation}) => {
   const {showToast} = useToast();
-  const insets = useSafeAreaInsets();
   const [prompt, setPrompt] = useState('');
 
-  const suggestions = useMemo(
-    () => [
-      '늦게까지 열려있는 포차 알려줘',
-      '회식하기 좋은 이자카야 알려줘',
-      '축구 보면서 한잔하기 좋은 곳?',
-    ],
-    [],
-  );
+  const suggestions = [
+    {keyword: '늦게까지 하는', subtext: '호프집 알려줘'},
+    {keyword: '회식하기 좋은', subtext: '이자카야 추천해줘'},
+    {keyword: '축구 보면서', subtext: '한잔하기 좋은 곳 알려줘'},
+    {keyword: '가성비 좋은', subtext: '술집 추천해줘'},
+    {keyword: '단체 가기 편한', subtext: '술집 어디 있어?'},
+    {keyword: '분위기 깔끔한', subtext: '바 추천해줘'},
+    {keyword: '안주 잘하는', subtext: '술집 찾아줘'},
+  ];
 
-  const handleSubmit = () => {
-    const trimmed = prompt.trim();
-    if (!trimmed.length) {
-      showToast?.('한잔하고 싶은 순간을 입력해주세요', 'center');
+  const submit = () => {
+    if (!prompt.trim()) {
+      showToast('한잔하고 싶은 술집을 입력해주세요', 'center');
       return;
     }
-    showToast?.('AI 탐색을 준비 중입니다', 'center');
+    showToast('AI 탐색 준비중...', 'center');
   };
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => null,
+      headerShadowVisible: false,
+      headerLeft: () => (
+        <Pressable
+          style={{marginLeft: 18}}
+          hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+          <MenuIcon size={10} />
+        </Pressable>
+      ),
+    });
+  }, [navigation]);
+
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <Pressable style={styles.menuButton} hitSlop={10}>
-              <Ionicons name="menu-outline" size={26} color="#1a1a1a" />
-            </Pressable>
-          </View>
+        {/** ─────────── MAIN CONTENT ─────────── */}
+        <View style={styles.center}>
+          <CustomText style={styles.title}>
+            오늘은 어디서 한잔할까요?
+          </CustomText>
+        </View>
 
-          <View style={styles.content}>
-            <CustomText maxScale={1.2} style={styles.question}>
-              오늘은 어디서 한잔할까요?
-            </CustomText>
-            <View style={styles.chipWrap}>
-              {suggestions.map(text => (
-                <Pressable
-                  key={text}
-                  style={styles.chip}
-                  onPress={() => setPrompt(text)}>
-                  <CustomText maxScale={1.05} style={styles.chipText}>
-                    {text}
-                  </CustomText>
-                </Pressable>
-              ))}
-            </View>
-          </View>
+        <View style={styles.suggestionWrap}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipRow}>
+            {suggestions.map(({keyword, subtext}) => {
+              const fullText = `${keyword} ${subtext}`;
+              return (
+                <LinearGradient
+                  key={keyword}
+                  colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
+                  start={{x: 0, y: 0}}
+                  end={{x: 1, y: 0}}
+                  style={styles.chipBorder}>
+                  <Pressable
+                    style={styles.chip}
+                    onPress={() => setPrompt(fullText)}>
+                    <CustomText style={styles.chipKeyword}>
+                      {keyword}
+                    </CustomText>
+                    <CustomText style={styles.chipSubtext}>
+                      {subtext}
+                    </CustomText>
+                  </Pressable>
+                </LinearGradient>
+              );
+            })}
+          </ScrollView>
+        </View>
 
-          <View
-            style={[
-              styles.promptBar,
-              {paddingBottom: Math.max(insets.bottom, 12)},
-            ]}>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="한잔하고 싶은 순간을 입력하세요"
-                placeholderTextColor={ColorUtil.placeholderText}
-                value={prompt}
-                onChangeText={setPrompt}
-                returnKeyType="send"
-                onSubmitEditing={handleSubmit}
-              />
-            </View>
-            <Pressable style={styles.sendButton} onPress={handleSubmit}>
-              <LinearGradient
-                colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
-                start={{x: 0, y: 0}}
-                end={{x: 1, y: 1}}
-                style={styles.sendButtonGradient}>
-                <Ionicons name="sparkles-outline" size={20} color="#fff" />
-              </LinearGradient>
-            </Pressable>
+        {/** ─────────── INPUT FIELD ─────────── */}
+        <View style={[styles.bottomInput]}>
+          <View style={styles.inputBox}>
+            <CustomTextInput
+              placeholder="한잔하고 싶은 술집을 입력하세요"
+              value={prompt}
+              onChangeText={setPrompt}
+              returnKeyType="send"
+              onSubmitEditing={submit}
+              placeholderTextColor="#b0b0b0"
+              style={styles.input}
+            />
+            <AIMicIcon size={18} />
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -100,112 +117,84 @@ const AIExploreScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF',
   },
   flex: {
     flex: 1,
   },
-  container: {
+
+  // CENTER SECTION
+  center: {
     flex: 1,
-    paddingHorizontal: 22,
-    backgroundColor: '#fff',
-  },
-  header: {
-    paddingTop: 6,
-    paddingBottom: 8,
-    alignItems: 'flex-start',
-  },
-  menuButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: {width: 0, height: 4},
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: ColorUtil.border,
-  },
-  content: {
-    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
   },
-  question: {
-    fontSize: 19,
-    fontFamily: 'Pretendard-SemiBold',
-    color: ColorUtil.textPrimary,
-    marginBottom: 26,
+  title: {
+    fontSize: 24,
+    fontFamily: 'Pretendard-Regular',
+    color: '#333',
     textAlign: 'center',
+    marginBottom: 70,
   },
-  chipWrap: {
-    width: '100%',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+
+  chipRow: {
+    paddingHorizontal: 12,
+  },
+  chipBorder: {
+    marginHorizontal: 6,
+    borderRadius: 16,
   },
   chip: {
-    marginHorizontal: 6,
-    marginVertical: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#3CBBFF',
-    backgroundColor: '#F5FBFF',
-    shadowColor: '#3CBBFF',
-    shadowOpacity: 0.16,
-    shadowRadius: 10,
-    shadowOffset: {width: 0, height: 4},
-    elevation: 3,
+    borderRadius: 14.5,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    margin: 1.5,
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
-  chipText: {
-    fontSize: 13,
-    color: '#0F1522',
-    fontFamily: 'Pretendard-Medium',
+  chipKeyword: {
+    fontSize: 15,
+    color: '#333',
+    fontFamily: 'Pretendard-Bold',
+    lineHeight: 15 * 1.3,
+    letterSpacing: 0,
   },
-  promptBar: {
+  chipSubtext: {
+    fontSize: 14,
+    color: ColorUtil.subText,
+    fontFamily: 'Pretendard-Regular',
+    marginTop: 2,
+  },
+
+  // INPUT SECTION
+  bottomInput: {
     flexDirection: 'row',
+    paddingHorizontal: 18,
     alignItems: 'center',
     paddingTop: 12,
-    paddingHorizontal: 8,
+    backgroundColor: '#fff',
+    paddingBottom: 20,
   },
-  inputContainer: {
+  inputBox: {
     flex: 1,
-    height: 50,
-    borderRadius: 14,
-    backgroundColor: '#F3F4F6',
+    height: 48,
+    backgroundColor: '#FFF',
+    borderRadius: 100,
     borderWidth: 1,
-    borderColor: ColorUtil.placeholderBorder,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
+    borderColor: '#e5e5e5',
+    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   input: {
-    fontFamily: 'Pretendard-Regular',
     fontSize: 14,
-    color: ColorUtil.textPrimary,
-    padding: 0,
-  },
-  sendButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginLeft: 10,
-  },
-  sendButtonGradient: {
-    flex: 1,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    color: '#333',
+    fontFamily: 'Pretendard-Regular',
   },
 });
 
 export default AIExploreScreen;
-AIExploreScreen;
