@@ -28,8 +28,11 @@ const AIExploreScreen = ({navigation}) => {
   const {showToast} = useToast();
   const [prompt, setPrompt] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [messages, setMessages] = useState([]);
   const headerHeight = useHeaderHeight();
   const hasPrompt = prompt.trim().length > 0;
+  const hasMessages = messages.length > 0;
+  const scrollViewRef = useRef(null);
   const titleAnim = useRef(new Animated.Value(1)).current;
   const chipAnim = useRef(new Animated.Value(1)).current;
   const [showTitle, setShowTitle] = useState(true);
@@ -46,10 +49,17 @@ const AIExploreScreen = ({navigation}) => {
   ];
 
   const submit = () => {
-    if (!prompt.trim()) {
+    const trimmed = prompt.trim();
+    if (!trimmed) {
       showToast('한잔하고 싶은 술집을 입력해주세요', 'center');
       return;
     }
+    setMessages(prev => [
+      ...prev,
+      {id: `${Date.now()}-${prev.length}`, text: trimmed},
+    ]);
+    setPrompt('');
+    Keyboard.dismiss();
     showToast('AI 탐색 준비중...', 'center');
   };
 
@@ -80,8 +90,12 @@ const AIExploreScreen = ({navigation}) => {
       });
     };
 
-    animateVisibility(titleAnim, !isInputFocused && !hasPrompt, setShowTitle);
-  }, [isInputFocused, hasPrompt, titleAnim]);
+    animateVisibility(
+      titleAnim,
+      !isInputFocused && !hasPrompt && !hasMessages,
+      setShowTitle,
+    );
+  }, [isInputFocused, hasPrompt, hasMessages, titleAnim]);
 
   useEffect(() => {
     const animateVisibility = (anim, visible, setVisible) => {
@@ -96,8 +110,14 @@ const AIExploreScreen = ({navigation}) => {
       });
     };
 
-    animateVisibility(chipAnim, !hasPrompt, setShowChips);
-  }, [hasPrompt, chipAnim]);
+    animateVisibility(chipAnim, !hasPrompt && !hasMessages, setShowChips);
+  }, [hasPrompt, hasMessages, chipAnim]);
+
+  useEffect(() => {
+    if (hasMessages && scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({animated: true});
+    }
+  }, [hasMessages, messages]);
 
   return (
     <KeyboardAvoidingView
@@ -105,21 +125,42 @@ const AIExploreScreen = ({navigation}) => {
       behavior="padding"
       keyboardVerticalOffset={headerHeight}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.container} edges={['top']}>
           {/** ─────────── MAIN CONTENT ─────────── */}
-          <View style={styles.center}>
-            {showTitle && (
-              <Animated.View
-                style={[
-                  styles.titleWrap,
-                  {
-                    opacity: titleAnim,
-                  },
-                ]}>
-                <CustomText style={styles.title}>
-                  오늘은 어디서 한잔할까요?
-                </CustomText>
-              </Animated.View>
+          <View
+            style={[
+              styles.center,
+              hasMessages ? styles.chatContainer : styles.emptyCenter,
+            ]}>
+            {hasMessages ? (
+              <ScrollView
+                ref={scrollViewRef}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.chatContent}>
+                {messages.map(message => (
+                  <View key={message.id} style={styles.bubbleRow}>
+                    <View style={styles.messageBubble}>
+                      <CustomText style={styles.messageText}>
+                        {message.text}
+                      </CustomText>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            ) : (
+              showTitle && (
+                <Animated.View
+                  style={[
+                    styles.titleWrap,
+                    {
+                      opacity: titleAnim,
+                    },
+                  ]}>
+                  <CustomText style={styles.title}>
+                    오늘은 어디서 한잔할까요?
+                  </CustomText>
+                </Animated.View>
+              )
             )}
           </View>
 
@@ -192,7 +233,7 @@ const AIExploreScreen = ({navigation}) => {
               </View>
             </View>
           </View>
-        </SafeAreaView>
+        </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
@@ -210,8 +251,37 @@ const styles = StyleSheet.create({
   // CENTER SECTION
   center: {
     flex: 1,
+  },
+  emptyCenter: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  chatContainer: {
+    paddingHorizontal: 18,
+    paddingTop: 16,
+  },
+  chatContent: {
+    paddingBottom: 12,
+  },
+  bubbleRow: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginBottom: 8,
+  },
+  messageBubble: {
+    backgroundColor: '#f2f2f2',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderBottomRightRadius: 0,
+    maxWidth: '85%',
+  },
+  messageText: {
+    fontSize: 16,
+    color: '#333',
+    fontFamily: 'Pretendard-Regular',
+    lineHeight: 16 * 1.4,
   },
   title: {
     fontSize: 24,
