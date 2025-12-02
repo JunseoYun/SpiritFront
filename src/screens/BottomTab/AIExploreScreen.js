@@ -33,119 +33,47 @@ import AIMicIcon from '../../assets/svg/AIMicIcon';
 import MenuIcon from '../../assets/svg/MenuIcon';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
-import FastImage from 'react-native-fast-image';
 import {RotateCwIcon} from 'lucide-react-native';
-import {AILogoIcon} from '../../assets/svg/AILogoIcon';
 import {AIFullIcon} from '../../assets/svg/AiTabIcon';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Agent_chat_search} from '../../api/agentApi';
-import useDistance from '../../hooks/useDistance';
-import useStoreStatus from '../../hooks/useStoreStatus';
-import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import {getAddress, getLocation} from '../../storage/locationStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AIResultCard from '../../components/AIExplore/AIResultCard';
 
-const resolveStoreId = store =>
-  store?.id ??
-  store?.storeId ??
-  store?.store_id ??
-  store?.storeID ??
-  store?.storeid ??
-  null;
-
-const resolveStoreName = store =>
-  store?.name ??
-  store?.storeName ??
-  store?.storeNm ??
-  store?.title ??
-  store?.store_name ??
-  '가게 이름';
-
-const resolveLocationDto = store => {
-  if (!store) {
-    return null;
-  }
-  const loc =
-    store.locationDto ||
-    store.location ||
-    store.location_info ||
-    store.locationInfo;
-  if (
-    loc &&
-    typeof loc.latitude === 'number' &&
-    typeof loc.longitude === 'number'
-  ) {
-    return {
-      latitude: loc.latitude,
-      longitude: loc.longitude,
-      address:
-        loc.address ||
-        loc.roadAddress ||
-        loc.roadAddr ||
-        loc.addr ||
-        store.address ||
-        null,
-    };
-  }
-
-  const lat =
-    store.latitude ??
-    store.lat ??
-    store?.location?.lat ??
-    store?.location?.latitude ??
-    null;
-  const lng =
-    store.longitude ??
-    store.lng ??
-    store?.location?.lng ??
-    store?.location?.longitude ??
-    null;
-
-  if (typeof lat === 'number' && typeof lng === 'number') {
-    return {
-      latitude: lat,
-      longitude: lng,
-      address:
-        store.address ??
-        store.roadAddress ??
-        store.addr ??
-        store.roadAddr ??
-        null,
-    };
-  }
-  return null;
-};
-
-const resolveCategories = store => {
-  const candidates = [
-    store?.categories,
-    store?.categoryList,
-    store?.categoryNames,
-    store?.category,
-    store?.tags,
-  ];
-
-  for (const candidate of candidates) {
-    if (!candidate) continue;
-    if (Array.isArray(candidate)) {
-      return candidate;
-    }
-    if (typeof candidate === 'string') {
-      const parts = candidate.split(/[,/|]/).map(part => part.trim());
-      const filtered = parts.filter(Boolean);
-      if (filtered.length) return filtered;
-    }
-  }
-  return [];
-};
-
-const resolveMainImage = store =>
-  store?.mainImgUrl ||
-  store?.imageUrl ||
-  store?.thumbnailUrl ||
-  store?.imgUrl ||
-  store?.mainImageUrl ||
-  null;
+const SAMPLE_RECENT_FIRST_PROMPTS = [
+  '강남역에서 조용한 와인바 알려줘',
+  '홍대에서 분위기 좋은 칵테일바 추천해줘',
+  '야외 테라스 있는 술집 찾아줘',
+  '을지로 감성 있는 포차 알려줘',
+  '이태원에서 새벽까지 하는 바 추천해줘',
+  '단체 회식하기 좋은 이자카야 알려줘',
+  '가성비 좋은 맥주집 찾아줘',
+  '분위기 깔끔한 수제맥주 펍 추천',
+  '직장인 회식하기 좋은 곳 알려줘',
+  '데이트하기 좋은 와인바 찾아줘',
+  '칵테일 잘하는 바 추천해줘',
+  '분위기 어두운 스피크이지 알려줘',
+  '루프탑에서 한잔할 수 있는 곳',
+  '혼술하기 편한 바 추천',
+  '안주 맛있는 술집 알려줘',
+  '라이브 음악 있는 바 추천해줘',
+  '강남역 새벽까지 하는 바 찾아줘',
+  '회식 10명 가능한 공간 있는 곳',
+  '응원 보면서 술 마실 수 있는 곳',
+  '예약 가능한 조용한 술집',
+  '노포 감성 포장마차 추천',
+  '뷰 좋은 한강 근처 술집 알려줘',
+  '와인 콜키지 가능한 곳 찾아줘',
+  '신논현역 바로 앞 술집 추천',
+  '이태원 프리미엄 바 추천해줘',
+  '소주 말고 칵테일 많은 곳',
+  '브런치도 되는 바 알려줘',
+  '디저트도 파는 와인바 찾아줘',
+  '분위기 좋은 2차 장소 추천',
+  '조용히 이야기하기 좋은 술집',
+];
+const USE_SAMPLE_RECENT_PROMPTS = true; // 샘플 목록을 보고 싶을 때 true 로 전환
 
 const extractStoreList = data => {
   if (!data) return [];
@@ -180,116 +108,6 @@ const extractStoreList = data => {
   return [];
 };
 
-const resolveAgentMessage = data =>
-  data?.responseMessage ??
-  data?.agentMessage ??
-  data?.message ??
-  data?.assistantMessage ??
-  data?.llmAgentResult?.agentMessage ??
-  '';
-
-const AIResultCard = ({store, navigation, userLocation}) => {
-  const calculateDistance = useDistance();
-  const {translateCategory} = useCategoryTranslation();
-  const {isOpen, isBreak, closed, nextclosed, starttime, endtime, breakend} =
-    useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
-  const [distanceText, setDistanceText] = useState(null);
-
-  useEffect(() => {
-    if (!userLocation) {
-      return;
-    }
-    const storeLocation = resolveLocationDto(store);
-    if (!storeLocation) {
-      return;
-    }
-
-    const km = calculateDistance(
-      userLocation.latitude,
-      userLocation.longitude,
-      storeLocation.latitude,
-      storeLocation.longitude,
-    );
-    if (!Number.isFinite(km)) {
-      return;
-    }
-    setDistanceText(
-      km < 1 ? `${(km * 1000).toFixed(0)}m` : `${km.toFixed(1)}km`,
-    );
-  }, [userLocation, store, calculateDistance]);
-
-  let timeLabel = '정보 없음';
-  if (store?.isAlwaysOpen) {
-    timeLabel = '24시간';
-  } else if (isOpen && isBreak && breakend) {
-    timeLabel = `브레이크 ~ ${breakend}`;
-  } else if (!isOpen && nextclosed) {
-    timeLabel = '영업 종료 · 익일 휴무';
-  } else if (!isOpen && closed) {
-    timeLabel = '금일 휴무';
-  } else if (!isOpen && starttime) {
-    timeLabel = `${starttime} 오픈`;
-  } else if (endtime) {
-    timeLabel = `${endtime} 종료`;
-  }
-
-  const categories = resolveCategories(store).map(category =>
-    translateCategory(category),
-  );
-  const storeId = resolveStoreId(store);
-
-  const handlePress = () => {
-    if (!storeId) {
-      return;
-    }
-    const storeLocation = resolveLocationDto(store);
-    navigation.navigate('StoreStack', {
-      screen: 'StoreMainScreen',
-      params: {
-        storeId,
-        innerlatitude: storeLocation?.latitude,
-        innerlongitude: storeLocation?.longitude,
-      },
-    });
-  };
-
-  return (
-    <Pressable
-      onPress={handlePress}
-      disabled={!storeId}
-      style={styles.resultCard}
-      android_ripple={{color: 'rgba(0,0,0,0.05)', borderless: false}}>
-      <FastImage
-        source={
-          resolveMainImage(store)
-            ? {uri: resolveMainImage(store)}
-            : require('../../assets/default_store.png')
-        }
-        style={styles.resultImage}
-        resizeMode={FastImage.resizeMode.cover}
-      />
-      <CustomText style={styles.resultName} numberOfLines={1}>
-        {resolveStoreName(store)}
-      </CustomText>
-      {!!categories.length && (
-        <CustomText style={styles.resultCategory} numberOfLines={1}>
-          {categories.join(' · ')}
-        </CustomText>
-      )}
-      <View style={styles.resultMetaRow}>
-        <CustomText style={styles.resultMeta} numberOfLines={1}>
-          {timeLabel}
-        </CustomText>
-        {distanceText && (
-          <CustomText style={[styles.resultMeta, styles.resultMetaDim]}>
-            {distanceText}
-          </CustomText>
-        )}
-      </View>
-    </Pressable>
-  );
-};
-
 const AIExploreScreen = ({navigation}) => {
   const {showToast} = useToast();
   const insets = useSafeAreaInsets();
@@ -315,39 +133,6 @@ const AIExploreScreen = ({navigation}) => {
   const chipAnim = useRef(new Animated.Value(1)).current;
   const [showTitle, setShowTitle] = useState(true);
   const [showChips, setShowChips] = useState(true);
-  const SAMPLE_RECENT_FIRST_PROMPTS = [
-    '강남역에서 조용한 와인바 알려줘',
-    '홍대에서 분위기 좋은 칵테일바 추천해줘',
-    '야외 테라스 있는 술집 찾아줘',
-    '을지로 감성 있는 포차 알려줘',
-    '이태원에서 새벽까지 하는 바 추천해줘',
-    '단체 회식하기 좋은 이자카야 알려줘',
-    '가성비 좋은 맥주집 찾아줘',
-    '분위기 깔끔한 수제맥주 펍 추천',
-    '직장인 회식하기 좋은 곳 알려줘',
-    '데이트하기 좋은 와인바 찾아줘',
-    '칵테일 잘하는 바 추천해줘',
-    '분위기 어두운 스피크이지 알려줘',
-    '루프탑에서 한잔할 수 있는 곳',
-    '혼술하기 편한 바 추천',
-    '안주 맛있는 술집 알려줘',
-    '라이브 음악 있는 바 추천해줘',
-    '강남역 새벽까지 하는 바 찾아줘',
-    '회식 10명 가능한 공간 있는 곳',
-    '응원 보면서 술 마실 수 있는 곳',
-    '예약 가능한 조용한 술집',
-    '노포 감성 포장마차 추천',
-    '뷰 좋은 한강 근처 술집 알려줘',
-    '와인 콜키지 가능한 곳 찾아줘',
-    '신논현역 바로 앞 술집 추천',
-    '이태원 프리미엄 바 추천해줘',
-    '소주 말고 칵테일 많은 곳',
-    '브런치도 되는 바 알려줘',
-    '디저트도 파는 와인바 찾아줘',
-    '분위기 좋은 2차 장소 추천',
-    '조용히 이야기하기 좋은 술집',
-  ];
-  const USE_SAMPLE_RECENT_PROMPTS = true; // 샘플 목록을 보고 싶을 때 true 로 전환
   const [recentFirstPrompts, setRecentFirstPrompts] = useState(
     USE_SAMPLE_RECENT_PROMPTS ? SAMPLE_RECENT_FIRST_PROMPTS : [],
   );
@@ -467,11 +252,7 @@ const AIExploreScreen = ({navigation}) => {
         : [];
       setRecentFirstPrompts(fallback);
     }
-  }, [
-    RECENT_FIRST_PROMPT_KEY,
-    SAMPLE_RECENT_FIRST_PROMPTS,
-    USE_SAMPLE_RECENT_PROMPTS,
-  ]);
+  }, [RECENT_FIRST_PROMPT_KEY]);
 
   const removeRecentFirstPrompt = useCallback(
     index => {
@@ -512,8 +293,10 @@ const AIExploreScreen = ({navigation}) => {
       return () => backHandler.remove();
     }, [navigation]),
   );
+  console.log(prompt);
   const submit = async () => {
     const trimmed = prompt.trim();
+    console.log('trimmed: ', trimmed);
     if (!trimmed) {
       showToast('한잔하고 싶은 술집을 입력해주세요', 'center');
       return;
@@ -574,23 +357,23 @@ const AIExploreScreen = ({navigation}) => {
       }
       console.log(data);
       const agentResult = data?.llmAgentResult || data || {};
-      const responseId =
-        agentResult?.responseId ??
-        data?.responseId ??
-        data?.id ??
-        data?.response_id ??
-        null;
+      const responseId = agentResult?.responseId;
+      const storeList = data?.stores?.content;
+
       if (responseId) {
         setLastResponseId(responseId);
       }
       const aiMessage = {
         id: `ai-${Date.now()}`,
         role: 'assistant',
-        text:
-          resolveAgentMessage(agentResult) || resolveAgentMessage(data) || '',
-        agentMode: agentResult?.agentMode || data?.agentMode,
-        stores: extractStoreList(data) || extractStoreList(agentResult),
+        text: agentResult?.agentMessage,
+        agentMode:
+          agentResult?.agentMode ??
+          agentResult?.mode ??
+          (Array.isArray(storeList) && storeList.length ? 'SHOW_RESULT' : null),
+        stores: Array.isArray(storeList) ? storeList : [],
       };
+      console.log(data?.stores?.content);
       setChatHistory(prev => [...prev, aiMessage]);
     } catch (error) {
       showToast('죄송해요. 잠시 후 다시 시도해주세요.', 'center');
@@ -978,9 +761,7 @@ const AIExploreScreen = ({navigation}) => {
                               contentContainerStyle={styles.resultList}>
                               {message.stores.map((store, index) => (
                                 <AIResultCard
-                                  key={`${message.id}-${
-                                    resolveStoreId(store) || index
-                                  }`}
+                                  key={`${message.id}-${store?.id}`}
                                   store={store}
                                   navigation={navigation}
                                   userLocation={userLocation}
@@ -1104,7 +885,7 @@ const AIExploreScreen = ({navigation}) => {
                 multiline
                 numberOfLines={3}
                 textAlignVertical="top"
-                onSubmitEditing={submit}
+                // onSubmitEditing={submit}
                 placeholderTextColor={ColorUtil.placeholderText}
                 style={styles.input}
                 onFocus={() => setIsInputFocused(true)}
@@ -1232,13 +1013,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 10,
     marginHorizontal: 18,
-    borderRadius: 16,
+    borderRadius: 999,
     marginBottom: 20,
   },
   mapChip: {
     paddingHorizontal: 18,
     paddingVertical: 10,
     alignItems: 'center',
+    borderRadius: 999,
   },
   title: {
     fontSize: 24,
@@ -1337,51 +1119,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f2f2f2',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  resultCard: {
-    width: 160,
-    marginRight: 12,
-    borderRadius: 14,
-    backgroundColor: '#fff',
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#eef1f5',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  resultImage: {
-    width: '100%',
-    height: 100,
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-  resultName: {
-    fontSize: 15,
-    color: '#222',
-    fontFamily: 'Pretendard-Bold',
-  },
-  resultCategory: {
-    marginTop: 4,
-    fontSize: 13,
-    color: ColorUtil.subText,
-    fontFamily: 'Pretendard-Regular',
-  },
-  resultMetaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  resultMeta: {
-    fontSize: 13,
-    color: '#222',
-    fontFamily: 'Pretendard-Regular',
-  },
-  resultMetaDim: {
-    color: '#6b7684',
   },
   aiLoadingText: {
     fontSize: 15,
