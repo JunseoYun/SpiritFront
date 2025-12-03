@@ -33,7 +33,7 @@ import AIMicIcon from '../../assets/svg/AIMicIcon';
 import MenuIcon from '../../assets/svg/MenuIcon';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
-import {RotateCwIcon} from 'lucide-react-native';
+import {RotateCwIcon, Trash2} from 'lucide-react-native';
 import {AIFullIcon} from '../../assets/svg/AiTabIcon';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Agent_chat_search} from '../../api/agentApi';
@@ -73,7 +73,7 @@ const SAMPLE_RECENT_FIRST_PROMPTS = [
   '분위기 좋은 2차 장소 추천',
   '조용히 이야기하기 좋은 술집',
 ];
-const USE_SAMPLE_RECENT_PROMPTS = true; // 샘플 목록을 보고 싶을 때 true 로 전환
+const USE_SAMPLE_RECENT_PROMPTS = false; // 샘플 목록을 보고 싶을 때 true 로 전환
 
 const AIExploreScreen = ({navigation}) => {
   const {showToast} = useToast();
@@ -244,6 +244,15 @@ const AIExploreScreen = ({navigation}) => {
     },
     [RECENT_FIRST_PROMPT_KEY],
   );
+
+  const clearRecentFirstPrompts = useCallback(() => {
+    if (!recentFirstPrompts.length) {
+      showToast('최근 질문이 없습니다', 'center');
+      return;
+    }
+    setRecentFirstPrompts([]);
+    AsyncStorage.removeItem(RECENT_FIRST_PROMPT_KEY).catch(() => {});
+  }, [RECENT_FIRST_PROMPT_KEY, recentFirstPrompts.length, showToast]);
 
   const suggestions = [
     {keyword: '늦게까지 하는', subtext: '호프집 알려줘'},
@@ -609,6 +618,17 @@ const AIExploreScreen = ({navigation}) => {
                     <RotateCwIcon size={18} color="#333" />
                     <CustomText style={styles.drawerButtonText}>
                       새 대화 시작
+                    </CustomText>
+                  </Pressable>
+                </View>
+
+                <View style={styles.drawerSection}>
+                  <Pressable
+                    style={styles.drawerButton}
+                    onPress={clearRecentFirstPrompts}>
+                    <Trash2 size={18} color="#333" />
+                    <CustomText style={styles.drawerButtonText}>
+                      최근 질문 전체 삭제
                     </CustomText>
                   </Pressable>
                 </View>
@@ -1154,9 +1174,10 @@ const styles = StyleSheet.create({
   },
   drawerSection: {
     marginTop: 12,
+    justifyContent: 'center',
   },
   sheetSubtitle: {
-    marginTop: 50,
+    marginTop: 70,
     fontSize: 14,
     fontFamily: 'Pretendard-Regular',
     color: '#666',
