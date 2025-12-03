@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import CustomText from '../../utils/CustomText';
@@ -8,7 +8,7 @@ import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import ColorUtil from '../../utils/ColorUtil';
 
-const AIResultCard = ({store, navigation, userLocation}) => {
+const AIResultCard = ({store, navigation, userLocation, searchConditions}) => {
   const calculateDistance = useDistance();
   const {translateCategory} = useCategoryTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
@@ -72,6 +72,33 @@ const AIResultCard = ({store, navigation, userLocation}) => {
   const displayTime =
     endtime && !store?.isAlwaysOpen ? `${endtime} 종료` : timeLabel;
 
+  const conditionText = useMemo(() => {
+    const drinkType = searchConditions?.drinkType;
+    if (!drinkType) {
+      return null;
+    }
+    const translated = translateAlcohol(drinkType);
+    const matchedDrink = mainDrinks.find(
+      drink => drink?.type && drink.type === drinkType,
+    );
+    const price = matchedDrink?.price;
+
+    let priceText = '';
+    if (price === '변동') {
+      priceText = ' 변동';
+    } else if (typeof price === 'number' && price > 0) {
+      priceText = ` ${price.toLocaleString()}원`;
+    } else if (typeof price === 'string' && price) {
+      const numeric = Number(price);
+      if (!Number.isNaN(numeric) && numeric > 0) {
+        priceText = ` ${numeric.toLocaleString()}원`;
+      }
+    }
+
+    const text = `${translated || ''}${priceText}`;
+    return text.trim() || null;
+  }, [searchConditions?.drinkType, mainDrinks, translateAlcohol]);
+
   const handlePress = () => {
     if (!storeId) {
       return;
@@ -91,8 +118,7 @@ const AIResultCard = ({store, navigation, userLocation}) => {
     <Pressable
       onPress={handlePress}
       disabled={!storeId}
-      style={styles.resultCard}
-      android_ripple={{color: 'rgba(0,0,0,0.05)', borderless: false}}>
+      style={styles.resultCard}>
       <View style={styles.imageWrap}>
         <FastImage
           source={
@@ -132,6 +158,11 @@ const AIResultCard = ({store, navigation, userLocation}) => {
             </View>
           )}
         </FastImage>
+        {conditionText && (
+          <View style={styles.badge}>
+            <CustomText style={styles.badgeText}>{conditionText}</CustomText>
+          </View>
+        )}
       </View>
 
       <View style={styles.cardBody}>
@@ -148,8 +179,7 @@ const AIResultCard = ({store, navigation, userLocation}) => {
         </View>
 
         <CustomText style={styles.subtitle} numberOfLines={1}>
-          {[...translatedDrinks, ...categories].slice(0, 3).join('  ') ||
-            '카테고리 미설정'}
+          {categories.slice(0, 3).join('  ') || '카테고리 미설정'}
         </CustomText>
 
         <View style={styles.footerRow}>
@@ -177,7 +207,7 @@ const styles = StyleSheet.create({
   imageWrap: {
     width: 160,
     height: 160,
-    borderRadius: 15,
+    borderRadius: 9,
     backgroundColor: '#fff',
     borderWidth: 0.5,
     borderColor: ColorUtil.border,
@@ -217,11 +247,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     marginBottom: 8,
   },
+
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingRight: 2,
+    marginBottom: 8,
   },
   metaText: {
     fontSize: 14,
@@ -240,8 +272,24 @@ const styles = StyleSheet.create({
   overlayText: {
     color: '#fff',
     fontSize: 14,
-    fontFamily: 'Pretendard-Bold',
+    fontFamily: 'Pretendard-SemiBold',
     textAlign: 'center',
+  },
+
+  badge: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    maxWidth: '90%',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontFamily: 'Pretendard-Medium',
   },
 });
 
