@@ -119,6 +119,7 @@ const AIExploreScreen = ({navigation}) => {
   const inputRef = useRef(null);
   const pendingVoiceSendRef = useRef(false);
   const keepRecordingRef = useRef(false);
+  const autoSentVoiceRef = useRef(false);
   const restartTimerRef = useRef(null);
   const voiceAccumRef = useRef('');
   const transcribeTimeoutRef = useRef(null);
@@ -729,6 +730,9 @@ const AIExploreScreen = ({navigation}) => {
       }
     };
     Voice.onSpeechResults = event => {
+      if (autoSentVoiceRef.current) {
+        return;
+      }
       const text = Array.isArray(event?.value) ? event.value[0]?.trim() : '';
       clearTranscribeTimer();
       setIsTranscribing(false);
@@ -744,17 +748,24 @@ const AIExploreScreen = ({navigation}) => {
         return;
       }
       const merged = text || voiceAccumRef.current;
+      if (pendingVoiceSendRef.current) {
+        submit(merged);
+        setPrompt('');
+        setVoiceInputPending(false);
+        voiceAccumRef.current = '';
+        autoSentVoiceRef.current = true;
+        pendingVoiceSendRef.current = false;
+        return;
+      }
       voiceAccumRef.current = merged;
       setPrompt(merged);
       setVoiceInputPending(true);
-      if (pendingVoiceSendRef.current) {
-        submit(merged);
-        setVoiceInputPending(false);
-        pendingVoiceSendRef.current = false;
-      }
     };
 
     Voice.onSpeechPartialResults = event => {
+      if (autoSentVoiceRef.current) {
+        return;
+      }
       const partial = Array.isArray(event?.value) ? event.value[0]?.trim() : '';
       if (!keepRecordingRef.current) {
         return;
@@ -855,6 +866,7 @@ const AIExploreScreen = ({navigation}) => {
         pendingVoiceSendRef.current = false;
         voiceAccumRef.current = '';
         keepRecordingRef.current = false;
+        autoSentVoiceRef.current = false;
         await Voice.stop().catch(() => {});
         await Voice.cancel().catch(() => {});
         await Voice.start('ko-KR', voiceStartOptions);
