@@ -75,39 +75,6 @@ const SAMPLE_RECENT_FIRST_PROMPTS = [
 ];
 const USE_SAMPLE_RECENT_PROMPTS = true; // 샘플 목록을 보고 싶을 때 true 로 전환
 
-const extractStoreList = data => {
-  if (!data) return [];
-  if (data?.stores?.content && Array.isArray(data.stores.content)) {
-    return data.stores.content;
-  }
-  if (Array.isArray(data?.stores)) {
-    return data.stores;
-  }
-  const candidates = [
-    data.stores,
-    data.storeList,
-    data.storeDtos,
-    data.storeResponses,
-    data.storeResponseDtos,
-    data.recommendStores,
-    data.storePreviews,
-    data.results,
-    data.items,
-    data.data,
-    data?.storeList?.items,
-    data?.storeList?.stores,
-  ];
-  for (const candidate of candidates) {
-    if (Array.isArray(candidate)) {
-      return candidate;
-    }
-  }
-  if (Array.isArray(data)) {
-    return data;
-  }
-  return [];
-};
-
 const AIExploreScreen = ({navigation}) => {
   const {showToast} = useToast();
   const insets = useSafeAreaInsets();
@@ -140,6 +107,7 @@ const AIExploreScreen = ({navigation}) => {
   const drawerAnim = useRef(new Animated.Value(-drawerWidth)).current;
   const contentShiftAnim = useRef(new Animated.Value(0)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
+  const inputRef = useRef(null);
 
   const closeDrawer = useCallback(() => {
     Animated.parallel([
@@ -254,6 +222,15 @@ const AIExploreScreen = ({navigation}) => {
     }
   }, [RECENT_FIRST_PROMPT_KEY]);
 
+  const handlePromptSelect = text => {
+    const cleaned = text?.trim();
+    if (!cleaned) {
+      return;
+    }
+    setPrompt(cleaned);
+    submit(cleaned);
+  };
+
   const removeRecentFirstPrompt = useCallback(
     index => {
       setRecentFirstPrompts(prev => {
@@ -293,10 +270,10 @@ const AIExploreScreen = ({navigation}) => {
       return () => backHandler.remove();
     }, [navigation]),
   );
-  console.log(prompt);
-  const submit = async () => {
-    const trimmed = prompt.trim();
-    console.log('trimmed: ', trimmed);
+
+  const submit = async textOverride => {
+    const sourceText = typeof textOverride === 'string' ? textOverride : prompt;
+    const trimmed = sourceText.trim();
     if (!trimmed) {
       showToast('한잔하고 싶은 술집을 입력해주세요', 'center');
       return;
@@ -359,6 +336,8 @@ const AIExploreScreen = ({navigation}) => {
       const agentResult = data?.llmAgentResult || data || {};
       const responseId = agentResult?.responseId;
       const storeList = data?.stores?.content;
+      const searchConditions = agentResult?.searchConditions;
+      console.log(searchConditions);
 
       if (responseId) {
         setLastResponseId(responseId);
@@ -373,7 +352,7 @@ const AIExploreScreen = ({navigation}) => {
           (Array.isArray(storeList) && storeList.length ? 'SHOW_RESULT' : null),
         stores: Array.isArray(storeList) ? storeList : [],
       };
-      console.log(data?.stores?.content);
+
       setChatHistory(prev => [...prev, aiMessage]);
     } catch (error) {
       showToast('죄송해요. 잠시 후 다시 시도해주세요.', 'center');
@@ -383,6 +362,9 @@ const AIExploreScreen = ({navigation}) => {
   };
 
   const openDrawer = useCallback(async () => {
+    Keyboard.dismiss();
+    inputRef.current?.blur();
+    setIsInputFocused(false);
     await loadRecentFirstPrompt();
     setShowDrawer(true);
     drawerAnim.setValue(-drawerWidth);
@@ -644,8 +626,8 @@ const AIExploreScreen = ({navigation}) => {
                             hitSlop={5}
                             style={styles.sheetPromptPress}
                             onPress={() => {
-                              setPrompt(item);
                               closeDrawer();
+                              handlePromptSelect(item);
                             }}>
                             <CustomText
                               style={styles.sheetPromptText}
@@ -860,7 +842,7 @@ const AIExploreScreen = ({navigation}) => {
                       style={styles.chipBorder}>
                       <Pressable
                         style={styles.chip}
-                        onPress={() => setPrompt(fullText)}>
+                        onPress={() => handlePromptSelect(fullText)}>
                         <CustomText style={styles.chipKeyword}>
                           {keyword}
                         </CustomText>
@@ -879,6 +861,7 @@ const AIExploreScreen = ({navigation}) => {
           <View style={[styles.bottomInput]}>
             <View style={styles.inputBox}>
               <CustomTextInput
+                ref={inputRef}
                 placeholder="한잔하고 싶은 술집을 입력하세요"
                 value={prompt}
                 onChangeText={setPrompt}
@@ -1054,7 +1037,7 @@ const styles = StyleSheet.create({
   chipKeyword: {
     fontSize: 15,
     color: '#333',
-    fontFamily: 'Pretendard-Bold',
+    fontFamily: 'Pretendard-Medium',
     lineHeight: 15 * 1.3,
     letterSpacing: 0,
   },
