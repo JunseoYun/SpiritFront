@@ -351,6 +351,7 @@ const AIExploreScreen = ({navigation}) => {
           agentResult?.mode ??
           (Array.isArray(storeList) && storeList.length ? 'SHOW_RESULT' : null),
         stores: Array.isArray(storeList) ? storeList : [],
+        searchConditions: searchConditions || null,
       };
 
       setChatHistory(prev => [...prev, aiMessage]);
@@ -747,6 +748,7 @@ const AIExploreScreen = ({navigation}) => {
                                   store={store}
                                   navigation={navigation}
                                   userLocation={userLocation}
+                                  searchConditions={message.searchConditions}
                                 />
                               ))}
                             </ScrollView>
