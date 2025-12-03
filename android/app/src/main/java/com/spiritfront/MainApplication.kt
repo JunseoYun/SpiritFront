@@ -44,7 +44,8 @@ class MainApplication : Application(), ReactApplication {
     KakaoSdk.init(this, kakaoKey)
 
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-      load()
+      // Disable bridgeless mode so legacy native modules (e.g. voice) keep working
+      load(bridgelessEnabled = false)
     }
   }
 }
