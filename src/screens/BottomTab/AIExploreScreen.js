@@ -254,8 +254,21 @@ const AIExploreScreen = ({navigation}) => {
     AsyncStorage.removeItem(RECENT_FIRST_PROMPT_KEY).catch(() => {});
   }, [RECENT_FIRST_PROMPT_KEY, recentFirstPrompts.length, showToast]);
 
+  const handleOpenMapWithAiResult = useCallback(
+    (stores, searchConditions, promptText) => {
+      navigation.navigate('MapScreen', {
+        aiStores: Array.isArray(stores) ? stores : [],
+        aiSearchConditions: searchConditions || null,
+        aiSearchPrompt: typeof promptText === 'string' ? promptText : null,
+        prevTab: 'AIExploreScreen',
+      });
+    },
+    [navigation],
+  );
+
   const suggestions = [
     {keyword: '늦게까지 하는', subtext: '호프집 알려줘'},
+    {keyword: '소주 싼 곳', subtext: '알려줘'},
     {keyword: '회식하기 좋은', subtext: '이자카야 추천해줘'},
     {keyword: '축구 보면서', subtext: '한잔하기 좋은 곳 알려줘'},
     {keyword: '가성비 좋은', subtext: '술집 추천해줘'},
@@ -361,6 +374,7 @@ const AIExploreScreen = ({navigation}) => {
           (Array.isArray(storeList) && storeList.length ? 'SHOW_RESULT' : null),
         stores: Array.isArray(storeList) ? storeList : [],
         searchConditions: searchConditions || null,
+        userPrompt: trimmed,
       };
 
       setChatHistory(prev => [...prev, aiMessage]);
@@ -780,7 +794,11 @@ const AIExploreScreen = ({navigation}) => {
                               <Pressable
                                 style={[styles.chip, styles.mapChip]}
                                 onPress={() =>
-                                  navigation.navigate('MapScreen')
+                                  handleOpenMapWithAiResult(
+                                    message.stores,
+                                    message.searchConditions,
+                                    message.userPrompt,
+                                  )
                                 }>
                                 <CustomText style={styles.chipKeyword}>
                                   지도에서 확인하기

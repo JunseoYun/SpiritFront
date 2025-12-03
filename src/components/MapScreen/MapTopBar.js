@@ -16,6 +16,9 @@ const MapTopBar = ({
   prevTab,
   onMeasureHeight,
   forceWhiteBackground = false,
+  isAiSearchMode = false,
+  searchLabelOverride,
+  onClearSearch,
 }) => {
   const insets = useSafeAreaInsets();
   const {searchText, setSearchText} = useMapSearch();
@@ -99,16 +102,26 @@ const MapTopBar = ({
           <Pressable
             onPress={() => {
               const trimmed = (searchText || '').trim();
-              if (trimmed.length > 0) {
-                setSearchText('');
-              } else {
-                if (prevTab && prevTab !== 'MapScreen') {
-                  navigation.navigate(prevTab);
-                } else if (navigation.canGoBack()) {
-                  navigation.goBack();
-                } else {
-                  navigation.navigate('MainScreen');
+              if (isAiSearchMode) {
+                if (onClearSearch) {
+                  onClearSearch();
+                  return;
                 }
+              }
+              if (trimmed.length > 0) {
+                if (onClearSearch) {
+                  onClearSearch();
+                } else {
+                  setSearchText('');
+                }
+                return;
+              }
+              if (prevTab && prevTab !== 'MapScreen') {
+                navigation.navigate(prevTab);
+              } else if (navigation.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation.navigate('MainScreen');
               }
             }}
             style={styles.backBtn}>
@@ -119,7 +132,9 @@ const MapTopBar = ({
             style={styles.searchBox}
             onPress={() => {
               navigation.navigate('SearchScreen', {
-                preserveFilters: true,
+                // AI 모드에서도 검색 화면은 빈 입력으로 시작하게 하고, 맵 상태는 그대로 둔다.
+                preserveFilters: !isAiSearchMode,
+                fromAI: isAiSearchMode,
                 prevTab,
               });
             }}>
@@ -127,13 +142,17 @@ const MapTopBar = ({
               maxScale={1.2}
               style={[
                 styles.placeholder,
-                searchText?.trim()?.length > 0 && {color: 'black'},
+                searchText?.trim()?.length > 0 && !isAiSearchMode
+                  ? {color: 'black'}
+                  : null,
+                isAiSearchMode ? styles.aiSubText : null,
               ]}
               numberOfLines={1}
               ellipsizeMode="tail">
-              {searchText?.trim()?.length > 0
-                ? searchText
-                : '술집이나 메뉴를 검색하세요'}
+              {searchLabelOverride ??
+                (searchText?.trim()?.length > 0
+                  ? searchText
+                  : '술집이나 메뉴를 검색하세요')}
             </CustomText>
           </Pressable>
         </Animated.View>
@@ -222,6 +241,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingRight: 30,
     fontFamily: 'Pretendard-Regular',
+  },
+  aiSubText: {
+    color: '#9E9E9E',
   },
   exploreButton: {
     width: 48,
