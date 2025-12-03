@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
 } from 'react';
 import {
   Platform,
@@ -21,7 +22,9 @@ import {
   BackHandler,
   Dimensions,
   PanResponder,
+  ActivityIndicator,
 } from 'react-native';
+import Voice from '@react-native-voice/voice';
 import {useFocusEffect} from '@react-navigation/native';
 import {useHeaderHeight} from '@react-navigation/elements';
 import CustomText from '../../utils/CustomText';
@@ -40,6 +43,12 @@ import {Agent_chat_search} from '../../api/agentApi';
 import {getAddress, getLocation} from '../../storage/locationStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AIResultCard from '../../components/AIExplore/AIResultCard';
+import {
+  PERMISSIONS,
+  RESULTS,
+  check,
+  request as requestPermission,
+} from 'react-native-permissions';
 
 const SAMPLE_RECENT_FIRST_PROMPTS = [
   '강남역에서 조용한 와인바 알려줘',
@@ -108,6 +117,47 @@ const AIExploreScreen = ({navigation}) => {
   const contentShiftAnim = useRef(new Animated.Value(0)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
   const inputRef = useRef(null);
+  const pendingVoiceSendRef = useRef(false);
+  const keepRecordingRef = useRef(false);
+  const restartTimerRef = useRef(null);
+  const voiceAccumRef = useRef('');
+  const transcribeTimeoutRef = useRef(null);
+  const silenceDurationMs = 120000;
+  const recordShiftAnim = useRef(new Animated.Value(0)).current;
+  const volumeLevel = useRef(new Animated.Value(0)).current;
+  const waveformUnitWidth = 3 + 0.8 * 2;
+  const waveformBarCount = useMemo(() => {
+    const minBars = Math.ceil(screenWidth / waveformUnitWidth);
+    return Math.min(minBars * 6, 600); // plenty of bars to scroll without recycling
+  }, [screenWidth, waveformUnitWidth]);
+  const waveformSeeds = useMemo(
+    () =>
+      Array.from({length: waveformBarCount}, () => 0.4 + Math.random() * 0.8),
+    [waveformBarCount],
+  );
+
+  const voiceStartOptions = useMemo(
+    () =>
+      Platform.select({
+        android: {
+          EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: silenceDurationMs,
+          EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS:
+            silenceDurationMs,
+          EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS: 5000,
+          EXTRA_PARTIAL_RESULTS: true,
+        },
+        ios: {
+          AVAudioSessionMode: 'measurement',
+          AVAudioSessionCategory: 'playAndRecord',
+          shouldPlayAudioDucking: true,
+        },
+        default: {},
+      }),
+    [silenceDurationMs],
+  );
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [voiceInputPending, setVoiceInputPending] = useState(false);
 
   const closeDrawer = useCallback(() => {
     Animated.parallel([
@@ -189,13 +239,22 @@ const AIExploreScreen = ({navigation}) => {
   const overlayPanHandlers = showDrawer ? overlayPanResponder.panHandlers : {};
 
   const resetChat = useCallback(() => {
+    Voice.cancel().catch(() => {});
     setChatHistory([]);
     setLastResponseId(null);
     setPrompt('');
     setShowTitle(true);
     setShowChips(true);
+    setIsRecording(false);
+    setIsTranscribing(false);
+    setVoiceInputPending(false);
+    voiceAccumRef.current = '';
+    keepRecordingRef.current = false;
+    restartTimerRef.current && clearTimeout(restartTimerRef.current);
+    restartTimerRef.current = null;
+    clearTranscribeTimer();
     scrollViewRef.current?.scrollTo({y: 0, animated: false});
-  }, []);
+  }, [clearTranscribeTimer]);
 
   const loadRecentFirstPrompt = useCallback(async () => {
     try {
@@ -293,99 +352,122 @@ const AIExploreScreen = ({navigation}) => {
     }, [navigation]),
   );
 
-  const submit = async textOverride => {
-    const sourceText = typeof textOverride === 'string' ? textOverride : prompt;
-    const trimmed = sourceText.trim();
-    if (!trimmed) {
-      showToast('한잔하고 싶은 술집을 입력해주세요', 'center');
-      return;
-    }
-    if (trimmed.length > 200) {
-      showToast('메시지는 200자 이하로 입력해주세요', 'center');
-      return;
-    }
-    if (sending) {
-      return;
-    }
-    const previousResponseId = lastResponseId;
-    const isFirstUserMessage = previousResponseId == null;
-    const userMessage = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      text: trimmed,
-    };
-    setChatHistory(prev => [...prev, userMessage]);
-    setPrompt('');
-    Keyboard.dismiss();
-    setSending(true);
-    if (isFirstUserMessage) {
-      try {
-        const current =
-          Array.isArray(recentFirstPrompts) && recentFirstPrompts.length
-            ? recentFirstPrompts
-            : [];
-        const next = [trimmed, ...current].slice(0, 10);
-        setRecentFirstPrompts(next);
-        await AsyncStorage.setItem(
-          RECENT_FIRST_PROMPT_KEY,
-          JSON.stringify(next),
-        );
-      } catch (e) {
-        // ignore storage errors
-      }
-    }
-    try {
-      const location = (await getLocation()) || userLocation;
-      if (location) {
-        setUserLocation(location);
-      }
-      const payload = {
-        previousResponseId,
-        latitude: location?.latitude ?? null,
-        longitude: location?.longitude ?? null,
-        userMessage: trimmed,
-      };
-      console.log(payload);
-      const data = await Agent_chat_search(payload);
-      if (!data) {
-        showToast(
-          '답변을 불러오지 못했어요. 잠시 후 다시 시도해주세요.',
-          'center',
-        );
+  const submit = useCallback(
+    async (textOverride, options = {}) => {
+      const {skipApi = false} = options;
+      const sourceText =
+        typeof textOverride === 'string' ? textOverride : prompt;
+      const trimmed = sourceText.trim();
+      if (!trimmed) {
+        showToast('한잔하고 싶은 술집을 입력해주세요', 'center');
         return;
       }
-      console.log(data);
-      const agentResult = data?.llmAgentResult || data || {};
-      const responseId = agentResult?.responseId;
-      const storeList = data?.stores?.content;
-      const searchConditions = agentResult?.searchConditions;
-      console.log(searchConditions);
-
-      if (responseId) {
-        setLastResponseId(responseId);
+      if (trimmed.length > 200) {
+        showToast('메시지는 200자 이하로 입력해주세요', 'center');
+        return;
       }
-      const aiMessage = {
-        id: `ai-${Date.now()}`,
-        role: 'assistant',
-        text: agentResult?.agentMessage,
-        agentMode:
-          agentResult?.agentMode ??
-          agentResult?.mode ??
-          (Array.isArray(storeList) && storeList.length ? 'SHOW_RESULT' : null),
-        stores: Array.isArray(storeList) ? storeList : [],
-        searchConditions: searchConditions || null,
-        userPrompt: trimmed,
+      if (sending) {
+        return;
+      }
+      const previousResponseId = lastResponseId;
+      const isFirstUserMessage = previousResponseId == null;
+      const userMessage = {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        text: trimmed,
       };
+      setChatHistory(prev => [...prev, userMessage]);
+      setPrompt('');
+      Keyboard.dismiss();
+      if (skipApi) {
+        console.log('[AIExplore voice] message sent without API:', trimmed);
+        return;
+      }
+      setSending(true);
+      if (isFirstUserMessage) {
+        try {
+          const current =
+            Array.isArray(recentFirstPrompts) && recentFirstPrompts.length
+              ? recentFirstPrompts
+              : [];
+          const next = [trimmed, ...current].slice(0, 10);
+          setRecentFirstPrompts(next);
+          await AsyncStorage.setItem(
+            RECENT_FIRST_PROMPT_KEY,
+            JSON.stringify(next),
+          );
+        } catch (e) {
+          // ignore storage errors
+        }
+      }
+      try {
+        const location = (await getLocation()) || userLocation;
+        if (location) {
+          setUserLocation(location);
+        }
+        const payload = {
+          previousResponseId,
+          latitude: location?.latitude ?? null,
+          longitude: location?.longitude ?? null,
+          userMessage: trimmed,
+        };
+        console.log(payload);
+        const data = await Agent_chat_search(payload);
+        if (!data) {
+          showToast(
+            '답변을 불러오지 못했어요. 잠시 후 다시 시도해주세요.',
+            'center',
+          );
+          return;
+        }
+        console.log(data);
+        const agentResult = data?.llmAgentResult || data || {};
+        const responseId = agentResult?.responseId;
+        const storeList = data?.stores?.content;
+        const searchConditions = agentResult?.searchConditions;
+        console.log(searchConditions);
 
-      setChatHistory(prev => [...prev, aiMessage]);
-    } catch (error) {
-      showToast('죄송해요. 잠시 후 다시 시도해주세요.', 'center');
-    } finally {
-      setSending(false);
-    }
-  };
+        if (responseId) {
+          setLastResponseId(responseId);
+        }
+        const aiMessage = {
+          id: `ai-${Date.now()}`,
+          role: 'assistant',
+          text: agentResult?.agentMessage,
+          agentMode:
+            agentResult?.agentMode ??
+            agentResult?.mode ??
+            (Array.isArray(storeList) && storeList.length
+              ? 'SHOW_RESULT'
+              : null),
+          stores: Array.isArray(storeList) ? storeList : [],
+          searchConditions: searchConditions || null,
+          userPrompt: trimmed,
+        };
+
+        setChatHistory(prev => [...prev, aiMessage]);
+      } catch (error) {
+        showToast('죄송해요. 잠시 후 다시 시도해주세요.', 'center');
+      } finally {
+        setSending(false);
+      }
+    },
+    [
+      Agent_chat_search,
+      RECENT_FIRST_PROMPT_KEY,
+      lastResponseId,
+      prompt,
+      recentFirstPrompts,
+      sending,
+      showToast,
+      userLocation,
+    ],
+  );
 
   const openDrawer = useCallback(async () => {
+    if (isRecording || keepRecordingRef.current || isTranscribing) {
+      await stopRecordingAndTranscribe({shouldSend: false});
+    }
     Keyboard.dismiss();
     inputRef.current?.blur();
     setIsInputFocused(false);
@@ -421,6 +503,9 @@ const AIExploreScreen = ({navigation}) => {
     contentShiftAnim,
     drawerShift,
     overlayAnim,
+    isRecording,
+    isTranscribing,
+    stopRecordingAndTranscribe,
   ]);
 
   useLayoutEffect(() => {
@@ -501,6 +586,21 @@ const AIExploreScreen = ({navigation}) => {
     }
   }, [hasMessages, chatHistory, sending]);
 
+  const clearTranscribeTimer = useCallback(() => {
+    if (transcribeTimeoutRef.current) {
+      clearTimeout(transcribeTimeoutRef.current);
+      transcribeTimeoutRef.current = null;
+    }
+  }, []);
+
+  const startTranscribeTimer = useCallback(() => {
+    clearTranscribeTimer();
+    transcribeTimeoutRef.current = setTimeout(() => {
+      setIsTranscribing(false);
+      transcribeTimeoutRef.current = null;
+    }, 2500);
+  }, [clearTranscribeTimer]);
+
   useFocusEffect(
     useCallback(() => {
       loadRecentFirstPrompt();
@@ -528,6 +628,34 @@ const AIExploreScreen = ({navigation}) => {
   }, [sending, spinAnim]);
 
   useEffect(() => {
+    Animated.timing(volumeLevel, {
+      toValue: isRecording || isTranscribing ? 0.12 : 0,
+      duration: isRecording || isTranscribing ? 220 : 180,
+      useNativeDriver: true,
+    }).start();
+  }, [isRecording, isTranscribing, volumeLevel]);
+
+  useEffect(() => {
+    let shiftAnim;
+    if (isRecording || isTranscribing) {
+      recordShiftAnim.stopAnimation();
+      recordShiftAnim.setValue(0);
+      shiftAnim = Animated.timing(recordShiftAnim, {
+        toValue: 1,
+        duration: waveformDuration,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      });
+      shiftAnim.start();
+    } else {
+      recordShiftAnim.stopAnimation(() => recordShiftAnim.setValue(0));
+    }
+    return () => {
+      shiftAnim?.stop();
+    };
+  }, [isRecording, isTranscribing, recordShiftAnim, waveformDuration]);
+
+  useEffect(() => {
     const showEvent =
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvent =
@@ -552,10 +680,271 @@ const AIExploreScreen = ({navigation}) => {
     };
   }, []);
 
+  const restartListening = useCallback(async () => {
+    try {
+      restartTimerRef.current && clearTimeout(restartTimerRef.current);
+      restartTimerRef.current = null;
+      if (!keepRecordingRef.current) {
+        return;
+      }
+      await Voice.start('ko-KR', voiceStartOptions);
+      setIsRecording(true);
+      setIsTranscribing(false);
+      console.log('[AIExplore voice] restarted listening');
+    } catch (error) {
+      console.log('[AIExplore voice] restart error', error);
+      restartTimerRef.current = setTimeout(restartListening, 400);
+    }
+  }, [voiceStartOptions]);
+
+  useEffect(() => {
+    Voice.onSpeechStart = () => {
+      if (keepRecordingRef.current) {
+        setIsRecording(true);
+        setIsTranscribing(false);
+      }
+    };
+    Voice.onSpeechEnd = () => {
+      if (keepRecordingRef.current) {
+        setIsRecording(true);
+        setIsTranscribing(false);
+        restartTimerRef.current && clearTimeout(restartTimerRef.current);
+        restartTimerRef.current = setTimeout(restartListening, 200);
+      } else {
+        clearTranscribeTimer();
+        setIsTranscribing(false);
+      }
+    };
+    Voice.onSpeechError = error => {
+      console.log('[AIExplore voice] error', error);
+      if (keepRecordingRef.current) {
+        setIsRecording(true);
+        setIsTranscribing(false);
+        restartTimerRef.current && clearTimeout(restartTimerRef.current);
+        restartTimerRef.current = setTimeout(restartListening, 300);
+      } else {
+        clearTranscribeTimer();
+        setIsTranscribing(false);
+        pendingVoiceSendRef.current = false;
+      }
+    };
+    Voice.onSpeechResults = event => {
+      const text = Array.isArray(event?.value) ? event.value[0]?.trim() : '';
+      clearTranscribeTimer();
+      setIsTranscribing(false);
+      if (keepRecordingRef.current) {
+        voiceAccumRef.current = text || voiceAccumRef.current;
+        setIsRecording(true);
+        return; // 녹음 중에는 최종 텍스트를 입력창에 표시하지 않음
+      }
+      setIsRecording(false);
+      if (!text) {
+        setVoiceInputPending(false);
+        pendingVoiceSendRef.current = false;
+        return;
+      }
+      const merged = text || voiceAccumRef.current;
+      voiceAccumRef.current = merged;
+      setPrompt(merged);
+      setVoiceInputPending(true);
+      if (pendingVoiceSendRef.current) {
+        submit(merged);
+        setVoiceInputPending(false);
+        pendingVoiceSendRef.current = false;
+      }
+    };
+
+    Voice.onSpeechPartialResults = event => {
+      const partial = Array.isArray(event?.value) ? event.value[0]?.trim() : '';
+      if (!keepRecordingRef.current) {
+        return;
+      }
+      voiceAccumRef.current = partial || voiceAccumRef.current;
+    };
+
+    Voice.onSpeechVolumeChanged = event => {
+      if (!keepRecordingRef.current) {
+        return;
+      }
+      const raw =
+        typeof event?.value === 'number'
+          ? event.value
+          : parseFloat(event?.value ?? '0');
+      const base = isFinite(raw) ? raw : 0;
+      const normalized = Math.max(0, Math.min(3, base > 1 ? base / 1.5 : base));
+      const eased = Math.max(0, normalized - 0.05);
+      Animated.timing(volumeLevel, {
+        toValue: eased,
+        duration: 120,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    };
+
+    return () => {
+      restartTimerRef.current && clearTimeout(restartTimerRef.current);
+      restartTimerRef.current = null;
+      clearTranscribeTimer();
+      Voice.destroy()
+        .then(Voice.removeAllListeners)
+        .catch(() => {});
+    };
+  }, [clearTranscribeTimer, restartListening, submit]);
+
   const bottomPadding = keyboardVisible
     ? insets.bottom + 24
     : insets.bottom + 100;
   const firstUserMessageId = chatHistory.find(msg => msg.role === 'user')?.id;
+  const showRecordingUI = isRecording || isTranscribing;
+  const waveformBars = useMemo(
+    () => waveformSeeds.map((seed, idx) => ({seed, idx})),
+    [waveformSeeds],
+  );
+  const waveformWidth = useMemo(
+    () => waveformBars.length * waveformUnitWidth,
+    [waveformBars.length, waveformUnitWidth],
+  );
+  const waveformTravel = Math.max(0, waveformWidth - screenWidth);
+  const waveformPxPerSec = 36;
+  const waveformDuration = Math.max(
+    (waveformTravel / Math.max(waveformPxPerSec, 1)) * 1000,
+    60000,
+  ); // default slow glide, at least 60s so it never resets during typical recordings
+
+  const requestMicPermission = useCallback(async () => {
+    const permission =
+      Platform.OS === 'ios'
+        ? PERMISSIONS.IOS.MICROPHONE
+        : PERMISSIONS.ANDROID.RECORD_AUDIO;
+    if (!permission) {
+      return true;
+    }
+    try {
+      const current = await check(permission);
+      if (current === RESULTS.GRANTED || current === RESULTS.LIMITED) {
+        return true;
+      }
+      if (current === RESULTS.BLOCKED) {
+        showToast('마이크 권한을 설정에서 허용해주세요', 'center');
+        return false;
+      }
+      const next = await requestPermission(permission);
+      if (next === RESULTS.GRANTED || next === RESULTS.LIMITED) {
+        return true;
+      }
+      showToast('마이크 권한이 필요해요', 'center');
+      return false;
+    } catch (error) {
+      showToast('마이크 권한을 확인할 수 없어요', 'center');
+      return false;
+    }
+  }, [showToast]);
+
+  const handleMicPress = useCallback(() => {
+    const start = async () => {
+      if (sending || isRecording || isTranscribing) {
+        return;
+      }
+      const granted = await requestMicPermission();
+      if (!granted) {
+        return;
+      }
+      try {
+        setVoiceInputPending(false);
+        setIsTranscribing(false);
+        pendingVoiceSendRef.current = false;
+        voiceAccumRef.current = '';
+        keepRecordingRef.current = false;
+        await Voice.stop().catch(() => {});
+        await Voice.cancel().catch(() => {});
+        await Voice.start('ko-KR', voiceStartOptions);
+        keepRecordingRef.current = true;
+        setIsRecording(true);
+        console.log('[AIExplore voice] recording started');
+      } catch (error) {
+        console.log('[AIExplore voice] start error', error);
+        showToast('녹음을 시작할 수 없어요', 'center');
+      }
+    };
+    start();
+  }, [
+    isRecording,
+    isTranscribing,
+    requestMicPermission,
+    sending,
+    showToast,
+    voiceStartOptions,
+  ]);
+
+  const stopRecordingAndTranscribe = useCallback(
+    async ({shouldSend = false} = {}) => {
+      if (!isRecording && !isTranscribing && !keepRecordingRef.current) {
+        return;
+      }
+      setIsRecording(false);
+      setIsTranscribing(true);
+      pendingVoiceSendRef.current = shouldSend;
+      keepRecordingRef.current = false;
+      restartTimerRef.current && clearTimeout(restartTimerRef.current);
+      restartTimerRef.current = null;
+      Animated.timing(volumeLevel, {
+        toValue: 0,
+        duration: 160,
+        useNativeDriver: true,
+      }).start();
+      startTranscribeTimer();
+      console.log('[AIExplore voice] recording stopped');
+      try {
+        await Voice.stop();
+      } catch (error) {
+        console.log('[AIExplore voice] stop error', error);
+        setIsTranscribing(false);
+        pendingVoiceSendRef.current = false;
+      }
+    },
+    [isRecording, isTranscribing],
+  );
+
+  const handleSendPress = useCallback(async () => {
+    if (sending || isTranscribing) {
+      return;
+    }
+    if (isRecording || keepRecordingRef.current) {
+      await stopRecordingAndTranscribe({shouldSend: true});
+      return;
+    }
+    if (!prompt.trim()) {
+      return;
+    }
+    if (voiceInputPending) {
+      await submit(prompt);
+      setVoiceInputPending(false);
+      voiceAccumRef.current = '';
+      return;
+    }
+    submit();
+  }, [
+    isRecording,
+    isTranscribing,
+    prompt,
+    sending,
+    stopRecordingAndTranscribe,
+    submit,
+    voiceInputPending,
+  ]);
+
+  const handleStopPress = useCallback(() => {
+    if (isRecording || keepRecordingRef.current || isTranscribing) {
+      stopRecordingAndTranscribe({shouldSend: false});
+    }
+  }, [isRecording, isTranscribing, stopRecordingAndTranscribe]);
+
+  const handleChangePrompt = useCallback(text => {
+    setPrompt(text);
+    setVoiceInputPending(false);
+    voiceAccumRef.current = text;
+  }, []);
+
   return (
     <KeyboardAvoidingView
       style={styles.flex}
@@ -841,7 +1230,7 @@ const AIExploreScreen = ({navigation}) => {
                 onPress={Keyboard.dismiss}
                 accessible={false}>
                 <View style={styles.emptyTouchArea}>
-                  {showTitle && (
+                  {showTitle && !showRecordingUI && (
                     <Animated.View
                       style={[
                         styles.titleWrap,
@@ -859,7 +1248,7 @@ const AIExploreScreen = ({navigation}) => {
             )}
           </View>
 
-          {showChips && (
+          {showChips && !showRecordingUI && (
             <Animated.View
               style={[
                 styles.suggestionWrap,
@@ -899,34 +1288,136 @@ const AIExploreScreen = ({navigation}) => {
 
           {/** ─────────── INPUT FIELD ─────────── */}
           <View style={[styles.bottomInput]}>
-            <View style={styles.inputBox}>
-              <CustomTextInput
-                ref={inputRef}
-                placeholder="한잔하고 싶은 술집을 입력하세요"
-                value={prompt}
-                onChangeText={setPrompt}
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-                // onSubmitEditing={submit}
-                placeholderTextColor={ColorUtil.placeholderText}
-                style={styles.input}
-                onFocus={() => setIsInputFocused(true)}
-                onBlur={() => setIsInputFocused(false)}
-              />
-              <View
-                style={[
-                  styles.trailingAction,
-                  hasPrompt ? styles.sendAlign : styles.micAlign,
-                ]}>
-                {hasPrompt ? (
-                  <Pressable style={styles.sendButton} onPress={submit}>
-                    <Ionicons name="arrow-up" size={20} color="#333" />
+            <View
+              style={[
+                styles.inputBox,
+                showRecordingUI && styles.recordingContainer,
+              ]}>
+              {showRecordingUI ? (
+                <>
+                  <Pressable
+                    style={styles.stopButton}
+                    onPress={handleStopPress}
+                    hitSlop={10}>
+                    <Ionicons name="stop" size={18} color="#f2f2f2" />
                   </Pressable>
-                ) : (
-                  <AIMicIcon size={22} />
-                )}
-              </View>
+                  <View style={styles.recordingBox}>
+                    {isRecording ? (
+                      <View style={styles.recordingWaveWindow}>
+                        <Animated.View
+                          style={[
+                            styles.recordingWaveTrack,
+                            {
+                              width: waveformWidth,
+                              transform: [
+                                {
+                                  translateX: recordShiftAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0, -waveformTravel],
+                                  }),
+                                },
+                              ],
+                            },
+                          ]}>
+                          {waveformBars.map(({idx, seed}) => {
+                            const silentScale = 0.25;
+                            const dynamicScale = 1 + seed * 1.2;
+                            const maxScale = 1.6 + seed * 1.2;
+                            const scale = volumeLevel.interpolate({
+                              inputRange: [0, 0.2, 1, 3],
+                              outputRange: [
+                                silentScale,
+                                silentScale,
+                                dynamicScale,
+                                maxScale,
+                              ],
+                              extrapolate: 'clamp',
+                            });
+                            const opacity = volumeLevel.interpolate({
+                              inputRange: [0, 0.2, 1, 3],
+                              outputRange: [0.2, 0.3, 0.9, 1],
+                              extrapolate: 'clamp',
+                            });
+                            return (
+                              <Animated.View
+                                key={`bar-${idx}`}
+                                style={[
+                                  styles.recordingWaveBar,
+                                  {transform: [{scaleY: scale}], opacity},
+                                ]}
+                              />
+                            );
+                          })}
+                        </Animated.View>
+                      </View>
+                    ) : (
+                      <View style={styles.recordingLabelRow}>
+                        <ActivityIndicator
+                          style={styles.recordingSpinner}
+                          size="small"
+                          color="#9AA0A6"
+                        />
+                        <CustomText style={styles.recordingLabel}>
+                          받아쓰는 중
+                        </CustomText>
+                      </View>
+                    )}
+                  </View>
+                  <View style={[styles.trailingAction, styles.sendAlign]}>
+                    <Pressable
+                      style={[
+                        styles.sendButton,
+                        styles.sendButtonActive,
+                        (sending || isTranscribing) &&
+                          styles.sendButtonDisabled,
+                      ]}
+                      onPress={handleSendPress}
+                      disabled={sending || isTranscribing}>
+                      <Ionicons
+                        name="arrow-up"
+                        size={20}
+                        color={sending || isTranscribing ? '#aaa' : '#111'}
+                      />
+                    </Pressable>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <CustomTextInput
+                    ref={inputRef}
+                    placeholder="한잔하고 싶은 술집을 입력하세요"
+                    value={prompt}
+                    onChangeText={handleChangePrompt}
+                    multiline
+                    numberOfLines={3}
+                    textAlignVertical="top"
+                    placeholderTextColor={ColorUtil.placeholderText}
+                    style={styles.input}
+                    onFocus={() => setIsInputFocused(true)}
+                    onBlur={() => setIsInputFocused(false)}
+                  />
+                  <View
+                    style={[
+                      styles.trailingAction,
+                      hasPrompt ? styles.sendAlign : styles.micAlign,
+                    ]}>
+                    {hasPrompt ? (
+                      <Pressable
+                        style={styles.sendButton}
+                        onPress={handleSendPress}>
+                        <Ionicons name="arrow-up" size={20} color="#333" />
+                      </Pressable>
+                    ) : (
+                      <Pressable
+                        style={styles.micButton}
+                        onPress={handleMicPress}
+                        hitSlop={10}>
+                        <AIMicIcon size={22} />
+                      </Pressable>
+                    )}
+                  </View>
+                </>
+              )}
             </View>
           </View>
         </Animated.View>
@@ -1109,6 +1600,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  recordingContainer: {
+    backgroundColor: '#fff',
+    borderColor: '#e5e5e5',
+  },
   input: {
     flex: 1,
     fontSize: 16,
@@ -1140,6 +1635,77 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 100,
     backgroundColor: '#f2f2f2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sendButtonActive: {
+    backgroundColor: '#f5f5f5',
+  },
+  sendButtonDisabled: {
+    opacity: 0.5,
+  },
+  stopButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#333',
+    marginRight: 8,
+    marginLeft: -4,
+  },
+  recordingBox: {
+    flex: 1,
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  recordingWaveRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 20,
+    overflow: 'hidden',
+  },
+  recordingWaveWindow: {
+    height: 20,
+    overflow: 'hidden',
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recordingWaveTrack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  recordingWaveBar: {
+    width: 3,
+    height: 8,
+    marginHorizontal: 0.8,
+    backgroundColor: '#666',
+    borderRadius: 2,
+  },
+  recordingLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+  },
+  recordingLabel: {
+    marginLeft: 7,
+    color: '#9AA0A6',
+    fontSize: 14,
+    fontFamily: 'Pretendard-Regular',
+  },
+  recordingSpinner: {
+    width: 14,
+    height: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    transform: [{scale: 0.8}],
+  },
+  micButton: {
     alignItems: 'center',
     justifyContent: 'center',
   },
