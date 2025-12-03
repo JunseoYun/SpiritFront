@@ -1461,11 +1461,7 @@ const MapScreen = ({navigation, route}) => {
           forceWhiteBackground={shouldForceListModeUi && !isUpdatingLocation}
           isAiSearchMode={isAiSearchMode}
           searchLabelOverride={
-            isAiSearchMode && aiSearchPrompt?.trim?.()
-              ? `${AI_SEARCH_LABEL} · ${aiSearchPrompt}`
-              : isAiSearchMode
-              ? AI_SEARCH_LABEL
-              : undefined
+            isAiSearchMode ? '탐색 보기' : undefined
           }
           onClearSearch={handleClearSearch}
         />

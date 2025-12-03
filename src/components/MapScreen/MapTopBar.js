@@ -138,22 +138,29 @@ const MapTopBar = ({
                 prevTab,
               });
             }}>
-            <CustomText
-              maxScale={1.2}
-              style={[
-                styles.placeholder,
-                searchText?.trim()?.length > 0 && !isAiSearchMode
-                  ? {color: 'black'}
-                  : null,
-                isAiSearchMode ? styles.aiSubText : null,
-              ]}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              {searchLabelOverride ??
-                (searchText?.trim()?.length > 0
-                  ? searchText
-                  : '술집이나 메뉴를 검색하세요')}
-            </CustomText>
+            {isAiSearchMode ? (
+              <CustomText
+                maxScale={1.2}
+                style={[styles.placeholder, styles.aiSubText]}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {searchLabelOverride?.trim?.() || '탐색 보기'}
+              </CustomText>
+            ) : (
+              <CustomText
+                maxScale={1.2}
+                style={[
+                  styles.placeholder,
+                  searchText?.trim()?.length > 0 && {color: '#333'},
+                ]}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {searchLabelOverride ??
+                  (searchText?.trim()?.length > 0
+                    ? searchText
+                    : '술집이나 메뉴를 검색하세요')}
+              </CustomText>
+            )}
           </Pressable>
         </Animated.View>
 
@@ -243,8 +250,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
   },
   aiSubText: {
-    color: '#9E9E9E',
+    color: '#333',
   },
+  aiLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  aiBadge: {},
+  aiBadgeText: {},
+  aiPromptText: {},
   exploreButton: {
     width: 48,
     height: 48,
