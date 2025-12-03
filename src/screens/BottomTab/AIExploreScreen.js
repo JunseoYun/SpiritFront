@@ -638,7 +638,7 @@ const AIExploreScreen = ({navigation}) => {
 
   useEffect(() => {
     let shiftAnim;
-    if (isRecording || isTranscribing) {
+    if (isRecording) {
       recordShiftAnim.stopAnimation();
       recordShiftAnim.setValue(0);
       shiftAnim = Animated.timing(recordShiftAnim, {
@@ -654,7 +654,7 @@ const AIExploreScreen = ({navigation}) => {
     return () => {
       shiftAnim?.stop();
     };
-  }, [isRecording, isTranscribing, recordShiftAnim, waveformDuration]);
+  }, [isRecording, recordShiftAnim, waveformDuration]);
 
   useEffect(() => {
     const showEvent =
@@ -712,20 +712,42 @@ const AIExploreScreen = ({navigation}) => {
         restartTimerRef.current && clearTimeout(restartTimerRef.current);
         restartTimerRef.current = setTimeout(restartListening, 200);
       } else {
-        clearTranscribeTimer();
-        setIsTranscribing(false);
+        setIsRecording(false);
+        // stop 이후에는 받아쓰기 상태 유지
       }
     };
     Voice.onSpeechError = error => {
       console.log('[AIExplore voice] error', error);
+      if (autoSentVoiceRef.current) {
+        return;
+      }
       if (keepRecordingRef.current) {
         setIsRecording(true);
         setIsTranscribing(false);
         restartTimerRef.current && clearTimeout(restartTimerRef.current);
         restartTimerRef.current = setTimeout(restartListening, 300);
       } else {
-        clearTranscribeTimer();
-        setIsTranscribing(false);
+        setIsRecording(false);
+        // stop 이후에는 받아쓰기 상태 유지
+        const fallback =
+          typeof voiceAccumRef.current === 'string'
+            ? voiceAccumRef.current.trim()
+            : '';
+        const shouldSend = pendingVoiceSendRef.current && fallback;
+        if (shouldSend) {
+          submit(fallback);
+          setPrompt('');
+          setVoiceInputPending(false);
+          voiceAccumRef.current = '';
+          autoSentVoiceRef.current = true;
+        } else if (fallback) {
+          setPrompt(fallback);
+          setVoiceInputPending(true);
+          voiceAccumRef.current = fallback;
+        } else {
+          setVoiceInputPending(false);
+          voiceAccumRef.current = '';
+        }
         pendingVoiceSendRef.current = false;
       }
     };
@@ -734,31 +756,40 @@ const AIExploreScreen = ({navigation}) => {
         return;
       }
       const text = Array.isArray(event?.value) ? event.value[0]?.trim() : '';
+      const fallback =
+        text ||
+        (typeof voiceAccumRef.current === 'string'
+          ? voiceAccumRef.current.trim()
+          : '');
       clearTranscribeTimer();
       setIsTranscribing(false);
+      setIsRecording(false);
       if (keepRecordingRef.current) {
-        voiceAccumRef.current = text || voiceAccumRef.current;
-        setIsRecording(true);
+        voiceAccumRef.current = fallback || voiceAccumRef.current;
+        setIsRecording(true); // keep showing recording UI while looping
         return; // 녹음 중에는 최종 텍스트를 입력창에 표시하지 않음
       }
-      setIsRecording(false);
-      if (!text) {
-        setVoiceInputPending(false);
+      if (pendingVoiceSendRef.current) {
+        if (fallback) {
+          submit(fallback);
+          setPrompt('');
+          setVoiceInputPending(false);
+          voiceAccumRef.current = '';
+          autoSentVoiceRef.current = true;
+        } else {
+          setVoiceInputPending(false);
+          voiceAccumRef.current = '';
+        }
         pendingVoiceSendRef.current = false;
         return;
       }
-      const merged = text || voiceAccumRef.current;
-      if (pendingVoiceSendRef.current) {
-        submit(merged);
-        setPrompt('');
+      if (!fallback) {
         setVoiceInputPending(false);
         voiceAccumRef.current = '';
-        autoSentVoiceRef.current = true;
-        pendingVoiceSendRef.current = false;
         return;
       }
-      voiceAccumRef.current = merged;
-      setPrompt(merged);
+      voiceAccumRef.current = fallback;
+      setPrompt(fallback);
       setVoiceInputPending(true);
     };
 
