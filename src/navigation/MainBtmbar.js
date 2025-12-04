@@ -8,6 +8,7 @@ import AIExploreScreen from '../screens/BottomTab/AIExploreScreen';
 import MyStack from './MyStack';
 import CustomText from '../utils/CustomText';
 import {AIFullIcon, AIEmptyIcon} from '../assets/svg/AiTabIcon';
+import {HomeEmptyIcon, HomeFullIcon} from '../assets/svg/HomeTabIcon';
 
 const Tab = createBottomTabNavigator();
 const INITIAL_TAB = 'MainScreen';
@@ -52,13 +53,17 @@ const MainBtmbar = ({route}) => {
           alignContent: 'center',
           justifyContent: 'center',
         },
-        tabBarActiveTintColor: '#1a1a1a',
+        tabBarActiveTintColor: '#333',
         tabBarInactiveTintColor: '#999',
         tabBarIcon: ({focused, color, size}) => {
           let iconName;
-          if (route.name === 'MainScreen')
-            iconName = focused ? 'home' : 'home-outline';
-          else if (route.name === 'MapScreen')
+          if (route.name === 'MainScreen') {
+            return focused ? (
+              <HomeFullIcon size={30} color={color} />
+            ) : (
+              <HomeEmptyIcon size={30} color={color} />
+            );
+          } else if (route.name === 'MapScreen')
             iconName = focused ? 'map' : 'map-outline';
           else if (route.name === 'AIExploreScreen') {
             return focused ? (
