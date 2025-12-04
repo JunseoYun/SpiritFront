@@ -214,7 +214,7 @@ const MapDetailItem = ({
     .slice(0, 2);
   const imgSrc = mainImageUrl
     ? {uri: mainImageUrl}
-    : require('../../../assets/default_store.png');
+    : require('../../../assets/default_store2.png');
   const showMosaicLayout = hasPhotos && mosaicImages.length === 2;
   const detailBodyAnimatedStyle = useAnimatedStyle(() => {
     const progress = detailRevealProgressValue?.value ?? 1;

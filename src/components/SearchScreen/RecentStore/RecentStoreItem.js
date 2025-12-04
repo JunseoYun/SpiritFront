@@ -69,7 +69,7 @@ const RecentStoreItem = ({store, navigation, location}) => {
           source={
             store.mainImgUrl
               ? {uri: store.mainImgUrl} // ✅ 네트워크 이미지
-              : require('../../../assets/default_store.png') // ✅ 로컬 이미지
+              : require('../../../assets/default_store2.png') // ✅ 로컬 이미지
           }
           style={styles.backimage}
           imageStyle={styles.backimagestyle}>

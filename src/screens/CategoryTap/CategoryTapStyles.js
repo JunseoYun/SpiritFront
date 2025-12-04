@@ -56,20 +56,15 @@ const Categorystyles = StyleSheet.create({
     borderColor: '#f1f1f1',
   },
   noneImg: {
-    width: 130,
-    height: 130,
-    // borderRadius: 10,
-    // 아래 세 줄은 삭제하세요 👇
-    // alignContent: 'center',
-    // alignItems: 'center',
-    // justifyContent: 'center',
+    width: 180,
+    height: 190,
   },
   gradientTop: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 65, // 그라데이션 높이
+    height: 90, // 그라데이션 높이
     zIndex: 1,
   },
   menuName: {
@@ -115,7 +110,7 @@ const Categorystyles = StyleSheet.create({
     // borderRadius: 9,
   },
   semiOverlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.2)', // ✅ 반투명 배경 추가
+    backgroundColor: 'rgba(0, 0, 0, 0)', // ✅ 반투명 배경 추가
     alignItems: 'flex-start',
     width: '100%',
     height: '100%',
