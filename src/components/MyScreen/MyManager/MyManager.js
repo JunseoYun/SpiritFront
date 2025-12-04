@@ -92,7 +92,7 @@ const MyManager = ({navigation}) => {
             source={
               item.mainImgUrl
                 ? {uri: item.mainImgUrl}
-                : require('../../../assets/store.png')
+                : require('../../../assets/default_store2.png')
             }
             style={styles.storeImage}
           />

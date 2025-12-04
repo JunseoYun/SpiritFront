@@ -64,6 +64,9 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
     return [...matched, ...others];
   }, [drinkType, store?.mainDrinkDtos]);
 
+  const menuRenderList = store?.menuList || [];
+  const hasMenuThumb = menuRenderList.length > 0;
+
   return (
     <View style={styles.itemContainer}>
       <View style={styles.imageView}>
@@ -85,13 +88,13 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
                 }
                 style={[
                   styles.mainImageView,
-                  store.menuList.every(menu => !menu.imgUrl)
+                  hasMenuThumb
                     ? {
-                        borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
-                      }
-                    : {
                         borderTopLeftRadius: 9,
                         borderBottomLeftRadius: 9,
+                      }
+                    : {
+                        borderRadius: 9,
                       },
                 ]}>
                 {(() => {
@@ -116,13 +119,13 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
                   // overlay 스타일 계산
                   const overlayStyle = [
                     styles.overlay,
-                    store.menuList.every(menu => !menu.imgUrl)
+                    hasMenuThumb
                       ? {
-                          borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
-                        }
-                      : {
                           borderTopLeftRadius: 9,
                           borderBottomLeftRadius: 9,
+                        }
+                      : {
+                          borderRadius: 9,
                         },
                   ];
 
@@ -140,13 +143,13 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
                 resizeMode={FastImage.resizeMode.contain}
                 style={[
                   styles.noneImageView,
-                  store.menuList.every(menu => !menu.imgUrl)
+                  hasMenuThumb
                     ? {
-                        borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
-                      }
-                    : {
                         borderTopLeftRadius: 9,
                         borderBottomLeftRadius: 9,
+                      }
+                    : {
+                        borderRadius: 9,
                       },
                 ]}>
                 <View
@@ -156,7 +159,7 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
                     alignItems: 'center',
                   }}>
                   <FastImage
-                    source={require('../../../assets/store.png')}
+                    source={require('../../../assets/default_store2.png')}
                     style={styles.noneImg}
                     resizeMode={FastImage.resizeMode.contain}
                   />
@@ -183,13 +186,13 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
                   // overlay 스타일 계산
                   const overlayStyle = [
                     styles.overlay,
-                    store.menuList.every(menu => !menu.imgUrl)
+                    hasMenuThumb
                       ? {
-                          borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
-                        }
-                      : {
                           borderTopLeftRadius: 9,
                           borderBottomLeftRadius: 9,
+                        }
+                      : {
+                          borderRadius: 9,
                         },
                   ];
 
@@ -204,73 +207,70 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
               </FastImage>
             )}
           </Pressable>
-          {store.menuList?.length > 0 &&
-            store.menuList
-              .filter(menu => !!menu.imgUrl)
-              .map((menu, index, arr) => (
-                <Pressable
-                  onPress={handleStorePress}
-                  key={index}
-                  style={styles.menuItemView}>
-                  <FastImage
-                    source={
-                      {uri: menu.imgUrl} // ✅ 네트워크 이미지
-                      // ✅ 로컬 이미지
-                    }
+          {menuRenderList.length > 0 &&
+            menuRenderList.map((menu, index, arr) => (
+              <Pressable
+                onPress={handleStorePress}
+                key={index}
+                style={styles.menuItemView}>
+                <FastImage
+                  source={
+                    menu.imgUrl
+                      ? {uri: menu.imgUrl} // ✅ 네트워크 이미지
+                      : require('../../../assets/default_menu.png')
+                  }
+                  style={[
+                    styles.menuImageView,
+                    index === arr.length - 1
+                      ? {
+                          borderTopRightRadius: 9,
+                          borderBottomRightRadius: 9,
+                        }
+                      : {
+                          borderTopRightRadius: 0,
+                          borderBottomRightRadius: 0,
+                        },
+                  ]}>
+                  <View
                     style={[
-                      styles.menuImageView,
-                      index === arr.length - 1 && {
-                        borderTopRightRadius: 9,
-                        borderBottomRightRadius: 9,
-                      },
+                      styles.semiOverlay,
+                      index === arr.length - 1
+                        ? {
+                            borderTopRightRadius: 9,
+                            borderBottomRightRadius: 9,
+                          }
+                        : {
+                            borderTopRightRadius: 0,
+                            borderBottomRightRadius: 0,
+                          },
                     ]}>
-                    {(!isOpen && !nextclosed && !closed) ||
-                    (!isOpen && nextclosed && !closed) ||
-                    (!isOpen && !nextclosed && closed) ||
-                    (isOpen && isBreak) ? (
-                      // 오버레이만 표시 (내용 없음)
-                      <View
-                        style={[
-                          styles.overlay,
-                          index === arr.length - 1 && {
-                            borderTopRightRadius: 9,
-                            borderBottomRightRadius: 9,
-                          },
-                        ]}></View>
-                    ) : (
-                      // 메뉴 정보가 포함된 오버레이
-                      <View
-                        style={[
-                          styles.semiOverlay,
-                          index === arr.length - 1 && {
-                            borderTopRightRadius: 9,
-                            borderBottomRightRadius: 9,
-                          },
-                        ]}>
-                        <LinearGradient
-                          colors={['rgba(0, 0, 0, 0.3)', 'transparent']} // 위쪽은 어두움 → 아래쪽은 투명
-                          style={styles.gradientTop}
-                          pointerEvents="none"
-                        />
-                        <CustomText
-                          style={styles.menuName}
-                          numberOfLines={1}
-                          ellipsizeMode="tail">
-                          {menu.name}
-                        </CustomText>
-                        <CustomText
-                          style={styles.menuPrice}
-                          numberOfLines={1}
-                          ellipsizeMode="tail">
-                          {/^\d+$/.test(menu?.price)
-                            ? Number(menu.price).toLocaleString() + '원'
-                            : menu?.price}
-                        </CustomText>
-                      </View>
-                    )}
-                  </FastImage>
-                </Pressable>
-              ))}
+                    <LinearGradient
+                      colors={
+                        menu.imgUrl
+                          ? ['rgba(0, 0, 0, 0.3)', 'transparent']
+                          : ['rgba(0, 0, 0, 0.2)', 'transparent']
+                      } // 기본 이미지는 약하게
+                      style={styles.gradientTop}
+                      pointerEvents="none"
+                    />
+                    <CustomText
+                      style={styles.menuName}
+                      numberOfLines={1}
+                      ellipsizeMode="tail">
+                      {menu.name}
+                    </CustomText>
+                    <CustomText
+                      style={styles.menuPrice}
+                      numberOfLines={1}
+                      ellipsizeMode="tail">
+                      {/^\d+$/.test(menu?.price)
+                        ? Number(menu.price).toLocaleString() + '원'
+                        : menu?.price}
+                    </CustomText>
+                  </View>
+                </FastImage>
+              </Pressable>
+            ))}
         </ScrollView>
       </View>
 
@@ -436,15 +436,15 @@ const styles = StyleSheet.create({
     borderColor: '#f1f1f1',
   },
   noneImg: {
-    width: 130,
-    height: 130,
+    width: 180,
+    height: 190,
   },
   gradientTop: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 65, // 그라데이션 높이
+    height: 90, // 그라데이션 높이
     zIndex: 1,
   },
   menuName: {
@@ -489,7 +489,6 @@ const styles = StyleSheet.create({
     // borderRadius: 9,
   },
   semiOverlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.2)', // ✅ 반투명 배경 추가
     alignItems: 'flex-start',
     width: '100%',
     height: '100%',

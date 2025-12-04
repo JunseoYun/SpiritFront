@@ -50,6 +50,9 @@ const StoreItem = ({store, location, navigation}) => {
     return store.mainDrinkDtos;
   }, [store?.mainDrinkDtos]);
 
+  const menuRenderList = store?.menuList || [];
+  const hasMenuThumb = menuRenderList.length > 0;
+
   return (
     <View style={Categorystyles.itemContainer}>
       <View style={Categorystyles.imageView}>
@@ -73,13 +76,13 @@ const StoreItem = ({store, location, navigation}) => {
                 }
                 style={[
                   Categorystyles.mainImageView,
-                  store.menuList.every(menu => !menu.imgUrl)
+                  hasMenuThumb
                     ? {
-                        borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
-                      }
-                    : {
                         borderTopLeftRadius: 9,
                         borderBottomLeftRadius: 9,
+                      }
+                    : {
+                        borderRadius: 9,
                       },
                 ]}>
                 {(() => {
@@ -104,13 +107,13 @@ const StoreItem = ({store, location, navigation}) => {
                   // overlay 스타일 계산
                   const overlayStyle = [
                     Categorystyles.overlay,
-                    store.menuList.every(menu => !menu.imgUrl)
+                    hasMenuThumb
                       ? {
-                          borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
-                        }
-                      : {
                           borderTopLeftRadius: 9,
                           borderBottomLeftRadius: 9,
+                        }
+                      : {
+                          borderRadius: 9,
                         },
                   ];
 
@@ -130,13 +133,13 @@ const StoreItem = ({store, location, navigation}) => {
                 resizeMode={FastImage.resizeMode.contain}
                 style={[
                   Categorystyles.noneImageView,
-                  store.menuList.every(menu => !menu.imgUrl)
+                  hasMenuThumb
                     ? {
-                        borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
-                      }
-                    : {
                         borderTopLeftRadius: 9,
                         borderBottomLeftRadius: 9,
+                      }
+                    : {
+                        borderRadius: 9,
                       },
                 ]}>
                 <View
@@ -146,7 +149,7 @@ const StoreItem = ({store, location, navigation}) => {
                     alignItems: 'center',
                   }}>
                   <FastImage
-                    source={require('../../assets/store.png')}
+                    source={require('../../assets/default_store2.png')}
                     style={Categorystyles.noneImg}
                     resizeMode={FastImage.resizeMode.contain}
                   />
@@ -173,13 +176,13 @@ const StoreItem = ({store, location, navigation}) => {
                   // overlay 스타일 계산
                   const overlayStyle = [
                     Categorystyles.overlay,
-                    store.menuList.every(menu => !menu.imgUrl)
+                    hasMenuThumb
                       ? {
-                          borderRadius: 9, // 메뉴는 있지만 imgUrl 없는 경우
-                        }
-                      : {
                           borderTopLeftRadius: 9,
                           borderBottomLeftRadius: 9,
+                        }
+                      : {
+                          borderRadius: 9,
                         },
                   ];
 
@@ -196,73 +199,70 @@ const StoreItem = ({store, location, navigation}) => {
               </FastImage>
             )}
           </Pressable>
-          {store.menuList?.length > 0 &&
-            store.menuList
-              .filter(menu => !!menu.imgUrl)
-              .map((menu, index, arr) => (
-                <Pressable
-                  onPress={handleStorePress}
-                  key={index}
-                  style={Categorystyles.menuItemView}>
-                  <FastImage
-                    source={
-                      {uri: menu.imgUrl} // ✅ 네트워크 이미지
-                      // ✅ 로컬 이미지
-                    }
+          {menuRenderList.length > 0 &&
+            menuRenderList.map((menu, index, arr) => (
+              <Pressable
+                onPress={handleStorePress}
+                key={index}
+                style={Categorystyles.menuItemView}>
+                <FastImage
+                  source={
+                    menu.imgUrl
+                      ? {uri: menu.imgUrl}
+                      : require('../../assets/default_menu.png')
+                  }
+                  style={[
+                    Categorystyles.menuImageView,
+                    index === arr.length - 1
+                      ? {
+                          borderTopRightRadius: 9,
+                          borderBottomRightRadius: 9,
+                        }
+                      : {
+                          borderTopRightRadius: 0,
+                          borderBottomRightRadius: 0,
+                        },
+                  ]}>
+                  <View
                     style={[
-                      Categorystyles.menuImageView,
-                      index === arr.length - 1 && {
-                        borderTopRightRadius: 9,
-                        borderBottomRightRadius: 9,
-                      },
+                      Categorystyles.semiOverlay,
+                      index === arr.length - 1
+                        ? {
+                            borderTopRightRadius: 9,
+                            borderBottomRightRadius: 9,
+                          }
+                        : {
+                            borderTopRightRadius: 0,
+                            borderBottomRightRadius: 0,
+                          },
                     ]}>
-                    {(!isOpen && !nextclosed && !closed) ||
-                    (!isOpen && nextclosed && !closed) ||
-                    (!isOpen && !nextclosed && closed) ||
-                    (isOpen && isBreak) ? (
-                      // 오버레이만 표시 (내용 없음)
-                      <View
-                        style={[
-                          Categorystyles.overlay,
-                          index === arr.length - 1 && {
-                            borderTopRightRadius: 9,
-                            borderBottomRightRadius: 9,
-                          },
-                        ]}></View>
-                    ) : (
-                      // 메뉴 정보가 포함된 오버레이
-                      <View
-                        style={[
-                          Categorystyles.semiOverlay,
-                          index === arr.length - 1 && {
-                            borderTopRightRadius: 9,
-                            borderBottomRightRadius: 9,
-                          },
-                        ]}>
-                        <LinearGradient
-                          colors={['rgba(0, 0, 0, 0.3)', 'transparent']} // 위쪽은 어두움 → 아래쪽은 투명
-                          style={Categorystyles.gradientTop}
-                          pointerEvents="none"
-                        />
-                        <CustomText
-                          style={Categorystyles.menuName}
-                          numberOfLines={1}
-                          ellipsizeMode="tail">
-                          {menu.name}
-                        </CustomText>
-                        <CustomText
-                          style={Categorystyles.menuPrice}
-                          numberOfLines={1}
-                          ellipsizeMode="tail">
-                          {/^\d+$/.test(menu?.price)
-                            ? Number(menu.price).toLocaleString() + '원'
-                            : menu?.price}
-                        </CustomText>
-                      </View>
-                    )}
-                  </FastImage>
-                </Pressable>
-              ))}
+                    <LinearGradient
+                      colors={
+                        menu.imgUrl
+                          ? ['rgba(0, 0, 0, 0.5)', 'transparent']
+                          : ['rgba(0, 0, 0, 0.2)', 'transparent']
+                      } // 위쪽은 어두움 → 아래쪽은 투명 (기본 이미지는 약하게)
+                      style={Categorystyles.gradientTop}
+                      pointerEvents="none"
+                    />
+                    <CustomText
+                      style={Categorystyles.menuName}
+                      numberOfLines={1}
+                      ellipsizeMode="tail">
+                      {menu.name}
+                    </CustomText>
+                    <CustomText
+                      style={Categorystyles.menuPrice}
+                      numberOfLines={1}
+                      ellipsizeMode="tail">
+                      {/^\d+$/.test(menu?.price)
+                        ? Number(menu.price).toLocaleString() + '원'
+                        : menu?.price}
+                    </CustomText>
+                  </View>
+                </FastImage>
+              </Pressable>
+            ))}
         </ScrollView>
       </View>
 

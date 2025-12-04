@@ -13,6 +13,7 @@ import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
 import FastImage from 'react-native-fast-image';
 import CustomText from '../../utils/CustomText';
+import ColorUtil from '../../utils/ColorUtil';
 
 const windowWidth = Dimensions.get('window').width;
 const H_MARGIN = 18;
@@ -68,22 +69,11 @@ const LikedItem = ({store, navigation}) => {
           source={
             store?.mainImgUrl
               ? {uri: store.mainImgUrl}
-              : require('../../assets/default_store.png')
+              : require('../../assets/default_store2.png')
           }
           style={styles.image}
           resizeMode={FastImage.resizeMode.cover}
         />
-
-        {/* 인증 배지 (우상단) */}
-        {store?.isCertified && (
-          <View style={styles.verifyBadge} pointerEvents="none">
-            <FastImage
-              source={require('../../assets/verifyMaker.png')}
-              style={styles.verifyIcon}
-              resizeMode={FastImage.resizeMode.contain}
-            />
-          </View>
-        )}
 
         {/* 상태 칩(우하단) */}
         {isOpen && isBreak ? (
@@ -150,6 +140,15 @@ const LikedItem = ({store, navigation}) => {
 
         {/* 상단: 이름 + 평점/리뷰수 */}
         <View style={styles.titleRow}>
+          {store?.isCertified && (
+            <View style={styles.verifyBadgeInline} pointerEvents="none">
+              <FastImage
+                source={require('../../assets/verifyMaker.png')}
+                style={styles.verifyIcon}
+                resizeMode={FastImage.resizeMode.contain}
+              />
+            </View>
+          )}
           <CustomText style={styles.title} numberOfLines={1}>
             {store?.name || '가게 이름'}
           </CustomText>
@@ -244,18 +243,14 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 
-  // 인증 배지
-  verifyBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 3,
-    padding: 4,
-    borderRadius: 30,
-  },
   verifyIcon: {
-    width: 24,
-    height: 24,
+    width: 18,
+    height: 18,
+  },
+  verifyBadgeInline: {
+    marginRight: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   // 칩들
