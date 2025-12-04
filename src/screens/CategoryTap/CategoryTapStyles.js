@@ -150,11 +150,15 @@ const Categorystyles = StyleSheet.create({
   },
   infoTopView: {
     width: '100%',
-    marginTop: 1,
-
-    paddingHorizontal: 18,
+    marginTop: 10,
+    paddingHorizontal: 20,
   },
   infoTitleView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  infoTitleViewSection: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -190,13 +194,13 @@ const Categorystyles = StyleSheet.create({
     // flexDirection: 'row',
     // alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 7,
   },
   subInfoText: {
     fontSize: 14,
-    fontFamily: 'Pretendard-Medium',
-    color: '#999',
-    textAlign: 'left',
+    color: '#4b5563',
+    fontFamily: 'Pretendard-Regular',
+    textAlign: 'center',
   },
   iconStar: {
     justifyContent: 'space-between',
@@ -221,14 +225,30 @@ const Categorystyles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 5,
     marginRight: 9,
-    fontFamily: 'Pretendard-Medium',
-    color: '#767676',
+    color: '#6b7280',
+    fontFamily: 'Pretendard-SemiBold',
   },
   imageStyle: {
     alignSelf: 'center',
     width: 15,
     height: 15,
     marginRight: 5,
+  },
+  mainDrinkView: {
+    flexDirection: 'row',
+    marginTop: 16,
+  },
+  drinkBadge: {
+    marginRight: 7,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 3,
+  },
+  drinkBadgeText: {
+    color: '#121212',
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    paddingVertical: 2,
+    paddingHorizontal: 4,
   },
 });
 
