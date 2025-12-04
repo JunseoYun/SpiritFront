@@ -1,7 +1,6 @@
-import React from 'react';
-import {View, Text, Pressable, ScrollView, PixelRatio} from 'react-native';
+import React, {useMemo} from 'react';
+import {View, Pressable, ScrollView, PixelRatio} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import LinearGradient from 'react-native-linear-gradient';
 import Categorystyles from '../../screens/CategoryTap/CategoryTapStyles';
@@ -43,6 +42,13 @@ const StoreItem = ({store, location, navigation}) => {
       params: {storeId: store.id},
     });
   };
+
+  const prioritizedDrinks = useMemo(() => {
+    if (!store?.mainDrinkDtos?.length) {
+      return [];
+    }
+    return store.mainDrinkDtos;
+  }, [store?.mainDrinkDtos]);
 
   return (
     <View style={Categorystyles.itemContainer}>
@@ -261,67 +267,42 @@ const StoreItem = ({store, location, navigation}) => {
       </View>
 
       <Pressable onPress={handleStorePress} style={Categorystyles.infoTopView}>
-        <View style={Categorystyles.drinkView}>
-          {store.mainDrinkDtos && store.mainDrinkDtos.length > 0
-            ? store.mainDrinkDtos.map((drink, index) => {
-                const isLast = index === store.mainDrinkDtos.length - 1;
-                return (
-                  <React.Fragment key={index}>
-                    <CustomText
-                      style={Categorystyles.drinkText}
-                      {...(isLast
-                        ? {numberOfLines: 1, ellipsizeMode: 'tail', flex: 1}
-                        : {})} // 마지막만 적용
-                    >
-                      {translateAlcohol(drink.type)} {drink.price}
-                    </CustomText>
-                    {index !== store.mainDrinkDtos.length - 1 && (
-                      <View style={Categorystyles.division} />
-                    )}
-                  </React.Fragment>
-                );
-              })
-            : null}
-        </View>
         <View style={Categorystyles.infoTitleView}>
-          {store.isCertified == true && (
-            <FastImage
-              source={require('../../assets/verifyMaker.png')}
+          <View style={[Categorystyles.infoTitleViewSection, {flex: 1}]}>
+            {store.isCertified == true && (
+              <FastImage
+                source={require('../../assets/verifyMaker.png')}
+                style={[
+                  Categorystyles.imageStyle,
+                  fontScale >= 1.5 && {width: 21, height: 21},
+                ]}
+              />
+            )}
+            <CustomText
+              style={Categorystyles.storeName}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {store.name}
+            </CustomText>
+          </View>
+          <View style={Categorystyles.infoTitleViewSection}>
+            <FontAwesomeIcon name="star" size={iconSize} color="#FED348" />
+            <CustomText style={Categorystyles.infoText}>
+              {' '}
+              {store.storeRate || 0}
+            </CustomText>
+            <CustomText
               style={[
-                Categorystyles.imageStyle,
-                fontScale >= 1.5 && {width: 21, height: 21},
-              ]}
-            />
-          )}
-          <CustomText
-            style={Categorystyles.storeName}
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            {store.name}
-          </CustomText>
-        </View>
-        <View style={Categorystyles.infoReviewView}>
-          <FontAwesomeIcon name="star" size={iconSize} color="#FED348" />
-          <CustomText style={Categorystyles.infoText}>
-            {' '}
-            {store.storeRate || 0}
-          </CustomText>
-          <CustomText
-            style={[
-              Categorystyles.infoText,
-              {color: '#999', fontFamily: 'Pretendard-Regular', marginLeft: 3},
-            ]}>
-            ({store.reviewCount || 0})
-          </CustomText>
-          <Ionicons
-            name="heart"
-            size={iconSize}
-            color={'#F85656'}
-            style={{marginLeft: 7}}
-          />
-          <CustomText style={[Categorystyles.infoText, {marginLeft: 3}]}>
-            {store.storeLikeCount || 0}
-          </CustomText>
+                Categorystyles.infoText,
+                {
+                  color: '#999',
+                  fontFamily: 'Pretendard-Regular',
+                  marginLeft: 3,
+                },
+              ]}>
+              ({Number(store.reviewCount ?? 0).toLocaleString('ko-KR')})
+            </CustomText>
+          </View>
         </View>
         <View
           style={[
@@ -361,6 +342,32 @@ const StoreItem = ({store, location, navigation}) => {
             </View>
           )}
         </View>
+
+        {prioritizedDrinks.length > 0 && (
+          <View style={Categorystyles.mainDrinkView}>
+            {prioritizedDrinks.map((drink, idx, arr) => {
+              const isLast = idx === arr.length - 1;
+
+              return (
+                <View
+                  key={idx}
+                  style={[
+                    Categorystyles.drinkBadge,
+                    isLast ? {flexShrink: 1} : {},
+                  ]}>
+                  <CustomText
+                    style={Categorystyles.drinkBadgeText}
+                    {...(isLast
+                      ? {numberOfLines: 1, ellipsizeMode: 'tail'}
+                      : {})}>
+                    {translateAlcohol(drink.type)}
+                    {drink.price ? ` ${drink.price}` : ''}
+                  </CustomText>
+                </View>
+              );
+            })}
+          </View>
+        )}
       </Pressable>
     </View>
   );
