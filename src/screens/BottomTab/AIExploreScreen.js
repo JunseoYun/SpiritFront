@@ -326,17 +326,28 @@ const AIExploreScreen = ({navigation}) => {
     [navigation],
   );
 
-  const suggestions = [
-    {keyword: '늦게까지 하는', subtext: '호프집 알려줘'},
-    {keyword: '소주 싼 곳', subtext: '알려줘'},
-    {keyword: '회식하기 좋은', subtext: '이자카야 추천해줘'},
-    {keyword: '축구 보면서', subtext: '한잔하기 좋은 곳 알려줘'},
-    {keyword: '가성비 좋은', subtext: '술집 추천해줘'},
-    {keyword: '단체 가기 편한', subtext: '술집 어디 있어?'},
-    {keyword: '분위기 깔끔한', subtext: '바 추천해줘'},
-    {keyword: '안주 잘하는', subtext: '술집 찾아줘'},
-  ];
+  // const suggestions = [
+  //   {keyword: '늦게까지 하는', subtext: '호프집 알려줘'},
+  //   {keyword: '소주 싼 곳', subtext: '알려줘'},
+  //   {keyword: '회식하기 좋은', subtext: '이자카야 추천해줘'},
+  //   {keyword: '축구 보면서', subtext: '한잔하기 좋은 곳 알려줘'},
+  //   {keyword: '가성비 좋은', subtext: '술집 추천해줘'},
+  //   {keyword: '단체 가기 편한', subtext: '술집 어디 있어?'},
+  //   {keyword: '분위기 깔끔한', subtext: '바 추천해줘'},
+  //   {keyword: '안주 잘하는', subtext: '술집 찾아줘'},
+  // ];
 
+  const suggestions = [
+    {keyword: '지금 바로 갈 수 있는', subtext: '호프집 알려줘'},
+    {keyword: '2시간 뒤에도 영업하는', subtext: '펍·바 찾아줘'},
+    {keyword: '회식하기 좋은', subtext: '고깃집 추천해줘'},
+    {keyword: '축구 보면서', subtext: '술 마실 곳 알려줘'},
+    {keyword: '가성비 좋은', subtext: '술집 추천해줘'},
+    {keyword: '개별 룸 있는', subtext: '이자카야 알려줘'},
+    {keyword: '단체로 가기 좋은', subtext: '술집 추천해줘'},
+    {keyword: '인테리어 깔끔한', subtext: '와인바 추천해줘'},
+    {keyword: '방어 파는 곳', subtext: '알려줘'},
+  ];
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
