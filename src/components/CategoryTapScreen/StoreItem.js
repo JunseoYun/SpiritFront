@@ -149,7 +149,7 @@ const StoreItem = ({store, location, navigation}) => {
                     alignItems: 'center',
                   }}>
                   <FastImage
-                    source={require('../../assets/default_store2.png')}
+                    source={require('../../assets/default_store6.png')}
                     style={Categorystyles.noneImg}
                     resizeMode={FastImage.resizeMode.contain}
                   />
@@ -209,7 +209,7 @@ const StoreItem = ({store, location, navigation}) => {
                   source={
                     menu.imgUrl
                       ? {uri: menu.imgUrl}
-                      : require('../../assets/default_menu.png')
+                      : require('../../assets/default_menu2.png')
                   }
                   style={[
                     Categorystyles.menuImageView,

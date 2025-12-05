@@ -1,4 +1,5 @@
 import {StyleSheet} from 'react-native';
+import ColorUtil from '../../utils/ColorUtil';
 
 const Categorystyles = StyleSheet.create({
   itemContainer: {
@@ -52,8 +53,6 @@ const Categorystyles = StyleSheet.create({
     alignItems: 'center', // 가로 중앙
     justifyContent: 'center', // 세로 중앙
     alignSelf: 'center', // 부모 기준 중앙 (ScrollView 내에서)
-    borderWidth: 1,
-    borderColor: '#f1f1f1',
   },
   noneImg: {
     width: 180,
@@ -64,7 +63,7 @@ const Categorystyles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 90, // 그라데이션 높이
+    height: 55, // 그라데이션 높이
     zIndex: 1,
   },
   menuName: {
@@ -83,8 +82,8 @@ const Categorystyles = StyleSheet.create({
     color: '#fff',
     marginLeft: 5,
     textAlign: 'center',
-
     zIndex: 3,
+    marginTop: -2,
   },
   storeMainView: {
     width: 130,

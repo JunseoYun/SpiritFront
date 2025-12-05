@@ -26,7 +26,7 @@ const ViewedStoreItem = ({store, location, navigation}) => {
           source={
             store.mainImgUrl
               ? {uri: store.mainImgUrl}
-              : require('../../../assets/default_store2.png')
+              : require('../../../assets/default_store6.png')
           }
           style={{
             width: 100,

@@ -77,7 +77,7 @@ const TodayRecommItem = ({store, navigation}) => {
         source={
           store.mainImgUrl
             ? {uri: store.mainImgUrl, priority: FastImage.priority.normal}
-            : require('../../../assets/default_store2.png')
+            : require('../../../assets/default_store6.png')
         }
         resizeMode={FastImage.resizeMode.cover}>
         {/* 오버레이 컨테이너 */}

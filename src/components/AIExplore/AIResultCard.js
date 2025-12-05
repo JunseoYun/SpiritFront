@@ -124,7 +124,7 @@ const AIResultCard = ({store, navigation, userLocation, searchConditions}) => {
           source={
             store?.mainImgUrl
               ? {uri: store?.mainImgUrl}
-              : require('../../assets/default_store2.png')
+              : require('../../assets/default_store6.png')
           }
           style={styles.resultImage}
           imageStyle={styles.resultImageRadius}
