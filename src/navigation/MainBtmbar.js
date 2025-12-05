@@ -110,7 +110,7 @@ const MainBtmbar = ({route}) => {
         options={{
           tabBarLabel: ({color, focused}) =>
             renderLabel('탐색', focused ? '#3CBBFF' : color),
-          headerShown: true,
+          headerShown: false,
         }}
       />
       <Tab.Screen

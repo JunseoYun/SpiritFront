@@ -131,36 +131,32 @@ const MapTopBar = ({
           <Pressable
             style={styles.searchBox}
             onPress={() => {
+              const trimmedKeyword =
+                typeof searchText === 'string' ? searchText.trim() : '';
+              const shouldPreserve =
+                trimmedKeyword.length > 0 || isAiSearchMode;
               navigation.navigate('SearchScreen', {
-                // AI 모드에서도 검색 화면은 빈 입력으로 시작하게 하고, 맵 상태는 그대로 둔다.
-                preserveFilters: !isAiSearchMode,
+                preserveFilters: shouldPreserve,
                 fromAI: isAiSearchMode,
                 prevTab,
+                initialSearchKeyword: trimmedKeyword || undefined,
               });
             }}>
-            {isAiSearchMode ? (
-              <CustomText
-                maxScale={1.2}
-                style={[styles.placeholder, styles.aiSubText]}
-                numberOfLines={1}
-                ellipsizeMode="tail">
-                {searchLabelOverride?.trim?.() || '탐색 보기'}
-              </CustomText>
-            ) : (
-              <CustomText
-                maxScale={1.2}
-                style={[
-                  styles.placeholder,
-                  searchText?.trim()?.length > 0 && {color: '#333'},
-                ]}
-                numberOfLines={1}
-                ellipsizeMode="tail">
-                {searchLabelOverride ??
-                  (searchText?.trim()?.length > 0
-                    ? searchText
-                    : '술집이나 메뉴를 검색하세요')}
-              </CustomText>
-            )}
+            <CustomText
+              maxScale={1.2}
+              style={[
+                styles.placeholder,
+                searchText?.trim()?.length > 0
+                  ? {color: '#333'}
+                  : {color: styles.placeholder.color},
+              ]}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {searchLabelOverride?.trim?.() ||
+                (searchText?.trim()?.length > 0
+                  ? searchText
+                  : '술집이나 메뉴를 검색하세요')}
+            </CustomText>
           </Pressable>
         </Animated.View>
 
@@ -249,9 +245,7 @@ const styles = StyleSheet.create({
     paddingRight: 30,
     fontFamily: 'Pretendard-Regular',
   },
-  aiSubText: {
-    color: '#333',
-  },
+
   aiLabelRow: {
     flexDirection: 'row',
     alignItems: 'center',

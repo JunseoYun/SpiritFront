@@ -70,44 +70,45 @@ const styles = StyleSheet.create({
 
 const categories = [
   {
-    source: require('../../../assets/category/Izakaya.png'),
+    source: require('../../../assets/category/Izakaya2.png'),
     text: '이자카야',
   },
   {
-    source: require('../../../assets/category/Koreafood.png'),
+    source: require('../../../assets/category/Koreafood2.png'),
     text: '한식',
   },
   {
-    source: require('../../../assets/category/Westernfood.png'),
+    source: require('../../../assets/category/Westernfood2.png'),
     text: '양식',
   },
   {
-    source: require('../../../assets/category/Chinesefood.png'),
+    source: require('../../../assets/category/Chinesefood2.png'),
     text: '중식',
   },
   {
-    source: require('../../../assets/category/Emotional.png'),
+    source: require('../../../assets/category/Emotional2.png'),
     text: '감성주점',
   },
+  {
+    source: require('../../../assets/category/Pocha2.png'),
+    text: '포장마차',
+  },
+
   {
     source: require('../../../assets/category/Grilled.png'),
     text: '구이·찜',
   },
   {
-    source: require('../../../assets/category/Hope.png'),
+    source: require('../../../assets/category/Hope2.png'),
     text: '치킨·호프',
   },
   {
-    source: require('../../../assets/category/Seafood.png'),
+    source: require('../../../assets/category/Seafood2.png'),
     text: '회·해산물',
   },
   {
-    source: require('../../../assets/category/Pupbar.png'),
+    source: require('../../../assets/category/Pupbar2.png'),
     text: '펍·바',
-  },
-  {
-    source: require('../../../assets/category/Pocha.png'),
-    text: '포장마차',
   },
 ];
 

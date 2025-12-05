@@ -7,11 +7,11 @@ const categoryMap = {
   WESTERN: '양식',
   CHINESE: '중식',
   GAMSEONG: '감성주점',
+  POCHA: '포장마차',
   GRILLED_STEW: '구이·찜',
   CHICKEN_HOF: '치킨·호프',
   RAW_SEAFOOD: '회·해산물',
   PUB_BAR: '펍·바',
-  POCHA: '포장마차',
 };
 
 // 영어 카테고리명을 한글로 변환하는 훅

@@ -24,10 +24,14 @@ import MapStoreList from '../../components/MapScreen/MapStore/MapStoreList';
 import Loading from '../../hooks/Loading';
 import MapTopBar from '../../components/MapScreen/MapTopBar';
 import MapSearchBar from '../../components/MapScreen/MapSearchBar';
-import {useMapSearch} from '../../context/MapSearchContext';
+import {
+  useMapSearch,
+  buildInitialSelectedFilters,
+} from '../../context/MapSearchContext';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   buildConditionSearchDto,
+  conditionSearchFilterKeys,
   normalizeStoreResponse,
 } from '../../utils/buildConditionSearchDto';
 
@@ -127,7 +131,174 @@ const normalizeStoreForMap = store => {
   return normalized;
 };
 
-const AI_SEARCH_LABEL = '탐색';
+const CATEGORY_LABEL_BY_CODE = {
+  IZAKAYA: '이자카야',
+  KOREAN: '한식',
+  WESTERN: '양식',
+  CHINESE: '중식',
+  GAMSEONG: '감성주점',
+  POCHA: '포장마차',
+  GRILLED_STEW: '구이·찜',
+  CHICKEN_HOF: '치킨·호프',
+  RAW_SEAFOOD: '회·해산물',
+  PUB_BAR: '펍·바',
+};
+const DRINK_LABEL_BY_CODE = {
+  SOJU: '소주',
+  BEER: '맥주',
+  MAKGEOLLI: '막걸리',
+  WINE: '와인',
+  COCKTAIL: '칵테일',
+  SAKE: '사케',
+  KAOLIANG: '고량주',
+  WHISKEY: '위스키',
+  VODKA: '보드카',
+  TRADITIONAL: '전통주',
+  HIGHBALL: '하이볼',
+  TEQUILA: '데킬라',
+};
+const MOOD_LABEL_BY_CODE = {
+  QUIET: '대화하기 좋은',
+  LIVELY: '활기찬',
+  SOLO_FRIENDLY: '혼술',
+  DATE: '데이트',
+  PARTY_EVENT: '파티·이벤트',
+  TRADITIONAL: '전통적인',
+  EXOTIC: '이국적인',
+  MODERN: '모던·깔끔한',
+  OLD_SCHOOL: '노포 감성',
+  VIEW_SPOT: '뷰 맛집',
+  LOCAL_FAVORITE: '로컬 맛집',
+  SECOND_ROUND: '2차 맛집',
+};
+const GROUP_VALUE = '단체 방문';
+const AVAILABLE_VALUE = '가능';
+const SCREEN_VALUE = '설치';
+
+const extractTimeLabel = raw => {
+  if (typeof raw !== 'string') {
+    return '';
+  }
+  const isoMatch = raw.match(/T(\d{2}):(\d{2})/);
+  if (isoMatch) {
+    return `${isoMatch[1]}:${isoMatch[2]}`;
+  }
+  const timeMatch = raw.match(/(\d{1,2}):(\d{2})/);
+  if (timeMatch) {
+    const hours = timeMatch[1].padStart(2, '0');
+    return `${hours}:${timeMatch[2]}`;
+  }
+  return '';
+};
+
+const toArray = value => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map(item => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+};
+
+const buildFiltersFromSearchConditions = conditions => {
+  const baseFilters = buildInitialSelectedFilters();
+  if (!conditions) {
+    return baseFilters;
+  }
+  const keys = conditionSearchFilterKeys;
+  if (typeof conditions.radius === 'number') {
+    baseFilters[keys.distance] = `${conditions.radius}km`;
+  }
+  const categoryLabel = CATEGORY_LABEL_BY_CODE[conditions.category];
+  if (categoryLabel) {
+    baseFilters[keys.category] = categoryLabel;
+  }
+  const drinkLabel = DRINK_LABEL_BY_CODE[conditions.drinkType];
+  if (drinkLabel) {
+    baseFilters[keys.alcohol] = drinkLabel;
+  }
+  const moodLabels = toArray(conditions.moods)
+    .map(code => MOOD_LABEL_BY_CODE[code])
+    .filter(Boolean);
+  if (moodLabels.length > 0) {
+    baseFilters[keys.moods] = moodLabels;
+  }
+  const timeLabel = extractTimeLabel(
+    conditions.arrivalTime || conditions.conditionTime,
+  );
+  if (timeLabel) {
+    baseFilters[keys.visitTime] = timeLabel;
+  }
+  if (conditions.isGroupAvailable) {
+    baseFilters[keys.people] = GROUP_VALUE;
+  }
+  if (conditions.isParkingAvailable) {
+    baseFilters[keys.parking] = AVAILABLE_VALUE;
+  }
+  if (conditions.isCorkageAvailable) {
+    baseFilters[keys.corkage] = AVAILABLE_VALUE;
+  }
+  if (conditions.hasRoom) {
+    baseFilters[keys.room] = AVAILABLE_VALUE;
+  }
+  if (conditions.hasOutdoor) {
+    baseFilters[keys.outdoor] = AVAILABLE_VALUE;
+  }
+  if (conditions.hasScreen) {
+    baseFilters[keys.screen] = SCREEN_VALUE;
+  }
+  if (conditions.drinkPriceOrder) {
+    baseFilters[keys.priceOrder] = conditions.drinkPriceOrder;
+  }
+  return baseFilters;
+};
+
+const resolveLatLngFromConditions = (
+  conditions,
+  fallbackStores = [],
+  fallbackLocation = null,
+) => {
+  const candidate = (Array.isArray(fallbackStores) ? fallbackStores : []).find(
+    item => resolveLocationDto(item),
+  );
+  const locFromStore = candidate ? resolveLocationDto(candidate) : null;
+  if (
+    locFromStore &&
+    typeof locFromStore.latitude === 'number' &&
+    typeof locFromStore.longitude === 'number'
+  ) {
+    return {
+      latitude: locFromStore.latitude,
+      longitude: locFromStore.longitude,
+    };
+  }
+  const latFromCond =
+    conditions && typeof conditions.latitude === 'number'
+      ? conditions.latitude
+      : null;
+  const lngFromCond =
+    conditions && typeof conditions.longitude === 'number'
+      ? conditions.longitude
+      : null;
+  if (latFromCond != null && lngFromCond != null) {
+    return {latitude: latFromCond, longitude: lngFromCond};
+  }
+  if (
+    fallbackLocation &&
+    typeof fallbackLocation.latitude === 'number' &&
+    typeof fallbackLocation.longitude === 'number'
+  ) {
+    return {
+      latitude: fallbackLocation.latitude,
+      longitude: fallbackLocation.longitude,
+    };
+  }
+  return {latitude: null, longitude: null};
+};
 
 const {width, height: SCREEN_HEIGHT} = Dimensions.get('window');
 
@@ -153,7 +324,14 @@ const MapScreen = ({navigation, route}) => {
   const [isFlatListVisible, setIsFlatListVisible] = useState(true); // 플랫리스트 상태
   const flatListAnim = useRef(new Animated.Value(0)).current; // 초기 위치 0
   const [radius, setRadiusint] = useState(2);
-  const {radiusKm, selectedFilters, searchText, setSearchText} = useMapSearch();
+  const {
+    radiusKm,
+    setRadiusKm,
+    selectedFilters,
+    setSelectedFilters,
+    searchText,
+    setSearchText,
+  } = useMapSearch();
   const prevRadiusRef = useRef(radius);
   const [storegetloading, setStoregetloading] = useState(true);
   const [sheetIndex, setSheetIndex] = useState(1);
@@ -165,9 +343,12 @@ const MapScreen = ({navigation, route}) => {
   const [isAiSearchMode, setIsAiSearchMode] = useState(false);
   const aiSearchModeRef = useRef(false);
   const [aiSearchStores, setAiSearchStores] = useState([]);
-  const [, setAiSearchConditions] = useState(null);
+  const [aiSearchConditions, setAiSearchConditions] = useState(null);
   const [aiSearchPrompt, setAiSearchPrompt] = useState('');
   const aiRenderPendingRef = useRef(false);
+  const [aiPriorityStores, setAiPriorityStores] = useState([]);
+  const aiPriorityStoresRef = useRef([]);
+  const [aiSearchLabel, setAiSearchLabel] = useState('');
   const [listPage, setListPage] = useState(0);
   const [hasMoreStores, setHasMoreStores] = useState(true);
   const [loadingMoreStores, setLoadingMoreStores] = useState(false);
@@ -184,6 +365,8 @@ const MapScreen = ({navigation, route}) => {
   const lastQueryRef = useRef({lat: null, lng: null, radius: null});
   const detailFetchSeqRef = useRef(0);
   const isFocused = useIsFocused();
+  const mapReadyRef = useRef(false);
+  const pendingCenterRef = useRef(null);
   const buildCurrentQuerySignature = useCallback(
     () =>
       JSON.stringify({
@@ -241,11 +424,21 @@ const MapScreen = ({navigation, route}) => {
           radius,
         );
         const normalized = normalizeStoreResponse(response);
-        setStores(prevStores =>
-          append ? mergeUniqueStores(prevStores, normalized) : normalized,
-        );
+        const withPriority = baseList => {
+          if (page === 0 && aiPriorityStoresRef.current.length > 0) {
+            return mergeUniqueStores(aiPriorityStoresRef.current, baseList);
+          }
+          return baseList;
+        };
+        setStores(prevStores => {
+          if (append) {
+            return mergeUniqueStores(prevStores, normalized);
+          }
+          return withPriority(normalized);
+        });
         if (!append) {
-          setSelectedStore(normalized[0] || null);
+          const mergedForSelection = withPriority(normalized);
+          setSelectedStore(mergedForSelection[0] || null);
           setSelectedStoreIndex(0);
         }
         setListPage(page);
@@ -270,13 +463,15 @@ const MapScreen = ({navigation, route}) => {
         }
       }
     },
-    [buildCurrentConditionDto, hasMoreStores, loadingMoreStores],
+    [
+      aiPriorityStoresRef,
+      buildCurrentConditionDto,
+      hasMoreStores,
+      loadingMoreStores,
+    ],
   );
 
   const handleLoadMoreStores = useCallback(() => {
-    if (aiSearchModeRef.current) {
-      return;
-    }
     if (!hasMoreStores || loadingMoreStores) {
       return;
     }
@@ -339,15 +534,11 @@ const MapScreen = ({navigation, route}) => {
 
   useEffect(() => {
     if (isAiSearchMode && aiRenderPendingRef.current) {
-      renderAiStoresOnMap(aiSearchStores);
+      const listForRender =
+        aiPriorityStores.length > 0 ? aiPriorityStores : aiSearchStores;
+      renderAiStoresOnMap(listForRender);
     }
-  }, [aiSearchStores, isAiSearchMode, renderAiStoresOnMap]);
-
-  useEffect(() => {
-    if (isAiSearchMode && (searchText || '').trim() !== AI_SEARCH_LABEL) {
-      exitAiSearchMode({clearSearchText: false, triggerRefresh: false});
-    }
-  }, [exitAiSearchMode, isAiSearchMode, searchText]);
+  }, [aiPriorityStores, aiSearchStores, isAiSearchMode, renderAiStoresOnMap]);
 
   // consume skipAutoSnap param once and persist in ref for the next focus event
   useEffect(() => {
@@ -359,10 +550,12 @@ const MapScreen = ({navigation, route}) => {
 
   useEffect(() => {
     const aiStoresParam = route?.params?.aiStores;
-    if (Array.isArray(aiStoresParam)) {
+    const incomingSearchConditions =
+      route?.params?.searchConditions || route?.params?.aiSearchConditions;
+    if (Array.isArray(aiStoresParam) || incomingSearchConditions) {
       activateAiSearchMode(
-        aiStoresParam,
-        route?.params?.aiSearchConditions,
+        Array.isArray(aiStoresParam) ? aiStoresParam : [],
+        incomingSearchConditions,
         route?.params?.aiSearchPrompt,
       );
     }
@@ -370,6 +563,7 @@ const MapScreen = ({navigation, route}) => {
     activateAiSearchMode,
     route?.params?.aiSearchConditions,
     route?.params?.aiSearchPrompt,
+    route?.params?.searchConditions,
     route?.params?.aiStores,
   ]);
 
@@ -473,9 +667,6 @@ const MapScreen = ({navigation, route}) => {
   };
 
   const getStorelist = async radius => {
-    if (aiSearchModeRef.current) {
-      return;
-    }
     setLoading(true);
     setStoregetloading(true);
     try {
@@ -525,6 +716,9 @@ const MapScreen = ({navigation, route}) => {
       setAiSearchStores([]);
       setAiSearchConditions(null);
       setAiSearchPrompt('');
+      setAiPriorityStores([]);
+      aiPriorityStoresRef.current = [];
+      setAiSearchLabel('');
       setResultCount(null);
       setDetailStoreId(null);
       setGroupStoreIds(null);
@@ -601,6 +795,7 @@ const MapScreen = ({navigation, route}) => {
       setLocation,
       setPrevCenterLatLng,
       refreshWithLatLngs,
+      setAiSearchLabel,
     ],
   );
 
@@ -609,6 +804,8 @@ const MapScreen = ({navigation, route}) => {
       const normalizedList = (Array.isArray(storeList) ? storeList : [])
         .map(normalizeStoreForMap)
         .filter(Boolean);
+      aiPriorityStoresRef.current = normalizedList;
+      setAiPriorityStores(normalizedList);
       // AI 모드 진입 전에 마지막 일반 검색 좌표/반경을 저장
       if (
         lastQueryRef.current &&
@@ -618,10 +815,6 @@ const MapScreen = ({navigation, route}) => {
       ) {
         lastNonAiQueryRef.current = {...lastQueryRef.current};
       }
-      aiSearchModeRef.current = true;
-      setIsAiSearchMode(true);
-      setAiSearchStores(normalizedList);
-      setAiSearchConditions(searchConditions || null);
       const promptText =
         (typeof promptOverride === 'string' && promptOverride) ||
         (searchConditions && searchConditions.prompt) ||
@@ -629,34 +822,133 @@ const MapScreen = ({navigation, route}) => {
         (searchConditions && searchConditions.query) ||
         (searchConditions && searchConditions.keyword) ||
         '';
+      const hasAiPayload =
+        normalizedList.length > 0 || !!(searchConditions || promptText);
+      aiSearchModeRef.current = hasAiPayload;
+      setIsAiSearchMode(hasAiPayload);
+      setAiSearchStores(normalizedList);
+      setAiSearchConditions(searchConditions || null);
       setAiSearchPrompt(promptText);
-      setStores(normalizedList);
-      setMarkerStores(normalizedList);
       setDetailStoreId(null);
       setGroupStoreIds(null);
-      setSelectedStore(normalizedList[0] || null);
-      setSelectedStoreIndex(0);
-      setHasMoreStores(false);
+      setHasMoreStores(true);
       setLoading(false);
       setStoregetloading(false);
       setLoadingMoreStores(false);
-      setResultCount(normalizedList.length || null);
       setIsMapSearchActive(false);
       setRefresh(false);
-      setSearchText(AI_SEARCH_LABEL);
+
+      const searchKeyword =
+        typeof searchConditions?.searchKeyword === 'string'
+          ? searchConditions.searchKeyword.trim()
+          : '';
+      setAiSearchLabel(searchKeyword || '');
+      const appliedFilters = searchConditions
+        ? buildFiltersFromSearchConditions(searchConditions)
+        : null;
+      if (appliedFilters) {
+        setSelectedFilters(appliedFilters);
+      }
+      setSearchText(searchKeyword);
+      const radiusValue =
+        typeof searchConditions?.radius === 'number'
+          ? searchConditions.radius
+          : radius;
+      if (typeof radiusValue === 'number') {
+        setRadiusKm(radiusValue);
+        setRadiusint(radiusValue);
+      }
+
+      if (normalizedList.length > 0) {
+        setStores(normalizedList);
+        setMarkerStores(normalizedList);
+        setSelectedStore(normalizedList[0] || null);
+        setSelectedStoreIndex(0);
+        setResultCount(normalizedList.length || null);
+      } else {
+        setStores([]);
+        setMarkerStores([]);
+        setSelectedStore(null);
+        setSelectedStoreIndex(0);
+        setResultCount(null);
+      }
+
+      const coords = resolveLatLngFromConditions(
+        searchConditions,
+        normalizedList,
+        location,
+      );
+      if (coords.latitude != null && coords.longitude != null) {
+        setCenterLatLng(coords);
+        setPrevCenterLatLng(coords);
+        setLocation(coords);
+        moveCenterMap(
+          coords.latitude,
+          coords.longitude,
+          sheetIndex,
+          true,
+          SCREEN_HEIGHT * 0.25,
+        );
+      }
+
       navigation?.setParams?.({
         aiStores: null,
         aiSearchConditions: null,
+        aiSearchPrompt: null,
+        searchConditions: null,
         fromAI: null,
       });
-      renderAiStoresOnMap(normalizedList);
+
+      const filtersForDto =
+        appliedFilters || selectedFilters || buildInitialSelectedFilters();
+      const conditionDto = buildConditionSearchDto({
+        filters: filtersForDto,
+        searchKeyword: searchKeyword,
+      });
+      const signature = JSON.stringify({
+        searchKeyword: (searchKeyword || '').trim(),
+        filters: filtersForDto,
+      });
+      const targetRadius =
+        typeof radiusValue === 'number' ? radiusValue : radiusKm;
+      if (
+        typeof coords.latitude === 'number' &&
+        typeof coords.longitude === 'number'
+      ) {
+        setLoading(true);
+        setStoregetloading(true);
+        renderAiStoresOnMap(normalizedList);
+        refreshWithLatLngs(
+          coords.latitude,
+          coords.longitude,
+          coords.latitude,
+          coords.longitude,
+          targetRadius,
+          0,
+          conditionDto,
+          signature,
+          {allowUserMarker: true, suppressUserMarker: true},
+        );
+      } else {
+        renderAiStoresOnMap(normalizedList);
+      }
     },
     [
-      navigation,
+      buildInitialSelectedFilters,
+      radius,
+      radiusKm,
+      selectedFilters,
       renderAiStoresOnMap,
+      navigation,
+      setRadiusKm,
       setSearchText,
+      setSelectedFilters,
       setStores,
       setMarkerStores,
+      location,
+      refreshWithLatLngs,
+      setRadiusint,
+      setAiSearchLabel,
     ],
   );
 
@@ -676,10 +968,6 @@ const MapScreen = ({navigation, route}) => {
   };
 
   const updateNewLocation = async radius => {
-    if (aiSearchModeRef.current) {
-      exitAiSearchMode();
-      return;
-    }
     setIsUpdatingLocation(true);
     setLoading(true);
     try {
@@ -748,9 +1036,6 @@ const MapScreen = ({navigation, route}) => {
       allowUserMarker = false,
       suppressUserMarker: suppressUserMarkerOption = false,
     } = options || {};
-    if (aiSearchModeRef.current) {
-      return;
-    }
     const suppressUserMarker =
       allowUserMarker === true ? suppressUserMarkerOption === true : true;
     try {
@@ -783,7 +1068,11 @@ const MapScreen = ({navigation, route}) => {
         }
         return normalized;
       });
-      setMarkerStores(markerData);
+      const markerWithPriority =
+        aiPriorityStoresRef.current.length > 0
+          ? mergeUniqueStores(aiPriorityStoresRef.current, markerData)
+          : markerData;
+      setMarkerStores(markerWithPriority);
       // keep radius so pagination can reuse it
       lastQueryRef.current = {lat: queryLat, lng: queryLng, radius: reqRadius};
       setHasMoreStores(true);
@@ -803,7 +1092,7 @@ const MapScreen = ({navigation, route}) => {
         const script = generateMapScript(
           baseLat,
           baseLng,
-          markerData,
+          markerWithPriority,
           effectiveOffset,
           {suppressUserMarker},
         );
@@ -821,13 +1110,11 @@ const MapScreen = ({navigation, route}) => {
       console.error('반경 내 매장 조회 중 오류:', err);
       setStoregetloading(false);
     } finally {
-      if (!aiSearchModeRef.current) {
-        lastNonAiQueryRef.current = {
-          lat: queryLat,
-          lng: queryLng,
-          radius: reqRadius,
-        };
-      }
+      lastNonAiQueryRef.current = {
+        lat: queryLat,
+        lng: queryLng,
+        radius: reqRadius,
+      };
       setRefresh(false);
       setLoading(false);
       bottomSheetRef.current?.snapToIndex(1);
@@ -920,10 +1207,6 @@ const MapScreen = ({navigation, route}) => {
   };
 
   const handleSearchThisAreaPress = () => {
-    if (aiSearchModeRef.current) {
-      exitAiSearchMode();
-      return;
-    }
     suppressUserMarkerRef.current = true;
     setIsMapSearchActive(true);
     setcenterrefresh(radius);
@@ -953,6 +1236,13 @@ const MapScreen = ({navigation, route}) => {
 
     const moved =
       force || !roundedPrev || isSignificantMovement(roundedPrev, roundedNew);
+
+    if (!mapReadyRef.current) {
+      pendingCenterRef.current = {latitude: lat, longitude: lng, offsetY};
+      setCenterLatLng({latitude: lat, longitude: lng});
+      setPrevCenterLatLng({latitude: lat, longitude: lng});
+      return;
+    }
 
     if (moved) {
       isProgrammaticPan.current = true; // ?? 다음 idle은 무시하게 하기
@@ -991,8 +1281,9 @@ const MapScreen = ({navigation, route}) => {
       // 기존 메시지 처리
       if (message.action === 'mapLoaded') {
         console.log('Kakao Maps API가 로드되었습니다.');
-        const baseLat = location?.latitude;
-        const baseLng = location?.longitude;
+        mapReadyRef.current = true;
+        const baseLat = centerLatLng?.latitude ?? location?.latitude;
+        const baseLng = centerLatLng?.longitude ?? location?.longitude;
         if (
           webViewRef.current &&
           typeof baseLat === 'number' &&
@@ -1003,14 +1294,30 @@ const MapScreen = ({navigation, route}) => {
           webViewRef.current.injectJavaScript(script);
         }
 
-        if (aiSearchModeRef.current) {
-          renderAiStoresOnMap();
-          setStoregetloading(false);
-          setLoading(false);
+        const priorityListForRender =
+          aiPriorityStores.length > 0
+            ? aiPriorityStores
+            : aiPriorityStoresRef.current;
+        if (priorityListForRender.length > 0) {
+          renderAiStoresOnMap(priorityListForRender);
+        }
+
+        if (pendingCenterRef.current) {
+          const {
+            latitude: pendLat,
+            longitude: pendLng,
+            offsetY,
+          } = pendingCenterRef.current;
+          pendingCenterRef.current = null;
+          moveCenterMap(pendLat, pendLng, sheetIndex, true, offsetY);
+        }
+
+        if (typeof baseLat === 'number' && typeof baseLng === 'number') {
+          setRefresh(true);
+          setcenterrefresh(radius);
         } else {
           getStorelist(radius);
         }
-        setRefresh(false);
         return;
       }
       if (
@@ -1092,16 +1399,6 @@ const MapScreen = ({navigation, route}) => {
           latitude: message.latitude,
           longitude: message.longitude,
         };
-
-        if (aiSearchModeRef.current) {
-          setCenterLatLng(current);
-          setPrevCenterLatLng(current);
-          if (sheetIndex !== 0) {
-            bottomSheetRef.current?.snapToIndex?.(0);
-            setSheetIndex(0);
-          }
-          return;
-        }
 
         if (isSignificantMovement(prevCenterLatLng, current)) {
           setCenterLatLng(current);
@@ -1327,9 +1624,6 @@ const MapScreen = ({navigation, route}) => {
 
   const requeryStoresWithCurrentFilters = useCallback(
     filtersOverride => {
-      if (aiSearchModeRef.current) {
-        return;
-      }
       const baseLat = centerLatLng?.latitude ?? location?.latitude;
       const baseLng = centerLatLng?.longitude ?? location?.longitude;
       if (typeof baseLat !== 'number' || typeof baseLng !== 'number') {
@@ -1391,26 +1685,88 @@ const MapScreen = ({navigation, route}) => {
     if (!isFocused) {
       return;
     }
-    if (isAiSearchMode) {
-      return;
-    }
     const signature = buildCurrentQuerySignature();
     if (lastAppliedQueryRef.current === signature) {
       return;
     }
     requeryForSearchParamsChange();
-  }, [
-    buildCurrentQuerySignature,
-    isAiSearchMode,
-    isFocused,
-    requeryForSearchParamsChange,
-  ]);
+  }, [buildCurrentQuerySignature, isFocused, requeryForSearchParamsChange]);
 
   useEffect(() => {
     if (!refresh) {
       setIsMapSearchActive(false);
     }
   }, [refresh]);
+
+  useEffect(() => {
+    const dto = buildConditionSearchDto({
+      filters: selectedFilters,
+      searchKeyword: searchText,
+    });
+    const moodArray = dto.moods
+      ? dto.moods
+          .split(',')
+          .map(item => item.trim())
+          .filter(Boolean)
+      : null;
+    const latestLat =
+      typeof lastQueryRef.current.lat === 'number'
+        ? lastQueryRef.current.lat
+        : centerLatLng?.latitude ?? location?.latitude ?? null;
+    const latestLng =
+      typeof lastQueryRef.current.lng === 'number'
+        ? lastQueryRef.current.lng
+        : centerLatLng?.longitude ?? location?.longitude ?? null;
+    const radiusValue =
+      typeof radiusKm === 'number' ? radiusKm : radius ?? null;
+    const nextConditions = {
+      arrivalTime: dto.conditionTime || null,
+      category: dto.category || null,
+      drinkPriceOrder: dto.priceOrder || null,
+      drinkType: dto.drinkType || null,
+      hasOutdoor:
+        dto.hasOutdoor === true
+          ? true
+          : dto.hasOutdoor === false
+          ? false
+          : null,
+      hasRoom:
+        dto.hasRoom === true ? true : dto.hasRoom === false ? false : null,
+      hasScreen:
+        dto.hasScreen === true ? true : dto.hasScreen === false ? false : null,
+      isCorkageAvailable:
+        dto.isCorkageAvailable === true
+          ? true
+          : dto.isCorkageAvailable === false
+          ? false
+          : null,
+      isGroupAvailable:
+        dto.isGroupAvailable === true
+          ? true
+          : dto.isGroupAvailable === false
+          ? false
+          : null,
+      isParkingAvailable:
+        dto.isParkingAvailable === true
+          ? true
+          : dto.isParkingAvailable === false
+          ? false
+          : null,
+      moods: moodArray,
+      radius: radiusValue,
+      searchKeyword: dto.searchKeyword || '',
+      latitude: typeof latestLat === 'number' ? latestLat : null,
+      longitude: typeof latestLng === 'number' ? latestLng : null,
+    };
+    const nextJson = JSON.stringify(nextConditions);
+    setAiSearchConditions(prev => {
+      const prevJson = JSON.stringify(prev);
+      if (prevJson === nextJson) {
+        return prev;
+      }
+      return nextConditions;
+    });
+  }, [centerLatLng, location, radius, radiusKm, searchText, selectedFilters]);
 
   // Track group total when a marker group is clicked
   useEffect(() => {
@@ -1431,9 +1787,12 @@ const MapScreen = ({navigation, route}) => {
     shouldForceListModeUi && !isUpdatingLocation && !isListRestoring;
   const hasMapSource =
     !!location ||
+    (aiSearchConditions &&
+      typeof aiSearchConditions.latitude === 'number' &&
+      typeof aiSearchConditions.longitude === 'number') ||
     (isAiSearchMode &&
-      Array.isArray(aiSearchStores) &&
-      aiSearchStores.length > 0);
+      ((Array.isArray(aiPriorityStores) && aiPriorityStores.length > 0) ||
+        (Array.isArray(aiSearchStores) && aiSearchStores.length > 0)));
 
   return (
     <>
@@ -1461,13 +1820,15 @@ const MapScreen = ({navigation, route}) => {
           forceWhiteBackground={shouldForceListModeUi && !isUpdatingLocation}
           isAiSearchMode={isAiSearchMode}
           searchLabelOverride={
-            isAiSearchMode ? '탐색 보기' : undefined
+            isAiSearchMode && aiSearchLabel?.trim?.()
+              ? aiSearchLabel.trim()
+              : undefined
           }
           onClearSearch={handleClearSearch}
         />
       </View>
 
-      {refresh && (
+      {refresh && !loading && (
         <View
           style={[styles.searchOverlay, {top: topBarHeight || 0}]}
           pointerEvents="box-none">
@@ -1479,7 +1840,7 @@ const MapScreen = ({navigation, route}) => {
         updateNewLocation={() => updateNewLocation()}
         flatListAnim={flatListAnim}
         isFlatListVisible={isFlatListVisible}
-        hideFilters={isAiSearchMode}
+        hideFilters={false}
         stores={stores}
         selectedStoreIndex={selectedStoreIndex}
         setSelectedStoreIndex={setSelectedStoreIndex}

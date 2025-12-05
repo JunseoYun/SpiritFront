@@ -962,11 +962,11 @@ const screens = [
   'WESTERN',
   'CHINESE',
   'GAMSEONG',
+  'POCHA',
   'GRILLED_STEW',
   'CHICKEN_HOF',
   'RAW_SEAFOOD',
   'PUB_BAR',
-  'POCHA',
 ];
 
 export default MainScreen;
