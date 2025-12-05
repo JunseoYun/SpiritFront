@@ -97,14 +97,30 @@ const SearchScreen = ({navigation, route}) => {
     useCallback(() => {
       loadRecentSearches();
       const shouldPreserve = preserveFiltersRef.current;
+      const initialKeyword =
+        typeof route?.params?.initialSearchKeyword === 'string'
+          ? route.params.initialSearchKeyword.trim()
+          : '';
       if (shouldPreserve) {
         setPendingFilters(selectedFiltersRef.current);
         setPendingRadiusKm(radiusKmRef.current);
-        setSearchStoreName(searchText?.trim() ? searchText : '');
+        setSearchStoreName(
+          initialKeyword || (searchText?.trim() ? searchText : ''),
+        );
         navigation.setParams({preserveFilters: false});
+        if (initialKeyword) {
+          navigation.setParams({initialSearchKeyword: undefined});
+        }
       } else {
-        resetFiltersToInitial();
-        setSearchStoreName('');
+        if (initialKeyword) {
+          setPendingFilters(selectedFiltersRef.current);
+          setPendingRadiusKm(radiusKmRef.current);
+          setSearchStoreName(initialKeyword);
+          navigation.setParams({initialSearchKeyword: undefined});
+        } else {
+          resetFiltersToInitial();
+          setSearchStoreName('');
+        }
       }
     }, [loadRecentSearches, navigation, resetFiltersToInitial, searchText]),
   );

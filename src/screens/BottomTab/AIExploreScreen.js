@@ -105,6 +105,7 @@ const AIExploreScreen = ({navigation}) => {
   const hasPrompt = prompt.trim().length > 0;
   const hasMessages = chatHistory.length > 0;
   const scrollViewRef = useRef(null);
+  const pendingScrollMessageIdRef = useRef(null);
   const titleAnim = useRef(new Animated.Value(1)).current;
   const chipAnim = useRef(new Animated.Value(1)).current;
   const [showTitle, setShowTitle] = useState(true);
@@ -319,6 +320,7 @@ const AIExploreScreen = ({navigation}) => {
       navigation.navigate('MapScreen', {
         aiStores: Array.isArray(stores) ? stores : [],
         aiSearchConditions: searchConditions || null,
+        searchConditions: searchConditions || null,
         aiSearchPrompt: typeof promptText === 'string' ? promptText : null,
         prevTab: 'AIExploreScreen',
       });
@@ -457,6 +459,7 @@ const AIExploreScreen = ({navigation}) => {
           userPrompt: trimmed,
         };
 
+        pendingScrollMessageIdRef.current = aiMessage.id;
         setChatHistory(prev => [...prev, aiMessage]);
       } catch (error) {
         showToast('죄송해요. 잠시 후 다시 시도해주세요.', 'center');
@@ -597,6 +600,18 @@ const AIExploreScreen = ({navigation}) => {
       scrollViewRef.current.scrollToEnd({animated: true});
     }
   }, [hasMessages, chatHistory, sending]);
+
+  const handleMessageLayout = useCallback((messageId, y) => {
+    if (
+      pendingScrollMessageIdRef.current &&
+      messageId === pendingScrollMessageIdRef.current
+    ) {
+      pendingScrollMessageIdRef.current = null;
+      requestAnimationFrame(() => {
+        scrollViewRef.current?.scrollTo({y, animated: true});
+      });
+    }
+  }, []);
 
   const clearTranscribeTimer = useCallback(() => {
     if (transcribeTimeoutRef.current) {
@@ -1187,7 +1202,15 @@ const AIExploreScreen = ({navigation}) => {
                 ]}>
                 {chatHistory.map(message =>
                   message.role === 'user' ? (
-                    <View key={message.id} style={styles.bubbleRow}>
+                    <View
+                      key={message.id}
+                      style={styles.bubbleRow}
+                      onLayout={({nativeEvent}) =>
+                        handleMessageLayout(
+                          message.id,
+                          nativeEvent?.layout?.y ?? 0,
+                        )
+                      }>
                       <View style={styles.messageBubble}>
                         <CustomText style={styles.messageText}>
                           {message.text}
@@ -1202,7 +1225,15 @@ const AIExploreScreen = ({navigation}) => {
                       )}
                     </View>
                   ) : (
-                    <View key={message.id} style={styles.aiRow}>
+                    <View
+                      key={message.id}
+                      style={styles.aiRow}
+                      onLayout={({nativeEvent}) =>
+                        handleMessageLayout(
+                          message.id,
+                          nativeEvent?.layout?.y ?? 0,
+                        )
+                      }>
                       <View style={styles.aiAvatarLarge}>
                         <AIFullIcon size={26} />
                       </View>
