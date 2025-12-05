@@ -16,6 +16,7 @@ import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
 import CustomText from '../../../utils/CustomText';
+import ColorUtil from '../../../utils/ColorUtil';
 const fontScale = PixelRatio.getFontScale();
 
 const iconSize = fontScale >= 1.5 ? 22 : 16;
@@ -159,7 +160,7 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
                     alignItems: 'center',
                   }}>
                   <FastImage
-                    source={require('../../../assets/default_store2.png')}
+                    source={require('../../../assets/default_store6.png')}
                     style={styles.noneImg}
                     resizeMode={FastImage.resizeMode.contain}
                   />
@@ -217,7 +218,7 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
                   source={
                     menu.imgUrl
                       ? {uri: menu.imgUrl} // ✅ 네트워크 이미지
-                      : require('../../../assets/default_menu.png')
+                      : require('../../../assets/default_menu2.png')
                   }
                   style={[
                     styles.menuImageView,
@@ -432,8 +433,6 @@ const styles = StyleSheet.create({
     alignItems: 'center', // 가로 중앙
     justifyContent: 'center', // 세로 중앙
     alignSelf: 'center', // 부모 기준 중앙 (ScrollView 내에서)
-    borderWidth: 1,
-    borderColor: '#f1f1f1',
   },
   noneImg: {
     width: 180,
@@ -444,7 +443,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 90, // 그라데이션 높이
+    height: 55, // 그라데이션 높이
     zIndex: 1,
   },
   menuName: {
@@ -462,8 +461,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginLeft: 5,
     textAlign: 'center',
-
     zIndex: 3,
+    marginTop: -2,
   },
   storeMainView: {
     width: 130,

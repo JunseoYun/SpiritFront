@@ -142,7 +142,7 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
                 source={
                   previewData?.storeImage
                     ? {uri: previewData.storeImage}
-                    : require('../assets/default_store2.png')
+                    : require('../assets/default_store6.png')
                 }
                 style={styles.coverImage}
                 resizeMode={FastImage.resizeMode.cover}

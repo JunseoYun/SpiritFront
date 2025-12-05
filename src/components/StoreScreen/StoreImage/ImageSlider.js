@@ -183,7 +183,7 @@ const ImageSlider = ({
         <View style={styles.noneImageContainer}>
           <FastImage
             style={[styles.noneImage]}
-            source={require('../../../assets/default_store2.png')}
+            source={require('../../../assets/default_store6.png')}
             resizeMode={FastImage.resizeMode.cover}
           />
         </View>
