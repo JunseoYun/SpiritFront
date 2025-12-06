@@ -866,10 +866,9 @@ const AIExploreScreen = ({navigation}) => {
     };
   }, [clearTranscribeTimer, isVoiceSupported, restartListening, submit]);
 
-  const bottomPadding = keyboardVisible
-    ? insets.bottom + 24
-    : insets.bottom + 100;
-  const firstUserMessageId = chatHistory.find(msg => msg.role === 'user')?.id;
+  const bottomPadding = keyboardVisible ? insets.bottom + 24 : insets.bottom;
+  const showSendButton = hasPrompt;
+  const showMicButton = !showSendButton && isVoiceSupported;
   const showRecordingUI = isVoiceSupported && (isRecording || isTranscribing);
   const waveformBars = useMemo(
     () => waveformSeeds.map((seed, idx) => ({seed, idx})),
@@ -1244,13 +1243,6 @@ const AIExploreScreen = ({navigation}) => {
                             {message.text}
                           </CustomText>
                         </View>
-                        {message.id === firstUserMessageId && !!address && (
-                          <CustomText
-                            style={styles.addressSubtext}
-                            numberOfLines={2}>
-                            {address}
-                          </CustomText>
-                        )}
                       </View>
                     );
                   }
@@ -1519,7 +1511,7 @@ const AIExploreScreen = ({navigation}) => {
                 <>
                   <CustomTextInput
                     ref={inputRef}
-                    placeholder="한잔하고 싶은 술집을 입력하세요"
+                    placeholder="가고 싶은 술집을 설명해주세요"
                     value={prompt}
                     onChangeText={handleChangePrompt}
                     multiline
@@ -1533,23 +1525,23 @@ const AIExploreScreen = ({navigation}) => {
                   <View
                     style={[
                       styles.trailingAction,
-                      hasPrompt || !isVoiceSupported
-                        ? styles.sendAlign
-                        : styles.micAlign,
+                      showSendButton ? styles.sendAlign : styles.micAlign,
                     ]}>
-                    {hasPrompt || !isVoiceSupported ? (
+                    {showSendButton ? (
                       <Pressable
                         style={styles.sendButton}
                         onPress={handleSendPress}>
                         <Ionicons name="arrow-up" size={20} color="#333" />
                       </Pressable>
-                    ) : (
+                    ) : showMicButton ? (
                       <Pressable
                         style={styles.micButton}
                         onPress={handleMicPress}
                         hitSlop={10}>
                         <AIMicIcon size={22} />
                       </Pressable>
+                    ) : (
+                      <View style={styles.sendButtonPlaceholder} />
                     )}
                   </View>
                 </>
@@ -1641,18 +1633,16 @@ const styles = StyleSheet.create({
   aiHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    // paddingHorizontal: 18,
     marginBottom: 10,
   },
   aiAvatarLarge: {
-    // paddingHorizontal: 18,
     paddingLeft: 18,
     marginRight: 8,
   },
   aiAddressText: {
     flexShrink: 1,
-    fontSize: 16,
-    color: '#666',
+    fontSize: 14,
+    color: '#999',
     fontFamily: 'Pretendard-Regular',
     maxWidth: '70%',
   },
@@ -1691,12 +1681,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     color: '#333',
     textAlign: 'center',
-    marginBottom: 70,
+    marginBottom: 50,
   },
 
   chipRow: {
     paddingHorizontal: 12,
-    marginBottom: 12,
+    marginBottom: 2,
   },
   titleWrap: {
     width: '100%',
@@ -1734,7 +1724,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 18,
     alignItems: 'center',
-
+    paddingTop: 10,
     backgroundColor: '#fff',
     paddingBottom: 20,
   },
@@ -1793,6 +1783,10 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.5,
+  },
+  sendButtonPlaceholder: {
+    width: 32,
+    height: 32,
   },
   stopButton: {
     width: 32,
