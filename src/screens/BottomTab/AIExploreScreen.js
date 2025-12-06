@@ -83,6 +83,8 @@ const SAMPLE_RECENT_FIRST_PROMPTS = [
   '조용히 이야기하기 좋은 술집',
 ];
 const USE_SAMPLE_RECENT_PROMPTS = false; // 샘플 목록을 보고 싶을 때 true 로 전환
+const NO_RESULT_SYSTEM_TEXT =
+  '방금 추천해 준 조건으로 찾아봤는데 검색된 매장이 없어. 위치를 제외한 모든 조건은 초기화하고 이어서 말하는 내용 반영해서 다시 찾아 줘.';
 
 const AIExploreScreen = ({navigation}) => {
   const {showToast} = useToast();
@@ -329,17 +331,6 @@ const AIExploreScreen = ({navigation}) => {
     [navigation],
   );
 
-  // const suggestions = [
-  //   {keyword: '늦게까지 하는', subtext: '호프집 알려줘'},
-  //   {keyword: '소주 싼 곳', subtext: '알려줘'},
-  //   {keyword: '회식하기 좋은', subtext: '이자카야 추천해줘'},
-  //   {keyword: '축구 보면서', subtext: '한잔하기 좋은 곳 알려줘'},
-  //   {keyword: '가성비 좋은', subtext: '술집 추천해줘'},
-  //   {keyword: '단체 가기 편한', subtext: '술집 어디 있어?'},
-  //   {keyword: '분위기 깔끔한', subtext: '바 추천해줘'},
-  //   {keyword: '안주 잘하는', subtext: '술집 찾아줘'},
-  // ];
-
   const suggestions = [
     {keyword: '지금 바로 갈 수 있는', subtext: '호프집 알려줘'},
     {keyword: '2시간 뒤에도 영업하는', subtext: '펍·바 찾아줘'},
@@ -381,6 +372,14 @@ const AIExploreScreen = ({navigation}) => {
         showToast('메시지는 200자 이하로 입력해주세요', 'center');
         return;
       }
+      const lastAssistantMessage = [...chatHistory]
+        .reverse()
+        .find(msg => msg.role === 'assistant');
+      const shouldAppendSystemText =
+        lastAssistantMessage?.agentMode === 'NO_RESULT';
+      const payloadText = shouldAppendSystemText
+        ? `${NO_RESULT_SYSTEM_TEXT} ${trimmed}`
+        : trimmed;
       if (sending) {
         return;
       }
@@ -424,7 +423,7 @@ const AIExploreScreen = ({navigation}) => {
           previousResponseId,
           latitude: location?.latitude ?? null,
           longitude: location?.longitude ?? null,
-          userMessage: trimmed,
+          userMessage: payloadText,
         };
         console.log(payload);
         const data = await Agent_chat_search(payload);
@@ -451,10 +450,10 @@ const AIExploreScreen = ({navigation}) => {
           text: agentResult?.agentMessage,
           agentMode:
             agentResult?.agentMode ??
-            agentResult?.mode ??
             (Array.isArray(storeList) && storeList.length
               ? 'SHOW_RESULT'
               : null),
+          changedAddress: data?.changedAddress?.address ?? null,
           stores: Array.isArray(storeList) ? storeList : [],
           searchConditions: searchConditions || null,
           userPrompt: trimmed,
@@ -471,6 +470,7 @@ const AIExploreScreen = ({navigation}) => {
     [
       Agent_chat_search,
       RECENT_FIRST_PROMPT_KEY,
+      chatHistory,
       lastResponseId,
       prompt,
       recentFirstPrompts,
@@ -1100,7 +1100,11 @@ const AIExploreScreen = ({navigation}) => {
                 <View style={styles.drawerSection}>
                   <Pressable
                     style={styles.drawerButton}
+                    disabled={sending}
                     onPress={() => {
+                      if (sending) {
+                        return;
+                      }
                       resetChat();
                       closeDrawer();
                     }}>
@@ -1190,8 +1194,14 @@ const AIExploreScreen = ({navigation}) => {
                 <Feather name="crosshair" size={22} color="#333" />
               </Pressable>
               <Pressable
-                onPress={resetChat}
-                style={{marginLeft: 12}}
+                onPress={() => {
+                  if (sending) {
+                    return;
+                  }
+                  resetChat();
+                }}
+                disabled={sending}
+                style={{marginLeft: 12, opacity: sending ? 0.35 : 1}}
                 hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
                 <RotateCwIcon size={22} color="#333" />
               </Pressable>
@@ -1217,31 +1227,42 @@ const AIExploreScreen = ({navigation}) => {
                   styles.chatContent,
                   {paddingBottom: bottomPadding},
                 ]}>
-                {chatHistory.map(message =>
-                  message.role === 'user' ? (
-                    <View
-                      key={message.id}
-                      style={styles.bubbleRow}
-                      onLayout={({nativeEvent}) =>
-                        handleMessageLayout(
-                          message.id,
-                          nativeEvent?.layout?.y ?? 0,
-                        )
-                      }>
-                      <View style={styles.messageBubble}>
-                        <CustomText style={styles.messageText}>
-                          {message.text}
-                        </CustomText>
+                {chatHistory.map(message => {
+                  if (message.role === 'user') {
+                    return (
+                      <View
+                        key={message.id}
+                        style={styles.bubbleRow}
+                        onLayout={({nativeEvent}) =>
+                          handleMessageLayout(
+                            message.id,
+                            nativeEvent?.layout?.y ?? 0,
+                          )
+                        }>
+                        <View style={styles.messageBubble}>
+                          <CustomText style={styles.messageText}>
+                            {message.text}
+                          </CustomText>
+                        </View>
+                        {message.id === firstUserMessageId && !!address && (
+                          <CustomText
+                            style={styles.addressSubtext}
+                            numberOfLines={2}>
+                            {address}
+                          </CustomText>
+                        )}
                       </View>
-                      {message.id === firstUserMessageId && !!address && (
-                        <CustomText
-                          style={styles.addressSubtext}
-                          numberOfLines={2}>
-                          {address}
-                        </CustomText>
-                      )}
-                    </View>
-                  ) : (
+                    );
+                  }
+
+                  const changedAddressText =
+                    typeof message.changedAddress === 'string' &&
+                    message.changedAddress.trim()
+                      ? message.changedAddress.trim()
+                      : '';
+                  const displayAddress = changedAddressText || address;
+
+                  return (
                     <View
                       key={message.id}
                       style={styles.aiRow}
@@ -1251,8 +1272,17 @@ const AIExploreScreen = ({navigation}) => {
                           nativeEvent?.layout?.y ?? 0,
                         )
                       }>
-                      <View style={styles.aiAvatarLarge}>
-                        <AIFullIcon size={26} />
+                      <View style={styles.aiHeaderRow}>
+                        <View style={styles.aiAvatarLarge}>
+                          <AIFullIcon size={26} />
+                        </View>
+                        {!!displayAddress && (
+                          <CustomText
+                            style={styles.aiAddressText}
+                            numberOfLines={1}>
+                            {displayAddress}
+                          </CustomText>
+                        )}
                       </View>
                       {!!message.text && (
                         <CustomText style={styles.aiTextBare}>
@@ -1299,31 +1329,33 @@ const AIExploreScreen = ({navigation}) => {
                           </>
                         )}
                     </View>
-                  ),
-                )}
+                  );
+                })}
                 {sending && (
                   <View style={styles.aiRow}>
-                    <View style={styles.aiAvatarLarge}>
-                      <Animated.View
-                        style={[
-                          styles.aiLoadingSpinner,
-                          {
-                            transform: [
-                              {
-                                rotate: spinAnim.interpolate({
-                                  inputRange: [0, 1],
-                                  outputRange: ['0deg', '360deg'],
-                                }),
-                              },
-                            ],
-                          },
-                        ]}>
-                        <AIFullIcon size={26} />
-                      </Animated.View>
+                    <View style={styles.aiHeaderRow}>
+                      <View style={styles.aiAvatarLarge}>
+                        <Animated.View
+                          style={[
+                            styles.aiLoadingSpinner,
+                            {
+                              transform: [
+                                {
+                                  rotate: spinAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: ['0deg', '360deg'],
+                                  }),
+                                },
+                              ],
+                            },
+                          ]}>
+                          <AIFullIcon size={26} />
+                        </Animated.View>
+                      </View>
+                      <CustomText style={styles.aiAddressText}>
+                        탐색 중
+                      </CustomText>
                     </View>
-                    <CustomText style={styles.aiLoadingText}>
-                      탐색 중
-                    </CustomText>
                   </View>
                 )}
               </ScrollView>
@@ -1606,9 +1638,23 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 18,
   },
-  aiAvatarLarge: {
+  aiHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // paddingHorizontal: 18,
     marginBottom: 10,
-    paddingHorizontal: 18,
+  },
+  aiAvatarLarge: {
+    // paddingHorizontal: 18,
+    paddingLeft: 18,
+    marginRight: 8,
+  },
+  aiAddressText: {
+    flexShrink: 1,
+    fontSize: 16,
+    color: '#666',
+    fontFamily: 'Pretendard-Regular',
+    maxWidth: '70%',
   },
   aiTextBare: {
     fontSize: 16,
@@ -1618,7 +1664,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     marginRight: 40,
 
-    paddingHorizontal: 18,
+    paddingLeft: 18,
   },
 
   resultList: {
