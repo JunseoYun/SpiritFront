@@ -77,6 +77,24 @@ const MapStoreList = ({
   onListFullExpandChange,
   onListRestoringChange,
 }) => {
+  const resolveStoreName = useCallback(store => {
+    return (
+      store?.name ??
+      store?.storeName ??
+      store?.storeNm ??
+      store?.title ??
+      store?.id ??
+      '(이름 없음)'
+    );
+  }, []);
+
+  useEffect(() => {
+    if (Array.isArray(stores)) {
+      const names = stores.map(resolveStoreName);
+      console.log('[MapStoreList] 전달 스토어 이름', names);
+    }
+  }, [stores, resolveStoreName]);
+
   const insets = useSafeAreaInsets();
   const [filterheight, setFilterheight] = useState(DEFAULT_FILTER_HEIGHT);
   const lastValidFilterHeightRef = useRef(DEFAULT_FILTER_HEIGHT);
@@ -1207,13 +1225,16 @@ const MapStoreList = ({
       listContent = <View />;
     } else {
       const disableTopOverscroll =
-        !isDetailMode && (isFullListExpanded || currentIndex === 1);
+        !isDetailMode &&
+        (isFullListExpanded || currentIndex === 1) &&
+        listHasRoomToScroll;
       listContent = (
         <FlatList
           ref={flatListRef}
           data={stores}
           keyExtractor={keyExtractor}
           showsVerticalScrollIndicator={false}
+          scrollEnabled={listHasRoomToScroll}
           bounces={!disableTopOverscroll}
           overScrollMode={disableTopOverscroll ? 'never' : 'always'}
           contentContainerStyle={{
@@ -1307,7 +1328,7 @@ const MapStoreList = ({
             bottomInset={0}
             handleIndicatorStyle={[styles.sheetHandleIndicator]}
             backgroundStyle={[styles.sheetBackground]}
-            enableContentPanningGesture={false}
+            enableContentPanningGesture={shouldEnableContentPanGesture}
             enableHandlePanningGesture={!filterModalVisible && !isListRestoring}
             enableOverDrag={false}
             animatedIndex={animatedIndex}
