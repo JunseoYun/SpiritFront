@@ -1422,14 +1422,6 @@ const AIExploreScreen = ({navigation}) => {
 
           {/** ─────────── INPUT FIELD ─────────── */}
           <View style={styles.bottomInputContainer}>
-            {hasMessages && (
-              <LinearGradient
-                pointerEvents="none"
-                colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)', '#fff']}
-                locations={[0, 0.6, 1]}
-                style={styles.bottomInputFade}
-              />
-            )}
             <View style={[styles.bottomInput]}>
               <View
                 style={[
