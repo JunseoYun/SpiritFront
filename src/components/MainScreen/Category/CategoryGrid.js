@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Pressable, Image, Text, StyleSheet} from 'react-native';
 import CustomText from '../../../utils/CustomText';
+import FastImage from 'react-native-fast-image';
 
 const CategoryGrid = ({onPress, style}) => {
   return (
@@ -16,7 +17,7 @@ const CategoryGrid = ({onPress, style}) => {
                 onPress={() => onPress(index)}
                 style={styles.categoryItem}>
                 <View style={styles.iconWrapper}>
-                  <Image source={source} style={styles.icon} />
+                  <FastImage source={source} style={styles.icon} />
                 </View>
                 <CustomText style={styles.text}>{text}</CustomText>
               </Pressable>,
@@ -50,8 +51,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   icon: {
-    width: 30,
-    height: 30,
+    width: 35,
+    height: 35,
     resizeMode: 'contain',
   },
   text: {
@@ -86,16 +87,16 @@ const categories = [
     text: '중식',
   },
   {
-    source: require('../../../assets/category/Emotional2.png'),
-    text: '감성주점',
-  },
-  {
     source: require('../../../assets/category/Pocha2.png'),
     text: '포장마차',
   },
+  {
+    source: require('../../../assets/category/Emotional2.png'),
+    text: '감성주점',
+  },
 
   {
-    source: require('../../../assets/category/Grilled.png'),
+    source: require('../../../assets/category/Grilled2.png'),
     text: '구이·찜',
   },
   {
