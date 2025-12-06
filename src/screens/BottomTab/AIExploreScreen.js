@@ -36,7 +36,7 @@ import AIMicIcon from '../../assets/svg/AIMicIcon';
 import MenuIcon from '../../assets/svg/MenuIcon';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
-import {RotateCwIcon, Trash2} from 'lucide-react-native';
+import {RotateCwIcon} from 'lucide-react-native';
 import {AIFullIcon} from '../../assets/svg/AiTabIcon';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Agent_chat_search} from '../../api/agentApi';
@@ -1098,7 +1098,10 @@ const AIExploreScreen = ({navigation}) => {
 
                 <View style={styles.drawerSection}>
                   <Pressable
-                    style={styles.drawerButton}
+                    style={[
+                      styles.drawerButton,
+                      sending && styles.drawerButtonDisabled,
+                    ]}
                     disabled={sending}
                     onPress={() => {
                       if (sending) {
@@ -1107,25 +1110,30 @@ const AIExploreScreen = ({navigation}) => {
                       resetChat();
                       closeDrawer();
                     }}>
-                    <RotateCwIcon size={18} color="#333" />
-                    <CustomText style={styles.drawerButtonText}>
+                    <RotateCwIcon size={18} color={sending ? '#aaa' : '#333'} />
+                    <CustomText
+                      style={[
+                        styles.drawerButtonText,
+                        sending && styles.drawerButtonTextDisabled,
+                      ]}>
                       새 대화 시작
                     </CustomText>
                   </Pressable>
                 </View>
 
-                <View style={styles.drawerSection}>
+                <View style={styles.sheetSubtitleRow}>
+                  <CustomText style={styles.sheetSubtitle}>
+                    최근 질문
+                  </CustomText>
                   <Pressable
-                    style={styles.drawerButton}
-                    onPress={clearRecentFirstPrompts}>
-                    <Trash2 size={18} color="#333" />
-                    <CustomText style={styles.drawerButtonText}>
-                      최근 질문 전체 삭제
+                    onPress={clearRecentFirstPrompts}
+                    hitSlop={10}
+                    style={styles.sheetSubtitleAction}>
+                    <CustomText style={styles.sheetSubtitleActionText}>
+                      전체 삭제
                     </CustomText>
                   </Pressable>
                 </View>
-
-                <CustomText style={styles.sheetSubtitle}>최근 질문</CustomText>
                 <View style={styles.sheetContent}>
                   {recentFirstPrompts.length
                     ? recentFirstPrompts.map((item, idx) => (
@@ -1413,139 +1421,149 @@ const AIExploreScreen = ({navigation}) => {
           )}
 
           {/** ─────────── INPUT FIELD ─────────── */}
-          <View style={[styles.bottomInput]}>
-            <View
-              style={[
-                styles.inputBox,
-                showRecordingUI && styles.recordingContainer,
-              ]}>
-              {showRecordingUI ? (
-                <>
-                  <Pressable
-                    style={styles.stopButton}
-                    onPress={handleStopPress}
-                    hitSlop={10}>
-                    <Ionicons name="stop" size={18} color="#f2f2f2" />
-                  </Pressable>
-                  <View style={styles.recordingBox}>
-                    {isRecording ? (
-                      <View style={styles.recordingWaveWindow}>
-                        <Animated.View
-                          style={[
-                            styles.recordingWaveTrack,
-                            {
-                              width: waveformWidth,
-                              transform: [
-                                {
-                                  translateX: recordShiftAnim.interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: [0, -waveformTravel],
-                                  }),
-                                },
-                              ],
-                            },
-                          ]}>
-                          {waveformBars.map(({idx, seed}) => {
-                            const silentScale = 0.25;
-                            const dynamicScale = 1 + seed * 1.2;
-                            const maxScale = 1.6 + seed * 1.2;
-                            const scale = volumeLevel.interpolate({
-                              inputRange: [0, 0.2, 1, 3],
-                              outputRange: [
-                                silentScale,
-                                silentScale,
-                                dynamicScale,
-                                maxScale,
-                              ],
-                              extrapolate: 'clamp',
-                            });
-                            const opacity = volumeLevel.interpolate({
-                              inputRange: [0, 0.2, 1, 3],
-                              outputRange: [0.2, 0.3, 0.9, 1],
-                              extrapolate: 'clamp',
-                            });
-                            return (
-                              <Animated.View
-                                key={`bar-${idx}`}
-                                style={[
-                                  styles.recordingWaveBar,
-                                  {transform: [{scaleY: scale}], opacity},
-                                ]}
-                              />
-                            );
-                          })}
-                        </Animated.View>
-                      </View>
-                    ) : (
-                      <View style={styles.recordingLabelRow}>
-                        <ActivityIndicator
-                          style={styles.recordingSpinner}
-                          size="small"
-                          color="#9AA0A6"
-                        />
-                        <CustomText style={styles.recordingLabel}>
-                          받아쓰는 중
-                        </CustomText>
-                      </View>
-                    )}
-                  </View>
-                  <View style={[styles.trailingAction, styles.sendAlign]}>
+          <View style={styles.bottomInputContainer}>
+            {hasMessages && (
+              <LinearGradient
+                pointerEvents="none"
+                colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)', '#fff']}
+                locations={[0, 0.6, 1]}
+                style={styles.bottomInputFade}
+              />
+            )}
+            <View style={[styles.bottomInput]}>
+              <View
+                style={[
+                  styles.inputBox,
+                  showRecordingUI && styles.recordingContainer,
+                ]}>
+                {showRecordingUI ? (
+                  <>
                     <Pressable
-                      style={[
-                        styles.sendButton,
-                        styles.sendButtonActive,
-                        (sending || isTranscribing) &&
-                          styles.sendButtonDisabled,
-                      ]}
-                      onPress={handleSendPress}
-                      disabled={sending || isTranscribing}>
-                      <Ionicons
-                        name="arrow-up"
-                        size={20}
-                        color={sending || isTranscribing ? '#aaa' : '#111'}
-                      />
+                      style={styles.stopButton}
+                      onPress={handleStopPress}
+                      hitSlop={10}>
+                      <Ionicons name="stop" size={18} color="#f2f2f2" />
                     </Pressable>
-                  </View>
-                </>
-              ) : (
-                <>
-                  <CustomTextInput
-                    ref={inputRef}
-                    placeholder="가고 싶은 술집을 설명해주세요"
-                    value={prompt}
-                    onChangeText={handleChangePrompt}
-                    multiline
-                    numberOfLines={3}
-                    textAlignVertical="top"
-                    placeholderTextColor={ColorUtil.placeholderText}
-                    style={styles.input}
-                    onFocus={() => setIsInputFocused(true)}
-                    onBlur={() => setIsInputFocused(false)}
-                  />
-                  <View
-                    style={[
-                      styles.trailingAction,
-                      showSendButton ? styles.sendAlign : styles.micAlign,
-                    ]}>
-                    {showSendButton ? (
+                    <View style={styles.recordingBox}>
+                      {isRecording ? (
+                        <View style={styles.recordingWaveWindow}>
+                          <Animated.View
+                            style={[
+                              styles.recordingWaveTrack,
+                              {
+                                width: waveformWidth,
+                                transform: [
+                                  {
+                                    translateX: recordShiftAnim.interpolate({
+                                      inputRange: [0, 1],
+                                      outputRange: [0, -waveformTravel],
+                                    }),
+                                  },
+                                ],
+                              },
+                            ]}>
+                            {waveformBars.map(({idx, seed}) => {
+                              const silentScale = 0.25;
+                              const dynamicScale = 1 + seed * 1.2;
+                              const maxScale = 1.6 + seed * 1.2;
+                              const scale = volumeLevel.interpolate({
+                                inputRange: [0, 0.2, 1, 3],
+                                outputRange: [
+                                  silentScale,
+                                  silentScale,
+                                  dynamicScale,
+                                  maxScale,
+                                ],
+                                extrapolate: 'clamp',
+                              });
+                              const opacity = volumeLevel.interpolate({
+                                inputRange: [0, 0.2, 1, 3],
+                                outputRange: [0.2, 0.3, 0.9, 1],
+                                extrapolate: 'clamp',
+                              });
+                              return (
+                                <Animated.View
+                                  key={`bar-${idx}`}
+                                  style={[
+                                    styles.recordingWaveBar,
+                                    {transform: [{scaleY: scale}], opacity},
+                                  ]}
+                                />
+                              );
+                            })}
+                          </Animated.View>
+                        </View>
+                      ) : (
+                        <View style={styles.recordingLabelRow}>
+                          <ActivityIndicator
+                            style={styles.recordingSpinner}
+                            size="small"
+                            color="#9AA0A6"
+                          />
+                          <CustomText style={styles.recordingLabel}>
+                            받아쓰는 중
+                          </CustomText>
+                        </View>
+                      )}
+                    </View>
+                    <View style={[styles.trailingAction, styles.sendAlign]}>
                       <Pressable
-                        style={styles.sendButton}
-                        onPress={handleSendPress}>
-                        <Ionicons name="arrow-up" size={20} color="#333" />
+                        style={[
+                          styles.sendButton,
+                          styles.sendButtonActive,
+                          (sending || isTranscribing) &&
+                            styles.sendButtonDisabled,
+                        ]}
+                        onPress={handleSendPress}
+                        disabled={sending || isTranscribing}>
+                        <Ionicons
+                          name="arrow-up"
+                          size={20}
+                          color={sending || isTranscribing ? '#aaa' : '#111'}
+                        />
                       </Pressable>
-                    ) : showMicButton ? (
-                      <Pressable
-                        style={styles.micButton}
-                        onPress={handleMicPress}
-                        hitSlop={10}>
-                        <AIMicIcon size={22} />
-                      </Pressable>
-                    ) : (
-                      <View style={styles.sendButtonPlaceholder} />
-                    )}
-                  </View>
-                </>
-              )}
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    <CustomTextInput
+                      ref={inputRef}
+                      placeholder="가고 싶은 술집을 설명해주세요"
+                      value={prompt}
+                      onChangeText={handleChangePrompt}
+                      multiline
+                      numberOfLines={3}
+                      textAlignVertical="top"
+                      placeholderTextColor={ColorUtil.placeholderText}
+                      style={styles.input}
+                      onFocus={() => setIsInputFocused(true)}
+                      onBlur={() => setIsInputFocused(false)}
+                    />
+                    <View
+                      style={[
+                        styles.trailingAction,
+                        showSendButton ? styles.sendAlign : styles.micAlign,
+                      ]}>
+                      {showSendButton ? (
+                        <Pressable
+                          style={styles.sendButton}
+                          onPress={handleSendPress}>
+                          <Ionicons name="arrow-up" size={20} color="#333" />
+                        </Pressable>
+                      ) : showMicButton ? (
+                        <Pressable
+                          style={styles.micButton}
+                          onPress={handleMicPress}
+                          hitSlop={10}>
+                          <AIMicIcon size={22} />
+                        </Pressable>
+                      ) : (
+                        <View style={styles.sendButtonPlaceholder} />
+                      )}
+                    </View>
+                  </>
+                )}
+              </View>
             </View>
           </View>
         </Animated.View>
@@ -1720,6 +1738,17 @@ const styles = StyleSheet.create({
   },
 
   // INPUT SECTION
+  bottomInputContainer: {
+    position: 'relative',
+    backgroundColor: '#fff',
+  },
+  bottomInputFade: {
+    position: 'absolute',
+    top: -18,
+    left: 0,
+    right: 0,
+    height: 30,
+  },
   bottomInput: {
     flexDirection: 'row',
     paddingHorizontal: 18,
@@ -1904,8 +1933,22 @@ const styles = StyleSheet.create({
     marginTop: 12,
     justifyContent: 'center',
   },
+  sheetSubtitleRow: {
+    marginTop: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 7,
+  },
   sheetSubtitle: {
-    marginTop: 70,
+    fontSize: 16,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
+  },
+  sheetSubtitleAction: {
+    paddingHorizontal: 4,
+  },
+  sheetSubtitleActionText: {
     fontSize: 14,
     fontFamily: 'Pretendard-Regular',
     color: '#666',
@@ -1928,11 +1971,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  drawerButtonDisabled: {
+    opacity: 0.5,
+  },
   drawerButtonText: {
     marginLeft: 10,
     fontSize: 15,
     fontFamily: 'Pretendard-Medium',
     color: '#333',
+  },
+  drawerButtonTextDisabled: {
+    color: '#999',
   },
   drawerScroll: {
     flex: 1,
