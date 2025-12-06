@@ -353,6 +353,7 @@ const MapScreen = ({navigation, route}) => {
   const [hasMoreStores, setHasMoreStores] = useState(true);
   const [loadingMoreStores, setLoadingMoreStores] = useState(false);
   const skipInitialOffsetRef = useRef(true);
+  const initialMapLiftedRef = useRef(false);
   const mapmovedOffsetRef = useRef(false);
   const lastRenderOffsetRef = useRef(0);
   const lastNonAiQueryRef = useRef(null);
@@ -601,6 +602,19 @@ const MapScreen = ({navigation, route}) => {
     }
   }, [radiusKm]);
 
+  const getOffsetForSheet = useCallback(
+    (index = sheetIndex) => {
+      if (index === 1) {
+        return SCREEN_HEIGHT * 0.12;
+      }
+      if (index === 10) {
+        return SCREEN_HEIGHT * -0.18;
+      }
+      return 0;
+    },
+    [sheetIndex],
+  );
+
   const closeStoreListOverlayScript = `
   if (window.currentOverlay && typeof window.currentOverlay.setMap === 'function') {
     window.currentOverlay.setMap(null);
@@ -635,12 +649,7 @@ const MapScreen = ({navigation, route}) => {
         aiRenderPendingRef.current = true;
         return;
       }
-      const offset =
-        sheetIndex === 1
-          ? SCREEN_HEIGHT * 0.18
-          : sheetIndex === 10
-          ? SCREEN_HEIGHT * -0.18
-          : 0;
+      const offset = getOffsetForSheet(sheetIndex);
       webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
       const script = generateMapScript(baseLat, baseLng, list, offset, {
         allowUserMarker: false,
@@ -655,6 +664,7 @@ const MapScreen = ({navigation, route}) => {
     [
       aiSearchStores,
       closeStoreListOverlayScript,
+      getOffsetForSheet,
       location?.latitude,
       location?.longitude,
       sheetIndex,
@@ -1142,7 +1152,12 @@ const MapScreen = ({navigation, route}) => {
         suppressUserMarkerRef.current = false;
         return;
       }
-      const offsetY = 0;
+      const offsetY = getOffsetForSheet(sheetIndex);
+      if (!initialMapLiftedRef.current && offsetY !== 0) {
+        initialMapLiftedRef.current = true;
+        skipInitialOffsetRef.current = false;
+        moveCenterMap(lat, lng, sheetIndex, true, offsetY);
+      }
 
       if (webViewRef.current) {
         const calcAdjustedScript = `
@@ -1216,13 +1231,7 @@ const MapScreen = ({navigation, route}) => {
     const offsetY =
       typeof customOffset === 'number'
         ? customOffset
-        : sheetIndex === null
-        ? 0
-        : sheetIndex === 1
-        ? SCREEN_HEIGHT * 0.18 // 45%일 때
-        : sheetIndex === 10
-        ? SCREEN_HEIGHT * -0.18
-        : 0;
+        : getOffsetForSheet(sheetIndex);
 
     const roundedPrev = prevCenterLatLng && {
       latitude: roundToPrecision(prevCenterLatLng.latitude),
@@ -1289,8 +1298,9 @@ const MapScreen = ({navigation, route}) => {
           typeof baseLat === 'number' &&
           typeof baseLng === 'number'
         ) {
-          const script = generateMapScript(baseLat, baseLng, [], 0);
-          lastRenderOffsetRef.current = 0;
+          const initialOffset = getOffsetForSheet(sheetIndex);
+          const script = generateMapScript(baseLat, baseLng, [], initialOffset);
+          lastRenderOffsetRef.current = initialOffset;
           webViewRef.current.injectJavaScript(script);
         }
 
@@ -1329,13 +1339,7 @@ const MapScreen = ({navigation, route}) => {
         const queryLat = message.latitude;
         const queryLng = message.longitude;
         const reqRadius = message.radius ?? radius;
-        const adjOffsetY =
-          message.offsetY ??
-          (sheetIndex === 1
-            ? SCREEN_HEIGHT * 0.18
-            : sheetIndex === 10
-            ? SCREEN_HEIGHT * -0.18
-            : 0);
+        const adjOffsetY = message.offsetY ?? getOffsetForSheet(sheetIndex);
         const suppressMarker = suppressUserMarkerRef.current;
         refreshWithLatLngs(
           baseLat,
@@ -1370,11 +1374,7 @@ const MapScreen = ({navigation, route}) => {
           const offsetForRender =
             typeof lastRenderOffsetRef.current === 'number'
               ? lastRenderOffsetRef.current
-              : sheetIndex === 1
-              ? SCREEN_HEIGHT * 0.18
-              : sheetIndex === 10
-              ? SCREEN_HEIGHT * -0.18
-              : 0;
+              : getOffsetForSheet(sheetIndex);
           const script = generateMapScript(
             nextLat,
             nextLng,
@@ -1632,7 +1632,7 @@ const MapScreen = ({navigation, route}) => {
       if (detailStoreId) {
         setDetailStoreId(null);
       }
-      const offsetY = sheetIndex === 1 ? SCREEN_HEIGHT * 0.18 : 0;
+      const offsetY = getOffsetForSheet(sheetIndex);
       const signature = JSON.stringify({
         searchKeyword: (searchText || '').trim(),
         filters: filtersOverride ?? selectedFilters ?? {},
@@ -1662,6 +1662,7 @@ const MapScreen = ({navigation, route}) => {
       searchText,
       selectedFilters,
       sheetIndex,
+      getOffsetForSheet,
     ],
   );
 
