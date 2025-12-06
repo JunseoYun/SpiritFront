@@ -137,6 +137,7 @@ const AIExploreScreen = ({navigation}) => {
       Array.from({length: waveformBarCount}, () => 0.4 + Math.random() * 0.8),
     [waveformBarCount],
   );
+  const isVoiceSupported = Platform.OS !== 'android';
 
   const voiceStartOptions = useMemo(
     () =>
@@ -708,6 +709,9 @@ const AIExploreScreen = ({navigation}) => {
   }, []);
 
   const restartListening = useCallback(async () => {
+    if (!isVoiceSupported) {
+      return;
+    }
     try {
       restartTimerRef.current && clearTimeout(restartTimerRef.current);
       restartTimerRef.current = null;
@@ -722,9 +726,12 @@ const AIExploreScreen = ({navigation}) => {
       console.log('[AIExplore voice] restart error', error);
       restartTimerRef.current = setTimeout(restartListening, 400);
     }
-  }, [voiceStartOptions]);
+  }, [isVoiceSupported, voiceStartOptions]);
 
   useEffect(() => {
+    if (!isVoiceSupported) {
+      return;
+    }
     Voice.onSpeechStart = () => {
       if (keepRecordingRef.current) {
         setIsRecording(true);
@@ -857,13 +864,13 @@ const AIExploreScreen = ({navigation}) => {
         .then(Voice.removeAllListeners)
         .catch(() => {});
     };
-  }, [clearTranscribeTimer, restartListening, submit]);
+  }, [clearTranscribeTimer, isVoiceSupported, restartListening, submit]);
 
   const bottomPadding = keyboardVisible
     ? insets.bottom + 24
     : insets.bottom + 100;
   const firstUserMessageId = chatHistory.find(msg => msg.role === 'user')?.id;
-  const showRecordingUI = isRecording || isTranscribing;
+  const showRecordingUI = isVoiceSupported && (isRecording || isTranscribing);
   const waveformBars = useMemo(
     () => waveformSeeds.map((seed, idx) => ({seed, idx})),
     [waveformSeeds],
@@ -880,6 +887,9 @@ const AIExploreScreen = ({navigation}) => {
   ); // default slow glide, at least 60s so it never resets during typical recordings
 
   const requestMicPermission = useCallback(async () => {
+    if (!isVoiceSupported) {
+      return false;
+    }
     const permission =
       Platform.OS === 'ios'
         ? PERMISSIONS.IOS.MICROPHONE
@@ -906,9 +916,12 @@ const AIExploreScreen = ({navigation}) => {
       showToast('마이크 권한을 확인할 수 없어요', 'center');
       return false;
     }
-  }, [showToast]);
+  }, [isVoiceSupported, showToast]);
 
   const handleMicPress = useCallback(() => {
+    if (!isVoiceSupported) {
+      return;
+    }
     const start = async () => {
       if (sending || isRecording || isTranscribing) {
         return;
@@ -937,6 +950,7 @@ const AIExploreScreen = ({navigation}) => {
     };
     start();
   }, [
+    isVoiceSupported,
     isRecording,
     isTranscribing,
     requestMicPermission,
@@ -947,7 +961,10 @@ const AIExploreScreen = ({navigation}) => {
 
   const stopRecordingAndTranscribe = useCallback(
     async ({shouldSend = false} = {}) => {
-      if (!isRecording && !isTranscribing && !keepRecordingRef.current) {
+      if (
+        !isVoiceSupported ||
+        (!isRecording && !isTranscribing && !keepRecordingRef.current)
+      ) {
         return;
       }
       setIsRecording(false);
@@ -971,7 +988,7 @@ const AIExploreScreen = ({navigation}) => {
         pendingVoiceSendRef.current = false;
       }
     },
-    [isRecording, isTranscribing],
+    [isRecording, isTranscribing, isVoiceSupported, startTranscribeTimer],
   );
 
   const handleSendPress = useCallback(async () => {
@@ -1484,9 +1501,11 @@ const AIExploreScreen = ({navigation}) => {
                   <View
                     style={[
                       styles.trailingAction,
-                      hasPrompt ? styles.sendAlign : styles.micAlign,
+                      hasPrompt || !isVoiceSupported
+                        ? styles.sendAlign
+                        : styles.micAlign,
                     ]}>
-                    {hasPrompt ? (
+                    {hasPrompt || !isVoiceSupported ? (
                       <Pressable
                         style={styles.sendButton}
                         onPress={handleSendPress}>

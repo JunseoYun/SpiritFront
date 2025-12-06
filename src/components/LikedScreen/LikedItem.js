@@ -215,9 +215,9 @@ const styles = StyleSheet.create({
     borderRadius: CARD_RADIUS,
     // iOS shadow
     shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: {width: 0, height: 6},
+    shadowOpacity: 0.12,
+    shadowRadius: 5,
+    shadowOffset: {width: 0, height: 0},
     // Android
     elevation: 2,
   },
