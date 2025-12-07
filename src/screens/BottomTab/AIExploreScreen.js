@@ -10,45 +10,35 @@ import React, {
 } from 'react';
 import {
   Platform,
-  Pressable,
   StyleSheet,
   KeyboardAvoidingView,
-  ScrollView,
   View,
-  TouchableWithoutFeedback,
   Keyboard,
   Animated,
   Easing,
   BackHandler,
   Dimensions,
   PanResponder,
-  ActivityIndicator,
 } from 'react-native';
 import Voice from '@react-native-voice/voice';
 import {useFocusEffect} from '@react-navigation/native';
 import {useHeaderHeight} from '@react-navigation/elements';
-import CustomText from '../../utils/CustomText';
-import CustomTextInput from '../../utils/CustomTextInput';
-import LinearGradient from 'react-native-linear-gradient';
 import {useToast} from '../../context/ToastContext';
-import ColorUtil from '../../utils/ColorUtil';
-import AIMicIcon from '../../assets/svg/AIMicIcon';
-import MenuIcon from '../../assets/svg/MenuIcon';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import Feather from 'react-native-vector-icons/Feather';
-import {RotateCwIcon} from 'lucide-react-native';
-import {AIFullIcon} from '../../assets/svg/AiTabIcon';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Agent_chat_search} from '../../api/agentApi';
 import {getAddress, getLocation} from '../../storage/locationStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import AIResultCard from '../../components/AIExplore/AIResultCard';
 import {
   PERMISSIONS,
   RESULTS,
   check,
   request as requestPermission,
 } from 'react-native-permissions';
+import AIExploreDrawer from '../../components/AIExplore/AIExploreDrawer';
+import AIExploreHeader from '../../components/AIExplore/AIExploreHeader';
+import AIExploreChatList from '../../components/AIExplore/AIExploreChatList';
+import AIExploreSuggestions from '../../components/AIExplore/AIExploreSuggestions';
+import AIExploreInput from '../../components/AIExplore/AIExploreInput';
 
 const SAMPLE_RECENT_FIRST_PROMPTS = [
   '강남역에서 조용한 와인바 알려줘',
@@ -1027,146 +1017,41 @@ const AIExploreScreen = ({navigation}) => {
     voiceAccumRef.current = text;
   }, []);
 
+  const handleLocationPress = useCallback(() => {
+    navigation.navigate('SetLocationScreen', {
+      origin: 'AIExploreScreen',
+    });
+  }, [navigation]);
+
   return (
     <KeyboardAvoidingView
       style={styles.flex}
       behavior="padding"
       keyboardVerticalOffset={keyboardVerticalOffset}>
       <View style={styles.flex}>
-        {showDrawer && (
-          <View style={styles.drawerLayer} pointerEvents="box-none">
-            <Animated.View
-              style={[
-                styles.drawerOverlay,
-                {
-                  opacity: overlayAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, 0.35],
-                  }),
-                },
-              ]}
-              {...overlayPanHandlers}>
-              <Pressable
-                style={styles.overlayPressArea}
-                onPress={closeDrawer}
-              />
-            </Animated.View>
-            <Animated.View
-              style={[
-                styles.drawerContainer,
-                {
-                  width: drawerWidth,
-                  paddingTop:
-                    insets.top + (Platform.OS === 'android' ? 20 : 10),
-                  transform: [{translateX: drawerAnim}],
-                },
-              ]}
-              {...overlayPanHandlers}>
-              <View style={styles.drawerHeader}>
-                <CustomText style={styles.sheetTitle}>탐색</CustomText>
-                <Pressable onPress={closeDrawer} hitSlop={10}>
-                  <Ionicons name="close" size={22} color="#333" />
-                </Pressable>
-              </View>
-              <ScrollView
-                style={styles.drawerScroll}
-                contentContainerStyle={[
-                  styles.drawerScrollContent,
-                  {paddingBottom: insets.bottom + 10},
-                ]}>
-                <View style={styles.drawerSection}>
-                  <Pressable
-                    style={styles.drawerCard}
-                    onPress={() => {
-                      closeDrawer();
-                      navigation.navigate('SetLocationScreen', {
-                        origin: 'AIExploreScreen',
-                      });
-                    }}>
-                    <Feather name="crosshair" size={18} color="#333" />
-                    <CustomText
-                      style={styles.drawerAddressText}
-                      numberOfLines={1}>
-                      {address || '설정된 주소가 없어요'}
-                    </CustomText>
-                    <Ionicons name="chevron-forward" size={18} color="#666" />
-                  </Pressable>
-                </View>
-
-                <View style={styles.drawerSection}>
-                  <Pressable
-                    style={[
-                      styles.drawerButton,
-                      sending && styles.drawerButtonDisabled,
-                    ]}
-                    disabled={sending}
-                    onPress={() => {
-                      if (sending) {
-                        return;
-                      }
-                      resetChat();
-                      closeDrawer();
-                    }}>
-                    <RotateCwIcon size={18} color={sending ? '#aaa' : '#333'} />
-                    <CustomText
-                      style={[
-                        styles.drawerButtonText,
-                        sending && styles.drawerButtonTextDisabled,
-                      ]}>
-                      새 대화 시작
-                    </CustomText>
-                  </Pressable>
-                </View>
-
-                <View style={styles.sheetSubtitleRow}>
-                  <CustomText style={styles.sheetSubtitle}>
-                    최근 질문
-                  </CustomText>
-                  <Pressable
-                    onPress={clearRecentFirstPrompts}
-                    hitSlop={10}
-                    style={styles.sheetSubtitleAction}>
-                    <CustomText style={styles.sheetSubtitleActionText}>
-                      전체 삭제
-                    </CustomText>
-                  </Pressable>
-                </View>
-                <View style={styles.sheetContent}>
-                  {recentFirstPrompts.length
-                    ? recentFirstPrompts.map((item, idx) => (
-                        <View
-                          key={`${item}-${idx}`}
-                          style={[
-                            styles.sheetPromptRow,
-                            idx > 0 && styles.sheetPromptSpacing,
-                          ]}>
-                          <Pressable
-                            hitSlop={5}
-                            style={styles.sheetPromptPress}
-                            onPress={() => {
-                              closeDrawer();
-                              handlePromptSelect(item);
-                            }}>
-                            <CustomText
-                              style={styles.sheetPromptText}
-                              numberOfLines={1}>
-                              {item}
-                            </CustomText>
-                          </Pressable>
-                          <Pressable
-                            onPress={() => removeRecentFirstPrompt(idx)}
-                            hitSlop={10}>
-                            <Ionicons name="close" size={16} color="#666" />
-                          </Pressable>
-                        </View>
-                      ))
-                    : null}
-                </View>
-              </ScrollView>
-            </Animated.View>
-          </View>
-        )}
-
+        <AIExploreDrawer
+          showDrawer={showDrawer}
+          overlayAnim={overlayAnim}
+          drawerAnim={drawerAnim}
+          drawerWidth={drawerWidth}
+          overlayPanHandlers={overlayPanHandlers}
+          insets={insets}
+          address={address}
+          sending={sending}
+          onClose={closeDrawer}
+          onResetChat={resetChat}
+          onNavigateLocation={() => {
+            closeDrawer();
+            handleLocationPress();
+          }}
+          recentFirstPrompts={recentFirstPrompts}
+          onClearRecentFirstPrompts={clearRecentFirstPrompts}
+          onRemoveRecentFirstPrompt={removeRecentFirstPrompt}
+          onSelectPrompt={item => {
+            closeDrawer();
+            handlePromptSelect(item);
+          }}
+        />
         <Animated.View
           style={[
             styles.container,
@@ -1175,407 +1060,63 @@ const AIExploreScreen = ({navigation}) => {
             },
           ]}
           {...overlayPanHandlers}>
-          <View
-            style={[
-              styles.customHeader,
-              {
-                paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 10),
-              },
-            ]}>
-            <Pressable
-              onPress={openDrawer}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <MenuIcon size={10} />
-            </Pressable>
-            <View style={styles.headerActions}>
-              <Pressable
-                onPress={() =>
-                  navigation.navigate('SetLocationScreen', {
-                    origin: 'AIExploreScreen',
-                  })
-                }
-                hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-                <Feather name="crosshair" size={22} color="#333" />
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  if (sending) {
-                    return;
-                  }
-                  resetChat();
-                }}
-                disabled={sending}
-                style={{marginLeft: 12, opacity: sending ? 0.35 : 1}}
-                hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-                <RotateCwIcon size={22} color="#333" />
-              </Pressable>
-            </View>
-          </View>
-          {/** ─────────── MAIN CONTENT ─────────── */}
-          <View
-            style={[
-              styles.center,
-              hasMessages ? styles.chatContainer : styles.emptyCenter,
-            ]}>
-            {hasMessages ? (
-              <ScrollView
-                ref={scrollViewRef}
-                showsVerticalScrollIndicator={true}
-                keyboardShouldPersistTaps="handled"
-                nestedScrollEnabled
-                automaticallyAdjustKeyboardInsets={false}
-                overScrollMode="always"
-                scrollEventThrottle={16}
-                style={styles.chatScroll}
-                contentContainerStyle={[
-                  styles.chatContent,
-                  {paddingBottom: bottomPadding + 50},
-                ]}>
-                {chatHistory.map(message => {
-                  if (message.role === 'user') {
-                    return (
-                      <View
-                        key={message.id}
-                        style={styles.bubbleRow}
-                        onLayout={({nativeEvent}) =>
-                          handleMessageLayout(
-                            message.id,
-                            nativeEvent?.layout?.y ?? 0,
-                          )
-                        }>
-                        <View style={styles.messageBubble}>
-                          <CustomText style={styles.messageText}>
-                            {message.text}
-                          </CustomText>
-                        </View>
-                      </View>
-                    );
-                  }
+          <AIExploreHeader
+            insets={insets}
+            sending={sending}
+            onOpenDrawer={openDrawer}
+            onNavigateLocation={handleLocationPress}
+            onResetChat={resetChat}
+          />
 
-                  const changedAddressText =
-                    typeof message.changedAddress === 'string' &&
-                    message.changedAddress.trim()
-                      ? message.changedAddress.trim()
-                      : '';
-                  const displayAddress = changedAddressText || address;
+          <AIExploreChatList
+            chatHistory={chatHistory}
+            address={address}
+            hasMessages={hasMessages}
+            sending={sending}
+            spinAnim={spinAnim}
+            scrollViewRef={scrollViewRef}
+            handleMessageLayout={handleMessageLayout}
+            bottomPadding={bottomPadding}
+            navigation={navigation}
+            userLocation={userLocation}
+            handleOpenMapWithAiResult={handleOpenMapWithAiResult}
+            showTitle={showTitle}
+            showRecordingUI={showRecordingUI}
+            titleAnim={titleAnim}
+          />
 
-                  return (
-                    <View
-                      key={message.id}
-                      style={styles.aiRow}
-                      onLayout={({nativeEvent}) =>
-                        handleMessageLayout(
-                          message.id,
-                          nativeEvent?.layout?.y ?? 0,
-                        )
-                      }>
-                      <View style={styles.aiHeaderRow}>
-                        <View style={styles.aiAvatarLarge}>
-                          <AIFullIcon size={26} />
-                        </View>
-                        {!!displayAddress && (
-                          <CustomText
-                            style={styles.aiAddressText}
-                            numberOfLines={1}>
-                            {displayAddress}
-                          </CustomText>
-                        )}
-                      </View>
-                      {!!message.text && (
-                        <CustomText style={styles.aiTextBare}>
-                          {message.text}
-                        </CustomText>
-                      )}
-                      {message.agentMode === 'SHOW_RESULT' &&
-                        Array.isArray(message.stores) &&
-                        message.stores.length > 0 && (
-                          <>
-                            <ScrollView
-                              horizontal
-                              showsHorizontalScrollIndicator={false}
-                              contentContainerStyle={styles.resultList}>
-                              {message.stores.map((store, index) => (
-                                <AIResultCard
-                                  key={`${message.id}-${store?.id}`}
-                                  store={store}
-                                  navigation={navigation}
-                                  userLocation={userLocation}
-                                  searchConditions={message.searchConditions}
-                                />
-                              ))}
-                            </ScrollView>
-                            <LinearGradient
-                              colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
-                              start={{x: 0, y: 0}}
-                              end={{x: 1, y: 0}}
-                              style={[styles.chipBorder, styles.mapChipBorder]}>
-                              <Pressable
-                                style={[styles.chip, styles.mapChip]}
-                                onPress={() =>
-                                  handleOpenMapWithAiResult(
-                                    message.stores,
-                                    message.searchConditions,
-                                    message.userPrompt,
-                                  )
-                                }>
-                                <CustomText style={styles.chipKeyword}>
-                                  지도에서 확인하기
-                                </CustomText>
-                              </Pressable>
-                            </LinearGradient>
-                          </>
-                        )}
-                    </View>
-                  );
-                })}
-                {sending && (
-                  <View style={styles.aiRow}>
-                    <View style={styles.aiHeaderRow}>
-                      <View style={styles.aiAvatarLarge}>
-                        <Animated.View
-                          style={[
-                            styles.aiLoadingSpinner,
-                            {
-                              transform: [
-                                {
-                                  rotate: spinAnim.interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: ['0deg', '360deg'],
-                                  }),
-                                },
-                              ],
-                            },
-                          ]}>
-                          <AIFullIcon size={26} />
-                        </Animated.View>
-                      </View>
-                      <CustomText style={styles.aiAddressText}>
-                        탐색 중
-                      </CustomText>
-                    </View>
-                  </View>
-                )}
-              </ScrollView>
-            ) : (
-              <TouchableWithoutFeedback
-                onPress={Keyboard.dismiss}
-                accessible={false}>
-                <View style={styles.emptyTouchArea}>
-                  {showTitle && !showRecordingUI && (
-                    <Animated.View
-                      style={[
-                        styles.titleWrap,
-                        {
-                          opacity: titleAnim,
-                        },
-                      ]}>
-                      <CustomText style={styles.title}>
-                        오늘은 어디서 한잔할까요?
-                      </CustomText>
-                    </Animated.View>
-                  )}
-                </View>
-              </TouchableWithoutFeedback>
-            )}
-          </View>
+          <AIExploreSuggestions
+            showChips={showChips}
+            showRecordingUI={showRecordingUI}
+            chipAnim={chipAnim}
+            chipBottomSpacing={chipBottomSpacing}
+            suggestions={suggestions}
+            onSelectSuggestion={handlePromptSelect}
+          />
 
-          {showChips && !showRecordingUI && (
-            <Animated.View
-              style={[
-                styles.suggestionWrap,
-                {
-                  opacity: chipAnim,
-                  marginBottom: chipBottomSpacing,
-                },
-              ]}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={[styles.chipRow]}>
-                {suggestions.map(({keyword, subtext}) => {
-                  const fullText = `${keyword} ${subtext}`;
-                  return (
-                    <LinearGradient
-                      key={keyword}
-                      colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
-                      start={{x: 0, y: 0}}
-                      end={{x: 1, y: 0}}
-                      style={styles.chipBorder}>
-                      <Pressable
-                        style={styles.chip}
-                        onPress={() => handlePromptSelect(fullText)}>
-                        <CustomText style={styles.chipKeyword}>
-                          {keyword}
-                        </CustomText>
-                        <CustomText style={styles.chipSubtext}>
-                          {subtext}
-                        </CustomText>
-                      </Pressable>
-                    </LinearGradient>
-                  );
-                })}
-              </ScrollView>
-            </Animated.View>
-          )}
-
-          {/** ─────────── INPUT FIELD ─────────── */}
-
-          <View style={styles.bottomInputContainer} pointerEvents="box-none">
-            <LinearGradient
-              pointerEvents="none"
-              colors={[
-                'rgba(255,255,255,0)',
-                'rgba(255,255,255,0.2)',
-                'rgba(255,255,255,0.9)',
-              ]}
-              locations={[0.1, 0.45, 1]}
-              style={[
-                styles.bottomGradient,
-                {
-                  height: bottomOverlayHeight,
-                },
-              ]}
-            />
-            <View
-              style={[styles.bottomInput]}
-              onLayout={({nativeEvent}) =>
-                setBottomInputHeight(nativeEvent?.layout?.height ?? 0)
-              }>
-              <View
-                style={[
-                  styles.inputBox,
-                  showRecordingUI && styles.recordingContainer,
-                ]}>
-                {showRecordingUI ? (
-                  <>
-                    <Pressable
-                      style={styles.stopButton}
-                      onPress={handleStopPress}
-                      hitSlop={10}>
-                      <Ionicons name="stop" size={18} color="#f2f2f2" />
-                    </Pressable>
-                    <View style={styles.recordingBox}>
-                      {isRecording ? (
-                        <View style={styles.recordingWaveWindow}>
-                          <Animated.View
-                            style={[
-                              styles.recordingWaveTrack,
-                              {
-                                width: waveformWidth,
-                                transform: [
-                                  {
-                                    translateX: recordShiftAnim.interpolate({
-                                      inputRange: [0, 1],
-                                      outputRange: [0, -waveformTravel],
-                                    }),
-                                  },
-                                ],
-                              },
-                            ]}>
-                            {waveformBars.map(({idx, seed}) => {
-                              const silentScale = 0.25;
-                              const dynamicScale = 1 + seed * 1.2;
-                              const maxScale = 1.6 + seed * 1.2;
-                              const scale = volumeLevel.interpolate({
-                                inputRange: [0, 0.2, 1, 3],
-                                outputRange: [
-                                  silentScale,
-                                  silentScale,
-                                  dynamicScale,
-                                  maxScale,
-                                ],
-                                extrapolate: 'clamp',
-                              });
-                              const opacity = volumeLevel.interpolate({
-                                inputRange: [0, 0.2, 1, 3],
-                                outputRange: [0.2, 0.3, 0.9, 1],
-                                extrapolate: 'clamp',
-                              });
-                              return (
-                                <Animated.View
-                                  key={`bar-${idx}`}
-                                  style={[
-                                    styles.recordingWaveBar,
-                                    {transform: [{scaleY: scale}], opacity},
-                                  ]}
-                                />
-                              );
-                            })}
-                          </Animated.View>
-                        </View>
-                      ) : (
-                        <View style={styles.recordingLabelRow}>
-                          <ActivityIndicator
-                            style={styles.recordingSpinner}
-                            size="small"
-                            color="#9AA0A6"
-                          />
-                          <CustomText style={styles.recordingLabel}>
-                            받아쓰는 중
-                          </CustomText>
-                        </View>
-                      )}
-                    </View>
-                    <View style={[styles.trailingAction, styles.sendAlign]}>
-                      <Pressable
-                        style={[
-                          styles.sendButton,
-                          styles.sendButtonActive,
-                          (sending || isTranscribing) &&
-                            styles.sendButtonDisabled,
-                        ]}
-                        onPress={handleSendPress}
-                        disabled={sending || isTranscribing}>
-                        <Ionicons
-                          name="arrow-up"
-                          size={20}
-                          color={sending || isTranscribing ? '#aaa' : '#111'}
-                        />
-                      </Pressable>
-                    </View>
-                  </>
-                ) : (
-                  <>
-                    <CustomTextInput
-                      ref={inputRef}
-                      placeholder="가고 싶은 술집을 설명해주세요"
-                      value={prompt}
-                      onChangeText={handleChangePrompt}
-                      multiline
-                      numberOfLines={3}
-                      textAlignVertical="top"
-                      placeholderTextColor={ColorUtil.placeholderText}
-                      style={styles.input}
-                      onFocus={() => setIsInputFocused(true)}
-                      onBlur={() => setIsInputFocused(false)}
-                    />
-                    <View
-                      style={[
-                        styles.trailingAction,
-                        showSendButton ? styles.sendAlign : styles.micAlign,
-                      ]}>
-                      {showSendButton ? (
-                        <Pressable
-                          style={styles.sendButton}
-                          onPress={handleSendPress}>
-                          <Ionicons name="arrow-up" size={20} color="#333" />
-                        </Pressable>
-                      ) : showMicButton ? (
-                        <Pressable
-                          style={styles.micButton}
-                          onPress={handleMicPress}
-                          hitSlop={10}>
-                          <AIMicIcon size={22} />
-                        </Pressable>
-                      ) : (
-                        <View style={styles.sendButtonPlaceholder} />
-                      )}
-                    </View>
-                  </>
-                )}
-              </View>
-            </View>
-          </View>
+          <AIExploreInput
+            showRecordingUI={showRecordingUI}
+            bottomOverlayHeight={bottomOverlayHeight}
+            onInputLayout={height => setBottomInputHeight(height)}
+            prompt={prompt}
+            onChangePrompt={handleChangePrompt}
+            onFocusInput={() => setIsInputFocused(true)}
+            onBlurInput={() => setIsInputFocused(false)}
+            showSendButton={showSendButton}
+            showMicButton={showMicButton}
+            onSendPress={handleSendPress}
+            onMicPress={handleMicPress}
+            onStopPress={handleStopPress}
+            isRecording={isRecording}
+            isTranscribing={isTranscribing}
+            sending={sending}
+            waveformWidth={waveformWidth}
+            waveformTravel={waveformTravel}
+            waveformBars={waveformBars}
+            recordShiftAnim={recordShiftAnim}
+            volumeLevel={volumeLevel}
+            inputRef={inputRef}
+          />
         </Animated.View>
       </View>
     </KeyboardAvoidingView>
@@ -1589,469 +1130,6 @@ const styles = StyleSheet.create({
   flex: {
     backgroundColor: '#FFF',
     flex: 1,
-  },
-  headerAddressWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    maxWidth: 240,
-  },
-  headerAddressText: {
-    marginLeft: 6,
-    fontSize: 15,
-    color: '#111',
-    fontFamily: 'Pretendard-SemiBold',
-  },
-
-  // CENTER SECTION
-  center: {
-    flex: 1,
-  },
-  emptyCenter: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyTouchArea: {
-    flex: 1,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chatContainer: {
-    flex: 1,
-  },
-  chatScroll: {
-    flex: 1,
-    paddingTop: 16,
-  },
-  chatContent: {
-    flexGrow: 1,
-  },
-  bubbleRow: {
-    width: '100%',
-    alignItems: 'flex-end',
-    marginBottom: 8,
-    paddingHorizontal: 18,
-  },
-  messageBubble: {
-    backgroundColor: '#f2f2f2',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    borderBottomRightRadius: 0,
-    maxWidth: '85%',
-  },
-  messageText: {
-    fontSize: 16,
-    color: '#333',
-    fontFamily: 'Pretendard-Regular',
-    lineHeight: 16 * 1.4,
-  },
-  addressSubtext: {
-    marginTop: 4,
-    fontSize: 12,
-    color: '#999',
-    fontFamily: 'Pretendard-Regular',
-    textAlign: 'right',
-  },
-  aiRow: {
-    marginTop: 20,
-    marginBottom: 18,
-  },
-  aiHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  aiAvatarLarge: {
-    paddingLeft: 18,
-    marginRight: 8,
-  },
-  aiAddressText: {
-    flexShrink: 1,
-    fontSize: 14,
-    color: '#999',
-    fontFamily: 'Pretendard-Regular',
-    maxWidth: '70%',
-  },
-  aiTextBare: {
-    fontSize: 16,
-    lineHeight: 16 * 1.5,
-    color: '#333',
-    fontFamily: 'Pretendard-Regular',
-    marginBottom: 6,
-    marginRight: 40,
-
-    paddingLeft: 18,
-  },
-
-  resultList: {
-    paddingVertical: 12,
-    paddingRight: 6,
-    paddingHorizontal: 18,
-    gap: 4,
-  },
-  mapChipBorder: {
-    alignSelf: 'center',
-    marginTop: 10,
-    marginHorizontal: 18,
-    borderRadius: 999,
-    marginBottom: 20,
-  },
-  mapChip: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 999,
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: 'Pretendard-Regular',
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 50,
-  },
-
-  chipRow: {
-    paddingHorizontal: 12,
-    marginBottom: 2,
-  },
-  titleWrap: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  chipBorder: {
-    marginHorizontal: 6,
-    borderRadius: 16,
-  },
-  chip: {
-    borderRadius: 14.5,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    margin: 1.5,
-    alignItems: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  chipKeyword: {
-    fontSize: 15,
-    color: '#333',
-    fontFamily: 'Pretendard-Medium',
-    lineHeight: 15 * 1.3,
-    letterSpacing: 0,
-  },
-  chipSubtext: {
-    fontSize: 14,
-    color: ColorUtil.subText,
-    fontFamily: 'Pretendard-Regular',
-    marginTop: 2,
-  },
-
-  // INPUT SECTION
-  bottomInputContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  bottomGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  bottomInput: {
-    flexDirection: 'row',
-    marginHorizontal: 18,
-    alignItems: 'center',
-    // paddingTop: 10,
-    // backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    paddingBottom: 20,
-    // borderTopLeftRadius: 24,
-    // borderTopRightRadius: 24,
-  },
-  inputBox: {
-    flex: 1,
-    minHeight: 28,
-    backgroundColor: '#FFF',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#e5e5e5',
-    paddingHorizontal: 12,
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  recordingContainer: {
-    backgroundColor: '#fff',
-    borderColor: '#e5e5e5',
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-    fontFamily: 'Pretendard-Regular',
-    ...Platform.select({
-      ios: {
-        paddingVertical: 12,
-      },
-    }),
-
-    marginLeft: 6,
-    maxHeight: 80,
-  },
-  trailingAction: {
-    marginLeft: 10,
-    marginRight: 4,
-  },
-  sendAlign: {
-    alignSelf: 'flex-end',
-    paddingBottom: 6,
-    marginRight: -4,
-  },
-  micAlign: {
-    alignSelf: 'center',
-  },
-  sendButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 100,
-    backgroundColor: '#f2f2f2',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sendButtonActive: {
-    backgroundColor: '#f5f5f5',
-  },
-  sendButtonDisabled: {
-    opacity: 0.5,
-  },
-  sendButtonPlaceholder: {
-    width: 32,
-    height: 32,
-  },
-  stopButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#333',
-    marginRight: 8,
-    marginLeft: -4,
-  },
-  recordingBox: {
-    flex: 1,
-    borderRadius: 18,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  recordingWaveRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 20,
-    overflow: 'hidden',
-  },
-  recordingWaveWindow: {
-    height: 20,
-    overflow: 'hidden',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  recordingWaveTrack: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  recordingWaveBar: {
-    width: 3,
-    height: 8,
-    marginHorizontal: 0.8,
-    backgroundColor: '#666',
-    borderRadius: 2,
-  },
-  recordingLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-  },
-  recordingLabel: {
-    marginLeft: 7,
-    color: '#9AA0A6',
-    fontSize: 14,
-    fontFamily: 'Pretendard-Regular',
-  },
-  recordingSpinner: {
-    width: 14,
-    height: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    transform: [{scale: 0.8}],
-  },
-  micButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  aiLoadingText: {
-    fontSize: 15,
-    lineHeight: 15 * 1.5,
-    color: '#666',
-    fontFamily: 'Pretendard-Regular',
-    marginRight: 40,
-    paddingHorizontal: 18,
-    marginBottom: 6,
-  },
-  aiLoadingSpinner: {
-    width: 26,
-    height: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  drawerLayer: {
-    ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
-    zIndex: 20,
-  },
-  drawerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#000',
-  },
-  drawerContainer: {
-    width: '80%',
-    backgroundColor: '#FFF',
-    // paddingHorizontal: 18,
-    // paddingBottom: 28,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  drawerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-    marginHorizontal: 18,
-  },
-  sheetTitle: {
-    fontSize: 18,
-    fontFamily: 'Pretendard-Bold',
-    color: '#333',
-  },
-  drawerSection: {
-    marginTop: 12,
-    justifyContent: 'center',
-  },
-  sheetSubtitleRow: {
-    marginTop: 60,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 7,
-  },
-  sheetSubtitle: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
-  },
-  sheetSubtitleAction: {
-    paddingHorizontal: 4,
-  },
-  sheetSubtitleActionText: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-Regular',
-    color: '#666',
-  },
-  drawerCard: {
-    marginTop: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  drawerAddressText: {
-    flex: 1,
-    marginHorizontal: 10,
-    fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
-    color: '#333',
-    lineHeight: 15 * 1.35,
-  },
-  drawerButton: {
-    marginTop: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  drawerButtonDisabled: {
-    opacity: 0.5,
-  },
-  drawerButtonText: {
-    marginLeft: 10,
-    fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
-    color: '#333',
-  },
-  drawerButtonTextDisabled: {
-    color: '#999',
-  },
-  drawerScroll: {
-    flex: 1,
-    paddingHorizontal: 18,
-  },
-  drawerScrollContent: {
-    paddingBottom: 10,
-  },
-  sheetPromptRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  sheetContent: {
-    marginTop: 20,
-    flex: 1,
-    // backgroundColor: '#333',
-  },
-  sheetPromptText: {
-    fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
-    color: '#333',
-    lineHeight: 15 * 1.45,
-    flex: 1,
-    minWidth: 0,
-  },
-  sheetPromptPress: {
-    flex: 1,
-  },
-  sheetPromptSpacing: {
-    marginTop: 20,
-  },
-  sheetPromptScroll: {
-    // maxHeight: 200,
-  },
-  sheetPromptScrollContent: {
-    paddingRight: 4,
-  },
-  sheetEmpty: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-Regular',
-    color: '#888',
-  },
-  overlayPressArea: {
-    flex: 1,
-  },
-  customHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingBottom: 10,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
 });
 
