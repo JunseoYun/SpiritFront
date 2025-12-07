@@ -577,7 +577,6 @@ const MapScreen = ({navigation, route}) => {
         const n = item?.name;
         return n ?? '(이름 없음)';
       });
-      console.log('[MapScreen] 지도에서 확인하기 전달 스토어 이름', namesOnly);
     }
   }, [route?.params?.aiStores]);
 
@@ -1135,7 +1134,11 @@ const MapScreen = ({navigation, route}) => {
       ) {
         const markerWithPriority = aiPriorityStoresRef.current;
         setMarkerStores(markerWithPriority);
-        lastQueryRef.current = {lat: queryLat, lng: queryLng, radius: reqRadius};
+        lastQueryRef.current = {
+          lat: queryLat,
+          lng: queryLng,
+          radius: reqRadius,
+        };
         setHasMoreStores(true);
         setListPage(-1); // so next load-more fetches page 0 from API
         setStoregetloading(false);
@@ -1392,13 +1395,9 @@ const MapScreen = ({navigation, route}) => {
   const onMessageHandler = event => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
-      if (message && message.action) {
-        //console.log('WebView action:', message.action, message);
-      }
 
       // 기존 메시지 처리
       if (message.action === 'mapLoaded') {
-        console.log('Kakao Maps API가 로드되었습니다.');
         mapReadyRef.current = true;
         const baseLat = centerLatLng?.latitude ?? location?.latitude;
         const baseLng = centerLatLng?.longitude ?? location?.longitude;
