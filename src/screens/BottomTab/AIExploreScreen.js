@@ -395,7 +395,6 @@ const AIExploreScreen = ({navigation}) => {
       setPrompt('');
       Keyboard.dismiss();
       if (skipApi) {
-        console.log('[AIExplore voice] message sent without API:', trimmed);
         return;
       }
       setSending(true);
@@ -405,7 +404,7 @@ const AIExploreScreen = ({navigation}) => {
             Array.isArray(recentFirstPrompts) && recentFirstPrompts.length
               ? recentFirstPrompts
               : [];
-          const next = [trimmed, ...current].slice(0, 10);
+          const next = [trimmed, ...current].slice(0, 30);
           setRecentFirstPrompts(next);
           await AsyncStorage.setItem(
             RECENT_FIRST_PROMPT_KEY,
@@ -426,7 +425,7 @@ const AIExploreScreen = ({navigation}) => {
           longitude: location?.longitude ?? null,
           userMessage: payloadText,
         };
-        console.log(payload);
+
         const data = await Agent_chat_search(payload);
         if (!data) {
           showToast(
@@ -435,12 +434,11 @@ const AIExploreScreen = ({navigation}) => {
           );
           return;
         }
-        console.log(data);
+
         const agentResult = data?.llmAgentResult || data || {};
         const responseId = agentResult?.responseId;
         const storeList = data?.stores?.content;
         const searchConditions = agentResult?.searchConditions;
-        console.log(searchConditions);
 
         if (responseId) {
           setLastResponseId(responseId);
@@ -548,7 +546,6 @@ const AIExploreScreen = ({navigation}) => {
             }
           }
         } catch (error) {
-          console.log('현재 주소 불러오기 실패:', error);
           if (isActive) {
             setAddress('주소 정보를 불러오지 못했어요');
           }
@@ -722,9 +719,7 @@ const AIExploreScreen = ({navigation}) => {
       await Voice.start('ko-KR', voiceStartOptions);
       setIsRecording(true);
       setIsTranscribing(false);
-      console.log('[AIExplore voice] restarted listening');
     } catch (error) {
-      console.log('[AIExplore voice] restart error', error);
       restartTimerRef.current = setTimeout(restartListening, 400);
     }
   }, [isVoiceSupported, voiceStartOptions]);
@@ -751,7 +746,6 @@ const AIExploreScreen = ({navigation}) => {
       }
     };
     Voice.onSpeechError = error => {
-      console.log('[AIExplore voice] error', error);
       if (autoSentVoiceRef.current) {
         return;
       }
@@ -948,9 +942,7 @@ const AIExploreScreen = ({navigation}) => {
         await Voice.start('ko-KR', voiceStartOptions);
         keepRecordingRef.current = true;
         setIsRecording(true);
-        console.log('[AIExplore voice] recording started');
       } catch (error) {
-        console.log('[AIExplore voice] start error', error);
         showToast('녹음을 시작할 수 없어요', 'center');
       }
     };
@@ -985,11 +977,9 @@ const AIExploreScreen = ({navigation}) => {
         useNativeDriver: true,
       }).start();
       startTranscribeTimer();
-      console.log('[AIExplore voice] recording stopped');
       try {
         await Voice.stop();
       } catch (error) {
-        console.log('[AIExplore voice] stop error', error);
         setIsTranscribing(false);
         pendingVoiceSendRef.current = false;
       }
