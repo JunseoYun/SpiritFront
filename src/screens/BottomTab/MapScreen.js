@@ -636,7 +636,7 @@ const MapScreen = ({navigation, route}) => {
   const getOffsetForSheet = useCallback(
     (index = sheetIndex) => {
       if (index === 1) {
-        return SCREEN_HEIGHT * 0.12;
+        return SCREEN_HEIGHT * 0.25;
       }
       if (index === 10) {
         return SCREEN_HEIGHT * -0.18;
