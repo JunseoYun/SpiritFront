@@ -182,8 +182,8 @@ const ImageSlider = ({
       ) : (
         <View style={styles.noneImageContainer}>
           <FastImage
-            style={[styles.noneImage, {opacity: 0.7}]}
-            source={require('../../../assets/store.png')}
+            style={[styles.noneImage]}
+            source={require('../../../assets/default_store6.png')}
             resizeMode={FastImage.resizeMode.cover}
           />
         </View>
@@ -223,8 +223,8 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   noneImage: {
-    width: 197,
-    height: 155,
+    width: '100%',
+    height: '100%',
     alignSelf: 'center',
   },
   indicatorContainer: {

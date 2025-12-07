@@ -23,6 +23,7 @@ const ColorUtil = {
   backgroundGray: '#F8F9FA',
 
   // 경계선/보더
+  photoBorder: '#f1f1f1',
   border: '#E5E5E5',
 
   // 상태 컬러

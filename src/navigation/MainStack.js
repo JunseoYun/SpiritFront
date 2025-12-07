@@ -26,6 +26,7 @@ import LocataionMapScreen from '../screens/SetLocation/LocataionMapScreen';
 import OpenStoreScreen from '../screens/TotalScreen/OpenStoreScreen';
 import NearStoreScreen from '../screens/TotalScreen/NearStoreScreen';
 import ViewedStoreScreen from '../screens/TotalScreen/ViewedStoreScreen';
+import SearchScreen from '../screens/Search/SearchScreen';
 import NotificationScreen from '../screens/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/Notification/NotificationSetScreen';
 import OrderDetailScreen from '../screens/BottomTab/Order/OrderDetailScreen';
@@ -53,6 +54,13 @@ export default function MainStack() {
         name="MainBtmbar"
         component={MainBtmbar}
         options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="SearchScreen"
+        component={SearchScreen}
+        options={{
+          headerShown: false,
+        }}
       />
       <Stack.Screen
         name="SetLocationScreen"
@@ -84,7 +92,6 @@ export default function MainStack() {
         options={({navigation}) => ({
           title: '주소 설정',
           headerTitleAlign: 'center',
-
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',
             fontSize: 18,

@@ -1,9 +1,11 @@
 import React, {useCallback, useEffect, useRef} from 'react';
 import {StyleSheet, Text, Pressable, Animated, View} from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useMapSearch} from '../../context/MapSearchContext';
-import CancelText from '../CancelText/CancelText';
+import {AILogoIcon, AIEmptyLogoIcon} from '../../assets/svg/AILogoIcon';
+import LinearGradient from 'react-native-linear-gradient';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import ColorUtil from '../../utils/ColorUtil';
 import CustomText from '../../utils/CustomText';
 
@@ -11,8 +13,12 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const MapTopBar = ({
   navigation,
+  prevTab,
   onMeasureHeight,
   forceWhiteBackground = false,
+  isAiSearchMode = false,
+  searchLabelOverride,
+  onClearSearch,
 }) => {
   const insets = useSafeAreaInsets();
   const {searchText, setSearchText} = useMapSearch();
@@ -20,6 +26,7 @@ const MapTopBar = ({
   const whiteBgAnim = useRef(
     new Animated.Value(forceWhiteBackground ? 1 : 0),
   ).current;
+  const isFullScreen = !forceWhiteBackground;
 
   useEffect(() => {
     Animated.timing(whiteBgAnim, {
@@ -94,7 +101,28 @@ const MapTopBar = ({
           ]}>
           <Pressable
             onPress={() => {
-              navigation.navigate('MainScreen');
+              const trimmed = (searchText || '').trim();
+              if (isAiSearchMode) {
+                if (onClearSearch) {
+                  onClearSearch();
+                  return;
+                }
+              }
+              if (trimmed.length > 0) {
+                if (onClearSearch) {
+                  onClearSearch();
+                } else {
+                  setSearchText('');
+                }
+                return;
+              }
+              if (prevTab && prevTab !== 'MapScreen') {
+                navigation.navigate(prevTab);
+              } else if (navigation.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation.navigate('MainScreen');
+              }
             }}
             style={styles.backBtn}>
             <Ionicons name="arrow-back" size={20} color="#333" />
@@ -103,46 +131,63 @@ const MapTopBar = ({
           <Pressable
             style={styles.searchBox}
             onPress={() => {
-              navigation.navigate('SearchStack', {
-                screen: 'SearchScreen',
-                params: {preserveFilters: true},
+              const trimmedKeyword =
+                typeof searchText === 'string' ? searchText.trim() : '';
+              const shouldPreserve =
+                trimmedKeyword.length > 0 || isAiSearchMode;
+              navigation.navigate('SearchScreen', {
+                preserveFilters: shouldPreserve,
+                fromAI: isAiSearchMode,
+                prevTab,
+                initialSearchKeyword: trimmedKeyword || undefined,
               });
             }}>
             <CustomText
               maxScale={1.2}
               style={[
                 styles.placeholder,
-                searchText?.trim()?.length > 0 && {color: 'black'},
+                searchText?.trim()?.length > 0
+                  ? {color: '#333'}
+                  : {color: styles.placeholder.color},
               ]}
               numberOfLines={1}
               ellipsizeMode="tail">
-              {searchText?.trim()?.length > 0
-                ? searchText
-                : '술집이나 메뉴를 검색하세요'}
+              {searchLabelOverride?.trim?.() ||
+                (searchText?.trim()?.length > 0
+                  ? searchText
+                  : '술집이나 메뉴를 검색하세요')}
             </CustomText>
-            {searchText?.trim()?.length > 0 && (
-              <CancelText
-                rightnum={0}
-                topnum={0}
-                paddingnum={0}
-                handlecancel={() => setSearchText('')}
-                size={20}
-              />
-            )}
           </Pressable>
         </Animated.View>
 
         <AnimatedPressable
           style={[
-            styles.homeButton,
-            forceWhiteBackground ? styles.homeButtonSolid : null,
+            styles.exploreButton,
+            forceWhiteBackground ? styles.exploreButtonSolid : null,
           ]}
           onPress={() => {
-            navigation.navigate('MainScreen');
+            navigation.navigate('AIExploreScreen');
           }}>
-          <View style={styles.homeButtonContent}>
-            <Ionicons name="home" size={22} color="#333" />
-          </View>
+          {!forceWhiteBackground ? (
+            <LinearGradient
+              colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
+              locations={[0, 0.5, 1]}
+              start={{x: 0, y: 0}}
+              end={{x: 1, y: 1}}
+              style={styles.exploreGradient}>
+              <View style={styles.exploreButtonContent}>
+                <AIEmptyLogoIcon size={19} />
+                <CustomText style={styles.exploreText}>탐색</CustomText>
+              </View>
+            </LinearGradient>
+          ) : (
+            <View style={styles.exploreButtonContent}>
+              <AILogoIcon size={19} />
+              <CustomText style={[styles.exploreText, {color: '#3cbbff'}]}>
+                탐색
+              </CustomText>
+            </View>
+          )}
         </AnimatedPressable>
       </View>
     </Animated.View>
@@ -200,13 +245,22 @@ const styles = StyleSheet.create({
     paddingRight: 30,
     fontFamily: 'Pretendard-Regular',
   },
-  homeButton: {
+
+  aiLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  aiBadge: {},
+  aiBadgeText: {},
+  aiPromptText: {},
+  exploreButton: {
     width: 48,
     height: 48,
     borderRadius: 9,
-    backgroundColor: '#fff',
+    backgroundColor: '#3CBBFF',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
 
     elevation: 3,
     shadowColor: '#000',
@@ -214,18 +268,29 @@ const styles = StyleSheet.create({
     shadowRadius: 1.5,
     shadowOffset: {width: 0, height: 2},
   },
-  homeButtonContent: {
+  exploreButtonContent: {
     width: '100%',
     height: '100%',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 6,
   },
-  homeButtonSolid: {
-    borderWidth: 1,
-    borderColor: ColorUtil.border,
+  exploreText: {
+    fontSize: 12,
+    color: '#FFF',
+    fontFamily: 'Pretendard-Medium',
+  },
+  exploreGradient: {
+    width: '100%',
+    height: '100%',
+  },
+  exploreButtonSolid: {
     elevation: 0,
     shadowColor: '#000',
     shadowOpacity: 0,
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: ColorUtil.border,
   },
 });
 

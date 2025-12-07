@@ -197,26 +197,18 @@ window.__nameOverlayStyle =
     allowUserMarker ? 'false' : 'true'
   };
  if (!__skipUserMarker) {
-      // Compute adjusted position for current marker so it appears offset from center
       try {
-        var __offset = ${offsetY};
-        if (!__offset) { __offset = 0; }
         var __baseLatLng = new kakao.maps.LatLng(${lat}, ${lng});
-        var __proj = map.getProjection();
-        var __pt = __proj.containerPointFromCoords(__baseLatLng);
-        // Move marker UP by offset (subtract Y)
-        var __markerPt = new kakao.maps.Point(__pt.x, __pt.y - __offset);
-        var __markerLatLng = __proj.coordsFromContainerPoint(__markerPt);
         if (!window.currentMarker) {
           window.currentMarker = new kakao.maps.Marker({
-            position: __markerLatLng,
+            position: __baseLatLng,
             map: map,
             title: '현재 위치',
             image: markerImage,
             zIndex: 2
           });
         } else {
-          window.currentMarker.setPosition(__markerLatLng);
+          window.currentMarker.setPosition(__baseLatLng);
           window.currentMarker.setMap(map);
         }
       } catch (e) {
