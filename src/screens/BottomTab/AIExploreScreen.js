@@ -140,6 +140,7 @@ const AIExploreScreen = ({navigation}) => {
     [waveformBarCount],
   );
   const isVoiceSupported = Platform.OS !== 'android';
+  const [bottomInputHeight, setBottomInputHeight] = useState(0);
 
   const voiceStartOptions = useMemo(
     () =>
@@ -866,7 +867,13 @@ const AIExploreScreen = ({navigation}) => {
     };
   }, [clearTranscribeTimer, isVoiceSupported, restartListening, submit]);
 
-  const bottomPadding = keyboardVisible ? insets.bottom + 24 : insets.bottom;
+  const measuredInputHeight = bottomInputHeight || 94;
+  const bottomPadding = Math.max(
+    insets.bottom + (keyboardVisible ? 28 : 16),
+    Math.round(measuredInputHeight * 0.6),
+  );
+  const bottomOverlayHeight = Math.max(bottomInputHeight + insets.bottom, 120);
+  const chipBottomSpacing = Math.max(bottomOverlayHeight - 40, 80);
   const showSendButton = hasPrompt;
   const showMicButton = !showSendButton && isVoiceSupported;
   const showRecordingUI = isVoiceSupported && (isRecording || isTranscribing);
@@ -1232,7 +1239,7 @@ const AIExploreScreen = ({navigation}) => {
                 style={styles.chatScroll}
                 contentContainerStyle={[
                   styles.chatContent,
-                  {paddingBottom: bottomPadding},
+                  {paddingBottom: bottomPadding + 50},
                 ]}>
                 {chatHistory.map(message => {
                   if (message.role === 'user') {
@@ -1388,12 +1395,13 @@ const AIExploreScreen = ({navigation}) => {
                 styles.suggestionWrap,
                 {
                   opacity: chipAnim,
+                  marginBottom: chipBottomSpacing,
                 },
               ]}>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.chipRow}>
+                contentContainerStyle={[styles.chipRow]}>
                 {suggestions.map(({keyword, subtext}) => {
                   const fullText = `${keyword} ${subtext}`;
                   return (
@@ -1421,8 +1429,28 @@ const AIExploreScreen = ({navigation}) => {
           )}
 
           {/** ─────────── INPUT FIELD ─────────── */}
-          <View style={styles.bottomInputContainer}>
-            <View style={[styles.bottomInput]}>
+
+          <View style={styles.bottomInputContainer} pointerEvents="box-none">
+            <LinearGradient
+              pointerEvents="none"
+              colors={[
+                'rgba(255,255,255,0)',
+                'rgba(255,255,255,0.2)',
+                'rgba(255,255,255,0.9)',
+              ]}
+              locations={[0.1, 0.45, 1]}
+              style={[
+                styles.bottomGradient,
+                {
+                  height: bottomOverlayHeight,
+                },
+              ]}
+            />
+            <View
+              style={[styles.bottomInput]}
+              onLayout={({nativeEvent}) =>
+                setBottomInputHeight(nativeEvent?.layout?.height ?? 0)
+              }>
               <View
                 style={[
                   styles.inputBox,
@@ -1731,23 +1759,26 @@ const styles = StyleSheet.create({
 
   // INPUT SECTION
   bottomInputContainer: {
-    position: 'relative',
-    backgroundColor: '#fff',
-  },
-  bottomInputFade: {
     position: 'absolute',
-    top: -18,
     left: 0,
     right: 0,
-    height: 30,
+    bottom: 0,
+  },
+  bottomGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   bottomInput: {
     flexDirection: 'row',
-    paddingHorizontal: 18,
+    marginHorizontal: 18,
     alignItems: 'center',
-    paddingTop: 10,
-    backgroundColor: '#fff',
+    // paddingTop: 10,
+    // backgroundColor: 'rgba(255, 255, 255, 0.7)',
     paddingBottom: 20,
+    // borderTopLeftRadius: 24,
+    // borderTopRightRadius: 24,
   },
   inputBox: {
     flex: 1,
