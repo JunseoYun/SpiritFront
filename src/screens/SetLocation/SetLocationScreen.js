@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   Text,
   SafeAreaView,
@@ -21,12 +21,37 @@ import Loading from '../../hooks/Loading';
 import {log_access_create} from '../../api/userApi';
 import CustomText from '../../utils/CustomText';
 
-const SetLocationScreen = ({navigation}) => {
+const SetLocationScreen = ({navigation, route}) => {
   const [currentAddress, setCurrentAddress] = useState('');
   const [currentLocation, setCurrentLocation] = useState(null);
   const [loading, setLoading] = useState(false);
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
+  const origin = route?.params?.origin || null;
+
+  const resetToHome = useCallback(
+    (targetIndex = 0) => {
+    if (origin === 'AIExploreScreen') {
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'MainBtmbar',
+            params: {
+              screen: 'AIExploreScreen',
+              initialTab: 'AIExploreScreen',
+              lastFocusedTab: 'AIExploreScreen',
+              lastNonMapTab: 'AIExploreScreen',
+            },
+          },
+        ],
+      });
+      return;
+    }
+      navigation.reset({index: targetIndex, routes: [{name: 'MainBtmbar'}]});
+    },
+    [navigation, origin],
+  );
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -57,7 +82,7 @@ const SetLocationScreen = ({navigation}) => {
         setCurrentAddress(address);
         showToast('주소 설정이 완료 되었습니다.');
         setTimeout(() => {
-          navigation.reset({index: 0, routes: [{name: 'MainBtmbar'}]});
+          resetToHome();
         }, 100);
       } else {
         showAlert({title: '주소를 선택해주세요.'});
@@ -76,7 +101,7 @@ const SetLocationScreen = ({navigation}) => {
   const handleGetCurrentLocation = async () => {
     try {
       const location = await getLocation();
-      navigation.navigate('LocataionMapScreen', {location});
+      navigation.navigate('LocataionMapScreen', {location, origin});
     } catch (error) {
       console.log(error);
     }
@@ -94,10 +119,7 @@ const SetLocationScreen = ({navigation}) => {
           showToast('저장된 주소가 삭제되었습니다.');
         }
         setTimeout(() => {
-          navigation.reset({
-            index: 1,
-            routes: [{name: 'MainBtmbar'}],
-          });
+          resetToHome(1);
         }, 100);
       } catch (error) {
         console.log(error);

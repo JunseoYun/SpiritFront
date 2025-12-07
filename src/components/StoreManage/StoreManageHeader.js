@@ -1,9 +1,10 @@
 import React from 'react';
 import {Pressable, StyleSheet, Animated, Platform, Share} from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useToast} from '../../context/ToastContext';
 import {get_store_share} from '../../api/storeApi';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {HomeHeaderIcon} from '../../assets/svg/HomeTabIcon';
 const StoreManageHeader = ({
   navigation,
   titleOpacity,
@@ -83,9 +84,7 @@ const StoreManageHeader = ({
               routes: [{name: 'MainBtmbar'}],
             })
           }>
-          <Animated.Text allowFontScaling={false} style={{color: '#333'}}>
-            <Ionicons name="home-outline" size={25} />
-          </Animated.Text>
+          <HomeHeaderIcon color="#333" />
         </Pressable>
       </Animated.View>
     </Animated.View>

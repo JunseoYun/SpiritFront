@@ -420,9 +420,7 @@ const MainScreen = ({navigation}) => {
   };
 
   const handleSearchPress = useCallback(() => {
-    navigation.navigate('SearchStack', {
-      screen: 'SearchScreen',
-    });
+    navigation.navigate('SearchScreen');
   }, [navigation]);
 
   const setLocationHandle = useCallback(() => {
@@ -963,12 +961,12 @@ const screens = [
   'KOREAN',
   'WESTERN',
   'CHINESE',
+  'POCHA',
   'GAMSEONG',
   'GRILLED_STEW',
   'CHICKEN_HOF',
   'RAW_SEAFOOD',
   'PUB_BAR',
-  'POCHA',
 ];
 
 export default MainScreen;

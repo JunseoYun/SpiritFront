@@ -34,13 +34,17 @@ const NoneStore = ({navigation, location}) => {
             onPress={() => {
               navigation.navigate('StoreSearchScreen', {index: 0, location});
             }}>
-            <CustomText style={styles.noneText2}>매장 제보하기</CustomText>
+            <CustomText maxScale={1.1} style={styles.noneText2}>
+              매장 제보하기
+            </CustomText>
           </Pressable>
 
           <Pressable
             style={styles.button}
             onPress={() => navigation.navigate('SetLocationScreen')}>
-            <CustomText style={styles.noneText}>위치 변경하기</CustomText>
+            <CustomText maxScale={1.1} style={styles.noneText}>
+              위치 변경하기
+            </CustomText>
           </Pressable>
         </View>
       </View>

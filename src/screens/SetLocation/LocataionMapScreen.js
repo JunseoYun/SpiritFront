@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
   Text,
   View,
@@ -29,7 +29,7 @@ import CustomText from '../../utils/CustomText';
 const LocataionMapScreen = ({navigation}) => {
   const route = useRoute();
   const [loading, setLoading] = useState(false);
-  const {location, onAddressSelect} = route.params;
+  const {location, onAddressSelect, origin} = route.params || {};
   const [centerLatLng, setCenterLatLng] = useState(null);
   const [prevCenterLatLng, setPrevCenterLatLng] = useState(null);
   const [currentloacation, setCurrentloacation] = useState(null);
@@ -38,6 +38,33 @@ const LocataionMapScreen = ({navigation}) => {
   const webViewRef = useRef(null);
 
   const insets = useSafeAreaInsets();
+
+  const resetToHome = useCallback(
+    (targetIndex = 1) => {
+      if (origin === 'AIExploreScreen') {
+        navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'MainBtmbar',
+              params: {
+                screen: 'AIExploreScreen',
+                initialTab: 'AIExploreScreen',
+                lastFocusedTab: 'AIExploreScreen',
+                lastNonMapTab: 'AIExploreScreen',
+              },
+            },
+          ],
+        });
+        return;
+      }
+      navigation.reset({
+        index: targetIndex,
+        routes: [{name: 'MainBtmbar'}],
+      });
+    },
+    [navigation, origin],
+  );
   useEffect(() => {
     if (location) {
       updateNewLocation();
@@ -108,10 +135,7 @@ const LocataionMapScreen = ({navigation}) => {
           log_access_create(targetCoords);
           showToast('주소 설정이 완료 되었습니다.');
           setTimeout(() => {
-            navigation.reset({
-              index: 1,
-              routes: [{name: 'MainBtmbar'}],
-            });
+            resetToHome();
           }, 100);
         } else {
           showToast('주소 설정 오류.');

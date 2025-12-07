@@ -84,7 +84,12 @@ const StoreMainInfo = ({
   // 몇미터 떨어져 있는지 distance
   return (
     <View style={[styles.StoreTopView]}>
-      {storedata?.moods.length > 0 && <Moods moods={storedata?.moods} />}
+      {storedata?.moods.length > 0 && (
+        <Moods
+          moods={storedata?.moods}
+          imgLength={storedata?.imgUrlList?.length}
+        />
+      )}
       {storedata?.categories?.length > 0 && (
         <Category
           categories={storedata?.categories}
