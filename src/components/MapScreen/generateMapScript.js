@@ -241,7 +241,7 @@ if (window.overlayMarkers) {
 
   try {
     var level = map.getLevel();
-    var gridSize =  level >= 6 ? 30 :level >= 5 ? 20:level >= 4 ? 10  : 0;
+    var gridSize = level >= 5 ? 50:level >= 4 ? 40  :level >= 3 ? 30  : 0;
     var proj = map.getProjection();
     var center = map.getCenter();
     var centerPt = proj.containerPointFromCoords(center);
