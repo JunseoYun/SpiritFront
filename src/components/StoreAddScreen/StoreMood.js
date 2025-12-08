@@ -34,7 +34,7 @@ const StoreMood = ({moodInfo, setMoodInfo, type = 'default'}) => {
       {/* ✅ 상단 라벨 */}
       {!isRegistration && (
         <View style={styles.labelView}>
-          <CustomText style={styles.label}>매장 분위기</CustomText>
+          <CustomText style={styles.label}>분위기</CustomText>
           {selectedCount < 1 ? (
             <CustomText style={styles.subLabel}>(선택)</CustomText>
           ) : (

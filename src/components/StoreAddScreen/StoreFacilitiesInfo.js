@@ -40,7 +40,7 @@ const StoreFacilitiesInfo = ({
       style={[styles.container, isRegistration && styles.registrationSpacing]}>
       {/* ✅ 상단 라벨 */}
       {!isRegistration && (
-        <CustomText style={styles.label}>매장 편의시설</CustomText>
+        <CustomText style={styles.label}>편의시설</CustomText>
       )}
 
       {/* ✅ 칩 버튼 리스트 */}

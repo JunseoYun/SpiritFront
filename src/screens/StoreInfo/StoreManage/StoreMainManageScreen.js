@@ -215,7 +215,7 @@ const StoreMainManageScreen = ({
       },
       {
         key: 'facilities',
-        label: '시설 정보',
+        label: '편의시설',
         values: enabledFacilities,
         placeholder,
       },
