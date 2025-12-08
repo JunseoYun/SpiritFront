@@ -23,6 +23,14 @@ const generateMapScript = (lat, lng, markerData, offsetY = 0, options = {}) => {
     });
 
     kakao.maps.event.addListener(window.map, 'zoom_changed', function () {
+      // Close any open multi-store list when the zoom level changes
+      try {
+        if (window.currentOverlay) {
+          window.currentOverlay.setMap(null);
+          window.currentOverlay = null;
+        }
+        window.isStoreListClicked = false;
+      } catch (_e) {}
       try {
         var center = window.map.getCenter();
         window.ReactNativeWebView.postMessage(JSON.stringify({
