@@ -40,7 +40,6 @@ const StoreMainInfo = ({
     breakend,
     operationSchedule,
   } = useStoreStatus(storedata?.operationInfoDtos, storedata?.isAlwaysOpen);
-
   const [distance, setDistance] = useState(0);
   const [unit, setUnite] = useState('m');
   const calculateDistance = useDistance();
@@ -161,7 +160,7 @@ const StoreMainInfo = ({
       />
       {storedata?.contact && <Contact contact={storedata?.contact} />}
 
-      {storedata?.facilitiesInfoDto.length > 0 && (
+      {storedata?.facilitiesInfoDto && (
         <FacilitiesInfo facilitiesInfoDto={storedata?.facilitiesInfoDto} />
       )}
       {events?.length > 0 && (
