@@ -43,7 +43,7 @@ const generateMapScript = (lat, lng, markerData, offsetY = 0, options = {}) => {
     });
   }
 
-  var map = window.map;
+ var map = window.map;
 
   // Name bubble helper overlay (for selected store)
   try {
@@ -193,13 +193,33 @@ window.__nameOverlayStyle =
   <circle cx="200" cy="200" r="60" fill="#006DFE" />
 
 </svg>
-\`);
+ \`);
 
  var markerImage = new kakao.maps.MarkerImage(
     markerImageUrl,
     new kakao.maps.Size(40, 40),
     { offset: new kakao.maps.Point(20, 20) }
  );
+
+  // Helper to move or create only the user marker without touching store markers
+  window.moveUserMarker = function(lat, lng) {
+    try {
+      if (!map) return;
+      var targetPos = new kakao.maps.LatLng(lat, lng);
+      if (!window.currentMarker) {
+        window.currentMarker = new kakao.maps.Marker({
+          position: targetPos,
+          map: map,
+          title: '현재 위치',
+          image: markerImage,
+          zIndex: 2
+        });
+      } else {
+        window.currentMarker.setPosition(targetPos);
+        window.currentMarker.setMap(map);
+      }
+    } catch(e){}
+  };
 
  var __skipUserMarker = ${suppressUserMarker ? 'true' : 'false'} || ${
     allowUserMarker ? 'false' : 'true'

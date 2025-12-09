@@ -1082,19 +1082,14 @@ const MapScreen = ({navigation, route}) => {
         roundedCurrentLng === roundedNewLng
       ) {
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
+        webViewRef.current.injectJavaScript(`try { if (window.moveUserMarker) { window.moveUserMarker(${newLocation.latitude}, ${newLocation.longitude}); } } catch(e){}; true;`);
         moveCenterMap(newLocation.latitude, newLocation.longitude, 0);
       } else {
         setLocation(newLocation);
         moveCenterMap(newLocation.latitude, newLocation.longitude, 0);
         if (webViewRef.current) {
           webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-          const script = generateMapScript(
-            newLocation.latitude,
-            newLocation.longitude,
-            stores,
-          );
-          lastRenderOffsetRef.current = 0;
-          webViewRef.current.injectJavaScript(script);
+          webViewRef.current.injectJavaScript(`try { if (window.moveUserMarker) { window.moveUserMarker(${newLocation.latitude}, ${newLocation.longitude}); } } catch(e){}; true;`);
         }
       }
     } catch (err) {
