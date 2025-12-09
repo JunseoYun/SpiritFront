@@ -265,10 +265,8 @@ const styles = StyleSheet.create({
   buttonSection: {
     width: '100%',
     paddingHorizontal: 24,
-    // paddingBottom: Platform.OS === 'ios' ? 120 : 120,
     position: 'absolute',
-
-    top: Platform.OS === 'ios' ? '65%' : '55%',
+    bottom: '15%',
   },
 
   dividerRow: {

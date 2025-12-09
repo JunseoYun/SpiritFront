@@ -194,7 +194,7 @@ const MapDetailItem = ({
   };
 
   const categoriesText =
-    storeData?.categories?.map(c => translateCategory(c)).join(' · ') ||
+    storeData?.categories?.map(c => translateCategory(c)).join('   ') ||
     '카테고리 미설정';
 
   // 이미지 레이아웃
