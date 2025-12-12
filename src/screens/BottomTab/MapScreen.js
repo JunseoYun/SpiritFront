@@ -390,6 +390,16 @@ const MapScreen = ({navigation, route}) => {
     setSelectedFilters(buildInitialSelectedFilters());
   }, [setSearchText, setSelectedFilters]);
 
+  const clearAiPriorityState = useCallback(() => {
+    aiPriorityStoresRef.current = [];
+    setAiPriorityStores([]);
+    aiSearchModeRef.current = false;
+    setIsAiSearchMode(false);
+    setAiSearchConditions(null);
+    setAiSearchPrompt('');
+    setAiSearchLabel('');
+  }, []);
+
   const fetchStoreListPage = useCallback(
     async ({
       page = 0,
@@ -1727,6 +1737,8 @@ const MapScreen = ({navigation, route}) => {
 
   const requeryStoresWithCurrentFilters = useCallback(
     filtersOverride => {
+      // 필터를 새로 적용하면 AI 추천 결과와 합치지 않도록 AI 상태를 비운다.
+      clearAiPriorityState();
       const baseLat = centerLatLng?.latitude ?? location?.latitude;
       const baseLng = centerLatLng?.longitude ?? location?.longitude;
       if (typeof baseLat !== 'number' || typeof baseLng !== 'number') {
@@ -1766,6 +1778,7 @@ const MapScreen = ({navigation, route}) => {
       selectedFilters,
       sheetIndex,
       getOffsetForSheet,
+      clearAiPriorityState,
     ],
   );
 
