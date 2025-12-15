@@ -23,7 +23,7 @@ const NoneStore = ({navigation, location}) => {
               style={{marginRight: 3}}
             />
             <CustomText maxScale={1.2} style={styles.noDatasubText}>
-              현재 한잔할까는 용인시를 중심으로 운영 중입니다.
+              현재 한잔할까는 강남구 중심으로 운영 중입니다.
             </CustomText>
           </View>
         </View>
