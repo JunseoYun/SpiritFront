@@ -31,23 +31,23 @@ const SetLocationScreen = ({navigation, route}) => {
 
   const resetToHome = useCallback(
     (targetIndex = 0) => {
-    if (origin === 'AIExploreScreen') {
-      navigation.reset({
-        index: 0,
-        routes: [
-          {
-            name: 'MainBtmbar',
-            params: {
-              screen: 'AIExploreScreen',
-              initialTab: 'AIExploreScreen',
-              lastFocusedTab: 'AIExploreScreen',
-              lastNonMapTab: 'AIExploreScreen',
+      if (origin === 'AIExploreScreen') {
+        navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'MainBtmbar',
+              params: {
+                screen: 'AIExploreScreen',
+                initialTab: 'AIExploreScreen',
+                lastFocusedTab: 'AIExploreScreen',
+                lastNonMapTab: 'AIExploreScreen',
+              },
             },
-          },
-        ],
-      });
-      return;
-    }
+          ],
+        });
+        return;
+      }
       navigation.reset({index: targetIndex, routes: [{name: 'MainBtmbar'}]});
     },
     [navigation, origin],
@@ -108,7 +108,7 @@ const SetLocationScreen = ({navigation, route}) => {
   };
 
   const handleClearLocation = async () => {
-    if (currentAddress === '죽전역') {
+    if (currentAddress === '신논현역') {
       showToast('현재 기본 주소입니다.');
     } else {
       try {
@@ -147,7 +147,7 @@ const SetLocationScreen = ({navigation, route}) => {
           style={{marginRight: 3}}
         />
         <CustomText maxScale={1.3} style={styles.noticeText}>
-          현재 한잔할까는 용인시를 중심으로 운영 중입니다.
+          현재 한잔할까는 강남구 중심으로 운영 중입니다.
         </CustomText>
       </View>
 

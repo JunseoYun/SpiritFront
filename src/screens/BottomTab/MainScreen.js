@@ -80,7 +80,7 @@ const MainScreen = ({navigation}) => {
   const [unreadNotification, setUnreadNotification] = useState(false);
 
   const formatAddress = useCallback(addr => {
-    if (addr === '죽전역') {
+    if (addr === '신논현역') {
       return addr;
     }
     return addr;
