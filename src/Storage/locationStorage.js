@@ -1,8 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {get_init_road} from '../api/location';
 
-let fixedLocation = {latitude: 37.324264, longitude: 127.107483};
-let fixedAddress = '죽전역';
+let fixedLocation = {
+  latitude: 37.50451038636537,
+  longitude: 127.02449668534305,
+};
+let fixedAddress = '신논현역';
 
 let cachedLocation = null; // 메모리 캐시
 let cachedAddress = null;

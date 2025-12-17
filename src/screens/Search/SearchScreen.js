@@ -8,23 +8,23 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
-import SearchBar from '../../../components/SearchScreen/SearchBar';
-import {useToast} from '../../../context/ToastContext';
-import Loading from '../../../hooks/Loading';
-import MyBanner from '../../../components/Ads/MyBanner';
+import SearchBar from '../../components/SearchScreen/SearchBar';
+import {useToast} from '../../context/ToastContext';
+import Loading from '../../hooks/Loading';
+import MyBanner from '../../components/Ads/MyBanner';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import MapFilterHeader from '../../../components/MapScreen/MapStore/MapFilterHeader';
-import FilterPotal from '../../../components/MapScreen/MapStore/FilterPotal';
+import MapFilterHeader from '../../components/MapScreen/MapStore/MapFilterHeader';
+import FilterPotal from '../../components/MapScreen/MapStore/FilterPotal';
 import {
   useMapSearch,
   buildInitialSelectedFilters,
   INITIAL_RADIUS_KM,
-} from '../../../context/MapSearchContext';
+} from '../../context/MapSearchContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, CommonActions} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import RecentSearchItem from '../../../components/SearchScreen/RecentSearchItem';
-import CustomText from '../../../utils/CustomText';
+import RecentSearchItem from '../../components/SearchScreen/RecentSearchItem';
+import CustomText from '../../utils/CustomText';
 
 const AVAILABLE_VALUE = '가능';
 const GROUP_VALUE = '단체 방문';
@@ -52,6 +52,9 @@ const SearchScreen = ({navigation, route}) => {
   const [filterInitialTab, setFilterInitialTab] = useState('거리');
   const [recentSearches, setRecentSearches] = useState([]);
   const preserveFiltersRef = useRef(route?.params?.preserveFilters === true);
+  const originTabRef = useRef(
+    route?.params?.prevTab || route?.params?.lastFocusedTab || null,
+  );
 
   useEffect(() => {
     selectedFiltersRef.current = selectedFilters;
@@ -64,6 +67,13 @@ const SearchScreen = ({navigation, route}) => {
   useEffect(() => {
     preserveFiltersRef.current = route?.params?.preserveFilters === true;
   }, [route?.params?.preserveFilters]);
+
+  useEffect(() => {
+    if (route?.params?.prevTab || route?.params?.lastFocusedTab) {
+      originTabRef.current =
+        route?.params?.prevTab || route?.params?.lastFocusedTab;
+    }
+  }, [route?.params?.lastFocusedTab, route?.params?.prevTab]);
 
   const RECENT_KEY = 'RECENT_SEARCHES';
 
@@ -87,14 +97,30 @@ const SearchScreen = ({navigation, route}) => {
     useCallback(() => {
       loadRecentSearches();
       const shouldPreserve = preserveFiltersRef.current;
+      const initialKeyword =
+        typeof route?.params?.initialSearchKeyword === 'string'
+          ? route.params.initialSearchKeyword.trim()
+          : '';
       if (shouldPreserve) {
         setPendingFilters(selectedFiltersRef.current);
         setPendingRadiusKm(radiusKmRef.current);
-        setSearchStoreName(searchText?.trim() ? searchText : '');
+        setSearchStoreName(
+          initialKeyword || (searchText?.trim() ? searchText : ''),
+        );
         navigation.setParams({preserveFilters: false});
+        if (initialKeyword) {
+          navigation.setParams({initialSearchKeyword: undefined});
+        }
       } else {
-        resetFiltersToInitial();
-        setSearchStoreName('');
+        if (initialKeyword) {
+          setPendingFilters(selectedFiltersRef.current);
+          setPendingRadiusKm(radiusKmRef.current);
+          setSearchStoreName(initialKeyword);
+          navigation.setParams({initialSearchKeyword: undefined});
+        } else {
+          resetFiltersToInitial();
+          setSearchStoreName('');
+        }
       }
     }, [loadRecentSearches, navigation, resetFiltersToInitial, searchText]),
   );
@@ -102,7 +128,7 @@ const SearchScreen = ({navigation, route}) => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        navigation.navigate('MainScreen');
+        navigation.goBack();
         return true;
       };
 
@@ -147,7 +173,24 @@ const SearchScreen = ({navigation, route}) => {
         typeof pendingRadiusKm === 'number' ? pendingRadiusKm : radiusKm,
       );
       await persistRecent(trimmed);
-      navigation.navigate('MapScreen', {skipAutoSnap: true});
+      const lastTab = originTabRef.current || 'MainScreen';
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'MainBtmbar',
+              params: {
+                screen: 'MapScreen',
+                params: {skipAutoSnap: true, prevTab: lastTab},
+                initialTab: 'MapScreen',
+                lastFocusedTab: lastTab,
+                lastNonMapTab: lastTab,
+              },
+            },
+          ],
+        }),
+      );
     },
     [
       navigation,
@@ -243,12 +286,29 @@ const SearchScreen = ({navigation, route}) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container}>
         <SearchBar
           value={searchStoreName}
           onChangeText={setSearchStoreName}
-          placeholder="술집이나 메뉴를 검색해 보세요"
+          placeholder="술집이나 메뉴를 검색하세요"
           onPress={onPressSearch}
+          onBackPress={() => navigation.goBack()}
+          onHomePress={() =>
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: 'MainBtmbar',
+                    params: {
+                      screen: 'AIExploreScreen',
+                      initialTab: 'AIExploreScreen',
+                    },
+                  },
+                ],
+              }),
+            )
+          }
         />
 
         <MapFilterHeader

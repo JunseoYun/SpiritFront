@@ -83,7 +83,7 @@ const OpenStoreTotalItem = ({store, location, navigation}) => {
           source={
             store?.mainImgUrl
               ? {uri: store.mainImgUrl}
-              : require('../../assets/default_store.png')
+              : require('../../assets/default_store6.png')
           }
           style={styles.image}
           resizeMode={FastImage.resizeMode.cover}

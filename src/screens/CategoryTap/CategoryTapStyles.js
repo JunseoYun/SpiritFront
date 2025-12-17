@@ -1,4 +1,5 @@
 import {StyleSheet} from 'react-native';
+import ColorUtil from '../../utils/ColorUtil';
 
 const Categorystyles = StyleSheet.create({
   itemContainer: {
@@ -52,24 +53,17 @@ const Categorystyles = StyleSheet.create({
     alignItems: 'center', // 가로 중앙
     justifyContent: 'center', // 세로 중앙
     alignSelf: 'center', // 부모 기준 중앙 (ScrollView 내에서)
-    borderWidth: 1,
-    borderColor: '#f1f1f1',
   },
   noneImg: {
-    width: 130,
-    height: 130,
-    // borderRadius: 10,
-    // 아래 세 줄은 삭제하세요 👇
-    // alignContent: 'center',
-    // alignItems: 'center',
-    // justifyContent: 'center',
+    width: 180,
+    height: 190,
   },
   gradientTop: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 65, // 그라데이션 높이
+    height: 55, // 그라데이션 높이
     zIndex: 1,
   },
   menuName: {
@@ -88,8 +82,8 @@ const Categorystyles = StyleSheet.create({
     color: '#fff',
     marginLeft: 5,
     textAlign: 'center',
-
     zIndex: 3,
+    marginTop: -2,
   },
   storeMainView: {
     width: 130,
@@ -115,7 +109,7 @@ const Categorystyles = StyleSheet.create({
     // borderRadius: 9,
   },
   semiOverlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.2)', // ✅ 반투명 배경 추가
+    backgroundColor: 'rgba(0, 0, 0, 0)', // ✅ 반투명 배경 추가
     alignItems: 'flex-start',
     width: '100%',
     height: '100%',
@@ -150,11 +144,15 @@ const Categorystyles = StyleSheet.create({
   },
   infoTopView: {
     width: '100%',
-    marginTop: 1,
-
-    paddingHorizontal: 18,
+    marginTop: 10,
+    paddingHorizontal: 20,
   },
   infoTitleView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  infoTitleViewSection: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -190,13 +188,13 @@ const Categorystyles = StyleSheet.create({
     // flexDirection: 'row',
     // alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 7,
   },
   subInfoText: {
     fontSize: 14,
-    fontFamily: 'Pretendard-Medium',
-    color: '#999',
-    textAlign: 'left',
+    color: '#4b5563',
+    fontFamily: 'Pretendard-Regular',
+    textAlign: 'center',
   },
   iconStar: {
     justifyContent: 'space-between',
@@ -221,14 +219,30 @@ const Categorystyles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 5,
     marginRight: 9,
-    fontFamily: 'Pretendard-Medium',
-    color: '#767676',
+    color: '#6b7280',
+    fontFamily: 'Pretendard-SemiBold',
   },
   imageStyle: {
     alignSelf: 'center',
     width: 15,
     height: 15,
     marginRight: 5,
+  },
+  mainDrinkView: {
+    flexDirection: 'row',
+    marginTop: 16,
+  },
+  drinkBadge: {
+    marginRight: 7,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 3,
+  },
+  drinkBadgeText: {
+    color: '#121212',
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    paddingVertical: 2,
+    paddingHorizontal: 4,
   },
 });
 

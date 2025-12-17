@@ -194,7 +194,7 @@ const MapDetailItem = ({
   };
 
   const categoriesText =
-    storeData?.categories?.map(c => translateCategory(c)).join(' · ') ||
+    storeData?.categories?.map(c => translateCategory(c)).join('   ') ||
     '카테고리 미설정';
 
   // 이미지 레이아웃
@@ -214,7 +214,7 @@ const MapDetailItem = ({
     .slice(0, 2);
   const imgSrc = mainImageUrl
     ? {uri: mainImageUrl}
-    : require('../../../assets/default_store.png');
+    : require('../../../assets/default_store6.png');
   const showMosaicLayout = hasPhotos && mosaicImages.length === 2;
   const detailBodyAnimatedStyle = useAnimatedStyle(() => {
     const progress = detailRevealProgressValue?.value ?? 1;

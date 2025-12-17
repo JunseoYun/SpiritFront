@@ -18,12 +18,12 @@ const MOOD_LABELS = {
   SECOND_ROUND: '2차 맛집',
 };
 
-const Moods = ({moods = []}) => {
+const Moods = ({moods = [], imgLength}) => {
   const activeMoods = moods?.filter(Boolean) ?? [];
 
   if (!activeMoods.length) {
     return (
-      <View style={styles.emptyContainer}>
+      <View style={[styles.emptyContainer]}>
         <CustomText style={styles.emptyText}>
           사장님이 아직 분위기 정보를 등록하지 않았어요.
         </CustomText>
@@ -32,7 +32,7 @@ const Moods = ({moods = []}) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, imgLength < 1 && {marginTop: 20}]}>
       <View style={styles.labelRow}>
         {activeMoods.map(mood => (
           <View key={mood} style={styles.moodChip}>

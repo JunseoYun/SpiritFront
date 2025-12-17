@@ -493,19 +493,19 @@ const StoreMainScreen = ({navigation}) => {
     : 0;
   const scrollButtonBottomValue = scrollButtonBottom + orderBarOffset;
 
-  const handleOrderSubmit = ({visitTime, peopleCount}) => {
-    Keyboard.dismiss();
-    setShowOrderForm(false);
-    navigation.navigate('StoreOrderScreen', {
-      storeId,
-      storeName: storedata?.name ?? '',
-      initialMenus: menus ?? [],
-      initialAlcohols: alcohols ?? [],
-      mainDrinkDtos: storedata?.mainDrinkDtos ?? [],
-      visitTime,
-      peopleCount,
-    });
-  };
+  // const handleOrderSubmit = ({visitTime, peopleCount}) => {
+  //   Keyboard.dismiss();
+  //   setShowOrderForm(false);
+  //   navigation.navigate('StoreOrderScreen', {
+  //     storeId,
+  //     storeName: storedata?.name ?? '',
+  //     initialMenus: menus ?? [],
+  //     initialAlcohols: alcohols ?? [],
+  //     mainDrinkDtos: storedata?.mainDrinkDtos ?? [],
+  //     visitTime,
+  //     peopleCount,
+  //   });
+  // };
 
   if (!storeId) {
     return (

@@ -6,17 +6,18 @@ import {
   View,
   StyleSheet,
   TextInput,
-  Platform,
+  Keyboard,
 } from 'react-native';
 
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
 import {review_set_reply} from '../../api/reviewApi';
 import Loading from '../../hooks/Loading';
 import CustomText from '../../utils/CustomText';
 import CustomTextInput from '../../utils/CustomTextInput';
+import ColorUtil from '../../utils/ColorUtil';
 
 const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -119,13 +120,10 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
   };
 
   return (
-    <View
+    <Pressable
       key={item.reviewId}
-      style={[
-        styles.reviewContainer,
-        (isEditing || isReplying) &&
-          Platform.OS === 'android' && {paddingBottom: 70},
-      ]}>
+      onPress={Keyboard.dismiss}
+      style={[styles.reviewContainer]}>
       {/* 상단 리뷰 헤더 */}
       <View style={styles.reviewHeader}>
         <FastImage
@@ -217,6 +215,7 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
                 style={styles.replyInput}
                 placeholder="답글을 입력하세요"
                 value={replyText}
+                placeholderTextColor={ColorUtil.placeholderText}
                 onChangeText={text => {
                   const maxChars = 2000;
                   if (text.length > maxChars) {
@@ -247,11 +246,7 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
         <View style={styles.repliesContainer}>
           <View style={styles.replyItem}>
             <View style={styles.shopImageView}>
-              <FastImage
-                source={require('../../assets/shop.png')}
-                style={styles.shopImage}
-                resizeMode={FastImage.resizeMode.cover}
-              />
+              <Ionicons name="storefront-outline" size={22} color={'#333'} />
             </View>
 
             <View style={{flex: 1}}>
@@ -368,7 +363,7 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
         </View>
       )}
       <Loading loading={loading} />
-    </View>
+    </Pressable>
   );
 };
 

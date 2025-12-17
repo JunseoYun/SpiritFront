@@ -18,12 +18,12 @@ const CATEGORY_MAP = {
   '\ud55c\uc2dd': 'KOREAN', // 한식
   '\uc591\uc2dd': 'WESTERN', // 양식
   '\uc911\uc2dd': 'CHINESE', // 중식
+  '\ud3ec\uc7a5\ub9c8\ucc28': 'POCHA', // 포장마차
   '\uac10\uc131\uc8fc\uc810': 'GAMSEONG', // 감성주점
   '\uad6c\uc774\u00b7\uc9c4': 'GRILLED_STEW', // 구이·찜
   '\uce58\ud0a8\u00b7\ud638\ud504': 'CHICKEN_HOF', // 치킨·호프
   '\ud68c\u00b7\ud574\uc0b0\ubb3c': 'RAW_SEAFOOD', // 회·해산물
   '\ud38d\u00b7\ubc14': 'PUB_BAR', // 펍·바
-  '\ud3ec\uc7a5\ub9c8\ucc28': 'POCHA', // 포장마차
 };
 
 const DRINK_MAP = {

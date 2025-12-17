@@ -33,13 +33,7 @@ const FacilitiesInfo = ({facilitiesInfoDto}) => {
 
   // 아무것도 없을 때 처리
   if (activeItems.length === 0) {
-    return (
-      <View style={styles.emptyBox}>
-        <CustomText style={styles.emptyText}>
-          등록된 편의시설이 없어요.
-        </CustomText>
-      </View>
-    );
+    return;
   }
 
   return (

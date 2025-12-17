@@ -467,20 +467,6 @@ const MenuEditScreen = ({route, navigation}) => {
                 );
               })}
             </View>
-
-            {menuTypeValue === 'MAIN' && !image && (
-              <View style={styles.typeInfoRow}>
-                <Ionicons
-                  name="information-circle-outline"
-                  size={15}
-                  color="#A5AAB3"
-                  style={{marginRight: 4}}
-                />
-                <CustomText style={styles.typeInfoText}>
-                  대표 메뉴는 사진이 없으면 카테고리 탭에 표시되지 않아요.
-                </CustomText>
-              </View>
-            )}
           </View>
 
           {/* 메뉴 이름 */}

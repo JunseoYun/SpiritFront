@@ -135,7 +135,7 @@ const MapStoreItem = ({
             source={
               item.mainImgUrl
                 ? {uri: item.mainImgUrl, priority: FastImage.priority.normal}
-                : require('../../../assets/default_store.png')
+                : require('../../../assets/default_store6.png')
             }
             style={styles.backimage}
           />
