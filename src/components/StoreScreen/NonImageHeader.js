@@ -1,8 +1,9 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Pressable, StyleSheet, Animated, Platform} from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import FastImage from 'react-native-fast-image';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {HomeHeaderIcon} from '../../assets/svg/HomeTabIcon';
 
 const NonImageHeader = ({
   navigation,
@@ -17,6 +18,36 @@ const NonImageHeader = ({
   containerStyle,
 }) => {
   const insets = useSafeAreaInsets();
+  const [homeIconColor, setHomeIconColor] = useState(
+    typeof iconColor === 'string' ? iconColor : '#333',
+  );
+
+  useEffect(() => {
+    if (typeof iconColor === 'string') {
+      setHomeIconColor(iconColor);
+      return;
+    }
+
+    const immediateColor = iconColor?.__getValue?.();
+    if (typeof immediateColor === 'string') {
+      setHomeIconColor(immediateColor);
+      return;
+    }
+
+    let listenerId;
+    if (iconColor?.addListener) {
+      listenerId = iconColor.addListener(({value}) => {
+        if (typeof value === 'string') {
+          setHomeIconColor(value);
+        }
+      });
+    }
+    return () => {
+      if (listenerId && iconColor?.removeListener) {
+        iconColor.removeListener(listenerId);
+      }
+    };
+  }, [iconColor]);
   return (
     <Animated.View
       style={[
@@ -82,9 +113,7 @@ const NonImageHeader = ({
               routes: [{name: 'MainBtmbar'}],
             })
           }>
-          <Animated.Text allowFontScaling={false} style={{color: iconColor}}>
-            <Ionicons name="home-outline" size={25} />
-          </Animated.Text>
+          <HomeHeaderIcon size={30} color={homeIconColor} />
         </Pressable>
       </Animated.View>
     </Animated.View>

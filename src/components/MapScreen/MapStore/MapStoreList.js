@@ -48,6 +48,7 @@ const MapStoreList = ({
   updateNewLocation,
   isFlatListVisible,
   isListFullyExpanded,
+  hideFilters = false,
   stores,
   selectedStoreIndex,
   setSelectedStoreIndex,
@@ -108,10 +109,11 @@ const MapStoreList = ({
   const detailClosingRef = useRef(false);
   const [isDetailRestorePending, setIsDetailRestorePending] = useState(false);
   const detailCollapsedHeight = useMemo(() => {
-    const effectiveFilterHeight =
-      filterheight >= MIN_VALID_FILTER_HEIGHT
-        ? filterheight
-        : lastValidFilterHeightRef.current;
+    const effectiveFilterHeight = hideFilters
+      ? 0
+      : filterheight >= MIN_VALID_FILTER_HEIGHT
+      ? filterheight
+      : lastValidFilterHeightRef.current;
     if (!detailStoreId) {
       return SCREEN_HEIGHT * 0.03 + effectiveFilterHeight + insets.bottom;
     }
@@ -125,6 +127,7 @@ const MapStoreList = ({
     insets.bottom,
     detailHeaderHeight,
     lastValidFilterHeightRef,
+    hideFilters,
   ]);
 
   const detailSnapPoint = useMemo(() => {
@@ -919,6 +922,19 @@ const MapStoreList = ({
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filterInitialTab, setFilterInitialTab] = useState('거리');
+
+  useEffect(() => {
+    if (hideFilters) {
+      setFilterheight(0);
+      lastValidFilterHeightRef.current = 0;
+      if (filterModalVisible) {
+        setFilterModalVisible(false);
+      }
+    } else if (filterheight === 0 && lastValidFilterHeightRef.current === 0) {
+      setFilterheight(DEFAULT_FILTER_HEIGHT);
+      lastValidFilterHeightRef.current = DEFAULT_FILTER_HEIGHT;
+    }
+  }, [hideFilters, filterModalVisible, filterheight]);
   const [selectedFilters, setSelectedFilters] = useState({
     거리: '2km',
     카테고리: '',
@@ -1191,13 +1207,16 @@ const MapStoreList = ({
       listContent = <View />;
     } else {
       const disableTopOverscroll =
-        !isDetailMode && (isFullListExpanded || currentIndex === 1);
+        !isDetailMode &&
+        (isFullListExpanded || currentIndex === 1) &&
+        listHasRoomToScroll;
       listContent = (
         <FlatList
           ref={flatListRef}
           data={stores}
           keyExtractor={keyExtractor}
           showsVerticalScrollIndicator={false}
+          scrollEnabled={listHasRoomToScroll}
           bounces={!disableTopOverscroll}
           overScrollMode={disableTopOverscroll ? 'never' : 'always'}
           contentContainerStyle={{
@@ -1291,7 +1310,7 @@ const MapStoreList = ({
             bottomInset={0}
             handleIndicatorStyle={[styles.sheetHandleIndicator]}
             backgroundStyle={[styles.sheetBackground]}
-            enableContentPanningGesture={false}
+            enableContentPanningGesture={shouldEnableContentPanGesture}
             enableHandlePanningGesture={!filterModalVisible && !isListRestoring}
             enableOverDrag={false}
             animatedIndex={animatedIndex}
@@ -1354,7 +1373,7 @@ const MapStoreList = ({
                 </View>
               )}
 
-              {!isDetailMode && (
+              {!isDetailMode && !hideFilters && (
                 <MapFilterHeader
                   setFilterInitialTab={setFilterInitialTab}
                   setFilterModalVisible={setFilterModalVisible}
@@ -1381,20 +1400,22 @@ const MapStoreList = ({
         </>
       )}
 
-      <FilterPotal
-        filterModalVisible={filterModalVisible}
-        setFilterModalVisible={setFilterModalVisible}
-        selectedFilters={mapSearchCtx?.selectedFilters || {}}
-        setSelectedFilters={mapSearchCtx?.setSelectedFilters}
-        initialTab={filterInitialTab}
-        setRadiusint={v => {
-          try {
-            setRadiusint?.(v);
-            mapSearchCtx?.setRadiusKm?.(v);
-          } catch (e) {}
-        }}
-        onApply={filters => onApplyFilters?.(filters)}
-      />
+      {!hideFilters && (
+        <FilterPotal
+          filterModalVisible={filterModalVisible}
+          setFilterModalVisible={setFilterModalVisible}
+          selectedFilters={mapSearchCtx?.selectedFilters || {}}
+          setSelectedFilters={mapSearchCtx?.setSelectedFilters}
+          initialTab={filterInitialTab}
+          setRadiusint={v => {
+            try {
+              setRadiusint?.(v);
+              mapSearchCtx?.setRadiusKm?.(v);
+            } catch (e) {}
+          }}
+          onApply={filters => onApplyFilters?.(filters)}
+        />
+      )}
     </>
   );
 };

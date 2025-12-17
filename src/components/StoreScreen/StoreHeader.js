@@ -1,8 +1,9 @@
 import React from 'react';
 import {Pressable, StyleSheet, Animated, Platform} from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import FastImage from 'react-native-fast-image';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {HomeHeaderIcon} from '../../assets/svg/HomeTabIcon';
 
 const StoreHeader = ({
   navigation,
@@ -80,9 +81,9 @@ const StoreHeader = ({
               routes: [{name: 'MainBtmbar'}],
             })
           }>
-          <Animated.Text allowFontScaling={false} style={{color: iconColor}}>
-            <Ionicons name="home-outline" size={25} />
-          </Animated.Text>
+          <Animated.View>
+            <HomeHeaderIcon color={iconColor} />
+          </Animated.View>
         </Pressable>
       </Animated.View>
     </Animated.View>

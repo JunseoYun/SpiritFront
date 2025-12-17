@@ -23,6 +23,14 @@ const generateMapScript = (lat, lng, markerData, offsetY = 0, options = {}) => {
     });
 
     kakao.maps.event.addListener(window.map, 'zoom_changed', function () {
+      // Close any open multi-store list when the zoom level changes
+      try {
+        if (window.currentOverlay) {
+          window.currentOverlay.setMap(null);
+          window.currentOverlay = null;
+        }
+        window.isStoreListClicked = false;
+      } catch (_e) {}
       try {
         var center = window.map.getCenter();
         window.ReactNativeWebView.postMessage(JSON.stringify({
@@ -35,7 +43,7 @@ const generateMapScript = (lat, lng, markerData, offsetY = 0, options = {}) => {
     });
   }
 
-  var map = window.map;
+ var map = window.map;
 
   // Name bubble helper overlay (for selected store)
   try {
@@ -185,7 +193,7 @@ window.__nameOverlayStyle =
   <circle cx="200" cy="200" r="60" fill="#006DFE" />
 
 </svg>
-\`);
+ \`);
 
  var markerImage = new kakao.maps.MarkerImage(
     markerImageUrl,
@@ -193,30 +201,42 @@ window.__nameOverlayStyle =
     { offset: new kakao.maps.Point(20, 20) }
  );
 
+  // Helper to move or create only the user marker without touching store markers
+  window.moveUserMarker = function(lat, lng) {
+    try {
+      if (!map) return;
+      var targetPos = new kakao.maps.LatLng(lat, lng);
+      if (!window.currentMarker) {
+        window.currentMarker = new kakao.maps.Marker({
+          position: targetPos,
+          map: map,
+          title: '현재 위치',
+          image: markerImage,
+          zIndex: 2
+        });
+      } else {
+        window.currentMarker.setPosition(targetPos);
+        window.currentMarker.setMap(map);
+      }
+    } catch(e){}
+  };
+
  var __skipUserMarker = ${suppressUserMarker ? 'true' : 'false'} || ${
     allowUserMarker ? 'false' : 'true'
   };
  if (!__skipUserMarker) {
-      // Compute adjusted position for current marker so it appears offset from center
       try {
-        var __offset = ${offsetY};
-        if (!__offset) { __offset = 0; }
         var __baseLatLng = new kakao.maps.LatLng(${lat}, ${lng});
-        var __proj = map.getProjection();
-        var __pt = __proj.containerPointFromCoords(__baseLatLng);
-        // Move marker UP by offset (subtract Y)
-        var __markerPt = new kakao.maps.Point(__pt.x, __pt.y - __offset);
-        var __markerLatLng = __proj.coordsFromContainerPoint(__markerPt);
         if (!window.currentMarker) {
           window.currentMarker = new kakao.maps.Marker({
-            position: __markerLatLng,
+            position: __baseLatLng,
             map: map,
             title: '현재 위치',
             image: markerImage,
             zIndex: 2
           });
         } else {
-          window.currentMarker.setPosition(__markerLatLng);
+          window.currentMarker.setPosition(__baseLatLng);
           window.currentMarker.setMap(map);
         }
       } catch (e) {
@@ -249,7 +269,7 @@ if (window.overlayMarkers) {
 
   try {
     var level = map.getLevel();
-    var gridSize =  level >= 6 ? 30 :level >= 5 ? 20:level >= 4 ? 10  : 0;
+    var gridSize = level >= 5 ? 50:level >= 4 ? 40  :level >= 3 ? 30  : 0;
     var proj = map.getProjection();
     var center = map.getCenter();
     var centerPt = proj.containerPointFromCoords(center);

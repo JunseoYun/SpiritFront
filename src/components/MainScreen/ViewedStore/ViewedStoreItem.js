@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, Pressable, Dimensions} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import CustomText from '../../../utils/CustomText';
+import ColorUtil from '../../../utils/ColorUtil';
 
 const ViewedStoreItem = ({store, location, navigation}) => {
   const handlePress = () => {
@@ -25,13 +26,15 @@ const ViewedStoreItem = ({store, location, navigation}) => {
           source={
             store.mainImgUrl
               ? {uri: store.mainImgUrl}
-              : require('../../../assets/default_store.png')
+              : require('../../../assets/default_store6.png')
           }
           style={{
             width: 100,
             aspectRatio: 1,
             alignSelf: 'center',
             borderRadius: 7,
+            borderWidth: 0.5,
+            borderColor: ColorUtil.border,
           }}
           imageStyle={styles.backimagestyle}></FastImage>
 
