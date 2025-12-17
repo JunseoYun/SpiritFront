@@ -104,9 +104,12 @@ export const buildConditionSearchDto = ({
     dto.searchKeyword = trimmedKeyword;
   }
 
-  const categoryLabel = filters[FILTER_KEYS.category];
-  if (categoryLabel && CATEGORY_MAP[categoryLabel]) {
-    dto.category = CATEGORY_MAP[categoryLabel];
+  const categoryLabels = toArray(filters[FILTER_KEYS.category]);
+  const categoryCodes = categoryLabels
+    .map(label => CATEGORY_MAP[label])
+    .filter(Boolean);
+  if (categoryCodes.length > 0) {
+    dto.categories = categoryCodes.join(',');
   }
 
   const drinkLabel = filters[FILTER_KEYS.alcohol];
