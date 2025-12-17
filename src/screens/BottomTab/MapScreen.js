@@ -73,6 +73,14 @@ const resolveLocationDto = store => {
   return loc ?? null;
 };
 
+const resolveStoreName = store =>
+  store?.name ??
+  store?.storeName ??
+  store?.storeNm ??
+  store?.store_name ??
+  store?.title ??
+  null;
+
 const mergeUniqueStores = (prevList = [], nextList = []) => {
   const map = new Map();
   (Array.isArray(prevList) ? prevList : []).forEach(item => {
@@ -110,7 +118,7 @@ const normalizeStoreForMap = store => {
     normalized.locationDto = location;
   }
   if (!normalized.name) {
-    const fallbackName = normalized?.name;
+    const fallbackName = resolveStoreName(normalized);
     if (fallbackName) {
       normalized.name = fallbackName;
     }
@@ -207,9 +215,12 @@ const buildFiltersFromSearchConditions = conditions => {
   if (typeof conditions.radius === 'number') {
     baseFilters[keys.distance] = formatRadiusLabel(conditions.radius);
   }
-  const categoryLabel = CATEGORY_LABEL_BY_CODE[conditions.category];
-  if (categoryLabel) {
-    baseFilters[keys.category] = categoryLabel;
+  const categoryCodes = toArray(conditions.categories || conditions.category);
+  const categoryLabels = categoryCodes
+    .map(code => CATEGORY_LABEL_BY_CODE[code])
+    .filter(Boolean);
+  if (categoryLabels.length > 0) {
+    baseFilters[keys.category] = categoryLabels;
   }
   const drinkLabel = DRINK_LABEL_BY_CODE[conditions.drinkType];
   if (drinkLabel) {
@@ -1665,7 +1676,7 @@ const MapScreen = ({navigation, route}) => {
           const js = `try{ if(window.currentOverlay){ window.currentOverlay.setMap(null); window.currentOverlay=null;} if(window.showStoreLabelAt){ window.showStoreLabelAt(${
             location.latitude
           }, ${location.longitude}, ${JSON.stringify(
-            store?.name || '',
+            resolveStoreName(store) || '',
           )}, ${countArg}); } }catch(e){}; true;`;
           webViewRef.current?.injectJavaScript(js);
         } catch (e) {}
@@ -1688,7 +1699,7 @@ const MapScreen = ({navigation, route}) => {
           const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${
             location.latitude
           }, ${location.longitude}, ${JSON.stringify(
-            store?.name || '',
+            resolveStoreName(store) || '',
           )}, null); } }catch(e){}; true;`;
           webViewRef.current?.injectJavaScript(js);
         } catch (e) {}
@@ -1723,7 +1734,7 @@ const MapScreen = ({navigation, route}) => {
         const js = `try{ if(window.showStoreLabelAt){ window.showStoreLabelAt(${
           location.latitude
         }, ${location.longitude}, ${JSON.stringify(
-          store?.name || '',
+          resolveStoreName(store) || '',
         )}, ${countArg}); } }catch(e){}; true;`;
         webViewRef.current.injectJavaScript(js);
       } catch (e) {}
@@ -1830,6 +1841,18 @@ const MapScreen = ({navigation, route}) => {
           .map(item => item.trim())
           .filter(Boolean)
       : null;
+    const categoryArray =
+      typeof dto.categories === 'string'
+        ? dto.categories
+            .split(',')
+            .map(item => item.trim())
+            .filter(Boolean)
+        : Array.isArray(dto.categories)
+        ? dto.categories.filter(Boolean)
+        : dto.category
+        ? [dto.category]
+        : [];
+    const categoriesValue = categoryArray.length > 0 ? categoryArray : null;
     const latestLat =
       typeof lastQueryRef.current.lat === 'number'
         ? lastQueryRef.current.lat
@@ -1842,7 +1865,8 @@ const MapScreen = ({navigation, route}) => {
       typeof radiusKm === 'number' ? radiusKm : radius ?? null;
     const nextConditions = {
       arrivalTime: dto.conditionTime || null,
-      category: dto.category || null,
+      categories: categoriesValue,
+      category: categoriesValue ? categoriesValue[0] : null,
       drinkPriceOrder: dto.priceOrder || null,
       drinkType: dto.drinkType || null,
       hasOutdoor:

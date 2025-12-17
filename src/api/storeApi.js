@@ -747,7 +747,7 @@ const buildConditionSearchParams = payload => {
     longitude: payload.longitude ?? null,
     page: payload.page ?? null,
     radius: payload.radius ?? null,
-    category: dto.category ?? null,
+    categories: dto.categories ?? null,
     searchKeyword: dto.searchKeyword ?? null,
     hasScreen: dto.hasScreen ?? null,
     hasRoom: dto.hasRoom ?? null,
@@ -777,6 +777,7 @@ export const Store_getby_condition_search = async (
       page,
       reqRadius,
     );
+    console.log(conditionSearchDto);
     const radius = await getRadiusParam(payload.radius);
     console.log('condition_search:', payload.radius);
     const params = buildConditionSearchParams({...payload, radius});
@@ -805,6 +806,7 @@ export const Store_getby_condition_search_markers = async (
       null,
       reqRadius,
     );
+    console.log(conditionSearchDto);
 
     const radius = await getRadiusParam(payload.radius);
 

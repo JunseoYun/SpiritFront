@@ -26,7 +26,7 @@ export const buildInitialSelectedFilters = (
   radiusKm = INITIAL_RADIUS_KM,
 ) => ({
   거리: formatRadiusLabel(radiusKm),
-  카테고리: '',
+  카테고리: [],
   주종: '',
   가격순: '',
   매장분위기: '',

@@ -941,7 +941,7 @@ const MapStoreList = ({
   }, [hideFilters, filterModalVisible, filterheight]);
   const [selectedFilters, setSelectedFilters] = useState({
     거리: formatRadiusLabel(INITIAL_RADIUS_KM),
-    카테고리: '',
+    카테고리: [],
     주종: '',
     방문시간: '',
     분위기: '',
@@ -1120,9 +1120,23 @@ const MapStoreList = ({
       ? mapSearchCtx.radiusKm
       : INITIAL_RADIUS_KM;
   const baseRadiusLabel = formatRadiusLabel(baseRadiusKm);
+  const toArrayVal = value => {
+    if (Array.isArray(value)) return value.filter(Boolean);
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return [value.trim()];
+    }
+    return [];
+  };
+  const formatArrayLabel = (arr, emptyLabel) => {
+    if (!arr || arr.length === 0) return emptyLabel;
+    if (arr.length === 1) return arr[0];
+    return `${arr[0]} 외 ${arr.length - 1}`;
+  };
   const distanceLabel =
     selectedFilters['거리'] || baseRadiusLabel;
-  const categoryLabel = selectedFilters['카테고리'] || '카테고리';
+  const categoryArray = toArrayVal(selectedFilters['카테고리']);
+  const categoryLabel = formatArrayLabel(categoryArray, '카테고리');
+  const categoryCount = categoryArray.length;
   const peopleLabel = selectedFilters['인원'] || '인원';
   const alcoholLabel = selectedFilters['주종'] || '주종';
   const storeatmVal = selectedFilters['분위기'];
@@ -1353,6 +1367,18 @@ const MapStoreList = ({
                 const keyRoom = findExistingKey(filters, '룸');
                 const keyOutdoor = findExistingKey(filters, '야장');
                 const getVal = (key, def) => filters?.[key] ?? def;
+                const toArrayVal = value => {
+                  if (Array.isArray(value)) return value.filter(Boolean);
+                  if (typeof value === 'string' && value.trim().length > 0) {
+                    return [value.trim()];
+                  }
+                  return [];
+                };
+                const formatArrayLabel = (arr, emptyLabel) => {
+                  if (!arr || arr.length === 0) return emptyLabel;
+                  if (arr.length === 1) return arr[0];
+                  return `${arr[0]} 외 ${arr.length - 1}`;
+                };
 
                 // expose computed labels into JSX via closure variables
                 const storeatmVal = getVal(keyStoreatm, []);
@@ -1361,12 +1387,14 @@ const MapStoreList = ({
                   : storeatmVal
                   ? 1
                   : 0;
+                const categoriesVal = toArrayVal(getVal(keyCategory, []));
                 computedLabels = {
                   distance: getVal(
                     keyDistance,
                     baseRadiusLabel,
                   ),
-                  category: getVal(keyCategory, '카테고리'),
+                  category: formatArrayLabel(categoriesVal, '카테고리'),
+                  categoryCount: categoriesVal.length,
                   people: getVal(keyPeople, '인원'),
                   alcohol: getVal(keyAlcohol, '주종'),
                   storeatm: getVal(keyStoreatm, '분위기'),
@@ -1396,6 +1424,11 @@ const MapStoreList = ({
                   distanceLabel={computedLabels?.distance || distanceLabel}
                   distanceBaseLabel={baseRadiusLabel}
                   categoryLabel={computedLabels?.category || categoryLabel}
+                  categoryCount={
+                    typeof computedLabels?.categoryCount === 'number'
+                      ? computedLabels.categoryCount
+                      : categoryCount
+                  }
                   peopleLabel={computedLabels?.people || peopleLabel}
                   alcoholLabel={computedLabels?.alcohol || alcoholLabel}
                   timeActive={computedLabels?.time || timeActive}
