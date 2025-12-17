@@ -28,6 +28,11 @@ import {
 import BottomActionButton from '../../../utils/BottomActionButton';
 import CustomText from '../../../utils/CustomText';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {
+  INITIAL_RADIUS_KM,
+  formatRadiusLabel,
+  useMapSearch,
+} from '../../../context/MapSearchContext';
 
 // Try to resolve keys that may be mojibake in persisted state
 const findExistingKey = (filters, hint) => {
@@ -48,6 +53,17 @@ const FilterPotal = ({
   setRadiusint,
   onApply,
 }) => {
+  const mapSearchCtx = useMapSearch();
+  const baseRadiusKm = useMemo(() => {
+    if (typeof mapSearchCtx?.storedRadiusKm === 'number')
+      return mapSearchCtx.storedRadiusKm;
+    if (typeof mapSearchCtx?.radiusKm === 'number') return mapSearchCtx.radiusKm;
+    return INITIAL_RADIUS_KM;
+  }, [mapSearchCtx?.storedRadiusKm, mapSearchCtx?.radiusKm]);
+  const baseRadiusLabel = useMemo(
+    () => formatRadiusLabel(baseRadiusKm),
+    [baseRadiusKm],
+  );
   const FILTER_TABS = useMemo(
     () => ['거리', '카테고리', '주종', '분위기', '방문시간', '편의시설'],
     [],
@@ -89,6 +105,20 @@ const FilterPotal = ({
 
   const screenWidth = Dimensions.get('window').width;
   const filtersSource = draftFilters || {};
+  const distanceOptions = useMemo(
+    () => ['500m', '1km', '2km', '3km', '5km'],
+    [],
+  );
+  const radiusValueByLabel = useMemo(
+    () => ({
+      '500m': 0.5,
+      '1km': 1,
+      '2km': 2,
+      '3km': 3,
+      '5km': 5,
+    }),
+    [],
+  );
 
   const ensureTabVisible = tab => {
     const pos = tabPositions?.[tab];
@@ -339,15 +369,23 @@ const FilterPotal = ({
   const handleApply = useCallback(() => {
     closePriceOrderModal(false);
     const nextFilters = {...(draftFilters || {})};
+    const distanceLabel = nextFilters?.[keyDistance];
+    const radiusValue = radiusValueByLabel[distanceLabel];
+    if (typeof radiusValue === 'number') {
+      setRadiusint?.(radiusValue);
+    }
     setSelectedFilters(nextFilters);
     onApply?.(nextFilters);
     setPriceOrderAnchor(null);
     setFilterModalVisible(false);
   }, [
     closePriceOrderModal,
+    keyDistance,
+    radiusValueByLabel,
     setSelectedFilters,
     draftFilters,
     onApply,
+    setRadiusint,
     setFilterModalVisible,
   ]);
 
@@ -420,7 +458,7 @@ const FilterPotal = ({
                       onPress={() => {
                         setDraftFilters(prev => ({
                           ...(prev || {}),
-                          [keyDistance]: '2km',
+                          [keyDistance]: baseRadiusLabel,
                           [keyCategory]: '',
                           [keyAlcohol]: '',
                           [keyStoreatm]: '',
@@ -433,37 +471,33 @@ const FilterPotal = ({
                           [keyOutdoor]: '',
                           [keyPriceOrder]: '',
                         }));
-                        if (typeof setRadiusint === 'function') setRadiusint(2);
+                        if (typeof setRadiusint === 'function')
+                          setRadiusint(baseRadiusKm);
                       }}>
                       <CustomText style={styles.inittext}>초기화</CustomText>
                     </Pressable>
                   </View>
                   <View style={styles.filterItemsContainer}>
-                    {['1km', '2km', '3km', '5km'].map(dist => (
+                    {distanceOptions.map(dist => (
                       <Pressable
                         key={dist}
                         style={[
                           styles.filterItem,
-                          getVal(keyDistance, '2km') === dist &&
+                          getVal(keyDistance, baseRadiusLabel) === dist &&
                             styles.filterItemSelected,
                         ]}
                         onPress={() => {
                           setVal(keyDistance, dist);
                           if (typeof setRadiusint === 'function') {
-                            const m = {
-                              '1km': 1,
-                              '2km': 2,
-                              '3km': 3,
-                              '5km': 5,
-                            };
-                            const rv = m[dist] ?? 2;
+                            const rv =
+                              radiusValueByLabel[dist] ?? INITIAL_RADIUS_KM;
                             setRadiusint(rv);
                           }
                         }}>
                         <CustomText
                           style={[
                             styles.filterItemText,
-                            getVal(keyDistance, '2km') === dist &&
+                            getVal(keyDistance, baseRadiusLabel) === dist &&
                               styles.filterItemTextSelected,
                           ]}>
                           {dist}

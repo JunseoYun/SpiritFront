@@ -19,6 +19,7 @@ import {
   useMapSearch,
   buildInitialSelectedFilters,
   INITIAL_RADIUS_KM,
+  formatRadiusLabel,
 } from '../../context/MapSearchContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect, CommonActions} from '@react-navigation/native';
@@ -39,6 +40,7 @@ const SearchScreen = ({navigation, route}) => {
     setSelectedFilters,
     radiusKm,
     setRadiusKm,
+    storedRadiusKm,
   } = useMapSearch();
   const selectedFiltersRef = useRef(selectedFilters);
   const radiusKmRef = useRef(radiusKm);
@@ -78,9 +80,13 @@ const SearchScreen = ({navigation, route}) => {
   const RECENT_KEY = 'RECENT_SEARCHES';
 
   const resetFiltersToInitial = useCallback(() => {
-    const initialFilters = buildInitialSelectedFilters();
+    const baseRadius =
+      typeof radiusKmRef.current === 'number'
+        ? radiusKmRef.current
+        : INITIAL_RADIUS_KM;
+    const initialFilters = buildInitialSelectedFilters(baseRadius);
     setPendingFilters(initialFilters);
-    setPendingRadiusKm(INITIAL_RADIUS_KM);
+    setPendingRadiusKm(baseRadius);
   }, []);
 
   const loadRecentSearches = useCallback(async () => {
@@ -271,7 +277,13 @@ const SearchScreen = ({navigation, route}) => {
     [resolveFilterKey],
   );
 
-  const distanceLabel = getFilterValue('거리', '1km');
+  const storedRadiusLabel = formatRadiusLabel(
+    typeof storedRadiusKm === 'number' ? storedRadiusKm : INITIAL_RADIUS_KM,
+  );
+  const distanceLabel = getFilterValue(
+    '거리',
+    storedRadiusLabel,
+  );
   const categoryLabel = getFilterValue('카테고리', '카테고리');
   const peopleLabel = getFilterValue('인원', '인원');
   const alcoholLabel = getFilterValue('주종', '주종');
@@ -315,6 +327,7 @@ const SearchScreen = ({navigation, route}) => {
           setFilterInitialTab={setFilterInitialTab}
           setFilterModalVisible={setFilterModalVisible}
           distanceLabel={distanceLabel}
+          distanceBaseLabel={storedRadiusLabel}
           categoryLabel={categoryLabel}
           peopleLabel={peopleLabel}
           alcoholLabel={alcoholLabel}

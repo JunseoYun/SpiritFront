@@ -28,7 +28,11 @@ import NoneStore from './NoneStore';
 import FilterPotal from './FilterPotal';
 import MapFilterHeader from './MapFilterHeader';
 import MapDetailItem from './MapDetailItem';
-import {useMapSearch} from '../../../context/MapSearchContext';
+import {
+  INITIAL_RADIUS_KM,
+  formatRadiusLabel,
+  useMapSearch,
+} from '../../../context/MapSearchContext';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useFocusEffect} from '@react-navigation/native';
 import MapDetailItemSkeleton from './MapDetailItemSkeleton';
@@ -936,7 +940,7 @@ const MapStoreList = ({
     }
   }, [hideFilters, filterModalVisible, filterheight]);
   const [selectedFilters, setSelectedFilters] = useState({
-    거리: '2km',
+    거리: formatRadiusLabel(INITIAL_RADIUS_KM),
     카테고리: '',
     주종: '',
     방문시간: '',
@@ -1109,7 +1113,15 @@ const MapStoreList = ({
     setListfastview(true);
     bottomSheetRef.current.snapToIndex(1);
   };
-  const distanceLabel = selectedFilters['거리'] || '2km';
+  const baseRadiusKm =
+    typeof mapSearchCtx?.storedRadiusKm === 'number'
+      ? mapSearchCtx.storedRadiusKm
+      : typeof mapSearchCtx?.radiusKm === 'number'
+      ? mapSearchCtx.radiusKm
+      : INITIAL_RADIUS_KM;
+  const baseRadiusLabel = formatRadiusLabel(baseRadiusKm);
+  const distanceLabel =
+    selectedFilters['거리'] || baseRadiusLabel;
   const categoryLabel = selectedFilters['카테고리'] || '카테고리';
   const peopleLabel = selectedFilters['인원'] || '인원';
   const alcoholLabel = selectedFilters['주종'] || '주종';
@@ -1350,7 +1362,10 @@ const MapStoreList = ({
                   ? 1
                   : 0;
                 computedLabels = {
-                  distance: getVal(keyDistance, '1km'),
+                  distance: getVal(
+                    keyDistance,
+                    baseRadiusLabel,
+                  ),
                   category: getVal(keyCategory, '카테고리'),
                   people: getVal(keyPeople, '인원'),
                   alcohol: getVal(keyAlcohol, '주종'),
@@ -1379,6 +1394,7 @@ const MapStoreList = ({
                   setFilterModalVisible={setFilterModalVisible}
                   setFilterheight={handleFilterHeight}
                   distanceLabel={computedLabels?.distance || distanceLabel}
+                  distanceBaseLabel={baseRadiusLabel}
                   categoryLabel={computedLabels?.category || categoryLabel}
                   peopleLabel={computedLabels?.people || peopleLabel}
                   alcoholLabel={computedLabels?.alcohol || alcoholLabel}
