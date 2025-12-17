@@ -9,6 +9,7 @@ const MapFilterHeader = ({
   setFilterModalVisible,
   setFilterheight = () => {},
   distanceLabel,
+  distanceBaseLabel,
   categoryLabel,
   peopleLabel,
   alcoholLabel,
@@ -34,6 +35,16 @@ const MapFilterHeader = ({
     [onAmenityToggle, setFilterInitialTab, setFilterModalVisible],
   );
 
+  const resolvedBaseDistanceLabel =
+    typeof distanceBaseLabel === 'string' && distanceBaseLabel.length > 0
+      ? distanceBaseLabel
+      : '2km';
+  const resolvedDistanceLabel =
+    typeof distanceLabel === 'string' && distanceLabel.length > 0
+      ? distanceLabel
+      : resolvedBaseDistanceLabel;
+  const isDistanceActive = resolvedDistanceLabel !== resolvedBaseDistanceLabel;
+
   return (
     <View
       style={styles.headerContainer}
@@ -56,7 +67,7 @@ const MapFilterHeader = ({
         <Pressable
           style={[
             styles.filterChip,
-            distanceLabel !== '2km' && styles.filterChipActive,
+            isDistanceActive && styles.filterChipActive,
           ]}
           onPress={() => {
             setFilterInitialTab('거리');
@@ -65,9 +76,9 @@ const MapFilterHeader = ({
           <CustomText
             style={[
               styles.filterText,
-              distanceLabel !== '2km' && styles.filterTextActive,
+              isDistanceActive && styles.filterTextActive,
             ]}>
-            {distanceLabel}
+            {resolvedDistanceLabel}
           </CustomText>
         </Pressable>
         <Pressable
