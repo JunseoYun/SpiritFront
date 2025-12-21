@@ -19,10 +19,7 @@ import DeleteLocationButton from '../../components/SetLocation/DeleteLocationBut
 import MapPreview from '../../components/SetLocation/MapPreview';
 import RadiusSelector from '../../components/SetLocation/RadiusSelector';
 import SetLocationHeader from '../../components/SetLocation/SetLocationHeader';
-import {
-  useMapSearch,
-  formatRadiusLabel,
-} from '../../context/MapSearchContext';
+import {useMapSearch, formatRadiusLabel} from '../../context/MapSearchContext';
 
 const RADIUS_OPTIONS = [
   {label: '500m', value: 0.5},
@@ -315,6 +312,7 @@ const SetLocationScreen = ({navigation, route}) => {
           onGetCurrentLocation={handleGetCurrentLocation}
           onSearch={handleSearch}
         />
+        <DeleteLocationButton onPress={handleClearLocation} />
         <RadiusSelector
           options={RADIUS_OPTIONS}
           selectedValue={searchRadiusKm}
@@ -325,7 +323,6 @@ const SetLocationScreen = ({navigation, route}) => {
           webViewRef={webViewRef}
           onMapLoaded={() => setMapLoaded(true)}
         />
-        <DeleteLocationButton onPress={handleClearLocation} />
       </ScrollView>
       <AlertComponent />
       <Loading loading={loading} />
