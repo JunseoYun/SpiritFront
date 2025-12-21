@@ -115,7 +115,7 @@ const StoreAddMapScreen = ({navigation}) => {
         );
         const addressText = addressObj?.getAddressDto.address || '';
         const coordinate = addressObj?.getCoordinateDto;
-        console.log(addressText, coordinate);
+
         if (route.params?.onAddressSelect) {
           route.params.onAddressSelect({
             address: addressText,

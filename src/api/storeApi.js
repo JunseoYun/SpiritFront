@@ -387,8 +387,6 @@ export const Store_getby_popular = async (
 ) => {
   try {
     const radius = await getRadiusParam();
-
-    console.log('Store_getby_popular:', radius);
     const response = await axiosInstance.get(`/store/get-by/popular`, {
       // auth: false,
       params: {
@@ -777,9 +775,8 @@ export const Store_getby_condition_search = async (
       page,
       reqRadius,
     );
-    console.log(conditionSearchDto);
+
     const radius = await getRadiusParam(payload.radius);
-    console.log('condition_search:', payload.radius);
     const params = buildConditionSearchParams({...payload, radius});
 
     const response = await axiosInstance.get(`/store/get-by/condition-search`, {
@@ -806,8 +803,6 @@ export const Store_getby_condition_search_markers = async (
       null,
       reqRadius,
     );
-    console.log(conditionSearchDto);
-
     const radius = await getRadiusParam(payload.radius);
 
     const params = buildConditionSearchParams({...payload, radius});

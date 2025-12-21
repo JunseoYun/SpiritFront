@@ -55,7 +55,6 @@ export const saveSearchRadius = async radiusKm => {
   try {
     await AsyncStorage.setItem('searchRadiusKm', JSON.stringify(radiusKm));
     cachedSearchRadiusKm = radiusKm;
-    console.log('save radius:', cachedSearchRadiusKm);
   } catch (err) {
     console.log('검색 반경 저장 오류:', err);
   }
