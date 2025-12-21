@@ -105,7 +105,6 @@ export const DrinkUpdateSort = async (storeId, drinkIdInOrderList) => {
 export const StoreDrinkdelete = async drinkId => {
   try {
     const response = await axiosInstance.delete(`/drink/delete/${drinkId}`, {});
-    console.log(response, '??');
     return response.data.data;
   } catch (error) {
     functionError(error);
