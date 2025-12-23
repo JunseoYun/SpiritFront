@@ -1,6 +1,13 @@
 import axiosInstance from './axiosInstance';
 import {functionError} from './errorHandler';
 import toFileField from '../utils/toFileField';
+import {getSearchRadius} from '../storage/locationStorage';
+
+const getRadiusParam = async providedRadius => {
+  if (typeof providedRadius === 'number') return providedRadius;
+  const storedRadius = await getSearchRadius();
+  return typeof storedRadius === 'number' ? storedRadius : undefined;
+};
 // 매장 데이터 가져오기
 export const getStore = async () => {
   try {
@@ -350,6 +357,8 @@ export const Store_getby_keyword = async (
   keyword,
 ) => {
   try {
+    const radius = await getRadiusParam();
+
     const response = await axiosInstance.get(
       `/store/get-by/keyword/${keyword}`,
 
@@ -359,6 +368,7 @@ export const Store_getby_keyword = async (
           longitude,
           latitude,
           page, // page 값만 전달 초기 : 0
+          radius,
         },
       },
     );
@@ -376,6 +386,7 @@ export const Store_getby_popular = async (
   priceOrder,
 ) => {
   try {
+    const radius = await getRadiusParam();
     const response = await axiosInstance.get(`/store/get-by/popular`, {
       // auth: false,
       params: {
@@ -384,6 +395,7 @@ export const Store_getby_popular = async (
         page, // page 값만 전달 초기 : 0
         drinkType,
         priceOrder,
+        radius,
       },
     });
     return response.data.data;
@@ -427,12 +439,15 @@ export const Store_getby_store = async (page, keyword) => {
 // 가까운 순서 가게 리스트 조회 O
 export const Store_getby_distance = async (page, latitude, longitude) => {
   try {
+    const radius = await getRadiusParam();
+
     const response = await axiosInstance.get(`/store/get-by/distance`, {
       // auth: false,
       params: {
         page,
         latitude,
         longitude,
+        radius,
       },
     });
     return response.data.data;
@@ -451,6 +466,8 @@ export const Store_getby_category = async (
   priceOrder,
 ) => {
   try {
+    const radius = await getRadiusParam();
+
     const response = await axiosInstance.get(
       `/store/get-by/category/${category}`,
       {
@@ -460,6 +477,7 @@ export const Store_getby_category = async (
           drinkType,
           page,
           priceOrder,
+          radius,
         },
       },
     );
@@ -472,6 +490,8 @@ export const Store_getby_category = async (
 // 영업중 가게 리스트 조회
 export const Store_getby_business_hours = async (page, latitude, longitude) => {
   try {
+    const radius = await getRadiusParam();
+
     const response = await axiosInstance.get(`/store/get-by/business-hours`, {
       // auth: false,
 
@@ -479,6 +499,7 @@ export const Store_getby_business_hours = async (page, latitude, longitude) => {
         longitude,
         latitude,
         page,
+        radius,
       },
     });
     return response.data.data;
@@ -489,11 +510,14 @@ export const Store_getby_business_hours = async (page, latitude, longitude) => {
 
 export const Store_getby_main_banner = async (latitude, longitude) => {
   try {
+    const radius = await getRadiusParam();
+
     const response = await axiosInstance.get(`/store/get-by/main-banner`, {
       // auth: false,
       params: {
         longitude,
         latitude,
+        radius,
       },
     });
     return response.data.data;
@@ -721,7 +745,7 @@ const buildConditionSearchParams = payload => {
     longitude: payload.longitude ?? null,
     page: payload.page ?? null,
     radius: payload.radius ?? null,
-    category: dto.category ?? null,
+    categories: dto.categories ?? null,
     searchKeyword: dto.searchKeyword ?? null,
     hasScreen: dto.hasScreen ?? null,
     hasRoom: dto.hasRoom ?? null,
@@ -751,7 +775,10 @@ export const Store_getby_condition_search = async (
       page,
       reqRadius,
     );
-    const params = buildConditionSearchParams(payload);
+
+    const radius = await getRadiusParam(payload.radius);
+    const params = buildConditionSearchParams({...payload, radius});
+
     const response = await axiosInstance.get(`/store/get-by/condition-search`, {
       params,
     });
@@ -776,8 +803,9 @@ export const Store_getby_condition_search_markers = async (
       null,
       reqRadius,
     );
+    const radius = await getRadiusParam(payload.radius);
 
-    const params = buildConditionSearchParams(payload);
+    const params = buildConditionSearchParams({...payload, radius});
     const response = await axiosInstance.get(
       `/store/get-by/condition-search/markers`,
       {

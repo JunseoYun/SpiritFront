@@ -28,6 +28,11 @@ import {
 import BottomActionButton from '../../../utils/BottomActionButton';
 import CustomText from '../../../utils/CustomText';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {
+  INITIAL_RADIUS_KM,
+  formatRadiusLabel,
+  useMapSearch,
+} from '../../../context/MapSearchContext';
 
 // Try to resolve keys that may be mojibake in persisted state
 const findExistingKey = (filters, hint) => {
@@ -48,6 +53,18 @@ const FilterPotal = ({
   setRadiusint,
   onApply,
 }) => {
+  const mapSearchCtx = useMapSearch();
+  const baseRadiusKm = useMemo(() => {
+    if (typeof mapSearchCtx?.storedRadiusKm === 'number')
+      return mapSearchCtx.storedRadiusKm;
+    if (typeof mapSearchCtx?.radiusKm === 'number')
+      return mapSearchCtx.radiusKm;
+    return INITIAL_RADIUS_KM;
+  }, [mapSearchCtx?.storedRadiusKm, mapSearchCtx?.radiusKm]);
+  const baseRadiusLabel = useMemo(
+    () => formatRadiusLabel(baseRadiusKm),
+    [baseRadiusKm],
+  );
   const FILTER_TABS = useMemo(
     () => ['거리', '카테고리', '주종', '분위기', '방문시간', '편의시설'],
     [],
@@ -89,6 +106,35 @@ const FilterPotal = ({
 
   const screenWidth = Dimensions.get('window').width;
   const filtersSource = draftFilters || {};
+  const distanceOptions = useMemo(
+    () => ['500m', '1km', '2km', '3km', '5km'],
+    [],
+  );
+  const categoryOptions = useMemo(
+    () => [
+      '이자카야',
+      '한식',
+      '양식',
+      '중식',
+      '포장마차',
+      '감성주점',
+      '구이·찜',
+      '치킨·호프',
+      '회·해산물',
+      '펍·바',
+    ],
+    [],
+  );
+  const radiusValueByLabel = useMemo(
+    () => ({
+      '500m': 0.5,
+      '1km': 1,
+      '2km': 2,
+      '3km': 3,
+      '5km': 5,
+    }),
+    [],
+  );
 
   const ensureTabVisible = tab => {
     const pos = tabPositions?.[tab];
@@ -165,6 +211,7 @@ const FilterPotal = ({
   }, [selectedAlcohol, priceOrder, keyPriceOrder]);
 
   const storeAtmSelected = getArrVal(getVal(keyStoreatm, []));
+  const selectedCategories = getArrVal(getVal(keyCategory, []));
 
   const generateTimes = () => {
     const times = [];
@@ -339,15 +386,23 @@ const FilterPotal = ({
   const handleApply = useCallback(() => {
     closePriceOrderModal(false);
     const nextFilters = {...(draftFilters || {})};
+    const distanceLabel = nextFilters?.[keyDistance];
+    const radiusValue = radiusValueByLabel[distanceLabel];
+    if (typeof radiusValue === 'number') {
+      setRadiusint?.(radiusValue);
+    }
     setSelectedFilters(nextFilters);
     onApply?.(nextFilters);
     setPriceOrderAnchor(null);
     setFilterModalVisible(false);
   }, [
     closePriceOrderModal,
+    keyDistance,
+    radiusValueByLabel,
     setSelectedFilters,
     draftFilters,
     onApply,
+    setRadiusint,
     setFilterModalVisible,
   ]);
 
@@ -420,8 +475,8 @@ const FilterPotal = ({
                       onPress={() => {
                         setDraftFilters(prev => ({
                           ...(prev || {}),
-                          [keyDistance]: '2km',
-                          [keyCategory]: '',
+                          [keyDistance]: baseRadiusLabel,
+                          [keyCategory]: [],
                           [keyAlcohol]: '',
                           [keyStoreatm]: '',
                           [keyTime]: '',
@@ -433,37 +488,33 @@ const FilterPotal = ({
                           [keyOutdoor]: '',
                           [keyPriceOrder]: '',
                         }));
-                        if (typeof setRadiusint === 'function') setRadiusint(2);
+                        if (typeof setRadiusint === 'function')
+                          setRadiusint(baseRadiusKm);
                       }}>
                       <CustomText style={styles.inittext}>초기화</CustomText>
                     </Pressable>
                   </View>
                   <View style={styles.filterItemsContainer}>
-                    {['1km', '2km', '3km', '5km'].map(dist => (
+                    {distanceOptions.map(dist => (
                       <Pressable
                         key={dist}
                         style={[
                           styles.filterItem,
-                          getVal(keyDistance, '2km') === dist &&
+                          getVal(keyDistance, baseRadiusLabel) === dist &&
                             styles.filterItemSelected,
                         ]}
                         onPress={() => {
                           setVal(keyDistance, dist);
                           if (typeof setRadiusint === 'function') {
-                            const m = {
-                              '1km': 1,
-                              '2km': 2,
-                              '3km': 3,
-                              '5km': 5,
-                            };
-                            const rv = m[dist] ?? 2;
+                            const rv =
+                              radiusValueByLabel[dist] ?? INITIAL_RADIUS_KM;
                             setRadiusint(rv);
                           }
                         }}>
                         <CustomText
                           style={[
                             styles.filterItemText,
-                            getVal(keyDistance, '2km') === dist &&
+                            getVal(keyDistance, baseRadiusLabel) === dist &&
                               styles.filterItemTextSelected,
                           ]}>
                           {dist}
@@ -482,32 +533,30 @@ const FilterPotal = ({
                     }
                   }}
                   style={styles.sectionContainer}>
-                  <CustomText style={styles.sectionTitle}>카테고리</CustomText>
+                  <View style={{flexDirection: 'row'}}>
+                    <CustomText style={styles.sectionTitle}>
+                      카테고리
+                    </CustomText>
+                    {selectedCategories.length > 0 && (
+                      <CustomText style={styles.sectionCount}>
+                        {selectedCategories.length}/3
+                      </CustomText>
+                    )}
+                  </View>
                   <View style={styles.filterItemsContainer}>
-                    {[
-                      '이자카야',
-                      '한식',
-                      '양식',
-                      '중식',
-                      '포장마차',
-                      '감성주점',
-                      '구이·찜',
-                      '치킨·호프',
-                      '회·해산물',
-                      '펍·바',
-                    ].map(cat => (
+                    {categoryOptions.map(cat => (
                       <Pressable
                         key={cat}
                         style={[
                           styles.filterItem,
-                          getVal(keyCategory, '') === cat &&
+                          selectedCategories.includes(cat) &&
                             styles.filterItemSelected,
                         ]}
-                        onPress={() => toggleSingle(keyCategory, cat)}>
+                        onPress={() => toggleInArray(keyCategory, cat, 3)}>
                         <CustomText
                           style={[
                             styles.filterItemText,
-                            getVal(keyCategory, '') === cat &&
+                            selectedCategories.includes(cat) &&
                               styles.filterItemTextSelected,
                           ]}>
                           {cat}

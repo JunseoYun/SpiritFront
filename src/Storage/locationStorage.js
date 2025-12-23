@@ -9,6 +9,9 @@ let fixedAddress = '신논현역';
 
 let cachedLocation = null; // 메모리 캐시
 let cachedAddress = null;
+let cachedSearchRadiusKm = null;
+
+export const DEFAULT_SEARCH_RADIUS_KM = 2;
 
 // 서버에서 가져와 저장
 export const initLocationFromServer = async () => {
@@ -47,6 +50,16 @@ export const saveLocationAddress = async (location, address) => {
   }
 };
 
+// 검색 반경 저장
+export const saveSearchRadius = async radiusKm => {
+  try {
+    await AsyncStorage.setItem('searchRadiusKm', JSON.stringify(radiusKm));
+    cachedSearchRadiusKm = radiusKm;
+  } catch (err) {
+    console.log('검색 반경 저장 오류:', err);
+  }
+};
+
 // 캐시/스토리지/기본값 순으로 위치 가져오기
 export const getLocation = async () => {
   if (cachedLocation) return cachedLocation;
@@ -75,6 +88,24 @@ export const getAddress = async () => {
     console.log('주소 정보 가져오기 오류:', err);
   }
   return fixedAddress;
+};
+
+// 캐시/스토리지/기본값 순으로 검색 반경 가져오기
+export const getSearchRadius = async () => {
+  if (cachedSearchRadiusKm !== null) return cachedSearchRadiusKm;
+  try {
+    const stored = await AsyncStorage.getItem('searchRadiusKm');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (typeof parsed === 'number') {
+        cachedSearchRadiusKm = parsed;
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.log('검색 반경 가져오기 오류:', err);
+  }
+  return DEFAULT_SEARCH_RADIUS_KM;
 };
 
 // AsyncStorage 초기화
