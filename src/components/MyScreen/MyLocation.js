@@ -1,28 +1,38 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Pressable,
   ScrollView,
   RefreshControl,
 } from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
-import {getAddress} from '../../storage/locationStorage';
+import {getAddress, getSearchRadius} from '../../storage/locationStorage';
 import CustomText from '../../utils/CustomText';
+import {
+  formatRadiusLabel,
+  INITIAL_RADIUS_KM,
+} from '../../context/MapSearchContext';
 
 const MyLocation = ({navigation}) => {
   const [address, setAddress] = useState('');
+  const [radiusLabel, setRadiusLabel] = useState(
+    formatRadiusLabel(INITIAL_RADIUS_KM),
+  );
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchLocation = async () => {
     try {
       const storageAddress = await getAddress();
-      if (storageAddress) {
-        setAddress(storageAddress);
+      setAddress(storageAddress || '저장된 주소가 없습니다.');
+
+      const storedRadius = await getSearchRadius();
+      if (typeof storedRadius === 'number') {
+        setRadiusLabel(formatRadiusLabel(storedRadius));
       } else {
-        setAddress('저장된 주소가 없습니다.');
+        setRadiusLabel(formatRadiusLabel(INITIAL_RADIUS_KM));
       }
     } catch (error) {
       console.log(error);
@@ -33,9 +43,15 @@ const MyLocation = ({navigation}) => {
     fetchLocation();
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchLocation();
+    }, []),
+  );
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchLocation(); // 새로고침할 때 주소 다시 가져오기
+    await fetchLocation();
     setRefreshing(false);
   }, []);
 
@@ -46,28 +62,35 @@ const MyLocation = ({navigation}) => {
   return (
     <ScrollView
       style={styles.container}
+      contentContainerStyle={styles.content}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }>
-      <View style={styles.infoBox}>
-        <Ionicons
-          name="location-outline"
-          size={24}
-          color="#555"
-          style={styles.icon}
-        />
-        <View>
+      {/* Info Card */}
+      <View style={styles.card}>
+        <View style={styles.iconWrap}>
+          <Ionicons name="location-outline" size={18} color="#64748B" />
+        </View>
+
+        <View style={styles.textWrap}>
           <CustomText style={styles.label}>현재 설정된 위치</CustomText>
-          <CustomText style={styles.address}>{address}</CustomText>
+
+          <CustomText style={styles.address} numberOfLines={2}>
+            {address}
+          </CustomText>
+
+          <View style={styles.metaRow}>
+            <CustomText style={styles.metaLabel}>탐색 반경</CustomText>
+            <CustomText style={styles.metaValue}>{radiusLabel}</CustomText>
+          </View>
         </View>
       </View>
-      <Pressable style={styles.button} onPress={searchAddressHandle}>
-        <Feather
-          name="crosshair"
-          size={15}
-          color="#1a1a1a"
-          style={styles.texticon}
-        />
+
+      {/* Action Button */}
+      <Pressable
+        onPress={searchAddressHandle}
+        style={({pressed}) => [styles.button, pressed && styles.buttonPressed]}>
+        <Feather name="crosshair" size={16} color="#111827" />
         <CustomText style={styles.buttonText}>내 위치 변경하기</CustomText>
       </Pressable>
     </ScrollView>
@@ -77,54 +100,88 @@ const MyLocation = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 16,
-  },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 0},
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2, // Android 그림자
-    marginBottom: 20,
   },
-  icon: {
+  content: {
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
+
+  card: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  iconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 12,
+    marginTop: 1,
   },
-  texticon: {
-    marginRight: 6,
+
+  textWrap: {
+    flex: 1,
+    paddingRight: 4,
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#6B7280',
     fontFamily: 'Pretendard-Regular',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   address: {
-    fontSize: 16,
-    color: '#121212',
+    fontSize: 15,
+    color: '#111827',
     fontFamily: 'Pretendard-SemiBold',
-    marginRight: 15,
+    lineHeight: 20,
   },
-  button: {
+
+  metaRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: 12,
-    borderRadius: 5,
     alignItems: 'center',
-    borderColor: '#ccc',
+    marginTop: 10,
+  },
+  metaLabel: {
+    fontSize: 12.5,
+    color: '#9CA3AF',
+    fontFamily: 'Pretendard-Regular',
+    marginRight: 8,
+  },
+  metaValue: {
+    fontSize: 12.5,
+    color: '#374151',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+
+  button: {
+    marginTop: 14,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
+    borderColor: '#E5E7EB',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  buttonPressed: {
+    opacity: 0.86,
   },
   buttonText: {
     fontSize: 14,
-    color: '#1a1a1a',
-    fontFamily: 'Pretendard-Medium',
+    color: '#111827',
+    fontFamily: 'Pretendard-SemiBold',
   },
 });
 

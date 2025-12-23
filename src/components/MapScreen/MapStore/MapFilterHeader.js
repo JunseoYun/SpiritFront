@@ -9,7 +9,9 @@ const MapFilterHeader = ({
   setFilterModalVisible,
   setFilterheight = () => {},
   distanceLabel,
+  distanceBaseLabel,
   categoryLabel,
+  categoryCount = 0,
   peopleLabel,
   alcoholLabel,
   timeActive,
@@ -34,6 +36,16 @@ const MapFilterHeader = ({
     [onAmenityToggle, setFilterInitialTab, setFilterModalVisible],
   );
 
+  const resolvedBaseDistanceLabel =
+    typeof distanceBaseLabel === 'string' && distanceBaseLabel.length > 0
+      ? distanceBaseLabel
+      : '2km';
+  const resolvedDistanceLabel =
+    typeof distanceLabel === 'string' && distanceLabel.length > 0
+      ? distanceLabel
+      : resolvedBaseDistanceLabel;
+  const isDistanceActive = resolvedDistanceLabel !== resolvedBaseDistanceLabel;
+
   return (
     <View
       style={styles.headerContainer}
@@ -56,7 +68,7 @@ const MapFilterHeader = ({
         <Pressable
           style={[
             styles.filterChip,
-            distanceLabel !== '2km' && styles.filterChipActive,
+            isDistanceActive && styles.filterChipActive,
           ]}
           onPress={() => {
             setFilterInitialTab('거리');
@@ -65,28 +77,37 @@ const MapFilterHeader = ({
           <CustomText
             style={[
               styles.filterText,
-              distanceLabel !== '2km' && styles.filterTextActive,
+              isDistanceActive && styles.filterTextActive,
             ]}>
-            {distanceLabel}
+            {resolvedDistanceLabel}
           </CustomText>
         </Pressable>
-        <Pressable
-          style={[
-            styles.filterChip,
-            categoryLabel !== '카테고리' && styles.filterChipActive,
-          ]}
-          onPress={() => {
-            setFilterInitialTab('카테고리');
-            setFilterModalVisible(true);
-          }}>
-          <CustomText
+        <View style={styles.badgeWrapper} pointerEvents="box-none">
+          <Pressable
             style={[
-              styles.filterText,
-              categoryLabel !== '카테고리' && styles.filterTextActive,
-            ]}>
-            {categoryLabel}
-          </CustomText>
-        </Pressable>
+              styles.filterChip,
+              categoryLabel !== '카테고리' && styles.filterChipActive,
+            ]}
+            onPress={() => {
+              setFilterInitialTab('카테고리');
+              setFilterModalVisible(true);
+            }}>
+            <CustomText
+              style={[
+                styles.filterText,
+                categoryLabel !== '카테고리' && styles.filterTextActive,
+              ]}>
+              {categoryLabel}
+            </CustomText>
+          </Pressable>
+          {categoryCount > 1 && (
+            <View style={styles.badge}>
+              <CustomText maxScale={1.2} style={styles.badgeText}>
+                {categoryCount}
+              </CustomText>
+            </View>
+          )}
+        </View>
         <Pressable
           style={[
             styles.filterChip,
@@ -288,6 +309,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontFamily: 'Pretendard-Bold',
     textAlign: 'center',
+  },
+  badgeWrapper: {
+    position: 'relative',
   },
 });
 

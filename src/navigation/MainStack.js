@@ -90,7 +90,7 @@ export default function MainStack() {
         name="LocataionMapScreen"
         component={LocataionMapScreen}
         options={({navigation}) => ({
-          title: '주소 설정',
+          title: '위치 설정',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: 'Pretendard-Bold',

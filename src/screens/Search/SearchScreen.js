@@ -19,6 +19,7 @@ import {
   useMapSearch,
   buildInitialSelectedFilters,
   INITIAL_RADIUS_KM,
+  formatRadiusLabel,
 } from '../../context/MapSearchContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect, CommonActions} from '@react-navigation/native';
@@ -39,6 +40,7 @@ const SearchScreen = ({navigation, route}) => {
     setSelectedFilters,
     radiusKm,
     setRadiusKm,
+    storedRadiusKm,
   } = useMapSearch();
   const selectedFiltersRef = useRef(selectedFilters);
   const radiusKmRef = useRef(radiusKm);
@@ -78,9 +80,13 @@ const SearchScreen = ({navigation, route}) => {
   const RECENT_KEY = 'RECENT_SEARCHES';
 
   const resetFiltersToInitial = useCallback(() => {
-    const initialFilters = buildInitialSelectedFilters();
+    const baseRadius =
+      typeof radiusKmRef.current === 'number'
+        ? radiusKmRef.current
+        : INITIAL_RADIUS_KM;
+    const initialFilters = buildInitialSelectedFilters(baseRadius);
     setPendingFilters(initialFilters);
-    setPendingRadiusKm(INITIAL_RADIUS_KM);
+    setPendingRadiusKm(baseRadius);
   }, []);
 
   const loadRecentSearches = useCallback(async () => {
@@ -229,6 +235,18 @@ const SearchScreen = ({navigation, route}) => {
 
     return val == null || isEmptyArray || isEmptyString ? fallback : val;
   };
+  const toArrayVal = value => {
+    if (Array.isArray(value)) return value.filter(Boolean);
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return [value.trim()];
+    }
+    return [];
+  };
+  const formatArrayLabel = (arr, emptyLabel) => {
+    if (!arr || arr.length === 0) return emptyLabel;
+    if (arr.length === 1) return arr[0];
+    return `${arr[0]} 외 ${arr.length - 1}`;
+  };
 
   const handleAmenityToggle = useCallback(
     type => {
@@ -271,8 +289,16 @@ const SearchScreen = ({navigation, route}) => {
     [resolveFilterKey],
   );
 
-  const distanceLabel = getFilterValue('거리', '1km');
-  const categoryLabel = getFilterValue('카테고리', '카테고리');
+  const storedRadiusLabel = formatRadiusLabel(
+    typeof storedRadiusKm === 'number' ? storedRadiusKm : INITIAL_RADIUS_KM,
+  );
+  const distanceLabel = getFilterValue(
+    '거리',
+    storedRadiusLabel,
+  );
+  const categoryValue = getFilterValue('카테고리', []);
+  const categoryArray = toArrayVal(categoryValue);
+  const categoryLabel = formatArrayLabel(categoryArray, '카테고리');
   const peopleLabel = getFilterValue('인원', '인원');
   const alcoholLabel = getFilterValue('주종', '주종');
   const storeatmValue = getFilterValue('분위기', '');
@@ -315,7 +341,9 @@ const SearchScreen = ({navigation, route}) => {
           setFilterInitialTab={setFilterInitialTab}
           setFilterModalVisible={setFilterModalVisible}
           distanceLabel={distanceLabel}
+          distanceBaseLabel={storedRadiusLabel}
           categoryLabel={categoryLabel}
+          categoryCount={categoryArray.length}
           peopleLabel={peopleLabel}
           alcoholLabel={alcoholLabel}
           timeActive={timeActive}

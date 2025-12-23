@@ -273,7 +273,6 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
     }
 
     updatePayload.facilitiesInfoDto = facilitiesInfo;
-    // console.log(updatePayload);
     try {
       setLoading(true);
       if (!preStoreId) {

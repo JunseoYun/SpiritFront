@@ -27,6 +27,7 @@ import MapSearchBar from '../../components/MapScreen/MapSearchBar';
 import {
   useMapSearch,
   buildInitialSelectedFilters,
+  formatRadiusLabel,
 } from '../../context/MapSearchContext';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
@@ -79,6 +80,7 @@ const resolveStoreName = store =>
   store?.store_name ??
   store?.title ??
   null;
+
 const mergeUniqueStores = (prevList = [], nextList = []) => {
   const map = new Map();
   (Array.isArray(prevList) ? prevList : []).forEach(item => {
@@ -211,11 +213,14 @@ const buildFiltersFromSearchConditions = conditions => {
   }
   const keys = conditionSearchFilterKeys;
   if (typeof conditions.radius === 'number') {
-    baseFilters[keys.distance] = `${conditions.radius}km`;
+    baseFilters[keys.distance] = formatRadiusLabel(conditions.radius);
   }
-  const categoryLabel = CATEGORY_LABEL_BY_CODE[conditions.category];
-  if (categoryLabel) {
-    baseFilters[keys.category] = categoryLabel;
+  const categoryCodes = toArray(conditions.categories || conditions.category);
+  const categoryLabels = categoryCodes
+    .map(code => CATEGORY_LABEL_BY_CODE[code])
+    .filter(Boolean);
+  if (categoryLabels.length > 0) {
+    baseFilters[keys.category] = categoryLabels;
   }
   const drinkLabel = DRINK_LABEL_BY_CODE[conditions.drinkType];
   if (drinkLabel) {
@@ -386,9 +391,15 @@ const MapScreen = ({navigation, route}) => {
   }, [selectedFilters, searchText]);
 
   const resetSearchInputs = useCallback(() => {
+    const baseRadius =
+      typeof radiusKm === 'number'
+        ? radiusKm
+        : typeof radius === 'number'
+        ? radius
+        : undefined;
     setSearchText('');
-    setSelectedFilters(buildInitialSelectedFilters());
-  }, [setSearchText, setSelectedFilters]);
+    setSelectedFilters(buildInitialSelectedFilters(baseRadius));
+  }, [radiusKm, radius, setSearchText, setSelectedFilters]);
 
   const clearAiPriorityState = useCallback(() => {
     aiPriorityStoresRef.current = [];
@@ -1092,14 +1103,18 @@ const MapScreen = ({navigation, route}) => {
         roundedCurrentLng === roundedNewLng
       ) {
         webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-        webViewRef.current.injectJavaScript(`try { if (window.moveUserMarker) { window.moveUserMarker(${newLocation.latitude}, ${newLocation.longitude}); } } catch(e){}; true;`);
+        webViewRef.current.injectJavaScript(
+          `try { if (window.moveUserMarker) { window.moveUserMarker(${newLocation.latitude}, ${newLocation.longitude}); } } catch(e){}; true;`,
+        );
         moveCenterMap(newLocation.latitude, newLocation.longitude, 0);
       } else {
         setLocation(newLocation);
         moveCenterMap(newLocation.latitude, newLocation.longitude, 0);
         if (webViewRef.current) {
           webViewRef.current.injectJavaScript(closeStoreListOverlayScript);
-          webViewRef.current.injectJavaScript(`try { if (window.moveUserMarker) { window.moveUserMarker(${newLocation.latitude}, ${newLocation.longitude}); } } catch(e){}; true;`);
+          webViewRef.current.injectJavaScript(
+            `try { if (window.moveUserMarker) { window.moveUserMarker(${newLocation.latitude}, ${newLocation.longitude}); } } catch(e){}; true;`,
+          );
         }
       }
     } catch (err) {
@@ -1188,7 +1203,7 @@ const MapScreen = ({navigation, route}) => {
           normalized.locationDto = location;
         }
         if (!normalized.name) {
-          const fallbackName = resolveStoreName(normalized);
+          const fallbackName = normalized?.name;
           if (fallbackName) {
             normalized.name = fallbackName;
           }
@@ -1826,6 +1841,18 @@ const MapScreen = ({navigation, route}) => {
           .map(item => item.trim())
           .filter(Boolean)
       : null;
+    const categoryArray =
+      typeof dto.categories === 'string'
+        ? dto.categories
+            .split(',')
+            .map(item => item.trim())
+            .filter(Boolean)
+        : Array.isArray(dto.categories)
+        ? dto.categories.filter(Boolean)
+        : dto.category
+        ? [dto.category]
+        : [];
+    const categoriesValue = categoryArray.length > 0 ? categoryArray : null;
     const latestLat =
       typeof lastQueryRef.current.lat === 'number'
         ? lastQueryRef.current.lat
@@ -1838,7 +1865,8 @@ const MapScreen = ({navigation, route}) => {
       typeof radiusKm === 'number' ? radiusKm : radius ?? null;
     const nextConditions = {
       arrivalTime: dto.conditionTime || null,
-      category: dto.category || null,
+      categories: categoriesValue,
+      category: categoriesValue ? categoriesValue[0] : null,
       drinkPriceOrder: dto.priceOrder || null,
       drinkType: dto.drinkType || null,
       hasOutdoor:

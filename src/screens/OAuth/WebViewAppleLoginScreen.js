@@ -19,7 +19,6 @@ const AppleLoginScreen = ({navigation}) => {
         const userCredential = await auth().signInWithCredential(
           appleCredential,
         );
-        console.log('✅ Apple 로그인 성공:', userCredential.user);
         navigation.goBack(); // 또는 홈 화면 등 이동
       } else {
         console.log('❌ identityToken 없음');
