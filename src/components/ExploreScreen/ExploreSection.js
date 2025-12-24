@@ -1,16 +1,16 @@
-// MainSection.js
+// ExploreSection.js
 import React, {useState} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
-import TodayRecomm from '../../components/MainScreen/TodayRecomm/TodayRecomm';
-import CategoryGrid from '../../components/MainScreen/Category/CategoryGrid';
-import StoreRegister from '../../components/MainScreen/StoreRegister';
-import OpenStoreList from '../../components/MainScreen/CurrentOpenStore/OpenStoreList';
-import NearStoreList from '../../components/MainScreen/NearStore/NearStoreList';
+import TodayRecomm from './TodayRecomm/TodayRecomm';
+import CategoryGrid from './Category/CategoryGrid';
+import StoreRegister from './StoreRegister';
+import OpenStoreList from './CurrentOpenStore/OpenStoreList';
+import NearStoreList from './NearStore/NearStoreList';
 import ViewedStoreList from './ViewedStore/ViewedStoreList';
 import MyBanner from '../Ads/MyBanner';
 import CustomText from '../../utils/CustomText';
 
-const MainSection = ({
+const ExploreSection = ({
   recommCategory,
   recommReason,
   recommStores,
@@ -100,4 +100,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.memo(MainSection);
+export default React.memo(ExploreSection);

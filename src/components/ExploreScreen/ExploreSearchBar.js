@@ -4,7 +4,7 @@ import {Pressable, View, Text, StyleSheet} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import CustomText from '../../utils/CustomText';
 
-const MainSearchBar = ({handleSearchPress}) => {
+const ExploreSearchBar = ({handleSearchPress}) => {
   return (
     <Pressable
       hitSlop={10}
@@ -45,4 +45,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MainSearchBar;
+export default ExploreSearchBar;

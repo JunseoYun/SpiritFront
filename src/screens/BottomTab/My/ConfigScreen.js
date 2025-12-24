@@ -11,7 +11,7 @@ import CFModal from '../../../components/ConfigScreen/CFModal';
 import CFActionbtn from '../../../components/ConfigScreen/CFActionbtn';
 import CFUserinfo from '../../../components/ConfigScreen/CFUserinfo';
 import Loading from '../../../hooks/Loading';
-import AppInfo from '../../../components/MainScreen/AppInfo';
+import AppInfo from '../../../components/ExploreScreen/AppInfo';
 
 const ConfigScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
