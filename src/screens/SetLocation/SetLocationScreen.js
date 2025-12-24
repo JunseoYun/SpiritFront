@@ -89,20 +89,14 @@ const SetLocationScreen = ({navigation, route}) => {
 
   const resetToHome = useCallback(
     (targetIndex = 0) => {
-      if (origin === 'AIExploreScreen') {
+      if (
+        origin === 'ChatbotScreen' ||
+        origin === 'AIExploreScreen' ||
+        origin === 'ExploreScreen'
+      ) {
         navigation.reset({
           index: 0,
-          routes: [
-            {
-              name: 'MainBtmbar',
-              params: {
-                screen: 'AIExploreScreen',
-                initialTab: 'AIExploreScreen',
-                lastFocusedTab: 'AIExploreScreen',
-                lastNonMapTab: 'AIExploreScreen',
-              },
-            },
-          ],
+          routes: [{name: 'ChatbotScreen'}],
         });
         return;
       }

@@ -8,7 +8,12 @@ import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import ColorUtil from '../../utils/ColorUtil';
 
-const AIResultCard = ({store, navigation, userLocation, searchConditions}) => {
+const ChatbotResultCard = ({
+  store,
+  navigation,
+  userLocation,
+  searchConditions,
+}) => {
   const calculateDistance = useDistance();
   const {translateCategory} = useCategoryTranslation();
   const {translateAlcohol} = useTranslateAlcohol();
@@ -293,4 +298,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AIResultCard;
+export default ChatbotResultCard;

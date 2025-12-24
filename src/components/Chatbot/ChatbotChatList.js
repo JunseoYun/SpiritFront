@@ -11,9 +11,9 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import {AIFullIcon} from '../../assets/svg/AiTabIcon';
 import CustomText from '../../utils/CustomText';
-import AIResultCard from './AIResultCard';
+import ChatbotResultCard from './ChatbotResultCard';
 
-const AIExploreChatList = ({
+const ChatbotChatList = ({
   chatHistory,
   address,
   hasMessages,
@@ -106,7 +106,7 @@ const AIExploreChatList = ({
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.resultList}>
                         {message.stores.map((store, index) => (
-                          <AIResultCard
+                          <ChatbotResultCard
                             key={`${message.id}-${store?.id ?? index}`}
                             store={store}
                             navigation={navigation}
@@ -320,4 +320,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AIExploreChatList;
+export default ChatbotChatList;

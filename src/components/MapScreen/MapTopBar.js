@@ -166,7 +166,7 @@ const MapTopBar = ({
             forceWhiteBackground ? styles.exploreButtonSolid : null,
           ]}
           onPress={() => {
-            navigation.navigate('AIExploreScreen');
+            navigation.navigate('ChatbotScreen');
           }}>
           {!forceWhiteBackground ? (
             <LinearGradient
@@ -177,14 +177,14 @@ const MapTopBar = ({
               style={styles.exploreGradient}>
               <View style={styles.exploreButtonContent}>
                 <AIEmptyLogoIcon size={19} />
-                <CustomText style={styles.exploreText}>탐색</CustomText>
+                <CustomText style={styles.exploreText}>챗봇</CustomText>
               </View>
             </LinearGradient>
           ) : (
             <View style={styles.exploreButtonContent}>
               <AILogoIcon size={19} />
               <CustomText style={[styles.exploreText, {color: '#3cbbff'}]}>
-                탐색
+                챗봇
               </CustomText>
             </View>
           )}

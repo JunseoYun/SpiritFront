@@ -5,6 +5,7 @@ import MainBtmbar from './MainBtmbar';
 import SetLocationScreen from '../screens/SetLocation/SetLocationScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import ChatbotScreen from '../screens/Chatbot/ChatbotScreen';
 
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
 
@@ -53,6 +54,11 @@ export default function MainStack() {
       <Stack.Screen
         name="MainBtmbar"
         component={MainBtmbar}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ChatbotScreen"
+        component={ChatbotScreen}
         options={{headerShown: false}}
       />
       <Stack.Screen
