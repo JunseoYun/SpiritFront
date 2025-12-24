@@ -7,7 +7,7 @@ import LikeScreen from '../screens/BottomTab/LikeScreen';
 import AIExploreScreen from '../screens/BottomTab/AIExploreScreen';
 import MyStack from './MyStack';
 import CustomText from '../utils/CustomText';
-import {AIFullIcon, AIEmptyIcon} from '../assets/svg/AiTabIcon';
+import {AIFullIcon, AIFullIconDark, AIEmptyIcon} from '../assets/svg/AiTabIcon';
 import {HomeEmptyIcon, HomeFullIcon} from '../assets/svg/HomeTabIcon';
 
 const Tab = createBottomTabNavigator();
@@ -67,7 +67,7 @@ const MainBtmbar = ({route}) => {
             iconName = focused ? 'map' : 'map-outline';
           else if (route.name === 'AIExploreScreen') {
             return focused ? (
-              <AIFullIcon size={25} />
+              <AIFullIconDark size={25} color={color} />
             ) : (
               <AIEmptyIcon size={25} />
             );
@@ -109,7 +109,7 @@ const MainBtmbar = ({route}) => {
         component={AIExploreScreen}
         options={{
           tabBarLabel: ({color, focused}) =>
-            renderLabel('탐색', focused ? '#3CBBFF' : color),
+            renderLabel('탐색', focused ? '#333' : color),
           headerShown: false,
         }}
       />
