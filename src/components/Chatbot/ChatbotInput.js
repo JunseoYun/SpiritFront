@@ -14,7 +14,7 @@ import CustomTextInput from '../../utils/CustomTextInput';
 import ColorUtil from '../../utils/ColorUtil';
 import AIMicIcon from '../../assets/svg/AIMicIcon';
 
-const AIExploreInput = ({
+const ChatbotInput = ({
   showRecordingUI,
   bottomOverlayHeight,
   onInputLayout,
@@ -322,4 +322,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AIExploreInput;
+export default ChatbotInput;

@@ -4,7 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
 
-const AIExploreSuggestions = ({
+const ChatbotSuggestions = ({
   showChips,
   showRecordingUI,
   chipAnim,
@@ -86,4 +86,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AIExploreSuggestions;
+export default ChatbotSuggestions;

@@ -1,4 +1,4 @@
-// -------------------- AIExploreScreen (사진 동일하게 리디자인) -----------------------
+// -------------------- ChatbotScreen (사진 동일하게 리디자인) -----------------------
 
 import React, {
   useState,
@@ -34,11 +34,11 @@ import {
   check,
   request as requestPermission,
 } from 'react-native-permissions';
-import AIExploreDrawer from '../../components/AIExplore/AIExploreDrawer';
-import AIExploreHeader from '../../components/AIExplore/AIExploreHeader';
-import AIExploreChatList from '../../components/AIExplore/AIExploreChatList';
-import AIExploreSuggestions from '../../components/AIExplore/AIExploreSuggestions';
-import AIExploreInput from '../../components/AIExplore/AIExploreInput';
+import ChatbotDrawer from '../../components/Chatbot/ChatbotDrawer';
+import ChatbotHeader from '../../components/Chatbot/ChatbotHeader';
+import ChatbotChatList from '../../components/Chatbot/ChatbotChatList';
+import ChatbotSuggestions from '../../components/Chatbot/ChatbotSuggestions';
+import ChatbotInput from '../../components/Chatbot/ChatbotInput';
 
 const SAMPLE_RECENT_FIRST_PROMPTS = [
   '강남역에서 조용한 와인바 알려줘',
@@ -76,7 +76,7 @@ const USE_SAMPLE_RECENT_PROMPTS = false; // 샘플 목록을 보고 싶을 때 t
 const NO_RESULT_SYSTEM_TEXT =
   '방금 추천해 준 조건으로 찾아봤는데 검색된 매장이 없어. 위치를 제외한 모든 조건은 초기화하고 이어서 말하는 내용 반영해서 다시 찾아 줘.';
 
-const AIExploreScreen = ({navigation}) => {
+const ChatbotScreen = ({navigation}) => {
   const {showToast} = useToast();
   const insets = useSafeAreaInsets();
   const RECENT_FIRST_PROMPT_KEY = 'RECENT_AI_FIRST_PROMPTS';
@@ -316,7 +316,7 @@ const AIExploreScreen = ({navigation}) => {
         aiSearchConditions: searchConditions || null,
         searchConditions: searchConditions || null,
         aiSearchPrompt: typeof promptText === 'string' ? promptText : null,
-        prevTab: 'AIExploreScreen',
+        prevTab: 'ChatbotScreen',
       });
     },
     [navigation],
@@ -1019,8 +1019,16 @@ const AIExploreScreen = ({navigation}) => {
 
   const handleLocationPress = useCallback(() => {
     navigation.navigate('SetLocationScreen', {
-      origin: 'AIExploreScreen',
+      origin: 'ChatbotScreen',
     });
+  }, [navigation]);
+
+  const handleGoBack = useCallback(() => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('MainBtmbar');
   }, [navigation]);
 
   return (
@@ -1029,7 +1037,7 @@ const AIExploreScreen = ({navigation}) => {
       behavior="padding"
       keyboardVerticalOffset={keyboardVerticalOffset}>
       <View style={styles.flex}>
-        <AIExploreDrawer
+        <ChatbotDrawer
           showDrawer={showDrawer}
           overlayAnim={overlayAnim}
           drawerAnim={drawerAnim}
@@ -1060,15 +1068,16 @@ const AIExploreScreen = ({navigation}) => {
             },
           ]}
           {...overlayPanHandlers}>
-          <AIExploreHeader
+          <ChatbotHeader
             insets={insets}
             sending={sending}
             onOpenDrawer={openDrawer}
             onNavigateLocation={handleLocationPress}
             onResetChat={resetChat}
+            onGoBack={handleGoBack}
           />
 
-          <AIExploreChatList
+          <ChatbotChatList
             chatHistory={chatHistory}
             address={address}
             hasMessages={hasMessages}
@@ -1085,7 +1094,7 @@ const AIExploreScreen = ({navigation}) => {
             titleAnim={titleAnim}
           />
 
-          <AIExploreSuggestions
+          <ChatbotSuggestions
             showChips={showChips}
             showRecordingUI={showRecordingUI}
             chipAnim={chipAnim}
@@ -1094,7 +1103,7 @@ const AIExploreScreen = ({navigation}) => {
             onSelectSuggestion={handlePromptSelect}
           />
 
-          <AIExploreInput
+          <ChatbotInput
             showRecordingUI={showRecordingUI}
             bottomOverlayHeight={bottomOverlayHeight}
             onInputLayout={height => setBottomInputHeight(height)}
@@ -1133,4 +1142,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AIExploreScreen;
+export default ChatbotScreen;

@@ -4,7 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import MainScreen from '../screens/BottomTab/MainScreen';
 import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
-import AIExploreScreen from '../screens/BottomTab/AIExploreScreen';
+import ExploreScreen from '../screens/BottomTab/ExploreScreen';
 import MyStack from './MyStack';
 import CustomText from '../utils/CustomText';
 import {AIFullIcon, AIFullIconDark, AIEmptyIcon} from '../assets/svg/AiTabIcon';
@@ -65,7 +65,7 @@ const MainBtmbar = ({route}) => {
             );
           } else if (route.name === 'MapScreen')
             iconName = focused ? 'map' : 'map-outline';
-          else if (route.name === 'AIExploreScreen') {
+          else if (route.name === 'ExploreScreen') {
             return focused ? (
               <AIFullIconDark size={25} color={color} />
             ) : (
@@ -105,8 +105,8 @@ const MainBtmbar = ({route}) => {
         }}
       />
       <Tab.Screen
-        name="AIExploreScreen"
-        component={AIExploreScreen}
+        name="ExploreScreen"
+        component={ExploreScreen}
         options={{
           tabBarLabel: ({color, focused}) =>
             renderLabel('탐색', focused ? '#333' : color),

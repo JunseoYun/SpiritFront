@@ -319,22 +319,7 @@ const SearchScreen = ({navigation, route}) => {
           placeholder="술집이나 메뉴를 검색하세요"
           onPress={onPressSearch}
           onBackPress={() => navigation.goBack()}
-          onHomePress={() =>
-            navigation.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: 'MainBtmbar',
-                    params: {
-                      screen: 'AIExploreScreen',
-                      initialTab: 'AIExploreScreen',
-                    },
-                  },
-                ],
-              }),
-            )
-          }
+          onHomePress={() => navigation.navigate('ChatbotScreen')}
         />
 
         <MapFilterHeader

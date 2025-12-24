@@ -68,7 +68,7 @@ const SearchBar = ({
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
           <View style={styles.exploreButtonContent}>
             <AILogoIcon size={19} />
-            <CustomText style={[styles.exploreText]}>탐색</CustomText>
+            <CustomText style={[styles.exploreText]}>챗봇</CustomText>
           </View>
         </Pressable>
       </View>

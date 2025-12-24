@@ -12,7 +12,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import {RotateCwIcon} from 'lucide-react-native';
 import CustomText from '../../utils/CustomText';
 
-const AIExploreDrawer = ({
+const ChatbotDrawer = ({
   showDrawer,
   overlayAnim,
   drawerAnim,
@@ -270,4 +270,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AIExploreDrawer;
+export default ChatbotDrawer;
