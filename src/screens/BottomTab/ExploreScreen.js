@@ -21,11 +21,11 @@ import Loading from '../../hooks/Loading';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {has_unread_notification} from '../../api/notificationApi';
 import {useDeepLink} from '../../context/DeepLinkContext';
-import FilterHeader from '../../components/MainScreen/FilterHeader';
-import MainSection from '../../components/MainScreen/MainSection';
-import MainSearchBar from '../../components/MainScreen/MainSearchBar';
-import NotificationButton from '../../components/MainScreen/NotificationButton';
-import PopularStoresSection from '../../components/MainScreen/PopularStroe/PopularStoresSection';
+import FilterHeader from '../../components/ExploreScreen/FilterHeader';
+import ExploreSection from '../../components/ExploreScreen/ExploreSection';
+import ExploreSearchBar from '../../components/ExploreScreen/ExploreSearchBar';
+import NotificationButton from '../../components/ExploreScreen/NotificationButton';
+import PopularStoresSection from '../../components/ExploreScreen/PopularStroe/PopularStoresSection';
 import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import CustomText from '../../utils/CustomText';
 
@@ -573,7 +573,7 @@ const ExploreScreen = ({navigation}) => {
                   Math.abs(prev - height) > 1 ? height : prev,
                 );
               }}>
-              <MainSection
+              <ExploreSection
                 {...sectionProps}
                 onHeaderLayout={height => setPopulartext(height)}
               />
@@ -658,7 +658,7 @@ const ExploreScreen = ({navigation}) => {
               onSearchLayout(event);
             }
           }}>
-          <MainSearchBar handleSearchPress={handleSearchPress} />
+          <ExploreSearchBar handleSearchPress={handleSearchPress} />
         </View>
       </>
     ),
