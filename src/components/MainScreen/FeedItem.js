@@ -25,7 +25,7 @@ import ColorUtil from '../../utils/ColorUtil';
 import ReportSheet, {REPORT_REASONS} from './ReportSheet';
 const defaultProfile = require('../../assets/default_profile.png');
 
-const FeedItem = ({item}) => {
+const FeedItem = ({item, isCentered = false}) => {
   const screenWidth = Dimensions.get('window').width;
   const profileSource = item.profileImage
     ? {uri: item.profileImage}
@@ -53,6 +53,8 @@ const FeedItem = ({item}) => {
   const [selectedReportReason, setSelectedReportReason] = useState(
     REPORT_REASONS[0],
   );
+  const badgeAnim = useRef(new Animated.Value(isCentered ? 1 : 0)).current;
+  const badgeDelayRef = useRef(null);
   const HEART_SIZE = 32;
   const HEART_END_OFFSET_X = 0;
   const HEART_LINGER_DURATION = 140;
@@ -206,6 +208,48 @@ const FeedItem = ({item}) => {
       );
     });
   }, [item.postImages]);
+
+  useEffect(() => {
+    if (badgeDelayRef.current) {
+      clearTimeout(badgeDelayRef.current);
+      badgeDelayRef.current = null;
+    }
+
+    if (isCentered) {
+      badgeDelayRef.current = setTimeout(() => {
+        Animated.timing(badgeAnim, {
+          toValue: 1,
+          duration: 160,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }).start();
+      }, 500);
+    } else {
+      Animated.timing(badgeAnim, {
+        toValue: 0,
+        duration: 160,
+        easing: Easing.in(Easing.quad),
+        useNativeDriver: true,
+      }).start();
+    }
+
+    return () => {
+      if (badgeDelayRef.current) {
+        clearTimeout(badgeDelayRef.current);
+        badgeDelayRef.current = null;
+      }
+    };
+  }, [badgeAnim, isCentered]);
+
+  const badgeStyle = useMemo(
+    () => [
+      styles.storeBadge,
+      {
+        opacity: badgeAnim,
+      },
+    ],
+    [badgeAnim],
+  );
 
   const indicatorIndices = useMemo(() => {
     if (!item.postImages || totalImages === 0) {
@@ -433,7 +477,7 @@ const FeedItem = ({item}) => {
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig}
             renderItem={({item: uri, index}) => (
-              <View style={{width: screenWidth}}>
+              <View style={[styles.imageWrapper, {width: screenWidth}]}>
                 <Pressable onPress={handleImagePress}>
                   <FastImage
                     source={{uri}}
@@ -448,6 +492,9 @@ const FeedItem = ({item}) => {
                     onLoad={event => handleImageLoad(event, index)}
                   />
                 </Pressable>
+                <Animated.View style={badgeStyle} pointerEvents="none">
+                  <Ionicons name="storefront" size={14} color="#FFF" />
+                </Animated.View>
               </View>
             )}
           />
@@ -506,6 +553,9 @@ const FeedItem = ({item}) => {
               onLoad={event => handleImageLoad(event, 0)}
             />
           </Pressable>
+          <Animated.View style={badgeStyle} pointerEvents="none">
+            <Ionicons name="storefront" size={14} color="#FFF" />
+          </Animated.View>
         </View>
       ) : null}
 
@@ -641,6 +691,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f6f6f6',
     marginBottom: 10,
   },
+  imageWrapper: {
+    position: 'relative',
+  },
   imageCounter: {
     position: 'absolute',
     top: 10,
@@ -724,6 +777,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#5a6f8f',
     fontFamily: 'Pretendard-SemiBold',
+  },
+  storeBadge: {
+    position: 'absolute',
+    bottom: 24,
+    right: 12,
+    backgroundColor: ColorUtil.main,
+    borderRadius: 16,
+    padding: 6,
   },
 });
 
