@@ -1,5 +1,11 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {FlatList, Platform, StyleSheet, View} from 'react-native';
+import {
+  DeviceEventEmitter,
+  FlatList,
+  Platform,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -162,6 +168,10 @@ const MainScreen = ({navigation}) => {
     loadHeaderData();
   }, [loadHeaderData]);
 
+  const closeMoreMenus = useCallback(() => {
+    DeviceEventEmitter.emit('feed-more-menu-close');
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       loadHeaderData();
@@ -173,7 +183,11 @@ const MainScreen = ({navigation}) => {
       style={[
         styles.container,
         {paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0)},
-      ]}>
+      ]}
+      onStartShouldSetResponderCapture={() => {
+        closeMoreMenus();
+        return false;
+      }}>
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <ExploreSearchBar handleSearchPress={handleSearchPress} />
@@ -194,6 +208,8 @@ const MainScreen = ({navigation}) => {
         renderItem={({item}) => <FeedItem item={item} />}
         contentContainerStyle={styles.feedContent}
         showsVerticalScrollIndicator={false}
+        onScrollBeginDrag={closeMoreMenus}
+        onTouchStart={closeMoreMenus}
       />
 
       {rejectModalData && (
