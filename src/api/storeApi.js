@@ -349,6 +349,19 @@ export const Store_getby_liked = async page => {
   }
 };
 
+export const Store_getby_saved = async page => {
+  try {
+    const response = await axiosInstance.get(`/store/get-by/saved`, {
+      params: {
+        page,
+      },
+    });
+    return response.data.data.content;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 // 가게 검색(가게명, 메뉴명)리스트 조회
 export const Store_getby_keyword = async (
   page,

@@ -174,6 +174,7 @@ const AppNavigator = () => {
       {Platform.OS === 'android' && (
         <StatusBar
           barStyle="dark-content" // 상태바 글자/아이콘 색
+          backgroundColor={'#fff'}
         />
       )}
       {token ? <MainStack /> : <OAuthStack isTestEnabled={isTestEnabled} />}
