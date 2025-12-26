@@ -80,6 +80,9 @@ const FeedItem = ({item}) => {
   }, [animateToggle, fadeAnim, item.name]);
 
   const handleLikePress = () => {
+    if (showFlyingHeart || pendingLikeRef.current) {
+      return;
+    }
     setLiked(prev => !prev);
     setLikes(prev => prev + (liked ? -1 : 1));
   };
@@ -214,18 +217,16 @@ const FeedItem = ({item}) => {
           const destY = targetY + targetH / 2 - cardY - HEART_SIZE / 2;
 
           flyingHeartPos.setValue({x: startX, y: startY});
-          flyingHeartScale.setValue(0.6);
+          flyingHeartScale.setValue(0.2);
 
           Animated.sequence([
-            Animated.parallel([
-              Animated.spring(flyingHeartScale, {
-                toValue: 1.15,
-                friction: 6,
-                tension: 140,
-                useNativeDriver: true,
-              }),
-            ]),
-            Animated.delay(HEART_LINGER_DURATION),
+            Animated.spring(flyingHeartScale, {
+              toValue: 1.6,
+              friction: 5,
+              tension: 190,
+              useNativeDriver: true,
+            }),
+            Animated.delay(100),
             Animated.parallel([
               Animated.timing(flyingHeartPos, {
                 toValue: {x: destX, y: destY},
@@ -234,16 +235,16 @@ const FeedItem = ({item}) => {
                 useNativeDriver: true,
               }),
               Animated.sequence([
-                Animated.spring(flyingHeartScale, {
-                  toValue: 1.25,
-                  friction: 5,
-                  tension: 120,
+                Animated.timing(flyingHeartScale, {
+                  toValue: 1.85,
+                  duration: 220,
+                  easing: Easing.inOut(Easing.quad),
                   useNativeDriver: true,
                 }),
-                Animated.timing(flyingHeartScale, {
-                  toValue: 0.7,
-                  duration: 200,
-                  easing: Easing.inOut(Easing.quad),
+                Animated.spring(flyingHeartScale, {
+                  toValue: 1.1,
+                  friction: 8,
+                  tension: 120,
                   useNativeDriver: true,
                 }),
               ]),
@@ -260,6 +261,10 @@ const FeedItem = ({item}) => {
 
   const handleDoubleTapLike = useCallback(
     event => {
+      if (showFlyingHeart) {
+        return;
+      }
+
       const {pageX = 0, pageY = 0} = event?.nativeEvent ?? {};
       if (liked || pendingLikeRef.current) {
         triggerHeartFly(pageX, pageY);
@@ -267,14 +272,14 @@ const FeedItem = ({item}) => {
       }
 
       pendingLikeRef.current = true;
+      setLikes(prev => prev + 1);
 
       triggerHeartFly(pageX, pageY, () => {
         setLiked(true);
-        setLikes(prev => prev + 1);
         pendingLikeRef.current = false;
       });
     },
-    [liked, triggerHeartFly],
+    [liked, showFlyingHeart, triggerHeartFly],
   );
 
   const handleImagePress = useCallback(
@@ -432,6 +437,7 @@ const FeedItem = ({item}) => {
           ref={likeButtonRef}
           style={styles.actionButton}
           hitSlop={8}
+          disabled={showFlyingHeart || pendingLikeRef.current}
           onPress={handleLikePress}>
           <View ref={heartIconWrapperRef}>
             <HeartIcon
