@@ -72,14 +72,7 @@ const MainBtmbar = ({route}) => {
               <AIEmptyIcon size={25} />
             );
           } else if (route.name === 'LikeScreen') {
-            return (
-              <BookmarkIcon
-                size={25}
-                color={color}
-                filled={focused}
-                strokeWidth={2}
-              />
-            );
+            iconName = focused ? 'bookmark' : 'bookmark-outline';
           } else if (route.name === 'MyStack')
             iconName = focused ? 'person' : 'person-outline';
           return <Ionicons name={iconName} size={25} color={color} />;

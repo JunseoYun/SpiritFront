@@ -35,6 +35,17 @@ const FeedItem = ({item}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageRatios, setImageRatios] = useState({});
   const totalImages = item.postImages?.length ?? 0;
+  const lastTapRef = useRef({time: 0, x: 0, y: 0});
+  const likeButtonRef = useRef(null);
+  const heartIconWrapperRef = useRef(null);
+  const cardRef = useRef(null);
+  const flyingHeartPos = useRef(new Animated.ValueXY({x: 0, y: 0})).current;
+  const flyingHeartScale = useRef(new Animated.Value(0)).current;
+  const [showFlyingHeart, setShowFlyingHeart] = useState(false);
+  const HEART_SIZE = 32;
+  const HEART_END_OFFSET_X = 0;
+  const HEART_LINGER_DURATION = 140;
+  const pendingLikeRef = useRef(false);
 
   const animateToggle = useCallback(() => {
     Animated.timing(fadeAnim, {
@@ -163,8 +174,151 @@ const FeedItem = ({item}) => {
     return Array.from({length: end - start + 1}, (_, i) => start + i);
   }, [currentIndex, item.postImages, totalImages]);
 
+  const triggerHeartFly = useCallback(
+    (pageX = 0, pageY = 0, onFinish) => {
+      if (!cardRef.current) {
+        onFinish?.();
+        return;
+      }
+
+      setShowFlyingHeart(true);
+
+      cardRef.current.measureInWindow((cardX = 0, cardY = 0) => {
+        const measureTarget = targetCallback => {
+          if (heartIconWrapperRef.current) {
+            heartIconWrapperRef.current.measureInWindow(
+              (targetX = 0, targetY = 0, targetW = 0, targetH = 0) => {
+                targetCallback(targetX, targetY, targetW, targetH);
+              },
+            );
+            return;
+          }
+
+          if (likeButtonRef.current) {
+            likeButtonRef.current.measureInWindow(
+              (targetX = 0, targetY = 0, targetW = 0, targetH = 0) => {
+                targetCallback(targetX, targetY, targetW, targetH);
+              },
+            );
+            return;
+          }
+
+          targetCallback();
+        };
+
+        measureTarget((targetX = 0, targetY = 0, targetW = 0, targetH = 0) => {
+          const startX = pageX - cardX - HEART_SIZE / 2;
+          const startY = pageY - cardY - HEART_SIZE / 2;
+          const destX =
+            targetX + targetW / 2 - cardX - HEART_SIZE / 2 + HEART_END_OFFSET_X;
+          const destY = targetY + targetH / 2 - cardY - HEART_SIZE / 2;
+
+          flyingHeartPos.setValue({x: startX, y: startY});
+          flyingHeartScale.setValue(0.6);
+
+          Animated.sequence([
+            Animated.parallel([
+              Animated.spring(flyingHeartScale, {
+                toValue: 1.15,
+                friction: 6,
+                tension: 140,
+                useNativeDriver: true,
+              }),
+            ]),
+            Animated.delay(HEART_LINGER_DURATION),
+            Animated.parallel([
+              Animated.timing(flyingHeartPos, {
+                toValue: {x: destX, y: destY},
+                duration: 450,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: true,
+              }),
+              Animated.sequence([
+                Animated.spring(flyingHeartScale, {
+                  toValue: 1.25,
+                  friction: 5,
+                  tension: 120,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(flyingHeartScale, {
+                  toValue: 0.7,
+                  duration: 200,
+                  easing: Easing.inOut(Easing.quad),
+                  useNativeDriver: true,
+                }),
+              ]),
+            ]),
+          ]).start(() => {
+            setShowFlyingHeart(false);
+            onFinish?.();
+          });
+        });
+      });
+    },
+    [HEART_SIZE, flyingHeartPos, flyingHeartScale],
+  );
+
+  const handleDoubleTapLike = useCallback(
+    event => {
+      const {pageX = 0, pageY = 0} = event?.nativeEvent ?? {};
+      if (liked || pendingLikeRef.current) {
+        triggerHeartFly(pageX, pageY);
+        return;
+      }
+
+      pendingLikeRef.current = true;
+
+      triggerHeartFly(pageX, pageY, () => {
+        setLiked(true);
+        setLikes(prev => prev + 1);
+        pendingLikeRef.current = false;
+      });
+    },
+    [liked, triggerHeartFly],
+  );
+
+  const handleImagePress = useCallback(
+    event => {
+      const now = Date.now();
+      const {locationX = 0, locationY = 0} = event?.nativeEvent ?? {};
+      const {time: lastTime, x: lastX, y: lastY} = lastTapRef.current;
+      const isFast = now - lastTime < 500;
+      const distance = Math.hypot(locationX - lastX, locationY - lastY);
+      const isSameArea = distance < 40;
+
+      if (isFast && isSameArea) {
+        handleDoubleTapLike(event);
+      }
+
+      lastTapRef.current = {time: now, x: locationX, y: locationY};
+    },
+    [handleDoubleTapLike],
+  );
+
   return (
-    <View style={styles.card}>
+    <View style={styles.card} ref={cardRef}>
+      {showFlyingHeart ? (
+        <View pointerEvents="none" style={styles.heartFlyContainer}>
+          <Animated.View
+            style={[
+              styles.flyingHeart,
+              {
+                transform: [
+                  {translateX: flyingHeartPos.x},
+                  {translateY: flyingHeartPos.y},
+                  {scale: flyingHeartScale},
+                ],
+              },
+            ]}>
+            <HeartIcon
+              size={HEART_SIZE}
+              color="#FF5E5E"
+              filled
+              strokeWidth={0}
+            />
+          </Animated.View>
+        </View>
+      ) : null}
       <View style={styles.cardHeader}>
         <View style={styles.profileRow}>
           <FastImage source={profileSource} style={styles.avatar} />
@@ -198,18 +352,20 @@ const FeedItem = ({item}) => {
             viewabilityConfig={viewabilityConfig}
             renderItem={({item: uri, index}) => (
               <View style={{width: screenWidth}}>
-                <FastImage
-                  source={{uri}}
-                  style={[
-                    styles.postImage,
-                    {
-                      width: screenWidth,
-                      aspectRatio: imageRatios[index] ?? imageRatio,
-                    },
-                  ]}
-                  resizeMode={FastImage.resizeMode.contain}
-                  onLoad={event => handleImageLoad(event, index)}
-                />
+                <Pressable onPress={handleImagePress}>
+                  <FastImage
+                    source={{uri}}
+                    style={[
+                      styles.postImage,
+                      {
+                        width: screenWidth,
+                        aspectRatio: imageRatios[index] ?? imageRatio,
+                      },
+                    ]}
+                    resizeMode={FastImage.resizeMode.contain}
+                    onLoad={event => handleImageLoad(event, index)}
+                  />
+                </Pressable>
               </View>
             )}
           />
@@ -254,29 +410,37 @@ const FeedItem = ({item}) => {
         </View>
       ) : item.postImages?.length === 1 ? (
         <View style={{width: screenWidth}}>
-          <FastImage
-            source={{uri: item.postImages[0]}}
-            style={[
-              styles.postImage,
-              {width: screenWidth, aspectRatio: imageRatios[0] ?? imageRatio},
-            ]}
-            resizeMode={FastImage.resizeMode.contain}
-            onLoad={event => handleImageLoad(event, 0)}
-          />
+          <Pressable onPress={handleImagePress}>
+            <FastImage
+              source={{uri: item.postImages[0]}}
+              style={[
+                styles.postImage,
+                {
+                  width: screenWidth,
+                  aspectRatio: imageRatios[0] ?? imageRatio,
+                },
+              ]}
+              resizeMode={FastImage.resizeMode.contain}
+              onLoad={event => handleImageLoad(event, 0)}
+            />
+          </Pressable>
         </View>
       ) : null}
 
       <View style={styles.actionsRow}>
         <Pressable
+          ref={likeButtonRef}
           style={styles.actionButton}
           hitSlop={8}
           onPress={handleLikePress}>
-          <HeartIcon
-            size={24}
-            color={liked ? '#FF5E5E' : '#333'}
-            strokeWidth={2}
-            filled={liked}
-          />
+          <View ref={heartIconWrapperRef}>
+            <HeartIcon
+              size={24}
+              color={liked ? '#FF5E5E' : '#333'}
+              strokeWidth={2}
+              filled={liked}
+            />
+          </View>
           <CustomText style={[styles.actionCount]}>{likes}</CustomText>
         </Pressable>
         <Pressable style={styles.actionButton} hitSlop={8}>
@@ -306,6 +470,7 @@ const styles = StyleSheet.create({
   card: {
     paddingTop: 10,
     paddingBottom: 30,
+    position: 'relative',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -344,6 +509,13 @@ const styles = StyleSheet.create({
   moreButton: {
     paddingHorizontal: 4,
     paddingVertical: 2,
+  },
+  heartFlyContainer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10,
+  },
+  flyingHeart: {
+    position: 'absolute',
   },
   postImage: {
     width: '100%',
@@ -407,6 +579,9 @@ const styles = StyleSheet.create({
     color: '#333',
     fontFamily: 'Pretendard-SemiBold',
   },
+  hiddenIcon: {
+    opacity: 0,
+  },
   contentWrapper: {
     marginHorizontal: 14,
     marginTop: 2,
@@ -416,7 +591,7 @@ const styles = StyleSheet.create({
   contentText: {
     fontSize: 14,
     color: '#333',
-    fontFamily: 'Pretendard-Regular',
+    fontFamily: 'Pretendard-Medium',
     lineHeight: 22,
   },
   moreOverlay: {
