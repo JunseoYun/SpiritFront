@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   DeviceEventEmitter,
   FlatList,
@@ -130,6 +130,10 @@ const MainScreen = ({navigation}) => {
   const [rejectModalData, setRejectModalData] = useState(null);
   const [unreadNotification, setUnreadNotification] = useState(false);
   const {pendingNotification, setPendingNotification} = useNotification();
+  const [centeredItemId, setCenteredItemId] = useState(null);
+  const listHeightRef = useRef(0);
+  const itemLayoutsRef = useRef(new Map());
+  const scrollOffsetRef = useRef(0);
 
   useHandlePendingNotification(
     false,
@@ -168,6 +172,82 @@ const MainScreen = ({navigation}) => {
     loadHeaderData();
   }, [loadHeaderData]);
 
+  // Track the feed item sitting closest to the vertical center of the screen.
+  const updateCenteredItem = useCallback(
+    (offsetY = scrollOffsetRef.current) => {
+      const listHeight = listHeightRef.current;
+      if (!listHeight || itemLayoutsRef.current.size === 0) {
+        return;
+      }
+
+      const centerY = offsetY + listHeight / 2;
+      let closestId = null;
+      let closestDistance = Infinity;
+
+      itemLayoutsRef.current.forEach((layout, id) => {
+        const start = layout.y;
+        const end = layout.y + layout.height;
+        const distance =
+          centerY >= start && centerY <= end
+            ? 0
+            : Math.min(Math.abs(centerY - start), Math.abs(centerY - end));
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestId = id;
+        }
+      });
+
+      if (closestId) {
+        setCenteredItemId(prev => (prev === closestId ? prev : closestId));
+      }
+    },
+    [],
+  );
+
+  const handleListLayout = useCallback(
+    event => {
+      listHeightRef.current = event.nativeEvent.layout.height;
+      updateCenteredItem();
+    },
+    [updateCenteredItem],
+  );
+
+  const handleItemLayout = useCallback(
+    (id, layout) => {
+      if (!layout) {
+        return;
+      }
+      itemLayoutsRef.current.set(id, layout);
+      updateCenteredItem();
+    },
+    [updateCenteredItem],
+  );
+
+  const handleScroll = useCallback(
+    event => {
+      const offsetY = event.nativeEvent.contentOffset.y;
+      scrollOffsetRef.current = offsetY;
+      updateCenteredItem(offsetY);
+    },
+    [updateCenteredItem],
+  );
+
+  const cellRenderer = useCallback(
+    ({item, index, style, onLayout, children, ...rest}) => (
+      <View
+        {...rest}
+        style={style}
+        onLayout={event => {
+          handleItemLayout(item.id, event.nativeEvent.layout);
+          onLayout?.(event);
+        }}>
+        {children}
+      </View>
+    ),
+    [handleItemLayout],
+  );
+
   const closeMoreMenus = useCallback(() => {
     DeviceEventEmitter.emit('feed-more-menu-close');
   }, []);
@@ -201,10 +281,19 @@ const MainScreen = ({navigation}) => {
       <FlatList
         data={sampleFeedData}
         keyExtractor={item => item.id}
-        renderItem={({item}) => <FeedItem item={item} />}
+        renderItem={({item}) => (
+          <FeedItem
+            item={item}
+            isCentered={item.id === centeredItemId}
+          />
+        )}
         contentContainerStyle={styles.feedContent}
         showsVerticalScrollIndicator={false}
         onScrollBeginDrag={closeMoreMenus}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        onLayout={handleListLayout}
+        CellRendererComponent={cellRenderer}
       />
 
       {rejectModalData && (
