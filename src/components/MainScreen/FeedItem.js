@@ -10,6 +10,7 @@ import {
   Dimensions,
   Platform,
   Pressable,
+  Text,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -59,6 +60,12 @@ const FeedItem = ({item, isCentered = false}) => {
   const HEART_END_OFFSET_X = 0;
   const HEART_LINGER_DURATION = 140;
   const pendingLikeRef = useRef(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [collapsedContent, setCollapsedContent] = useState(item.content ?? '');
+  const [isContentExpandable, setIsContentExpandable] = useState(false);
+  const [hasMeasuredContent, setHasMeasuredContent] = useState(false);
+  const READ_MORE_LABEL = ' …더보기';
+  const MAX_CONTENT_LINES = 2;
 
   const animateToggle = useCallback(() => {
     Animated.timing(fadeAnim, {
@@ -134,6 +141,13 @@ const FeedItem = ({item, isCentered = false}) => {
     return () => clearInterval(id);
   }, [animateToggle, fadeAnim, item.name]);
 
+  useEffect(() => {
+    setIsExpanded(false);
+    setCollapsedContent(item.content ?? '');
+    setIsContentExpandable(false);
+    setHasMeasuredContent(false);
+  }, [item.content]);
+
   const handleLikePress = () => {
     if (showFlyingHeart || pendingLikeRef.current) {
       return;
@@ -179,6 +193,25 @@ const FeedItem = ({item, isCentered = false}) => {
   const viewabilityConfig = useRef({
     viewAreaCoveragePercentThreshold: 60,
   }).current;
+
+  const contentForRender = useMemo(() => {
+    if (isExpanded || !isContentExpandable) {
+      return item.content ?? '';
+    }
+
+    return (
+      <>
+        {collapsedContent}
+        <CustomText style={styles.moreButtonText}>{READ_MORE_LABEL}</CustomText>
+      </>
+    );
+  }, [
+    READ_MORE_LABEL,
+    collapsedContent,
+    isContentExpandable,
+    isExpanded,
+    item.content,
+  ]);
 
   useEffect(() => {
     setImageRatios({});
@@ -397,6 +430,43 @@ const FeedItem = ({item, isCentered = false}) => {
     [handleDoubleTapLike],
   );
 
+  const handleContentLayout = useCallback(
+    event => {
+      if (isExpanded) {
+        return;
+      }
+
+      const {lines} = event.nativeEvent;
+      if (!lines) {
+        return;
+      }
+
+      if (!hasMeasuredContent) {
+        setHasMeasuredContent(true);
+
+        if (lines.length > MAX_CONTENT_LINES) {
+          setIsContentExpandable(true);
+          const initialCollapsed = lines
+            .slice(0, MAX_CONTENT_LINES)
+            .map(line => line.text)
+            .join('')
+            .trimEnd();
+          setCollapsedContent(initialCollapsed);
+        } else {
+          setIsContentExpandable(false);
+        }
+        return;
+      }
+
+      if (isContentExpandable && lines.length > MAX_CONTENT_LINES) {
+        setCollapsedContent(prev =>
+          prev.length > 0 ? prev.slice(0, -1).trimEnd() : prev,
+        );
+      }
+    },
+    [MAX_CONTENT_LINES, hasMeasuredContent, isContentExpandable, isExpanded],
+  );
+
   return (
     <View
       style={styles.card}
@@ -591,8 +661,14 @@ const FeedItem = ({item, isCentered = false}) => {
       </View>
 
       <View style={styles.contentWrapper}>
-        <Pressable>
-          <CustomText style={styles.contentText}>{item.content}</CustomText>
+        <Pressable
+          disabled={!isContentExpandable}
+          onPress={() => setIsExpanded(prev => !prev)}>
+          <CustomText
+            style={styles.contentText}
+            onTextLayout={handleContentLayout}>
+            {contentForRender}
+          </CustomText>
         </Pressable>
       </View>
       <ReportSheet
@@ -774,9 +850,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   moreButtonText: {
-    fontSize: 13,
-    color: '#5a6f8f',
-    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
+    lineHeight: 22,
   },
   storeBadge: {
     position: 'absolute',
