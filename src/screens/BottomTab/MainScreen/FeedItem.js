@@ -1,12 +1,17 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   Animated,
+  ActionSheetIOS,
+  Alert,
+  DeviceEventEmitter,
   Easing,
   FlatList,
   Image,
+  Dimensions,
+  Platform,
   Pressable,
   StyleSheet,
-  Dimensions,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import CustomText from '../../../utils/CustomText';
@@ -42,6 +47,7 @@ const FeedItem = ({item}) => {
   const flyingHeartPos = useRef(new Animated.ValueXY({x: 0, y: 0})).current;
   const flyingHeartScale = useRef(new Animated.Value(0)).current;
   const [showFlyingHeart, setShowFlyingHeart] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const HEART_SIZE = 32;
   const HEART_END_OFFSET_X = 0;
   const HEART_LINGER_DURATION = 140;
@@ -66,6 +72,40 @@ const FeedItem = ({item}) => {
       ]).start();
     });
   }, [fadeAnim]);
+
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener('feed-more-menu-close', () => {
+      setShowMoreMenu(false);
+    });
+    return () => sub.remove();
+  }, []);
+
+  const handleReport = useCallback(() => {
+    setShowMoreMenu(false);
+    // TODO: Hook up real report flow when available.
+    Alert.alert('신고하기', '신고가 접수되었습니다.');
+  }, []);
+
+  const handleMorePress = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['신고하기', '취소'],
+          cancelButtonIndex: 1,
+          destructiveButtonIndex: 0,
+          userInterfaceStyle: 'light',
+        },
+        buttonIndex => {
+          if (buttonIndex === 0) {
+            handleReport();
+          }
+        },
+      );
+      return;
+    }
+
+    setShowMoreMenu(prev => !prev);
+  }, [handleReport]);
 
   useEffect(() => {
     if (!item.name) {
@@ -301,7 +341,15 @@ const FeedItem = ({item}) => {
   );
 
   return (
-    <View style={styles.card} ref={cardRef}>
+    <View
+      style={styles.card}
+      ref={cardRef}
+      onStartShouldSetResponderCapture={() => {
+        if (showMoreMenu) {
+          setShowMoreMenu(false);
+        }
+        return false;
+      }}>
       {showFlyingHeart ? (
         <View pointerEvents="none" style={styles.heartFlyContainer}>
           <Animated.View
@@ -324,6 +372,24 @@ const FeedItem = ({item}) => {
           </Animated.View>
         </View>
       ) : null}
+      {showMoreMenu ? (
+        <>
+          <Pressable
+            style={styles.moreMenuOverlay}
+            onPress={() => setShowMoreMenu(false)}
+          />
+          <View style={styles.moreMenu}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.moreMenuItem}
+              onPress={handleReport}>
+              <CustomText style={styles.moreMenuItemTextDestructive}>
+                신고하기
+              </CustomText>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : null}
       <View style={styles.cardHeader}>
         <View style={styles.profileRow}>
           <FastImage source={profileSource} style={styles.avatar} />
@@ -336,7 +402,10 @@ const FeedItem = ({item}) => {
             </Animated.View>
           </View>
         </View>
-        <Pressable style={styles.moreButton} hitSlop={8}>
+        <Pressable
+          style={styles.moreButton}
+          hitSlop={8}
+          onPress={handleMorePress}>
           <Ionicons name="ellipsis-horizontal" size={18} color="#333" />
         </Pressable>
       </View>
@@ -515,6 +584,35 @@ const styles = StyleSheet.create({
   moreButton: {
     paddingHorizontal: 4,
     paddingVertical: 2,
+  },
+  moreMenuOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'transparent',
+  },
+  moreMenu: {
+    position: 'absolute',
+    right: 0,
+    top: 70,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 6,
+    overflow: 'hidden',
+    minWidth: 140,
+    zIndex: 20,
+  },
+  moreMenuItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  moreMenuItemTextDestructive: {
+    fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
+    color: '#333',
+    textAlign: 'center',
   },
   heartFlyContainer: {
     ...StyleSheet.absoluteFillObject,
