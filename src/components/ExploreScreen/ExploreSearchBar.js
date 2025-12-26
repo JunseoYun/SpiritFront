@@ -11,10 +11,10 @@ const ExploreSearchBar = ({handleSearchPress}) => {
       onPress={() => handleSearchPress()}
       style={styles.searchBar}>
       <View style={styles.searchContent}>
-        <CustomText style={styles.searchText}>
-          술집이나 메뉴를 검색하세요
+        <Feather name="search" size={18} color="#7E8081" />
+        <CustomText maxScale={1.0} style={styles.searchText}>
+          원하는 술집이나 메뉴를 검색하세요
         </CustomText>
-        <Feather name="search" size={18} color="#333" />
       </View>
     </Pressable>
   );
@@ -22,26 +22,24 @@ const ExploreSearchBar = ({handleSearchPress}) => {
 
 const styles = StyleSheet.create({
   searchBar: {
-    height: 42,
+    flex: 1,
+    height: 38,
     backgroundColor: '#FFF',
-    marginHorizontal: 16,
     borderRadius: 50,
-    borderWidth: 0.5,
-    borderColor: '#E5E5E5',
-    marginTop: 7,
-    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#3cbbff',
     justifyContent: 'center',
   },
   searchContent: {
     flexDirection: 'row',
     paddingHorizontal: 18,
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
   searchText: {
     fontFamily: 'Pretendard-Regular',
-    fontSize: 15,
+    fontSize: 14,
     color: '#7E8081',
+    marginLeft: 10,
   },
 });
 

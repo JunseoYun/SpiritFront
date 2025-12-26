@@ -26,16 +26,16 @@ const ExploreSection = ({
     <View
       style={{
         backgroundColor: '#fff',
-        borderTopLeftRadius: 18,
-        borderTopRightRadius: 18,
-        paddingTop: 14,
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: -3}, // 👈 위쪽 방향
-        shadowOpacity: 0.15,
-        shadowRadius: 3,
-        elevation: 3,
+        // borderTopLeftRadius: 18,
+        // borderTopRightRadius: 18,
+        // paddingTop: 14,
+        // shadowColor: '#000',
+        // shadowOffset: {width: 0, height: -3}, // 👈 위쪽 방향
+        // shadowOpacity: 0.15,
+        // shadowRadius: 3,
+        // elevation: 3,
       }}>
-      <TodayRecomm
+      {/* <TodayRecomm
         recommCategory={recommCategory}
         recommReason={recommReason}
         recommStores={recommStores}
@@ -43,7 +43,7 @@ const ExploreSection = ({
         refresh={isRefreshing}
         navigation={navigation}
         loading={loading}
-      />
+      /> */}
       <CategoryGrid onPress={catagoryClick} />
 
       <StoreRegister handlestoreItemClick={handlestoreItemClick} />
