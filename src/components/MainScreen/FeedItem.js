@@ -10,7 +10,6 @@ import {
   Dimensions,
   Platform,
   Pressable,
-  Text,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -24,9 +23,10 @@ import HeartIcon from '../../assets/svg/HeartIcon';
 import BookmarkIcon from '../../assets/svg/BookmarkIcon';
 import ColorUtil from '../../utils/ColorUtil';
 import ReportSheet, {REPORT_REASONS} from './ReportSheet';
+import useMeasuredExpandableText from '../../utils/useMeasuredExpandableText';
 const defaultProfile = require('../../assets/default_profile.png');
 
-const FeedItem = ({item, isCentered = false}) => {
+const FeedItem = ({item, isCentered = false, contentMaxLines = 2}) => {
   const screenWidth = Dimensions.get('window').width;
   const profileSource = item.profileImage
     ? {uri: item.profileImage}
@@ -60,12 +60,20 @@ const FeedItem = ({item, isCentered = false}) => {
   const HEART_END_OFFSET_X = 0;
   const HEART_LINGER_DURATION = 140;
   const pendingLikeRef = useRef(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [collapsedContent, setCollapsedContent] = useState(item.content ?? '');
-  const [isContentExpandable, setIsContentExpandable] = useState(false);
-  const [hasMeasuredContent, setHasMeasuredContent] = useState(false);
-  const READ_MORE_LABEL = ' …더보기';
-  const MAX_CONTENT_LINES = 2;
+  const READ_MORE_LABEL = '…더보기';
+
+  const {
+    contentForRender,
+    handleTextLayout: handleContentLayout,
+    isExpanded,
+    isExpandable: isContentExpandable,
+    toggleExpanded: toggleContentExpanded,
+  } = useMeasuredExpandableText({
+    text: item.content,
+    maxLines: contentMaxLines,
+    readMoreLabel: READ_MORE_LABEL,
+    readMoreStyle: styles.moreButtonText,
+  });
 
   const animateToggle = useCallback(() => {
     Animated.timing(fadeAnim, {
@@ -141,13 +149,6 @@ const FeedItem = ({item, isCentered = false}) => {
     return () => clearInterval(id);
   }, [animateToggle, fadeAnim, item.name]);
 
-  useEffect(() => {
-    setIsExpanded(false);
-    setCollapsedContent(item.content ?? '');
-    setIsContentExpandable(false);
-    setHasMeasuredContent(false);
-  }, [item.content]);
-
   const handleLikePress = () => {
     if (showFlyingHeart || pendingLikeRef.current) {
       return;
@@ -193,25 +194,6 @@ const FeedItem = ({item, isCentered = false}) => {
   const viewabilityConfig = useRef({
     viewAreaCoveragePercentThreshold: 60,
   }).current;
-
-  const contentForRender = useMemo(() => {
-    if (isExpanded || !isContentExpandable) {
-      return item.content ?? '';
-    }
-
-    return (
-      <>
-        {collapsedContent}
-        <CustomText style={styles.moreButtonText}>{READ_MORE_LABEL}</CustomText>
-      </>
-    );
-  }, [
-    READ_MORE_LABEL,
-    collapsedContent,
-    isContentExpandable,
-    isExpanded,
-    item.content,
-  ]);
 
   useEffect(() => {
     setImageRatios({});
@@ -352,7 +334,7 @@ const FeedItem = ({item, isCentered = false}) => {
           Animated.sequence([
             Animated.spring(flyingHeartScale, {
               toValue: 1.6,
-              friction: 4,
+              friction: 8,
               tension: 230,
               useNativeDriver: true,
             }),
@@ -428,43 +410,6 @@ const FeedItem = ({item, isCentered = false}) => {
       lastTapRef.current = {time: now, x: locationX, y: locationY};
     },
     [handleDoubleTapLike],
-  );
-
-  const handleContentLayout = useCallback(
-    event => {
-      if (isExpanded) {
-        return;
-      }
-
-      const {lines} = event.nativeEvent;
-      if (!lines) {
-        return;
-      }
-
-      if (!hasMeasuredContent) {
-        setHasMeasuredContent(true);
-
-        if (lines.length > MAX_CONTENT_LINES) {
-          setIsContentExpandable(true);
-          const initialCollapsed = lines
-            .slice(0, MAX_CONTENT_LINES)
-            .map(line => line.text)
-            .join('')
-            .trimEnd();
-          setCollapsedContent(initialCollapsed);
-        } else {
-          setIsContentExpandable(false);
-        }
-        return;
-      }
-
-      if (isContentExpandable && lines.length > MAX_CONTENT_LINES) {
-        setCollapsedContent(prev =>
-          prev.length > 0 ? prev.slice(0, -1).trimEnd() : prev,
-        );
-      }
-    },
-    [MAX_CONTENT_LINES, hasMeasuredContent, isContentExpandable, isExpanded],
   );
 
   return (
@@ -663,7 +608,7 @@ const FeedItem = ({item, isCentered = false}) => {
       <View style={styles.contentWrapper}>
         <Pressable
           disabled={!isContentExpandable}
-          onPress={() => setIsExpanded(prev => !prev)}>
+          onPress={toggleContentExpanded}>
           <CustomText
             style={styles.contentText}
             onTextLayout={handleContentLayout}>
