@@ -16,12 +16,16 @@ import {useFocusEffect} from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
 import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
+import LinearGradient from 'react-native-linear-gradient';
+import {AIFullIcon} from '../../assets/svg/AiTabIcon';
 import {Store_getby_main_banner, Store_getby_popular} from '../../api/storeApi';
 import Loading from '../../hooks/Loading';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {has_unread_notification} from '../../api/notificationApi';
 import {useDeepLink} from '../../context/DeepLinkContext';
 import FilterHeader from '../../components/ExploreScreen/FilterHeader';
+import {useNotification} from '../../context/NotificationContext';
+import useHandlePendingNotification from '../../hooks/notification/useHandlePendingNotification';
 import ExploreSection from '../../components/ExploreScreen/ExploreSection';
 import ExploreSearchBar from '../../components/ExploreScreen/ExploreSearchBar';
 import NotificationButton from '../../components/ExploreScreen/NotificationButton';
@@ -29,6 +33,7 @@ import PopularStoresSection from '../../components/ExploreScreen/PopularStroe/Po
 import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import CustomText from '../../utils/CustomText';
 
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 const TOP_TOUCHABLE_DISTANCE = 24;
@@ -44,27 +49,15 @@ const ExploreScreen = ({navigation}) => {
   const fixedFilterHeaderRef = useRef(null);
   const listFilterHeaderRef = useRef(null);
   const lastFilterScrollX = useRef(0);
-  const scrollToTopListenerRef = useRef(null);
-  const topViewScrollListener = useRef(null);
-  const topOverlayListenerRef = useRef(null);
-  const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   const contentTopPadding = useMemo(
-    () => (Platform.OS === 'android' ? insets.top + 20 : insets.top + 10),
+    () => (Platform.OS === 'android' ? insets.top + 40 : insets.top + 20),
     [insets.top],
   );
 
-  const [addressHeight, setAddressHeight] = useState(0);
-  const [searchBarHeight, setSearchBarHeight] = useState(0);
   const [mainSectionHeight, setMainSectionHeight] = useState(0);
-  const [showTopView2, setShowTopView2] = useState(false);
   const [topView2Height, setTopView2Height] = useState(0);
   const [touchable, setTouchable] = useState(false);
-  const [isTopOverlayInteractive, setIsTopOverlayInteractive] = useState(true);
-  const overlayInteractionOpacity = useMemo(
-    () => (Platform.OS === 'ios' ? 0.02 : 0),
-    [],
-  );
 
   const [recommStores, setRecommStores] = useState([]);
   const [recommCategory, setRecommCategory] = useState(null);
@@ -98,16 +91,6 @@ const ExploreScreen = ({navigation}) => {
       navigation.setParams({scrollToTop: handleScrollToTop});
     }, [navigation, handleScrollToTop]),
   );
-
-  const handleAddressLayout = useCallback(event => {
-    const {height} = event.nativeEvent.layout;
-    setAddressHeight(prev => (Math.abs(prev - height) > 1 ? height : prev));
-  }, []);
-
-  const handleSearchBarLayout = useCallback(event => {
-    const {height} = event.nativeEvent.layout;
-    setSearchBarHeight(prev => (Math.abs(prev - height) > 1 ? height : prev));
-  }, []);
 
   const registerFixedFilterHeader = useCallback(instance => {
     fixedFilterHeaderRef.current = instance;
@@ -147,69 +130,34 @@ const ExploreScreen = ({navigation}) => {
     [syncFilterScroll],
   );
 
-  const scrollToTopThreshold = useMemo(
-    () => (Platform.OS === 'ios' ? screenHeight * 0.25 : screenHeight * 0.3),
-    [],
+  const aiChatButtonBottom = useMemo(() => 18, []);
+  const aiLabelWidth = 92;
+  const aiLabelProgress = useMemo(
+    () =>
+      scrollY.interpolate({
+        inputRange: [0, 140],
+        outputRange: [1, 0],
+        extrapolate: 'clamp',
+      }),
+    [scrollY],
   );
-  const scrollToTopBottom = useMemo(() => 18, []);
-
-  useEffect(() => {
-    scrollToTopListenerRef.current = scrollY.addListener(({value}) => {
-      const iosThreshold = insets.top + 40;
-      const androidThreshold = insets.top + 100;
-      const threshold = Platform.OS === 'ios' ? iosThreshold : androidThreshold;
-
-      setShowScrollToTop(prev => {
-        if (value >= scrollToTopThreshold && !prev) return true;
-        if (value < scrollToTopThreshold && prev) return false;
-        return prev;
-      });
-    });
-
-    return () => {
-      if (scrollToTopListenerRef.current)
-        scrollY.removeListener(scrollToTopListenerRef.current);
-    };
-  }, [insets.top, scrollToTopThreshold, scrollY]);
-
-  useEffect(() => {
-    topViewScrollListener.current = scrollY.addListener(({value}) => {
-      const iosThreshold = insets.top + 30;
-      const androidThreshold = insets.top + 120;
-      const threshold = Platform.OS === 'ios' ? iosThreshold : androidThreshold;
-
-      setShowTopView2(prev => {
-        if (value >= threshold && !prev) return true;
-        if (value < threshold && prev) return false;
-        return prev;
-      });
-    });
-
-    return () => {
-      if (topViewScrollListener.current)
-        scrollY.removeListener(topViewScrollListener.current);
-    };
-  }, [insets.top, scrollY]);
+  const aiLabelScaleX = aiLabelProgress;
+  const aiLabelTranslateX = useMemo(
+    () =>
+      aiLabelProgress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [20, 0],
+        extrapolate: 'clamp',
+      }),
+    [aiLabelProgress],
+  );
 
   const stickyTranslateY = 0;
 
   const filterHeaderThreshold = useMemo(() => {
     if (!mainSectionHeight) return 100000;
-    return Math.max(
-      0,
-      mainSectionHeight +
-        searchBarHeight +
-        contentTopPadding +
-        addressHeight -
-        topView2Height,
-    );
-  }, [
-    mainSectionHeight,
-    searchBarHeight,
-    addressHeight,
-    contentTopPadding,
-    topView2Height,
-  ]);
+    return Math.max(0, mainSectionHeight);
+  }, [mainSectionHeight]);
 
   const filterHeaderProgress = scrollY.interpolate({
     inputRange: [filterHeaderThreshold, filterHeaderThreshold],
@@ -219,33 +167,6 @@ const ExploreScreen = ({navigation}) => {
 
   const fixedFilterOpacity = filterHeaderProgress;
   const listFilterOpacity = Animated.subtract(1, filterHeaderProgress);
-
-  const topBarThreshold = useMemo(
-    () => (Platform.OS === 'ios' ? insets.top + 20 : insets.top + 50),
-    [insets.top],
-  );
-
-  const topBarProgress = useMemo(
-    () =>
-      scrollY.interpolate({
-        inputRange: [topBarThreshold - 10, topBarThreshold + 10],
-        outputRange: [0, 1],
-        extrapolate: 'clamp',
-      }),
-    [topBarThreshold, scrollY],
-  );
-
-  const topView2Opacity = topBarProgress;
-  const topView2TranslateY = scrollY.interpolate({
-    inputRange: [topBarThreshold - 10, topBarThreshold + 10],
-    outputRange: [-6, 0],
-    extrapolate: 'clamp',
-  });
-  const topBackgroundColor = topBarProgress.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#3CBBFF', '#F5F5F5'],
-    extrapolate: 'clamp',
-  });
 
   const shadowOpacity = fixedFilterOpacity.interpolate({
     inputRange: [0, 0.1],
@@ -268,40 +189,18 @@ const ExploreScreen = ({navigation}) => {
 
   const headerOffsetFallback = useMemo(() => insets.top + 110, [insets.top]);
   const measuredHeaderHeight = useMemo(
-    () => contentTopPadding + addressHeight + searchBarHeight,
-    [contentTopPadding, addressHeight, searchBarHeight],
+    () => contentTopPadding,
+    [contentTopPadding],
   );
   const headerOffset = useMemo(
     () =>
       measuredHeaderHeight > 0 ? measuredHeaderHeight : headerOffsetFallback,
     [measuredHeaderHeight, headerOffsetFallback],
   );
-  const overlayTouchThreshold = useMemo(
-    () => Math.max(TOP_TOUCHABLE_DISTANCE, headerOffset * 0.2),
-    [headerOffset],
+  const listTopPadding = useMemo(
+    () => (topView2Height > 0 ? topView2Height : headerOffset),
+    [topView2Height, headerOffset],
   );
-
-  useEffect(() => {
-    if (topOverlayListenerRef.current) {
-      scrollY.removeListener(topOverlayListenerRef.current);
-      topOverlayListenerRef.current = null;
-    }
-
-    const listenerId = scrollY.addListener(({value}) => {
-      const shouldEnable = value <= overlayTouchThreshold;
-      setIsTopOverlayInteractive(prev =>
-        prev === shouldEnable ? prev : shouldEnable,
-      );
-    });
-
-    topOverlayListenerRef.current = listenerId;
-
-    return () => {
-      if (listenerId) {
-        scrollY.removeListener(listenerId);
-      }
-    };
-  }, [overlayTouchThreshold, scrollY]);
 
   useFocusEffect(
     useCallback(() => {
@@ -326,20 +225,6 @@ const ExploreScreen = ({navigation}) => {
 
       return () => backHandler.remove();
     }, []),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      if (Platform.OS === 'android') {
-        StatusBar.setBackgroundColor(showTopView2 ? 'white' : '#3CBBFF');
-      }
-
-      return () => {
-        if (Platform.OS === 'android') {
-          StatusBar.setBackgroundColor('white');
-        }
-      };
-    }, [showTopView2]),
   );
 
   useEffect(() => {
@@ -415,12 +300,12 @@ const ExploreScreen = ({navigation}) => {
     navigation.navigate('StoreSearchScreen', {index, location: location});
   };
 
-  const handleGoToChatbot = useCallback(() => {
-    navigation.navigate('ChatbotScreen');
-  }, [navigation]);
-
   const handleSearchPress = useCallback(() => {
     navigation.navigate('SearchScreen');
+  }, [navigation]);
+
+  const handleAiChatPress = useCallback(() => {
+    navigation.navigate('AIExploreScreen');
   }, [navigation]);
 
   const setLocationHandle = useCallback(() => {
@@ -428,6 +313,30 @@ const ExploreScreen = ({navigation}) => {
       navigation.navigate('SetLocationScreen');
     }, 50);
   }, [navigation]);
+
+  const [rejectModalData, setRejectModalData] = useState(null);
+  const {pendingNotification, setPendingNotification} = useNotification();
+  useHandlePendingNotification(
+    loading,
+    pendingNotification,
+    () => setPendingNotification(null),
+    data => setRejectModalData(data),
+  );
+
+  useEffect(() => {
+    const checkStoredNotification = async () => {
+      const stored = await AsyncStorage.getItem('PENDING_NOTIFICATION');
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          setPendingNotification(data);
+          await AsyncStorage.removeItem('PENDING_NOTIFICATION');
+        } catch (e) {}
+      }
+    };
+
+    checkStoredNotification();
+  }, [setPendingNotification]);
 
   useFocusEffect(
     useCallback(() => {
@@ -613,103 +522,15 @@ const ExploreScreen = ({navigation}) => {
     ],
   );
 
-  const renderTopStack = useCallback(
-    ({onAddressLayout, onSearchLayout} = {}) => (
-      <>
-        <View
-          style={styles.topView}
-          onLayout={event => {
-            if (onAddressLayout) {
-              onAddressLayout(event);
-            }
-          }}>
-          <Animated.View style={[styles.addressContainer]}>
-            <Pressable
-              hitSlop={{
-                left: 15,
-                right: 15,
-                top: 15,
-                bottom: 15,
-              }}
-              style={styles.addressPressable}
-              onPress={setLocationHandle}>
-              <CustomText
-                maxScale={1.0}
-                style={styles.todayAddress}
-                numberOfLines={1}
-                ellipsizeMode="tail">
-                {formatAddress(address)}
-              </CustomText>
-              {formatAddress(address) && (
-                <Feather name="chevron-right" size={22} color="#fff" />
-              )}
-            </Pressable>
-          </Animated.View>
-          <NotificationButton
-            unreadNotification={unreadNotification}
-            floating={false}
-            iconColor="#fff"
-          />
-        </View>
-
-        <View
-          onLayout={event => {
-            if (onSearchLayout) {
-              onSearchLayout(event);
-            }
-          }}>
-          <ExploreSearchBar handleSearchPress={handleSearchPress} />
-        </View>
-      </>
-    ),
-    [
-      address,
-      formatAddress,
-      handleSearchPress,
-      setLocationHandle,
-      unreadNotification,
-    ],
-  );
-
   return (
     <>
       <Animated.View
-        pointerEvents="none"
-        style={[
-          styles.absoluteTop,
-          {
-            paddingTop: contentTopPadding,
-            backgroundColor: topBackgroundColor,
-          },
-        ]}>
-        {renderTopStack({
-          onAddressLayout: handleAddressLayout,
-          onSearchLayout: handleSearchBarLayout,
-        })}
-      </Animated.View>
-
-      <Animated.View
-        pointerEvents={isTopOverlayInteractive ? 'box-none' : 'none'}
-        style={[
-          styles.absoluteTop,
-          {
-            paddingTop: contentTopPadding,
-            backgroundColor: 'transparent',
-            zIndex: 60,
-            opacity: isTopOverlayInteractive ? overlayInteractionOpacity : 0,
-          },
-        ]}>
-        {renderTopStack()}
-      </Animated.View>
-      <Animated.View
-        pointerEvents={topView2Opacity.__getValue() === 0 ? 'none' : 'auto'}
+        pointerEvents={'auto'}
         style={[
           styles.topView2,
           {paddingTop: insets.top},
-          insets.top === 0 && {height: 50},
+          insets.top === 0 && {paddingTop: 10},
           {
-            opacity: topView2Opacity,
-            transform: [{translateY: topView2TranslateY}],
             ...Platform.select({
               ios: {
                 shadowColor: '#000',
@@ -727,34 +548,47 @@ const ExploreScreen = ({navigation}) => {
           const {height} = event.nativeEvent.layout;
           setTopView2Height(height);
         }}>
-        <Pressable
-          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
-          style={styles.addressPressableCompact}
-          onPress={setLocationHandle}>
-          <CustomText
-            maxScale={1.0}
-            style={styles.todayAddress2}
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            {formatAddress(address)}
-          </CustomText>
-          {address && (
-            <Feather name="chevron-right" size={20} color="#181a1a" />
-          )}
-        </Pressable>
-        <View style={styles.topView2Actions}>
-          <Pressable
-            hitSlop={10}
-            style={{marginRight: 10}}
-            onPress={handleSearchPress}>
-            <Feather name="search" size={20} color="#181a1a" />
-          </Pressable>
-          <NotificationButton
-            unreadNotification={unreadNotification}
-            floating={false}
-            iconColor="#181a1a"
-            badgeColor="#3CBBFF"
-          />
+        <View style={{flexDirection: 'column'}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginHorizontal: 20,
+              gap: 20,
+            }}>
+            <ExploreSearchBar handleSearchPress={handleSearchPress} />
+            <View style={styles.topView2Actions}>
+              <NotificationButton
+                unreadNotification={unreadNotification}
+                floating={false}
+                iconColor="#181a1a"
+                badgeColor="#3CBBFF"
+              />
+            </View>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginHorizontal: 20,
+              marginVertical: 12,
+            }}>
+            <Pressable
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+              style={[styles.addressPressableCompact, {marginLeft: 0}]}
+              onPress={setLocationHandle}>
+              <CustomText
+                maxScale={1.0}
+                style={styles.todayAddress2}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {formatAddress(address)}
+              </CustomText>
+              {address && (
+                <Feather name="chevron-right" size={20} color="#181a1a" />
+              )}
+            </Pressable>
+          </View>
         </View>
       </Animated.View>
 
@@ -793,18 +627,6 @@ const ExploreScreen = ({navigation}) => {
             useNativeDriver: Platform.OS === 'android',
           },
         )}
-        ListHeaderComponent={
-          <View style={styles.chatbotButtonContainer}>
-            <Pressable
-              style={styles.chatbotButton}
-              onPress={handleGoToChatbot}
-              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-              <CustomText style={styles.chatbotButtonText}>
-                AI 탐색/챗봇 바로가기
-              </CustomText>
-            </Pressable>
-          </View>
-        }
         renderSectionHeader={({section}) => {
           if (section.key === 'popularStoresCombined') {
             return (
@@ -832,14 +654,14 @@ const ExploreScreen = ({navigation}) => {
             refreshing={isRefreshing}
             onRefresh={onRefresh}
             {...(Platform.OS === 'android'
-              ? {progressViewOffset: headerOffset}
+              ? {progressViewOffset: listTopPadding}
               : {})}
           />
         }
         onEndReached={loadMoreData}
         onEndReachedThreshold={0.7}
         contentContainerStyle={{
-          paddingTop: headerOffset,
+          paddingTop: listTopPadding,
         }}
         automaticallyAdjustContentInsets={false}
         contentInsetAdjustmentBehavior="never"
@@ -851,12 +673,52 @@ const ExploreScreen = ({navigation}) => {
         removeClippedSubviews={Platform.OS === 'android'}
       />
 
-      <ScrollToTopButton
-        visible={showScrollToTop}
-        bottom={scrollToTopBottom}
-        onPress={handleScrollToTop}
-      />
+      <Pressable
+        hitSlop={10}
+        onPress={handleAiChatPress}
+        style={[
+          styles.aiChatButton,
+          {
+            bottom: aiChatButtonBottom,
+          },
+        ]}>
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.aiChatLabel,
+            {
+              opacity: aiLabelProgress,
+              transform: [{translateX: aiLabelTranslateX}],
+            },
+          ]}>
+          <AnimatedLinearGradient
+            colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
+            start={{x: 0, y: 0}}
+            end={{x: 1, y: 1}}
+            style={[
+              styles.aiChatLabelBg,
+              {
+                transform: [
+                  {translateX: aiLabelWidth / 2},
+                  {scaleX: aiLabelScaleX},
+                  {translateX: -aiLabelWidth / 2},
+                ],
+              },
+            ]}
+          />
+          <CustomText style={styles.aiChatLabelText}>AI탐색</CustomText>
+        </Animated.View>
+        <View style={styles.aiChatIcon}>
+          <AIFullIcon size={44} />
+        </View>
+      </Pressable>
 
+      {rejectModalData && !loading && (
+        <RejectModal
+          data={rejectModalData}
+          onClose={() => setRejectModalData(null)}
+        />
+      )}
       <Loading loading={isRefreshing || loading || popularloading} />
     </>
   );
@@ -895,9 +757,6 @@ const styles = StyleSheet.create({
   addressPressableCompact: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-    paddingVertical: 6,
-    paddingHorizontal: 4,
   },
   topView2: {
     position: 'absolute',
@@ -906,15 +765,15 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 40,
     backgroundColor: '#fff',
-    flexDirection: 'row',
-    paddingVertical: 7,
-    paddingHorizontal: 18,
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 1,
+    shadowRadius: 1,
+    elevation: 1,
   },
   todayAddress2: {
     fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium',
     color: '#181a1a',
     flexShrink: 1,
     marginRight: 3,
@@ -922,7 +781,6 @@ const styles = StyleSheet.create({
   topView2Actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 12,
   },
   fixedFilterHeader: {
     position: 'absolute',
@@ -936,22 +794,43 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 1,
   },
-  chatbotButtonContainer: {
-    paddingHorizontal: 18,
-    paddingBottom: 14,
+  aiChatButton: {
+    position: 'absolute',
+    right: 16,
+    height: 52,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
-  chatbotButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: '#3CBBFF',
+  aiChatLabel: {
+    width: 92,
+    height: 44,
+    paddingHorizontal: 18,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: -12,
+    overflow: 'hidden',
+  },
+  aiChatLabelBg: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  aiChatIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  chatbotButtonText: {
-    fontSize: 16,
-    color: '#fff',
-    fontFamily: 'Pretendard-Bold',
+  aiChatLabelText: {
+    fontSize: 14,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#FFFFFF',
   },
 });
 

@@ -9,7 +9,7 @@ const NotificationButton = ({
   unreadNotification = false,
   floating = true,
   iconColor,
-  iconSize = 20,
+  iconSize = 23,
   badgeColor,
 }) => {
   const navigation = useNavigation();
