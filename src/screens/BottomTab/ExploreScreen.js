@@ -131,7 +131,10 @@ const ExploreScreen = ({navigation}) => {
   );
 
   const aiChatButtonBottom = useMemo(() => 18, []);
-  const aiLabelWidth = 92;
+  const aiButtonHeight = 48;
+  const aiIconSize = 28;
+  const aiLabelWidth = 90;
+  const aiChatButtonWidth = aiLabelWidth + aiButtonHeight;
   const aiLabelProgress = useMemo(
     () =>
       scrollY.interpolate({
@@ -141,7 +144,26 @@ const ExploreScreen = ({navigation}) => {
       }),
     [scrollY],
   );
-  const aiLabelScaleX = aiLabelProgress;
+  const aiChatBackgroundScale = useMemo(
+    () =>
+      aiLabelProgress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [aiButtonHeight / aiChatButtonWidth, 1],
+        extrapolate: 'clamp',
+      }),
+    [aiButtonHeight, aiChatButtonWidth, aiLabelProgress],
+  );
+  const aiCircleOpacity = useMemo(
+    () =>
+      aiLabelProgress.interpolate({
+        inputRange: [0, 0.6, 1],
+        outputRange: [1, 0, 0],
+        extrapolate: 'clamp',
+      }),
+    [aiLabelProgress],
+  );
+  const aiPillOpacity = aiLabelProgress;
+  const aiChatBackgroundOriginX = aiChatButtonWidth / 2;
   const aiLabelTranslateX = useMemo(
     () =>
       aiLabelProgress.interpolate({
@@ -305,7 +327,7 @@ const ExploreScreen = ({navigation}) => {
   }, [navigation]);
 
   const handleAiChatPress = useCallback(() => {
-    navigation.navigate('AIExploreScreen');
+    navigation.navigate('ChatbotScreen');
   }, [navigation]);
 
   const setLocationHandle = useCallback(() => {
@@ -680,36 +702,56 @@ const ExploreScreen = ({navigation}) => {
           styles.aiChatButton,
           {
             bottom: aiChatButtonBottom,
+            width: aiChatButtonWidth,
+            height: aiButtonHeight,
           },
         ]}>
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            styles.aiChatLabel,
-            {
-              opacity: aiLabelProgress,
-              transform: [{translateX: aiLabelTranslateX}],
-            },
-          ]}>
-          <AnimatedLinearGradient
-            colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
-            start={{x: 0, y: 0}}
-            end={{x: 1, y: 1}}
+        <View style={[styles.aiChatButtonShell, {width: aiChatButtonWidth}]}>
+          <Animated.View
+            pointerEvents="none"
             style={[
-              styles.aiChatLabelBg,
+              styles.aiChatCircleShell,
               {
-                transform: [
-                  {translateX: aiLabelWidth / 2},
-                  {scaleX: aiLabelScaleX},
-                  {translateX: -aiLabelWidth / 2},
-                ],
+                width: aiButtonHeight,
+                height: aiButtonHeight,
+                borderRadius: aiButtonHeight / 2,
+                opacity: aiCircleOpacity,
               },
             ]}
           />
-          <CustomText style={styles.aiChatLabelText}>AI탐색</CustomText>
-        </Animated.View>
-        <View style={styles.aiChatIcon}>
-          <AIFullIcon size={44} />
+          <Animated.View
+            style={[
+              styles.aiChatLabelShell,
+              {
+                width: aiChatButtonWidth,
+                height: aiButtonHeight,
+                paddingRight: aiButtonHeight,
+                borderRadius: 40,
+                opacity: aiPillOpacity,
+                transform: [
+                  {translateX: aiChatBackgroundOriginX},
+                  {scaleX: aiChatBackgroundScale},
+                  {translateX: -aiChatBackgroundOriginX},
+                ],
+              },
+            ]}>
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.aiChatLabel,
+                {
+                  opacity: aiLabelProgress,
+                  transform: [{translateX: aiLabelTranslateX}],
+                },
+              ]}>
+              <CustomText maxScale={1.0} style={styles.aiChatLabelText}>
+                Chat Bot
+              </CustomText>
+            </Animated.View>
+          </Animated.View>
+          <View style={styles.aiChatIcon}>
+            <AIFullIcon size={aiIconSize} />
+          </View>
         </View>
       </Pressable>
 
@@ -797,7 +839,6 @@ const styles = StyleSheet.create({
   aiChatButton: {
     position: 'absolute',
     right: 16,
-    height: 52,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -807,30 +848,46 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 3,
   },
+  aiChatButtonShell: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 48,
+    justifyContent: 'flex-end',
+  },
+  aiChatLabelShell: {
+    position: 'absolute',
+    right: 0,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E0E4EA',
+    borderRadius: 40,
+    justifyContent: 'center',
+  },
+  aiChatCircleShell: {
+    position: 'absolute',
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E0E4EA',
+  },
   aiChatLabel: {
-    width: 92,
-    height: 44,
-    paddingHorizontal: 18,
-    borderRadius: 22,
+    flex: 1,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: -12,
-    overflow: 'hidden',
-  },
-  aiChatLabelBg: {
-    ...StyleSheet.absoluteFillObject,
+    marginRight: -10,
   },
   aiChatIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
   aiChatLabelText: {
     fontSize: 14,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#FFFFFF',
+    color: 'black',
   },
 });
 

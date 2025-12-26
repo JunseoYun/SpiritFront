@@ -333,21 +333,6 @@ const ChatbotScreen = ({navigation}) => {
     {keyword: '인테리어 깔끔한', subtext: '와인바 추천해줘'},
     {keyword: '방어 파는 곳', subtext: '알려줘'},
   ];
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-        navigation.navigate('MainScreen'); // MainScreen 탭으로 전환
-        return true; // 기본 뒤로가기 방지
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        onBackPress,
-      );
-
-      return () => backHandler.remove();
-    }, [navigation]),
-  );
 
   const submit = useCallback(
     async (textOverride, options = {}) => {

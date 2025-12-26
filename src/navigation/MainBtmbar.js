@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+﻿import React, {useRef} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MainScreen from '../screens/BottomTab/MainScreen';
@@ -9,6 +9,7 @@ import MyStack from './MyStack';
 import CustomText from '../utils/CustomText';
 import {AIFullIcon, AIFullIconDark, AIEmptyIcon} from '../assets/svg/AiTabIcon';
 import {HomeEmptyIcon, HomeFullIcon} from '../assets/svg/HomeTabIcon';
+import BookmarkIcon from '../assets/svg/BookmarkIcon';
 
 const Tab = createBottomTabNavigator();
 const INITIAL_TAB = 'MainScreen';
@@ -22,7 +23,6 @@ const MainBtmbar = ({route}) => {
   const lastFocusedTabRef = useRef(initialLastFocused);
   const lastNonMapTabRef = useRef(initialLastNonMap);
 
-  // 탭 라벨을 커스텀 Text로 반환
   const renderLabel = (label, color) => (
     <CustomText
       maxScale={1}
@@ -72,7 +72,14 @@ const MainBtmbar = ({route}) => {
               <AIEmptyIcon size={25} />
             );
           } else if (route.name === 'LikeScreen') {
-            iconName = focused ? 'heart' : 'heart-outline';
+            return (
+              <BookmarkIcon
+                size={25}
+                color={color}
+                filled={focused}
+                strokeWidth={2}
+              />
+            );
           } else if (route.name === 'MyStack')
             iconName = focused ? 'person' : 'person-outline';
           return <Ionicons name={iconName} size={25} color={color} />;
@@ -117,12 +124,12 @@ const MainBtmbar = ({route}) => {
         name="LikeScreen"
         component={LikeScreen}
         options={{
-          tabBarLabel: ({color}) => renderLabel('찜', color),
+          tabBarLabel: ({color}) => renderLabel('저장', color),
           headerShown: true,
           headerTitleAlign: 'center',
 
           headerShadowVisible: false,
-          title: '찜',
+          title: '저장',
           headerTitleStyle: {
             fontSize: 19,
             color: '#333',
