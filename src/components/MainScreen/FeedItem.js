@@ -14,15 +14,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import CustomText from '../../../utils/CustomText';
+import CustomText from '../../utils/CustomText';
 import FastImage from 'react-native-fast-image';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import ChatCircleIcon from '../../../assets/svg/ChatCircleIcon';
-import PaperPlaneIcon from '../../../assets/svg/PaperPlaneIcon';
-import HeartIcon from '../../../assets/svg/HeartIcon';
-import BookmarkIcon from '../../../assets/svg/BookmarkIcon';
-import ColorUtil from '../../../utils/ColorUtil';
-const defaultProfile = require('../../../assets/default_profile.png');
+import ChatCircleIcon from '../../assets/svg/ChatCircleIcon';
+import PaperPlaneIcon from '../../assets/svg/PaperPlaneIcon';
+import HeartIcon from '../../assets/svg/HeartIcon';
+import BookmarkIcon from '../../assets/svg/BookmarkIcon';
+import ColorUtil from '../../utils/ColorUtil';
+import ReportSheet, {REPORT_REASONS} from './ReportSheet';
+const defaultProfile = require('../../assets/default_profile.png');
 
 const FeedItem = ({item}) => {
   const screenWidth = Dimensions.get('window').width;
@@ -48,6 +49,10 @@ const FeedItem = ({item}) => {
   const flyingHeartScale = useRef(new Animated.Value(0)).current;
   const [showFlyingHeart, setShowFlyingHeart] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [isReportModalVisible, setReportModalVisible] = useState(false);
+  const [selectedReportReason, setSelectedReportReason] = useState(
+    REPORT_REASONS[0],
+  );
   const HEART_SIZE = 32;
   const HEART_END_OFFSET_X = 0;
   const HEART_LINGER_DURATION = 140;
@@ -80,10 +85,18 @@ const FeedItem = ({item}) => {
     return () => sub.remove();
   }, []);
 
-  const handleReport = useCallback(() => {
+  const openReportModal = useCallback(() => {
     setShowMoreMenu(false);
+    setSelectedReportReason(REPORT_REASONS[0]);
+    setReportModalVisible(true);
+  }, []);
+
+  const handleReportSubmit = useCallback(() => {
+    setReportModalVisible(false);
     // TODO: Hook up real report flow when available.
-    Alert.alert('신고하기', '신고가 접수되었습니다.');
+    setTimeout(() => {
+      Alert.alert('신고하기', '신고가 접수되었습니다.');
+    }, 120);
   }, []);
 
   const handleMorePress = useCallback(() => {
@@ -97,7 +110,7 @@ const FeedItem = ({item}) => {
         },
         buttonIndex => {
           if (buttonIndex === 0) {
-            handleReport();
+            openReportModal();
           }
         },
       );
@@ -105,7 +118,7 @@ const FeedItem = ({item}) => {
     }
 
     setShowMoreMenu(prev => !prev);
-  }, [handleReport]);
+  }, [openReportModal]);
 
   useEffect(() => {
     if (!item.name) {
@@ -262,29 +275,29 @@ const FeedItem = ({item}) => {
           Animated.sequence([
             Animated.spring(flyingHeartScale, {
               toValue: 1.6,
-              friction: 5,
-              tension: 190,
+              friction: 4,
+              tension: 230,
               useNativeDriver: true,
             }),
-            Animated.delay(100),
+
             Animated.parallel([
               Animated.timing(flyingHeartPos, {
                 toValue: {x: destX, y: destY},
-                duration: 450,
+                duration: 320,
                 easing: Easing.out(Easing.cubic),
                 useNativeDriver: true,
               }),
               Animated.sequence([
                 Animated.timing(flyingHeartScale, {
                   toValue: 1.85,
-                  duration: 220,
+                  duration: 170,
                   easing: Easing.inOut(Easing.quad),
                   useNativeDriver: true,
                 }),
                 Animated.spring(flyingHeartScale, {
                   toValue: 1.1,
-                  friction: 8,
-                  tension: 120,
+                  friction: 7,
+                  tension: 140,
                   useNativeDriver: true,
                 }),
               ]),
@@ -344,12 +357,7 @@ const FeedItem = ({item}) => {
     <View
       style={styles.card}
       ref={cardRef}
-      onStartShouldSetResponderCapture={() => {
-        if (showMoreMenu) {
-          setShowMoreMenu(false);
-        }
-        return false;
-      }}>
+      onStartShouldSetResponderCapture={() => false}>
       {showFlyingHeart ? (
         <View pointerEvents="none" style={styles.heartFlyContainer}>
           <Animated.View
@@ -382,7 +390,7 @@ const FeedItem = ({item}) => {
             <TouchableOpacity
               activeOpacity={0.8}
               style={styles.moreMenuItem}
-              onPress={handleReport}>
+              onPress={openReportModal}>
               <CustomText style={styles.moreMenuItemTextDestructive}>
                 신고하기
               </CustomText>
@@ -537,6 +545,13 @@ const FeedItem = ({item}) => {
           <CustomText style={styles.contentText}>{item.content}</CustomText>
         </Pressable>
       </View>
+      <ReportSheet
+        visible={isReportModalVisible}
+        onClose={() => setReportModalVisible(false)}
+        onSubmit={handleReportSubmit}
+        selectedReason={selectedReportReason}
+        onSelectReason={setSelectedReportReason}
+      />
     </View>
   );
 };

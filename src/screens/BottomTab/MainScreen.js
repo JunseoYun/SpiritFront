@@ -15,7 +15,7 @@ import NotificationButton from '../../components/ExploreScreen/NotificationButto
 import {has_unread_notification} from '../../api/notificationApi';
 import useHandlePendingNotification from '../../hooks/notification/useHandlePendingNotification';
 import {useNotification} from '../../context/NotificationContext';
-import FeedItem from './MainScreen/FeedItem';
+import FeedItem from '../../components/MainScreen/FeedItem';
 
 const sampleFeedData = [
   {
@@ -183,11 +183,7 @@ const MainScreen = ({navigation}) => {
       style={[
         styles.container,
         {paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0)},
-      ]}
-      onStartShouldSetResponderCapture={() => {
-        closeMoreMenus();
-        return false;
-      }}>
+      ]}>
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <ExploreSearchBar handleSearchPress={handleSearchPress} />
@@ -209,7 +205,6 @@ const MainScreen = ({navigation}) => {
         contentContainerStyle={styles.feedContent}
         showsVerticalScrollIndicator={false}
         onScrollBeginDrag={closeMoreMenus}
-        onTouchStart={closeMoreMenus}
       />
 
       {rejectModalData && (
