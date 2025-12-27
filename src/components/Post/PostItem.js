@@ -23,12 +23,17 @@ import PaperPlaneIcon from '../../assets/svg/PaperPlaneIcon';
 import HeartIcon from '../../assets/svg/HeartIcon';
 import BookmarkIcon from '../../assets/svg/BookmarkIcon';
 import ColorUtil from '../../utils/ColorUtil';
-import ReportSheet, {REPORT_REASONS} from './ReportSheet';
+import PostReportSheet, {POST_REPORT_REASONS} from './PostReportSheet';
 import useMeasuredExpandableText from '../../utils/useMeasuredExpandableText';
 import {get_store_share} from '../../api/storeApi';
 const defaultProfile = require('../../assets/default_profile.png');
 
-const FeedItem = ({item, isCentered = false, contentMaxLines = 2}) => {
+const PostItem = ({
+  item,
+  isCentered = false,
+  contentMaxLines = 2,
+  onCommentPress,
+}) => {
   const screenWidth = Dimensions.get('window').width;
   const profileSource = item.profileImage
     ? {uri: item.profileImage}
@@ -54,7 +59,7 @@ const FeedItem = ({item, isCentered = false, contentMaxLines = 2}) => {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isReportModalVisible, setReportModalVisible] = useState(false);
   const [selectedReportReason, setSelectedReportReason] = useState(
-    REPORT_REASONS[0],
+    POST_REPORT_REASONS[0],
   );
   const badgeAnim = useRef(new Animated.Value(isCentered ? 1 : 0)).current;
   const badgeDelayRef = useRef(null);
@@ -106,7 +111,7 @@ const FeedItem = ({item, isCentered = false, contentMaxLines = 2}) => {
 
   const openReportModal = useCallback(() => {
     setShowMoreMenu(false);
-    setSelectedReportReason(REPORT_REASONS[0]);
+    setSelectedReportReason(POST_REPORT_REASONS[0]);
     setReportModalVisible(true);
   }, []);
 
@@ -162,6 +167,10 @@ const FeedItem = ({item, isCentered = false, contentMaxLines = 2}) => {
   const handleBookmarkPress = () => {
     setSaved(prev => !prev);
   };
+
+  const handleCommentPress = useCallback(() => {
+    onCommentPress?.(item);
+  }, [item, onCommentPress]);
 
   const handleSharePress = useCallback(async () => {
     try {
@@ -631,7 +640,10 @@ const FeedItem = ({item, isCentered = false, contentMaxLines = 2}) => {
           </View>
           <CustomText style={[styles.actionCount]}>{likes}</CustomText>
         </Pressable>
-        <Pressable style={styles.actionButton} hitSlop={8}>
+        <Pressable
+          style={styles.actionButton}
+          hitSlop={8}
+          onPress={handleCommentPress}>
           <ChatCircleIcon size={24} color="#333" strokeWidth={2} />
           <CustomText style={styles.actionCount}>{comments}</CustomText>
         </Pressable>
@@ -659,7 +671,7 @@ const FeedItem = ({item, isCentered = false, contentMaxLines = 2}) => {
           </CustomText>
         </Pressable>
       </View>
-      <ReportSheet
+      <PostReportSheet
         visible={isReportModalVisible}
         onClose={() => setReportModalVisible(false)}
         onSubmit={handleReportSubmit}
@@ -853,4 +865,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeedItem;
+export default PostItem;
