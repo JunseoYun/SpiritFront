@@ -5,25 +5,30 @@ import {
   Easing,
   FlatList,
   Platform,
-  Pressable,
   StyleSheet,
   View,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
+import {openSettings} from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import RejectModal from '../../components/Reject/RejectModal';
 import ExploreSearchBar from '../../components/ExploreScreen/ExploreSearchBar';
 import NotificationButton from '../../components/ExploreScreen/NotificationButton';
 import {has_unread_notification} from '../../api/notificationApi';
 import useHandlePendingNotification from '../../hooks/notification/useHandlePendingNotification';
+import PencilIcon from '../../assets/svg/PencilIcon';
+import StoreIcon from '../../assets/svg/StoreIcon';
+import VerifyIcon from '../../assets/svg/VerifyIcon';
+import WriteMenu from '../../components/MainScreen/WriteMenu';
+import WriteButton from '../../components/MainScreen/WriteButton';
+import {iniBasictNotification} from '../../hooks/notification/useNotificationPermission';
+import useCustomAlert from '../../hooks/useCustomAlert';
 import {useNotification} from '../../context/NotificationContext';
 import PostItem from '../../components/Post/PostItem';
 import {useNavigation} from '@react-navigation/native';
-import CustomText from '../../utils/CustomText';
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+import {getLocation} from '../../storage/locationStorage';
 
 const sampleFeedData = [
   {
@@ -142,16 +147,40 @@ const MainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const [rejectModalData, setRejectModalData] = useState(null);
   const [unreadNotification, setUnreadNotification] = useState(false);
+  const [location, setLocation] = useState(null);
+  const {showAlert, AlertComponent} = useCustomAlert();
   const {pendingNotification, setPendingNotification} = useNotification();
   const [centeredItemId, setCenteredItemId] = useState(null);
   const listHeightRef = useRef(0);
   const itemLayoutsRef = useRef(new Map());
   const scrollOffsetRef = useRef(0);
   const [showWriteLabel, setShowWriteLabel] = useState(true);
+  const [isWriteMenuVisible, setIsWriteMenuVisible] = useState(false);
+  const [isWriteMenuOpen, setIsWriteMenuOpen] = useState(false);
   const writeLabelVisibleRef = useRef(true);
   const WRITE_BUTTON_COLLAPSE_OFFSET = 20;
   const writeButtonAnim = useRef(new Animated.Value(1)).current;
   const writeLabelAnim = useRef(new Animated.Value(1)).current;
+  const writeIconAnim = useRef(new Animated.Value(0)).current;
+  const writeMenuAnim = useRef(new Animated.Value(0)).current;
+
+  const writeMenuItems = [
+    {
+      key: 'post',
+      label: '게시글 작성',
+      icon: 'edit',
+    },
+    {
+      key: 'store',
+      label: '매장 제보',
+      icon: 'plus-square',
+    },
+    {
+      key: 'owner',
+      label: '사장님 인증',
+      icon: 'check-circle',
+    },
+  ];
 
   useHandlePendingNotification(
     false,
@@ -175,6 +204,19 @@ const MainScreen = ({navigation}) => {
     checkStoredNotification();
   }, [setPendingNotification]);
 
+  useEffect(() => {
+    const fetchLocation = async () => {
+      try {
+        const storedLocation = await getLocation();
+        if (storedLocation) {
+          setLocation(storedLocation);
+        }
+      } catch (error) {}
+    };
+
+    fetchLocation();
+  }, []);
+
   const handleSearchPress = useCallback(() => {
     navigation.navigate('SearchScreen');
   }, [navigation]);
@@ -196,6 +238,10 @@ const MainScreen = ({navigation}) => {
     },
     [nav],
   );
+
+  const handleGoToSettings = useCallback(() => {
+    openSettings().catch(() => console.warn('설정 열기에 실패했습니다.'));
+  }, []);
 
   // Track the feed item sitting closest to the vertical center of the screen.
   const updateCenteredItem = useCallback(
@@ -261,8 +307,17 @@ const MainScreen = ({navigation}) => {
         writeLabelVisibleRef.current = shouldShowLabel;
         setShowWriteLabel(shouldShowLabel);
       }
+
+      if (isWriteMenuOpen) {
+        setIsWriteMenuOpen(false);
+        const shouldRestoreLabel = offsetY <= WRITE_BUTTON_COLLAPSE_OFFSET;
+        if (shouldRestoreLabel && !writeLabelVisibleRef.current) {
+          writeLabelVisibleRef.current = true;
+          setShowWriteLabel(true);
+        }
+      }
     },
-    [updateCenteredItem],
+    [isWriteMenuOpen, updateCenteredItem],
   );
 
   useEffect(() => {
@@ -286,6 +341,30 @@ const MainScreen = ({navigation}) => {
       }),
     ]).start();
   }, [showWriteLabel, writeButtonAnim, writeLabelAnim]);
+
+  useEffect(() => {
+    Animated.timing(writeIconAnim, {
+      toValue: isWriteMenuOpen ? 1 : 0,
+      duration: 200,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: false,
+    }).start();
+
+    const menuAnim = Animated.timing(writeMenuAnim, {
+      toValue: isWriteMenuOpen ? 1 : 0,
+      duration: isWriteMenuOpen ? 200 : 200,
+      easing: isWriteMenuOpen
+        ? Easing.out(Easing.cubic)
+        : Easing.in(Easing.quad),
+      useNativeDriver: true,
+    });
+
+    menuAnim.start(({finished}) => {
+      if (finished && !isWriteMenuOpen) {
+        setIsWriteMenuVisible(false);
+      }
+    });
+  }, [isWriteMenuOpen, writeIconAnim, writeMenuAnim]);
 
   const cellRenderer = useCallback(
     ({item, index, style, onLayout, children, ...rest}) => (
@@ -313,8 +392,87 @@ const MainScreen = ({navigation}) => {
   );
 
   const handleWritePress = useCallback(() => {
-    // TODO: Hook up to the real write flow when available.
+    setIsWriteMenuOpen(prev => {
+      const next = !prev;
+      if (next) {
+        setIsWriteMenuVisible(true);
+      }
+      if (next && writeLabelVisibleRef.current) {
+        writeLabelVisibleRef.current = false;
+        setShowWriteLabel(false);
+      }
+
+      if (!next) {
+        const shouldShowLabel =
+          scrollOffsetRef.current <= WRITE_BUTTON_COLLAPSE_OFFSET;
+        if (shouldShowLabel && !writeLabelVisibleRef.current) {
+          writeLabelVisibleRef.current = true;
+          setShowWriteLabel(true);
+        }
+      }
+      return next;
+    });
   }, []);
+
+  const handleWriteMenuItemPress = useCallback(
+    async key => {
+      setIsWriteMenuOpen(false);
+      const shouldShowLabel =
+        scrollOffsetRef.current <= WRITE_BUTTON_COLLAPSE_OFFSET;
+      if (shouldShowLabel && !writeLabelVisibleRef.current) {
+        writeLabelVisibleRef.current = true;
+        setShowWriteLabel(true);
+      }
+
+      if (key === 'store') {
+        navigation.navigate('StoreSearchScreen', {index: 0, location});
+        return;
+      }
+
+      if (key === 'owner') {
+        const isAuthorized = await iniBasictNotification(1);
+        if (isAuthorized) {
+          navigation.navigate('StoreSearchScreen', {index: 1, location});
+        } else {
+          showAlert({
+            title: '알림 미설정',
+            message: '사장님 인증 결과를 받기 위해\n알림 권한이 필요해요',
+            type: 'notificationSetting',
+            onConfirm: handleGoToSettings,
+            onCancel: () => {},
+          });
+        }
+        return;
+      }
+
+      // TODO: Replace with navigation or action for each menu item when available.
+      console.log('write menu item selected', key);
+    },
+    [navigation, location, handleGoToSettings, showAlert],
+  );
+
+  const writeIconRotation = writeIconAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '45deg'],
+  });
+
+  const writeMenuStyle = {
+    opacity: writeMenuAnim,
+    transform: [
+      {
+        scale: writeMenuAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.95, 1],
+        }),
+      },
+      {
+        translateY: writeMenuAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [40, 0],
+        }),
+      },
+    ],
+  };
 
   return (
     <View
@@ -355,65 +513,34 @@ const MainScreen = ({navigation}) => {
         CellRendererComponent={cellRenderer}
       />
 
-      <View style={[styles.writeButtonWrapper, {bottom: 20}]}>
-        <AnimatedPressable
-          onPress={handleWritePress}
-          style={[
-            styles.writeButton,
-            {
-              // width: writeButtonAnim.interpolate({
-              //   inputRange: [0, 1],
-              //   outputRange: [56, 120],
-              // }),
-              paddingHorizontal: writeButtonAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [13, 12],
-              }),
-            },
-          ]}>
-          <Animated.View
-            style={{
-              transform: [
-                {
-                  scale: writeButtonAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1.3, 1],
-                  }),
-                },
-              ],
-            }}>
-            <Ionicons name="add" size={24} color="#fff" />
-          </Animated.View>
-          <Animated.View
-            style={{
-              opacity: writeLabelAnim,
-              marginLeft: writeLabelAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 6],
-              }),
-              maxWidth: writeLabelAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 120],
-              }),
-              overflow: 'hidden',
-              flexShrink: 1,
-              transform: [
-                {
-                  translateX: writeLabelAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [6, 0],
-                  }),
-                },
-              ],
-              pointerEvents: 'none',
-              justifyContent: 'center',
-            }}>
-            <CustomText numberOfLines={1} style={styles.writeButtonText}>
-              글쓰기
-            </CustomText>
-          </Animated.View>
-        </AnimatedPressable>
-      </View>
+      <WriteMenu
+        visible={isWriteMenuVisible}
+        bottomOffset={insets.bottom + (Platform.OS === 'android' ? 40 : 50)}
+        menuStyle={writeMenuStyle}
+        items={writeMenuItems}
+        onClose={handleWritePress}
+        onItemPress={handleWriteMenuItemPress}
+        renderIcon={item => {
+          if (item.key === 'post') {
+            return <PencilIcon size={22} color="#3CBBFF" />;
+          }
+          if (item.key === 'store') {
+            return <StoreIcon size={22} color="#308FF5" />;
+          }
+          if (item.key === 'owner') {
+            return <VerifyIcon size={22} color="#2563EB" />;
+          }
+          return null;
+        }}
+      />
+
+      <WriteButton
+        isOpen={isWriteMenuOpen}
+        onPress={handleWritePress}
+        writeButtonAnim={writeButtonAnim}
+        writeLabelAnim={writeLabelAnim}
+        writeIconRotation={writeIconRotation}
+      />
 
       {rejectModalData && (
         <RejectModal
@@ -421,6 +548,7 @@ const MainScreen = ({navigation}) => {
           onClose={() => setRejectModalData(null)}
         />
       )}
+      <AlertComponent />
     </View>
   );
 };
@@ -450,24 +578,6 @@ const styles = StyleSheet.create({
   feedContent: {
     paddingTop: 10,
     paddingBottom: 24,
-  },
-  writeButtonWrapper: {
-    position: 'absolute',
-    right: 16,
-  },
-  writeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#3CBBFF',
-    height: 50,
-    // paddingVertical: 16,
-    borderRadius: 100,
-  },
-  writeButtonText: {
-    color: '#fff',
-    fontFamily: 'Pretendard-Bold',
-    fontSize: 16,
   },
 });
 
