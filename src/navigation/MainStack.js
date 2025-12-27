@@ -33,6 +33,7 @@ import NotificationSetScreen from '../screens/Notification/NotificationSetScreen
 import OrderDetailScreen from '../screens/BottomTab/Order/OrderDetailScreen';
 import {normalizeFont} from '../hooks/normalizeFont';
 import CustomText from '../utils/CustomText';
+import PostDetailScreen from '../screens/PostScreen/PostDetailScreen';
 
 const Stack = createStackNavigator();
 
@@ -60,6 +61,31 @@ export default function MainStack() {
         name="ChatbotScreen"
         component={ChatbotScreen}
         options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="PostDetailScreen"
+        component={PostDetailScreen}
+        options={({navigation}) => ({
+          title: '게시글',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: 'Pretendard-Bold',
+            fontSize: 18,
+            color: '#333',
+          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
       />
       <Stack.Screen
         name="SearchScreen"

@@ -10,7 +10,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import CustomText from '../../utils/CustomText';
 
-export const REPORT_REASONS = [
+export const POST_REPORT_REASONS = [
   '주제에 맞지 않아요',
   '정보가 부정확해요',
   '지나치게 광고를 해요',
@@ -21,7 +21,7 @@ export const REPORT_REASONS = [
   '외설적인 내용이 포함돼있어요',
 ];
 
-const ReportSheet = ({
+const PostReportSheet = ({
   visible,
   onClose,
   onSubmit,
@@ -50,7 +50,7 @@ const ReportSheet = ({
             </Pressable>
           </View>
           <View style={styles.reportList}>
-            {REPORT_REASONS.map(reason => {
+            {POST_REPORT_REASONS.map(reason => {
               const isActive = selectedReason === reason;
               return (
                 <Pressable
@@ -87,8 +87,6 @@ const ReportSheet = ({
     </Modal>
   );
 };
-
-export default ReportSheet;
 
 const styles = StyleSheet.create({
   reportOverlay: {
@@ -165,3 +163,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
   },
 });
+
+export default PostReportSheet;

@@ -15,7 +15,8 @@ import NotificationButton from '../../components/ExploreScreen/NotificationButto
 import {has_unread_notification} from '../../api/notificationApi';
 import useHandlePendingNotification from '../../hooks/notification/useHandlePendingNotification';
 import {useNotification} from '../../context/NotificationContext';
-import FeedItem from '../../components/MainScreen/FeedItem';
+import PostItem from '../../components/Post/PostItem';
+import {useNavigation} from '@react-navigation/native';
 
 const sampleFeedData = [
   {
@@ -126,6 +127,7 @@ const sampleFeedData = [
 ];
 
 const MainScreen = ({navigation}) => {
+  const nav = useNavigation();
   const insets = useSafeAreaInsets();
   const [rejectModalData, setRejectModalData] = useState(null);
   const [unreadNotification, setUnreadNotification] = useState(false);
@@ -171,6 +173,13 @@ const MainScreen = ({navigation}) => {
   useEffect(() => {
     loadHeaderData();
   }, [loadHeaderData]);
+
+  const handleOpenFeedDetail = useCallback(
+    feed => {
+      nav.navigate('PostDetailScreen', {item: feed});
+    },
+    [nav],
+  );
 
   // Track the feed item sitting closest to the vertical center of the screen.
   const updateCenteredItem = useCallback(
@@ -282,8 +291,9 @@ const MainScreen = ({navigation}) => {
         data={sampleFeedData}
         keyExtractor={item => item.id}
         renderItem={({item}) => (
-          <FeedItem
+          <PostItem
             item={item}
+            onCommentPress={handleOpenFeedDetail}
             isCentered={item.id === centeredItemId}
           />
         )}
