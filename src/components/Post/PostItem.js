@@ -858,7 +858,7 @@ const styles = StyleSheet.create({
   storeBadge: {
     position: 'absolute',
     bottom: 24,
-    right: 12,
+    left: 12,
     backgroundColor: ColorUtil.main,
     borderRadius: 16,
     padding: 6,

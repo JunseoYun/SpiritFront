@@ -1,14 +1,18 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
+  Animated,
   DeviceEventEmitter,
+  Easing,
   FlatList,
   Platform,
+  Pressable,
   StyleSheet,
   View,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import RejectModal from '../../components/Reject/RejectModal';
 import ExploreSearchBar from '../../components/ExploreScreen/ExploreSearchBar';
 import NotificationButton from '../../components/ExploreScreen/NotificationButton';
@@ -17,6 +21,9 @@ import useHandlePendingNotification from '../../hooks/notification/useHandlePend
 import {useNotification} from '../../context/NotificationContext';
 import PostItem from '../../components/Post/PostItem';
 import {useNavigation} from '@react-navigation/native';
+import CustomText from '../../utils/CustomText';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const sampleFeedData = [
   {
@@ -24,22 +31,15 @@ const sampleFeedData = [
     nickname: '커피러버',
     profileImage:
       'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+
     postImages: [
-      'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?auto=format&fit=crop&w=800&q=80',
     ],
     storeAddress: '서울 성동구 성수동 1가',
     name: '커피맛집',
     content:
-      '오늘의 시그니처 메뉴! 에스프레소 위에 시트러스 폼을 올려서 상큼하게 즐겨 보세요.오늘의 시그니처 메뉴! 에스프레소 위에 시트러스 폼을 올려서 상큼하게 즐겨 보세요.오늘의 시그니처 메뉴! 에스프레소 위에 시트러스 폼을 올려서 상큼하게 즐겨 보세요.',
-    likes: 128,
+      '연남동에서 발견한 숯불 향 가득한 버거집! 치즈가 진짜 대박이에요 🍔',
+    likes: 342,
     comments: 22,
     shares: 32,
   },
@@ -50,11 +50,22 @@ const sampleFeedData = [
     storeAddress: '서울 마포구 연남동',
     name: '치즈버거맛집',
     postImages: [
-      'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
     ],
     content:
       '연남동에서 발견한 숯불 향 가득한 버거집! 치즈가 진짜 대박이에요 🍔',
     likes: 342,
+    content:
+      '오늘의 시그니처 메뉴! 에스프레소 위에 시트러스 폼을 올려서 상큼하게 즐겨 보세요.오늘의 시그니처 메뉴! 에스프레소 위에 시트러스 폼을 올려서 상큼하게 즐겨 보세요.오늘의 시그니처 메뉴! 에스프레소 위에 시트러스 폼을 올려서 상큼하게 즐겨 보세요.',
+    likes: 128,
     comments: 48,
     shares: 332,
   },
@@ -136,6 +147,11 @@ const MainScreen = ({navigation}) => {
   const listHeightRef = useRef(0);
   const itemLayoutsRef = useRef(new Map());
   const scrollOffsetRef = useRef(0);
+  const [showWriteLabel, setShowWriteLabel] = useState(true);
+  const writeLabelVisibleRef = useRef(true);
+  const WRITE_BUTTON_COLLAPSE_OFFSET = 20;
+  const writeButtonAnim = useRef(new Animated.Value(1)).current;
+  const writeLabelAnim = useRef(new Animated.Value(1)).current;
 
   useHandlePendingNotification(
     false,
@@ -238,9 +254,38 @@ const MainScreen = ({navigation}) => {
       const offsetY = event.nativeEvent.contentOffset.y;
       scrollOffsetRef.current = offsetY;
       updateCenteredItem(offsetY);
+
+      // Collapse the write button label after a small scroll.
+      const shouldShowLabel = offsetY <= WRITE_BUTTON_COLLAPSE_OFFSET;
+      if (shouldShowLabel !== writeLabelVisibleRef.current) {
+        writeLabelVisibleRef.current = shouldShowLabel;
+        setShowWriteLabel(shouldShowLabel);
+      }
     },
     [updateCenteredItem],
   );
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(writeButtonAnim, {
+        toValue: showWriteLabel ? 1 : 0,
+        duration: showWriteLabel ? 240 : 170,
+        easing: showWriteLabel
+          ? Easing.out(Easing.cubic)
+          : Easing.in(Easing.cubic),
+        useNativeDriver: false,
+      }),
+      Animated.timing(writeLabelAnim, {
+        toValue: showWriteLabel ? 1 : 0,
+        duration: showWriteLabel ? 200 : 200,
+        delay: showWriteLabel ? 70 : 0,
+        easing: showWriteLabel
+          ? Easing.out(Easing.cubic)
+          : Easing.inOut(Easing.quad),
+        useNativeDriver: false,
+      }),
+    ]).start();
+  }, [showWriteLabel, writeButtonAnim, writeLabelAnim]);
 
   const cellRenderer = useCallback(
     ({item, index, style, onLayout, children, ...rest}) => (
@@ -266,6 +311,10 @@ const MainScreen = ({navigation}) => {
       loadHeaderData();
     }, [loadHeaderData]),
   );
+
+  const handleWritePress = useCallback(() => {
+    // TODO: Hook up to the real write flow when available.
+  }, []);
 
   return (
     <View
@@ -306,6 +355,66 @@ const MainScreen = ({navigation}) => {
         CellRendererComponent={cellRenderer}
       />
 
+      <View style={[styles.writeButtonWrapper, {bottom: 20}]}>
+        <AnimatedPressable
+          onPress={handleWritePress}
+          style={[
+            styles.writeButton,
+            {
+              // width: writeButtonAnim.interpolate({
+              //   inputRange: [0, 1],
+              //   outputRange: [56, 120],
+              // }),
+              paddingHorizontal: writeButtonAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [13, 12],
+              }),
+            },
+          ]}>
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  scale: writeButtonAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1.3, 1],
+                  }),
+                },
+              ],
+            }}>
+            <Ionicons name="add" size={24} color="#fff" />
+          </Animated.View>
+          <Animated.View
+            style={{
+              opacity: writeLabelAnim,
+              marginLeft: writeLabelAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 6],
+              }),
+              maxWidth: writeLabelAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 120],
+              }),
+              overflow: 'hidden',
+              flexShrink: 1,
+              transform: [
+                {
+                  translateX: writeLabelAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [6, 0],
+                  }),
+                },
+              ],
+              pointerEvents: 'none',
+              justifyContent: 'center',
+            }}>
+            <CustomText numberOfLines={1} style={styles.writeButtonText}>
+              글쓰기
+            </CustomText>
+          </Animated.View>
+        </AnimatedPressable>
+      </View>
+
       {rejectModalData && (
         <RejectModal
           data={rejectModalData}
@@ -341,6 +450,24 @@ const styles = StyleSheet.create({
   feedContent: {
     paddingTop: 10,
     paddingBottom: 24,
+  },
+  writeButtonWrapper: {
+    position: 'absolute',
+    right: 16,
+  },
+  writeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#3CBBFF',
+    height: 50,
+    // paddingVertical: 16,
+    borderRadius: 100,
+  },
+  writeButtonText: {
+    color: '#fff',
+    fontFamily: 'Pretendard-Bold',
+    fontSize: 16,
   },
 });
 
