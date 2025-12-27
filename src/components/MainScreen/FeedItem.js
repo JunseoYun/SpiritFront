@@ -9,6 +9,7 @@ import {
   Image,
   Dimensions,
   Platform,
+  Share,
   Pressable,
   StyleSheet,
   TouchableOpacity,
@@ -24,6 +25,7 @@ import BookmarkIcon from '../../assets/svg/BookmarkIcon';
 import ColorUtil from '../../utils/ColorUtil';
 import ReportSheet, {REPORT_REASONS} from './ReportSheet';
 import useMeasuredExpandableText from '../../utils/useMeasuredExpandableText';
+import {get_store_share} from '../../api/storeApi';
 const defaultProfile = require('../../assets/default_profile.png');
 
 const FeedItem = ({item, isCentered = false, contentMaxLines = 2}) => {
@@ -35,7 +37,7 @@ const FeedItem = ({item, isCentered = false, contentMaxLines = 2}) => {
   const [likes, setLikes] = useState(item.likes ?? 0);
   const [saved, setSaved] = useState(false);
   const comments = item.comments ?? 0;
-  const shares = item.shares ?? 0;
+  const [shareCount, setShareCount] = useState(item.shares ?? 0);
   const [showAltTitle, setShowAltTitle] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const [imageRatio, setImageRatio] = useState(1);
@@ -160,6 +162,44 @@ const FeedItem = ({item, isCentered = false, contentMaxLines = 2}) => {
   const handleBookmarkPress = () => {
     setSaved(prev => !prev);
   };
+
+  const handleSharePress = useCallback(async () => {
+    try {
+      const targetId = item?.storeId ?? item?.id;
+      let shareLink = item?.shareLink;
+
+      if (!shareLink && targetId) {
+        const response = await get_store_share(targetId);
+        shareLink = response?.shareLink;
+      }
+
+      const messageParts = [];
+      if (item?.name) {
+        messageParts.push(`${item.name}에서 한잔 어때요?`);
+      }
+      if (item?.storeAddress) {
+        messageParts.push(item.storeAddress);
+      }
+      if (shareLink) {
+        messageParts.push(shareLink);
+      } else if (item?.content) {
+        messageParts.push(item.content);
+      }
+
+      const message = messageParts.filter(Boolean).join('\n');
+      if (!message) {
+        Alert.alert('공유하기', '공유할 내용을 찾을 수 없어요.');
+        return;
+      }
+
+      const result = await Share.share({message});
+      if (result?.action === Share.sharedAction) {
+        setShareCount(prev => prev + 1);
+      }
+    } catch (error) {
+      Alert.alert('공유하기', '공유에 실패했어요. 잠시 후 다시 시도해주세요.');
+    }
+  }, [item]);
 
   const handleImageLoad = (event, index) => {
     const {width, height} = event.nativeEvent;
@@ -595,9 +635,12 @@ const FeedItem = ({item, isCentered = false, contentMaxLines = 2}) => {
           <ChatCircleIcon size={24} color="#333" strokeWidth={2} />
           <CustomText style={styles.actionCount}>{comments}</CustomText>
         </Pressable>
-        <Pressable style={styles.actionButton} hitSlop={8}>
+        <Pressable
+          style={styles.actionButton}
+          hitSlop={8}
+          onPress={handleSharePress}>
           <PaperPlaneIcon size={24} color="#333" strokeWidth={2} />
-          <CustomText style={styles.actionCount}>{shares}</CustomText>
+          <CustomText style={styles.actionCount}>{shareCount}</CustomText>
         </Pressable>
         <View style={{flex: 1}} />
         <Pressable hitSlop={8} onPress={handleBookmarkPress}>
