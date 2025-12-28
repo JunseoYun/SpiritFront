@@ -426,7 +426,7 @@ const MainScreen = ({navigation}) => {
       closeWriteMenu();
 
       if (key === 'post') {
-        navigation.navigate('WritePhotoSelectScreen');
+        navigation.navigate('PostPhotoSelectScreen');
         return;
       }
 
