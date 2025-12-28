@@ -1453,6 +1453,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-cameraroll (7.10.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-config (1.5.5):
     - react-native-config/App (= 1.5.5)
   - react-native-config/App (1.5.5):
@@ -2336,6 +2357,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
+  - "react-native-cameraroll (from `../node_modules/@react-native-camera-roll/camera-roll`)"
   - react-native-config (from `../node_modules/react-native-config`)
   - react-native-date-picker (from `../node_modules/react-native-date-picker`)
   - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
@@ -2515,6 +2537,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-blur:
     :path: "../node_modules/@react-native-community/blur"
+  react-native-cameraroll:
+    :path: "../node_modules/@react-native-camera-roll/camera-roll"
   react-native-config:
     :path: "../node_modules/react-native-config"
   react-native-date-picker:
@@ -2701,6 +2725,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: c79216258c659d70cdebaf76f8c110cc46dce8db
   React-microtasksnativemodule: 8d918db5d7c4526de2a0a4692d878a21b338c3f0
   react-native-blur: d81883c19b028d3d04b44126ea661ae9e7ff35b6
+  react-native-cameraroll: eccee661ed4bdd489d15bd86d1eb0e51d11b6f3f
   react-native-config: 3367df9c1f25bb96197007ec531c7087ed4554c3
   react-native-date-picker: ce13cdf5cdfcd729025022c8d3b6f4fa547a754f
   react-native-geolocation: a2778ea7c815d1f8d3bccaa6fc386b66a55fb469
