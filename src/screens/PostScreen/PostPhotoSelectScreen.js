@@ -13,16 +13,24 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import FastImage from 'react-native-fast-image';
+
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import CameraRollDefault, {
   CameraRoll as CameraRollNamed,
 } from '@react-native-camera-roll/camera-roll';
 import ImageEditor from '@react-native-community/image-editor';
+import ImagePicker from 'react-native-image-crop-picker';
 import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
 import SkeletonBox from '../../hooks/SkeletonBox';
+import Loading from '../../hooks/Loading';
 import MaximizeIcon from '../../assets/svg/MaximizeIcon';
-import {requestPhotoPermission} from '../../hooks/usePhotopermis';
+import {
+  requestCameraPermission,
+  requestPhotoPermission,
+} from '../../hooks/usePhotopermis';
+import {IMAGE_PICKER_TEXTS} from '../../constants/imagePickerLabels';
 
 const {width} = Dimensions.get('window');
 const CameraRollModule = CameraRollNamed || CameraRollDefault;
@@ -79,6 +87,7 @@ const PostPhotoSelectScreen = ({navigation}) => {
   const [activeScale, setActiveScale] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [cropLoading, setCropLoading] = useState(false);
   const panValue = useRef(new Animated.ValueXY({x: 0, y: 0})).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
   const panStartRef = useRef({x: 0, y: 0});
@@ -107,6 +116,7 @@ const PostPhotoSelectScreen = ({navigation}) => {
     const targetId = currentPhotoId ?? fallbackId;
     return selectedAlbum?.photos.find(photo => photo.id === targetId);
   }, [selectedAlbum, selectedPhotoIds, currentPhotoId]);
+  const isNextEnabled = selectedPhotoIds.length > 0 && !cropLoading;
   const isScaleModeEditable = useMemo(() => {
     const firstSelectedId = selectedPhotoIds[0] ?? null;
     if (!firstSelectedId) {
@@ -116,6 +126,10 @@ const PostPhotoSelectScreen = ({navigation}) => {
   }, [currentPhotoId, selectedPhotoIds]);
   const isInitialLoading =
     loading && (!selectedAlbum || !(selectedAlbum?.photos?.length > 0));
+  const gridPhotos = useMemo(() => {
+    const albumPhotos = selectedAlbum?.photos ?? [];
+    return [{id: 'camera-tile', isCamera: true}, ...albumPhotos];
+  }, [selectedAlbum]);
 
   const rawImageAspectRatio = useMemo(() => {
     if (!currentImageSize.width || !currentImageSize.height) {
@@ -800,6 +814,78 @@ const PostPhotoSelectScreen = ({navigation}) => {
     navigation.goBack();
   };
 
+  const handleCameraPress = async () => {
+    const hasCamera = await requestCameraPermission();
+    if (!hasCamera) {
+      return;
+    }
+
+    try {
+      const captured = await ImagePicker.openCamera({
+        mediaType: 'photo',
+        cropping: false,
+        includeExif: false,
+        compressImageQuality: 0.95,
+        compressImageMaxWidth: 2160,
+        compressImageMaxHeight: 2160,
+        ...IMAGE_PICKER_TEXTS,
+      });
+
+      if (!captured?.path) {
+        return;
+      }
+
+      const savePermission = await requestPhotoPermission();
+      const originalUri = normalizeImageUri(captured.path);
+      let savedUri = originalUri;
+      if (savePermission) {
+        try {
+          savedUri = await CameraRollModule.save(originalUri, {type: 'photo'});
+        } catch (error) {
+          console.warn('사진 저장 실패', error);
+          savedUri = originalUri;
+        }
+      }
+
+      const newPhoto = {
+        id: `${savedUri}-${Date.now()}`,
+        uri: savedUri,
+      };
+
+      setAlbums(prev => {
+        const hasRecent = prev.some(album => album.id === 'recent');
+        if (!hasRecent) {
+          return [
+            {
+              id: 'recent',
+              name: '최근 항목',
+              photos: [newPhoto],
+              hasNextPage: true,
+              endCursor: null,
+            },
+            ...prev,
+          ];
+        }
+        return prev.map(album => {
+          if (album.id !== 'recent') {
+            return album;
+          }
+          const exists = album.photos?.some(photo => photo.uri === newPhoto.uri);
+          return {
+            ...album,
+            photos: exists ? album.photos : [newPhoto, ...(album.photos ?? [])],
+          };
+        });
+      });
+
+      setSelectedAlbumId('recent');
+      setSelectedPhotoIds([newPhoto.id]);
+      setCurrentPhotoId(newPhoto.id);
+    } catch (error) {
+      console.warn('카메라 촬영 실패', error);
+    }
+  };
+
   const handleNext = async () => {
     const fallbackPhoto = selectedPhoto;
     const previewPhotoIds = selectedPhotoIds.length
@@ -816,21 +902,28 @@ const PostPhotoSelectScreen = ({navigation}) => {
     if (!frameSize.width || !frameSize.height) {
       return;
     }
-    const croppedPhotos = await Promise.all(
-      previewPhotos.map((photo, index) => cropPhotoToPreview(photo, index)),
-    );
-    navigation.navigate('PostStoreInputScreen', {
-      preview: {
-        photos: croppedPhotos,
-        previewMode,
-        baseFrame: {
-          isPortraitPhoto,
-          landscapeAspectRatio,
+    setCropLoading(true);
+    try {
+      const croppedPhotos = await Promise.all(
+        previewPhotos.map((photo, index) => cropPhotoToPreview(photo, index)),
+      );
+      navigation.navigate('PostStoreInputScreen', {
+        preview: {
+          photos: croppedPhotos,
+          previewMode,
+          baseFrame: {
+            isPortraitPhoto,
+            landscapeAspectRatio,
+          },
+          panByPhotoId,
+          scaleByPhotoId,
         },
-        panByPhotoId,
-        scaleByPhotoId,
-      },
-    });
+      });
+    } finally {
+      if (isMountedRef.current) {
+        setCropLoading(false);
+      }
+    }
   };
 
   const togglePhotoSelection = photoId => {
@@ -844,6 +937,21 @@ const PostPhotoSelectScreen = ({navigation}) => {
   };
 
   const renderPhotoItem = ({item}) => {
+    if (item.isCamera) {
+      return (
+        <Pressable
+          style={[styles.thumbnailWrapper, styles.cameraTile]}
+          onPress={handleCameraPress}>
+          <FontAwesomeIcon
+            name="camera"
+            size={20}
+            color="#333"
+            style={styles.cameraicon}
+          />
+          <CustomText style={styles.cameraText}>카메라</CustomText>
+        </Pressable>
+      );
+    }
     const selectedIndex = selectedPhotoIds.indexOf(item.id);
     const isSelected = selectedIndex >= 0;
     const isCurrent = item.id === currentPhotoId;
@@ -902,8 +1010,13 @@ const PostPhotoSelectScreen = ({navigation}) => {
 
         <Pressable
           hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
-          onPress={handleNext}>
-          <CustomText style={styles.nextText}>다음</CustomText>
+          onPress={handleNext}
+          disabled={!isNextEnabled}
+          style={!isNextEnabled && styles.nextButtonDisabled}>
+          <CustomText
+            style={[styles.nextText, !isNextEnabled && styles.nextTextDisabled]}>
+            다음
+          </CustomText>
         </Pressable>
       </View>
 
@@ -995,7 +1108,7 @@ const PostPhotoSelectScreen = ({navigation}) => {
           </View>
 
           <FlatList
-            data={selectedAlbum?.photos ?? []}
+            data={gridPhotos}
             keyExtractor={item => item.id}
             numColumns={4}
             renderItem={renderPhotoItem}
@@ -1040,6 +1153,7 @@ const PostPhotoSelectScreen = ({navigation}) => {
           </View>
         </View>
       )}
+      <Loading loading={cropLoading} />
     </View>
   );
 };
@@ -1072,6 +1186,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 16,
     color: '#3CBBFF',
+  },
+  nextTextDisabled: {
+    color: '#A7B7C3',
+  },
+  nextButtonDisabled: {
+    opacity: 0.6,
   },
   previewContainer: {
     width: '100%',
@@ -1148,6 +1268,17 @@ const styles = StyleSheet.create({
     width: (width - 3) / 4,
     height: (width - 3) / 4,
     marginBottom: 1,
+  },
+  cameraTile: {
+    backgroundColor: '#F5F6F8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cameraText: {
+    marginTop: 6,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 12,
+    color: '#666',
   },
   thumbnail: {
     width: '100%',
