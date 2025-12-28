@@ -1,127 +1,163 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {
+  SectionList,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  Pressable,
+  Platform,
+  RefreshControl,
+} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
-import {View, Text, StyleSheet, FlatList, Platform} from 'react-native';
-import MyReviewItem from './MyReviewItem';
-import {ReviewRecentGet, ReviewDelete} from '../../api/reviewApi';
-import useCustomAlert from '../../hooks/useCustomAlert';
-import {useToast} from '../../context/ToastContext';
+import FastImage from 'react-native-fast-image';
+import {ReviewRecentGet} from '../../api/reviewApi';
 import Loading from '../../hooks/Loading';
 import CustomText from '../../utils/CustomText';
 
-const MyReview = ({navigation}) => {
-  const [myReview, setMyReview] = useState([]); // 검색된 가게 목록
-  const [page, setPage] = useState(0); // 페이지 번호
-  const [loading, setLoading] = useState(false); // 로딩 상태
-  const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
+const GRID_COLUMNS = 3;
+const GRID_GAP = 1;
+
+const MyReview = ({
+  navigation,
+  headerComponent,
+  tabComponent,
+  onCountChange,
+  userProfile,
+}) => {
+  const {width: screenWidth} = useWindowDimensions();
+  const [myReview, setMyReview] = useState([]);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isEnd, setIsEnd] = useState(false);
   const [totalpage, setTotalpage] = useState(0);
-  const [openDropdownReviewId, setOpenDropdownReviewId] = useState(null);
-  const {showAlert, AlertComponent} = useCustomAlert();
-  const {showToast} = useToast();
 
-  // 검색된 가게들을 필터링하는 함수
-  const myReviewsget = async currentPage => {
-    setLoading(true);
+  const cellSize = useMemo(
+    () => (screenWidth - GRID_GAP * (GRID_COLUMNS - 1)) / GRID_COLUMNS,
+    [screenWidth],
+  );
 
+  const myReviewsget = async (currentPage, reset = false) => {
+    if (!reset) {
+      setLoading(true);
+    }
     try {
       const data = await ReviewRecentGet(currentPage);
       setTotalpage(data.totalPages);
-
       if (data.content.length === 0) {
-        setIsEnd(true); // 더 이상 데이터가 없으면
+        setIsEnd(true);
       } else {
-        // 기존 데이터와 병합하고 중복 제거
-        setMyReview(prevStores => {
-          const mergedReviews = [...prevStores, ...data.content];
-          const uniqueReviews = Array.from(
-            new Map(mergedReviews.map(review => [review.id, review])).values(),
+        setMyReview(prevReviews => {
+          const merged = reset ? data.content : [...prevReviews, ...data.content];
+          const unique = Array.from(
+            new Map(merged.map(review => [review.id, review])).values(),
           );
-          return uniqueReviews;
+          return unique;
         });
       }
     } catch (err) {
-      console.error('오류 발생:', err.message);
+      console.error('리뷰 로딩 실패:', err.message);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  // 초기 로딩 시, 검색어와 위치가 있을 때 데이터를 불러옴
   useFocusEffect(
     useCallback(() => {
-      setMyReview([]); // 기존 데이터 초기화
-      setPage(0);
-      setIsEnd(false);
-      setOpenDropdownReviewId(null);
-      myReviewsget(0); // 첫 페이지 불러오기
-    }, []),
+      if (myReview.length === 0) {
+        setPage(0);
+        setIsEnd(false);
+        myReviewsget(0, true);
+      }
+    }, [myReview.length]),
   );
 
-  const deleteReview = reviewid => {
-    showAlert({
-      title: `리뷰 삭제`,
-      message: `이 리뷰를 삭제하시겠습니까?`,
-      onConfirm: async () => {
-        try {
-          await ReviewDelete(reviewid);
-          setMyReview(prevReviews =>
-            prevReviews.filter(review => review.id !== reviewid),
+  useEffect(() => {
+    onCountChange?.(myReview.length);
+  }, [myReview.length, onCountChange]);
+
+  const rows = useMemo(() => {
+    const result = [];
+    for (let i = 0; i < myReview.length; i += GRID_COLUMNS) {
+      result.push(myReview.slice(i, i + GRID_COLUMNS));
+    }
+    return result;
+  }, [myReview]);
+
+  const handleOpenDetail = review => {
+    navigation.navigate('MyPostDetailScreen', {
+      review,
+      userProfile,
+    });
+  };
+
+  const handleRefresh = () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setIsEnd(false);
+    setPage(0);
+    myReviewsget(0, true);
+  };
+
+  const renderRow = ({item: row, index}) => {
+    return (
+      <View style={[styles.row, {marginBottom: GRID_GAP}]}>
+        {row.map((review, idx) => {
+          const isLast = idx === row.length - 1;
+          const imageUrl = review?.imgUrlList?.[0];
+          return (
+            <Pressable
+              key={review?.id ?? `empty-${index}-${idx}`}
+              onPress={() => review && handleOpenDetail(review)}
+              style={{
+                width: cellSize,
+                height: cellSize,
+                marginRight: isLast ? 0 : GRID_GAP,
+                backgroundColor: '#f1f1f1',
+              }}>
+              <FastImage
+                source={
+                  imageUrl
+                    ? {uri: imageUrl}
+                    : require('../../assets/default_store6.png')
+                }
+                style={styles.image}
+                resizeMode={FastImage.resizeMode.cover}
+              />
+            </Pressable>
           );
-          showToast('삭제 되었습니다.');
-        } catch (error) {}
-      },
-      onCancel: null,
-      type: 'delete',
-    });
+        })}
+      </View>
+    );
   };
 
-  const updateReview = reviewdata => {
-    navigation.navigate('StoreStack', {
-      screen: 'ReviewEditScreen',
-      params: {
-        reviewdata,
-        onRefresh: () => {
-          setMyReview([]); // 기존 데이터 초기화
-          setPage(0);
-          setIsEnd(false);
-          myReviewsget(0); // 첫 페이지 불러오기
-        },
-      },
-    });
-  };
-
-  const renderItem = ({item}) => (
-    <MyReviewItem
-      key={item.id}
-      review={item}
-      navigation={navigation}
-      deleteReview={() => deleteReview(item.id)}
-      updateReview={() => updateReview(item)}
-      isDropdownOpen={openDropdownReviewId === item.id}
-      onDropdownOpen={() => setOpenDropdownReviewId(item.id)}
-      onDropdownClose={() => {
-        if (openDropdownReviewId === item.id) {
-          setOpenDropdownReviewId(null);
-        }
-      }}
-    />
-  );
   return (
     <>
-      <FlatList
-        data={myReview}
-        renderItem={renderItem}
-        keyExtractor={item => item.id.toString()}
-        initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
-        maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
-        contentContainerStyle={{paddingBottom: 30}}
-        windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
-        removeClippedSubviews={Platform.OS === 'android'} // iOS에서는 화면이 잘려 렌더링 오류가 발생해 안드로이드에서만 사용
+      <SectionList
+        sections={[{title: 'tabs', data: rows}]}
+        keyExtractor={(item, index) => `row-${index}`}
+        renderItem={renderRow}
+        renderSectionHeader={() =>
+          tabComponent ? (
+            <View style={styles.tabHeader}>{tabComponent}</View>
+          ) : null
+        }
+        ListHeaderComponent={headerComponent || null}
+        stickySectionHeadersEnabled
+        initialNumToRender={12}
+        maxToRenderPerBatch={12}
+        windowSize={7}
+        removeClippedSubviews={Platform.OS === 'android'}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
         onEndReached={() => {
           if (!loading && !isEnd && page < totalpage - 1) {
             setPage(prevPage => {
-              const nextPage = prevPage + 1; // 다음 페이지 번호
-              myReviewsget(nextPage); // 그 페이지 번호로 데이터 요청
-              return nextPage; // 상태를 증가된 페이지 번호로 갱신
+              const nextPage = prevPage + 1;
+              myReviewsget(nextPage, false);
+              return nextPage;
             });
           }
         }}
@@ -130,20 +166,33 @@ const MyReview = ({navigation}) => {
           !loading && myReview.length === 0 ? (
             <View style={styles.footer}>
               <CustomText style={styles.emptyText}>
-                등록된 리뷰가 없어요
+                등록한 게시물이 없어요
               </CustomText>
             </View>
           ) : null
         }
+        contentContainerStyle={styles.content}
       />
       <Loading loading={loading} />
-      <AlertComponent />
-      {/* 모달 컴포넌트 사용 */}
     </>
   );
 };
 
 const styles = StyleSheet.create({
+  content: {
+    paddingBottom: 30,
+  },
+  row: {
+    flexDirection: 'row',
+    marginTop: 1,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  tabHeader: {
+    backgroundColor: '#fff',
+  },
   footer: {
     paddingVertical: 30,
     alignItems: 'center',

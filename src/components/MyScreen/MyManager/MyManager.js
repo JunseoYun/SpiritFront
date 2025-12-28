@@ -1,5 +1,5 @@
 import React, {useState, useCallback} from 'react';
-import {View, Text, FlatList, Pressable, StyleSheet} from 'react-native';
+import {View, SectionList, Pressable, StyleSheet} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import ColorUtil from '../../../utils/ColorUtil';
 import FastImage from 'react-native-fast-image';
@@ -7,7 +7,7 @@ import {Store_getby_managed} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
 import CustomText from '../../../utils/CustomText';
 
-const MyManager = ({navigation}) => {
+const MyManager = ({navigation, headerComponent, tabComponent}) => {
   const [page, setPage] = useState(0);
   const [totalpage, setTotalpage] = useState(0);
   const [mysotredata, setMystoredata] = useState([]);
@@ -128,12 +128,19 @@ const MyManager = ({navigation}) => {
   return (
     <View style={styles.container}>
       <View style={styles.listCard}>
-        <FlatList
-          data={mysotredata}
+        <SectionList
+          sections={[{title: 'tabs', data: mysotredata}]}
           keyExtractor={(item, index) =>
             item.storeId ? item.storeId.toString() : `${index}`
           }
           renderItem={renderStoreItem}
+          renderSectionHeader={() =>
+            tabComponent ? (
+              <View style={styles.tabHeader}>{tabComponent}</View>
+            ) : null
+          }
+          ListHeaderComponent={headerComponent || null}
+          stickySectionHeadersEnabled
           ListEmptyComponent={!loading ? renderEmptyComponent : null}
           onEndReached={loadMoreStores}
           onEndReachedThreshold={0.3}
@@ -160,6 +167,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
 
     paddingHorizontal: 18,
+  },
+  tabHeader: {
+    backgroundColor: '#fff',
   },
   listContentContainer: {
     paddingVertical: 6,

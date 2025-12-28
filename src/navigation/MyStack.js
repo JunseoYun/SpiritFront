@@ -1,17 +1,17 @@
-import React from 'react';
+﻿import React from 'react';
 import {Pressable} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import ConfigScreen from '../screens/BottomTab/My/ConfigScreen';
 import Mynickchange from '../screens/BottomTab/My/Mynickchange';
 import MyScreen from '../screens/BottomTab/My/MyScreen';
+import MyPostDetailScreen from '../screens/BottomTab/My/MyPostDetailScreen';
 import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
 import MyCardScreen from '../screens/BottomTab/My/MyCard/MyCardScreen';
 import CardRegisterScreen from '../screens/BottomTab/My/MyCard/CardRegisterScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 const Stack = createStackNavigator();
 
-// 재사용 가능한 옵션 컴포넌트
 const getScreenOptions = title => ({
   headerShown: true,
   title: title,
@@ -33,7 +33,7 @@ export default function MyStack() {
           headerShown: true,
           headerTitleAlign: 'center',
           headerShadowVisible: false,
-          title: '마이프로필',
+          title: '마이페이지',
           headerTitleStyle: {
             fontSize: 19,
             color: '#333',
@@ -42,11 +42,32 @@ export default function MyStack() {
         })}
       />
       <Stack.Screen
+        name="MyPostDetailScreen"
+        component={MyPostDetailScreen}
+        options={({navigation}) => ({
+          headerShadowVisible: false,
+          title: '게시물',
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
         name="ConfigScreen"
         component={ConfigScreen}
         options={({navigation}) => ({
           headerShadowVisible: false,
-          ...getScreenOptions('프로필 수정'), // getScreenOptions 객체를 펼쳐 병합
+          ...getScreenOptions('프로필 설정'),
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}
@@ -66,7 +87,7 @@ export default function MyStack() {
         component={Mynickchange}
         options={({navigation}) => ({
           headerShadowVisible: false,
-          ...getScreenOptions('닉네임 변경'), // getScreenOptions 객체를 펼쳐 병합
+          ...getScreenOptions('닉네임 변경'),
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}

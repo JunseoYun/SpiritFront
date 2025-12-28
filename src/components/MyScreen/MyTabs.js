@@ -14,10 +14,7 @@ const {width} = Dimensions.get('window');
 const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
   const animatedValue = useRef(new Animated.Value(selectedTab)).current;
 
-  const tabs = [
-    {name: '리뷰', screen: 'MyReview'},
-    {name: '위치', screen: 'MyLiked'},
-  ];
+  const tabs = [{name: '게시물', screen: 'MyReview'}];
 
   if (isManager) {
     tabs.push({name: '나의 매장', screen: 'MyManager'});
@@ -25,9 +22,13 @@ const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
 
   const TAB_COUNT = tabs.length;
   const TAB_WIDTH = width / TAB_COUNT;
+  const INDICATOR_WIDTH = TAB_WIDTH * 0.28;
 
   // underline 이동 (가장 부드러운 방식)
-  const translateX = Animated.multiply(animatedValue, TAB_WIDTH);
+  const translateX = Animated.add(
+    Animated.multiply(animatedValue, TAB_WIDTH),
+    (TAB_WIDTH - INDICATOR_WIDTH) / 2,
+  );
 
   const handlePress = index => {
     setSelectedTab(index);
@@ -74,15 +75,12 @@ const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
         ))}
       </View>
 
-      {/* 바닥 기본 줄 */}
-      <View style={styles.defaultUnderline} />
-
       {/* 이동하는 밑줄 */}
       <Animated.View
         style={[
           styles.animatedUnderline,
           {
-            width: TAB_WIDTH - 30,
+            width: INDICATOR_WIDTH,
             transform: [{translateX}],
           },
         ]}
@@ -102,8 +100,8 @@ const styles = StyleSheet.create({
   tabButton: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 15,
-    paddingBottom: 17,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
   tabText: {
     fontSize: 17,
@@ -115,7 +113,7 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   defaultUnderline: {
-    height: 2.5,
+    height: 1.5,
     width: '100%',
     backgroundColor: '#E0E0E0',
     position: 'absolute',
@@ -124,9 +122,8 @@ const styles = StyleSheet.create({
   animatedUnderline: {
     position: 'absolute',
     bottom: 0,
-    height: 2.5,
+    height: 1.5,
     backgroundColor: '#1a1a1a',
-    marginHorizontal: 15,
   },
 });
 
