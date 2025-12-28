@@ -34,6 +34,7 @@ import OrderDetailScreen from '../screens/BottomTab/Order/OrderDetailScreen';
 import {normalizeFont} from '../hooks/normalizeFont';
 import CustomText from '../utils/CustomText';
 import PostDetailScreen from '../screens/PostScreen/PostDetailScreen';
+import WritePhotoSelectScreen from '../screens/PostScreen/WritePhotoSelectScreen';
 
 const Stack = createStackNavigator();
 
@@ -86,6 +87,13 @@ export default function MainStack() {
             </Pressable>
           ),
         })}
+      />
+      <Stack.Screen
+        name="WritePhotoSelectScreen"
+        component={WritePhotoSelectScreen}
+        options={{
+          headerShown: false,
+        }}
       />
       <Stack.Screen
         name="SearchScreen"

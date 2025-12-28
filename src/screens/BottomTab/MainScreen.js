@@ -425,6 +425,11 @@ const MainScreen = ({navigation}) => {
     async key => {
       closeWriteMenu();
 
+      if (key === 'post') {
+        navigation.navigate('WritePhotoSelectScreen');
+        return;
+      }
+
       if (key === 'store') {
         navigation.navigate('StoreSearchScreen', {index: 0, location});
         return;
