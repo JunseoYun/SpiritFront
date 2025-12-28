@@ -30,6 +30,7 @@
     "@react-native-community/blur": "^4.4.1",
     "@react-native-community/checkbox": "^0.5.17",
     "@react-native-community/geolocation": "^3.4.0",
+    "@react-native-community/image-editor": "^4.3.0",
     "@react-native-firebase/app": "^22.2.0",
     "@react-native-firebase/auth": "^22.2.0",
     "@react-native-firebase/messaging": "^22.2.0",

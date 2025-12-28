@@ -35,6 +35,7 @@ import {normalizeFont} from '../hooks/normalizeFont';
 import CustomText from '../utils/CustomText';
 import PostDetailScreen from '../screens/PostScreen/PostDetailScreen';
 import WritePhotoSelectScreen from '../screens/PostScreen/WritePhotoSelectScreen';
+import WritePhotoPreviewScreen from '../screens/PostScreen/WritePhotoPreviewScreen';
 
 const Stack = createStackNavigator();
 
@@ -91,6 +92,13 @@ export default function MainStack() {
       <Stack.Screen
         name="WritePhotoSelectScreen"
         component={WritePhotoSelectScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="WritePhotoPreviewScreen"
+        component={WritePhotoPreviewScreen}
         options={{
           headerShown: false,
         }}

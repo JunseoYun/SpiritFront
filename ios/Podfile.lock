@@ -1522,6 +1522,28 @@ PODS:
     - Yoga
   - react-native-geolocation-service (5.3.1):
     - React
+  - react-native-image-editor (4.3.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-RCTImage
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-pager-view (6.6.1):
     - DoubleConversion
     - glog
@@ -2362,6 +2384,7 @@ DEPENDENCIES:
   - react-native-date-picker (from `../node_modules/react-native-date-picker`)
   - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
   - react-native-geolocation-service (from `../node_modules/react-native-geolocation-service`)
+  - "react-native-image-editor (from `../node_modules/@react-native-community/image-editor`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
@@ -2547,6 +2570,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/geolocation"
   react-native-geolocation-service:
     :path: "../node_modules/react-native-geolocation-service"
+  react-native-image-editor:
+    :path: "../node_modules/@react-native-community/image-editor"
   react-native-pager-view:
     :path: "../node_modules/react-native-pager-view"
   react-native-safe-area-context:
@@ -2730,6 +2755,7 @@ SPEC CHECKSUMS:
   react-native-date-picker: ce13cdf5cdfcd729025022c8d3b6f4fa547a754f
   react-native-geolocation: a2778ea7c815d1f8d3bccaa6fc386b66a55fb469
   react-native-geolocation-service: 608e1da71a1ac31b4de64d9ef2815f697978c55b
+  react-native-image-editor: a123921217668b06561ef12198966972d5cf6f12
   react-native-pager-view: d43f2637dd5952c1486b9baf2d8f9bb3dd83c46f
   react-native-safe-area-context: 550de290dba420c3fda1e95eef4039fddefaf9dc
   react-native-splash-screen: 4312f786b13a81b5169ef346d76d33bc0c6dc457
