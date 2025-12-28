@@ -16,7 +16,7 @@ import ColorUtil from '../../utils/ColorUtil';
 
 const {width} = Dimensions.get('window');
 const MAX_LANDSCAPE_RATIO = 16 / 9;
-const WritePhotoPreviewScreen = ({navigation, route}) => {
+const PostStoreInputScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
   const preview = route?.params?.preview ?? {};
   const photos = Array.isArray(preview.photos) ? preview.photos : [];
@@ -286,4 +286,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default WritePhotoPreviewScreen;
+export default PostStoreInputScreen;

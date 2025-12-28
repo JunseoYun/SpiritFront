@@ -34,8 +34,8 @@ import OrderDetailScreen from '../screens/BottomTab/Order/OrderDetailScreen';
 import {normalizeFont} from '../hooks/normalizeFont';
 import CustomText from '../utils/CustomText';
 import PostDetailScreen from '../screens/PostScreen/PostDetailScreen';
-import WritePhotoSelectScreen from '../screens/PostScreen/WritePhotoSelectScreen';
-import WritePhotoPreviewScreen from '../screens/PostScreen/WritePhotoPreviewScreen';
+import PostPhotoSelectScreen from '../screens/PostScreen/PostPhotoSelectScreen';
+import PostStoreInputScreen from '../screens/PostScreen/PostStoreInputScreen';
 
 const Stack = createStackNavigator();
 
@@ -90,15 +90,15 @@ export default function MainStack() {
         })}
       />
       <Stack.Screen
-        name="WritePhotoSelectScreen"
-        component={WritePhotoSelectScreen}
+        name="PostPhotoSelectScreen"
+        component={PostPhotoSelectScreen}
         options={{
           headerShown: false,
         }}
       />
       <Stack.Screen
-        name="WritePhotoPreviewScreen"
-        component={WritePhotoPreviewScreen}
+        name="PostStoreInputScreen"
+        component={PostStoreInputScreen}
         options={{
           headerShown: false,
         }}

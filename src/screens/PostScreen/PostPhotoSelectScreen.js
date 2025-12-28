@@ -59,7 +59,7 @@ const getTouchDistance = touches => {
   return Math.hypot(dx, dy);
 };
 
-const WritePhotoSelectScreen = ({navigation}) => {
+const PostPhotoSelectScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const [albums, setAlbums] = useState([]);
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
@@ -819,7 +819,7 @@ const WritePhotoSelectScreen = ({navigation}) => {
     const croppedPhotos = await Promise.all(
       previewPhotos.map((photo, index) => cropPhotoToPreview(photo, index)),
     );
-    navigation.navigate('WritePhotoPreviewScreen', {
+    navigation.navigate('PostStoreInputScreen', {
       preview: {
         photos: croppedPhotos,
         previewMode,
@@ -1216,4 +1216,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default WritePhotoSelectScreen;
+export default PostPhotoSelectScreen;
