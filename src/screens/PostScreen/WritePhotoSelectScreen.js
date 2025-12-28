@@ -17,6 +17,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import CameraRollDefault, {
   CameraRoll as CameraRollNamed,
 } from '@react-native-camera-roll/camera-roll';
+import ImageEditor from '@react-native-community/image-editor';
 import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
 import SkeletonBox from '../../hooks/SkeletonBox';
@@ -32,6 +33,21 @@ const MAX_PREVIEW_SCALE = 3;
 const MAX_LANDSCAPE_RATIO = 16 / 9;
 
 const clampValue = (value, min, max) => Math.max(min, Math.min(value, max));
+const clampNumber = (value, min, max) => Math.max(min, Math.min(value, max));
+const normalizeImageUri = uri => {
+  if (!uri || typeof uri !== 'string') {
+    return uri;
+  }
+  if (
+    uri.startsWith('file://') ||
+    uri.startsWith('content://') ||
+    uri.startsWith('ph://') ||
+    uri.startsWith('assets-library://')
+  ) {
+    return uri;
+  }
+  return `file://${uri}`;
+};
 
 const getTouchDistance = touches => {
   if (!touches || touches.length < 2) {
@@ -187,6 +203,132 @@ const WritePhotoSelectScreen = ({navigation}) => {
 
   const canPan =
     canZoom && (effectiveResizeMode === 'cover' || activeScale > 1);
+
+  const getImageSize = uri =>
+    new Promise(resolve => {
+      if (!uri) {
+        resolve({width: 0, height: 0});
+        return;
+      }
+      Image.getSize(
+        uri,
+        (imgWidth, imgHeight) => {
+          resolve({width: imgWidth, height: imgHeight});
+        },
+        () => resolve({width: 0, height: 0}),
+      );
+    });
+
+  const getDisplaySizeForCrop = (imageSize, resizeMode) => {
+    if (
+      !frameSize.width ||
+      !frameSize.height ||
+      !imageSize.width ||
+      !imageSize.height
+    ) {
+      return {width: frameSize.width, height: frameSize.height};
+    }
+    const scaleFactor =
+      resizeMode === 'contain'
+        ? Math.min(
+            frameSize.width / imageSize.width,
+            frameSize.height / imageSize.height,
+          )
+        : Math.max(
+            frameSize.width / imageSize.width,
+            frameSize.height / imageSize.height,
+          );
+    return {
+      width: imageSize.width * scaleFactor,
+      height: imageSize.height * scaleFactor,
+    };
+  };
+
+  const cropPhotoToPreview = async (photo, index) => {
+    if (!photo?.uri || typeof photo.uri !== 'string') {
+      return photo;
+    }
+    const imageSize = await getImageSize(photo.uri);
+    if (!imageSize.width || !imageSize.height) {
+      return photo;
+    }
+    const rawImageAspectRatio = imageSize.width / imageSize.height;
+    const isUltraWideLandscape =
+      !isPortraitPhoto && rawImageAspectRatio > MAX_LANDSCAPE_RATIO;
+    const isScaleModeEditable = index === 0;
+    const resizeMode =
+      previewMode === 'full'
+        ? 'cover'
+        : isPortraitPhoto || isUltraWideLandscape
+        ? 'cover'
+        : isScaleModeEditable
+        ? 'contain'
+        : 'cover';
+
+    const displaySizeForCrop = getDisplaySizeForCrop(imageSize, resizeMode);
+    const baseScale =
+      imageSize.width > 0 ? displaySizeForCrop.width / imageSize.width : 1;
+    const photoScale = scaleByPhotoId[photo.id] ?? 1;
+    const effectiveScale = baseScale * photoScale;
+    if (!effectiveScale) {
+      return photo;
+    }
+    const scaledWidth = imageSize.width * effectiveScale;
+    const scaledHeight = imageSize.height * effectiveScale;
+    const pan = panByPhotoId[photo.id] ?? {x: 0, y: 0};
+    const offsetX = (scaledWidth - frameSize.width) / 2 - pan.x;
+    const offsetY = (scaledHeight - frameSize.height) / 2 - pan.y;
+    const clampedOffsetX = clampNumber(offsetX, 0, scaledWidth);
+    const clampedOffsetY = clampNumber(offsetY, 0, scaledHeight);
+    const cropWidth = clampNumber(
+      frameSize.width,
+      0,
+      scaledWidth - clampedOffsetX,
+    );
+    const cropHeight = clampNumber(
+      frameSize.height,
+      0,
+      scaledHeight - clampedOffsetY,
+    );
+    const originX = clampedOffsetX / effectiveScale;
+    const originY = clampedOffsetY / effectiveScale;
+    const sizeWidth = cropWidth / effectiveScale;
+    const sizeHeight = cropHeight / effectiveScale;
+    const maxOffsetX = Math.max(0, imageSize.width - 1);
+    const maxOffsetY = Math.max(0, imageSize.height - 1);
+    const safeOriginX = clampNumber(originX, 0, maxOffsetX);
+    const safeOriginY = clampNumber(originY, 0, maxOffsetY);
+    const maxWidth = Math.max(1, imageSize.width - safeOriginX);
+    const maxHeight = Math.max(1, imageSize.height - safeOriginY);
+    const safeWidth = clampNumber(sizeWidth, 1, maxWidth);
+    const safeHeight = clampNumber(sizeHeight, 1, maxHeight);
+    const cropData = {
+      offset: {
+        x: Math.round(safeOriginX),
+        y: Math.round(safeOriginY),
+      },
+      size: {
+        width: Math.round(safeWidth),
+        height: Math.round(safeHeight),
+      },
+    };
+
+    try {
+      const cropResult = await ImageEditor.cropImage(photo.uri, cropData);
+      const croppedUri =
+        typeof cropResult === 'string' ? cropResult : cropResult?.uri;
+      if (!croppedUri) {
+        return photo;
+      }
+      return {
+        ...photo,
+        uri: normalizeImageUri(croppedUri),
+      };
+    } catch (error) {
+      console.warn('사진 크롭 실패', error);
+      return photo;
+    }
+  };
 
   useEffect(() => {
     const firstSelectedId = selectedPhotoIds[0] ?? null;
@@ -658,8 +800,37 @@ const WritePhotoSelectScreen = ({navigation}) => {
     navigation.goBack();
   };
 
-  const handleNext = () => {
-    navigation.goBack();
+  const handleNext = async () => {
+    const fallbackPhoto = selectedPhoto;
+    const previewPhotoIds = selectedPhotoIds.length
+      ? selectedPhotoIds
+      : fallbackPhoto
+      ? [fallbackPhoto.id]
+      : [];
+    const previewPhotos = previewPhotoIds
+      .map(photoId => selectedAlbum?.photos.find(photo => photo.id === photoId))
+      .filter(Boolean);
+    if (!previewPhotos.length) {
+      return;
+    }
+    if (!frameSize.width || !frameSize.height) {
+      return;
+    }
+    const croppedPhotos = await Promise.all(
+      previewPhotos.map((photo, index) => cropPhotoToPreview(photo, index)),
+    );
+    navigation.navigate('WritePhotoPreviewScreen', {
+      preview: {
+        photos: croppedPhotos,
+        previewMode,
+        baseFrame: {
+          isPortraitPhoto,
+          landscapeAspectRatio,
+        },
+        panByPhotoId,
+        scaleByPhotoId,
+      },
+    });
   };
 
   const togglePhotoSelection = photoId => {
