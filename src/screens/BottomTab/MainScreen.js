@@ -163,6 +163,15 @@ const MainScreen = ({navigation}) => {
   const writeLabelAnim = useRef(new Animated.Value(1)).current;
   const writeIconAnim = useRef(new Animated.Value(0)).current;
   const writeMenuAnim = useRef(new Animated.Value(0)).current;
+  const closeWriteMenu = useCallback(() => {
+    setIsWriteMenuOpen(false);
+    const shouldShowLabel =
+      scrollOffsetRef.current <= WRITE_BUTTON_COLLAPSE_OFFSET;
+    if (shouldShowLabel && !writeLabelVisibleRef.current) {
+      writeLabelVisibleRef.current = true;
+      setShowWriteLabel(true);
+    }
+  }, []);
 
   const writeMenuItems = [
     {
@@ -307,17 +316,8 @@ const MainScreen = ({navigation}) => {
         writeLabelVisibleRef.current = shouldShowLabel;
         setShowWriteLabel(shouldShowLabel);
       }
-
-      if (isWriteMenuOpen) {
-        setIsWriteMenuOpen(false);
-        const shouldRestoreLabel = offsetY <= WRITE_BUTTON_COLLAPSE_OFFSET;
-        if (shouldRestoreLabel && !writeLabelVisibleRef.current) {
-          writeLabelVisibleRef.current = true;
-          setShowWriteLabel(true);
-        }
-      }
     },
-    [isWriteMenuOpen, updateCenteredItem],
+    [updateCenteredItem],
   );
 
   useEffect(() => {
@@ -385,6 +385,13 @@ const MainScreen = ({navigation}) => {
     DeviceEventEmitter.emit('feed-more-menu-close');
   }, []);
 
+  const handleScrollBeginDrag = useCallback(() => {
+    closeMoreMenus();
+    if (isWriteMenuOpen) {
+      closeWriteMenu();
+    }
+  }, [closeMoreMenus, closeWriteMenu, isWriteMenuOpen]);
+
   useFocusEffect(
     useCallback(() => {
       loadHeaderData();
@@ -416,13 +423,7 @@ const MainScreen = ({navigation}) => {
 
   const handleWriteMenuItemPress = useCallback(
     async key => {
-      setIsWriteMenuOpen(false);
-      const shouldShowLabel =
-        scrollOffsetRef.current <= WRITE_BUTTON_COLLAPSE_OFFSET;
-      if (shouldShowLabel && !writeLabelVisibleRef.current) {
-        writeLabelVisibleRef.current = true;
-        setShowWriteLabel(true);
-      }
+      closeWriteMenu();
 
       if (key === 'store') {
         navigation.navigate('StoreSearchScreen', {index: 0, location});
@@ -448,7 +449,7 @@ const MainScreen = ({navigation}) => {
       // TODO: Replace with navigation or action for each menu item when available.
       console.log('write menu item selected', key);
     },
-    [navigation, location, handleGoToSettings, showAlert],
+    [closeWriteMenu, navigation, location, handleGoToSettings, showAlert],
   );
 
   const writeIconRotation = writeIconAnim.interpolate({
@@ -506,7 +507,7 @@ const MainScreen = ({navigation}) => {
         )}
         contentContainerStyle={styles.feedContent}
         showsVerticalScrollIndicator={false}
-        onScrollBeginDrag={closeMoreMenus}
+        onScrollBeginDrag={handleScrollBeginDrag}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         onLayout={handleListLayout}
