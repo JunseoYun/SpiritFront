@@ -1,25 +1,21 @@
-import React, {useState, useEffect, useCallback, useLayoutEffect} from 'react';
+﻿import React, {useState, useEffect, useCallback, useLayoutEffect} from 'react';
 import {
   StyleSheet,
-  Text,
   SafeAreaView,
   BackHandler,
   Pressable,
   View,
 } from 'react-native';
-import {useFocusEffect} from '@react-navigation/native';
-import MyPageheader from '../../../components/MyScreen/MyPageheader'; // 위에서 만든 컴포넌트
+import {useFocusEffect, useRoute} from '@react-navigation/native';
+import MyPageheader from '../../../components/MyScreen/MyPageheader';
 import {Userdataget} from '../../../api/userApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import MyTabs from '../../../components/MyScreen/MyTabs';
 import MyReview from '../../../components/MyScreen/MyReview';
-import MyLocation from '../../../components/MyScreen/MyLocation';
 import MyManager from '../../../components/MyScreen/MyManager/MyManager';
 import Loading from '../../../hooks/Loading';
-import {useRoute} from '@react-navigation/native';
 import {Bell} from 'lucide-react-native';
 import {has_unread_notification} from '../../../api/notificationApi';
-import LikeScreen from '../LikeScreen';
 
 const MyScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
@@ -30,6 +26,7 @@ const MyScreen = ({navigation}) => {
   const [unreadNotification, setUnreadNotification] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState('MyReview');
+  const [reviewCount, setReviewCount] = useState(0);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -56,13 +53,13 @@ const MyScreen = ({navigation}) => {
         </Pressable>
       ),
     });
-  }, [unreadNotification]);
+  }, [unreadNotification, navigation]);
 
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        navigation.navigate('MainScreen'); // MainScreen 탭으로 전환
-        return true; // 기본 뒤로가기 방지
+        navigation.navigate('MainScreen');
+        return true;
       };
 
       const backHandler = BackHandler.addEventListener(
@@ -73,6 +70,7 @@ const MyScreen = ({navigation}) => {
       return () => backHandler.remove();
     }, [navigation]),
   );
+
   useFocusEffect(
     useCallback(() => {
       const fetchUnread = async () => {
@@ -80,7 +78,7 @@ const MyScreen = ({navigation}) => {
           const unread = await has_unread_notification();
           setUnreadNotification(unread.hasUnread);
         } catch (err) {
-          console.error('데이터 불러오기 실패', err);
+          console.error('알림 조회 실패:', err);
         }
       };
 
@@ -93,34 +91,30 @@ const MyScreen = ({navigation}) => {
       setLoading(true);
       try {
         const data = await Userdataget();
-
         setUserdata(data);
       } catch (error) {
         if (error.response) {
-          const statusCode = error.response.status; // 에러 코드 가져오기
+          const statusCode = error.response.status;
 
-          // 에러 코드별 처리
           switch (statusCode) {
             case 404:
               showAlert({
-                title: '유저 정보 오류',
-                message: '유저정보를 찾을 수 없습니다. 다시 시도해주세요.',
+                title: '유저 정보 없음',
+                message: '유저 정보가 없습니다. 다시 로그인해주세요.',
               });
               break;
-
             default:
               showAlert({
-                title: '에러 발생',
-                message: `다시 시도해주세요.`,
+                title: '네트워크 오류',
+                message: '다시 시도해주세요.',
               });
               break;
           }
         } else {
-          // 네트워크 또는 다른 에러 처리
           console.error('Unexpected Error:', error);
           showAlert({
-            title: '네트워크 오류',
-            message: '인터넷 연결을 확인하고 다시 시도해주세요.',
+            title: '알 수 없는 오류',
+            message: '다시 시도해주세요.',
           });
         }
       } finally {
@@ -128,12 +122,12 @@ const MyScreen = ({navigation}) => {
       }
     };
     fetchUserData();
-  }, []);
+  }, [showAlert]);
 
   useEffect(() => {
     if (invitationManager) {
       setCurrentPage('MyManager');
-      setSelectedTab(userdata?.isManager ? 2 : 0); // MyManager가 3번째 탭이므로 index = 2
+      setSelectedTab(userdata?.isManager ? 1 : 0);
     }
   }, [invitationManager, userdata?.isManager]);
 
@@ -150,33 +144,50 @@ const MyScreen = ({navigation}) => {
     });
   };
 
+  const profileHeader = (
+    <MyPageheader
+      nickname={userdata.nickname}
+      postCount={reviewCount}
+      imageuri={userdata.imgUrl}
+      handleImagePress={handleImagePress}
+      onProfilePress={() =>
+        navigation.navigate('MyStack', {
+          screen: 'ConfigScreen',
+        })
+      }
+    />
+  );
+
+  const tabHeader = (
+    <MyTabs
+      selectedTab={selectedTab}
+      setSelectedTab={setSelectedTab}
+      changePage={setCurrentPage}
+      isManager={userdata?.isManager}
+    />
+  );
+
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
-      <MyPageheader
-        nickname={userdata.nickname}
-        imageuri={userdata.imgUrl}
-        handleImagePress={handleImagePress}
-        onProfilePress={() =>
-          navigation.navigate('MyStack', {
-            screen: 'ConfigScreen',
-          })
-        }
-      />
-      <MyTabs
-        selectedTab={selectedTab}
-        setSelectedTab={setSelectedTab}
-        changePage={setCurrentPage}
-        isManager={userdata?.isManager}
-      />
-      <>
-        {/* Myreview 값 가져오기 */}
-        {currentPage === 'MyReview' && <MyReview navigation={navigation} />}
-        {currentPage === 'MyLiked' && <MyLocation navigation={navigation} />}
-        {/* {currentPage === 'MyLiked' && <LikeScreen navigation={navigation} />} */}
-        {currentPage === 'MyManager' && userdata?.isManager === true && (
-          <MyManager navigation={navigation} />
-        )}
-      </>
+      {currentPage === 'MyReview' && (
+        <MyReview
+          navigation={navigation}
+          headerComponent={profileHeader}
+          tabComponent={tabHeader}
+          onCountChange={setReviewCount}
+          userProfile={{
+            nickname: userdata.nickname,
+            imageuri: userdata.imgUrl,
+          }}
+        />
+      )}
+      {currentPage === 'MyManager' && userdata?.isManager === true && (
+        <MyManager
+          navigation={navigation}
+          headerComponent={profileHeader}
+          tabComponent={tabHeader}
+        />
+      )}
 
       <AlertComponent />
       <Loading loading={loading} />
@@ -198,7 +209,7 @@ const styles = StyleSheet.create({
   loadingtext: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
+    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
     fontSize: 20,
     color: '#333',
   },

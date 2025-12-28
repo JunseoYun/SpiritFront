@@ -1,11 +1,12 @@
-import React from 'react';
-import {View, Text, Pressable, StyleSheet} from 'react-native';
+﻿import React from 'react';
+import {View, Pressable, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import FastImage from 'react-native-fast-image';
 import CustomText from '../../utils/CustomText';
 
 const MyPageheader = ({
   nickname,
+  postCount = 0,
   onProfilePress,
   imageuri,
   handleImagePress,
@@ -14,30 +15,28 @@ const MyPageheader = ({
     {imageuri ? (
       <Pressable onPress={handleImagePress}>
         <FastImage
-          source={
-            {uri: imageuri} // 동적으로 설정된 이미지 URI
-          }
+          source={{uri: imageuri}}
           style={styles.profileimg}
         />
       </Pressable>
     ) : (
       <FastImage
-        source={
-          require('../../assets/default_profile.png') // 기본 이미지
-        }
+        source={require('../../assets/default_profile.png')}
         style={styles.profileimg}
       />
     )}
 
     <Pressable style={styles.pressView} onPress={onProfilePress}>
-      <CustomText style={[styles.Nickname]}>{nickname}</CustomText>
-
-      <FontAwesomeIcon
-        name={'angle-right'}
-        size={22}
-        color={'#999'}
-        style={styles.changenick}
-      />
+      <View style={styles.leftGroup}>
+        <CustomText style={styles.Nickname}>{nickname}</CustomText>
+        <FontAwesomeIcon
+          name={'angle-right'}
+          size={22}
+          color={'#999'}
+          style={styles.changenick}
+        />
+      </View>
+      <CustomText style={styles.postCountText}>게시물 {postCount}</CustomText>
     </Pressable>
   </View>
 );
@@ -61,14 +60,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
     color: '#333',
-    marginLeft: 17,
   },
   changenick: {
     marginLeft: 10,
   },
-  pressView: {
+  leftGroup: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  postCountText: {
+    marginTop: 6,
+    fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
+    color: '#666',
+  },
+  pressView: {
+    flex: 1,
+    marginLeft: 17,
+    alignItems: 'flex-start',
   },
 });
 
