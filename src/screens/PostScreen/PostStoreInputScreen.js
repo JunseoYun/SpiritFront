@@ -1,4 +1,11 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Dimensions,
   FlatList,
@@ -7,7 +14,11 @@ import {
   Pressable,
   StyleSheet,
   View,
+  BackHandler,
+  ToastAndroid,
 } from 'react-native';
+import {TouchableOpacity} from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CustomText from '../../utils/CustomText';
@@ -25,12 +36,14 @@ import {
 import PostStoreResultItem from '../../components/Post/PostStoreResultItem';
 import CancelText from '../../components/CancelText/CancelText';
 import CustomTextInput from '../../utils/CustomTextInput';
+import {getLocation} from '../../storage/locationStorage';
 
 const {width} = Dimensions.get('window');
 const MAX_LANDSCAPE_RATIO = 16 / 9;
 const PostStoreInputScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
   const preview = route?.params?.preview ?? {};
+  const [location, setLocation] = useState(route?.params?.location ?? null);
   const photos = Array.isArray(preview.photos) ? preview.photos : [];
   const previewMode = preview.previewMode ?? 'crop';
   const baseFrame = preview.baseFrame ?? {};
@@ -62,6 +75,15 @@ const PostStoreInputScreen = ({navigation, route}) => {
   const [searchValue, setSearchValue] = useState('');
   const [selectedStore, setSelectedStore] = useState(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [manualStoreName, setManualStoreName] = useState('');
+  const [manualStoreAddress, setManualStoreAddress] = useState('');
+  const [isManualNameFocused, setIsManualNameFocused] = useState(false);
+  const [isManualAddressFocused, setIsManualAddressFocused] = useState(false);
+  const [isManualNameOver, setIsManualNameOver] = useState(false);
+  const [isManualAddressOver, setIsManualAddressOver] = useState(false);
+  const manualNameInputRef = useRef(null);
+  const manualAddressInputRef = useRef(null);
+  const lastBackPressed = useRef(0);
   const [searchState, setSearchState] = useState({
     items: [],
     loading: false,
@@ -76,6 +98,19 @@ const PostStoreInputScreen = ({navigation, route}) => {
     loading: false,
     loaded: false,
   });
+
+  useEffect(() => {
+    const loadLocation = async () => {
+      if (location) return;
+      try {
+        const saved = await getLocation();
+        setLocation(saved ?? null);
+      } catch (error) {
+        console.error('현재 위치 불러오기 실패:', error);
+      }
+    };
+    loadLocation();
+  }, [location]);
 
   useEffect(() => {
     const fetchViewed = async () => {
@@ -115,6 +150,22 @@ const PostStoreInputScreen = ({navigation, route}) => {
   }, [activeChip, likedState.loaded, viewedState.loaded]);
 
   useEffect(() => {
+    if (activeChip !== 'manual') {
+      return;
+    }
+    const trimmedName = manualStoreName.trim();
+    if (!trimmedName) {
+      setSelectedStore(null);
+      return;
+    }
+    setSelectedStore({
+      id: 'manual',
+      name: trimmedName,
+      address: manualStoreAddress?.trim() || '',
+    });
+  }, [activeChip, manualStoreAddress, manualStoreName]);
+
+  useEffect(() => {
     const trimmed = searchValue.trim();
     let isActive = true;
 
@@ -146,6 +197,15 @@ const PostStoreInputScreen = ({navigation, route}) => {
   }, [searchValue]);
 
   const getStoreId = store => store?.id ?? store?.storeId ?? store?.store_id;
+  const getStoreAddress = store => {
+    if (!store) return '';
+    const base = store?.locationDto?.address ?? '';
+    const detail = store?.locationDto?.addressDetail;
+    if (detail && base && base !== detail) {
+      return `${base}, ${detail}`;
+    }
+    return base;
+  };
 
   const handleSelectStore = store => {
     setSelectedStore(prev => {
@@ -165,11 +225,49 @@ const PostStoreInputScreen = ({navigation, route}) => {
   const isSearching = trimmedSearchValue.length > 0;
   const displayedItems = isSearching ? searchState.items : activeItems;
   const displayedLoading = isSearching ? searchState.loading : activeLoading;
+  const selectedAddressText =
+    activeChip === 'manual'
+      ? manualStoreAddress.trim()
+      : getStoreAddress(selectedStore);
+  const isNextEnabled = Boolean(selectedStore?.name && selectedAddressText);
 
-  const handleChipPress = useCallback(chipKey => {
-    setActiveChip(chipKey);
-    bottomSheetRef.current?.snapToIndex(2);
-  }, []);
+  const handleChipPress = useCallback(
+    chipKey => {
+      setActiveChip(chipKey);
+      if (chipKey !== 'manual' && selectedStore?.id === 'manual') {
+        setSelectedStore(null);
+      }
+      bottomSheetRef.current?.snapToIndex(2);
+    },
+    [selectedStore],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        const now = Date.now();
+        if (now - lastBackPressed.current < 2000) {
+          navigation.goBack();
+          return true;
+        }
+
+        lastBackPressed.current = now;
+
+        ToastAndroid.show(
+          '한 번 더 누르면 작성한 내용이 사라집니다.',
+          ToastAndroid.SHORT,
+        );
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove();
+    }, [navigation]),
+  );
 
   const handleManualPress = useCallback(() => {
     setSearchValue('');
@@ -177,15 +275,40 @@ const PostStoreInputScreen = ({navigation, route}) => {
     bottomSheetRef.current?.snapToIndex(2);
   }, []);
 
+  const handleManualAddressSelect = useCallback(value => {
+    if (value?.address) {
+      setManualStoreAddress(value.address);
+    }
+  }, []);
+
   const handleSheetChange = useCallback(
     index => {
       if (index < 2 && isSearchFocused) {
         searchInputRef.current?.blur?.();
+      }
+      if (index < 2 && isManualNameFocused) {
+        manualNameInputRef.current?.blur?.();
+      }
+      if (index < 2 && isManualAddressFocused) {
+        manualAddressInputRef.current?.blur?.();
+      }
+      if (
+        index < 2 &&
+        (isSearchFocused || isManualNameFocused || isManualAddressFocused)
+      ) {
         Keyboard.dismiss();
       }
     },
-    [isSearchFocused],
+    [isSearchFocused, isManualNameFocused, isManualAddressFocused],
   );
+
+  useLayoutEffect(() => {
+    const isIOS = Platform.OS === 'ios';
+
+    navigation.setOptions({
+      gestureEnabled: !isIOS,
+    });
+  }, [navigation]);
 
   const handleSheetScroll = useCallback(() => {
     if (isSearchFocused) {
@@ -236,8 +359,15 @@ const PostStoreInputScreen = ({navigation, route}) => {
         <CustomText style={styles.headerTitle}>매장 입력</CustomText>
         <Pressable
           hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
-          onPress={() => {}}>
-          <CustomText style={styles.nextText}>다음</CustomText>
+          onPress={() => {}}
+          disabled={!isNextEnabled}>
+          <CustomText
+            style={[
+              styles.nextText,
+              !isNextEnabled && styles.nextTextDisabled,
+            ]}>
+            다음
+          </CustomText>
         </Pressable>
       </View>
       <Pressable
@@ -255,18 +385,36 @@ const PostStoreInputScreen = ({navigation, route}) => {
             color={selectedStore ? '#1F2937' : '#9CA3AF'}
           />
         </View>
-        <CustomText
-          style={
-            selectedStore
-              ? styles.selectedStoreText
-              : styles.selectedStorePlaceholder
-          }
-          numberOfLines={1}>
-          {selectedStore?.name || '선택된 매장이 없어요.'}
-        </CustomText>
+        <View style={styles.selectedStoreInfo}>
+          <CustomText
+            style={
+              selectedStore
+                ? styles.selectedStoreText
+                : styles.selectedStorePlaceholder
+            }
+            numberOfLines={1}>
+            {selectedStore?.name || '매장 이름'}
+          </CustomText>
+
+          <CustomText
+            style={
+              selectedAddressText
+                ? styles.selectedStoreAddress
+                : styles.selectedAddressPlaceholder
+            }
+            numberOfLines={1}>
+            {selectedAddressText || '매장 주소'}
+          </CustomText>
+        </View>
         {selectedStore && (
           <Pressable
-            onPress={() => setSelectedStore(null)}
+            onPress={() => {
+              setSelectedStore(null);
+              if (activeChip === 'manual') {
+                setManualStoreName('');
+                setManualStoreAddress('');
+              }
+            }}
             hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
             style={styles.selectedStoreClear}>
             <CustomText style={styles.selectedStoreClearText}>삭제</CustomText>
@@ -325,7 +473,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
               returnKeyType="done"
               blurOnSubmit
               onSubmitEditing={() => searchInputRef.current?.blur?.()}
-              placeholder="매장명을 검색하세요."
+              placeholder="매장 이름을 검색하세요."
               placeholderTextColor="#9B9B9B"
             />
             {Boolean(searchValue) && (
@@ -446,6 +594,96 @@ const PostStoreInputScreen = ({navigation, route}) => {
               )}
             </View>
           )}
+          {activeChip === 'manual' && (
+            <View style={styles.manualForm}>
+              <CustomText style={styles.manualLabel}>매장 이름</CustomText>
+              <CustomTextInput
+                ref={manualNameInputRef}
+                style={[
+                  styles.manualInput,
+                  isManualNameFocused && styles.manualInputFocused,
+                  manualStoreName.length > 0 && styles.manualInputFilled,
+                ]}
+                value={manualStoreName}
+                onChangeText={text => {
+                  const maxChars = 50;
+                  if (text.length > maxChars) {
+                    setIsManualNameOver(true);
+                    return;
+                  }
+                  setIsManualNameOver(false);
+                  setManualStoreName(text);
+                }}
+                placeholder="매장 이름을 입력하세요."
+                placeholderTextColor="#9B9B9B"
+                onFocus={() => {
+                  setIsManualNameFocused(true);
+                  bottomSheetRef.current?.snapToIndex(2);
+                }}
+                onBlur={() => setIsManualNameFocused(false)}
+                returnKeyType="next"
+                onSubmitEditing={() => manualAddressInputRef.current?.focus?.()}
+              />
+              {isManualNameOver && (
+                <CustomText style={styles.manualErrorText}>
+                  매장 이름은 최대 50자까지 입력 가능합니다.
+                </CustomText>
+              )}
+              {/* <CustomText style={styles.manualLabel}>매장 주소</CustomText> */}
+              <View style={styles.labelView}>
+                <CustomText style={styles.manualLabel}>매장 주소</CustomText>
+
+                <CustomText maxScale={1.1} style={styles.subLabel}>
+                  · 대략적인 위치만 알려주셔도 괜찮아요
+                </CustomText>
+              </View>
+              <View style={styles.manualAddressInputWrapper}>
+                <CustomTextInput
+                  ref={manualAddressInputRef}
+                  style={[
+                    styles.manualInput,
+                    styles.manualAddressInput,
+                    isManualAddressFocused && styles.manualInputFocused,
+                    manualStoreAddress.length > 0 && styles.manualInputFilled,
+                  ]}
+                  value={manualStoreAddress}
+                  onChangeText={text => {
+                    const maxChars = 80;
+                    if (text.length > maxChars) {
+                      setIsManualAddressOver(true);
+                      return;
+                    }
+                    setIsManualAddressOver(false);
+                    setManualStoreAddress(text);
+                  }}
+                  placeholder="신논현역 인근 또는 강남구 봉은사로 102"
+                  placeholderTextColor="#9B9B9B"
+                  onFocus={() => {
+                    setIsManualAddressFocused(true);
+                    bottomSheetRef.current?.snapToIndex(2);
+                  }}
+                  onBlur={() => setIsManualAddressFocused(false)}
+                  returnKeyType="done"
+                />
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('StoreAddMapScreen', {
+                      location,
+                      onAddressSelect: handleManualAddressSelect,
+                      detailedAddress: '',
+                    })
+                  }
+                  style={styles.manualMapButton}>
+                  <Ionicons name="map-outline" size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+              {isManualAddressOver && (
+                <CustomText style={styles.manualErrorText}>
+                  매장 주소는 최대 80자까지 입력 가능합니다.
+                </CustomText>
+              )}
+            </View>
+          )}
           {isSearching && (
             <View style={styles.manualEntryWrap}>
               <CustomText style={styles.manualEntryHint}>
@@ -490,6 +728,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#4AA3FF',
   },
+  nextTextDisabled: {
+    color: ColorUtil.mainDisable,
+  },
   previewItem: {
     paddingBottom: 10,
     backgroundColor: '#fff',
@@ -504,7 +745,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: ColorUtil.border,
-    borderRadius: 7,
+    borderRadius: 9,
   },
   previewImage: {
     width: '100%',
@@ -551,9 +792,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4F5F7',
     borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 10,
     marginBottom: 10,
     position: 'relative',
+    height: 48,
   },
   searchInput: {
     flex: 1,
@@ -579,19 +820,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    padding: 6,
+    padding: 10,
   },
   selectedStoreText: {
     flex: 1,
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 14,
-    color: '#111827',
+    color: '#333',
+    lineHeight: 22,
+  },
+  selectedStoreInfo: {
+    flex: 1,
+  },
+  selectedStoreAddress: {
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 12,
+    color: '#9CA3AF',
+    lineHeight: 16,
   },
   selectedStorePlaceholder: {
     flex: 1,
     fontFamily: 'Pretendard-Regular',
     fontSize: 14,
     color: '#9CA3AF',
+    lineHeight: 20,
+  },
+  selectedAddressPlaceholder: {
+    flex: 1,
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 12,
+    color: '#9CA3AF',
+    lineHeight: 16,
   },
   selectedStoreClear: {
     alignItems: 'center',
@@ -663,6 +922,76 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     fontSize: 13,
     color: '#4AA3FF',
+  },
+  manualForm: {
+    marginTop: 12,
+    paddingHorizontal: 6,
+    borderRadius: 12,
+  },
+  manualLabel: {
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
+    fontSize: 15,
+    marginTop: 20,
+
+    marginRight: 6,
+  },
+
+  labelView: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    // marginBottom: 12,
+  },
+
+  subLabel: {
+    fontFamily: 'Pretendard-Regular',
+    color: '#999',
+    fontSize: 14,
+    marginRight: 4,
+    paddingBottom: 1,
+  },
+  manualInput: {
+    flex: 1,
+    height: 52,
+    borderColor: ColorUtil.placeholderBorder,
+    borderWidth: 1,
+    fontSize: 16,
+    fontFamily: 'Pretendard-Regular',
+    borderRadius: 9,
+    paddingHorizontal: 14,
+    paddingRight: 42,
+    marginTop: 12,
+  },
+  manualAddressInputWrapper: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  manualAddressInput: {
+    paddingRight: 44,
+  },
+  manualMapButton: {
+    position: 'absolute',
+    right: 10,
+    top: 24,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // padding: 6,
+    width: 28,
+    height: 28,
+    borderRadius: 50,
+    backgroundColor: '#F8F8F8',
+  },
+  manualInputFocused: {
+    borderColor: '#333',
+  },
+  manualInputFilled: {
+    color: '#333',
+  },
+  manualErrorText: {
+    color: '#FF4816',
+    fontSize: 12,
+    fontFamily: 'Pretendard-Medium',
   },
   storeGrid: {
     marginTop: 14,
