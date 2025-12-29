@@ -36,6 +36,7 @@ import CustomText from '../utils/CustomText';
 import PostDetailScreen from '../screens/PostScreen/PostDetailScreen';
 import PostPhotoSelectScreen from '../screens/PostScreen/PostPhotoSelectScreen';
 import PostStoreInputScreen from '../screens/PostScreen/PostStoreInputScreen';
+import PostWriteScreen from '../screens/PostScreen/PostWriteScreen';
 
 const Stack = createStackNavigator();
 
@@ -100,6 +101,13 @@ export default function MainStack() {
       <Stack.Screen
         name="PostStoreInputScreen"
         component={PostStoreInputScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="PostWriteScreen"
+        component={PostWriteScreen}
         options={{
           headerShown: false,
         }}
