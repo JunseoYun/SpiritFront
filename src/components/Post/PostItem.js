@@ -26,6 +26,7 @@ import ColorUtil from '../../utils/ColorUtil';
 import PostReportSheet, {POST_REPORT_REASONS} from './PostReportSheet';
 import useMeasuredExpandableText from '../../utils/useMeasuredExpandableText';
 import {get_store_share} from '../../api/storeApi';
+import {getGlobalShowAlert} from '../../context/CustomAlertContext';
 const defaultProfile = require('../../assets/default_profile.png');
 
 const PostItem = ({
@@ -33,6 +34,9 @@ const PostItem = ({
   isCentered = false,
   contentMaxLines = 2,
   onCommentPress,
+  onEditPress,
+  onDeletePress,
+  isWriter = false,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const profileSource = item.profileImage
@@ -115,6 +119,43 @@ const PostItem = ({
     setReportModalVisible(true);
   }, []);
 
+  const handleEditPress = useCallback(() => {
+    setShowMoreMenu(false);
+    if (onEditPress) {
+      onEditPress(item);
+      return;
+    }
+    Alert.alert('수정하기', '수정 화면으로 이동하도록 연결해주세요.');
+  }, [item, onEditPress]);
+
+  const handleDeletePress = useCallback(() => {
+    setShowMoreMenu(false);
+    const confirmDelete = () => {
+      if (onDeletePress) {
+        onDeletePress(item);
+        return;
+      }
+      Alert.alert('삭제하기', '삭제 동작을 연결해주세요.');
+    };
+
+    const showAlert = getGlobalShowAlert();
+    if (showAlert) {
+      showAlert({
+        title: '글 삭제하기',
+        message: '정말 삭제할까요?',
+        type: 'delete',
+        onConfirm: confirmDelete,
+        onCancel: () => {},
+      });
+      return;
+    }
+
+    Alert.alert('삭제하기', '정말 삭제할까요?', [
+      {text: '취소', style: 'cancel'},
+      {text: '삭제', style: 'destructive', onPress: confirmDelete},
+    ]);
+  }, [item, onDeletePress]);
+
   const handleReportSubmit = useCallback(() => {
     setReportModalVisible(false);
     // TODO: Hook up real report flow when available.
@@ -125,6 +166,27 @@ const PostItem = ({
 
   const handleMorePress = useCallback(() => {
     if (Platform.OS === 'ios') {
+      if (isWriter) {
+        ActionSheetIOS.showActionSheetWithOptions(
+          {
+            options: ['수정하기', '삭제하기', '취소'],
+            cancelButtonIndex: 2,
+            destructiveButtonIndex: 1,
+            userInterfaceStyle: 'light',
+          },
+          buttonIndex => {
+            if (buttonIndex === 0) {
+              handleEditPress();
+              return;
+            }
+            if (buttonIndex === 1) {
+              handleDeletePress();
+            }
+          },
+        );
+        return;
+      }
+
       ActionSheetIOS.showActionSheetWithOptions(
         {
           options: ['신고하기', '취소'],
@@ -142,7 +204,7 @@ const PostItem = ({
     }
 
     setShowMoreMenu(prev => !prev);
-  }, [openReportModal]);
+  }, [handleDeletePress, handleEditPress, isWriter, openReportModal]);
 
   useEffect(() => {
     if (!item.name) {
@@ -495,14 +557,35 @@ const PostItem = ({
             onPress={() => setShowMoreMenu(false)}
           />
           <View style={styles.moreMenu}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.moreMenuItem}
-              onPress={openReportModal}>
-              <CustomText style={styles.moreMenuItemTextDestructive}>
-                신고하기
-              </CustomText>
-            </TouchableOpacity>
+            {isWriter ? (
+              <>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.moreMenuItem}
+                  onPress={handleEditPress}>
+                  <CustomText style={styles.moreMenuItemText}>
+                    수정하기
+                  </CustomText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.moreMenuItem}
+                  onPress={handleDeletePress}>
+                  <CustomText style={styles.moreMenuItemTextDestructive}>
+                    삭제하기
+                  </CustomText>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.moreMenuItem}
+                onPress={openReportModal}>
+                <CustomText style={styles.moreMenuItemTextDestructive}>
+                  신고하기
+                </CustomText>
+              </TouchableOpacity>
+            )}
           </View>
         </>
       ) : null}
@@ -749,10 +832,16 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
-  moreMenuItemTextDestructive: {
+  moreMenuItemText: {
     fontSize: 15,
     fontFamily: 'Pretendard-Medium',
     color: '#333',
+    textAlign: 'center',
+  },
+  moreMenuItemTextDestructive: {
+    fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
+    color: '#E03131',
     textAlign: 'center',
   },
   heartFlyContainer: {

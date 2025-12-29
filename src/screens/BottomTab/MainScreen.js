@@ -47,6 +47,7 @@ const sampleFeedData = [
     likes: 342,
     comments: 22,
     shares: 32,
+    isWriter: true,
   },
   {
     id: '2',
@@ -73,6 +74,7 @@ const sampleFeedData = [
     likes: 128,
     comments: 48,
     shares: 332,
+    isWriter: true,
   },
   {
     id: '3',
@@ -92,6 +94,7 @@ const sampleFeedData = [
     likes: 210,
     comments: 17,
     shares: 12,
+    isWriter: true,
   },
   {
     id: '4',
@@ -108,6 +111,7 @@ const sampleFeedData = [
     likes: 189,
     comments: 11,
     shares: 20,
+    isWriter: false,
   },
   {
     id: '5',
@@ -124,6 +128,7 @@ const sampleFeedData = [
     likes: 256,
     comments: 34,
     shares: 45,
+    isWriter: false,
   },
   {
     id: '6',
@@ -139,6 +144,7 @@ const sampleFeedData = [
     likes: 312,
     comments: 29,
     shares: 51,
+    isWriter: false,
   },
 ];
 
@@ -481,12 +487,12 @@ const MainScreen = ({navigation}) => {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0)},
-      ]}>
-      <View style={styles.header}>
+    <View style={[styles.container]}>
+      <View
+        style={[
+          styles.header,
+          {paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0)},
+        ]}>
         <View style={styles.headerRow}>
           <ExploreSearchBar handleSearchPress={handleSearchPress} />
           <View style={styles.topView}>
@@ -508,6 +514,7 @@ const MainScreen = ({navigation}) => {
             item={item}
             onCommentPress={handleOpenFeedDetail}
             isCentered={item.id === centeredItemId}
+            isWriter={item.isWriter}
           />
         )}
         contentContainerStyle={styles.feedContent}
@@ -567,7 +574,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#fff',
     paddingTop: 6,
-    paddingBottom: 20,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderColor: '#EEE',
   },
