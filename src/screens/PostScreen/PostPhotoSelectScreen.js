@@ -1,4 +1,11 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useLayoutEffect,
+} from 'react';
 import {
   Animated,
   Dimensions,
@@ -10,11 +17,14 @@ import {
   SafeAreaView,
   StyleSheet,
   View,
+  BackHandler,
+  ToastAndroid,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import FastImage from 'react-native-fast-image';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useFocusEffect} from '@react-navigation/native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import CameraRollDefault, {
   CameraRoll as CameraRollNamed,
@@ -98,6 +108,7 @@ const PostPhotoSelectScreen = ({navigation}) => {
   const albumRequestIdRef = useRef(0);
   const selectedAlbumIdRef = useRef(null);
   const loadingMoreAlbumIdRef = useRef(null);
+  const lastBackPressed = useRef(0);
 
   const selectedAlbum = useMemo(
     () => albums.find(album => album.id === selectedAlbumId),
@@ -870,7 +881,9 @@ const PostPhotoSelectScreen = ({navigation}) => {
           if (album.id !== 'recent') {
             return album;
           }
-          const exists = album.photos?.some(photo => photo.uri === newPhoto.uri);
+          const exists = album.photos?.some(
+            photo => photo.uri === newPhoto.uri,
+          );
           return {
             ...album,
             photos: exists ? album.photos : [newPhoto, ...(album.photos ?? [])],
@@ -925,6 +938,41 @@ const PostPhotoSelectScreen = ({navigation}) => {
       }
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        const now = Date.now();
+        if (now - lastBackPressed.current < 2000) {
+          navigation.goBack();
+          return true;
+        }
+
+        lastBackPressed.current = now;
+
+        ToastAndroid.show(
+          '한 번 더 누르면 작성한 내용이 사라집니다.',
+          ToastAndroid.SHORT,
+        );
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove();
+    }, [navigation]),
+  );
+
+  useLayoutEffect(() => {
+    const isIOS = Platform.OS === 'ios';
+
+    navigation.setOptions({
+      gestureEnabled: !isIOS,
+    });
+  }, [navigation]);
 
   const togglePhotoSelection = photoId => {
     setSelectedPhotoIds(prev => {
@@ -1014,7 +1062,10 @@ const PostPhotoSelectScreen = ({navigation}) => {
           disabled={!isNextEnabled}
           style={!isNextEnabled && styles.nextButtonDisabled}>
           <CustomText
-            style={[styles.nextText, !isNextEnabled && styles.nextTextDisabled]}>
+            style={[
+              styles.nextText,
+              !isNextEnabled && styles.nextTextDisabled,
+            ]}>
             다음
           </CustomText>
         </Pressable>
@@ -1188,7 +1239,7 @@ const styles = StyleSheet.create({
     color: '#3CBBFF',
   },
   nextTextDisabled: {
-    color: '#A7B7C3',
+    color: ColorUtil.mainDisable,
   },
   nextButtonDisabled: {
     opacity: 0.6,
