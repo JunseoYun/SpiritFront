@@ -976,12 +976,19 @@ const PostPhotoSelectScreen = ({navigation}) => {
 
   const togglePhotoSelection = photoId => {
     setSelectedPhotoIds(prev => {
-      if (prev.includes(photoId)) {
-        return prev.filter(id => id !== photoId);
+      const isSelected = prev.includes(photoId);
+      if (isSelected) {
+        const nextSelected = prev.filter(id => id !== photoId);
+        if (currentPhotoId === photoId) {
+          const nextCurrent =
+            nextSelected[nextSelected.length - 1] ?? null;
+          setCurrentPhotoId(nextCurrent);
+        }
+        return nextSelected;
       }
+      setCurrentPhotoId(photoId);
       return [...prev, photoId];
     });
-    setCurrentPhotoId(photoId);
   };
 
   const renderPhotoItem = ({item}) => {

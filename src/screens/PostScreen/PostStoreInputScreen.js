@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import {
   Dimensions,
-  FlatList,
   Keyboard,
   Platform,
   Pressable,
@@ -17,6 +16,11 @@ import {
   BackHandler,
   ToastAndroid,
 } from 'react-native';
+import {
+  ScrollView,
+  TapGestureHandler,
+  State as GestureState,
+} from 'react-native-gesture-handler';
 import {TouchableOpacity} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -40,19 +44,26 @@ import {getLocation} from '../../storage/locationStorage';
 
 const {width} = Dimensions.get('window');
 const MAX_LANDSCAPE_RATIO = 16 / 9;
+
 const PostStoreInputScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
   const preview = route?.params?.preview ?? {};
   const [location, setLocation] = useState(route?.params?.location ?? null);
-  const photos = Array.isArray(preview.photos) ? preview.photos : [];
+  const [photoList, setPhotoList] = useState(
+    Array.isArray(preview.photos) ? preview.photos : [],
+  );
   const previewMode = preview.previewMode ?? 'crop';
   const baseFrame = preview.baseFrame ?? {};
   const baseIsPortraitPhoto = baseFrame.isPortraitPhoto ?? true;
   const baseLandscapeAspectRatio = baseFrame.landscapeAspectRatio ?? 1;
-  const hasMultiplePhotos = photos.length > 1;
+  const hasMultiplePhotos = photoList.length > 1;
   const previewItemWidth = hasMultiplePhotos ? width * 0.86 : width;
   const previewSidePadding = hasMultiplePhotos ? 6 : 20;
   const previewItemSpacing = hasMultiplePhotos ? 2 : 0;
+  const previewForNext = useMemo(
+    () => ({...preview, photos: photoList}),
+    [photoList, preview],
+  );
   const clampedLandscapeRatio = Math.min(
     baseLandscapeAspectRatio || 1,
     MAX_LANDSCAPE_RATIO,
@@ -317,11 +328,13 @@ const PostStoreInputScreen = ({navigation, route}) => {
     }
   }, [isSearchFocused]);
 
-  const renderPhoto = ({item, index}) => {
-    const isLast = index === photos.length - 1;
+  const renderPhoto = (item, index) => {
+    const isLast = index === photoList.length - 1;
+    const canRemove = photoList.length > 1;
 
     return (
       <View
+        key={item.id ?? `${item.uri}-${index}`}
         style={[
           styles.previewItem,
           {
@@ -337,6 +350,22 @@ const PostStoreInputScreen = ({navigation, route}) => {
             resizeMode={FastImage.resizeMode.cover}
           />
         </View>
+        {canRemove && (
+          <TapGestureHandler
+            hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
+            shouldCancelWhenOutside
+            onHandlerStateChange={({nativeEvent}) => {
+              if (nativeEvent.state === GestureState.END) {
+                setPhotoList(prev =>
+                  prev.length > 1 ? prev.filter((_, i) => i !== index) : prev,
+                );
+              }
+            }}>
+            <View style={styles.previewRemoveButton}>
+              <Ionicons name="close" size={18} color="#fff" />
+            </View>
+          </TapGestureHandler>
+        )}
       </View>
     );
   };
@@ -359,7 +388,13 @@ const PostStoreInputScreen = ({navigation, route}) => {
         <CustomText style={styles.headerTitle}>매장 입력</CustomText>
         <Pressable
           hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
-          onPress={() => {}}
+          onPress={() => {
+            navigation.navigate('PostWriteScreen', {
+              preview: previewForNext,
+              storeName: selectedStore?.name ?? manualStoreName.trim(),
+              storeAddress: selectedAddressText,
+            });
+          }}
           disabled={!isNextEnabled}>
           <CustomText
             style={[
@@ -379,11 +414,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
         }}
         disabled={Boolean(selectedStore)}>
         <View style={styles.selectedStoreIcon}>
-          <Ionicons
-            name="storefront"
-            size={16}
-            color={selectedStore ? '#1F2937' : '#9CA3AF'}
-          />
+          <Ionicons name="storefront-outline" size={16} color="#333" />
         </View>
         <View style={styles.selectedStoreInfo}>
           <CustomText
@@ -421,17 +452,15 @@ const PostStoreInputScreen = ({navigation, route}) => {
           </Pressable>
         )}
       </Pressable>
-      {photos.length ? (
-        <FlatList
-          data={photos}
-          keyExtractor={item => item.id}
+      {photoList.length ? (
+        <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          renderItem={renderPhoto}
           contentContainerStyle={
             hasMultiplePhotos ? styles.previewList : undefined
-          }
-        />
+          }>
+          {photoList.map(renderPhoto)}
+        </ScrollView>
       ) : (
         <View
           style={[
@@ -629,7 +658,6 @@ const PostStoreInputScreen = ({navigation, route}) => {
                   매장 이름은 최대 50자까지 입력 가능합니다.
                 </CustomText>
               )}
-              {/* <CustomText style={styles.manualLabel}>매장 주소</CustomText> */}
               <View style={styles.labelView}>
                 <CustomText style={styles.manualLabel}>매장 주소</CustomText>
 
@@ -732,6 +760,7 @@ const styles = StyleSheet.create({
     color: ColorUtil.mainDisable,
   },
   previewItem: {
+    position: 'relative',
     paddingBottom: 10,
     backgroundColor: '#fff',
   },
@@ -751,6 +780,19 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: '#DDE2E6',
+  },
+  previewRemoveButton: {
+    position: 'absolute',
+    top: 10,
+    right: 18,
+    width: 28,
+    height: 28,
+    borderRadius: 50,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+    elevation: 2,
   },
   emptyState: {
     alignItems: 'center',
