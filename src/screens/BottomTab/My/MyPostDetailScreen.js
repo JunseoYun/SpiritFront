@@ -34,6 +34,7 @@ const InlinePostItem = ({
   onCommentPress,
   onEditPress,
   onDeletePress,
+  showAlert,
   initialImageRatios = {},
   initialImageRatio = 1,
 }) => {
@@ -164,13 +165,39 @@ const InlinePostItem = ({
 
   const handleEditPress = useCallback(() => {
     toggleDropdown();
-    onEditPress?.(item);
+    if (onEditPress) {
+      onEditPress(item);
+      return;
+    }
+    Alert.alert('수정하기', '수정 화면으로 이동하도록 연결해주세요.');
   }, [item, onEditPress, toggleDropdown]);
 
   const handleDeletePress = useCallback(() => {
     toggleDropdown();
-    onDeletePress?.(item);
-  }, [item, onDeletePress, toggleDropdown]);
+    const confirmDelete = () => {
+      if (onDeletePress) {
+        onDeletePress(item);
+        return;
+      }
+      Alert.alert('삭제하기', '삭제 동작을 연결해주세요.');
+    };
+
+    if (showAlert) {
+      showAlert({
+        title: '글 삭제하기',
+        message: '정말 삭제할까요?',
+        type: 'delete',
+        onConfirm: confirmDelete,
+        onCancel: () => {},
+      });
+      return;
+    }
+
+    Alert.alert('삭제하기', '정말 삭제할까요?', [
+      {text: '취소', style: 'cancel'},
+      {text: '삭제', style: 'destructive', onPress: confirmDelete},
+    ]);
+  }, [item, onDeletePress, showAlert, toggleDropdown]);
 
   const handleSharePress = useCallback(async () => {
     try {
@@ -517,13 +544,15 @@ const InlinePostItem = ({
           {dropdownVisible && (
             <Animated.View style={dropdownStyle}>
               <Pressable style={styles.moreMenuItem} onPress={handleEditPress}>
-                <CustomText style={styles.moreMenuItemText}>수정</CustomText>
+                <CustomText style={styles.moreMenuItemText}>
+                  수정하기
+                </CustomText>
               </Pressable>
               <Pressable
                 style={styles.moreMenuItem}
                 onPress={handleDeletePress}>
                 <CustomText style={styles.moreMenuItemTextDestructive}>
-                  삭제
+                  삭제하기
                 </CustomText>
               </Pressable>
             </Animated.View>
@@ -689,7 +718,6 @@ const MyPostDetailScreen = ({navigation, route}) => {
   } = route.params || {};
   const {showAlert, AlertComponent} = useCustomAlert();
   const scrollRef = useRef(null);
-  const commentSectionOffset = useRef(0);
   const [initialImageRatios, setInitialImageRatios] = useState(
     routeImageRatios ?? {},
   );
@@ -715,30 +743,6 @@ const MyPostDetailScreen = ({navigation, route}) => {
     return `${y}.${m}.${d}`;
   }, [reviewDate]);
 
-  const comments = useMemo(
-    () => [
-      {
-        id: 'c1',
-        author: '루나',
-        text: '분위기 너무 좋았어요!',
-        createdAt: '방금 전',
-      },
-      {
-        id: 'c2',
-        author: '민지',
-        text: '다음엔 친구랑 같이 갈게요.',
-        createdAt: '1시간 전',
-      },
-      {
-        id: 'c3',
-        author: '준호',
-        text: '사진이 맛있어 보여요.',
-        createdAt: '어제',
-      },
-    ],
-    [],
-  );
-
   const postItem = useMemo(
     () => ({
       id: review?.id,
@@ -751,11 +755,10 @@ const MyPostDetailScreen = ({navigation, route}) => {
       content: review?.content || '리뷰 내용 없음',
       postImages: Array.isArray(review?.imgUrlList) ? review.imgUrlList : [],
       likes: review?.likes ?? review?.likeCount ?? 0,
-      comments: comments.length,
+      comments: 0,
       shares: review?.shares ?? 0,
     }),
     [
-      comments.length,
       profileSource?.uri,
       review?.content,
       review?.id,
@@ -772,25 +775,9 @@ const MyPostDetailScreen = ({navigation, route}) => {
     ],
   );
 
-  const handleDeletePress = () => {
-    showAlert({
-      title: '게시글 삭제',
-      message: '삭제하시겠습니까?',
-      type: 'delete',
-      onConfirm: () => {},
-      onCancel: () => {},
-    });
-  };
-
-  const scrollToComments = () => {
-    if (!commentSectionOffset.current) {
-      return;
-    }
-    scrollRef.current?.scrollTo({
-      y: commentSectionOffset.current,
-      animated: true,
-    });
-  };
+  const handleDeleteConfirm = useCallback(() => {
+    Alert.alert('삭제하기', '삭제 동작을 연결해주세요.');
+  }, []);
 
   useEffect(() => {
     if (
@@ -857,11 +844,11 @@ const MyPostDetailScreen = ({navigation, route}) => {
         showsVerticalScrollIndicator={false}>
         <InlinePostItem
           item={postItem}
-          onCommentPress={scrollToComments}
           onEditPress={() =>
             navigation.navigate('MyPostEditScreen', {review, userProfile})
           }
-          onDeletePress={handleDeletePress}
+          onDeletePress={handleDeleteConfirm}
+          showAlert={showAlert}
           initialImageRatios={initialImageRatios}
           initialImageRatio={initialImageRatio}
         />
@@ -889,31 +876,6 @@ const MyPostDetailScreen = ({navigation, route}) => {
           {Boolean(formattedDate) && (
             <CustomText style={styles.visitDate}>{formattedDate}</CustomText>
           )}
-        </View>
-
-        <View
-          style={styles.commentsSection}
-          onLayout={e => {
-            commentSectionOffset.current = e.nativeEvent.layout.y;
-          }}>
-          <CustomText style={styles.commentsTitle}>
-            댓글 {comments.length}
-          </CustomText>
-          {comments.map(comment => (
-            <View key={comment.id} style={styles.commentItem}>
-              <View style={styles.commentHeader}>
-                <CustomText style={styles.commentAuthor}>
-                  {comment.author}
-                </CustomText>
-                {comment.createdAt ? (
-                  <CustomText style={styles.commentDate}>
-                    {comment.createdAt}
-                  </CustomText>
-                ) : null}
-              </View>
-              <CustomText style={styles.commentText}>{comment.text}</CustomText>
-            </View>
-          ))}
         </View>
       </ScrollView>
 
@@ -1042,7 +1004,7 @@ const styles = StyleSheet.create({
   moreMenuItemTextDestructive: {
     fontSize: 14,
     fontFamily: 'Pretendard-Medium',
-    color: '#333',
+    color: '#E03131',
   },
   heartFlyContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -1151,45 +1113,6 @@ const styles = StyleSheet.create({
     backgroundColor: ColorUtil.main,
     borderRadius: 16,
     padding: 6,
-  },
-  commentsSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    gap: 14,
-  },
-  commentsTitle: {
-    fontSize: 17,
-    fontFamily: 'Pretendard-Bold',
-    color: '#222',
-  },
-  commentItem: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
-    gap: 4,
-  },
-  commentHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  commentAuthor: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
-  },
-  commentDate: {
-    fontSize: 12,
-    fontFamily: 'Pretendard-Regular',
-    color: ColorUtil.subText,
-  },
-  commentText: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-Regular',
-    color: '#333',
-    lineHeight: 20,
   },
 });
 

@@ -7,6 +7,7 @@ import CustomText from '../../utils/CustomText';
 import useStoreStatus from '../../hooks/useStoreStatus';
 import useCategoryTranslation from '../../hooks/useCategoryTranslation';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
+import ColorUtil from '../../utils/ColorUtil';
 
 const LikedGridItem = ({store, width, onPress, style}) => {
   const {translateCategory} = useCategoryTranslation();
@@ -42,7 +43,7 @@ const LikedGridItem = ({store, width, onPress, style}) => {
         drink?.price !== ''
           ? ` ${Number(drink.price).toLocaleString('ko-KR')}원`
           : '';
-      return `${label}${price}`.trim();
+      return `${label}`.trim();
     })
     .filter(Boolean)
     .join(' · ');
@@ -155,10 +156,13 @@ const styles = StyleSheet.create({
   },
   imageWrap: {
     width: '100%',
-    borderRadius: 14,
+
+    borderRadius: 9,
     overflow: 'hidden',
     backgroundColor: '#f3f4f6',
     position: 'relative',
+    borderWidth: 0.5,
+    borderColor: ColorUtil.border,
   },
   image: {
     width: '100%',
@@ -168,6 +172,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
+    zIndex: 3,
   },
   topGradient: {
     position: 'absolute',
@@ -175,6 +180,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 52,
+    zIndex: 2,
   },
   reviewText: {
     fontSize: 11,
@@ -219,6 +225,7 @@ const styles = StyleSheet.create({
   info: {
     paddingTop: 10,
     paddingBottom: 8,
+    paddingHorizontal: 2,
   },
   title: {
     fontSize: 15,
