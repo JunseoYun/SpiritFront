@@ -37,6 +37,8 @@ import PostDetailScreen from '../screens/PostScreen/PostDetailScreen';
 import PostPhotoSelectScreen from '../screens/PostScreen/PostPhotoSelectScreen';
 import PostStoreInputScreen from '../screens/PostScreen/PostStoreInputScreen';
 import PostWriteScreen from '../screens/PostScreen/PostWriteScreen';
+import MyPostDetailScreen from '../screens/BottomTab/My/MyPostDetailScreen';
+import MyPostEditScreen from '../screens/BottomTab/My/MyPostEditScreen';
 
 const Stack = createStackNavigator();
 
@@ -104,6 +106,32 @@ export default function MainStack() {
         options={{
           headerShown: false,
         }}
+      />
+      <Stack.Screen
+        name="MyPostDetailScreen"
+        component={MyPostDetailScreen}
+        options={({navigation}) => ({
+          headerShadowVisible: false,
+          title: '게시글',
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="MyPostEditScreen"
+        component={MyPostEditScreen}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="PostWriteScreen"

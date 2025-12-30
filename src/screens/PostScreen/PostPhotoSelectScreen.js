@@ -77,7 +77,7 @@ const getTouchDistance = touches => {
   return Math.hypot(dx, dy);
 };
 
-const PostPhotoSelectScreen = ({navigation}) => {
+const PostPhotoSelectScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
   const [albums, setAlbums] = useState([]);
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
@@ -109,6 +109,20 @@ const PostPhotoSelectScreen = ({navigation}) => {
   const selectedAlbumIdRef = useRef(null);
   const loadingMoreAlbumIdRef = useRef(null);
   const lastBackPressed = useRef(0);
+  const returnTo = route?.params?.returnTo;
+  const returnReview = route?.params?.review;
+  const returnDraft = route?.params?.draft;
+  const returnDraftToken = route?.params?.draftToken;
+  const baseFrame = route?.params?.baseFrame;
+  const baseFrameAspectRatio =
+    typeof baseFrame?.aspectRatio === 'number' ? baseFrame.aspectRatio : null;
+  const shouldLockFrame = Boolean(
+    returnTo === 'MyPostEditScreen' &&
+      baseFrame &&
+      (typeof baseFrame.isPortraitPhoto === 'boolean' ||
+        typeof baseFrame.landscapeAspectRatio === 'number' ||
+        typeof baseFrame.aspectRatio === 'number'),
+  );
 
   const selectedAlbum = useMemo(
     () => albums.find(album => album.id === selectedAlbumId),
@@ -198,10 +212,12 @@ const PostPhotoSelectScreen = ({navigation}) => {
     [activeScale, displaySize],
   );
 
-  const clampedLandscapeRatio = useMemo(
-    () => Math.min(landscapeAspectRatio || 1, MAX_LANDSCAPE_RATIO),
-    [landscapeAspectRatio],
-  );
+  const clampedLandscapeRatio = useMemo(() => {
+    if (shouldLockFrame && baseFrameAspectRatio) {
+      return baseFrameAspectRatio;
+    }
+    return Math.min(landscapeAspectRatio || 1, MAX_LANDSCAPE_RATIO);
+  }, [baseFrameAspectRatio, landscapeAspectRatio, shouldLockFrame]);
 
   const panBounds = useMemo(() => {
     const overflowX = Math.max(
@@ -356,6 +372,30 @@ const PostPhotoSelectScreen = ({navigation}) => {
   };
 
   useEffect(() => {
+    if (!shouldLockFrame) {
+      return;
+    }
+    const ratio =
+      typeof baseFrameAspectRatio === 'number'
+        ? baseFrameAspectRatio
+        : baseFrame?.landscapeAspectRatio ?? 1;
+    setIsPortraitPhoto(
+      typeof baseFrameAspectRatio === 'number'
+        ? baseFrameAspectRatio <= 1
+        : baseFrame?.isPortraitPhoto ?? true,
+    );
+    setLandscapeAspectRatio(ratio);
+  }, [
+    baseFrame?.isPortraitPhoto,
+    baseFrame?.landscapeAspectRatio,
+    baseFrameAspectRatio,
+    shouldLockFrame,
+  ]);
+
+  useEffect(() => {
+    if (shouldLockFrame) {
+      return;
+    }
     const firstSelectedId = selectedPhotoIds[0] ?? null;
     const targetId = firstSelectedId ?? currentPhotoId;
     const targetPhoto = selectedAlbum?.photos.find(
@@ -389,7 +429,7 @@ const PostPhotoSelectScreen = ({navigation}) => {
     return () => {
       isActive = false;
     };
-  }, [currentPhotoId, selectedAlbum, selectedPhotoIds]);
+  }, [currentPhotoId, selectedAlbum, selectedPhotoIds, shouldLockFrame]);
 
   useEffect(() => {
     if (!selectedPhoto?.uri) {
@@ -920,6 +960,24 @@ const PostPhotoSelectScreen = ({navigation}) => {
       const croppedPhotos = await Promise.all(
         previewPhotos.map((photo, index) => cropPhotoToPreview(photo, index)),
       );
+      if (returnTo === 'MyPostEditScreen') {
+        const croppedUris = croppedPhotos
+          .map(photo => photo?.uri)
+          .filter(Boolean);
+        navigation.navigate({
+          name: returnTo,
+          params: {
+            review: returnReview,
+            draft: returnDraft,
+            draftToken: returnDraftToken,
+            addedImages: croppedUris,
+            addedImagesToken: Date.now(),
+          },
+          merge: true,
+        });
+        return;
+      }
+
       navigation.navigate('PostStoreInputScreen', {
         preview: {
           photos: croppedPhotos,
@@ -980,8 +1038,7 @@ const PostPhotoSelectScreen = ({navigation}) => {
       if (isSelected) {
         const nextSelected = prev.filter(id => id !== photoId);
         if (currentPhotoId === photoId) {
-          const nextCurrent =
-            nextSelected[nextSelected.length - 1] ?? null;
+          const nextCurrent = nextSelected[nextSelected.length - 1] ?? null;
           setCurrentPhotoId(nextCurrent);
         }
         return nextSelected;

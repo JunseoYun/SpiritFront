@@ -14,10 +14,7 @@ const MyPageheader = ({
   <View style={styles.profiletopview}>
     {imageuri ? (
       <Pressable onPress={handleImagePress}>
-        <FastImage
-          source={{uri: imageuri}}
-          style={styles.profileimg}
-        />
+        <FastImage source={{uri: imageuri}} style={styles.profileimg} />
       </Pressable>
     ) : (
       <FastImage
@@ -36,7 +33,7 @@ const MyPageheader = ({
           style={styles.changenick}
         />
       </View>
-      <CustomText style={styles.postCountText}>게시물 {postCount}</CustomText>
+      <CustomText style={styles.postCountText}>게시글 {postCount}</CustomText>
     </Pressable>
   </View>
 );

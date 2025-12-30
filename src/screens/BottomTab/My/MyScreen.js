@@ -158,14 +158,15 @@ const MyScreen = ({navigation}) => {
     />
   );
 
-  const tabHeader = (
-    <MyTabs
-      selectedTab={selectedTab}
-      setSelectedTab={setSelectedTab}
-      changePage={setCurrentPage}
-      isManager={userdata?.isManager}
-    />
-  );
+  const tabHeader =
+    userdata?.isManager === true ? (
+      <MyTabs
+        selectedTab={selectedTab}
+        setSelectedTab={setSelectedTab}
+        changePage={setCurrentPage}
+        isManager={userdata?.isManager}
+      />
+    ) : null;
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>

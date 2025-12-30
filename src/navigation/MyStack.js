@@ -5,7 +5,6 @@ import {createStackNavigator} from '@react-navigation/stack';
 import ConfigScreen from '../screens/BottomTab/My/ConfigScreen';
 import Mynickchange from '../screens/BottomTab/My/Mynickchange';
 import MyScreen from '../screens/BottomTab/My/MyScreen';
-import MyPostDetailScreen from '../screens/BottomTab/My/MyPostDetailScreen';
 import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
 import MyCardScreen from '../screens/BottomTab/My/MyCard/MyCardScreen';
 import CardRegisterScreen from '../screens/BottomTab/My/MyCard/CardRegisterScreen';
@@ -33,33 +32,12 @@ export default function MyStack() {
           headerShown: true,
           headerTitleAlign: 'center',
           headerShadowVisible: false,
-          title: '마이페이지',
+          title: '마이프로필',
           headerTitleStyle: {
             fontSize: 19,
             color: '#333',
             fontFamily: 'Pretendard-Bold',
           },
-        })}
-      />
-      <Stack.Screen
-        name="MyPostDetailScreen"
-        component={MyPostDetailScreen}
-        options={({navigation}) => ({
-          headerShadowVisible: false,
-          title: '게시물',
-          headerTitleAlign: 'center',
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
         })}
       />
       <Stack.Screen

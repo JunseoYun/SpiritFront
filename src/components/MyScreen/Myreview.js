@@ -7,6 +7,7 @@ import {
   Pressable,
   Platform,
   RefreshControl,
+  Image,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
@@ -48,7 +49,9 @@ const MyReview = ({
         setIsEnd(true);
       } else {
         setMyReview(prevReviews => {
-          const merged = reset ? data.content : [...prevReviews, ...data.content];
+          const merged = reset
+            ? data.content
+            : [...prevReviews, ...data.content];
           const unique = Array.from(
             new Map(merged.map(review => [review.id, review])).values(),
           );
@@ -86,10 +89,36 @@ const MyReview = ({
   }, [myReview]);
 
   const handleOpenDetail = review => {
-    navigation.navigate('MyPostDetailScreen', {
-      review,
-      userProfile,
-    });
+    const imageUrl = review?.imgUrlList?.[0];
+    const rootNavigation =
+      navigation.getParent?.()?.getParent?.() ??
+      navigation.getParent?.() ??
+      navigation;
+    if (!imageUrl) {
+      rootNavigation?.navigate('MyPostDetailScreen', {
+        review,
+        userProfile,
+      });
+      return;
+    }
+
+    Image.getSize(
+      imageUrl,
+      (width, height) => {
+        const ratio = width && height ? width / height : 1;
+        rootNavigation?.navigate('MyPostDetailScreen', {
+          review,
+          userProfile,
+          initialImageRatio: ratio,
+        });
+      },
+      () => {
+        rootNavigation?.navigate('MyPostDetailScreen', {
+          review,
+          userProfile,
+        });
+      },
+    );
   };
 
   const handleRefresh = () => {
@@ -166,7 +195,7 @@ const MyReview = ({
           !loading && myReview.length === 0 ? (
             <View style={styles.footer}>
               <CustomText style={styles.emptyText}>
-                등록한 게시물이 없어요
+                등록한 게시글이 없어요
               </CustomText>
             </View>
           ) : null
