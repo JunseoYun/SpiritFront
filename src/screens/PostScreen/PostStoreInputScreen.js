@@ -724,6 +724,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
         ref={bottomSheetRef}
         index={0}
         snapPoints={bottomSheetSnapPoints}
+        enableContentPanningGesture={false}
         handleIndicatorStyle={styles.sheetHandleIndicator}
         backgroundStyle={[styles.sheetBackground]}
         onChange={handleSheetChange}>
@@ -764,7 +765,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
             {paddingBottom: Math.max(insets.bottom, 20) + keyboardPadding},
           ]}
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="always"
           onScroll={handleSheetScroll}
           scrollEventThrottle={16}>
           {!isSearching && (

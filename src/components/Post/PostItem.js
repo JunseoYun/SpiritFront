@@ -767,8 +767,8 @@ const PostItem = ({
 
 const styles = StyleSheet.create({
   card: {
-    paddingTop: 10,
-    paddingBottom: 30,
+    // paddingTop: 10,
+    paddingBottom: 40,
     position: 'relative',
   },
   cardHeader: {

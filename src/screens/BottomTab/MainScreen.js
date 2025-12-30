@@ -11,7 +11,7 @@ import {
 import {useFocusEffect} from '@react-navigation/native';
 import {openSettings} from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import RejectModal from '../../components/Reject/RejectModal';
 import ExploreSearchBar from '../../components/ExploreScreen/ExploreSearchBar';
@@ -487,12 +487,12 @@ const MainScreen = ({navigation}) => {
   };
 
   return (
-    <View style={[styles.container]}>
-      <View
-        style={[
-          styles.header,
-          {paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0)},
-        ]}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        {paddingTop: Platform.OS === 'android' ? 10 : 0},
+      ]}>
+      <View style={[styles.header]}>
         <View style={styles.headerRow}>
           <ExploreSearchBar handleSearchPress={handleSearchPress} />
           <View style={styles.topView}>
@@ -562,7 +562,7 @@ const MainScreen = ({navigation}) => {
         />
       )}
       <AlertComponent />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -574,9 +574,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#fff',
     paddingTop: 6,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderColor: '#EEE',
+    paddingBottom: 10,
   },
   headerRow: {
     flexDirection: 'row',
