@@ -23,7 +23,7 @@ const ExploreSearchBar = ({handleSearchPress}) => {
 const styles = StyleSheet.create({
   searchBar: {
     flex: 1,
-    height: 38,
+    height: 42,
     backgroundColor: '#FFF',
     borderRadius: 50,
     borderWidth: 1,
