@@ -35,6 +35,7 @@ const PostWriteScreen = ({navigation, route}) => {
   const preview = route?.params?.preview ?? {};
   const storeName = route?.params?.storeName ?? '';
   const storeAddress = route?.params?.storeAddress ?? '';
+  const placeName = route?.params?.placeName ?? '';
   const photos = Array.isArray(preview.photos) ? preview.photos : [];
   const previewKey = useMemo(
     () => `${photos.length}-${photos?.[0]?.uri ?? 'none'}`,
@@ -48,6 +49,11 @@ const PostWriteScreen = ({navigation, route}) => {
 
   const previewPhoto = photos[0];
   const hasMultiplePhotos = photos.length > 1;
+  const displayName = placeName || storeName;
+  const hasStoreName = storeName.trim().length > 0;
+  const hasPlaceName = placeName.trim().length > 0;
+  const showStoreInfo = hasStoreName || hasPlaceName;
+  const showRating = hasStoreName && !hasPlaceName;
 
   useEffect(() => {
     let isActive = true;
@@ -261,43 +267,47 @@ const PostWriteScreen = ({navigation, route}) => {
               </View>
             )
           ) : null}
-          <View style={styles.storeInfo}>
-            <View style={styles.storeInfoRow}>
-              <View style={styles.storeInfoIcon}>
-                <Ionicons name="storefront" size={14} color="#333" />
-              </View>
-              <View style={styles.storeInfoText}>
-                <CustomText style={styles.storeName} numberOfLines={2}>
-                  {storeName}
-                </CustomText>
+          {showStoreInfo && (
+            <View style={styles.storeInfo}>
+              <View style={styles.storeInfoRow}>
+                <View style={styles.storeInfoIcon}>
+                  <Ionicons name="storefront" size={14} color="#333" />
+                </View>
+                <View style={styles.storeInfoText}>
+                  <CustomText style={styles.storeName} numberOfLines={2}>
+                    {displayName}
+                  </CustomText>
+                </View>
               </View>
             </View>
-          </View>
-          <View style={styles.ratingSection}>
-            <View style={styles.ratingRow}>
-              {Array.from({length: 5}, (_, index) => {
-                const starIndex = index + 1;
-                return (
-                  <Pressable
-                    key={`rating-star-${starIndex}`}
-                    onPress={() => setRating(starIndex)}
-                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
-                    <FontAwesomeIcon
-                      name="star"
-                      size={22}
-                      color={starIndex <= rating ? '#FFD700' : '#E2E2E2'}
-                      style={styles.ratingStar}
-                    />
-                  </Pressable>
-                );
-              })}
+          )}
+          {showRating && (
+            <View style={styles.ratingSection}>
+              <View style={styles.ratingRow}>
+                {Array.from({length: 5}, (_, index) => {
+                  const starIndex = index + 1;
+                  return (
+                    <Pressable
+                      key={`rating-star-${starIndex}`}
+                      onPress={() => setRating(starIndex)}
+                      hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                      <FontAwesomeIcon
+                        name="star"
+                        size={22}
+                        color={starIndex <= rating ? '#FFD700' : '#E2E2E2'}
+                        style={styles.ratingStar}
+                      />
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
-          </View>
+          )}
           <View style={styles.editor}>
             <CustomTextInput
               style={styles.editorInput}
               placeholder={
-                '이곳에서 어떤 술자리를 보냈나요?\n분위기나 기억에 남는 순간을 공유해보세요.'
+                '어떤 술자리를 보냈나요?\n분위기나 기억에 남는 순간을 공유해보세요.'
               }
               placeholderTextColor="#777"
               multiline
