@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   image: {
-    borderRadius: 14,
+    borderRadius: 9,
     backgroundColor: '#e5e7eb',
   },
   info: {

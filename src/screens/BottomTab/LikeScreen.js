@@ -31,7 +31,7 @@ const TABS = [
   },
   {
     key: 'saved',
-    label: '스크랩',
+    label: '게시글',
     empty: '저장한 매장이 없어요',
   },
 ];
