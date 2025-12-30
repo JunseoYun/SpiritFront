@@ -13,7 +13,6 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CustomText from '../../../utils/CustomText';
@@ -35,6 +34,8 @@ const InlinePostItem = ({
   onCommentPress,
   onEditPress,
   onDeletePress,
+  initialImageRatios = {},
+  initialImageRatio = 1,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const profileSource = item.profileImage
@@ -47,9 +48,9 @@ const InlinePostItem = ({
   const [shareCount, setShareCount] = useState(item.shares ?? 0);
   const [showAltTitle, setShowAltTitle] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const [imageRatio, setImageRatio] = useState(1);
+  const [imageRatio, setImageRatio] = useState(initialImageRatio);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [imageRatios, setImageRatios] = useState({});
+  const [imageRatios, setImageRatios] = useState(initialImageRatios);
   const totalImages = item.postImages?.length ?? 0;
   const lastTapRef = useRef({time: 0, x: 0, y: 0});
   const likeButtonRef = useRef(null);
@@ -244,9 +245,9 @@ const InlinePostItem = ({
   }).current;
 
   useEffect(() => {
-    setImageRatios({});
+    setImageRatios(initialImageRatios ?? {});
     setCurrentIndex(0);
-    setImageRatio(1);
+    setImageRatio(initialImageRatios?.[0] ?? initialImageRatio ?? 1);
     item.postImages?.forEach((uri, idx) => {
       Image.getSize(
         uri,
@@ -270,7 +271,7 @@ const InlinePostItem = ({
         () => {},
       );
     });
-  }, [item.postImages]);
+  }, [item.postImages, initialImageRatios, initialImageRatio]);
 
   useEffect(() => {
     if (badgeDelayRef.current) {
@@ -679,12 +680,22 @@ const InlinePostItem = ({
   );
 };
 
-const MyPostDetailScreen = ({route}) => {
-  const {review, userProfile} = route.params || {};
+const MyPostDetailScreen = ({navigation, route}) => {
+  const {
+    review,
+    userProfile,
+    initialImageRatio: routeImageRatio,
+    initialImageRatios: routeImageRatios,
+  } = route.params || {};
   const {showAlert, AlertComponent} = useCustomAlert();
-  const navigation = useNavigation();
   const scrollRef = useRef(null);
   const commentSectionOffset = useRef(0);
+  const [initialImageRatios, setInitialImageRatios] = useState(
+    routeImageRatios ?? {},
+  );
+  const [initialImageRatio, setInitialImageRatio] = useState(
+    routeImageRatio ?? 1,
+  );
 
   const reviewRate = Number(review?.rate ?? 0);
   const safeRate = Number.isFinite(reviewRate) ? reviewRate : 0;
@@ -782,11 +793,60 @@ const MyPostDetailScreen = ({route}) => {
   };
 
   useEffect(() => {
-    navigation.getParent()?.setOptions({tabBarStyle: {display: 'none'}});
+    if (
+      (Number.isFinite(routeImageRatio) && routeImageRatio > 0) ||
+      (routeImageRatios && Object.keys(routeImageRatios).length > 0)
+    ) {
+      return;
+    }
+    const images = Array.isArray(review?.imgUrlList)
+      ? review.imgUrlList.filter(Boolean)
+      : [];
+
+    if (images.length === 0) {
+      setInitialImageRatios({});
+      setInitialImageRatio(1);
+      return;
+    }
+
+    let isActive = true;
+    const nextRatios = {};
+    let pending = images.length;
+
+    images.forEach((uri, idx) => {
+      Image.getSize(
+        uri,
+        (width, height) => {
+          if (!isActive) return;
+          if (width && height) {
+            const ratio = width / height;
+            if (ratio > 0) {
+              nextRatios[idx] = ratio;
+              if (idx === 0) {
+                setInitialImageRatio(ratio);
+              }
+            }
+          }
+          pending -= 1;
+          if (pending === 0 && isActive) {
+            setInitialImageRatios(nextRatios);
+          }
+        },
+        () => {
+          if (!isActive) return;
+          pending -= 1;
+          if (pending === 0) {
+            setInitialImageRatios(nextRatios);
+          }
+        },
+      );
+    });
+
     return () => {
-      navigation.getParent()?.setOptions({tabBarStyle: {display: 'flex'}});
+      isActive = false;
     };
-  }, [navigation]);
+  }, [review?.imgUrlList, routeImageRatio, routeImageRatios]);
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -798,8 +858,12 @@ const MyPostDetailScreen = ({route}) => {
         <InlinePostItem
           item={postItem}
           onCommentPress={scrollToComments}
-          onEditPress={() => {}}
+          onEditPress={() =>
+            navigation.navigate('MyPostEditScreen', {review, userProfile})
+          }
           onDeletePress={handleDeletePress}
+          initialImageRatios={initialImageRatios}
+          initialImageRatio={initialImageRatio}
         />
 
         <View style={styles.metaSection}>

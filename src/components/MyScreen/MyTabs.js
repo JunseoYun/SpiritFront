@@ -14,7 +14,7 @@ const {width} = Dimensions.get('window');
 const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
   const animatedValue = useRef(new Animated.Value(selectedTab)).current;
 
-  const tabs = [{name: '게시물', screen: 'MyReview'}];
+  const tabs = [{name: '게시글', screen: 'MyReview'}];
 
   if (isManager) {
     tabs.push({name: '나의 매장', screen: 'MyManager'});
