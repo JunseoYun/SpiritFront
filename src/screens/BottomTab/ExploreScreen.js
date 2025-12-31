@@ -83,23 +83,6 @@ const ExploreScreen = ({navigation}) => {
     return addr;
   }, []);
 
-  const handleScrollToTop = useCallback(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollToLocation({
-        sectionIndex: 0,
-        itemIndex: 0,
-        viewPosition: 0,
-        animated: true,
-      });
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      navigation.setParams({scrollToTop: handleScrollToTop});
-    }, [navigation, handleScrollToTop]),
-  );
-
   const registerFixedFilterHeader = useCallback(instance => {
     fixedFilterHeaderRef.current = instance;
     if (instance?.syncScroll) {
@@ -252,7 +235,7 @@ const ExploreScreen = ({navigation}) => {
     fetchLocation();
   }, [pendingStoreId]);
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
 
     try {
@@ -281,7 +264,25 @@ const ExploreScreen = ({navigation}) => {
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [recommendCategory, PopularStores]);
+
+  const handleScrollToTop = useCallback(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollToLocation({
+        sectionIndex: 0,
+        itemIndex: 0,
+        viewPosition: 0,
+        animated: true,
+      });
+    }
+    onRefresh();
+  }, [onRefresh]);
+
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setParams({scrollToTop: handleScrollToTop});
+    }, [navigation, handleScrollToTop]),
+  );
 
   const catagoryClick = index => {
     if (index >= 0 && index < 10) {

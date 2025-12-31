@@ -193,11 +193,13 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    marginVertical: 20,
+    marginTop: 40,
     fontFamily: 'Pretendard-Medium',
     fontSize: 15,
     color: '#c0c0c0',
     alignSelf: 'center',
+    textAlign: 'center',
+    marginLeft: 10,
   },
 });
 

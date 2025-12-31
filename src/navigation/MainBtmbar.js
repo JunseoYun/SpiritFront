@@ -112,6 +112,15 @@ const MainBtmbar = ({route}) => {
             renderLabel('탐색', focused ? '#333' : color),
           headerShown: false,
         }}
+        listeners={({navigation, route}) => ({
+          tabPress: () => {
+            const isFocused = navigation.isFocused();
+
+            if (isFocused && route.params?.scrollToTop) {
+              route.params.scrollToTop();
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="LikeScreen"
