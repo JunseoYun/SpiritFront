@@ -114,6 +114,8 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   const returnDraft = route?.params?.draft;
   const returnDraftToken = route?.params?.draftToken;
   const baseFrame = route?.params?.baseFrame;
+  const presetStore = route?.params?.presetStore;
+  const reviewFlow = route?.params?.reviewFlow;
   const baseFrameAspectRatio =
     typeof baseFrame?.aspectRatio === 'number' ? baseFrame.aspectRatio : null;
   const shouldLockFrame = Boolean(
@@ -1009,6 +1011,8 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
           panByPhotoId,
           scaleByPhotoId,
         },
+        presetStore,
+        reviewFlow,
       });
     } finally {
       if (isMountedRef.current) {

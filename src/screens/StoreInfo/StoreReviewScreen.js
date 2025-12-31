@@ -22,7 +22,7 @@ import BottomActionButton from '../../utils/BottomActionButton';
 import CustomText from '../../utils/CustomText';
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
-  const {storeId, storename, isOwner} = route.params;
+  const {storeId, storename, isOwner, storeAddress} = route.params;
   const shouldRefresh = route.params?.shouldRefresh;
   const [reviewdata, setReviewdata] = useState([]);
   const [postData, setPostData] = useState([]);
@@ -221,10 +221,13 @@ const StoreReviewScreen = ({navigation}) => {
   );
 
   const handleWriteReviewPress = () => {
-    navigation.navigate('StoreReviewWriteScreen', {
-      storeId,
-      storename,
-      onReviewSubmitted: handleRefresh,
+    navigation.navigate('PostPhotoSelectScreen', {
+      presetStore: {
+        id: storeId,
+        name: storename,
+        address: storeAddress ?? '',
+      },
+      reviewFlow: true,
     });
   };
 

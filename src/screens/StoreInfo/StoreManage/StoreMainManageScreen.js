@@ -266,6 +266,7 @@ const StoreMainManageScreen = ({
             params: {
               storeId: storeInfo?.id,
               storename: storeInfo?.name,
+              storeAddress: storeInfo?.locationDto?.address ?? '',
               isOwner: true,
             },
           }),

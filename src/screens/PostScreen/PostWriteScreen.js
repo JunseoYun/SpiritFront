@@ -42,6 +42,7 @@ const PostWriteScreen = ({navigation, route}) => {
   const storeAddress = route?.params?.storeAddress ?? '';
   const placeName = route?.params?.placeName ?? '';
   const storeId = route?.params?.storeId ?? null;
+  const reviewFlow = route?.params?.reviewFlow ?? false;
   const photos = Array.isArray(preview.photos) ? preview.photos : [];
   const previewKey = useMemo(
     () => `${photos.length}-${photos?.[0]?.uri ?? 'none'}`,
@@ -232,6 +233,19 @@ const PostWriteScreen = ({navigation, route}) => {
         },
       };
       await PostCreate(data);
+      if (reviewFlow && resolvedStoreId) {
+        navigation.pop(3);
+        navigation.navigate('StoreStack', {
+          screen: 'StoreReviewScreen',
+          params: {
+            storeId: resolvedStoreId,
+            storename: storeName,
+            storeAddress,
+            shouldRefresh: true,
+          },
+        });
+        return;
+      }
       navigation.reset({
         index: 0,
         routes: [{name: 'MainBtmbar', state: {routes: [{name: 'MainScreen'}]}}],

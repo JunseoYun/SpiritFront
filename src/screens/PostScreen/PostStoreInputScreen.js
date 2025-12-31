@@ -48,6 +48,8 @@ const MAX_LANDSCAPE_RATIO = 16 / 9;
 const PostStoreInputScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
   const preview = route?.params?.preview ?? {};
+  const presetStore = route?.params?.presetStore ?? null;
+  const reviewFlow = route?.params?.reviewFlow;
   const [location, setLocation] = useState(route?.params?.location ?? null);
   const [photoList, setPhotoList] = useState(
     Array.isArray(preview.photos) ? preview.photos : [],
@@ -56,6 +58,16 @@ const PostStoreInputScreen = ({navigation, route}) => {
   const baseFrame = preview.baseFrame ?? {};
   const baseIsPortraitPhoto = baseFrame.isPortraitPhoto ?? true;
   const baseLandscapeAspectRatio = baseFrame.landscapeAspectRatio ?? 1;
+  const isStoreLocked = useMemo(() => {
+    if (!presetStore) {
+      return false;
+    }
+    const storeId =
+      presetStore?.id ?? presetStore?.storeId ?? presetStore?.store_id;
+    const storeName = presetStore?.name ?? presetStore?.storeName;
+    const storeAddress = presetStore?.address ?? presetStore?.storeAddress;
+    return Boolean(storeId || storeName || storeAddress);
+  }, [presetStore]);
   const hasMultiplePhotos = photoList.length > 1;
   const previewItemWidth = hasMultiplePhotos ? width * 0.86 : width;
   const previewSidePadding = hasMultiplePhotos ? 6 : 20;
@@ -282,6 +294,26 @@ const PostStoreInputScreen = ({navigation, route}) => {
     }
     return base;
   };
+
+  useEffect(() => {
+    if (!isStoreLocked || !presetStore) {
+      return;
+    }
+    const storeId =
+      presetStore?.id ?? presetStore?.storeId ?? presetStore?.store_id ?? null;
+    const storeName = presetStore?.name ?? presetStore?.storeName ?? '';
+    const storeAddress =
+      presetStore?.address ?? presetStore?.storeAddress ?? '';
+    setSelectedStore({
+      id: storeId,
+      name: storeName,
+      locationDto: {address: storeAddress},
+    });
+    setPlaceName('');
+    setPlaceNameInput('');
+    setManualStoreName('');
+    setManualStoreAddress('');
+  }, [isStoreLocked, presetStore]);
 
   const handleSelectStore = store => {
     setSelectedStore(prev => {
@@ -630,6 +662,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
               storeAddress: hasPlaceName ? '' : selectedAddressText,
               placeName: hasPlaceName ? trimmedPlaceName : '',
               storeId,
+              reviewFlow,
             });
           }}
           disabled={!isNextEnabled}>
@@ -645,11 +678,11 @@ const PostStoreInputScreen = ({navigation, route}) => {
       <Pressable
         style={styles.selectedStoreRow}
         onPress={() => {
-          if (!selectedStore && !trimmedPlaceName) {
+          if (!isStoreLocked && !selectedStore && !trimmedPlaceName) {
             bottomSheetRef.current?.snapToIndex(2);
           }
         }}
-        disabled={Boolean(selectedStore || trimmedPlaceName)}>
+        disabled={isStoreLocked || Boolean(selectedStore || trimmedPlaceName)}>
         <View style={styles.selectedStoreIcon}>
           <Ionicons name="storefront-outline" size={16} color="#333" />
         </View>
@@ -690,7 +723,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
             </>
           )}
         </View>
-        {(selectedStore || trimmedPlaceName) && (
+        {!isStoreLocked && (selectedStore || trimmedPlaceName) && (
           <Pressable
             onPress={() => {
               setSelectedStore(null);
@@ -732,54 +765,55 @@ const PostStoreInputScreen = ({navigation, route}) => {
           </View>
         </View>
       )}
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={0}
-        snapPoints={bottomSheetSnapPoints}
-        enableContentPanningGesture={false}
-        handleIndicatorStyle={styles.sheetHandleIndicator}
-        backgroundStyle={[styles.sheetBackground]}
-        onChange={handleSheetChange}>
-        <BottomSheetView style={[styles.bottomSheetHeader]}>
-          <View style={styles.searchRow}>
-            <Ionicons name="search-outline" size={18} color="#7A7A7A" />
-            <CustomTextInput
-              ref={searchInputRef}
-              style={styles.searchInput}
-              value={searchValue}
-              onChangeText={setSearchValue}
-              onFocus={() => {
-                setIsSearchFocused(true);
-                bottomSheetRef.current?.snapToIndex(2);
-              }}
-              onBlur={() => setIsSearchFocused(false)}
-              returnKeyType="done"
-              blurOnSubmit
-              onSubmitEditing={() => searchInputRef.current?.blur?.()}
-              placeholder="매장 이름을 검색하세요."
-              placeholderTextColor="#9B9B9B"
-            />
-            {Boolean(searchValue) && (
-              <CancelText
-                rightnum={10}
-                centerVertical
-                paddingnum={4}
-                handlecancel={setSearchValue}
-                size={20}
+      {!isStoreLocked ? (
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={0}
+          snapPoints={bottomSheetSnapPoints}
+          enableContentPanningGesture={false}
+          handleIndicatorStyle={styles.sheetHandleIndicator}
+          backgroundStyle={[styles.sheetBackground]}
+          onChange={handleSheetChange}>
+          <BottomSheetView style={[styles.bottomSheetHeader]}>
+            <View style={styles.searchRow}>
+              <Ionicons name="search-outline" size={18} color="#7A7A7A" />
+              <CustomTextInput
+                ref={searchInputRef}
+                style={styles.searchInput}
+                value={searchValue}
+                onChangeText={setSearchValue}
+                onFocus={() => {
+                  setIsSearchFocused(true);
+                  bottomSheetRef.current?.snapToIndex(2);
+                }}
+                onBlur={() => setIsSearchFocused(false)}
+                returnKeyType="done"
+                blurOnSubmit
+                onSubmitEditing={() => searchInputRef.current?.blur?.()}
+                placeholder="매장 이름을 검색하세요."
+                placeholderTextColor="#9B9B9B"
               />
-            )}
-          </View>
-        </BottomSheetView>
-        <BottomSheetScrollView
-          ref={sheetScrollRef}
-          contentContainerStyle={[
-            styles.bottomSheetContent,
-            {paddingBottom: Math.max(insets.bottom, 20) + keyboardPadding},
-          ]}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="always"
-          onScroll={handleSheetScroll}
-          scrollEventThrottle={16}>
+              {Boolean(searchValue) && (
+                <CancelText
+                  rightnum={10}
+                  centerVertical
+                  paddingnum={4}
+                  handlecancel={setSearchValue}
+                  size={20}
+                />
+              )}
+            </View>
+          </BottomSheetView>
+          <BottomSheetScrollView
+            ref={sheetScrollRef}
+            contentContainerStyle={[
+              styles.bottomSheetContent,
+              {paddingBottom: Math.max(insets.bottom, 20) + keyboardPadding},
+            ]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="always"
+            onScroll={handleSheetScroll}
+            scrollEventThrottle={16}>
           {!isSearching && (
             <View style={styles.chipRow}>
               <Pressable
@@ -1072,6 +1106,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
           )}
         </BottomSheetScrollView>
       </BottomSheet>
+      ) : null}
     </View>
   );
 };
