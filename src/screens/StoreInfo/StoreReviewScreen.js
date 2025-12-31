@@ -1,16 +1,19 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useRef} from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   SafeAreaView,
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {ReviewStoreGet, review_delete_reply} from '../../api/reviewApi';
+import {PostGetByStore} from '../../api/postApi';
 import ReviewItem from '../../components/StoreReviewScreen/ReviewItem';
+import {POST_REPORT_REASONS} from '../../components/Post/PostReportSheet';
+import PostReportBottomSheet from '../../components/Post/PostReportBottomSheet';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import Loading from '../../hooks/Loading';
 import ReviewItemSkeleton from '../../components/StoreReviewScreen/ReviewItemSkeleton';
@@ -22,8 +25,14 @@ const StoreReviewScreen = ({navigation}) => {
   const {storeId, storename, isOwner} = route.params;
   const shouldRefresh = route.params?.shouldRefresh;
   const [reviewdata, setReviewdata] = useState([]);
+  const [postData, setPostData] = useState([]);
+  const [postLoading, setPostLoading] = useState(true);
+  const [selectedPostReportReason, setSelectedPostReportReason] = useState(
+    POST_REPORT_REASONS[0],
+  );
   const {showAlert, AlertComponent} = useCustomAlert();
   const {bottom} = useSafeAndroidInsets();
+  const postReportSheetRef = useRef(null);
 
   const [firstloading, setFirstloading] = useState(true);
   const [page, setPage] = useState(0); // 페이지 번호
@@ -65,6 +74,45 @@ const StoreReviewScreen = ({navigation}) => {
     [storeId],
   );
 
+  const getStorePosts = useCallback(async () => {
+    if (!storeId) {
+      setPostData([]);
+      setPostLoading(false);
+      return;
+    }
+
+    setPostLoading(true);
+    try {
+      const data = await PostGetByStore({storeId, page: 0, size: 5});
+      const mapped = (data?.content ?? []).map(post => ({
+        ...post,
+        id: String(post.id ?? ''),
+        writerNickname: post.writerNickname ?? '게스트',
+        writerImgUrl: post.writerImgUrl ?? null,
+        profileImage: post.writerImgUrl ?? null,
+        nickname: post.writerNickname ?? '게스트',
+        rate: post.rate ?? post.rating ?? 0,
+        visitedAt: null,
+        content: post.content ?? '',
+        imgUrlList: Array.isArray(post.postImgUrlList)
+          ? post.postImgUrlList
+          : [],
+        postImages: Array.isArray(post.postImgUrlList)
+          ? post.postImgUrlList
+          : [],
+        name: post.storeName ?? post.name ?? null,
+        storeAddress: post.storeAddress ?? post.address ?? null,
+        createdAt: post.createdAt ?? post.createAt ?? post.createdDate ?? null,
+        isPostItem: true,
+      }));
+      setPostData(mapped);
+    } catch (error) {
+      console.error('매장 게시글 조회 실패:', error);
+    } finally {
+      setPostLoading(false);
+    }
+  }, [storeId]);
+
   const loadMoreReviews = useCallback(() => {
     if (!loading && !isEnd) {
       setPage(prevPage => {
@@ -80,7 +128,8 @@ const StoreReviewScreen = ({navigation}) => {
     setPage(0); // 페이지 초기화
     setIsEnd(false);
     getReviewData(0);
-  }, [getReviewData]);
+    getStorePosts();
+  }, [getReviewData, getStorePosts]);
 
   const handleRefresh = useCallback(() => {
     setReviewdata([]); // 기존 stores 초기화
@@ -88,7 +137,47 @@ const StoreReviewScreen = ({navigation}) => {
     setPage(0);
     setRefreshing(true); // 새로고침 시작
     getReviewData(0); // 새로고침
-  }, [getReviewData]);
+    getStorePosts();
+  }, [getReviewData, getStorePosts]);
+
+  const openPostReport = useCallback(() => {
+    setSelectedPostReportReason(POST_REPORT_REASONS[0]);
+    postReportSheetRef.current?.present();
+  }, []);
+
+  const handlePostReportSubmit = useCallback(() => {
+    postReportSheetRef.current?.dismiss();
+    // TODO: Hook up real report flow when available.
+    setTimeout(() => {
+      Alert.alert('신고하기', '신고가 접수되었습니다.');
+    }, 120);
+  }, []);
+
+  const renderPostSection = () => (
+    <View>
+      {postLoading ? (
+        <>
+          <ReviewItemSkeleton />
+          <ReviewItemSkeleton />
+        </>
+      ) : postData.length > 0 ? (
+        postData.map(post => (
+          <ReviewItem
+            key={`store-post-${post.id}`}
+            item={post}
+            navigation={navigation}
+            isOwner={false}
+            isPostItem
+            onReportPress={openPostReport}
+          />
+        ))
+      ) : (
+        <CustomText style={styles.postEmptyText}>
+          등록된 게시글이 없어요
+        </CustomText>
+      )}
+    </View>
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -150,6 +239,7 @@ const StoreReviewScreen = ({navigation}) => {
               data={[1, 2, 3]} // 임의의 더미 데이터
               keyExtractor={(item, index) => index.toString()}
               renderItem={() => <ReviewItemSkeleton />}
+              ListHeaderComponent={renderPostSection}
               showsVerticalScrollIndicator={false}
             />
           ) : (
@@ -164,6 +254,7 @@ const StoreReviewScreen = ({navigation}) => {
               onRefresh={handleRefresh}
               refreshing={refreshing}
               contentContainerStyle={{paddingBottom: 0}}
+              ListHeaderComponent={renderPostSection}
               ListFooterComponent={
                 <View style={styles.footer}>
                   {loading && !isEnd ? (
@@ -186,6 +277,13 @@ const StoreReviewScreen = ({navigation}) => {
       </SafeAreaView>
       <AlertComponent />
       <Loading loading={loading} />
+      <PostReportBottomSheet
+        sheetRef={postReportSheetRef}
+        reasons={POST_REPORT_REASONS}
+        selectedReason={selectedPostReportReason}
+        onSelectReason={setSelectedPostReportReason}
+        onSubmit={handlePostReportSubmit}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -268,6 +366,14 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
     fontSize: 20,
+    color: '#c0c0c0',
+  },
+
+  postEmptyText: {
+    textAlign: 'center',
+    paddingBottom: 16,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
     color: '#c0c0c0',
   },
 

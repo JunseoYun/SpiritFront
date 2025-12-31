@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useLayoutEffect, useMemo, useState} from 'react';
 import CustomText from './CustomText';
 
 /**
@@ -16,7 +16,7 @@ const useMeasuredExpandableText = ({
   const [isExpandable, setIsExpandable] = useState(false);
   const [hasMeasured, setHasMeasured] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setIsExpanded(false);
     setCollapsedContent(text ?? '');
     setIsExpandable(false);
@@ -92,6 +92,7 @@ const useMeasuredExpandableText = ({
     handleTextLayout,
     isExpanded,
     isExpandable,
+    hasMeasured,
     toggleExpanded,
   };
 };
