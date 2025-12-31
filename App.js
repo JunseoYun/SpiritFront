@@ -25,6 +25,8 @@ import {DeepLinkProvider, useDeepLink} from './src/context/DeepLinkContext';
 import './reanimatedConfig';
 import mobileAds from 'react-native-google-mobile-ads';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {
   initLocationIfNeeded,
   initLocationFromServer,
@@ -54,27 +56,29 @@ const App = () => {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <PaperProvider>
-        <AuthProvider>
-          <CustomAlertProvider>
-            <ToastProvider>
-              <NotificationProvider>
-                <DeepLinkProvider>
-                  <StoreInviteProvider>
-                    <AdConsentProvider>
-                      <MapSearchProvider>
-                        <AppNavigator />
-                      </MapSearchProvider>
-                    </AdConsentProvider>
-                  </StoreInviteProvider>
-                </DeepLinkProvider>
-              </NotificationProvider>
-            </ToastProvider>
-          </CustomAlertProvider>
-        </AuthProvider>
-      </PaperProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <SafeAreaProvider>
+        <PaperProvider>
+          <AuthProvider>
+            <CustomAlertProvider>
+              <ToastProvider>
+                <NotificationProvider>
+                  <DeepLinkProvider>
+                    <StoreInviteProvider>
+                      <AdConsentProvider>
+                        <MapSearchProvider>
+                          <AppNavigator />
+                        </MapSearchProvider>
+                      </AdConsentProvider>
+                    </StoreInviteProvider>
+                  </DeepLinkProvider>
+                </NotificationProvider>
+              </ToastProvider>
+            </CustomAlertProvider>
+          </AuthProvider>
+        </PaperProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 };
 
@@ -170,15 +174,17 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer ref={navigationRef} onReady={onNavigationReady}>
-      {Platform.OS === 'android' && (
-        <StatusBar
-          barStyle="dark-content" // 상태바 글자/아이콘 색
-          backgroundColor={'#fff'}
-        />
-      )}
-      {token ? <MainStack /> : <OAuthStack isTestEnabled={isTestEnabled} />}
-    </NavigationContainer>
+    <BottomSheetModalProvider>
+      <NavigationContainer ref={navigationRef} onReady={onNavigationReady}>
+        {Platform.OS === 'android' && (
+          <StatusBar
+            barStyle="dark-content" // 상태바 글자/아이콘 색
+            backgroundColor={'#fff'}
+          />
+        )}
+        {token ? <MainStack /> : <OAuthStack isTestEnabled={isTestEnabled} />}
+      </NavigationContainer>
+    </BottomSheetModalProvider>
   );
 };
 
