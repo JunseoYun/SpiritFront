@@ -47,6 +47,8 @@ import {PostGetByRecent} from '../../api/postApi';
 import Loading from '../../hooks/Loading';
 
 const defaultProfile = require('../../assets/default_profile.png');
+const FEED_PAGE_SIZE = 10;
+const PREFETCH_REMAINING_ITEMS = 3;
 
 const MainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
@@ -60,9 +62,19 @@ const MainScreen = ({navigation}) => {
   const [feedData, setFeedData] = useState([]);
   const [feedLoading, setFeedLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [feedPage, setFeedPage] = useState(0);
+  const [feedTotalPages, setFeedTotalPages] = useState(0);
+  const [feedLoadingMore, setFeedLoadingMore] = useState(false);
+  const listRef = useRef(null);
   const listHeightRef = useRef(0);
   const itemLayoutsRef = useRef(new Map());
   const scrollOffsetRef = useRef(0);
+  const allowLoadMore = useRef(false);
+  const onEndReachedCalledDuringMomentum = useRef(false);
+  const lastFetchCountRef = useRef(0);
+  const feedDataLengthRef = useRef(0);
+  const lastPrefetchPageRef = useRef(-1);
+  const feedTotalPagesRef = useRef(0);
   const [showWriteLabel, setShowWriteLabel] = useState(true);
   const [isWriteMenuVisible, setIsWriteMenuVisible] = useState(false);
   const [isWriteMenuOpen, setIsWriteMenuOpen] = useState(false);
@@ -94,6 +106,22 @@ const MainScreen = ({navigation}) => {
     () => Array.from({length: 4}, (_, index) => `skeleton-${index}`),
     [],
   );
+  const refreshFeed = useCallback(() => {
+    allowLoadMore.current = false;
+    setFeedPage(0);
+    setFeedTotalPages(0);
+    feedTotalPagesRef.current = 0;
+    fetchPosts({page: 0, isRefresh: true});
+  }, [fetchPosts]);
+  const handleScrollToTop = useCallback(() => {
+    listRef.current?.scrollToOffset({offset: 0, animated: true});
+    //TODO 탭 재클릭 새로고침
+    // refreshFeed();
+  }, [refreshFeed]);
+
+  useEffect(() => {
+    navigation.setParams({scrollToTop: handleScrollToTop});
+  }, [navigation, handleScrollToTop]);
 
   const writeMenuItems = [
     {
@@ -148,15 +176,18 @@ const MainScreen = ({navigation}) => {
     fetchLocation();
   }, []);
 
-  const fetchPosts = useCallback(async ({isRefresh = false} = {}) => {
+  const fetchPosts = useCallback(async ({page = 0, isRefresh = false} = {}) => {
+    const isPaging = page > 0 && !isRefresh;
     if (isRefresh) {
       setRefreshing(true);
+    } else if (isPaging) {
+      setFeedLoadingMore(true);
     } else {
       setFeedLoading(true);
     }
     try {
-      const data = await PostGetByRecent({page: 0, size: 10});
-      console.log('MainScreen 최근 게시글:', data);
+      const data = await PostGetByRecent({page, size: FEED_PAGE_SIZE});
+      // console.log('MainScreen 최근 게시글:', data);
       const mapped = (data?.content ?? []).map(post => ({
         id: String(post.id ?? ''),
         nickname: post.writerNickname ?? '게스트',
@@ -173,20 +204,54 @@ const MainScreen = ({navigation}) => {
         shares: post.shareCount ?? 0,
         isWriter: post.isWriter ?? false,
       }));
-      setFeedData(mapped);
+      lastFetchCountRef.current = mapped.length;
+      const totalPages = Number.isFinite(data?.totalPages)
+        ? data.totalPages
+        : feedTotalPagesRef.current;
+      feedTotalPagesRef.current = totalPages ?? 0;
+      setFeedTotalPages(feedTotalPagesRef.current);
+      setFeedData(prev => {
+        if (!isPaging) {
+          return mapped;
+        }
+        const merged = [...prev, ...mapped];
+        return Array.from(
+          new Map(merged.map(item => [item.id, item])).values(),
+        );
+      });
+      const reachedEnd =
+        totalPages && totalPages > 0
+          ? page >= totalPages - 1
+          : mapped.length === 0;
+      if (reachedEnd) {
+        allowLoadMore.current = false;
+      }
+      if (!isPaging) {
+        setFeedPage(0);
+        lastPrefetchPageRef.current = -1;
+      }
     } catch (error) {
       console.error('게시글 조회 실패:', error);
     } finally {
       if (isRefresh) {
         setRefreshing(false);
+      } else if (isPaging) {
+        setFeedLoadingMore(false);
       } else {
         setFeedLoading(false);
+      }
+      if (!isPaging) {
+        itemLayoutsRef.current.clear();
+        allowLoadMore.current = false;
+        setTimeout(() => {
+          allowLoadMore.current = true;
+        }, 300);
       }
     }
   }, []);
 
   useEffect(() => {
-    fetchPosts();
+    fetchPosts({page: 0});
   }, [fetchPosts]);
 
   const handleSearchPress = useCallback(() => {
@@ -574,6 +639,78 @@ const MainScreen = ({navigation}) => {
     }
   }, [closeMoreMenus, closeWriteMenu, isWriteMenuOpen]);
 
+  const handleLoadMore = useCallback(() => {
+    if (
+      feedLoading ||
+      feedLoadingMore ||
+      refreshing ||
+      !allowLoadMore.current
+    ) {
+      return;
+    }
+    if (feedTotalPages && feedPage >= feedTotalPages - 1) {
+      return;
+    }
+    setFeedPage(prevPage => {
+      const nextPage = prevPage + 1;
+      fetchPosts({page: nextPage});
+      return nextPage;
+    });
+  }, [
+    feedLoading,
+    feedLoadingMore,
+    refreshing,
+    feedTotalPages,
+    feedPage,
+    fetchPosts,
+  ]);
+
+  const handleViewableItemsChanged = useCallback(
+    ({viewableItems}) => {
+      if (
+        feedLoading ||
+        feedLoadingMore ||
+        refreshing ||
+        !allowLoadMore.current
+      ) {
+        return;
+      }
+      if (lastFetchCountRef.current < FEED_PAGE_SIZE) {
+        return;
+      }
+      if (feedTotalPages && feedPage >= feedTotalPages - 1) {
+        return;
+      }
+      const maxIndex = viewableItems.reduce(
+        (max, item) => (item.index > max ? item.index : max),
+        -1,
+      );
+      if (maxIndex < 0) {
+        return;
+      }
+      const triggerIndex = feedDataLengthRef.current - PREFETCH_REMAINING_ITEMS;
+      if (
+        maxIndex >= triggerIndex &&
+        lastPrefetchPageRef.current !== feedPage
+      ) {
+        lastPrefetchPageRef.current = feedPage;
+        handleLoadMore();
+      }
+    },
+    [
+      feedLoading,
+      feedLoadingMore,
+      refreshing,
+      feedTotalPages,
+      feedPage,
+      handleLoadMore,
+    ],
+  );
+
+  useEffect(() => {
+    feedDataLengthRef.current = feedData.length;
+  }, [feedData.length]);
+
   useFocusEffect(
     useCallback(() => {
       loadHeaderData();
@@ -683,6 +820,7 @@ const MainScreen = ({navigation}) => {
       </View>
 
       <FlatList
+        ref={listRef}
         data={feedLoading ? skeletonData : feedData}
         keyExtractor={(item, index) =>
           feedLoading ? item : item.id ?? `${index}`
@@ -703,12 +841,27 @@ const MainScreen = ({navigation}) => {
         showsVerticalScrollIndicator={false}
         scrollEnabled={!feedLoading}
         refreshing={refreshing}
-        onRefresh={() => fetchPosts({isRefresh: true})}
+        onRefresh={refreshFeed}
         onScrollBeginDrag={handleScrollBeginDrag}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         onLayout={handleListLayout}
         CellRendererComponent={cellRenderer}
+        onViewableItemsChanged={handleViewableItemsChanged}
+        viewabilityConfig={{itemVisiblePercentThreshold: 60}}
+        onMomentumScrollBegin={() => {
+          onEndReachedCalledDuringMomentum.current = false;
+        }}
+        onEndReached={() => {
+          if (
+            !onEndReachedCalledDuringMomentum.current &&
+            allowLoadMore.current
+          ) {
+            handleLoadMore();
+            onEndReachedCalledDuringMomentum.current = true;
+          }
+        }}
+        onEndReachedThreshold={0.9}
       />
 
       <BottomSheetModal

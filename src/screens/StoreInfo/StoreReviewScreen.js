@@ -171,11 +171,7 @@ const StoreReviewScreen = ({navigation}) => {
             onReportPress={openPostReport}
           />
         ))
-      ) : (
-        <CustomText style={styles.postEmptyText}>
-          등록된 게시글이 없어요
-        </CustomText>
-      )}
+      ) : null}
     </View>
   );
 
