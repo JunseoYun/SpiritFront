@@ -148,7 +148,7 @@ const PostDetailScreen = ({navigation, route}) => {
       style={[
         styles.container,
         {
-          paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0),
+          paddingTop: insets.top + (Platform.OS === 'android' ? 17 : 7),
           paddingBottom: insets.bottom,
         },
       ]}>
@@ -162,7 +162,9 @@ const PostDetailScreen = ({navigation, route}) => {
         <CustomText style={styles.headerTitle}>게시글</CustomText>
         <View style={styles.headerSide} />
       </View>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}>
         {postItem && (
           <PostItem
             item={postItem}
@@ -172,24 +174,6 @@ const PostDetailScreen = ({navigation, route}) => {
           />
         )}
 
-        <View style={styles.commentsSection}>
-          {/* <CustomText style={styles.commentsTitle}>
-          댓글 {comments.length}
-        </CustomText>
-        {comments.map(comment => (
-          <View key={comment.id} style={styles.commentItem}>
-            <View style={styles.commentHeader}>
-              <CustomText style={styles.commentAuthor}>
-                {comment.author}
-              </CustomText>
-              <CustomText style={styles.commentDate}>
-                {comment.createdAt}
-              </CustomText>
-            </View>
-            <CustomText style={styles.commentText}>{comment.text}</CustomText>
-          </View>
-        ))} */}
-        </View>
         <Loading loading={loading} />
       </ScrollView>
       <PostCommentSheet
@@ -213,13 +197,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFF',
   },
+  content: {
+    paddingTop: 10,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 12,
-    // borderBottomWidth: 1,
-    // borderColor: '#F1F1F1',
   },
   headerSide: {
     width: 24,
@@ -228,46 +213,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     fontFamily: 'Pretendard-Bold',
-    fontSize: 16,
+    fontSize: 17,
     color: '#333',
     textAlign: 'center',
-  },
-  commentsSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    gap: 14,
-  },
-  commentsTitle: {
-    fontSize: 17,
-    fontFamily: 'Pretendard-Bold',
-    color: '#222',
-  },
-  commentItem: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
-    gap: 4,
-  },
-  commentHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  commentAuthor: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
-  },
-  commentDate: {
-    fontSize: 12,
-    fontFamily: 'Pretendard-Regular',
-    color: ColorUtil.subText,
-  },
-  commentText: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-Regular',
-    color: '#333',
-    lineHeight: 20,
   },
 });
 
