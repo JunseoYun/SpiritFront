@@ -160,19 +160,19 @@ const MainScreen = ({navigation}) => {
       const mapped = (data?.content ?? []).map(post => ({
         id: String(post.id ?? ''),
         nickname: post.writerNickname ?? '게스트',
-          profileImage: post.writerImgUrl ?? null,
-          postImages: Array.isArray(post.postImgUrlList)
-            ? post.postImgUrlList
-            : [],
-          storeId: post.storeId ?? null,
-          storeAddress: post.address ?? post.storeAddress ?? '',
-          name: post.storeName ?? '',
+        profileImage: post.writerImgUrl ?? null,
+        postImages: Array.isArray(post.postImgUrlList)
+          ? post.postImgUrlList
+          : [],
+        storeId: post.storeId ?? null,
+        storeAddress: post.storeAddress ?? post.address ?? '',
+        name: post.storeName ?? '',
         content: post.content ?? '',
         likes: post.likes ?? 0,
         comments: post.commentCount ?? 0,
         shares: post.shareCount ?? 0,
-          isWriter: post.isWriter ?? false,
-        }));
+        isWriter: post.isWriter ?? false,
+      }));
       setFeedData(mapped);
     } catch (error) {
       console.error('게시글 조회 실패:', error);

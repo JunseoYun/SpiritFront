@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
-import {ReviewRecentGet} from '../../api/reviewApi';
+import {PostMyGet} from '../../api/reviewApi';
 import Loading from '../../hooks/Loading';
 import CustomText from '../../utils/CustomText';
 
@@ -43,7 +43,7 @@ const MyReview = ({
       setLoading(true);
     }
     try {
-      const data = await ReviewRecentGet(currentPage);
+      const data = await PostMyGet(currentPage);
       setTotalpage(data.totalPages);
       if (data.content.length === 0) {
         setIsEnd(true);
@@ -89,14 +89,17 @@ const MyReview = ({
   }, [myReview]);
 
   const handleOpenDetail = review => {
-    const imageUrl = review?.imgUrlList?.[0];
+    const imageUrl = review?.postImgUrlList?.[0] || review?.imgUrlList?.[0];
     const rootNavigation =
       navigation.getParent?.()?.getParent?.() ??
       navigation.getParent?.() ??
       navigation;
+    const foundIndex = myReview.findIndex(item => item?.id === review?.id);
+    const initialIndex = foundIndex >= 0 ? foundIndex : 0;
     if (!imageUrl) {
       rootNavigation?.navigate('MyPostDetailScreen', {
-        review,
+        posts: myReview,
+        initialIndex,
         userProfile,
       });
       return;
@@ -107,14 +110,16 @@ const MyReview = ({
       (width, height) => {
         const ratio = width && height ? width / height : 1;
         rootNavigation?.navigate('MyPostDetailScreen', {
-          review,
+          posts: myReview,
+          initialIndex,
           userProfile,
           initialImageRatio: ratio,
         });
       },
       () => {
         rootNavigation?.navigate('MyPostDetailScreen', {
-          review,
+          posts: myReview,
+          initialIndex,
           userProfile,
         });
       },
@@ -134,7 +139,8 @@ const MyReview = ({
       <View style={[styles.row, {marginBottom: GRID_GAP}]}>
         {row.map((review, idx) => {
           const isLast = idx === row.length - 1;
-          const imageUrl = review?.imgUrlList?.[0];
+          const imageUrl =
+            review?.postImgUrlList?.[0] || review?.imgUrlList?.[0];
           return (
             <Pressable
               key={review?.id ?? `empty-${index}-${idx}`}

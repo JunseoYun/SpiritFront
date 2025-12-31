@@ -35,7 +35,10 @@ const PostItem = ({
   item,
   isCentered = false,
   contentMaxLines = 2,
+  fixedMediaHeight,
   onCommentPress,
+  onPrimaryImageLoad,
+  initialImageRatio,
   onEditPress,
   onDeletePress,
   isWriter = false,
@@ -75,6 +78,7 @@ const PostItem = ({
   const HEART_LINGER_DURATION = 140;
   const pendingLikeRef = useRef(false);
   const READ_MORE_LABEL = '…더보기';
+  const primaryImageLoadedRef = useRef(false);
 
   const {
     contentForRender,
@@ -305,6 +309,10 @@ const PostItem = ({
         });
       }
     }
+    if (index === 0 && !primaryImageLoadedRef.current) {
+      primaryImageLoadedRef.current = true;
+      onPrimaryImageLoad?.();
+    }
   };
 
   const onViewableItemsChanged = useRef(({viewableItems}) => {
@@ -323,9 +331,13 @@ const PostItem = ({
   }).current;
 
   useEffect(() => {
-    setImageRatios({});
+    const seededRatio =
+      typeof initialImageRatio === 'number' && initialImageRatio > 0
+        ? initialImageRatio
+        : null;
+    setImageRatios(seededRatio ? {0: seededRatio} : {});
     setCurrentIndex(0);
-    setImageRatio(1);
+    setImageRatio(seededRatio || 1);
     item.postImages?.forEach((uri, idx) => {
       Image.getSize(
         uri,
@@ -349,7 +361,7 @@ const PostItem = ({
         () => {},
       );
     });
-  }, [item.postImages]);
+  }, [initialImageRatio, item.postImages]);
 
   useEffect(() => {
     if (badgeDelayRef.current) {
@@ -612,7 +624,12 @@ const PostItem = ({
       </View>
 
       {item.postImages?.length > 1 ? (
-        <View style={{width: screenWidth, position: 'relative'}}>
+        <View
+          style={{
+            width: screenWidth,
+            position: 'relative',
+            ...(fixedMediaHeight ? {height: fixedMediaHeight} : null),
+          }}>
           <FlatList
             data={item.postImages}
             keyExtractor={(uri, index) => `${uri}-${index}`}
@@ -626,7 +643,14 @@ const PostItem = ({
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig}
             renderItem={({item: uri, index}) => (
-              <View style={[styles.imageWrapper, {width: screenWidth}]}>
+              <View
+                style={[
+                  styles.imageWrapper,
+                  {
+                    width: screenWidth,
+                    ...(fixedMediaHeight ? {height: fixedMediaHeight} : null),
+                  },
+                ]}>
                 <Pressable onPress={handleImagePress}>
                   <FastImage
                     source={{uri}}
@@ -634,7 +658,9 @@ const PostItem = ({
                       styles.postImage,
                       {
                         width: screenWidth,
-                        aspectRatio: imageRatios[index] ?? imageRatio,
+                        ...(fixedMediaHeight
+                          ? {height: fixedMediaHeight}
+                          : {aspectRatio: imageRatios[index] ?? imageRatio}),
                       },
                     ]}
                     resizeMode={FastImage.resizeMode.contain}
@@ -692,7 +718,11 @@ const PostItem = ({
           ) : null}
         </View>
       ) : item.postImages?.length === 1 ? (
-        <View style={{width: screenWidth}}>
+        <View
+          style={{
+            width: screenWidth,
+            ...(fixedMediaHeight ? {height: fixedMediaHeight} : null),
+          }}>
           <Pressable onPress={handleImagePress}>
             <FastImage
               source={{uri: item.postImages[0]}}
@@ -700,7 +730,9 @@ const PostItem = ({
                 styles.postImage,
                 {
                   width: screenWidth,
-                  aspectRatio: imageRatios[0] ?? imageRatio,
+                  ...(fixedMediaHeight
+                    ? {height: fixedMediaHeight}
+                    : {aspectRatio: imageRatios[0] ?? imageRatio}),
                 },
               ]}
               resizeMode={FastImage.resizeMode.contain}

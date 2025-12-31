@@ -21,6 +21,12 @@ import CustomText from '../../../utils/CustomText';
 import ColorUtil from '../../../utils/ColorUtil';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import useCustomAlert from '../../../hooks/useCustomAlert';
+import {
+  PostDeleteImage,
+  PostUpdate,
+  PostUploadImage,
+} from '../../../api/reviewApi';
+import Loading from '../../../hooks/Loading';
 
 const {width: screenWidth} = Dimensions.get('window');
 const MAX_IMAGES = 10;
@@ -30,6 +36,7 @@ const mapToImageItem = (uri, index) => ({
   id: `${uri}-${Date.now()}-${index}`,
   uri,
 });
+const isRemoteUri = uri => typeof uri === 'string' && /^https?:\/\//i.test(uri);
 
 const MyPostEditScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
@@ -37,12 +44,16 @@ const MyPostEditScreen = ({navigation, route}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
   const lastBackPressed = useRef(0);
   const initialImages = useMemo(() => {
-    const list = Array.isArray(review?.imgUrlList) ? review.imgUrlList : [];
+    const list = Array.isArray(review?.postImgUrlList)
+      ? review.postImgUrlList
+      : Array.isArray(review?.imgUrlList)
+        ? review.imgUrlList
+        : [];
     return list.filter(Boolean).map((uri, index) => ({
       id: `${uri}-${index}`,
       uri,
     }));
-  }, [review?.imgUrlList]);
+  }, [review?.imgUrlList, review?.postImgUrlList]);
 
   const [images, setImages] = useState(initialImages);
   const [title, setTitle] = useState(review?.title ?? '');
@@ -50,6 +61,7 @@ const MyPostEditScreen = ({navigation, route}) => {
   const [rating, setRating] = useState(review?.rate ?? review?.rating ?? 0);
   const [baseAspectRatio, setBaseAspectRatio] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const draft = route.params?.draft;
@@ -229,7 +241,23 @@ const MyPostEditScreen = ({navigation, route}) => {
   };
 
   const handleDeleteImage = index => {
+    const target = images[index];
+    if (!target) {
+      return;
+    }
     setImages(prev => prev.filter((_, i) => i !== index));
+    if (!isRemoteUri(target.uri) || !review?.id) {
+      return;
+    }
+    PostDeleteImage(review.id, [target.uri]).catch(() => {
+      setImages(prev => {
+        const next = [...prev];
+        const insertAt = Math.min(index, next.length);
+        next.splice(insertAt, 0, target);
+        return next;
+      });
+      Alert.alert('이미지 삭제 실패', '이미지 삭제에 실패했습니다.');
+    });
   };
 
   const getFirstImageFrame = async () => {
@@ -285,7 +313,49 @@ const MyPostEditScreen = ({navigation, route}) => {
     });
   };
 
-  const handleSubmit = () => {};
+  const handleSubmit = () => {
+    if (!review?.id) {
+      Alert.alert('수정 실패', '게시글 정보를 찾을 수 없습니다.');
+      return;
+    }
+    if (isSubmitting) {
+      return;
+    }
+    const addedLocalImages = images
+      .map(item => item?.uri)
+      .filter(
+        uri =>
+          uri &&
+          !isRemoteUri(uri) &&
+          !initialImages.some(initial => initial.uri === uri),
+      );
+    setIsSubmitting(true);
+    PostUpdate(review.id, {
+      content: content ?? '',
+      rate: Number.isFinite(rating) ? rating : 0,
+    })
+      .then(async () => {
+        if (addedLocalImages.length > 0) {
+          await PostUploadImage(review.id, {files: addedLocalImages});
+        }
+        showAlert({
+          title: '수정 완료',
+          message: '게시글이 수정되었습니다.',
+          onConfirm: () => goToMyProfile(),
+          type: 'confirm',
+        });
+      })
+      .catch(() => {
+        showAlert({
+          title: '수정 실패',
+          message: '게시글 수정에 실패했습니다.',
+        });
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
+  };
+
 
   return (
     <SafeAreaView
@@ -500,6 +570,7 @@ const MyPostEditScreen = ({navigation, route}) => {
           />
         </View>
       </ScrollView>
+      <Loading loading={isSubmitting} />
       <AlertComponent />
     </SafeAreaView>
   );
