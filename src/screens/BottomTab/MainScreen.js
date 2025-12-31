@@ -4,25 +4,15 @@ import {
   DeviceEventEmitter,
   Easing,
   FlatList,
-  Image,
   Platform,
-  Pressable,
   StyleSheet,
-  TextInput,
   View,
   useWindowDimensions,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {openSettings} from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
-import {
-  BottomSheetModal,
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-  BottomSheetView,
-} from '@gorhom/bottom-sheet';
-import {Portal} from 'react-native-paper';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import RejectModal from '../../components/Reject/RejectModal';
 import ExploreSearchBar from '../../components/ExploreScreen/ExploreSearchBar';
@@ -39,10 +29,8 @@ import useCustomAlert from '../../hooks/useCustomAlert';
 import {useNotification} from '../../context/NotificationContext';
 import PostItem from '../../components/Post/PostItem';
 import PostItemSkeleton from '../../components/Post/PostItemSkeleton';
+import PostCommentSheet from '../../components/Post/PostCommentSheet';
 import {getLocation} from '../../storage/locationStorage';
-import CustomText from '../../utils/CustomText';
-import ColorUtil from '../../utils/ColorUtil';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {PostGetByRecent} from '../../api/postApi';
 import Loading from '../../hooks/Loading';
 
@@ -79,7 +67,6 @@ const MainScreen = ({navigation}) => {
   const [isWriteMenuVisible, setIsWriteMenuVisible] = useState(false);
   const [isWriteMenuOpen, setIsWriteMenuOpen] = useState(false);
   const [selectedFeed, setSelectedFeed] = useState(null);
-  const [isCommentSheetOpen, setIsCommentSheetOpen] = useState(false);
   const [commentLikeState, setCommentLikeState] = useState({});
   const [commentInput, setCommentInput] = useState('');
   const writeLabelVisibleRef = useRef(true);
@@ -480,18 +467,6 @@ const MainScreen = ({navigation}) => {
     });
   }, []);
 
-  const renderCommentBackdrop = useCallback(
-    props => (
-      <BottomSheetBackdrop
-        {...props}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        opacity={0.45}
-      />
-    ),
-    [],
-  );
-
   const handleGoToSettings = useCallback(() => {
     openSettings().catch(() => console.warn('설정 열기에 실패했습니다.'));
   }, []);
@@ -864,123 +839,23 @@ const MainScreen = ({navigation}) => {
         onEndReachedThreshold={0.9}
       />
 
-      <BottomSheetModal
+      <PostCommentSheet
         ref={commentSheetRef}
-        index={0}
         snapPoints={commentSheetSnapPoints}
-        enablePanDownToClose
-        onChange={index => setIsCommentSheetOpen(index >= 0)}
+        onChange={() => {}}
         onDismiss={() => {
           setSelectedFeed(null);
-          setIsCommentSheetOpen(false);
         }}
-        backdropComponent={renderCommentBackdrop}
-        backgroundStyle={styles.commentSheetBackground}
-        handleIndicatorStyle={styles.commentSheetHandleIndicator}>
-        <BottomSheetView style={styles.commentSheetHeader}>
-          <CustomText style={styles.commentSheetTitle}>댓글</CustomText>
-        </BottomSheetView>
-        <BottomSheetScrollView
-          contentContainerStyle={[
-            styles.commentSheetContent,
-            {paddingBottom: 110 + Math.max(insets.bottom, 16)},
-          ]}>
-          {commentList.length === 0 ? (
-            <CustomText style={styles.commentEmptyText}>
-              아직 댓글이 없어요.
-            </CustomText>
-          ) : (
-            commentList.map(comment => (
-              <View key={comment.id} style={styles.commentItem}>
-                <Image
-                  source={
-                    comment.profileImage
-                      ? {uri: comment.profileImage}
-                      : defaultProfile
-                  }
-                  style={styles.commentAvatar}
-                />
-                <View style={styles.commentBody}>
-                  <View style={styles.commentHeader}>
-                    <CustomText style={styles.commentAuthor}>
-                      {comment.author}
-                    </CustomText>
-                    <CustomText style={styles.commentDate}>
-                      {comment.createdAt}
-                    </CustomText>
-                  </View>
-                  <CustomText style={styles.commentText}>
-                    {comment.text}
-                  </CustomText>
-                  <CustomText style={styles.commentReplyText}>
-                    답글 달기
-                  </CustomText>
-                </View>
-                <View style={styles.commentLikeColumn}>
-                  <Pressable
-                    hitSlop={8}
-                    onPress={() => handleCommentLikeToggle(comment.id)}>
-                    <Ionicons
-                      name={
-                        commentLikeState[comment.id] ? 'heart' : 'heart-outline'
-                      }
-                      size={20}
-                      color={
-                        commentLikeState[comment.id] ? '#FF5E5E' : '#A0A5AE'
-                      }
-                    />
-                  </Pressable>
-                  <CustomText style={styles.commentLikeCount}>
-                    {formatLikeCount(
-                      (comment.likes ?? 0) +
-                        (commentLikeState[comment.id] ? 1 : 0),
-                    )}
-                  </CustomText>
-                </View>
-              </View>
-            ))
-          )}
-        </BottomSheetScrollView>
-      </BottomSheetModal>
-      {isCommentSheetOpen && (
-        <Portal>
-          <View style={styles.commentInputOverlay} pointerEvents="box-none">
-            <View
-              style={[
-                styles.commentInputBar,
-                {paddingBottom: Math.max(insets.bottom, 12)},
-              ]}>
-              <Image
-                source={defaultProfile}
-                style={styles.commentInputAvatar}
-              />
-              <View style={styles.commentInputField}>
-                <TextInput
-                  value={commentInput}
-                  onChangeText={setCommentInput}
-                  placeholder="회원님의 생각을 남겨보세요."
-                  placeholderTextColor="#9AA1AE"
-                  style={styles.commentInput}
-                  multiline
-                  underlineColorAndroid="transparent"
-                />
-              </View>
-              <Pressable
-                hitSlop={8}
-                style={[
-                  styles.commentSendButton,
-                  commentInput.trim() ? styles.commentSendButtonActive : null,
-                ]}>
-                <Ionicons
-                  name="paper-plane-outline"
-                  size={18}
-                  color={commentInput.trim() ? '#3CBBFF' : '#A0A5AE'}
-                />
-              </Pressable>
-            </View>
-          </View>
-        </Portal>
-      )}
+        insets={insets}
+        commentList={commentList}
+        defaultProfile={defaultProfile}
+        commentLikeState={commentLikeState}
+        onToggleLike={handleCommentLikeToggle}
+        formatLikeCount={formatLikeCount}
+        commentInput={commentInput}
+        onChangeCommentInput={setCommentInput}
+        onPressSend={() => {}}
+      />
 
       <WriteMenu
         visible={isWriteMenuVisible}
@@ -1046,150 +921,6 @@ const styles = StyleSheet.create({
   feedContent: {
     paddingTop: 10,
     paddingBottom: 24,
-  },
-  commentSheetBackground: {
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-  },
-  commentSheetHandleIndicator: {
-    backgroundColor: '#E4E4E4',
-    width: 48,
-    height: 3,
-  },
-  commentSheetHeader: {
-    paddingBottom: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F1F4',
-  },
-  commentSheetTitle: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-Bold',
-    color: '#222',
-  },
-  commentSheetClose: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-Medium',
-    color: ColorUtil.subText,
-  },
-  commentSheetContent: {
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    gap: 18,
-  },
-  commentEmptyText: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-Regular',
-    color: ColorUtil.subText,
-    textAlign: 'center',
-    paddingVertical: 24,
-  },
-  commentItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 8,
-    gap: 12,
-  },
-  commentAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F2F2F2',
-  },
-  commentBody: {
-    flex: 1,
-    gap: 6,
-  },
-  commentHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  commentAuthor: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
-  },
-  commentDate: {
-    fontSize: 12,
-    fontFamily: 'Pretendard-Regular',
-    color: ColorUtil.subText,
-  },
-  commentText: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-Regular',
-    color: '#333',
-    lineHeight: 20,
-  },
-  commentReplyText: {
-    fontSize: 12,
-    fontFamily: 'Pretendard-Medium',
-    color: ColorUtil.subText,
-  },
-  commentLikeColumn: {
-    width: 42,
-    alignItems: 'center',
-    gap: 4,
-    paddingTop: 2,
-  },
-  commentLikeCount: {
-    fontSize: 12,
-    fontFamily: 'Pretendard-Medium',
-    color: '#8F96A3',
-  },
-  commentInputOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  commentInputBar: {
-    borderTopWidth: 1,
-    borderTopColor: '#E8EBF1',
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 10,
-    backgroundColor: '#FFF',
-  },
-  commentInputAvatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#F2F2F2',
-  },
-  commentInputField: {
-    flex: 1,
-    minHeight: 40,
-    borderWidth: 1,
-    borderColor: '#E1E5EC',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: '#FAFBFC',
-  },
-  commentInput: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-Regular',
-    color: '#222',
-    lineHeight: 18,
-    padding: 0,
-    margin: 0,
-  },
-  commentSendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F1F3F6',
-  },
-  commentSendButtonActive: {
-    backgroundColor: '#E8F4FF',
   },
 });
 
