@@ -287,8 +287,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
     setSelectedStore(prev => {
       const prevId = getStoreId(prev);
       const nextId = getStoreId(store);
-      const nextStore =
-        prevId && nextId && prevId === nextId ? null : store;
+      const nextStore = prevId && nextId && prevId === nextId ? null : store;
       if (nextStore) {
         console.log('선택한 매장 정보:', nextStore);
       }
@@ -1194,7 +1193,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginTop: 10,
     paddingVertical: 12,
     borderRadius: 14,
     borderColor: '#E5E7EB',

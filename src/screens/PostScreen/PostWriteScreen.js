@@ -261,7 +261,7 @@ const PostWriteScreen = ({navigation, route}) => {
   ]);
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         {
@@ -425,7 +425,7 @@ const PostWriteScreen = ({navigation, route}) => {
       </KeyboardAvoidingView>
       <AlertComponent />
       <Loading loading={isSubmitting} />
-    </SafeAreaView>
+    </View>
   );
 };
 
