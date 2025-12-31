@@ -27,7 +27,9 @@ import PostReportSheet, {POST_REPORT_REASONS} from './PostReportSheet';
 import useMeasuredExpandableText from '../../utils/useMeasuredExpandableText';
 import {get_store_share} from '../../api/storeApi';
 import {getGlobalShowAlert} from '../../context/CustomAlertContext';
+import {useNavigation} from '@react-navigation/native';
 const defaultProfile = require('../../assets/default_profile.png');
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const PostItem = ({
   item,
@@ -38,6 +40,7 @@ const PostItem = ({
   onDeletePress,
   isWriter = false,
 }) => {
+  const navigation = useNavigation();
   const screenWidth = Dimensions.get('window').width;
   const profileSource = item.profileImage
     ? {uri: item.profileImage}
@@ -274,6 +277,17 @@ const PostItem = ({
     }
   }, [item]);
 
+  const handleStoreBadgePress = useCallback(() => {
+    const storeId = item?.storeId;
+    if (!storeId) {
+      return;
+    }
+    navigation.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {storeId},
+    });
+  }, [item?.storeId, navigation]);
+
   const handleImageLoad = (event, index) => {
     const {width, height} = event.nativeEvent;
     if (width && height) {
@@ -342,32 +356,14 @@ const PostItem = ({
       clearTimeout(badgeDelayRef.current);
       badgeDelayRef.current = null;
     }
-
-    if (isCentered) {
-      badgeDelayRef.current = setTimeout(() => {
-        Animated.timing(badgeAnim, {
-          toValue: 1,
-          duration: 160,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }).start();
-      }, 500);
-    } else {
-      Animated.timing(badgeAnim, {
-        toValue: 0,
-        duration: 160,
-        easing: Easing.in(Easing.quad),
-        useNativeDriver: true,
-      }).start();
-    }
-
-    return () => {
-      if (badgeDelayRef.current) {
-        clearTimeout(badgeDelayRef.current);
-        badgeDelayRef.current = null;
-      }
-    };
-  }, [badgeAnim, isCentered]);
+    const showBadge = Boolean(item?.storeId);
+    Animated.timing(badgeAnim, {
+      toValue: showBadge ? 1 : 0,
+      duration: 160,
+      easing: showBadge ? Easing.out(Easing.quad) : Easing.in(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  }, [badgeAnim, item?.storeId]);
 
   const badgeStyle = useMemo(
     () => [
@@ -645,9 +641,6 @@ const PostItem = ({
                     onLoad={event => handleImageLoad(event, index)}
                   />
                 </Pressable>
-                <Animated.View style={badgeStyle} pointerEvents="none">
-                  <Ionicons name="storefront" size={14} color="#FFF" />
-                </Animated.View>
               </View>
             )}
           />
@@ -689,6 +682,14 @@ const PostItem = ({
               );
             })}
           </View>
+          {item?.storeId ? (
+            <AnimatedPressable
+              style={badgeStyle}
+              hitSlop={6}
+              onPress={handleStoreBadgePress}>
+              <Ionicons name="storefront" size={14} color="#FFF" />
+            </AnimatedPressable>
+          ) : null}
         </View>
       ) : item.postImages?.length === 1 ? (
         <View style={{width: screenWidth}}>
@@ -706,9 +707,14 @@ const PostItem = ({
               onLoad={event => handleImageLoad(event, 0)}
             />
           </Pressable>
-          <Animated.View style={badgeStyle} pointerEvents="none">
-            <Ionicons name="storefront" size={14} color="#FFF" />
-          </Animated.View>
+          {item?.storeId ? (
+            <AnimatedPressable
+              style={badgeStyle}
+              hitSlop={6}
+              onPress={handleStoreBadgePress}>
+              <Ionicons name="storefront" size={14} color="#FFF" />
+            </AnimatedPressable>
+          ) : null}
         </View>
       ) : null}
 
@@ -954,9 +960,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 24,
     left: 12,
-    backgroundColor: ColorUtil.main,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // 60% 불투명
     borderRadius: 16,
-    padding: 6,
+    padding: 7,
   },
 });
 
