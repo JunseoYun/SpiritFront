@@ -30,6 +30,7 @@ const PostDetailScreen = ({navigation, route}) => {
     [insets.top, windowHeight],
   );
   const [commentLikeState, setCommentLikeState] = useState({});
+  const [commentInput, setCommentInput] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -187,6 +188,9 @@ const PostDetailScreen = ({navigation, route}) => {
         commentLikeState={commentLikeState}
         onToggleLike={handleCommentLikeToggle}
         formatLikeCount={formatLikeCount}
+        commentInput={commentInput}
+        onChangeCommentInput={setCommentInput}
+        onPressSend={() => {}}
       />
     </View>
   );
