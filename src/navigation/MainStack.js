@@ -70,27 +70,7 @@ export default function MainStack() {
       <Stack.Screen
         name="PostDetailScreen"
         component={PostDetailScreen}
-        options={({navigation}) => ({
-          title: '게시글',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="PostPhotoSelectScreen"

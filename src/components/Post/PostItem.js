@@ -18,12 +18,14 @@ import {
 import CustomText from '../../utils/CustomText';
 import FastImage from 'react-native-fast-image';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import ChatCircleIcon from '../../assets/svg/ChatCircleIcon';
 import PaperPlaneIcon from '../../assets/svg/PaperPlaneIcon';
 import HeartIcon from '../../assets/svg/HeartIcon';
 import BookmarkIcon from '../../assets/svg/BookmarkIcon';
 import ColorUtil from '../../utils/ColorUtil';
-import PostReportSheet, {POST_REPORT_REASONS} from './PostReportSheet';
+import {POST_REPORT_REASONS} from './PostReportSheet';
+import PostReportBottomSheet from './PostReportBottomSheet';
 import useMeasuredExpandableText from '../../utils/useMeasuredExpandableText';
 import {get_store_share} from '../../api/storeApi';
 import {getGlobalShowAlert} from '../../context/CustomAlertContext';
@@ -37,11 +39,14 @@ const PostItem = ({
   contentMaxLines = 2,
   fixedMediaHeight,
   onCommentPress,
+  onContentMeasured,
   onPrimaryImageLoad,
   initialImageRatio,
   onEditPress,
   onDeletePress,
   isWriter = false,
+  hideStoreBadge = false,
+  showRatingInTitleCycle = false,
 }) => {
   const navigation = useNavigation();
   const screenWidth = Dimensions.get('window').width;
@@ -53,7 +58,7 @@ const PostItem = ({
   const [saved, setSaved] = useState(false);
   const comments = item.comments ?? 0;
   const [shareCount, setShareCount] = useState(item.shares ?? 0);
-  const [showAltTitle, setShowAltTitle] = useState(false);
+  const [titleCycleIndex, setTitleCycleIndex] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const [imageRatio, setImageRatio] = useState(1);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -67,15 +72,14 @@ const PostItem = ({
   const flyingHeartScale = useRef(new Animated.Value(0)).current;
   const [showFlyingHeart, setShowFlyingHeart] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [isReportModalVisible, setReportModalVisible] = useState(false);
   const [selectedReportReason, setSelectedReportReason] = useState(
     POST_REPORT_REASONS[0],
   );
+  const reportSheetRef = useRef(null);
   const badgeAnim = useRef(new Animated.Value(isCentered ? 1 : 0)).current;
   const badgeDelayRef = useRef(null);
   const HEART_SIZE = 32;
   const HEART_END_OFFSET_X = 0;
-  const HEART_LINGER_DURATION = 140;
   const pendingLikeRef = useRef(false);
   const READ_MORE_LABEL = '…더보기';
   const primaryImageLoadedRef = useRef(false);
@@ -83,8 +87,8 @@ const PostItem = ({
   const {
     contentForRender,
     handleTextLayout: handleContentLayout,
-    isExpanded,
     isExpandable: isContentExpandable,
+    hasMeasured: hasContentMeasured,
     toggleExpanded: toggleContentExpanded,
   } = useMeasuredExpandableText({
     text: item.content,
@@ -92,15 +96,65 @@ const PostItem = ({
     readMoreLabel: READ_MORE_LABEL,
     readMoreStyle: styles.moreButtonText,
   });
+  const contentMeasuredRef = useRef(false);
+
+  const ratingValue =
+    item?.rate ?? item?.rating ?? item?.storeRate ?? item?.storeRating ?? null;
+  const hasRating =
+    ratingValue !== null && ratingValue !== undefined && ratingValue !== '';
+  const formattedRating = useMemo(() => {
+    if (!hasRating) {
+      return '';
+    }
+    const numeric = Number(ratingValue);
+    if (!Number.isFinite(numeric)) {
+      return String(ratingValue);
+    }
+    return numeric % 1 === 0 ? numeric.toFixed(0) : numeric.toFixed(1);
+  }, [hasRating, ratingValue]);
+  const titleCycleItems = useMemo(() => {
+    const items = [];
+    if (showRatingInTitleCycle) {
+      if (item?.name) {
+        items.push({type: 'text', value: item.name});
+      }
+      if (item?.storeAddress) {
+        items.push({type: 'text', value: item.storeAddress});
+      }
+      if (hasRating) {
+        items.push({type: 'rating', value: formattedRating});
+      }
+      return items;
+    }
+
+    if (item?.storeAddress) {
+      items.push({type: 'text', value: item.storeAddress});
+    }
+    if (item?.name) {
+      items.push({type: 'text', value: item.name});
+    }
+    return items;
+  }, [
+    formattedRating,
+    hasRating,
+    item?.name,
+    item?.storeAddress,
+    showRatingInTitleCycle,
+  ]);
+  const titleCycleLength = titleCycleItems.length;
+  const hasTitleCycle = titleCycleLength > 1;
 
   const animateToggle = useCallback(() => {
+    if (titleCycleLength < 2) {
+      return;
+    }
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 200,
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start(() => {
-      setShowAltTitle(prev => !prev);
+      setTitleCycleIndex(prev => (prev + 1) % titleCycleLength);
       Animated.sequence([
         Animated.delay(100),
         Animated.timing(fadeAnim, {
@@ -111,7 +165,7 @@ const PostItem = ({
         }),
       ]).start();
     });
-  }, [fadeAnim]);
+  }, [fadeAnim, titleCycleLength]);
 
   useEffect(() => {
     const sub = DeviceEventEmitter.addListener('feed-more-menu-close', () => {
@@ -120,10 +174,22 @@ const PostItem = ({
     return () => sub.remove();
   }, []);
 
+  useEffect(() => {
+    if (hasContentMeasured && !contentMeasuredRef.current) {
+      contentMeasuredRef.current = true;
+      onContentMeasured?.(item);
+      return;
+    }
+
+    if (!hasContentMeasured && contentMeasuredRef.current) {
+      contentMeasuredRef.current = false;
+    }
+  }, [hasContentMeasured, item, onContentMeasured]);
+
   const openReportModal = useCallback(() => {
     setShowMoreMenu(false);
     setSelectedReportReason(POST_REPORT_REASONS[0]);
-    setReportModalVisible(true);
+    reportSheetRef.current?.present();
   }, []);
 
   const handleEditPress = useCallback(() => {
@@ -164,7 +230,7 @@ const PostItem = ({
   }, [item, onDeletePress]);
 
   const handleReportSubmit = useCallback(() => {
-    setReportModalVisible(false);
+    reportSheetRef.current?.dismiss();
     // TODO: Hook up real report flow when available.
     setTimeout(() => {
       Alert.alert('신고하기', '신고가 접수되었습니다.');
@@ -213,11 +279,9 @@ const PostItem = ({
     setShowMoreMenu(prev => !prev);
   }, [handleDeletePress, handleEditPress, isWriter, openReportModal]);
 
-  const hasTitleToggle = Boolean(item?.storeAddress && item?.name);
-
   useEffect(() => {
-    if (!hasTitleToggle) {
-      setShowAltTitle(false);
+    if (!hasTitleCycle) {
+      setTitleCycleIndex(0);
       fadeAnim.setValue(1);
       return;
     }
@@ -225,7 +289,13 @@ const PostItem = ({
     const id = setInterval(animateToggle, 7000);
 
     return () => clearInterval(id);
-  }, [animateToggle, fadeAnim, hasTitleToggle]);
+  }, [animateToggle, fadeAnim, hasTitleCycle]);
+
+  useEffect(() => {
+    if (titleCycleIndex >= titleCycleLength && titleCycleLength > 0) {
+      setTitleCycleIndex(0);
+    }
+  }, [titleCycleIndex, titleCycleLength]);
 
   const handleLikePress = () => {
     if (showFlyingHeart || pendingLikeRef.current) {
@@ -282,6 +352,17 @@ const PostItem = ({
   }, [item]);
 
   const handleStoreBadgePress = useCallback(() => {
+    const storeId = item?.storeId;
+    if (!storeId) {
+      return;
+    }
+    navigation.navigate('StoreStack', {
+      screen: 'StoreMainScreen',
+      params: {storeId},
+    });
+  }, [item?.storeId, navigation]);
+
+  const handleProfilePress = useCallback(() => {
     const storeId = item?.storeId;
     if (!storeId) {
       return;
@@ -385,6 +466,14 @@ const PostItem = ({
       },
     ],
     [badgeAnim],
+  );
+
+  const cardContentStyle = useMemo(
+    () => [
+      styles.cardContent,
+      !hasContentMeasured ? styles.cardContentHidden : null,
+    ],
+    [hasContentMeasured],
   );
 
   const indicatorIndices = useMemo(() => {
@@ -538,6 +627,9 @@ const PostItem = ({
       style={styles.card}
       ref={cardRef}
       onStartShouldSetResponderCapture={() => false}>
+      <View
+        style={cardContentStyle}
+        pointerEvents={hasContentMeasured ? 'auto' : 'none'}>
       {showFlyingHeart ? (
         <View pointerEvents="none" style={styles.heartFlyContainer}>
           <Animated.View
@@ -600,21 +692,34 @@ const PostItem = ({
         </>
       ) : null}
       <View style={styles.cardHeader}>
-        <View style={styles.profileRow}>
-          <FastImage source={profileSource} style={styles.avatar} />
-          <View style={styles.profileText}>
-            <CustomText style={styles.nickname}>{item.nickname}</CustomText>
-            <Animated.View style={{opacity: fadeAnim}}>
-              <CustomText style={styles.address} numberOfLines={1}>
-                {hasTitleToggle
-                  ? showAltTitle
-                    ? item.name
-                    : item.storeAddress
-                  : item.storeAddress || item.name}
-              </CustomText>
-            </Animated.View>
+        <Pressable
+          onPress={handleProfilePress}
+          disabled={!item?.storeId || hideStoreBadge}
+          hitSlop={6}
+          style={styles.profileRowPressable}>
+          <View style={styles.profileRow}>
+            <FastImage source={profileSource} style={styles.avatar} />
+            <View style={styles.profileText}>
+              <CustomText style={styles.nickname}>{item.nickname}</CustomText>
+              <Animated.View style={{opacity: fadeAnim}}>
+                {titleCycleItems[titleCycleIndex]?.type === 'rating' ? (
+                  <View style={styles.ratingRow}>
+                    <FontAwesomeIcon name="star" size={12} color="#FCC104" />
+                    <CustomText style={styles.ratingText}>
+                      {titleCycleItems[titleCycleIndex]?.value}
+                    </CustomText>
+                  </View>
+                ) : (
+                  <CustomText style={styles.address} numberOfLines={1}>
+                    {titleCycleItems[titleCycleIndex]?.value ??
+                      item.storeAddress ??
+                      item.name}
+                  </CustomText>
+                )}
+              </Animated.View>
+            </View>
           </View>
-        </View>
+        </Pressable>
         <Pressable
           style={styles.moreButton}
           hitSlop={8}
@@ -708,7 +813,7 @@ const PostItem = ({
               );
             })}
           </View>
-          {item?.storeId ? (
+          {!hideStoreBadge && item?.storeId ? (
             <AnimatedPressable
               style={badgeStyle}
               hitSlop={6}
@@ -739,7 +844,7 @@ const PostItem = ({
               onLoad={event => handleImageLoad(event, 0)}
             />
           </Pressable>
-          {item?.storeId ? (
+          {!hideStoreBadge && item?.storeId ? (
             <AnimatedPressable
               style={badgeStyle}
               hitSlop={6}
@@ -798,13 +903,14 @@ const PostItem = ({
           </CustomText>
         </Pressable>
       </View>
-      <PostReportSheet
-        visible={isReportModalVisible}
-        onClose={() => setReportModalVisible(false)}
-        onSubmit={handleReportSubmit}
+      <PostReportBottomSheet
+        sheetRef={reportSheetRef}
+        reasons={POST_REPORT_REASONS}
         selectedReason={selectedReportReason}
         onSelectReason={setSelectedReportReason}
+        onSubmit={handleReportSubmit}
       />
+    </View>
     </View>
   );
 };
@@ -814,6 +920,12 @@ const styles = StyleSheet.create({
     // paddingTop: 10,
     paddingBottom: 40,
     position: 'relative',
+  },
+  cardContent: {
+    position: 'relative',
+  },
+  cardContentHidden: {
+    opacity: 0,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -826,6 +938,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  profileRowPressable: {
+    flexShrink: 1,
   },
   profileText: {
     flexShrink: 1,
@@ -848,6 +963,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     color: ColorUtil.subText,
     marginTop: 2,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  ratingText: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-Regular',
+    color: ColorUtil.subText,
   },
   moreButton: {
     paddingHorizontal: 4,

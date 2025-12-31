@@ -46,3 +46,33 @@ export const PostGetByRecent = async ({page = 0, size = 10, sort} = {}) => {
     functionError(error);
   }
 };
+
+export const PostGetByStore = async ({
+  storeId,
+  page = 0,
+  size = 10,
+  sort,
+} = {}) => {
+  try {
+    const response = await axiosInstance.get(`/post/get-by/store/${storeId}`, {
+      params: {
+        page,
+        size,
+        ...(sort ? {sort} : null),
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const PostGetById = async postId => {
+  if (!postId) return null;
+  try {
+    const response = await axiosInstance.get(`/post/get-by/${postId}`);
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};

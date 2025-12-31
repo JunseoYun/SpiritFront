@@ -1,13 +1,90 @@
-import React, {useMemo, useRef} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
-import FeedItem from '../../components/Post/PostItem';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  Pressable,
+  useWindowDimensions,
+} from 'react-native';
+import PostItem from '../../components/Post/PostItem';
+import PostCommentSheet from '../../components/Post/PostCommentSheet';
 import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
+import {PostGetById} from '../../api/postApi';
+import Loading from '../../hooks/Loading';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {HomeEmptyIcon, HomeHeaderIcon} from '../../assets/svg/HomeTabIcon';
 
-const PostDetailScreen = ({route}) => {
-  const {item, comments: routeComments} = route.params ?? {};
-  const scrollRef = useRef(null);
-  const commentSectionOffset = useRef(0);
+const defaultProfile = require('../../assets/default_profile.png');
+
+const PostDetailScreen = ({navigation, route}) => {
+  const {postId, item: routeItem, comments: routeComments} = route.params ?? {};
+  const [postItem, setPostItem] = useState(routeItem ?? null);
+  const [loading, setLoading] = useState(Boolean(postId));
+  const insets = useSafeAreaInsets();
+  const {height: windowHeight} = useWindowDimensions();
+  const commentSheetRef = useRef(null);
+  const commentSheetSnapPoints = useMemo(
+    () => ['70%', Math.max(0, windowHeight - insets.top)],
+    [insets.top, windowHeight],
+  );
+  const [commentLikeState, setCommentLikeState] = useState({});
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!postId) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const fetchPost = async () => {
+      setLoading(true);
+      try {
+        const data = await PostGetById(postId);
+        if (!isMounted || !data) return;
+        const mapped = {
+          ...data,
+          id: String(data.id ?? postId),
+          profileImage:
+            data.writerImgUrl ??
+            data.profileImgUrl ??
+            data.profileImage ??
+            null,
+          nickname: data.writerNickname ?? data.nickname ?? '게스트',
+          name: data.storeName ?? data.name ?? null,
+          storeAddress: data.storeAddress ?? data.address ?? null,
+          postImages: Array.isArray(data.postImgUrlList)
+            ? data.postImgUrlList
+            : data.postImages ?? [],
+          content: data.content ?? '',
+          rate:
+            data.rate ??
+            data.rating ??
+            data.storeRate ??
+            data.storeRating ??
+            null,
+          storeId:
+            data.storeId ?? data.store?.id ?? data.store?.storeId ?? null,
+          shares: data.shares ?? 0,
+          likes: data.likes ?? 0,
+          comments: data.comments ?? 0,
+        };
+        setPostItem(prev => ({...prev, ...mapped}));
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchPost();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [postId]);
 
   const comments = useMemo(() => {
     if (Array.isArray(routeComments) && routeComments.length > 0) {
@@ -18,7 +95,7 @@ const PostDetailScreen = ({route}) => {
     return [
       {
         id: 'c1',
-        author: item?.nickname ?? '게스트',
+        author: postItem?.nickname ?? '게스트',
         text: '방금 본 메뉴 정말 맛있어 보여요!',
         createdAt: '방금 전',
       },
@@ -35,31 +112,68 @@ const PostDetailScreen = ({route}) => {
         createdAt: '어제',
       },
     ];
-  }, [item?.nickname, routeComments]);
+  }, [postItem?.nickname, routeComments]);
 
-  const scrollToComments = () => {
-    if (!commentSectionOffset.current) {
-      return;
-    }
-    scrollRef.current?.scrollTo({
-      y: commentSectionOffset.current,
-      animated: true,
+  useEffect(() => {
+    const nextState = {};
+    comments.forEach(comment => {
+      nextState[comment.id] = false;
     });
-  };
+    setCommentLikeState(nextState);
+  }, [comments]);
+
+  const handleCommentLikeToggle = useCallback(commentId => {
+    setCommentLikeState(prev => ({
+      ...prev,
+      [commentId]: !prev[commentId],
+    }));
+  }, []);
+
+  const formatLikeCount = useCallback(value => {
+    if (!Number.isFinite(value)) {
+      return '0';
+    }
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+    }
+    return `${value}`;
+  }, []);
+
+  const handleOpenCommentSheet = useCallback(() => {
+    commentSheetRef.current?.present();
+  }, []);
 
   return (
-    <ScrollView
-      ref={scrollRef}
-      style={styles.container}
-      contentContainerStyle={styles.content}>
-      <FeedItem item={item} onCommentPress={scrollToComments} />
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0),
+          paddingBottom: insets.bottom,
+        },
+      ]}>
+      <View style={styles.header}>
+        <Pressable
+          style={styles.headerSide}
+          hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
+          onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back-outline" size={24} color="#333" />
+        </Pressable>
+        <CustomText style={styles.headerTitle}>게시글</CustomText>
+        <View style={styles.headerSide} />
+      </View>
+      <ScrollView style={styles.container}>
+        {postItem && (
+          <PostItem
+            item={postItem}
+            onCommentPress={handleOpenCommentSheet}
+            showRatingInTitleCycle
+            hideStoreBadge
+          />
+        )}
 
-      <View
-        style={styles.commentsSection}
-        onLayout={e => {
-          commentSectionOffset.current = e.nativeEvent.layout.y;
-        }}>
-        <CustomText style={styles.commentsTitle}>
+        <View style={styles.commentsSection}>
+          {/* <CustomText style={styles.commentsTitle}>
           댓글 {comments.length}
         </CustomText>
         {comments.map(comment => (
@@ -74,9 +188,23 @@ const PostDetailScreen = ({route}) => {
             </View>
             <CustomText style={styles.commentText}>{comment.text}</CustomText>
           </View>
-        ))}
-      </View>
-    </ScrollView>
+        ))} */}
+        </View>
+        <Loading loading={loading} />
+      </ScrollView>
+      <PostCommentSheet
+        ref={commentSheetRef}
+        snapPoints={commentSheetSnapPoints}
+        onChange={() => {}}
+        onDismiss={() => {}}
+        insets={insets}
+        commentList={comments}
+        defaultProfile={defaultProfile}
+        commentLikeState={commentLikeState}
+        onToggleLike={handleCommentLikeToggle}
+        formatLikeCount={formatLikeCount}
+      />
+    </View>
   );
 };
 
@@ -85,14 +213,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFF',
   },
-  content: {
-    paddingBottom: 40,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    // borderBottomWidth: 1,
+    // borderColor: '#F1F1F1',
+  },
+  headerSide: {
+    width: 24,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    fontFamily: 'Pretendard-Bold',
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
   },
   commentsSection: {
     paddingHorizontal: 16,
     paddingVertical: 18,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
     gap: 14,
   },
   commentsTitle: {
