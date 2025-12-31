@@ -167,6 +167,9 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     !isPortraitPhoto && rawImageAspectRatio > MAX_LANDSCAPE_RATIO;
 
   const effectiveResizeMode = useMemo(() => {
+    if (shouldLockFrame) {
+      return 'cover';
+    }
     if (previewMode === 'full') {
       return 'cover';
     }
@@ -177,7 +180,13 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       return 'cover';
     }
     return isScaleModeEditable ? 'contain' : 'cover';
-  }, [isPortraitPhoto, isScaleModeEditable, isUltraWideLandscape, previewMode]);
+  }, [
+    isPortraitPhoto,
+    isScaleModeEditable,
+    isUltraWideLandscape,
+    previewMode,
+    shouldLockFrame,
+  ]);
 
   const displaySize = useMemo(() => {
     if (
@@ -293,30 +302,41 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     if (!imageSize.width || !imageSize.height) {
       return photo;
     }
+    if (!frameSize.width || !frameSize.height) {
+      return photo;
+    }
     const rawImageAspectRatio = imageSize.width / imageSize.height;
     const isUltraWideLandscape =
       !isPortraitPhoto && rawImageAspectRatio > MAX_LANDSCAPE_RATIO;
-    const isScaleModeEditable = index === 0;
-    const resizeMode =
-      previewMode === 'full'
-        ? 'cover'
-        : isPortraitPhoto || isUltraWideLandscape
-        ? 'cover'
-        : isScaleModeEditable
-        ? 'contain'
-        : 'cover';
+    const resizeMode = shouldLockFrame
+      ? 'cover'
+      : previewMode === 'full'
+      ? 'cover'
+      : isPortraitPhoto || isUltraWideLandscape
+      ? 'cover'
+      : 'contain';
 
     const displaySizeForCrop = getDisplaySizeForCrop(imageSize, resizeMode);
-    const baseScale =
+    let baseScale =
       imageSize.width > 0 ? displaySizeForCrop.width / imageSize.width : 1;
     const photoScale = scaleByPhotoId[photo.id] ?? 1;
-    const effectiveScale = baseScale * photoScale;
+    let effectiveScale = baseScale * photoScale;
     if (!effectiveScale) {
       return photo;
     }
-    const scaledWidth = imageSize.width * effectiveScale;
-    const scaledHeight = imageSize.height * effectiveScale;
-    const pan = panByPhotoId[photo.id] ?? {x: 0, y: 0};
+    let scaledWidth = imageSize.width * effectiveScale;
+    let scaledHeight = imageSize.height * effectiveScale;
+    let pan = panByPhotoId[photo.id] ?? {x: 0, y: 0};
+    const shouldForceCover =
+      scaledWidth < frameSize.width || scaledHeight < frameSize.height;
+    if (shouldForceCover) {
+      const coverSize = getDisplaySizeForCrop(imageSize, 'cover');
+      baseScale = imageSize.width > 0 ? coverSize.width / imageSize.width : 1;
+      effectiveScale = baseScale;
+      scaledWidth = imageSize.width * effectiveScale;
+      scaledHeight = imageSize.height * effectiveScale;
+      pan = {x: 0, y: 0};
+    }
     const offsetX = (scaledWidth - frameSize.width) / 2 - pan.x;
     const offsetY = (scaledHeight - frameSize.height) / 2 - pan.y;
     const clampedOffsetX = clampNumber(offsetX, 0, scaledWidth);

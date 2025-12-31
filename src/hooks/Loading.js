@@ -7,11 +7,9 @@ const Loading = ({loading}) => {
   const intervalRef = useRef(null);
   const [currentDot, setCurrentDot] = useState(0);
 
-  // ⏳ 점 보이기 딜레이용
   const [showDots, setShowDots] = useState(false);
   const delayTimer = useRef(null);
 
-  // 점 색상
   const dotColors = ['#80D2F4', '#8DC2DA', '#A9CBD9', '#ABE3FA'];
 
   useEffect(() => {
@@ -24,7 +22,7 @@ const Loading = ({loading}) => {
 
   useEffect(() => {
     if (loading) {
-      // ⏳ 점을 0.5초 후에만 보이게
+      // ???? 0.5??
       delayTimer.current = setTimeout(() => setShowDots(true), 500);
 
       intervalRef.current = setInterval(() => {
@@ -65,7 +63,6 @@ const Loading = ({loading}) => {
   return (
     <View style={styles.overlay}>
       <View style={styles.container}>
-        {/* ⏳ showDots가 true일 때만 렌더 */}
         {showDots &&
           dotRefs.current.map((dot, idx) => (
             <Animated.Text
