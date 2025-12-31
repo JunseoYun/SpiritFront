@@ -287,7 +287,12 @@ const PostStoreInputScreen = ({navigation, route}) => {
     setSelectedStore(prev => {
       const prevId = getStoreId(prev);
       const nextId = getStoreId(store);
-      return prevId && nextId && prevId === nextId ? null : store;
+      const nextStore =
+        prevId && nextId && prevId === nextId ? null : store;
+      if (nextStore) {
+        console.log('선택한 매장 정보:', nextStore);
+      }
+      return nextStore;
     });
     setPlaceName('');
     requestAnimationFrame(() => {
@@ -613,11 +618,19 @@ const PostStoreInputScreen = ({navigation, route}) => {
           hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
           onPress={() => {
             const hasPlaceName = trimmedPlaceName.length > 0;
+            const resolvedStoreId = hasPlaceName
+              ? null
+              : getStoreId(selectedStore);
+            const storeId =
+              resolvedStoreId && resolvedStoreId !== 'manual'
+                ? resolvedStoreId
+                : null;
             navigation.navigate('PostWriteScreen', {
               preview: previewForNext,
               storeName: hasPlaceName ? '' : selectedStore?.name ?? '',
               storeAddress: hasPlaceName ? '' : selectedAddressText,
               placeName: hasPlaceName ? trimmedPlaceName : '',
+              storeId,
             });
           }}
           disabled={!isNextEnabled}>

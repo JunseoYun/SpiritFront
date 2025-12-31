@@ -38,130 +38,15 @@ import {iniBasictNotification} from '../../hooks/notification/useNotificationPer
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useNotification} from '../../context/NotificationContext';
 import PostItem from '../../components/Post/PostItem';
+import PostItemSkeleton from '../../components/Post/PostItemSkeleton';
 import {getLocation} from '../../storage/locationStorage';
 import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {PostGetByRecent} from '../../api/postApi';
+import Loading from '../../hooks/Loading';
 
 const defaultProfile = require('../../assets/default_profile.png');
-
-const sampleFeedData = [
-  {
-    id: '1',
-    nickname: '커피러버',
-    profileImage:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
-
-    postImages: [
-      'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?auto=format&fit=crop&w=800&q=80',
-    ],
-    storeAddress: '서울 성동구 성수동 1가',
-    name: '커피맛집',
-    content:
-      '연남동에서 발견한 숯불 향 가득한 버거집! 치즈가 진짜 대박이에요 🍔',
-    likes: 342,
-    comments: 22,
-    shares: 32,
-    isWriter: true,
-  },
-  {
-    id: '2',
-    nickname: '야식탐방가',
-    profileImage: null,
-    storeAddress: '서울 마포구 연남동',
-    name: '치즈버거맛집',
-    postImages: [
-      'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
-    ],
-    content:
-      '연남동에서 발견한 숯불 향 가득한 버거집! 치즈가 진짜 대박이에요 🍔',
-    likes: 342,
-    content:
-      '오늘의 시그니처 메뉴! 에스프레소 위에 시트러스 폼을 올려서 상큼하게 즐겨 보세요.오늘의 시그니처 메뉴! 에스프레소 위에 시트러스 폼을 올려서 상큼하게 즐겨 보세요.오늘의 시그니처 메뉴! 에스프레소 위에 시트러스 폼을 올려서 상큼하게 즐겨 보세요.',
-    likes: 128,
-    comments: 48,
-    shares: 332,
-    isWriter: true,
-  },
-  {
-    id: '3',
-    nickname: '주말러너',
-    profileImage:
-      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80',
-    postImages: [
-      'https://images.unsplash.com/photo-1464306076886-da185f6a9d05?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
-    ],
-    storeAddress: '서울 송파구 석촌호수',
-    name: '연어스테이크맛집',
-    content:
-      '러닝 끝나고 들른 건강식 카페. 그릭요거트 볼이 신선하고 가볍게 먹기 좋아요!',
-    likes: 210,
-    comments: 17,
-    shares: 12,
-    isWriter: true,
-  },
-  {
-    id: '4',
-    nickname: '빵순이',
-    profileImage:
-      'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=200&q=80',
-    storeAddress: '서울 서대문구 연희동',
-    name: '버터향가득브런치',
-    postImages: [
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
-    ],
-    content:
-      '갓 구운 크루아상이 버터향 가득! 라떼와 함께 먹으면 완벽한 브런치.',
-    likes: 189,
-    comments: 11,
-    shares: 20,
-    isWriter: false,
-  },
-  {
-    id: '5',
-    nickname: '와인초보',
-    profileImage:
-      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80',
-    storeAddress: '서울 용산구 한남동',
-    name: '내추럴와인바',
-    postImages: [
-      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
-    ],
-    content:
-      '내추럴 와인 페어링 코스 추천받고 왔어요. 분위기도 조용해서 데이트 코스로 딱!',
-    likes: 256,
-    comments: 34,
-    shares: 45,
-    isWriter: false,
-  },
-  {
-    id: '6',
-    nickname: '디저트헌터',
-    profileImage: null,
-    storeAddress: '서울 광진구 화양동',
-    name: '말차디저트카페',
-    postImages: [
-      'https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=800&q=80',
-    ],
-    content:
-      '말차 티라미수가 녹진하고 덜 달아서 딱 좋았어요. 플레이트도 예뻐서 사진 필수!',
-    likes: 312,
-    comments: 29,
-    shares: 51,
-    isWriter: false,
-  },
-];
 
 const MainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
@@ -172,6 +57,9 @@ const MainScreen = ({navigation}) => {
   const {showAlert, AlertComponent} = useCustomAlert();
   const {pendingNotification, setPendingNotification} = useNotification();
   const [centeredItemId, setCenteredItemId] = useState(null);
+  const [feedData, setFeedData] = useState([]);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const listHeightRef = useRef(0);
   const itemLayoutsRef = useRef(new Map());
   const scrollOffsetRef = useRef(0);
@@ -202,6 +90,10 @@ const MainScreen = ({navigation}) => {
       setShowWriteLabel(true);
     }
   }, []);
+  const skeletonData = useMemo(
+    () => Array.from({length: 4}, (_, index) => `skeleton-${index}`),
+    [],
+  );
 
   const writeMenuItems = [
     {
@@ -255,6 +147,46 @@ const MainScreen = ({navigation}) => {
 
     fetchLocation();
   }, []);
+
+  const fetchPosts = useCallback(async ({isRefresh = false} = {}) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setFeedLoading(true);
+    }
+    try {
+      const data = await PostGetByRecent({page: 0, size: 10});
+      console.log('MainScreen 최근 게시글:', data);
+      const mapped = (data?.content ?? []).map(post => ({
+        id: String(post.id ?? ''),
+        nickname: post.writerNickname ?? '게스트',
+        profileImage: post.writerImgUrl ?? null,
+        postImages: Array.isArray(post.postImgUrlList)
+          ? post.postImgUrlList
+          : [],
+        storeAddress: post.storeAddress ?? '',
+        name: post.storeName ?? '',
+        content: post.content ?? '',
+        likes: post.likes ?? 0,
+        comments: post.commentCount ?? 0,
+        shares: post.shareCount ?? 0,
+        isWriter: false,
+      }));
+      setFeedData(mapped);
+    } catch (error) {
+      console.error('게시글 조회 실패:', error);
+    } finally {
+      if (isRefresh) {
+        setRefreshing(false);
+      } else {
+        setFeedLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const handleSearchPress = useCallback(() => {
     navigation.navigate('SearchScreen');
@@ -618,7 +550,10 @@ const MainScreen = ({navigation}) => {
         {...rest}
         style={style}
         onLayout={event => {
-          handleItemLayout(item.id, event.nativeEvent.layout);
+          const itemId = item?.id ?? item;
+          if (itemId) {
+            handleItemLayout(itemId, event.nativeEvent.layout);
+          }
           onLayout?.(event);
         }}>
         {children}
@@ -747,18 +682,27 @@ const MainScreen = ({navigation}) => {
       </View>
 
       <FlatList
-        data={sampleFeedData}
-        keyExtractor={item => item.id}
-        renderItem={({item}) => (
-          <PostItem
-            item={item}
-            onCommentPress={handleOpenCommentSheet}
-            isCentered={item.id === centeredItemId}
-            isWriter={item.isWriter}
-          />
-        )}
+        data={feedLoading ? skeletonData : feedData}
+        keyExtractor={(item, index) =>
+          feedLoading ? item : item.id ?? `${index}`
+        }
+        renderItem={({item}) =>
+          feedLoading ? (
+            <PostItemSkeleton />
+          ) : (
+            <PostItem
+              item={item}
+              onCommentPress={handleOpenCommentSheet}
+              isCentered={item.id === centeredItemId}
+              isWriter={item.isWriter}
+            />
+          )
+        }
         contentContainerStyle={styles.feedContent}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!feedLoading}
+        refreshing={refreshing}
+        onRefresh={() => fetchPosts({isRefresh: true})}
         onScrollBeginDrag={handleScrollBeginDrag}
         onScroll={handleScroll}
         scrollEventThrottle={16}
@@ -920,6 +864,7 @@ const MainScreen = ({navigation}) => {
         />
       )}
       <AlertComponent />
+      <Loading loading={refreshing} />
     </View>
   );
 };

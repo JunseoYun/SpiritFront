@@ -27,6 +27,8 @@ import FastImage from 'react-native-fast-image';
 import CustomText from '../../utils/CustomText';
 import CustomTextInput from '../../utils/CustomTextInput';
 import ColorUtil from '../../utils/ColorUtil';
+import {PostCreate} from '../../api/postApi';
+import Loading from '../../hooks/Loading';
 
 const PostWriteScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
@@ -36,6 +38,7 @@ const PostWriteScreen = ({navigation, route}) => {
   const storeName = route?.params?.storeName ?? '';
   const storeAddress = route?.params?.storeAddress ?? '';
   const placeName = route?.params?.placeName ?? '';
+  const storeId = route?.params?.storeId ?? null;
   const photos = Array.isArray(preview.photos) ? preview.photos : [];
   const previewKey = useMemo(
     () => `${photos.length}-${photos?.[0]?.uri ?? 'none'}`,
@@ -45,6 +48,7 @@ const PostWriteScreen = ({navigation, route}) => {
   const [rating, setRating] = useState(0);
   const [content, setContent] = useState('');
   const [isEditorFocused, setIsEditorFocused] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const maxPreviewSize = 200;
 
   const previewPhoto = photos[0];
@@ -54,6 +58,16 @@ const PostWriteScreen = ({navigation, route}) => {
   const hasPlaceName = placeName.trim().length > 0;
   const showStoreInfo = hasStoreName || hasPlaceName;
   const showRating = hasStoreName && !hasPlaceName;
+
+  useEffect(() => {
+    console.log('PostWriteScreen params:', {
+      storeId,
+      storeName,
+      storeAddress,
+      placeName,
+      preview,
+    });
+  }, [storeId, storeName, storeAddress, placeName, preview]);
 
   useEffect(() => {
     let isActive = true;
@@ -165,6 +179,37 @@ const PostWriteScreen = ({navigation, route}) => {
   }, [isEditorFocused]);
 
   const isSubmitEnabled = rating > 0 && content.trim().length > 0;
+  const isSubmitReady = isSubmitEnabled && !isSubmitting;
+
+  const handleSubmitPost = useCallback(async () => {
+    if (!isSubmitReady) return;
+    if (!storeId) {
+      console.warn('게시 실패: storeId가 없습니다.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const data = {
+        files: photos,
+        createPostDto: {
+          content: content.trim(),
+          storeId,
+          rate: rating,
+        },
+      };
+      await PostCreate(data);
+      navigation.reset({
+        index: 0,
+        routes: [
+          {name: 'MainBtmbar', state: {routes: [{name: 'MainScreen'}]}},
+        ],
+      });
+    } catch (error) {
+      console.error('게시 실패:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [content, isSubmitReady, navigation, photos, rating, storeId]);
 
   return (
     <SafeAreaView
@@ -200,11 +245,12 @@ const PostWriteScreen = ({navigation, route}) => {
         ) : (
           <Pressable
             hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
-            disabled={!isSubmitEnabled}>
+            onPress={handleSubmitPost}
+            disabled={!isSubmitReady}>
             <CustomText
               style={[
                 styles.headerAction,
-                !isSubmitEnabled && styles.headerActionDisabled,
+                !isSubmitReady && styles.headerActionDisabled,
               ]}>
               게시
             </CustomText>
@@ -328,6 +374,7 @@ const PostWriteScreen = ({navigation, route}) => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <Loading loading={isSubmitting} />
     </SafeAreaView>
   );
 };

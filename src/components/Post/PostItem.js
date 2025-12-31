@@ -206,8 +206,10 @@ const PostItem = ({
     setShowMoreMenu(prev => !prev);
   }, [handleDeletePress, handleEditPress, isWriter, openReportModal]);
 
+  const hasTitleToggle = Boolean(item?.storeAddress && item?.name);
+
   useEffect(() => {
-    if (!item.name) {
+    if (!hasTitleToggle) {
       setShowAltTitle(false);
       fadeAnim.setValue(1);
       return;
@@ -216,7 +218,7 @@ const PostItem = ({
     const id = setInterval(animateToggle, 7000);
 
     return () => clearInterval(id);
-  }, [animateToggle, fadeAnim, item.name]);
+  }, [animateToggle, fadeAnim, hasTitleToggle]);
 
   const handleLikePress = () => {
     if (showFlyingHeart || pendingLikeRef.current) {
@@ -596,7 +598,11 @@ const PostItem = ({
             <CustomText style={styles.nickname}>{item.nickname}</CustomText>
             <Animated.View style={{opacity: fadeAnim}}>
               <CustomText style={styles.address} numberOfLines={1}>
-                {showAltTitle && item.name ? item.name : item.storeAddress}
+                {hasTitleToggle
+                  ? showAltTitle
+                    ? item.name
+                    : item.storeAddress
+                  : item.storeAddress || item.name}
               </CustomText>
             </Animated.View>
           </View>
