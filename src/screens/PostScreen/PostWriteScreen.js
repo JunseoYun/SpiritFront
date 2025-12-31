@@ -28,12 +28,15 @@ import CustomText from '../../utils/CustomText';
 import CustomTextInput from '../../utils/CustomTextInput';
 import ColorUtil from '../../utils/ColorUtil';
 import {PostCreate} from '../../api/postApi';
+import {StoreSuggestion} from '../../api/storeApi';
 import Loading from '../../hooks/Loading';
+import useCustomAlert from '../../hooks/useCustomAlert';
 
 const PostWriteScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
   const lastBackPressed = useRef(0);
   const scrollViewRef = useRef(null);
+  const {showAlert, AlertComponent} = useCustomAlert();
   const preview = route?.params?.preview ?? {};
   const storeName = route?.params?.storeName ?? '';
   const storeAddress = route?.params?.storeAddress ?? '';
@@ -183,33 +186,79 @@ const PostWriteScreen = ({navigation, route}) => {
 
   const handleSubmitPost = useCallback(async () => {
     if (!isSubmitReady) return;
-    if (!storeId) {
-      console.warn('게시 실패: storeId가 없습니다.');
-      return;
-    }
     setIsSubmitting(true);
     try {
+      let resolvedStoreId = storeId;
+      if (!resolvedStoreId) {
+        const trimmedStoreName = storeName.trim();
+        const trimmedStoreAddress = storeAddress.trim();
+        if (!trimmedStoreName || !trimmedStoreAddress) {
+          console.warn('게시 실패: storeId가 없습니다.');
+          return;
+        }
+        const suggestionData = {
+          files: photos,
+          createStoreDto: {
+            name: trimmedStoreName,
+            locationDto: {
+              address: trimmedStoreAddress,
+              addressDetail: '',
+              latitude: 12.34,
+              longitude: 12.34,
+            },
+            facilitiesInfoDto: {
+              hasScreen: false,
+              hasRoom: false,
+              hasOutdoor: false,
+              isGroupAvailable: false,
+              isParkingAvailable: false,
+              isCorkageAvailable: false,
+            },
+          },
+        };
+        const response = await StoreSuggestion(suggestionData);
+        resolvedStoreId = response?.data?.data?.id ?? null;
+        if (!resolvedStoreId) {
+          console.warn('게시 실패: 매장 제보 후 storeId를 받지 못했습니다.');
+          return;
+        }
+      }
       const data = {
         files: photos,
         createPostDto: {
           content: content.trim(),
-          storeId,
+          storeId: resolvedStoreId,
           rate: rating,
         },
       };
       await PostCreate(data);
       navigation.reset({
         index: 0,
-        routes: [
-          {name: 'MainBtmbar', state: {routes: [{name: 'MainScreen'}]}},
-        ],
+        routes: [{name: 'MainBtmbar', state: {routes: [{name: 'MainScreen'}]}}],
       });
     } catch (error) {
+      if (error?.response?.data?.code === 25006) {
+        showAlert({
+          title: '등록 제한',
+          message: '매장 당 게시글은 하루에 한 번만 작성할 수 있습니다.',
+        });
+        return;
+      }
       console.error('게시 실패:', error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [content, isSubmitReady, navigation, photos, rating, storeId]);
+  }, [
+    content,
+    isSubmitReady,
+    navigation,
+    photos,
+    rating,
+    storeAddress,
+    storeId,
+    storeName,
+    showAlert,
+  ]);
 
   return (
     <SafeAreaView
@@ -374,6 +423,7 @@ const PostWriteScreen = ({navigation, route}) => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <AlertComponent />
       <Loading loading={isSubmitting} />
     </SafeAreaView>
   );
