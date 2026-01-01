@@ -1,10 +1,10 @@
-import React, {forwardRef, useCallback} from 'react';
+import React, {forwardRef, useCallback, useEffect, useRef, useState} from 'react';
 import {
   Image,
+  Keyboard,
   Platform,
   Pressable,
   StyleSheet,
-  TextInput,
   View,
 } from 'react-native';
 import {
@@ -12,13 +12,97 @@ import {
   BottomSheetFooter,
   BottomSheetModal,
   BottomSheetScrollView,
+  BottomSheetTextInput,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
 import CustomTextInput from '../../utils/CustomTextInput';
+import FastImage from 'react-native-fast-image';
 
+const CommentFooter = ({
+  inputRef,
+  commentInput,
+  onChangeCommentInput,
+  onPressSend,
+  onFocusInput,
+  defaultProfile,
+  bottomInset,
+}) => {
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [localInput, setLocalInput] = useState(commentInput ?? '');
+
+  useEffect(() => {
+    setLocalInput(commentInput ?? '');
+  }, [commentInput]);
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, () => {
+      setIsKeyboardVisible(true);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  return (
+    <View
+      style={[
+        styles.commentInputBar,
+        {
+          paddingBottom:
+            Platform.OS === 'android'
+              ? bottomInset + 10
+              : isKeyboardVisible
+              ? 10
+              : bottomInset + 10,
+        },
+      ]}>
+      <FastImage source={defaultProfile} style={styles.commentInputAvatar} />
+      <View style={styles.commentInputField}>
+        <CustomTextInput
+          ref={inputRef}
+          value={localInput}
+          onChangeText={text => {
+            setLocalInput(text);
+            onChangeCommentInput?.(text);
+          }}
+          onFocus={onFocusInput}
+          placeholder="댓글을 남겨보세요."
+          placeholderTextColor="#9AA1AE"
+          style={styles.commentInput}
+          multiline
+          underlineColorAndroid="transparent"
+          InputComponent={BottomSheetTextInput}
+        />
+        <Pressable
+          hitSlop={8}
+          onPress={onPressSend}
+          style={[
+            styles.commentSendButton,
+            localInput.trim() ? styles.commentSendButtonActive : null,
+          ]}>
+          <Ionicons
+            name="paper-plane-outline"
+            size={18}
+            color={localInput.trim() ? '#3CBBFF' : '#A0A5AE'}
+          />
+        </Pressable>
+      </View>
+    </View>
+  );
+};
 const PostCommentSheet = forwardRef(
   (
     {
@@ -37,6 +121,8 @@ const PostCommentSheet = forwardRef(
     },
     ref,
   ) => {
+    const inputRef = useRef(null);
+
     const renderCommentBackdrop = useCallback(
       props => (
         <BottomSheetBackdrop
@@ -49,50 +135,57 @@ const PostCommentSheet = forwardRef(
       [],
     );
 
-    const renderCommentFooter = useCallback(
-      props => (
-        <BottomSheetFooter {...props}>
-          <View
-            style={[
-              styles.commentInputBar,
-              {paddingBottom: insets.bottom + 10},
-            ]}>
-            <Image source={defaultProfile} style={styles.commentInputAvatar} />
-            <View style={styles.commentInputField}>
-              <CustomTextInput
-                value={commentInput}
-                onChangeText={onChangeCommentInput}
-                placeholder="회원님의 생각을 남겨보세요."
-                placeholderTextColor="#9AA1AE"
-                style={styles.commentInput}
-                multiline
-                underlineColorAndroid="transparent"
-              />
-              <Pressable
-                hitSlop={8}
-                onPress={onPressSend}
-                style={[
-                  styles.commentSendButton,
-                  commentInput?.trim() ? styles.commentSendButtonActive : null,
-                ]}>
-                <Ionicons
-                  name="paper-plane-outline"
-                  size={18}
-                  color={commentInput?.trim() ? '#3CBBFF' : '#A0A5AE'}
-                />
-              </Pressable>
-            </View>
-          </View>
-        </BottomSheetFooter>
-      ),
-      [
-        commentInput,
-        defaultProfile,
-        insets.bottom,
-        onChangeCommentInput,
-        onPressSend,
-      ],
+    const handleInputFocus = useCallback(() => {
+      if (ref && typeof ref !== 'function') {
+        const targetIndex = Math.max(0, (snapPoints?.length ?? 1) - 1);
+        ref.current?.snapToIndex?.(targetIndex);
+      }
+    }, [ref, snapPoints]);
+
+    const handleSheetChange = useCallback(
+      index => {
+        if (index === -1) {
+          inputRef.current?.blur?.();
+          onChangeCommentInput?.('');
+        }
+        if (onChange) {
+          onChange(index);
+        }
+      },
+      [onChange],
     );
+
+    const handleSheetAnimate = useCallback((fromIndex, toIndex) => {
+      if (toIndex === -1) {
+        inputRef.current?.blur?.();
+        onChangeCommentInput?.('');
+      }
+    }, []);
+
+    const footerStateRef = useRef(null);
+    footerStateRef.current = {
+      inputRef,
+      commentInput,
+      onChangeCommentInput,
+      onPressSend,
+      onFocusInput: handleInputFocus,
+      defaultProfile,
+      bottomInset: insets.bottom,
+    };
+
+    const renderCommentFooter = useCallback(props => {
+      const footerState = footerStateRef.current;
+      if (!footerState) {
+        return null;
+      }
+      return (
+        <BottomSheetFooter {...props}>
+          <CommentFooter {...footerState} />
+        </BottomSheetFooter>
+      );
+    }, []);
+
+    const sheetBottomInset = Math.max(insets?.bottom ?? 0, 12);
 
     return (
       <BottomSheetModal
@@ -100,7 +193,12 @@ const PostCommentSheet = forwardRef(
         index={0}
         snapPoints={snapPoints}
         enablePanDownToClose
-        onChange={onChange}
+        keyboardBehavior="extend"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
+        // bottomInset={sheetBottomInset}
+        onChange={handleSheetChange}
+        onAnimate={handleSheetAnimate}
         onDismiss={onDismiss}
         backdropComponent={renderCommentBackdrop}
         backgroundStyle={styles.commentSheetBackground}
@@ -110,6 +208,8 @@ const PostCommentSheet = forwardRef(
           <CustomText style={styles.commentSheetTitle}>댓글</CustomText>
         </BottomSheetView>
         <BottomSheetScrollView
+          keyboardShouldPersistTaps="handled"
+          enableFooterMarginAdjustment
           contentContainerStyle={[
             styles.commentSheetContent,
             {paddingBottom: 100 + Math.max(insets.bottom, 12)},
@@ -151,11 +251,15 @@ const PostCommentSheet = forwardRef(
                     onPress={() => onToggleLike(comment.id)}>
                     <Ionicons
                       name={
-                        commentLikeState[comment.id] ? 'heart' : 'heart-outline'
+                        commentLikeState[comment.id]
+                          ? 'heart'
+                          : 'heart-outline'
                       }
                       size={20}
                       color={
-                        commentLikeState[comment.id] ? '#FF5E5E' : '#A0A5AE'
+                        commentLikeState[comment.id]
+                          ? '#FF5E5E'
+                          : '#A0A5AE'
                       }
                     />
                   </Pressable>
@@ -287,7 +391,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderWidth: 1,
     borderColor: '#e5e5e5',
-    borderRadius: 24,
+    borderRadius: 100,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -301,11 +405,7 @@ const styles = StyleSheet.create({
     maxHeight: 80,
     padding: 0,
     margin: 0,
-    ...Platform.select({
-      ios: {
-        paddingVertical: 12,
-      },
-    }),
+    paddingVertical: 10,
   },
   commentSendButton: {
     width: 32,
