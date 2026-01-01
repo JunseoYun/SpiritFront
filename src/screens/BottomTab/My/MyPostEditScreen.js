@@ -3,6 +3,7 @@ import {
   Alert,
   BackHandler,
   Dimensions,
+  FlatList,
   Image,
   Platform,
   Pressable,
@@ -136,14 +137,41 @@ const MyPostEditScreen = ({navigation, route}) => {
 
   const imageCount = images.length;
   const hasMultiplePhotos = imageCount > 1;
-  const previewItemWidth = screenWidth;
-  const previewSidePadding = 0;
-  const previewItemSpacing = 0;
+  const indicatorIndices = useMemo(() => {
+    if (imageCount <= 0) {
+      return [];
+    }
+
+    const windowSize = Math.min(7, imageCount);
+    let start = currentIndex - Math.floor(windowSize / 2);
+    let end = start + windowSize - 1;
+
+    if (start < 0) {
+      start = 0;
+      end = windowSize - 1;
+    }
+
+    if (end >= imageCount) {
+      end = imageCount - 1;
+      start = Math.max(0, end - windowSize + 1);
+    }
+
+    return Array.from({length: end - start + 1}, (_, i) => start + i);
+  }, [currentIndex, imageCount]);
   const previewAspectRatio = baseAspectRatio || 1;
   const storeName = review?.storeName || '';
   const storeAddress = review?.storeAddress || '';
   const hasStoreInfo = Boolean(storeName || storeAddress);
   const hasRating = review?.rate !== undefined && review?.rate !== null;
+  const onViewableItemsChanged = useRef(({viewableItems}) => {
+    const first = viewableItems?.[0];
+    if (first?.index !== undefined) {
+      setCurrentIndex(first.index);
+    }
+  }).current;
+  const viewabilityConfig = useRef({
+    viewAreaCoveragePercentThreshold: 60,
+  }).current;
 
   const hasUnsavedChanges = useMemo(() => {
     const initialUris = initialImages.map(item => item.uri);
@@ -227,18 +255,6 @@ const MyPostEditScreen = ({navigation, route}) => {
       return () => backHandler.remove();
     }, [goToMyProfile, hasUnsavedChanges]),
   );
-
-  const moveImage = (from, to) => {
-    setImages(prev => {
-      if (to < 0 || to >= prev.length) {
-        return prev;
-      }
-      const next = [...prev];
-      const [moved] = next.splice(from, 1);
-      next.splice(to, 0, moved);
-      return next;
-    });
-  };
 
   const handleDeleteImage = index => {
     const target = images[index];
@@ -410,76 +426,55 @@ const MyPostEditScreen = ({navigation, route}) => {
             </View>
           )}
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            pagingEnabled
-            decelerationRate="fast"
-            snapToInterval={screenWidth}
-            snapToAlignment="start"
-            onScroll={event => {
-              const offsetX = event.nativeEvent.contentOffset.x;
-              const nextIndex = Math.round(offsetX / screenWidth);
-              if (nextIndex !== currentIndex) {
-                setCurrentIndex(nextIndex);
-              }
-            }}
-            scrollEventThrottle={16}
-            contentContainerStyle={
-              hasMultiplePhotos ? styles.previewList : undefined
-            }>
-            {photoData.map(item => {
-              const isAdd = item.isAdd;
-              const aspectRatio = previewAspectRatio;
+          <View style={{width: screenWidth, position: 'relative'}}>
+            <FlatList
+              data={photoData}
+              keyExtractor={(item, index) => `${item.id}-${index}`}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              snapToAlignment="start"
+              decelerationRate="fast"
+              style={{width: screenWidth}}
+              snapToInterval={screenWidth}
+              onViewableItemsChanged={onViewableItemsChanged}
+              viewabilityConfig={viewabilityConfig}
+              renderItem={({item}) => {
+                const isAdd = item.isAdd;
+                const aspectRatio = previewAspectRatio;
 
-              if (isAdd) {
+                if (isAdd) {
+                  return (
+                    <View
+                      key={item.id}
+                      style={[styles.imageWrapper, {width: screenWidth}]}>
+                      <Pressable
+                        style={[
+                          styles.previewStage,
+                          styles.photoAddCard,
+                          {aspectRatio},
+                        ]}
+                        onPress={handleAddImages}>
+                        <Ionicons name="add" size={28} color="#4B5563" />
+                        <CustomText style={styles.photoAddText}>
+                          사진 추가
+                        </CustomText>
+                      </Pressable>
+                    </View>
+                  );
+                }
+
+                const isDeleteDisabled = images.length <= 1;
                 return (
                   <View
                     key={item.id}
-                    style={[
-                      styles.previewItem,
-                      {
-                        width: previewItemWidth,
-                        paddingHorizontal: previewSidePadding,
-                        marginRight: 0,
-                      },
-                    ]}>
-                    <Pressable
-                      style={[
-                        styles.previewStage,
-                        styles.photoAddCard,
-                        {aspectRatio},
-                      ]}
-                      onPress={handleAddImages}>
-                      <Ionicons name="add" size={28} color="#4B5563" />
-                      <CustomText style={styles.photoAddText}>
-                        사진 추가
-                      </CustomText>
-                    </Pressable>
-                  </View>
-                );
-              }
-
-              const isDeleteDisabled = images.length <= 1;
-              const isMoveLeftDisabled = item.index === 0;
-              const isMoveRightDisabled = item.index === images.length - 1;
-              const showMoveControls =
-                !isMoveLeftDisabled || !isMoveRightDisabled;
-              return (
-                <View
-                  key={item.id}
-                  style={[
-                    styles.previewItem,
-                    {
-                      width: previewItemWidth,
-                      paddingHorizontal: previewSidePadding,
-                      marginRight: previewItemSpacing,
-                    },
-                  ]}>
-                  <View style={[styles.previewStage, {aspectRatio}]}>
+                    style={[styles.imageWrapper, {width: screenWidth}]}>
                     <FastImage
                       source={{uri: item.uri}}
-                      style={styles.previewImage}
+                      style={[
+                        styles.postImage,
+                        {width: screenWidth, aspectRatio},
+                      ]}
                       resizeMode={FastImage.resizeMode.contain}
                     />
                     {!isDeleteDisabled && (
@@ -490,49 +485,49 @@ const MyPostEditScreen = ({navigation, route}) => {
                         <Ionicons name="close" size={18} color="#fff" />
                       </Pressable>
                     )}
-                    {showMoveControls && (
-                      <View style={styles.photoMoveRow}>
-                        {!isMoveLeftDisabled && (
-                          <Pressable
-                            style={styles.photoMoveButton}
-                            onPress={() => moveImage(item.index, item.index - 1)}>
-                            <Ionicons
-                              name="chevron-back"
-                              size={22}
-                              color="#fff"
-                            />
-                          </Pressable>
-                        )}
-                        {!isMoveRightDisabled && (
-                          <Pressable
-                            style={styles.photoMoveButton}
-                            onPress={() => moveImage(item.index, item.index + 1)}>
-                            <Ionicons
-                              name="chevron-forward"
-                              size={22}
-                              color="#fff"
-                            />
-                          </Pressable>
-                        )}
-                      </View>
-                    )}
                   </View>
-                </View>
-              );
-            })}
-          </ScrollView>
-        </View>
+                );
+              }}
+            />
+            {hasMultiplePhotos && (
+              <View style={styles.imageIndicatorContainer}>
+                {indicatorIndices.map(index => {
+                  const isActive = index === currentIndex;
+                  const distance = Math.abs(currentIndex - index);
+                  const clampedDistance = Math.min(distance, 3);
+                  const baseSize = isActive ? 8 : 6;
+                  const size = Math.max(
+                    isActive ? baseSize : baseSize - clampedDistance * 1,
+                    isActive ? 8 : 3,
+                  );
+                  const opacity = isActive
+                    ? 1
+                    : Math.max(0.35, 0.8 - clampedDistance * 0.2);
+                  const color = isActive ? '#FFF' : '#CFD5DF';
 
-        {imageCount > 1 && (
-          <View style={styles.dotRow}>
-            {Array.from({length: imageCount}).map((_, index) => (
-              <View
-                key={`dot-${index}`}
-                style={[styles.dot, index === currentIndex && styles.dotActive]}
-              />
-            ))}
+                  return (
+                    <View
+                      key={`dot-${index}`}
+                      style={styles.imageIndicatorDotWrapper}>
+                      <View
+                        style={[
+                          styles.imageIndicatorDot,
+                          {
+                            width: size,
+                            height: size,
+                            borderRadius: size / 2,
+                            opacity,
+                            backgroundColor: color,
+                          },
+                        ]}
+                      />
+                    </View>
+                  );
+                })}
+              </View>
+            )}
           </View>
-        )}
+        </View>
 
         {hasRating && (
           <View style={styles.ratingSection}>
@@ -648,13 +643,8 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     lineHeight: 16,
   },
-  previewItem: {
+  imageWrapper: {
     position: 'relative',
-    paddingBottom: 10,
-    backgroundColor: '#fff',
-  },
-  previewList: {
-    paddingHorizontal: 0,
   },
   previewStage: {
     width: '100%',
@@ -664,10 +654,10 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderRadius: 0,
   },
-  previewImage: {
+  postImage: {
     width: '100%',
-    height: '100%',
-    backgroundColor: '#DDE2E6',
+    backgroundColor: '#f6f6f6',
+    marginBottom: 10,
   },
   previewRemoveButton: {
     position: 'absolute',
@@ -693,39 +683,27 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#6B7280',
   },
-  photoMoveRow: {
+  imageIndicatorContainer: {
     position: 'absolute',
-    left: 10,
-    bottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  photoMoveButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dotRow: {
+    bottom: 24,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
-    gap: 6,
+    gap: 0,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    alignSelf: 'center',
   },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#D1D5DB',
-  },
-  dotActive: {
+  imageIndicatorDotWrapper: {
     width: 14,
-    borderRadius: 5,
-    backgroundColor: '#111',
+    height: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imageIndicatorDot: {
+    backgroundColor: '#CFD5DF',
   },
   ratingSection: {
     paddingHorizontal: 16,
