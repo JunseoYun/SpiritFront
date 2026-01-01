@@ -28,6 +28,7 @@ import ColorUtil from '../../utils/ColorUtil';
 import CustomTextInput from '../../utils/CustomTextInput';
 import FastImage from 'react-native-fast-image';
 
+//TODO 답글 달기
 const CommentFooter = ({
   inputRef,
   commentInput,
@@ -133,6 +134,7 @@ const PostCommentSheet = forwardRef(
     ref,
   ) => {
     const inputRef = useRef(null);
+    const [expandedReplies, setExpandedReplies] = useState({});
 
     const renderCommentBackdrop = useCallback(
       props => (
@@ -221,64 +223,162 @@ const PostCommentSheet = forwardRef(
         <BottomSheetScrollView
           keyboardShouldPersistTaps="handled"
           enableFooterMarginAdjustment
-          contentContainerStyle={[
-            styles.commentSheetContent,
-            {paddingBottom: 100 + Math.max(insets.bottom, 12)},
-          ]}>
+          contentContainerStyle={[styles.commentSheetContent]}>
           {commentList.length === 0 ? (
             <CustomText style={styles.commentEmptyText}>
               아직 댓글이 없어요.
             </CustomText>
           ) : (
-            commentList.map(comment => (
-              <View key={comment.id} style={styles.commentItem}>
-                <Image
-                  source={
-                    comment.profileImage
-                      ? {uri: comment.profileImage}
-                      : defaultProfile
-                  }
-                  style={styles.commentAvatar}
-                />
-                <View style={styles.commentBody}>
-                  <View style={styles.commentHeader}>
-                    <CustomText style={styles.commentAuthor}>
-                      {comment.author}
-                    </CustomText>
-                    <CustomText style={styles.commentDate}>
-                      {comment.createdAt}
-                    </CustomText>
-                  </View>
-                  <CustomText style={styles.commentText}>
-                    {comment.text}
-                  </CustomText>
-                  <CustomText style={styles.commentReplyText}>
-                    답글 달기
-                  </CustomText>
-                </View>
-                <View style={styles.commentLikeColumn}>
-                  <Pressable
-                    hitSlop={8}
-                    onPress={() => onToggleLike(comment.id)}>
-                    <Ionicons
-                      name={
-                        commentLikeState[comment.id] ? 'heart' : 'heart-outline'
+            commentList.map((comment, index) => {
+              const demoReplies =
+                index === 0
+                  ? [
+                      {
+                        id: `${comment.id}-reply-1`,
+                        author: 'asdasd218',
+                        createdAt: '2시간',
+                        text: `정말로 맛있어 보여요`,
+                        likes: 1,
+                      },
+                      {
+                        id: `${comment.id}-reply-2`,
+                        author: 'hanjanman',
+                        createdAt: '2시간',
+                        text: `언제쯤 저도 가볼 수 있을까요 ㅠㅠ`,
+                        likes: 2,
+                      },
+                    ]
+                  : [];
+              const replies = comment.replies ?? demoReplies;
+              const isExpanded = Boolean(expandedReplies[comment.id]);
+
+              return (
+                <View key={comment.id} style={styles.commentGroup}>
+                  <View style={styles.commentItem}>
+                    <FastImage
+                      source={
+                        comment.profileImage
+                          ? {uri: comment.profileImage}
+                          : defaultProfile
                       }
-                      size={20}
-                      color={
-                        commentLikeState[comment.id] ? '#FF5E5E' : '#A0A5AE'
-                      }
+                      style={styles.commentAvatar}
                     />
-                  </Pressable>
-                  <CustomText style={styles.commentLikeCount}>
-                    {formatLikeCount(
-                      (comment.likes ?? 0) +
-                        (commentLikeState[comment.id] ? 1 : 0),
-                    )}
-                  </CustomText>
+                    <View style={styles.commentBody}>
+                      <View style={styles.commentHeader}>
+                        <CustomText style={styles.commentAuthor}>
+                          {comment.author}
+                        </CustomText>
+                        <CustomText style={styles.commentDate}>
+                          {comment.createdAt}
+                        </CustomText>
+                      </View>
+                      <CustomText style={styles.commentText}>
+                        {comment.text}
+                      </CustomText>
+                      <CustomText style={styles.commentReplyText}>
+                        답글 달기
+                      </CustomText>
+                      {!isExpanded && replies.length ? (
+                        <Pressable
+                          style={styles.commentReplyToggle}
+                          disabled={!replies.length}
+                          onPress={() =>
+                            setExpandedReplies(prev => ({
+                              ...prev,
+                              [comment.id]: true,
+                            }))
+                          }>
+                          <View style={styles.commentReplyToggleLine} />
+                          <CustomText style={styles.commentReplyToggleText}>
+                            답글 {replies.length}개 보기
+                          </CustomText>
+                        </Pressable>
+                      ) : null}
+                    </View>
+                    <View style={styles.commentLikeColumn}>
+                      <Pressable
+                        hitSlop={8}
+                        onPress={() => onToggleLike(comment.id)}>
+                        <Ionicons
+                          name={
+                            commentLikeState[comment.id]
+                              ? 'heart'
+                              : 'heart-outline'
+                          }
+                          size={20}
+                          color={
+                            commentLikeState[comment.id] ? '#FF5E5E' : '#A0A5AE'
+                          }
+                        />
+                      </Pressable>
+                      <CustomText style={styles.commentLikeCount}>
+                        {formatLikeCount(
+                          (comment.likes ?? 0) +
+                            (commentLikeState[comment.id] ? 1 : 0),
+                        )}
+                      </CustomText>
+                    </View>
+                  </View>
+                  {replies.length && isExpanded ? (
+                    <View style={styles.commentReplyList}>
+                      {replies.map(reply => (
+                        <View key={reply.id} style={styles.commentReplyItem}>
+                          <Image
+                            source={
+                              reply.profileImage
+                                ? {uri: reply.profileImage}
+                                : defaultProfile
+                            }
+                            style={styles.commentReplyAvatar}
+                          />
+                          <View style={styles.commentReplyBody}>
+                            <View style={styles.commentReplyHeader}>
+                              <CustomText style={styles.commentAuthor}>
+                                {reply.author}
+                              </CustomText>
+                              <CustomText style={styles.commentDate}>
+                                {reply.createdAt}
+                              </CustomText>
+                            </View>
+                            <CustomText style={styles.commentText}>
+                              {reply.text}
+                            </CustomText>
+                            <CustomText style={styles.commentReplyText}>
+                              답글 달기
+                            </CustomText>
+                          </View>
+                          <View style={styles.commentReplyLikeColumn}>
+                            <Pressable hitSlop={8}>
+                              <Ionicons
+                                name="heart-outline"
+                                size={18}
+                                color="#A0A5AE"
+                              />
+                            </Pressable>
+                            <CustomText style={styles.commentLikeCount}>
+                              {formatLikeCount(reply.likes ?? 0)}
+                            </CustomText>
+                          </View>
+                        </View>
+                      ))}
+                      <Pressable
+                        style={styles.commentReplyToggle}
+                        onPress={() =>
+                          setExpandedReplies(prev => ({
+                            ...prev,
+                            [comment.id]: false,
+                          }))
+                        }>
+                        <View style={styles.commentReplyToggleLine} />
+                        <CustomText style={styles.commentReplyToggleText}>
+                          답글 숨기기
+                        </CustomText>
+                      </Pressable>
+                    </View>
+                  ) : null}
                 </View>
-              </View>
-            ))
+              );
+            })
           )}
         </BottomSheetScrollView>
       </BottomSheetModal>
@@ -329,6 +429,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     gap: 12,
   },
+  commentGroup: {
+    gap: 6,
+  },
   commentAvatar: {
     width: 36,
     height: 36,
@@ -364,6 +467,53 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Pretendard-Medium',
     color: ColorUtil.subText,
+  },
+  commentReplyList: {
+    paddingLeft: 48,
+    gap: 14,
+  },
+  commentReplyItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  commentReplyAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F2F2F2',
+  },
+  commentReplyBody: {
+    flex: 1,
+    gap: 6,
+  },
+  commentReplyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  commentReplyLikeColumn: {
+    width: 36,
+    alignItems: 'center',
+    gap: 4,
+    paddingTop: 2,
+  },
+  commentReplyToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingLeft: 0,
+    marginTop: 10,
+  },
+  commentReplyToggleLine: {
+    width: 18,
+    height: 1,
+    backgroundColor: '#D6D9DF',
+  },
+  commentReplyToggleText: {
+    fontSize: 12,
+    fontFamily: 'Pretendard-Medium',
+    color: '#9AA1AE',
   },
   commentLikeColumn: {
     width: 42,
