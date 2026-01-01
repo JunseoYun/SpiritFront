@@ -39,6 +39,8 @@ const MyPostDetailScreen = ({navigation, route}) => {
   const scrollRequestedRef = useRef(false);
   const pendingLastScrollRef = useRef(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const contentMeasuredRef = useRef(false);
+  const [contentMeasured, setContentMeasured] = useState(false);
   const [selectedFeed, setSelectedFeed] = useState(null);
   const [commentLikeState, setCommentLikeState] = useState({});
   const [commentInput, setCommentInput] = useState('');
@@ -318,6 +320,8 @@ const MyPostDetailScreen = ({navigation, route}) => {
     listReadyRef.current = false;
     previewReadyRef.current = false;
     scrollRequestedRef.current = false;
+    contentMeasuredRef.current = false;
+    setContentMeasured(false);
   }, [feedItems.length, initialIndex]);
 
   useEffect(() => {
@@ -375,14 +379,26 @@ const MyPostDetailScreen = ({navigation, route}) => {
     ensureLastItemPinned();
   }, [ensureLastItemPinned, listLaidOut, showList]);
 
+  const handleContentSizeChange = useCallback(() => {
+    if (!showList || !listLaidOut) {
+      return;
+    }
+    if (!contentMeasuredRef.current) {
+      contentMeasuredRef.current = true;
+      setContentMeasured(true);
+    }
+    ensureLastItemPinned();
+  }, [ensureLastItemPinned, listLaidOut, showList]);
+
   useEffect(() => {
-    if (!showList) return;
-    if (!listLaidOut) return;
-    const timer = setTimeout(() => {
+    if (!showList || !listLaidOut || !contentMeasured) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
       setIsTransitioning(false);
-    }, 180);
-    return () => clearTimeout(timer);
-  }, [listLaidOut, showList]);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [contentMeasured, listLaidOut, showList]);
 
   useEffect(() => {
     if (showList || !feedItems.length) return;
@@ -427,7 +443,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
         viewabilityConfig={viewabilityConfig}
         onScrollToIndexFailed={handleScrollToIndexFailed}
         onLayout={handleListLayout}
-        onContentSizeChange={ensureLastItemPinned}
+        onContentSizeChange={handleContentSizeChange}
         renderItem={({item, index}) => (
           <PostItem
             item={item}

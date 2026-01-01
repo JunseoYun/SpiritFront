@@ -3,6 +3,7 @@ import {
   Animated,
   BackHandler,
   FlatList,
+  Image,
   Platform,
   Pressable,
   SafeAreaView,
@@ -13,6 +14,7 @@ import {
 import {useFocusEffect} from '@react-navigation/native';
 import {TabView} from 'react-native-tab-view';
 import {Store_getby_liked, Store_getby_saved} from '../../api/storeApi';
+import {Userdataget} from '../../api/userApi';
 import LikedGridItem from '../../components/LikedScreen/LikedGridItem';
 import ScrapImageItem from '../../components/LikedScreen/ScrapImageItem';
 import LikedGridItemSkeleton from '../../components/LikedScreen/LikedGridItemSkeleton';
@@ -131,7 +133,7 @@ const ScrapTabContent = ({
       <ScrapImageItem
         store={item}
         size={itemSize}
-        onPress={onPress}
+        onPress={() => onPress?.(item, index)}
         style={{
           marginRight:
             index % SCRAP_GRID_COLUMNS === SCRAP_GRID_COLUMNS - 1 ? 0 : gap,
@@ -182,6 +184,10 @@ const LikeScreen = ({navigation}) => {
   const scrollOffsetsRef = useRef({liked: 0, saved: 0});
   const [likedState, setLikedState] = useState(createTabState);
   const [savedState, setSavedState] = useState(createTabState);
+  const [userProfile, setUserProfile] = useState(null);
+  const didInitRef = useRef(false);
+  const isSwipingRef = useRef(false);
+  const swipeTimerRef = useRef(null);
   const {
     visible: showScrollToTop,
     handleScroll,
@@ -261,6 +267,7 @@ const LikeScreen = ({navigation}) => {
   );
 
   const handleStorePress = store => {
+    if (isSwipingRef.current) return;
     const storeId = store?.id ?? store?.storeId;
     if (!storeId) return;
     navigation.navigate('StoreStack', {
@@ -321,6 +328,10 @@ const LikeScreen = ({navigation}) => {
 
   useFocusEffect(
     useCallback(() => {
+      if (didInitRef.current) {
+        return;
+      }
+      didInitRef.current = true;
       setActiveTab(0);
       setLikedState(createTabState());
       setSavedState(createTabState());
@@ -331,6 +342,26 @@ const LikeScreen = ({navigation}) => {
       updateVisibility(0);
     }, [updateVisibility]),
   );
+
+  useEffect(() => {
+    let isActive = true;
+    const fetchUser = async () => {
+      try {
+        const data = await Userdataget();
+        if (!isActive) return;
+        setUserProfile({
+          nickname: data?.nickname ?? '',
+          imageuri: data?.imgUrl ?? null,
+        });
+      } catch (error) {}
+    };
+    if (token) {
+      fetchUser();
+    }
+    return () => {
+      isActive = false;
+    };
+  }, [token]);
 
   useEffect(() => {
     const offset = scrollOffsetsRef.current[activeTabKey] || 0;
@@ -487,6 +518,36 @@ const LikeScreen = ({navigation}) => {
       );
     }
 
+    const defaultStoreImageUri = Image.resolveAssetSource(
+      require('../../assets/default_store6.png'),
+    ).uri;
+    const handleScrapPress = (store, index) => {
+      if (isSwipingRef.current) {
+        return;
+      }
+      if (!Array.isArray(savedState.items) || savedState.items.length === 0) {
+        return;
+      }
+      const posts = savedState.items.map((item, itemIndex) => ({
+        id: item?.id ?? item?.storeId ?? item?.store_id ?? `saved-${itemIndex}`,
+        storeId: item?.storeId ?? item?.id ?? item?.store_id ?? null,
+        storeName: item?.storeName ?? item?.name ?? '',
+        storeAddress: item?.storeAddress ?? item?.address ?? '',
+        content: '너무 맛있습니다',
+        postImgUrlList: [
+          item?.mainImgUrl ? item.mainImgUrl : defaultStoreImageUri,
+        ],
+        likes: 0,
+        comments: 0,
+        shares: 0,
+      }));
+      navigation.navigate('LikeSavedPostDetailScreen', {
+        posts,
+        initialIndex: index ?? 0,
+        userProfile: userProfile ?? {nickname: '', imageuri: null},
+      });
+    };
+
     return (
       <ScrapTabContent
         data={tabState.items}
@@ -500,7 +561,7 @@ const LikeScreen = ({navigation}) => {
         insets={insets}
         itemSize={scrapItemSize}
         gap={SCRAP_GRID_GAP}
-        onPress={handleStorePress}
+        onPress={handleScrapPress}
       />
     );
   };
@@ -512,6 +573,20 @@ const LikeScreen = ({navigation}) => {
           navigationState={{index: activeTab, routes: TABS}}
           renderScene={renderScene}
           onIndexChange={setActiveTab}
+          onSwipeStart={() => {
+            isSwipingRef.current = true;
+            if (swipeTimerRef.current) {
+              clearTimeout(swipeTimerRef.current);
+            }
+          }}
+          onSwipeEnd={() => {
+            if (swipeTimerRef.current) {
+              clearTimeout(swipeTimerRef.current);
+            }
+            swipeTimerRef.current = setTimeout(() => {
+              isSwipingRef.current = false;
+            }, 120);
+          }}
           renderTabBar={renderTabBar}
           initialLayout={{width: screenWidth}}
           lazy

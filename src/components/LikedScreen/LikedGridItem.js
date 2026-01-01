@@ -99,13 +99,7 @@ const LikedGridItem = ({store, width, onPress, style}) => {
   return (
     <Pressable
       onPress={handlePress}
-      android_ripple={{color: 'rgba(0,0,0,0.06)'}}
-      style={({pressed}) => [
-        styles.container,
-        {width},
-        pressed && styles.cardPressed,
-        style,
-      ]}>
+      style={[styles.container, {width}, style]}>
       <View style={[styles.imageWrap, {height: imageHeight}]}>
         <FastImage
           source={imageSource}
@@ -150,9 +144,6 @@ const LikedGridItem = ({store, width, onPress, style}) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'transparent',
-  },
-  cardPressed: {
-    opacity: 0.92,
   },
   imageWrap: {
     width: '100%',
