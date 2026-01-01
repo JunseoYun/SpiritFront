@@ -5,13 +5,17 @@ import {
   FlatList,
   StyleSheet,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import PostItem from '../../../components/Post/PostItem';
 import PostItemSkeleton from '../../../components/Post/PostItemSkeleton';
+import PostCommentSheet from '../../../components/Post/PostCommentSheet';
 import Loading from '../../../hooks/Loading';
 import {PostDelete} from '../../../api/reviewApi';
+
+const defaultProfile = require('../../../assets/default_profile.png');
 
 const MyPostDetailScreen = ({navigation, route}) => {
   const {
@@ -27,6 +31,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
   const [listLaidOut, setListLaidOut] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(routeInitialIndex);
   const currentIndexRef = useRef(routeInitialIndex);
+  const {height: windowHeight} = useWindowDimensions();
   const screenWidth = Dimensions.get('window').width;
   const insets = useSafeAreaInsets();
   const listReadyRef = useRef(false);
@@ -34,6 +39,14 @@ const MyPostDetailScreen = ({navigation, route}) => {
   const scrollRequestedRef = useRef(false);
   const pendingLastScrollRef = useRef(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedFeed, setSelectedFeed] = useState(null);
+  const [commentLikeState, setCommentLikeState] = useState({});
+  const [commentInput, setCommentInput] = useState('');
+  const commentSheetRef = useRef(null);
+  const commentSheetSnapPoints = useMemo(
+    () => ['70%', Math.max(0, windowHeight - insets.top)],
+    [insets.top, windowHeight],
+  );
 
   const goToMyProfile = useCallback(() => {
     navigation.reset({
@@ -108,6 +121,72 @@ const MyPostDetailScreen = ({navigation, route}) => {
     [],
   );
   const showSkeleton = (!showList && feedItems.length > 0) || isTransitioning;
+  const commentList = useMemo(() => {
+    if (!selectedFeed) {
+      return [];
+    }
+
+    return [
+      {
+        id: 'c1',
+        author: selectedFeed?.nickname ?? '게스트',
+        profileImage:
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+        text: '방금 본 메뉴 정말 맛있어보여요!',
+        createdAt: '방금 전',
+        likes: 2,
+      },
+      {
+        id: 'c2',
+        author: '렌디에',
+        profileImage: null,
+        text: '언제 가볼게요 주말에 갈게요!',
+        createdAt: '1시간 전',
+        likes: 8,
+      },
+      {
+        id: 'c3',
+        author: '카페어딜까',
+        profileImage:
+          'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=200&q=80',
+        text: '분위기 궁금했는데 사진으로 잘 담았네요. 공유 감사!',
+        createdAt: '어제',
+        likes: 14,
+      },
+    ];
+  }, [selectedFeed]);
+
+  useEffect(() => {
+    const nextState = {};
+    commentList.forEach(comment => {
+      nextState[comment.id] = false;
+    });
+    setCommentLikeState(nextState);
+  }, [commentList]);
+
+  const handleCommentLikeToggle = useCallback(commentId => {
+    setCommentLikeState(prev => ({
+      ...prev,
+      [commentId]: !prev[commentId],
+    }));
+  }, []);
+
+  const formatLikeCount = useCallback(value => {
+    if (!Number.isFinite(value)) {
+      return '0';
+    }
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+    }
+    return `${value}`;
+  }, []);
+
+  const handleOpenCommentSheet = useCallback(feed => {
+    setSelectedFeed(feed);
+    requestAnimationFrame(() => {
+      commentSheetRef.current?.present();
+    });
+  }, []);
 
   const handleDeleteConfirm = useCallback(
     async item => {
@@ -323,6 +402,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
           <View onLayout={handleSelectedLayout}>
             <PostItem
               item={feedItems[initialIndex]}
+              onCommentPress={handleOpenCommentSheet}
               onEditPress={handleEditPress}
               onDeletePress={handleDeletePress}
               isWriter
@@ -351,6 +431,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
         renderItem={({item, index}) => (
           <PostItem
             item={item}
+            onCommentPress={handleOpenCommentSheet}
             onEditPress={handleEditPress}
             onDeletePress={handleDeletePress}
             isWriter
@@ -363,6 +444,24 @@ const MyPostDetailScreen = ({navigation, route}) => {
         ]}
         style={showList ? null : styles.listHidden}
         pointerEvents={showList ? 'auto' : 'none'}
+      />
+
+      <PostCommentSheet
+        ref={commentSheetRef}
+        snapPoints={commentSheetSnapPoints}
+        onChange={() => {}}
+        onDismiss={() => {
+          setSelectedFeed(null);
+        }}
+        insets={insets}
+        commentList={commentList}
+        defaultProfile={defaultProfile}
+        commentLikeState={commentLikeState}
+        onToggleLike={handleCommentLikeToggle}
+        formatLikeCount={formatLikeCount}
+        commentInput={commentInput}
+        onChangeCommentInput={setCommentInput}
+        onPressSend={() => {}}
       />
 
       {showSkeleton ? (
