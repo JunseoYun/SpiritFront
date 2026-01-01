@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+﻿import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   DeviceEventEmitter,
   Dimensions,
@@ -32,7 +32,9 @@ const MyPostDetailScreen = ({navigation, route}) => {
   const listReadyRef = useRef(false);
   const previewReadyRef = useRef(false);
   const scrollRequestedRef = useRef(false);
+  const pendingLastScrollRef = useRef(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
   const goToMyProfile = useCallback(() => {
     navigation.reset({
       index: 0,
@@ -83,15 +85,16 @@ const MyPostDetailScreen = ({navigation, route}) => {
         storeId: review?.storeId ?? review?.store?.id,
         shareLink: review?.shareLink,
         profileImage: userProfile?.imageuri,
-        nickname: userProfile?.nickname || '�� �Խñ�',
-        storeAddress: review?.storeAddress || review?.address || review?.storeName || '',
+        nickname: userProfile?.nickname || '',
+        storeAddress:
+          review?.storeAddress || review?.address || review?.storeName || '',
         name: review?.storeName || '',
-        content: review?.content || '���� ���� ����',
+        content: review?.content || '',
         postImages: Array.isArray(review?.postImgUrlList)
           ? review.postImgUrlList
           : Array.isArray(review?.imgUrlList)
-            ? review.imgUrlList
-            : [],
+          ? review.imgUrlList
+          : [],
         likes: review?.likes ?? review?.likeCount ?? 0,
         comments: 0,
         shares: review?.shares ?? 0,
@@ -114,16 +117,11 @@ const MyPostDetailScreen = ({navigation, route}) => {
       setIsDeleting(true);
       try {
         await PostDelete(item.id);
-        showAlert?.({
-          title: '���� �Ϸ�',
-          message: '�Խñ��� �����Ǿ����ϴ�.',
-          type: 'ok',
-          onConfirm: goToMyProfile,
-        });
+        goToMyProfile();
       } catch (error) {
         showAlert?.({
-          title: '���� ����',
-          message: '�Խñ� ������ �����߽��ϴ�.',
+          title: '게시글 삭제 실패',
+          message: '게시글 삭제에 실패했습니다.',
           type: 'ok',
         });
       } finally {
@@ -167,29 +165,35 @@ const MyPostDetailScreen = ({navigation, route}) => {
   const viewabilityConfig = useRef({
     viewAreaCoveragePercentThreshold: 60,
   }).current;
+  const isLastIndex = currentIndex === feedItems.length - 1;
 
-  const handleScrollToIndexFailed = useCallback(info => {
-    const wait = new Promise(resolve => setTimeout(resolve, 120));
-    wait.then(() => {
-      if (!listRef.current) return;
-      const fallback =
-        typeof info.averageItemLength === 'number' && info.averageItemLength > 0
-          ? info.averageItemLength
-          : screenWidth;
-      listRef.current.scrollToOffset({
-        offset: fallback * info.index,
-        animated: false,
-      });
-      setTimeout(() => {
+  const handleScrollToIndexFailed = useCallback(
+    info => {
+      const wait = new Promise(resolve => setTimeout(resolve, 120));
+      wait.then(() => {
         if (!listRef.current) return;
-        listRef.current.scrollToIndex({
-          index: info.index,
+        const viewPosition = info.index === feedItems.length - 1 ? 1 : 0;
+        const fallback =
+          typeof info.averageItemLength === 'number' &&
+          info.averageItemLength > 0
+            ? info.averageItemLength
+            : screenWidth;
+        listRef.current.scrollToOffset({
+          offset: fallback * info.index,
           animated: false,
-          viewPosition: 0,
         });
-      }, 80);
-    });
-  }, [screenWidth]);
+        setTimeout(() => {
+          if (!listRef.current) return;
+          listRef.current.scrollToIndex({
+            index: info.index,
+            animated: false,
+            viewPosition,
+          });
+        }, 80);
+      });
+    },
+    [feedItems.length, screenWidth],
+  );
 
   const requestShowList = useCallback(() => {
     if (showList) {
@@ -208,14 +212,16 @@ const MyPostDetailScreen = ({navigation, route}) => {
       return;
     }
     if (initialIndex > 0) {
+      const viewPosition =
+        initialIndex === feedItems.length - 1 ? 1 : 0;
       listRef.current.scrollToIndex({
         index: initialIndex,
         animated: false,
-        viewPosition: 0,
+        viewPosition,
       });
     }
     requestShowList();
-  }, [initialIndex, requestShowList]);
+  }, [feedItems.length, initialIndex, requestShowList]);
 
   const tryStartList = useCallback(() => {
     if (showList) {
@@ -257,6 +263,38 @@ const MyPostDetailScreen = ({navigation, route}) => {
     setListLaidOut(true);
     tryStartList();
   }, [tryStartList]);
+
+  const ensureLastItemPinned = useCallback(() => {
+    if (!listRef.current || !feedItems.length) {
+      return;
+    }
+    if (currentIndex !== feedItems.length - 1) {
+      return;
+    }
+    if (pendingLastScrollRef.current) {
+      return;
+    }
+    pendingLastScrollRef.current = true;
+    requestAnimationFrame(() => {
+      if (!listRef.current) {
+        pendingLastScrollRef.current = false;
+        return;
+      }
+      listRef.current.scrollToIndex({
+        index: currentIndex,
+        animated: false,
+        viewPosition: 1,
+      });
+      pendingLastScrollRef.current = false;
+    });
+  }, [currentIndex, feedItems.length]);
+
+  useEffect(() => {
+    if (!showList || !listLaidOut) {
+      return;
+    }
+    ensureLastItemPinned();
+  }, [ensureLastItemPinned, listLaidOut, showList]);
 
   useEffect(() => {
     if (!showList) return;
@@ -309,6 +347,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
         viewabilityConfig={viewabilityConfig}
         onScrollToIndexFailed={handleScrollToIndexFailed}
         onLayout={handleListLayout}
+        onContentSizeChange={ensureLastItemPinned}
         renderItem={({item, index}) => (
           <PostItem
             item={item}
@@ -318,7 +357,10 @@ const MyPostDetailScreen = ({navigation, route}) => {
             isCentered={index === currentIndex}
           />
         )}
-        contentContainerStyle={[styles.feedContent, {paddingBottom: Math.max(insets.bottom, 24)}]}
+        contentContainerStyle={[
+          styles.feedContent,
+          {paddingBottom: isLastIndex ? insets.bottom : Math.max(insets.bottom, 24)},
+        ]}
         style={showList ? null : styles.listHidden}
         pointerEvents={showList ? 'auto' : 'none'}
       />
@@ -355,4 +397,3 @@ const styles = StyleSheet.create({
 });
 
 export default MyPostDetailScreen;
-
