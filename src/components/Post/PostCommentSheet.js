@@ -1,5 +1,12 @@
-import React, {forwardRef, useCallback, useEffect, useRef, useState} from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
+  Animated,
   Image,
   Keyboard,
   Platform,
@@ -30,8 +37,12 @@ const CommentFooter = ({
   defaultProfile,
   bottomInset,
 }) => {
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [localInput, setLocalInput] = useState(commentInput ?? '');
+  const animatedPaddingBottom = useRef(
+    new Animated.Value(
+      Platform.OS === 'android' ? bottomInset + 10 : bottomInset + 10,
+    ),
+  ).current;
 
   useEffect(() => {
     setLocalInput(commentInput ?? '');
@@ -43,30 +54,35 @@ const CommentFooter = ({
     const hideEvent =
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
 
-    const showSub = Keyboard.addListener(showEvent, () => {
-      setIsKeyboardVisible(true);
+    const animatePadding = (toValue, duration = 200) => {
+      Animated.timing(animatedPaddingBottom, {
+        toValue,
+        duration,
+        useNativeDriver: false,
+      }).start();
+    };
+
+    const showSub = Keyboard.addListener(showEvent, event => {
+      const targetPadding = Platform.OS === 'android' ? bottomInset + 10 : 10;
+      animatePadding(targetPadding, event?.duration);
     });
-    const hideSub = Keyboard.addListener(hideEvent, () => {
-      setIsKeyboardVisible(false);
+    const hideSub = Keyboard.addListener(hideEvent, event => {
+      const targetPadding = bottomInset + 10;
+      animatePadding(targetPadding, event?.duration);
     });
 
     return () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, []);
+  }, [animatedPaddingBottom, bottomInset]);
 
   return (
-    <View
+    <Animated.View
       style={[
         styles.commentInputBar,
         {
-          paddingBottom:
-            Platform.OS === 'android'
-              ? bottomInset + 10
-              : isKeyboardVisible
-              ? 10
-              : bottomInset + 10,
+          paddingBottom: animatedPaddingBottom,
         },
       ]}>
       <FastImage source={defaultProfile} style={styles.commentInputAvatar} />
@@ -86,21 +102,16 @@ const CommentFooter = ({
           underlineColorAndroid="transparent"
           InputComponent={BottomSheetTextInput}
         />
-        <Pressable
-          hitSlop={8}
-          onPress={onPressSend}
-          style={[
-            styles.commentSendButton,
-            localInput.trim() ? styles.commentSendButtonActive : null,
-          ]}>
-          <Ionicons
-            name="paper-plane-outline"
-            size={18}
-            color={localInput.trim() ? '#3CBBFF' : '#A0A5AE'}
-          />
-        </Pressable>
+        {localInput.trim() ? (
+          <Pressable
+            hitSlop={8}
+            onPress={onPressSend}
+            style={[styles.commentSendButton]}>
+            <Ionicons name="arrow-up" size={20} color="#FFF" />
+          </Pressable>
+        ) : null}
       </View>
-    </View>
+    </Animated.View>
   );
 };
 const PostCommentSheet = forwardRef(
@@ -251,15 +262,11 @@ const PostCommentSheet = forwardRef(
                     onPress={() => onToggleLike(comment.id)}>
                     <Ionicons
                       name={
-                        commentLikeState[comment.id]
-                          ? 'heart'
-                          : 'heart-outline'
+                        commentLikeState[comment.id] ? 'heart' : 'heart-outline'
                       }
                       size={20}
                       color={
-                        commentLikeState[comment.id]
-                          ? '#FF5E5E'
-                          : '#A0A5AE'
+                        commentLikeState[comment.id] ? '#FF5E5E' : '#A0A5AE'
                       }
                     />
                   </Pressable>
@@ -391,8 +398,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderWidth: 1,
     borderColor: '#e5e5e5',
-    borderRadius: 100,
-    paddingHorizontal: 12,
+    borderRadius: 20,
+    paddingHorizontal: 7,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -401,23 +408,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Pretendard-Regular',
     color: '#333',
-    marginLeft: 6,
+    marginLeft: 8,
     maxHeight: 80,
     padding: 0,
     margin: 0,
     paddingVertical: 10,
   },
   commentSendButton: {
-    width: 32,
-    height: 32,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f2f2f2',
-    marginLeft: 8,
-  },
-  commentSendButtonActive: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#3CBBFF',
   },
 });
 
