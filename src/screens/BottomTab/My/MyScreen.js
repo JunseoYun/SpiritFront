@@ -1,12 +1,21 @@
-﻿import React, {useState, useEffect, useCallback, useLayoutEffect} from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import {
   StyleSheet,
   SafeAreaView,
   BackHandler,
   Pressable,
   View,
+  ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import {useFocusEffect, useRoute} from '@react-navigation/native';
+import PagerView from 'react-native-pager-view';
 import MyPageheader from '../../../components/MyScreen/MyPageheader';
 import {Userdataget} from '../../../api/userApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
@@ -16,6 +25,7 @@ import MyManager from '../../../components/MyScreen/MyManager/MyManager';
 import Loading from '../../../hooks/Loading';
 import {Bell} from 'lucide-react-native';
 import {has_unread_notification} from '../../../api/notificationApi';
+import {RefreshControl} from 'react-native-gesture-handler';
 
 const MyScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
@@ -25,8 +35,36 @@ const MyScreen = ({navigation}) => {
   const invitationManager = route.params?.invitationManager;
   const [unreadNotification, setUnreadNotification] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState('MyReview');
   const [reviewCount, setReviewCount] = useState(0);
+  const {width: screenWidth} = useWindowDimensions();
+  const verticalScrollRef = useRef(null);
+  const pagerRef = useRef(null);
+  const reviewRef = useRef(null);
+  const managerRef = useRef(null);
+  const [reviewRefreshing, setReviewRefreshing] = useState(false);
+  const [managerRefreshing, setManagerRefreshing] = useState(false);
+  const isRefreshing = selectedTab === 0 ? reviewRefreshing : managerRefreshing;
+  const scrollYRef = useRef(0);
+  const tabsOffsetRef = useRef(null);
+  const [tabsHeight, setTabsHeight] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(0);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const [reviewPageHeight, setReviewPageHeight] = useState(0);
+  const [managerPageHeight, setManagerPageHeight] = useState(0);
+  const [isTabsSticky, setIsTabsSticky] = useState(false);
+  const reviewHeightRef = useRef(0);
+  const managerHeightRef = useRef(0);
+  const activePageHeight =
+    selectedTab === 0 ? reviewPageHeight : managerPageHeight;
+  const minPagerHeight = Math.max(0, viewportHeight - tabsHeight);
+  const basePagerHeight = activePageHeight > 0 ? activePageHeight : 0;
+  const pagerHeight =
+    basePagerHeight || minPagerHeight
+      ? Math.max(basePagerHeight, minPagerHeight || 0)
+      : undefined;
+  const scrollContentHeight = headerHeight + tabsHeight + basePagerHeight;
+  const canScrollVertically = scrollContentHeight > viewportHeight + 1;
+  const scrollEnabled = isTabsSticky || canScrollVertically;
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -124,16 +162,69 @@ const MyScreen = ({navigation}) => {
     fetchUserData();
   }, [showAlert]);
 
+  const isManager = userdata?.isManager === true;
+  const pagerKey = isManager ? 'manager' : 'user';
   useEffect(() => {
-    if (invitationManager) {
-      setCurrentPage('MyManager');
-      setSelectedTab(userdata?.isManager ? 1 : 0);
+    if (invitationManager && isManager) {
+      setSelectedTab(1);
+      pagerRef.current?.setPage?.(1);
     }
-  }, [invitationManager, userdata?.isManager]);
+  }, [invitationManager, isManager, screenWidth]);
 
-  if (!userdata) {
-    return <Loading loading={true} />;
-  }
+  useEffect(() => {
+    if (!isManager) {
+      setSelectedTab(0);
+      setTabsHeight(0);
+      tabsOffsetRef.current = null;
+      setIsTabsSticky(false);
+    }
+  }, [isManager]);
+
+  const handleChangePage = useCallback(
+    index => {
+      if (typeof index === 'number') {
+        if (!isManager && index !== 0) {
+          return;
+        }
+        setSelectedTab(index);
+        pagerRef.current?.setPage?.(index);
+        if (isTabsSticky && tabsOffsetRef.current != null) {
+          verticalScrollRef.current?.scrollTo?.({
+            y: tabsOffsetRef.current,
+            animated: false,
+          });
+          scrollYRef.current = tabsOffsetRef.current;
+        }
+      }
+    },
+    [pagerRef, screenWidth, isTabsSticky],
+  );
+
+  const handlePageSelected = useCallback(
+    event => {
+      const nextIndex = event.nativeEvent.position ?? 0;
+      if (!isManager && nextIndex !== 0) {
+        return;
+      }
+      setSelectedTab(nextIndex);
+      if (isTabsSticky && tabsOffsetRef.current != null) {
+        verticalScrollRef.current?.scrollTo?.({
+          y: tabsOffsetRef.current,
+          animated: false,
+        });
+        scrollYRef.current = tabsOffsetRef.current;
+      }
+    },
+    [isManager, isTabsSticky],
+  );
+
+  const renderTabs = () => (
+    <MyTabs
+      selectedTab={selectedTab}
+      changePage={handleChangePage}
+      isManager={isManager}
+    />
+  );
 
   const handleImagePress = () => {
     navigation.navigate('StoreStack', {
@@ -144,7 +235,7 @@ const MyScreen = ({navigation}) => {
     });
   };
 
-  const profileHeader = (
+  const renderProfileHeader = () => (
     <MyPageheader
       nickname={userdata.nickname}
       postCount={reviewCount}
@@ -158,37 +249,155 @@ const MyScreen = ({navigation}) => {
     />
   );
 
-  const tabHeader =
-    userdata?.isManager === true ? (
-      <MyTabs
-        selectedTab={selectedTab}
-        setSelectedTab={setSelectedTab}
-        changePage={setCurrentPage}
-        isManager={userdata?.isManager}
-      />
-    ) : null;
+  const handleVerticalScroll = useCallback(
+    event => {
+      const {contentOffset, contentSize, layoutMeasurement} = event.nativeEvent;
+      scrollYRef.current = contentOffset.y;
+      if (tabsOffsetRef.current != null) {
+        const nextSticky = contentOffset.y >= tabsOffsetRef.current;
+        setIsTabsSticky(prev => (prev === nextSticky ? prev : nextSticky));
+      }
+      const scrollable = contentSize.height > layoutMeasurement.height + 1;
+      if (!scrollable) {
+        return;
+      }
+      const bottomSpace =
+        contentSize.height - (contentOffset.y + layoutMeasurement.height);
+      if (bottomSpace > 200) {
+        return;
+      }
+      if (selectedTab === 0) {
+        reviewRef.current?.loadMore?.();
+      } else {
+        managerRef.current?.loadMore?.();
+      }
+    },
+    [selectedTab],
+  );
+
+  const handleRefresh = useCallback(() => {
+    if (selectedTab === 0) {
+      reviewRef.current?.refresh?.();
+      return;
+    }
+    managerRef.current?.refresh?.();
+  }, [selectedTab]);
+
+  const handlePagerMoveCapture = useCallback((_, gestureState) => {
+    const {dx, dy} = gestureState;
+    return Math.abs(dx) > Math.abs(dy);
+  }, []);
+
+  const updateReviewHeight = useCallback(height => {
+    if (Math.abs(reviewHeightRef.current - height) < 1) {
+      return;
+    }
+    reviewHeightRef.current = height;
+    setReviewPageHeight(height);
+  }, []);
+
+  const updateManagerHeight = useCallback(height => {
+    if (Math.abs(managerHeightRef.current - height) < 1) {
+      return;
+    }
+    managerHeightRef.current = height;
+    setManagerPageHeight(height);
+  }, []);
+
+  if (!userdata) {
+    return <Loading loading={true} />;
+  }
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
-      {currentPage === 'MyReview' && (
-        <MyReview
-          navigation={navigation}
-          headerComponent={profileHeader}
-          tabComponent={tabHeader}
-          onCountChange={setReviewCount}
-          userProfile={{
-            nickname: userdata.nickname,
-            imageuri: userdata.imgUrl,
-          }}
-        />
-      )}
-      {currentPage === 'MyManager' && userdata?.isManager === true && (
-        <MyManager
-          navigation={navigation}
-          headerComponent={profileHeader}
-          tabComponent={tabHeader}
-        />
-      )}
+      <ScrollView
+        ref={verticalScrollRef}
+        stickyHeaderIndices={isManager ? [1] : []}
+        onScroll={handleVerticalScroll}
+        scrollEventThrottle={16}
+        nestedScrollEnabled
+        onLayout={({nativeEvent}) => {
+          setViewportHeight(nativeEvent.layout.height);
+        }}
+        scrollEnabled={scrollEnabled}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            enabled={scrollEnabled}
+          />
+        }>
+        <View
+          onLayout={({nativeEvent}) => {
+            setHeaderHeight(nativeEvent.layout.height);
+          }}>
+          {renderProfileHeader()}
+        </View>
+        {isManager ? (
+          <View
+            style={styles.tabsContainer}
+            onLayout={({nativeEvent}) => {
+              tabsOffsetRef.current = nativeEvent.layout.y;
+              setTabsHeight(nativeEvent.layout.height);
+            }}>
+            {renderTabs()}
+          </View>
+        ) : null}
+        <View onMoveShouldSetResponderCapture={handlePagerMoveCapture}>
+          {isManager ? (
+            <PagerView
+              key={pagerKey}
+              ref={pagerRef}
+              style={[styles.pager, pagerHeight ? {height: pagerHeight} : null]}
+              initialPage={isManager ? selectedTab : 0}
+              onPageSelected={handlePageSelected}
+              scrollEnabled>
+              <View key="review" style={[styles.page, {width: screenWidth}]}>
+                <MyReview
+                  ref={reviewRef}
+                  navigation={navigation}
+                  onRefreshingChange={setReviewRefreshing}
+                  onContentLayout={({nativeEvent}) => {
+                    updateReviewHeight(nativeEvent.layout.height);
+                  }}
+                  onCountChange={setReviewCount}
+                  userProfile={{
+                    nickname: userdata.nickname,
+                    imageuri: userdata.imgUrl,
+                  }}
+                />
+              </View>
+              <View key="manager" style={[styles.page, {width: screenWidth}]}>
+                <MyManager
+                  ref={managerRef}
+                  navigation={navigation}
+                  onRefreshingChange={setManagerRefreshing}
+                  onContentLayout={({nativeEvent}) => {
+                    updateManagerHeight(nativeEvent.layout.height);
+                  }}
+                />
+              </View>
+            </PagerView>
+          ) : (
+            <View style={[styles.page, {width: screenWidth}]}>
+              <MyReview
+                ref={reviewRef}
+                navigation={navigation}
+                onRefreshingChange={setReviewRefreshing}
+                onContentLayout={({nativeEvent}) => {
+                  updateReviewHeight(nativeEvent.layout.height);
+                }}
+                onCountChange={setReviewCount}
+                userProfile={{
+                  nickname: userdata.nickname,
+                  imageuri: userdata.imgUrl,
+                }}
+              />
+            </View>
+          )}
+        </View>
+      </ScrollView>
 
       <AlertComponent />
       <Loading loading={loading} />
@@ -213,6 +422,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
     fontSize: 20,
     color: '#333',
+  },
+  tabsContainer: {
+    backgroundColor: '#fff',
+  },
+  pager: {
+    flexGrow: 0,
+  },
+  page: {
+    flex: 1,
   },
 });
 

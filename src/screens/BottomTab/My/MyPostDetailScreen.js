@@ -3,6 +3,7 @@ import {
   DeviceEventEmitter,
   Dimensions,
   FlatList,
+  Image,
   StyleSheet,
   View,
   useWindowDimensions,
@@ -23,6 +24,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
     review: routeReview,
     userProfile,
     initialIndex: routeInitialIndex = 0,
+    initialImageRatio: routeInitialImageRatio,
   } = route.params || {};
   const {showAlert, AlertComponent} = useCustomAlert();
   const listRef = useRef(null);
@@ -40,11 +42,15 @@ const MyPostDetailScreen = ({navigation, route}) => {
   const pendingLastScrollRef = useRef(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const contentMeasuredRef = useRef(false);
+  const initialScrollDoneRef = useRef(false);
+  const initialAlignDoneRef = useRef(false);
   const [contentMeasured, setContentMeasured] = useState(false);
+  const [initialScrollDone, setInitialScrollDone] = useState(false);
   const [selectedFeed, setSelectedFeed] = useState(null);
   const [commentLikeState, setCommentLikeState] = useState({});
   const [commentInput, setCommentInput] = useState('');
   const commentSheetRef = useRef(null);
+  const [imageRatioMap, setImageRatioMap] = useState({});
   const commentSheetSnapPoints = useMemo(
     () => ['70%', Math.max(0, windowHeight - insets.top)],
     [insets.top, windowHeight],
@@ -91,7 +97,59 @@ const MyPostDetailScreen = ({navigation, route}) => {
   useEffect(() => {
     setCurrentIndex(initialIndex);
     currentIndexRef.current = initialIndex;
+    initialScrollDoneRef.current = false;
+    initialAlignDoneRef.current = false;
+    setInitialScrollDone(false);
   }, [initialIndex]);
+
+  useEffect(() => {
+    let active = true;
+    const initialRatio =
+      Number.isFinite(routeInitialImageRatio) && routeInitialImageRatio > 0
+        ? routeInitialImageRatio
+        : null;
+    setImageRatioMap(() => {
+      const next = {};
+      if (initialRatio !== null) {
+        next[initialIndex] = initialRatio;
+      }
+      return next;
+    });
+
+    posts.forEach((review, index) => {
+      const imageUrl =
+        review?.postImgUrlList?.[0] || review?.imgUrlList?.[0];
+      if (!imageUrl) {
+        return;
+      }
+      if (index === initialIndex && initialRatio !== null) {
+        return;
+      }
+      Image.getSize(
+        imageUrl,
+        (width, height) => {
+          if (!active || !width || !height) {
+            return;
+          }
+          const ratio = width / height;
+          if (ratio <= 0) {
+            return;
+          }
+          setImageRatioMap(prev => {
+            if (prev[index] === ratio) {
+              return prev;
+            }
+            return {...prev, [index]: ratio};
+          });
+        },
+        () => {},
+      );
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [initialIndex, posts, routeInitialImageRatio]);
 
   const feedItems = useMemo(
     () =>
@@ -123,6 +181,10 @@ const MyPostDetailScreen = ({navigation, route}) => {
     [],
   );
   const showSkeleton = (!showList && feedItems.length > 0) || isTransitioning;
+  const initialRenderCount = useMemo(
+    () => Math.min(feedItems.length, Math.max(5, initialIndex + 2)),
+    [feedItems.length, initialIndex],
+  );
   const commentList = useMemo(() => {
     if (!selectedFeed) {
       return [];
@@ -241,6 +303,16 @@ const MyPostDetailScreen = ({navigation, route}) => {
         setCurrentIndex(first.index);
       }
     }
+    if (!initialScrollDoneRef.current) {
+      const targetIndex = initialIndex;
+      const hasTarget = viewableItems?.some(
+        viewable => viewable?.index === targetIndex,
+      );
+      if (hasTarget) {
+        initialScrollDoneRef.current = true;
+        setInitialScrollDone(true);
+      }
+    }
   }).current;
 
   const viewabilityConfig = useRef({
@@ -322,6 +394,9 @@ const MyPostDetailScreen = ({navigation, route}) => {
     scrollRequestedRef.current = false;
     contentMeasuredRef.current = false;
     setContentMeasured(false);
+    initialScrollDoneRef.current = false;
+    initialAlignDoneRef.current = false;
+    setInitialScrollDone(false);
   }, [feedItems.length, initialIndex]);
 
   useEffect(() => {
@@ -372,6 +447,27 @@ const MyPostDetailScreen = ({navigation, route}) => {
     });
   }, [currentIndex, feedItems.length]);
 
+  const alignInitialIndex = useCallback(() => {
+    if (!listRef.current || !feedItems.length) {
+      return;
+    }
+    if (initialAlignDoneRef.current) {
+      return;
+    }
+    initialAlignDoneRef.current = true;
+    if (initialIndex <= 0) {
+      return;
+    }
+    const viewPosition = initialIndex === feedItems.length - 1 ? 1 : 0;
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToIndex({
+        index: initialIndex,
+        animated: false,
+        viewPosition,
+      });
+    });
+  }, [feedItems.length, initialIndex]);
+
   useEffect(() => {
     if (!showList || !listLaidOut) {
       return;
@@ -391,14 +487,37 @@ const MyPostDetailScreen = ({navigation, route}) => {
   }, [ensureLastItemPinned, listLaidOut, showList]);
 
   useEffect(() => {
-    if (!showList || !listLaidOut || !contentMeasured) {
+    if (!showList || !listLaidOut || !contentMeasured || !initialScrollDone) {
       return;
     }
     const frame = requestAnimationFrame(() => {
       setIsTransitioning(false);
     });
     return () => cancelAnimationFrame(frame);
-  }, [contentMeasured, listLaidOut, showList]);
+  }, [contentMeasured, initialScrollDone, listLaidOut, showList]);
+
+  useEffect(() => {
+    if (!showList || !listLaidOut || !initialScrollDone) {
+      return;
+    }
+    alignInitialIndex();
+  }, [alignInitialIndex, initialScrollDone, listLaidOut, showList]);
+
+  useEffect(() => {
+    if (!showList || !listLaidOut) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      if (isTransitioning) {
+        setIsTransitioning(false);
+      }
+      if (!initialScrollDoneRef.current) {
+        initialScrollDoneRef.current = true;
+        setInitialScrollDone(true);
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [isTransitioning, listLaidOut, showList]);
 
   useEffect(() => {
     if (showList || !feedItems.length) return;
@@ -423,6 +542,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
               onDeletePress={handleDeletePress}
               isWriter
               isCentered
+              initialImageRatio={imageRatioMap[initialIndex]}
               onPrimaryImageLoad={handleSelectedLoaded}
             />
           </View>
@@ -434,8 +554,8 @@ const MyPostDetailScreen = ({navigation, route}) => {
         keyExtractor={(item, index) =>
           item?.id ? item.id.toString() : `post-${index}`
         }
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
+        initialNumToRender={initialRenderCount}
+        maxToRenderPerBatch={initialRenderCount}
         windowSize={9}
         showsVerticalScrollIndicator={false}
         onScrollBeginDrag={handleScrollBeginDrag}
@@ -452,6 +572,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
             onDeletePress={handleDeletePress}
             isWriter
             isCentered={index === currentIndex}
+            initialImageRatio={imageRatioMap[index]}
           />
         )}
         contentContainerStyle={[
