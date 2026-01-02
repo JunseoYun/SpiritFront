@@ -31,23 +31,20 @@ import FastImage from 'react-native-fast-image';
 //TODO 답글 달기
 const CommentFooter = ({
   inputRef,
-  commentInput,
   onChangeCommentInput,
   onPressSend,
   onFocusInput,
   defaultProfile,
   bottomInset,
+  replyTarget,
+  onClearReplyTarget,
 }) => {
-  const [localInput, setLocalInput] = useState(commentInput ?? '');
+  const [localInput, setLocalInput] = useState('');
   const animatedPaddingBottom = useRef(
     new Animated.Value(
       Platform.OS === 'android' ? bottomInset + 10 : bottomInset + 10,
     ),
   ).current;
-
-  useEffect(() => {
-    setLocalInput(commentInput ?? '');
-  }, [commentInput]);
 
   useEffect(() => {
     const showEvent =
@@ -78,6 +75,12 @@ const CommentFooter = ({
     };
   }, [animatedPaddingBottom, bottomInset]);
 
+  const handleSend = useCallback(() => {
+    onPressSend?.();
+    setLocalInput('');
+    onChangeCommentInput?.('');
+  }, [onPressSend, onChangeCommentInput]);
+
   return (
     <Animated.View
       style={[
@@ -87,31 +90,81 @@ const CommentFooter = ({
         },
       ]}>
       <FastImage source={defaultProfile} style={styles.commentInputAvatar} />
-      <View style={styles.commentInputField}>
-        <CustomTextInput
-          ref={inputRef}
-          value={localInput}
-          onChangeText={text => {
-            setLocalInput(text);
-            onChangeCommentInput?.(text);
-          }}
-          onFocus={onFocusInput}
-          placeholder="댓글을 남겨보세요."
-          placeholderTextColor="#9AA1AE"
-          style={styles.commentInput}
-          multiline
-          underlineColorAndroid="transparent"
-          InputComponent={BottomSheetTextInput}
-        />
-        {localInput.trim() ? (
-          <Pressable
-            hitSlop={8}
-            onPress={onPressSend}
-            style={[styles.commentSendButton]}>
-            <Ionicons name="arrow-up" size={20} color="#FFF" />
-          </Pressable>
-        ) : null}
-      </View>
+      {replyTarget ? (
+        <View style={{flex: 1}}>
+          <View style={styles.replyField}>
+            <CustomText
+              style={styles.replyTarget}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {replyTarget} 님에게 답글 남기기
+            </CustomText>
+            <Pressable hitSlop={6} onPress={onClearReplyTarget}>
+              <Ionicons name="close" size={16} color={ColorUtil.subText} />
+            </Pressable>
+          </View>
+          <View
+            style={[
+              styles.commentInputField,
+              {
+                borderBottomLeftRadius: 20,
+                borderBottomRightRadius: 20,
+                borderRadius: 0,
+                borderTopWidth: 0,
+              },
+            ]}>
+            <CustomTextInput
+              ref={inputRef}
+              value={localInput}
+              onChangeText={text => {
+                setLocalInput(text);
+                onChangeCommentInput?.(text);
+              }}
+              onFocus={onFocusInput}
+              placeholder="댓글을 남겨보세요."
+              placeholderTextColor="#9AA1AE"
+              style={styles.commentInput}
+              multiline
+              underlineColorAndroid="transparent"
+              InputComponent={BottomSheetTextInput}
+            />
+            {localInput.trim() ? (
+              <Pressable
+                hitSlop={8}
+                onPress={handleSend}
+                style={[styles.commentSendButton]}>
+                <Ionicons name="arrow-up" size={20} color="#FFF" />
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
+      ) : (
+        <View style={styles.commentInputField}>
+          <CustomTextInput
+            ref={inputRef}
+            value={localInput}
+            onChangeText={text => {
+              setLocalInput(text);
+              onChangeCommentInput?.(text);
+            }}
+            onFocus={onFocusInput}
+            placeholder="댓글을 남겨보세요."
+            placeholderTextColor="#9AA1AE"
+            style={styles.commentInput}
+            multiline
+            underlineColorAndroid="transparent"
+            InputComponent={BottomSheetTextInput}
+          />
+          {localInput.trim() ? (
+            <Pressable
+              hitSlop={8}
+              onPress={handleSend}
+              style={[styles.commentSendButton]}>
+              <Ionicons name="arrow-up" size={20} color="#FFF" />
+            </Pressable>
+          ) : null}
+        </View>
+      )}
     </Animated.View>
   );
 };
@@ -127,14 +180,92 @@ const PostCommentSheet = forwardRef(
       commentLikeState,
       onToggleLike,
       formatLikeCount,
-      commentInput,
       onChangeCommentInput,
       onPressSend,
     },
     ref,
   ) => {
     const inputRef = useRef(null);
+    const scrollRef = useRef(null);
     const [expandedReplies, setExpandedReplies] = useState({});
+    const [replyTarget, setReplyTarget] = useState(null);
+    const highlightMapRef = useRef({});
+
+    const layoutMapRef = useRef({});
+    const setItemLayoutWithSize = useCallback((id, y, height) => {
+      if (!id) return;
+      layoutMapRef.current[id] = {y, height};
+    }, []);
+
+    const pendingScrollIdRef = useRef(null);
+    const isKeyboardVisibleRef = useRef(false);
+    const getHighlightValue = useCallback(id => {
+      if (!id) return null;
+      if (!highlightMapRef.current[id]) {
+        highlightMapRef.current[id] = new Animated.Value(0);
+      }
+      return highlightMapRef.current[id];
+    }, []);
+
+    const triggerHighlight = useCallback(
+      id => {
+        const value = getHighlightValue(id);
+        if (!value) return;
+        value.stopAnimation();
+        value.setValue(1);
+        Animated.timing(value, {
+          toValue: 0,
+          duration: 320,
+          delay: 1800,
+          useNativeDriver: false,
+        }).start();
+      },
+      [getHighlightValue],
+    );
+    const scrollToItem = useCallback(id => {
+      const layout = layoutMapRef.current[id];
+      if (!layout || typeof layout.y !== 'number') {
+        return;
+      }
+      const {y} = layout;
+      scrollRef.current?.scrollTo?.({y: Math.max(0, y), animated: true});
+      requestAnimationFrame(() => {
+        inputRef.current?.focus?.();
+      });
+    }, []);
+
+    useEffect(() => {
+      const showSub = Keyboard.addListener('keyboardDidShow', () => {
+        isKeyboardVisibleRef.current = true;
+        if (pendingScrollIdRef.current) {
+          const id = pendingScrollIdRef.current;
+          pendingScrollIdRef.current = null;
+          scrollToItem(id);
+        }
+      });
+      const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+        isKeyboardVisibleRef.current = false;
+      });
+
+      return () => {
+        showSub.remove();
+        hideSub.remove();
+      };
+    }, [scrollToItem]);
+
+    const handleReplyPress = useCallback(
+      (author, id) => {
+        setReplyTarget(author);
+        triggerHighlight(id);
+        handleInputFocus();
+        if (isKeyboardVisibleRef.current) {
+          scrollToItem(id);
+        } else {
+          pendingScrollIdRef.current = id;
+        }
+      },
+      [handleInputFocus, scrollToItem, triggerHighlight],
+    );
 
     const renderCommentBackdrop = useCallback(
       props => (
@@ -153,6 +284,9 @@ const PostCommentSheet = forwardRef(
         const targetIndex = Math.max(0, (snapPoints?.length ?? 1) - 1);
         ref.current?.snapToIndex?.(targetIndex);
       }
+      requestAnimationFrame(() => {
+        inputRef.current?.focus?.();
+      });
     }, [ref, snapPoints]);
 
     const handleSheetChange = useCallback(
@@ -175,30 +309,60 @@ const PostCommentSheet = forwardRef(
       }
     }, []);
 
-    const footerStateRef = useRef(null);
-    footerStateRef.current = {
-      inputRef,
-      commentInput,
-      onChangeCommentInput,
-      onPressSend,
-      onFocusInput: handleInputFocus,
-      defaultProfile,
-      bottomInset: insets.bottom,
-    };
+    const onPressSendRef = useRef(onPressSend);
+    const onChangeCommentInputRef = useRef(onChangeCommentInput);
 
-    const renderCommentFooter = useCallback(props => {
-      const footerState = footerStateRef.current;
-      if (!footerState) {
-        return null;
-      }
-      return (
-        <BottomSheetFooter {...props}>
-          <CommentFooter {...footerState} />
-        </BottomSheetFooter>
-      );
+    useEffect(() => {
+      onPressSendRef.current = onPressSend;
+    }, [onPressSend]);
+
+    useEffect(() => {
+      onChangeCommentInputRef.current = onChangeCommentInput;
+    }, [onChangeCommentInput]);
+
+    const handlePressSend = useCallback(() => {
+      onPressSendRef.current?.();
     }, []);
 
-    const sheetBottomInset = Math.max(insets?.bottom ?? 0, 12);
+    const handleChangeCommentInput = useCallback(text => {
+      onChangeCommentInputRef.current?.(text);
+    }, []);
+
+    const getHighlightOpacityStyle = useCallback(
+      id => {
+        const value = getHighlightValue(id);
+        if (!value) return null;
+        return {
+          opacity: value,
+        };
+      },
+      [getHighlightValue],
+    );
+
+    const renderCommentFooter = useCallback(
+      props => (
+        <BottomSheetFooter {...props}>
+          <CommentFooter
+            inputRef={inputRef}
+            onChangeCommentInput={handleChangeCommentInput}
+            onPressSend={handlePressSend}
+            onFocusInput={handleInputFocus}
+            defaultProfile={defaultProfile}
+            bottomInset={insets.bottom}
+            replyTarget={replyTarget}
+            onClearReplyTarget={() => setReplyTarget(null)}
+          />
+        </BottomSheetFooter>
+      ),
+      [
+        defaultProfile,
+        handleChangeCommentInput,
+        handleInputFocus,
+        handlePressSend,
+        insets.bottom,
+        replyTarget,
+      ],
+    );
 
     return (
       <BottomSheetModal
@@ -221,7 +385,9 @@ const PostCommentSheet = forwardRef(
           <CustomText style={styles.commentSheetTitle}>댓글</CustomText>
         </BottomSheetView>
         <BottomSheetScrollView
-          keyboardShouldPersistTaps="handled"
+          ref={scrollRef}
+          keyboardShouldPersistTaps="always"
+          keyboardDismissMode="none"
           enableFooterMarginAdjustment
           contentContainerStyle={[styles.commentSheetContent]}>
           {commentList.length === 0 ? (
@@ -253,8 +419,22 @@ const PostCommentSheet = forwardRef(
               const isExpanded = Boolean(expandedReplies[comment.id]);
 
               return (
-                <View key={comment.id} style={styles.commentGroup}>
-                  <View style={styles.commentItem}>
+                <View
+                  key={comment.id}
+                  style={styles.commentGroup}
+                  onLayout={event => {
+                    const {y, height} = event.nativeEvent.layout;
+                    setItemLayoutWithSize(comment.id, y, height);
+                  }}>
+                  <Animated.View
+                    style={styles.commentItem}>
+                    <Animated.View
+                      pointerEvents="none"
+                      style={[
+                        styles.commentHighlight,
+                        getHighlightOpacityStyle(comment.id),
+                      ]}
+                    />
                     <FastImage
                       source={
                         comment.profileImage
@@ -275,9 +455,14 @@ const PostCommentSheet = forwardRef(
                       <CustomText style={styles.commentText}>
                         {comment.text}
                       </CustomText>
-                      <CustomText style={styles.commentReplyText}>
-                        답글 달기
-                      </CustomText>
+                      <Pressable
+                        onPress={() =>
+                          handleReplyPress(comment.author, comment.id)
+                        }>
+                        <CustomText style={styles.commentReplyText}>
+                          답글 달기
+                        </CustomText>
+                      </Pressable>
                       {!isExpanded && replies.length ? (
                         <Pressable
                           style={styles.commentReplyToggle}
@@ -318,11 +503,24 @@ const PostCommentSheet = forwardRef(
                         )}
                       </CustomText>
                     </View>
-                  </View>
+                  </Animated.View>
                   {replies.length && isExpanded ? (
                     <View style={styles.commentReplyList}>
                       {replies.map(reply => (
-                        <View key={reply.id} style={styles.commentReplyItem}>
+                        <Animated.View
+                          key={reply.id}
+                          style={styles.commentReplyItem}
+                          onLayout={event => {
+                            const {y, height} = event.nativeEvent.layout;
+                            setItemLayoutWithSize(reply.id, y, height);
+                          }}>
+                          <Animated.View
+                            pointerEvents="none"
+                            style={[
+                              styles.commentHighlight,
+                              getHighlightOpacityStyle(reply.id),
+                            ]}
+                          />
                           <Image
                             source={
                               reply.profileImage
@@ -343,9 +541,14 @@ const PostCommentSheet = forwardRef(
                             <CustomText style={styles.commentText}>
                               {reply.text}
                             </CustomText>
-                            <CustomText style={styles.commentReplyText}>
-                              답글 달기
-                            </CustomText>
+                            <Pressable
+                              onPress={() =>
+                                handleReplyPress(reply.author, reply.id)
+                              }>
+                              <CustomText style={styles.commentReplyText}>
+                                답글 달기
+                              </CustomText>
+                            </Pressable>
                           </View>
                           <View style={styles.commentReplyLikeColumn}>
                             <Pressable hitSlop={8}>
@@ -359,10 +562,15 @@ const PostCommentSheet = forwardRef(
                               {formatLikeCount(reply.likes ?? 0)}
                             </CustomText>
                           </View>
-                        </View>
+                        </Animated.View>
                       ))}
                       <Pressable
-                        style={styles.commentReplyToggle}
+                        style={[
+                          styles.commentReplyToggle,
+                          {
+                            paddingLeft: 48,
+                          },
+                        ]}
                         onPress={() =>
                           setExpandedReplies(prev => ({
                             ...prev,
@@ -370,7 +578,7 @@ const PostCommentSheet = forwardRef(
                           }))
                         }>
                         <View style={styles.commentReplyToggleLine} />
-                        <CustomText style={styles.commentReplyToggleText}>
+                        <CustomText style={[styles.commentReplyToggleText]}>
                           답글 숨기기
                         </CustomText>
                       </Pressable>
@@ -411,7 +619,6 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   commentSheetContent: {
-    paddingHorizontal: 18,
     paddingTop: 12,
     paddingBottom: 12,
     gap: 18,
@@ -428,6 +635,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingVertical: 8,
     gap: 12,
+    paddingHorizontal: 18,
+    position: 'relative',
   },
   commentGroup: {
     gap: 6,
@@ -469,13 +678,19 @@ const styles = StyleSheet.create({
     color: ColorUtil.subText,
   },
   commentReplyList: {
-    paddingLeft: 48,
-    gap: 14,
+    // gap: 14,
   },
   commentReplyItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
+    paddingLeft: 48,
+    paddingVertical: 7,
+    position: 'relative',
+  },
+  commentHighlight: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: ColorUtil.mainChip,
   },
   commentReplyAvatar: {
     width: 28,
@@ -502,7 +717,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingLeft: 0,
     marginTop: 10,
   },
   commentReplyToggleLine: {
@@ -542,12 +756,32 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     backgroundColor: '#F2F2F2',
   },
+  replyField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E7ECEF',
+    borderBottomWidth: 0,
+    backgroundColor: '#F8F9F9',
+    paddingHorizontal: 15,
+  },
+  replyTarget: {
+    fontSize: 12,
+    fontFamily: 'Pretendard-Regular',
+    color: ColorUtil.subText,
+    paddingVertical: 10,
+    flex: 1,
+    marginRight: 8,
+  },
   commentInputField: {
     flex: 1,
     minHeight: 32,
     backgroundColor: '#FFF',
     borderWidth: 1,
-    borderColor: '#e5e5e5',
+    borderColor: '#E7ECEF',
     borderRadius: 20,
     paddingHorizontal: 7,
     flexDirection: 'row',
@@ -555,14 +789,14 @@ const styles = StyleSheet.create({
   },
   commentInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'Pretendard-Regular',
     color: '#333',
     marginLeft: 8,
     maxHeight: 80,
     padding: 0,
     margin: 0,
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
   commentSendButton: {
     paddingVertical: 6,
