@@ -1,17 +1,10 @@
 import React, {useEffect, useRef} from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  Animated,
-  Dimensions,
-} from 'react-native';
+import {View, Pressable, StyleSheet, Animated, Dimensions} from 'react-native';
 import CustomText from '../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 
-const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
+const MyTabs = ({changePage, isManager, selectedTab}) => {
   const animatedValue = useRef(new Animated.Value(selectedTab)).current;
 
   const tabs = [{name: '게시글', screen: 'MyReview'}];
@@ -24,27 +17,15 @@ const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
   const TAB_WIDTH = width / TAB_COUNT;
   const INDICATOR_WIDTH = TAB_WIDTH * 0.28;
 
-  // underline 이동 (가장 부드러운 방식)
   const translateX = Animated.add(
     Animated.multiply(animatedValue, TAB_WIDTH),
     (TAB_WIDTH - INDICATOR_WIDTH) / 2,
   );
 
   const handlePress = index => {
-    setSelectedTab(index);
-
-    Animated.spring(animatedValue, {
-      toValue: index,
-      stiffness: 160,
-      damping: 20,
-      mass: 0.35,
-      useNativeDriver: true, // 가능해짐
-    }).start();
-
-    changePage(tabs[index].screen);
+    changePage(index);
   };
 
-  // 외부에서 selectedTab 변경 시 반영
   useEffect(() => {
     Animated.spring(animatedValue, {
       toValue: selectedTab,
@@ -53,11 +34,10 @@ const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
       mass: 0.35,
       useNativeDriver: true,
     }).start();
-  }, [selectedTab]);
+  }, [selectedTab, animatedValue]);
 
   return (
     <View style={styles.container}>
-      {/* 탭 버튼 영역 */}
       <View style={styles.tabContainer}>
         {tabs.map((tab, index) => (
           <Pressable
@@ -75,7 +55,6 @@ const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
         ))}
       </View>
 
-      {/* 이동하는 밑줄 */}
       <Animated.View
         style={[
           styles.animatedUnderline,
