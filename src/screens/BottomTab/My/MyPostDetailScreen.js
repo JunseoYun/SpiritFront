@@ -117,8 +117,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
     });
 
     posts.forEach((review, index) => {
-      const imageUrl =
-        review?.postImgUrlList?.[0] || review?.imgUrlList?.[0];
+      const imageUrl = review?.postImgUrlList?.[0] || review?.imgUrlList?.[0];
       if (!imageUrl) {
         return;
       }
@@ -365,8 +364,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
       return;
     }
     if (initialIndex > 0) {
-      const viewPosition =
-        initialIndex === feedItems.length - 1 ? 1 : 0;
+      const viewPosition = initialIndex === feedItems.length - 1 ? 1 : 0;
       listRef.current.scrollToIndex({
         index: initialIndex,
         animated: false,
@@ -577,7 +575,11 @@ const MyPostDetailScreen = ({navigation, route}) => {
         )}
         contentContainerStyle={[
           styles.feedContent,
-          {paddingBottom: isLastIndex ? insets.bottom : Math.max(insets.bottom, 24)},
+          {
+            paddingBottom: isLastIndex
+              ? insets.bottom
+              : Math.max(insets.bottom, 24),
+          },
         ]}
         style={showList ? null : styles.listHidden}
         pointerEvents={showList ? 'auto' : 'none'}
@@ -599,6 +601,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
         commentInput={commentInput}
         onChangeCommentInput={setCommentInput}
         onPressSend={() => {}}
+        isPostWriter={selectedFeed?.isWriter ?? false}
       />
 
       {showSkeleton ? (
