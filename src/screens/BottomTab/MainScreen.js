@@ -270,6 +270,7 @@ const MainScreen = ({navigation}) => {
         text: '방금 본 메뉴 정말 맛있어 보여요!',
         createdAt: '방금 전',
         likes: 2,
+        isMine: true,
       },
       {
         id: 'c2',
@@ -278,6 +279,7 @@ const MainScreen = ({navigation}) => {
         text: '위치 저장했습니다. 주말에 가볼게요 😋',
         createdAt: '1시간 전',
         likes: 8,
+        isMine: false,
       },
       {
         id: 'c3',
@@ -287,6 +289,7 @@ const MainScreen = ({navigation}) => {
         text: '분위기 궁금했는데 사진으로 감 잡았어요. 공유 감사합니다!',
         createdAt: '어제',
         likes: 14,
+        isMine: false,
       },
       {
         id: 'c4',
@@ -295,6 +298,7 @@ const MainScreen = ({navigation}) => {
         text: '여기 늦게까지 하나요? 2차로 딱일 것 같네요.',
         createdAt: '어제',
         likes: 5,
+        isMine: false,
       },
       {
         id: 'c5',
@@ -304,6 +308,7 @@ const MainScreen = ({navigation}) => {
         text: '안주 비주얼 미쳤네요… 저장!',
         createdAt: '2일 전',
         likes: 21,
+        isMine: false,
       },
       {
         id: 'c6',
@@ -312,6 +317,7 @@ const MainScreen = ({navigation}) => {
         text: '가격대는 어느 정도인지 궁금합니다.',
         createdAt: '2일 전',
         likes: 3,
+        isMine: false,
       },
       {
         id: 'c7',
@@ -321,6 +327,7 @@ const MainScreen = ({navigation}) => {
         text: '혼자 가도 부담 없을까요?',
         createdAt: '3일 전',
         likes: 9,
+        isMine: false,
       },
       {
         id: 'c8',
@@ -329,6 +336,7 @@ const MainScreen = ({navigation}) => {
         text: '이번 주말 후보에 넣어둘게요 👍',
         createdAt: '3일 전',
         likes: 6,
+        isMine: false,
       },
       {
         id: 'c9',
@@ -338,6 +346,7 @@ const MainScreen = ({navigation}) => {
         text: '사진 색감 너무 좋아요. 직접 찍으신 건가요?',
         createdAt: '4일 전',
         likes: 11,
+        isMine: false,
       },
       {
         id: 'c10',
@@ -346,6 +355,7 @@ const MainScreen = ({navigation}) => {
         text: '여기 실제로 가봤는데 분위기 괜찮아요.',
         createdAt: '4일 전',
         likes: 18,
+        isMine: false,
       },
       {
         id: 'c11',
@@ -355,6 +365,7 @@ const MainScreen = ({navigation}) => {
         text: '데이트 장소로도 괜찮을 것 같네요.',
         createdAt: '5일 전',
         likes: 7,
+        isMine: false,
       },
       {
         id: 'c12',
@@ -363,6 +374,7 @@ const MainScreen = ({navigation}) => {
         text: '양 대비 가격은 어떤 편인가요?',
         createdAt: '5일 전',
         likes: 4,
+        isMine: false,
       },
       {
         id: 'c13',
@@ -372,6 +384,7 @@ const MainScreen = ({navigation}) => {
         text: '퇴근하고 바로 가기 좋은 느낌이네요.',
         createdAt: '6일 전',
         likes: 13,
+        isMine: false,
       },
       {
         id: 'c14',
@@ -380,6 +393,7 @@ const MainScreen = ({navigation}) => {
         text: '시끄러운 편인지 조용한 편인지 궁금해요.',
         createdAt: '6일 전',
         likes: 2,
+        isMine: false,
       },
       {
         id: 'c15',
@@ -389,6 +403,7 @@ const MainScreen = ({navigation}) => {
         text: '여기 소주 말고 다른 술도 괜찮나요?',
         createdAt: '1주 전',
         likes: 16,
+        isMine: false,
       },
       {
         id: 'c16',
@@ -397,6 +412,7 @@ const MainScreen = ({navigation}) => {
         text: '지도에 저장 완료했습니다.',
         createdAt: '1주 전',
         likes: 5,
+        isMine: false,
       },
       {
         id: 'c17',
@@ -406,6 +422,7 @@ const MainScreen = ({navigation}) => {
         text: '메뉴 구성 보니까 안주 위주네요. 취향입니다.',
         createdAt: '1주 전',
         likes: 12,
+        isMine: false,
       },
       {
         id: 'c18',
@@ -414,6 +431,7 @@ const MainScreen = ({navigation}) => {
         text: '첫 방문인데 추천 메뉴 있으면 알려주세요!',
         createdAt: '1주 전',
         likes: 1,
+        isMine: false,
       },
       {
         id: 'c19',
@@ -423,6 +441,7 @@ const MainScreen = ({navigation}) => {
         text: '사진 보고 바로 들어왔어요.',
         createdAt: '2주 전',
         likes: 9,
+        isMine: false,
       },
       {
         id: 'c20',
@@ -431,6 +450,7 @@ const MainScreen = ({navigation}) => {
         text: '여기서 한잔하면 시간 순삭일 듯하네요.',
         createdAt: '2주 전',
         likes: 20,
+        isMine: false,
       },
     ];
   }, [selectedFeed]);
@@ -855,6 +875,7 @@ const MainScreen = ({navigation}) => {
         commentInput={commentInput}
         onChangeCommentInput={setCommentInput}
         onPressSend={() => {}}
+        isPostWriter={selectedFeed?.isWriter ?? false}
       />
 
       <WriteMenu

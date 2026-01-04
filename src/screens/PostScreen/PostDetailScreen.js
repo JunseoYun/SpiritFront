@@ -99,18 +99,21 @@ const PostDetailScreen = ({navigation, route}) => {
         author: postItem?.nickname ?? '게스트',
         text: '방금 본 메뉴 정말 맛있어 보여요!',
         createdAt: '방금 전',
+        isMine: true,
       },
       {
         id: 'c2',
         author: '푸드파이터',
         text: '위치 저장했습니다. 주말에 가볼게요 😋',
         createdAt: '1시간 전',
+        isMine: false,
       },
       {
         id: 'c3',
         author: '카페투어러',
         text: '분위기 궁금했는데 사진으로 감 잡았어요. 공유 감사합니다!',
         createdAt: '어제',
+        isMine: false,
       },
     ];
   }, [postItem?.nickname, routeComments]);
@@ -191,6 +194,7 @@ const PostDetailScreen = ({navigation, route}) => {
         commentInput={commentInput}
         onChangeCommentInput={setCommentInput}
         onPressSend={() => {}}
+        isPostWriter={postItem?.isWriter ?? false}
       />
     </View>
   );

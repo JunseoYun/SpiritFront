@@ -433,6 +433,7 @@ const LikeSavedPostDetailScreen = ({route}) => {
         commentInput={commentInput}
         onChangeCommentInput={setCommentInput}
         onPressSend={() => {}}
+        isPostWriter={selectedFeed?.isWriter ?? false}
       />
 
       {showSkeleton ? (
