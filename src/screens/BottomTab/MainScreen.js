@@ -75,6 +75,10 @@ const MainScreen = ({navigation}) => {
   const writeLabelAnim = useRef(new Animated.Value(1)).current;
   const writeIconAnim = useRef(new Animated.Value(0)).current;
   const writeMenuAnim = useRef(new Animated.Value(0)).current;
+  const headerTranslateY = useRef(new Animated.Value(0)).current;
+  const headerHiddenRef = useRef(false);
+  const lastScrollOffsetRef = useRef(0);
+  const [headerHeight, setHeaderHeight] = useState(0);
   const commentSheetRef = useRef(null);
   const commentSheetSnapPoints = useMemo(
     () => ['70%', Math.max(0, windowHeight - insets.top)],
@@ -546,6 +550,8 @@ const MainScreen = ({navigation}) => {
   const handleScroll = useCallback(
     event => {
       const offsetY = event.nativeEvent.contentOffset.y;
+      const deltaY = offsetY - lastScrollOffsetRef.current;
+      const absDelta = Math.abs(deltaY);
       scrollOffsetRef.current = offsetY;
       updateCenteredItem(offsetY);
 
@@ -555,8 +561,33 @@ const MainScreen = ({navigation}) => {
         writeLabelVisibleRef.current = shouldShowLabel;
         setShowWriteLabel(shouldShowLabel);
       }
+
+      if (offsetY <= 0) {
+        if (headerHiddenRef.current) {
+          headerHiddenRef.current = false;
+          Animated.timing(headerTranslateY, {
+            toValue: 0,
+            duration: 220,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }).start();
+        }
+      } else if (absDelta > 6 && headerHeight > 0) {
+        const shouldHide = deltaY > 0;
+        if (shouldHide !== headerHiddenRef.current) {
+          headerHiddenRef.current = shouldHide;
+          Animated.timing(headerTranslateY, {
+            toValue: shouldHide ? -headerHeight : 0,
+            duration: shouldHide ? 180 : 220,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }).start();
+        }
+      }
+
+      lastScrollOffsetRef.current = offsetY;
     },
-    [updateCenteredItem],
+    [updateCenteredItem, headerHeight, headerTranslateY],
   );
 
   useEffect(() => {
@@ -604,6 +635,12 @@ const MainScreen = ({navigation}) => {
       }
     });
   }, [isWriteMenuOpen, writeIconAnim, writeMenuAnim]);
+
+  useEffect(() => {
+    if (headerHeight > 0 && headerHiddenRef.current) {
+      headerTranslateY.setValue(-headerHeight);
+    }
+  }, [headerHeight, headerTranslateY]);
 
   const cellRenderer = useCallback(
     ({item, index, style, onLayout, children, ...rest}) => (
@@ -794,13 +831,24 @@ const MainScreen = ({navigation}) => {
     ],
   };
 
+  const headerTopPadding = insets.top + (Platform.OS === 'android' ? 10 : 0);
+
   return (
-    <View
-      style={[
-        styles.container,
-        {paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0)},
-      ]}>
-      <View style={[styles.header]}>
+    <View style={[styles.container, {paddingTop: insets.top}]}>
+      <Animated.View
+        onLayout={event => {
+          const nextHeight = event.nativeEvent.layout.height;
+          if (nextHeight && nextHeight !== headerHeight) {
+            setHeaderHeight(nextHeight);
+          }
+        }}
+        style={[
+          styles.header,
+          {
+            paddingTop: headerTopPadding + 6,
+            transform: [{translateY: headerTranslateY}],
+          },
+        ]}>
         <View style={styles.headerRow}>
           <ExploreSearchBar handleSearchPress={handleSearchPress} />
           <View style={styles.topView}>
@@ -812,7 +860,7 @@ const MainScreen = ({navigation}) => {
             />
           </View>
         </View>
-      </View>
+      </Animated.View>
 
       <FlatList
         ref={listRef}
@@ -832,7 +880,10 @@ const MainScreen = ({navigation}) => {
             />
           )
         }
-        contentContainerStyle={styles.feedContent}
+        contentContainerStyle={[
+          styles.feedContent,
+          {paddingTop: insets.top + (Platform.OS === 'android' ? 40 : 10)},
+        ]}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!feedLoading}
         refreshing={refreshing}
@@ -925,9 +976,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   header: {
-    backgroundColor: '#fff',
-    paddingTop: 6,
     paddingBottom: 10,
+    backgroundColor: '#FFF',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    // elevation: 4,
   },
   headerRow: {
     flexDirection: 'row',
