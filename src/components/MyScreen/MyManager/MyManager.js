@@ -46,8 +46,10 @@ const MyManager = forwardRef(
 
     useFocusEffect(
       useCallback(() => {
-        MyStore(0, true);
-      }, []),
+        if (mysotredata.length === 0) {
+          MyStore(0, true);
+        }
+      }, [mysotredata.length]),
     );
 
     useEffect(() => {

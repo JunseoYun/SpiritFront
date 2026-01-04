@@ -65,6 +65,8 @@ const MyScreen = ({navigation}) => {
   const scrollContentHeight = headerHeight + tabsHeight + basePagerHeight;
   const canScrollVertically = scrollContentHeight > viewportHeight + 1;
   const scrollEnabled = isTabsSticky || canScrollVertically;
+  const refreshEnabled =
+    scrollEnabled && (selectedTab === 0 || canScrollVertically);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -179,6 +181,17 @@ const MyScreen = ({navigation}) => {
       setIsTabsSticky(false);
     }
   }, [isManager]);
+
+  const handleScrollBeginDrag = useCallback(() => {
+    if (!isManager && selectedTab !== 0) {
+      return;
+    }
+    if (selectedTab === 1 && isTabsSticky && !canScrollVertically) {
+      setIsTabsSticky(false);
+      verticalScrollRef.current?.scrollTo?.({y: 0, animated: false});
+      scrollYRef.current = 0;
+    }
+  }, [canScrollVertically, isManager, isTabsSticky, selectedTab]);
 
   const handleChangePage = useCallback(
     index => {
@@ -313,6 +326,7 @@ const MyScreen = ({navigation}) => {
       <ScrollView
         ref={verticalScrollRef}
         stickyHeaderIndices={isManager ? [1] : []}
+        onScrollBeginDrag={handleScrollBeginDrag}
         onScroll={handleVerticalScroll}
         scrollEventThrottle={16}
         nestedScrollEnabled
@@ -325,7 +339,7 @@ const MyScreen = ({navigation}) => {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            enabled={scrollEnabled}
+            enabled={refreshEnabled}
           />
         }>
         <View
@@ -354,31 +368,31 @@ const MyScreen = ({navigation}) => {
               onPageSelected={handlePageSelected}
               scrollEnabled>
               <View key="review" style={[styles.page, {width: screenWidth}]}>
-                <MyReview
-                  ref={reviewRef}
-                  navigation={navigation}
-                  onRefreshingChange={setReviewRefreshing}
-                  onContentLayout={({nativeEvent}) => {
-                    updateReviewHeight(nativeEvent.layout.height);
-                  }}
-                  onCountChange={setReviewCount}
-                  userProfile={{
-                    nickname: userdata.nickname,
-                    imageuri: userdata.imgUrl,
-                  }}
-                />
-              </View>
-              <View key="manager" style={[styles.page, {width: screenWidth}]}>
-                <MyManager
-                  ref={managerRef}
-                  navigation={navigation}
-                  onRefreshingChange={setManagerRefreshing}
-                  onContentLayout={({nativeEvent}) => {
-                    updateManagerHeight(nativeEvent.layout.height);
-                  }}
-                />
-              </View>
-            </PagerView>
+              <MyReview
+                ref={reviewRef}
+                navigation={navigation}
+                onRefreshingChange={setReviewRefreshing}
+                onContentLayout={({nativeEvent}) => {
+                  updateReviewHeight(nativeEvent.layout.height);
+                }}
+                onCountChange={setReviewCount}
+                userProfile={{
+                  nickname: userdata.nickname,
+                  imageuri: userdata.imgUrl,
+                }}
+              />
+            </View>
+            <View key="manager" style={[styles.page, {width: screenWidth}]}>
+              <MyManager
+                ref={managerRef}
+                navigation={navigation}
+                onRefreshingChange={setManagerRefreshing}
+                onContentLayout={({nativeEvent}) => {
+                  updateManagerHeight(nativeEvent.layout.height);
+                }}
+              />
+            </View>
+          </PagerView>
           ) : (
             <View style={[styles.page, {width: screenWidth}]}>
               <MyReview
