@@ -41,11 +41,13 @@ const PostDetailScreen = ({navigation, route}) => {
     return ['70%', Math.max(0, windowHeight - topInset)];
   }, [insets.top, windowHeight]);
   const [commentList, setCommentList] = useState([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [commentLikeState, setCommentLikeState] = useState({});
   const [commentInput, setCommentInput] = useState('');
   const [commentPage, setCommentPage] = useState(0);
   const [commentTotalCount, setCommentTotalCount] = useState(null);
   const [currentUserNickname, setCurrentUserNickname] = useState('');
+  const [pendingScrollReplyId, setPendingScrollReplyId] = useState(null);
   const isLoadingMoreCommentsRef = useRef(false);
 
   useEffect(() => {
@@ -165,20 +167,26 @@ const PostDetailScreen = ({navigation, route}) => {
         setCommentList([]);
         setCommentPage(0);
         setCommentTotalCount(null);
+        setIsLoadingComments(false);
         return;
       }
-      const data = await CommentGetByPost({
-        postId: targetPostId,
-        page: 0,
-        size: 20,
-      });
-      const items = Array.isArray(data?.content) ? data.content : [];
-      const totalElements = Number.isFinite(data?.totalElements)
-        ? data.totalElements
-        : null;
-      setCommentList(items.map(item => mapCommentItem(item)));
-      setCommentPage(0);
-      setCommentTotalCount(totalElements);
+      setIsLoadingComments(true);
+      try {
+        const data = await CommentGetByPost({
+          postId: targetPostId,
+          page: 0,
+          size: 20,
+        });
+        const items = Array.isArray(data?.content) ? data.content : [];
+        const totalElements = Number.isFinite(data?.totalElements)
+          ? data.totalElements
+          : null;
+        setCommentList(items.map(item => mapCommentItem(item)));
+        setCommentPage(0);
+        setCommentTotalCount(totalElements);
+      } finally {
+        setIsLoadingComments(false);
+      }
     },
     [mapCommentItem],
   );
@@ -247,26 +255,38 @@ const PostDetailScreen = ({navigation, route}) => {
           if (String(comment.id) !== String(rootCommentId)) {
             return comment;
           }
+          const previewReplies = Array.isArray(comment.previewReplies)
+            ? comment.previewReplies
+            : [];
+          const existingReplies = Array.isArray(comment.replies)
+            ? comment.replies
+            : [];
+          const mergeUnique = list => {
+            const seen = new Set();
+            return list.filter(reply => {
+              const key = String(reply.id);
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+          };
           const nextReplies =
             page === 0
-              ? mappedReplies
-              : [
-                  ...(comment.replies ?? []),
-                  ...mappedReplies.filter(
-                    reply =>
-                      !(comment.replies ?? []).some(
-                        existing => String(existing.id) === String(reply.id),
-                      ),
-                  ),
-                ];
+              ? mergeUnique([
+                  ...previewReplies,
+                  ...existingReplies,
+                  ...mappedReplies,
+                ])
+              : mergeUnique([...existingReplies, ...mappedReplies]);
+          const nextReplyCount = Number.isFinite(totalElements)
+            ? Math.max(totalElements, nextReplies.length)
+            : Number.isFinite(comment.replyCount)
+            ? Math.max(comment.replyCount, nextReplies.length)
+            : nextReplies.length;
           return {
             ...comment,
             replies: nextReplies,
-            replyCount:
-              totalElements ??
-              (Number.isFinite(comment.replyCount)
-                ? comment.replyCount
-                : nextReplies.length),
+            replyCount: nextReplyCount,
             replyPage: page,
             previewReplies: comment.previewReplies ?? [],
           };
@@ -306,19 +326,41 @@ const PostDetailScreen = ({navigation, route}) => {
             result ?? fallbackReply,
             rootCommentId,
           );
+          const mergeUnique = list => {
+            const seen = new Set();
+            return list.filter(reply => {
+              const key = String(reply.id);
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+          };
           setCommentList(prev =>
             prev.map(comment =>
               String(comment.id) === String(rootCommentId)
                 ? {
                     ...comment,
-                    replyCount: Number.isFinite(comment.replyCount)
-                      ? comment.replyCount + 1
-                      : 1,
-                    previewReplies: [mappedReply],
+                    replies: mergeUnique([
+                      ...(Array.isArray(comment.replies) ? comment.replies : []),
+                      mappedReply,
+                    ]),
+                    previewReplies: mergeUnique([
+                      mappedReply,
+                      ...(Array.isArray(comment.previewReplies)
+                        ? comment.previewReplies
+                        : []),
+                    ]),
+                    replyCount: Math.max(
+                      Number.isFinite(comment.replyCount)
+                        ? comment.replyCount + 1
+                        : 1,
+                      1,
+                    ),
                   }
                 : comment,
             ),
           );
+          setPendingScrollReplyId(mappedReply.id);
           return;
         } else {
           const fallbackComment = {
@@ -373,6 +415,7 @@ const PostDetailScreen = ({navigation, route}) => {
     const targetPostId = postItem?.id ?? postId;
     if (!targetPostId) {
       setCommentList([]);
+      setIsLoadingComments(false);
       return;
     }
     fetchComments(targetPostId);
@@ -435,6 +478,8 @@ const PostDetailScreen = ({navigation, route}) => {
         commentTotalCount={commentTotalCount}
         commentPage={commentPage}
         isPostWriter={postItem?.isWriter ?? false}
+        isLoadingComments={isLoadingComments}
+        pendingScrollToId={pendingScrollReplyId}
       />
     </View>
   );

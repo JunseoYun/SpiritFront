@@ -113,7 +113,7 @@ const MyManager = forwardRef(
 
     const renderStoreItem = ({item, index}) => {
       const isLast = index === mysotredata.length - 1;
-      const address = item.locationDto?.address || 'No address';
+      const address = item.locationDto?.address || '주소 정보 없음';
       const detail = item.locationDto?.addressDetail
         ? ` ${item.locationDto.addressDetail}`
         : '';
@@ -133,7 +133,7 @@ const MyManager = forwardRef(
             />
             <View style={styles.textWrapper}>
               <CustomText style={styles.storeName} numberOfLines={1}>
-                {item.storeName || 'No store name'}
+                {item.storeName || '매장 이름 없음'}
               </CustomText>
               <CustomText style={styles.storeAddress} numberOfLines={1}>
                 {address}
@@ -145,7 +145,7 @@ const MyManager = forwardRef(
             style={styles.manageButton}
             hitSlop={15}
             onPress={() => handleManageStore(item)}>
-            <CustomText style={styles.manageText}>Manage</CustomText>
+            <CustomText style={styles.manageText}>매장 관리</CustomText>
           </Pressable>
         </View>
       );
@@ -153,9 +153,11 @@ const MyManager = forwardRef(
 
     const renderEmptyComponent = () => (
       <View style={styles.emptyState}>
-        <CustomText style={styles.emptyTitle}>No managed stores.</CustomText>
+        <CustomText style={styles.emptyTitle}>
+          등록된 매장이 없습니다.
+        </CustomText>
         <CustomText style={styles.emptySubtitle}>
-          Register a store to manage it here.
+          매장을 등록하면 이곳에서 빠르게 관리할 수 있어요.
         </CustomText>
       </View>
     );
