@@ -33,6 +33,13 @@ const TermsMenu = ({selected, onSelect}) => {
       }>
       <Menu.Item
         onPress={() => {
+          onSelect('[현행] 2026년 1월 15일 시행안');
+          closeMenu();
+        }}
+        title="[현행] 2026년 1월 15일 시행안"
+      />
+      <Menu.Item
+        onPress={() => {
           onSelect('[현행] 2025년 4월 1일 시행안');
           closeMenu();
         }}
