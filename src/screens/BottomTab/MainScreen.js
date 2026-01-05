@@ -13,6 +13,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import {openSettings} from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useToast} from '../../context/ToastContext';
 
 import RejectModal from '../../components/Reject/RejectModal';
 import ExploreSearchBar from '../../components/ExploreScreen/ExploreSearchBar';
@@ -32,6 +33,14 @@ import PostItemSkeleton from '../../components/Post/PostItemSkeleton';
 import PostCommentSheet from '../../components/Post/PostCommentSheet';
 import {getLocation} from '../../storage/locationStorage';
 import {PostGetByRecent} from '../../api/postApi';
+import {
+  CommentCreate,
+  CommentDelete,
+  CommentGetByPost,
+  CommentGetByRootComment,
+} from '../../api/commentApi';
+import {Userdataget} from '../../api/userApi';
+import formatRelativeTime from '../../utils/formatRelativeTime';
 import Loading from '../../hooks/Loading';
 
 const defaultProfile = require('../../assets/default_profile.png');
@@ -40,6 +49,7 @@ const PREFETCH_REMAINING_ITEMS = 3;
 
 const MainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
+  const {showToast} = useToast();
   const {height: windowHeight} = useWindowDimensions();
   const [rejectModalData, setRejectModalData] = useState(null);
   const [unreadNotification, setUnreadNotification] = useState(false);
@@ -67,8 +77,12 @@ const MainScreen = ({navigation}) => {
   const [isWriteMenuVisible, setIsWriteMenuVisible] = useState(false);
   const [isWriteMenuOpen, setIsWriteMenuOpen] = useState(false);
   const [selectedFeed, setSelectedFeed] = useState(null);
+  const [commentList, setCommentList] = useState([]);
   const [commentLikeState, setCommentLikeState] = useState({});
   const [commentInput, setCommentInput] = useState('');
+  const [commentPage, setCommentPage] = useState(0);
+  const [commentTotalCount, setCommentTotalCount] = useState(null);
+  const [currentUserNickname, setCurrentUserNickname] = useState('');
   const writeLabelVisibleRef = useRef(true);
   const WRITE_BUTTON_COLLAPSE_OFFSET = 20;
   const writeButtonAnim = useRef(new Animated.Value(1)).current;
@@ -78,12 +92,14 @@ const MainScreen = ({navigation}) => {
   const headerTranslateY = useRef(new Animated.Value(0)).current;
   const headerHiddenRef = useRef(false);
   const lastScrollOffsetRef = useRef(0);
+  const isSendingCommentRef = useRef(false);
+  const isLoadingMoreCommentsRef = useRef(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const commentSheetRef = useRef(null);
-  const commentSheetSnapPoints = useMemo(
-    () => ['70%', Math.max(0, windowHeight - insets.top)],
-    [insets.top, windowHeight],
-  );
+  const commentSheetSnapPoints = useMemo(() => {
+    const topInset = insets.top === 0 ? 20 : insets.top;
+    return ['70%', Math.max(0, windowHeight - topInset)];
+  }, [insets.top, windowHeight]);
   const closeWriteMenu = useCallback(() => {
     setIsWriteMenuOpen(false);
     const shouldShowLabel =
@@ -106,7 +122,6 @@ const MainScreen = ({navigation}) => {
   }, [fetchPosts]);
   const handleScrollToTop = useCallback(() => {
     listRef.current?.scrollToOffset({offset: 0, animated: true});
-    //TODO 탭 재클릭 새로고침
     // refreshFeed();
   }, [refreshFeed]);
 
@@ -138,6 +153,22 @@ const MainScreen = ({navigation}) => {
     () => setPendingNotification(null),
     data => setRejectModalData(data),
   );
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUserNickname = async () => {
+      try {
+        const data = await Userdataget();
+        if (isMounted) {
+          setCurrentUserNickname(data?.nickname ?? '');
+        }
+      } catch (error) {}
+    };
+    fetchUserNickname();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const checkStoredNotification = async () => {
@@ -260,205 +291,6 @@ const MainScreen = ({navigation}) => {
     loadHeaderData();
   }, [loadHeaderData]);
 
-  const commentList = useMemo(() => {
-    if (!selectedFeed) {
-      return [];
-    }
-
-    return [
-      {
-        id: 'c1',
-        author: selectedFeed?.nickname ?? '게스트',
-        profileImage:
-          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
-        text: '방금 본 메뉴 정말 맛있어 보여요!',
-        createdAt: '방금 전',
-        likes: 2,
-        isMine: true,
-      },
-      {
-        id: 'c2',
-        author: '푸드파이터',
-        profileImage: null,
-        text: '위치 저장했습니다. 주말에 가볼게요 😋',
-        createdAt: '1시간 전',
-        likes: 8,
-        isMine: false,
-      },
-      {
-        id: 'c3',
-        author: '카페투어러',
-        profileImage:
-          'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=200&q=80',
-        text: '분위기 궁금했는데 사진으로 감 잡았어요. 공유 감사합니다!',
-        createdAt: '어제',
-        likes: 14,
-        isMine: false,
-      },
-      {
-        id: 'c4',
-        author: '야식러버',
-        profileImage: null,
-        text: '여기 늦게까지 하나요? 2차로 딱일 것 같네요.',
-        createdAt: '어제',
-        likes: 5,
-        isMine: false,
-      },
-      {
-        id: 'c5',
-        author: '술한잔각',
-        profileImage:
-          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80',
-        text: '안주 비주얼 미쳤네요… 저장!',
-        createdAt: '2일 전',
-        likes: 21,
-        isMine: false,
-      },
-      {
-        id: 'c6',
-        author: '맛집메모장',
-        profileImage: null,
-        text: '가격대는 어느 정도인지 궁금합니다.',
-        createdAt: '2일 전',
-        likes: 3,
-        isMine: false,
-      },
-      {
-        id: 'c7',
-        author: '혼술마스터',
-        profileImage:
-          'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80',
-        text: '혼자 가도 부담 없을까요?',
-        createdAt: '3일 전',
-        likes: 9,
-        isMine: false,
-      },
-      {
-        id: 'c8',
-        author: '주말계획중',
-        profileImage: null,
-        text: '이번 주말 후보에 넣어둘게요 👍',
-        createdAt: '3일 전',
-        likes: 6,
-        isMine: false,
-      },
-      {
-        id: 'c9',
-        author: '사진중독',
-        profileImage:
-          'https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?auto=format&fit=crop&w=200&q=80',
-        text: '사진 색감 너무 좋아요. 직접 찍으신 건가요?',
-        createdAt: '4일 전',
-        likes: 11,
-        isMine: false,
-      },
-      {
-        id: 'c10',
-        author: '연남동주민',
-        profileImage: null,
-        text: '여기 실제로 가봤는데 분위기 괜찮아요.',
-        createdAt: '4일 전',
-        likes: 18,
-        isMine: false,
-      },
-      {
-        id: 'c11',
-        author: '데이트코스수집가',
-        profileImage:
-          'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=200&q=80',
-        text: '데이트 장소로도 괜찮을 것 같네요.',
-        createdAt: '5일 전',
-        likes: 7,
-        isMine: false,
-      },
-      {
-        id: 'c12',
-        author: '가성비헌터',
-        profileImage: null,
-        text: '양 대비 가격은 어떤 편인가요?',
-        createdAt: '5일 전',
-        likes: 4,
-        isMine: false,
-      },
-      {
-        id: 'c13',
-        author: '퇴근후한잔',
-        profileImage:
-          'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80',
-        text: '퇴근하고 바로 가기 좋은 느낌이네요.',
-        createdAt: '6일 전',
-        likes: 13,
-        isMine: false,
-      },
-      {
-        id: 'c14',
-        author: '분위기중요',
-        profileImage: null,
-        text: '시끄러운 편인지 조용한 편인지 궁금해요.',
-        createdAt: '6일 전',
-        likes: 2,
-        isMine: false,
-      },
-      {
-        id: 'c15',
-        author: '술친놈',
-        profileImage:
-          'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-        text: '여기 소주 말고 다른 술도 괜찮나요?',
-        createdAt: '1주 전',
-        likes: 16,
-        isMine: false,
-      },
-      {
-        id: 'c16',
-        author: '지도저장중',
-        profileImage: null,
-        text: '지도에 저장 완료했습니다.',
-        createdAt: '1주 전',
-        likes: 5,
-        isMine: false,
-      },
-      {
-        id: 'c17',
-        author: '안주중심',
-        profileImage:
-          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80',
-        text: '메뉴 구성 보니까 안주 위주네요. 취향입니다.',
-        createdAt: '1주 전',
-        likes: 12,
-        isMine: false,
-      },
-      {
-        id: 'c18',
-        author: '첫방문예정',
-        profileImage: null,
-        text: '첫 방문인데 추천 메뉴 있으면 알려주세요!',
-        createdAt: '1주 전',
-        likes: 1,
-        isMine: false,
-      },
-      {
-        id: 'c19',
-        author: '사진보고옴',
-        profileImage:
-          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
-        text: '사진 보고 바로 들어왔어요.',
-        createdAt: '2주 전',
-        likes: 9,
-        isMine: false,
-      },
-      {
-        id: 'c20',
-        author: '술자리메이커',
-        profileImage: null,
-        text: '여기서 한잔하면 시간 순삭일 듯하네요.',
-        createdAt: '2주 전',
-        likes: 20,
-        isMine: false,
-      },
-    ];
-  }, [selectedFeed]);
-
   useEffect(() => {
     const nextState = {};
     commentList.forEach(comment => {
@@ -483,6 +315,235 @@ const MainScreen = ({navigation}) => {
     }
     return `${value}`;
   }, []);
+
+  const mapCommentItem = useCallback(
+    (item, rootCommentId = null) => ({
+      id: String(item.id ?? ''),
+      author: item.writerNickname ?? item.author ?? '',
+      profileImage: item.writerImgUrl ?? item.profileImage ?? null,
+      text: item.content ?? item.text ?? '',
+      createdAt: formatRelativeTime(item.createdAt),
+      likes: item.likes ?? 0,
+      isMine: item.isWriter ?? item.isMine ?? false,
+      replyCount: item.replyCount ?? 0,
+      rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
+    }),
+    [],
+  );
+
+  const fetchComments = useCallback(
+    async targetPostId => {
+      if (!targetPostId) {
+        setCommentList([]);
+        setCommentPage(0);
+        setCommentTotalCount(null);
+        return;
+      }
+      const data = await CommentGetByPost({
+        postId: targetPostId,
+        page: 0,
+        size: 20,
+      });
+      const items = Array.isArray(data?.content) ? data.content : [];
+      const totalElements = Number.isFinite(data?.totalElements)
+        ? data.totalElements
+        : null;
+      setCommentList(items.map(item => mapCommentItem(item)));
+      setCommentPage(0);
+      setCommentTotalCount(totalElements);
+    },
+    [mapCommentItem],
+  );
+
+  const handleRequestMoreComments = useCallback(
+    async nextPage => {
+      const targetPostId = selectedFeed?.id;
+      if (!targetPostId) return;
+      if (isLoadingMoreCommentsRef.current) return;
+      if (
+        commentTotalCount !== null &&
+        commentList.length >= commentTotalCount
+      ) {
+        return;
+      }
+      isLoadingMoreCommentsRef.current = true;
+      try {
+        const data = await CommentGetByPost({
+          postId: targetPostId,
+          page: nextPage,
+          size: 20,
+        });
+        const items = Array.isArray(data?.content) ? data.content : [];
+        const mapped = items.map(item => mapCommentItem(item));
+        const totalElements = Number.isFinite(data?.totalElements)
+          ? data.totalElements
+          : commentTotalCount;
+        setCommentList(prev => {
+          const merged = [...prev, ...mapped];
+          return Array.from(
+            new Map(merged.map(item => [item.id, item])).values(),
+          );
+        });
+        setCommentPage(nextPage);
+        setCommentTotalCount(totalElements);
+      } finally {
+        isLoadingMoreCommentsRef.current = false;
+      }
+    },
+    [commentList.length, commentTotalCount, mapCommentItem, selectedFeed?.id],
+  );
+
+  const handleRequestReplies = useCallback(
+    async (rootCommentId, page = 0) => {
+      if (!rootCommentId) return;
+      const data = await CommentGetByRootComment({
+        rootCommentId,
+        page,
+        size: 10,
+      });
+      const items = Array.isArray(data?.content) ? data.content : [];
+      const mappedReplies = items.map(item =>
+        mapCommentItem(item, rootCommentId),
+      );
+      const totalElements = Number.isFinite(data?.totalElements)
+        ? data.totalElements
+        : null;
+      setCommentList(prev =>
+        prev.map(comment => {
+          if (String(comment.id) !== String(rootCommentId)) {
+            return comment;
+          }
+          const nextReplies =
+            page === 0
+              ? mappedReplies
+              : [
+                  ...(comment.replies ?? []),
+                  ...mappedReplies.filter(
+                    reply =>
+                      !(comment.replies ?? []).some(
+                        existing => String(existing.id) === String(reply.id),
+                      ),
+                  ),
+                ];
+          return {
+            ...comment,
+            replies: nextReplies,
+            replyCount:
+              totalElements ??
+              (Number.isFinite(comment.replyCount)
+                ? comment.replyCount
+                : nextReplies.length),
+            replyPage: page,
+            previewReplies: comment.previewReplies ?? [],
+          };
+        }),
+      );
+    },
+    [mapCommentItem],
+  );
+
+  const handleSendComment = useCallback(
+    async payload => {
+      const targetPostId = selectedFeed?.id;
+      const content = payload?.content?.trim();
+      if (!targetPostId || !content) {
+        return;
+      }
+      if (isSendingCommentRef.current) {
+        return;
+      }
+      isSendingCommentRef.current = true;
+      const rootCommentId = payload?.rootCommentId ?? null;
+      try {
+        const result = await CommentCreate({
+          postId: targetPostId,
+          content,
+          rootCommentId,
+        });
+        if (rootCommentId) {
+          const fallbackReply = {
+            id: `temp-${Date.now()}`,
+            content,
+            createdAt: new Date().toISOString(),
+            writerNickname: currentUserNickname || '나',
+            isWriter: true,
+          };
+          const mappedReply = mapCommentItem(
+            result ?? fallbackReply,
+            rootCommentId,
+          );
+          setCommentList(prev =>
+            prev.map(comment =>
+              String(comment.id) === String(rootCommentId)
+                ? {
+                    ...comment,
+                    replyCount: Number.isFinite(comment.replyCount)
+                      ? comment.replyCount + 1
+                      : 1,
+                    previewReplies: [mappedReply],
+                  }
+                : comment,
+            ),
+          );
+          return;
+        } else {
+          const fallbackComment = {
+            id: `temp-${Date.now()}`,
+            content,
+            createdAt: new Date().toISOString(),
+            writerNickname: currentUserNickname || '나',
+            isWriter: true,
+          };
+          const mappedComment = mapCommentItem(result ?? fallbackComment);
+          setCommentList(prev => {
+            const filtered = prev.filter(
+              comment => String(comment.id) !== String(mappedComment.id),
+            );
+            return [...filtered, mappedComment];
+          });
+          setCommentTotalCount(prev => (prev === null ? null : prev + 1));
+        }
+      } finally {
+        isSendingCommentRef.current = false;
+      }
+    },
+    [
+      currentUserNickname,
+      fetchComments,
+      mapCommentItem,
+      selectedFeed?.id,
+    ],
+  );
+
+  const handleDeleteComment = useCallback(
+    async targetComment => {
+      const targetPostId = selectedFeed?.id;
+      if (!targetComment?.id || !targetPostId) {
+        return;
+      }
+      await CommentDelete(targetComment.id);
+      if (targetComment.rootCommentId) {
+        handleRequestReplies(targetComment.rootCommentId);
+      } else {
+        fetchComments(targetPostId);
+        setCommentTotalCount(prev =>
+          prev === null ? null : Math.max(0, prev - 1),
+        );
+      }
+      showToast('삭제가 완료되었습니다.');
+    },
+    [fetchComments, handleRequestReplies, selectedFeed?.id, showToast],
+  );
+
+  useEffect(() => {
+    if (!selectedFeed?.id) {
+      setCommentList([]);
+      setCommentPage(0);
+      setCommentTotalCount(null);
+      return;
+    }
+    fetchComments(selectedFeed.id);
+  }, [fetchComments, selectedFeed?.id]);
 
   const handleOpenCommentSheet = useCallback(feed => {
     setSelectedFeed(feed);
@@ -882,7 +943,12 @@ const MainScreen = ({navigation}) => {
         }
         contentContainerStyle={[
           styles.feedContent,
-          {paddingTop: insets.top + (Platform.OS === 'android' ? 40 : 10)},
+          {
+            paddingTop:
+              insets.top +
+              (Platform.OS === 'android' ? 40 : 10) +
+              (insets.top === 0 && 40),
+          },
         ]}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!feedLoading}
@@ -925,7 +991,12 @@ const MainScreen = ({navigation}) => {
         formatLikeCount={formatLikeCount}
         commentInput={commentInput}
         onChangeCommentInput={setCommentInput}
-        onPressSend={() => {}}
+        onPressSend={handleSendComment}
+        onDeleteComment={handleDeleteComment}
+        onRequestReplies={handleRequestReplies}
+        onRequestMoreComments={handleRequestMoreComments}
+        commentTotalCount={commentTotalCount}
+        commentPage={commentPage}
         isPostWriter={selectedFeed?.isWriter ?? false}
       />
 

@@ -13,6 +13,14 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 import PostItem from '../../../components/Post/PostItem';
 import PostItemSkeleton from '../../../components/Post/PostItemSkeleton';
 import PostCommentSheet from '../../../components/Post/PostCommentSheet';
+import {
+  CommentCreate,
+  CommentDelete,
+  CommentGetByPost,
+  CommentGetByRootComment,
+} from '../../../api/commentApi';
+import formatRelativeTime from '../../../utils/formatRelativeTime';
+import {useToast} from '../../../context/ToastContext';
 import Loading from '../../../hooks/Loading';
 import {PostDelete} from '../../../api/reviewApi';
 
@@ -36,25 +44,31 @@ const MyPostDetailScreen = ({navigation, route}) => {
   const {height: windowHeight} = useWindowDimensions();
   const screenWidth = Dimensions.get('window').width;
   const insets = useSafeAreaInsets();
+  const {showToast} = useToast();
   const listReadyRef = useRef(false);
   const previewReadyRef = useRef(false);
   const scrollRequestedRef = useRef(false);
   const pendingLastScrollRef = useRef(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const isSendingCommentRef = useRef(false);
   const contentMeasuredRef = useRef(false);
   const initialScrollDoneRef = useRef(false);
   const initialAlignDoneRef = useRef(false);
   const [contentMeasured, setContentMeasured] = useState(false);
   const [initialScrollDone, setInitialScrollDone] = useState(false);
   const [selectedFeed, setSelectedFeed] = useState(null);
+  const [commentList, setCommentList] = useState([]);
   const [commentLikeState, setCommentLikeState] = useState({});
   const [commentInput, setCommentInput] = useState('');
+  const [commentPage, setCommentPage] = useState(0);
+  const [commentTotalCount, setCommentTotalCount] = useState(null);
   const commentSheetRef = useRef(null);
+  const isLoadingMoreCommentsRef = useRef(false);
   const [imageRatioMap, setImageRatioMap] = useState({});
-  const commentSheetSnapPoints = useMemo(
-    () => ['70%', Math.max(0, windowHeight - insets.top)],
-    [insets.top, windowHeight],
-  );
+  const commentSheetSnapPoints = useMemo(() => {
+    const topInset = insets.top === 0 ? 20 : insets.top;
+    return ['70%', Math.max(0, windowHeight - topInset)];
+  }, [insets.top, windowHeight]);
 
   const goToMyProfile = useCallback(() => {
     navigation.reset({
@@ -184,40 +198,6 @@ const MyPostDetailScreen = ({navigation, route}) => {
     () => Math.min(feedItems.length, Math.max(5, initialIndex + 2)),
     [feedItems.length, initialIndex],
   );
-  const commentList = useMemo(() => {
-    if (!selectedFeed) {
-      return [];
-    }
-
-    return [
-      {
-        id: 'c1',
-        author: selectedFeed?.nickname ?? '게스트',
-        profileImage:
-          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
-        text: '방금 본 메뉴 정말 맛있어보여요!',
-        createdAt: '방금 전',
-        likes: 2,
-      },
-      {
-        id: 'c2',
-        author: '렌디에',
-        profileImage: null,
-        text: '언제 가볼게요 주말에 갈게요!',
-        createdAt: '1시간 전',
-        likes: 8,
-      },
-      {
-        id: 'c3',
-        author: '카페어딜까',
-        profileImage:
-          'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=200&q=80',
-        text: '분위기 궁금했는데 사진으로 잘 담았네요. 공유 감사!',
-        createdAt: '어제',
-        likes: 14,
-      },
-    ];
-  }, [selectedFeed]);
 
   useEffect(() => {
     const nextState = {};
@@ -243,6 +223,235 @@ const MyPostDetailScreen = ({navigation, route}) => {
     }
     return `${value}`;
   }, []);
+
+  const mapCommentItem = useCallback(
+    (item, rootCommentId = null) => ({
+      id: String(item.id ?? ''),
+      author: item.writerNickname ?? item.author ?? '',
+      profileImage: item.writerImgUrl ?? item.profileImage ?? null,
+      text: item.content ?? item.text ?? '',
+      createdAt: formatRelativeTime(item.createdAt),
+      likes: item.likes ?? 0,
+      isMine: item.isWriter ?? item.isMine ?? false,
+      replyCount: item.replyCount ?? 0,
+      rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
+    }),
+    [],
+  );
+
+  const fetchComments = useCallback(
+    async targetPostId => {
+      if (!targetPostId) {
+        setCommentList([]);
+        setCommentPage(0);
+        setCommentTotalCount(null);
+        return;
+      }
+      const data = await CommentGetByPost({
+        postId: targetPostId,
+        page: 0,
+        size: 20,
+      });
+      const items = Array.isArray(data?.content) ? data.content : [];
+      const totalElements = Number.isFinite(data?.totalElements)
+        ? data.totalElements
+        : null;
+      setCommentList(items.map(item => mapCommentItem(item)));
+      setCommentPage(0);
+      setCommentTotalCount(totalElements);
+    },
+    [mapCommentItem],
+  );
+
+  const handleRequestMoreComments = useCallback(
+    async nextPage => {
+      const targetPostId = selectedFeed?.id;
+      if (!targetPostId) return;
+      if (isLoadingMoreCommentsRef.current) return;
+      if (
+        commentTotalCount !== null &&
+        commentList.length >= commentTotalCount
+      ) {
+        return;
+      }
+      isLoadingMoreCommentsRef.current = true;
+      try {
+        const data = await CommentGetByPost({
+          postId: targetPostId,
+          page: nextPage,
+          size: 20,
+        });
+        const items = Array.isArray(data?.content) ? data.content : [];
+        const mapped = items.map(item => mapCommentItem(item));
+        const totalElements = Number.isFinite(data?.totalElements)
+          ? data.totalElements
+          : commentTotalCount;
+        setCommentList(prev => {
+          const merged = [...prev, ...mapped];
+          return Array.from(
+            new Map(merged.map(item => [item.id, item])).values(),
+          );
+        });
+        setCommentPage(nextPage);
+        setCommentTotalCount(totalElements);
+      } finally {
+        isLoadingMoreCommentsRef.current = false;
+      }
+    },
+    [commentList.length, commentTotalCount, mapCommentItem, selectedFeed?.id],
+  );
+
+  const handleRequestReplies = useCallback(
+    async (rootCommentId, page = 0) => {
+      if (!rootCommentId) return;
+      const data = await CommentGetByRootComment({
+        rootCommentId,
+        page,
+        size: 10,
+      });
+      const items = Array.isArray(data?.content) ? data.content : [];
+      const mappedReplies = items.map(item =>
+        mapCommentItem(item, rootCommentId),
+      );
+      const totalElements = Number.isFinite(data?.totalElements)
+        ? data.totalElements
+        : null;
+      setCommentList(prev =>
+        prev.map(comment => {
+          if (String(comment.id) !== String(rootCommentId)) {
+            return comment;
+          }
+          const nextReplies =
+            page === 0
+              ? mappedReplies
+              : [
+                  ...(comment.replies ?? []),
+                  ...mappedReplies.filter(
+                    reply =>
+                      !(comment.replies ?? []).some(
+                        existing => String(existing.id) === String(reply.id),
+                      ),
+                  ),
+                ];
+          return {
+            ...comment,
+            replies: nextReplies,
+            replyCount:
+              totalElements ??
+              (Number.isFinite(comment.replyCount)
+                ? comment.replyCount
+                : nextReplies.length),
+            replyPage: page,
+            previewReplies: comment.previewReplies ?? [],
+          };
+        }),
+      );
+    },
+    [mapCommentItem],
+  );
+
+  const handleSendComment = useCallback(
+    async payload => {
+      const targetPostId = selectedFeed?.id;
+      const content = payload?.content?.trim();
+      if (!targetPostId || !content) {
+        return;
+      }
+      if (isSendingCommentRef.current) {
+        return;
+      }
+      isSendingCommentRef.current = true;
+      const rootCommentId = payload?.rootCommentId ?? null;
+      try {
+        const result = await CommentCreate({
+          postId: targetPostId,
+          content,
+          rootCommentId,
+        });
+        if (rootCommentId) {
+          const fallbackReply = {
+            id: `temp-${Date.now()}`,
+            content,
+            createdAt: new Date().toISOString(),
+            writerNickname: userProfile?.nickname || '나',
+            isWriter: true,
+          };
+          const mappedReply = mapCommentItem(
+            result ?? fallbackReply,
+            rootCommentId,
+          );
+          setCommentList(prev =>
+            prev.map(comment =>
+              String(comment.id) === String(rootCommentId)
+                ? {
+                    ...comment,
+                    replyCount: Number.isFinite(comment.replyCount)
+                      ? comment.replyCount + 1
+                      : 1,
+                    previewReplies: [mappedReply],
+                  }
+                : comment,
+            ),
+          );
+          return;
+        } else {
+          const fallbackComment = {
+            id: `temp-${Date.now()}`,
+            content,
+            createdAt: new Date().toISOString(),
+            writerNickname: userProfile?.nickname || '나',
+            isWriter: true,
+          };
+          const mappedComment = mapCommentItem(result ?? fallbackComment);
+          setCommentList(prev => {
+            const filtered = prev.filter(
+              commentItem => String(commentItem.id) !== String(mappedComment.id),
+            );
+            return [...filtered, mappedComment];
+          });
+          setCommentTotalCount(prev => (prev === null ? null : prev + 1));
+        }
+      } finally {
+        isSendingCommentRef.current = false;
+      }
+    },
+    [
+      fetchComments,
+      mapCommentItem,
+      selectedFeed?.id,
+      userProfile?.nickname,
+    ],
+  );
+
+  const handleDeleteComment = useCallback(
+    async targetComment => {
+      const targetPostId = selectedFeed?.id;
+      if (!targetComment?.id || !targetPostId) {
+        return;
+      }
+      await CommentDelete(targetComment.id);
+      if (targetComment.rootCommentId) {
+        handleRequestReplies(targetComment.rootCommentId);
+      } else {
+        fetchComments(targetPostId);
+        setCommentTotalCount(prev =>
+          prev === null ? null : Math.max(0, prev - 1),
+        );
+      }
+      showToast('삭제가 완료되었습니다.');
+    },
+    [fetchComments, handleRequestReplies, selectedFeed?.id, showToast],
+  );
+
+  useEffect(() => {
+    if (!selectedFeed?.id) {
+      setCommentList([]);
+      setCommentPage(0);
+      setCommentTotalCount(0);
+      return;
+    }
+    fetchComments(selectedFeed.id);
+  }, [fetchComments, selectedFeed?.id]);
 
   const handleOpenCommentSheet = useCallback(feed => {
     setSelectedFeed(feed);
@@ -600,7 +809,12 @@ const MyPostDetailScreen = ({navigation, route}) => {
         formatLikeCount={formatLikeCount}
         commentInput={commentInput}
         onChangeCommentInput={setCommentInput}
-        onPressSend={() => {}}
+        onPressSend={handleSendComment}
+        onDeleteComment={handleDeleteComment}
+        onRequestReplies={handleRequestReplies}
+        onRequestMoreComments={handleRequestMoreComments}
+        commentTotalCount={commentTotalCount}
+        commentPage={commentPage}
         isPostWriter={selectedFeed?.isWriter ?? false}
       />
 
