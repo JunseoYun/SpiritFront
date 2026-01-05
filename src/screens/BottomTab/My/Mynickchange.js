@@ -1,10 +1,7 @@
 import React, {useState} from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  TextInput,
-  Pressable,
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
@@ -14,6 +11,7 @@ import {
 } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import {useRoute, useNavigation} from '@react-navigation/native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import forbiddenWords from '../../../hooks/forbiddenWords';
 import filterWords from '../../../hooks/filterWords';
 import useCustomAlert from '../../../hooks/useCustomAlert';
@@ -23,6 +21,7 @@ import Loading from '../../../hooks/Loading';
 import CancelText from '../../../components/CancelText/CancelText';
 import CustomText from '../../../utils/CustomText';
 import CustomTextInput from '../../../utils/CustomTextInput';
+import BottomActionButton from '../../../utils/BottomActionButton';
 
 const Mynickchange = () => {
   const route = useRoute();
@@ -37,6 +36,9 @@ const Mynickchange = () => {
   const [loading, setLoading] = useState(false);
   const {showToast} = useToast();
   const [focused, setFocused] = useState(false);
+  const insets = useSafeAreaInsets();
+  const isButtonDisabled =
+    !newnickname.trim() || nicknameError || nicknamelength || nicknamefilter;
   const handleNicknameChange = text => {
     setNewnickname(text);
     setNicknameError(false);
@@ -151,13 +153,16 @@ const Mynickchange = () => {
 
   return (
     <KeyboardAvoidingView
-      style={{flex: 1}}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
+      style={{flex: 1, backgroundColor: '#FFF'}}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 90}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={styles.container}>
           <ScrollView
-            contentContainerStyle={{flexGrow: 1}}
+            contentContainerStyle={[
+              styles.scrollContent,
+              {paddingBottom: 120 + insets.bottom},
+            ]}
             keyboardShouldPersistTaps="handled">
             <View style={styles.topview}>
               <CustomText style={styles.nickname}>새로운 닉네임</CustomText>
@@ -234,26 +239,13 @@ const Mynickchange = () => {
               </View>
             </View>
           </ScrollView>
-          <Pressable
-            style={[
-              styles.completebtn,
-              (!newnickname.trim() ||
-                nicknameError ||
-                nicknamelength ||
-                nicknamefilter) &&
-                styles.disabledbtn,
-            ]}
-            disabled={
-              !newnickname.trim() ||
-              nicknameError ||
-              nicknamelength ||
-              nicknamefilter
-            }
-            onPress={nicknameCheck ? handlePutnick : handleCheckNickname}>
-            <CustomText style={styles.completebtntext}>
-              {nicknameCheck ? '완료' : '중복 검사'}
-            </CustomText>
-          </Pressable>
+          <BottomActionButton
+            type="simple"
+            label={nicknameCheck ? '완료' : '중복 검사'}
+            onPress={nicknameCheck ? handlePutnick : handleCheckNickname}
+            disabled={isButtonDisabled}
+            paddingBottom={10}
+          />
 
           <AlertComponent />
         </SafeAreaView>
@@ -270,8 +262,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   topview: {
-    marginTop: 50,
+    marginTop: 40,
     marginHorizontal: 18,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   nickname: {
     fontSize: 18,
@@ -286,21 +281,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     color: '#333',
     paddingRight: 30,
-  },
-  completebtn: {
-    width: '90%',
-    backgroundColor: '#3CBBFF',
-    borderRadius: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    alignSelf: 'center',
-    marginBottom: 10, // 여유 공간 추가
-  },
-  completebtntext: {
-    color: 'white',
-    fontSize: 18,
-    fontFamily: 'Pretendard-SemiBold',
   },
   nicknameInputView: {
     flexDirection: 'row',
@@ -343,27 +323,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 3,
     flexWrap: 'wrap',
-  },
-  disabledbtn: {
-    backgroundColor: '#CCCCCC', // 비활성화된 버튼 색상
-  },
-  footer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(194, 194, 194, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  loadingtext: {
-    textAlign: 'center',
-    marginVertical: 20,
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B', // 커스텀 폰트 적용
-    fontSize: 20,
-    color: '#333',
   },
 });
 
