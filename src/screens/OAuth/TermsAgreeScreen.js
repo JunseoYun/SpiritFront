@@ -4,15 +4,19 @@ import React, {useState} from 'react';
 import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
 import TermsMenu from '../../components/Agreement/Terms/TermsMenu';
 import Terms_v20250401 from '../../components/Agreement/Terms/Terms_v20250401';
+import Terms_v20260115 from '../../components/Agreement/Terms/Terms_v20260115';
 import CustomText from '../../utils/CustomText';
 
 const TermsAgreeScreen = ({navigation}) => {
-  const [selected, setSelected] = useState('[현행] 2025년 4월 1일 시행안'); // 선택된 메뉴
-  const [ActiveComponent, setActiveComponent] = useState(<Terms_v20250401 />); // 표시할 컴포넌트
+  const [selected, setSelected] = useState('[현행] 2026년 1월 15일 시행안'); // 선택된 메뉴
+  const [ActiveComponent, setActiveComponent] = useState(<Terms_v20260115 />); // 표시할 컴포넌트
 
   const handleMenuSelect = option => {
     setSelected(option);
     switch (option) {
+      case '[현행] 2026년 1월 15일 시행안':
+        setActiveComponent(<Terms_v20260115 />);
+        break;
       case '[현행] 2025년 4월 1일 시행안':
         setActiveComponent(<Terms_v20250401 />);
         break;
