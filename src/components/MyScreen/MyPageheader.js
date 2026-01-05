@@ -10,71 +10,102 @@ const MyPageheader = ({
   onProfilePress,
   imageuri,
   handleImagePress,
-}) => (
-  <View style={styles.profiletopview}>
-    {imageuri ? (
-      <Pressable onPress={handleImagePress}>
-        <FastImage source={{uri: imageuri}} style={styles.profileimg} />
-      </Pressable>
-    ) : (
-      <FastImage
-        source={require('../../assets/default_profile.png')}
-        style={styles.profileimg}
-      />
-    )}
+  onWritePress,
+}) => {
+  return (
+    <View style={styles.wrap}>
+      <View style={styles.row}>
+        {/* Left : Avatar */}
+        <Pressable onPress={handleImagePress} hitSlop={10}>
+          <FastImage
+            source={
+              imageuri
+                ? {uri: imageuri}
+                : require('../../assets/default_profile.png')
+            }
+            style={styles.avatar}
+          />
+        </Pressable>
 
-    <Pressable style={styles.pressView} onPress={onProfilePress}>
-      <View style={styles.leftGroup}>
-        <CustomText style={styles.Nickname}>{nickname}</CustomText>
-        <FontAwesomeIcon
-          name={'angle-right'}
-          size={22}
-          color={'#999'}
-          style={styles.changenick}
-        />
+        {/* Center : Text */}
+        <Pressable
+          onPress={onProfilePress}
+          hitSlop={10}
+          style={styles.textArea}>
+          <View style={styles.nameLine}>
+            <CustomText numberOfLines={1} style={styles.nickname}>
+              {nickname}
+            </CustomText>
+            <FontAwesomeIcon name="angle-right" size={20} color="#9CA3AF" />
+          </View>
+
+          <CustomText style={styles.meta}>게시글 · {postCount}</CustomText>
+        </Pressable>
+
+        {/* Right : Write */}
+        <Pressable onPress={onWritePress} hitSlop={10} style={styles.writeBtn}>
+          <CustomText style={styles.writeText}>글쓰기</CustomText>
+        </Pressable>
       </View>
-      <CustomText style={styles.postCountText}>게시글 {postCount}</CustomText>
-    </Pressable>
-  </View>
-);
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  profiletopview: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  wrap: {
+    backgroundColor: '#fff',
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 40,
-    backgroundColor: '#fff',
+    paddingBottom: 26,
   },
-  profileimg: {
-    resizeMode: 'cover',
-    width: 80,
-    height: 80,
-    borderRadius: 90,
-  },
-  Nickname: {
-    fontSize: 20,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
-  },
-  changenick: {
-    marginLeft: 10,
-  },
-  leftGroup: {
+
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  postCountText: {
-    marginTop: 6,
-    fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
-    color: '#666',
+
+  avatar: {
+    width: 74,
+    height: 74,
+    borderRadius: 50,
+    backgroundColor: '#F3F4F6',
   },
-  pressView: {
+
+  textArea: {
     flex: 1,
-    marginLeft: 17,
-    alignItems: 'flex-start',
+    marginLeft: 14,
+  },
+
+  nameLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+
+  nickname: {
+    fontSize: 18,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#111827',
+    letterSpacing: -0.2,
+  },
+
+  meta: {
+    marginTop: 4,
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    color: '#6B7280',
+  },
+
+  writeBtn: {
+    marginLeft: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 2, // 버튼 티 안 나게
+  },
+
+  writeText: {
+    fontSize: 14,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#3CBBFF', // 한잔할까 포인트 컬러
   },
 });
 

@@ -30,17 +30,17 @@ const CFImage = ({imageUrl, onPress}) => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginVertical: 50,
+    marginVertical: 40,
   },
   imageContainer: {
     position: 'relative',
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
   },
   image: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 100,
     resizeMode: 'cover',
   },
   cameraButton: {

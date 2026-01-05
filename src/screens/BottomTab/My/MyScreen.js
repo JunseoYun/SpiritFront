@@ -248,12 +248,17 @@ const MyScreen = ({navigation}) => {
     });
   };
 
+  const handleWritePostPress = useCallback(() => {
+    navigation.navigate('PostPhotoSelectScreen');
+  }, [navigation]);
+
   const renderProfileHeader = () => (
     <MyPageheader
       nickname={userdata.nickname}
       postCount={reviewCount}
       imageuri={userdata.imgUrl}
       handleImagePress={handleImagePress}
+      onWritePress={handleWritePostPress}
       onProfilePress={() =>
         navigation.navigate('MyStack', {
           screen: 'ConfigScreen',
