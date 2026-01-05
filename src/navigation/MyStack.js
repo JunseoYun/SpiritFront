@@ -30,9 +30,12 @@ export default function MyStack() {
         component={MyScreen}
         options={({navigation}) => ({
           headerShown: true,
-          headerTitleAlign: 'center',
+          headerTitleAlign: 'left',
           headerShadowVisible: false,
           title: '마이프로필',
+          headerTitleContainerStyle: {
+            paddingLeft: 6,
+          },
           headerTitleStyle: {
             fontSize: 19,
             color: '#333',
