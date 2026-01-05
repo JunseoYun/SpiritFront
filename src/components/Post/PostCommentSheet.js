@@ -41,10 +41,13 @@ const CommentFooter = ({
   onFocusInput,
   defaultProfile,
   bottomInset,
-  replyTarget,
+  replyTargetStore,
   onClearReplyTarget,
 }) => {
   const [localInput, setLocalInput] = useState('');
+  const [replyTarget, setReplyTarget] = useState(
+    replyTargetStore?.current?.value ?? null,
+  );
   const animatedPaddingBottom = useRef(
     new Animated.Value(
       Platform.OS === 'android' ? bottomInset + 10 : bottomInset + 10,
@@ -80,6 +83,19 @@ const CommentFooter = ({
     };
   }, [animatedPaddingBottom, bottomInset]);
 
+  useEffect(() => {
+    const store = replyTargetStore?.current;
+    if (!store) return;
+    setReplyTarget(store.value ?? null);
+    const listener = nextValue => {
+      setReplyTarget(nextValue ?? null);
+    };
+    store.listeners.add(listener);
+    return () => {
+      store.listeners.delete(listener);
+    };
+  }, [replyTargetStore]);
+
   const handleSend = useCallback(() => {
     const content = localInput.trim();
     if (!content) {
@@ -104,7 +120,6 @@ const CommentFooter = ({
     replyTarget,
     onClearReplyTarget,
   ]);
-
   return (
     <Animated.View
       style={[
@@ -192,6 +207,7 @@ const PostCommentSheet = forwardRef(
     const [expandedReplies, setExpandedReplies] = useState({});
     const [hiddenPreviewReplies, setHiddenPreviewReplies] = useState({});
     const [replyTarget, setReplyTarget] = useState(null);
+    const replyTargetStoreRef = useRef({value: null, listeners: new Set()});
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const [selectedMenuTarget, setSelectedMenuTarget] = useState(null);
     const [menuPosition, setMenuPosition] = useState({top: 60});
@@ -423,6 +439,13 @@ const PostCommentSheet = forwardRef(
       });
     }, [ref, snapPoints]);
 
+    const handleClearReplyTarget = useCallback(() => {
+      setReplyTarget(null);
+      requestAnimationFrame(() => {
+        inputRef.current?.focus?.();
+      });
+    }, []);
+
     const handleSheetChange = useCallback(
       index => {
         if (index === -1) {
@@ -482,6 +505,12 @@ const PostCommentSheet = forwardRef(
       }
       lastRequestedCommentPageRef.current = commentPage;
     }, [commentPage]);
+
+    useEffect(() => {
+      const store = replyTargetStoreRef.current;
+      store.value = replyTarget;
+      store.listeners.forEach(listener => listener(replyTarget));
+    }, [replyTarget]);
 
     const onPressSendRef = useRef(onPressSend);
     const onChangeCommentInputRef = useRef(onChangeCommentInput);
@@ -556,8 +585,8 @@ const PostCommentSheet = forwardRef(
             onFocusInput={handleInputFocus}
             defaultProfile={defaultProfile}
             bottomInset={insets.bottom}
-            replyTarget={replyTarget}
-            onClearReplyTarget={() => setReplyTarget(null)}
+            replyTargetStore={replyTargetStoreRef}
+            onClearReplyTarget={handleClearReplyTarget}
           />
         </BottomSheetFooter>
       ),
@@ -566,8 +595,8 @@ const PostCommentSheet = forwardRef(
         handleChangeCommentInput,
         handleInputFocus,
         handlePressSend,
+        handleClearReplyTarget,
         insets.bottom,
-        replyTarget,
       ],
     );
 
