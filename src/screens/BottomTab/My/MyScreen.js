@@ -368,31 +368,31 @@ const MyScreen = ({navigation}) => {
               onPageSelected={handlePageSelected}
               scrollEnabled>
               <View key="review" style={[styles.page, {width: screenWidth}]}>
-              <MyReview
-                ref={reviewRef}
-                navigation={navigation}
-                onRefreshingChange={setReviewRefreshing}
-                onContentLayout={({nativeEvent}) => {
-                  updateReviewHeight(nativeEvent.layout.height);
-                }}
-                onCountChange={setReviewCount}
-                userProfile={{
-                  nickname: userdata.nickname,
-                  imageuri: userdata.imgUrl,
-                }}
-              />
-            </View>
-            <View key="manager" style={[styles.page, {width: screenWidth}]}>
-              <MyManager
-                ref={managerRef}
-                navigation={navigation}
-                onRefreshingChange={setManagerRefreshing}
-                onContentLayout={({nativeEvent}) => {
-                  updateManagerHeight(nativeEvent.layout.height);
-                }}
-              />
-            </View>
-          </PagerView>
+                <MyReview
+                  ref={reviewRef}
+                  navigation={navigation}
+                  onRefreshingChange={setReviewRefreshing}
+                  onContentLayout={({nativeEvent}) => {
+                    updateReviewHeight(nativeEvent.layout.height);
+                  }}
+                  onCountChange={setReviewCount}
+                  userProfile={{
+                    nickname: userdata.nickname,
+                    imageuri: userdata.imgUrl,
+                  }}
+                />
+              </View>
+              <View key="manager" style={[styles.page, {width: screenWidth}]}>
+                <MyManager
+                  ref={managerRef}
+                  navigation={navigation}
+                  onRefreshingChange={setManagerRefreshing}
+                  onContentLayout={({nativeEvent}) => {
+                    updateManagerHeight(nativeEvent.layout.height);
+                  }}
+                />
+              </View>
+            </PagerView>
           ) : (
             <View style={[styles.page, {width: screenWidth}]}>
               <MyReview

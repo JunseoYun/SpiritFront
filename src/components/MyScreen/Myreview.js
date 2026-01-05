@@ -224,7 +224,6 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    marginTop: 1,
   },
   image: {
     width: '100%',
