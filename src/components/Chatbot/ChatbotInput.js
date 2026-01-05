@@ -7,7 +7,6 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CustomText from '../../utils/CustomText';
 import CustomTextInput from '../../utils/CustomTextInput';
@@ -16,8 +15,6 @@ import AIMicIcon from '../../assets/svg/AIMicIcon';
 
 const ChatbotInput = ({
   showRecordingUI,
-  bottomOverlayHeight,
-  onInputLayout,
   prompt,
   onChangePrompt,
   onFocusInput,
@@ -39,31 +36,18 @@ const ChatbotInput = ({
 }) => {
   return (
     <View style={styles.bottomInputContainer} pointerEvents="box-none">
-      <LinearGradient
-        pointerEvents="none"
-        colors={[
-          'rgba(255,255,255,0)',
-          'rgba(255,255,255,0.2)',
-          'rgba(255,255,255,0.9)',
-        ]}
-        locations={[0.1, 0.45, 1]}
-        style={[
-          styles.bottomGradient,
-          {
-            height: bottomOverlayHeight,
-          },
-        ]}
-      />
-      <View
-        style={[styles.bottomInput]}
-        onLayout={({nativeEvent}) =>
-          onInputLayout(nativeEvent?.layout?.height ?? 0)
-        }>
+      <View style={[styles.bottomInput]}>
         <View
-          style={[styles.inputBox, showRecordingUI && styles.recordingContainer]}>
+          style={[
+            styles.inputBox,
+            showRecordingUI && styles.recordingContainer,
+          ]}>
           {showRecordingUI ? (
             <>
-              <Pressable style={styles.stopButton} onPress={onStopPress} hitSlop={10}>
+              <Pressable
+                style={styles.stopButton}
+                onPress={onStopPress}
+                hitSlop={10}>
                 <Ionicons name="stop" size={18} color="#f2f2f2" />
               </Pressable>
               <View style={styles.recordingBox}>
@@ -122,7 +106,9 @@ const ChatbotInput = ({
                       size="small"
                       color="#9AA0A6"
                     />
-                    <CustomText style={styles.recordingLabel}>받아쓰는 중</CustomText>
+                    <CustomText style={styles.recordingLabel}>
+                      받아쓰는 중
+                    </CustomText>
                   </View>
                 )}
               </View>
@@ -135,11 +121,7 @@ const ChatbotInput = ({
                   ]}
                   onPress={onSendPress}
                   disabled={sending || isTranscribing}>
-                  <Ionicons
-                    name="arrow-up"
-                    size={20}
-                    color={sending || isTranscribing ? '#aaa' : '#111'}
-                  />
+                  <Ionicons name="arrow-up" size={20} color="#FFF" />
                 </Pressable>
               </View>
             </>
@@ -165,10 +147,13 @@ const ChatbotInput = ({
                 ]}>
                 {showSendButton ? (
                   <Pressable style={styles.sendButton} onPress={onSendPress}>
-                    <Ionicons name="arrow-up" size={20} color="#333" />
+                    <Ionicons name="arrow-up" size={20} color="#FFF" />
                   </Pressable>
                 ) : showMicButton ? (
-                  <Pressable style={styles.micButton} onPress={onMicPress} hitSlop={10}>
+                  <Pressable
+                    style={styles.micButton}
+                    onPress={onMicPress}
+                    hitSlop={10}>
                     <AIMicIcon size={22} />
                   </Pressable>
                 ) : (
@@ -185,22 +170,15 @@ const ChatbotInput = ({
 
 const styles = StyleSheet.create({
   bottomInputContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+    marginHorizontal: 18,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
   },
-  bottomGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
+
   bottomInput: {
     flexDirection: 'row',
-    marginHorizontal: 18,
     alignItems: 'center',
-    paddingBottom: 20,
+    marginBottom: 10,
   },
   inputBox: {
     flex: 1,
@@ -244,15 +222,15 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   sendButton: {
-    width: 32,
-    height: 32,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
     borderRadius: 100,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#3CBBFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
   sendButtonActive: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#3CBBFF',
   },
   sendButtonDisabled: {
     opacity: 0.5,

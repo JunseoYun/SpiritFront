@@ -9,6 +9,8 @@ const ChatbotSuggestions = ({
   showRecordingUI,
   chipAnim,
   chipBottomSpacing,
+  safeAreaBottom,
+  keyboardVisible,
   suggestions,
   onSelectSuggestion,
 }) => {
@@ -16,13 +18,21 @@ const ChatbotSuggestions = ({
     return null;
   }
 
+  const extraBottomSpacing =
+    !keyboardVisible &&
+    Platform.OS === 'ios' &&
+    typeof safeAreaBottom === 'number' &&
+    safeAreaBottom > 0
+      ? safeAreaBottom
+      : 0;
+
   return (
     <Animated.View
       style={[
         styles.suggestionWrap,
         {
           opacity: chipAnim,
-          marginBottom: chipBottomSpacing,
+          // marginBottom: chipBottomSpacing + extraBottomSpacing,
         },
       ]}>
       <ScrollView
@@ -38,7 +48,9 @@ const ChatbotSuggestions = ({
               start={{x: 0, y: 0}}
               end={{x: 1, y: 0}}
               style={styles.chipBorder}>
-              <Pressable style={styles.chip} onPress={() => onSelectSuggestion(fullText)}>
+              <Pressable
+                style={styles.chip}
+                onPress={() => onSelectSuggestion(fullText)}>
                 <CustomText style={styles.chipKeyword}>{keyword}</CustomText>
                 <CustomText style={styles.chipSubtext}>{subtext}</CustomText>
               </Pressable>
@@ -56,7 +68,7 @@ const styles = StyleSheet.create({
   },
   chipRow: {
     paddingHorizontal: 12,
-    marginBottom: 2,
+    marginBottom: 10,
   },
   chipBorder: {
     marginHorizontal: 6,

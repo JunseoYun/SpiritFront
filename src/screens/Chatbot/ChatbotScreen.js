@@ -91,8 +91,8 @@ const ChatbotScreen = ({navigation}) => {
   const [lastResponseId, setLastResponseId] = useState(null);
   const [sending, setSending] = useState(false);
   const headerHeight = useHeaderHeight();
-  const keyboardVerticalOffset = headerHeight - 10;
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const spinAnim = useRef(new Animated.Value(0)).current;
   const hasPrompt = prompt.trim().length > 0;
   const hasMessages = chatHistory.length > 0;
@@ -501,7 +501,7 @@ const ChatbotScreen = ({navigation}) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
-      gestureEnabled: false,
+      gestureEnabled: true,
     });
   }, [navigation]);
 
@@ -664,12 +664,14 @@ const ChatbotScreen = ({navigation}) => {
 
     const handleShow = e => {
       setKeyboardVisible(true);
+      setKeyboardHeight(e?.endCoordinates?.height ?? 0);
       requestAnimationFrame(() => {
         scrollViewRef.current?.scrollToEnd({animated: true});
       });
     };
     const handleHide = () => {
       setKeyboardVisible(false);
+      setKeyboardHeight(0);
     };
 
     const showSub = Keyboard.addListener(showEvent, handleShow);
@@ -837,6 +839,13 @@ const ChatbotScreen = ({navigation}) => {
   }, [clearTranscribeTimer, isVoiceSupported, restartListening, submit]);
 
   const measuredInputHeight = bottomInputHeight || 94;
+  const keyboardLift =
+    keyboardVisible && keyboardHeight
+      ? Math.max(
+          0,
+          keyboardHeight - insets.bottom + (Platform.OS === 'android' ? 50 : 0),
+        )
+      : 0;
   const bottomPadding = Math.max(
     insets.bottom + (keyboardVisible ? 28 : 16),
     Math.round(measuredInputHeight * 0.6),
@@ -1017,81 +1026,78 @@ const ChatbotScreen = ({navigation}) => {
   }, [navigation]);
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior="padding"
-      keyboardVerticalOffset={keyboardVerticalOffset}>
-      <View style={[styles.flex]}>
-        <ChatbotDrawer
-          showDrawer={showDrawer}
-          overlayAnim={overlayAnim}
-          drawerAnim={drawerAnim}
-          drawerWidth={drawerWidth}
-          overlayPanHandlers={overlayPanHandlers}
+    <View style={[styles.flex, {paddingBottom: insets.bottom}]}>
+      <ChatbotDrawer
+        showDrawer={showDrawer}
+        overlayAnim={overlayAnim}
+        drawerAnim={drawerAnim}
+        drawerWidth={drawerWidth}
+        overlayPanHandlers={overlayPanHandlers}
+        insets={insets}
+        address={address}
+        sending={sending}
+        onClose={closeDrawer}
+        onResetChat={resetChat}
+        onNavigateLocation={() => {
+          closeDrawer();
+          handleLocationPress();
+        }}
+        recentFirstPrompts={recentFirstPrompts}
+        onClearRecentFirstPrompts={clearRecentFirstPrompts}
+        onRemoveRecentFirstPrompt={removeRecentFirstPrompt}
+        onSelectPrompt={item => {
+          closeDrawer();
+          handlePromptSelect(item);
+        }}
+      />
+      <Animated.View
+        style={[
+          styles.container,
+          {
+            transform: [{translateX: contentShiftAnim}],
+          },
+        ]}
+        {...overlayPanHandlers}>
+        <ChatbotHeader
           insets={insets}
-          address={address}
           sending={sending}
-          onClose={closeDrawer}
+          onOpenDrawer={openDrawer}
+          onNavigateLocation={handleLocationPress}
           onResetChat={resetChat}
-          onNavigateLocation={() => {
-            closeDrawer();
-            handleLocationPress();
-          }}
-          recentFirstPrompts={recentFirstPrompts}
-          onClearRecentFirstPrompts={clearRecentFirstPrompts}
-          onRemoveRecentFirstPrompt={removeRecentFirstPrompt}
-          onSelectPrompt={item => {
-            closeDrawer();
-            handlePromptSelect(item);
-          }}
+          onGoBack={handleGoBack}
         />
-        <Animated.View
-          style={[
-            styles.container,
-            {
-              transform: [{translateX: contentShiftAnim}],
-            },
-          ]}
-          {...overlayPanHandlers}>
-          <ChatbotHeader
-            insets={insets}
-            sending={sending}
-            onOpenDrawer={openDrawer}
-            onNavigateLocation={handleLocationPress}
-            onResetChat={resetChat}
-            onGoBack={handleGoBack}
-          />
 
-          <ChatbotChatList
-            chatHistory={chatHistory}
-            address={address}
-            hasMessages={hasMessages}
-            sending={sending}
-            spinAnim={spinAnim}
-            scrollViewRef={scrollViewRef}
-            handleMessageLayout={handleMessageLayout}
-            bottomPadding={bottomPadding}
-            navigation={navigation}
-            userLocation={userLocation}
-            handleOpenMapWithAiResult={handleOpenMapWithAiResult}
-            showTitle={showTitle}
-            showRecordingUI={showRecordingUI}
-            titleAnim={titleAnim}
-          />
+        <ChatbotChatList
+          chatHistory={chatHistory}
+          address={address}
+          hasMessages={hasMessages}
+          sending={sending}
+          spinAnim={spinAnim}
+          scrollViewRef={scrollViewRef}
+          handleMessageLayout={handleMessageLayout}
+          bottomPadding={bottomPadding}
+          navigation={navigation}
+          userLocation={userLocation}
+          handleOpenMapWithAiResult={handleOpenMapWithAiResult}
+          showTitle={showTitle}
+          showRecordingUI={showRecordingUI}
+          titleAnim={titleAnim}
+        />
 
+        <View style={[styles.bottomArea, {paddingBottom: keyboardLift}]}>
           <ChatbotSuggestions
             showChips={showChips}
             showRecordingUI={showRecordingUI}
             chipAnim={chipAnim}
             chipBottomSpacing={chipBottomSpacing}
+            safeAreaBottom={insets.bottom}
+            keyboardVisible={keyboardVisible}
             suggestions={suggestions}
             onSelectSuggestion={handlePromptSelect}
           />
 
           <ChatbotInput
             showRecordingUI={showRecordingUI}
-            bottomOverlayHeight={bottomOverlayHeight}
-            onInputLayout={height => setBottomInputHeight(height)}
             prompt={prompt}
             onChangePrompt={handleChangePrompt}
             onFocusInput={() => setIsInputFocused(true)}
@@ -1111,9 +1117,9 @@ const ChatbotScreen = ({navigation}) => {
             volumeLevel={volumeLevel}
             inputRef={inputRef}
           />
-        </Animated.View>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </Animated.View>
+    </View>
   );
 };
 
@@ -1124,6 +1130,9 @@ const styles = StyleSheet.create({
   flex: {
     backgroundColor: '#FFF',
     flex: 1,
+  },
+  bottomArea: {
+    alignSelf: 'stretch',
   },
 });
 
