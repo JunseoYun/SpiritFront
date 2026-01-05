@@ -15,10 +15,10 @@ import {
 } from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import FastImage from 'react-native-fast-image';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {ShareIcon} from 'lucide-react-native';
 import Clipboard from 'react-native/Libraries/Components/Clipboard/Clipboard';
 import useDirectionsModal from '../../../hooks/useDirectionsModal';
+import BookmarkIcon from '../../../assets/svg/BookmarkIcon';
 
 import ColorUtil from '../../../utils/ColorUtil';
 import {normalizeFont} from '../../../hooks/normalizeFont';
@@ -35,6 +35,7 @@ import OperationSchedule from '../../StoreScreen/StoreMainInfo/OperationSchedule
 import {Storelikepost, get_store_share} from '../../../api/storeApi';
 import CustomText from '../../../utils/CustomText';
 
+import Ionicons from 'react-native-vector-icons/Ionicons';
 const {width} = Dimensions.get('window');
 const H_PADDING = 16;
 const CONTENT_WIDTH = width - H_PADDING * 2;
@@ -245,15 +246,16 @@ const MapDetailItem = ({
               <Pressable
                 style={[
                   styles.topButton,
-                  isLiked && styles.likeButtonActive,
+                  isLiked && styles.saveButtonActive,
                   likeLoading && {opacity: 0.5},
                 ]}
                 hitSlop={8}
                 onPress={handleToggleLike}>
-                <Ionicons
-                  name={isLiked ? 'heart' : 'heart-outline'}
+                <BookmarkIcon
                   size={18}
-                  color={isLiked ? '#FF5E5E' : '#4B5563'}
+                  color={isLiked ? '#3CBBFF' : '#4B5563'}
+                  strokeWidth={2}
+                  filled={isLiked}
                 />
               </Pressable>
 
@@ -512,8 +514,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 10,
   },
-  likeButtonActive: {
-    backgroundColor: '#FFECEE',
+  saveButtonActive: {
+    backgroundColor: '#E6F3FF',
   },
 
   titleView: {

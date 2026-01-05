@@ -549,28 +549,19 @@ const ExploreScreen = ({navigation}) => {
       stableNavigation,
     ],
   );
+  const headerTopPadding = insets.top + (Platform.OS === 'android' ? 10 : 0);
 
   return (
-    <>
+    <View style={styles.container}>
       <Animated.View
         pointerEvents={'auto'}
-        style={[
-          styles.topView2,
-          {paddingTop: insets.top},
-          insets.top === 0 && {paddingTop: 10},
-        ]}
+        style={[styles.topView2]}
         onLayout={event => {
           const {height} = event.nativeEvent.layout;
           setTopView2Height(height);
         }}>
         <View style={{flexDirection: 'column'}}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              marginHorizontal: 20,
-              gap: 20,
-            }}>
+          <View style={[styles.headerRow, {paddingTop: headerTopPadding + 6}]}>
             <ExploreSearchBar handleSearchPress={handleSearchPress} />
             <View style={styles.topView2Actions}>
               <NotificationButton
@@ -746,11 +737,15 @@ const ExploreScreen = ({navigation}) => {
         />
       )}
       <Loading loading={isRefreshing || loading || popularloading} />
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
   absoluteTop: {
     position: 'absolute',
     left: 0,
@@ -771,6 +766,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
     color: '#fff',
     flexShrink: 1,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+    gap: 16,
   },
   addressContainer: {
     flex: 1,

@@ -507,7 +507,9 @@ const MainScreen = ({navigation}) => {
                 ? {
                     ...comment,
                     replies: mergeUnique([
-                      ...(Array.isArray(comment.replies) ? comment.replies : []),
+                      ...(Array.isArray(comment.replies)
+                        ? comment.replies
+                        : []),
                       mappedReply,
                     ]),
                     previewReplies: mergeUnique([
@@ -549,12 +551,7 @@ const MainScreen = ({navigation}) => {
         isSendingCommentRef.current = false;
       }
     },
-    [
-      currentUserNickname,
-      fetchComments,
-      mapCommentItem,
-      selectedFeed?.id,
-    ],
+    [currentUserNickname, fetchComments, mapCommentItem, selectedFeed?.id],
   );
 
   const handleDeleteComment = useCallback(
@@ -1105,7 +1102,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginHorizontal: 16,
-    gap: 20,
+    gap: 16,
   },
   topView: {
     flexDirection: 'row',

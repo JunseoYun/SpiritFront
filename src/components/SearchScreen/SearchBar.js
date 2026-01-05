@@ -1,12 +1,12 @@
 import React, {useCallback, useRef, useState} from 'react';
 import {View, TouchableOpacity, StyleSheet, Pressable} from 'react-native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CancelText from '../CancelText/CancelText';
 import {useFocusEffect} from '@react-navigation/native';
 import CustomTextInput from '../../utils/CustomTextInput';
 import ColorUtil from '../../utils/ColorUtil';
-import {AILogoIcon} from '../../assets/svg/AILogoIcon';
+import ChatbotIcon from '../../assets/svg/ChatbotIcon';
 import CustomText from '../../utils/CustomText';
 const SearchBar = ({
   value,
@@ -29,7 +29,11 @@ const SearchBar = ({
   return (
     <View style={[styles.container, {paddingTop: 10}]}>
       <View style={styles.contentRow}>
-        <View style={styles.searchContainer}>
+        <View
+          style={[
+            styles.searchContainer,
+            {borderColor: focused ? '#3cbbff' : ColorUtil.border},
+          ]}>
           <Pressable
             style={styles.backBtn}
             onPress={() => onBackPress && onBackPress()}
@@ -38,12 +42,12 @@ const SearchBar = ({
           </Pressable>
 
           <View style={styles.inputWrapper}>
-            {/* <AntDesign name="search1" size={18} color={'#A9A9A9'} /> */}
             <CustomTextInput
               ref={inputRef}
+              maxScale={1.1}
               style={styles.textInput}
               placeholder={placeholder || '검색어를 입력해주세요.'}
-              placeholderTextColor="#9E9E9E"
+              placeholderTextColor="#7E8081"
               value={value}
               onChangeText={onChangeText}
               returnKeyType="search"
@@ -66,10 +70,12 @@ const SearchBar = ({
           style={[styles.exploreButton]}
           onPress={() => onHomePress && onHomePress()}
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-          <View style={styles.exploreButtonContent}>
-            <AILogoIcon size={19} />
-            <CustomText style={[styles.exploreText]}>챗봇</CustomText>
-          </View>
+          {/* <View style={styles.exploreButtonContent}> */}
+          <ChatbotIcon size={35} color="#333" />
+          {/* <CustomText maxScale={1.1} style={[styles.exploreText]}>
+            챗봇
+          </CustomText> */}
+          {/* </View> */}
         </Pressable>
       </View>
     </View>
@@ -91,18 +97,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     height: 48,
-    borderRadius: 9,
+    borderRadius: 50,
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: ColorUtil.border,
     paddingHorizontal: 12,
-
-    flex: 1,
     marginRight: 12,
   },
   backBtn: {
-    marginRight: 8,
-    paddingRight: 6,
+    marginRight: 10,
   },
   inputWrapper: {
     flex: 1,
@@ -113,14 +115,14 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 16,
-    color: '#121212',
+    color: '#333',
     fontFamily: 'Pretendard-Regular',
-    paddingRight: 30,
+    marginRight: 30,
   },
   exploreButton: {
     width: 48,
     height: 48,
-    borderRadius: 9,
+    borderRadius: 100,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',

@@ -5,9 +5,11 @@ import {useMapSearch} from '../../context/MapSearchContext';
 import {AILogoIcon, AIEmptyLogoIcon} from '../../assets/svg/AILogoIcon';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Feather from 'react-native-vector-icons/Feather';
 
 import ColorUtil from '../../utils/ColorUtil';
 import CustomText from '../../utils/CustomText';
+import ChatbotIcon from '../../assets/svg/ChatbotIcon';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -87,12 +89,10 @@ const MapTopBar = ({
           style={[
             styles.searchContainer,
             styles.searchContainerSpacing,
-            forceWhiteBackground ? styles.searchContainerSolid : null,
+            forceWhiteBackground
+              ? styles.searchContainerSolid
+              : styles.searchContainerFloating,
             {
-              borderWidth: whiteBgAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, StyleSheet.hairlineWidth * 2],
-              }),
               shadowOpacity: whiteBgAnim.interpolate({
                 inputRange: [0, 1],
                 outputRange: [0.2, 0],
@@ -142,6 +142,7 @@ const MapTopBar = ({
                 initialSearchKeyword: trimmedKeyword || undefined,
               });
             }}>
+            {/* <Feather name="search" size={18} color="#7E8081" /> */}
             <CustomText
               maxScale={1.2}
               style={[
@@ -176,16 +177,21 @@ const MapTopBar = ({
               end={{x: 1, y: 1}}
               style={styles.exploreGradient}>
               <View style={styles.exploreButtonContent}>
-                <AIEmptyLogoIcon size={19} />
-                <CustomText style={styles.exploreText}>챗봇</CustomText>
+                {/* <AIEmptyLogoIcon size={18} /> */}
+                <ChatbotIcon size={35} color="#FFF" />
+                {/* <CustomText style={styles.exploreText}>챗봇</CustomText> */}
               </View>
             </LinearGradient>
           ) : (
             <View style={styles.exploreButtonContent}>
-              <AILogoIcon size={19} />
-              <CustomText style={[styles.exploreText, {color: '#3cbbff'}]}>
+              {/* <AILogoIcon size={18} /> */}
+
+              <ChatbotIcon size={35} color="#333" />
+              {/* <CustomText
+                maxScale={1.1}
+                style={[styles.exploreText, {color: '#3cbbff'}]}>
                 챗봇
-              </CustomText>
+              </CustomText> */}
             </View>
           )}
         </AnimatedPressable>
@@ -212,11 +218,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'white',
     borderColor: ColorUtil.border,
-    borderRadius: 9,
-    paddingHorizontal: 12,
-    elevation: 3,
+    borderRadius: 50,
+    paddingHorizontal: 18,
     shadowColor: '#000',
-    shadowOpacity: 0.15,
     shadowRadius: 1.5,
     shadowOffset: {width: 0, height: 2},
   },
@@ -228,21 +232,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: ColorUtil.border,
     elevation: 0,
-    shadowColor: '#000',
     shadowOpacity: 0,
+  },
+  searchContainerFloating: {
+    borderWidth: 0,
+    elevation: 3,
+    shadowOpacity: 0.15,
   },
   searchBox: {
     flex: 1,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   backBtn: {
-    marginRight: 6,
-    paddingRight: 6,
+    marginRight: 10,
   },
   placeholder: {
-    color: '#9E9E9E',
+    color: '#7E8081',
     fontSize: 16,
-    paddingRight: 30,
     fontFamily: 'Pretendard-Regular',
   },
 
@@ -261,7 +268,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-
+    borderRadius: 100,
     elevation: 3,
     shadowColor: '#000',
     shadowOpacity: 0.05,
@@ -283,6 +290,8 @@ const styles = StyleSheet.create({
   exploreGradient: {
     width: '100%',
     height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   exploreButtonSolid: {
     elevation: 0,
