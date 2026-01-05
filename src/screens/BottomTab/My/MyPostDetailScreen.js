@@ -4,11 +4,14 @@ import {
   Dimensions,
   FlatList,
   Image,
+  Pressable,
   StyleSheet,
+  Text,
   View,
   useWindowDimensions,
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import useCustomAlert from '../../../hooks/useCustomAlert';
 import PostItem from '../../../components/Post/PostItem';
 import PostItemSkeleton from '../../../components/Post/PostItemSkeleton';
@@ -415,7 +418,9 @@ const MyPostDetailScreen = ({navigation, route}) => {
                 ? {
                     ...comment,
                     replies: mergeUnique([
-                      ...(Array.isArray(comment.replies) ? comment.replies : []),
+                      ...(Array.isArray(comment.replies)
+                        ? comment.replies
+                        : []),
                       mappedReply,
                     ]),
                     previewReplies: mergeUnique([
@@ -447,7 +452,8 @@ const MyPostDetailScreen = ({navigation, route}) => {
           const mappedComment = mapCommentItem(result ?? fallbackComment);
           setCommentList(prev => {
             const filtered = prev.filter(
-              commentItem => String(commentItem.id) !== String(mappedComment.id),
+              commentItem =>
+                String(commentItem.id) !== String(mappedComment.id),
             );
             return [...filtered, mappedComment];
           });
@@ -457,12 +463,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
         isSendingCommentRef.current = false;
       }
     },
-    [
-      fetchComments,
-      mapCommentItem,
-      selectedFeed?.id,
-      userProfile?.nickname,
-    ],
+    [fetchComments, mapCommentItem, selectedFeed?.id, userProfile?.nickname],
   );
 
   const handleDeleteComment = useCallback(
@@ -781,9 +782,25 @@ const MyPostDetailScreen = ({navigation, route}) => {
   }, [feedItems.length, showList, tryStartList]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      {!showList && feedItems.length ? (
-        <>
+    <View style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <View style={styles.header}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}
+            style={styles.headerSide}>
+            <Ionicons
+              name="arrow-back-outline"
+              size={23}
+              color="#333"
+            />
+          </Pressable>
+          <Text style={styles.headerTitle}>게시글</Text>
+          <View style={styles.headerSide} />
+        </View>
+      </SafeAreaView>
+      <View style={styles.content}>
+        {!showList && feedItems.length ? (
           <View onLayout={handleSelectedLayout}>
             <PostItem
               item={feedItems[initialIndex]}
@@ -796,84 +813,84 @@ const MyPostDetailScreen = ({navigation, route}) => {
               onPrimaryImageLoad={handleSelectedLoaded}
             />
           </View>
-        </>
-      ) : null}
-      <FlatList
-        ref={listRef}
-        data={feedItems}
-        keyExtractor={(item, index) =>
-          item?.id ? item.id.toString() : `post-${index}`
-        }
-        initialNumToRender={initialRenderCount}
-        maxToRenderPerBatch={initialRenderCount}
-        windowSize={9}
-        showsVerticalScrollIndicator={false}
-        onScrollBeginDrag={handleScrollBeginDrag}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        onScrollToIndexFailed={handleScrollToIndexFailed}
-        onLayout={handleListLayout}
-        onContentSizeChange={handleContentSizeChange}
-        renderItem={({item, index}) => (
-          <PostItem
-            item={item}
-            onCommentPress={handleOpenCommentSheet}
-            onEditPress={handleEditPress}
-            onDeletePress={handleDeletePress}
-            isWriter
-            isCentered={index === currentIndex}
-            initialImageRatio={imageRatioMap[index]}
-          />
-        )}
-        contentContainerStyle={[
-          styles.feedContent,
-          {
-            paddingBottom: isLastIndex
-              ? insets.bottom
-              : Math.max(insets.bottom, 24),
-          },
-        ]}
-        style={showList ? null : styles.listHidden}
-        pointerEvents={showList ? 'auto' : 'none'}
-      />
+        ) : null}
+        <FlatList
+          ref={listRef}
+          data={feedItems}
+          keyExtractor={(item, index) =>
+            item?.id ? item.id.toString() : `post-${index}`
+          }
+          initialNumToRender={initialRenderCount}
+          maxToRenderPerBatch={initialRenderCount}
+          windowSize={9}
+          showsVerticalScrollIndicator={false}
+          onScrollBeginDrag={handleScrollBeginDrag}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          onScrollToIndexFailed={handleScrollToIndexFailed}
+          onLayout={handleListLayout}
+          onContentSizeChange={handleContentSizeChange}
+          renderItem={({item, index}) => (
+            <PostItem
+              item={item}
+              onCommentPress={handleOpenCommentSheet}
+              onEditPress={handleEditPress}
+              onDeletePress={handleDeletePress}
+              isWriter
+              isCentered={index === currentIndex}
+              initialImageRatio={imageRatioMap[index]}
+            />
+          )}
+          contentContainerStyle={[
+            styles.feedContent,
+            {
+              paddingBottom: isLastIndex
+                ? insets.bottom
+                : Math.max(insets.bottom, 24),
+            },
+          ]}
+          style={showList ? null : styles.listHidden}
+          pointerEvents={showList ? 'auto' : 'none'}
+        />
 
-      <PostCommentSheet
-        ref={commentSheetRef}
-        snapPoints={commentSheetSnapPoints}
-        onChange={() => {}}
-        onDismiss={() => {
-          setSelectedFeed(null);
-        }}
-        insets={insets}
-        commentList={commentList}
-        defaultProfile={defaultProfile}
-        commentLikeState={commentLikeState}
-        onToggleLike={handleCommentLikeToggle}
-        formatLikeCount={formatLikeCount}
-        commentInput={commentInput}
-        onChangeCommentInput={setCommentInput}
-        onPressSend={handleSendComment}
-        onDeleteComment={handleDeleteComment}
-        onRequestReplies={handleRequestReplies}
-        onRequestMoreComments={handleRequestMoreComments}
-        commentTotalCount={commentTotalCount}
-        commentPage={commentPage}
-        isPostWriter={selectedFeed?.isWriter ?? false}
-        isLoadingComments={isLoadingComments}
-        pendingScrollToId={pendingScrollReplyId}
-      />
+        <PostCommentSheet
+          ref={commentSheetRef}
+          snapPoints={commentSheetSnapPoints}
+          onChange={() => {}}
+          onDismiss={() => {
+            setSelectedFeed(null);
+          }}
+          insets={insets}
+          commentList={commentList}
+          defaultProfile={defaultProfile}
+          commentLikeState={commentLikeState}
+          onToggleLike={handleCommentLikeToggle}
+          formatLikeCount={formatLikeCount}
+          commentInput={commentInput}
+          onChangeCommentInput={setCommentInput}
+          onPressSend={handleSendComment}
+          onDeleteComment={handleDeleteComment}
+          onRequestReplies={handleRequestReplies}
+          onRequestMoreComments={handleRequestMoreComments}
+          commentTotalCount={commentTotalCount}
+          commentPage={commentPage}
+          isPostWriter={selectedFeed?.isWriter ?? false}
+          isLoadingComments={isLoadingComments}
+          pendingScrollToId={pendingScrollReplyId}
+        />
 
-      {showSkeleton ? (
-        <View style={styles.skeletonOverlay} pointerEvents="auto">
-          {skeletonItems.map(key => (
-            <PostItemSkeleton key={key} />
-          ))}
-        </View>
-      ) : null}
-      <Loading loading={showSkeleton} />
-      <Loading loading={isDeleting} />
-      <AlertComponent />
-    </SafeAreaView>
+        {showSkeleton ? (
+          <View style={styles.skeletonOverlay} pointerEvents="auto">
+            {skeletonItems.map(key => (
+              <PostItemSkeleton key={key} />
+            ))}
+          </View>
+        ) : null}
+        <Loading loading={showSkeleton} />
+        <Loading loading={isDeleting} />
+        <AlertComponent />
+      </View>
+    </View>
   );
 };
 
@@ -881,6 +898,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  safeArea: {
+    backgroundColor: '#fff',
+  },
+  header: {
+    height: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+  },
+  headerSide: {
+    width: 32,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#333',
+    fontFamily: 'Pretendard-Bold',
+  },
+  content: {
+    flex: 1,
   },
   feedContent: {
     paddingTop: 10,

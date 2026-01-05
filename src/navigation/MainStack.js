@@ -91,23 +91,7 @@ export default function MainStack() {
       <Stack.Screen
         name="MyPostDetailScreen"
         component={MyPostDetailScreen}
-        options={({navigation}) => ({
-          headerShadowVisible: false,
-          title: '게시글',
-          headerTitleAlign: 'center',
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="MyPostEditScreen"
@@ -117,23 +101,7 @@ export default function MainStack() {
       <Stack.Screen
         name="LikeSavedPostDetailScreen"
         component={LikeSavedPostDetailScreen}
-        options={({navigation}) => ({
-          headerShadowVisible: false,
-          title: '게시글',
-          headerTitleAlign: 'center',
-          headerLeft: () => (
-            <Pressable
-              onPress={() => navigation.goBack()}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="arrow-back-outline"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="PostWriteScreen"
