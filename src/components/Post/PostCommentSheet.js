@@ -9,6 +9,7 @@ import {
   ActionSheetIOS,
   Alert,
   Animated,
+  ActivityIndicator,
   Image,
   Keyboard,
   Platform,
@@ -109,12 +110,12 @@ const CommentFooter = ({
       style={[
         styles.commentInputBar,
         {
-          paddingBottom: animatedPaddingBottom,
+          paddingBottom: bottomInset + 10,
         },
       ]}>
       <FastImage source={defaultProfile} style={styles.commentInputAvatar} />
-      {replyTarget ? (
-        <View style={{flex: 1}}>
+      <View style={{flex: 1}}>
+        {replyTarget ? (
           <View style={styles.replyField}>
             <CustomText
               style={styles.replyTarget}
@@ -126,43 +127,12 @@ const CommentFooter = ({
               <Ionicons name="close" size={16} color={ColorUtil.subText} />
             </Pressable>
           </View>
-          <View
-            style={[
-              styles.commentInputField,
-              {
-                borderBottomLeftRadius: 20,
-                borderBottomRightRadius: 20,
-                borderRadius: 0,
-                borderTopWidth: 0,
-              },
-            ]}>
-            <CustomTextInput
-              ref={inputRef}
-              value={localInput}
-              onChangeText={text => {
-                setLocalInput(text);
-                onChangeCommentInput?.(text);
-              }}
-              onFocus={onFocusInput}
-              placeholder="댓글을 남겨보세요."
-              placeholderTextColor="#9AA1AE"
-              style={styles.commentInput}
-              multiline
-              underlineColorAndroid="transparent"
-              InputComponent={BottomSheetTextInput}
-            />
-            {localInput.trim() ? (
-              <Pressable
-                hitSlop={8}
-                onPress={handleSend}
-                style={[styles.commentSendButton]}>
-                <Ionicons name="arrow-up" size={20} color="#FFF" />
-              </Pressable>
-            ) : null}
-          </View>
-        </View>
-      ) : (
-        <View style={styles.commentInputField}>
+        ) : null}
+        <View
+          style={[
+            styles.commentInputField,
+            replyTarget ? styles.commentInputFieldReply : null,
+          ]}>
           <CustomTextInput
             ref={inputRef}
             value={localInput}
@@ -187,7 +157,7 @@ const CommentFooter = ({
             </Pressable>
           ) : null}
         </View>
-      )}
+      </View>
     </Animated.View>
   );
 };
@@ -212,6 +182,8 @@ const PostCommentSheet = forwardRef(
       commentPage = 0,
       commentPageSize = 20,
       isPostWriter = false,
+      isLoadingComments = false,
+      pendingScrollToId = null,
     },
     ref,
   ) => {
@@ -226,18 +198,25 @@ const PostCommentSheet = forwardRef(
     const [selectedReportReason, setSelectedReportReason] = useState(
       POST_REPORT_REASONS[0],
     );
+    const [loadingReplies, setLoadingReplies] = useState({});
     const reportSheetRef = useRef(null);
     const scrollOffsetRef = useRef(0);
     const isLoadingMoreCommentsRef = useRef(false);
     const lastRequestedCommentPageRef = useRef(0);
     const SHEET_HEADER_HEIGHT = 52;
     const highlightMapRef = useRef({});
+    const replyRequestTokenRef = useRef({});
+    const pendingAutoScrollIdRef = useRef(null);
 
     const layoutMapRef = useRef({});
     const replyListLayoutRef = useRef({});
     const setItemLayoutWithSize = useCallback((id, y, height) => {
       if (!id) return;
       layoutMapRef.current[id] = {y, height};
+      if (pendingAutoScrollIdRef.current === id) {
+        pendingAutoScrollIdRef.current = null;
+        scrollToItem(id);
+      }
     }, []);
     const setReplyListLayout = useCallback((id, y) => {
       if (!id) return;
@@ -280,6 +259,16 @@ const PostCommentSheet = forwardRef(
         inputRef.current?.focus?.();
       });
     }, []);
+
+    useEffect(() => {
+      if (!pendingScrollToId) return;
+      pendingAutoScrollIdRef.current = pendingScrollToId;
+      const layout = layoutMapRef.current[pendingScrollToId];
+      if (layout && typeof layout.y === 'number') {
+        pendingAutoScrollIdRef.current = null;
+        scrollToItem(pendingScrollToId);
+      }
+    }, [pendingScrollToId, scrollToItem]);
 
     useEffect(() => {
       const showSub = Keyboard.addListener('keyboardDidShow', () => {
@@ -513,6 +502,39 @@ const PostCommentSheet = forwardRef(
       onChangeCommentInputRef.current?.(text);
     }, []);
 
+    const requestReplies = useCallback(
+      (commentId, page) => {
+        if (!onRequestReplies) return;
+        const nextToken = (replyRequestTokenRef.current[commentId] ?? 0) + 1;
+        replyRequestTokenRef.current[commentId] = nextToken;
+        setLoadingReplies(prev => {
+          if (prev[commentId]) return prev;
+          return {...prev, [commentId]: true};
+        });
+        const maybePromise = onRequestReplies(commentId, page);
+        if (maybePromise && typeof maybePromise.finally === 'function') {
+          maybePromise.finally(() => {
+            if (replyRequestTokenRef.current[commentId] === nextToken) {
+              setLoadingReplies(prev => ({
+                ...prev,
+                [commentId]: false,
+              }));
+            }
+          });
+          return;
+        }
+        setTimeout(() => {
+          if (replyRequestTokenRef.current[commentId] === nextToken) {
+            setLoadingReplies(prev => ({
+              ...prev,
+              [commentId]: false,
+            }));
+          }
+        }, 250);
+      },
+      [onRequestReplies],
+    );
+
     const getHighlightOpacityStyle = useCallback(
       id => {
         const value = getHighlightValue(id);
@@ -660,9 +682,13 @@ const PostCommentSheet = forwardRef(
             scrollEventThrottle={16}
             onScroll={handleCommentScroll}
             contentContainerStyle={[styles.commentSheetContent]}>
-            {commentList.length === 0 ? (
+            {commentList.length === 0 && isLoadingComments ? (
+              <View style={styles.commentLoadingContainer}>
+                <ActivityIndicator size="small" color="#9AA1AE" />
+              </View>
+            ) : commentList.length === 0 ? (
               <CustomText style={styles.commentEmptyText}>
-                아직 댓글이 없어요
+                첫 댓글을 작성해보세요.
               </CustomText>
             ) : (
               commentList.map(comment => {
@@ -675,9 +701,23 @@ const PostCommentSheet = forwardRef(
                 const previewReplies = Array.isArray(comment.previewReplies)
                   ? comment.previewReplies
                   : [];
+                const mergeUnique = list => {
+                  const seen = new Set();
+                  return list.filter(reply => {
+                    const key = String(reply.id);
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                  });
+                };
+                const expandedReplyItems = mergeUnique(
+                  replies.length ? replies : previewReplies,
+                );
                 const isMenuTarget = selectedMenuTarget?.id === comment.id;
                 const isExpanded = Boolean(expandedReplies[comment.id]);
-                const isPreviewHidden = Boolean(hiddenPreviewReplies[comment.id]);
+                const isPreviewHidden = Boolean(
+                  hiddenPreviewReplies[comment.id],
+                );
                 const previewVisibleCount =
                   !isExpanded && !isPreviewHidden ? previewReplies.length : 0;
                 const remainingReplyCount = Math.max(
@@ -686,9 +726,10 @@ const PostCommentSheet = forwardRef(
                 );
                 const remainingExpandedCount = Math.max(
                   0,
-                  replyCount - replies.length,
+                  replyCount - expandedReplyItems.length,
                 );
                 const hasRepliesLoaded = Array.isArray(comment.replies);
+                const isLoadingReplies = !!loadingReplies[comment.id];
 
                 return (
                   <View
@@ -787,7 +828,7 @@ const PostCommentSheet = forwardRef(
                             event.nativeEvent.layout.y,
                           );
                         }}>
-                        {replies.map(reply => {
+                        {expandedReplyItems.map(reply => {
                           const isReplyMenuTarget =
                             selectedMenuTarget?.id === reply.id;
                           return (
@@ -887,16 +928,22 @@ const PostCommentSheet = forwardRef(
                                 paddingLeft: 48,
                               },
                             ]}
+                            disabled={isLoadingReplies}
                             onPress={() => {
                               const nextPage = hasRepliesLoaded
                                 ? (comment.replyPage ?? 0) + 1
                                 : 0;
-                              onRequestReplies?.(comment.id, nextPage);
+                              requestReplies(comment.id, nextPage);
                             }}>
                             <View style={styles.commentReplyToggleLine} />
                             <CustomText style={[styles.commentReplyToggleText]}>
-                              답글 {remainingExpandedCount}개 더보기
+                              {isLoadingReplies
+                                ? ''
+                                : `답글 ${remainingExpandedCount}개 더보기`}
                             </CustomText>
+                            {isLoadingReplies ? (
+                              <ActivityIndicator size="small" color="#9AA1AE" />
+                            ) : null}
                           </Pressable>
                         ) : (
                           <Pressable
@@ -920,7 +967,9 @@ const PostCommentSheet = forwardRef(
                         )}
                       </View>
                     ) : null}
-                    {!isExpanded && !isPreviewHidden && previewReplies.length ? (
+                    {!isExpanded &&
+                    !isPreviewHidden &&
+                    previewReplies.length ? (
                       <View style={styles.commentReplyList}>
                         {previewReplies.map(reply => (
                           <View key={reply.id} style={styles.commentReplyItem}>
@@ -972,6 +1021,7 @@ const PostCommentSheet = forwardRef(
                       remainingReplyCount > 0 ? (
                         <Pressable
                           style={[styles.commentReplyToggle, {paddingLeft: 48}]}
+                          disabled={isLoadingReplies}
                           onPress={() => {
                             setHiddenPreviewReplies(prev => ({
                               ...prev,
@@ -982,13 +1032,18 @@ const PostCommentSheet = forwardRef(
                               [comment.id]: true,
                             }));
                             if (!hasRepliesLoaded) {
-                              onRequestReplies?.(comment.id, 0);
+                              requestReplies(comment.id, 0);
                             }
                           }}>
                           <View style={styles.commentReplyToggleLine} />
                           <CustomText style={styles.commentReplyToggleText}>
-                            답글 {remainingReplyCount}개 더보기
+                            {isLoadingReplies
+                              ? '불러오는 중...'
+                              : `답글 ${remainingReplyCount}개 더보기`}
                           </CustomText>
+                          {isLoadingReplies ? (
+                            <ActivityIndicator size="small" color="#9AA1AE" />
+                          ) : null}
                         </Pressable>
                       ) : (
                         <Pressable
@@ -1006,9 +1061,12 @@ const PostCommentSheet = forwardRef(
                         </Pressable>
                       )
                     ) : null}
-                    {!isExpanded && previewVisibleCount === 0 && replyCount > 0 ? (
+                    {!isExpanded &&
+                    previewVisibleCount === 0 &&
+                    replyCount > 0 ? (
                       <Pressable
                         style={[styles.commentReplyToggle, {paddingLeft: 48}]}
+                        disabled={isLoadingReplies}
                         onPress={() => {
                           setHiddenPreviewReplies(prev => ({
                             ...prev,
@@ -1019,13 +1077,18 @@ const PostCommentSheet = forwardRef(
                             [comment.id]: true,
                           }));
                           if (!hasRepliesLoaded) {
-                            onRequestReplies?.(comment.id, 0);
+                            requestReplies(comment.id, 0);
                           }
                         }}>
                         <View style={styles.commentReplyToggleLine} />
                         <CustomText style={styles.commentReplyToggleText}>
-                          답글 {replyCount}개 더보기
+                          {isLoadingReplies
+                            ? '불러오는 중...'
+                            : `답글 ${replyCount}개 더보기`}
                         </CustomText>
+                        {isLoadingReplies ? (
+                          <ActivityIndicator size="small" color="#9AA1AE" />
+                        ) : null}
                       </Pressable>
                     ) : null}
                   </View>
@@ -1073,7 +1136,7 @@ const styles = StyleSheet.create({
   },
   commentSheetContent: {
     paddingTop: 12,
-    paddingBottom: 12,
+    paddingBottom: 80,
     gap: 18,
   },
   moreMenuOverlay: {
@@ -1118,6 +1181,17 @@ const styles = StyleSheet.create({
     color: ColorUtil.subText,
     textAlign: 'center',
     paddingVertical: 24,
+  },
+  commentLoadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 24,
+    gap: 8,
+  },
+  commentLoadingText: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-Regular',
+    color: ColorUtil.subText,
   },
   commentItem: {
     flexDirection: 'row',
@@ -1288,6 +1362,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  commentInputFieldReply: {
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    borderRadius: 0,
+    borderTopWidth: 0,
   },
   commentInput: {
     flex: 1,
