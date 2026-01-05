@@ -18,6 +18,7 @@ import FastImage from 'react-native-fast-image';
 import {PostMyGet} from '../../api/reviewApi';
 import Loading from '../../hooks/Loading';
 import CustomText from '../../utils/CustomText';
+import ColorUtil from '../../utils/ColorUtil';
 
 const GRID_COLUMNS = 3;
 const GRID_GAP = 1;
@@ -100,12 +101,14 @@ const MyReview = forwardRef(
       return result;
     }, [myReview]);
 
+    const getRootNavigation = () =>
+      navigation.getParent?.()?.getParent?.() ??
+      navigation.getParent?.() ??
+      navigation;
+
     const handleOpenDetail = review => {
       const imageUrl = review?.postImgUrlList?.[0] || review?.imgUrlList?.[0];
-      const rootNavigation =
-        navigation.getParent?.()?.getParent?.() ??
-        navigation.getParent?.() ??
-        navigation;
+      const rootNavigation = getRootNavigation();
       const foundIndex = myReview.findIndex(item => item?.id === review?.id);
       const initialIndex = foundIndex >= 0 ? foundIndex : 0;
       if (!imageUrl) {
@@ -136,6 +139,11 @@ const MyReview = forwardRef(
           });
         },
       );
+    };
+
+    const handleWritePost = () => {
+      const rootNavigation = getRootNavigation();
+      rootNavigation?.navigate('PostPhotoSelectScreen');
     };
 
     const handleRefresh = () => {
@@ -206,9 +214,15 @@ const MyReview = forwardRef(
             ))
           ) : !loading ? (
             <View style={styles.footer}>
-              <CustomText style={styles.emptyText}>
-                게시글이 없습니다.
+              <CustomText style={styles.emptyTitle}>
+                아직 게시글이 없어요.
               </CustomText>
+
+              <Pressable style={styles.writeButton} onPress={handleWritePost}>
+                <CustomText style={styles.writeButtonText}>
+                  게시글 작성하기
+                </CustomText>
+              </Pressable>
             </View>
           ) : null}
         </View>
@@ -235,13 +249,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     textAlign: 'center',
   },
-  emptyText: {
+  emptyTitle: {
     textAlign: 'center',
-    marginVertical: 60,
     fontFamily: 'Pretendard-Medium',
     fontSize: 17,
+    width: '100%',
     color: '#c0c0c0',
-    alignSelf: 'center',
+  },
+
+  writeButton: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  writeButtonText: {
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 14,
+    color: ColorUtil.main,
   },
 });
 

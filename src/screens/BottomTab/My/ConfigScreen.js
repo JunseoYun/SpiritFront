@@ -164,8 +164,8 @@ const ConfigScreen = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
-    height: '100%',
+    backgroundColor: '#FFF',
+    flex: 1,
   },
   footer: {
     position: 'absolute',

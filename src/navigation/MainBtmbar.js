@@ -128,10 +128,13 @@ const MainBtmbar = ({route}) => {
         options={{
           tabBarLabel: ({color}) => renderLabel('저장', color),
           headerShown: true,
-          headerTitleAlign: 'center',
+          headerTitleAlign: 'left',
 
           headerShadowVisible: false,
           title: '저장',
+          headerTitleContainerStyle: {
+            paddingLeft: 6,
+          },
           headerTitleStyle: {
             fontSize: 19,
             color: '#333',

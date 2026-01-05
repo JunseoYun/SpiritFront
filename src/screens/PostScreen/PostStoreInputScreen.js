@@ -13,6 +13,8 @@ import {
   Pressable,
   StyleSheet,
   View,
+  UIManager,
+  findNodeHandle,
   BackHandler,
   ToastAndroid,
 } from 'react-native';
@@ -29,6 +31,7 @@ import CustomText from '../../utils/CustomText';
 import FastImage from 'react-native-fast-image';
 import ColorUtil from '../../utils/ColorUtil';
 import BottomSheet, {
+  BottomSheetFlatList,
   BottomSheetScrollView,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
@@ -113,6 +116,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
   const manualNameInputRef = useRef(null);
   const manualAddressInputRef = useRef(null);
   const placeNameInputRef = useRef(null);
+  const focusedInputRef = useRef(null);
   const lastBackPressed = useRef(0);
   const sheetScrollRef = useRef(null);
   const focusStateRef = useRef({
@@ -169,9 +173,55 @@ const PostStoreInputScreen = ({navigation, route}) => {
     isManual,
   ]);
 
+  const scrollSheetToOffset = useCallback(offset => {
+    if (sheetScrollRef.current?.scrollToOffset) {
+      sheetScrollRef.current.scrollToOffset({offset, animated: true});
+      return;
+    }
+    sheetScrollRef.current?.scrollTo?.({y: offset, animated: true});
+  }, []);
+
+  const scrollSheetToInput = useCallback(
+    (inputRef, keyboardHeightOverride) => {
+      const inputNode = findNodeHandle(inputRef?.current);
+      const scrollNode =
+        sheetScrollRef.current?.getScrollableNode?.() ??
+        findNodeHandle(sheetScrollRef.current);
+      if (!inputNode || !scrollNode) return;
+
+      requestAnimationFrame(() => {
+        UIManager.measureLayout(
+          inputNode,
+          scrollNode,
+          () => {},
+          (x, y, width, height) => {
+            UIManager.measure(scrollNode, (sx, sy, sWidth, sHeight) => {
+              const extraOffset = 16;
+              const resolvedKeyboardHeight =
+                keyboardHeightOverride ?? keyboardHeight;
+              const visibleHeight = sHeight - resolvedKeyboardHeight;
+              const inputBottom = y + height;
+              if (
+                resolvedKeyboardHeight > 0 &&
+                inputBottom > visibleHeight - extraOffset
+              ) {
+                const targetOffset = y - (visibleHeight - height) + extraOffset;
+                scrollSheetToOffset(Math.max(targetOffset, 0));
+                return;
+              }
+              scrollSheetToOffset(Math.max(y - extraOffset, 0));
+            });
+          },
+        );
+      });
+    },
+    [keyboardHeight, scrollSheetToOffset],
+  );
+
   useEffect(() => {
     const showListener = Keyboard.addListener('keyboardDidShow', event => {
-      setKeyboardHeight(event?.endCoordinates?.height ?? 0);
+      const nextKeyboardHeight = event?.endCoordinates?.height ?? 0;
+      setKeyboardHeight(nextKeyboardHeight);
       if (focusStateRef.current.isSearchFocused) {
         return;
       }
@@ -181,9 +231,9 @@ const PostStoreInputScreen = ({navigation, route}) => {
         focusStateRef.current.isManualAddressFocused ||
         focusStateRef.current.isPlaceFocused
       ) {
-        requestAnimationFrame(() => {
-          sheetScrollRef.current?.scrollToEnd?.({animated: true});
-        });
+        if (focusedInputRef.current) {
+          scrollSheetToInput(focusedInputRef.current, nextKeyboardHeight);
+        }
       }
     });
     const hideListener = Keyboard.addListener('keyboardDidHide', () => {
@@ -194,7 +244,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
       showListener.remove();
       hideListener.remove();
     };
-  }, []);
+  }, [scrollSheetToInput]);
 
   useEffect(() => {
     const fetchViewed = async () => {
@@ -390,10 +440,10 @@ const PostStoreInputScreen = ({navigation, route}) => {
     bottomSheetRef.current?.snapToIndex(2);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        sheetScrollRef.current?.scrollToEnd?.({animated: true});
+        scrollSheetToInput(manualNameInputRef);
       });
     });
-  }, []);
+  }, [scrollSheetToInput]);
 
   const handleManualCancel = useCallback(() => {
     setIsManual(false);
@@ -552,35 +602,19 @@ const PostStoreInputScreen = ({navigation, route}) => {
     }
   }, [searchValue]);
 
-  const handleSheetScroll = useCallback(
-    event => {
-      if (isSearchFocused) {
-        searchInputRef.current?.blur?.();
-        Keyboard.dismiss();
-      }
-      if (!isSearching || searchState.loading || searchState.end) {
-        return;
-      }
-      const {contentOffset, contentSize, layoutMeasurement} =
-        event.nativeEvent || {};
-      if (
-        contentOffset &&
-        contentSize &&
-        layoutMeasurement &&
-        contentOffset.y + layoutMeasurement.height >= contentSize.height - 80
-      ) {
-        loadMoreSearch();
-      }
-    },
-    [
-      isSearchFocused,
-      isPlaceFocused,
-      isSearching,
-      loadMoreSearch,
-      searchState.end,
-      searchState.loading,
-    ],
-  );
+  const handleSheetScroll = useCallback(() => {
+    if (isSearchFocused) {
+      searchInputRef.current?.blur?.();
+      Keyboard.dismiss();
+    }
+  }, [isSearchFocused]);
+
+  const handleSearchEndReached = useCallback(() => {
+    if (!isSearching || searchState.loading || searchState.end) {
+      return;
+    }
+    loadMoreSearch();
+  }, [isSearching, loadMoreSearch, searchState.end, searchState.loading]);
 
   const keyboardPadding = Math.max(
     0,
@@ -770,7 +804,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
           ref={bottomSheetRef}
           index={0}
           snapPoints={bottomSheetSnapPoints}
-          enableContentPanningGesture={false}
+          enableContentPanningGesture
           handleIndicatorStyle={styles.sheetHandleIndicator}
           backgroundStyle={[styles.sheetBackground]}
           onChange={handleSheetChange}>
@@ -804,308 +838,556 @@ const PostStoreInputScreen = ({navigation, route}) => {
               )}
             </View>
           </BottomSheetView>
-          <BottomSheetScrollView
-            ref={sheetScrollRef}
-            contentContainerStyle={[
-              styles.bottomSheetContent,
-              {paddingBottom: Math.max(insets.bottom, 20) + keyboardPadding},
-            ]}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="always"
-            onScroll={handleSheetScroll}
-            scrollEventThrottle={16}>
-          {!isSearching && (
-            <View style={styles.chipRow}>
-              <Pressable
-                style={[
-                  styles.chip,
-                  activeChip === 'viewed' && styles.chipActive,
-                ]}
-                onPress={() => handleChipPress('viewed')}
-                hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
-                <CustomText
-                  style={[
-                    styles.chipText,
-                    activeChip === 'viewed' && styles.chipActiveText,
-                  ]}>
-                  최근 본 매장
-                </CustomText>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.chip,
-                  activeChip === 'liked' && styles.chipActive,
-                ]}
-                onPress={() => handleChipPress('liked')}
-                hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
-                <CustomText
-                  style={[
-                    styles.chipText,
-                    activeChip === 'liked' && styles.chipActiveText,
-                  ]}>
-                  저장한 매장
-                </CustomText>
-              </Pressable>
-
-              <Pressable
-                style={[
-                  styles.chip,
-                  activeChip === 'manual' && styles.chipActive,
-                ]}
-                onPress={() => handleChipPress('manual')}
-                hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
-                <CustomText
-                  style={[
-                    styles.chipText,
-                    activeChip === 'manual' && styles.chipActiveText,
-                  ]}>
-                  장소 직접 입력
-                </CustomText>
-              </Pressable>
-            </View>
-          )}
-          {(isSearching || activeChip !== 'manual') && (
-            <View style={styles.storeGrid}>
-              {displayedLoading ? (
-                <CustomText style={styles.emptyStoreText}>
-                  불러오는 중...
-                </CustomText>
-              ) : displayedItems.length === 0 ? (
-                <CustomText style={styles.emptyStoreText}>
-                  {isSearching
-                    ? '검색된 매장이 없어요.'
-                    : activeChip === 'viewed'
-                    ? '최근 본 매장이 없어요.'
-                    : '저장한 매장이 없어요.'}
-                </CustomText>
-              ) : (
-                displayedItems.map((store, index) => {
-                  const storeId = getStoreId(store);
-                  const isSelected = getStoreId(selectedStore) === storeId;
-                  return (
-                    <View
-                      key={String(storeId)}
-                      style={[
-                        styles.storeCardWrap,
-                        {
-                          width: storeCardWidth,
-                          marginRight: index % 2 === 0 ? storeGridGap : 0,
-                        },
-                      ]}>
-                      <PostStoreResultItem
-                        store={store}
-                        width={storeCardWidth}
-                        onPress={handleSelectStore}
+          {isSearching ? (
+            <BottomSheetFlatList
+              ref={sheetScrollRef}
+              data={displayedItems}
+              keyExtractor={(item, index) => String(getStoreId(item) ?? index)}
+              numColumns={2}
+              renderItem={({item, index}) => {
+                const storeId = getStoreId(item);
+                const isSelected = getStoreId(selectedStore) === storeId;
+                return (
+                  <View
+                    style={[
+                      styles.storeCardWrap,
+                      {
+                        width: storeCardWidth,
+                        marginRight: index % 2 === 0 ? storeGridGap : 0,
+                      },
+                    ]}>
+                    <PostStoreResultItem
+                      store={item}
+                      width={storeCardWidth}
+                      onPress={handleSelectStore}
+                    />
+                    {isSelected && (
+                      <View style={styles.storeCardCheck}>
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={18}
+                          color="#4AA3FF"
+                        />
+                      </View>
+                    )}
+                  </View>
+                );
+              }}
+              contentContainerStyle={[
+                styles.bottomSheetContent,
+                {paddingBottom: Math.max(insets.bottom, 20) + keyboardPadding},
+              ]}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="always"
+              onScroll={handleSheetScroll}
+              scrollEventThrottle={16}
+              onEndReached={handleSearchEndReached}
+              onEndReachedThreshold={0.4}
+              ListEmptyComponent={
+                displayedLoading ? (
+                  <CustomText style={styles.emptyStoreText}>
+                    불러오는 중...
+                  </CustomText>
+                ) : (
+                  <CustomText style={styles.emptyStoreText}>
+                    검색된 매장이 없어요.
+                  </CustomText>
+                )
+              }
+              ListFooterComponent={
+                <>
+                  {isManual || displayedItems.length === 0 ? (
+                    <View style={styles.manualForm}>
+                      {!isManual && (
+                        <CustomText
+                          style={[
+                            styles.manualEntryHint,
+                            {marginTop: 20, alignSelf: 'center'},
+                          ]}>
+                          찾는 매장이 없다면 직접 입력해보세요.
+                        </CustomText>
+                      )}
+                      <CustomText style={styles.manualLabel}>
+                        매장 이름
+                      </CustomText>
+                      <CustomTextInput
+                        ref={manualNameInputRef}
+                        style={[
+                          styles.manualInput,
+                          isManualNameFocused && styles.manualInputFocused,
+                          manualStoreName.length > 0 &&
+                            styles.manualInputFilled,
+                        ]}
+                        value={manualStoreName}
+                        onChangeText={text => {
+                          const maxChars = 50;
+                          if (text.length > maxChars) {
+                            setIsManualNameOver(true);
+                            return;
+                          }
+                          setIsManualNameOver(false);
+                          setManualStoreName(text);
+                        }}
+                        placeholder="매장 이름을 입력하세요."
+                        placeholderTextColor="#9B9B9B"
+                        onFocus={() => {
+                          setIsManualNameFocused(true);
+                          focusedInputRef.current = manualNameInputRef;
+                          bottomSheetRef.current?.snapToIndex(2);
+                          scrollSheetToInput(manualNameInputRef);
+                        }}
+                        onBlur={() => {
+                          setIsManualNameFocused(false);
+                          if (focusedInputRef.current === manualNameInputRef) {
+                            focusedInputRef.current = null;
+                          }
+                        }}
+                        returnKeyType="next"
+                        onSubmitEditing={() =>
+                          manualAddressInputRef.current?.focus?.()
+                        }
                       />
-                      {isSelected && (
-                        <View style={styles.storeCardCheck}>
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={18}
-                            color="#4AA3FF"
-                          />
-                        </View>
+                      {isManualNameOver && (
+                        <CustomText style={styles.manualErrorText}>
+                          매장 이름은 최대 50자까지 입력 가능합니다.
+                        </CustomText>
+                      )}
+                      <View style={styles.labelView}>
+                        <CustomText style={styles.manualLabel}>
+                          매장 주소
+                        </CustomText>
+
+                        <CustomText maxScale={1.1} style={styles.subLabel}>
+                          · 대략적인 위치만 알려주셔도 괜찮아요
+                        </CustomText>
+                      </View>
+                      <View style={styles.manualAddressInputWrapper}>
+                        <CustomTextInput
+                          ref={manualAddressInputRef}
+                          style={[
+                            styles.manualInput,
+                            styles.manualAddressInput,
+                            isManualAddressFocused && styles.manualInputFocused,
+                            manualStoreAddress.length > 0 &&
+                              styles.manualInputFilled,
+                          ]}
+                          value={manualStoreAddress}
+                          onChangeText={text => {
+                            const maxChars = 80;
+                            if (text.length > maxChars) {
+                              setIsManualAddressOver(true);
+                              return;
+                            }
+                            setIsManualAddressOver(false);
+                            setManualStoreAddress(text);
+                          }}
+                          placeholder="신논현역 인근 또는 강남구 봉은사로 102"
+                          placeholderTextColor="#9B9B9B"
+                          onFocus={() => {
+                            setIsManualAddressFocused(true);
+                            focusedInputRef.current = manualAddressInputRef;
+                            bottomSheetRef.current?.snapToIndex(2);
+                            scrollSheetToInput(manualAddressInputRef);
+                          }}
+                          onBlur={() => {
+                            setIsManualAddressFocused(false);
+                            if (
+                              focusedInputRef.current === manualAddressInputRef
+                            ) {
+                              focusedInputRef.current = null;
+                            }
+                          }}
+                          returnKeyType="done"
+                        />
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate('StoreAddMapScreen', {
+                              location,
+                              onAddressSelect: handleManualAddressSelect,
+                              detailedAddress: '',
+                            })
+                          }
+                          style={styles.manualMapButton}>
+                          <Ionicons name="map-outline" size={20} color="#666" />
+                        </TouchableOpacity>
+                      </View>
+                      <Pressable
+                        style={[
+                          styles.manualEntryButton,
+                          {marginTop: 20},
+                          isManualSubmitDisabled &&
+                            styles.manualEntryButtonDisabled,
+                        ]}
+                        disabled={isManualSubmitDisabled}
+                        onPress={
+                          isManualCancelMode
+                            ? handleManualCancel
+                            : handleManualSubmit
+                        }>
+                        <CustomText
+                          style={[
+                            styles.manualEntryText,
+                            isManualSubmitDisabled &&
+                              styles.manualEntryTextDisabled,
+                          ]}>
+                          {isManualCancelMode ? '취소' : '입력 완료'}
+                        </CustomText>
+                      </Pressable>
+                      {isManualAddressOver && (
+                        <CustomText style={styles.manualErrorText}>
+                          매장 주소는 최대 80자까지 입력 가능합니다.
+                        </CustomText>
                       )}
                     </View>
-                  );
-                })
-              )}
-            </View>
-          )}
-          {activeChip === 'manual' && !isSearching && (
-            <View style={styles.manualForm}>
-              <CustomText style={styles.manualEntryHint}>
-                매장이 아니라면 장소를 직접 입력해보세요.
-              </CustomText>
-              <CustomText style={styles.manualLabel}>장소 이름</CustomText>
-              <CustomTextInput
-                ref={placeNameInputRef}
-                style={[
-                  styles.manualInput,
-                  isPlaceFocused && styles.manualInputFocused,
-                  placeNameInput.length > 0 && styles.manualInputFilled,
-                ]}
-                value={placeNameInput}
-                onChangeText={text => {
-                  const maxChars = 50;
-                  if (text.length > maxChars) {
-                    setIsPlaceNameOver(true);
-                    return;
-                  }
-                  setIsPlaceNameOver(false);
-                  setPlaceNameInput(text);
-                }}
-                placeholder="우리집, 한강"
-                placeholderTextColor="#9B9B9B"
-                onFocus={() => {
-                  setIsPlaceFocused(true);
-                  bottomSheetRef.current?.snapToIndex(2);
-                  sheetScrollRef.current?.scrollToEnd?.({animated: true});
-                }}
-                onBlur={() => setIsPlaceFocused(false)}
-                returnKeyType="done"
-                onSubmitEditing={() => {
-                  if (!isPlaceSubmitDisabled) {
-                    handlePlaceSubmit();
-                  }
-                }}
-              />
-              {isPlaceNameOver && (
-                <CustomText style={styles.manualErrorText}>
-                  장소 이름은 최대 50자까지 입력 가능합니다.
-                </CustomText>
-              )}
-              <Pressable
-                style={[
-                  styles.manualEntryButton,
-                  {marginTop: 20},
-                  isPlaceSubmitDisabled && styles.manualEntryButtonDisabled,
-                ]}
-                disabled={isPlaceSubmitDisabled}
-                onPress={handlePlaceSubmit}>
-                <CustomText
-                  style={[
-                    styles.manualEntryText,
-                    isPlaceSubmitDisabled && styles.manualEntryTextDisabled,
-                  ]}>
-                  입력 완료
-                </CustomText>
-              </Pressable>
-            </View>
-          )}
-          {isSearching && displayedItems.length !== 0 && !isManual && (
-            <View style={styles.manualEntryWrap}>
-              <CustomText style={styles.manualEntryHint}>
-                찾는 매장이 없다면 직접 입력해보세요.
-              </CustomText>
-              <Pressable
-                style={styles.manualEntryButton}
-                onPress={handleManualPress}>
-                <CustomText style={styles.manualEntryText}>
-                  직접 입력하기
-                </CustomText>
-              </Pressable>
-            </View>
-          )}
-          {((isSearching && displayedItems.length === 0) || isManual) && (
-            <View style={styles.manualForm}>
-              {!isManual && (
-                <CustomText
-                  style={[
-                    styles.manualEntryHint,
-                    {marginTop: 20, alignSelf: 'center'},
-                  ]}>
-                  찾는 매장이 없다면 직접 입력해보세요.
-                </CustomText>
-              )}
-              <CustomText style={styles.manualLabel}>매장 이름</CustomText>
-              <CustomTextInput
-                ref={manualNameInputRef}
-                style={[
-                  styles.manualInput,
-                  isManualNameFocused && styles.manualInputFocused,
-                  manualStoreName.length > 0 && styles.manualInputFilled,
-                ]}
-                value={manualStoreName}
-                onChangeText={text => {
-                  const maxChars = 50;
-                  if (text.length > maxChars) {
-                    setIsManualNameOver(true);
-                    return;
-                  }
-                  setIsManualNameOver(false);
-                  setManualStoreName(text);
-                }}
-                placeholder="매장 이름을 입력하세요."
-                placeholderTextColor="#9B9B9B"
-                onFocus={() => {
-                  setIsManualNameFocused(true);
-                  bottomSheetRef.current?.snapToIndex(2);
-                  sheetScrollRef.current?.scrollToEnd?.({animated: true});
-                }}
-                onBlur={() => setIsManualNameFocused(false)}
-                returnKeyType="next"
-                onSubmitEditing={() => manualAddressInputRef.current?.focus?.()}
-              />
-              {isManualNameOver && (
-                <CustomText style={styles.manualErrorText}>
-                  매장 이름은 최대 50자까지 입력 가능합니다.
-                </CustomText>
-              )}
-              <View style={styles.labelView}>
-                <CustomText style={styles.manualLabel}>매장 주소</CustomText>
+                  ) : (
+                    <View style={styles.manualEntryWrap}>
+                      <CustomText style={styles.manualEntryHint}>
+                        찾는 매장이 없다면 직접 입력해보세요.
+                      </CustomText>
+                      <Pressable
+                        style={styles.manualEntryButton}
+                        onPress={handleManualPress}>
+                        <CustomText style={styles.manualEntryText}>
+                          직접 입력하기
+                        </CustomText>
+                      </Pressable>
+                    </View>
+                  )}
+                </>
+              }
+            />
+          ) : (
+            <BottomSheetScrollView
+              ref={sheetScrollRef}
+              contentContainerStyle={[
+                styles.bottomSheetContent,
+                {paddingBottom: Math.max(insets.bottom, 20) + keyboardPadding},
+              ]}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="always"
+              onScroll={handleSheetScroll}
+              scrollEventThrottle={16}>
+              {!isSearching && (
+                <View style={styles.chipRow}>
+                  <Pressable
+                    style={[
+                      styles.chip,
+                      activeChip === 'viewed' && styles.chipActive,
+                    ]}
+                    onPress={() => handleChipPress('viewed')}
+                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                    <CustomText
+                      style={[
+                        styles.chipText,
+                        activeChip === 'viewed' && styles.chipActiveText,
+                      ]}>
+                      최근 본 매장
+                    </CustomText>
+                  </Pressable>
+                  <Pressable
+                    style={[
+                      styles.chip,
+                      activeChip === 'liked' && styles.chipActive,
+                    ]}
+                    onPress={() => handleChipPress('liked')}
+                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                    <CustomText
+                      style={[
+                        styles.chipText,
+                        activeChip === 'liked' && styles.chipActiveText,
+                      ]}>
+                      저장한 매장
+                    </CustomText>
+                  </Pressable>
 
-                <CustomText maxScale={1.1} style={styles.subLabel}>
-                  · 대략적인 위치만 알려주셔도 괜찮아요
-                </CustomText>
-              </View>
-              <View style={styles.manualAddressInputWrapper}>
-                <CustomTextInput
-                  ref={manualAddressInputRef}
-                  style={[
-                    styles.manualInput,
-                    styles.manualAddressInput,
-                    isManualAddressFocused && styles.manualInputFocused,
-                    manualStoreAddress.length > 0 && styles.manualInputFilled,
-                  ]}
-                  value={manualStoreAddress}
-                  onChangeText={text => {
-                    const maxChars = 80;
-                    if (text.length > maxChars) {
-                      setIsManualAddressOver(true);
-                      return;
-                    }
-                    setIsManualAddressOver(false);
-                    setManualStoreAddress(text);
-                  }}
-                  placeholder="신논현역 인근 또는 강남구 봉은사로 102"
-                  placeholderTextColor="#9B9B9B"
-                  onFocus={() => {
-                    setIsManualAddressFocused(true);
-                    bottomSheetRef.current?.snapToIndex(2);
-                  }}
-                  onBlur={() => setIsManualAddressFocused(false)}
-                  returnKeyType="done"
-                />
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate('StoreAddMapScreen', {
-                      location,
-                      onAddressSelect: handleManualAddressSelect,
-                      detailedAddress: '',
-                    })
-                  }
-                  style={styles.manualMapButton}>
-                  <Ionicons name="map-outline" size={20} color="#666" />
-                </TouchableOpacity>
-              </View>
-              <Pressable
-                style={[
-                  styles.manualEntryButton,
-                  {marginTop: 20},
-                  isManualSubmitDisabled && styles.manualEntryButtonDisabled,
-                ]}
-                disabled={isManualSubmitDisabled}
-                onPress={
-                  isManualCancelMode ? handleManualCancel : handleManualSubmit
-                }>
-                <CustomText
-                  style={[
-                    styles.manualEntryText,
-                    isManualSubmitDisabled && styles.manualEntryTextDisabled,
-                  ]}>
-                  {isManualCancelMode ? '취소' : '입력 완료'}
-                </CustomText>
-              </Pressable>
-              {isManualAddressOver && (
-                <CustomText style={styles.manualErrorText}>
-                  매장 주소는 최대 80자까지 입력 가능합니다.
-                </CustomText>
+                  <Pressable
+                    style={[
+                      styles.chip,
+                      activeChip === 'manual' && styles.chipActive,
+                    ]}
+                    onPress={() => handleChipPress('manual')}
+                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                    <CustomText
+                      style={[
+                        styles.chipText,
+                        activeChip === 'manual' && styles.chipActiveText,
+                      ]}>
+                      장소 직접 입력
+                    </CustomText>
+                  </Pressable>
+                </View>
               )}
-            </View>
+              {(isSearching || activeChip !== 'manual') && (
+                <View style={styles.storeGrid}>
+                  {displayedLoading ? (
+                    <CustomText style={styles.emptyStoreText}>
+                      불러오는 중...
+                    </CustomText>
+                  ) : displayedItems.length === 0 ? (
+                    <CustomText style={styles.emptyStoreText}>
+                      {isSearching
+                        ? '검색된 매장이 없어요.'
+                        : activeChip === 'viewed'
+                        ? '최근 본 매장이 없어요.'
+                        : '저장한 매장이 없어요.'}
+                    </CustomText>
+                  ) : (
+                    displayedItems.map((store, index) => {
+                      const storeId = getStoreId(store);
+                      const isSelected = getStoreId(selectedStore) === storeId;
+                      return (
+                        <View
+                          key={String(storeId)}
+                          style={[
+                            styles.storeCardWrap,
+                            {
+                              width: storeCardWidth,
+                              marginRight: index % 2 === 0 ? storeGridGap : 0,
+                            },
+                          ]}>
+                          <PostStoreResultItem
+                            store={store}
+                            width={storeCardWidth}
+                            onPress={handleSelectStore}
+                          />
+                          {isSelected && (
+                            <View style={styles.storeCardCheck}>
+                              <Ionicons
+                                name="checkmark-circle"
+                                size={18}
+                                color="#4AA3FF"
+                              />
+                            </View>
+                          )}
+                        </View>
+                      );
+                    })
+                  )}
+                </View>
+              )}
+              {activeChip === 'manual' && !isSearching && (
+                <View style={styles.manualForm}>
+                  <CustomText style={styles.manualEntryHint}>
+                    매장이 아니라면 장소를 직접 입력해보세요.
+                  </CustomText>
+                  <CustomText style={styles.manualLabel}>장소 이름</CustomText>
+                  <CustomTextInput
+                    ref={placeNameInputRef}
+                    style={[
+                      styles.manualInput,
+                      isPlaceFocused && styles.manualInputFocused,
+                      placeNameInput.length > 0 && styles.manualInputFilled,
+                    ]}
+                    value={placeNameInput}
+                    onChangeText={text => {
+                      const maxChars = 50;
+                      if (text.length > maxChars) {
+                        setIsPlaceNameOver(true);
+                        return;
+                      }
+                      setIsPlaceNameOver(false);
+                      setPlaceNameInput(text);
+                    }}
+                    placeholder="우리집, 한강"
+                    placeholderTextColor="#9B9B9B"
+                    onFocus={() => {
+                      setIsPlaceFocused(true);
+                      focusedInputRef.current = placeNameInputRef;
+                      bottomSheetRef.current?.snapToIndex(2);
+                      scrollSheetToInput(placeNameInputRef);
+                    }}
+                    onBlur={() => {
+                      setIsPlaceFocused(false);
+                      if (focusedInputRef.current === placeNameInputRef) {
+                        focusedInputRef.current = null;
+                      }
+                    }}
+                    returnKeyType="done"
+                    onSubmitEditing={() => {
+                      if (!isPlaceSubmitDisabled) {
+                        handlePlaceSubmit();
+                      }
+                    }}
+                  />
+                  {isPlaceNameOver && (
+                    <CustomText style={styles.manualErrorText}>
+                      장소 이름은 최대 50자까지 입력 가능합니다.
+                    </CustomText>
+                  )}
+                  <Pressable
+                    style={[
+                      styles.manualEntryButton,
+                      {marginTop: 20},
+                      isPlaceSubmitDisabled && styles.manualEntryButtonDisabled,
+                    ]}
+                    disabled={isPlaceSubmitDisabled}
+                    onPress={handlePlaceSubmit}>
+                    <CustomText
+                      style={[
+                        styles.manualEntryText,
+                        isPlaceSubmitDisabled && styles.manualEntryTextDisabled,
+                      ]}>
+                      입력 완료
+                    </CustomText>
+                  </Pressable>
+                </View>
+              )}
+              {isSearching && displayedItems.length !== 0 && !isManual && (
+                <View style={styles.manualEntryWrap}>
+                  <CustomText style={styles.manualEntryHint}>
+                    찾는 매장이 없다면 직접 입력해보세요.
+                  </CustomText>
+                  <Pressable
+                    style={styles.manualEntryButton}
+                    onPress={handleManualPress}>
+                    <CustomText style={styles.manualEntryText}>
+                      직접 입력하기
+                    </CustomText>
+                  </Pressable>
+                </View>
+              )}
+              {((isSearching && displayedItems.length === 0) || isManual) && (
+                <View style={styles.manualForm}>
+                  {!isManual && (
+                    <CustomText
+                      style={[
+                        styles.manualEntryHint,
+                        {marginTop: 20, alignSelf: 'center'},
+                      ]}>
+                      찾는 매장이 없다면 직접 입력해보세요.
+                    </CustomText>
+                  )}
+                  <CustomText style={styles.manualLabel}>매장 이름</CustomText>
+                  <CustomTextInput
+                    ref={manualNameInputRef}
+                    style={[
+                      styles.manualInput,
+                      isManualNameFocused && styles.manualInputFocused,
+                      manualStoreName.length > 0 && styles.manualInputFilled,
+                    ]}
+                    value={manualStoreName}
+                    onChangeText={text => {
+                      const maxChars = 50;
+                      if (text.length > maxChars) {
+                        setIsManualNameOver(true);
+                        return;
+                      }
+                      setIsManualNameOver(false);
+                      setManualStoreName(text);
+                    }}
+                    placeholder="매장 이름을 입력하세요."
+                    placeholderTextColor="#9B9B9B"
+                    onFocus={() => {
+                      setIsManualNameFocused(true);
+                      focusedInputRef.current = manualNameInputRef;
+                      bottomSheetRef.current?.snapToIndex(2);
+                      scrollSheetToInput(manualNameInputRef);
+                    }}
+                    onBlur={() => {
+                      setIsManualNameFocused(false);
+                      if (focusedInputRef.current === manualNameInputRef) {
+                        focusedInputRef.current = null;
+                      }
+                    }}
+                    returnKeyType="next"
+                    onSubmitEditing={() =>
+                      manualAddressInputRef.current?.focus?.()
+                    }
+                  />
+                  {isManualNameOver && (
+                    <CustomText style={styles.manualErrorText}>
+                      매장 이름은 최대 50자까지 입력 가능합니다.
+                    </CustomText>
+                  )}
+                  <View style={styles.labelView}>
+                    <CustomText style={styles.manualLabel}>
+                      매장 주소
+                    </CustomText>
+
+                    <CustomText maxScale={1.1} style={styles.subLabel}>
+                      · 대략적인 위치만 알려주셔도 괜찮아요
+                    </CustomText>
+                  </View>
+                  <View style={styles.manualAddressInputWrapper}>
+                    <CustomTextInput
+                      ref={manualAddressInputRef}
+                      style={[
+                        styles.manualInput,
+                        styles.manualAddressInput,
+                        isManualAddressFocused && styles.manualInputFocused,
+                        manualStoreAddress.length > 0 &&
+                          styles.manualInputFilled,
+                      ]}
+                      value={manualStoreAddress}
+                      onChangeText={text => {
+                        const maxChars = 80;
+                        if (text.length > maxChars) {
+                          setIsManualAddressOver(true);
+                          return;
+                        }
+                        setIsManualAddressOver(false);
+                        setManualStoreAddress(text);
+                      }}
+                      placeholder="신논현역 인근 또는 강남구 봉은사로 102"
+                      placeholderTextColor="#9B9B9B"
+                      onFocus={() => {
+                        setIsManualAddressFocused(true);
+                        focusedInputRef.current = manualAddressInputRef;
+                        bottomSheetRef.current?.snapToIndex(2);
+                        scrollSheetToInput(manualAddressInputRef);
+                      }}
+                      onBlur={() => {
+                        setIsManualAddressFocused(false);
+                        if (focusedInputRef.current === manualAddressInputRef) {
+                          focusedInputRef.current = null;
+                        }
+                      }}
+                      returnKeyType="done"
+                    />
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('StoreAddMapScreen', {
+                          location,
+                          onAddressSelect: handleManualAddressSelect,
+                          detailedAddress: '',
+                        })
+                      }
+                      style={styles.manualMapButton}>
+                      <Ionicons name="map-outline" size={20} color="#666" />
+                    </TouchableOpacity>
+                  </View>
+                  <Pressable
+                    style={[
+                      styles.manualEntryButton,
+                      {marginTop: 20},
+                      isManualSubmitDisabled &&
+                        styles.manualEntryButtonDisabled,
+                    ]}
+                    disabled={isManualSubmitDisabled}
+                    onPress={
+                      isManualCancelMode
+                        ? handleManualCancel
+                        : handleManualSubmit
+                    }>
+                    <CustomText
+                      style={[
+                        styles.manualEntryText,
+                        isManualSubmitDisabled &&
+                          styles.manualEntryTextDisabled,
+                      ]}>
+                      {isManualCancelMode ? '취소' : '입력 완료'}
+                    </CustomText>
+                  </Pressable>
+                  {isManualAddressOver && (
+                    <CustomText style={styles.manualErrorText}>
+                      매장 주소는 최대 80자까지 입력 가능합니다.
+                    </CustomText>
+                  )}
+                </View>
+              )}
+            </BottomSheetScrollView>
           )}
-        </BottomSheetScrollView>
-      </BottomSheet>
+        </BottomSheet>
       ) : null}
     </View>
   );
