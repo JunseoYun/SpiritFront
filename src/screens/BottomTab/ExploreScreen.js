@@ -730,8 +730,11 @@ const ExploreScreen = ({navigation}) => {
             pointerEvents: 'none',
             justifyContent: 'center',
           }}>
-          <CustomText numberOfLines={1} maxScale={1.0} style={styles.aiChatLabelText}>
-            Chat Bot
+          <CustomText
+            numberOfLines={1}
+            maxScale={1.0}
+            style={styles.aiChatLabelText}>
+            챗봇
           </CustomText>
         </Animated.View>
       </AnimatedPressable>
@@ -825,9 +828,11 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   aiChatLabelText: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: 'Pretendard-SemiBold',
-    color: 'black',
+    color: '#333',
+    minWidth: 30,
+    textAlign: 'center',
   },
 });
 

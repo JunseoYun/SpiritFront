@@ -39,12 +39,12 @@ const ChatbotHeader = ({
           }}
           disabled={sending}
           style={{marginLeft: 12, opacity: sending ? 0.35 : 1}}
-          hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
           <RotateCwIcon size={22} color="#333" />
         </Pressable>
         <Pressable
           onPress={onOpenDrawer}
-          hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
           style={{marginLeft: 12}}>
           <MenuIcon size={10} />
         </Pressable>

@@ -56,10 +56,7 @@ const ChatbotChatList = ({
                   key={message.id}
                   style={styles.bubbleRow}
                   onLayout={({nativeEvent}) =>
-                    handleMessageLayout(
-                      message.id,
-                      nativeEvent?.layout?.y ?? 0,
-                    )
+                    handleMessageLayout(message.id, nativeEvent?.layout?.y ?? 0)
                   }>
                   <View style={styles.messageBubble}>
                     <CustomText style={styles.messageText}>
@@ -95,7 +92,9 @@ const ChatbotChatList = ({
                   )}
                 </View>
                 {!!message.text && (
-                  <CustomText style={styles.aiTextBare}>{message.text}</CustomText>
+                  <CustomText style={styles.aiTextBare}>
+                    {message.text}
+                  </CustomText>
                 )}
                 {message.agentMode === 'SHOW_RESULT' &&
                   Array.isArray(message.stores) &&
@@ -117,9 +116,9 @@ const ChatbotChatList = ({
                       </ScrollView>
                       <LinearGradient
                         colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
-                      start={{x: 0, y: 0}}
-                      end={{x: 1, y: 0}}
-                      style={[styles.chipBorder, styles.mapChipBorder]}>
+                        start={{x: 0, y: 0}}
+                        end={{x: 1, y: 0}}
+                        style={[styles.chipBorder, styles.mapChipBorder]}>
                         <Pressable
                           style={[styles.chip, styles.mapChip]}
                           onPress={() =>
@@ -300,6 +299,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     lineHeight: 15 * 1.3,
     letterSpacing: 0,
+    textAlign: 'center',
   },
   title: {
     fontSize: 24,
