@@ -106,7 +106,7 @@ const ChatbotScreen = ({navigation}) => {
     USE_SAMPLE_RECENT_PROMPTS ? SAMPLE_RECENT_FIRST_PROMPTS : [],
   );
   const [showDrawer, setShowDrawer] = useState(false);
-  const drawerAnim = useRef(new Animated.Value(-drawerWidth)).current;
+  const drawerAnim = useRef(new Animated.Value(drawerWidth)).current;
   const contentShiftAnim = useRef(new Animated.Value(0)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
   const inputRef = useRef(null);
@@ -158,7 +158,7 @@ const ChatbotScreen = ({navigation}) => {
   const closeDrawer = useCallback(() => {
     Animated.parallel([
       Animated.timing(drawerAnim, {
-        toValue: -drawerWidth,
+        toValue: drawerWidth,
         duration: 320,
         easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
@@ -184,10 +184,10 @@ const ChatbotScreen = ({navigation}) => {
 
   const updateDrawerByGesture = useCallback(
     value => {
-      const clamped = Math.min(0, Math.max(-drawerWidth, value));
+      const clamped = Math.min(drawerWidth, Math.max(0, value));
       drawerAnim.setValue(clamped);
-      const progress = 1 + clamped / drawerWidth; // 0 to 1
-      contentShiftAnim.setValue(progress * drawerShift);
+      const progress = 1 - clamped / drawerWidth; // 1 to 0
+      contentShiftAnim.setValue(-progress * drawerShift);
       overlayAnim.setValue(progress);
     },
     [contentShiftAnim, drawerAnim, drawerShift, drawerWidth, overlayAnim],
@@ -203,7 +203,7 @@ const ChatbotScreen = ({navigation}) => {
         updateDrawerByGesture(gestureState.dx);
       },
       onPanResponderRelease: (_, gestureState) => {
-        const shouldClose = gestureState.dx < -drawerWidth * 0.25;
+        const shouldClose = gestureState.dx > drawerWidth * 0.25;
         if (shouldClose) {
           closeDrawer();
         } else {
@@ -215,7 +215,7 @@ const ChatbotScreen = ({navigation}) => {
               useNativeDriver: true,
             }),
             Animated.timing(contentShiftAnim, {
-              toValue: drawerShift,
+              toValue: -drawerShift,
               duration: 320,
               easing: Easing.out(Easing.cubic),
               useNativeDriver: true,
@@ -463,7 +463,7 @@ const ChatbotScreen = ({navigation}) => {
     setIsInputFocused(false);
     await loadRecentFirstPrompt();
     setShowDrawer(true);
-    drawerAnim.setValue(-drawerWidth);
+    drawerAnim.setValue(drawerWidth);
     contentShiftAnim.setValue(0);
     overlayAnim.setValue(0);
     Animated.parallel([
@@ -474,7 +474,7 @@ const ChatbotScreen = ({navigation}) => {
         useNativeDriver: true,
       }),
       Animated.timing(contentShiftAnim, {
-        toValue: drawerShift,
+        toValue: -drawerShift,
         duration: 320,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
@@ -1021,7 +1021,7 @@ const ChatbotScreen = ({navigation}) => {
       style={styles.flex}
       behavior="padding"
       keyboardVerticalOffset={keyboardVerticalOffset}>
-      <View style={styles.flex}>
+      <View style={[styles.flex]}>
         <ChatbotDrawer
           showDrawer={showDrawer}
           overlayAnim={overlayAnim}

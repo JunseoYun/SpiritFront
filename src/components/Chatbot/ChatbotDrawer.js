@@ -152,7 +152,6 @@ const ChatbotDrawer = ({
 const styles = StyleSheet.create({
   drawerLayer: {
     ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
     zIndex: 20,
   },
   drawerOverlay: {
@@ -163,6 +162,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   drawerContainer: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
     width: '80%',
     backgroundColor: '#FFF',
     shadowColor: '#000',
