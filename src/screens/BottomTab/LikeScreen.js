@@ -2,8 +2,8 @@
 import {
   Animated,
   BackHandler,
+  DeviceEventEmitter,
   FlatList,
-  Image,
   Platform,
   Pressable,
   SafeAreaView,
@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {TabView} from 'react-native-tab-view';
-import {Store_getby_liked, Store_getby_saved} from '../../api/storeApi';
+import {Store_getby_liked} from '../../api/storeApi';
+import {PostGetBySaved} from '../../api/postApi';
 import {Userdataget} from '../../api/userApi';
 import LikedGridItem from '../../components/LikedScreen/LikedGridItem';
 import ScrapImageItem from '../../components/LikedScreen/ScrapImageItem';
@@ -44,6 +45,7 @@ const SCRAP_GRID_GAP = 1;
 const STORE_GRID_COLUMNS = 2;
 const STORE_GRID_GAP = 14;
 const STORE_LIST_PADDING = 16;
+const SAVED_POST_PAGE_SIZE = 20;
 
 const createTabState = () => ({
   items: [],
@@ -186,10 +188,12 @@ const LikeScreen = ({navigation}) => {
   const scrollOffsetsRef = useRef({liked: 0, saved: 0});
   const [likedState, setLikedState] = useState(createTabState);
   const [savedState, setSavedState] = useState(createTabState);
+  const likedStateRef = useRef(likedState);
+  const savedStateRef = useRef(savedState);
   const [userProfile, setUserProfile] = useState(null);
-  const didInitRef = useRef(false);
   const isSwipingRef = useRef(false);
   const swipeTimerRef = useRef(null);
+  const pendingReturnTabRef = useRef(null);
   const {
     visible: showScrollToTop,
     handleScroll,
@@ -224,20 +228,33 @@ const LikeScreen = ({navigation}) => {
 
   const fetchStoresForTab = useCallback(
     async (tabKey, currentPage, refresh = false) => {
-      const [state, setState] = getTabState(tabKey);
+      const stateRef = tabKey === 'liked' ? likedStateRef : savedStateRef;
+      const setState = tabKey === 'liked' ? setLikedState : setSavedState;
       const fetcher =
-        tabKey === 'liked' ? Store_getby_liked : Store_getby_liked;
+        tabKey === 'liked' ? Store_getby_liked : PostGetBySaved;
+      const state = stateRef.current;
 
-      if (state.loading || (!state.hasMore && !refresh)) return;
+      if ((state.loading && !refresh) || (!state.hasMore && !refresh)) return;
       setState(prev => ({...prev, loading: true}));
 
       try {
-        const storesData = await fetcher(currentPage);
-        if (storesData && storesData.length > 0) {
+        const response =
+          tabKey === 'liked'
+            ? await fetcher(currentPage)
+            : await fetcher({page: currentPage, size: SAVED_POST_PAGE_SIZE});
+        const items =
+          tabKey === 'liked'
+            ? Array.isArray(response)
+              ? response
+              : []
+            : Array.isArray(response?.content)
+            ? response.content
+            : Array.isArray(response)
+            ? response
+            : [];
+        if (items.length > 0) {
           setState(prev => {
-            const merged = refresh
-              ? storesData
-              : [...prev.items, ...storesData];
+            const merged = refresh ? items : [...prev.items, ...items];
             const unique = Array.from(
               new Map(
                 merged.map(store => [
@@ -265,7 +282,7 @@ const LikeScreen = ({navigation}) => {
         }));
       }
     },
-    [likedState, savedState],
+    [],
   );
 
   const handleStorePress = store => {
@@ -310,6 +327,16 @@ const LikeScreen = ({navigation}) => {
       updateVisibility(0);
     }
   };
+  const refreshSavedPosts = useCallback((showRefreshing = true) => {
+    setSavedState(prev => ({
+      ...prev,
+      items: [],
+      page: 0,
+      hasMore: true,
+      refreshing: showRefreshing,
+    }));
+    fetchStoresForTab('saved', 0, true);
+  }, [fetchStoresForTab]);
 
   useFocusEffect(
     useCallback(() => {
@@ -330,19 +357,25 @@ const LikeScreen = ({navigation}) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (didInitRef.current) {
-        return;
+      if (!token) {
+        return () => {};
       }
-      didInitRef.current = true;
-      setActiveTab(0);
+      const nextTabKey = pendingReturnTabRef.current ?? 'liked';
+      const nextTabIndex = TABS.findIndex(tab => tab.key === nextTabKey);
+      setActiveTab(nextTabIndex >= 0 ? nextTabIndex : 0);
+      pendingReturnTabRef.current = null;
       setLikedState(createTabState());
       setSavedState(createTabState());
       scrollOffsetsRef.current = {liked: 0, saved: 0};
       likedListRef.current?.scrollToOffset({offset: 0, animated: false});
       savedListRef.current?.scrollToOffset({offset: 0, animated: false});
-      scrollRef.current = likedListRef.current;
+      scrollRef.current =
+        nextTabKey === 'saved' ? savedListRef.current : likedListRef.current;
       updateVisibility(0);
-    }, [updateVisibility]),
+      fetchStoresForTab('liked', 0, true);
+      fetchStoresForTab('saved', 0, true);
+      return () => {};
+    }, [fetchStoresForTab, token, updateVisibility]),
   );
 
   useEffect(() => {
@@ -364,6 +397,32 @@ const LikeScreen = ({navigation}) => {
       isActive = false;
     };
   }, [token]);
+
+  useEffect(() => {
+    likedStateRef.current = likedState;
+  }, [likedState]);
+
+  useEffect(() => {
+    savedStateRef.current = savedState;
+  }, [savedState]);
+
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener(
+      'saved-posts-updated',
+      () => refreshSavedPosts(true),
+    );
+    return () => sub.remove();
+  }, [refreshSavedPosts]);
+
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener(
+      'like-screen-return-tab',
+      payload => {
+        pendingReturnTabRef.current = payload?.tabKey ?? null;
+      },
+    );
+    return () => sub.remove();
+  }, []);
 
   useEffect(() => {
     const offset = scrollOffsetsRef.current[activeTabKey] || 0;
@@ -389,17 +448,8 @@ const LikeScreen = ({navigation}) => {
   useFocusEffect(
     useCallback(() => {
       if (!token) return;
-      if (activeState.firstLoading) {
-        fetchStoresForTab(activeTabKey, 0, true);
-      }
       updateVisibility(0);
-    }, [
-      token,
-      activeState.firstLoading,
-      activeTabKey,
-      fetchStoresForTab,
-      updateVisibility,
-    ]),
+    }, [token, updateVisibility]),
   );
 
   const renderScrapSkeletonItem = ({index}) => (
@@ -521,9 +571,6 @@ const LikeScreen = ({navigation}) => {
       );
     }
 
-    const defaultStoreImageUri = Image.resolveAssetSource(
-      require('../../assets/default_store6.png'),
-    ).uri;
     const handleScrapPress = (store, index) => {
       if (isSwipingRef.current) {
         return;
@@ -531,21 +578,8 @@ const LikeScreen = ({navigation}) => {
       if (!Array.isArray(savedState.items) || savedState.items.length === 0) {
         return;
       }
-      const posts = savedState.items.map((item, itemIndex) => ({
-        id: item?.id ?? item?.storeId ?? item?.store_id ?? `saved-${itemIndex}`,
-        storeId: item?.storeId ?? item?.id ?? item?.store_id ?? null,
-        storeName: item?.storeName ?? item?.name ?? '',
-        storeAddress: item?.storeAddress ?? item?.address ?? '',
-        content: '너무 맛있습니다',
-        postImgUrlList: [
-          item?.mainImgUrl ? item.mainImgUrl : defaultStoreImageUri,
-        ],
-        likes: 0,
-        comments: 0,
-        shares: 0,
-      }));
       navigation.navigate('LikeSavedPostDetailScreen', {
-        posts,
+        posts: savedState.items,
         initialIndex: index ?? 0,
         userProfile: userProfile ?? {nickname: '', imageuri: null},
       });

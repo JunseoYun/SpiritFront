@@ -74,14 +74,19 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
     }
     return routePosts;
   }, [routePosts]);
+  const [savedPosts, setSavedPosts] = useState(posts);
+
+  useEffect(() => {
+    setSavedPosts(posts);
+  }, [posts]);
 
   const initialIndex = useMemo(() => {
-    if (!posts.length) return 0;
+    if (!savedPosts.length) return 0;
     const safeIndex = Number.isFinite(routeInitialIndex)
       ? routeInitialIndex
       : 0;
-    return Math.min(Math.max(safeIndex, 0), posts.length - 1);
-  }, [posts.length, routeInitialIndex]);
+    return Math.min(Math.max(safeIndex, 0), savedPosts.length - 1);
+  }, [routeInitialIndex, savedPosts.length]);
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
@@ -97,7 +102,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
 
   const feedItems = useMemo(
     () =>
-      posts.map((post, index) => {
+      savedPosts.map((post, index) => {
         const postImages = Array.isArray(post?.postImgUrlList)
           ? post.postImgUrlList.filter(Boolean)
           : Array.isArray(post?.imgUrlList)
@@ -109,21 +114,23 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           id: post?.id ?? `saved-${index}`,
           storeId: post?.storeId ?? post?.store?.id ?? null,
           shareLink: post?.shareLink,
-          profileImage: userProfile?.imageuri,
-          nickname: userProfile?.nickname || '',
-          storeAddress:
-            post?.storeAddress || post?.address || post?.storeName || '',
-          name: post?.storeName || '',
-          content: '너무 맛있습니다',
+          profileImage:
+            post?.writerImgUrl ?? post?.profileImgUrl ?? post?.profileImage,
+          nickname: post?.writerNickname ?? post?.nickname ?? '',
+          storeAddress: post?.address ?? post?.storeAddress ?? '',
+          name: post?.storeName ?? '',
+          content: post?.content ?? '',
           postImages: finalImages,
           likes: post?.likes ?? 0,
-          comments: post?.comments ?? 0,
-          shares: post?.shares ?? 0,
-          isWriter: true,
+          comments: post?.commentCount ?? post?.comments ?? 0,
+          shares: post?.shareCount ?? post?.shares ?? 0,
+          isWriter: post?.isWriter ?? false,
+          rate: post?.rate ?? post?.rating ?? null,
+          saved: post?.isSaved ?? true,
           __sourceReview: post,
         };
       }),
-    [fallbackImageUri, posts, userProfile?.imageuri, userProfile?.nickname],
+    [fallbackImageUri, savedPosts],
   );
 
   const skeletonItems = useMemo(
@@ -451,6 +458,32 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
     DeviceEventEmitter.emit('feed-more-menu-close');
   }, []);
 
+  const handleBackPress = useCallback(() => {
+    DeviceEventEmitter.emit('like-screen-return-tab', {tabKey: 'saved'});
+    navigation.goBack();
+  }, [navigation]);
+
+  const handleSavedChange = useCallback(
+    (postItem, nextSaved) => {
+      const targetId = postItem?.id;
+      if (!targetId) {
+        return;
+      }
+      setSavedPosts(prev =>
+        prev.map(item =>
+          String(item?.id) === String(targetId)
+            ? {...item, isSaved: nextSaved}
+            : item,
+        ),
+      );
+      DeviceEventEmitter.emit('saved-posts-updated', {
+        postId: targetId,
+        saved: nextSaved,
+      });
+    },
+    [],
+  );
+
   const onViewableItemsChanged = useRef(({viewableItems}) => {
     const first = viewableItems?.[0];
     if (first?.index !== undefined) {
@@ -645,7 +678,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <View style={styles.header}>
           <Pressable
-            onPress={() => navigation.goBack()}
+            onPress={handleBackPress}
             hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}
             style={styles.headerSide}>
             <Ionicons
@@ -664,6 +697,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
             <PostItem
               item={feedItems[initialIndex]}
               onCommentPress={handleOpenCommentSheet}
+              onSavedChange={handleSavedChange}
               isWriter
               isCentered
               onPrimaryImageLoad={handleSelectedLoaded}
@@ -690,6 +724,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
             <PostItem
               item={item}
               onCommentPress={handleOpenCommentSheet}
+              onSavedChange={handleSavedChange}
               isWriter
               isCentered={index === currentIndex}
             />

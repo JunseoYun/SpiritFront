@@ -76,3 +76,28 @@ export const PostGetById = async postId => {
     functionError(error);
   }
 };
+
+export const PostGetBySaved = async ({page = 0, size = 10, sort} = {}) => {
+  try {
+    const response = await axiosInstance.get('/post/get-by/saved', {
+      params: {
+        page,
+        size,
+        ...(sort ? {sort} : null),
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const PostSave = async postId => {
+  if (!postId) return null;
+  try {
+    const response = await axiosInstance.post(`/post/save/${postId}`, {});
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};

@@ -4,8 +4,15 @@ import FastImage from 'react-native-fast-image';
 
 const ScrapImageItem = ({store, size, onPress, style}) => {
   const handlePress = () => onPress?.(store);
-  const imageSource = store?.mainImgUrl
-    ? {uri: store.mainImgUrl}
+  const imageUrl =
+    store?.postImgUrlList?.[0] ??
+    store?.imgUrlList?.[0] ??
+    store?.postImages?.[0] ??
+    store?.mainImgUrl ??
+    store?.imageUrl ??
+    null;
+  const imageSource = imageUrl
+    ? {uri: imageUrl}
     : require('../../assets/default_store6.png');
 
   return (
