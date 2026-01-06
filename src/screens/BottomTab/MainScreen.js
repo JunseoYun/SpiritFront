@@ -33,6 +33,7 @@ import PostItemSkeleton from '../../components/Post/PostItemSkeleton';
 import PostCommentSheet from '../../components/Post/PostCommentSheet';
 import {getLocation} from '../../storage/locationStorage';
 import {PostGetByRecent} from '../../api/postApi';
+import {PostDelete} from '../../api/reviewApi';
 import {
   CommentCreate,
   CommentDelete,
@@ -63,6 +64,7 @@ const MainScreen = ({navigation}) => {
   const [feedPage, setFeedPage] = useState(0);
   const [feedTotalPages, setFeedTotalPages] = useState(0);
   const [feedLoadingMore, setFeedLoadingMore] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const listRef = useRef(null);
   const listHeightRef = useRef(0);
   const itemLayoutsRef = useRef(new Map());
@@ -73,6 +75,9 @@ const MainScreen = ({navigation}) => {
   const feedDataLengthRef = useRef(0);
   const lastPrefetchPageRef = useRef(-1);
   const feedTotalPagesRef = useRef(0);
+  const loadMorePendingRef = useRef(false);
+  const pendingLoadMoreIdsRef = useRef(new Set());
+  const loadMoreTimeoutRef = useRef(null);
   const [showWriteLabel, setShowWriteLabel] = useState(true);
   const [isWriteMenuVisible, setIsWriteMenuVisible] = useState(false);
   const [isWriteMenuOpen, setIsWriteMenuOpen] = useState(false);
@@ -115,6 +120,24 @@ const MainScreen = ({navigation}) => {
     () => Array.from({length: 4}, (_, index) => `skeleton-${index}`),
     [],
   );
+  const loadMorePadding = 24;
+  const mapPostItem = useCallback(post => {
+    return {
+      id: String(post.id ?? ''),
+      nickname: post.writerNickname ?? '게스트',
+      profileImage: post.writerImgUrl ?? null,
+      postImages: Array.isArray(post.postImgUrlList) ? post.postImgUrlList : [],
+      storeId: post.storeId ?? null,
+      storeAddress: post.storeAddress ?? post.address ?? '',
+      name: post.storeName ?? '',
+      content: post.content ?? '',
+      likes: post.likes ?? 0,
+      comments: post.commentCount ?? 0,
+      shares: post.shareCount ?? 0,
+      isWriter: post.isWriter ?? false,
+      __sourceReview: post,
+    };
+  }, []);
   const refreshFeed = useCallback(() => {
     allowLoadMore.current = false;
     setFeedPage(0);
@@ -200,79 +223,133 @@ const MainScreen = ({navigation}) => {
     fetchLocation();
   }, []);
 
-  const fetchPosts = useCallback(async ({page = 0, isRefresh = false} = {}) => {
-    const isPaging = page > 0 && !isRefresh;
-    if (isRefresh) {
-      setRefreshing(true);
-    } else if (isPaging) {
-      setFeedLoadingMore(true);
-    } else {
-      setFeedLoading(true);
-    }
-    try {
-      const data = await PostGetByRecent({page, size: FEED_PAGE_SIZE});
-      // console.log('MainScreen 최근 게시글:', data);
-      const mapped = (data?.content ?? []).map(post => ({
-        id: String(post.id ?? ''),
-        nickname: post.writerNickname ?? '게스트',
-        profileImage: post.writerImgUrl ?? null,
-        postImages: Array.isArray(post.postImgUrlList)
-          ? post.postImgUrlList
-          : [],
-        storeId: post.storeId ?? null,
-        storeAddress: post.storeAddress ?? post.address ?? '',
-        name: post.storeName ?? '',
-        content: post.content ?? '',
-        likes: post.likes ?? 0,
-        comments: post.commentCount ?? 0,
-        shares: post.shareCount ?? 0,
-        isWriter: post.isWriter ?? false,
-      }));
-      lastFetchCountRef.current = mapped.length;
-      const totalPages = Number.isFinite(data?.totalPages)
-        ? data.totalPages
-        : feedTotalPagesRef.current;
-      feedTotalPagesRef.current = totalPages ?? 0;
-      setFeedTotalPages(feedTotalPagesRef.current);
-      setFeedData(prev => {
-        if (!isPaging) {
-          return mapped;
-        }
-        const merged = [...prev, ...mapped];
-        return Array.from(
-          new Map(merged.map(item => [item.id, item])).values(),
-        );
-      });
-      const reachedEnd =
-        totalPages && totalPages > 0
-          ? page >= totalPages - 1
-          : mapped.length === 0;
-      if (reachedEnd) {
-        allowLoadMore.current = false;
-      }
-      if (!isPaging) {
-        setFeedPage(0);
-        lastPrefetchPageRef.current = -1;
-      }
-    } catch (error) {
-      console.error('게시글 조회 실패:', error);
-    } finally {
+  const fetchPosts = useCallback(
+    async ({page = 0, isRefresh = false} = {}) => {
+      const isPaging = page > 0 && !isRefresh;
       if (isRefresh) {
-        setRefreshing(false);
+        setRefreshing(true);
       } else if (isPaging) {
-        setFeedLoadingMore(false);
+        setFeedLoadingMore(true);
+        loadMorePendingRef.current = true;
+        setFeedData(prev => {
+          if (prev.some(item => item?.__isLoadingMore)) {
+            return prev;
+          }
+          return [...prev, {id: 'loading-more', __isLoadingMore: true}];
+        });
       } else {
-        setFeedLoading(false);
+        setFeedLoading(true);
       }
-      if (!isPaging) {
-        itemLayoutsRef.current.clear();
-        allowLoadMore.current = false;
-        setTimeout(() => {
-          allowLoadMore.current = true;
-        }, 300);
+      try {
+        const data = await PostGetByRecent({page, size: FEED_PAGE_SIZE});
+        // console.log('MainScreen 최근 게시글:', data);
+        const mapped = (data?.content ?? []).map(mapPostItem);
+        lastFetchCountRef.current = mapped.length;
+        if (isPaging) {
+          const nextPending = new Set(
+            mapped
+              .filter(item => item?.id && item?.postImages?.length)
+              .map(item => item.id),
+          );
+          pendingLoadMoreIdsRef.current = nextPending;
+          if (loadMoreTimeoutRef.current) {
+            clearTimeout(loadMoreTimeoutRef.current);
+            loadMoreTimeoutRef.current = null;
+          }
+          if (nextPending.size === 0) {
+            loadMorePendingRef.current = false;
+            setFeedLoadingMore(false);
+          } else {
+            loadMoreTimeoutRef.current = setTimeout(() => {
+              loadMorePendingRef.current = false;
+              setFeedLoadingMore(false);
+              pendingLoadMoreIdsRef.current.clear();
+              loadMoreTimeoutRef.current = null;
+            }, 1500);
+          }
+        }
+        const totalPages = Number.isFinite(data?.totalPages)
+          ? data.totalPages
+          : feedTotalPagesRef.current;
+        feedTotalPagesRef.current = totalPages ?? 0;
+        setFeedTotalPages(feedTotalPagesRef.current);
+        setFeedData(prev => {
+          if (!isPaging) {
+            return mapped;
+          }
+          const withoutLoading = prev.filter(item => !item?.__isLoadingMore);
+          const merged = [...withoutLoading, ...mapped];
+          return Array.from(
+            new Map(merged.map(item => [item.id, item])).values(),
+          );
+        });
+        const reachedEnd =
+          totalPages && totalPages > 0
+            ? page >= totalPages - 1
+            : mapped.length === 0;
+        if (reachedEnd) {
+          allowLoadMore.current = false;
+        }
+        if (!isPaging) {
+          setFeedPage(0);
+          lastPrefetchPageRef.current = -1;
+        }
+      } catch (error) {
+        lastFetchCountRef.current = 0;
+        console.error('게시글 조회 실패:', error);
+      } finally {
+        if (isRefresh) {
+          setRefreshing(false);
+        } else if (isPaging) {
+          if (lastFetchCountRef.current === 0) {
+            loadMorePendingRef.current = false;
+            setFeedLoadingMore(false);
+            if (loadMoreTimeoutRef.current) {
+              clearTimeout(loadMoreTimeoutRef.current);
+              loadMoreTimeoutRef.current = null;
+            }
+            setFeedData(prev =>
+              prev.filter(item => !item?.__isLoadingMore),
+            );
+          }
+        } else {
+          setFeedLoading(false);
+        }
+        if (!isPaging) {
+          itemLayoutsRef.current.clear();
+          allowLoadMore.current = false;
+          setTimeout(() => {
+            allowLoadMore.current = true;
+          }, 300);
+        }
+      }
+    },
+    [mapPostItem],
+  );
+
+  const handlePrimaryImageLoad = useCallback(itemId => {
+    if (!loadMorePendingRef.current || !itemId) {
+      return;
+    }
+    if (!pendingLoadMoreIdsRef.current.has(itemId)) {
+      return;
+    }
+    pendingLoadMoreIdsRef.current.delete(itemId);
+    if (pendingLoadMoreIdsRef.current.size === 0) {
+      loadMorePendingRef.current = false;
+      setFeedLoadingMore(false);
+      if (loadMoreTimeoutRef.current) {
+        clearTimeout(loadMoreTimeoutRef.current);
+        loadMoreTimeoutRef.current = null;
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (!feedLoadingMore) {
+      setFeedData(prev => prev.filter(item => !item?.__isLoadingMore));
+    }
+  }, [feedLoadingMore]);
 
   useEffect(() => {
     fetchPosts({page: 0});
@@ -591,6 +668,53 @@ const MainScreen = ({navigation}) => {
       commentSheetRef.current?.present();
     });
   }, []);
+
+  const handleEditPress = useCallback(
+    item => {
+      if (!item) {
+        return;
+      }
+      const review = item?.__sourceReview ?? {
+        id: item?.id,
+        postImgUrlList: Array.isArray(item?.postImages) ? item.postImages : [],
+        storeName: item?.name ?? '',
+        storeAddress: item?.storeAddress ?? '',
+        content: item?.content ?? '',
+        rate: item?.rate ?? item?.rating ?? 0,
+      };
+      navigation.navigate('MyPostEditScreen', {
+        review,
+        returnTo: 'MainScreen',
+      });
+    },
+    [navigation],
+  );
+
+  const handleDeletePress = useCallback(
+    async item => {
+      if (!item?.id) {
+        return;
+      }
+      try {
+        setIsDeleting(true);
+        await PostDelete(item.id);
+        setFeedData(prev =>
+          prev.filter(feedItem => String(feedItem.id) !== String(item.id)),
+        );
+        itemLayoutsRef.current.delete(String(item.id));
+        showToast('삭제가 완료되었습니다.');
+      } catch (error) {
+        showAlert?.({
+          title: '게시글 삭제 실패',
+          message: '게시글 삭제에 실패했습니다.',
+          type: 'ok',
+        });
+      } finally {
+        setIsDeleting(false);
+      }
+    },
+    [showAlert, showToast],
+  );
 
   const handleGoToSettings = useCallback(() => {
     openSettings().catch(() => console.warn('설정 열기에 실패했습니다.'));
@@ -970,14 +1094,17 @@ const MainScreen = ({navigation}) => {
           feedLoading ? item : item.id ?? `${index}`
         }
         renderItem={({item}) =>
-          feedLoading ? (
+          feedLoading || item?.__isLoadingMore ? (
             <PostItemSkeleton />
           ) : (
             <PostItem
               item={item}
               onCommentPress={handleOpenCommentSheet}
+              onPrimaryImageLoad={() => handlePrimaryImageLoad(item.id)}
               isCentered={item.id === centeredItemId}
               isWriter={item.isWriter}
+              onEditPress={handleEditPress}
+              onDeletePress={handleDeletePress}
             />
           )
         }
@@ -988,6 +1115,7 @@ const MainScreen = ({navigation}) => {
               insets.top +
               (Platform.OS === 'android' ? 40 : 10) +
               (insets.top === 0 && 40),
+            paddingBottom: loadMorePadding,
           },
         ]}
         showsVerticalScrollIndicator={false}
@@ -1014,6 +1142,7 @@ const MainScreen = ({navigation}) => {
           }
         }}
         onEndReachedThreshold={0.9}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
       />
 
       <PostCommentSheet
@@ -1078,7 +1207,7 @@ const MainScreen = ({navigation}) => {
         />
       )}
       <AlertComponent />
-      <Loading loading={refreshing} />
+      <Loading loading={refreshing || feedLoadingMore || isDeleting} />
     </View>
   );
 };

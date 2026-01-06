@@ -530,7 +530,11 @@ const MyPostDetailScreen = ({navigation, route}) => {
     item => {
       const review = item?.__sourceReview;
       if (!review) return;
-      navigation.navigate('MyPostEditScreen', {review, userProfile});
+      navigation.navigate('MyPostEditScreen', {
+        review,
+        userProfile,
+        returnTo: 'MyPostDetailScreen',
+      });
     },
     [navigation, userProfile],
   );
