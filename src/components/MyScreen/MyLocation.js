@@ -21,7 +21,6 @@ const MyLocation = ({navigation, onContentLayout}) => {
   const [radiusLabel, setRadiusLabel] = useState(
     formatRadiusLabel(INITIAL_RADIUS_KM),
   );
-  const [refreshing, setRefreshing] = useState(false);
 
   const fetchLocation = async () => {
     try {
@@ -48,28 +47,11 @@ const MyLocation = ({navigation, onContentLayout}) => {
     }, []),
   );
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchLocation();
-    setRefreshing(false);
-  }, []);
-
   const searchAddressHandle = () => {
     navigation.navigate('SetLocationScreen');
   };
 
   return (
-    // <ScrollView
-    //   style={styles.container}
-    //   contentContainerStyle={styles.content}
-    //   onContentSizeChange={(_, height) => {
-    //     if (onContentLayout) {
-    //       onContentLayout({nativeEvent: {layout: {height}}});
-    //     }
-    //   }}
-    //   refreshControl={
-    //     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-    //   }>
     <View style={styles.container} onLayout={onContentLayout}>
       <View style={styles.card}>
         <View style={styles.iconWrap}>
@@ -97,7 +79,6 @@ const MyLocation = ({navigation, onContentLayout}) => {
         <CustomText style={styles.buttonText}>내 위치 변경하기</CustomText>
       </Pressable>
     </View>
-    // </ScrollView>
   );
 };
 
