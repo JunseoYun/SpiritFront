@@ -37,6 +37,8 @@ const MyPostDetailScreen = ({navigation, route}) => {
     initialIndex: routeInitialIndex = 0,
     initialImageRatio: routeInitialImageRatio,
   } = route.params || {};
+  const currentUserProfileImage =
+    userProfile?.imageuri ?? userProfile?.imgUrl ?? null;
   const {showAlert, AlertComponent} = useCustomAlert();
   const listRef = useRef(null);
   const [showList, setShowList] = useState(false);
@@ -230,18 +232,25 @@ const MyPostDetailScreen = ({navigation, route}) => {
   }, []);
 
   const mapCommentItem = useCallback(
-    (item, rootCommentId = null) => ({
-      id: String(item.id ?? ''),
-      author: item.writerNickname ?? item.author ?? '',
-      profileImage: item.writerImgUrl ?? item.profileImage ?? null,
-      text: item.content ?? item.text ?? '',
-      createdAt: formatRelativeTime(item.createdAt),
-      likes: item.likes ?? 0,
-      isMine: item.isWriter ?? item.isMine ?? false,
-      replyCount: item.replyCount ?? 0,
-      rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
-    }),
-    [],
+    (item, rootCommentId = null) => {
+      const isMine = item.isWriter ?? item.isMine ?? false;
+      return {
+        id: String(item.id ?? ''),
+        author: item.writerNickname ?? item.author ?? '',
+        profileImage:
+          item.writerImgUrl ??
+          item.profileImgUrl ??
+          item.profileImage ??
+          (isMine ? currentUserProfileImage : null),
+        text: item.content ?? item.text ?? '',
+        createdAt: formatRelativeTime(item.createdAt),
+        likes: item.likes ?? 0,
+        isMine,
+        replyCount: item.replyCount ?? 0,
+        rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
+      };
+    },
+    [currentUserProfileImage],
   );
 
   const fetchComments = useCallback(
@@ -396,6 +405,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
             id: `temp-${Date.now()}`,
             content,
             createdAt: new Date().toISOString(),
+            writerImgUrl: currentUserProfileImage ?? null,
             writerNickname: userProfile?.nickname || '나',
             isWriter: true,
           };
@@ -446,6 +456,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
             id: `temp-${Date.now()}`,
             content,
             createdAt: new Date().toISOString(),
+            writerImgUrl: currentUserProfileImage ?? null,
             writerNickname: userProfile?.nickname || '나',
             isWriter: true,
           };
@@ -463,7 +474,13 @@ const MyPostDetailScreen = ({navigation, route}) => {
         isSendingCommentRef.current = false;
       }
     },
-    [fetchComments, mapCommentItem, selectedFeed?.id, userProfile?.nickname],
+    [
+      fetchComments,
+      mapCommentItem,
+      selectedFeed?.id,
+      userProfile?.nickname,
+      currentUserProfileImage,
+    ],
   );
 
   const handleDeleteComment = useCallback(
@@ -869,10 +886,11 @@ const MyPostDetailScreen = ({navigation, route}) => {
           defaultProfile={defaultProfile}
           commentLikeState={commentLikeState}
           onToggleLike={handleCommentLikeToggle}
-          formatLikeCount={formatLikeCount}
-          commentInput={commentInput}
-          onChangeCommentInput={setCommentInput}
-          onPressSend={handleSendComment}
+        formatLikeCount={formatLikeCount}
+        commentInput={commentInput}
+        onChangeCommentInput={setCommentInput}
+        currentUserProfileImage={currentUserProfileImage}
+        onPressSend={handleSendComment}
           onDeleteComment={handleDeleteComment}
           onRequestReplies={handleRequestReplies}
           onRequestMoreComments={handleRequestMoreComments}
