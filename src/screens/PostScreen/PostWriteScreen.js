@@ -59,19 +59,12 @@ const PostWriteScreen = ({navigation, route}) => {
   const hasMultiplePhotos = photos.length > 1;
   const displayName = placeName || storeName;
   const hasStoreName = storeName.trim().length > 0;
-  const hasPlaceName = placeName.trim().length > 0;
+  const trimmedPlaceName = placeName.trim();
+  const hasPlaceName = trimmedPlaceName.length > 0;
+  const canUseStoreId = Boolean(storeId);
+  const isContentOnly = !hasPlaceName && !hasStoreName && !canUseStoreId;
   const showStoreInfo = hasStoreName || hasPlaceName;
   const showRating = hasStoreName && !hasPlaceName;
-
-  useEffect(() => {
-    console.log('PostWriteScreen params:', {
-      storeId,
-      storeName,
-      storeAddress,
-      placeName,
-      preview,
-    });
-  }, [storeId, storeName, storeAddress, placeName, preview]);
 
   useEffect(() => {
     let isActive = true;
@@ -182,7 +175,11 @@ const PostWriteScreen = ({navigation, route}) => {
     }
   }, [isEditorFocused]);
 
-  const isSubmitEnabled = rating > 0 && content.trim().length > 0;
+  const isSubmitEnabled = hasPlaceName
+    ? content.trim().length > 0
+    : isContentOnly
+    ? content.trim().length > 0
+    : rating > 0 && content.trim().length > 0;
   const isSubmitReady = isSubmitEnabled && !isSubmitting;
 
   const handleSubmitPost = useCallback(async () => {
@@ -190,50 +187,61 @@ const PostWriteScreen = ({navigation, route}) => {
     setIsSubmitting(true);
     try {
       let resolvedStoreId = storeId;
-      if (!resolvedStoreId) {
-        const trimmedStoreName = storeName.trim();
-        const trimmedStoreAddress = storeAddress.trim();
-        if (!trimmedStoreName || !trimmedStoreAddress) {
-          console.warn('게시 실패: storeId가 없습니다.');
-          return;
-        }
-        const suggestionData = {
-          files: photos,
-          createStoreDto: {
-            name: trimmedStoreName,
-            locationDto: {
-              address: trimmedStoreAddress,
-              addressDetail: '',
-              latitude: 12.34,
-              longitude: 12.34,
-            },
-            facilitiesInfoDto: {
-              hasScreen: false,
-              hasRoom: false,
-              hasOutdoor: false,
-              isGroupAvailable: false,
-              isParkingAvailable: false,
-              isCorkageAvailable: false,
-            },
-          },
-        };
-        const response = await StoreSuggestion(suggestionData);
-        resolvedStoreId = response?.data?.data?.id ?? null;
+      if (!hasPlaceName && !isContentOnly) {
         if (!resolvedStoreId) {
-          console.warn('게시 실패: 매장 제보 후 storeId를 받지 못했습니다.');
-          return;
+          const trimmedStoreName = storeName.trim();
+          const trimmedStoreAddress = storeAddress.trim();
+          if (!trimmedStoreName || !trimmedStoreAddress) {
+            console.warn('게시 실패: storeId가 없습니다.');
+            return;
+          }
+          const suggestionData = {
+            files: photos,
+            createStoreDto: {
+              name: trimmedStoreName,
+              locationDto: {
+                address: trimmedStoreAddress,
+                addressDetail: '',
+                latitude: 12.34,
+                longitude: 12.34,
+              },
+              facilitiesInfoDto: {
+                hasScreen: false,
+                hasRoom: false,
+                hasOutdoor: false,
+                isGroupAvailable: false,
+                isParkingAvailable: false,
+                isCorkageAvailable: false,
+              },
+            },
+          };
+          const response = await StoreSuggestion(suggestionData);
+          resolvedStoreId = response?.data?.data?.id ?? null;
+          if (!resolvedStoreId) {
+            console.warn('게시 실패: 매장 제보 후 storeId를 받지 못했습니다.');
+            return;
+          }
         }
       }
       const data = {
         files: photos,
-        createPostDto: {
-          content: content.trim(),
-          storeId: resolvedStoreId,
-          rate: rating,
-        },
+        createPostDto: hasPlaceName
+          ? {
+              content: content.trim(),
+              place: trimmedPlaceName,
+            }
+          : isContentOnly
+          ? {
+              content: content.trim(),
+            }
+          : {
+              content: content.trim(),
+              storeId: resolvedStoreId,
+              rate: rating,
+            },
       };
       await PostCreate(data);
-      if (reviewFlow && resolvedStoreId) {
+      if (!hasPlaceName && !isContentOnly && reviewFlow && resolvedStoreId) {
         navigation.pop(3);
         navigation.navigate('StoreStack', {
           screen: 'StoreReviewScreen',
@@ -264,13 +272,19 @@ const PostWriteScreen = ({navigation, route}) => {
     }
   }, [
     content,
+    canUseStoreId,
+    hasPlaceName,
+    hasStoreName,
+    isContentOnly,
     isSubmitReady,
     navigation,
     photos,
     rating,
+    reviewFlow,
     storeAddress,
     storeId,
     storeName,
+    trimmedPlaceName,
     showAlert,
   ]);
 
