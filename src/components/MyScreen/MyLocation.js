@@ -16,7 +16,7 @@ import {
   INITIAL_RADIUS_KM,
 } from '../../context/MapSearchContext';
 
-const MyLocation = ({navigation}) => {
+const MyLocation = ({navigation, onContentLayout}) => {
   const [address, setAddress] = useState('');
   const [radiusLabel, setRadiusLabel] = useState(
     formatRadiusLabel(INITIAL_RADIUS_KM),
@@ -60,13 +60,18 @@ const MyLocation = ({navigation}) => {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }>
-      {/* Info Card */}
+    // <ScrollView
+    //   style={styles.container}
+    //   contentContainerStyle={styles.content}
+    //   onContentSizeChange={(_, height) => {
+    //     if (onContentLayout) {
+    //       onContentLayout({nativeEvent: {layout: {height}}});
+    //     }
+    //   }}
+    //   refreshControl={
+    //     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+    //   }>
+    <View style={styles.container}>
       <View style={styles.card}>
         <View style={styles.iconWrap}>
           <Ionicons name="location-outline" size={18} color="#64748B" />
@@ -86,14 +91,14 @@ const MyLocation = ({navigation}) => {
         </View>
       </View>
 
-      {/* Action Button */}
       <Pressable
         onPress={searchAddressHandle}
         style={({pressed}) => [styles.button, pressed && styles.buttonPressed]}>
         <Feather name="crosshair" size={16} color="#111827" />
         <CustomText style={styles.buttonText}>내 위치 변경하기</CustomText>
       </Pressable>
-    </ScrollView>
+    </View>
+    // </ScrollView>
   );
 };
 
@@ -101,6 +106,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   content: {
     paddingHorizontal: 18,
