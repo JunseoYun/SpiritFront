@@ -24,6 +24,7 @@ import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import CustomText from '../../utils/CustomText';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import ColorUtil from '../../utils/ColorUtil';
 
 const TABS = [
   {
@@ -77,6 +78,7 @@ const StoreTabContent = ({
           marginRight:
             index % STORE_GRID_COLUMNS === STORE_GRID_COLUMNS - 1 ? 0 : gap,
           marginBottom: gap,
+          paddingTop: 5,
         }}
       />
     ),
@@ -165,7 +167,7 @@ const ScrapTabContent = ({
           <CustomText style={styles.emptyText}>{emptyText}</CustomText>
         ) : null
       }
-      contentContainerStyle={{paddingBottom: insets.bottom}}
+      contentContainerStyle={{paddingTop: 1, paddingBottom: insets.bottom}}
       onScroll={onScroll}
       scrollEventThrottle={16}
     />
@@ -459,6 +461,7 @@ const LikeScreen = ({navigation}) => {
             </Pressable>
           );
         })}
+        <View style={styles.tabUnderline} />
         {tabWidth > 0 && (
           <Animated.View
             style={[
@@ -624,11 +627,12 @@ const styles = StyleSheet.create({
   tabs: {
     flexDirection: 'row',
     position: 'relative',
-    marginBottom: 2,
+    // marginBottom: 2,
   },
   tabButton: {
     flex: 1,
-    paddingVertical: 12,
+    paddingTop: 12,
+    paddingBottom: 7,
     alignItems: 'center',
   },
   tabText: {
@@ -642,11 +646,11 @@ const styles = StyleSheet.create({
   },
   tabUnderline: {
     position: 'absolute',
-    bottom: -1,
+    bottom: 0,
     left: 0,
     right: 0,
-    height: 2,
-    backgroundColor: '#f4f4f5',
+    height: 0.5,
+    backgroundColor: ColorUtil.border,
   },
   tabIndicator: {
     position: 'absolute',

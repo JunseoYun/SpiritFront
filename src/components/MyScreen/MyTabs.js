@@ -8,7 +8,10 @@ const MyTabs = ({changePage, isManager, selectedTab, tabPosition}) => {
   const internalAnimatedValue = useRef(new Animated.Value(selectedTab)).current;
   const animatedValue = tabPosition || internalAnimatedValue;
 
-  const tabs = [{name: '게시글', screen: 'MyReview'}];
+  const tabs = [
+    {name: '게시글', screen: 'MyReview'},
+    {name: '위치', screen: 'MyLocation'},
+  ];
 
   if (isManager) {
     tabs.push({name: '나의 매장', screen: 'MyManager'});
@@ -16,7 +19,7 @@ const MyTabs = ({changePage, isManager, selectedTab, tabPosition}) => {
 
   const TAB_COUNT = tabs.length;
   const TAB_WIDTH = width / TAB_COUNT;
-  const INDICATOR_WIDTH = TAB_WIDTH * 0.3;
+  const INDICATOR_WIDTH = TAB_COUNT <= 2 ? TAB_WIDTH * 0.3 : TAB_WIDTH * 0.5;
 
   const translateX = Animated.add(
     Animated.multiply(animatedValue, TAB_WIDTH),
@@ -57,6 +60,7 @@ const MyTabs = ({changePage, isManager, selectedTab, tabPosition}) => {
         ))}
       </View>
 
+      <View style={styles.defaultUnderline} />
       <Animated.View
         style={[
           styles.animatedUnderline,
@@ -77,6 +81,7 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    marginBottom: 5,
   },
   tabButton: {
     flex: 1,
@@ -94,7 +99,7 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   defaultUnderline: {
-    height: 1.5,
+    height: 0.5,
     width: '100%',
     backgroundColor: '#E0E0E0',
     position: 'absolute',
