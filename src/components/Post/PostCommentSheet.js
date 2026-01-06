@@ -40,6 +40,7 @@ const CommentFooter = ({
   onPressSend,
   onFocusInput,
   defaultProfile,
+  currentUserProfileImage,
   bottomInset,
   replyTargetStore,
   onClearReplyTarget,
@@ -128,7 +129,14 @@ const CommentFooter = ({
           paddingBottom: bottomInset + 10,
         },
       ]}>
-      <FastImage source={defaultProfile} style={styles.commentInputAvatar} />
+      <FastImage
+        source={
+          currentUserProfileImage
+            ? {uri: currentUserProfileImage}
+            : defaultProfile
+        }
+        style={styles.commentInputAvatar}
+      />
       <View style={{flex: 1}}>
         {replyTarget ? (
           <View style={styles.replyField}>
@@ -189,6 +197,7 @@ const PostCommentSheet = forwardRef(
       onToggleLike,
       formatLikeCount,
       onChangeCommentInput,
+      currentUserProfileImage,
       onPressSend,
       onDeleteComment,
       onRequestReplies,
@@ -584,6 +593,7 @@ const PostCommentSheet = forwardRef(
             onPressSend={handlePressSend}
             onFocusInput={handleInputFocus}
             defaultProfile={defaultProfile}
+            currentUserProfileImage={currentUserProfileImage}
             bottomInset={insets.bottom}
             replyTargetStore={replyTargetStoreRef}
             onClearReplyTarget={handleClearReplyTarget}
@@ -592,6 +602,7 @@ const PostCommentSheet = forwardRef(
       ),
       [
         defaultProfile,
+        currentUserProfileImage,
         handleChangeCommentInput,
         handleInputFocus,
         handlePressSend,
@@ -757,7 +768,14 @@ const PostCommentSheet = forwardRef(
                   0,
                   replyCount - expandedReplyItems.length,
                 );
-                const hasRepliesLoaded = Array.isArray(comment.replies);
+                const loadedReplyCount = Array.isArray(comment.replies)
+                  ? comment.replies.length
+                  : 0;
+                const expectedReplyCount = Number.isFinite(comment.replyCount)
+                  ? comment.replyCount
+                  : loadedReplyCount;
+                const hasLoadedAllReplies =
+                  expectedReplyCount > 0 && loadedReplyCount >= expectedReplyCount;
                 const isLoadingReplies = !!loadingReplies[comment.id];
 
                 return (
@@ -959,8 +977,11 @@ const PostCommentSheet = forwardRef(
                             ]}
                             disabled={isLoadingReplies}
                             onPress={() => {
-                              const nextPage = hasRepliesLoaded
-                                ? (comment.replyPage ?? 0) + 1
+                              if (hasLoadedAllReplies) {
+                                return;
+                              }
+                              const nextPage = Number.isFinite(comment.replyPage)
+                                ? comment.replyPage + 1
                                 : 0;
                               requestReplies(comment.id, nextPage);
                             }}>
@@ -983,11 +1004,11 @@ const PostCommentSheet = forwardRef(
                               },
                             ]}
                             onPress={() =>
-                              setExpandedReplies(prev => ({
-                                ...prev,
-                                [comment.id]: false,
-                              }))
-                            }>
+                            setExpandedReplies(prev => ({
+                              ...prev,
+                              [comment.id]: false,
+                            }))
+                          }>
                             <View style={styles.commentReplyToggleLine} />
                             <CustomText style={[styles.commentReplyToggleText]}>
                               답글 접기
@@ -1060,7 +1081,7 @@ const PostCommentSheet = forwardRef(
                               ...prev,
                               [comment.id]: true,
                             }));
-                            if (!hasRepliesLoaded) {
+                            if (!hasLoadedAllReplies && !Number.isFinite(comment.replyPage)) {
                               requestReplies(comment.id, 0);
                             }
                           }}>
@@ -1105,7 +1126,7 @@ const PostCommentSheet = forwardRef(
                             ...prev,
                             [comment.id]: true,
                           }));
-                          if (!hasRepliesLoaded) {
+                          if (!hasLoadedAllReplies && !Number.isFinite(comment.replyPage)) {
                             requestReplies(comment.id, 0);
                           }
                         }}>

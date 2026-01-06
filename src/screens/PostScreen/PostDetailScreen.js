@@ -47,6 +47,7 @@ const PostDetailScreen = ({navigation, route}) => {
   const [commentPage, setCommentPage] = useState(0);
   const [commentTotalCount, setCommentTotalCount] = useState(null);
   const [currentUserNickname, setCurrentUserNickname] = useState('');
+  const [currentUserProfileImage, setCurrentUserProfileImage] = useState(null);
   const [pendingScrollReplyId, setPendingScrollReplyId] = useState(null);
   const isLoadingMoreCommentsRef = useRef(false);
 
@@ -57,6 +58,9 @@ const PostDetailScreen = ({navigation, route}) => {
         const data = await Userdataget();
         if (isMounted) {
           setCurrentUserNickname(data?.nickname ?? '');
+          setCurrentUserProfileImage(
+            data?.imgUrl ?? data?.profileImgUrl ?? data?.profileImage ?? null,
+          );
         }
       } catch (error) {}
     };
@@ -147,18 +151,25 @@ const PostDetailScreen = ({navigation, route}) => {
   }, []);
 
   const mapCommentItem = useCallback(
-    (item, rootCommentId = null) => ({
-      id: String(item.id ?? ''),
-      author: item.writerNickname ?? item.author ?? '',
-      profileImage: item.writerImgUrl ?? item.profileImage ?? null,
-      text: item.content ?? item.text ?? '',
-      createdAt: formatRelativeTime(item.createdAt),
-      likes: item.likes ?? 0,
-      isMine: item.isWriter ?? item.isMine ?? false,
-      replyCount: item.replyCount ?? 0,
-      rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
-    }),
-    [],
+    (item, rootCommentId = null) => {
+      const isMine = item.isWriter ?? item.isMine ?? false;
+      return {
+        id: String(item.id ?? ''),
+        author: item.writerNickname ?? item.author ?? '',
+        profileImage:
+          item.writerImgUrl ??
+          item.profileImgUrl ??
+          item.profileImage ??
+          (isMine ? currentUserProfileImage : null),
+        text: item.content ?? item.text ?? '',
+        createdAt: formatRelativeTime(item.createdAt),
+        likes: item.likes ?? 0,
+        isMine,
+        replyCount: item.replyCount ?? 0,
+        rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
+      };
+    },
+    [currentUserProfileImage],
   );
 
   const fetchComments = useCallback(
@@ -319,6 +330,7 @@ const PostDetailScreen = ({navigation, route}) => {
             id: `temp-${Date.now()}`,
             content,
             createdAt: new Date().toISOString(),
+            writerImgUrl: currentUserProfileImage ?? null,
             writerNickname: currentUserNickname || '나',
             isWriter: true,
           };
@@ -367,6 +379,7 @@ const PostDetailScreen = ({navigation, route}) => {
             id: `temp-${Date.now()}`,
             content,
             createdAt: new Date().toISOString(),
+            writerImgUrl: currentUserProfileImage ?? null,
             writerNickname: currentUserNickname || '나',
             isWriter: true,
           };
@@ -385,6 +398,7 @@ const PostDetailScreen = ({navigation, route}) => {
     },
     [
       currentUserNickname,
+      currentUserProfileImage,
       fetchComments,
       mapCommentItem,
       postId,
@@ -471,6 +485,7 @@ const PostDetailScreen = ({navigation, route}) => {
         formatLikeCount={formatLikeCount}
         commentInput={commentInput}
         onChangeCommentInput={setCommentInput}
+        currentUserProfileImage={currentUserProfileImage}
         onPressSend={handleSendComment}
         onDeleteComment={handleDeleteComment}
         onRequestReplies={handleRequestReplies}

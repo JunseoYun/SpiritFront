@@ -89,6 +89,7 @@ const MainScreen = ({navigation}) => {
   const [commentPage, setCommentPage] = useState(0);
   const [commentTotalCount, setCommentTotalCount] = useState(null);
   const [currentUserNickname, setCurrentUserNickname] = useState('');
+  const [currentUserProfileImage, setCurrentUserProfileImage] = useState(null);
   const [pendingScrollReplyId, setPendingScrollReplyId] = useState(null);
   const writeLabelVisibleRef = useRef(true);
   const WRITE_BUTTON_COLLAPSE_OFFSET = 20;
@@ -186,6 +187,9 @@ const MainScreen = ({navigation}) => {
         const data = await Userdataget();
         if (isMounted) {
           setCurrentUserNickname(data?.nickname ?? '');
+          setCurrentUserProfileImage(
+            data?.imgUrl ?? data?.profileImgUrl ?? data?.profileImage ?? null,
+          );
         }
       } catch (error) {}
     };
@@ -308,9 +312,7 @@ const MainScreen = ({navigation}) => {
               clearTimeout(loadMoreTimeoutRef.current);
               loadMoreTimeoutRef.current = null;
             }
-            setFeedData(prev =>
-              prev.filter(item => !item?.__isLoadingMore),
-            );
+            setFeedData(prev => prev.filter(item => !item?.__isLoadingMore));
           }
         } else {
           setFeedLoading(false);
@@ -396,18 +398,25 @@ const MainScreen = ({navigation}) => {
   }, []);
 
   const mapCommentItem = useCallback(
-    (item, rootCommentId = null) => ({
-      id: String(item.id ?? ''),
-      author: item.writerNickname ?? item.author ?? '',
-      profileImage: item.writerImgUrl ?? item.profileImage ?? null,
-      text: item.content ?? item.text ?? '',
-      createdAt: formatRelativeTime(item.createdAt),
-      likes: item.likes ?? 0,
-      isMine: item.isWriter ?? item.isMine ?? false,
-      replyCount: item.replyCount ?? 0,
-      rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
-    }),
-    [],
+    (item, rootCommentId = null) => {
+      const isMine = item.isWriter ?? item.isMine ?? false;
+      return {
+        id: String(item.id ?? ''),
+        author: item.writerNickname ?? item.author ?? '',
+        profileImage:
+          item.writerImgUrl ??
+          item.profileImgUrl ??
+          item.profileImage ??
+          (isMine ? currentUserProfileImage : null),
+        text: item.content ?? item.text ?? '',
+        createdAt: formatRelativeTime(item.createdAt),
+        likes: item.likes ?? 0,
+        isMine,
+        replyCount: item.replyCount ?? 0,
+        rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
+      };
+    },
+    [currentUserProfileImage],
   );
 
   const fetchComments = useCallback(
@@ -562,6 +571,7 @@ const MainScreen = ({navigation}) => {
             id: `temp-${Date.now()}`,
             content,
             createdAt: new Date().toISOString(),
+            writerImgUrl: currentUserProfileImage ?? null,
             writerNickname: currentUserNickname || '나',
             isWriter: true,
           };
@@ -612,6 +622,7 @@ const MainScreen = ({navigation}) => {
             id: `temp-${Date.now()}`,
             content,
             createdAt: new Date().toISOString(),
+            writerImgUrl: currentUserProfileImage ?? null,
             writerNickname: currentUserNickname || '나',
             isWriter: true,
           };
@@ -628,7 +639,13 @@ const MainScreen = ({navigation}) => {
         isSendingCommentRef.current = false;
       }
     },
-    [currentUserNickname, fetchComments, mapCommentItem, selectedFeed?.id],
+    [
+      currentUserNickname,
+      currentUserProfileImage,
+      fetchComments,
+      mapCommentItem,
+      selectedFeed?.id,
+    ],
   );
 
   const handleDeleteComment = useCallback(
@@ -1160,6 +1177,7 @@ const MainScreen = ({navigation}) => {
         formatLikeCount={formatLikeCount}
         commentInput={commentInput}
         onChangeCommentInput={setCommentInput}
+        currentUserProfileImage={currentUserProfileImage}
         onPressSend={handleSendComment}
         onDeleteComment={handleDeleteComment}
         onRequestReplies={handleRequestReplies}
