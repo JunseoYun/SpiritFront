@@ -4,8 +4,9 @@ import CustomText from '../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 
-const MyTabs = ({changePage, isManager, selectedTab}) => {
-  const animatedValue = useRef(new Animated.Value(selectedTab)).current;
+const MyTabs = ({changePage, isManager, selectedTab, tabPosition}) => {
+  const internalAnimatedValue = useRef(new Animated.Value(selectedTab)).current;
+  const animatedValue = tabPosition || internalAnimatedValue;
 
   const tabs = [{name: '게시글', screen: 'MyReview'}];
 
@@ -15,7 +16,7 @@ const MyTabs = ({changePage, isManager, selectedTab}) => {
 
   const TAB_COUNT = tabs.length;
   const TAB_WIDTH = width / TAB_COUNT;
-  const INDICATOR_WIDTH = TAB_WIDTH * 0.28;
+  const INDICATOR_WIDTH = TAB_WIDTH * 0.3;
 
   const translateX = Animated.add(
     Animated.multiply(animatedValue, TAB_WIDTH),
@@ -27,14 +28,15 @@ const MyTabs = ({changePage, isManager, selectedTab}) => {
   };
 
   useEffect(() => {
-    Animated.spring(animatedValue, {
+    if (tabPosition) return;
+    Animated.spring(internalAnimatedValue, {
       toValue: selectedTab,
       stiffness: 160,
       damping: 20,
       mass: 0.35,
       useNativeDriver: true,
     }).start();
-  }, [selectedTab, animatedValue]);
+  }, [selectedTab, tabPosition, internalAnimatedValue]);
 
   return (
     <View style={styles.container}>
@@ -101,7 +103,7 @@ const styles = StyleSheet.create({
   animatedUnderline: {
     position: 'absolute',
     bottom: 0,
-    height: 1.5,
+    height: 2,
     backgroundColor: '#1a1a1a',
   },
 });

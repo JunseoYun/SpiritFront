@@ -13,6 +13,7 @@ import {
   View,
   ScrollView,
   useWindowDimensions,
+  Animated,
 } from 'react-native';
 import {useFocusEffect, useRoute} from '@react-navigation/native';
 import PagerView from 'react-native-pager-view';
@@ -39,6 +40,7 @@ const MyScreen = ({navigation}) => {
   const {width: screenWidth} = useWindowDimensions();
   const verticalScrollRef = useRef(null);
   const pagerRef = useRef(null);
+  const pagerPosition = useRef(new Animated.Value(selectedTab)).current;
   const reviewRef = useRef(null);
   const managerRef = useRef(null);
   const [reviewRefreshing, setReviewRefreshing] = useState(false);
@@ -176,11 +178,12 @@ const MyScreen = ({navigation}) => {
   useEffect(() => {
     if (!isManager) {
       setSelectedTab(0);
+      pagerPosition.setValue(0);
       setTabsHeight(0);
       tabsOffsetRef.current = null;
       setIsTabsSticky(false);
     }
-  }, [isManager]);
+  }, [isManager, pagerPosition]);
 
   const handleScrollBeginDrag = useCallback(() => {
     if (!isManager && selectedTab !== 0) {
@@ -210,7 +213,7 @@ const MyScreen = ({navigation}) => {
         }
       }
     },
-    [pagerRef, screenWidth, isTabsSticky],
+    [pagerRef, screenWidth, isTabsSticky, isManager, pagerPosition],
   );
 
   const handlePageSelected = useCallback(
@@ -220,6 +223,7 @@ const MyScreen = ({navigation}) => {
         return;
       }
       setSelectedTab(nextIndex);
+      pagerPosition.setValue(nextIndex);
       if (isTabsSticky && tabsOffsetRef.current != null) {
         verticalScrollRef.current?.scrollTo?.({
           y: tabsOffsetRef.current,
@@ -228,7 +232,7 @@ const MyScreen = ({navigation}) => {
         scrollYRef.current = tabsOffsetRef.current;
       }
     },
-    [isManager, isTabsSticky],
+    [isManager, isTabsSticky, pagerPosition],
   );
 
   const renderTabs = () => (
@@ -236,6 +240,7 @@ const MyScreen = ({navigation}) => {
       selectedTab={selectedTab}
       changePage={handleChangePage}
       isManager={isManager}
+      tabPosition={pagerPosition}
     />
   );
 
@@ -370,6 +375,10 @@ const MyScreen = ({navigation}) => {
               ref={pagerRef}
               style={[styles.pager, pagerHeight ? {height: pagerHeight} : null]}
               initialPage={isManager ? selectedTab : 0}
+              onPageScroll={event => {
+                const {position, offset} = event.nativeEvent;
+                pagerPosition.setValue(position + offset);
+              }}
               onPageSelected={handlePageSelected}
               scrollEnabled>
               <View key="review" style={[styles.page, {width: screenWidth}]}>

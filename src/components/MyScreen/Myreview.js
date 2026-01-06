@@ -235,6 +235,7 @@ const MyReview = forwardRef(
 const styles = StyleSheet.create({
   content: {
     paddingBottom: 30,
+    marginTop: 1,
   },
   row: {
     flexDirection: 'row',
