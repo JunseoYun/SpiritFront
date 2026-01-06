@@ -41,15 +41,15 @@ const isRemoteUri = uri => typeof uri === 'string' && /^https?:\/\//i.test(uri);
 
 const MyPostEditScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
-  const {review} = route.params || {};
+  const {review, returnTo} = route.params || {};
   const {showAlert, AlertComponent} = useCustomAlert();
   const lastBackPressed = useRef(0);
   const initialImages = useMemo(() => {
     const list = Array.isArray(review?.postImgUrlList)
       ? review.postImgUrlList
       : Array.isArray(review?.imgUrlList)
-        ? review.imgUrlList
-        : [];
+      ? review.imgUrlList
+      : [];
     return list.filter(Boolean).map((uri, index) => ({
       id: `${uri}-${index}`,
       uri,
@@ -212,30 +212,44 @@ const MyPostEditScreen = ({navigation, route}) => {
     });
   }, [navigation]);
 
+  const goBackToOrigin = useCallback(() => {
+    if (returnTo === 'MainScreen') {
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('MainBtmbar', {
+          screen: 'MainScreen',
+        });
+      }
+      return;
+    }
+    navigation.goBack();
+  }, [navigation, returnTo]);
+
   const handleBackPress = useCallback(() => {
     if (!hasUnsavedChanges) {
-      goToMyProfile();
+      goBackToOrigin();
       return;
     }
     showAlert({
       title: '저장되지 않았습니다',
       message: '뒤로 가시겠습니까?',
-      onConfirm: () => goToMyProfile(),
+      onConfirm: () => goBackToOrigin(),
       type: 'confirm',
     });
-  }, [goToMyProfile, hasUnsavedChanges, showAlert]);
+  }, [goBackToOrigin, hasUnsavedChanges, showAlert]);
 
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
         const now = Date.now();
         if (!hasUnsavedChanges) {
-          goToMyProfile();
+          goBackToOrigin();
           return true;
         }
 
         if (now - lastBackPressed.current < 2000) {
-          goToMyProfile();
+          goBackToOrigin();
           return true;
         }
 
@@ -253,7 +267,7 @@ const MyPostEditScreen = ({navigation, route}) => {
       );
 
       return () => backHandler.remove();
-    }, [goToMyProfile, hasUnsavedChanges]),
+    }, [goBackToOrigin, hasUnsavedChanges]),
   );
 
   const handleDeleteImage = index => {
@@ -371,7 +385,6 @@ const MyPostEditScreen = ({navigation, route}) => {
         setIsSubmitting(false);
       });
   };
-
 
   return (
     <SafeAreaView
