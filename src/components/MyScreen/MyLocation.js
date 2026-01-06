@@ -27,7 +27,6 @@ const MyLocation = ({navigation, onContentLayout}) => {
     try {
       const storageAddress = await getAddress();
       setAddress(storageAddress || '저장된 주소가 없습니다.');
-
       const storedRadius = await getSearchRadius();
       if (typeof storedRadius === 'number') {
         setRadiusLabel(formatRadiusLabel(storedRadius));
@@ -71,7 +70,7 @@ const MyLocation = ({navigation, onContentLayout}) => {
     //   refreshControl={
     //     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
     //   }>
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={onContentLayout}>
       <View style={styles.card}>
         <View style={styles.iconWrap}>
           <Ionicons name="location-outline" size={18} color="#64748B" />

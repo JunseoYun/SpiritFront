@@ -3,9 +3,11 @@ import React, {
   useEffect,
   useCallback,
   useLayoutEffect,
+  useMemo,
   useRef,
 } from 'react';
 import {
+  Animated,
   StyleSheet,
   SafeAreaView,
   BackHandler,
@@ -13,10 +15,8 @@ import {
   View,
   ScrollView,
   useWindowDimensions,
-  Animated,
 } from 'react-native';
 import {useFocusEffect, useRoute} from '@react-navigation/native';
-import PagerView from 'react-native-pager-view';
 import MyPageheader from '../../../components/MyScreen/MyPageheader';
 import {Userdataget} from '../../../api/userApi';
 import useCustomAlert from '../../../hooks/useCustomAlert';
@@ -39,31 +39,29 @@ const MyScreen = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [reviewCount, setReviewCount] = useState(0);
   const {width: screenWidth} = useWindowDimensions();
-  const verticalScrollRef = useRef(null);
-  const pagerRef = useRef(null);
-  const pagerPosition = useRef(new Animated.Value(selectedTab)).current;
   const reviewRef = useRef(null);
   const managerRef = useRef(null);
   const [reviewRefreshing, setReviewRefreshing] = useState(false);
   const [managerRefreshing, setManagerRefreshing] = useState(false);
+  const pagerRef = useRef(null);
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const isPagerDragging = useRef(false);
+  const skipPagerSync = useRef(false);
   const isRefreshing =
     selectedTab === 0
       ? reviewRefreshing
       : selectedTab === 2
       ? managerRefreshing
       : false;
-  const scrollYRef = useRef(0);
-  const tabsOffsetRef = useRef(null);
   const [tabsHeight, setTabsHeight] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(0);
-  const [headerHeight, setHeaderHeight] = useState(0);
   const [reviewPageHeight, setReviewPageHeight] = useState(0);
   const [locationPageHeight, setLocationPageHeight] = useState(0);
   const [managerPageHeight, setManagerPageHeight] = useState(0);
-  const [isTabsSticky, setIsTabsSticky] = useState(false);
   const reviewHeightRef = useRef(0);
   const locationHeightRef = useRef(0);
   const managerHeightRef = useRef(0);
+  const isManager = userdata?.isManager === true;
   const tabCount = isManager ? 3 : 2;
   const maxTabIndex = tabCount - 1;
   const activePageHeight =
@@ -78,16 +76,22 @@ const MyScreen = ({navigation}) => {
     basePagerHeight || minPagerHeight
       ? Math.max(basePagerHeight, minPagerHeight || 0)
       : undefined;
-  const scrollContentHeight = headerHeight + tabsHeight + basePagerHeight;
-  const canScrollVertically = scrollContentHeight > viewportHeight + 1;
-  const scrollEnabled = isTabsSticky || canScrollVertically;
-  const refreshEnabled =
-    scrollEnabled &&
-    (selectedTab === 0
-      ? true
-      : selectedTab === 2
-      ? canScrollVertically
-      : false);
+  const tabPosition = useMemo(() => {
+    const safeWidth = screenWidth || 1;
+    return Animated.divide(scrollX, safeWidth);
+  }, [scrollX, screenWidth]);
+
+  const scrollToPage = useCallback(
+    (index, animated) => {
+      if (!screenWidth) return;
+      const pagerNode =
+        pagerRef.current && typeof pagerRef.current.getNode === 'function'
+          ? pagerRef.current.getNode()
+          : pagerRef.current;
+      pagerNode?.scrollTo?.({x: index * screenWidth, animated});
+    },
+    [screenWidth],
+  );
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -185,75 +189,45 @@ const MyScreen = ({navigation}) => {
     fetchUserData();
   }, [showAlert]);
 
-  const isManager = userdata?.isManager === true;
-  const pagerKey = isManager ? 'manager' : 'user';
   useEffect(() => {
     if (invitationManager && isManager) {
       setSelectedTab(2);
-      pagerRef.current?.setPage?.(2);
     }
   }, [invitationManager, isManager, screenWidth]);
 
   useEffect(() => {
     if (!isManager && selectedTab > maxTabIndex) {
       setSelectedTab(0);
-      pagerPosition.setValue(0);
     }
-  }, [isManager, maxTabIndex, pagerPosition, selectedTab]);
+  }, [isManager, maxTabIndex, selectedTab]);
 
-  const handleScrollBeginDrag = useCallback(() => {
-    if (selectedTab !== 0 && isTabsSticky && !canScrollVertically) {
-      setIsTabsSticky(false);
-      verticalScrollRef.current?.scrollTo?.({y: 0, animated: false});
-      scrollYRef.current = 0;
+  useEffect(() => {
+    if (skipPagerSync.current) {
+      skipPagerSync.current = false;
+      return;
     }
-  }, [canScrollVertically, isManager, isTabsSticky, selectedTab]);
+    scrollToPage(selectedTab, false);
+  }, [scrollToPage, selectedTab]);
 
   const handleChangePage = useCallback(
     index => {
-      if (typeof index === 'number') {
-        if (!isManager && index > maxTabIndex) {
-          return;
-        }
-        setSelectedTab(index);
-        pagerRef.current?.setPage?.(index);
-        if (isTabsSticky && tabsOffsetRef.current != null) {
-          verticalScrollRef.current?.scrollTo?.({
-            y: tabsOffsetRef.current,
-            animated: false,
-          });
-          scrollYRef.current = tabsOffsetRef.current;
-        }
-      }
-    },
-    [pagerRef, screenWidth, isTabsSticky, isManager, pagerPosition],
-  );
-
-  const handlePageSelected = useCallback(
-    event => {
-      const nextIndex = event.nativeEvent.position ?? 0;
-      if (!isManager && nextIndex > maxTabIndex) {
+      if (typeof index !== 'number') return;
+      if (!isManager && index > maxTabIndex) {
         return;
       }
-      setSelectedTab(nextIndex);
-      pagerPosition.setValue(nextIndex);
-      if (isTabsSticky && tabsOffsetRef.current != null) {
-        verticalScrollRef.current?.scrollTo?.({
-          y: tabsOffsetRef.current,
-          animated: false,
-        });
-        scrollYRef.current = tabsOffsetRef.current;
-      }
+      isPagerDragging.current = false;
+      skipPagerSync.current = true;
+      setSelectedTab(index);
+      scrollToPage(index, true);
     },
-    [isManager, isTabsSticky, pagerPosition],
+    [isManager, maxTabIndex, scrollToPage],
   );
-
-  const renderTabs = () => (
+  const renderTabs = tabPosition => (
     <MyTabs
       selectedTab={selectedTab}
       changePage={handleChangePage}
       isManager={isManager}
-      tabPosition={pagerPosition}
+      tabPosition={tabPosition}
     />
   );
 
@@ -288,11 +262,6 @@ const MyScreen = ({navigation}) => {
   const handleVerticalScroll = useCallback(
     event => {
       const {contentOffset, contentSize, layoutMeasurement} = event.nativeEvent;
-      scrollYRef.current = contentOffset.y;
-      if (tabsOffsetRef.current != null) {
-        const nextSticky = contentOffset.y >= tabsOffsetRef.current;
-        setIsTabsSticky(prev => (prev === nextSticky ? prev : nextSticky));
-      }
       const scrollable = contentSize.height > layoutMeasurement.height + 1;
       if (!scrollable) {
         return;
@@ -321,11 +290,6 @@ const MyScreen = ({navigation}) => {
     }
   }, [selectedTab]);
 
-  const handlePagerMoveCapture = useCallback((_, gestureState) => {
-    const {dx, dy} = gestureState;
-    return Math.abs(dx) > Math.abs(dy);
-  }, []);
-
   const updateReviewHeight = useCallback(height => {
     if (Math.abs(reviewHeightRef.current - height) < 1) {
       return;
@@ -350,6 +314,29 @@ const MyScreen = ({navigation}) => {
     setManagerPageHeight(height);
   }, []);
 
+  const handlePagerMomentumEnd = useCallback(
+    event => {
+      if (!isPagerDragging.current) {
+        return;
+      }
+      isPagerDragging.current = false;
+      const offsetX = event.nativeEvent.contentOffset.x || 0;
+      const nextIndex = screenWidth ? Math.round(offsetX / screenWidth) : 0;
+      if (nextIndex !== selectedTab) {
+        setSelectedTab(Math.min(nextIndex, maxTabIndex));
+      }
+    },
+    [maxTabIndex, screenWidth, selectedTab],
+  );
+
+  const handlePagerScroll = useMemo(
+    () =>
+      Animated.event([{nativeEvent: {contentOffset: {x: scrollX}}}], {
+        useNativeDriver: false,
+      }),
+    [scrollX],
+  );
+
   if (!userdata) {
     return <Loading loading={true} />;
   }
@@ -357,87 +344,72 @@ const MyScreen = ({navigation}) => {
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
       <ScrollView
-        ref={verticalScrollRef}
         stickyHeaderIndices={[1]}
-        onScrollBeginDrag={handleScrollBeginDrag}
         onScroll={handleVerticalScroll}
         scrollEventThrottle={16}
-        nestedScrollEnabled
         onLayout={({nativeEvent}) => {
           setViewportHeight(nativeEvent.layout.height);
         }}
-        scrollEnabled={scrollEnabled}
         keyboardShouldPersistTaps="handled"
         refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            enabled={refreshEnabled}
-          />
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }>
-        <View
-          onLayout={({nativeEvent}) => {
-            setHeaderHeight(nativeEvent.layout.height);
-          }}>
-          {renderProfileHeader()}
-        </View>
+        <View>{renderProfileHeader()}</View>
         <View
           style={styles.tabsContainer}
           onLayout={({nativeEvent}) => {
-            tabsOffsetRef.current = nativeEvent.layout.y;
             setTabsHeight(nativeEvent.layout.height);
           }}>
-          {renderTabs()}
+          {renderTabs(tabPosition)}
         </View>
-        <View onMoveShouldSetResponderCapture={handlePagerMoveCapture}>
-          <PagerView
-            key={pagerKey}
-            ref={pagerRef}
-            style={[styles.pager, pagerHeight ? {height: pagerHeight} : null]}
-            initialPage={selectedTab}
-            onPageScroll={event => {
-              const {position, offset} = event.nativeEvent;
-              pagerPosition.setValue(position + offset);
-            }}
-            onPageSelected={handlePageSelected}
-            scrollEnabled>
-            <View key="review" style={[styles.page, {width: screenWidth}]}>
-              <MyReview
-                ref={reviewRef}
+        <Animated.ScrollView
+          ref={pagerRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onScrollBeginDrag={() => {
+            isPagerDragging.current = true;
+          }}
+          onMomentumScrollEnd={handlePagerMomentumEnd}
+          onScroll={handlePagerScroll}
+          style={[styles.pager, pagerHeight ? {height: pagerHeight} : null]}>
+          <View style={[styles.page, {width: screenWidth}]}>
+            <MyReview
+              ref={reviewRef}
+              navigation={navigation}
+              onRefreshingChange={setReviewRefreshing}
+              onContentLayout={({nativeEvent}) => {
+                updateReviewHeight(nativeEvent.layout.height);
+              }}
+              onCountChange={setReviewCount}
+              userProfile={{
+                nickname: userdata.nickname,
+                imageuri: userdata.imgUrl,
+              }}
+            />
+          </View>
+          <View style={[styles.page, {width: screenWidth}]}>
+            <MyLocation
+              navigation={navigation}
+              onContentLayout={({nativeEvent}) => {
+                updateLocationHeight(nativeEvent.layout.height);
+              }}
+            />
+          </View>
+          {isManager && (
+            <View style={[styles.page, {width: screenWidth}]}>
+              <MyManager
+                ref={managerRef}
                 navigation={navigation}
-                onRefreshingChange={setReviewRefreshing}
+                onRefreshingChange={setManagerRefreshing}
                 onContentLayout={({nativeEvent}) => {
-                  updateReviewHeight(nativeEvent.layout.height);
-                }}
-                onCountChange={setReviewCount}
-                userProfile={{
-                  nickname: userdata.nickname,
-                  imageuri: userdata.imgUrl,
+                  updateManagerHeight(nativeEvent.layout.height);
                 }}
               />
             </View>
-            <View key="location" style={[styles.page, {width: screenWidth}]}>
-              <MyLocation
-                navigation={navigation}
-                onContentLayout={({nativeEvent}) => {
-                  updateLocationHeight(nativeEvent.layout.height);
-                }}
-              />
-            </View>
-            {isManager ? (
-              <View key="manager" style={[styles.page, {width: screenWidth}]}>
-                <MyManager
-                  ref={managerRef}
-                  navigation={navigation}
-                  onRefreshingChange={setManagerRefreshing}
-                  onContentLayout={({nativeEvent}) => {
-                    updateManagerHeight(nativeEvent.layout.height);
-                  }}
-                />
-              </View>
-            ) : null}
-          </PagerView>
-        </View>
+          )}
+        </Animated.ScrollView>
       </ScrollView>
 
       <AlertComponent />
