@@ -31,6 +31,7 @@ import {get_store_share} from '../../api/storeApi';
 import {PostSave} from '../../api/postApi';
 import {getGlobalShowAlert} from '../../context/CustomAlertContext';
 import {useNavigation} from '@react-navigation/native';
+import formatRelativeTime from '../../utils/formatRelativeTime';
 const defaultProfile = require('../../assets/default_profile.png');
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -60,6 +61,7 @@ const PostItem = ({
   const [saved, setSaved] = useState(
     Boolean(item?.saved ?? item?.isSaved ?? false),
   );
+
   const comments = item.comments ?? 0;
   const [shareCount, setShareCount] = useState(item.shares ?? 0);
   const [titleCycleIndex, setTitleCycleIndex] = useState(0);
@@ -107,6 +109,13 @@ const PostItem = ({
     item?.rate ?? item?.rating ?? item?.storeRate ?? item?.storeRating ?? null;
   const hasRating =
     ratingValue !== null && ratingValue !== undefined && ratingValue !== '';
+  const fallbackPlace = item?.place ?? item?.__sourceReview?.place ?? '';
+  const fallbackCreatedAt =
+    item?.createdAt ?? item?.__sourceReview?.createdAt ?? null;
+  const formattedCreatedAt = fallbackCreatedAt
+    ? formatRelativeTime(fallbackCreatedAt)
+    : '';
+  const hasStoreIdentity = Boolean(item?.storeId) || Boolean(item?.name);
   const formattedRating = useMemo(() => {
     if (!hasRating) {
       return '';
@@ -119,12 +128,21 @@ const PostItem = ({
   }, [hasRating, ratingValue]);
   const titleCycleItems = useMemo(() => {
     const items = [];
+    if (!hasStoreIdentity) {
+      if (fallbackPlace) {
+        items.push({type: 'text', value: fallbackPlace});
+      }
+      if (formattedCreatedAt) {
+        items.push({type: 'text', value: formattedCreatedAt});
+      }
+      return items;
+    }
     if (showRatingInTitleCycle) {
       if (item?.name) {
         items.push({type: 'text', value: item.name});
       }
-      if (item?.storeAddress) {
-        items.push({type: 'text', value: item.storeAddress});
+      if (formattedCreatedAt) {
+        items.push({type: 'text', value: formattedCreatedAt});
       }
       if (hasRating) {
         items.push({type: 'rating', value: formattedRating});
@@ -132,15 +150,18 @@ const PostItem = ({
       return items;
     }
 
-    if (item?.storeAddress) {
-      items.push({type: 'text', value: item.storeAddress});
-    }
     if (item?.name) {
       items.push({type: 'text', value: item.name});
     }
+    if (formattedCreatedAt) {
+      items.push({type: 'text', value: formattedCreatedAt});
+    }
     return items;
   }, [
+    fallbackPlace,
+    formattedCreatedAt,
     formattedRating,
+    hasStoreIdentity,
     hasRating,
     item?.name,
     item?.storeAddress,
@@ -652,287 +673,292 @@ const PostItem = ({
       <View
         style={cardContentStyle}
         pointerEvents={hasContentMeasured ? 'auto' : 'none'}>
-      {showFlyingHeart ? (
-        <View pointerEvents="none" style={styles.heartFlyContainer}>
-          <Animated.View
-            style={[
-              styles.flyingHeart,
-              {
-                transform: [
-                  {translateX: flyingHeartPos.x},
-                  {translateY: flyingHeartPos.y},
-                  {scale: flyingHeartScale},
-                ],
-              },
-            ]}>
-            <HeartIcon
-              size={HEART_SIZE}
-              color="#FF5E5E"
-              filled
-              strokeWidth={0}
+        {showFlyingHeart ? (
+          <View pointerEvents="none" style={styles.heartFlyContainer}>
+            <Animated.View
+              style={[
+                styles.flyingHeart,
+                {
+                  transform: [
+                    {translateX: flyingHeartPos.x},
+                    {translateY: flyingHeartPos.y},
+                    {scale: flyingHeartScale},
+                  ],
+                },
+              ]}>
+              <HeartIcon
+                size={HEART_SIZE}
+                color="#FF5E5E"
+                filled
+                strokeWidth={0}
+              />
+            </Animated.View>
+          </View>
+        ) : null}
+        {showMoreMenu ? (
+          <>
+            <Pressable
+              style={styles.moreMenuOverlay}
+              onPress={() => setShowMoreMenu(false)}
             />
-          </Animated.View>
-        </View>
-      ) : null}
-      {showMoreMenu ? (
-        <>
-          <Pressable
-            style={styles.moreMenuOverlay}
-            onPress={() => setShowMoreMenu(false)}
-          />
-          <View style={styles.moreMenu}>
-            {isWriter ? (
-              <>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={styles.moreMenuItem}
-                  onPress={handleEditPress}>
-                  <CustomText style={styles.moreMenuItemText}>
-                    수정하기
-                  </CustomText>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={styles.moreMenuItem}
-                  onPress={handleDeletePress}>
-                  <CustomText style={styles.moreMenuItemTextDestructive}>
-                    삭제하기
-                  </CustomText>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <TouchableOpacity
-                activeOpacity={0.8}
-                style={styles.moreMenuItem}
-                onPress={openReportModal}>
-                <CustomText style={styles.moreMenuItemTextDestructive}>
-                  신고하기
-                </CustomText>
-              </TouchableOpacity>
-            )}
-          </View>
-        </>
-      ) : null}
-      <View style={styles.cardHeader}>
-        <Pressable
-          onPress={handleProfilePress}
-          disabled={!item?.storeId || hideStoreBadge}
-          hitSlop={6}
-          style={styles.profileRowPressable}>
-          <View style={styles.profileRow}>
-            <FastImage source={profileSource} style={styles.avatar} />
-            <View style={styles.profileText}>
-              <CustomText style={styles.nickname}>{item.nickname}</CustomText>
-              <Animated.View style={{opacity: fadeAnim}}>
-                {titleCycleItems[titleCycleIndex]?.type === 'rating' ? (
-                  <View style={styles.ratingRow}>
-                    <FontAwesomeIcon name="star" size={12} color="#FCC104" />
-                    <CustomText style={styles.ratingText}>
-                      {titleCycleItems[titleCycleIndex]?.value}
+            <View style={styles.moreMenu}>
+              {isWriter ? (
+                <>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.moreMenuItem}
+                    onPress={handleEditPress}>
+                    <CustomText style={styles.moreMenuItemText}>
+                      수정하기
                     </CustomText>
-                  </View>
-                ) : (
-                  <CustomText style={styles.address} numberOfLines={1}>
-                    {titleCycleItems[titleCycleIndex]?.value ??
-                      item.storeAddress ??
-                      item.name}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.moreMenuItem}
+                    onPress={handleDeletePress}>
+                    <CustomText style={styles.moreMenuItemTextDestructive}>
+                      삭제하기
+                    </CustomText>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.moreMenuItem}
+                  onPress={openReportModal}>
+                  <CustomText style={styles.moreMenuItemTextDestructive}>
+                    신고하기
                   </CustomText>
-                )}
-              </Animated.View>
+                </TouchableOpacity>
+              )}
             </View>
-          </View>
-        </Pressable>
-        <Pressable
-          style={styles.moreButton}
-          hitSlop={8}
-          onPress={handleMorePress}>
-          <Ionicons name="ellipsis-horizontal" size={18} color="#333" />
-        </Pressable>
-      </View>
+          </>
+        ) : null}
+        <View style={styles.cardHeader}>
+          <Pressable
+            onPress={handleProfilePress}
+            disabled={!item?.storeId || hideStoreBadge}
+            hitSlop={6}
+            style={styles.profileRowPressable}>
+            <View style={styles.profileRow}>
+              <FastImage source={profileSource} style={styles.avatar} />
+              <View style={styles.profileText}>
+                <CustomText style={styles.nickname}>{item.nickname}</CustomText>
+                <Animated.View style={{opacity: fadeAnim}}>
+                  {titleCycleItems[titleCycleIndex]?.type === 'rating' ? (
+                    <View style={styles.ratingRow}>
+                      <FontAwesomeIcon name="star" size={12} color="#FCC104" />
+                      <CustomText style={styles.ratingText}>
+                        {titleCycleItems[titleCycleIndex]?.value}
+                      </CustomText>
+                    </View>
+                  ) : (
+                    <CustomText style={styles.address} numberOfLines={1}>
+                      {titleCycleItems[titleCycleIndex]?.value ??
+                        item.storeAddress ??
+                        item.name}
+                    </CustomText>
+                  )}
+                </Animated.View>
+              </View>
+            </View>
+          </Pressable>
+          <Pressable
+            style={styles.moreButton}
+            hitSlop={8}
+            onPress={handleMorePress}>
+            <Ionicons name="ellipsis-horizontal" size={18} color="#333" />
+          </Pressable>
+        </View>
 
-      {item.postImages?.length > 1 ? (
-        <View
-          style={{
-            width: screenWidth,
-            position: 'relative',
-            ...(fixedMediaHeight ? {height: fixedMediaHeight} : null),
-          }}>
-          <FlatList
-            data={item.postImages}
-            keyExtractor={(uri, index) => `${uri}-${index}`}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            snapToAlignment="start"
-            decelerationRate="fast"
-            style={{width: screenWidth}}
-            snapToInterval={screenWidth}
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={viewabilityConfig}
-            renderItem={({item: uri, index}) => (
-              <View
+        {item.postImages?.length > 1 ? (
+          <View
+            style={{
+              width: screenWidth,
+              position: 'relative',
+              ...(fixedMediaHeight ? {height: fixedMediaHeight} : null),
+            }}>
+            <FlatList
+              data={item.postImages}
+              keyExtractor={(uri, index) => `${uri}-${index}`}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              snapToAlignment="start"
+              decelerationRate="fast"
+              style={{width: screenWidth}}
+              snapToInterval={screenWidth}
+              onViewableItemsChanged={onViewableItemsChanged}
+              viewabilityConfig={viewabilityConfig}
+              renderItem={({item: uri, index}) => (
+                <View
+                  style={[
+                    styles.imageWrapper,
+                    {
+                      width: screenWidth,
+                      ...(fixedMediaHeight ? {height: fixedMediaHeight} : null),
+                    },
+                  ]}>
+                  <Pressable onPress={handleImagePress}>
+                    <FastImage
+                      source={{uri}}
+                      style={[
+                        styles.postImage,
+                        {
+                          width: screenWidth,
+                          ...(fixedMediaHeight
+                            ? {height: fixedMediaHeight}
+                            : {aspectRatio: imageRatios[index] ?? imageRatio}),
+                        },
+                      ]}
+                      resizeMode={FastImage.resizeMode.contain}
+                      onLoad={event => handleImageLoad(event, index)}
+                    />
+                  </Pressable>
+                </View>
+              )}
+            />
+            <View style={styles.imageCounter}>
+              <CustomText style={styles.imageCounterText}>
+                {currentIndex + 1}/{item.postImages.length}
+              </CustomText>
+            </View>
+            <View style={styles.imageIndicatorContainer}>
+              {indicatorIndices.map(idx => {
+                const isActive = idx === currentIndex;
+                const distance = Math.abs(currentIndex - idx);
+                const clampedDistance = Math.min(distance, 3);
+                const baseSize = isActive ? 8 : 6;
+                const size = Math.max(
+                  isActive ? baseSize : baseSize - clampedDistance * 1,
+                  isActive ? 8 : 3,
+                );
+                const opacity = isActive
+                  ? 1
+                  : Math.max(0.35, 0.8 - clampedDistance * 0.2);
+                const color = isActive ? '#FFF' : '#CFD5DF';
+
+                return (
+                  <View key={idx} style={styles.imageIndicatorDotWrapper}>
+                    <View
+                      style={[
+                        styles.imageIndicatorDot,
+                        {
+                          width: size,
+                          height: size,
+                          borderRadius: size / 2,
+                          opacity,
+                          backgroundColor: color,
+                        },
+                      ]}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+            {!hideStoreBadge && item?.storeId ? (
+              <AnimatedPressable
+                style={badgeStyle}
+                hitSlop={6}
+                onPress={handleStoreBadgePress}>
+                <Ionicons name="storefront" size={14} color="#FFF" />
+              </AnimatedPressable>
+            ) : null}
+          </View>
+        ) : item.postImages?.length === 1 ? (
+          <View
+            style={{
+              width: screenWidth,
+              ...(fixedMediaHeight ? {height: fixedMediaHeight} : null),
+            }}>
+            <Pressable onPress={handleImagePress}>
+              <FastImage
+                source={{uri: item.postImages[0]}}
                 style={[
-                  styles.imageWrapper,
+                  styles.postImage,
                   {
                     width: screenWidth,
-                    ...(fixedMediaHeight ? {height: fixedMediaHeight} : null),
+                    ...(fixedMediaHeight
+                      ? {height: fixedMediaHeight}
+                      : {aspectRatio: imageRatios[0] ?? imageRatio}),
                   },
-                ]}>
-                <Pressable onPress={handleImagePress}>
-                  <FastImage
-                    source={{uri}}
-                    style={[
-                      styles.postImage,
-                      {
-                        width: screenWidth,
-                        ...(fixedMediaHeight
-                          ? {height: fixedMediaHeight}
-                          : {aspectRatio: imageRatios[index] ?? imageRatio}),
-                      },
-                    ]}
-                    resizeMode={FastImage.resizeMode.contain}
-                    onLoad={event => handleImageLoad(event, index)}
-                  />
-                </Pressable>
-              </View>
-            )}
-          />
-          <View style={styles.imageCounter}>
-            <CustomText style={styles.imageCounterText}>
-              {currentIndex + 1}/{item.postImages.length}
-            </CustomText>
+                ]}
+                resizeMode={FastImage.resizeMode.contain}
+                onLoad={event => handleImageLoad(event, 0)}
+              />
+            </Pressable>
+            {!hideStoreBadge && item?.storeId ? (
+              <AnimatedPressable
+                style={badgeStyle}
+                hitSlop={6}
+                onPress={handleStoreBadgePress}>
+                <Ionicons name="storefront" size={14} color="#FFF" />
+              </AnimatedPressable>
+            ) : null}
           </View>
-          <View style={styles.imageIndicatorContainer}>
-            {indicatorIndices.map(idx => {
-              const isActive = idx === currentIndex;
-              const distance = Math.abs(currentIndex - idx);
-              const clampedDistance = Math.min(distance, 3);
-              const baseSize = isActive ? 8 : 6;
-              const size = Math.max(
-                isActive ? baseSize : baseSize - clampedDistance * 1,
-                isActive ? 8 : 3,
-              );
-              const opacity = isActive
-                ? 1
-                : Math.max(0.35, 0.8 - clampedDistance * 0.2);
-              const color = isActive ? '#FFF' : '#CFD5DF';
+        ) : null}
 
-              return (
-                <View key={idx} style={styles.imageIndicatorDotWrapper}>
-                  <View
-                    style={[
-                      styles.imageIndicatorDot,
-                      {
-                        width: size,
-                        height: size,
-                        borderRadius: size / 2,
-                        opacity,
-                        backgroundColor: color,
-                      },
-                    ]}
-                  />
-                </View>
-              );
-            })}
-          </View>
-          {!hideStoreBadge && item?.storeId ? (
-            <AnimatedPressable
-              style={badgeStyle}
-              hitSlop={6}
-              onPress={handleStoreBadgePress}>
-              <Ionicons name="storefront" size={14} color="#FFF" />
-            </AnimatedPressable>
-          ) : null}
-        </View>
-      ) : item.postImages?.length === 1 ? (
-        <View
-          style={{
-            width: screenWidth,
-            ...(fixedMediaHeight ? {height: fixedMediaHeight} : null),
-          }}>
-          <Pressable onPress={handleImagePress}>
-            <FastImage
-              source={{uri: item.postImages[0]}}
-              style={[
-                styles.postImage,
-                {
-                  width: screenWidth,
-                  ...(fixedMediaHeight
-                    ? {height: fixedMediaHeight}
-                    : {aspectRatio: imageRatios[0] ?? imageRatio}),
-                },
-              ]}
-              resizeMode={FastImage.resizeMode.contain}
-              onLoad={event => handleImageLoad(event, 0)}
-            />
+        <View style={styles.actionsRow}>
+          <Pressable
+            ref={likeButtonRef}
+            style={styles.actionButton}
+            hitSlop={8}
+            disabled={showFlyingHeart || pendingLikeRef.current}
+            onPress={handleLikePress}>
+            <View ref={heartIconWrapperRef}>
+              <HeartIcon
+                size={24}
+                color={liked ? '#FF5E5E' : '#333'}
+                strokeWidth={2}
+                filled={liked}
+              />
+            </View>
+            <CustomText style={[styles.actionCount]}>{likes}</CustomText>
           </Pressable>
-          {!hideStoreBadge && item?.storeId ? (
-            <AnimatedPressable
-              style={badgeStyle}
-              hitSlop={6}
-              onPress={handleStoreBadgePress}>
-              <Ionicons name="storefront" size={14} color="#FFF" />
-            </AnimatedPressable>
-          ) : null}
-        </View>
-      ) : null}
-
-      <View style={styles.actionsRow}>
-        <Pressable
-          ref={likeButtonRef}
-          style={styles.actionButton}
-          hitSlop={8}
-          disabled={showFlyingHeart || pendingLikeRef.current}
-          onPress={handleLikePress}>
-          <View ref={heartIconWrapperRef}>
-            <HeartIcon
-              size={24}
-              color={liked ? '#FF5E5E' : '#333'}
-              strokeWidth={2}
-              filled={liked}
-            />
-          </View>
-          <CustomText style={[styles.actionCount]}>{likes}</CustomText>
-        </Pressable>
-        <Pressable
-          style={styles.actionButton}
-          hitSlop={8}
-          onPress={handleCommentPress}>
-          <ChatCircleIcon size={24} color="#333" strokeWidth={2} />
-          <CustomText style={styles.actionCount}>{comments}</CustomText>
-        </Pressable>
-        <Pressable
+          <Pressable
+            style={styles.actionButton}
+            hitSlop={8}
+            onPress={handleCommentPress}>
+            <ChatCircleIcon size={24} color="#333" strokeWidth={2} />
+            <CustomText style={styles.actionCount}>{comments}</CustomText>
+          </Pressable>
+          {/* <Pressable
           style={styles.actionButton}
           hitSlop={8}
           onPress={handleSharePress}>
           <PaperPlaneIcon size={24} color="#333" strokeWidth={2} />
           <CustomText style={styles.actionCount}>{shareCount}</CustomText>
-        </Pressable>
-        <View style={{flex: 1}} />
-        <Pressable hitSlop={8} onPress={handleBookmarkPress}>
-          <BookmarkIcon size={24} color="#333" strokeWidth={2} filled={saved} />
-        </Pressable>
-      </View>
+        </Pressable> */}
+          <View style={{flex: 1}} />
+          <Pressable hitSlop={8} onPress={handleBookmarkPress}>
+            <BookmarkIcon
+              size={24}
+              color="#333"
+              strokeWidth={2}
+              filled={saved}
+            />
+          </Pressable>
+        </View>
 
-      <View style={styles.contentWrapper}>
-        <Pressable
-          disabled={!isContentExpandable}
-          onPress={toggleContentExpanded}>
-          <CustomText
-            style={styles.contentText}
-            onTextLayout={handleContentLayout}>
-            {contentForRender}
-          </CustomText>
-        </Pressable>
+        <View style={styles.contentWrapper}>
+          <Pressable
+            disabled={!isContentExpandable}
+            onPress={toggleContentExpanded}>
+            <CustomText
+              style={styles.contentText}
+              onTextLayout={handleContentLayout}>
+              {contentForRender}
+            </CustomText>
+          </Pressable>
+        </View>
+        <PostReportBottomSheet
+          sheetRef={reportSheetRef}
+          reasons={POST_REPORT_REASONS}
+          selectedReason={selectedReportReason}
+          onSelectReason={setSelectedReportReason}
+          onSubmit={handleReportSubmit}
+        />
       </View>
-      <PostReportBottomSheet
-        sheetRef={reportSheetRef}
-        reasons={POST_REPORT_REASONS}
-        selectedReason={selectedReportReason}
-        onSelectReason={setSelectedReportReason}
-        onSubmit={handleReportSubmit}
-      />
-    </View>
     </View>
   );
 };
