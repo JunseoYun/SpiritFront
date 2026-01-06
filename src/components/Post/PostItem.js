@@ -28,6 +28,7 @@ import {POST_REPORT_REASONS} from './PostReportSheet';
 import PostReportBottomSheet from './PostReportBottomSheet';
 import useMeasuredExpandableText from '../../utils/useMeasuredExpandableText';
 import {get_store_share} from '../../api/storeApi';
+import {PostSave} from '../../api/postApi';
 import {getGlobalShowAlert} from '../../context/CustomAlertContext';
 import {useNavigation} from '@react-navigation/native';
 const defaultProfile = require('../../assets/default_profile.png');
@@ -44,6 +45,7 @@ const PostItem = ({
   initialImageRatio,
   onEditPress,
   onDeletePress,
+  onSavedChange,
   isWriter = false,
   hideStoreBadge = false,
   showRatingInTitleCycle = false,
@@ -55,7 +57,9 @@ const PostItem = ({
     : defaultProfile;
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(item.likes ?? 0);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(
+    Boolean(item?.saved ?? item?.isSaved ?? false),
+  );
   const comments = item.comments ?? 0;
   const [shareCount, setShareCount] = useState(item.shares ?? 0);
   const [titleCycleIndex, setTitleCycleIndex] = useState(0);
@@ -81,6 +85,7 @@ const PostItem = ({
   const HEART_SIZE = 32;
   const HEART_END_OFFSET_X = 0;
   const pendingLikeRef = useRef(false);
+  const pendingSaveRef = useRef(false);
   const READ_MORE_LABEL = '…더보기';
   const primaryImageLoadedRef = useRef(false);
 
@@ -173,6 +178,10 @@ const PostItem = ({
     });
     return () => sub.remove();
   }, []);
+
+  useEffect(() => {
+    setSaved(Boolean(item?.saved ?? item?.isSaved ?? false));
+  }, [item?.id, item?.isSaved, item?.saved]);
 
   useEffect(() => {
     if (hasContentMeasured && !contentMeasuredRef.current) {
@@ -305,9 +314,22 @@ const PostItem = ({
     setLikes(prev => prev + (liked ? -1 : 1));
   };
 
-  const handleBookmarkPress = () => {
-    setSaved(prev => !prev);
-  };
+  const handleBookmarkPress = useCallback(async () => {
+    if (!item?.id || pendingSaveRef.current) {
+      return;
+    }
+    const nextSaved = !saved;
+    setSaved(nextSaved);
+    pendingSaveRef.current = true;
+    try {
+      await PostSave(item.id);
+      onSavedChange?.(item, nextSaved);
+    } catch (error) {
+      setSaved(!nextSaved);
+    } finally {
+      pendingSaveRef.current = false;
+    }
+  }, [item, onSavedChange, saved]);
 
   const handleCommentPress = useCallback(() => {
     onCommentPress?.(item);
