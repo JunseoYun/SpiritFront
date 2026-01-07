@@ -194,6 +194,7 @@ const LikeScreen = ({navigation}) => {
   const isSwipingRef = useRef(false);
   const swipeTimerRef = useRef(null);
   const pendingReturnTabRef = useRef(null);
+  const lastActiveTabKeyRef = useRef(TABS[0].key);
   const {
     visible: showScrollToTop,
     handleScroll,
@@ -360,7 +361,8 @@ const LikeScreen = ({navigation}) => {
       if (!token) {
         return () => {};
       }
-      const nextTabKey = pendingReturnTabRef.current ?? 'liked';
+      const nextTabKey =
+        pendingReturnTabRef.current ?? lastActiveTabKeyRef.current;
       const nextTabIndex = TABS.findIndex(tab => tab.key === nextTabKey);
       setActiveTab(nextTabIndex >= 0 ? nextTabIndex : 0);
       pendingReturnTabRef.current = null;
@@ -423,6 +425,10 @@ const LikeScreen = ({navigation}) => {
     );
     return () => sub.remove();
   }, []);
+
+  useEffect(() => {
+    lastActiveTabKeyRef.current = activeTabKey;
+  }, [activeTabKey]);
 
   useEffect(() => {
     const offset = scrollOffsetsRef.current[activeTabKey] || 0;
