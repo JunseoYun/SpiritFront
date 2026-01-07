@@ -17,6 +17,7 @@ import {
   CommentDelete,
   CommentGetByPost,
   CommentGetByRootComment,
+  CommentLike,
 } from '../../api/commentApi';
 import {Userdataget} from '../../api/userApi';
 import Loading from '../../hooks/Loading';
@@ -27,6 +28,10 @@ import formatRelativeTime from '../../utils/formatRelativeTime';
 import {useToast} from '../../context/ToastContext';
 
 const defaultProfile = require('../../assets/default_profile.png');
+const COMMENT_SORTS = {
+  latest: null,
+  popular: ['likeCount,DESC', 'id,DESC'],
+};
 
 const PostDetailScreen = ({navigation, route}) => {
   const {postId, item: routeItem} = route.params ?? {};
@@ -47,6 +52,7 @@ const PostDetailScreen = ({navigation, route}) => {
   const [commentInput, setCommentInput] = useState('');
   const [commentPage, setCommentPage] = useState(0);
   const [commentTotalCount, setCommentTotalCount] = useState(null);
+  const [commentSortKey, setCommentSortKey] = useState('latest');
   const [currentUserNickname, setCurrentUserNickname] = useState('');
   const [currentUserProfileImage, setCurrentUserProfileImage] = useState(null);
   const [pendingScrollReplyId, setPendingScrollReplyId] = useState(null);
@@ -133,7 +139,16 @@ const PostDetailScreen = ({navigation, route}) => {
   useEffect(() => {
     const nextState = {};
     commentList.forEach(comment => {
-      nextState[comment.id] = false;
+      nextState[comment.id] = comment.isLiked ?? false;
+      const previewReplies = Array.isArray(comment.previewReplies)
+        ? comment.previewReplies
+        : [];
+      const replies = Array.isArray(comment.replies) ? comment.replies : [];
+      [...previewReplies, ...replies].forEach(reply => {
+        if (reply?.id) {
+          nextState[reply.id] = reply.isLiked ?? false;
+        }
+      });
     });
     setCommentLikeState(nextState);
   }, [commentList]);
@@ -185,11 +200,22 @@ const PostDetailScreen = ({navigation, route}) => {
     };
   }, []);
 
-  const handleCommentLikeToggle = useCallback(commentId => {
+  const handleCommentLikeToggle = useCallback(async commentId => {
+    if (!commentId) {
+      return;
+    }
     setCommentLikeState(prev => ({
       ...prev,
       [commentId]: !prev[commentId],
     }));
+    try {
+      await CommentLike(commentId);
+    } catch (error) {
+      setCommentLikeState(prev => ({
+        ...prev,
+        [commentId]: !prev[commentId],
+      }));
+    }
   }, []);
 
   const formatLikeCount = useCallback(value => {
@@ -215,7 +241,8 @@ const PostDetailScreen = ({navigation, route}) => {
           (isMine ? currentUserProfileImage : null),
         text: item.content ?? item.text ?? '',
         createdAt: formatRelativeTime(item.createdAt),
-        likes: item.likes ?? 0,
+        likes: item.likeCount ?? item.likes ?? 0,
+        isLiked: item.isLiked ?? false,
         isMine,
         replyCount: item.replyCount ?? 0,
         rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
@@ -239,6 +266,7 @@ const PostDetailScreen = ({navigation, route}) => {
           postId: targetPostId,
           page: 0,
           size: 20,
+          sort: COMMENT_SORTS[commentSortKey],
         });
         const items = Array.isArray(data?.content) ? data.content : [];
         const totalElements = Number.isFinite(data?.totalElements)
@@ -251,7 +279,7 @@ const PostDetailScreen = ({navigation, route}) => {
         setIsLoadingComments(false);
       }
     },
-    [mapCommentItem],
+    [commentSortKey, mapCommentItem],
   );
 
   const handleRequestMoreComments = useCallback(
@@ -271,6 +299,7 @@ const PostDetailScreen = ({navigation, route}) => {
           postId: targetPostId,
           page: nextPage,
           size: 20,
+          sort: COMMENT_SORTS[commentSortKey],
         });
         const items = Array.isArray(data?.content) ? data.content : [];
         const mapped = items.map(item => mapCommentItem(item));
@@ -291,6 +320,7 @@ const PostDetailScreen = ({navigation, route}) => {
     },
     [
       commentList.length,
+      commentSortKey,
       commentTotalCount,
       mapCommentItem,
       postId,
@@ -299,12 +329,14 @@ const PostDetailScreen = ({navigation, route}) => {
   );
 
   const handleRequestReplies = useCallback(
-    async (rootCommentId, page = 0) => {
+    async (rootCommentId, page = 0, sortKey, reset = false) => {
       if (!rootCommentId) return;
+      const activeSortKey = sortKey ?? commentSortKey;
       const data = await CommentGetByRootComment({
         rootCommentId,
         page,
         size: 10,
+        sort: COMMENT_SORTS[activeSortKey],
       });
       const items = Array.isArray(data?.content) ? data.content : [];
       const mappedReplies = items.map(item =>
@@ -324,6 +356,7 @@ const PostDetailScreen = ({navigation, route}) => {
           const existingReplies = Array.isArray(comment.replies)
             ? comment.replies
             : [];
+          const baseReplies = reset || page === 0 ? [] : existingReplies;
           const mergeUnique = list => {
             const seen = new Set();
             return list.filter(reply => {
@@ -333,14 +366,7 @@ const PostDetailScreen = ({navigation, route}) => {
               return true;
             });
           };
-          const nextReplies =
-            page === 0
-              ? mergeUnique([
-                  ...previewReplies,
-                  ...existingReplies,
-                  ...mappedReplies,
-                ])
-              : mergeUnique([...existingReplies, ...mappedReplies]);
+          const nextReplies = mergeUnique([...baseReplies, ...mappedReplies]);
           const nextReplyCount = Number.isFinite(totalElements)
             ? Math.max(totalElements, nextReplies.length)
             : Number.isFinite(comment.replyCount)
@@ -356,7 +382,7 @@ const PostDetailScreen = ({navigation, route}) => {
         }),
       );
     },
-    [mapCommentItem],
+    [commentSortKey, mapCommentItem],
   );
 
   const updatePostCommentCount = useCallback((targetPostId, delta) => {
@@ -390,6 +416,7 @@ const PostDetailScreen = ({navigation, route}) => {
       }
       isSendingCommentRef.current = true;
       const rootCommentId = payload?.rootCommentId ?? null;
+      const isExpandedTarget = Boolean(payload?.isExpandedTarget);
       try {
         const result = await CommentCreate({
           postId: targetPostId,
@@ -419,29 +446,33 @@ const PostDetailScreen = ({navigation, route}) => {
             });
           };
           setCommentList(prev =>
-            prev.map(comment =>
-              String(comment.id) === String(rootCommentId)
-                ? {
-                    ...comment,
-                    replies: mergeUnique([
-                      ...(Array.isArray(comment.replies) ? comment.replies : []),
-                      mappedReply,
-                    ]),
-                    previewReplies: mergeUnique([
-                      mappedReply,
-                      ...(Array.isArray(comment.previewReplies)
-                        ? comment.previewReplies
-                        : []),
-                    ]),
-                    replyCount: Math.max(
-                      Number.isFinite(comment.replyCount)
-                        ? comment.replyCount + 1
-                        : 1,
-                      1,
-                    ),
-                  }
-                : comment,
-            ),
+            prev.map(comment => {
+              if (String(comment.id) !== String(rootCommentId)) {
+                return comment;
+              }
+              const existingReplies = Array.isArray(comment.replies)
+                ? comment.replies
+                : [];
+              const nextReplies = isExpandedTarget
+                ? mergeUnique([mappedReply, ...existingReplies])
+                : existingReplies;
+              return {
+                ...comment,
+                replies: nextReplies,
+                previewReplies: mergeUnique([
+                  mappedReply,
+                  ...(Array.isArray(comment.previewReplies)
+                    ? comment.previewReplies
+                    : []),
+                ]),
+                replyCount: Math.max(
+                  Number.isFinite(comment.replyCount)
+                    ? comment.replyCount + 1
+                    : 1,
+                  1,
+                ),
+              };
+            }),
           );
           setPendingScrollReplyId(mappedReply.id);
           updatePostCommentCount(targetPostId, 1);
@@ -458,7 +489,8 @@ const PostDetailScreen = ({navigation, route}) => {
           const mappedComment = mapCommentItem(result ?? fallbackComment);
           setCommentList(prev => {
             const filtered = prev.filter(
-              commentItem => String(commentItem.id) !== String(mappedComment.id),
+              commentItem =>
+                String(commentItem.id) !== String(mappedComment.id),
             );
             return [...filtered, mappedComment];
           });
@@ -518,6 +550,20 @@ const PostDetailScreen = ({navigation, route}) => {
     fetchComments(targetPostId);
   }, [fetchComments, postId, postItem?.id]);
 
+  useEffect(() => {
+    const targetPostId = postItem?.id ?? postId;
+    if (!targetPostId) {
+      return;
+    }
+    setCommentPage(0);
+    setCommentTotalCount(null);
+    fetchComments(targetPostId);
+  }, [commentSortKey, fetchComments, postId, postItem?.id]);
+
+  const handleChangeCommentSort = useCallback(nextSortKey => {
+    setCommentSortKey(nextSortKey);
+  }, []);
+
   const handleOpenCommentSheet = useCallback(() => {
     commentSheetRef.current?.present();
   }, []);
@@ -562,6 +608,8 @@ const PostDetailScreen = ({navigation, route}) => {
         onDismiss={() => {}}
         insets={insets}
         commentList={commentList}
+        commentSortKey={commentSortKey}
+        onChangeCommentSort={handleChangeCommentSort}
         defaultProfile={defaultProfile}
         commentLikeState={commentLikeState}
         onToggleLike={handleCommentLikeToggle}

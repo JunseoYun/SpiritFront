@@ -19,6 +19,7 @@ import {
   CommentDelete,
   CommentGetByPost,
   CommentGetByRootComment,
+  CommentLike,
 } from '../../api/commentApi';
 import formatRelativeTime from '../../utils/formatRelativeTime';
 import {useToast} from '../../context/ToastContext';
@@ -26,6 +27,10 @@ import Loading from '../../hooks/Loading';
 
 const defaultProfile = require('../../assets/default_profile.png');
 const defaultStoreImage = require('../../assets/default_store6.png');
+const COMMENT_SORTS = {
+  latest: null,
+  popular: ['likeCount,DESC', 'id,DESC'],
+};
 
 const LikeSavedPostDetailScreen = ({navigation, route}) => {
   const {
@@ -60,6 +65,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
   const [commentInput, setCommentInput] = useState('');
   const [commentPage, setCommentPage] = useState(0);
   const [commentTotalCount, setCommentTotalCount] = useState(null);
+  const [commentSortKey, setCommentSortKey] = useState('latest');
   const [pendingScrollReplyId, setPendingScrollReplyId] = useState(null);
   const commentSheetRef = useRef(null);
   const isLoadingMoreCommentsRef = useRef(false);
@@ -143,16 +149,36 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
   useEffect(() => {
     const nextState = {};
     commentList.forEach(comment => {
-      nextState[comment.id] = false;
+      nextState[comment.id] = comment.isLiked ?? false;
+      const previewReplies = Array.isArray(comment.previewReplies)
+        ? comment.previewReplies
+        : [];
+      const replies = Array.isArray(comment.replies) ? comment.replies : [];
+      [...previewReplies, ...replies].forEach(reply => {
+        if (reply?.id) {
+          nextState[reply.id] = reply.isLiked ?? false;
+        }
+      });
     });
     setCommentLikeState(nextState);
   }, [commentList]);
 
-  const handleCommentLikeToggle = useCallback(commentId => {
+  const handleCommentLikeToggle = useCallback(async commentId => {
+    if (!commentId) {
+      return;
+    }
     setCommentLikeState(prev => ({
       ...prev,
       [commentId]: !prev[commentId],
     }));
+    try {
+      await CommentLike(commentId);
+    } catch (error) {
+      setCommentLikeState(prev => ({
+        ...prev,
+        [commentId]: !prev[commentId],
+      }));
+    }
   }, []);
 
   const formatLikeCount = useCallback(value => {
@@ -178,7 +204,8 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           (isMine ? currentUserProfileImage : null),
         text: item.content ?? item.text ?? '',
         createdAt: formatRelativeTime(item.createdAt),
-        likes: item.likes ?? 0,
+        likes: item.likeCount ?? item.likes ?? 0,
+        isLiked: item.isLiked ?? false,
         isMine,
         replyCount: item.replyCount ?? 0,
         rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
@@ -202,6 +229,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           postId: targetPostId,
           page: 0,
           size: 20,
+          sort: COMMENT_SORTS[commentSortKey],
         });
         const items = Array.isArray(data?.content) ? data.content : [];
         const totalElements = Number.isFinite(data?.totalElements)
@@ -214,7 +242,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
         setIsLoadingComments(false);
       }
     },
-    [mapCommentItem],
+    [commentSortKey, mapCommentItem],
   );
 
   const handleRequestMoreComments = useCallback(
@@ -234,6 +262,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           postId: targetPostId,
           page: nextPage,
           size: 20,
+          sort: COMMENT_SORTS[commentSortKey],
         });
         const items = Array.isArray(data?.content) ? data.content : [];
         const mapped = items.map(item => mapCommentItem(item));
@@ -252,16 +281,24 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
         isLoadingMoreCommentsRef.current = false;
       }
     },
-    [commentList.length, commentTotalCount, mapCommentItem, selectedFeed?.id],
+    [
+      commentList.length,
+      commentSortKey,
+      commentTotalCount,
+      mapCommentItem,
+      selectedFeed?.id,
+    ],
   );
 
   const handleRequestReplies = useCallback(
-    async (rootCommentId, page = 0) => {
+    async (rootCommentId, page = 0, sortKey, reset = false) => {
       if (!rootCommentId) return;
+      const activeSortKey = sortKey ?? commentSortKey;
       const data = await CommentGetByRootComment({
         rootCommentId,
         page,
         size: 10,
+        sort: COMMENT_SORTS[activeSortKey],
       });
       const items = Array.isArray(data?.content) ? data.content : [];
       const mappedReplies = items.map(item =>
@@ -281,6 +318,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           const existingReplies = Array.isArray(comment.replies)
             ? comment.replies
             : [];
+          const baseReplies = reset || page === 0 ? [] : existingReplies;
           const mergeUnique = list => {
             const seen = new Set();
             return list.filter(reply => {
@@ -290,14 +328,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
               return true;
             });
           };
-          const nextReplies =
-            page === 0
-              ? mergeUnique([
-                  ...previewReplies,
-                  ...existingReplies,
-                  ...mappedReplies,
-                ])
-              : mergeUnique([...existingReplies, ...mappedReplies]);
+          const nextReplies = mergeUnique([...baseReplies, ...mappedReplies]);
           const nextReplyCount = Number.isFinite(totalElements)
             ? Math.max(totalElements, nextReplies.length)
             : Number.isFinite(comment.replyCount)
@@ -313,7 +344,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
         }),
       );
     },
-    [mapCommentItem],
+    [commentSortKey, mapCommentItem],
   );
 
   const updatePostCommentCount = useCallback((targetPostId, delta) => {
@@ -362,6 +393,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
       }
       isSendingCommentRef.current = true;
       const rootCommentId = payload?.rootCommentId ?? null;
+      const isExpandedTarget = Boolean(payload?.isExpandedTarget);
       try {
         const result = await CommentCreate({
           postId: targetPostId,
@@ -391,31 +423,33 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
             });
           };
           setCommentList(prev =>
-            prev.map(comment =>
-              String(comment.id) === String(rootCommentId)
-                ? {
-                    ...comment,
-                    replies: mergeUnique([
-                      ...(Array.isArray(comment.replies)
-                        ? comment.replies
-                        : []),
-                      mappedReply,
-                    ]),
-                    previewReplies: mergeUnique([
-                      mappedReply,
-                      ...(Array.isArray(comment.previewReplies)
-                        ? comment.previewReplies
-                        : []),
-                    ]),
-                    replyCount: Math.max(
-                      Number.isFinite(comment.replyCount)
-                        ? comment.replyCount + 1
-                        : 1,
-                      1,
-                    ),
-                  }
-                : comment,
-            ),
+            prev.map(comment => {
+              if (String(comment.id) !== String(rootCommentId)) {
+                return comment;
+              }
+              const existingReplies = Array.isArray(comment.replies)
+                ? comment.replies
+                : [];
+              const nextReplies = isExpandedTarget
+                ? mergeUnique([mappedReply, ...existingReplies])
+                : existingReplies;
+              return {
+                ...comment,
+                replies: nextReplies,
+                previewReplies: mergeUnique([
+                  mappedReply,
+                  ...(Array.isArray(comment.previewReplies)
+                    ? comment.previewReplies
+                    : []),
+                ]),
+                replyCount: Math.max(
+                  Number.isFinite(comment.replyCount)
+                    ? comment.replyCount + 1
+                    : 1,
+                  1,
+                ),
+              };
+            }),
           );
           setPendingScrollReplyId(mappedReply.id);
           updatePostCommentCount(targetPostId, 1);
@@ -492,6 +526,19 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
     }
     fetchComments(selectedFeed.id);
   }, [fetchComments, selectedFeed?.id]);
+
+  useEffect(() => {
+    if (!selectedFeed?.id) {
+      return;
+    }
+    setCommentPage(0);
+    setCommentTotalCount(null);
+    fetchComments(selectedFeed.id);
+  }, [commentSortKey, fetchComments, selectedFeed?.id]);
+
+  const handleChangeCommentSort = useCallback(nextSortKey => {
+    setCommentSortKey(nextSortKey);
+  }, []);
 
   const handleOpenCommentSheet = useCallback(feed => {
     setSelectedFeed(feed);
@@ -792,14 +839,16 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           }}
           insets={insets}
           commentList={commentList}
+          commentSortKey={commentSortKey}
+          onChangeCommentSort={handleChangeCommentSort}
           defaultProfile={defaultProfile}
           commentLikeState={commentLikeState}
           onToggleLike={handleCommentLikeToggle}
-        formatLikeCount={formatLikeCount}
-        commentInput={commentInput}
-        onChangeCommentInput={setCommentInput}
-        currentUserProfileImage={currentUserProfileImage}
-        onPressSend={handleSendComment}
+          formatLikeCount={formatLikeCount}
+          commentInput={commentInput}
+          onChangeCommentInput={setCommentInput}
+          currentUserProfileImage={currentUserProfileImage}
+          onPressSend={handleSendComment}
           onDeleteComment={handleDeleteComment}
           onRequestReplies={handleRequestReplies}
           onRequestMoreComments={handleRequestMoreComments}
