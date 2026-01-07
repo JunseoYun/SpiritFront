@@ -410,7 +410,7 @@ const LikeScreen = ({navigation}) => {
 
   useEffect(() => {
     const sub = DeviceEventEmitter.addListener(
-      'saved-posts-updated',
+      'post-saved-updated',
       () => refreshSavedPosts(true),
     );
     return () => sub.remove();

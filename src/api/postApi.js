@@ -101,3 +101,13 @@ export const PostSave = async postId => {
     functionError(error);
   }
 };
+
+export const PostLike = async postId => {
+  if (!postId) return null;
+  try {
+    const response = await axiosInstance.post(`/post/like/${postId}`, {});
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
