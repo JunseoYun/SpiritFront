@@ -113,7 +113,6 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
         return {
           id: post?.id ?? `saved-${index}`,
           storeId: post?.storeId ?? post?.store?.id ?? null,
-          shareLink: post?.shareLink,
           profileImage:
             post?.writerImgUrl ?? post?.profileImgUrl ?? post?.profileImage,
           nickname: post?.writerNickname ?? post?.nickname ?? '',
@@ -121,13 +120,15 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           name: post?.storeName ?? '',
           content: post?.content ?? '',
           postImages: finalImages,
-          likes: post?.likes ?? 0,
+          likes: post?.likeCount ?? post?.likes ?? 0,
           comments: post?.commentCount ?? post?.comments ?? 0,
           shares: post?.shareCount ?? post?.shares ?? 0,
           isWriter: post?.isWriter ?? false,
+          isLiked: post?.isLiked ?? false,
           rate: post?.rate ?? post?.rating ?? null,
-          saved: post?.isSaved ?? true,
-          __sourceReview: post,
+          isSaved: post?.isSaved ?? true,
+          createdAt: post?.createdAt ?? null,
+          place: post?.place ?? null,
         };
       }),
     [fallbackImageUri, savedPosts],
@@ -315,6 +316,40 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
     [mapCommentItem],
   );
 
+  const updatePostCommentCount = useCallback((targetPostId, delta) => {
+    if (!targetPostId || !delta) {
+      return;
+    }
+    setSavedPosts(prev =>
+      prev.map(item => {
+        if (String(item?.id) !== String(targetPostId)) {
+          return item;
+        }
+        const baseCount =
+          item?.commentCount ?? item?.comments ?? item?.commentCnt ?? 0;
+        const nextCount = Math.max(0, baseCount + delta);
+        return {
+          ...item,
+          commentCount: nextCount,
+          comments: nextCount,
+        };
+      }),
+    );
+    setSelectedFeed(prev => {
+      if (!prev || String(prev?.id) !== String(targetPostId)) {
+        return prev;
+      }
+      const baseCount =
+        prev?.commentCount ?? prev?.comments ?? prev?.commentCnt ?? 0;
+      const nextCount = Math.max(0, baseCount + delta);
+      return {
+        ...prev,
+        commentCount: nextCount,
+        comments: nextCount,
+      };
+    });
+  }, []);
+
   const handleSendComment = useCallback(
     async payload => {
       const targetPostId = selectedFeed?.id;
@@ -383,6 +418,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
             ),
           );
           setPendingScrollReplyId(mappedReply.id);
+          updatePostCommentCount(targetPostId, 1);
           return;
         } else {
           const fallbackComment = {
@@ -402,6 +438,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
             return [...filtered, mappedComment];
           });
           setCommentTotalCount(prev => (prev === null ? null : prev + 1));
+          updatePostCommentCount(targetPostId, 1);
         }
       } finally {
         isSendingCommentRef.current = false;
@@ -413,6 +450,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
       selectedFeed?.id,
       userProfile?.nickname,
       currentUserProfileImage,
+      updatePostCommentCount,
     ],
   );
 
@@ -425,15 +463,23 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
       await CommentDelete(targetComment.id);
       if (targetComment.rootCommentId) {
         handleRequestReplies(targetComment.rootCommentId);
+        updatePostCommentCount(targetPostId, -1);
       } else {
         fetchComments(targetPostId);
         setCommentTotalCount(prev =>
           prev === null ? null : Math.max(0, prev - 1),
         );
+        updatePostCommentCount(targetPostId, -1);
       }
       showToast('삭제가 완료되었습니다.');
     },
-    [fetchComments, handleRequestReplies, selectedFeed?.id, showToast],
+    [
+      fetchComments,
+      handleRequestReplies,
+      selectedFeed?.id,
+      showToast,
+      updatePostCommentCount,
+    ],
   );
 
   useEffect(() => {
@@ -476,10 +522,6 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
             : item,
         ),
       );
-      DeviceEventEmitter.emit('saved-posts-updated', {
-        postId: targetId,
-        saved: nextSaved,
-      });
     },
     [],
   );

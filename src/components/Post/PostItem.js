@@ -28,7 +28,7 @@ import {POST_REPORT_REASONS} from './PostReportSheet';
 import PostReportBottomSheet from './PostReportBottomSheet';
 import useMeasuredExpandableText from '../../utils/useMeasuredExpandableText';
 import {get_store_share} from '../../api/storeApi';
-import {PostSave} from '../../api/postApi';
+import {PostLike, PostSave} from '../../api/postApi';
 import {getGlobalShowAlert} from '../../context/CustomAlertContext';
 import {useNavigation} from '@react-navigation/native';
 import formatRelativeTime from '../../utils/formatRelativeTime';
@@ -51,16 +51,22 @@ const PostItem = ({
   hideStoreBadge = false,
   showRatingInTitleCycle = false,
 }) => {
+  // console.log(item);
   const navigation = useNavigation();
   const screenWidth = Dimensions.get('window').width;
   const profileSource = item.profileImage
     ? {uri: item.profileImage}
     : defaultProfile;
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(Boolean(item?.isLiked ?? false));
   const [likes, setLikes] = useState(item.likes ?? 0);
   const [saved, setSaved] = useState(
     Boolean(item?.saved ?? item?.isSaved ?? false),
   );
+  useEffect(() => {
+    setLiked(Boolean(item?.isLiked ?? false));
+    setLikes(item?.likes ?? 0);
+    setSaved(Boolean(item?.saved ?? item?.isSaved ?? false));
+  }, [item?.id, item?.isLiked, item?.likes, item?.saved, item?.isSaved]);
 
   const comments = item.comments ?? 0;
   const [shareCount, setShareCount] = useState(item.shares ?? 0);
@@ -90,6 +96,37 @@ const PostItem = ({
   const pendingSaveRef = useRef(false);
   const READ_MORE_LABEL = '…더보기';
   const primaryImageLoadedRef = useRef(false);
+  const emitPostLikeUpdate = useCallback(
+    (nextLiked, nextLikes) => {
+      if (!item?.id) {
+        return;
+      }
+      const payload = {
+        postId: item.id,
+        liked: nextLiked,
+        likeCount: nextLikes,
+      };
+      setTimeout(() => {
+        DeviceEventEmitter.emit('post-like-updated', payload);
+      }, 0);
+    },
+    [item?.id],
+  );
+  const emitPostSavedUpdate = useCallback(
+    nextSaved => {
+      if (!item?.id) {
+        return;
+      }
+      const payload = {
+        postId: item.id,
+        saved: nextSaved,
+      };
+      setTimeout(() => {
+        DeviceEventEmitter.emit('post-saved-updated', payload);
+      }, 0);
+    },
+    [item?.id],
+  );
 
   const {
     contentForRender,
@@ -109,9 +146,8 @@ const PostItem = ({
     item?.rate ?? item?.rating ?? item?.storeRate ?? item?.storeRating ?? null;
   const hasRating =
     ratingValue !== null && ratingValue !== undefined && ratingValue !== '';
-  const fallbackPlace = item?.place ?? item?.__sourceReview?.place ?? '';
-  const fallbackCreatedAt =
-    item?.createdAt ?? item?.__sourceReview?.createdAt ?? null;
+  const fallbackPlace = item?.place ?? '';
+  const fallbackCreatedAt = item?.createdAt ?? null;
   const formattedCreatedAt = fallbackCreatedAt
     ? formatRelativeTime(fallbackCreatedAt)
     : '';
@@ -327,13 +363,31 @@ const PostItem = ({
     }
   }, [titleCycleIndex, titleCycleLength]);
 
-  const handleLikePress = () => {
-    if (showFlyingHeart || pendingLikeRef.current) {
+  const handleLikePress = useCallback(async () => {
+    if (showFlyingHeart || pendingLikeRef.current || !item?.id) {
       return;
     }
-    setLiked(prev => !prev);
-    setLikes(prev => prev + (liked ? -1 : 1));
-  };
+    const nextLiked = !liked;
+    pendingLikeRef.current = true;
+    setLiked(nextLiked);
+    setLikes(prev => {
+      const nextLikes = prev + (nextLiked ? 1 : -1);
+      emitPostLikeUpdate(nextLiked, nextLikes);
+      return nextLikes;
+    });
+    try {
+      await PostLike(item.id);
+    } catch (error) {
+      setLiked(!nextLiked);
+      setLikes(prev => {
+        const nextLikes = prev + (nextLiked ? -1 : 1);
+        emitPostLikeUpdate(!nextLiked, nextLikes);
+        return nextLikes;
+      });
+    } finally {
+      pendingLikeRef.current = false;
+    }
+  }, [emitPostLikeUpdate, item?.id, liked, showFlyingHeart]);
 
   const handleBookmarkPress = useCallback(async () => {
     if (!item?.id || pendingSaveRef.current) {
@@ -341,16 +395,18 @@ const PostItem = ({
     }
     const nextSaved = !saved;
     setSaved(nextSaved);
+    emitPostSavedUpdate(nextSaved);
     pendingSaveRef.current = true;
     try {
       await PostSave(item.id);
       onSavedChange?.(item, nextSaved);
     } catch (error) {
       setSaved(!nextSaved);
+      emitPostSavedUpdate(!nextSaved);
     } finally {
       pendingSaveRef.current = false;
     }
-  }, [item, onSavedChange, saved]);
+  }, [emitPostSavedUpdate, item, onSavedChange, saved]);
 
   const handleCommentPress = useCallback(() => {
     onCommentPress?.(item);
@@ -625,26 +681,41 @@ const PostItem = ({
   );
 
   const handleDoubleTapLike = useCallback(
-    event => {
+    async event => {
       if (showFlyingHeart) {
         return;
       }
 
       const {pageX = 0, pageY = 0} = event?.nativeEvent ?? {};
-      if (liked || pendingLikeRef.current) {
+      if (liked || pendingLikeRef.current || !item?.id) {
         triggerHeartFly(pageX, pageY);
         return;
       }
 
       pendingLikeRef.current = true;
-      setLikes(prev => prev + 1);
-
-      triggerHeartFly(pageX, pageY, () => {
-        setLiked(true);
-        pendingLikeRef.current = false;
+      setLiked(true);
+      setLikes(prev => {
+        const nextLikes = prev + 1;
+        emitPostLikeUpdate(true, nextLikes);
+        return nextLikes;
       });
+
+      triggerHeartFly(pageX, pageY);
+
+      try {
+        await PostLike(item.id);
+      } catch (error) {
+        setLiked(false);
+        setLikes(prev => {
+          const nextLikes = prev - 1;
+          emitPostLikeUpdate(false, nextLikes);
+          return nextLikes;
+        });
+      } finally {
+        pendingLikeRef.current = false;
+      }
     },
-    [liked, showFlyingHeart, triggerHeartFly],
+    [emitPostLikeUpdate, item?.id, liked, showFlyingHeart, triggerHeartFly],
   );
 
   const handleImagePress = useCallback(
@@ -758,7 +829,8 @@ const PostItem = ({
                         styles.address,
                         item?.storeId &&
                           (titleCycleItems[titleCycleIndex]?.type === 'name' ||
-                            titleCycleItems[titleCycleIndex]?.type === 'meta') &&
+                            titleCycleItems[titleCycleIndex]?.type ===
+                              'meta') &&
                           styles.storeNameText,
                       ]}
                       numberOfLines={1}>
@@ -930,13 +1002,13 @@ const PostItem = ({
             <ChatCircleIcon size={24} color="#333" strokeWidth={2} />
             <CustomText style={styles.actionCount}>{comments}</CustomText>
           </Pressable>
-          {/* <Pressable
-          style={styles.actionButton}
-          hitSlop={8}
-          onPress={handleSharePress}>
-          <PaperPlaneIcon size={24} color="#333" strokeWidth={2} />
-          <CustomText style={styles.actionCount}>{shareCount}</CustomText>
-        </Pressable> */}
+          <Pressable
+            style={styles.actionButton}
+            hitSlop={8}
+            onPress={handleSharePress}>
+            <PaperPlaneIcon size={24} color="#333" strokeWidth={2} />
+            <CustomText style={styles.actionCount}>{shareCount}</CustomText>
+          </Pressable>
           <View style={{flex: 1}} />
           <Pressable hitSlop={8} onPress={handleBookmarkPress}>
             <BookmarkIcon

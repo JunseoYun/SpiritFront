@@ -123,20 +123,25 @@ const MainScreen = ({navigation}) => {
   );
   const loadMorePadding = 24;
   const mapPostItem = useCallback(post => {
+    // console.log(post);
     return {
       id: String(post.id ?? ''),
       nickname: post.writerNickname ?? '게스트',
       profileImage: post.writerImgUrl ?? null,
       postImages: Array.isArray(post.postImgUrlList) ? post.postImgUrlList : [],
       storeId: post.storeId ?? null,
-      storeAddress: post.storeAddress ?? post.address ?? '',
+      storeAddress: post.address ?? '',
       name: post.storeName ?? '',
       content: post.content ?? '',
-      likes: post.likes ?? 0,
+      likes: post.likeCount ?? post.likes ?? 0,
       comments: post.commentCount ?? 0,
       shares: post.shareCount ?? 0,
       isWriter: post.isWriter ?? false,
-      __sourceReview: post,
+      isLiked: post.isLiked ?? false,
+      isSaved: post.isSaved ?? false,
+      rate: post.rate ?? null,
+      createdAt: post.createdAt ?? null,
+      place: post.place ?? null,
     };
   }, []);
   const refreshFeed = useCallback(() => {
@@ -380,6 +385,74 @@ const MainScreen = ({navigation}) => {
     setCommentLikeState(nextState);
   }, [commentList]);
 
+  useEffect(() => {
+    const likeSub = DeviceEventEmitter.addListener(
+      'post-like-updated',
+      payload => {
+        const targetId = payload?.postId;
+        if (!targetId) {
+          return;
+        }
+        setFeedData(prev =>
+          prev.map(item => {
+            if (String(item?.id) !== String(targetId)) {
+              return item;
+            }
+            const nextLikes = payload?.likeCount ?? item?.likes ?? 0;
+            return {
+              ...item,
+              isLiked: payload?.liked ?? item?.isLiked ?? false,
+              likes: nextLikes,
+            };
+          }),
+        );
+        setSelectedFeed(prev => {
+          if (!prev || String(prev?.id) !== String(targetId)) {
+            return prev;
+          }
+          const nextLikes = payload?.likeCount ?? prev?.likes ?? 0;
+          return {
+            ...prev,
+            isLiked: payload?.liked ?? prev?.isLiked ?? false,
+            likes: nextLikes,
+          };
+        });
+      },
+    );
+    const savedSub = DeviceEventEmitter.addListener(
+      'post-saved-updated',
+      payload => {
+        const targetId = payload?.postId;
+        if (!targetId) {
+          return;
+        }
+        setFeedData(prev =>
+          prev.map(item =>
+            String(item?.id) === String(targetId)
+              ? {
+                  ...item,
+                  isSaved: payload?.saved ?? item?.isSaved ?? false,
+                }
+              : item,
+          ),
+        );
+        setSelectedFeed(prev => {
+          if (!prev || String(prev?.id) !== String(targetId)) {
+            return prev;
+          }
+          return {
+            ...prev,
+            isSaved: payload?.saved ?? prev?.isSaved ?? false,
+          };
+        });
+      },
+    );
+    return () => {
+      likeSub.remove();
+      savedSub.remove();
+    };
+  }, []);
+
   const handleCommentLikeToggle = useCallback(commentId => {
     setCommentLikeState(prev => ({
       ...prev,
@@ -548,6 +621,40 @@ const MainScreen = ({navigation}) => {
     [mapCommentItem],
   );
 
+  const updatePostCommentCount = useCallback((targetPostId, delta) => {
+    if (!targetPostId || !delta) {
+      return;
+    }
+    setFeedData(prev =>
+      prev.map(item => {
+        if (String(item?.id) !== String(targetPostId)) {
+          return item;
+        }
+        const baseCount =
+          item?.commentCount ?? item?.comments ?? item?.commentCnt ?? 0;
+        const nextCount = Math.max(0, baseCount + delta);
+        return {
+          ...item,
+          commentCount: nextCount,
+          comments: nextCount,
+        };
+      }),
+    );
+    setSelectedFeed(prev => {
+      if (!prev || String(prev?.id) !== String(targetPostId)) {
+        return prev;
+      }
+      const baseCount =
+        prev?.commentCount ?? prev?.comments ?? prev?.commentCnt ?? 0;
+      const nextCount = Math.max(0, baseCount + delta);
+      return {
+        ...prev,
+        commentCount: nextCount,
+        comments: nextCount,
+      };
+    });
+  }, []);
+
   const handleSendComment = useCallback(
     async payload => {
       const targetPostId = selectedFeed?.id;
@@ -616,6 +723,7 @@ const MainScreen = ({navigation}) => {
             ),
           );
           setPendingScrollReplyId(mappedReply.id);
+          updatePostCommentCount(targetPostId, 1);
           return;
         } else {
           const fallbackComment = {
@@ -634,6 +742,7 @@ const MainScreen = ({navigation}) => {
             return [...filtered, mappedComment];
           });
           setCommentTotalCount(prev => (prev === null ? null : prev + 1));
+          updatePostCommentCount(targetPostId, 1);
         }
       } finally {
         isSendingCommentRef.current = false;
@@ -645,6 +754,7 @@ const MainScreen = ({navigation}) => {
       fetchComments,
       mapCommentItem,
       selectedFeed?.id,
+      updatePostCommentCount,
     ],
   );
 
@@ -657,15 +767,23 @@ const MainScreen = ({navigation}) => {
       await CommentDelete(targetComment.id);
       if (targetComment.rootCommentId) {
         handleRequestReplies(targetComment.rootCommentId);
+        updatePostCommentCount(targetPostId, -1);
       } else {
         fetchComments(targetPostId);
         setCommentTotalCount(prev =>
           prev === null ? null : Math.max(0, prev - 1),
         );
+        updatePostCommentCount(targetPostId, -1);
       }
       showToast('삭제가 완료되었습니다.');
     },
-    [fetchComments, handleRequestReplies, selectedFeed?.id, showToast],
+    [
+      fetchComments,
+      handleRequestReplies,
+      selectedFeed?.id,
+      showToast,
+      updatePostCommentCount,
+    ],
   );
 
   useEffect(() => {
@@ -691,13 +809,13 @@ const MainScreen = ({navigation}) => {
       if (!item) {
         return;
       }
-      const review = item?.__sourceReview ?? {
+      const review = {
         id: item?.id,
         postImgUrlList: Array.isArray(item?.postImages) ? item.postImages : [],
         storeName: item?.name ?? '',
         storeAddress: item?.storeAddress ?? '',
         content: item?.content ?? '',
-        rate: item?.rate ?? item?.rating ?? 0,
+        rate: item?.rate ?? 0,
       };
       navigation.navigate('MyPostEditScreen', {
         review,

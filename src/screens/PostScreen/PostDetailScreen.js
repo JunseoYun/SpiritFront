@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
+  DeviceEventEmitter,
   ScrollView,
   StyleSheet,
   View,
@@ -106,9 +107,13 @@ const PostDetailScreen = ({navigation, route}) => {
             null,
           storeId:
             data.storeId ?? data.store?.id ?? data.store?.storeId ?? null,
-          shares: data.shares ?? 0,
-          likes: data.likes ?? 0,
-          comments: data.comments ?? 0,
+          shares: data.shareCount ?? data.shares ?? 0,
+          likes: data.likeCount ?? data.likes ?? 0,
+          comments: data.commentCount ?? data.comments ?? 0,
+          isLiked: data.isLiked ?? false,
+          isSaved: data.isSaved ?? false,
+          createdAt: data.createdAt ?? null,
+          place: data.place ?? null,
         };
         setPostItem(prev => ({...prev, ...mapped}));
       } finally {
@@ -132,6 +137,53 @@ const PostDetailScreen = ({navigation, route}) => {
     });
     setCommentLikeState(nextState);
   }, [commentList]);
+
+  useEffect(() => {
+    const likeSub = DeviceEventEmitter.addListener(
+      'post-like-updated',
+      payload => {
+        const targetId = payload?.postId;
+        if (!targetId) {
+          return;
+        }
+        setPostItem(prev => {
+          if (!prev || String(prev?.id) !== String(targetId)) {
+            return prev;
+          }
+          const nextLikes =
+            payload?.likeCount ?? prev?.likeCount ?? prev?.likes ?? 0;
+          return {
+            ...prev,
+            isLiked: payload?.liked ?? prev?.isLiked ?? false,
+            likeCount: nextLikes,
+            likes: nextLikes,
+          };
+        });
+      },
+    );
+    const savedSub = DeviceEventEmitter.addListener(
+      'post-saved-updated',
+      payload => {
+        const targetId = payload?.postId;
+        if (!targetId) {
+          return;
+        }
+        setPostItem(prev => {
+          if (!prev || String(prev?.id) !== String(targetId)) {
+            return prev;
+          }
+          return {
+            ...prev,
+            isSaved: payload?.saved ?? prev?.isSaved ?? false,
+          };
+        });
+      },
+    );
+    return () => {
+      likeSub.remove();
+      savedSub.remove();
+    };
+  }, []);
 
   const handleCommentLikeToggle = useCallback(commentId => {
     setCommentLikeState(prev => ({
@@ -307,6 +359,25 @@ const PostDetailScreen = ({navigation, route}) => {
     [mapCommentItem],
   );
 
+  const updatePostCommentCount = useCallback((targetPostId, delta) => {
+    if (!targetPostId || !delta) {
+      return;
+    }
+    setPostItem(prev => {
+      if (!prev || String(prev?.id) !== String(targetPostId)) {
+        return prev;
+      }
+      const baseCount =
+        prev?.commentCount ?? prev?.comments ?? prev?.commentCnt ?? 0;
+      const nextCount = Math.max(0, baseCount + delta);
+      return {
+        ...prev,
+        commentCount: nextCount,
+        comments: nextCount,
+      };
+    });
+  }, []);
+
   const handleSendComment = useCallback(
     async payload => {
       const targetPostId = postItem?.id ?? postId;
@@ -373,6 +444,7 @@ const PostDetailScreen = ({navigation, route}) => {
             ),
           );
           setPendingScrollReplyId(mappedReply.id);
+          updatePostCommentCount(targetPostId, 1);
           return;
         } else {
           const fallbackComment = {
@@ -391,6 +463,7 @@ const PostDetailScreen = ({navigation, route}) => {
             return [...filtered, mappedComment];
           });
           setCommentTotalCount(prev => (prev === null ? null : prev + 1));
+          updatePostCommentCount(targetPostId, 1);
         }
       } finally {
         isSendingCommentRef.current = false;
@@ -403,6 +476,7 @@ const PostDetailScreen = ({navigation, route}) => {
       mapCommentItem,
       postId,
       postItem?.id,
+      updatePostCommentCount,
     ],
   );
 
@@ -415,15 +489,24 @@ const PostDetailScreen = ({navigation, route}) => {
       await CommentDelete(targetComment.id);
       if (targetComment.rootCommentId) {
         handleRequestReplies(targetComment.rootCommentId);
+        updatePostCommentCount(targetPostId, -1);
       } else {
         fetchComments(targetPostId);
         setCommentTotalCount(prev =>
           prev === null ? null : Math.max(0, prev - 1),
         );
+        updatePostCommentCount(targetPostId, -1);
       }
       showToast('삭제가 완료되었습니다.');
     },
-    [fetchComments, handleRequestReplies, postId, postItem?.id, showToast],
+    [
+      fetchComments,
+      handleRequestReplies,
+      postId,
+      postItem?.id,
+      showToast,
+      updatePostCommentCount,
+    ],
   );
   useEffect(() => {
     const targetPostId = postItem?.id ?? postId;

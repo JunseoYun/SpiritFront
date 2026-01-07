@@ -97,7 +97,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
     });
   }, [navigation]);
 
-  const posts = useMemo(() => {
+  const initialPosts = useMemo(() => {
     if (Array.isArray(routePosts) && routePosts.length > 0) {
       return routePosts;
     }
@@ -106,14 +106,19 @@ const MyPostDetailScreen = ({navigation, route}) => {
     }
     return [];
   }, [routePosts, routeReview]);
+  const [postList, setPostList] = useState(initialPosts);
+
+  useEffect(() => {
+    setPostList(initialPosts);
+  }, [initialPosts]);
 
   const initialIndex = useMemo(() => {
-    if (!posts.length) return 0;
+    if (!postList.length) return 0;
     const safeIndex = Number.isFinite(routeInitialIndex)
       ? routeInitialIndex
       : 0;
-    return Math.min(Math.max(safeIndex, 0), posts.length - 1);
-  }, [posts.length, routeInitialIndex]);
+    return Math.min(Math.max(safeIndex, 0), postList.length - 1);
+  }, [postList.length, routeInitialIndex]);
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
@@ -137,7 +142,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
       return next;
     });
 
-    posts.forEach((review, index) => {
+    postList.forEach((review, index) => {
       const imageUrl = review?.postImgUrlList?.[0] || review?.imgUrlList?.[0];
       if (!imageUrl) {
         return;
@@ -169,14 +174,13 @@ const MyPostDetailScreen = ({navigation, route}) => {
     return () => {
       active = false;
     };
-  }, [initialIndex, posts, routeInitialImageRatio]);
+  }, [initialIndex, postList, routeInitialImageRatio]);
 
   const feedItems = useMemo(
     () =>
-      posts.map((review, index) => ({
+      postList.map((review, index) => ({
         id: review?.id ?? `review-${index}`,
         storeId: review?.storeId ?? review?.store?.id,
-        shareLink: review?.shareLink,
         profileImage: userProfile?.imageuri,
         nickname: userProfile?.nickname || '',
         storeAddress:
@@ -188,13 +192,17 @@ const MyPostDetailScreen = ({navigation, route}) => {
           : Array.isArray(review?.imgUrlList)
           ? review.imgUrlList
           : [],
-        likes: review?.likes ?? review?.likeCount ?? 0,
-        comments: 0,
-        shares: review?.shares ?? 0,
+        likes: review?.likeCount ?? review?.likes ?? 0,
+        comments: review?.commentCount ?? 0,
+        shares: review?.shareCount ?? review?.shares ?? 0,
         isWriter: true,
-        __sourceReview: review,
+        isLiked: review?.isLiked ?? false,
+        isSaved: review?.isSaved ?? review?.saved ?? false,
+        rate: review?.rate ?? review?.rating ?? null,
+        createdAt: review?.createdAt ?? null,
+        place: review?.place ?? null,
       })),
-    [posts, userProfile?.imageuri, userProfile?.nickname],
+    [postList, userProfile?.imageuri, userProfile?.nickname],
   );
   const skeletonItems = useMemo(
     () => Array.from({length: 2}, (_, index) => `skeleton-${index}`),
@@ -213,6 +221,56 @@ const MyPostDetailScreen = ({navigation, route}) => {
     });
     setCommentLikeState(nextState);
   }, [commentList]);
+
+  useEffect(() => {
+    const likeSub = DeviceEventEmitter.addListener(
+      'post-like-updated',
+      payload => {
+        const targetId = payload?.postId;
+        if (!targetId) {
+          return;
+        }
+        setPostList(prev =>
+          prev.map(item => {
+            if (String(item?.id) !== String(targetId)) {
+              return item;
+            }
+            const nextLikes =
+              payload?.likeCount ?? item?.likeCount ?? item?.likes ?? 0;
+            return {
+              ...item,
+              isLiked: payload?.liked ?? item?.isLiked ?? false,
+              likeCount: nextLikes,
+              likes: nextLikes,
+            };
+          }),
+        );
+      },
+    );
+    const savedSub = DeviceEventEmitter.addListener(
+      'post-saved-updated',
+      payload => {
+        const targetId = payload?.postId;
+        if (!targetId) {
+          return;
+        }
+        setPostList(prev =>
+          prev.map(item =>
+            String(item?.id) === String(targetId)
+              ? {
+                  ...item,
+                  isSaved: payload?.saved ?? item?.isSaved ?? false,
+                }
+              : item,
+          ),
+        );
+      },
+    );
+    return () => {
+      likeSub.remove();
+      savedSub.remove();
+    };
+  }, []);
 
   const handleCommentLikeToggle = useCallback(commentId => {
     setCommentLikeState(prev => ({
@@ -382,6 +440,40 @@ const MyPostDetailScreen = ({navigation, route}) => {
     [mapCommentItem],
   );
 
+  const updatePostCommentCount = useCallback((targetPostId, delta) => {
+    if (!targetPostId || !delta) {
+      return;
+    }
+    setPostList(prev =>
+      prev.map(item => {
+        if (String(item?.id) !== String(targetPostId)) {
+          return item;
+        }
+        const baseCount =
+          item?.commentCount ?? item?.comments ?? item?.commentCnt ?? 0;
+        const nextCount = Math.max(0, baseCount + delta);
+        return {
+          ...item,
+          commentCount: nextCount,
+          comments: nextCount,
+        };
+      }),
+    );
+    setSelectedFeed(prev => {
+      if (!prev || String(prev?.id) !== String(targetPostId)) {
+        return prev;
+      }
+      const baseCount =
+        prev?.commentCount ?? prev?.comments ?? prev?.commentCnt ?? 0;
+      const nextCount = Math.max(0, baseCount + delta);
+      return {
+        ...prev,
+        commentCount: nextCount,
+        comments: nextCount,
+      };
+    });
+  }, []);
+
   const handleSendComment = useCallback(
     async payload => {
       const targetPostId = selectedFeed?.id;
@@ -450,6 +542,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
             ),
           );
           setPendingScrollReplyId(mappedReply.id);
+          updatePostCommentCount(targetPostId, 1);
           return;
         } else {
           const fallbackComment = {
@@ -469,6 +562,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
             return [...filtered, mappedComment];
           });
           setCommentTotalCount(prev => (prev === null ? null : prev + 1));
+          updatePostCommentCount(targetPostId, 1);
         }
       } finally {
         isSendingCommentRef.current = false;
@@ -480,6 +574,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
       selectedFeed?.id,
       userProfile?.nickname,
       currentUserProfileImage,
+      updatePostCommentCount,
     ],
   );
 
@@ -492,15 +587,23 @@ const MyPostDetailScreen = ({navigation, route}) => {
       await CommentDelete(targetComment.id);
       if (targetComment.rootCommentId) {
         handleRequestReplies(targetComment.rootCommentId);
+        updatePostCommentCount(targetPostId, -1);
       } else {
         fetchComments(targetPostId);
         setCommentTotalCount(prev =>
           prev === null ? null : Math.max(0, prev - 1),
         );
+        updatePostCommentCount(targetPostId, -1);
       }
       showToast('삭제가 완료되었습니다.');
     },
-    [fetchComments, handleRequestReplies, selectedFeed?.id, showToast],
+    [
+      fetchComments,
+      handleRequestReplies,
+      selectedFeed?.id,
+      showToast,
+      updatePostCommentCount,
+    ],
   );
 
   useEffect(() => {
@@ -545,8 +648,15 @@ const MyPostDetailScreen = ({navigation, route}) => {
 
   const handleEditPress = useCallback(
     item => {
-      const review = item?.__sourceReview;
-      if (!review) return;
+      if (!item) return;
+      const review = {
+        id: item?.id,
+        postImgUrlList: Array.isArray(item?.postImages) ? item.postImages : [],
+        storeName: item?.name ?? '',
+        storeAddress: item?.storeAddress ?? '',
+        content: item?.content ?? '',
+        rate: item?.rate ?? 0,
+      };
       navigation.navigate('MyPostEditScreen', {
         review,
         userProfile,
@@ -558,7 +668,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
 
   const handleDeletePress = useCallback(
     item => {
-      if (!item?.__sourceReview) return;
+      if (!item?.id) return;
       handleDeleteConfirm(item);
     },
     [handleDeleteConfirm],

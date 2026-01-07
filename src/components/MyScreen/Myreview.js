@@ -12,6 +12,7 @@ import {
   View,
   Pressable,
   Image,
+  DeviceEventEmitter,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
@@ -53,6 +54,7 @@ const MyReview = forwardRef(
       }
       try {
         const data = await PostMyGet(currentPage);
+        // console.log(data);
         setTotalpage(data.totalPages);
         if (data.content.length === 0) {
           setIsEnd(true);
@@ -92,6 +94,56 @@ const MyReview = forwardRef(
     useEffect(() => {
       onRefreshingChange?.(refreshing);
     }, [refreshing, onRefreshingChange]);
+
+    useEffect(() => {
+      const likeSub = DeviceEventEmitter.addListener(
+        'post-like-updated',
+        payload => {
+          const targetId = payload?.postId;
+          if (!targetId) {
+            return;
+          }
+          setMyReview(prev =>
+            prev.map(item => {
+              if (String(item?.id) !== String(targetId)) {
+                return item;
+              }
+              const nextLikes =
+                payload?.likeCount ?? item?.likeCount ?? item?.likes ?? 0;
+              return {
+                ...item,
+                isLiked: payload?.liked ?? item?.isLiked ?? false,
+                likeCount: nextLikes,
+                likes: nextLikes,
+              };
+            }),
+          );
+        },
+      );
+      const savedSub = DeviceEventEmitter.addListener(
+        'post-saved-updated',
+        payload => {
+          const targetId = payload?.postId;
+          if (!targetId) {
+            return;
+          }
+          setMyReview(prev =>
+            prev.map(item =>
+              String(item?.id) === String(targetId)
+                ? {
+                    ...item,
+                    isSaved: payload?.saved ?? item?.isSaved ?? false,
+                  }
+                : item,
+            ),
+          );
+        },
+      );
+      return () => {
+        likeSub.remove();
+        savedSub.remove();
+      };
+    }, []);
 
     const rows = useMemo(() => {
       const result = [];
