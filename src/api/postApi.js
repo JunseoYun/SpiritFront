@@ -111,3 +111,13 @@ export const PostLike = async postId => {
     functionError(error);
   }
 };
+
+export const PostShare = async postId => {
+  if (!postId) return null;
+  try {
+    const response = await axiosInstance.post(`/post/share/${postId}`, {});
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};

@@ -86,7 +86,8 @@ const AppNavigator = () => {
   const {token} = useAuth();
   const {isVersionValid, isTestEnabled} = useVersionCheck();
   const {pendingNotification, setPendingNotification} = useNotification();
-  const {pendingStoreId, setPendingStoreId} = useDeepLink();
+  const {pendingStoreId, setPendingStoreId, pendingPostId, setPendingPostId} =
+    useDeepLink();
 
   const [loading, setLoading] = useState(true);
   const [navigationReady, setNavigationReady] = useState(false);
@@ -166,6 +167,23 @@ const AppNavigator = () => {
 
     setPendingStoreId(null);
   }, [navigationReady, token, pendingStoreId]);
+
+  useEffect(() => {
+    if (!navigationReady || !pendingPostId || !token) return;
+    const currentRoute = navigationRef.getCurrentRoute();
+    if (
+      currentRoute?.name === 'PostDetailScreen' &&
+      String(currentRoute?.params?.postId) === String(pendingPostId)
+    ) {
+      setPendingPostId(null);
+      return;
+    }
+    setTimeout(() => {
+      navigationRef.navigate('PostDetailScreen', {postId: pendingPostId});
+    }, 500);
+
+    setPendingPostId(null);
+  }, [navigationReady, token, pendingPostId]);
 
   if (loading || !isVersionValid) {
     return <MySplashScreen isVersionValid={isVersionValid} />;

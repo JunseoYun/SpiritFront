@@ -3,8 +3,8 @@ import {getGlobalShowToast} from '../../context/ToastContext';
 import {getGlobalShowStoreInvite} from '../../context/StoreInviteContext';
 import {
   setGlobalPendingStoreId,
-  getGlobalPendingStoreId,
   setGlobalPendingStoreInviteId,
+  setGlobalPendingPostId,
 } from '../../context/DeepLinkContext';
 import {getGlobalToken} from '../../context/AuthContext';
 import Config from 'react-native-config';
@@ -74,6 +74,47 @@ export const handleUrl = ({url}) => {
 
       // 🔥 토큰이 있지만 navigation 아직 준비 안 됨(앱 첫 진입) → pending
       setGlobalPendingStoreId(storeId);
+    } else if (
+      url.includes(`${Config.BASE_URL}/link/post/`) ||
+      url.includes(`${Config.BASE_URL}/ul/post/`) ||
+      url.startsWith('spirit://post/')
+    ) {
+      const parts = url.split('/');
+      const postId = parts[parts.length - 1];
+
+      if (!postId) {
+        safeShowToast('유효하지 않은 링크입니다.');
+        return;
+      }
+
+      if (token && navigationRef.isReady()) {
+        const currentRoute = navigationRef.getCurrentRoute();
+        if (
+          currentRoute?.name === 'PostDetailScreen' &&
+          String(currentRoute?.params?.postId) === String(postId)
+        ) {
+          return;
+        }
+        navigationRef.reset({
+          index: 1,
+          routes: [
+            {name: 'MainBtmbar', state: {routes: [{name: 'MainScreen'}]}},
+            {
+              name: 'PostDetailScreen',
+              params: {postId},
+            },
+          ],
+        });
+        return;
+      }
+
+      if (!token) {
+        safeShowToast('로그인 후 이용하실 수 있습니다.');
+        setGlobalPendingPostId(postId);
+        return;
+      }
+
+      setGlobalPendingPostId(postId);
     } else if (
       url.includes(`${Config.BASE_URL}/link/store-manager-invite/`) ||
       url.includes(`${Config.BASE_URL}/ul/store-manager-invite/`) ||
