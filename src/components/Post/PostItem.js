@@ -130,19 +130,19 @@ const PostItem = ({
     const items = [];
     if (!hasStoreIdentity) {
       if (fallbackPlace) {
-        items.push({type: 'text', value: fallbackPlace});
+        items.push({type: 'place', value: fallbackPlace});
       }
       if (formattedCreatedAt) {
-        items.push({type: 'text', value: formattedCreatedAt});
+        items.push({type: 'meta', value: formattedCreatedAt});
       }
       return items;
     }
     if (showRatingInTitleCycle) {
       if (item?.name) {
-        items.push({type: 'text', value: item.name});
+        items.push({type: 'name', value: item.name});
       }
       if (formattedCreatedAt) {
-        items.push({type: 'text', value: formattedCreatedAt});
+        items.push({type: 'meta', value: formattedCreatedAt});
       }
       if (hasRating) {
         items.push({type: 'rating', value: formattedRating});
@@ -151,10 +151,10 @@ const PostItem = ({
     }
 
     if (item?.name) {
-      items.push({type: 'text', value: item.name});
+      items.push({type: 'name', value: item.name});
     }
     if (formattedCreatedAt) {
-      items.push({type: 'text', value: formattedCreatedAt});
+      items.push({type: 'meta', value: formattedCreatedAt});
     }
     return items;
   }, [
@@ -753,7 +753,15 @@ const PostItem = ({
                       </CustomText>
                     </View>
                   ) : (
-                    <CustomText style={styles.address} numberOfLines={1}>
+                    <CustomText
+                      style={[
+                        styles.address,
+                        item?.storeId &&
+                          (titleCycleItems[titleCycleIndex]?.type === 'name' ||
+                            titleCycleItems[titleCycleIndex]?.type === 'meta') &&
+                          styles.storeNameText,
+                      ]}
+                      numberOfLines={1}>
                       {titleCycleItems[titleCycleIndex]?.value ??
                         item.storeAddress ??
                         item.name}
@@ -1011,6 +1019,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     color: ColorUtil.subText,
     marginTop: 2,
+  },
+  storeNameText: {
+    color: '#333',
   },
   ratingRow: {
     flexDirection: 'row',
