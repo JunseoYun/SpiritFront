@@ -28,7 +28,7 @@ import {POST_REPORT_REASONS} from './PostReportSheet';
 import PostReportBottomSheet from './PostReportBottomSheet';
 import useMeasuredExpandableText from '../../utils/useMeasuredExpandableText';
 import {get_store_share} from '../../api/storeApi';
-import {PostLike, PostSave} from '../../api/postApi';
+import {PostLike, PostSave, PostShare} from '../../api/postApi';
 import {getGlobalShowAlert} from '../../context/CustomAlertContext';
 import {useNavigation} from '@react-navigation/native';
 import formatRelativeTime from '../../utils/formatRelativeTime';
@@ -96,6 +96,9 @@ const PostItem = ({
   const pendingSaveRef = useRef(false);
   const READ_MORE_LABEL = '…더보기';
   const primaryImageLoadedRef = useRef(false);
+  const displayLikes = Number.isFinite(likes) ? likes : 0;
+  const displayComments = Number.isFinite(comments) ? comments : 0;
+  const displayShares = Number.isFinite(shareCount) ? shareCount : 0;
   const emitPostLikeUpdate = useCallback(
     (nextLiked, nextLikes) => {
       if (!item?.id) {
@@ -239,6 +242,10 @@ const PostItem = ({
   useEffect(() => {
     setSaved(Boolean(item?.saved ?? item?.isSaved ?? false));
   }, [item?.id, item?.isSaved, item?.saved]);
+
+  useEffect(() => {
+    setShareCount(item?.shares ?? 0);
+  }, [item?.shares]);
 
   useEffect(() => {
     if (hasContentMeasured && !contentMeasuredRef.current) {
@@ -414,12 +421,16 @@ const PostItem = ({
 
   const handleSharePress = useCallback(async () => {
     try {
-      const targetId = item?.storeId ?? item?.id;
+      const targetId = item?.id;
       let shareLink = item?.shareLink;
 
       if (!shareLink && targetId) {
-        const response = await get_store_share(targetId);
-        shareLink = response?.shareLink;
+        const response = await PostShare(targetId);
+        shareLink = response?.shareLink ?? response?.link ?? shareLink;
+      }
+      if (!shareLink && item?.storeId) {
+        const response = await get_store_share(item.storeId);
+        shareLink = response?.shareLink ?? response?.link ?? shareLink;
       }
 
       const messageParts = [];
@@ -441,10 +452,7 @@ const PostItem = ({
         return;
       }
 
-      const result = await Share.share({message});
-      if (result?.action === Share.sharedAction) {
-        setShareCount(prev => prev + 1);
-      }
+      await Share.share({message});
     } catch (error) {
       Alert.alert('공유하기', '공유에 실패했어요. 잠시 후 다시 시도해주세요.');
     }
@@ -993,21 +1001,33 @@ const PostItem = ({
                 filled={liked}
               />
             </View>
-            <CustomText style={[styles.actionCount]}>{likes}</CustomText>
+            {displayLikes > 0 ? (
+              <CustomText style={[styles.actionCount]}>
+                {displayLikes}
+              </CustomText>
+            ) : null}
           </Pressable>
           <Pressable
             style={styles.actionButton}
             hitSlop={8}
             onPress={handleCommentPress}>
             <ChatCircleIcon size={24} color="#333" strokeWidth={2} />
-            <CustomText style={styles.actionCount}>{comments}</CustomText>
+            {displayComments > 0 ? (
+              <CustomText style={styles.actionCount}>
+                {displayComments}
+              </CustomText>
+            ) : null}
           </Pressable>
           <Pressable
             style={styles.actionButton}
             hitSlop={8}
             onPress={handleSharePress}>
             <PaperPlaneIcon size={24} color="#333" strokeWidth={2} />
-            <CustomText style={styles.actionCount}>{shareCount}</CustomText>
+            {displayShares > 0 ? (
+              <CustomText style={styles.actionCount}>
+                {displayShares}
+              </CustomText>
+            ) : null}
           </Pressable>
           <View style={{flex: 1}} />
           <Pressable hitSlop={8} onPress={handleBookmarkPress}>
