@@ -219,6 +219,7 @@ const PostCommentSheet = forwardRef(
     const [hiddenPreviewReplies, setHiddenPreviewReplies] = useState({});
     const [replyTarget, setReplyTarget] = useState(null);
     const replyTargetStoreRef = useRef({value: null, listeners: new Set()});
+    const expandedRepliesRef = useRef({});
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const [selectedMenuTarget, setSelectedMenuTarget] = useState(null);
     const [menuPosition, setMenuPosition] = useState({top: 60});
@@ -524,6 +525,10 @@ const PostCommentSheet = forwardRef(
       store.listeners.forEach(listener => listener(replyTarget));
     }, [replyTarget]);
 
+    useEffect(() => {
+      expandedRepliesRef.current = expandedReplies;
+    }, [expandedReplies]);
+
     const onPressSendRef = useRef(onPressSend);
     const onChangeCommentInputRef = useRef(onChangeCommentInput);
 
@@ -584,6 +589,18 @@ const PostCommentSheet = forwardRef(
       },
       [onRequestReplies],
     );
+
+    useEffect(() => {
+      const expandedIds = Object.keys(expandedRepliesRef.current).filter(
+        id => expandedRepliesRef.current[id],
+      );
+      if (!expandedIds.length) {
+        return;
+      }
+      expandedIds.forEach(commentId => {
+        requestReplies(commentId, 0, commentSortKey);
+      });
+    }, [commentSortKey, requestReplies]);
 
     const getHighlightOpacityStyle = useCallback(
       id => {
