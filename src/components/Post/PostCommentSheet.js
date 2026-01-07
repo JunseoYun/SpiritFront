@@ -192,6 +192,8 @@ const PostCommentSheet = forwardRef(
       onDismiss,
       insets,
       commentList,
+      commentSortKey = 'latest',
+      onChangeCommentSort,
       defaultProfile,
       commentLikeState,
       onToggleLike,
@@ -348,8 +350,9 @@ const PostCommentSheet = forwardRef(
       }, 120);
     }, []);
 
-    const handleDeletePress = useCallback(() => {
-      const targetId = selectedMenuTarget?.id;
+    const handleDeletePress = useCallback(targetItem => {
+      const resolvedTarget = targetItem ?? selectedMenuTarget;
+      const targetId = resolvedTarget?.id;
       if (!targetId) {
         Alert.alert('삭제하기', '삭제할 댓글을 찾지 못했습니다.');
         return;
@@ -359,7 +362,7 @@ const PostCommentSheet = forwardRef(
         return;
       }
       closeMoreMenu();
-      onDeleteComment(selectedMenuTarget);
+      onDeleteComment(resolvedTarget);
     }, [closeMoreMenu, onDeleteComment, selectedMenuTarget]);
 
     const resetSheetState = useCallback(() => {
@@ -532,16 +535,25 @@ const PostCommentSheet = forwardRef(
       onChangeCommentInputRef.current = onChangeCommentInput;
     }, [onChangeCommentInput]);
 
-    const handlePressSend = useCallback(payload => {
-      onPressSendRef.current?.(payload);
-    }, []);
+    const handlePressSend = useCallback(
+      payload => {
+        const rootCommentId = payload?.rootCommentId ?? null;
+        const isExpandedTarget =
+          rootCommentId && expandedReplies[rootCommentId] ? true : false;
+        onPressSendRef.current?.({
+          ...payload,
+          isExpandedTarget,
+        });
+      },
+      [expandedReplies],
+    );
 
     const handleChangeCommentInput = useCallback(text => {
       onChangeCommentInputRef.current?.(text);
     }, []);
 
     const requestReplies = useCallback(
-      (commentId, page) => {
+      (commentId, page, sortKey) => {
         if (!onRequestReplies) return;
         const nextToken = (replyRequestTokenRef.current[commentId] ?? 0) + 1;
         replyRequestTokenRef.current[commentId] = nextToken;
@@ -549,7 +561,7 @@ const PostCommentSheet = forwardRef(
           if (prev[commentId]) return prev;
           return {...prev, [commentId]: true};
         });
-        const maybePromise = onRequestReplies(commentId, page);
+        const maybePromise = onRequestReplies(commentId, page, sortKey);
         if (maybePromise && typeof maybePromise.finally === 'function') {
           maybePromise.finally(() => {
             if (replyRequestTokenRef.current[commentId] === nextToken) {
@@ -721,7 +733,32 @@ const PostCommentSheet = forwardRef(
             scrollEnabled={!showMoreMenu}
             scrollEventThrottle={16}
             onScroll={handleCommentScroll}
-            contentContainerStyle={[styles.commentSheetContent]}>
+          contentContainerStyle={[styles.commentSheetContent]}>
+          <View style={styles.commentSortRow}>
+            <Pressable
+              onPress={() => onChangeCommentSort?.('latest')}
+              hitSlop={6}>
+              <CustomText
+                style={[
+                  styles.commentSortText,
+                  commentSortKey === 'latest' && styles.commentSortTextActive,
+                ]}>
+                최신순
+              </CustomText>
+            </Pressable>
+            <View style={styles.commentSortDivider} />
+            <Pressable
+              onPress={() => onChangeCommentSort?.('popular')}
+              hitSlop={6}>
+              <CustomText
+                style={[
+                  styles.commentSortText,
+                  commentSortKey === 'popular' && styles.commentSortTextActive,
+                ]}>
+                인기순
+              </CustomText>
+            </Pressable>
+          </View>
             {commentList.length === 0 && isLoadingComments ? (
               <View style={styles.commentLoadingContainer}>
                 <ActivityIndicator size="small" color="#9AA1AE" />
@@ -750,13 +787,17 @@ const PostCommentSheet = forwardRef(
                     return true;
                   });
                 };
-                const expandedReplyItems = mergeUnique(
-                  replies.length ? replies : previewReplies,
-                );
                 const isMenuTarget = selectedMenuTarget?.id === comment.id;
                 const isExpanded = Boolean(expandedReplies[comment.id]);
                 const isPreviewHidden = Boolean(
                   hiddenPreviewReplies[comment.id],
+                );
+                const expandedReplyItems = mergeUnique(
+                  isExpanded
+                    ? replies
+                    : replies.length
+                    ? replies
+                    : previewReplies,
                 );
                 const previewVisibleCount =
                   !isExpanded && !isPreviewHidden ? previewReplies.length : 0;
@@ -855,7 +896,8 @@ const PostCommentSheet = forwardRef(
                         <CustomText style={styles.commentLikeCount}>
                           {formatLikeCount(
                             (comment.likes ?? 0) +
-                              (commentLikeState[comment.id] ? 1 : 0),
+                              (commentLikeState[comment.id] ? 1 : 0) -
+                              (comment.isLiked ? 1 : 0),
                           )}
                         </CustomText>
                       </View>
@@ -947,15 +989,29 @@ const PostCommentSheet = forwardRef(
                                 </Pressable>
                               </View>
                               <View style={styles.commentReplyLikeColumn}>
-                                <Pressable hitSlop={8}>
+                                <Pressable
+                                  hitSlop={8}
+                                  onPress={() => onToggleLike(reply.id)}>
                                   <Ionicons
-                                    name="heart-outline"
+                                    name={
+                                      commentLikeState[reply.id]
+                                        ? 'heart'
+                                        : 'heart-outline'
+                                    }
                                     size={18}
-                                    color="#A0A5AE"
+                                    color={
+                                      commentLikeState[reply.id]
+                                        ? '#FF5E5E'
+                                        : '#A0A5AE'
+                                    }
                                   />
                                 </Pressable>
                                 <CustomText style={styles.commentLikeCount}>
-                                  {formatLikeCount(reply.likes ?? 0)}
+                                  {formatLikeCount(
+                                    (reply.likes ?? 0) +
+                                      (commentLikeState[reply.id] ? 1 : 0) -
+                                      (reply.isLiked ? 1 : 0),
+                                  )}
                                 </CustomText>
                               </View>
                               {isReplyMenuTarget ? (
@@ -983,7 +1039,7 @@ const PostCommentSheet = forwardRef(
                               const nextPage = Number.isFinite(comment.replyPage)
                                 ? comment.replyPage + 1
                                 : 0;
-                              requestReplies(comment.id, nextPage);
+                              requestReplies(comment.id, nextPage, commentSortKey);
                             }}>
                             <View style={styles.commentReplyToggleLine} />
                             <CustomText style={[styles.commentReplyToggleText]}>
@@ -1052,15 +1108,29 @@ const PostCommentSheet = forwardRef(
                               </CustomText>
                             </View>
                             <View style={styles.commentReplyLikeColumn}>
-                              <Pressable hitSlop={8}>
+                              <Pressable
+                                hitSlop={8}
+                                onPress={() => onToggleLike(reply.id)}>
                                 <Ionicons
-                                  name="heart-outline"
+                                  name={
+                                    commentLikeState[reply.id]
+                                      ? 'heart'
+                                      : 'heart-outline'
+                                  }
                                   size={18}
-                                  color="#A0A5AE"
+                                  color={
+                                    commentLikeState[reply.id]
+                                      ? '#FF5E5E'
+                                      : '#A0A5AE'
+                                  }
                                 />
                               </Pressable>
                               <CustomText style={styles.commentLikeCount}>
-                                {formatLikeCount(reply.likes ?? 0)}
+                                {formatLikeCount(
+                                  (reply.likes ?? 0) +
+                                    (commentLikeState[reply.id] ? 1 : 0) -
+                                    (reply.isLiked ? 1 : 0),
+                                )}
                               </CustomText>
                             </View>
                           </View>
@@ -1082,7 +1152,7 @@ const PostCommentSheet = forwardRef(
                               [comment.id]: true,
                             }));
                             if (!hasLoadedAllReplies && !Number.isFinite(comment.replyPage)) {
-                              requestReplies(comment.id, 0);
+                              requestReplies(comment.id, 0, commentSortKey);
                             }
                           }}>
                           <View style={styles.commentReplyToggleLine} />
@@ -1127,7 +1197,7 @@ const PostCommentSheet = forwardRef(
                             [comment.id]: true,
                           }));
                           if (!hasLoadedAllReplies && !Number.isFinite(comment.replyPage)) {
-                            requestReplies(comment.id, 0);
+                            requestReplies(comment.id, 0, commentSortKey);
                           }
                         }}>
                         <View style={styles.commentReplyToggleLine} />
@@ -1188,6 +1258,25 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 80,
     gap: 18,
+  },
+  commentSortRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 18,
+  },
+  commentSortText: {
+    fontSize: 12,
+    fontFamily: 'Pretendard-Medium',
+    color: '#9AA1AE',
+  },
+  commentSortTextActive: {
+    color: '#333',
+  },
+  commentSortDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: '#E0E4EA',
   },
   moreMenuOverlay: {
     ...StyleSheet.absoluteFillObject,
