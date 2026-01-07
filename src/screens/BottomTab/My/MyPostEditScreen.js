@@ -162,7 +162,8 @@ const MyPostEditScreen = ({navigation, route}) => {
   const storeName = review?.storeName || '';
   const storeAddress = review?.storeAddress || '';
   const hasStoreInfo = Boolean(storeName || storeAddress);
-  const hasRating = review?.rate !== undefined && review?.rate !== null;
+  const hasRating =
+    hasStoreInfo && review?.rate !== undefined && review?.rate !== null;
   const onViewableItemsChanged = useRef(({viewableItems}) => {
     const first = viewableItems?.[0];
     if (first?.index !== undefined) {
