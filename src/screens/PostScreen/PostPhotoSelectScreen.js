@@ -24,7 +24,11 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import FastImage from 'react-native-fast-image';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useFocusEffect} from '@react-navigation/native';
+import {
+  CommonActions,
+  StackActions,
+  useFocusEffect,
+} from '@react-navigation/native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import CameraRollDefault, {
   CameraRoll as CameraRollNamed,
@@ -75,6 +79,86 @@ const getTouchDistance = touches => {
   const dx = second.pageX - first.pageX;
   const dy = second.pageY - first.pageY;
   return Math.hypot(dx, dy);
+};
+
+const getPhotoSize = photo => {
+  const width = photo?.width;
+  const height = photo?.height;
+  if (
+    Number.isFinite(width) &&
+    Number.isFinite(height) &&
+    width > 0 &&
+    height > 0
+  ) {
+    return {width, height};
+  }
+  return null;
+};
+
+const applyOrientationToCrop = (cropRect, displaySize, orientation) => {
+  if (!cropRect || !displaySize) {
+    return {crop: cropRect, rawSize: displaySize};
+  }
+  const rotation = (((orientation ?? 0) % 360) + 360) % 360;
+  if (!rotation) {
+    return {crop: cropRect, rawSize: displaySize};
+  }
+  const {width: displayWidth, height: displayHeight} = displaySize;
+  const {x, y} = cropRect.offset;
+  const {width: w, height: h} = cropRect.size;
+
+  if (rotation === 90) {
+    const rawWidth = displayHeight;
+    const rawHeight = displayWidth;
+    return {
+      crop: {
+        offset: {x: y, y: rawHeight - (x + w)},
+        size: {width: h, height: w},
+      },
+      rawSize: {width: rawWidth, height: rawHeight},
+    };
+  }
+  if (rotation === 180) {
+    const rawWidth = displayWidth;
+    const rawHeight = displayHeight;
+    return {
+      crop: {
+        offset: {x: rawWidth - (x + w), y: rawHeight - (y + h)},
+        size: {width: w, height: h},
+      },
+      rawSize: {width: rawWidth, height: rawHeight},
+    };
+  }
+  if (rotation === 270) {
+    const rawWidth = displayHeight;
+    const rawHeight = displayWidth;
+    return {
+      crop: {
+        offset: {x: rawWidth - (y + h), y: x},
+        size: {width: h, height: w},
+      },
+      rawSize: {width: rawWidth, height: rawHeight},
+    };
+  }
+  return {crop: cropRect, rawSize: displaySize};
+};
+
+const clampCropToBounds = (cropRect, rawSize) => {
+  if (!cropRect || !rawSize?.width || !rawSize?.height) {
+    return cropRect;
+  }
+  const maxOffsetX = Math.max(0, rawSize.width - 1);
+  const maxOffsetY = Math.max(0, rawSize.height - 1);
+  const safeOriginX = clampNumber(cropRect.offset.x, 0, maxOffsetX);
+  const safeOriginY = clampNumber(cropRect.offset.y, 0, maxOffsetY);
+  const maxWidth = Math.max(1, rawSize.width - safeOriginX);
+  const maxHeight = Math.max(1, rawSize.height - safeOriginY);
+  const safeWidth = clampNumber(cropRect.size.width, 1, maxWidth);
+  const safeHeight = clampNumber(cropRect.size.height, 1, maxHeight);
+  return {
+    offset: {x: safeOriginX, y: safeOriginY},
+    size: {width: safeWidth, height: safeHeight},
+  };
 };
 
 const PostPhotoSelectScreen = ({navigation, route}) => {
@@ -166,7 +250,9 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   }, [currentImageSize]);
 
   const isUltraWideLandscape =
-    !isPortraitPhoto && rawImageAspectRatio > MAX_LANDSCAPE_RATIO;
+    !shouldLockFrame &&
+    !isPortraitPhoto &&
+    rawImageAspectRatio > MAX_LANDSCAPE_RATIO;
 
   const effectiveResizeMode = useMemo(() => {
     if (shouldLockFrame) {
@@ -230,6 +316,16 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     return Math.min(landscapeAspectRatio || 1, MAX_LANDSCAPE_RATIO);
   }, [baseFrameAspectRatio, landscapeAspectRatio, shouldLockFrame]);
 
+  const lockedFrameStyle = useMemo(() => {
+    if (!shouldLockFrame || !baseFrameAspectRatio) {
+      return null;
+    }
+    if (baseFrameAspectRatio <= 1) {
+      return {height: '100%', aspectRatio: baseFrameAspectRatio};
+    }
+    return {width: '100%', aspectRatio: baseFrameAspectRatio};
+  }, [baseFrameAspectRatio, shouldLockFrame]);
+
   const panBounds = useMemo(() => {
     const overflowX = Math.max(
       0,
@@ -256,8 +352,14 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   const canPan =
     canZoom && (effectiveResizeMode === 'cover' || activeScale > 1);
 
-  const getImageSize = uri =>
+  const getImageSize = photo =>
     new Promise(resolve => {
+      const knownSize = getPhotoSize(photo);
+      if (knownSize) {
+        resolve(knownSize);
+        return;
+      }
+      const uri = photo?.uri;
       if (!uri) {
         resolve({width: 0, height: 0});
         return;
@@ -300,7 +402,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     if (!photo?.uri || typeof photo.uri !== 'string') {
       return photo;
     }
-    const imageSize = await getImageSize(photo.uri);
+    const imageSize = await getImageSize(photo);
     if (!imageSize.width || !imageSize.height) {
       return photo;
     }
@@ -309,7 +411,9 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     }
     const rawImageAspectRatio = imageSize.width / imageSize.height;
     const isUltraWideLandscape =
-      !isPortraitPhoto && rawImageAspectRatio > MAX_LANDSCAPE_RATIO;
+      !shouldLockFrame &&
+      !isPortraitPhoto &&
+      rawImageAspectRatio > MAX_LANDSCAPE_RATIO;
     const resizeMode = shouldLockFrame
       ? 'cover'
       : previewMode === 'full'
@@ -365,14 +469,24 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     const maxHeight = Math.max(1, imageSize.height - safeOriginY);
     const safeWidth = clampNumber(sizeWidth, 1, maxWidth);
     const safeHeight = clampNumber(sizeHeight, 1, maxHeight);
+    const baseCropRect = {
+      offset: {x: safeOriginX, y: safeOriginY},
+      size: {width: safeWidth, height: safeHeight},
+    };
+    const {crop: orientedCrop, rawSize} = applyOrientationToCrop(
+      baseCropRect,
+      imageSize,
+      photo?.orientation,
+    );
+    const clampedCrop = clampCropToBounds(orientedCrop, rawSize);
     const cropData = {
       offset: {
-        x: Math.round(safeOriginX),
-        y: Math.round(safeOriginY),
+        x: Math.round(clampedCrop.offset.x),
+        y: Math.round(clampedCrop.offset.y),
       },
       size: {
-        width: Math.round(safeWidth),
-        height: Math.round(safeHeight),
+        width: Math.round(clampedCrop.size.width),
+        height: Math.round(clampedCrop.size.height),
       },
     };
 
@@ -456,6 +570,11 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   useEffect(() => {
     if (!selectedPhoto?.uri) {
       return;
+    }
+    const knownSize = getPhotoSize(selectedPhoto);
+    if (knownSize) {
+      setCurrentImageSize(knownSize);
+      return undefined;
     }
     let isActive = true;
     Image.getSize(
@@ -633,6 +752,9 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
             return {
               id: `${uri}-${existingCount + index}`,
               uri,
+              width: edge?.node?.image?.width ?? null,
+              height: edge?.node?.image?.height ?? null,
+              orientation: edge?.node?.image?.orientation ?? null,
             };
           })
           .filter(Boolean) || [],
@@ -660,6 +782,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       first: after ? BATCH_SIZE : PAGE_SIZE,
       assetType: 'Photos',
       after: afterCursor,
+      include: ['imageSize', 'orientation'],
       ...(groupName
         ? {
             groupName,
@@ -923,6 +1046,9 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       const newPhoto = {
         id: `${savedUri}-${Date.now()}`,
         uri: savedUri,
+        width: typeof captured.width === 'number' ? captured.width : undefined,
+        height:
+          typeof captured.height === 'number' ? captured.height : undefined,
       };
 
       setAlbums(prev => {
@@ -986,17 +1112,19 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         const croppedUris = croppedPhotos
           .map(photo => photo?.uri)
           .filter(Boolean);
-        navigation.navigate({
-          name: returnTo,
-          params: {
-            review: returnReview,
-            draft: returnDraft,
-            draftToken: returnDraftToken,
-            addedImages: croppedUris,
-            addedImagesToken: Date.now(),
-          },
-          merge: true,
-        });
+        navigation.dispatch(
+          StackActions.popTo(
+            returnTo,
+            {
+              review: returnReview,
+              draft: returnDraft,
+              draftToken: returnDraftToken,
+              addedImages: croppedUris,
+              addedImagesToken: Date.now(),
+            },
+            {merge: true},
+          ),
+        );
         return;
       }
 
@@ -1180,14 +1308,17 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
                 <View
                   style={[
                     styles.previewCropFrame,
-                    isPortraitPhoto
+                    shouldLockFrame
+                      ? lockedFrameStyle
+                      : isPortraitPhoto
                       ? previewMode === 'full'
                         ? styles.previewCropFrameFull
                         : styles.previewPortraitCropFrame
                       : previewMode === 'full'
                       ? styles.previewCropFrameFull
                       : styles.previewLandscapeFrame,
-                    !isPortraitPhoto &&
+                    !shouldLockFrame &&
+                      !isPortraitPhoto &&
                       previewMode === 'crop' && {
                         aspectRatio: clampedLandscapeRatio,
                       },
