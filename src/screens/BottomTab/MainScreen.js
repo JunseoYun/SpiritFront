@@ -540,7 +540,24 @@ const MainScreen = ({navigation}) => {
         const totalElements = Number.isFinite(data?.totalElements)
           ? data.totalElements
           : null;
-        setCommentList(items.map(item => mapCommentItem(item)));
+        setCommentList(prev => {
+          const prevMap = new Map(
+            prev.map(comment => [String(comment.id), comment]),
+          );
+          return items.map(item => {
+            const mapped = mapCommentItem(item);
+            const prevItem = prevMap.get(mapped.id);
+            if (!prevItem) {
+              return mapped;
+            }
+            return {
+              ...mapped,
+              replies: prevItem.replies,
+              previewReplies: prevItem.previewReplies,
+              replyPage: prevItem.replyPage,
+            };
+          });
+        });
         setCommentPage(0);
         setCommentTotalCount(totalElements);
       } finally {
@@ -705,19 +722,17 @@ const MainScreen = ({navigation}) => {
           content,
           rootCommentId,
         });
+        const createdId = result?.commentId;
         if (rootCommentId) {
           const fallbackReply = {
-            id: `temp-${Date.now()}`,
+            id: createdId ?? `temp-${Date.now()}`,
             content,
             createdAt: new Date().toISOString(),
             writerImgUrl: currentUserProfileImage ?? null,
             writerNickname: currentUserNickname || '나',
             isWriter: true,
           };
-          const mappedReply = mapCommentItem(
-            result ?? fallbackReply,
-            rootCommentId,
-          );
+          const mappedReply = mapCommentItem(fallbackReply, rootCommentId);
           const mergeUnique = list => {
             const seen = new Set();
             return list.filter(reply => {
@@ -761,19 +776,19 @@ const MainScreen = ({navigation}) => {
           return;
         } else {
           const fallbackComment = {
-            id: `temp-${Date.now()}`,
+            id: createdId ?? `temp-${Date.now()}`,
             content,
             createdAt: new Date().toISOString(),
             writerImgUrl: currentUserProfileImage ?? null,
             writerNickname: currentUserNickname || '나',
             isWriter: true,
           };
-          const mappedComment = mapCommentItem(result ?? fallbackComment);
+          const mappedComment = mapCommentItem(fallbackComment);
           setCommentList(prev => {
             const filtered = prev.filter(
               comment => String(comment.id) !== String(mappedComment.id),
             );
-            return [...filtered, mappedComment];
+            return [mappedComment, ...filtered];
           });
           setCommentTotalCount(prev => (prev === null ? null : prev + 1));
           updatePostCommentCount(targetPostId, 1);
