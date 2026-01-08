@@ -36,7 +36,7 @@ const TABS = [
   {
     key: 'saved',
     label: '게시글',
-    empty: '저장한 매장이 없어요',
+    empty: '저장한 게시글이 없어요',
   },
 ];
 
@@ -231,8 +231,7 @@ const LikeScreen = ({navigation}) => {
     async (tabKey, currentPage, refresh = false) => {
       const stateRef = tabKey === 'liked' ? likedStateRef : savedStateRef;
       const setState = tabKey === 'liked' ? setLikedState : setSavedState;
-      const fetcher =
-        tabKey === 'liked' ? Store_getby_liked : PostGetBySaved;
+      const fetcher = tabKey === 'liked' ? Store_getby_liked : PostGetBySaved;
       const state = stateRef.current;
 
       if ((state.loading && !refresh) || (!state.hasMore && !refresh)) return;
@@ -328,16 +327,19 @@ const LikeScreen = ({navigation}) => {
       updateVisibility(0);
     }
   };
-  const refreshSavedPosts = useCallback((showRefreshing = true) => {
-    setSavedState(prev => ({
-      ...prev,
-      items: [],
-      page: 0,
-      hasMore: true,
-      refreshing: showRefreshing,
-    }));
-    fetchStoresForTab('saved', 0, true);
-  }, [fetchStoresForTab]);
+  const refreshSavedPosts = useCallback(
+    (showRefreshing = true) => {
+      setSavedState(prev => ({
+        ...prev,
+        items: [],
+        page: 0,
+        hasMore: true,
+        refreshing: showRefreshing,
+      }));
+      fetchStoresForTab('saved', 0, true);
+    },
+    [fetchStoresForTab],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -409,9 +411,8 @@ const LikeScreen = ({navigation}) => {
   }, [savedState]);
 
   useEffect(() => {
-    const sub = DeviceEventEmitter.addListener(
-      'post-saved-updated',
-      () => refreshSavedPosts(true),
+    const sub = DeviceEventEmitter.addListener('post-saved-updated', () =>
+      refreshSavedPosts(true),
     );
     return () => sub.remove();
   }, [refreshSavedPosts]);
