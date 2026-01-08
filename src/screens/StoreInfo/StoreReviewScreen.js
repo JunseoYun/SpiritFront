@@ -12,8 +12,13 @@ import {useRoute, useFocusEffect} from '@react-navigation/native';
 import {ReviewStoreGet, review_delete_reply} from '../../api/reviewApi';
 import {PostGetByStore} from '../../api/postApi';
 import ReviewItem from '../../components/StoreReviewScreen/ReviewItem';
-import {POST_REPORT_REASONS} from '../../components/Post/PostReportSheet';
+import {
+  POST_REPORT_REASONS,
+  REPORT_REASON_MAP,
+} from '../../components/Post/PostReportSheet';
 import PostReportBottomSheet from '../../components/Post/PostReportBottomSheet';
+import {report_create} from '../../api/reportApi';
+import {useToast} from '../../context/ToastContext';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import Loading from '../../hooks/Loading';
 import ReviewItemSkeleton from '../../components/StoreReviewScreen/ReviewItemSkeleton';
@@ -27,9 +32,10 @@ const StoreReviewScreen = ({navigation}) => {
   const [reviewdata, setReviewdata] = useState([]);
   const [postData, setPostData] = useState([]);
   const [postLoading, setPostLoading] = useState(true);
-  const [selectedPostReportReason, setSelectedPostReportReason] = useState(
-    POST_REPORT_REASONS[0],
-  );
+  const [selectedPostReportReason, setSelectedPostReportReason] =
+    useState(null);
+  const [postReportTarget, setPostReportTarget] = useState(null);
+  const {showToast} = useToast();
   const {showAlert, AlertComponent} = useCustomAlert();
   const {bottom} = useSafeAndroidInsets();
   const postReportSheetRef = useRef(null);
@@ -140,18 +146,46 @@ const StoreReviewScreen = ({navigation}) => {
     getStorePosts();
   }, [getReviewData, getStorePosts]);
 
-  const openPostReport = useCallback(() => {
-    setSelectedPostReportReason(POST_REPORT_REASONS[0]);
+  const openPostReport = useCallback(targetPost => {
+    setPostReportTarget(targetPost ?? null);
     postReportSheetRef.current?.present();
   }, []);
-
-  const handlePostReportSubmit = useCallback(() => {
-    postReportSheetRef.current?.dismiss();
-    // TODO: Hook up real report flow when available.
-    setTimeout(() => {
-      Alert.alert('신고하기', '신고가 접수되었습니다.');
-    }, 120);
+  const handleSelectPostReportReason = useCallback(reason => {
+    setSelectedPostReportReason(prev => (prev === reason ? null : reason));
   }, []);
+
+  const handlePostReportSubmit = useCallback(async () => {
+    postReportSheetRef.current?.dismiss();
+    if (!selectedPostReportReason) {
+      return;
+    }
+    if (!postReportTarget?.id) {
+      showToast('신고할 게시글을 찾지 못했습니다.');
+      return;
+    }
+    const reportReason = REPORT_REASON_MAP[selectedPostReportReason];
+    try {
+      await report_create({
+        reportTarget: 'POST',
+        targetId: postReportTarget.id,
+        reportReason,
+        description: selectedPostReportReason,
+      });
+      showToast('신고가 접수되었습니다.');
+      setPostReportTarget(null);
+    } catch (error) {
+      const code = error?.response?.data?.code;
+      if (code === 27004) {
+        showToast('이미 신고한 게시글입니다.');
+        return;
+      }
+      if (code === 27003) {
+        showToast('신고 사유를 입력해주세요.');
+        return;
+      }
+      showToast('신고 접수에 실패했습니다.');
+    }
+  }, [postReportTarget?.id, selectedPostReportReason]);
 
   const renderPostSection = () => (
     <View>
@@ -168,7 +202,7 @@ const StoreReviewScreen = ({navigation}) => {
             navigation={navigation}
             isOwner={false}
             isPostItem
-            onReportPress={openPostReport}
+            onReportPress={() => openPostReport(post)}
           />
         ))
       ) : null}
@@ -258,11 +292,9 @@ const StoreReviewScreen = ({navigation}) => {
                 <View style={styles.footer}>
                   {loading && !isEnd ? (
                     <CustomText style={styles.emptyText}>Loading...</CustomText>
-                  ) : !loading && reviewdata.length === 0 ? (
-                    <CustomText style={styles.emptyText}>
-                      등록된 리뷰가 없어요
-                    </CustomText>
-                  ) : null}
+                  ) : (
+                    !loading && reviewdata.length === 0 && null
+                  )}
                 </View>
               }
             />
@@ -280,7 +312,7 @@ const StoreReviewScreen = ({navigation}) => {
         sheetRef={postReportSheetRef}
         reasons={POST_REPORT_REASONS}
         selectedReason={selectedPostReportReason}
-        onSelectReason={setSelectedPostReportReason}
+        onSelectReason={handleSelectPostReportReason}
         onSubmit={handlePostReportSubmit}
       />
     </KeyboardAvoidingView>

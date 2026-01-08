@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     marginTop: 30,
-    backgroundColor: '#80D2F4',
+    backgroundColor: '#3CBBFF',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',

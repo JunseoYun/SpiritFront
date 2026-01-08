@@ -76,7 +76,13 @@ const PostReportBottomSheet = ({
             );
           })}
         </View>
-        <Pressable style={styles.submitButton} onPress={onSubmit}>
+        <Pressable
+          style={[
+            styles.submitButton,
+            !selectedReason && styles.submitButtonDisabled,
+          ]}
+          onPress={onSubmit}
+          disabled={!selectedReason}>
           <CustomText style={styles.submitText}>신고하기</CustomText>
         </Pressable>
       </BottomSheetView>
@@ -149,6 +155,9 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     paddingVertical: 14,
     alignItems: 'center',
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#C9CFD9',
   },
   submitText: {
     color: '#fff',

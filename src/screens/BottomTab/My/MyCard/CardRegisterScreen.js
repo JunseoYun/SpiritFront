@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   primaryBtn: {
-    backgroundColor: '#80D2F4',
+    backgroundColor: '#3CBBFF',
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',

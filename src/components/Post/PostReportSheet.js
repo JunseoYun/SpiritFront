@@ -11,15 +11,26 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import CustomText from '../../utils/CustomText';
 
 export const POST_REPORT_REASONS = [
-  '주제에 맞지 않아요',
-  '정보가 부정확해요',
-  '지나치게 광고를 해요',
-  '이 글로 도배가 돼있어요',
-  '저작권 침해가 우려돼요',
-  '명예를 훼손하는 내용이에요',
-  '욕설이나 비방이 심해요',
-  '외설적인 내용이 포함돼있어요',
+  '부적절한 언어 사용',
+  '부적절한 사진 게시',
+  '허위 광고 및 스팸',
+  '동일 내용 반복 게시',
+  '저작권 침해 우려',
 ];
+
+export const COMMENT_REPORT_REASONS = [
+  '부적절한 언어 사용',
+  '허위 광고 및 스팸',
+  '동일 내용 반복 게시',
+];
+
+export const REPORT_REASON_MAP = {
+  '부적절한 언어 사용': 'INAPPROPRIATE_LANGUAGE',
+  '부적절한 사진 게시': 'INAPPROPRIATE_PHOTO',
+  '허위 광고 및 스팸': 'SPAM_ADVERTISING',
+  '동일 내용 반복 게시': 'REPETITIVE_POSTING',
+  '저작권 침해 우려': 'COPYRIGHT_INFRINGEMENT',
+};
 
 const PostReportSheet = ({
   visible,
@@ -78,8 +89,12 @@ const PostReportSheet = ({
           </View>
           <TouchableOpacity
             activeOpacity={0.85}
-            style={styles.reportSubmitButton}
-            onPress={onSubmit}>
+            style={[
+              styles.reportSubmitButton,
+              !selectedReason && styles.reportSubmitButtonDisabled,
+            ]}
+            onPress={onSubmit}
+            disabled={!selectedReason}>
             <CustomText style={styles.reportSubmitText}>신고하기</CustomText>
           </TouchableOpacity>
         </View>
@@ -143,12 +158,12 @@ const styles = StyleSheet.create({
   },
   reportReasonText: {
     fontSize: 15,
-    color: '#1f2430',
-    fontFamily: 'Pretendard-SemiBold',
+    color: '#333',
+    fontFamily: 'Pretendard-Medium',
   },
   reportReasonTextInactive: {
-    color: '#8A93A3',
-    fontFamily: 'Pretendard-Medium',
+    color: '#999',
+    fontFamily: 'Pretendard-Regular',
   },
   reportSubmitButton: {
     marginTop: 6,
@@ -156,6 +171,9 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     paddingVertical: 14,
     alignItems: 'center',
+  },
+  reportSubmitButtonDisabled: {
+    backgroundColor: '#C9CFD9',
   },
   reportSubmitText: {
     color: '#fff',
