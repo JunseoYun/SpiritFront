@@ -31,7 +31,9 @@ import ColorUtil from '../../utils/ColorUtil';
 import CustomTextInput from '../../utils/CustomTextInput';
 import FastImage from 'react-native-fast-image';
 import PostReportBottomSheet from './PostReportBottomSheet';
-import {POST_REPORT_REASONS} from './PostReportSheet';
+import {COMMENT_REPORT_REASONS, REPORT_REASON_MAP} from './PostReportSheet';
+import {report_create} from '../../api/reportApi';
+import {useToast} from '../../context/ToastContext';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const CommentFooter = ({
@@ -225,10 +227,10 @@ const PostCommentSheet = forwardRef(
     const expandedRepliesRef = useRef({});
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const [selectedMenuTarget, setSelectedMenuTarget] = useState(null);
+    const [reportTargetItem, setReportTargetItem] = useState(null);
     const [menuPosition, setMenuPosition] = useState({top: 60});
-    const [selectedReportReason, setSelectedReportReason] = useState(
-      POST_REPORT_REASONS[0],
-    );
+    const {showToast} = useToast();
+    const [selectedReportReason, setSelectedReportReason] = useState(null);
     const [loadingReplies, setLoadingReplies] = useState({});
     const reportSheetRef = useRef(null);
     const scrollOffsetRef = useRef(0);
@@ -340,19 +342,47 @@ const PostCommentSheet = forwardRef(
     const handleReportPress = useCallback(
       _targetItem => {
         closeMoreMenu();
-        setSelectedReportReason(POST_REPORT_REASONS[0]);
+        setReportTargetItem(_targetItem ?? null);
         reportSheetRef.current?.present();
       },
       [closeMoreMenu],
     );
-
-    const handleReportSubmit = useCallback(() => {
-      reportSheetRef.current?.dismiss();
-      // TODO: Hook up real report flow when available.
-      setTimeout(() => {
-        Alert.alert('신고하기', '신고가 접수되었습니다.');
-      }, 120);
+    const handleSelectReportReason = useCallback(reason => {
+      setSelectedReportReason(prev => (prev === reason ? null : reason));
     }, []);
+
+    const handleReportSubmit = useCallback(async () => {
+      reportSheetRef.current?.dismiss();
+      if (!selectedReportReason) {
+        return;
+      }
+      if (!reportTargetItem?.id) {
+        showToast('신고할 댓글을 찾지 못했습니다.');
+        return;
+      }
+      const reportReason = REPORT_REASON_MAP[selectedReportReason];
+      try {
+        await report_create({
+          reportTarget: 'COMMENT',
+          targetId: reportTargetItem.id,
+          reportReason,
+          description: selectedReportReason,
+        });
+        showToast('신고가 접수되었습니다.');
+        setReportTargetItem(null);
+      } catch (error) {
+        const code = error?.response?.data?.code;
+        if (code === 27004) {
+          showToast('이미 신고한 댓글입니다.');
+          return;
+        }
+        if (code === 27003) {
+          showToast('신고 사유를 입력해주세요.');
+          return;
+        }
+        showToast('신고 접수에 실패했습니다.');
+      }
+    }, [reportTargetItem?.id, selectedReportReason]);
 
     const handleDeletePress = useCallback(
       targetItem => {
@@ -1255,9 +1285,9 @@ const PostCommentSheet = forwardRef(
         </BottomSheetModal>
         <PostReportBottomSheet
           sheetRef={reportSheetRef}
-          reasons={POST_REPORT_REASONS}
+          reasons={COMMENT_REPORT_REASONS}
           selectedReason={selectedReportReason}
-          onSelectReason={setSelectedReportReason}
+          onSelectReason={handleSelectReportReason}
           onSubmit={handleReportSubmit}
           title="댓글 신고하기"
         />
