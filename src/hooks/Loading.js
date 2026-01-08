@@ -10,7 +10,7 @@ const Loading = ({loading}) => {
   const [showDots, setShowDots] = useState(false);
   const delayTimer = useRef(null);
 
-  const dotColors = ['#80D2F4', '#8DC2DA', '#A9CBD9', '#ABE3FA'];
+  const dotColors = ['#3CBBFF', '#8DC2DA', '#A9CBD9', '#ABE3FA'];
 
   useEffect(() => {
     if (dotRefs.current.length === 0) {

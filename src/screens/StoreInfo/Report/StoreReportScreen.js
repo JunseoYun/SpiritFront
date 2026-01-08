@@ -86,14 +86,15 @@ const StoreReportScreen = ({navigation}) => {
 
     let reportReasonCode = '';
     let descriptionText = '';
+    let shouldSendDescription = false;
 
     if (selectedReportReason) {
       if (selectedReportReason === '기타 신고 문제') {
         reportReasonCode = 'ETC';
-        descriptionText = customReason; // 직접 입력한 기타 신고 내용
+        descriptionText = customReason.trim();
+        shouldSendDescription = descriptionText !== '';
       } else {
         reportReasonCode = reasonMap[selectedReportReason];
-        descriptionText = selectedReportReason; // 한글 그대로
       }
     } else if (selectedProposeReason) {
       reportReasonCode =
@@ -101,29 +102,38 @@ const StoreReportScreen = ({navigation}) => {
           ? 'ETC'
           : reasonMap[selectedProposeReason];
 
-      descriptionText =
-        customProposeReason.trim() !== ''
-          ? customProposeReason.trim()
-          : selectedProposeReason; // 입력이 있으면 입력 사용, 없으면 선택한 한글 그대로
+      descriptionText = customProposeReason.trim();
+      shouldSendDescription = descriptionText !== '';
     }
 
     const payloadData = {
       reportTarget: 'STORE',
       targetId: storeId,
       reportReason: reportReasonCode,
-      description: descriptionText,
     };
+    if (shouldSendDescription) {
+      payloadData.description = descriptionText;
+    }
     try {
       await report_create(payloadData);
-      if (selectedReportReason) {
-        showToast('신고 완료되었습니다.');
-      } else {
-        showToast('제보 완료되었습니다.');
-      }
+      showToast(
+        selectedReportReason ? '신고 완료되었습니다.' : '제보 완료되었습니다.',
+      );
 
       navigation.goBack();
     } catch (error) {
-      showToast('잠시 후 다시 시도해주세요.');
+      const code = error?.response?.data?.code;
+      if (code === 27004) {
+        showToast(
+          selectedReportReason
+            ? '이미 신고한 매장입니다.'
+            : '이미 제보한 매장입니다.',
+        );
+      } else if (code === 27003) {
+        showToast('기타 신고 사유를 입력해주세요.');
+      } else {
+        showToast('잠시 후 다시 시도해주세요.');
+      }
     } finally {
       setLoading(false);
     }
@@ -385,6 +395,6 @@ const styles = StyleSheet.create({
   reportText: {
     fontSize: 14,
     color: '#777',
-    fontWeight: 500,
+    fontFamily: 'Pretendard-Regluar',
   },
 });

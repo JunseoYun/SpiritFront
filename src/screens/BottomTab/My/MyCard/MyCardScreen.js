@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   emptySub: {marginTop: 6, fontSize: 14, color: '#6B7280', textAlign: 'center'},
   cta: {
     marginTop: 16,
-    backgroundColor: '#80D2F4',
+    backgroundColor: '#3CBBFF',
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 10,

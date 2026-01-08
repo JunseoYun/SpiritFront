@@ -198,17 +198,8 @@ const ReviewItem = ({
         <CustomText style={styles.datetimeText}>
           작성 {formattedCreatedDate}
         </CustomText>
-        {isPostItem ? (
-          onReportPress ? (
-            <Pressable onPress={onReportPress}>
-              <CustomText style={styles.datetimeText}>신고하기</CustomText>
-            </Pressable>
-          ) : null
-        ) : (
-          <Pressable
-            onPress={() => {
-              navigation.navigate('ReviewReportScreen', {reviewId: item.id});
-            }}>
+        {isPostItem && onReportPress && (
+          <Pressable onPress={onReportPress}>
             <CustomText style={styles.datetimeText}>신고하기</CustomText>
           </Pressable>
         )}

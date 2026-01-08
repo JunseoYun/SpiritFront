@@ -24,7 +24,9 @@ import PaperPlaneIcon from '../../assets/svg/PaperPlaneIcon';
 import HeartIcon from '../../assets/svg/HeartIcon';
 import BookmarkIcon from '../../assets/svg/BookmarkIcon';
 import ColorUtil from '../../utils/ColorUtil';
-import {POST_REPORT_REASONS} from './PostReportSheet';
+import {POST_REPORT_REASONS, REPORT_REASON_MAP} from './PostReportSheet';
+import {report_create} from '../../api/reportApi';
+import {useToast} from '../../context/ToastContext';
 import PostReportBottomSheet from './PostReportBottomSheet';
 import useMeasuredExpandableText from '../../utils/useMeasuredExpandableText';
 import {get_store_share} from '../../api/storeApi';
@@ -84,10 +86,9 @@ const PostItem = ({
   const flyingHeartScale = useRef(new Animated.Value(0)).current;
   const [showFlyingHeart, setShowFlyingHeart] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [selectedReportReason, setSelectedReportReason] = useState(
-    POST_REPORT_REASONS[0],
-  );
+  const [selectedReportReason, setSelectedReportReason] = useState(null);
   const reportSheetRef = useRef(null);
+  const {showToast} = useToast();
   const badgeAnim = useRef(new Animated.Value(isCentered ? 1 : 0)).current;
   const badgeDelayRef = useRef(null);
   const HEART_SIZE = 32;
@@ -261,8 +262,10 @@ const PostItem = ({
 
   const openReportModal = useCallback(() => {
     setShowMoreMenu(false);
-    setSelectedReportReason(POST_REPORT_REASONS[0]);
     reportSheetRef.current?.present();
+  }, []);
+  const handleSelectReportReason = useCallback(reason => {
+    setSelectedReportReason(prev => (prev === reason ? null : reason));
   }, []);
 
   const handleEditPress = useCallback(() => {
@@ -302,13 +305,37 @@ const PostItem = ({
     ]);
   }, [item, onDeletePress]);
 
-  const handleReportSubmit = useCallback(() => {
+  const handleReportSubmit = useCallback(async () => {
     reportSheetRef.current?.dismiss();
-    // TODO: Hook up real report flow when available.
-    setTimeout(() => {
-      Alert.alert('신고하기', '신고가 접수되었습니다.');
-    }, 120);
-  }, []);
+    if (!selectedReportReason) {
+      return;
+    }
+    if (!item?.id) {
+      showToast('신고할 게시글을 찾지 못했습니다.');
+      return;
+    }
+    const reportReason = REPORT_REASON_MAP[selectedReportReason];
+    try {
+      await report_create({
+        reportTarget: 'POST',
+        targetId: item.id,
+        reportReason,
+        description: selectedReportReason,
+      });
+      showToast('신고가 접수되었습니다.');
+    } catch (error) {
+      const code = error?.response?.data?.code;
+      if (code === 27004) {
+        showToast('이미 신고한 게시글입니다.');
+        return;
+      }
+      if (code === 27003) {
+        showToast('신고 사유를 입력해주세요.');
+        return;
+      }
+      showToast('신고 접수에 실패했습니다.');
+    }
+  }, [item?.id, selectedReportReason]);
 
   const handleMorePress = useCallback(() => {
     if (Platform.OS === 'ios') {
@@ -1055,7 +1082,7 @@ const PostItem = ({
           sheetRef={reportSheetRef}
           reasons={POST_REPORT_REASONS}
           selectedReason={selectedReportReason}
-          onSelectReason={setSelectedReportReason}
+          onSelectReason={handleSelectReportReason}
           onSubmit={handleReportSubmit}
         />
       </View>
