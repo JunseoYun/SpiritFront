@@ -126,7 +126,10 @@ const CommentFooter = ({
       style={[
         styles.commentInputBar,
         {
-          paddingBottom: bottomInset + 10,
+          paddingBottom:
+            Platform.OS === 'android'
+              ? bottomInset + 10
+              : animatedPaddingBottom,
         },
       ]}>
       <FastImage
@@ -351,20 +354,23 @@ const PostCommentSheet = forwardRef(
       }, 120);
     }, []);
 
-    const handleDeletePress = useCallback(targetItem => {
-      const resolvedTarget = targetItem ?? selectedMenuTarget;
-      const targetId = resolvedTarget?.id;
-      if (!targetId) {
-        Alert.alert('삭제하기', '삭제할 댓글을 찾지 못했습니다.');
-        return;
-      }
-      if (!onDeleteComment) {
-        Alert.alert('삭제하기', '삭제 동작을 연결해주세요.');
-        return;
-      }
-      closeMoreMenu();
-      onDeleteComment(resolvedTarget);
-    }, [closeMoreMenu, onDeleteComment, selectedMenuTarget]);
+    const handleDeletePress = useCallback(
+      targetItem => {
+        const resolvedTarget = targetItem ?? selectedMenuTarget;
+        const targetId = resolvedTarget?.id;
+        if (!targetId) {
+          Alert.alert('삭제하기', '삭제할 댓글을 찾지 못했습니다.');
+          return;
+        }
+        if (!onDeleteComment) {
+          Alert.alert('삭제하기', '삭제 동작을 연결해주세요.');
+          return;
+        }
+        closeMoreMenu();
+        onDeleteComment(resolvedTarget);
+      },
+      [closeMoreMenu, onDeleteComment, selectedMenuTarget],
+    );
 
     const resetSheetState = useCallback(() => {
       setExpandedReplies({});
@@ -707,6 +713,31 @@ const PostCommentSheet = forwardRef(
           footerComponent={renderCommentFooter}>
           <BottomSheetView style={styles.commentSheetHeader}>
             <CustomText style={styles.commentSheetTitle}>댓글</CustomText>
+            <View style={styles.commentSortRow}>
+              <Pressable
+                onPress={() => onChangeCommentSort?.('latest')}
+                hitSlop={6}>
+                <CustomText
+                  style={[
+                    styles.commentSortText,
+                    commentSortKey === 'latest' && styles.commentSortTextActive,
+                  ]}>
+                  최신순
+                </CustomText>
+              </Pressable>
+              <Pressable
+                onPress={() => onChangeCommentSort?.('popular')}
+                hitSlop={6}>
+                <CustomText
+                  style={[
+                    styles.commentSortText,
+                    commentSortKey === 'popular' &&
+                      styles.commentSortTextActive,
+                  ]}>
+                  인기순
+                </CustomText>
+              </Pressable>
+            </View>
           </BottomSheetView>
           {showMoreMenu ? (
             <>
@@ -750,32 +781,7 @@ const PostCommentSheet = forwardRef(
             scrollEnabled={!showMoreMenu}
             scrollEventThrottle={16}
             onScroll={handleCommentScroll}
-          contentContainerStyle={[styles.commentSheetContent]}>
-          <View style={styles.commentSortRow}>
-            <Pressable
-              onPress={() => onChangeCommentSort?.('latest')}
-              hitSlop={6}>
-              <CustomText
-                style={[
-                  styles.commentSortText,
-                  commentSortKey === 'latest' && styles.commentSortTextActive,
-                ]}>
-                최신순
-              </CustomText>
-            </Pressable>
-            <View style={styles.commentSortDivider} />
-            <Pressable
-              onPress={() => onChangeCommentSort?.('popular')}
-              hitSlop={6}>
-              <CustomText
-                style={[
-                  styles.commentSortText,
-                  commentSortKey === 'popular' && styles.commentSortTextActive,
-                ]}>
-                인기순
-              </CustomText>
-            </Pressable>
-          </View>
+            contentContainerStyle={[styles.commentSheetContent]}>
             {commentList.length === 0 && isLoadingComments ? (
               <View style={styles.commentLoadingContainer}>
                 <ActivityIndicator size="small" color="#9AA1AE" />
@@ -833,7 +839,8 @@ const PostCommentSheet = forwardRef(
                   ? comment.replyCount
                   : loadedReplyCount;
                 const hasLoadedAllReplies =
-                  expectedReplyCount > 0 && loadedReplyCount >= expectedReplyCount;
+                  expectedReplyCount > 0 &&
+                  loadedReplyCount >= expectedReplyCount;
                 const isLoadingReplies = !!loadingReplies[comment.id];
 
                 return (
@@ -1053,10 +1060,16 @@ const PostCommentSheet = forwardRef(
                               if (hasLoadedAllReplies) {
                                 return;
                               }
-                              const nextPage = Number.isFinite(comment.replyPage)
+                              const nextPage = Number.isFinite(
+                                comment.replyPage,
+                              )
                                 ? comment.replyPage + 1
                                 : 0;
-                              requestReplies(comment.id, nextPage, commentSortKey);
+                              requestReplies(
+                                comment.id,
+                                nextPage,
+                                commentSortKey,
+                              );
                             }}>
                             <View style={styles.commentReplyToggleLine} />
                             <CustomText style={[styles.commentReplyToggleText]}>
@@ -1077,11 +1090,11 @@ const PostCommentSheet = forwardRef(
                               },
                             ]}
                             onPress={() =>
-                            setExpandedReplies(prev => ({
-                              ...prev,
-                              [comment.id]: false,
-                            }))
-                          }>
+                              setExpandedReplies(prev => ({
+                                ...prev,
+                                [comment.id]: false,
+                              }))
+                            }>
                             <View style={styles.commentReplyToggleLine} />
                             <CustomText style={[styles.commentReplyToggleText]}>
                               답글 접기
@@ -1168,7 +1181,10 @@ const PostCommentSheet = forwardRef(
                               ...prev,
                               [comment.id]: true,
                             }));
-                            if (!hasLoadedAllReplies && !Number.isFinite(comment.replyPage)) {
+                            if (
+                              !hasLoadedAllReplies &&
+                              !Number.isFinite(comment.replyPage)
+                            ) {
                               requestReplies(comment.id, 0, commentSortKey);
                             }
                           }}>
@@ -1213,7 +1229,10 @@ const PostCommentSheet = forwardRef(
                             ...prev,
                             [comment.id]: true,
                           }));
-                          if (!hasLoadedAllReplies && !Number.isFinite(comment.replyPage)) {
+                          if (
+                            !hasLoadedAllReplies &&
+                            !Number.isFinite(comment.replyPage)
+                          ) {
                             requestReplies(comment.id, 0, commentSortKey);
                           }
                         }}>
@@ -1260,7 +1279,7 @@ const styles = StyleSheet.create({
   },
   commentSheetHeader: {
     paddingBottom: 15,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     borderBottomWidth: 1,
@@ -1278,9 +1297,10 @@ const styles = StyleSheet.create({
   },
   commentSortRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
     paddingHorizontal: 18,
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    gap: 18,
   },
   commentSortText: {
     fontSize: 12,
