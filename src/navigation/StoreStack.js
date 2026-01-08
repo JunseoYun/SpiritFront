@@ -488,29 +488,10 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreReportScreen"
         component={StoreReportScreen}
-        options={({navigation}) => ({
-          title: '매장 신고하기',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                navigation.goBack();
-              }}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="close"
-                size={24}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
+        options={{
+          headerShown: false,
+          animation: 'slide_from_bottom',
+        }}
       />
 
       <Stack.Screen
