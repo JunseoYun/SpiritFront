@@ -167,6 +167,18 @@ const PostItem = ({
   }, [hasRating, ratingValue]);
   const titleCycleItems = useMemo(() => {
     const items = [];
+    if (item?.storeId) {
+      if (item?.name) {
+        items.push({type: 'name', value: item.name});
+      }
+      if (hasRating && formattedRating) {
+        items.push({type: 'rating', value: formattedRating});
+      }
+      if (formattedCreatedAt) {
+        items.push({type: 'meta', value: formattedCreatedAt});
+      }
+      return items;
+    }
     if (!hasStoreIdentity) {
       if (fallbackPlace) {
         items.push({type: 'place', value: fallbackPlace});
@@ -190,6 +202,7 @@ const PostItem = ({
     hasStoreIdentity,
     hasRating,
     item?.name,
+    item?.storeId,
     item?.storeAddress,
   ]);
   const titleCycleLength = titleCycleItems.length;
@@ -838,9 +851,8 @@ const PostItem = ({
                 <Animated.View style={{opacity: fadeAnim}}>
                   {titleCycleItems[titleCycleIndex]?.type === 'rating' ? (
                     <View style={styles.ratingRow}>
-                      <FontAwesomeIcon name="star" size={12} color="#FCC104" />
                       <CustomText style={styles.ratingText}>
-                        {titleCycleItems[titleCycleIndex]?.value}
+                        별점 {titleCycleItems[titleCycleIndex]?.value}
                       </CustomText>
                     </View>
                   ) : (
@@ -1078,7 +1090,7 @@ const PostItem = ({
 const styles = StyleSheet.create({
   card: {
     // paddingTop: 10,
-    paddingBottom: 40,
+    paddingBottom: 50,
     position: 'relative',
   },
   cardContent: {
@@ -1136,7 +1148,7 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 13,
     fontFamily: 'Pretendard-Regular',
-    color: ColorUtil.subText,
+    color: '#333',
   },
   moreButton: {
     paddingHorizontal: 4,
