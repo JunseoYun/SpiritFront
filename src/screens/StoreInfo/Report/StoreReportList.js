@@ -8,12 +8,7 @@ import Loading from '../../../hooks/Loading';
 import CustomText from '../../../utils/CustomText';
 
 const REPORT_TYPES = {
-  report: [
-    'INAPPROPRIATE_LANGUAGE',
-    'INAPPROPRIATE_PHOTO',
-    'VIOLATION_OF_GUIDELINES',
-    'ETC',
-  ],
+  report: ['INAPPROPRIATE_LANGUAGE', 'INAPPROPRIATE_PHOTO', 'ETC'],
   suggestion: [
     'DUPLICATE_STORE',
     'INCORRECT_STORE_INFO',
@@ -23,6 +18,18 @@ const REPORT_TYPES = {
   ],
 };
 
+const reasonMap = {
+  INCORRECT_STORE_INFO: '잘못된 가게 정보',
+  INCORRECT_MENU_INFO: '잘못된 메뉴 정보',
+  INCORRECT_DRINK_INFO: '잘못된 주류 정보',
+  NON_EXISTENT_STORE: '폐업 또는 존재하지 않음',
+  DUPLICATE_STORE: '중복된 매장',
+  INAPPROPRIATE_LANGUAGE: '부적절한 언어 사용',
+  INAPPROPRIATE_PHOTO: '부적절한 사진 게시',
+  ETC: '기타 신고 문제',
+};
+
+//TODO 매장 사장 말고 직접 서비스 관리자는 신고 사유도 보이게 변경 예정
 const StoreReportList = () => {
   const route = useRoute();
   const {storeId} = route.params;
@@ -54,6 +61,7 @@ const StoreReportList = () => {
         const reports = response.map(item => ({
           reportId: item.id,
           reporterId: item.reporterId,
+          reportReason: item.reportReason,
           description: item.description,
           reporterNickname: item.reporterNickname,
           reason: item.reportReason,
@@ -96,9 +104,10 @@ const StoreReportList = () => {
   return (
     <View style={styles.root}>
       <ScrollView contentContainerStyle={styles.container}>
-        {['신고', '제보'].map(type => (
+        {/* {['신고', '제보'].map(type => ( */}
+        {['제보'].map(type => (
           <View key={type} style={styles.section}>
-            <CustomText style={styles.sectionTitle}>{type} 내역</CustomText>
+            {/* <CustomText style={styles.sectionTitle}>{type} 내역</CustomText> */}
             {reportsByType[type].length === 0 ? (
               <CustomText style={styles.noItemText}>
                 {type} 내역이 없습니다.
@@ -107,11 +116,14 @@ const StoreReportList = () => {
               reportsByType[type].map(report => (
                 <View key={report.reportId} style={styles.card}>
                   <CustomText style={styles.descriptionTitle}>
-                    {type} 사유
+                    {reasonMap[report.reportReason]}
                   </CustomText>
-                  <CustomText style={styles.descriptionText}>
-                    {report.description}
-                  </CustomText>
+                  {report.description && (
+                    <CustomText style={styles.descriptionText}>
+                      {report.description}
+                    </CustomText>
+                  )}
+
                   <View style={styles.metaContainer}>
                     <CustomText style={styles.metaText}>
                       {report.date}
@@ -177,15 +189,16 @@ const styles = StyleSheet.create({
   },
 
   descriptionTitle: {
+    fontSize: 15,
+    fontFamily: 'Pretendard-Medium',
+    color: '#333',
+    marginBottom: 5,
+  },
+  descriptionText: {
     fontSize: 13,
     color: '#6B7280',
     marginBottom: 4,
     fontFamily: 'Pretendard-Regular',
-  },
-  descriptionText: {
-    fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
-    color: '#121212',
     marginBottom: 12,
   },
   metaContainer: {

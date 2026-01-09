@@ -451,7 +451,7 @@ export default function StoreStack() {
         component={StoreReportList}
         options={({navigation, route}) => {
           const storename = route.params?.storeName || '매장';
-          const displayTitle = storename + ' 신고·제보';
+          const displayTitle = storename + ' 제보';
 
           return {
             headerLeft: () => (
