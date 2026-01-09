@@ -35,7 +35,8 @@ const COMMENT_SORTS = {
 //TODO
 //PostDetailScreen 에서 전 스크린이 매장 리뷰 스크린이면 매장 이름 눌렀을 때 매장으로 이동 안하는 걸로 변경
 const PostDetailScreen = ({navigation, route}) => {
-  const {postId, item: routeItem, screen} = route.params ?? {};
+  const {postId, item: routeItem, screen, openCommentSheet} =
+    route.params ?? {};
   const [postItem, setPostItem] = useState(routeItem ?? null);
   const [loading, setLoading] = useState(Boolean(postId));
   const insets = useSafeAreaInsets();
@@ -58,6 +59,7 @@ const PostDetailScreen = ({navigation, route}) => {
   const [currentUserProfileImage, setCurrentUserProfileImage] = useState(null);
   const [pendingScrollReplyId, setPendingScrollReplyId] = useState(null);
   const isLoadingMoreCommentsRef = useRef(false);
+  const [didAutoOpenCommentSheet, setDidAutoOpenCommentSheet] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -583,6 +585,17 @@ const PostDetailScreen = ({navigation, route}) => {
   const handleOpenCommentSheet = useCallback(() => {
     commentSheetRef.current?.present();
   }, []);
+
+  useEffect(() => {
+    const targetPostId = postItem?.id ?? postId;
+    if (!openCommentSheet || didAutoOpenCommentSheet || !targetPostId) {
+      return;
+    }
+    setDidAutoOpenCommentSheet(true);
+    setTimeout(() => {
+      commentSheetRef.current?.present();
+    }, 0);
+  }, [openCommentSheet, didAutoOpenCommentSheet, postItem?.id, postId]);
 
   return (
     <View
