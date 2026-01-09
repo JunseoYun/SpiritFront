@@ -20,6 +20,7 @@ import {PostMyGet} from '../../api/reviewApi';
 import Loading from '../../hooks/Loading';
 import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
+import Layer2Icon from '../../assets/svg/Layer2Icon';
 
 const GRID_COLUMNS = 3;
 const GRID_GAP = 1;
@@ -229,8 +230,10 @@ const MyReview = forwardRef(
         <View style={[styles.row, {marginBottom: GRID_GAP}]}>
           {row.map((review, idx) => {
             const isLast = idx === row.length - 1;
-            const imageUrl =
-              review?.postImgUrlList?.[0] || review?.imgUrlList?.[0];
+            const imageList =
+              review?.postImgUrlList || review?.imgUrlList || [];
+            const imageUrl = imageList[0];
+            const hasMultipleImages = imageList.length > 1;
             return (
               <Pressable
                 key={review?.id ?? `empty-${index}-${idx}`}
@@ -240,6 +243,7 @@ const MyReview = forwardRef(
                   height: cellSize,
                   marginRight: isLast ? 0 : GRID_GAP,
                   backgroundColor: '#f1f1f1',
+                  position: 'relative',
                 }}>
                 <FastImage
                   source={
@@ -250,6 +254,11 @@ const MyReview = forwardRef(
                   style={styles.image}
                   resizeMode={FastImage.resizeMode.cover}
                 />
+                {hasMultipleImages ? (
+                  <View style={styles.multiImageBadge}>
+                    <Layer2Icon size={12} color="#fff" />
+                  </View>
+                ) : null}
               </Pressable>
             );
           })}
@@ -295,6 +304,14 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  multiImageBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   footer: {
     paddingVertical: 30,
