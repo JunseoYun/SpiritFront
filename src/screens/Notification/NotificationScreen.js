@@ -170,6 +170,11 @@ const NotificationScreen = ({navigation}) => {
                   await NotificationRead(item.id);
                 }
 
+                if (item.notificationType === 'REPORT_RECEIVED') {
+                  setClickedItemId(null);
+                  return;
+                }
+
                 if (item.notificationType === 'STORE_OWNERSHIP_REJECTED') {
                   setSelectedReject(item);
                   if (!item.hasRead) {
@@ -231,6 +236,41 @@ const NotificationScreen = ({navigation}) => {
                     });
                   } catch (er) {
                     console.log(er);
+                  }
+                }
+                if (
+                  item.notificationType === 'POST_LIKED' &&
+                  item.redirectType === 'POST_DETAIL'
+                ) {
+                  const targetPostId = item.redirectId ?? item.targetId;
+                  if (targetPostId) {
+                    try {
+                      const response = await PostGetById(targetPostId);
+                      navigation.navigate('PostDetailScreen', {
+                        postId: response.id,
+                        item: response,
+                      });
+                    } catch (er) {
+                      console.log(er);
+                    }
+                  }
+                }
+                if (
+                  item.notificationType === 'ROOT_COMMENT_CREATED' &&
+                  item.redirectType === 'POST_COMMENT_RECENT_LIST'
+                ) {
+                  const targetPostId = item.redirectId ?? item.targetId;
+                  if (targetPostId) {
+                    try {
+                      const response = await PostGetById(targetPostId);
+                      navigation.navigate('PostDetailScreen', {
+                        postId: response.id,
+                        item: response,
+                        openCommentSheet: true,
+                      });
+                    } catch (er) {
+                      console.log(er);
+                    }
                   }
                 }
                 setClickedItemId(null);

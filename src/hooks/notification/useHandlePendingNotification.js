@@ -31,6 +31,7 @@ const useHandlePendingNotification = (
           notificationId,
           body,
         } = pendingNotification;
+        const targetPostId = redirectId ?? pendingNotification?.targetId;
 
         if (
           redirectType === 'POST_DETAIL' &&
@@ -49,6 +50,37 @@ const useHandlePendingNotification = (
             navigate('PostDetailScreen', {
               postId: response.id,
               item: response,
+            });
+          } catch (er) {
+            console.log(er);
+          }
+        }
+        if (
+          targetPostId &&
+          redirectType === 'POST_DETAIL' &&
+          notificationType === 'POST_LIKED'
+        ) {
+          try {
+            const response = await PostGetById(targetPostId);
+            navigate('PostDetailScreen', {
+              postId: response.id,
+              item: response,
+            });
+          } catch (er) {
+            console.log(er);
+          }
+        }
+        if (
+          targetPostId &&
+          redirectType === 'POST_COMMENT_RECENT_LIST' &&
+          notificationType === 'ROOT_COMMENT_CREATED'
+        ) {
+          try {
+            const response = await PostGetById(targetPostId);
+            navigate('PostDetailScreen', {
+              postId: response.id,
+              item: response,
+              openCommentSheet: true,
             });
           } catch (er) {
             console.log(er);
@@ -113,6 +145,11 @@ const useHandlePendingNotification = (
               storename: extractStoreName(body),
             },
           });
+        } else if (
+          notificationType === 'REPORT_RECEIVED' &&
+          redirectType === 'ADMIN_REPORT_LIST'
+        ) {
+          navigate('MainBtmbar');
         }
 
         await NotificationRead(notificationId);
