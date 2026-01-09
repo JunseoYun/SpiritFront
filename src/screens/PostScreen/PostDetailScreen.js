@@ -32,9 +32,10 @@ const COMMENT_SORTS = {
   latest: null,
   popular: ['likeCount,DESC', 'id,DESC'],
 };
-
+//TODO
+//PostDetailScreen 에서 전 스크린이 매장 리뷰 스크린이면 매장 이름 눌렀을 때 매장으로 이동 안하는 걸로 변경
 const PostDetailScreen = ({navigation, route}) => {
-  const {postId, item: routeItem} = route.params ?? {};
+  const {postId, item: routeItem, screen} = route.params ?? {};
   const [postItem, setPostItem] = useState(routeItem ?? null);
   const [loading, setLoading] = useState(Boolean(postId));
   const insets = useSafeAreaInsets();
@@ -610,7 +611,7 @@ const PostDetailScreen = ({navigation, route}) => {
             item={postItem}
             onCommentPress={handleOpenCommentSheet}
             showRatingInTitleCycle
-            hideStoreBadge
+            hideStoreBadge={screen === 'StoreReview' ? true : false}
           />
         )}
 

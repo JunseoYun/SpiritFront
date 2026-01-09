@@ -90,7 +90,11 @@ const ReviewItem = ({
     if (!isPostItem) {
       return;
     }
-    navigation.navigate('PostDetailScreen', {postId: item.id, item});
+    navigation.navigate('PostDetailScreen', {
+      postId: item.id,
+      item,
+      screen: 'StoreReview',
+    });
   };
 
   // ✅ 답글 등록
@@ -206,7 +210,7 @@ const ReviewItem = ({
       </View>
 
       {/* 답글 달기 */}
-      {isOwner && !reply && (
+      {/* {isOwner && !reply && (
         <>
           <Pressable
             style={styles.recommentView}
@@ -247,10 +251,10 @@ const ReviewItem = ({
             </View>
           )}
         </>
-      )}
+      )} */}
 
       {/* 답글 UI */}
-      {reply && (
+      {/* {reply && (
         <View style={styles.repliesContainer}>
           <View style={styles.replyItem}>
             <View style={styles.shopImageView}>
@@ -369,7 +373,7 @@ const ReviewItem = ({
             </View>
           </View>
         </View>
-      )}
+      )} */}
       <Loading loading={loading} />
     </Pressable>
   );
@@ -454,6 +458,8 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 7,
+    borderWidth: 0.5,
+    borderColor: ColorUtil.border,
   },
   bottomView: {
     marginHorizontal: 18,

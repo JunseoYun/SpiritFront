@@ -293,7 +293,7 @@ const MapDetailItem = ({
                 style={styles.starIcon}
               />
               <CustomText style={styles.ratingText}>
-                {storeData?.storeRate} ({storeData?.reviewCount})
+                {storeData?.storeRate} ({storeData?.postCount})
               </CustomText>
             </View>
             <CustomText style={{color: '#D4D4D4', marginRight: -24}}>

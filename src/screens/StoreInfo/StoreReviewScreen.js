@@ -6,10 +6,8 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import {useRoute, useFocusEffect} from '@react-navigation/native';
-import {ReviewStoreGet, review_delete_reply} from '../../api/reviewApi';
 import {PostGetByStore} from '../../api/postApi';
 import ReviewItem from '../../components/StoreReviewScreen/ReviewItem';
 import {
@@ -25,189 +23,124 @@ import ReviewItemSkeleton from '../../components/StoreReviewScreen/ReviewItemSke
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import BottomActionButton from '../../utils/BottomActionButton';
 import CustomText from '../../utils/CustomText';
+
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
   const {storeId, storename, isOwner, storeAddress} = route.params;
   const shouldRefresh = route.params?.shouldRefresh;
-  const [reviewdata, setReviewdata] = useState([]);
-  const [postData, setPostData] = useState([]);
-  const [postLoading, setPostLoading] = useState(true);
-  const [selectedPostReportReason, setSelectedPostReportReason] =
-    useState(null);
-  const [postReportTarget, setPostReportTarget] = useState(null);
-  const {showToast} = useToast();
-  const {showAlert, AlertComponent} = useCustomAlert();
-  const {bottom} = useSafeAndroidInsets();
-  const postReportSheetRef = useRef(null);
 
+  const [postData, setPostData] = useState([]);
   const [firstloading, setFirstloading] = useState(true);
-  const [page, setPage] = useState(0); // 페이지 번호
-  const [loading, setLoading] = useState(false); // 로딩 상태
-  const [isEnd, setIsEnd] = useState(false); // 데이터 끝 여부
+  const [postLoading, setPostLoading] = useState(true);
+
+  // (옵션) 포스트 페이징 쓰고 싶으면 유지
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false); // 하단 로딩
+  const [isEnd, setIsEnd] = useState(false);
   const [totalpage, setTotalpage] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
-  const getReviewData = useCallback(
-    async currentPage => {
-      setLoading(true);
+  const [selectedPostReportReason, setSelectedPostReportReason] =
+    useState(null);
+  const [postReportTarget, setPostReportTarget] = useState(null);
+
+  const {showToast} = useToast();
+  const {showAlert, AlertComponent} = useCustomAlert(); // (지금은 삭제 액션 없으면 안써도 됨)
+  const {bottom} = useSafeAndroidInsets();
+  const postReportSheetRef = useRef(null);
+
+  const mapPost = useCallback(post => {
+    return {
+      ...post,
+      id: String(post.id ?? ''),
+      writerNickname: post.writerNickname ?? '게스트',
+      writerImgUrl: post.writerImgUrl ?? null,
+      profileImage: post.writerImgUrl ?? null,
+      nickname: post.writerNickname ?? '게스트',
+      rate: post.rate ?? post.rating ?? 0,
+      visitedAt: null,
+      content: post.content ?? '',
+      imgUrlList: Array.isArray(post.postImgUrlList) ? post.postImgUrlList : [],
+      postImages: Array.isArray(post.postImgUrlList) ? post.postImgUrlList : [],
+      name: post.storeName ?? post.name ?? null,
+      storeAddress: post.storeAddress ?? post.address ?? null,
+      createdAt: post.createdAt ?? post.createAt ?? post.createdDate ?? null,
+      isPostItem: true,
+    };
+  }, []);
+
+  const getStorePosts = useCallback(
+    async (nextPage = 0, {reset = false} = {}) => {
+      if (!storeId) {
+        setPostData([]);
+        setPostLoading(false);
+        setFirstloading(false);
+        setRefreshing(false);
+        return;
+      }
+
+      // 첫 로딩/리프레시/무한스크롤 공용
+      if (reset) {
+        setIsEnd(false);
+        setPage(0);
+      }
+
+      if (nextPage === 0) setPostLoading(true);
+      else setLoading(true);
 
       try {
-        const reviewData = await ReviewStoreGet(storeId, currentPage);
-        setTotalpage(reviewData.totalPages);
+        // ✅ size는 원하는대로
+        const data = await PostGetByStore({storeId, page: nextPage, size: 10});
+        setTotalpage(data?.totalPages ?? 0);
 
-        if (reviewData.content.length === 0) {
-          setIsEnd(true); // 더 이상 데이터가 없으면
-        } else {
-          // 기존 데이터와 병합하고 중복 제거
-          setReviewdata(prevReviews => {
-            const mergedReviews = [...prevReviews, ...reviewData.content];
-            const uniqueReviews = Array.from(
-              new Map(
-                mergedReviews.map(review => [review.id, review]),
-              ).values(),
-            );
-            return uniqueReviews;
-          });
+        const mapped = (data?.content ?? []).map(mapPost);
+
+        if (mapped.length === 0) {
+          setIsEnd(true);
+          return;
         }
+
+        setPostData(prev => {
+          const merged = reset ? mapped : [...prev, ...mapped];
+          return Array.from(new Map(merged.map(v => [v.id, v])).values());
+        });
+
+        setPage(nextPage);
       } catch (error) {
-        console.error(error);
+        console.error('매장 게시글 조회 실패:', error);
       } finally {
+        setPostLoading(false);
         setLoading(false);
         setRefreshing(false);
         setFirstloading(false);
       }
     },
-    [storeId],
+    [mapPost, storeId],
   );
-
-  const getStorePosts = useCallback(async () => {
-    if (!storeId) {
-      setPostData([]);
-      setPostLoading(false);
-      return;
-    }
-
-    setPostLoading(true);
-    try {
-      const data = await PostGetByStore({storeId, page: 0, size: 5});
-      const mapped = (data?.content ?? []).map(post => ({
-        ...post,
-        id: String(post.id ?? ''),
-        writerNickname: post.writerNickname ?? '게스트',
-        writerImgUrl: post.writerImgUrl ?? null,
-        profileImage: post.writerImgUrl ?? null,
-        nickname: post.writerNickname ?? '게스트',
-        rate: post.rate ?? post.rating ?? 0,
-        visitedAt: null,
-        content: post.content ?? '',
-        imgUrlList: Array.isArray(post.postImgUrlList)
-          ? post.postImgUrlList
-          : [],
-        postImages: Array.isArray(post.postImgUrlList)
-          ? post.postImgUrlList
-          : [],
-        name: post.storeName ?? post.name ?? null,
-        storeAddress: post.storeAddress ?? post.address ?? null,
-        createdAt: post.createdAt ?? post.createAt ?? post.createdDate ?? null,
-        isPostItem: true,
-      }));
-      setPostData(mapped);
-    } catch (error) {
-      console.error('매장 게시글 조회 실패:', error);
-    } finally {
-      setPostLoading(false);
-    }
-  }, [storeId]);
-
-  const loadMoreReviews = useCallback(() => {
-    if (!loading && !isEnd) {
-      setPage(prevPage => {
-        const nextPage = prevPage + 1;
-        getReviewData(nextPage); // 다음 페이지 데이터를 가져옴
-        return nextPage;
-      });
-    }
-  }, [getReviewData, isEnd, loading]);
 
   useEffect(() => {
-    setReviewdata([]); // 기존 데이터 초기화
-    setPage(0); // 페이지 초기화
+    // ✅ 이제 리뷰 로딩 없음. 포스트만 초기 조회
+    setPostData([]);
     setIsEnd(false);
-    getReviewData(0);
-    getStorePosts();
-  }, [getReviewData, getStorePosts]);
+    getStorePosts(0, {reset: true});
+  }, [getStorePosts]);
 
   const handleRefresh = useCallback(() => {
-    setReviewdata([]); // 기존 stores 초기화
-    setIsEnd(true); // 추가 데이터 여부 초기화
-    setPage(0);
-    setRefreshing(true); // 새로고침 시작
-    getReviewData(0); // 새로고침
-    getStorePosts();
-  }, [getReviewData, getStorePosts]);
+    setRefreshing(true);
+    setPostData([]);
+    setIsEnd(false);
+    getStorePosts(0, {reset: true});
+  }, [getStorePosts]);
 
-  const openPostReport = useCallback(targetPost => {
-    setPostReportTarget(targetPost ?? null);
-    postReportSheetRef.current?.present();
-  }, []);
-  const handleSelectPostReportReason = useCallback(reason => {
-    setSelectedPostReportReason(prev => (prev === reason ? null : reason));
-  }, []);
+  const loadMorePosts = useCallback(() => {
+    if (loading || postLoading || isEnd) return;
 
-  const handlePostReportSubmit = useCallback(async () => {
-    postReportSheetRef.current?.dismiss();
-    if (!selectedPostReportReason) {
-      return;
-    }
-    if (!postReportTarget?.id) {
-      showToast('신고할 게시글을 찾지 못했습니다.');
-      return;
-    }
-    const reportReason = REPORT_REASON_MAP[selectedPostReportReason];
-    try {
-      await report_create({
-        reportTarget: 'POST',
-        targetId: postReportTarget.id,
-        reportReason,
-        description: selectedPostReportReason,
-      });
-      showToast('신고가 접수되었습니다.');
-      setPostReportTarget(null);
-    } catch (error) {
-      const code = error?.response?.data?.code;
-      if (code === 27004) {
-        showToast('이미 신고한 게시글입니다.');
-        return;
-      }
-      if (code === 27003) {
-        showToast('신고 사유를 입력해주세요.');
-        return;
-      }
-      showToast('신고 접수에 실패했습니다.');
-    }
-  }, [postReportTarget?.id, selectedPostReportReason]);
+    // totalpage를 신뢰하면 아래 조건 추가 가능
+    // if (page >= totalpage - 1) return;
 
-  const renderPostSection = () => (
-    <View>
-      {postLoading ? (
-        <>
-          <ReviewItemSkeleton />
-          <ReviewItemSkeleton />
-        </>
-      ) : postData.length > 0 ? (
-        postData.map(post => (
-          <ReviewItem
-            key={`store-post-${post.id}`}
-            item={post}
-            navigation={navigation}
-            isOwner={false}
-            isPostItem
-            onReportPress={() => openPostReport(post)}
-          />
-        ))
-      ) : null}
-    </View>
-  );
+    const nextPage = page + 1;
+    getStorePosts(nextPage);
+  }, [getStorePosts, isEnd, loading, page, postLoading]);
 
   useFocusEffect(
     useCallback(() => {
@@ -218,35 +151,53 @@ const StoreReviewScreen = ({navigation}) => {
     }, [handleRefresh, navigation, shouldRefresh]),
   );
 
-  const handleDeleteReply = reviewId => {
-    showAlert({
-      title: '답글 삭제',
-      message: '해당 답글 삭제하시겠습니까?',
-      onConfirm: () => {
-        deleteReply(reviewId);
-      },
-      type: 'delete',
-    });
-  };
+  const openPostReport = useCallback(targetPost => {
+    setPostReportTarget(targetPost ?? null);
+    postReportSheetRef.current?.present();
+  }, []);
 
-  const deleteReply = async reviewId => {
-    setLoading(true);
-    try {
-      await review_delete_reply(reviewId);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
+  const handleSelectPostReportReason = useCallback(reason => {
+    setSelectedPostReportReason(prev => (prev === reason ? null : reason));
+  }, []);
+
+  const handlePostReportSubmit = useCallback(async () => {
+    postReportSheetRef.current?.dismiss();
+
+    if (!selectedPostReportReason) return;
+
+    if (!postReportTarget?.id) {
+      showToast('신고할 게시글을 찾지 못했습니다.');
+      return;
     }
-  };
+
+    const reportReason = REPORT_REASON_MAP[selectedPostReportReason];
+
+    try {
+      await report_create({
+        reportTarget: 'POST',
+        targetId: postReportTarget.id,
+        reportReason,
+        description: selectedPostReportReason,
+      });
+      showToast('신고가 접수되었습니다.');
+      setPostReportTarget(null);
+      setSelectedPostReportReason(null);
+    } catch (error) {
+      const code = error?.response?.data?.code;
+      if (code === 27004) return showToast('이미 신고한 게시글입니다.');
+      if (code === 27003) return showToast('신고 사유를 입력해주세요.');
+      showToast('신고 접수에 실패했습니다.');
+    }
+  }, [postReportTarget?.id, selectedPostReportReason, showToast]);
 
   const renderItem = ({item}) => (
     <ReviewItem
-      key={item.id}
+      key={`store-post-${item.id}`}
       item={item}
       navigation={navigation}
-      isOwner={isOwner}
-      handleDeleteReply={handleDeleteReply}
+      isOwner={false}
+      isPostItem
+      onReportPress={() => openPostReport(item)}
     />
   );
 
@@ -269,45 +220,53 @@ const StoreReviewScreen = ({navigation}) => {
         <View style={{width: '100%'}}>
           {firstloading || refreshing ? (
             <FlatList
-              data={[1, 2, 3]} // 임의의 더미 데이터
-              keyExtractor={(item, index) => index.toString()}
+              data={[1, 2, 3]}
+              keyExtractor={(_, index) => index.toString()}
               renderItem={() => <ReviewItemSkeleton />}
-              ListHeaderComponent={renderPostSection}
               showsVerticalScrollIndicator={false}
             />
           ) : (
             <FlatList
-              data={reviewdata}
+              data={postData}
               renderItem={renderItem}
               keyExtractor={item => item.id.toString()}
               keyboardDismissMode="none"
               keyboardShouldPersistTaps="always"
-              onEndReached={loadMoreReviews}
+              onEndReached={loadMorePosts}
               onEndReachedThreshold={0.5}
               onRefresh={handleRefresh}
               refreshing={refreshing}
               contentContainerStyle={{paddingBottom: 0}}
-              ListHeaderComponent={renderPostSection}
+              ListEmptyComponent={
+                !postLoading && postData.length === 0 ? (
+                  <View style={styles.footer}>
+                    <CustomText style={styles.emptyText}>
+                      아직 게시글이 없어요
+                    </CustomText>
+                  </View>
+                ) : null
+              }
               ListFooterComponent={
                 <View style={styles.footer}>
                   {loading && !isEnd ? (
                     <CustomText style={styles.emptyText}>Loading...</CustomText>
-                  ) : (
-                    !loading && reviewdata.length === 0 && null
-                  )}
+                  ) : null}
                 </View>
               }
             />
           )}
         </View>
+
         <BottomActionButton
           label={'리뷰 작성하기'}
           cancel={false}
           onPress={handleWriteReviewPress}
         />
       </SafeAreaView>
+
       <AlertComponent />
-      <Loading loading={loading} />
+      <Loading loading={loading || postLoading} />
+
       <PostReportBottomSheet
         sheetRef={postReportSheetRef}
         reasons={POST_REPORT_REASONS}
@@ -320,97 +279,18 @@ const StoreReviewScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    paddingTop: Platform.OS === 'ios' ? 0 : 15,
-    paddingHorizontal: 18,
-    borderBottomWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontFamily: 'Pretendard-SemiBold',
-    marginBottom: 15,
-    marginLeft: 15,
-    textAlign: 'center',
-    color: '#333', // ✅ 더 진한 색상 적용
-  },
-  MenuaddView: {
-    width: '100%',
-    marginTop: 10,
-
-    paddingHorizontal: 18,
-    paddingBottom: 10,
-
-    borderBottomWidth: 0.5,
-    borderColor: '#E5E5E5',
-  },
-  addButton: {
-    width: '100%',
-    alignItems: 'center',
-    borderRadius: 10,
-    backgroundColor: '#3CBBFF',
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: 'Pretendard-Bold',
-    padding: 16,
-  },
-  star: {
-    marginHorizontal: 3, // 별 사이 간격
-  },
-  loadMoreButton: {
-    alignItems: 'center',
-    paddingVertical: 20,
-    borderTopWidth: 1,
-    borderColor: '#E7E7E7',
-  },
-  loadMoreText: {
-    color: '#1E90FF',
-    fontFamily: 'Hakgyoansim Dunggeunmiso TTF B',
-    fontSize: 16,
-  },
+  container: {flex: 1, backgroundColor: '#fff'},
   footer: {
     marginVertical: 20,
     alignItems: 'center',
     height: 100,
   },
-  footerloading: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(194, 194, 194, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
   emptyText: {
     textAlign: 'center',
     marginVertical: 20,
-    fontFamily: 'Pretendard-Medium', // 커스텀 폰트 적용
+    fontFamily: 'Pretendard-Medium',
     fontSize: 20,
     color: '#c0c0c0',
-  },
-
-  postEmptyText: {
-    textAlign: 'center',
-    paddingBottom: 16,
-    fontFamily: 'Pretendard-Medium',
-    fontSize: 14,
-    color: '#c0c0c0',
-  },
-
-  modalContent: {
-    flex: 1,
-    width: '100%',
   },
 });
 

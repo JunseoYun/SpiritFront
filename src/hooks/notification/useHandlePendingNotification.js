@@ -4,6 +4,7 @@ import {navigate, resetTo} from '../../navigation/NavigationService';
 import {navigationRef} from '../../navigation/NavigationService';
 import {NotifiRead} from '../../api/notificationApi';
 import {ReviewgetbyGet} from '../../api/reviewApi';
+import {PostGetById} from '../../api/postApi';
 
 const useHandlePendingNotification = (
   loading,
@@ -32,8 +33,8 @@ const useHandlePendingNotification = (
         } = pendingNotification;
 
         if (
-          redirectType === 'REVIEW_DETAIL' &&
-          notificationType === 'STORE_REVIEW_CREATED'
+          redirectType === 'POST_DETAIL' &&
+          notificationType === 'STORE_TAG_POST_CREATED'
         ) {
           const body = pendingNotification?.body || '';
           let storename = '';
@@ -43,10 +44,11 @@ const useHandlePendingNotification = (
             storename = match[1];
           }
           try {
-            const response = await ReviewgetbyGet(redirectId);
-            navigate('StoreStack', {
-              screen: 'StoreReviewScreen',
-              params: {storeId: response.storeId, storename, isOwner: true},
+            const response = await PostGetById(redirectId);
+
+            navigate('PostDetailScreen', {
+              postId: response.id,
+              item: response,
             });
           } catch (er) {
             console.log(er);

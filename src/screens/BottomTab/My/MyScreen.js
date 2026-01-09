@@ -37,7 +37,7 @@ const MyScreen = ({navigation}) => {
   const invitationManager = route.params?.invitationManager;
   const [unreadNotification, setUnreadNotification] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [reviewCount, setReviewCount] = useState(0);
+  const [postCount, setPostCount] = useState(0);
   const {width: screenWidth} = useWindowDimensions();
   const reviewRef = useRef(null);
   const managerRef = useRef(null);
@@ -247,7 +247,7 @@ const MyScreen = ({navigation}) => {
   const renderProfileHeader = () => (
     <MyPageheader
       nickname={userdata.nickname}
-      postCount={reviewCount}
+      postCount={postCount}
       imageuri={userdata.imgUrl}
       handleImagePress={handleImagePress}
       onWritePress={handleWritePostPress}
@@ -382,7 +382,7 @@ const MyScreen = ({navigation}) => {
               onContentLayout={({nativeEvent}) => {
                 updateReviewHeight(nativeEvent.layout.height);
               }}
-              onCountChange={setReviewCount}
+              onCountChange={setPostCount}
               userProfile={{
                 nickname: userdata.nickname,
                 imageuri: userdata.imgUrl,
