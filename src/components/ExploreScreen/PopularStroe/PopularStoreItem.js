@@ -314,7 +314,7 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
                   marginLeft: 3,
                 },
               ]}>
-              ({Number(store.reviewCount ?? 0).toLocaleString('ko-KR')})
+              ({Number(store.postCount ?? 0).toLocaleString('ko-KR')})
             </CustomText>
           </View>
         </View>

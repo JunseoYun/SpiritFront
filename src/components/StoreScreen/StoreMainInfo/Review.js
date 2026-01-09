@@ -32,7 +32,7 @@ const Review = ({navigation, storeData}) => {
             {storeData?.rate}
           </CustomText>
           <CustomText style={styles.reviewtext}>
-            ({storeData?.reviewCount})
+            ({storeData?.postCount})
           </CustomText>
         </View>
         <Entypo

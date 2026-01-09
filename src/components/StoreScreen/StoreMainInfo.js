@@ -114,7 +114,7 @@ const StoreMainInfo = ({
           name: storedata?.name,
           id: storedata?.id,
           rate: storedata?.storeRate,
-          reviewCount: storedata?.reviewCount,
+          postCount: storedata?.postCount,
           isOwner: storedata?.isOwner,
         }}
       />

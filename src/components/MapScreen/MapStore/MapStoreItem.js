@@ -236,7 +236,7 @@ const MapStoreItem = ({
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <FontAwesomeIcon name="star" size={15} color="#FCC104" />
               <CustomText style={styles.storeRateText}>
-                {item.storeRate}({item.reviewCount})
+                {item.storeRate}({item.postCount})
               </CustomText>
             </View>
           </View>

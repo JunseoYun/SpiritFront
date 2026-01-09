@@ -16,6 +16,7 @@ import {ReviewgetbyGet} from '../../api/reviewApi';
 import {has_unread_notification} from '../../api/notificationApi';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import CustomText from '../../utils/CustomText';
+import {PostGetById} from '../../api/postApi';
 
 const NotificationCard = ({title, message, date, hasRead}) => {
   const textColorStyle = hasRead ? styles.readText : styles.unreadText;
@@ -216,21 +217,17 @@ const NotificationScreen = ({navigation}) => {
                     },
                   });
                 }
-                if (item.notificationType === 'STORE_REVIEW_CREATED') {
+                if (item.notificationType === 'STORE_TAG_POST_CREATED') {
                   const body = item.body || '';
                   let storename = '';
                   const match = body.match(/(.+?) 매장에/);
                   if (match) storename = match[1];
 
                   try {
-                    const response = await ReviewgetbyGet(item.redirectId);
-                    navigation.navigate('StoreStack', {
-                      screen: 'StoreReviewScreen',
-                      params: {
-                        storeId: response.storeId,
-                        storename,
-                        isOwner: true,
-                      },
+                    const response = await PostGetById(item.redirectId);
+                    navigation.navigate('PostDetailScreen', {
+                      postId: response.id,
+                      item: response,
                     });
                   } catch (er) {
                     console.log(er);
