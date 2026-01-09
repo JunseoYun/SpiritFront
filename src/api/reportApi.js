@@ -17,7 +17,7 @@ export const report_create = async data => {
 export const ReportMainget = async (target, targetId) => {
   try {
     const response = await axiosInstance.get(
-      `/report/get-by/target/${targetId}`, // 경로 수정
+      `/report/get-by/store-manager/${targetId}`, // 경로 수정
       {
         params: {
           target: target, // query로 target 보내기
@@ -35,7 +35,7 @@ export const ReportMainget = async (target, targetId) => {
 export const completeReport = async reportId => {
   try {
     const response = await axiosInstance.patch(
-      `/report/complete/${reportId}`,
+      `/report/complete/store-manager/${reportId}`,
       {},
     );
     return response.data.data;

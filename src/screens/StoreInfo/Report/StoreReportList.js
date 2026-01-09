@@ -154,7 +154,7 @@ const StoreReportList = () => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#FDFDFD',
+    backgroundColor: '#FFF',
   },
   container: {
     padding: 16,
