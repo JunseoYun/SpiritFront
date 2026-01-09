@@ -51,7 +51,6 @@ const PostItem = ({
   onSavedChange,
   isWriter = false,
   hideStoreBadge = false,
-  showRatingInTitleCycle = false,
 }) => {
   // console.log(item);
   const navigation = useNavigation();
@@ -177,19 +176,6 @@ const PostItem = ({
       }
       return items;
     }
-    if (showRatingInTitleCycle) {
-      if (item?.name) {
-        items.push({type: 'name', value: item.name});
-      }
-      if (formattedCreatedAt) {
-        items.push({type: 'meta', value: formattedCreatedAt});
-      }
-      if (hasRating) {
-        items.push({type: 'rating', value: formattedRating});
-      }
-      return items;
-    }
-
     if (item?.name) {
       items.push({type: 'name', value: item.name});
     }
@@ -205,7 +191,6 @@ const PostItem = ({
     hasRating,
     item?.name,
     item?.storeAddress,
-    showRatingInTitleCycle,
   ]);
   const titleCycleLength = titleCycleItems.length;
   const hasTitleCycle = titleCycleLength > 1;

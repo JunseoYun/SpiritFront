@@ -44,7 +44,7 @@ const StoreReportScreen = ({navigation}) => {
   const reportReasons = [
     '부적절한 언어 사용',
     '부적절한 사진 게시',
-    '플랫폼 가이드라인 위반',
+    // '플랫폼 가이드라인 위반',
     '기타 신고 문제',
   ];
 
@@ -56,7 +56,6 @@ const StoreReportScreen = ({navigation}) => {
     '중복된 매장': 'DUPLICATE_STORE',
     '부적절한 언어 사용': 'INAPPROPRIATE_LANGUAGE',
     '부적절한 사진 게시': 'INAPPROPRIATE_PHOTO',
-    '플랫폼 가이드라인 위반': 'VIOLATION_OF_GUIDELINES',
     '기타 신고 문제': 'ETC',
   };
 

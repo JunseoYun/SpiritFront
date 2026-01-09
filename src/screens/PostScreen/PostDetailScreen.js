@@ -610,7 +610,6 @@ const PostDetailScreen = ({navigation, route}) => {
           <PostItem
             item={postItem}
             onCommentPress={handleOpenCommentSheet}
-            showRatingInTitleCycle
             hideStoreBadge={screen === 'StoreReview' ? true : false}
           />
         )}

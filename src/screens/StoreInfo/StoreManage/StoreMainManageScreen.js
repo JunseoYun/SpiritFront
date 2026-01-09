@@ -273,7 +273,7 @@ const StoreMainManageScreen = ({
       },
       {
         key: 'report',
-        label: '제보·신고',
+        label: '제보',
         icon: {name: 'information-circle', size: 25, color: '#525D6F'},
         onPress: () =>
           navigation.navigate('StoreStack', {
