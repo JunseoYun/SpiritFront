@@ -92,7 +92,7 @@ const PostItem = ({
   const badgeDelayRef = useRef(null);
   const HEART_SIZE = 32;
   const HEART_END_OFFSET_X = 0;
-  const pendingLikeRef = useRef(false);
+  const [isLikePending, setIsLikePending] = useState(false);
   const pendingSaveRef = useRef(false);
   const READ_MORE_LABEL = '…더보기';
   const primaryImageLoadedRef = useRef(false);
@@ -396,11 +396,11 @@ const PostItem = ({
   }, [titleCycleIndex, titleCycleLength]);
 
   const handleLikePress = useCallback(async () => {
-    if (showFlyingHeart || pendingLikeRef.current || !item?.id) {
+    if (showFlyingHeart || isLikePending || !item?.id) {
       return;
     }
     const nextLiked = !liked;
-    pendingLikeRef.current = true;
+    setIsLikePending(true);
     setLiked(nextLiked);
     setLikes(prev => {
       const nextLikes = prev + (nextLiked ? 1 : -1);
@@ -417,9 +417,9 @@ const PostItem = ({
         return nextLikes;
       });
     } finally {
-      pendingLikeRef.current = false;
+      setIsLikePending(false);
     }
-  }, [emitPostLikeUpdate, item?.id, liked, showFlyingHeart]);
+  }, [emitPostLikeUpdate, isLikePending, item?.id, liked, showFlyingHeart]);
 
   const handleBookmarkPress = useCallback(async () => {
     if (!item?.id || pendingSaveRef.current) {
@@ -720,12 +720,12 @@ const PostItem = ({
       }
 
       const {pageX = 0, pageY = 0} = event?.nativeEvent ?? {};
-      if (liked || pendingLikeRef.current || !item?.id) {
+      if (liked || isLikePending || !item?.id) {
         triggerHeartFly(pageX, pageY);
         return;
       }
 
-      pendingLikeRef.current = true;
+      setIsLikePending(true);
       setLiked(true);
       setLikes(prev => {
         const nextLikes = prev + 1;
@@ -745,10 +745,17 @@ const PostItem = ({
           return nextLikes;
         });
       } finally {
-        pendingLikeRef.current = false;
+        setIsLikePending(false);
       }
     },
-    [emitPostLikeUpdate, item?.id, liked, showFlyingHeart, triggerHeartFly],
+    [
+      emitPostLikeUpdate,
+      isLikePending,
+      item?.id,
+      liked,
+      showFlyingHeart,
+      triggerHeartFly,
+    ],
   );
 
   const handleImagePress = useCallback(
@@ -1015,7 +1022,7 @@ const PostItem = ({
             ref={likeButtonRef}
             style={styles.actionButton}
             hitSlop={8}
-            disabled={showFlyingHeart || pendingLikeRef.current}
+            disabled={showFlyingHeart || isLikePending}
             onPress={handleLikePress}>
             <View ref={heartIconWrapperRef}>
               <HeartIcon

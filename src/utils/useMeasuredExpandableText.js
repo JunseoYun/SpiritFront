@@ -16,12 +16,14 @@ const useMeasuredExpandableText = ({
   const [isExpandable, setIsExpandable] = useState(false);
   const [hasMeasured, setHasMeasured] = useState(false);
 
+  const normalizedText = text ?? '';
+
   useLayoutEffect(() => {
     setIsExpanded(false);
-    setCollapsedContent(text ?? '');
+    setCollapsedContent(normalizedText);
     setIsExpandable(false);
-    setHasMeasured(false);
-  }, [text, maxLines]);
+    setHasMeasured(normalizedText.length === 0);
+  }, [normalizedText, maxLines]);
 
   const handleTextLayout = useCallback(
     event => {
@@ -62,7 +64,7 @@ const useMeasuredExpandableText = ({
 
   const contentForRender = useMemo(() => {
     if (isExpanded || !isExpandable) {
-      return text ?? '';
+      return normalizedText;
     }
 
     return (
@@ -77,7 +79,7 @@ const useMeasuredExpandableText = ({
     isExpanded,
     readMoreLabel,
     readMoreStyle,
-    text,
+    normalizedText,
   ]);
 
   const toggleExpanded = useCallback(() => {
