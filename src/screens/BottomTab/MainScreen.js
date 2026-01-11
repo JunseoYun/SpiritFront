@@ -104,8 +104,11 @@ const MainScreen = ({navigation}) => {
   const writeIconAnim = useRef(new Animated.Value(0)).current;
   const writeMenuAnim = useRef(new Animated.Value(0)).current;
   const headerTranslateY = useRef(new Animated.Value(0)).current;
+  const headerOpacity = useRef(new Animated.Value(1)).current;
   const headerHiddenRef = useRef(false);
   const lastScrollOffsetRef = useRef(0);
+  const headerScrollAccumulatorRef = useRef(0);
+  const lastScrollDirectionRef = useRef(0);
   const isSendingCommentRef = useRef(false);
   const isLoadingMoreCommentsRef = useRef(false);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -128,6 +131,10 @@ const MainScreen = ({navigation}) => {
     [],
   );
   const loadMorePadding = 24;
+  const HEADER_TOGGLE_THRESHOLD = 28;
+  const HEADER_ANIM_HIDE_DURATION = 300;
+  const HEADER_ANIM_SHOW_DURATION = 340;
+  const headerHideOffset = Math.max(0, headerHeight - insets.top);
   const mapPostItem = useCallback(post => {
     // console.log(post);
     return {
@@ -974,6 +981,7 @@ const MainScreen = ({navigation}) => {
       const offsetY = event.nativeEvent.contentOffset.y;
       const deltaY = offsetY - lastScrollOffsetRef.current;
       const absDelta = Math.abs(deltaY);
+      const direction = deltaY > 0 ? 1 : deltaY < 0 ? -1 : 0;
       scrollOffsetRef.current = offsetY;
       updateCenteredItem(offsetY);
 
@@ -984,32 +992,84 @@ const MainScreen = ({navigation}) => {
         setShowWriteLabel(shouldShowLabel);
       }
 
+      if (direction !== 0 && direction !== lastScrollDirectionRef.current) {
+        headerScrollAccumulatorRef.current = 0;
+        lastScrollDirectionRef.current = direction;
+      }
+      if (direction !== 0) {
+        headerScrollAccumulatorRef.current += absDelta;
+      }
+
       if (offsetY <= 0) {
+        headerScrollAccumulatorRef.current = 0;
         if (headerHiddenRef.current) {
           headerHiddenRef.current = false;
-          Animated.timing(headerTranslateY, {
-            toValue: 0,
-            duration: 220,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
-          }).start();
+          Animated.parallel([
+            Animated.timing(headerTranslateY, {
+              toValue: 0,
+              duration: HEADER_ANIM_SHOW_DURATION,
+              easing: Easing.out(Easing.cubic),
+              useNativeDriver: true,
+            }),
+            Animated.timing(headerOpacity, {
+              toValue: 1,
+              duration: HEADER_ANIM_SHOW_DURATION,
+              easing: Easing.out(Easing.cubic),
+              useNativeDriver: true,
+            }),
+          ]).start();
         }
-      } else if (absDelta > 6 && headerHeight > 0) {
-        const shouldHide = deltaY > 0;
-        if (shouldHide !== headerHiddenRef.current) {
-          headerHiddenRef.current = shouldHide;
-          Animated.timing(headerTranslateY, {
-            toValue: shouldHide ? -headerHeight : 0,
-            duration: shouldHide ? 180 : 220,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
-          }).start();
+      } else if (headerHeight > 0) {
+        const shouldToggle =
+          headerScrollAccumulatorRef.current >= HEADER_TOGGLE_THRESHOLD;
+        if (shouldToggle) {
+          if (direction > 0 && !headerHiddenRef.current) {
+            headerHiddenRef.current = true;
+            headerScrollAccumulatorRef.current = 0;
+            Animated.parallel([
+              Animated.timing(headerTranslateY, {
+                toValue: -headerHideOffset,
+                duration: HEADER_ANIM_HIDE_DURATION,
+                easing: Easing.inOut(Easing.cubic),
+                useNativeDriver: true,
+              }),
+              Animated.timing(headerOpacity, {
+                toValue: 0,
+                duration: HEADER_ANIM_HIDE_DURATION,
+                easing: Easing.inOut(Easing.cubic),
+                useNativeDriver: true,
+              }),
+            ]).start();
+          } else if (direction < 0 && headerHiddenRef.current) {
+            headerHiddenRef.current = false;
+            headerScrollAccumulatorRef.current = 0;
+            Animated.parallel([
+              Animated.timing(headerTranslateY, {
+                toValue: 0,
+                duration: HEADER_ANIM_SHOW_DURATION,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: true,
+              }),
+              Animated.timing(headerOpacity, {
+                toValue: 1,
+                duration: HEADER_ANIM_SHOW_DURATION,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: true,
+              }),
+            ]).start();
+          }
         }
       }
 
       lastScrollOffsetRef.current = offsetY;
     },
-    [updateCenteredItem, headerHeight, headerTranslateY],
+    [
+      updateCenteredItem,
+      headerHeight,
+      headerHideOffset,
+      headerTranslateY,
+      headerOpacity,
+    ],
   );
 
   useEffect(() => {
@@ -1060,9 +1120,10 @@ const MainScreen = ({navigation}) => {
 
   useEffect(() => {
     if (headerHeight > 0 && headerHiddenRef.current) {
-      headerTranslateY.setValue(-headerHeight);
+      headerTranslateY.setValue(-headerHideOffset);
+      headerOpacity.setValue(0);
     }
-  }, [headerHeight, headerTranslateY]);
+  }, [headerHeight, headerHideOffset, headerTranslateY, headerOpacity]);
 
   const cellRenderer = useCallback(
     ({item, index, style, onLayout, children, ...rest}) => (
@@ -1269,6 +1330,7 @@ const MainScreen = ({navigation}) => {
           {
             paddingTop: headerTopPadding + 6,
             transform: [{translateY: headerTranslateY}],
+            opacity: headerOpacity,
           },
         ]}>
         <View style={styles.headerRow}>
