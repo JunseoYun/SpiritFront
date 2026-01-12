@@ -45,7 +45,7 @@ const SearchBar = ({
             <CustomTextInput
               ref={inputRef}
               maxScale={1.1}
-              style={styles.textInput}
+              style={[styles.textInput, value.length > 0 && {marginRight: 30}]}
               placeholder={placeholder || '검색어를 입력해주세요.'}
               placeholderTextColor="#7E8081"
               value={value}
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontFamily: 'Pretendard-Regular',
-    marginRight: 30,
+    // marginRight: 30,
   },
   exploreButton: {
     width: 48,

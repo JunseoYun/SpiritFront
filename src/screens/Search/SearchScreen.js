@@ -26,6 +26,7 @@ import {useFocusEffect, CommonActions} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import RecentSearchItem from '../../components/SearchScreen/RecentSearchItem';
 import CustomText from '../../utils/CustomText';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const AVAILABLE_VALUE = '가능';
 const GROUP_VALUE = '단체 방문';
@@ -54,6 +55,7 @@ const SearchScreen = ({navigation, route}) => {
   const [filterInitialTab, setFilterInitialTab] = useState('거리');
   const [recentSearches, setRecentSearches] = useState([]);
   const preserveFiltersRef = useRef(route?.params?.preserveFilters === true);
+  const insets = useSafeAreaInsets();
   const originTabRef = useRef(
     route?.params?.prevTab || route?.params?.lastFocusedTab || null,
   );
@@ -292,10 +294,7 @@ const SearchScreen = ({navigation, route}) => {
   const storedRadiusLabel = formatRadiusLabel(
     typeof storedRadiusKm === 'number' ? storedRadiusKm : INITIAL_RADIUS_KM,
   );
-  const distanceLabel = getFilterValue(
-    '거리',
-    storedRadiusLabel,
-  );
+  const distanceLabel = getFilterValue('거리', storedRadiusLabel);
   const categoryValue = getFilterValue('카테고리', []);
   const categoryArray = toArrayVal(categoryValue);
   const categoryLabel = formatArrayLabel(categoryArray, '카테고리');
@@ -312,7 +311,7 @@ const SearchScreen = ({navigation, route}) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, {paddingTop: insets.top}]}>
         <SearchBar
           value={searchStoreName}
           onChangeText={setSearchStoreName}
@@ -353,7 +352,7 @@ const SearchScreen = ({navigation, route}) => {
         {recentSearches.length > 0 && (
           <View style={styles.recentWrap}>
             <ScrollView
-              contentContainerStyle={{paddingBottom: 40}}
+              contentContainerStyle={{paddingBottom: insets.bottom + 20}}
               showsVerticalScrollIndicator={false}
               keyboardDismissMode="on-drag"
               keyboardShouldPersistTaps="handled">
@@ -399,7 +398,7 @@ const SearchScreen = ({navigation, route}) => {
           onApply={filters => setPendingFilters(filters)}
         />
         <Loading loading={isRefreshing || loading} />
-      </SafeAreaView>
+      </View>
     </TouchableWithoutFeedback>
   );
 };

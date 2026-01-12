@@ -387,10 +387,10 @@ const PopularStoreItem = ({store, location, navigation, drinkType}) => {
 const styles = StyleSheet.create({
   itemContainer: {
     width: '100%',
-    borderColor: '#EDEDED',
-    borderBottomWidth: 1.5,
+    borderColor: ColorUtil.border,
+    borderBottomWidth: 1,
     backgroundColor: 'white',
-    paddingVertical: 15,
+    paddingVertical: 20,
   },
   imageView: {
     width: '100%',

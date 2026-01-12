@@ -17,6 +17,7 @@ import {has_unread_notification} from '../../api/notificationApi';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import CustomText from '../../utils/CustomText';
 import {PostGetById} from '../../api/postApi';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const NotificationCard = ({title, message, date, hasRead}) => {
   const textColorStyle = hasRead ? styles.readText : styles.unreadText;
@@ -59,7 +60,8 @@ const NotificationScreen = ({navigation}) => {
   const [clickedItemId, setClickedItemId] = useState(null);
   const [unreadNotification, setUnreadNotification] = useState(false);
   const {showToast} = useToast();
-  const {bottom} = useSafeAndroidInsets();
+  const insets = useSafeAreaInsets();
+
   useEffect(() => {
     setNotifidata([]); // 기존 데이터 초기화
     setPage(0);
@@ -151,7 +153,7 @@ const NotificationScreen = ({navigation}) => {
   }
 
   return (
-    <SafeAreaView style={[styles.container, {paddingBottom: bottom}]}>
+    <View style={[styles.container]}>
       <FlatList
         data={notifidata}
         keyExtractor={item => item.id.toString()}
@@ -298,7 +300,10 @@ const NotificationScreen = ({navigation}) => {
         onRefresh={handleRefresh}
         refreshing={refreshing}
         onEndReachedThreshold={0.5}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          {paddingBottom: insets.bottom},
+        ]}
         ListEmptyComponent={
           !loading && notifidata.length === 0 ? (
             <View style={styles.footer}>
@@ -335,7 +340,7 @@ const NotificationScreen = ({navigation}) => {
         />
       )}
       <Loading loading={refreshing || loading} />
-    </SafeAreaView>
+    </View>
   );
 };
 
