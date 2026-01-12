@@ -1,12 +1,14 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
   DeviceEventEmitter,
-  Text,
   StyleSheet,
   SafeAreaView,
   View,
   ScrollView,
+  Platform,
+  StatusBar,
 } from 'react-native';
+import ImagePicker from 'react-native-image-crop-picker';
 import {Userdataget} from '../../../api/userApi';
 import {Userimgpost} from '../../../api/userApi';
 import {Userimgdelete} from '../../../api/userApi';
@@ -14,11 +16,19 @@ import useCustomAlert from '../../../hooks/useCustomAlert';
 
 import CFImage from '../../../components/ConfigScreen/CFImage';
 import toFileField from '../../../utils/toFileField';
-import CFModal from '../../../components/ConfigScreen/CFModal';
 import CFActionbtn from '../../../components/ConfigScreen/CFActionbtn';
 import CFUserinfo from '../../../components/ConfigScreen/CFUserinfo';
 import Loading from '../../../hooks/Loading';
 import AppInfo from '../../../components/ExploreScreen/AppInfo';
+import ImagePickermodal from '../../../hooks/ImagePickermodal';
+import {
+  IMAGE_CROPPER_TEXTS,
+  IMAGE_PICKER_TEXTS,
+} from '../../../constants/imagePickerLabels';
+import {
+  requestCameraPermission,
+  requestPhotoPermission,
+} from '../../../hooks/usePhotopermis';
 
 const ConfigScreen = ({navigation}) => {
   const [userdata, setUserdata] = useState(null);
@@ -73,15 +83,10 @@ const ConfigScreen = ({navigation}) => {
         });
       } catch (error) {}
       setIsModalVisible(false);
-      showAlert({
-        title: '프로필 변경 성공',
-        message: '프로필이 성공적으로 변경되었습니다!',
-        onConfirm: () => {
-          navigation.reset({
-            index: 0, // 초기 화면 인덱스
-            routes: [{name: 'MyScreen'}], // 이동할 화면
-          });
-        },
+
+      navigation.reset({
+        index: 0, // 초기 화면 인덱스
+        routes: [{name: 'MyScreen'}], // 이동할 화면
       });
     } catch (error) {
       handleError(error, showAlert);
@@ -109,15 +114,9 @@ const ConfigScreen = ({navigation}) => {
         });
       } catch (error) {}
 
-      showAlert({
-        title: '프로필 삭제',
-        message: '프로필이 성공적으로 삭제되었습니다!',
-        onConfirm: () => {
-          navigation.reset({
-            index: 0, // 초기 화면 인덱스
-            routes: [{name: 'MyScreen'}], // 이동할 화면
-          });
-        },
+      navigation.reset({
+        index: 0, // 초기 화면 인덱스
+        routes: [{name: 'MyScreen'}], // 이동할 화면
       });
     } catch (error) {
       handleError(error, showAlert);
@@ -165,6 +164,63 @@ const ConfigScreen = ({navigation}) => {
     return <Loading loading={true} />;
   }
 
+  const ensurePermission = async type => {
+    const hasPermission =
+      type === 'camera'
+        ? await requestCameraPermission()
+        : await requestPhotoPermission();
+    if (!hasPermission) {
+      onPressModalClose();
+    }
+    return hasPermission;
+  };
+
+  const prepareAndroidStatusBar = () => {
+    if (Platform.OS === 'android') {
+      StatusBar.setTranslucent(false);
+    }
+  };
+
+  const handleCameraPick = async () => {
+    const hasPermission = await ensurePermission('camera');
+    if (!hasPermission) return;
+    prepareAndroidStatusBar();
+    try {
+      const image = await ImagePicker.openCamera({
+        compressImageQuality: 0.95,
+        compressImageMaxWidth: 2160,
+        compressImageMaxHeight: 2160,
+        cropping: true,
+        mediaType: 'photo',
+        ...IMAGE_PICKER_TEXTS,
+        ...IMAGE_CROPPER_TEXTS,
+      });
+      UserImagepost(image);
+    } catch (error) {
+      console.error('Camera picker error:', error);
+    }
+  };
+
+  const handleGalleryPick = async () => {
+    const hasPermission = await ensurePermission('gallery');
+    if (!hasPermission) return;
+    prepareAndroidStatusBar();
+    try {
+      const image = await ImagePicker.openPicker({
+        compressImageQuality: 0.95,
+        compressImageMaxWidth: 2160,
+        compressImageMaxHeight: 2160,
+        cropping: true,
+        mediaType: 'photo',
+        ...IMAGE_PICKER_TEXTS,
+        ...IMAGE_CROPPER_TEXTS,
+      });
+      UserImagepost(image);
+    } catch (error) {
+      console.error('Image picker error:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView ref={scrollRef}>
@@ -178,11 +234,12 @@ const ConfigScreen = ({navigation}) => {
           <AppInfo scrollRef={scrollRef} navigation={navigation} />
         </View>
         <CFActionbtn navigation={navigation} />
-        <CFModal
-          isVisible={isModalVisible}
-          onClose={() => setIsModalVisible(false)}
-          onUpdate={UserImagepost}
-          onDelete={UserImagedelete}
+        <ImagePickermodal
+          isBottomSheetVisible={isModalVisible}
+          setBottomSheetVisible={setIsModalVisible}
+          handleCameraPick={handleCameraPick}
+          handleGalleryPick={handleGalleryPick}
+          handleDelete={UserImagedelete}
         />
       </ScrollView>
 
