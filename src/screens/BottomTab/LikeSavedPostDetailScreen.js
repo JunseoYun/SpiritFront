@@ -38,8 +38,12 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
     initialIndex: routeInitialIndex = 0,
     userProfile,
   } = route.params || {};
-  const currentUserProfileImage =
-    userProfile?.imageuri ?? userProfile?.imgUrl ?? null;
+  const [currentUserProfileImage, setCurrentUserProfileImage] = useState(
+    userProfile?.imageuri ?? userProfile?.imgUrl ?? null,
+  );
+  const [currentUserNickname, setCurrentUserNickname] = useState(
+    userProfile?.nickname ?? '',
+  );
   const listRef = useRef(null);
   const {showToast} = useToast();
   const [showList, setShowList] = useState(false);
@@ -85,6 +89,19 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
   useEffect(() => {
     setSavedPosts(posts);
   }, [posts]);
+
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener(
+      'user-profile-image-updated',
+      payload => {
+        setCurrentUserProfileImage(payload?.imageUrl ?? null);
+        if (payload?.nickname !== undefined) {
+          setCurrentUserNickname(payload?.nickname ?? '');
+        }
+      },
+    );
+    return () => sub.remove();
+  }, []);
 
   const initialIndex = useMemo(() => {
     if (!savedPosts.length) return 0;
@@ -424,7 +441,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
             content,
             createdAt: new Date().toISOString(),
             writerImgUrl: currentUserProfileImage ?? null,
-            writerNickname: userProfile?.nickname || '나',
+            writerNickname: currentUserNickname || '나',
             isWriter: true,
           };
           const mappedReply = mapCommentItem(fallbackReply, rootCommentId);
@@ -475,7 +492,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
             content,
             createdAt: new Date().toISOString(),
             writerImgUrl: currentUserProfileImage ?? null,
-            writerNickname: userProfile?.nickname || '나',
+            writerNickname: currentUserNickname || '나',
             isWriter: true,
           };
           const mappedComment = mapCommentItem(fallbackComment);
@@ -497,7 +514,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
       fetchComments,
       mapCommentItem,
       selectedFeed?.id,
-      userProfile?.nickname,
+      currentUserNickname,
       currentUserProfileImage,
       updatePostCommentCount,
     ],
@@ -571,22 +588,19 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
     navigation.goBack();
   }, [navigation]);
 
-  const handleSavedChange = useCallback(
-    (postItem, nextSaved) => {
-      const targetId = postItem?.id;
-      if (!targetId) {
-        return;
-      }
-      setSavedPosts(prev =>
-        prev.map(item =>
-          String(item?.id) === String(targetId)
-            ? {...item, isSaved: nextSaved}
-            : item,
-        ),
-      );
-    },
-    [],
-  );
+  const handleSavedChange = useCallback((postItem, nextSaved) => {
+    const targetId = postItem?.id;
+    if (!targetId) {
+      return;
+    }
+    setSavedPosts(prev =>
+      prev.map(item =>
+        String(item?.id) === String(targetId)
+          ? {...item, isSaved: nextSaved}
+          : item,
+      ),
+    );
+  }, []);
 
   const onViewableItemsChanged = useRef(({viewableItems}) => {
     const first = viewableItems?.[0];
@@ -785,11 +799,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
             onPress={handleBackPress}
             hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}
             style={styles.headerSide}>
-            <Ionicons
-              name="arrow-back-outline"
-              size={23}
-              color="#333"
-            />
+            <Ionicons name="arrow-back-outline" size={23} color="#333" />
           </Pressable>
           <Text style={styles.headerTitle}>게시글</Text>
           <View style={styles.headerSide} />
