@@ -1,5 +1,12 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Text, StyleSheet, SafeAreaView, View, ScrollView} from 'react-native';
+import {
+  DeviceEventEmitter,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  View,
+  ScrollView,
+} from 'react-native';
 import {Userdataget} from '../../../api/userApi';
 import {Userimgpost} from '../../../api/userApi';
 import {Userimgdelete} from '../../../api/userApi';
@@ -53,6 +60,18 @@ const ConfigScreen = ({navigation}) => {
       if (f) formData.append('file', f);
 
       await Userimgpost(formData); // API 호출
+      try {
+        const nextData = await Userdataget();
+        const imageUrl =
+          nextData?.imgUrl ??
+          nextData?.profileImgUrl ??
+          nextData?.profileImage ??
+          null;
+        DeviceEventEmitter.emit('user-profile-image-updated', {
+          imageUrl,
+          nickname: nextData?.nickname ?? null,
+        });
+      } catch (error) {}
       setIsModalVisible(false);
       showAlert({
         title: '프로필 변경 성공',
@@ -77,6 +96,18 @@ const ConfigScreen = ({navigation}) => {
 
     try {
       await Userimgdelete();
+      try {
+        const nextData = await Userdataget();
+        const imageUrl =
+          nextData?.imgUrl ??
+          nextData?.profileImgUrl ??
+          nextData?.profileImage ??
+          null;
+        DeviceEventEmitter.emit('user-profile-image-updated', {
+          imageUrl,
+          nickname: nextData?.nickname ?? null,
+        });
+      } catch (error) {}
 
       showAlert({
         title: '프로필 삭제',

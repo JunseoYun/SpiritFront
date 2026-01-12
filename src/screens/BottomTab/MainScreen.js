@@ -218,6 +218,19 @@ const MainScreen = ({navigation}) => {
   }, []);
 
   useEffect(() => {
+    const sub = DeviceEventEmitter.addListener(
+      'user-profile-image-updated',
+      payload => {
+        setCurrentUserProfileImage(payload?.imageUrl ?? null);
+        if (payload?.nickname !== undefined) {
+          setCurrentUserNickname(payload?.nickname ?? '');
+        }
+      },
+    );
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
     const checkStoredNotification = async () => {
       const stored = await AsyncStorage.getItem('PENDING_NOTIFICATION');
       if (stored) {

@@ -81,6 +81,19 @@ const PostDetailScreen = ({navigation, route}) => {
   }, []);
 
   useEffect(() => {
+    const sub = DeviceEventEmitter.addListener(
+      'user-profile-image-updated',
+      payload => {
+        setCurrentUserProfileImage(payload?.imageUrl ?? null);
+        if (payload?.nickname !== undefined) {
+          setCurrentUserNickname(payload?.nickname ?? '');
+        }
+      },
+    );
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
     let isMounted = true;
     if (!postId) {
       return () => {

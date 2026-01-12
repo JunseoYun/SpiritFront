@@ -42,8 +42,12 @@ const MyPostDetailScreen = ({navigation, route}) => {
     initialIndex: routeInitialIndex = 0,
     initialImageRatio: routeInitialImageRatio,
   } = route.params || {};
-  const currentUserProfileImage =
-    userProfile?.imageuri ?? userProfile?.imgUrl ?? null;
+  const [currentUserProfileImage, setCurrentUserProfileImage] = useState(
+    userProfile?.imageuri ?? userProfile?.imgUrl ?? null,
+  );
+  const [currentUserNickname, setCurrentUserNickname] = useState(
+    userProfile?.nickname ?? '',
+  );
   const {showAlert, AlertComponent} = useCustomAlert();
   const listRef = useRef(null);
   const [showList, setShowList] = useState(false);
@@ -181,6 +185,19 @@ const MyPostDetailScreen = ({navigation, route}) => {
       active = false;
     };
   }, [initialIndex, postList, routeInitialImageRatio]);
+
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener(
+      'user-profile-image-updated',
+      payload => {
+        setCurrentUserProfileImage(payload?.imageUrl ?? null);
+        if (payload?.nickname !== undefined) {
+          setCurrentUserNickname(payload?.nickname ?? '');
+        }
+      },
+    );
+    return () => sub.remove();
+  }, []);
 
   const feedItems = useMemo(
     () =>
@@ -548,7 +565,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
             content,
             createdAt: new Date().toISOString(),
             writerImgUrl: currentUserProfileImage ?? null,
-            writerNickname: userProfile?.nickname || '나',
+            writerNickname: currentUserNickname || '나',
             isWriter: true,
           };
           const mappedReply = mapCommentItem(fallbackReply, rootCommentId);
@@ -599,7 +616,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
             content,
             createdAt: new Date().toISOString(),
             writerImgUrl: currentUserProfileImage ?? null,
-            writerNickname: userProfile?.nickname || '나',
+            writerNickname: currentUserNickname || '나',
             isWriter: true,
           };
           const mappedComment = mapCommentItem(fallbackComment);
@@ -621,7 +638,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
       fetchComments,
       mapCommentItem,
       selectedFeed?.id,
-      userProfile?.nickname,
+      currentUserNickname,
       currentUserProfileImage,
       updatePostCommentCount,
     ],
