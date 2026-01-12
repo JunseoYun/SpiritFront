@@ -39,6 +39,7 @@ const PostReportBottomSheet = ({
       enableDynamicSizing
       enablePanDownToClose
       backdropComponent={renderBackdrop}
+      containerStyle={styles.container}
       backgroundStyle={styles.sheet}
       handleIndicatorStyle={styles.handle}>
       <BottomSheetView
@@ -91,6 +92,10 @@ const PostReportBottomSheet = ({
 };
 
 const styles = StyleSheet.create({
+  container: {
+    zIndex: 20000,
+    elevation: 20000,
+  },
   sheet: {
     backgroundColor: '#fff',
   },

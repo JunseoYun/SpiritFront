@@ -8,6 +8,7 @@ import {
   Easing,
   Image,
   Keyboard,
+  ToastAndroid,
   PanResponder,
   Platform,
   Pressable,
@@ -222,7 +223,7 @@ const PostCommentScreen = ({navigation, route}) => {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [selectedMenuTarget, setSelectedMenuTarget] = useState(null);
   const [reportTargetItem, setReportTargetItem] = useState(null);
-  const [menuPosition, setMenuPosition] = useState({top: 60});
+  const [menuPosition, setMenuPosition] = useState({top: 60, right: 16});
   const [selectedReportReason, setSelectedReportReason] = useState(null);
   const [loadingReplies, setLoadingReplies] = useState({});
   const reportSheetRef = useRef(null);
@@ -248,6 +249,8 @@ const PostCommentScreen = ({navigation, route}) => {
 
   const layoutMapRef = useRef({});
   const replyListLayoutRef = useRef({});
+  const itemMeasureMapRef = useRef({});
+  const sheetContainerRef = useRef(null);
   const setItemLayoutWithSize = useCallback((id, y, height) => {
     if (!id) return;
     layoutMapRef.current[id] = {y, height};
@@ -744,6 +747,9 @@ const PostCommentScreen = ({navigation, route}) => {
         );
       }
       showToast('삭제가 완료되었습니다.');
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('삭제가 완료되었습니다.', ToastAndroid.SHORT);
+      }
     },
     [fetchComments, handleRequestReplies, postId, showToast],
   );
@@ -987,14 +993,23 @@ const PostCommentScreen = ({navigation, route}) => {
       }
 
       setSelectedMenuTarget(targetItem);
-      const layout = layoutMapRef.current[targetItem?.id];
-      if (layout && typeof layout.y === 'number') {
-        const rawTop = SHEET_HEADER_HEIGHT + layout.y - scrollOffsetRef.current;
-        setMenuPosition({top: Math.max(60, rawTop)});
+      const targetId = targetItem?.id;
+      const targetNode = targetId ? itemMeasureMapRef.current[targetId] : null;
+      if (
+        targetNode?.measureInWindow &&
+        sheetContainerRef.current?.measureInWindow
+      ) {
+        targetNode.measureInWindow((x = 0, y = 0, width = 0, height = 0) => {
+          sheetContainerRef.current.measureInWindow((sx = 0, sy = 0) => {
+            const targetTop = Math.max(60, y - sy);
+            setMenuPosition({top: targetTop, right: 16});
+            setShowMoreMenu(true);
+          });
+        });
       } else {
-        setMenuPosition({top: 60});
+        setMenuPosition({top: 60, right: 16});
+        setShowMoreMenu(true);
       }
-      setShowMoreMenu(true);
     },
     [handleDeletePress, handleReportPress, isPostWriter],
   );
@@ -1383,7 +1398,8 @@ const PostCommentScreen = ({navigation, route}) => {
           styles.sheetContainer,
           {opacity: isLayoutReady ? 1 : 0},
           {height: sheetHeightValue, transform: [{translateY: sheetTranslate}]},
-        ]}>
+        ]}
+        ref={sheetContainerRef}>
         <View style={styles.sheetHandle} {...panResponder.panHandlers}>
           <View style={styles.commentSheetHandleIndicator} />
         </View>
@@ -1413,7 +1429,11 @@ const PostCommentScreen = ({navigation, route}) => {
         {showMoreMenu ? (
           <>
             <Pressable style={styles.moreMenuOverlay} onPress={closeMoreMenu} />
-            <View style={[styles.moreMenu, {top: menuPosition.top}]}>
+            <View
+              style={[
+                styles.moreMenu,
+                {top: menuPosition.top, right: menuPosition.right},
+              ]}>
               {!selectedMenuTarget?.isMine ? (
                 <Pressable
                   style={styles.moreMenuItem}
@@ -1560,6 +1580,11 @@ const PostCommentScreen = ({navigation, route}) => {
                       isMenuTarget ? styles.commentItemSelected : null,
                     ]}
                     onLongPress={() => handleCommentLongPress(comment)}
+                    ref={node => {
+                      if (node) {
+                        itemMeasureMapRef.current[comment.id] = node;
+                      }
+                    }}
                     onLayout={event => {
                       const {y, height} = event.nativeEvent.layout;
                       setItemLayoutWithSize(comment.id, y, height);
@@ -1657,6 +1682,11 @@ const PostCommentScreen = ({navigation, route}) => {
                                 : null,
                             ]}
                             onLongPress={() => handleCommentLongPress(reply)}
+                            ref={node => {
+                              if (node) {
+                                itemMeasureMapRef.current[reply.id] = node;
+                              }
+                            }}
                             onLayout={event => {
                               const {y} = event.nativeEvent.layout;
                               setReplyListLayout(reply.id, y);
