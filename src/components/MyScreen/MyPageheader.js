@@ -39,7 +39,7 @@ const MyPageheader = ({
             <FontAwesomeIcon name="angle-right" size={20} color="#9CA3AF" />
           </View>
 
-          <CustomText style={styles.meta}>게시글 · {postCount}</CustomText>
+          <CustomText style={styles.meta}>게시글 {postCount}</CustomText>
         </Pressable>
 
         {/* Right : Write */}
