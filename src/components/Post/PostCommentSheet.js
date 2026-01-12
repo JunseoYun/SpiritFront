@@ -72,7 +72,7 @@ const CommentFooter = ({
     };
 
     const showSub = Keyboard.addListener(showEvent, event => {
-      const targetPadding = 0;
+      const targetPadding = Platform.OS === 'ios' ? 5 : 0;
       animatePadding(targetPadding, event?.duration);
     });
     const hideSub = Keyboard.addListener(hideEvent, event => {
