@@ -3,6 +3,7 @@ import {View, Pressable, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import FastImage from 'react-native-fast-image';
 import CustomText from '../../utils/CustomText';
+import ColorUtil from '../../utils/ColorUtil';
 
 const MyPageheader = ({
   nickname,
@@ -69,6 +70,8 @@ const styles = StyleSheet.create({
     height: 74,
     borderRadius: 50,
     backgroundColor: '#F3F4F6',
+    borderColor: ColorUtil.border,
+    borderWidth: 0.5,
   },
 
   textArea: {
