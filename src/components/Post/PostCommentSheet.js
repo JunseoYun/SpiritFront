@@ -811,7 +811,10 @@ const PostCommentSheet = forwardRef(
             scrollEnabled={!showMoreMenu}
             scrollEventThrottle={16}
             onScroll={handleCommentScroll}
-            contentContainerStyle={[styles.commentSheetContent]}>
+            contentContainerStyle={[
+              styles.commentSheetContent,
+              {paddingBottom: insets.bottom + 70},
+            ]}>
             {commentList.length === 0 && isLoadingComments ? (
               <View style={styles.commentLoadingContainer}>
                 <ActivityIndicator size="small" color="#9AA1AE" />
@@ -1322,7 +1325,7 @@ const styles = StyleSheet.create({
   },
   commentSheetContent: {
     paddingTop: 12,
-    paddingBottom: 80,
+    paddingBottom: 100,
     gap: 18,
   },
   commentSortRow: {
@@ -1330,10 +1333,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     alignItems: 'center',
     alignSelf: 'flex-end',
-    gap: 18,
+    gap: 10,
   },
   commentSortText: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: 'Pretendard-Medium',
     color: '#9AA1AE',
   },
