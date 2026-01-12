@@ -164,6 +164,13 @@ const ConfigScreen = ({navigation}) => {
     return <Loading loading={true} />;
   }
 
+  const resolvedProfileImage =
+    userdata?.imgUrl ?? userdata?.profileImgUrl ?? userdata?.profileImage;
+  const hasProfileImage =
+    typeof resolvedProfileImage === 'string' &&
+    resolvedProfileImage.trim().length > 0 &&
+    !resolvedProfileImage.includes('default_profile');
+
   const ensurePermission = async type => {
     const hasPermission =
       type === 'camera'
@@ -239,7 +246,7 @@ const ConfigScreen = ({navigation}) => {
           setBottomSheetVisible={setIsModalVisible}
           handleCameraPick={handleCameraPick}
           handleGalleryPick={handleGalleryPick}
-          handleDelete={UserImagedelete}
+          handleDelete={hasProfileImage ? UserImagedelete : undefined}
         />
       </ScrollView>
 
