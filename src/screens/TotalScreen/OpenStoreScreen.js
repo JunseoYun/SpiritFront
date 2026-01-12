@@ -25,6 +25,7 @@ import TotalItemSkeleton from '../../components/TotalScreen/TotalSkeleton/TotalI
 import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 import CustomText from '../../utils/CustomText';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const OpenStoreScreen = ({navigation}) => {
   const route = useRoute();
@@ -37,6 +38,7 @@ const OpenStoreScreen = ({navigation}) => {
   const [totalpage, setTotalpage] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [firstloading, setFirstloading] = useState(true);
+  const insets = useSafeAreaInsets();
   const {
     scrollRef,
     visible: showScrollToTop,
@@ -115,8 +117,7 @@ const OpenStoreScreen = ({navigation}) => {
   );
 
   return (
-    <SafeAreaView
-      style={{flex: 1, paddingBottom: bottom, backgroundColor: '#fff'}}>
+    <View style={styles.container}>
       {firstloading || refreshing ? (
         <FlatList
           data={[1, 2, 3]} // 임의의 더미 데이터
@@ -131,7 +132,10 @@ const OpenStoreScreen = ({navigation}) => {
           renderItem={renderStoreItem}
           keyExtractor={(item, index) => `${item.id}-${index}`} // 고유 키 생성
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollViewContent}
+          contentContainerStyle={[
+            styles.scrollViewContent,
+            {paddingBottom: insets.bottom + 20},
+          ]}
           initialNumToRender={10} // 처음 렌더링할 개수 (기본값: 10)
           maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
           windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
@@ -165,11 +169,15 @@ const OpenStoreScreen = ({navigation}) => {
         onPress={scrollToTop}
       />
       <Loading loading={loading || refreshing} />
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
   scrollViewContent: {
     paddingBottom: 24,
   },

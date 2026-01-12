@@ -18,6 +18,7 @@ import StoreItemSkeleton from '../../components/CategoryTapScreen/StoreItemSkele
 import {normalizeFont} from '../../hooks/normalizeFont';
 import Feather from 'react-native-vector-icons/Feather';
 import CustomText from '../../utils/CustomText';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const CategoryTapScreen = ({navigation, route}) => {
   const {categoryname, location} = route.params;
@@ -35,6 +36,7 @@ const CategoryTapScreen = ({navigation, route}) => {
   const allowLoadMore = useRef(false);
   const onEndReachedCalledDuringMomentum = useRef(false);
   const scrollRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
   const fetchStores = async (page = 0, reset = false) => {
     if (loading || (isEnd && !reset)) return;
@@ -133,75 +135,78 @@ const CategoryTapScreen = ({navigation, route}) => {
   };
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
-      <View>
-        {firstloading ? (
-          <FlatList
-            data={[1, 2, 3, 4]} // 더미 데이터
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={() => <StoreItemSkeleton loading={loading} />}
-            showsVerticalScrollIndicator={false}
-          />
-        ) : (
-          <FlatList
-            ref={scrollRef}
-            data={stores}
-            renderItem={({item}) => (
+    <View style={{flex: 1, backgroundColor: 'white'}}>
+      {firstloading ? (
+        <FlatList
+          data={[1, 2, 3, 4]} // 더미 데이터
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={() => <StoreItemSkeleton loading={loading} />}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <FlatList
+          ref={scrollRef}
+          data={stores}
+          renderItem={({item}) => (
+            <Pressable
+              onPress={() => {
+                navigation.navigate('StoreStack', {
+                  screen: 'StoreMainScreen',
+                  params: {storeId: item.id},
+                });
+              }}>
               <StoreItem
                 store={item}
                 location={location}
-                navigation={navigation}
               />
-            )}
-            keyExtractor={item =>
-              `${categoryname}-${item.id}-${drinkType}-${priceOrder}`
+            </Pressable>
+          )}
+          keyExtractor={item =>
+            `${categoryname}-${item.id}-${drinkType}-${priceOrder}`
+          }
+          onMomentumScrollBegin={() => {
+            onEndReachedCalledDuringMomentum.current = false;
+          }}
+          onEndReached={() => {
+            if (
+              !onEndReachedCalledDuringMomentum.current &&
+              allowLoadMore.current
+            ) {
+              loadMoreStores();
+              onEndReachedCalledDuringMomentum.current = true;
             }
-            onMomentumScrollBegin={() => {
-              onEndReachedCalledDuringMomentum.current = false;
-            }}
-            onEndReached={() => {
-              if (
-                !onEndReachedCalledDuringMomentum.current &&
-                allowLoadMore.current
-              ) {
-                loadMoreStores();
-                onEndReachedCalledDuringMomentum.current = true;
-              }
-            }}
-            onEndReachedThreshold={0.4}
-            initialNumToRender={10}
-            maxToRenderPerBatch={5}
-            windowSize={5}
-            removeClippedSubviews={Platform.OS === 'android'}
-            ListEmptyComponent={
-              !loading && stores.length === 0 ? (
-                <View>
-                  <CustomText style={styles.emptyText}>
-                    주변에 등록된 술집이 없어요
-                  </CustomText>
-                  <Pressable
-                    style={styles.button}
-                    onPress={() => {
-                      navigation.navigate('SetLocationScreen');
-                    }}>
-                    <CustomText style={styles.noneText}>
-                      위치 변경하기
-                    </CustomText>
-                    <Feather name={'chevron-right'} size={18} color="#555" />
-                  </Pressable>
-                </View>
-              ) : null
-            }
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            contentContainerStyle={{paddingBottom: 70}}
-          />
-        )}
+          }}
+          onEndReachedThreshold={0.4}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
+          ListEmptyComponent={
+            !loading && stores.length === 0 ? (
+              <View>
+                <CustomText style={styles.emptyText}>
+                  주변에 등록된 술집이 없어요
+                </CustomText>
+                <Pressable
+                  style={styles.button}
+                  onPress={() => {
+                    navigation.navigate('SetLocationScreen');
+                  }}>
+                  <CustomText style={styles.noneText}>위치 변경하기</CustomText>
+                  <Feather name={'chevron-right'} size={18} color="#555" />
+                </Pressable>
+              </View>
+            ) : null
+          }
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          contentContainerStyle={{paddingBottom: insets.bottom + 20}}
+        />
+      )}
 
-        {/* 로딩 오버레이 */}
-        <Loading loading={loading} />
-      </View>
-    </SafeAreaView>
+      {/* 로딩 오버레이 */}
+      <Loading loading={loading} />
+    </View>
   );
 };
 

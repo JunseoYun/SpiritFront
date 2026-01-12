@@ -1,15 +1,16 @@
 // src/screens/TermsAgreeScreen.js
 
 import React, {useState} from 'react';
-import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
+import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import PrivacyMenu from '../../components/Agreement/Privacy/PrivacyMenu';
 import Privacy_v20250401 from '../../components/Agreement/Privacy/Privacy_v20250401';
 import CustomText from '../../utils/CustomText';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const PrivacyAgreeScreen = ({}) => {
   const [selected, setSelected] = useState('[현행] 2025년 1월 28일 시행안'); // 선택된 메뉴
   const [ActiveComponent, setActiveComponent] = useState(<Privacy_v20250401 />); // 표시할 컴포넌트
-
+  const insets = useSafeAreaInsets();
   const handleMenuSelect = option => {
     setSelected(option);
     switch (option) {
@@ -25,19 +26,19 @@ const PrivacyAgreeScreen = ({}) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container]}>
       {/* 분리된 MenuComponent 사용 */}
       <PrivacyMenu selected={selected} onSelect={handleMenuSelect} />
-
       {/* 선택된 약관 표시 */}
-      <View style={styles.contentContainer}>{ActiveComponent}</View>
-    </SafeAreaView>
+      <ScrollView contentContainerStyle={{paddingBottom: insets.bottom}}>
+        <View style={styles.contentContainer}>{ActiveComponent}</View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: 'white',
   },
   contentContainer: {
