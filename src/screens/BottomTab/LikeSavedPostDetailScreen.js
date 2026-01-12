@@ -763,6 +763,26 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
   }, [contentMeasured, initialScrollDone, listLaidOut, showList]);
 
   useEffect(() => {
+    if (feedItems.length !== 1 || !listLaidOut) {
+      return;
+    }
+    if (!showList) {
+      setShowList(true);
+    }
+    if (!contentMeasuredRef.current) {
+      contentMeasuredRef.current = true;
+      setContentMeasured(true);
+    }
+    if (!initialScrollDoneRef.current) {
+      initialScrollDoneRef.current = true;
+      setInitialScrollDone(true);
+    }
+    if (isTransitioning) {
+      setIsTransitioning(false);
+    }
+  }, [feedItems.length, isTransitioning, listLaidOut, showList]);
+
+  useEffect(() => {
     if (!showList || !listLaidOut) {
       return;
     }

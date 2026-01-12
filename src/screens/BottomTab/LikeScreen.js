@@ -459,23 +459,6 @@ const LikeScreen = ({navigation}) => {
     }, [token, updateVisibility]),
   );
 
-  const renderScrapSkeletonItem = ({index}) => (
-    <View
-      style={[
-        styles.skeletonItem,
-        {
-          width: scrapItemSize,
-          height: scrapItemSize,
-          marginRight:
-            index % SCRAP_GRID_COLUMNS === SCRAP_GRID_COLUMNS - 1
-              ? 0
-              : SCRAP_GRID_GAP,
-          marginBottom: SCRAP_GRID_GAP,
-        },
-      ]}
-    />
-  );
-
   const renderStoreSkeletonItem = ({index}) => (
     <LikedGridItemSkeleton
       width={storeCardWidth}
@@ -539,17 +522,16 @@ const LikeScreen = ({navigation}) => {
     const tabState = tabKey === 'liked' ? likedState : savedState;
     const isStoreTab = tabKey === 'liked';
     const listRef = isStoreTab ? likedListRef : savedListRef;
-    const showSkeleton = tabState.firstLoading || tabState.refreshing;
+    const showSkeleton =
+      isStoreTab && (tabState.firstLoading || tabState.refreshing);
 
     if (showSkeleton) {
       return (
         <FlatList
           data={skeletonData}
           keyExtractor={item => String(item)}
-          renderItem={
-            isStoreTab ? renderStoreSkeletonItem : renderScrapSkeletonItem
-          }
-          numColumns={isStoreTab ? STORE_GRID_COLUMNS : SCRAP_GRID_COLUMNS}
+          renderItem={renderStoreSkeletonItem}
+          numColumns={STORE_GRID_COLUMNS}
           showsVerticalScrollIndicator={false}
           scrollEnabled={false}
           contentContainerStyle={
@@ -700,9 +682,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#111827',
   },
   listContent: {},
-  skeletonItem: {
-    backgroundColor: '#f1f1f1',
-  },
   emptyText: {
     textAlign: 'center',
     marginVertical: 60,
