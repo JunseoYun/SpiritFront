@@ -268,16 +268,25 @@ const PostCommentSheet = forwardRef(
 
     const layoutMapRef = useRef({});
     const replyListLayoutRef = useRef({});
+    const tryScrollPending = useCallback(() => {
+      const targetId = pendingAutoScrollIdRef.current;
+      if (!targetId) return false;
+      const layout = layoutMapRef.current[targetId];
+      if (!layout || typeof layout.y !== 'number') return false;
+      pendingAutoScrollIdRef.current = null;
+      scrollToItem(targetId, false);
+      pendingHighlightSetRef.current.delete(String(targetId));
+      requestAnimationFrame(() => {
+        triggerHighlight(targetId);
+      });
+      return true;
+    }, [scrollToItem, triggerHighlight]);
     const setItemLayoutWithSize = useCallback(
       (id, y, height) => {
         if (!id) return;
         layoutMapRef.current[id] = {y, height};
         if (pendingAutoScrollIdRef.current === id) {
-          pendingAutoScrollIdRef.current = null;
-          scrollToItem(id, false);
-          requestAnimationFrame(() => {
-            triggerHighlight(id);
-          });
+          tryScrollPending();
         }
         if (pendingHighlightSetRef.current.has(String(id))) {
           pendingHighlightSetRef.current.delete(String(id));
@@ -286,7 +295,7 @@ const PostCommentSheet = forwardRef(
           });
         }
       },
-      [scrollToItem, triggerHighlight],
+      [triggerHighlight, tryScrollPending],
     );
     const setReplyListLayout = useCallback((id, y) => {
       if (!id) return;
@@ -301,6 +310,15 @@ const PostCommentSheet = forwardRef(
 
     const pendingScrollIdRef = useRef(null);
     const isKeyboardVisibleRef = useRef(false);
+    const clearAllHighlights = useCallback(() => {
+      Object.values(highlightMapRef.current).forEach(value => {
+        if (value?.stopAnimation) {
+          value.stopAnimation();
+          value.setValue(0);
+        }
+      });
+      pendingHighlightSetRef.current.clear();
+    }, []);
     const getHighlightValue = useCallback(id => {
       if (!id) return null;
       if (!highlightMapRef.current[id]) {
@@ -327,36 +345,38 @@ const PostCommentSheet = forwardRef(
       },
       [getHighlightValue],
     );
-    const scrollToItem = useCallback((id, shouldFocus = true) => {
-      const layout = layoutMapRef.current[id];
-      if (!layout || typeof layout.y !== 'number') {
-        return;
-      }
-      const {y} = layout;
-      const offset = Math.max(0, y - 12);
-      pendingHighlightSetRef.current.add(String(id));
-      scrollRef.current?.scrollTo?.({y: offset, animated: true});
-      if (shouldFocus) {
-        requestAnimationFrame(() => {
-          inputRef.current?.focus?.();
-        });
-      }
-    }, []);
+    const scrollToItem = useCallback(
+      (id, shouldFocus = true, {queueHighlight = true} = {}) => {
+        const layout = layoutMapRef.current[id];
+        if (!layout || typeof layout.y !== 'number') {
+          return;
+        }
+        const {y} = layout;
+        const rawOffset = Math.max(0, y - 12);
+        const offset = rawOffset < 8 ? 8 : rawOffset;
+        if (queueHighlight) {
+          pendingHighlightSetRef.current.add(String(id));
+        }
+        scrollRef.current?.scrollTo?.({y: offset, animated: true});
+        if (shouldFocus) {
+          requestAnimationFrame(() => {
+            inputRef.current?.focus?.();
+          });
+        }
+      },
+      [],
+    );
 
     useEffect(() => {
       if (!pendingScrollToId) return;
       pendingAutoScrollIdRef.current = pendingScrollToId;
       pendingHighlightSetRef.current.add(String(pendingScrollToId));
-      const layout = layoutMapRef.current[pendingScrollToId];
-      if (layout && typeof layout.y === 'number') {
-        pendingAutoScrollIdRef.current = null;
-        scrollToItem(pendingScrollToId, false);
-        pendingHighlightSetRef.current.delete(String(pendingScrollToId));
+      if (!tryScrollPending()) {
         requestAnimationFrame(() => {
-          triggerHighlight(pendingScrollToId);
+          tryScrollPending();
         });
       }
-    }, [pendingScrollToId, scrollToItem, triggerHighlight]);
+    }, [pendingScrollToId, tryScrollPending]);
 
     useEffect(() => {
       const ids = Array.isArray(pendingHighlightIds)
@@ -379,7 +399,7 @@ const PostCommentSheet = forwardRef(
         if (pendingScrollIdRef.current) {
           const id = pendingScrollIdRef.current;
           pendingScrollIdRef.current = null;
-          scrollToItem(id);
+          scrollToItem(id, true, {queueHighlight: false});
         }
       });
       const hideSub = Keyboard.addListener('keyboardDidHide', () => {
@@ -401,7 +421,7 @@ const PostCommentSheet = forwardRef(
         triggerHighlight(id, {persistent: true});
         handleInputFocus();
         if (isKeyboardVisibleRef.current) {
-          scrollToItem(id);
+          scrollToItem(id, true, {queueHighlight: false});
         } else {
           pendingScrollIdRef.current = id;
         }
@@ -612,6 +632,11 @@ const PostCommentSheet = forwardRef(
     const handleSheetChange = useCallback(
       index => {
         setCurrentSheetIndex(index);
+        if (index >= 0) {
+          setTimeout(() => {
+            tryScrollPending();
+          }, 40);
+        }
         if (index === finalSnapIndex && pendingFocusAfterSnapRef.current) {
           setTimeout(
             () => {
@@ -627,6 +652,7 @@ const PostCommentSheet = forwardRef(
           onChangeCommentInput?.('');
           closeMoreMenu();
           resetSheetState();
+          clearAllHighlights();
           pendingFocusAfterSnapRef.current = false;
           pendingSnapOnlyRef.current = false;
         }
@@ -640,6 +666,8 @@ const PostCommentSheet = forwardRef(
         onChange,
         onChangeCommentInput,
         resetSheetState,
+        tryScrollPending,
+        clearAllHighlights,
       ],
     );
 

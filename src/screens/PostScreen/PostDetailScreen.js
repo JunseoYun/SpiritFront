@@ -69,6 +69,7 @@ const PostDetailScreen = ({navigation, route}) => {
   const [pendingHighlightIds, setPendingHighlightIds] = useState([]);
   const isLoadingMoreCommentsRef = useRef(false);
   const [didAutoOpenCommentSheet, setDidAutoOpenCommentSheet] = useState(false);
+  const notifiedHighlightIdRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -724,7 +725,13 @@ const PostDetailScreen = ({navigation, route}) => {
         }
 
         setPendingScrollReplyId(targetCommentId);
-        setPendingHighlightIds([targetCommentId]);
+        if (targetCommentId) {
+          const key = String(targetCommentId);
+          if (notifiedHighlightIdRef.current !== key) {
+            setPendingHighlightIds([key]);
+            notifiedHighlightIdRef.current = key;
+          }
+        }
       } catch (error) {
         console.log(error);
       }
