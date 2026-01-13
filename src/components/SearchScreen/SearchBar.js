@@ -70,12 +70,9 @@ const SearchBar = ({
           style={[styles.exploreButton]}
           onPress={() => onHomePress && onHomePress()}
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-          {/* <View style={styles.exploreButtonContent}> */}
-          <ChatbotIcon size={35} color="#333" />
-          {/* <CustomText maxScale={1.1} style={[styles.exploreText]}>
-            챗봇
-          </CustomText> */}
-          {/* </View> */}
+          <View style={styles.exploreButtonContent}>
+            <ChatbotIcon size={35} color="#333" />
+          </View>
         </Pressable>
       </View>
     </View>
@@ -133,9 +130,9 @@ const styles = StyleSheet.create({
   exploreButtonContent: {
     width: '100%',
     height: '100%',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 6,
+    paddingBottom: 1,
   },
   exploreText: {
     fontSize: 12,

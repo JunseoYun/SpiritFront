@@ -459,16 +459,14 @@ const PostItem = ({
       }
 
       const messageParts = [];
-      if (item?.name) {
-        messageParts.push(`${item.name}에서 한잔 어때요?`);
-      }
-      if (item?.storeAddress) {
-        messageParts.push(item.storeAddress);
-      }
+      const nickname = item?.nickname?.trim();
+      messageParts.push(
+        nickname
+          ? `${nickname}님의 게시글을 확인해보세요!\n`
+          : '게시글을 확인해보세요!\n',
+      );
       if (shareLink) {
         messageParts.push(shareLink);
-      } else if (item?.content) {
-        messageParts.push(item.content);
       }
 
       const message = messageParts.filter(Boolean).join('\n');
