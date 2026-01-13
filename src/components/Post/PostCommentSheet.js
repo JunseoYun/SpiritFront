@@ -310,11 +310,14 @@ const PostCommentSheet = forwardRef(
     }, []);
 
     const triggerHighlight = useCallback(
-      id => {
+      (id, {persistent = false} = {}) => {
         const value = getHighlightValue(id);
         if (!value) return;
         value.stopAnimation();
         value.setValue(1);
+        if (persistent) {
+          return;
+        }
         Animated.timing(value, {
           toValue: 0,
           duration: 320,
@@ -395,7 +398,7 @@ const PostCommentSheet = forwardRef(
           name: author,
           rootCommentId: rootCommentId ?? id,
         });
-        triggerHighlight(id);
+        triggerHighlight(id, {persistent: true});
         handleInputFocus();
         if (isKeyboardVisibleRef.current) {
           scrollToItem(id);
@@ -584,8 +587,7 @@ const PostCommentSheet = forwardRef(
     }, [currentSheetIndex, finalSnapIndex, ref]);
 
     const handleScrollBegin = useCallback(event => {
-      scrollStartOffsetRef.current =
-        event?.nativeEvent?.contentOffset?.y ?? 0;
+      scrollStartOffsetRef.current = event?.nativeEvent?.contentOffset?.y ?? 0;
     }, []);
 
     const handleScrollEnd = useCallback(() => {
@@ -868,16 +870,10 @@ const PostCommentSheet = forwardRef(
           handleLoadMoreComments(Math.max(0, commentPage) + 1);
         }
       },
-      [
-        commentPage,
-        currentSheetIndex,
-        handleLoadMoreComments,
-        hasMoreComments,
-      ],
+      [commentPage, currentSheetIndex, handleLoadMoreComments, hasMoreComments],
     );
 
     const footerSpacing = (footerHeight || 72) + insets.bottom;
-
     return (
       <>
         <BottomSheetModal
@@ -981,7 +977,14 @@ const PostCommentSheet = forwardRef(
               scrollIndicatorInsets={{bottom: footerSpacing}}
               contentContainerStyle={[
                 styles.commentSheetContent,
-                {paddingBottom: Platform.OS === 'android' ? 150 : 30},
+                {
+                  paddingBottom:
+                    Platform.OS === 'android'
+                      ? insets.bottom == 0
+                        ? 250
+                        : 150
+                      : 30,
+                },
               ]}>
               {commentList.length === 0 && isLoadingComments ? (
                 <View style={styles.commentLoadingContainer}>
