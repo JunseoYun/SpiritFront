@@ -63,6 +63,7 @@ const PostDetailScreen = ({navigation, route}) => {
   const [commentPage, setCommentPage] = useState(0);
   const [commentTotalCount, setCommentTotalCount] = useState(null);
   const [commentSortKey, setCommentSortKey] = useState('latest');
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserNickname, setCurrentUserNickname] = useState('');
   const [currentUserProfileImage, setCurrentUserProfileImage] = useState(null);
   const [pendingScrollReplyId, setPendingScrollReplyId] = useState(null);
@@ -77,6 +78,9 @@ const PostDetailScreen = ({navigation, route}) => {
       try {
         const data = await Userdataget();
         if (isMounted) {
+          setCurrentUserId(
+            data?.id ?? data?.userId ?? data?.memberId ?? data?.writerId ?? null,
+          );
           setCurrentUserNickname(data?.nickname ?? '');
           setCurrentUserProfileImage(
             data?.imgUrl ?? data?.profileImgUrl ?? data?.profileImage ?? null,
@@ -259,6 +263,18 @@ const PostDetailScreen = ({navigation, route}) => {
       const isMine = item.isWriter ?? item.isMine ?? false;
       return {
         id: String(item.id ?? ''),
+        writerId:
+          item.writerId ??
+          item.writerUserId ??
+          item.userId ??
+          item.memberId ??
+          null,
+        taggedUserId:
+          item.taggedUserId ??
+          item.taggedUserID ??
+          item.taggedUser ??
+          null,
+        taggedUserNickname: item.taggedUserNickname ?? null,
         author: item.writerNickname ?? item.author ?? '',
         profileImage:
           item.writerImgUrl ??
@@ -372,14 +388,12 @@ const PostDetailScreen = ({navigation, route}) => {
   );
 
   const handleRequestReplies = useCallback(
-    async (rootCommentId, page = 0, sortKey, reset = false) => {
+    async (rootCommentId, page = 0, reset = false) => {
       if (!rootCommentId) return;
-      const activeSortKey = sortKey ?? commentSortKey;
       const data = await CommentGetByRootComment({
         rootCommentId,
         page,
         size: 10,
-        sort: COMMENT_SORTS[activeSortKey],
       });
       const items = Array.isArray(data?.content) ? data.content : [];
       const mappedReplies = items.map(item =>
@@ -425,7 +439,7 @@ const PostDetailScreen = ({navigation, route}) => {
         }),
       );
     },
-    [commentSortKey, mapCommentItem],
+    [mapCommentItem],
   );
 
   const updatePostCommentCount = useCallback((targetPostId, delta) => {
@@ -451,6 +465,8 @@ const PostDetailScreen = ({navigation, route}) => {
     async payload => {
       const targetPostId = postItem?.id ?? postId;
       const content = payload?.content?.trim();
+      const taggedUserId = payload?.taggedUserId ?? null;
+      const taggedUserNickname = payload?.taggedUserNickname ?? null;
       if (!targetPostId || !content) {
         return;
       }
@@ -465,6 +481,7 @@ const PostDetailScreen = ({navigation, route}) => {
           postId: targetPostId,
           content,
           rootCommentId,
+          taggedUserId,
         });
         const createdId = result?.commentId;
         if (rootCommentId) {
@@ -474,6 +491,13 @@ const PostDetailScreen = ({navigation, route}) => {
             createdAt: new Date().toISOString(),
             writerImgUrl: currentUserProfileImage ?? null,
             writerNickname: currentUserNickname || '나',
+            writerId: currentUserId ?? null,
+            taggedUserId,
+            taggedUserNickname,
+            shouldShowMention:
+              taggedUserNickname &&
+              currentUserNickname &&
+              taggedUserNickname !== currentUserNickname,
             isWriter: true,
           };
           const mappedReply = mapCommentItem(fallbackReply, rootCommentId);
@@ -519,14 +543,17 @@ const PostDetailScreen = ({navigation, route}) => {
           updatePostCommentCount(targetPostId, 1);
           return;
         } else {
-          const fallbackComment = {
-            id: createdId ?? `temp-${Date.now()}`,
-            content,
-            createdAt: new Date().toISOString(),
-            writerImgUrl: currentUserProfileImage ?? null,
-            writerNickname: currentUserNickname || '나',
-            isWriter: true,
-          };
+        const fallbackComment = {
+          id: createdId ?? `temp-${Date.now()}`,
+          content,
+          createdAt: new Date().toISOString(),
+          writerImgUrl: currentUserProfileImage ?? null,
+          writerNickname: currentUserNickname || '나',
+          writerId: currentUserId ?? null,
+          taggedUserId: null,
+          taggedUserNickname: null,
+          isWriter: true,
+        };
           const mappedComment = mapCommentItem(fallbackComment);
           setCommentList(prev => {
             const filtered = prev.filter(
@@ -550,6 +577,7 @@ const PostDetailScreen = ({navigation, route}) => {
       postId,
       postItem?.id,
       updatePostCommentCount,
+      currentUserId,
     ],
   );
 
@@ -665,7 +693,6 @@ const PostDetailScreen = ({navigation, route}) => {
               rootCommentId: rootId,
               page,
               size: pageSize,
-              sort: COMMENT_SORTS[commentSortKey],
             });
             const items = Array.isArray(data?.content) ? data.content : [];
             replies.push(...items);
@@ -816,6 +843,7 @@ const PostDetailScreen = ({navigation, route}) => {
         commentInput={commentInput}
         onChangeCommentInput={setCommentInput}
         currentUserProfileImage={currentUserProfileImage}
+        currentUserNickname={currentUserNickname}
         onPressSend={handleSendComment}
         onDeleteComment={handleDeleteComment}
         onRequestReplies={handleRequestReplies}

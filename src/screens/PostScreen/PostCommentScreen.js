@@ -87,6 +87,8 @@ const CommentFooter = ({
     onPressSend?.({
       content,
       rootCommentId: replyTarget?.rootCommentId ?? null,
+      taggedUserId: replyTarget?.targetWriterId ?? null,
+      taggedUserNickname: replyTarget?.name ?? null,
     });
     requestAnimationFrame(() => {
       setLocalInput('');
@@ -210,6 +212,7 @@ const PostCommentScreen = ({navigation, route}) => {
   const [commentTotalCount, setCommentTotalCount] = useState(null);
   const [commentInput, setCommentInput] = useState('');
   const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserProfileImage, setCurrentUserProfileImage] = useState(null);
   const [currentUserNickname, setCurrentUserNickname] = useState('');
   const [pendingScrollToId, setPendingScrollToId] = useState(null);
@@ -361,8 +364,7 @@ const PostCommentScreen = ({navigation, route}) => {
         0,
         (event?.endCoordinates?.height ?? 0) - insets.bottom,
       );
-      const fallbackKeyboardHeight =
-        rawKeyboardHeight || (isAndroid ? 320 : 0);
+      const fallbackKeyboardHeight = rawKeyboardHeight || (isAndroid ? 320 : 0);
       const baseForCap =
         sheetHeightRef.current ||
         screenHeightRef.current ||
@@ -423,6 +425,13 @@ const PostCommentScreen = ({navigation, route}) => {
       try {
         const data = await Userdataget();
         if (isMounted) {
+          setCurrentUserId(
+            data?.id ??
+              data?.userId ??
+              data?.memberId ??
+              data?.writerId ??
+              null,
+          );
           setCurrentUserNickname(data?.nickname ?? '');
           setCurrentUserProfileImage(
             data?.imgUrl ?? data?.profileImgUrl ?? data?.profileImage ?? null,
@@ -486,6 +495,15 @@ const PostCommentScreen = ({navigation, route}) => {
       const isMine = item.isWriter ?? item.isMine ?? false;
       return {
         id: String(item.id ?? ''),
+        writerId:
+          item.writerId ??
+          item.writerUserId ??
+          item.userId ??
+          item.memberId ??
+          null,
+        taggedUserId:
+          item.taggedUserId ?? item.taggedUserID ?? item.taggedUser ?? null,
+        taggedUserNickname: item.taggedUserNickname ?? null,
         author: item.writerNickname ?? item.author ?? '',
         profileImage:
           item.writerImgUrl ??
@@ -597,14 +615,12 @@ const PostCommentScreen = ({navigation, route}) => {
   );
 
   const handleRequestReplies = useCallback(
-    async (rootCommentId, page = 0, sortKey, reset = false) => {
+    async (rootCommentId, page = 0, reset = false) => {
       if (!rootCommentId) return;
-      const activeSortKey = sortKey ?? commentSortKey;
       const data = await CommentGetByRootComment({
         rootCommentId,
         page,
         size: 10,
-        sort: COMMENT_SORTS[activeSortKey],
       });
       const items = Array.isArray(data?.content) ? data.content : [];
       const mappedReplies = items.map(item =>
@@ -650,12 +666,14 @@ const PostCommentScreen = ({navigation, route}) => {
         }),
       );
     },
-    [commentSortKey, mapCommentItem],
+    [mapCommentItem],
   );
 
   const handleSendComment = useCallback(
     async payload => {
       const content = payload?.content?.trim();
+      const taggedUserId = payload?.taggedUserId ?? null;
+      const taggedUserNickname = payload?.taggedUserNickname ?? null;
       if (!postId || !content) {
         return;
       }
@@ -670,6 +688,7 @@ const PostCommentScreen = ({navigation, route}) => {
           postId,
           content,
           rootCommentId,
+          taggedUserId,
         });
         const createdId = result?.commentId;
         if (rootCommentId) {
@@ -679,6 +698,13 @@ const PostCommentScreen = ({navigation, route}) => {
             createdAt: new Date().toISOString(),
             writerImgUrl: currentUserProfileImage ?? null,
             writerNickname: currentUserNickname || '나',
+            writerId: currentUserId ?? null,
+            taggedUserId,
+            taggedUserNickname,
+            shouldShowMention:
+              taggedUserNickname &&
+              currentUserNickname &&
+              taggedUserNickname !== currentUserNickname,
             isWriter: true,
           };
           const mappedReply = mapCommentItem(fallbackReply, rootCommentId);
@@ -729,6 +755,9 @@ const PostCommentScreen = ({navigation, route}) => {
           createdAt: new Date().toISOString(),
           writerImgUrl: currentUserProfileImage ?? null,
           writerNickname: currentUserNickname || '나',
+          writerId: currentUserId ?? null,
+          taggedUserId: null,
+          taggedUserNickname: null,
           isWriter: true,
         };
         const mappedComment = mapCommentItem(fallbackComment);
@@ -746,7 +775,13 @@ const PostCommentScreen = ({navigation, route}) => {
         isSendingCommentRef.current = false;
       }
     },
-    [currentUserNickname, currentUserProfileImage, mapCommentItem, postId],
+    [
+      currentUserId,
+      currentUserNickname,
+      currentUserProfileImage,
+      mapCommentItem,
+      postId,
+    ],
   );
 
   const handleDeleteComment = useCallback(
@@ -828,7 +863,7 @@ const PostCommentScreen = ({navigation, route}) => {
   }, []);
 
   const requestReplies = useCallback(
-    (commentId, page, sortKey) => {
+    (commentId, page) => {
       if (!handleRequestReplies) return;
       const nextToken = (replyRequestTokenRef.current[commentId] ?? 0) + 1;
       replyRequestTokenRef.current[commentId] = nextToken;
@@ -836,7 +871,7 @@ const PostCommentScreen = ({navigation, route}) => {
         if (prev[commentId]) return prev;
         return {...prev, [commentId]: true};
       });
-      const maybePromise = handleRequestReplies(commentId, page, sortKey);
+      const maybePromise = handleRequestReplies(commentId, page);
       if (maybePromise && typeof maybePromise.finally === 'function') {
         maybePromise.finally(() => {
           if (replyRequestTokenRef.current[commentId] === nextToken) {
@@ -868,9 +903,9 @@ const PostCommentScreen = ({navigation, route}) => {
       return;
     }
     expandedIds.forEach(commentId => {
-      requestReplies(commentId, 0, commentSortKey);
+      requestReplies(commentId, 0);
     });
-  }, [commentSortKey, requestReplies]);
+  }, [requestReplies]);
 
   const getHighlightOpacityStyle = useCallback(
     id => {
@@ -1032,7 +1067,7 @@ const PostCommentScreen = ({navigation, route}) => {
   );
 
   const handleReplyPress = useCallback(
-    (author, id, rootCommentId) => {
+    (author, id, rootCommentId, writerId = null) => {
       if (lastReplyTargetIdRef.current && lastReplyTargetIdRef.current !== id) {
         const prevValue = getHighlightValue(lastReplyTargetIdRef.current);
         prevValue?.setValue?.(0);
@@ -1042,6 +1077,7 @@ const PostCommentScreen = ({navigation, route}) => {
         name: author,
         rootCommentId: rootCommentId ?? id,
         targetId: id,
+        targetWriterId: writerId,
       });
       triggerHighlight(id);
       handleInputFocus();
@@ -1632,9 +1668,41 @@ const PostCommentScreen = ({navigation, route}) => {
                           {comment.createdAt}
                         </CustomText>
                       </View>
-                      <CustomText style={styles.commentText}>
-                        {comment.text}
-                      </CustomText>
+                      {(() => {
+                        const mention = comment.taggedUserNickname;
+                        const textWithoutMention = mention
+                          ? comment.text?.replace(
+                              new RegExp(`^@${mention}\\s?`),
+                              '',
+                            )
+                          : comment.text;
+                        const shouldHideMention =
+                          mention && mention === currentUserNickname;
+                        console.log('[mention-check][comment]', {
+                          mention,
+                          currentUserNickname,
+                          shouldHideMention,
+                          author: comment.author,
+                          id: comment.id,
+                        });
+                        const showMention = Boolean(
+                          mention && !shouldHideMention,
+                        );
+                        return (
+                          <CustomText style={styles.commentText}>
+                            {showMention ? (
+                              <>
+                                <CustomText style={styles.commentMention}>
+                                  @{mention}{' '}
+                                </CustomText>
+                                {textWithoutMention}
+                              </>
+                            ) : (
+                              textWithoutMention
+                            )}
+                          </CustomText>
+                        );
+                      })()}
                       <Pressable
                         style={styles.commentReplyPressable}
                         onPress={() =>
@@ -1642,6 +1710,7 @@ const PostCommentScreen = ({navigation, route}) => {
                             comment.author,
                             comment.id,
                             comment.rootCommentId ?? comment.id,
+                            comment.writerId ?? null,
                           )
                         }>
                         <CustomText style={styles.commentReplyText}>
@@ -1734,9 +1803,42 @@ const PostCommentScreen = ({navigation, route}) => {
                                   {reply.createdAt}
                                 </CustomText>
                               </View>
-                              <CustomText style={styles.commentText}>
-                                {reply.text}
-                              </CustomText>
+                              {(() => {
+                                const mention = reply.taggedUserNickname;
+                                const textWithoutMention = mention
+                                  ? reply.text?.replace(
+                                      new RegExp(`^@${mention}\\s?`),
+                                      '',
+                                    )
+                                  : reply.text;
+                                const shouldHideMention =
+                                  mention && mention === currentUserNickname;
+                                console.log('[mention-check][reply-expanded]', {
+                                  mention,
+                                  currentUserNickname,
+                                  shouldHideMention,
+                                  author: reply.author,
+                                  id: reply.id,
+                                });
+                                const showMention = Boolean(
+                                  mention && !shouldHideMention,
+                                );
+                                return (
+                                  <CustomText style={styles.commentText}>
+                                    {showMention ? (
+                                      <>
+                                        <CustomText
+                                          style={styles.commentMention}>
+                                          @{mention}{' '}
+                                        </CustomText>
+                                        {textWithoutMention}
+                                      </>
+                                    ) : (
+                                      textWithoutMention
+                                    )}
+                                  </CustomText>
+                                );
+                              })()}
                               <Pressable
                                 style={styles.commentReplyPressable}
                                 onPress={() =>
@@ -1744,6 +1846,7 @@ const PostCommentScreen = ({navigation, route}) => {
                                     reply.author,
                                     reply.id,
                                     reply.rootCommentId ?? comment.id,
+                                    reply.writerId ?? null,
                                   )
                                 }>
                                 <CustomText style={styles.commentReplyText}>
@@ -1804,11 +1907,7 @@ const PostCommentScreen = ({navigation, route}) => {
                             const nextPage = Number.isFinite(comment.replyPage)
                               ? comment.replyPage + 1
                               : 0;
-                            requestReplies(
-                              comment.id,
-                              nextPage,
-                              commentSortKey,
-                            );
+                            requestReplies(comment.id, nextPage);
                           }}>
                           <View style={styles.commentReplyToggleLine} />
                           <CustomText style={[styles.commentReplyToggleText]}>
@@ -1874,9 +1973,41 @@ const PostCommentScreen = ({navigation, route}) => {
                                 {reply.createdAt}
                               </CustomText>
                             </View>
-                            <CustomText style={styles.commentText}>
-                              {reply.text}
-                            </CustomText>
+                            {(() => {
+                              const mention = reply.taggedUserNickname;
+                                const textWithoutMention = mention
+                                  ? reply.text?.replace(
+                                      new RegExp(`^@${mention}\\s?`),
+                                      '',
+                                    )
+                                  : reply.text;
+                                const shouldHideMention =
+                                  mention && mention === currentUserNickname;
+                                console.log('[mention-check][reply-preview]', {
+                                  mention,
+                                  currentUserNickname,
+                                  shouldHideMention,
+                                  author: reply.author,
+                                  id: reply.id,
+                                });
+                                const showMention = Boolean(
+                                  mention && !shouldHideMention,
+                                );
+                              return (
+                                <CustomText style={styles.commentText}>
+                                  {showMention ? (
+                                    <>
+                                      <CustomText style={styles.commentMention}>
+                                        @{mention}{' '}
+                                      </CustomText>
+                                      {textWithoutMention}
+                                    </>
+                                  ) : (
+                                    textWithoutMention
+                                  )}
+                                </CustomText>
+                              );
+                            })()}
                           </View>
                           <View style={styles.commentReplyLikeColumn}>
                             <Pressable
@@ -1926,7 +2057,7 @@ const PostCommentScreen = ({navigation, route}) => {
                             !hasLoadedAllReplies &&
                             !Number.isFinite(comment.replyPage)
                           ) {
-                            requestReplies(comment.id, 0, commentSortKey);
+                            requestReplies(comment.id, 0);
                           }
                         }}>
                         <View style={styles.commentReplyToggleLine} />
@@ -1974,7 +2105,7 @@ const PostCommentScreen = ({navigation, route}) => {
                           !hasLoadedAllReplies &&
                           !Number.isFinite(comment.replyPage)
                         ) {
-                          requestReplies(comment.id, 0, commentSortKey);
+                          requestReplies(comment.id, 0);
                         }
                       }}>
                       <View style={styles.commentReplyToggleLine} />
@@ -2200,6 +2331,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     color: '#333',
     lineHeight: 20,
+  },
+  commentMention: {
+    color: '#3CBBFF',
   },
   commentReplyText: {
     fontSize: 12,
