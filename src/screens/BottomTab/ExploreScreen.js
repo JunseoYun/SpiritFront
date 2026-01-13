@@ -3,7 +3,6 @@ import {
   BackHandler,
   ToastAndroid,
   Animated,
-  Easing,
   Platform,
   Dimensions,
   StatusBar,
@@ -19,6 +18,7 @@ import {getLocation, getAddress} from '../../storage/locationStorage';
 import useRecommendation from '../../hooks/useRecommendation';
 import LinearGradient from 'react-native-linear-gradient';
 import {AIFullIcon} from '../../assets/svg/AiTabIcon';
+import ChatbotIcon from '../../assets/svg/ChatbotIcon';
 import {Store_getby_main_banner, Store_getby_popular} from '../../api/storeApi';
 import Loading from '../../hooks/Loading';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -33,14 +33,13 @@ import NotificationButton from '../../components/ExploreScreen/NotificationButto
 import PopularStoresSection from '../../components/ExploreScreen/PopularStroe/PopularStoresSection';
 import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import CustomText from '../../utils/CustomText';
+import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 
-const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 const TOP_TOUCHABLE_DISTANCE = 24;
 const POPULAR_SECTION_ITEM = {id: 'popularStoresSection'};
-const AI_BUTTON_COLLAPSE_OFFSET = 20;
 
 const ExploreScreen = ({navigation}) => {
   const {pendingStoreId} = useDeepLink();
@@ -52,11 +51,6 @@ const ExploreScreen = ({navigation}) => {
   const fixedFilterHeaderRef = useRef(null);
   const listFilterHeaderRef = useRef(null);
   const lastFilterScrollX = useRef(0);
-  const scrollOffsetRef = useRef(0);
-  const [showAiLabel, setShowAiLabel] = useState(true);
-  const aiLabelVisibleRef = useRef(true);
-  const aiButtonAnim = useRef(new Animated.Value(1)).current;
-  const aiLabelAnim = useRef(new Animated.Value(1)).current;
 
   const contentTopPadding = useMemo(
     () => (Platform.OS === 'android' ? insets.top + 40 : insets.top + 20),
@@ -75,6 +69,16 @@ const ExploreScreen = ({navigation}) => {
 
   const {recommendCategory} = useRecommendation();
   const [unreadNotification, setUnreadNotification] = useState(false);
+  const scrollTopThreshold = useMemo(() => {
+    const base = Platform.OS === 'ios' ? 0.25 : 0.3;
+    return screenHeight * base;
+  }, []);
+  const {visible: showScrollToTop, updateVisibility} = useScrollToTopVisibility(
+    {
+      externalRef: scrollRef,
+      threshold: scrollTopThreshold,
+    },
+  );
 
   const formatAddress = useCallback(addr => {
     if (addr === '신논현역') {
@@ -122,13 +126,15 @@ const ExploreScreen = ({navigation}) => {
   );
 
   const aiChatButtonBottom = useMemo(() => 20, []);
-  const aiButtonHeight = 50;
-  const aiIconSize = 28;
-  const aiLabelWidth = 80;
-  const aiIconScale = aiButtonAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1.3, 1],
-  });
+  const aiChatLift = useMemo(
+    () =>
+      scrollY.interpolate({
+        inputRange: [0, scrollTopThreshold],
+        outputRange: [0, -60],
+        extrapolate: 'clamp',
+      }),
+    [scrollTopThreshold, scrollY],
+  );
 
   const stickyTranslateY = 0;
 
@@ -275,8 +281,7 @@ const ExploreScreen = ({navigation}) => {
         animated: true,
       });
     }
-    onRefresh();
-  }, [onRefresh]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -303,16 +308,6 @@ const ExploreScreen = ({navigation}) => {
   const handleAiChatPress = useCallback(() => {
     navigation.navigate('ChatbotScreen');
   }, [navigation]);
-
-  const handleScroll = useCallback(event => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    scrollOffsetRef.current = offsetY;
-    const shouldShowLabel = offsetY <= AI_BUTTON_COLLAPSE_OFFSET;
-    if (shouldShowLabel !== aiLabelVisibleRef.current) {
-      aiLabelVisibleRef.current = shouldShowLabel;
-      setShowAiLabel(shouldShowLabel);
-    }
-  }, []);
 
   const setLocationHandle = useCallback(() => {
     setTimeout(() => {
@@ -343,28 +338,6 @@ const ExploreScreen = ({navigation}) => {
 
     checkStoredNotification();
   }, [setPendingNotification]);
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(aiButtonAnim, {
-        toValue: showAiLabel ? 1 : 0,
-        duration: showAiLabel ? 240 : 170,
-        easing: showAiLabel
-          ? Easing.out(Easing.cubic)
-          : Easing.in(Easing.cubic),
-        useNativeDriver: false,
-      }),
-      Animated.timing(aiLabelAnim, {
-        toValue: showAiLabel ? 1 : 0,
-        duration: 200,
-        delay: showAiLabel ? 70 : 0,
-        easing: showAiLabel
-          ? Easing.out(Easing.cubic)
-          : Easing.inOut(Easing.quad),
-        useNativeDriver: false,
-      }),
-    ]).start();
-  }, [aiButtonAnim, aiLabelAnim, showAiLabel]);
 
   useFocusEffect(
     useCallback(() => {
@@ -631,7 +604,9 @@ const ExploreScreen = ({navigation}) => {
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {
             useNativeDriver: Platform.OS === 'android',
-            listener: handleScroll,
+            listener: event => {
+              updateVisibility(event?.nativeEvent?.contentOffset?.y ?? 0);
+            },
           },
         )}
         renderSectionHeader={({section}) => {
@@ -688,47 +663,26 @@ const ExploreScreen = ({navigation}) => {
           styles.aiChatButton,
           {
             bottom: aiChatButtonBottom,
-            paddingHorizontal: aiButtonAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [11, 10],
-            }),
+            transform: [{translateY: aiChatLift}],
           },
         ]}>
-        <Animated.View style={{transform: [{scale: aiIconScale}]}}>
-          <AIFullIcon size={aiIconSize} />
-        </Animated.View>
-        <Animated.View
-          style={{
-            opacity: aiLabelAnim,
-            marginLeft: aiLabelAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, 6],
-            }),
-            maxWidth: aiLabelAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, 80],
-            }),
-            overflow: 'hidden',
-            flexShrink: 1,
-            transform: [
-              {
-                translateX: aiLabelAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [6, 0],
-                }),
-              },
-            ],
-            pointerEvents: 'none',
-            justifyContent: 'center',
-          }}>
-          <CustomText
-            numberOfLines={1}
-            maxScale={1.0}
-            style={styles.aiChatLabelText}>
-            챗봇
-          </CustomText>
+        <LinearGradient
+          colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
+          locations={[0, 0.5, 1]}
+          start={{x: 0, y: 0}}
+          end={{x: 1, y: 1}}
+          style={styles.aiChatButtonGradient}
+        />
+        <Animated.View>
+          <ChatbotIcon size={35} color="#FFF" />
         </Animated.View>
       </AnimatedPressable>
+      <ScrollToTopButton
+        visible={showScrollToTop}
+        onPress={handleScrollToTop}
+        bottom={aiChatButtonBottom}
+        right={16}
+      />
 
       {rejectModalData && !loading && (
         <RejectModal
@@ -815,25 +769,20 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     alignItems: 'center',
-    flexDirection: 'row',
     justifyContent: 'center',
     height: 50,
-    elevation: 4,
+    width: 50,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E0E4EA',
+    shadowOpacity: 0.17,
+    shadowRadius: 2,
+    elevation: 2,
     borderRadius: 100,
+    paddingBottom: 1,
+    overflow: 'hidden',
   },
-  aiChatLabelText: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
-    minWidth: 30,
-    textAlign: 'center',
+  aiChatButtonGradient: {
+    ...StyleSheet.absoluteFillObject,
   },
 });
 
