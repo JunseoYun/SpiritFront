@@ -24,6 +24,7 @@ export const CommentGetByPost = async ({
       ? `/comment/get-by/post/${postId}?${query}`
       : `/comment/get-by/post/${postId}`;
     const response = await axiosInstance.get(url);
+    console.log(response.data.data);
     return response.data.data;
   } catch (error) {
     functionError(error);
@@ -34,16 +35,20 @@ export const CommentCreate = async ({
   postId,
   content,
   rootCommentId = null,
+  taggedUserId = null,
 } = {}) => {
   if (!postId || !content) return null;
+  console.log(postId, content, rootCommentId, taggedUserId);
   try {
     const response = await axiosInstance.post('/comment/create', {
       postId,
       content,
       rootCommentId,
+      taggedUserId,
     });
     return response.data.data;
   } catch (error) {
+    console.log(error.response);
     functionError(error);
   }
 };
@@ -52,25 +57,19 @@ export const CommentGetByRootComment = async ({
   rootCommentId,
   page = 0,
   size = 10,
-  sort,
 } = {}) => {
   if (!rootCommentId) return null;
   try {
     const params = new URLSearchParams();
     params.append('page', String(page));
     params.append('size', String(size));
-    if (Array.isArray(sort)) {
-      sort.filter(Boolean).forEach(value => {
-        params.append('sort', value);
-      });
-    } else if (typeof sort === 'string' && sort) {
-      params.append('sort', sort);
-    }
+    params.append('sort', 'id,ASC');
     const query = params.toString();
     const url = query
       ? `/comment/get-by/root-comment/${rootCommentId}?${query}`
       : `/comment/get-by/root-comment/${rootCommentId}`;
     const response = await axiosInstance.get(url);
+    console.log(response.data.data, '대댓');
     return response.data.data;
   } catch (error) {
     functionError(error);

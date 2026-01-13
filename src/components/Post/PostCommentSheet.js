@@ -46,6 +46,7 @@ const CommentFooter = ({
   canFocusInput = true,
   defaultProfile,
   currentUserProfileImage,
+  currentUserNickname = '',
   bottomInset,
   replyTargetStore,
   onClearReplyTarget,
@@ -108,10 +109,23 @@ const CommentFooter = ({
     if (!content) {
       return;
     }
-    onPressSend?.({
+    const payload = {
       content,
       rootCommentId: replyTarget?.rootCommentId ?? null,
+      taggedUserId: replyTarget?.targetWriterId ?? null,
+      taggedUserNickname: replyTarget?.name ?? null,
+    };
+    // 루트/답글 작성 직후 멘션 표시를 위해 name과 내 닉네임 비교 플래그
+    payload.shouldShowMention =
+      payload.taggedUserNickname &&
+      currentUserNickname &&
+      payload.taggedUserNickname !== currentUserNickname;
+    payload.mentionName = payload.taggedUserNickname || null;
+    console.log('[send][sheet]', {
+      replyTarget,
+      payload,
     });
+    onPressSend?.(payload);
     requestAnimationFrame(() => {
       setLocalInput('');
       onChangeCommentInput?.('');
@@ -126,6 +140,7 @@ const CommentFooter = ({
     onChangeCommentInput,
     replyTarget,
     onClearReplyTarget,
+    currentUserNickname,
   ]);
   return (
     <Animated.View
@@ -221,6 +236,7 @@ const PostCommentSheet = forwardRef(
       formatLikeCount,
       onChangeCommentInput,
       currentUserProfileImage,
+      currentUserNickname = '',
       onPressSend,
       onDeleteComment,
       onRequestReplies,
@@ -310,6 +326,18 @@ const PostCommentSheet = forwardRef(
 
     const pendingScrollIdRef = useRef(null);
     const isKeyboardVisibleRef = useRef(false);
+    const clearHighlight = useCallback(
+      id => {
+        if (!id) return;
+        const value = getHighlightValue(id);
+        if (value?.stopAnimation) {
+          value.stopAnimation();
+          value.setValue(0);
+        }
+        pendingHighlightSetRef.current.delete(String(id));
+      },
+      [getHighlightValue],
+    );
     const clearAllHighlights = useCallback(() => {
       Object.values(highlightMapRef.current).forEach(value => {
         if (value?.stopAnimation) {
@@ -319,6 +347,7 @@ const PostCommentSheet = forwardRef(
       });
       pendingHighlightSetRef.current.clear();
     }, []);
+    const replyHighlightIdRef = useRef(null);
     const getHighlightValue = useCallback(id => {
       if (!id) return null;
       if (!highlightMapRef.current[id]) {
@@ -413,12 +442,19 @@ const PostCommentSheet = forwardRef(
     }, [scrollToItem]);
 
     const handleReplyPress = useCallback(
-      (author, id, rootCommentId) => {
+      (author, id, rootCommentId, writerId = null, _isMine = false) => {
+        const prevHighlightId = replyHighlightIdRef.current;
+        if (prevHighlightId && prevHighlightId !== id) {
+          clearHighlight(prevHighlightId);
+        }
         setReplyTarget({
           name: author,
           rootCommentId: rootCommentId ?? id,
+          targetId: id,
+          targetWriterId: writerId,
         });
         triggerHighlight(id, {persistent: true});
+        replyHighlightIdRef.current = id;
         handleInputFocus();
         if (isKeyboardVisibleRef.current) {
           scrollToItem(id, true, {queueHighlight: false});
@@ -624,10 +660,14 @@ const PostCommentSheet = forwardRef(
 
     const handleClearReplyTarget = useCallback(() => {
       setReplyTarget(null);
+      if (replyHighlightIdRef.current) {
+        clearHighlight(replyHighlightIdRef.current);
+        replyHighlightIdRef.current = null;
+      }
       // requestAnimationFrame(() => {
       //   inputRef.current?.focus?.();
       // });
-    }, []);
+    }, [clearHighlight]);
 
     const handleSheetChange = useCallback(
       index => {
@@ -723,6 +763,12 @@ const PostCommentSheet = forwardRef(
       store.value = replyTarget;
       store.listeners.forEach(listener => listener(replyTarget));
     }, [replyTarget]);
+    useEffect(() => {
+      if (!replyTarget && replyHighlightIdRef.current) {
+        clearHighlight(replyHighlightIdRef.current);
+        replyHighlightIdRef.current = null;
+      }
+    }, [replyTarget, clearHighlight]);
 
     useEffect(() => {
       expandedRepliesRef.current = expandedReplies;
@@ -764,7 +810,7 @@ const PostCommentSheet = forwardRef(
     }, []);
 
     const requestReplies = useCallback(
-      (commentId, page, sortKey) => {
+      (commentId, page) => {
         if (!onRequestReplies) return;
         const nextToken = (replyRequestTokenRef.current[commentId] ?? 0) + 1;
         replyRequestTokenRef.current[commentId] = nextToken;
@@ -772,7 +818,7 @@ const PostCommentSheet = forwardRef(
           if (prev[commentId]) return prev;
           return {...prev, [commentId]: true};
         });
-        const maybePromise = onRequestReplies(commentId, page, sortKey);
+        const maybePromise = onRequestReplies(commentId, page);
         if (maybePromise && typeof maybePromise.finally === 'function') {
           maybePromise.finally(() => {
             if (replyRequestTokenRef.current[commentId] === nextToken) {
@@ -804,9 +850,9 @@ const PostCommentSheet = forwardRef(
         return;
       }
       expandedIds.forEach(commentId => {
-        requestReplies(commentId, 0, commentSortKey);
+        requestReplies(commentId, 0);
       });
-    }, [commentSortKey, requestReplies]);
+    }, [requestReplies]);
 
     const getHighlightOpacityStyle = useCallback(
       id => {
@@ -831,6 +877,7 @@ const PostCommentSheet = forwardRef(
             canFocusInput={canFocusInput}
             defaultProfile={defaultProfile}
             currentUserProfileImage={currentUserProfileImage}
+            currentUserNickname={currentUserNickname}
             bottomInset={insets.bottom}
             replyTargetStore={replyTargetStoreRef}
             onClearReplyTarget={handleClearReplyTarget}
@@ -1114,9 +1161,40 @@ const PostCommentSheet = forwardRef(
                               {comment.createdAt}
                             </CustomText>
                           </View>
-                          <CustomText style={styles.commentText}>
-                            {comment.text}
-                          </CustomText>
+                          {(() => {
+                            const mention =
+                              comment.shouldShowMention === false
+                                ? null
+                                : comment.taggedUserNickname ||
+                                  comment.mentionName ||
+                                  comment.writerNickname ||
+                                  (comment.text?.startsWith('@')
+                                    ? comment.text.split(/\s+/)[0]?.slice(1)
+                                    : null);
+                            const textWithoutMention =
+                              mention && comment.text?.startsWith(`@${mention}`)
+                                ? comment.text
+                                    .slice(`@${mention}`.length)
+                                    .trimStart()
+                                : comment.text;
+                            console.log(mention);
+                            const showMention =
+                              mention && mention !== currentUserNickname;
+                            return (
+                              <CustomText style={styles.commentText}>
+                                {showMention ? (
+                                  <>
+                                    <CustomText style={styles.commentMention}>
+                                      @{mention}{' '}
+                                    </CustomText>
+                                    {textWithoutMention}
+                                  </>
+                                ) : (
+                                  textWithoutMention
+                                )}
+                              </CustomText>
+                            );
+                          })()}
                           <Pressable
                             style={styles.commentReplyPressable}
                             onPress={() =>
@@ -1124,6 +1202,8 @@ const PostCommentSheet = forwardRef(
                                 comment.author,
                                 comment.id,
                                 comment.id,
+                                comment.writerId ?? null,
+                                comment.isMine,
                               )
                             }>
                             <CustomText style={styles.commentReplyText}>
@@ -1229,9 +1309,54 @@ const PostCommentSheet = forwardRef(
                                       {reply.createdAt}
                                     </CustomText>
                                   </View>
-                                  <CustomText style={styles.commentText}>
-                                    {reply.text}
-                                  </CustomText>
+                                  {(() => {
+                                    const mention =
+                                      reply.shouldShowMention === false
+                                        ? null
+                                        : reply.taggedUserNickname ||
+                                          reply.mentionName ||
+                                          reply.writerNickname ||
+                                          (reply.text?.startsWith('@')
+                                            ? reply.text
+                                                .split(/\s+/)[0]
+                                                ?.slice(1)
+                                            : null);
+                                    const textWithoutMention =
+                                      mention &&
+                                      reply.text?.startsWith(`@${mention}`)
+                                        ? reply.text
+                                            .slice(`@${mention}`.length)
+                                            .trimStart()
+                                        : reply.text;
+                                    const showMention =
+                                      mention &&
+                                      mention !== currentUserNickname;
+                                    console.log(
+                                      '[mention-check][sheet-reply]',
+                                      {
+                                        mention,
+                                        currentUserNickname,
+                                        showMention,
+                                        author: reply.author,
+                                        id: reply.id,
+                                      },
+                                    );
+                                    return (
+                                      <CustomText style={styles.commentText}>
+                                        {showMention ? (
+                                          <>
+                                            <CustomText
+                                              style={styles.commentMention}>
+                                              @{mention}{' '}
+                                            </CustomText>
+                                            {textWithoutMention}
+                                          </>
+                                        ) : (
+                                          textWithoutMention
+                                        )}
+                                      </CustomText>
+                                    );
+                                  })()}
                                   <Pressable
                                     style={styles.commentReplyPressable}
                                     onPress={() =>
@@ -1239,6 +1364,8 @@ const PostCommentSheet = forwardRef(
                                         reply.author,
                                         reply.id,
                                         reply.rootCommentId ?? comment.id,
+                                        reply.writerId ?? null,
+                                        reply.isMine,
                                       )
                                     }>
                                     <CustomText style={styles.commentReplyText}>
@@ -1299,11 +1426,7 @@ const PostCommentSheet = forwardRef(
                                 )
                                   ? comment.replyPage + 1
                                   : 0;
-                                requestReplies(
-                                  comment.id,
-                                  nextPage,
-                                  commentSortKey,
-                                );
+                                requestReplies(comment.id, nextPage);
                               }}>
                               <View style={styles.commentReplyToggleLine} />
                               <CustomText
@@ -1346,66 +1469,95 @@ const PostCommentSheet = forwardRef(
                       !isPreviewHidden &&
                       previewReplies.length ? (
                         <View style={styles.commentReplyList}>
-                          {previewReplies.map(reply => (
-                            <View
-                              key={reply.id}
-                              style={styles.commentReplyItem}>
-                              <Animated.View
-                                pointerEvents="none"
-                                style={[
-                                  styles.commentHighlight,
-                                  getHighlightOpacityStyle(reply.id),
-                                ]}
-                              />
-                              <Image
-                                source={
-                                  reply.profileImage
-                                    ? {uri: reply.profileImage}
-                                    : defaultProfile
-                                }
-                                style={styles.commentReplyAvatar}
-                              />
-                              <View style={styles.commentReplyBody}>
-                                <View style={styles.commentReplyHeader}>
-                                  <CustomText style={styles.commentAuthor}>
-                                    {reply.author}
-                                  </CustomText>
-                                  <CustomText style={styles.commentDate}>
-                                    {reply.createdAt}
+                          {previewReplies.map(reply => {
+                            const mention =
+                              reply.shouldShowMention === false
+                                ? null
+                                : reply.taggedUserNickname ||
+                                  reply.mentionName ||
+                                  reply.writerNickname ||
+                                  (reply.text?.startsWith('@')
+                                    ? reply.text.split(/\s+/)[0]?.slice(1)
+                                    : null);
+                            const textWithoutMention =
+                              mention && reply.text?.startsWith(`@${mention}`)
+                                ? reply.text
+                                    .slice((`@${mention}`).length)
+                                    .trimStart()
+                                : reply.text;
+                            const showMention =
+                              mention && mention !== currentUserNickname;
+                            return (
+                              <View
+                                key={reply.id}
+                                style={styles.commentReplyItem}>
+                                <Animated.View
+                                  pointerEvents="none"
+                                  style={[
+                                    styles.commentHighlight,
+                                    getHighlightOpacityStyle(reply.id),
+                                  ]}
+                                />
+                                <Image
+                                  source={
+                                    reply.profileImage
+                                      ? {uri: reply.profileImage}
+                                      : defaultProfile
+                                  }
+                                  style={styles.commentReplyAvatar}
+                                />
+                                <View style={styles.commentReplyBody}>
+                                  <View style={styles.commentReplyHeader}>
+                                    <CustomText style={styles.commentAuthor}>
+                                      {reply.author}
+                                    </CustomText>
+                                    <CustomText style={styles.commentDate}>
+                                      {reply.createdAt}
+                                    </CustomText>
+                                  </View>
+                                  <CustomText style={styles.commentText}>
+                                    {showMention ? (
+                                      <>
+                                        <CustomText
+                                          style={styles.commentMention}>
+                                          @{mention}{' '}
+                                        </CustomText>
+                                        {textWithoutMention}
+                                      </>
+                                    ) : (
+                                      textWithoutMention
+                                    )}
                                   </CustomText>
                                 </View>
-                                <CustomText style={styles.commentText}>
-                                  {reply.text}
-                                </CustomText>
+                                <View style={styles.commentReplyLikeColumn}>
+                                  <Pressable
+                                    hitSlop={8}
+                                    onPress={() => onToggleLike(reply.id)}>
+                                    <Ionicons
+                                      name={
+                                        commentLikeState[reply.id]
+                                          ? 'heart'
+                                          : 'heart-outline'
+                                      }
+                                      size={18}
+                                      color={
+                                        commentLikeState[reply.id]
+                                          ? '#FF5E5E'
+                                          : '#A0A5AE'
+                                      }
+                                    />
+                                  </Pressable>
+                                  <CustomText style={styles.commentLikeCount}>
+                                    {formatLikeCount(
+                                      (reply.likes ?? 0) +
+                                        (commentLikeState[reply.id] ? 1 : 0) -
+                                        (reply.isLiked ? 1 : 0),
+                                    )}
+                                  </CustomText>
+                                </View>
                               </View>
-                              <View style={styles.commentReplyLikeColumn}>
-                                <Pressable
-                                  hitSlop={8}
-                                  onPress={() => onToggleLike(reply.id)}>
-                                  <Ionicons
-                                    name={
-                                      commentLikeState[reply.id]
-                                        ? 'heart'
-                                        : 'heart-outline'
-                                    }
-                                    size={18}
-                                    color={
-                                      commentLikeState[reply.id]
-                                        ? '#FF5E5E'
-                                        : '#A0A5AE'
-                                    }
-                                  />
-                                </Pressable>
-                                <CustomText style={styles.commentLikeCount}>
-                                  {formatLikeCount(
-                                    (reply.likes ?? 0) +
-                                      (commentLikeState[reply.id] ? 1 : 0) -
-                                      (reply.isLiked ? 1 : 0),
-                                  )}
-                                </CustomText>
-                              </View>
-                            </View>
-                          ))}
+                            );
+                          })}
                         </View>
                       ) : null}
                       {!isExpanded && previewVisibleCount > 0 ? (
@@ -1429,7 +1581,7 @@ const PostCommentSheet = forwardRef(
                                 !hasLoadedAllReplies &&
                                 !Number.isFinite(comment.replyPage)
                               ) {
-                                requestReplies(comment.id, 0, commentSortKey);
+                                requestReplies(comment.id, 0);
                               }
                             }}>
                             <View style={styles.commentReplyToggleLine} />
@@ -1480,7 +1632,7 @@ const PostCommentSheet = forwardRef(
                               !hasLoadedAllReplies &&
                               !Number.isFinite(comment.replyPage)
                             ) {
-                              requestReplies(comment.id, 0, commentSortKey);
+                              requestReplies(comment.id, 0);
                             }
                           }}>
                           <View style={styles.commentReplyToggleLine} />
@@ -1678,6 +1830,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     color: '#333',
     lineHeight: 20,
+  },
+  commentMention: {
+    color: '#3CBBFF',
   },
   commentReplyText: {
     fontSize: 12,

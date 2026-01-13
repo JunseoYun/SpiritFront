@@ -70,6 +70,13 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
   const [commentPage, setCommentPage] = useState(0);
   const [commentTotalCount, setCommentTotalCount] = useState(null);
   const [commentSortKey, setCommentSortKey] = useState('latest');
+  const [currentUserId, setCurrentUserId] = useState(
+    userProfile?.id ??
+      userProfile?.userId ??
+      userProfile?.memberId ??
+      userProfile?.writerId ??
+      null,
+  );
   const [pendingScrollReplyId, setPendingScrollReplyId] = useState(null);
   const commentSheetRef = useRef(null);
   const isLoadingMoreCommentsRef = useRef(false);
@@ -213,6 +220,18 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
       const isMine = item.isWriter ?? item.isMine ?? false;
       return {
         id: String(item.id ?? ''),
+        writerId:
+          item.writerId ??
+          item.writerUserId ??
+          item.userId ??
+          item.memberId ??
+          null,
+        taggedUserId:
+          item.taggedUserId ??
+          item.taggedUserID ??
+          item.taggedUser ??
+          null,
+        taggedUserNickname: item.taggedUserNickname ?? null,
         author: item.writerNickname ?? item.author ?? '',
         profileImage:
           item.writerImgUrl ??
@@ -325,14 +344,12 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
   );
 
   const handleRequestReplies = useCallback(
-    async (rootCommentId, page = 0, sortKey, reset = false) => {
+    async (rootCommentId, page = 0, reset = false) => {
       if (!rootCommentId) return;
-      const activeSortKey = sortKey ?? commentSortKey;
       const data = await CommentGetByRootComment({
         rootCommentId,
         page,
         size: 10,
-        sort: COMMENT_SORTS[activeSortKey],
       });
       const items = Array.isArray(data?.content) ? data.content : [];
       const mappedReplies = items.map(item =>
@@ -378,7 +395,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
         }),
       );
     },
-    [commentSortKey, mapCommentItem],
+    [mapCommentItem],
   );
 
   const updatePostCommentCount = useCallback((targetPostId, delta) => {
@@ -419,6 +436,8 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
     async payload => {
       const targetPostId = selectedFeed?.id;
       const content = payload?.content?.trim();
+      const taggedUserId = payload?.taggedUserId ?? null;
+      const taggedUserNickname = payload?.taggedUserNickname ?? null;
       if (!targetPostId || !content) {
         return;
       }
@@ -433,17 +452,25 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           postId: targetPostId,
           content,
           rootCommentId,
+          taggedUserId,
         });
         const createdId = result?.commentId;
         if (rootCommentId) {
-          const fallbackReply = {
-            id: createdId ?? `temp-${Date.now()}`,
-            content,
-            createdAt: new Date().toISOString(),
-            writerImgUrl: currentUserProfileImage ?? null,
-            writerNickname: currentUserNickname || '나',
-            isWriter: true,
-          };
+        const fallbackReply = {
+          id: createdId ?? `temp-${Date.now()}`,
+          content,
+          createdAt: new Date().toISOString(),
+          writerImgUrl: currentUserProfileImage ?? null,
+          writerNickname: currentUserNickname || '나',
+          writerId: currentUserId ?? null,
+          taggedUserId,
+          taggedUserNickname,
+          shouldShowMention:
+            taggedUserNickname &&
+            currentUserNickname &&
+            taggedUserNickname !== currentUserNickname,
+          isWriter: true,
+        };
           const mappedReply = mapCommentItem(fallbackReply, rootCommentId);
           const mergeUnique = list => {
             const seen = new Set();
@@ -487,14 +514,17 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           updatePostCommentCount(targetPostId, 1);
           return;
         } else {
-          const fallbackComment = {
-            id: createdId ?? `temp-${Date.now()}`,
-            content,
-            createdAt: new Date().toISOString(),
-            writerImgUrl: currentUserProfileImage ?? null,
-            writerNickname: currentUserNickname || '나',
-            isWriter: true,
-          };
+        const fallbackComment = {
+          id: createdId ?? `temp-${Date.now()}`,
+          content,
+          createdAt: new Date().toISOString(),
+          writerImgUrl: currentUserProfileImage ?? null,
+          writerNickname: currentUserNickname || '나',
+          writerId: currentUserId ?? null,
+          taggedUserId: null,
+          taggedUserNickname: null,
+          isWriter: true,
+        };
           const mappedComment = mapCommentItem(fallbackComment);
           setCommentList(prev => {
             const filtered = prev.filter(
@@ -514,6 +544,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
       fetchComments,
       mapCommentItem,
       selectedFeed?.id,
+      currentUserId,
       currentUserNickname,
       currentUserProfileImage,
       updatePostCommentCount,
@@ -889,15 +920,16 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           defaultProfile={defaultProfile}
           commentLikeState={commentLikeState}
           onToggleLike={handleCommentLikeToggle}
-          formatLikeCount={formatLikeCount}
-          commentInput={commentInput}
-          onChangeCommentInput={setCommentInput}
-          currentUserProfileImage={currentUserProfileImage}
-          onPressSend={handleSendComment}
-          onDeleteComment={handleDeleteComment}
-          onRequestReplies={handleRequestReplies}
-          onRequestMoreComments={handleRequestMoreComments}
-          commentTotalCount={commentTotalCount}
+        formatLikeCount={formatLikeCount}
+        commentInput={commentInput}
+        onChangeCommentInput={setCommentInput}
+        currentUserProfileImage={currentUserProfileImage}
+        currentUserNickname={currentUserNickname}
+        onPressSend={handleSendComment}
+        onDeleteComment={handleDeleteComment}
+        onRequestReplies={handleRequestReplies}
+        onRequestMoreComments={handleRequestMoreComments}
+        commentTotalCount={commentTotalCount}
           commentPage={commentPage}
           isPostWriter={selectedFeed?.isWriter ?? false}
           isLoadingComments={isLoadingComments}
