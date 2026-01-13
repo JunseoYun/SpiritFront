@@ -177,21 +177,12 @@ const MapTopBar = ({
               end={{x: 1, y: 1}}
               style={styles.exploreGradient}>
               <View style={styles.exploreButtonContent}>
-                {/* <AIEmptyLogoIcon size={18} /> */}
                 <ChatbotIcon size={35} color="#FFF" />
-                {/* <CustomText style={styles.exploreText}>챗봇</CustomText> */}
               </View>
             </LinearGradient>
           ) : (
             <View style={styles.exploreButtonContent}>
-              {/* <AILogoIcon size={18} /> */}
-
               <ChatbotIcon size={35} color="#333" />
-              {/* <CustomText
-                maxScale={1.1}
-                style={[styles.exploreText, {color: '#3cbbff'}]}>
-                챗봇
-              </CustomText> */}
             </View>
           )}
         </AnimatedPressable>
@@ -257,9 +248,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  aiBadge: {},
-  aiBadgeText: {},
-  aiPromptText: {},
+
   exploreButton: {
     width: 48,
     height: 48,
@@ -278,9 +267,9 @@ const styles = StyleSheet.create({
   exploreButtonContent: {
     width: '100%',
     height: '100%',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 6,
+    paddingBottom: 1,
   },
   exploreText: {
     fontSize: 12,

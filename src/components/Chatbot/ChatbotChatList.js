@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import {
   Animated,
   Keyboard,
@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {AIFullIcon} from '../../assets/svg/AiTabIcon';
+import ChatbotIcon from '../../assets/svg/ChatbotIcon';
 import CustomText from '../../utils/CustomText';
 import ChatbotResultCard from './ChatbotResultCard';
 
@@ -18,7 +18,6 @@ const ChatbotChatList = ({
   address,
   hasMessages,
   sending,
-  spinAnim,
   scrollViewRef,
   handleMessageLayout,
   bottomPadding,
@@ -29,6 +28,31 @@ const ChatbotChatList = ({
   showRecordingUI,
   titleAnim,
 }) => {
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!sending) {
+      shimmerAnim.stopAnimation();
+      shimmerAnim.setValue(0);
+      return;
+    }
+
+    const loop = Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 1400,
+        useNativeDriver: true,
+      }),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [shimmerAnim, sending]);
+
+  const shimmerTranslate = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-40, 120],
+  });
+
   return (
     <View
       style={[
@@ -83,7 +107,16 @@ const ChatbotChatList = ({
                 }>
                 <View style={styles.aiHeaderRow}>
                   <View style={styles.aiAvatarLarge}>
-                    <AIFullIcon size={26} />
+                    <LinearGradient
+                      colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
+                      locations={[0, 0.5, 1]}
+                      start={{x: 0, y: 0}}
+                      end={{x: 1, y: 1}}
+                      style={styles.aiAvatarCircle}>
+                      <View style={{paddingBottom: 1}}>
+                        <ChatbotIcon size={26} color="#FFF" />
+                      </View>
+                    </LinearGradient>
                   </View>
                   {!!displayAddress && (
                     <CustomText style={styles.aiAddressText} numberOfLines={1}>
@@ -142,24 +175,53 @@ const ChatbotChatList = ({
             <View style={styles.aiRow}>
               <View style={styles.aiHeaderRow}>
                 <View style={styles.aiAvatarLarge}>
+                  <LinearGradient
+                    colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
+                    locations={[0, 0.5, 1]}
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 1}}
+                    style={styles.aiAvatarCircle}>
+                    <ChatbotIcon size={26} color="#FFF" />
+                    <Animated.View
+                      pointerEvents="none"
+                      style={[
+                        styles.shimmerSweep,
+                        {transform: [{translateX: shimmerTranslate}]},
+                      ]}>
+                      <LinearGradient
+                        colors={[
+                          'rgba(255,255,255,0)',
+                          'rgba(255,255,255,0.3)',
+                          'rgba(255,255,255,0)',
+                        ]}
+                        start={{x: 0, y: 0}}
+                        end={{x: 1, y: 0}}
+                        style={styles.shimmerGradient}
+                      />
+                    </Animated.View>
+                  </LinearGradient>
+                </View>
+                <View style={styles.shimmerTextWrap}>
+                  <CustomText style={styles.loadingText}>탐색 중</CustomText>
                   <Animated.View
+                    pointerEvents="none"
                     style={[
-                      styles.aiLoadingSpinner,
-                      {
-                        transform: [
-                          {
-                            rotate: spinAnim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: ['0deg', '360deg'],
-                            }),
-                          },
-                        ],
-                      },
+                      styles.shimmerSweep,
+                      styles.shimmerTextSweep,
+                      {transform: [{translateX: shimmerTranslate}]},
                     ]}>
-                    <AIFullIcon size={26} />
+                    <LinearGradient
+                      colors={[
+                        'rgba(255,255,255,0)',
+                        'rgba(255,255,255,0.7)',
+                        'rgba(255,255,255,0)',
+                      ]}
+                      start={{x: 0, y: 0}}
+                      end={{x: 1, y: 0}}
+                      style={styles.shimmerGradient}
+                    />
                   </Animated.View>
                 </View>
-                <CustomText style={styles.aiAddressText}>탐색 중</CustomText>
               </View>
             </View>
           )}
@@ -245,12 +307,43 @@ const styles = StyleSheet.create({
     paddingLeft: 18,
     marginRight: 8,
   },
+  aiAvatarCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
   aiAddressText: {
     flexShrink: 1,
     fontSize: 14,
     color: '#999',
     fontFamily: 'Pretendard-Regular',
     maxWidth: '70%',
+  },
+  loadingText: {
+    flexShrink: 1,
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard-Regular',
+  },
+  shimmerTextWrap: {
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  shimmerSweep: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 40,
+  },
+  shimmerTextSweep: {
+    top: -2,
+    bottom: -2,
+  },
+  shimmerGradient: {
+    flex: 1,
   },
   aiTextBare: {
     fontSize: 16,
@@ -311,12 +404,6 @@ const styles = StyleSheet.create({
   titleWrap: {
     width: '100%',
     alignItems: 'center',
-  },
-  aiLoadingSpinner: {
-    width: 26,
-    height: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
 
