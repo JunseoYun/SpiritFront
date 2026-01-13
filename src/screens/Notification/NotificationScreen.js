@@ -17,6 +17,7 @@ import {has_unread_notification} from '../../api/notificationApi';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import CustomText from '../../utils/CustomText';
 import {PostGetById} from '../../api/postApi';
+import {CommentGetById} from '../../api/commentApi';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const NotificationCard = ({title, message, date, hasRead}) => {
@@ -235,6 +236,38 @@ const NotificationScreen = ({navigation}) => {
                     navigation.navigate('PostDetailScreen', {
                       postId: response.id,
                       item: response,
+                    });
+                  } catch (er) {
+                    console.log(er);
+                  }
+                }
+                if (
+                  item.notificationType === 'COMMENT_LIKED' &&
+                  item.redirectType === 'COMMENT_DETAIL'
+                ) {
+                  try {
+                    const comment = await CommentGetById(item.redirectId);
+                    navigation.navigate('PostDetailScreen', {
+                      postId: comment?.postId,
+                      rootCommentId: comment?.rootCommentId,
+                      openCommentSheet: true,
+                      scrollToCommentId: comment?.id ?? item.redirectId,
+                    });
+                  } catch (er) {
+                    console.log(er);
+                  }
+                }
+                if (
+                  item.notificationType === 'REPLY_COMMENT_CREATED' &&
+                  item.redirectType === 'COMMENT_DETAIL'
+                ) {
+                  try {
+                    const comment = await CommentGetById(item.redirectId);
+                    navigation.navigate('PostDetailScreen', {
+                      postId: comment?.postId,
+                      rootCommentId: comment?.rootCommentId,
+                      openCommentSheet: true,
+                      scrollToCommentId: comment?.id ?? item.redirectId,
                     });
                   } catch (er) {
                     console.log(er);

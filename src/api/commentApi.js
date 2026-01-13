@@ -87,6 +87,18 @@ export const CommentLike = async commentId => {
   }
 };
 
+export const CommentGetById = async commentId => {
+  if (!commentId) return null;
+  try {
+    const response = await axiosInstance.get(
+      `/comment/get-by/comment/${commentId}`,
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 export const CommentDelete = async commentId => {
   if (!commentId) return null;
   try {
