@@ -5,6 +5,7 @@ import {navigationRef} from '../../navigation/NavigationService';
 import {NotifiRead} from '../../api/notificationApi';
 import {ReviewgetbyGet} from '../../api/reviewApi';
 import {PostGetById} from '../../api/postApi';
+import {CommentGetById} from '../../api/commentApi';
 
 const useHandlePendingNotification = (
   loading,
@@ -32,7 +33,38 @@ const useHandlePendingNotification = (
           body,
         } = pendingNotification;
         const targetPostId = redirectId ?? pendingNotification?.targetId;
-
+        if (
+          redirectType === 'COMMENT_DETAIL' &&
+          notificationType === 'COMMENT_LIKED'
+        ) {
+          try {
+            const comment = await CommentGetById(redirectId);
+            navigate('PostDetailScreen', {
+              postId: comment.postId,
+              rootCommentId: comment.rootCommentId,
+              openCommentSheet: true,
+              scrollToCommentId: comment.id ?? redirectId,
+            });
+          } catch (er) {
+            console.log(er);
+          }
+        }
+        if (
+          redirectType === 'COMMENT_DETAIL' &&
+          notificationType === 'REPLY_COMMENT_CREATED'
+        ) {
+          try {
+            const comment = await CommentGetById(redirectId);
+            navigate('PostDetailScreen', {
+              postId: comment.postId,
+              rootCommentId: comment.rootCommentId,
+              openCommentSheet: true,
+              scrollToCommentId: comment.id ?? redirectId,
+            });
+          } catch (er) {
+            console.log(er);
+          }
+        }
         if (
           redirectType === 'POST_DETAIL' &&
           notificationType === 'STORE_TAG_POST_CREATED'

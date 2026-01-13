@@ -170,6 +170,7 @@ const CommentFooter = ({
 
 const PostCommentScreen = ({navigation, route}) => {
   const {postId, isPostWriter = false} = route.params ?? {};
+  const isAndroid = Platform.OS === 'android';
   const insets = useSafeAreaInsets();
   const {height: rawWindowHeight} = useWindowDimensions();
   const windowHeight = Math.max(
@@ -356,14 +357,21 @@ const PostCommentScreen = ({navigation, route}) => {
       if (Platform.OS === 'ios' && !isExpandedRef.current) {
         setSheetExpanded(true, duration);
       }
-      const keyboardHeight = Math.max(
+      const rawKeyboardHeight = Math.max(
         0,
         (event?.endCoordinates?.height ?? 0) - insets.bottom,
       );
-      const maxTranslate = Math.max(0, sheetHeightRef.current - 120);
+      const fallbackKeyboardHeight =
+        rawKeyboardHeight || (isAndroid ? 320 : 0);
+      const baseForCap =
+        sheetHeightRef.current ||
+        screenHeightRef.current ||
+        screenHeight ||
+        windowHeight;
+      const maxTranslate = Math.max(0, baseForCap - 120);
       const effectiveKeyboard = Math.min(
         maxTranslate,
-        Math.max(0, keyboardHeight),
+        Math.max(0, fallbackKeyboardHeight),
       );
       setKeyboardHeight(effectiveKeyboard);
       Animated.timing(keyboardTranslate, {
@@ -398,7 +406,16 @@ const PostCommentScreen = ({navigation, route}) => {
       showSub.remove();
       hideSub.remove();
     };
-  }, [insets.bottom, keyboardTranslate, scrollToItem]);
+  }, [
+    insets.bottom,
+    isAndroid,
+    keyboardTranslate,
+    runCloseAnimation,
+    scrollToItem,
+    screenHeight,
+    windowHeight,
+    setSheetExpanded,
+  ]);
 
   useEffect(() => {
     let isMounted = true;

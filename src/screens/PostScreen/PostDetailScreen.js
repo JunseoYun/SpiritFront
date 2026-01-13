@@ -35,8 +35,14 @@ const COMMENT_SORTS = {
 //TODO
 //PostDetailScreen 에서 전 스크린이 매장 리뷰 스크린이면 매장 이름 눌렀을 때 매장으로 이동 안하는 걸로 변경
 const PostDetailScreen = ({navigation, route}) => {
-  const {postId, item: routeItem, screen, openCommentSheet} =
-    route.params ?? {};
+  const {
+    postId,
+    item: routeItem,
+    screen,
+    openCommentSheet,
+    scrollToCommentId,
+    rootCommentId,
+  } = route.params ?? {};
   const [postItem, setPostItem] = useState(routeItem ?? null);
   const [loading, setLoading] = useState(Boolean(postId));
   const insets = useSafeAreaInsets();
@@ -48,6 +54,8 @@ const PostDetailScreen = ({navigation, route}) => {
     const topInset = insets.top === 0 ? 20 : insets.top;
     return ['70%', Math.max(0, windowHeight - topInset)];
   }, [insets.top, windowHeight]);
+  const commentSheetInitialIndex = openCommentSheet ? 1 : 0;
+  const commentPageSize = 20;
   const [commentList, setCommentList] = useState([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [commentLikeState, setCommentLikeState] = useState({});
@@ -58,6 +66,7 @@ const PostDetailScreen = ({navigation, route}) => {
   const [currentUserNickname, setCurrentUserNickname] = useState('');
   const [currentUserProfileImage, setCurrentUserProfileImage] = useState(null);
   const [pendingScrollReplyId, setPendingScrollReplyId] = useState(null);
+  const [pendingHighlightIds, setPendingHighlightIds] = useState([]);
   const isLoadingMoreCommentsRef = useRef(false);
   const [didAutoOpenCommentSheet, setDidAutoOpenCommentSheet] = useState(false);
 
@@ -591,6 +600,148 @@ const PostDetailScreen = ({navigation, route}) => {
     fetchComments(targetPostId);
   }, [commentSortKey, fetchComments, postId, postItem?.id]);
 
+  useEffect(() => {
+    const targetPostId = postItem?.id ?? postId;
+    if (!scrollToCommentId || !targetPostId) {
+      return;
+    }
+    let isCancelled = false;
+    const ensureCommentVisible = async () => {
+      try {
+        const targetCommentId = String(scrollToCommentId);
+        const targetRootId =
+          rootCommentId !== undefined && rootCommentId !== null
+            ? String(rootCommentId)
+            : null;
+        const pageSize = 50;
+        const mergeUnique = (listA = [], listB = []) => {
+          const map = new Map();
+          [...listA, ...listB].forEach(item => {
+            if (item && item.id !== undefined) {
+              map.set(String(item.id), item);
+            }
+          });
+          return Array.from(map.values());
+        };
+
+        const fetchRootsUntilFound = async () => {
+          const roots = [];
+          let page = 0;
+          let foundRoot = null;
+          while (true) {
+            const data = await CommentGetByPost({
+              postId: targetPostId,
+              page,
+              size: pageSize,
+              sort: COMMENT_SORTS[commentSortKey],
+            });
+            const items = Array.isArray(data?.content) ? data.content : [];
+            roots.push(...items);
+            foundRoot = items.find(item =>
+              targetRootId
+                ? String(item.id) === targetRootId
+                : String(item.id) === targetCommentId,
+            );
+            const isLastPage =
+              data?.last === true ||
+              items.length < pageSize ||
+              (Number.isFinite(data?.totalPages) &&
+                page >= (data.totalPages ?? 1) - 1);
+            if (foundRoot || isLastPage) {
+              break;
+            }
+            page += 1;
+          }
+          return {roots, foundRoot};
+        };
+
+        const fetchRepliesUntilFound = async rootId => {
+          const replies = [];
+          let page = 0;
+          let foundReply = null;
+          while (true) {
+            const data = await CommentGetByRootComment({
+              rootCommentId: rootId,
+              page,
+              size: pageSize,
+              sort: COMMENT_SORTS[commentSortKey],
+            });
+            const items = Array.isArray(data?.content) ? data.content : [];
+            replies.push(...items);
+            foundReply = items.find(
+              item => String(item.id) === targetCommentId,
+            );
+            const isLastPage =
+              data?.last === true ||
+              items.length < pageSize ||
+              (Number.isFinite(data?.totalPages) &&
+                page >= (data.totalPages ?? 1) - 1);
+            if (foundReply || isLastPage) {
+              break;
+            }
+            page += 1;
+          }
+          return {replies, foundReply};
+        };
+
+        const {roots, foundRoot} = await fetchRootsUntilFound();
+        if (isCancelled) return;
+        const mappedRoots = roots.map(item => mapCommentItem(item));
+
+        setCommentList(prev => {
+          const map = new Map();
+          mappedRoots.forEach(c => map.set(String(c.id), c));
+          prev.forEach(c => {
+            if (!map.has(String(c.id))) map.set(String(c.id), c);
+          });
+          return Array.from(map.values());
+        });
+
+        const effectiveRootId =
+          targetRootId ?? (foundRoot ? String(foundRoot.id) : targetCommentId);
+
+        if (effectiveRootId && String(effectiveRootId) !== targetCommentId) {
+          const {replies} = await fetchRepliesUntilFound(effectiveRootId);
+          if (isCancelled) return;
+          const mappedReplies = replies.map(item =>
+            mapCommentItem(item, effectiveRootId),
+          );
+          setCommentList(prev =>
+            prev.map(comment => {
+              if (String(comment.id) !== String(effectiveRootId)) {
+                return comment;
+              }
+              return {
+                ...comment,
+                replies: mergeUnique(comment.replies, mappedReplies),
+                previewReplies: mergeUnique(
+                  comment.previewReplies,
+                  mappedReplies,
+                ),
+              };
+            }),
+          );
+        }
+
+        setPendingScrollReplyId(targetCommentId);
+        setPendingHighlightIds([targetCommentId]);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    ensureCommentVisible();
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    scrollToCommentId,
+    rootCommentId,
+    commentSortKey,
+    mapCommentItem,
+    postId,
+    postItem?.id,
+  ]);
+
   const handleChangeCommentSort = useCallback(nextSortKey => {
     setCommentSortKey(nextSortKey);
   }, []);
@@ -662,11 +813,15 @@ const PostDetailScreen = ({navigation, route}) => {
         onDeleteComment={handleDeleteComment}
         onRequestReplies={handleRequestReplies}
         onRequestMoreComments={handleRequestMoreComments}
+        commentPageSize={commentPageSize}
         commentTotalCount={commentTotalCount}
         commentPage={commentPage}
         isPostWriter={postItem?.isWriter ?? false}
         isLoadingComments={isLoadingComments}
         pendingScrollToId={pendingScrollReplyId}
+        pendingHighlightIds={pendingHighlightIds}
+        initialIndex={commentSheetInitialIndex}
+        autoExpandRootId={rootCommentId ?? null}
       />
     </View>
   );

@@ -4,6 +4,7 @@
   useEffect,
   useRef,
   useState,
+  useMemo,
 } from 'react';
 import {
   ActionSheetIOS,
@@ -17,11 +18,11 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import {ScrollView} from 'react-native-gesture-handler';
 import {
   BottomSheetBackdrop,
   BottomSheetFooter,
   BottomSheetModal,
-  BottomSheetScrollView,
   BottomSheetTextInput,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
@@ -41,11 +42,14 @@ const CommentFooter = ({
   onChangeCommentInput,
   onPressSend,
   onFocusInput,
+  onRequestFocusAfterSnap,
+  canFocusInput = true,
   defaultProfile,
   currentUserProfileImage,
   bottomInset,
   replyTargetStore,
   onClearReplyTarget,
+  onLayout,
 }) => {
   const [localInput, setLocalInput] = useState('');
   const [replyTarget, setReplyTarget] = useState(
@@ -125,6 +129,7 @@ const CommentFooter = ({
   ]);
   return (
     <Animated.View
+      onLayout={onLayout}
       style={[
         styles.commentInputBar,
         {
@@ -161,21 +166,32 @@ const CommentFooter = ({
             styles.commentInputField,
             replyTarget ? styles.commentInputFieldReply : null,
           ]}>
-          <CustomTextInput
-            ref={inputRef}
-            value={localInput}
-            onChangeText={text => {
-              setLocalInput(text);
-              onChangeCommentInput?.(text);
-            }}
-            onFocus={onFocusInput}
-            placeholder="댓글을 남겨보세요."
-            placeholderTextColor="#9AA1AE"
-            style={styles.commentInput}
-            multiline
-            underlineColorAndroid="transparent"
-            InputComponent={BottomSheetTextInput}
-          />
+          <View style={{flex: 1, position: 'relative'}}>
+            <CustomTextInput
+              ref={inputRef}
+              value={localInput}
+              onChangeText={text => {
+                setLocalInput(text);
+                onChangeCommentInput?.(text);
+              }}
+              editable
+              showSoftInputOnFocus={
+                Platform.OS === 'ios' ? true : canFocusInput
+              }
+              onPressIn={() => {
+                if (Platform.OS === 'android' && !canFocusInput) {
+                  onRequestFocusAfterSnap?.();
+                }
+              }}
+              onFocus={onFocusInput}
+              placeholder="댓글을 남겨보세요."
+              placeholderTextColor="#9AA1AE"
+              style={styles.commentInput}
+              multiline
+              underlineColorAndroid="transparent"
+              InputComponent={BottomSheetTextInput}
+            />
+          </View>
           {localInput.trim() ? (
             <Pressable
               hitSlop={8}
@@ -215,6 +231,9 @@ const PostCommentSheet = forwardRef(
       isPostWriter = false,
       isLoadingComments = false,
       pendingScrollToId = null,
+      pendingHighlightIds = [],
+      initialIndex = 0,
+      autoExpandRootId = null,
     },
     ref,
   ) => {
@@ -229,32 +248,56 @@ const PostCommentSheet = forwardRef(
     const [selectedMenuTarget, setSelectedMenuTarget] = useState(null);
     const [reportTargetItem, setReportTargetItem] = useState(null);
     const [menuPosition, setMenuPosition] = useState({top: 60});
+    const [footerHeight, setFooterHeight] = useState(0);
+    const [currentSheetIndex, setCurrentSheetIndex] = useState(0);
+    const pendingFocusAfterSnapRef = useRef(false);
+    const pendingSnapOnlyRef = useRef(false);
     const {showToast} = useToast();
     const [selectedReportReason, setSelectedReportReason] = useState(null);
     const [loadingReplies, setLoadingReplies] = useState({});
     const reportSheetRef = useRef(null);
     const scrollOffsetRef = useRef(0);
+    const scrollStartOffsetRef = useRef(0);
     const isLoadingMoreCommentsRef = useRef(false);
     const lastRequestedCommentPageRef = useRef(0);
     const SHEET_HEADER_HEIGHT = 52;
     const highlightMapRef = useRef({});
+    const pendingHighlightSetRef = useRef(new Set());
     const replyRequestTokenRef = useRef({});
     const pendingAutoScrollIdRef = useRef(null);
 
     const layoutMapRef = useRef({});
     const replyListLayoutRef = useRef({});
-    const setItemLayoutWithSize = useCallback((id, y, height) => {
-      if (!id) return;
-      layoutMapRef.current[id] = {y, height};
-      if (pendingAutoScrollIdRef.current === id) {
-        pendingAutoScrollIdRef.current = null;
-        scrollToItem(id);
-      }
-    }, []);
+    const setItemLayoutWithSize = useCallback(
+      (id, y, height) => {
+        if (!id) return;
+        layoutMapRef.current[id] = {y, height};
+        if (pendingAutoScrollIdRef.current === id) {
+          pendingAutoScrollIdRef.current = null;
+          scrollToItem(id, false);
+          requestAnimationFrame(() => {
+            triggerHighlight(id);
+          });
+        }
+        if (pendingHighlightSetRef.current.has(String(id))) {
+          pendingHighlightSetRef.current.delete(String(id));
+          requestAnimationFrame(() => {
+            triggerHighlight(id);
+          });
+        }
+      },
+      [scrollToItem, triggerHighlight],
+    );
     const setReplyListLayout = useCallback((id, y) => {
       if (!id) return;
       replyListLayoutRef.current[id] = y;
     }, []);
+    const finalSnapIndex = useMemo(
+      () => Math.max(0, (snapPoints?.length ?? 1) - 1),
+      [snapPoints],
+    );
+    const canFocusInput =
+      Platform.OS === 'ios' || currentSheetIndex === finalSnapIndex;
 
     const pendingScrollIdRef = useRef(null);
     const isKeyboardVisibleRef = useRef(false);
@@ -281,27 +324,51 @@ const PostCommentSheet = forwardRef(
       },
       [getHighlightValue],
     );
-    const scrollToItem = useCallback(id => {
+    const scrollToItem = useCallback((id, shouldFocus = true) => {
       const layout = layoutMapRef.current[id];
       if (!layout || typeof layout.y !== 'number') {
         return;
       }
       const {y} = layout;
-      scrollRef.current?.scrollTo?.({y: Math.max(0, y), animated: true});
-      requestAnimationFrame(() => {
-        inputRef.current?.focus?.();
-      });
+      const offset = Math.max(0, y - 12);
+      pendingHighlightSetRef.current.add(String(id));
+      scrollRef.current?.scrollTo?.({y: offset, animated: true});
+      if (shouldFocus) {
+        requestAnimationFrame(() => {
+          inputRef.current?.focus?.();
+        });
+      }
     }, []);
 
     useEffect(() => {
       if (!pendingScrollToId) return;
       pendingAutoScrollIdRef.current = pendingScrollToId;
+      pendingHighlightSetRef.current.add(String(pendingScrollToId));
       const layout = layoutMapRef.current[pendingScrollToId];
       if (layout && typeof layout.y === 'number') {
         pendingAutoScrollIdRef.current = null;
-        scrollToItem(pendingScrollToId);
+        scrollToItem(pendingScrollToId, false);
+        pendingHighlightSetRef.current.delete(String(pendingScrollToId));
+        requestAnimationFrame(() => {
+          triggerHighlight(pendingScrollToId);
+        });
       }
-    }, [pendingScrollToId, scrollToItem]);
+    }, [pendingScrollToId, scrollToItem, triggerHighlight]);
+
+    useEffect(() => {
+      const ids = Array.isArray(pendingHighlightIds)
+        ? pendingHighlightIds
+        : [pendingHighlightIds];
+      ids.filter(Boolean).forEach(id => {
+        const key = String(id);
+        pendingHighlightSetRef.current.add(key);
+        const layout = layoutMapRef.current[key];
+        if (layout && typeof layout.y === 'number') {
+          pendingHighlightSetRef.current.delete(key);
+          triggerHighlight(key);
+        }
+      });
+    }, [pendingHighlightIds, triggerHighlight]);
 
     useEffect(() => {
       const showSub = Keyboard.addListener('keyboardDidShow', () => {
@@ -479,35 +546,99 @@ const PostCommentSheet = forwardRef(
     );
 
     const handleInputFocus = useCallback(() => {
-      if (ref && typeof ref !== 'function') {
-        const targetIndex = Math.max(0, (snapPoints?.length ?? 1) - 1);
-        ref.current?.snapToIndex?.(targetIndex);
+      if (Platform.OS === 'ios') {
+        return;
       }
-      requestAnimationFrame(() => {
-        inputRef.current?.focus?.();
-      });
-    }, [ref, snapPoints]);
+      if (pendingFocusAfterSnapRef.current) {
+        return;
+      }
+      if (ref && typeof ref !== 'function') {
+        if (currentSheetIndex < finalSnapIndex) {
+          pendingFocusAfterSnapRef.current = true;
+          inputRef.current?.blur?.();
+          Keyboard.dismiss();
+          ref.current?.snapToIndex?.(finalSnapIndex);
+          return;
+        }
+      }
+    }, [currentSheetIndex, finalSnapIndex, ref]);
+
+    const handleRequestFocusAfterSnap = useCallback(() => {
+      if (Platform.OS === 'ios') {
+        return;
+      }
+      if (pendingFocusAfterSnapRef.current) {
+        return;
+      }
+      if (
+        currentSheetIndex < finalSnapIndex &&
+        ref &&
+        typeof ref !== 'function'
+      ) {
+        pendingFocusAfterSnapRef.current = true;
+        pendingSnapOnlyRef.current = true;
+        ref.current?.snapToIndex?.(finalSnapIndex);
+        return;
+      }
+      inputRef.current?.focus?.();
+    }, [currentSheetIndex, finalSnapIndex, ref]);
+
+    const handleScrollBegin = useCallback(event => {
+      scrollStartOffsetRef.current =
+        event?.nativeEvent?.contentOffset?.y ?? 0;
+    }, []);
+
+    const handleScrollEnd = useCallback(() => {
+      const startY = scrollStartOffsetRef.current ?? 0;
+      const endY = scrollOffsetRef.current ?? 0;
+      if (startY === 0 && endY === 0 && ref && typeof ref !== 'function') {
+        if (currentSheetIndex > 0) {
+          ref.current?.snapToIndex?.(currentSheetIndex - 1);
+        } else {
+          ref.current?.snapToIndex?.(-1) ?? ref.current?.dismiss?.();
+        }
+      }
+    }, [currentSheetIndex, ref]);
 
     const handleClearReplyTarget = useCallback(() => {
       setReplyTarget(null);
-      requestAnimationFrame(() => {
-        inputRef.current?.focus?.();
-      });
+      // requestAnimationFrame(() => {
+      //   inputRef.current?.focus?.();
+      // });
     }, []);
 
     const handleSheetChange = useCallback(
       index => {
+        setCurrentSheetIndex(index);
+        if (index === finalSnapIndex && pendingFocusAfterSnapRef.current) {
+          setTimeout(
+            () => {
+              pendingFocusAfterSnapRef.current = false;
+              inputRef.current?.focus?.();
+            },
+            pendingSnapOnlyRef.current ? 0 : 50,
+          );
+          pendingSnapOnlyRef.current = false;
+        }
         if (index === -1) {
           inputRef.current?.blur?.();
           onChangeCommentInput?.('');
           closeMoreMenu();
           resetSheetState();
+          pendingFocusAfterSnapRef.current = false;
+          pendingSnapOnlyRef.current = false;
         }
         if (onChange) {
           onChange(index);
         }
       },
-      [closeMoreMenu, onChange, onChangeCommentInput, resetSheetState],
+      [
+        closeMoreMenu,
+        finalSnapIndex,
+        onChange,
+        onChangeCommentInput,
+        resetSheetState,
+      ],
     );
 
     const handleSheetAnimate = useCallback(
@@ -517,6 +648,8 @@ const PostCommentSheet = forwardRef(
           onChangeCommentInput?.('');
           closeMoreMenu();
           resetSheetState();
+          pendingFocusAfterSnapRef.current = false;
+          pendingSnapOnlyRef.current = false;
         }
       },
       [closeMoreMenu, onChangeCommentInput, resetSheetState],
@@ -564,6 +697,13 @@ const PostCommentSheet = forwardRef(
     useEffect(() => {
       expandedRepliesRef.current = expandedReplies;
     }, [expandedReplies]);
+
+    useEffect(() => {
+      if (!autoExpandRootId) return;
+      const key = String(autoExpandRootId);
+      setExpandedReplies(prev => ({...prev, [key]: true}));
+      setHiddenPreviewReplies(prev => ({...prev, [key]: false}));
+    }, [autoExpandRootId]);
 
     const onPressSendRef = useRef(onPressSend);
     const onChangeCommentInputRef = useRef(onChangeCommentInput);
@@ -657,11 +797,19 @@ const PostCommentSheet = forwardRef(
             onChangeCommentInput={handleChangeCommentInput}
             onPressSend={handlePressSend}
             onFocusInput={handleInputFocus}
+            onRequestFocusAfterSnap={handleRequestFocusAfterSnap}
+            canFocusInput={canFocusInput}
             defaultProfile={defaultProfile}
             currentUserProfileImage={currentUserProfileImage}
             bottomInset={insets.bottom}
             replyTargetStore={replyTargetStoreRef}
             onClearReplyTarget={handleClearReplyTarget}
+            onLayout={event => {
+              const nextHeight = event?.nativeEvent?.layout?.height ?? 0;
+              if (!footerHeight && nextHeight) {
+                setFooterHeight(nextHeight);
+              }
+            }}
           />
         </BottomSheetFooter>
       ),
@@ -670,9 +818,12 @@ const PostCommentSheet = forwardRef(
         currentUserProfileImage,
         handleChangeCommentInput,
         handleInputFocus,
+        handleRequestFocusAfterSnap,
+        canFocusInput,
         handlePressSend,
         handleClearReplyTarget,
         insets.bottom,
+        footerHeight,
       ],
     );
 
@@ -706,28 +857,36 @@ const PostCommentSheet = forwardRef(
 
     const handleCommentScroll = useCallback(
       event => {
-        scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+        const offsetY = event.nativeEvent.contentOffset?.y ?? 0;
+        scrollOffsetRef.current = offsetY;
+
         if (!hasMoreComments) return;
         const layoutHeight = event.nativeEvent.layoutMeasurement?.height ?? 0;
         const contentHeight = event.nativeEvent.contentSize?.height ?? 0;
-        const offsetY = event.nativeEvent.contentOffset?.y ?? 0;
         const distanceFromBottom = contentHeight - (offsetY + layoutHeight);
         if (distanceFromBottom <= 120) {
           handleLoadMoreComments(Math.max(0, commentPage) + 1);
         }
       },
-      [commentPage, handleLoadMoreComments, hasMoreComments],
+      [
+        commentPage,
+        currentSheetIndex,
+        handleLoadMoreComments,
+        hasMoreComments,
+      ],
     );
+
+    const footerSpacing = (footerHeight || 72) + insets.bottom;
 
     return (
       <>
         <BottomSheetModal
           ref={ref}
-          index={0}
+          index={initialIndex}
           snapPoints={snapPoints}
           enablePanDownToClose
           keyboardBehavior="extend"
-          keyboardBlurBehavior="restore"
+          keyboardBlurBehavior="none"
           android_keyboardInputMode="adjustResize"
           // bottomInset={sheetBottomInset}
           onChange={handleSheetChange}
@@ -741,269 +900,425 @@ const PostCommentSheet = forwardRef(
           backgroundStyle={styles.commentSheetBackground}
           handleIndicatorStyle={styles.commentSheetHandleIndicator}
           footerComponent={renderCommentFooter}>
-          <BottomSheetView style={styles.commentSheetHeader}>
-            <CustomText style={styles.commentSheetTitle}>댓글</CustomText>
-            <View style={styles.commentSortRow}>
-              <Pressable
-                onPress={() => onChangeCommentSort?.('latest')}
-                hitSlop={6}>
-                <CustomText
-                  style={[
-                    styles.commentSortText,
-                    commentSortKey === 'latest' && styles.commentSortTextActive,
-                  ]}>
-                  최신순
-                </CustomText>
-              </Pressable>
-              <Pressable
-                onPress={() => onChangeCommentSort?.('popular')}
-                hitSlop={6}>
-                <CustomText
-                  style={[
-                    styles.commentSortText,
-                    commentSortKey === 'popular' &&
-                      styles.commentSortTextActive,
-                  ]}>
-                  인기순
-                </CustomText>
-              </Pressable>
-            </View>
-          </BottomSheetView>
-          {showMoreMenu ? (
-            <>
-              <Pressable
-                style={styles.moreMenuOverlay}
-                onPress={closeMoreMenu}
-              />
-              <View style={[styles.moreMenu, {top: menuPosition.top}]}>
-                {!selectedMenuTarget?.isMine ? (
-                  <Pressable
-                    style={styles.moreMenuItem}
-                    onPress={() => {
-                      closeMoreMenu();
-                      handleReportPress(selectedMenuTarget);
-                    }}>
-                    <CustomText style={styles.moreMenuItemTextPrimary}>
-                      신고하기
-                    </CustomText>
-                  </Pressable>
-                ) : null}
-                {isPostWriter || selectedMenuTarget?.isMine ? (
-                  <Pressable
-                    style={styles.moreMenuItem}
-                    onPress={() => {
-                      closeMoreMenu();
-                      handleDeletePress(selectedMenuTarget);
-                    }}>
-                    <CustomText style={styles.moreMenuItemTextDestructive}>
-                      삭제하기
-                    </CustomText>
-                  </Pressable>
-                ) : null}
+          <BottomSheetView style={styles.commentSheetBody}>
+            <BottomSheetView style={styles.commentSheetHeader}>
+              <CustomText style={styles.commentSheetTitle}>댓글</CustomText>
+              <View style={styles.commentSortRow}>
+                <Pressable
+                  onPress={() => onChangeCommentSort?.('latest')}
+                  hitSlop={6}>
+                  <CustomText
+                    style={[
+                      styles.commentSortText,
+                      commentSortKey === 'latest' &&
+                        styles.commentSortTextActive,
+                    ]}>
+                    최신순
+                  </CustomText>
+                </Pressable>
+                <Pressable
+                  onPress={() => onChangeCommentSort?.('popular')}
+                  hitSlop={6}>
+                  <CustomText
+                    style={[
+                      styles.commentSortText,
+                      commentSortKey === 'popular' &&
+                        styles.commentSortTextActive,
+                    ]}>
+                    인기순
+                  </CustomText>
+                </Pressable>
               </View>
-            </>
-          ) : null}
-          <BottomSheetScrollView
-            ref={scrollRef}
-            keyboardShouldPersistTaps="always"
-            keyboardDismissMode="none"
-            enableFooterMarginAdjustment={false}
-            scrollEnabled={!showMoreMenu}
-            scrollEventThrottle={16}
-            onScroll={handleCommentScroll}
-            contentContainerStyle={[
-              styles.commentSheetContent,
-              {paddingBottom: insets.bottom + 70},
-            ]}>
-            {commentList.length === 0 && isLoadingComments ? (
-              <View style={styles.commentLoadingContainer}>
-                <ActivityIndicator size="small" color="#9AA1AE" />
-              </View>
-            ) : commentList.length === 0 ? (
-              <CustomText style={styles.commentEmptyText}>
-                첫 댓글을 작성해보세요.
-              </CustomText>
-            ) : (
-              commentList.map(comment => {
-                const replies = Array.isArray(comment.replies)
-                  ? comment.replies
-                  : [];
-                const replyCount = Number.isFinite(comment.replyCount)
-                  ? comment.replyCount
-                  : replies.length;
-                const previewReplies = Array.isArray(comment.previewReplies)
-                  ? comment.previewReplies
-                  : [];
-                const mergeUnique = list => {
-                  const seen = new Set();
-                  return list.filter(reply => {
-                    const key = String(reply.id);
-                    if (seen.has(key)) return false;
-                    seen.add(key);
-                    return true;
-                  });
-                };
-                const isMenuTarget = selectedMenuTarget?.id === comment.id;
-                const isExpanded = Boolean(expandedReplies[comment.id]);
-                const isPreviewHidden = Boolean(
-                  hiddenPreviewReplies[comment.id],
-                );
-                const expandedReplyItems = mergeUnique(
-                  isExpanded
-                    ? replies
-                    : replies.length
-                    ? replies
-                    : previewReplies,
-                );
-                const previewVisibleCount =
-                  !isExpanded && !isPreviewHidden ? previewReplies.length : 0;
-                const remainingReplyCount = Math.max(
-                  0,
-                  replyCount - previewVisibleCount,
-                );
-                const remainingExpandedCount = Math.max(
-                  0,
-                  replyCount - expandedReplyItems.length,
-                );
-                const loadedReplyCount = Array.isArray(comment.replies)
-                  ? comment.replies.length
-                  : 0;
-                const expectedReplyCount = Number.isFinite(comment.replyCount)
-                  ? comment.replyCount
-                  : loadedReplyCount;
-                const hasLoadedAllReplies =
-                  expectedReplyCount > 0 &&
-                  loadedReplyCount >= expectedReplyCount;
-                const isLoadingReplies = !!loadingReplies[comment.id];
+            </BottomSheetView>
+            {showMoreMenu ? (
+              <>
+                <Pressable
+                  style={styles.moreMenuOverlay}
+                  onPress={closeMoreMenu}
+                />
+                <View style={[styles.moreMenu, {top: menuPosition.top}]}>
+                  {!selectedMenuTarget?.isMine ? (
+                    <Pressable
+                      style={styles.moreMenuItem}
+                      onPress={() => {
+                        closeMoreMenu();
+                        handleReportPress(selectedMenuTarget);
+                      }}>
+                      <CustomText style={styles.moreMenuItemTextPrimary}>
+                        신고하기
+                      </CustomText>
+                    </Pressable>
+                  ) : null}
+                  {isPostWriter || selectedMenuTarget?.isMine ? (
+                    <Pressable
+                      style={styles.moreMenuItem}
+                      onPress={() => {
+                        closeMoreMenu();
+                        handleDeletePress(selectedMenuTarget);
+                      }}>
+                      <CustomText style={styles.moreMenuItemTextDestructive}>
+                        삭제하기
+                      </CustomText>
+                    </Pressable>
+                  ) : null}
+                </View>
+              </>
+            ) : null}
+            <ScrollView
+              ref={scrollRef}
+              style={styles.commentSheetScroll}
+              keyboardShouldPersistTaps="always"
+              keyboardDismissMode="none"
+              bounces={false}
+              alwaysBounceVertical={false}
+              nestedScrollEnabled
+              scrollEnabled={!showMoreMenu}
+              scrollEventThrottle={16}
+              onScroll={handleCommentScroll}
+              onScrollBeginDrag={handleScrollBegin}
+              onScrollEndDrag={handleScrollEnd}
+              contentInset={{bottom: footerSpacing}}
+              scrollIndicatorInsets={{bottom: footerSpacing}}
+              contentContainerStyle={[
+                styles.commentSheetContent,
+                {paddingBottom: Platform.OS === 'android' ? 150 : 30},
+              ]}>
+              {commentList.length === 0 && isLoadingComments ? (
+                <View style={styles.commentLoadingContainer}>
+                  <ActivityIndicator size="small" color="#9AA1AE" />
+                </View>
+              ) : commentList.length === 0 ? (
+                <CustomText style={styles.commentEmptyText}>
+                  첫 댓글을 작성해보세요.
+                </CustomText>
+              ) : (
+                commentList.map(comment => {
+                  const replies = Array.isArray(comment.replies)
+                    ? comment.replies
+                    : [];
+                  const replyCount = Number.isFinite(comment.replyCount)
+                    ? comment.replyCount
+                    : replies.length;
+                  const previewReplies = Array.isArray(comment.previewReplies)
+                    ? comment.previewReplies
+                    : [];
+                  const mergeUnique = list => {
+                    const seen = new Set();
+                    return list.filter(reply => {
+                      const key = String(reply.id);
+                      if (seen.has(key)) return false;
+                      seen.add(key);
+                      return true;
+                    });
+                  };
+                  const isMenuTarget = selectedMenuTarget?.id === comment.id;
+                  const isExpanded = Boolean(expandedReplies[comment.id]);
+                  const isPreviewHidden = Boolean(
+                    hiddenPreviewReplies[comment.id],
+                  );
+                  const expandedReplyItems = mergeUnique(
+                    isExpanded
+                      ? replies
+                      : replies.length
+                      ? replies
+                      : previewReplies,
+                  );
+                  const previewVisibleCount =
+                    !isExpanded && !isPreviewHidden ? previewReplies.length : 0;
+                  const remainingReplyCount = Math.max(
+                    0,
+                    replyCount - previewVisibleCount,
+                  );
+                  const remainingExpandedCount = Math.max(
+                    0,
+                    replyCount - expandedReplyItems.length,
+                  );
+                  const loadedReplyCount = Array.isArray(comment.replies)
+                    ? comment.replies.length
+                    : 0;
+                  const expectedReplyCount = Number.isFinite(comment.replyCount)
+                    ? comment.replyCount
+                    : loadedReplyCount;
+                  const hasLoadedAllReplies =
+                    expectedReplyCount > 0 &&
+                    loadedReplyCount >= expectedReplyCount;
+                  const isLoadingReplies = !!loadingReplies[comment.id];
 
-                return (
-                  <View
-                    key={comment.id}
-                    style={styles.commentGroup}
-                    onLayout={event => {
-                      const {y, height} = event.nativeEvent.layout;
-                      setItemLayoutWithSize(comment.id, y, height);
-                    }}>
-                    <AnimatedPressable
-                      style={[
-                        styles.commentItem,
-                        isMenuTarget ? styles.commentItemSelected : null,
-                      ]}
-                      delayLongPress={250}
-                      onLongPress={() => handleCommentLongPress(comment)}>
-                      <Animated.View
-                        pointerEvents="none"
+                  return (
+                    <View
+                      key={comment.id}
+                      style={styles.commentGroup}
+                      onLayout={event => {
+                        const {y, height} = event.nativeEvent.layout;
+                        setItemLayoutWithSize(comment.id, y, height);
+                      }}>
+                      <AnimatedPressable
                         style={[
-                          styles.commentHighlight,
-                          getHighlightOpacityStyle(comment.id),
+                          styles.commentItem,
+                          isMenuTarget ? styles.commentItemSelected : null,
                         ]}
-                      />
-                      <FastImage
-                        source={
-                          comment.profileImage
-                            ? {uri: comment.profileImage}
-                            : defaultProfile
-                        }
-                        style={styles.commentAvatar}
-                      />
-                      <View style={styles.commentBody}>
-                        <View style={styles.commentHeader}>
-                          <CustomText style={styles.commentAuthor}>
-                            {comment.author}
+                        delayLongPress={250}
+                        onLongPress={() => handleCommentLongPress(comment)}>
+                        <Animated.View
+                          pointerEvents="none"
+                          style={[
+                            styles.commentHighlight,
+                            getHighlightOpacityStyle(comment.id),
+                          ]}
+                        />
+                        <FastImage
+                          source={
+                            comment.profileImage
+                              ? {uri: comment.profileImage}
+                              : defaultProfile
+                          }
+                          style={styles.commentAvatar}
+                        />
+                        <View style={styles.commentBody}>
+                          <View style={styles.commentHeader}>
+                            <CustomText style={styles.commentAuthor}>
+                              {comment.author}
+                            </CustomText>
+                            <CustomText style={styles.commentDate}>
+                              {comment.createdAt}
+                            </CustomText>
+                          </View>
+                          <CustomText style={styles.commentText}>
+                            {comment.text}
                           </CustomText>
-                          <CustomText style={styles.commentDate}>
-                            {comment.createdAt}
+                          <Pressable
+                            style={styles.commentReplyPressable}
+                            onPress={() =>
+                              handleReplyPress(
+                                comment.author,
+                                comment.id,
+                                comment.id,
+                              )
+                            }>
+                            <CustomText style={styles.commentReplyText}>
+                              답글 달기
+                            </CustomText>
+                          </Pressable>
+                        </View>
+                        <View style={styles.commentLikeColumn}>
+                          <Pressable
+                            hitSlop={8}
+                            onPress={() => onToggleLike(comment.id)}>
+                            <Ionicons
+                              name={
+                                commentLikeState[comment.id]
+                                  ? 'heart'
+                                  : 'heart-outline'
+                              }
+                              size={20}
+                              color={
+                                commentLikeState[comment.id]
+                                  ? '#FF5E5E'
+                                  : '#A0A5AE'
+                              }
+                            />
+                          </Pressable>
+                          <CustomText style={styles.commentLikeCount}>
+                            {formatLikeCount(
+                              (comment.likes ?? 0) +
+                                (commentLikeState[comment.id] ? 1 : 0) -
+                                (comment.isLiked ? 1 : 0),
+                            )}
                           </CustomText>
                         </View>
-                        <CustomText style={styles.commentText}>
-                          {comment.text}
-                        </CustomText>
-                        <Pressable
-                          style={styles.commentReplyPressable}
-                          onPress={() =>
-                            handleReplyPress(
-                              comment.author,
-                              comment.id,
-                              comment.id,
-                            )
-                          }>
-                          <CustomText style={styles.commentReplyText}>
-                            답글 달기
-                          </CustomText>
-                        </Pressable>
-                      </View>
-                      <View style={styles.commentLikeColumn}>
-                        <Pressable
-                          hitSlop={8}
-                          onPress={() => onToggleLike(comment.id)}>
-                          <Ionicons
-                            name={
-                              commentLikeState[comment.id]
-                                ? 'heart'
-                                : 'heart-outline'
-                            }
-                            size={20}
-                            color={
-                              commentLikeState[comment.id]
-                                ? '#FF5E5E'
-                                : '#A0A5AE'
-                            }
+                        {isMenuTarget ? (
+                          <View
+                            pointerEvents="none"
+                            style={styles.commentItemDimmer}
                           />
-                        </Pressable>
-                        <CustomText style={styles.commentLikeCount}>
-                          {formatLikeCount(
-                            (comment.likes ?? 0) +
-                              (commentLikeState[comment.id] ? 1 : 0) -
-                              (comment.isLiked ? 1 : 0),
-                          )}
-                        </CustomText>
-                      </View>
-                      {isMenuTarget ? (
+                        ) : null}
+                      </AnimatedPressable>
+                      {isExpanded && replyCount > 0 ? (
                         <View
-                          pointerEvents="none"
-                          style={styles.commentItemDimmer}
-                        />
-                      ) : null}
-                    </AnimatedPressable>
-                    {isExpanded && replyCount > 0 ? (
-                      <View
-                        style={styles.commentReplyList}
-                        onLayout={event => {
-                          setReplyListLayout(
-                            comment.id,
-                            event.nativeEvent.layout.y,
-                          );
-                        }}>
-                        {expandedReplyItems.map(reply => {
-                          const isReplyMenuTarget =
-                            selectedMenuTarget?.id === reply.id;
-                          return (
-                            <AnimatedPressable
-                              key={reply.id}
+                          style={styles.commentReplyList}
+                          onLayout={event => {
+                            setReplyListLayout(
+                              comment.id,
+                              event.nativeEvent.layout.y,
+                            );
+                          }}>
+                          {expandedReplyItems.map(reply => {
+                            const isReplyMenuTarget =
+                              selectedMenuTarget?.id === reply.id;
+                            return (
+                              <AnimatedPressable
+                                key={reply.id}
+                                style={[
+                                  styles.commentReplyItem,
+                                  isReplyMenuTarget
+                                    ? styles.commentItemSelected
+                                    : null,
+                                ]}
+                                delayLongPress={250}
+                                onLongPress={() =>
+                                  handleCommentLongPress(reply)
+                                }
+                                onLayout={event => {
+                                  const {y, height} = event.nativeEvent.layout;
+                                  const parentLayout =
+                                    layoutMapRef.current[comment.id];
+                                  const replyListY =
+                                    replyListLayoutRef.current[comment.id];
+                                  const absoluteY =
+                                    (parentLayout?.y ?? 0) +
+                                    (replyListY ?? 0) +
+                                    y;
+                                  setItemLayoutWithSize(
+                                    reply.id,
+                                    absoluteY,
+                                    height,
+                                  );
+                                }}>
+                                <Animated.View
+                                  pointerEvents="none"
+                                  style={[
+                                    styles.commentHighlight,
+                                    getHighlightOpacityStyle(reply.id),
+                                  ]}
+                                />
+                                <Image
+                                  source={
+                                    reply.profileImage
+                                      ? {uri: reply.profileImage}
+                                      : defaultProfile
+                                  }
+                                  style={styles.commentReplyAvatar}
+                                />
+                                <View style={styles.commentReplyBody}>
+                                  <View style={styles.commentReplyHeader}>
+                                    <CustomText style={styles.commentAuthor}>
+                                      {reply.author}
+                                    </CustomText>
+                                    <CustomText style={styles.commentDate}>
+                                      {reply.createdAt}
+                                    </CustomText>
+                                  </View>
+                                  <CustomText style={styles.commentText}>
+                                    {reply.text}
+                                  </CustomText>
+                                  <Pressable
+                                    style={styles.commentReplyPressable}
+                                    onPress={() =>
+                                      handleReplyPress(
+                                        reply.author,
+                                        reply.id,
+                                        reply.rootCommentId ?? comment.id,
+                                      )
+                                    }>
+                                    <CustomText style={styles.commentReplyText}>
+                                      답글 달기
+                                    </CustomText>
+                                  </Pressable>
+                                </View>
+                                <View style={styles.commentReplyLikeColumn}>
+                                  <Pressable
+                                    hitSlop={8}
+                                    onPress={() => onToggleLike(reply.id)}>
+                                    <Ionicons
+                                      name={
+                                        commentLikeState[reply.id]
+                                          ? 'heart'
+                                          : 'heart-outline'
+                                      }
+                                      size={18}
+                                      color={
+                                        commentLikeState[reply.id]
+                                          ? '#FF5E5E'
+                                          : '#A0A5AE'
+                                      }
+                                    />
+                                  </Pressable>
+                                  <CustomText style={styles.commentLikeCount}>
+                                    {formatLikeCount(
+                                      (reply.likes ?? 0) +
+                                        (commentLikeState[reply.id] ? 1 : 0) -
+                                        (reply.isLiked ? 1 : 0),
+                                    )}
+                                  </CustomText>
+                                </View>
+                                {isReplyMenuTarget ? (
+                                  <View
+                                    pointerEvents="none"
+                                    style={styles.commentItemDimmer}
+                                  />
+                                ) : null}
+                              </AnimatedPressable>
+                            );
+                          })}
+                          {remainingExpandedCount > 0 ? (
+                            <Pressable
                               style={[
-                                styles.commentReplyItem,
-                                isReplyMenuTarget
-                                  ? styles.commentItemSelected
-                                  : null,
+                                styles.commentReplyToggle,
+                                {
+                                  paddingLeft: 48,
+                                },
                               ]}
-                              delayLongPress={250}
-                              onLongPress={() => handleCommentLongPress(reply)}
-                              onLayout={event => {
-                                const {y, height} = event.nativeEvent.layout;
-                                const parentLayout =
-                                  layoutMapRef.current[comment.id];
-                                const replyListY =
-                                  replyListLayoutRef.current[comment.id];
-                                const absoluteY =
-                                  (parentLayout?.y ?? 0) +
-                                  (replyListY ?? 0) +
-                                  y;
-                                setItemLayoutWithSize(
-                                  reply.id,
-                                  absoluteY,
-                                  height,
+                              disabled={isLoadingReplies}
+                              onPress={() => {
+                                if (hasLoadedAllReplies) {
+                                  return;
+                                }
+                                const nextPage = Number.isFinite(
+                                  comment.replyPage,
+                                )
+                                  ? comment.replyPage + 1
+                                  : 0;
+                                requestReplies(
+                                  comment.id,
+                                  nextPage,
+                                  commentSortKey,
                                 );
                               }}>
+                              <View style={styles.commentReplyToggleLine} />
+                              <CustomText
+                                style={[styles.commentReplyToggleText]}>
+                                {isLoadingReplies
+                                  ? ''
+                                  : `답글 ${remainingExpandedCount}개 더보기`}
+                              </CustomText>
+                              {isLoadingReplies ? (
+                                <ActivityIndicator
+                                  size="small"
+                                  color="#9AA1AE"
+                                />
+                              ) : null}
+                            </Pressable>
+                          ) : (
+                            <Pressable
+                              style={[
+                                styles.commentReplyToggle,
+                                {
+                                  paddingLeft: 48,
+                                },
+                              ]}
+                              onPress={() =>
+                                setExpandedReplies(prev => ({
+                                  ...prev,
+                                  [comment.id]: false,
+                                }))
+                              }>
+                              <View style={styles.commentReplyToggleLine} />
+                              <CustomText
+                                style={[styles.commentReplyToggleText]}>
+                                답글 접기
+                              </CustomText>
+                            </Pressable>
+                          )}
+                        </View>
+                      ) : null}
+                      {!isExpanded &&
+                      !isPreviewHidden &&
+                      previewReplies.length ? (
+                        <View style={styles.commentReplyList}>
+                          {previewReplies.map(reply => (
+                            <View
+                              key={reply.id}
+                              style={styles.commentReplyItem}>
                               <Animated.View
                                 pointerEvents="none"
                                 style={[
@@ -1031,19 +1346,6 @@ const PostCommentSheet = forwardRef(
                                 <CustomText style={styles.commentText}>
                                   {reply.text}
                                 </CustomText>
-                                <Pressable
-                                  style={styles.commentReplyPressable}
-                                  onPress={() =>
-                                    handleReplyPress(
-                                      reply.author,
-                                      reply.id,
-                                      reply.rootCommentId ?? comment.id,
-                                    )
-                                  }>
-                                  <CustomText style={styles.commentReplyText}>
-                                    답글 달기
-                                  </CustomText>
-                                </Pressable>
                               </View>
                               <View style={styles.commentReplyLikeColumn}>
                                 <Pressable
@@ -1071,44 +1373,39 @@ const PostCommentSheet = forwardRef(
                                   )}
                                 </CustomText>
                               </View>
-                              {isReplyMenuTarget ? (
-                                <View
-                                  pointerEvents="none"
-                                  style={styles.commentItemDimmer}
-                                />
-                              ) : null}
-                            </AnimatedPressable>
-                          );
-                        })}
-                        {remainingExpandedCount > 0 ? (
+                            </View>
+                          ))}
+                        </View>
+                      ) : null}
+                      {!isExpanded && previewVisibleCount > 0 ? (
+                        remainingReplyCount > 0 ? (
                           <Pressable
                             style={[
                               styles.commentReplyToggle,
-                              {
-                                paddingLeft: 48,
-                              },
+                              {paddingLeft: 48},
                             ]}
                             disabled={isLoadingReplies}
                             onPress={() => {
-                              if (hasLoadedAllReplies) {
-                                return;
+                              setHiddenPreviewReplies(prev => ({
+                                ...prev,
+                                [comment.id]: false,
+                              }));
+                              setExpandedReplies(prev => ({
+                                ...prev,
+                                [comment.id]: true,
+                              }));
+                              if (
+                                !hasLoadedAllReplies &&
+                                !Number.isFinite(comment.replyPage)
+                              ) {
+                                requestReplies(comment.id, 0, commentSortKey);
                               }
-                              const nextPage = Number.isFinite(
-                                comment.replyPage,
-                              )
-                                ? comment.replyPage + 1
-                                : 0;
-                              requestReplies(
-                                comment.id,
-                                nextPage,
-                                commentSortKey,
-                              );
                             }}>
                             <View style={styles.commentReplyToggleLine} />
-                            <CustomText style={[styles.commentReplyToggleText]}>
+                            <CustomText style={styles.commentReplyToggleText}>
                               {isLoadingReplies
-                                ? ''
-                                : `답글 ${remainingExpandedCount}개 더보기`}
+                                ? '불러오는 중...'
+                                : `답글 ${remainingReplyCount}개 더보기`}
                             </CustomText>
                             {isLoadingReplies ? (
                               <ActivityIndicator size="small" color="#9AA1AE" />
@@ -1118,90 +1415,24 @@ const PostCommentSheet = forwardRef(
                           <Pressable
                             style={[
                               styles.commentReplyToggle,
-                              {
-                                paddingLeft: 48,
-                              },
+                              {paddingLeft: 48},
                             ]}
                             onPress={() =>
-                              setExpandedReplies(prev => ({
+                              setHiddenPreviewReplies(prev => ({
                                 ...prev,
-                                [comment.id]: false,
+                                [comment.id]: true,
                               }))
                             }>
                             <View style={styles.commentReplyToggleLine} />
-                            <CustomText style={[styles.commentReplyToggleText]}>
+                            <CustomText style={styles.commentReplyToggleText}>
                               답글 접기
                             </CustomText>
                           </Pressable>
-                        )}
-                      </View>
-                    ) : null}
-                    {!isExpanded &&
-                    !isPreviewHidden &&
-                    previewReplies.length ? (
-                      <View style={styles.commentReplyList}>
-                        {previewReplies.map(reply => (
-                          <View key={reply.id} style={styles.commentReplyItem}>
-                            <Animated.View
-                              pointerEvents="none"
-                              style={[
-                                styles.commentHighlight,
-                                getHighlightOpacityStyle(reply.id),
-                              ]}
-                            />
-                            <Image
-                              source={
-                                reply.profileImage
-                                  ? {uri: reply.profileImage}
-                                  : defaultProfile
-                              }
-                              style={styles.commentReplyAvatar}
-                            />
-                            <View style={styles.commentReplyBody}>
-                              <View style={styles.commentReplyHeader}>
-                                <CustomText style={styles.commentAuthor}>
-                                  {reply.author}
-                                </CustomText>
-                                <CustomText style={styles.commentDate}>
-                                  {reply.createdAt}
-                                </CustomText>
-                              </View>
-                              <CustomText style={styles.commentText}>
-                                {reply.text}
-                              </CustomText>
-                            </View>
-                            <View style={styles.commentReplyLikeColumn}>
-                              <Pressable
-                                hitSlop={8}
-                                onPress={() => onToggleLike(reply.id)}>
-                                <Ionicons
-                                  name={
-                                    commentLikeState[reply.id]
-                                      ? 'heart'
-                                      : 'heart-outline'
-                                  }
-                                  size={18}
-                                  color={
-                                    commentLikeState[reply.id]
-                                      ? '#FF5E5E'
-                                      : '#A0A5AE'
-                                  }
-                                />
-                              </Pressable>
-                              <CustomText style={styles.commentLikeCount}>
-                                {formatLikeCount(
-                                  (reply.likes ?? 0) +
-                                    (commentLikeState[reply.id] ? 1 : 0) -
-                                    (reply.isLiked ? 1 : 0),
-                                )}
-                              </CustomText>
-                            </View>
-                          </View>
-                        ))}
-                      </View>
-                    ) : null}
-                    {!isExpanded && previewVisibleCount > 0 ? (
-                      remainingReplyCount > 0 ? (
+                        )
+                      ) : null}
+                      {!isExpanded &&
+                      previewVisibleCount === 0 &&
+                      replyCount > 0 ? (
                         <Pressable
                           style={[styles.commentReplyToggle, {paddingLeft: 48}]}
                           disabled={isLoadingReplies}
@@ -1225,66 +1456,24 @@ const PostCommentSheet = forwardRef(
                           <CustomText style={styles.commentReplyToggleText}>
                             {isLoadingReplies
                               ? '불러오는 중...'
-                              : `답글 ${remainingReplyCount}개 더보기`}
+                              : `답글 ${replyCount}개 더보기`}
                           </CustomText>
                           {isLoadingReplies ? (
                             <ActivityIndicator size="small" color="#9AA1AE" />
                           ) : null}
                         </Pressable>
-                      ) : (
-                        <Pressable
-                          style={[styles.commentReplyToggle, {paddingLeft: 48}]}
-                          onPress={() =>
-                            setHiddenPreviewReplies(prev => ({
-                              ...prev,
-                              [comment.id]: true,
-                            }))
-                          }>
-                          <View style={styles.commentReplyToggleLine} />
-                          <CustomText style={styles.commentReplyToggleText}>
-                            답글 접기
-                          </CustomText>
-                        </Pressable>
-                      )
-                    ) : null}
-                    {!isExpanded &&
-                    previewVisibleCount === 0 &&
-                    replyCount > 0 ? (
-                      <Pressable
-                        style={[styles.commentReplyToggle, {paddingLeft: 48}]}
-                        disabled={isLoadingReplies}
-                        onPress={() => {
-                          setHiddenPreviewReplies(prev => ({
-                            ...prev,
-                            [comment.id]: false,
-                          }));
-                          setExpandedReplies(prev => ({
-                            ...prev,
-                            [comment.id]: true,
-                          }));
-                          if (
-                            !hasLoadedAllReplies &&
-                            !Number.isFinite(comment.replyPage)
-                          ) {
-                            requestReplies(comment.id, 0, commentSortKey);
-                          }
-                        }}>
-                        <View style={styles.commentReplyToggleLine} />
-                        <CustomText style={styles.commentReplyToggleText}>
-                          {isLoadingReplies
-                            ? '불러오는 중...'
-                            : `답글 ${replyCount}개 더보기`}
-                        </CustomText>
-                        {isLoadingReplies ? (
-                          <ActivityIndicator size="small" color="#9AA1AE" />
-                        ) : null}
-                      </Pressable>
-                    ) : null}
-                  </View>
-                );
-              })
-            )}
-          </BottomSheetScrollView>
+                      ) : null}
+                    </View>
+                  );
+                })
+              )}
+              {currentSheetIndex === 0 ? (
+                <View
+                  style={{height: footerSpacing, backgroundColor: '#FFF'}}
+                />
+              ) : null}
+            </ScrollView>
+          </BottomSheetView>
         </BottomSheetModal>
         <PostReportBottomSheet
           sheetRef={reportSheetRef}
@@ -1309,6 +1498,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#E4E4E4',
     width: 48,
     height: 3,
+  },
+  commentSheetBody: {
+    flex: 1,
+  },
+  commentSheetScroll: {
+    flex: 1,
   },
   commentSheetHeader: {
     paddingBottom: 15,
