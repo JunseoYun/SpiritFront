@@ -242,7 +242,8 @@ const NotificationScreen = ({navigation}) => {
                   }
                 }
                 if (
-                  item.notificationType === 'COMMENT_LIKED' &&
+                  (item.notificationType === 'COMMENT_LIKED' ||
+                    item.notificationType === 'REPLY_COMMENT_CREATED') &&
                   item.redirectType === 'COMMENT_DETAIL'
                 ) {
                   try {
@@ -250,22 +251,8 @@ const NotificationScreen = ({navigation}) => {
                     navigation.navigate('PostDetailScreen', {
                       postId: comment?.postId,
                       rootCommentId: comment?.rootCommentId,
-                      openCommentSheet: true,
-                      scrollToCommentId: comment?.id ?? item.redirectId,
-                    });
-                  } catch (er) {
-                    console.log(er);
-                  }
-                }
-                if (
-                  item.notificationType === 'REPLY_COMMENT_CREATED' &&
-                  item.redirectType === 'COMMENT_DETAIL'
-                ) {
-                  try {
-                    const comment = await CommentGetById(item.redirectId);
-                    navigation.navigate('PostDetailScreen', {
-                      postId: comment?.postId,
-                      rootCommentId: comment?.rootCommentId,
+                      rootCommentOrderIndex: comment?.rootCommentOrderIndex,
+                      replyCommentOrderIndex: comment?.replyCommentOrderIndex,
                       openCommentSheet: true,
                       scrollToCommentId: comment?.id ?? item.redirectId,
                     });

@@ -35,29 +35,16 @@ const useHandlePendingNotification = (
         const targetPostId = redirectId ?? pendingNotification?.targetId;
         if (
           redirectType === 'COMMENT_DETAIL' &&
-          notificationType === 'COMMENT_LIKED'
+          (notificationType === 'COMMENT_LIKED' ||
+            notificationType === 'REPLY_COMMENT_CREATED')
         ) {
           try {
             const comment = await CommentGetById(redirectId);
             navigate('PostDetailScreen', {
               postId: comment.postId,
               rootCommentId: comment.rootCommentId,
-              openCommentSheet: true,
-              scrollToCommentId: comment.id ?? redirectId,
-            });
-          } catch (er) {
-            console.log(er);
-          }
-        }
-        if (
-          redirectType === 'COMMENT_DETAIL' &&
-          notificationType === 'REPLY_COMMENT_CREATED'
-        ) {
-          try {
-            const comment = await CommentGetById(redirectId);
-            navigate('PostDetailScreen', {
-              postId: comment.postId,
-              rootCommentId: comment.rootCommentId,
+              rootCommentOrderIndex: comment?.rootCommentOrderIndex,
+              replyCommentOrderIndex: comment?.replyCommentOrderIndex,
               openCommentSheet: true,
               scrollToCommentId: comment.id ?? redirectId,
             });

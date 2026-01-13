@@ -121,10 +121,6 @@ const CommentFooter = ({
       currentUserNickname &&
       payload.taggedUserNickname !== currentUserNickname;
     payload.mentionName = payload.taggedUserNickname || null;
-    console.log('[send][sheet]', {
-      replyTarget,
-      payload,
-    });
     onPressSend?.(payload);
     requestAnimationFrame(() => {
       setLocalInput('');
@@ -406,6 +402,21 @@ const PostCommentSheet = forwardRef(
         });
       }
     }, [pendingScrollToId, tryScrollPending]);
+
+    // Fallback: retry pending scroll a few times as layouts settle
+    useEffect(() => {
+      if (!pendingAutoScrollIdRef.current) return;
+      const timeouts = [80, 180, 320, 520].map(delay =>
+        setTimeout(() => {
+          if (pendingAutoScrollIdRef.current) {
+            tryScrollPending();
+          }
+        }, delay),
+      );
+      return () => {
+        timeouts.forEach(timer => clearTimeout(timer));
+      };
+    }, [pendingScrollToId, commentList, tryScrollPending]);
 
     useEffect(() => {
       const ids = Array.isArray(pendingHighlightIds)
@@ -1177,7 +1188,6 @@ const PostCommentSheet = forwardRef(
                                     .slice(`@${mention}`.length)
                                     .trimStart()
                                 : comment.text;
-                            console.log(mention);
                             const showMention =
                               mention && mention !== currentUserNickname;
                             return (
@@ -1331,16 +1341,6 @@ const PostCommentSheet = forwardRef(
                                     const showMention =
                                       mention &&
                                       mention !== currentUserNickname;
-                                    console.log(
-                                      '[mention-check][sheet-reply]',
-                                      {
-                                        mention,
-                                        currentUserNickname,
-                                        showMention,
-                                        author: reply.author,
-                                        id: reply.id,
-                                      },
-                                    );
                                     return (
                                       <CustomText style={styles.commentText}>
                                         {showMention ? (
@@ -1482,7 +1482,7 @@ const PostCommentSheet = forwardRef(
                             const textWithoutMention =
                               mention && reply.text?.startsWith(`@${mention}`)
                                 ? reply.text
-                                    .slice((`@${mention}`).length)
+                                    .slice(`@${mention}`.length)
                                     .trimStart()
                                 : reply.text;
                             const showMention =

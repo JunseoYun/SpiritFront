@@ -42,6 +42,8 @@ const PostDetailScreen = ({navigation, route}) => {
     openCommentSheet,
     scrollToCommentId,
     rootCommentId,
+    rootCommentOrderIndex,
+    replyCommentOrderIndex,
   } = route.params ?? {};
   const [postItem, setPostItem] = useState(routeItem ?? null);
   const [loading, setLoading] = useState(Boolean(postId));
@@ -68,6 +70,7 @@ const PostDetailScreen = ({navigation, route}) => {
   const [currentUserProfileImage, setCurrentUserProfileImage] = useState(null);
   const [pendingScrollReplyId, setPendingScrollReplyId] = useState(null);
   const [pendingHighlightIds, setPendingHighlightIds] = useState([]);
+  const [autoExpandRootId, setAutoExpandRootId] = useState(null);
   const isLoadingMoreCommentsRef = useRef(false);
   const [didAutoOpenCommentSheet, setDidAutoOpenCommentSheet] = useState(false);
   const notifiedHighlightIdRef = useRef(null);
@@ -519,7 +522,7 @@ const PostDetailScreen = ({navigation, route}) => {
                 ? comment.replies
                 : [];
               const nextReplies = isExpandedTarget
-                ? mergeUnique([mappedReply, ...existingReplies])
+                ? mergeUnique([...existingReplies, mappedReply])
                 : existingReplies;
               return {
                 ...comment,
@@ -642,7 +645,8 @@ const PostDetailScreen = ({navigation, route}) => {
           rootCommentId !== undefined && rootCommentId !== null
             ? String(rootCommentId)
             : null;
-        const pageSize = 50;
+        const rootPageSize = 20;
+        const replyPageSize = 10;
         const mergeUnique = (listA = [], listB = []) => {
           const map = new Map();
           [...listA, ...listB].forEach(item => {
@@ -653,68 +657,92 @@ const PostDetailScreen = ({navigation, route}) => {
           return Array.from(map.values());
         };
 
-        const fetchRootsUntilFound = async () => {
-          const roots = [];
-          let page = 0;
-          let foundRoot = null;
-          while (true) {
-            const data = await CommentGetByPost({
-              postId: targetPostId,
-              page,
-              size: pageSize,
-              sort: COMMENT_SORTS[commentSortKey],
-            });
-            const items = Array.isArray(data?.content) ? data.content : [];
-            roots.push(...items);
-            foundRoot = items.find(item =>
-              targetRootId
-                ? String(item.id) === targetRootId
-                : String(item.id) === targetCommentId,
-            );
-            const isLastPage =
-              data?.last === true ||
-              items.length < pageSize ||
-              (Number.isFinite(data?.totalPages) &&
-                page >= (data.totalPages ?? 1) - 1);
-            if (foundRoot || isLastPage) {
-              break;
-            }
-            page += 1;
-          }
-          return {roots, foundRoot};
-        };
+        const fetchRootPage = async page =>
+          CommentGetByPost({
+            postId: targetPostId,
+            page,
+            size: rootPageSize,
+            sort: ['id,ASC'],
+          });
+        const fetchReplyPage = async (rootId, page) =>
+          CommentGetByRootComment({
+            rootCommentId: rootId,
+            page,
+            size: replyPageSize,
+          });
 
-        const fetchRepliesUntilFound = async rootId => {
-          const replies = [];
-          let page = 0;
-          let foundReply = null;
-          while (true) {
-            const data = await CommentGetByRootComment({
-              rootCommentId: rootId,
-              page,
-              size: pageSize,
-            });
-            const items = Array.isArray(data?.content) ? data.content : [];
-            replies.push(...items);
-            foundReply = items.find(
-              item => String(item.id) === targetCommentId,
-            );
-            const isLastPage =
-              data?.last === true ||
-              items.length < pageSize ||
-              (Number.isFinite(data?.totalPages) &&
-                page >= (data.totalPages ?? 1) - 1);
-            if (foundReply || isLastPage) {
-              break;
-            }
-            page += 1;
-          }
-          return {replies, foundReply};
-        };
+        const targetRootOrder =
+          Number.isFinite(rootCommentOrderIndex) && rootCommentOrderIndex >= 0
+            ? rootCommentOrderIndex
+            : null;
+        const targetReplyOrder =
+          Number.isFinite(replyCommentOrderIndex) &&
+          replyCommentOrderIndex >= 0
+            ? replyCommentOrderIndex
+            : null;
 
-        const {roots, foundRoot} = await fetchRootsUntilFound();
-        if (isCancelled) return;
+        let roots = [];
+        let foundRoot = null;
+        let foundRootInTargetPage = null;
+        if (targetRootOrder !== null) {
+          const page = Math.floor(targetRootOrder / rootPageSize);
+          const data = await fetchRootPage(page);
+          const items = Array.isArray(data?.content) ? data.content : [];
+          roots = items;
+          foundRootInTargetPage = items.find(item =>
+            targetRootId
+              ? String(item.id) === targetRootId
+              : String(item.id) === targetCommentId,
+          );
+        }
+
+        if (!foundRootInTargetPage) {
+          const {roots: fallbackRoots, foundRoot: fallbackFound} =
+            await (async () => {
+              const collected = [];
+              let page = 0;
+              let detected = null;
+              while (true) {
+                const data = await CommentGetByPost({
+                  postId: targetPostId,
+                  page,
+                  size: rootPageSize,
+                  sort: COMMENT_SORTS[commentSortKey],
+                });
+                const items = Array.isArray(data?.content) ? data.content : [];
+                collected.push(...items);
+                detected = items.find(item =>
+                  targetRootId
+                    ? String(item.id) === targetRootId
+                    : String(item.id) === targetCommentId,
+                );
+                const isLastPage =
+                  data?.last === true ||
+                  items.length < rootPageSize ||
+                  (Number.isFinite(data?.totalPages) &&
+                    page >= (data.totalPages ?? 1) - 1);
+                if (detected || isLastPage) {
+                  break;
+                }
+                page += 1;
+              }
+              return {roots: collected, foundRoot: detected};
+            })();
+          if (fallbackFound) {
+            roots = fallbackRoots;
+            foundRoot = fallbackFound;
+          } else if (!roots.length) {
+            roots = fallbackRoots;
+            foundRoot = fallbackFound;
+          } else {
+            foundRoot = foundRootInTargetPage;
+          }
+        } else {
+          foundRoot = foundRootInTargetPage;
+        }
+
         const mappedRoots = roots.map(item => mapCommentItem(item));
+        if (isCancelled) return;
 
         setCommentList(prev => {
           const map = new Map();
@@ -727,9 +755,46 @@ const PostDetailScreen = ({navigation, route}) => {
 
         const effectiveRootId =
           targetRootId ?? (foundRoot ? String(foundRoot.id) : targetCommentId);
+        setAutoExpandRootId(
+          effectiveRootId && String(effectiveRootId) !== targetCommentId
+            ? effectiveRootId
+            : null,
+        );
 
         if (effectiveRootId && String(effectiveRootId) !== targetCommentId) {
-          const {replies} = await fetchRepliesUntilFound(effectiveRootId);
+          let replies = [];
+          let foundReplyInTargetPage = null;
+          if (targetReplyOrder !== null) {
+            const page = Math.floor(targetReplyOrder / replyPageSize);
+            const data = await fetchReplyPage(effectiveRootId, page);
+            replies = Array.isArray(data?.content) ? data.content : [];
+            foundReplyInTargetPage = replies.find(
+              item => String(item.id) === targetCommentId,
+            );
+          }
+          if (!foundReplyInTargetPage) {
+            const fallback = [];
+            let page = 0;
+            let detected = null;
+            while (true) {
+              const data = await fetchReplyPage(effectiveRootId, page);
+              const items = Array.isArray(data?.content) ? data.content : [];
+              fallback.push(...items);
+              detected = items.find(
+                item => String(item.id) === targetCommentId,
+              );
+              const isLastPage =
+                data?.last === true ||
+                items.length < replyPageSize ||
+                (Number.isFinite(data?.totalPages) &&
+                  page >= (data.totalPages ?? 1) - 1);
+              if (detected || isLastPage) {
+                break;
+              }
+              page += 1;
+            }
+            replies = fallback.length ? fallback : replies;
+          }
           if (isCancelled) return;
           const mappedReplies = replies.map(item =>
             mapCommentItem(item, effectiveRootId),
@@ -770,6 +835,8 @@ const PostDetailScreen = ({navigation, route}) => {
   }, [
     scrollToCommentId,
     rootCommentId,
+    rootCommentOrderIndex,
+    replyCommentOrderIndex,
     commentSortKey,
     mapCommentItem,
     postId,
@@ -856,7 +923,7 @@ const PostDetailScreen = ({navigation, route}) => {
         pendingScrollToId={pendingScrollReplyId}
         pendingHighlightIds={pendingHighlightIds}
         initialIndex={commentSheetInitialIndex}
-        autoExpandRootId={rootCommentId ?? null}
+        autoExpandRootId={autoExpandRootId ?? rootCommentId ?? null}
       />
     </View>
   );
