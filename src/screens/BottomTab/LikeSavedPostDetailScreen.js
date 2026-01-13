@@ -490,7 +490,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
                 ? comment.replies
                 : [];
               const nextReplies = isExpandedTarget
-                ? mergeUnique([mappedReply, ...existingReplies])
+                ? mergeUnique([...existingReplies, mappedReply])
                 : existingReplies;
               return {
                 ...comment,
