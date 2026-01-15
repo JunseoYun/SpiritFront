@@ -53,6 +53,7 @@ const NotificationScreen = ({navigation}) => {
   const [hasReadmodal, setHasReadmodal] = useState(false);
   const [clickedItemId, setClickedItemId] = useState(null);
   const [unreadNotification, setUnreadNotification] = useState(false);
+  const [filterMode, setFilterMode] = useState('all');
   const {showToast} = useToast();
   const insets = useSafeAreaInsets();
 
@@ -81,6 +82,7 @@ const NotificationScreen = ({navigation}) => {
     try {
       const data = await NotifiGet(page);
       setTotalpage(data.totalPages);
+      console.log(data);
       if (data.content.length === 0) {
         setIsEnd(true); // 더 이상 데이터가 없으면
       } else {
@@ -146,8 +148,74 @@ const NotificationScreen = ({navigation}) => {
     return match ? match[1] : null;
   }
 
+  const getHighlightRanges = body => {
+    if (!body) return [];
+    const ranges = [];
+
+    const addRange = match => {
+      if (!match || !match[1]) return;
+      const raw = match[0];
+      const name = match[1];
+      const localStart = raw.indexOf(name);
+      if (localStart < 0) return;
+      const start = match.index + localStart;
+      const end = start + name.length;
+      if (end > start) {
+        ranges.push({start, end});
+      }
+    };
+
+    addRange(body.match(/(.+?)님이/));
+    addRange(body.match(/(.+?)\s*매장/));
+
+    return ranges.sort((a, b) => a.start - b.start);
+  };
+
+  const renderHighlightedBody = body => {
+    const ranges = getHighlightRanges(body);
+    if (!ranges.length) {
+      return body;
+    }
+
+    const segments = [];
+    let lastIndex = 0;
+    ranges.forEach((range, index) => {
+      if (range.start > lastIndex) {
+        segments.push({
+          key: `text-${index}-${lastIndex}`,
+          text: body.slice(lastIndex, range.start),
+          emphasis: false,
+        });
+      }
+      segments.push({
+        key: `em-${index}-${range.start}`,
+        text: body.slice(range.start, range.end),
+        emphasis: true,
+      });
+      lastIndex = range.end;
+    });
+    if (lastIndex < body.length) {
+      segments.push({
+        key: `text-tail-${lastIndex}`,
+        text: body.slice(lastIndex),
+        emphasis: false,
+      });
+    }
+
+    return segments.map(segment => (
+      <CustomText
+        key={segment.key}
+        style={segment.emphasis ? styles.bodyTextEmphasis : null}>
+        {segment.text}
+      </CustomText>
+    ));
+  };
+
   const renderNotificationContent = item => {
     const textColor = item.hasRead ? styles.readText : styles.unreadText;
+    const textColorOnly = item.hasRead
+      ? styles.readTextColor
+      : styles.unreadTextColor;
     const isAvatarNotification = avatarNotificationTypes.includes(
       item.notificationType,
     );
@@ -157,6 +225,11 @@ const NotificationScreen = ({navigation}) => {
     const isReportNotification = reportNotificationTypes.includes(
       item.notificationType,
     );
+    const isStrongNotification =
+      item.notificationType === 'REPORT_RECEIVED' ||
+      item.notificationType === 'STORE_SUGGESTION_CREATED' ||
+      item.notificationType === 'STORE_OWNERSHIP_REQUESTED' ||
+      item.notificationType === 'STORE_OWNERSHIP_REQUEST_CREATED';
 
     const hasAvatar =
       isAvatarNotification || isStoreNotification || isReportNotification;
@@ -173,13 +246,24 @@ const NotificationScreen = ({navigation}) => {
 
     const inlineText = (
       <View style={styles.inlineContent}>
-        <CustomText style={[styles.bodyText, textColor]}>
-          {item.body}
-          <CustomText style={styles.dateInline}>
-            {'  '}
-            {formatRelativeTime(item.createdAt, new Date(), false)}
+        {isStrongNotification ? (
+          <CustomText
+            style={[styles.bodyText, styles.bodyTextStrong, textColorOnly]}>
+            {item.body}
+            <CustomText style={styles.dateInline}>
+              {'  '}
+              {formatRelativeTime(item.createdAt, new Date(), false)}
+            </CustomText>
           </CustomText>
-        </CustomText>
+        ) : (
+          <CustomText style={[styles.bodyText, textColor]}>
+            {renderHighlightedBody(item.body)}
+            <CustomText style={styles.dateInline}>
+              {'  '}
+              {formatRelativeTime(item.createdAt, new Date(), false)}
+            </CustomText>
+          </CustomText>
+        )}
       </View>
     );
 
@@ -203,8 +287,10 @@ const NotificationScreen = ({navigation}) => {
             <Image source={avatarSource} style={styles.avatar} />
           )}
           {showHeartBadge && (
-            <View style={styles.heartBadge}>
-              <HeartIcon size={12} color="#fff" filled />
+            <View style={styles.heartCoverBadge}>
+              <View style={styles.heartBadge}>
+                <HeartIcon size={12} color="#fff" filled />
+              </View>
             </View>
           )}
         </View>
@@ -213,10 +299,32 @@ const NotificationScreen = ({navigation}) => {
     );
   };
 
+  const operationalNotificationTypes = new Set([
+    'REPORT_RECEIVED',
+    'STORE_SUGGESTION_CREATED',
+    'STORE_OWNERSHIP_REQUESTED',
+    'STORE_OWNERSHIP_REQUEST_CREATED',
+  ]);
+
+  const hasOperationalNotifications = notifidata.some(item =>
+    operationalNotificationTypes.has(item.notificationType),
+  );
+
+  const filteredNotifications = hasOperationalNotifications
+    ? notifidata.filter(item => {
+        const isOperational = operationalNotificationTypes.has(
+          item.notificationType,
+        );
+        if (filterMode === 'operation') return isOperational;
+        if (filterMode === 'general') return !isOperational;
+        return true;
+      })
+    : notifidata;
+
   return (
     <View style={[styles.container]}>
       <FlatList
-        data={notifidata}
+        data={filteredNotifications}
         keyExtractor={item => item.id.toString()}
         initialNumToRender={20}
         maxToRenderPerBatch={5} // 한번에 추가 로드할 개수
@@ -389,11 +497,52 @@ const NotificationScreen = ({navigation}) => {
           ) : null
         }
         ListHeaderComponent={
-          <Pressable
-            disabled={!unreadNotification || loading}
-            onPress={unreadNotification && !loading ? readallnotifi : null}>
-            <CustomText style={styles.allReadText}>알림 전체 읽기</CustomText>
-          </Pressable>
+          <View
+            style={[
+              styles.headerRow,
+              hasOperationalNotifications
+                ? styles.headerRowWithFilter
+                : styles.headerRowNoFilter,
+            ]}>
+            {hasOperationalNotifications ? (
+              <View style={styles.filterRow}>
+                {[
+                  {key: 'all', label: '전체'},
+                  {key: 'general', label: '일반'},
+                  {key: 'operation', label: '운영'},
+                ].map(option => {
+                  const isActive = filterMode === option.key;
+                  return (
+                    <Pressable
+                      key={option.key}
+                      onPress={() => setFilterMode(option.key)}
+                      hitSlop={6}
+                      style={[
+                        styles.filterChip,
+                        isActive && styles.filterChipActive,
+                      ]}>
+                      <CustomText
+                        style={[
+                          styles.filterChipText,
+                          isActive && styles.filterChipTextActive,
+                        ]}>
+                        {option.label}
+                      </CustomText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : null}
+            <View style={styles.allReadWrap}>
+              <Pressable
+                disabled={!unreadNotification || loading}
+                onPress={unreadNotification && !loading ? readallnotifi : null}>
+                <CustomText style={styles.allReadText}>
+                  알림 전체 읽기
+                </CustomText>
+              </Pressable>
+            </View>
+          </View>
         }
       />
       {selectedReject && (
@@ -422,6 +571,46 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 16,
+  },
+  headerRowWithFilter: {
+    justifyContent: 'space-between',
+  },
+  headerRowNoFilter: {
+    marginTop: 5,
+    justifyContent: 'flex-end',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
+  allReadWrap: {
+    flexShrink: 0,
+    marginLeft: 8,
+    alignItems: 'flex-end',
+  },
+  filterChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#F1F3F6',
+  },
+  filterChipActive: {
+    backgroundColor: '#333',
+  },
+  filterChipText: {
+    fontSize: 12,
+    fontFamily: 'Pretendard-Medium',
+    color: '#666',
+  },
+  filterChipTextActive: {
+    color: '#FFF',
+  },
   itemContainer: {
     paddingVertical: 14,
   },
@@ -437,14 +626,20 @@ const styles = StyleSheet.create({
   },
   bodyText: {
     fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
-    color: '#222',
+    fontFamily: 'Pretendard-Regular',
+    color: '#333',
     flexShrink: 1,
   },
+  bodyTextEmphasis: {
+    fontFamily: 'Pretendard-Medium',
+  },
+  bodyTextStrong: {
+    fontFamily: 'Pretendard-SemiBold',
+  },
   dateInline: {
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: 'Pretendard-Regular',
-    color: '#8c8c8c',
+    color: '#999',
   },
   avatar: {
     width: 44,
@@ -465,31 +660,43 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginRight: 12,
   },
-  heartBadge: {
+  heartCoverBadge: {
     position: 'absolute',
     bottom: -2,
     right: -2,
     width: 20,
     height: 20,
-    borderRadius: 20,
-    backgroundColor: '#FF5E5E',
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    borderColor: '#fff',
-    borderWidth: 2,
+    backgroundColor: '#FFFF',
+  },
+  heartBadge: {
+    backgroundColor: '#FF5E5E',
+    width: 17,
+    height: 17,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   allReadText: {
-    paddingBottom: 16,
     fontSize: 14,
     fontFamily: 'Pretendard-Medium',
-    color: '#121212',
+    color: '#333',
     textAlign: 'right',
   },
   readText: {
-    color: '#aaa',
+    color: '#999',
+    fontFamily: 'Pretendard-Regular',
   },
   unreadText: {
-    color: '#222',
+    color: '#333',
+  },
+  readTextColor: {
+    color: '#999',
+  },
+  unreadTextColor: {
+    color: '#333',
   },
   footer: {
     paddingVertical: 30,
