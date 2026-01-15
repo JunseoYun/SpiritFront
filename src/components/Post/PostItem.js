@@ -1176,7 +1176,7 @@ const styles = StyleSheet.create({
   moreMenu: {
     position: 'absolute',
     right: 0,
-    top: 70,
+    top: 40,
     backgroundColor: '#fff',
     borderRadius: 5,
     shadowColor: '#000',

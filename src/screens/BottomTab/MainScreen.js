@@ -200,9 +200,11 @@ const MainScreen = ({navigation}) => {
     // refreshFeed();
   }, [refreshFeed]);
 
-  useEffect(() => {
-    navigation.setParams({scrollToTop: handleScrollToTop});
-  }, [navigation, handleScrollToTop]);
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setParams({scrollToTop: handleScrollToTop});
+    }, [navigation, handleScrollToTop]),
+  );
 
   const writeMenuItems = [
     {
@@ -1391,6 +1393,11 @@ const MainScreen = ({navigation}) => {
     Platform.OS === 'android'
       ? Math.max(headerHeight, headerTopPadding + 40)
       : undefined;
+  const fabBottomOffset = useMemo(
+    () => insets.bottom + (Platform.OS === 'android' ? 24 : 28),
+    [insets.bottom],
+  );
+  const menuBottomOffset = useMemo(() => fabBottomOffset + 62, [fabBottomOffset]);
 
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
@@ -1517,7 +1524,7 @@ const MainScreen = ({navigation}) => {
 
       <WriteMenu
         visible={isWriteMenuVisible}
-        bottomOffset={insets.bottom + (Platform.OS === 'android' ? 40 : 50)}
+        bottomOffset={menuBottomOffset}
         menuStyle={writeMenuStyle}
         items={writeMenuItems}
         onClose={handleWritePress}
@@ -1542,6 +1549,7 @@ const MainScreen = ({navigation}) => {
         writeButtonAnim={writeButtonAnim}
         writeLabelAnim={writeLabelAnim}
         writeIconRotation={writeIconRotation}
+        bottom={fabBottomOffset}
       />
 
       {rejectModalData && (
