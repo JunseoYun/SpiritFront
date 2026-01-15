@@ -120,7 +120,7 @@ const ViewedStoreList = ({refresh, navigation, location, loaded}) => {
               {
                 paddingRight: 18,
                 paddingLeft: 10,
-                paddingBottom: 10,
+
                 marginBottom: 10,
               },
             ]} // 오른쪽 여백 추가

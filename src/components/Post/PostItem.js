@@ -1062,7 +1062,7 @@ const PostItem = ({
           <Pressable hitSlop={8} onPress={handleBookmarkPress}>
             <BookmarkIcon
               size={24}
-              color="#333"
+              color={saved ? '#3CBBFF' : '#333'}
               strokeWidth={2}
               filled={saved}
             />
@@ -1094,7 +1094,7 @@ const PostItem = ({
 
 const styles = StyleSheet.create({
   card: {
-    // paddingTop: 10,
+    paddingTop: 5,
     paddingBottom: 50,
     position: 'relative',
   },

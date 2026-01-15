@@ -335,13 +335,7 @@ const NotificationScreen = ({navigation}) => {
           <Pressable
             disabled={!unreadNotification || loading}
             onPress={unreadNotification && !loading ? readallnotifi : null}>
-            <CustomText
-              style={[
-                styles.allReadText,
-                unreadNotification && !loading
-                  ? {color: '#121212'}
-                  : {color: '#c0c0c0'},
-              ]}>
+            <CustomText style={styles.allReadText}>
               알림 전체 읽기
             </CustomText>
           </Pressable>
@@ -405,7 +399,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     fontSize: 14,
     fontFamily: 'Pretendard-Medium',
-    color: '#999',
+    color: '#121212',
     textAlign: 'right',
   },
   readText: {

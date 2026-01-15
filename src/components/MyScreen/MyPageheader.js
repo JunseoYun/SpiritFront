@@ -11,7 +11,6 @@ const MyPageheader = ({
   onProfilePress,
   imageuri,
   handleImagePress,
-  onWritePress,
 }) => {
   return (
     <View style={styles.wrap}>
@@ -41,11 +40,6 @@ const MyPageheader = ({
           </View>
 
           <CustomText style={styles.meta}>게시글 {postCount}</CustomText>
-        </Pressable>
-
-        {/* Right : Write */}
-        <Pressable onPress={onWritePress} hitSlop={10} style={styles.writeBtn}>
-          <CustomText style={styles.writeText}>글쓰기</CustomText>
         </Pressable>
       </View>
     </View>
@@ -97,18 +91,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: 'Pretendard-Medium',
     color: '#6B7280',
-  },
-
-  writeBtn: {
-    marginLeft: 12,
-    paddingVertical: 6,
-    paddingHorizontal: 2, // 버튼 티 안 나게
-  },
-
-  writeText: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#3CBBFF', // 한잔할까 포인트 컬러
   },
 });
 
