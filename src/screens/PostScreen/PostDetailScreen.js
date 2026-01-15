@@ -156,6 +156,7 @@ const PostDetailScreen = ({navigation, route}) => {
           comments: data.commentCount ?? data.comments ?? 0,
           isLiked: data.isLiked ?? false,
           isSaved: data.isSaved ?? false,
+          isStoreDeleted: data.isStoreDeleted ?? false,
           createdAt: data.createdAt ?? null,
           place: data.place ?? null,
         };

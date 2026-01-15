@@ -154,6 +154,7 @@ const PostItem = ({
   const formattedCreatedAt = fallbackCreatedAt
     ? formatRelativeTime(fallbackCreatedAt)
     : '';
+  const storeName = item?.name ?? '';
   const hasStoreIdentity = Boolean(item?.storeId) || Boolean(item?.name);
   const formattedRating = useMemo(() => {
     if (!hasRating) {
@@ -168,8 +169,8 @@ const PostItem = ({
   const titleCycleItems = useMemo(() => {
     const items = [];
     if (item?.storeId) {
-      if (item?.name) {
-        items.push({type: 'name', value: item.name});
+      if (storeName) {
+        items.push({type: 'name', value: storeName});
       }
       if (hasRating && formattedRating) {
         items.push({type: 'rating', value: formattedRating});
@@ -189,7 +190,7 @@ const PostItem = ({
       return items;
     }
     if (item?.name) {
-      items.push({type: 'name', value: item.name});
+      items.push({type: 'name', value: storeName});
     }
     if (formattedCreatedAt) {
       items.push({type: 'meta', value: formattedCreatedAt});
@@ -204,6 +205,7 @@ const PostItem = ({
     item?.name,
     item?.storeId,
     item?.storeAddress,
+    storeName,
   ]);
   const titleCycleLength = titleCycleItems.length;
   const hasTitleCycle = titleCycleLength > 1;
@@ -483,25 +485,31 @@ const PostItem = ({
 
   const handleStoreBadgePress = useCallback(() => {
     const storeId = item?.storeId;
-    if (!storeId) {
+    if (!storeId || item?.isStoreDeleted) {
+      if (storeId && item?.name) {
+        showToast('미승인된 매장입니다.');
+      }
       return;
     }
     navigation.navigate('StoreStack', {
       screen: 'StoreMainScreen',
       params: {storeId},
     });
-  }, [item?.storeId, navigation]);
+  }, [item?.isStoreDeleted, item?.name, item?.storeId, navigation, showToast]);
 
   const handleProfilePress = useCallback(() => {
     const storeId = item?.storeId;
-    if (!storeId) {
+    if (!storeId || item?.isStoreDeleted) {
+      if (storeId && item?.name) {
+        showToast('미승인된 매장입니다.');
+      }
       return;
     }
     navigation.navigate('StoreStack', {
       screen: 'StoreMainScreen',
       params: {storeId},
     });
-  }, [item?.storeId, navigation]);
+  }, [item?.isStoreDeleted, item?.name, item?.storeId, navigation, showToast]);
 
   const handleImageLoad = (event, index) => {
     const {width, height} = event.nativeEvent;
@@ -873,7 +881,7 @@ const PostItem = ({
                       numberOfLines={1}>
                       {titleCycleItems[titleCycleIndex]?.value ??
                         item.storeAddress ??
-                        item.name}
+                        storeName}
                     </CustomText>
                   )}
                 </Animated.View>

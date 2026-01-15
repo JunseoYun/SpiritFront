@@ -228,6 +228,7 @@ const MyPostDetailScreen = ({navigation, route}) => {
         isWriter: true,
         isLiked: review?.isLiked ?? false,
         isSaved: review?.isSaved ?? review?.saved ?? false,
+        isStoreDeleted: review?.isStoreDeleted ?? false,
         rate: review?.rate ?? review?.rating ?? null,
         createdAt: review?.createdAt ?? null,
         place: review?.place ?? null,
