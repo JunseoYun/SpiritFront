@@ -11,13 +11,9 @@ import MyBanner from '../Ads/MyBanner';
 import CustomText from '../../utils/CustomText';
 
 const ExploreSection = ({
-  recommCategory,
-  recommReason,
-  recommStores,
   location,
   isRefreshing,
   navigation,
-  loading,
   handlestoreItemClick,
   catagoryClick,
   onHeaderLayout = () => {},
@@ -26,34 +22,16 @@ const ExploreSection = ({
     <View
       style={{
         backgroundColor: '#fff',
-        // borderTopLeftRadius: 18,
-        // borderTopRightRadius: 18,
-        // paddingTop: 14,
-        // shadowColor: '#000',
-        // shadowOffset: {width: 0, height: -3}, // 👈 위쪽 방향
-        // shadowOpacity: 0.15,
-        // shadowRadius: 3,
-        // elevation: 3,
       }}>
-      {/* <TodayRecomm
-        recommCategory={recommCategory}
-        recommReason={recommReason}
-        recommStores={recommStores}
-        location={location}
-        refresh={isRefreshing}
-        navigation={navigation}
-        loading={loading}
-      /> */}
       <CategoryGrid onPress={catagoryClick} />
 
       <StoreRegister handlestoreItemClick={handlestoreItemClick} />
+
       <ViewedStoreList
         location={location}
         navigation={navigation}
         refresh={isRefreshing}
       />
-
-      <MyBanner index={'main'} />
 
       <OpenStoreList
         location={location}
