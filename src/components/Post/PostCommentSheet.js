@@ -188,11 +188,13 @@ const CommentFooter = ({
                 onChangeCommentInput?.(text);
               }}
               editable
-              showSoftInputOnFocus={
-                Platform.OS === 'ios' ? true : canFocusInput
-              }
+              // showSoftInputOnFocus={
+              //   Platform.OS === 'ios' ? true : canFocusInput
+              // }
+              showSoftInputOnFocus={canFocusInput}
               onPressIn={() => {
-                if (Platform.OS === 'android' && !canFocusInput) {
+                // if (Platform.OS === 'android' && !canFocusInput) {
+                if (!canFocusInput) {
                   onRequestFocusAfterSnap?.();
                 }
               }}
@@ -342,9 +344,9 @@ const PostCommentSheet = forwardRef(
       () => Math.max(0, (snapPoints?.length ?? 1) - 1),
       [snapPoints],
     );
-    const canFocusInput =
-      Platform.OS === 'ios' || currentSheetIndex === finalSnapIndex;
-
+    // const canFocusInput =
+    //   Platform.OS === 'ios' || currentSheetIndex === finalSnapIndex;
+    const canFocusInput = currentSheetIndex === finalSnapIndex;
     const pendingScrollIdRef = useRef(null);
     const isKeyboardVisibleRef = useRef(false);
     const clearHighlight = useCallback(
@@ -758,9 +760,9 @@ const PostCommentSheet = forwardRef(
     );
 
     const handleInputFocus = useCallback(() => {
-      if (Platform.OS === 'ios') {
-        return;
-      }
+      // if (Platform.OS === 'ios') {
+      //   return;
+      // }
       if (pendingFocusAfterSnapRef.current) {
         return;
       }
@@ -776,9 +778,9 @@ const PostCommentSheet = forwardRef(
     }, [currentSheetIndex, finalSnapIndex, ref]);
 
     const handleRequestFocusAfterSnap = useCallback(() => {
-      if (Platform.OS === 'ios') {
-        return;
-      }
+      // if (Platform.OS === 'ios') {
+      //   return;
+      // }
       if (pendingFocusAfterSnapRef.current) {
         return;
       }
