@@ -11,7 +11,6 @@ import {
 import SearchBar from '../../components/SearchScreen/SearchBar';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
-import MyBanner from '../../components/Ads/MyBanner';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import MapFilterHeader from '../../components/MapScreen/MapStore/MapFilterHeader';
 import FilterPotal from '../../components/MapScreen/MapStore/FilterPotal';
@@ -346,8 +345,6 @@ const SearchScreen = ({navigation, route}) => {
           }
           onAmenityToggle={handleAmenityToggle}
         />
-
-        {/* <MyBanner index={'search'} /> */}
 
         {recentSearches.length > 0 && (
           <View style={styles.recentWrap}>

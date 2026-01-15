@@ -157,6 +157,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           isLiked: post?.isLiked ?? false,
           rate: post?.rate ?? post?.rating ?? null,
           isSaved: post?.isSaved ?? true,
+          isStoreDeleted: post?.isStoreDeleted ?? false,
           createdAt: post?.createdAt ?? null,
           place: post?.place ?? null,
         };

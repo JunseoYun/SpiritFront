@@ -7,7 +7,7 @@ import StoreRegister from './StoreRegister';
 import OpenStoreList from './CurrentOpenStore/OpenStoreList';
 import NearStoreList from './NearStore/NearStoreList';
 import ViewedStoreList from './ViewedStore/ViewedStoreList';
-import MyBanner from '../Ads/MyBanner';
+
 import CustomText from '../../utils/CustomText';
 
 const ExploreSection = ({

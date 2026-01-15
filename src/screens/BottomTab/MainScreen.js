@@ -153,6 +153,7 @@ const MainScreen = ({navigation}) => {
       isWriter: post.isWriter ?? false,
       isLiked: post.isLiked ?? false,
       isSaved: post.isSaved ?? false,
+      isStoreDeleted: post.isStoreDeleted ?? false,
       rate: post.rate ?? null,
       createdAt: post.createdAt ?? null,
       place: post.place ?? null,
