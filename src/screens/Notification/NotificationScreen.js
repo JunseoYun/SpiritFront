@@ -1,53 +1,46 @@
 import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
-  Text,
-  SafeAreaView,
   View,
   FlatList,
   Pressable,
   Platform,
+  Image,
 } from 'react-native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {NotifiGet, NotifiRead, NotifiReadAll} from '../../api/notificationApi';
 import Loading from '../../hooks/Loading';
 import RejectModal from '../../components/Reject/RejectModal';
 import {useToast} from '../../context/ToastContext';
-import {ReviewgetbyGet} from '../../api/reviewApi';
 import {has_unread_notification} from '../../api/notificationApi';
-import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import CustomText from '../../utils/CustomText';
 import {PostGetById} from '../../api/postApi';
 import {CommentGetById} from '../../api/commentApi';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import formatRelativeTime from '../../utils/formatRelativeTime';
+import ColorUtil from '../../utils/ColorUtil';
+import HeartIcon from '../../assets/svg/HeartIcon';
 
-const NotificationCard = ({title, message, date, hasRead}) => {
-  const textColorStyle = hasRead ? styles.readText : styles.unreadText;
+const avatarNotificationTypes = [
+  'COMMENT_LIKED',
+  'POST_LIKED',
+  'REPLY_COMMENT_CREATED',
+  'ROOT_COMMENT_CREATED',
+];
+const storeNotificationTypes = [
+  'STORE_SUGGESTION_CREATED',
+  'STORE_OWNERSHIP_REQUESTED',
+  'STORE_OWNERSHIP_REQUEST_CREATED',
+  'STORE_OWNERSHIP_REJECTED',
+  'STORE_OWNERSHIP_APPROVED',
+  'STORE_OWNER_CHANGED',
+  'STORE_MANAGER_INVITE_ACCEPTED',
+  'STORE_TAG_POST_CREATED',
+];
+const reportNotificationTypes = ['REPORT_RECEIVED'];
 
-  return (
-    <View style={styles.card}>
-      <CustomText style={[styles.cardTitle, textColorStyle]}>
-        {title}
-      </CustomText>
-      <CustomText style={[styles.cardMessage, textColorStyle]}>
-        {message}
-      </CustomText>
-      <CustomText style={[styles.cardDate, textColorStyle]}>
-        {formatDate(date)}
-      </CustomText>
-    </View>
-  );
-};
-// 날짜 포맷 함수 (yyyy-mm-dd hh:mm)
-const formatDate = iso => {
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-    2,
-    '0',
-  )}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(
-    2,
-    '0',
-  )}:${String(d.getMinutes()).padStart(2, '0')}`;
-};
+const defaultProfile = require('../../assets/default_profile.png');
+const defaultStore = require('../../assets/default_store6.png');
 
 const NotificationScreen = ({navigation}) => {
   const [page, setPage] = useState(0);
@@ -153,14 +146,81 @@ const NotificationScreen = ({navigation}) => {
     return match ? match[1] : null;
   }
 
+  const renderNotificationContent = item => {
+    const textColor = item.hasRead ? styles.readText : styles.unreadText;
+    const isAvatarNotification = avatarNotificationTypes.includes(
+      item.notificationType,
+    );
+    const isStoreNotification = storeNotificationTypes.includes(
+      item.notificationType,
+    );
+    const isReportNotification = reportNotificationTypes.includes(
+      item.notificationType,
+    );
+
+    const hasAvatar =
+      isAvatarNotification || isStoreNotification || isReportNotification;
+    const showHeartBadge =
+      item.notificationType === 'COMMENT_LIKED' ||
+      item.notificationType === 'POST_LIKED';
+
+    const avatarSource =
+      isStoreNotification || isReportNotification
+        ? defaultStore
+        : item.imageUrl && item.imageUrl.length > 0
+        ? {uri: item.imageUrl}
+        : defaultProfile;
+
+    const inlineText = (
+      <View style={styles.inlineContent}>
+        <CustomText style={[styles.bodyText, textColor]}>
+          {item.body}
+          <CustomText style={styles.dateInline}>
+            {'  '}
+            {formatRelativeTime(item.createdAt, new Date(), false)}
+          </CustomText>
+        </CustomText>
+      </View>
+    );
+
+    if (!hasAvatar) {
+      return inlineText;
+    }
+
+    return (
+      <View style={styles.itemRow}>
+        <View style={styles.avatarWrap}>
+          {isReportNotification ? (
+            <View
+              style={[styles.avatar, styles.iconAvatar, styles.reportIconWrap]}>
+              <MaterialIcons
+                name="report-gmailerrorred"
+                size={24}
+                color="#222"
+              />
+            </View>
+          ) : (
+            <Image source={avatarSource} style={styles.avatar} />
+          )}
+          {showHeartBadge && (
+            <View style={styles.heartBadge}>
+              <HeartIcon size={12} color="#fff" filled />
+            </View>
+          )}
+        </View>
+        {inlineText}
+      </View>
+    );
+  };
+
   return (
     <View style={[styles.container]}>
       <FlatList
         data={notifidata}
         keyExtractor={item => item.id.toString()}
         initialNumToRender={20}
-        maxToRenderPerBatch={5} // 한 번에 추가 로드할 개수
-        windowSize={5} // 화면 밖의 아이템을 얼마나 유지할지
+        maxToRenderPerBatch={5} // 한번에 추가 로드할 개수
+        windowSize={5} // 화면 밖의 높이를 얼마나 유지할지
         removeClippedSubviews={Platform.OS === 'android'}
         renderItem={({item}) => (
           <Pressable
@@ -187,15 +247,15 @@ const NotificationScreen = ({navigation}) => {
 
                 if (item.notificationType === 'STORE_OWNERSHIP_APPROVED') {
                   navigation.reset({
-                    index: 0, // 최상단 활성 스택
+                    index: 0, // 최상단으로 선택
                     routes: [
                       {
-                        name: 'MainBtmbar', // 최상위 BottomTab
+                        name: 'MainBtmbar', // 최상단 BottomTab
                         state: {
                           index: 0, // MyStack 탭을 선택
                           routes: [
                             {
-                              name: 'MyStack', // MyStack 안으로
+                              name: 'MyStack', // MyStack 으로
                               state: {
                                 index: 0,
                                 routes: [
@@ -228,7 +288,7 @@ const NotificationScreen = ({navigation}) => {
                 if (item.notificationType === 'STORE_TAG_POST_CREATED') {
                   const body = item.body || '';
                   let storename = '';
-                  const match = body.match(/(.+?) 매장에/);
+                  const match = body.match(/(.+?) 매장?/);
                   if (match) storename = match[1];
 
                   try {
@@ -300,20 +360,17 @@ const NotificationScreen = ({navigation}) => {
 
               handlePress();
             }}>
-            <NotificationCard
-              title={item.title}
-              message={item.body}
-              date={item.createdAt}
-              hasRead={item.hasRead}
-            />
+            <View style={styles.itemContainer}>
+              {renderNotificationContent(item)}
+            </View>
           </Pressable>
         )}
         onEndReached={() => {
           if (!loading && !isEnd && page < totalpage - 1) {
             setPage(prevPage => {
               const nextPage = prevPage + 1; // 다음 페이지 번호
-              Notifigetall(nextPage); // 그 페이지 번호로 데이터 요청
-              return nextPage; // 상태를 증가된 페이지 번호로 갱신
+              Notifigetall(nextPage); // 해당 페이지 데이터 요청
+              return nextPage; // 상태값으로 페이지 번호 갱신
             });
           }
         }}
@@ -327,7 +384,7 @@ const NotificationScreen = ({navigation}) => {
         ListEmptyComponent={
           !loading && notifidata.length === 0 ? (
             <View style={styles.footer}>
-              <CustomText style={styles.emptyText}>알림이 없어요</CustomText>
+              <CustomText style={styles.emptyText}>알림이 없습니다.</CustomText>
             </View>
           ) : null
         }
@@ -335,9 +392,7 @@ const NotificationScreen = ({navigation}) => {
           <Pressable
             disabled={!unreadNotification || loading}
             onPress={unreadNotification && !loading ? readallnotifi : null}>
-            <CustomText style={styles.allReadText}>
-              알림 전체 읽기
-            </CustomText>
+            <CustomText style={styles.allReadText}>알림 전체 읽기</CustomText>
           </Pressable>
         }
       />
@@ -364,36 +419,64 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 8,
   },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+  itemContainer: {
+    paddingVertical: 14,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#121212',
-    marginBottom: 6,
+  itemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  cardMessage: {
-    fontSize: 14,
-    color: '#444',
-    marginBottom: 8,
+  inlineContent: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+  },
+  bodyText: {
+    fontSize: 15,
     fontFamily: 'Pretendard-Medium',
+    color: '#222',
+    flexShrink: 1,
   },
-  cardDate: {
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'right',
+  dateInline: {
+    fontSize: 13,
     fontFamily: 'Pretendard-Regular',
+    color: '#8c8c8c',
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#f1f1f1',
+    borderColor: ColorUtil.border,
+    borderWidth: 0.5,
+  },
+  iconAvatar: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reportIconWrap: {
+    backgroundColor: '#fff',
+  },
+  avatarWrap: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  heartBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 20,
+    height: 20,
+    borderRadius: 20,
+    backgroundColor: '#FF5E5E',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderColor: '#fff',
+    borderWidth: 2,
   },
   allReadText: {
     paddingBottom: 16,
