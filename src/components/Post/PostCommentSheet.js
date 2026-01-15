@@ -12,6 +12,7 @@ import {
   Animated,
   ActivityIndicator,
   Image,
+  InteractionManager,
   Keyboard,
   Platform,
   Pressable,
@@ -251,6 +252,14 @@ const PostCommentSheet = forwardRef(
   ) => {
     const inputRef = useRef(null);
     const scrollRef = useRef(null);
+    const forceLayoutTick = useCallback(() => {
+      if (!scrollRef.current?.scrollTo) return;
+      // 살짝 스크롤해 레이아웃/측정을 강제로 유도
+      scrollRef.current.scrollTo({y: 1, animated: false});
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo?.({y: 0, animated: false});
+      });
+    }, []);
     const [expandedReplies, setExpandedReplies] = useState({});
     const [hiddenPreviewReplies, setHiddenPreviewReplies] = useState({});
     const [replyTarget, setReplyTarget] = useState(null);
@@ -261,7 +270,9 @@ const PostCommentSheet = forwardRef(
     const [reportTargetItem, setReportTargetItem] = useState(null);
     const [menuPosition, setMenuPosition] = useState({top: 60});
     const [footerHeight, setFooterHeight] = useState(0);
-    const [currentSheetIndex, setCurrentSheetIndex] = useState(0);
+    const [currentSheetIndex, setCurrentSheetIndex] = useState(
+      initialIndex ?? 0,
+    );
     const pendingFocusAfterSnapRef = useRef(false);
     const pendingSnapOnlyRef = useRef(false);
     const {showToast} = useToast();
@@ -283,27 +294,38 @@ const PostCommentSheet = forwardRef(
     const tryScrollPending = useCallback(() => {
       const targetId = pendingAutoScrollIdRef.current;
       if (!targetId) return false;
-      const layout = layoutMapRef.current[targetId];
-      if (!layout || typeof layout.y !== 'number') return false;
+      const key = String(targetId);
+      const layout = layoutMapRef.current[key];
+      if (!layout || typeof layout.y !== 'number') {
+        forceLayoutTick();
+        return false;
+      }
+      if (
+        !scrollRef.current ||
+        typeof scrollRef.current.scrollTo !== 'function'
+      ) {
+        return false;
+      }
       pendingAutoScrollIdRef.current = null;
-      scrollToItem(targetId, false);
-      pendingHighlightSetRef.current.delete(String(targetId));
+      scrollToItem(key, false);
+      pendingHighlightSetRef.current.delete(key);
       requestAnimationFrame(() => {
-        triggerHighlight(targetId);
+        triggerHighlight(key);
       });
       return true;
     }, [scrollToItem, triggerHighlight]);
     const setItemLayoutWithSize = useCallback(
       (id, y, height) => {
         if (!id) return;
-        layoutMapRef.current[id] = {y, height};
-        if (pendingAutoScrollIdRef.current === id) {
+        const key = String(id);
+        layoutMapRef.current[key] = {y, height};
+        if (String(pendingAutoScrollIdRef.current) === key) {
           tryScrollPending();
         }
-        if (pendingHighlightSetRef.current.has(String(id))) {
-          pendingHighlightSetRef.current.delete(String(id));
+        if (pendingHighlightSetRef.current.has(key)) {
+          pendingHighlightSetRef.current.delete(key);
           requestAnimationFrame(() => {
-            triggerHighlight(id);
+            triggerHighlight(key);
           });
         }
       },
@@ -311,7 +333,8 @@ const PostCommentSheet = forwardRef(
     );
     const setReplyListLayout = useCallback((id, y) => {
       if (!id) return;
-      replyListLayoutRef.current[id] = y;
+      const key = String(id);
+      replyListLayoutRef.current[key] = y;
     }, []);
     const finalSnapIndex = useMemo(
       () => Math.max(0, (snapPoints?.length ?? 1) - 1),
@@ -394,19 +417,33 @@ const PostCommentSheet = forwardRef(
 
     useEffect(() => {
       if (!pendingScrollToId) return;
-      pendingAutoScrollIdRef.current = pendingScrollToId;
-      pendingHighlightSetRef.current.add(String(pendingScrollToId));
+      const key = String(pendingScrollToId);
+      pendingAutoScrollIdRef.current = key;
+      pendingHighlightSetRef.current.add(key);
+      forceLayoutTick();
       if (!tryScrollPending()) {
         requestAnimationFrame(() => {
           tryScrollPending();
         });
       }
-    }, [pendingScrollToId, tryScrollPending]);
+    }, [pendingScrollToId, tryScrollPending, forceLayoutTick]);
+
+    // On Android the sheet animation can delay layouts; retry once interactions settle.
+    useEffect(() => {
+      if (Platform.OS !== 'android') return;
+      if (!pendingAutoScrollIdRef.current) return;
+      const interaction = InteractionManager.runAfterInteractions(() => {
+        requestAnimationFrame(() => {
+          tryScrollPending();
+        });
+      });
+      return () => interaction?.cancel?.();
+    }, [commentList, currentSheetIndex, tryScrollPending]);
 
     // Fallback: retry pending scroll a few times as layouts settle
     useEffect(() => {
       if (!pendingAutoScrollIdRef.current) return;
-      const timeouts = [80, 180, 320, 520].map(delay =>
+      const timeouts = [80, 180, 320, 520, 850].map(delay =>
         setTimeout(() => {
           if (pendingAutoScrollIdRef.current) {
             tryScrollPending();
@@ -417,6 +454,109 @@ const PostCommentSheet = forwardRef(
         timeouts.forEach(timer => clearTimeout(timer));
       };
     }, [pendingScrollToId, commentList, tryScrollPending]);
+
+    // When replies auto-expand (e.g., to reveal a target reply), retry scroll once layouts are likely ready.
+    useEffect(() => {
+      if (!pendingAutoScrollIdRef.current) return;
+      const timer = setTimeout(() => {
+        tryScrollPending();
+        forceLayoutTick();
+      }, 120);
+      return () => clearTimeout(timer);
+    }, [
+      expandedReplies,
+      hiddenPreviewReplies,
+      commentList,
+      tryScrollPending,
+      forceLayoutTick,
+    ]);
+
+    // Aggressive retry loop: keep attempting scroll while pending id exists, to catch late layouts (e.g., after expanding replies).
+    useEffect(() => {
+      if (!pendingAutoScrollIdRef.current) return;
+      let attempts = 0;
+      const maxAttempts = 30;
+      const timer = setInterval(() => {
+        const id = pendingAutoScrollIdRef.current;
+        if (!id) {
+          clearInterval(timer);
+          return;
+        }
+        const key = String(id);
+        const layout = layoutMapRef.current[key];
+        if (layout && typeof layout.y === 'number') {
+          pendingAutoScrollIdRef.current = null;
+          const offset = Math.max(0, layout.y - 12);
+          scrollRef.current?.scrollTo?.({
+            y: offset,
+            animated: Platform.OS !== 'android',
+          });
+          pendingHighlightSetRef.current.delete(key);
+          requestAnimationFrame(() => {
+            triggerHighlight(key);
+          });
+          clearInterval(timer);
+          return;
+        }
+        attempts += 1;
+        if (attempts >= maxAttempts) {
+          // pending id 유지, 다음 레이아웃/스크롤 틱에서 재시도될 수 있도록 그대로 둔다
+          forceLayoutTick();
+          clearInterval(timer);
+        }
+      }, 80);
+      return () => clearInterval(timer);
+    }, [
+      commentList,
+      expandedReplies,
+      hiddenPreviewReplies,
+      currentSheetIndex,
+      tryScrollPending,
+      triggerHighlight,
+      forceLayoutTick,
+    ]);
+
+    // When the sheet reaches its final snap index, attempt scroll again (helps when initialIndex starts open).
+    useEffect(() => {
+      if (!pendingAutoScrollIdRef.current) return;
+      if (currentSheetIndex !== finalSnapIndex) return;
+      const timer = setTimeout(() => {
+        tryScrollPending();
+      }, 60);
+      return () => clearTimeout(timer);
+    }, [currentSheetIndex, finalSnapIndex, tryScrollPending]);
+
+    // Final safety net: after sheet/content settles, force a non-animated scroll on Android.
+    useEffect(() => {
+      if (Platform.OS !== 'android') return;
+      if (!pendingAutoScrollIdRef.current) return;
+      const timer = setTimeout(() => {
+        const id = pendingAutoScrollIdRef.current;
+        if (!id) return;
+        const key = String(id);
+        const layout = layoutMapRef.current[key];
+        if (!layout || typeof layout.y !== 'number') {
+          forceLayoutTick();
+          return;
+        }
+        pendingAutoScrollIdRef.current = null;
+        scrollRef.current?.scrollTo?.({
+          y: Math.max(0, layout.y - 12),
+          animated: false,
+        });
+        pendingHighlightSetRef.current.delete(key);
+        requestAnimationFrame(() => {
+          triggerHighlight(key);
+        });
+      }, 1300);
+      return () => clearTimeout(timer);
+    }, [
+      commentList,
+      currentSheetIndex,
+      tryScrollPending,
+      triggerHighlight,
+      forceLayoutTick,
+    ]);
 
     useEffect(() => {
       const ids = Array.isArray(pendingHighlightIds)
@@ -1054,6 +1194,7 @@ const PostCommentSheet = forwardRef(
               bounces={false}
               alwaysBounceVertical={false}
               nestedScrollEnabled
+              removeClippedSubviews={false}
               scrollEnabled={!showMoreMenu}
               scrollEventThrottle={16}
               onScroll={handleCommentScroll}
@@ -1061,6 +1202,13 @@ const PostCommentSheet = forwardRef(
               onScrollEndDrag={handleScrollEnd}
               contentInset={{bottom: footerSpacing}}
               scrollIndicatorInsets={{bottom: footerSpacing}}
+              onContentSizeChange={() => {
+                if (pendingAutoScrollIdRef.current) {
+                  requestAnimationFrame(() => {
+                    tryScrollPending();
+                  });
+                }
+              }}
               contentContainerStyle={[
                 styles.commentSheetContent,
                 {
@@ -1136,6 +1284,7 @@ const PostCommentSheet = forwardRef(
                   return (
                     <View
                       key={comment.id}
+                      collapsable={false}
                       style={styles.commentGroup}
                       onLayout={event => {
                         const {y, height} = event.nativeEvent.layout;
@@ -1269,6 +1418,7 @@ const PostCommentSheet = forwardRef(
                             return (
                               <AnimatedPressable
                                 key={reply.id}
+                                collapsable={false}
                                 style={[
                                   styles.commentReplyItem,
                                   isReplyMenuTarget
@@ -1805,6 +1955,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     backgroundColor: '#F2F2F2',
+    borderColor: ColorUtil.border,
+    borderWidth: 0.5,
   },
   commentBody: {
     flex: 1,
@@ -1863,6 +2015,8 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     backgroundColor: '#F2F2F2',
+    borderColor: ColorUtil.border,
+    borderWidth: 0.5,
   },
   commentReplyBody: {
     flex: 1,
@@ -1921,6 +2075,8 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     backgroundColor: '#F2F2F2',
+    borderColor: ColorUtil.border,
+    borderWidth: 0.5,
   },
   replyField: {
     flexDirection: 'row',
