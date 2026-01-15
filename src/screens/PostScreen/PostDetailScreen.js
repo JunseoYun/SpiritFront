@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+﻿import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   DeviceEventEmitter,
   ScrollView,
@@ -56,7 +56,8 @@ const PostDetailScreen = ({navigation, route}) => {
     const topInset = insets.top === 0 ? 20 : insets.top;
     return ['70%', Math.max(0, windowHeight - topInset)];
   }, [insets.top, windowHeight]);
-  const commentSheetInitialIndex = openCommentSheet ? 1 : 0;
+  const shouldAutoOpenSheet = openCommentSheet || Boolean(scrollToCommentId);
+  const commentSheetInitialIndex = shouldAutoOpenSheet ? 1 : 0;
   const commentPageSize = 20;
   const [commentList, setCommentList] = useState([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
@@ -82,7 +83,11 @@ const PostDetailScreen = ({navigation, route}) => {
         const data = await Userdataget();
         if (isMounted) {
           setCurrentUserId(
-            data?.id ?? data?.userId ?? data?.memberId ?? data?.writerId ?? null,
+            data?.id ??
+              data?.userId ??
+              data?.memberId ??
+              data?.writerId ??
+              null,
           );
           setCurrentUserNickname(data?.nickname ?? '');
           setCurrentUserProfileImage(
@@ -273,10 +278,7 @@ const PostDetailScreen = ({navigation, route}) => {
           item.memberId ??
           null,
         taggedUserId:
-          item.taggedUserId ??
-          item.taggedUserID ??
-          item.taggedUser ??
-          null,
+          item.taggedUserId ?? item.taggedUserID ?? item.taggedUser ?? null,
         taggedUserNickname: item.taggedUserNickname ?? null,
         author: item.writerNickname ?? item.author ?? '',
         profileImage:
@@ -546,17 +548,17 @@ const PostDetailScreen = ({navigation, route}) => {
           updatePostCommentCount(targetPostId, 1);
           return;
         } else {
-        const fallbackComment = {
-          id: createdId ?? `temp-${Date.now()}`,
-          content,
-          createdAt: new Date().toISOString(),
-          writerImgUrl: currentUserProfileImage ?? null,
-          writerNickname: currentUserNickname || '나',
-          writerId: currentUserId ?? null,
-          taggedUserId: null,
-          taggedUserNickname: null,
-          isWriter: true,
-        };
+          const fallbackComment = {
+            id: createdId ?? `temp-${Date.now()}`,
+            content,
+            createdAt: new Date().toISOString(),
+            writerImgUrl: currentUserProfileImage ?? null,
+            writerNickname: currentUserNickname || '나',
+            writerId: currentUserId ?? null,
+            taggedUserId: null,
+            taggedUserNickname: null,
+            isWriter: true,
+          };
           const mappedComment = mapCommentItem(fallbackComment);
           setCommentList(prev => {
             const filtered = prev.filter(
@@ -662,7 +664,7 @@ const PostDetailScreen = ({navigation, route}) => {
             postId: targetPostId,
             page,
             size: rootPageSize,
-            sort: ['id,ASC'],
+            //sort: ['id,ASC'],
           });
         const fetchReplyPage = async (rootId, page) =>
           CommentGetByRootComment({
@@ -676,8 +678,7 @@ const PostDetailScreen = ({navigation, route}) => {
             ? rootCommentOrderIndex
             : null;
         const targetReplyOrder =
-          Number.isFinite(replyCommentOrderIndex) &&
-          replyCommentOrderIndex >= 0
+          Number.isFinite(replyCommentOrderIndex) && replyCommentOrderIndex >= 0
             ? replyCommentOrderIndex
             : null;
 
@@ -853,14 +854,30 @@ const PostDetailScreen = ({navigation, route}) => {
 
   useEffect(() => {
     const targetPostId = postItem?.id ?? postId;
-    if (!openCommentSheet || didAutoOpenCommentSheet || !targetPostId) {
+    if (!shouldAutoOpenSheet || didAutoOpenCommentSheet || !targetPostId) {
       return;
     }
     setDidAutoOpenCommentSheet(true);
     setTimeout(() => {
       commentSheetRef.current?.present();
+      commentSheetRef.current?.snapToIndex?.(1);
     }, 0);
-  }, [openCommentSheet, didAutoOpenCommentSheet, postItem?.id, postId]);
+  }, [
+    openCommentSheet,
+    shouldAutoOpenSheet,
+    didAutoOpenCommentSheet,
+    postItem?.id,
+    postId,
+  ]);
+
+  // scrollToCommentId가 있으면 시트를 강제로 열어 레이아웃을 보장
+  useEffect(() => {
+    if (!scrollToCommentId) {
+      return;
+    }
+    commentSheetRef.current?.present?.();
+    commentSheetRef.current?.snapToIndex?.(1);
+  }, [scrollToCommentId]);
 
   return (
     <View
