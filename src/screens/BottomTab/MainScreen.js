@@ -1,11 +1,14 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   Animated,
+  BackHandler,
   DeviceEventEmitter,
   Easing,
   FlatList,
   Platform,
+  RefreshControl,
   StyleSheet,
+  ToastAndroid,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -114,6 +117,32 @@ const MainScreen = ({navigation}) => {
   const isLoadingMoreCommentsRef = useRef(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const commentSheetRef = useRef(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      let lastBackPressed = 0;
+
+      const onBackPress = () => {
+        const now = Date.now();
+        if (now - lastBackPressed < 2000) {
+          BackHandler.exitApp();
+          return true;
+        }
+
+        lastBackPressed = now;
+        ToastAndroid.show('한 번 더 누르면 종료됩니다.', ToastAndroid.SHORT);
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => backHandler.remove();
+    }, []),
+  );
+
   const commentSheetSnapPoints = useMemo(() => {
     const topInset = insets.top === 0 ? 20 : insets.top;
     return ['70%', Math.max(0, windowHeight - topInset)];
@@ -763,21 +792,21 @@ const MainScreen = ({navigation}) => {
         });
         const createdId = result?.commentId;
         if (rootCommentId) {
-        const fallbackReply = {
-          id: createdId ?? `temp-${Date.now()}`,
-          content,
-          createdAt: new Date().toISOString(),
-          writerImgUrl: currentUserProfileImage ?? null,
-          writerNickname: currentUserNickname || '나',
-          writerId: currentUserId ?? null,
-          taggedUserId,
-          taggedUserNickname,
-          shouldShowMention:
-            taggedUserNickname &&
-            currentUserNickname &&
-            taggedUserNickname !== currentUserNickname,
-          isWriter: true,
-        };
+          const fallbackReply = {
+            id: createdId ?? `temp-${Date.now()}`,
+            content,
+            createdAt: new Date().toISOString(),
+            writerImgUrl: currentUserProfileImage ?? null,
+            writerNickname: currentUserNickname || '나',
+            writerId: currentUserId ?? null,
+            taggedUserId,
+            taggedUserNickname,
+            shouldShowMention:
+              taggedUserNickname &&
+              currentUserNickname &&
+              taggedUserNickname !== currentUserNickname,
+            isWriter: true,
+          };
           const mappedReply = mapCommentItem(fallbackReply, rootCommentId);
           const mergeUnique = list => {
             const seen = new Set();
@@ -1358,6 +1387,10 @@ const MainScreen = ({navigation}) => {
   };
 
   const headerTopPadding = insets.top + (Platform.OS === 'android' ? 10 : 0);
+  const refreshControlOffset =
+    Platform.OS === 'android'
+      ? Math.max(headerHeight, headerTopPadding + 40)
+      : undefined;
 
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
@@ -1422,8 +1455,13 @@ const MainScreen = ({navigation}) => {
         ]}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!feedLoading}
-        refreshing={refreshing}
-        onRefresh={refreshFeed}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refreshFeed}
+            progressViewOffset={refreshControlOffset}
+          />
+        }
         onScrollBeginDrag={handleScrollBeginDrag}
         onScroll={handleScroll}
         scrollEventThrottle={16}
