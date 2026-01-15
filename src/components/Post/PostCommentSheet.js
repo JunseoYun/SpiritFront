@@ -11,6 +11,7 @@ import {
   Alert,
   Animated,
   ActivityIndicator,
+  BackHandler,
   Image,
   InteractionManager,
   Keyboard,
@@ -273,6 +274,7 @@ const PostCommentSheet = forwardRef(
     const [currentSheetIndex, setCurrentSheetIndex] = useState(
       initialIndex ?? 0,
     );
+    const [isSheetVisible, setIsSheetVisible] = useState(false);
     const pendingFocusAfterSnapRef = useRef(false);
     const pendingSnapOnlyRef = useRef(false);
     const {showToast} = useToast();
@@ -823,6 +825,7 @@ const PostCommentSheet = forwardRef(
     const handleSheetChange = useCallback(
       index => {
         setCurrentSheetIndex(index);
+        setIsSheetVisible(index !== -1);
         if (index >= 0) {
           setTimeout(() => {
             tryScrollPending();
@@ -864,6 +867,9 @@ const PostCommentSheet = forwardRef(
 
     const handleSheetAnimate = useCallback(
       (fromIndex, toIndex) => {
+        if (toIndex >= 0) {
+          setIsSheetVisible(true);
+        }
         if (toIndex === -1) {
           inputRef.current?.blur?.();
           onChangeCommentInput?.('');
@@ -871,10 +877,45 @@ const PostCommentSheet = forwardRef(
           resetSheetState();
           pendingFocusAfterSnapRef.current = false;
           pendingSnapOnlyRef.current = false;
+          setIsSheetVisible(false);
         }
       },
       [closeMoreMenu, onChangeCommentInput, resetSheetState],
     );
+
+    const handleHardwareBackPress = useCallback(() => {
+      if (Platform.OS !== 'android') {
+        return false;
+      }
+      if (!isSheetVisible) {
+        return false;
+      }
+      if (showMoreMenu) {
+        closeMoreMenu();
+        return true;
+      }
+      if (ref && typeof ref !== 'function') {
+        ref.current?.dismiss?.();
+        return true;
+      }
+      return false;
+    }, [closeMoreMenu, isSheetVisible, ref, showMoreMenu]);
+
+    useEffect(() => {
+      if (Platform.OS !== 'android') {
+        return undefined;
+      }
+      if (!isSheetVisible) {
+        return undefined;
+      }
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        handleHardwareBackPress,
+      );
+
+      return () => subscription.remove();
+    }, [handleHardwareBackPress, isSheetVisible]);
 
     const previewCountRef = useRef({});
     useEffect(() => {
@@ -1114,6 +1155,7 @@ const PostCommentSheet = forwardRef(
           onChange={handleSheetChange}
           onAnimate={handleSheetAnimate}
           onDismiss={() => {
+            setIsSheetVisible(false);
             closeMoreMenu();
             resetSheetState();
             onDismiss?.();
