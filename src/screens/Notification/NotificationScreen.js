@@ -82,7 +82,6 @@ const NotificationScreen = ({navigation}) => {
     try {
       const data = await NotifiGet(page);
       setTotalpage(data.totalPages);
-      console.log(data);
       if (data.content.length === 0) {
         setIsEnd(true); // 더 이상 데이터가 없으면
       } else {
