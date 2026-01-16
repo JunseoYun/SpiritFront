@@ -9,16 +9,20 @@ import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
 import MyCardScreen from '../screens/BottomTab/My/MyCard/MyCardScreen';
 import CardRegisterScreen from '../screens/BottomTab/My/MyCard/CardRegisterScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../utils/CustomText';
 const Stack = createStackNavigator();
+
+const renderHeaderTitle = label => (
+  <CustomText
+    style={{fontSize: 19, color: '#333', fontFamily: 'Pretendard-Bold'}}>
+    {label}
+  </CustomText>
+);
 
 const getScreenOptions = title => ({
   headerShown: true,
-  title: title,
-  headerTitleStyle: {
-    fontSize: 18,
-    color: '#333',
-    fontFamily: 'Pretendard-Bold',
-  },
+  title,
+  headerTitle: () => renderHeaderTitle(title),
 
   headerTitleAlign: 'center',
 });
@@ -33,13 +37,9 @@ export default function MyStack() {
           headerTitleAlign: 'left',
           headerShadowVisible: false,
           title: '마이프로필',
+          headerTitle: () => renderHeaderTitle('마이프로필'),
           headerTitleContainerStyle: {
             paddingLeft: 6,
-          },
-          headerTitleStyle: {
-            fontSize: 19,
-            color: '#333',
-            fontFamily: 'Pretendard-Bold',
           },
         })}
       />
@@ -92,6 +92,7 @@ export default function MyStack() {
 
           headerShadowVisible: false,
           title: '회원탈퇴',
+          headerTitle: () => renderHeaderTitle('회원탈퇴'),
           headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
@@ -114,6 +115,7 @@ export default function MyStack() {
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
           title: '내 카드 관리',
+          headerTitle: () => renderHeaderTitle('내 카드 관리'),
           headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
@@ -134,6 +136,7 @@ export default function MyStack() {
         component={CardRegisterScreen}
         options={({navigation}) => ({
           title: '카드 등록',
+          headerTitle: () => renderHeaderTitle('카드 등록'),
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
           headerLeft: () => (

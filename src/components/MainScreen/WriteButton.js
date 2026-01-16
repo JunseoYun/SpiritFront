@@ -69,7 +69,7 @@ const WriteButton = ({
             justifyContent: 'center',
           }}>
           <CustomText numberOfLines={1} style={styles.buttonText}>
-            글쓰기
+            작성
           </CustomText>
         </Animated.View>
       </AnimatedPressable>
@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontFamily: 'Pretendard-Bold',
     fontSize: 16,
+    marginRight: 7,
   },
 });
 
