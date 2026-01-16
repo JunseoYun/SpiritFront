@@ -44,6 +44,10 @@ export const useNotificationSetup = () => {
           channelId: 'default',
           importance: AndroidImportance.HIGH,
           smallIcon: 'ic_launcher',
+          pressAction: {
+            id: 'default',
+            launchActivity: 'default',
+          },
         },
         ios: {
           foregroundPresentationOptions: {

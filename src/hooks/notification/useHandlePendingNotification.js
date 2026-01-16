@@ -36,7 +36,8 @@ const useHandlePendingNotification = (
         if (
           redirectType === 'COMMENT_DETAIL' &&
           (notificationType === 'COMMENT_LIKED' ||
-            notificationType === 'REPLY_COMMENT_CREATED')
+            notificationType === 'REPLY_COMMENT_CREATED' ||
+            notificationType === 'ROOT_COMMENT_CREATED')
         ) {
           try {
             const comment = await CommentGetById(redirectId);
