@@ -209,7 +209,7 @@ const MainScreen = ({navigation}) => {
   const writeMenuItems = [
     {
       key: 'post',
-      label: '게시글 작성',
+      label: '게시글',
       icon: 'edit',
     },
     {

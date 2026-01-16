@@ -30,6 +30,12 @@ const MainBtmbar = ({route}) => {
       {label}
     </CustomText>
   );
+  const renderHeaderTitle = label => (
+    <CustomText
+      style={{fontSize: 19, color: '#333', fontFamily: 'Pretendard-Bold'}}>
+      {label}
+    </CustomText>
+  );
 
   return (
     <Tab.Navigator
@@ -131,14 +137,9 @@ const MainBtmbar = ({route}) => {
           headerTitleAlign: 'left',
 
           headerShadowVisible: false,
-          title: '저장',
+          headerTitle: () => renderHeaderTitle('저장'),
           headerTitleContainerStyle: {
             paddingLeft: 6,
-          },
-          headerTitleStyle: {
-            fontSize: 19,
-            color: '#333',
-            fontFamily: 'Pretendard-Bold',
           },
         }}
       />
