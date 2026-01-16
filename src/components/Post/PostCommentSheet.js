@@ -265,6 +265,7 @@ const PostCommentSheet = forwardRef(
     }, []);
     const [expandedReplies, setExpandedReplies] = useState({});
     const [hiddenPreviewReplies, setHiddenPreviewReplies] = useState({});
+    const [hideLocalReplies, setHideLocalReplies] = useState({});
     const [replyTarget, setReplyTarget] = useState(null);
     const replyTargetStoreRef = useRef({value: null, listeners: new Set()});
     const expandedRepliesRef = useRef({});
@@ -989,8 +990,18 @@ const PostCommentSheet = forwardRef(
     const handlePressSend = useCallback(
       payload => {
         const rootCommentId = payload?.rootCommentId ?? null;
-        const isExpandedTarget =
-          rootCommentId && expandedReplies[rootCommentId] ? true : false;
+        if (rootCommentId) {
+          setExpandedReplies(prev => ({...prev, [rootCommentId]: true}));
+          setHiddenPreviewReplies(prev => ({...prev, [rootCommentId]: false}));
+          setHideLocalReplies(prev => ({...prev, [rootCommentId]: false}));
+        } else {
+          scrollRef.current?.scrollTo?.({y: 0, animated: true});
+        }
+        const isExpandedTarget = rootCommentId
+          ? true
+          : expandedReplies[rootCommentId]
+          ? true
+          : false;
         onPressSendRef.current?.({
           ...payload,
           isExpandedTarget,
@@ -1256,12 +1267,7 @@ const PostCommentSheet = forwardRef(
               contentContainerStyle={[
                 styles.commentSheetContent,
                 {
-                  paddingBottom:
-                    Platform.OS === 'android'
-                      ? insets.bottom == 0
-                        ? 250
-                        : 150
-                      : 30,
+                  paddingBottom: Platform.OS === 'android' ? 200 : 30,
                 },
               ]}>
               {commentList.length === 0 && isLoadingComments ? (
@@ -1277,12 +1283,20 @@ const PostCommentSheet = forwardRef(
                   const replies = Array.isArray(comment.replies)
                     ? comment.replies
                     : [];
+                  const shouldHideLocal = !!hideLocalReplies[comment.id];
+                  const filterLocalReplies = list =>
+                    shouldHideLocal
+                      ? list.filter(item => !item?.isLocal)
+                      : list;
+                  const filteredReplies = filterLocalReplies(replies);
                   const replyCount = Number.isFinite(comment.replyCount)
                     ? comment.replyCount
-                    : replies.length;
+                    : filteredReplies.length;
                   const previewReplies = Array.isArray(comment.previewReplies)
                     ? comment.previewReplies
                     : [];
+                  const filteredPreviewReplies =
+                    filterLocalReplies(previewReplies);
                   const mergeUnique = list => {
                     const seen = new Set();
                     return list.filter(reply => {
@@ -1299,13 +1313,15 @@ const PostCommentSheet = forwardRef(
                   );
                   const expandedReplyItems = mergeUnique(
                     isExpanded
-                      ? replies
-                      : replies.length
-                      ? replies
-                      : previewReplies,
+                      ? filteredReplies
+                      : filteredReplies.length
+                      ? filteredReplies
+                      : filteredPreviewReplies,
                   );
                   const previewVisibleCount =
-                    !isExpanded && !isPreviewHidden ? previewReplies.length : 0;
+                    !isExpanded && !isPreviewHidden
+                      ? filteredPreviewReplies.length
+                      : 0;
                   const remainingReplyCount = Math.max(
                     0,
                     replyCount - previewVisibleCount,
@@ -1315,7 +1331,7 @@ const PostCommentSheet = forwardRef(
                     replyCount - expandedReplyItems.length,
                   );
                   const loadedReplyCount = Array.isArray(comment.replies)
-                    ? comment.replies.length
+                    ? filteredReplies.length
                     : 0;
                   const expectedReplyCount = Number.isFinite(comment.replyCount)
                     ? comment.replyCount
@@ -1612,6 +1628,10 @@ const PostCommentSheet = forwardRef(
                               ]}
                               disabled={isLoadingReplies}
                               onPress={() => {
+                                setHideLocalReplies(prev => ({
+                                  ...prev,
+                                  [comment.id]: true,
+                                }));
                                 if (hasLoadedAllReplies) {
                                   return;
                                 }
@@ -1644,12 +1664,16 @@ const PostCommentSheet = forwardRef(
                                   paddingLeft: 48,
                                 },
                               ]}
-                              onPress={() =>
+                              onPress={() => {
+                                setHideLocalReplies(prev => ({
+                                  ...prev,
+                                  [comment.id]: true,
+                                }));
                                 setExpandedReplies(prev => ({
                                   ...prev,
                                   [comment.id]: false,
-                                }))
-                              }>
+                                }));
+                              }}>
                               <View style={styles.commentReplyToggleLine} />
                               <CustomText
                                 style={[styles.commentReplyToggleText]}>
@@ -1661,9 +1685,9 @@ const PostCommentSheet = forwardRef(
                       ) : null}
                       {!isExpanded &&
                       !isPreviewHidden &&
-                      previewReplies.length ? (
+                      filteredPreviewReplies.length ? (
                         <View style={styles.commentReplyList}>
-                          {previewReplies.map(reply => {
+                          {filteredPreviewReplies.map(reply => {
                             const mention =
                               reply.shouldShowMention === false
                                 ? null
@@ -1763,6 +1787,10 @@ const PostCommentSheet = forwardRef(
                             ]}
                             disabled={isLoadingReplies}
                             onPress={() => {
+                              setHideLocalReplies(prev => ({
+                                ...prev,
+                                [comment.id]: true,
+                              }));
                               setHiddenPreviewReplies(prev => ({
                                 ...prev,
                                 [comment.id]: false,
@@ -1794,12 +1822,16 @@ const PostCommentSheet = forwardRef(
                               styles.commentReplyToggle,
                               {paddingLeft: 48},
                             ]}
-                            onPress={() =>
+                            onPress={() => {
+                              setHideLocalReplies(prev => ({
+                                ...prev,
+                                [comment.id]: true,
+                              }));
                               setHiddenPreviewReplies(prev => ({
                                 ...prev,
                                 [comment.id]: true,
-                              }))
-                            }>
+                              }));
+                            }}>
                             <View style={styles.commentReplyToggleLine} />
                             <CustomText style={styles.commentReplyToggleText}>
                               답글 접기
@@ -1814,6 +1846,10 @@ const PostCommentSheet = forwardRef(
                           style={[styles.commentReplyToggle, {paddingLeft: 48}]}
                           disabled={isLoadingReplies}
                           onPress={() => {
+                            setHideLocalReplies(prev => ({
+                              ...prev,
+                              [comment.id]: true,
+                            }));
                             setHiddenPreviewReplies(prev => ({
                               ...prev,
                               [comment.id]: false,

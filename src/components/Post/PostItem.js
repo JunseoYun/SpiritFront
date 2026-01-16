@@ -1137,7 +1137,7 @@ const styles = StyleSheet.create({
     height: 38,
     borderRadius: 50,
     backgroundColor: '#f0f0f0',
-    borderWidth: 0.5,
+    borderWidth: 1,
     borderColor: '#EEE',
   },
   nickname: {
@@ -1175,7 +1175,7 @@ const styles = StyleSheet.create({
   },
   moreMenu: {
     position: 'absolute',
-    right: 0,
+    right: 10,
     top: 40,
     backgroundColor: '#fff',
     borderRadius: 5,

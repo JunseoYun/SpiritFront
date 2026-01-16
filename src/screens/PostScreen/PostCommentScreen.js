@@ -515,6 +515,7 @@ const PostCommentScreen = ({navigation, route}) => {
         likes: item.likeCount ?? item.likes ?? 0,
         isLiked: item.isLiked ?? false,
         isMine,
+        isLocal: item.isLocal ?? false,
         replyCount: item.replyCount ?? 0,
         rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
       };
@@ -701,6 +702,7 @@ const PostCommentScreen = ({navigation, route}) => {
             writerId: currentUserId ?? null,
             taggedUserId,
             taggedUserNickname,
+            isLocal: true,
             shouldShowMention:
               taggedUserNickname &&
               currentUserNickname &&
