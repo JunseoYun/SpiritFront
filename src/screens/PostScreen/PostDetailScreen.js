@@ -292,6 +292,7 @@ const PostDetailScreen = ({navigation, route}) => {
         likes: item.likeCount ?? item.likes ?? 0,
         isLiked: item.isLiked ?? false,
         isMine,
+        isLocal: item.isLocal ?? false,
         replyCount: item.replyCount ?? 0,
         rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
       };
@@ -505,6 +506,7 @@ const PostDetailScreen = ({navigation, route}) => {
               currentUserNickname &&
               taggedUserNickname !== currentUserNickname,
             isWriter: true,
+            isLocal: true,
           };
           const mappedReply = mapCommentItem(fallbackReply, rootCommentId);
           const mergeUnique = list => {

@@ -581,6 +581,7 @@ const MainScreen = ({navigation}) => {
         likes: item.likeCount ?? item.likes ?? 0,
         isLiked: item.isLiked ?? false,
         isMine,
+        isLocal: item.isLocal ?? false,
         replyCount: item.replyCount ?? 0,
         rootCommentId: rootCommentId ?? item.rootCommentId ?? null,
       };
@@ -803,6 +804,7 @@ const MainScreen = ({navigation}) => {
             writerId: currentUserId ?? null,
             taggedUserId,
             taggedUserNickname,
+            isLocal: true,
             shouldShowMention:
               taggedUserNickname &&
               currentUserNickname &&
@@ -1393,11 +1395,11 @@ const MainScreen = ({navigation}) => {
     Platform.OS === 'android'
       ? Math.max(headerHeight, headerTopPadding + 40)
       : undefined;
-  const fabBottomOffset = useMemo(
-    () => insets.bottom + (Platform.OS === 'android' ? 24 : 28),
-    [insets.bottom],
+  const fabBottomOffset = 20;
+  const menuBottomOffset = useMemo(
+    () => fabBottomOffset + 62,
+    [fabBottomOffset],
   );
-  const menuBottomOffset = useMemo(() => fabBottomOffset + 62, [fabBottomOffset]);
 
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
