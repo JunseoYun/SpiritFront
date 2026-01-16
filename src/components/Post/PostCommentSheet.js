@@ -19,6 +19,7 @@ import {
   Pressable,
   StyleSheet,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {
@@ -278,6 +279,7 @@ const PostCommentSheet = forwardRef(
       initialIndex ?? 0,
     );
     const [isSheetVisible, setIsSheetVisible] = useState(false);
+    const [sheetTargetIndex, setSheetTargetIndex] = useState(initialIndex ?? 0);
     const pendingFocusAfterSnapRef = useRef(false);
     const pendingSnapOnlyRef = useRef(false);
     const {showToast} = useToast();
@@ -293,6 +295,7 @@ const PostCommentSheet = forwardRef(
     const pendingHighlightSetRef = useRef(new Set());
     const replyRequestTokenRef = useRef({});
     const pendingAutoScrollIdRef = useRef(null);
+    const {height: windowHeight} = useWindowDimensions();
 
     const layoutMapRef = useRef({});
     const replyListLayoutRef = useRef({});
@@ -827,6 +830,7 @@ const PostCommentSheet = forwardRef(
 
     const handleSheetChange = useCallback(
       index => {
+        setSheetTargetIndex(index);
         setCurrentSheetIndex(index);
         setIsSheetVisible(index !== -1);
         if (index >= 0) {
@@ -870,6 +874,7 @@ const PostCommentSheet = forwardRef(
 
     const handleSheetAnimate = useCallback(
       (fromIndex, toIndex) => {
+        setSheetTargetIndex(toIndex);
         if (toIndex >= 0) {
           setIsSheetVisible(true);
         }
@@ -1154,6 +1159,12 @@ const PostCommentSheet = forwardRef(
     );
 
     const footerSpacing = (footerHeight || 72) + insets.bottom;
+    const contentPaddingBottom =
+      Platform.OS === 'android'
+        ? sheetTargetIndex === 0
+          ? windowHeight * 0.3
+          : windowHeight * 0.1
+        : 30;
     return (
       <>
         <BottomSheetModal
@@ -1267,7 +1278,7 @@ const PostCommentSheet = forwardRef(
               contentContainerStyle={[
                 styles.commentSheetContent,
                 {
-                  paddingBottom: Platform.OS === 'android' ? 200 : 30,
+                  paddingBottom: contentPaddingBottom,
                 },
               ]}>
               {commentList.length === 0 && isLoadingComments ? (
@@ -1933,7 +1944,6 @@ const styles = StyleSheet.create({
   },
   commentSheetContent: {
     paddingTop: 12,
-    paddingBottom: 100,
     gap: 18,
   },
   commentSortRow: {
