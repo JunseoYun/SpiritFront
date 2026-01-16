@@ -446,16 +446,19 @@ const NotificationScreen = ({navigation}) => {
                 }
                 if (
                   item.notificationType === 'ROOT_COMMENT_CREATED' &&
-                  item.redirectType === 'POST_COMMENT_RECENT_LIST'
+                  item.redirectType === 'COMMENT_DETAIL'
                 ) {
                   const targetPostId = item.redirectId ?? item.targetId;
                   if (targetPostId) {
                     try {
-                      const response = await PostGetById(targetPostId);
+                      const comment = await CommentGetById(targetPostId);
                       navigation.navigate('PostDetailScreen', {
-                        postId: response.id,
-                        item: response,
+                        postId: comment?.postId,
+                        rootCommentId: comment?.rootCommentId,
+                        rootCommentOrderIndex: comment?.rootCommentOrderIndex,
+                        replyCommentOrderIndex: comment?.replyCommentOrderIndex,
                         openCommentSheet: true,
+                        scrollToCommentId: comment?.id ?? item.redirectId,
                       });
                     } catch (er) {
                       console.log(er);
