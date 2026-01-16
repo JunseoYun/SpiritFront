@@ -75,6 +75,66 @@ const PostDetailScreen = ({navigation, route}) => {
   const isLoadingMoreCommentsRef = useRef(false);
   const [didAutoOpenCommentSheet, setDidAutoOpenCommentSheet] = useState(false);
   const notifiedHighlightIdRef = useRef(null);
+  const notificationTargetRootId = useMemo(() => {
+    if (!scrollToCommentId) return null;
+    return rootCommentId ?? scrollToCommentId;
+  }, [rootCommentId, scrollToCommentId]);
+  const notificationTargetReplyId = useMemo(() => {
+    if (!scrollToCommentId) return null;
+    if (!rootCommentId) return null;
+    const rootKey = String(rootCommentId);
+    const targetKey = String(scrollToCommentId);
+    return rootKey !== targetKey ? scrollToCommentId : null;
+  }, [rootCommentId, scrollToCommentId]);
+  const promoteNotificationComment = useCallback(
+    list => {
+      if (!notificationTargetRootId || !Array.isArray(list) || !list.length) {
+        return list;
+      }
+      const rootKey = String(notificationTargetRootId);
+      const rootIndex = list.findIndex(
+        item => String(item?.id) === rootKey,
+      );
+      if (rootIndex < 0) return list;
+      let rootItem = list[rootIndex];
+      const replyKey = notificationTargetReplyId
+        ? String(notificationTargetReplyId)
+        : null;
+      if (replyKey) {
+        const moveToFront = items => {
+          if (!Array.isArray(items) || items.length === 0) return items;
+          const index = items.findIndex(
+            reply => String(reply?.id) === replyKey,
+          );
+          if (index <= 0) return items;
+          const next = items.slice();
+          const [target] = next.splice(index, 1);
+          next.unshift(target);
+          return next;
+        };
+        const nextReplies = moveToFront(rootItem.replies);
+        const nextPreviewReplies = moveToFront(rootItem.previewReplies);
+        if (
+          nextReplies !== rootItem.replies ||
+          nextPreviewReplies !== rootItem.previewReplies
+        ) {
+          rootItem = {
+            ...rootItem,
+            replies: nextReplies,
+            previewReplies: nextPreviewReplies,
+          };
+        }
+      }
+      if (rootIndex === 0 && rootItem === list[rootIndex]) {
+        return list;
+      }
+      const nextList = list.slice();
+      nextList.splice(rootIndex, 1);
+      nextList.unshift(rootItem);
+      return nextList;
+    },
+    [notificationTargetReplyId, notificationTargetRootId],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -325,7 +385,7 @@ const PostDetailScreen = ({navigation, route}) => {
           const prevMap = new Map(
             prev.map(comment => [String(comment.id), comment]),
           );
-          return items.map(item => {
+          const mapped = items.map(item => {
             const mapped = mapCommentItem(item);
             const prevItem = prevMap.get(mapped.id);
             if (!prevItem) {
@@ -338,6 +398,7 @@ const PostDetailScreen = ({navigation, route}) => {
               replyPage: prevItem.replyPage,
             };
           });
+          return promoteNotificationComment(mapped);
         });
         setCommentPage(0);
         setCommentTotalCount(totalElements);
@@ -345,7 +406,7 @@ const PostDetailScreen = ({navigation, route}) => {
         setIsLoadingComments(false);
       }
     },
-    [commentSortKey, mapCommentItem],
+    [commentSortKey, mapCommentItem, promoteNotificationComment],
   );
 
   const handleRequestMoreComments = useCallback(
@@ -374,9 +435,10 @@ const PostDetailScreen = ({navigation, route}) => {
           : commentTotalCount;
         setCommentList(prev => {
           const merged = [...prev, ...mapped];
-          return Array.from(
+          const nextList = Array.from(
             new Map(merged.map(item => [item.id, item])).values(),
           );
+          return promoteNotificationComment(nextList);
         });
         setCommentPage(nextPage);
         setCommentTotalCount(totalElements);
@@ -389,6 +451,7 @@ const PostDetailScreen = ({navigation, route}) => {
       commentSortKey,
       commentTotalCount,
       mapCommentItem,
+      promoteNotificationComment,
       postId,
       postItem?.id,
     ],
@@ -409,8 +472,8 @@ const PostDetailScreen = ({navigation, route}) => {
       const totalElements = Number.isFinite(data?.totalElements)
         ? data.totalElements
         : null;
-      setCommentList(prev =>
-        prev.map(comment => {
+      setCommentList(prev => {
+        const nextList = prev.map(comment => {
           if (String(comment.id) !== String(rootCommentId)) {
             return comment;
           }
@@ -441,12 +504,15 @@ const PostDetailScreen = ({navigation, route}) => {
             replies: nextReplies,
             replyCount: nextReplyCount,
             replyPage: page,
-            previewReplies: comment.previewReplies ?? [],
+            previewReplies: previewReplies.length
+              ? previewReplies
+              : comment.previewReplies ?? [],
           };
-        }),
-      );
+        });
+        return promoteNotificationComment(nextList);
+      });
     },
-    [mapCommentItem],
+    [mapCommentItem, promoteNotificationComment],
   );
 
   const updatePostCommentCount = useCallback((targetPostId, delta) => {
@@ -748,17 +814,18 @@ const PostDetailScreen = ({navigation, route}) => {
         const mappedRoots = roots.map(item => mapCommentItem(item));
         if (isCancelled) return;
 
+        const effectiveRootId =
+          targetRootId ?? (foundRoot ? String(foundRoot.id) : targetCommentId);
         setCommentList(prev => {
           const map = new Map();
           mappedRoots.forEach(c => map.set(String(c.id), c));
           prev.forEach(c => {
             if (!map.has(String(c.id))) map.set(String(c.id), c);
           });
-          return Array.from(map.values());
+          const nextList = Array.from(map.values());
+          return promoteNotificationComment(nextList);
         });
 
-        const effectiveRootId =
-          targetRootId ?? (foundRoot ? String(foundRoot.id) : targetCommentId);
         setAutoExpandRootId(
           effectiveRootId && String(effectiveRootId) !== targetCommentId
             ? effectiveRootId
@@ -803,8 +870,8 @@ const PostDetailScreen = ({navigation, route}) => {
           const mappedReplies = replies.map(item =>
             mapCommentItem(item, effectiveRootId),
           );
-          setCommentList(prev =>
-            prev.map(comment => {
+          setCommentList(prev => {
+            const nextList = prev.map(comment => {
               if (String(comment.id) !== String(effectiveRootId)) {
                 return comment;
               }
@@ -816,8 +883,9 @@ const PostDetailScreen = ({navigation, route}) => {
                   mappedReplies,
                 ),
               };
-            }),
-          );
+            });
+            return promoteNotificationComment(nextList);
+          });
         }
 
         setPendingScrollReplyId(targetCommentId);
@@ -843,6 +911,7 @@ const PostDetailScreen = ({navigation, route}) => {
     replyCommentOrderIndex,
     commentSortKey,
     mapCommentItem,
+    promoteNotificationComment,
     postId,
     postItem?.id,
   ]);

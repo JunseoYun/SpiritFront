@@ -879,16 +879,12 @@ const PostCommentSheet = forwardRef(
           setIsSheetVisible(true);
         }
         if (toIndex === -1) {
-          inputRef.current?.blur?.();
-          onChangeCommentInput?.('');
-          closeMoreMenu();
-          resetSheetState();
           pendingFocusAfterSnapRef.current = false;
           pendingSnapOnlyRef.current = false;
           setIsSheetVisible(false);
         }
       },
-      [closeMoreMenu, onChangeCommentInput, resetSheetState],
+      [],
     );
 
     const handleHardwareBackPress = useCallback(() => {
