@@ -1162,8 +1162,8 @@ const PostCommentSheet = forwardRef(
     const contentPaddingBottom =
       Platform.OS === 'android'
         ? sheetTargetIndex === 0
-          ? windowHeight * 0.3
-          : windowHeight * 0.1
+          ? windowHeight * 0.35
+          : windowHeight * 0.15
         : 30;
     return (
       <>
@@ -1393,29 +1393,44 @@ const PostCommentSheet = forwardRef(
                             </CustomText>
                           </View>
                           {(() => {
-                            const mention =
+                            const mentionCandidate =
                               comment.shouldShowMention === false
                                 ? null
                                 : comment.taggedUserNickname ||
                                   comment.mentionName ||
-                                  comment.writerNickname ||
                                   (comment.text?.startsWith('@')
                                     ? comment.text.split(/\s+/)[0]?.slice(1)
                                     : null);
+                            const isSelfTaggedByName =
+                              mentionCandidate &&
+                              comment.taggedUserNickname &&
+                              comment.taggedUserNickname ===
+                                comment.writerNickname;
+                            const isSelfTaggedById =
+                              comment.taggedUserId &&
+                              comment.writerId &&
+                              String(comment.taggedUserId) ===
+                                String(comment.writerId);
+                            const safeMention =
+                              isSelfTaggedByName || isSelfTaggedById
+                                ? null
+                                : mentionCandidate;
                             const textWithoutMention =
-                              mention && comment.text?.startsWith(`@${mention}`)
+                              safeMention &&
+                              comment.text?.startsWith(`@${safeMention}`)
                                 ? comment.text
-                                    .slice(`@${mention}`.length)
+                                    .slice(`@${safeMention}`.length)
                                     .trimStart()
                                 : comment.text;
                             const showMention =
-                              mention && mention !== currentUserNickname;
+                              safeMention &&
+                              safeMention !== currentUserNickname;
                             return (
                               <CustomText style={styles.commentText}>
                                 {showMention ? (
                                   <>
                                     <CustomText style={styles.commentMention}>
-                                      @{mention}{' '}
+                                      @{safeMention}{' '}
                                     </CustomText>
                                     {textWithoutMention}
                                   </>
@@ -1541,34 +1556,48 @@ const PostCommentSheet = forwardRef(
                                     </CustomText>
                                   </View>
                                   {(() => {
-                                    const mention =
+                                    const mentionCandidate =
                                       reply.shouldShowMention === false
                                         ? null
                                         : reply.taggedUserNickname ||
                                           reply.mentionName ||
-                                          reply.writerNickname ||
                                           (reply.text?.startsWith('@')
                                             ? reply.text
                                                 .split(/\s+/)[0]
                                                 ?.slice(1)
                                             : null);
+                                    const isSelfTaggedByName =
+                                      mentionCandidate &&
+                                      reply.taggedUserNickname &&
+                                      reply.taggedUserNickname ===
+                                        reply.writerNickname;
+                                    const isSelfTaggedById =
+                                      reply.taggedUserId &&
+                                      reply.writerId &&
+                                      String(reply.taggedUserId) ===
+                                        String(reply.writerId);
+                                    const safeMention =
+                                      isSelfTaggedByName || isSelfTaggedById
+                                        ? null
+                                        : mentionCandidate;
                                     const textWithoutMention =
-                                      mention &&
-                                      reply.text?.startsWith(`@${mention}`)
+                                      safeMention &&
+                                      reply.text?.startsWith(`@${safeMention}`)
                                         ? reply.text
-                                            .slice(`@${mention}`.length)
+                                            .slice(`@${safeMention}`.length)
                                             .trimStart()
                                         : reply.text;
                                     const showMention =
-                                      mention &&
-                                      mention !== currentUserNickname;
+                                      safeMention &&
+                                      safeMention !== currentUserNickname;
+
                                     return (
                                       <CustomText style={styles.commentText}>
                                         {showMention ? (
                                           <>
                                             <CustomText
                                               style={styles.commentMention}>
-                                              @{mention}{' '}
+                                              @{safeMention}{' '}
                                             </CustomText>
                                             {textWithoutMention}
                                           </>
@@ -1699,15 +1728,26 @@ const PostCommentSheet = forwardRef(
                       filteredPreviewReplies.length ? (
                         <View style={styles.commentReplyList}>
                           {filteredPreviewReplies.map(reply => {
-                            const mention =
+                            const mentionCandidate =
                               reply.shouldShowMention === false
                                 ? null
                                 : reply.taggedUserNickname ||
                                   reply.mentionName ||
-                                  reply.writerNickname ||
                                   (reply.text?.startsWith('@')
                                     ? reply.text.split(/\s+/)[0]?.slice(1)
                                     : null);
+                            const isSelfTaggedByName =
+                              mentionCandidate &&
+                              reply.taggedUserNickname &&
+                              reply.taggedUserNickname === reply.writerNickname;
+                            const isSelfTaggedById =
+                              reply.taggedUserId &&
+                              reply.writerId &&
+                              String(reply.taggedUserId) ===
+                                String(reply.writerId);
+                            const mention = isSelfTaggedByName || isSelfTaggedById
+                              ? null
+                              : mentionCandidate;
                             const textWithoutMention =
                               mention && reply.text?.startsWith(`@${mention}`)
                                 ? reply.text
