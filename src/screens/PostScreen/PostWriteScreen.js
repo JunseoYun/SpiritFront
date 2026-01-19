@@ -369,10 +369,7 @@ const PostWriteScreen = ({navigation, route}) => {
           contentContainerStyle={[
             styles.contentContainer,
             {
-              paddingBottom:
-                (Platform.OS === 'ios' ? insets.bottom : 0) +
-                (Platform.OS === 'android' && keyboardHeight) +
-                24,
+              paddingBottom: insets.bottom,
             },
           ]}
           showsVerticalScrollIndicator={false}
@@ -605,7 +602,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#333',
     lineHeight: 22,
-    // paddingVertical: 12,
+    // backgroundColor: '#999',
   },
 });
 
