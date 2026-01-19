@@ -16,6 +16,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const MapTopBar = ({
   navigation,
   prevTab,
+  useStackBack = false,
   onMeasureHeight,
   forceWhiteBackground = false,
   isAiSearchMode = false,
@@ -102,6 +103,14 @@ const MapTopBar = ({
           <Pressable
             onPress={() => {
               const trimmed = (searchText || '').trim();
+              if (useStackBack) {
+                if (navigation.canGoBack()) {
+                  navigation.goBack();
+                } else {
+                  navigation.navigate('MainScreen');
+                }
+                return;
+              }
               if (isAiSearchMode) {
                 if (onClearSearch) {
                   onClearSearch();
@@ -138,6 +147,7 @@ const MapTopBar = ({
               navigation.navigate('SearchScreen', {
                 preserveFilters: shouldPreserve,
                 fromAI: isAiSearchMode,
+                fromChatbotMap: useStackBack === true,
                 prevTab,
                 initialSearchKeyword: trimmedKeyword || undefined,
               });
@@ -167,6 +177,10 @@ const MapTopBar = ({
             forceWhiteBackground ? styles.exploreButtonSolid : null,
           ]}
           onPress={() => {
+            if (useStackBack && navigation.canGoBack()) {
+              navigation.goBack();
+              return;
+            }
             navigation.navigate('ChatbotScreen');
           }}>
           {!forceWhiteBackground ? (

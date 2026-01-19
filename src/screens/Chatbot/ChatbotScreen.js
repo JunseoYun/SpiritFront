@@ -311,12 +311,16 @@ const ChatbotScreen = ({navigation}) => {
 
   const handleOpenMapWithAiResult = useCallback(
     (stores, searchConditions, promptText) => {
-      navigation.navigate('MapScreen', {
-        aiStores: Array.isArray(stores) ? stores : [],
-        aiSearchConditions: searchConditions || null,
-        searchConditions: searchConditions || null,
-        aiSearchPrompt: typeof promptText === 'string' ? promptText : null,
-        prevTab: 'ChatbotScreen',
+      navigation.navigate('MainBtmbar', {
+        screen: 'MapScreen',
+        params: {
+          aiStores: Array.isArray(stores) ? stores : [],
+          aiSearchConditions: searchConditions || null,
+          searchConditions: searchConditions || null,
+          aiSearchPrompt: typeof promptText === 'string' ? promptText : null,
+          prevTab: 'ChatbotScreen',
+          fromChatbot: true,
+        },
       });
     },
     [navigation],
@@ -411,6 +415,7 @@ const ChatbotScreen = ({navigation}) => {
         }
 
         const agentResult = data?.llmAgentResult || data || {};
+        console.log('[agent/chat-search] response', data);
         const responseId = agentResult?.responseId;
         const storeList = data?.stores?.content;
         const searchConditions = agentResult?.searchConditions;
@@ -501,7 +506,7 @@ const ChatbotScreen = ({navigation}) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
-      gestureEnabled: true,
+      gestureEnabled: Platform.OS !== 'android',
     });
   }, [navigation]);
 
@@ -843,7 +848,7 @@ const ChatbotScreen = ({navigation}) => {
     keyboardVisible && keyboardHeight
       ? Math.max(
           0,
-          keyboardHeight - insets.bottom + (Platform.OS === 'android' ? 50 : 0),
+          keyboardHeight - (Platform.OS === 'android' ? 0 : insets.bottom),
         )
       : 0;
   const bottomPadding = Math.max(
