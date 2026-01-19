@@ -926,13 +926,6 @@ const MainScreen = ({navigation}) => {
       setIsLoadingComments(false);
       return;
     }
-    fetchComments(selectedFeed.id);
-  }, [fetchComments, selectedFeed?.id]);
-
-  useEffect(() => {
-    if (!selectedFeed?.id) {
-      return;
-    }
     setCommentPage(0);
     setCommentTotalCount(null);
     fetchComments(selectedFeed.id);
