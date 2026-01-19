@@ -12,6 +12,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import ChatbotIcon from '../../assets/svg/ChatbotIcon';
 import CustomText from '../../utils/CustomText';
 import ChatbotResultCard from './ChatbotResultCard';
+import ColorUtil from '../../utils/ColorUtil';
 
 const ChatbotChatList = ({
   chatHistory,
@@ -148,6 +149,9 @@ const ChatbotChatList = ({
                           />
                         ))}
                       </ScrollView>
+                      <CustomText style={styles.aiNoticeText}>
+                        AI가 생성한 결과로, 실제 정보와 차이가 있을 수 있습니다.
+                      </CustomText>
                       <LinearGradient
                         colors={['#3CBBFF', '#30D4F9', '#9A6CFF']}
                         start={{x: 0, y: 0}}
@@ -360,6 +364,15 @@ const styles = StyleSheet.create({
     paddingRight: 6,
     paddingHorizontal: 18,
     gap: 4,
+  },
+  aiNoticeText: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Pretendard-Regular',
+    // textAlign: '',
+    marginTop: 10,
+    marginBottom: 8,
+    paddingHorizontal: 24,
   },
   mapChipBorder: {
     alignSelf: 'center',

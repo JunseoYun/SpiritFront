@@ -21,7 +21,7 @@ import {
   formatRadiusLabel,
 } from '../../context/MapSearchContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect, CommonActions} from '@react-navigation/native';
+import {useFocusEffect, CommonActions, StackActions} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import RecentSearchItem from '../../components/SearchScreen/RecentSearchItem';
 import CustomText from '../../utils/CustomText';
@@ -317,7 +317,17 @@ const SearchScreen = ({navigation, route}) => {
           placeholder="술집이나 메뉴를 검색하세요"
           onPress={onPressSearch}
           onBackPress={() => navigation.goBack()}
-          onHomePress={() => navigation.navigate('ChatbotScreen')}
+          onHomePress={() => {
+            if (route?.params?.fromChatbotMap) {
+              if (navigation.canGoBack()) {
+                navigation.dispatch(StackActions.pop(2));
+              } else {
+                navigation.navigate('ChatbotScreen');
+              }
+              return;
+            }
+            navigation.navigate('ChatbotScreen');
+          }}
         />
 
         <MapFilterHeader

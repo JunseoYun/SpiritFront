@@ -45,7 +45,10 @@ const MainBtmbar = ({route}) => {
         focus: () => {
           const current = route.name;
           if (current === 'MapScreen') {
-            navigation.setParams({prevTab: lastNonMapTabRef.current});
+            const incomingPrevTab = route.params?.prevTab;
+            if (!incomingPrevTab || incomingPrevTab === 'MapScreen') {
+              navigation.setParams({prevTab: lastNonMapTabRef.current});
+            }
           } else {
             lastNonMapTabRef.current = current;
           }
