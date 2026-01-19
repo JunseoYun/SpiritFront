@@ -1,5 +1,5 @@
 import React from 'react';
-import {Animated, Pressable, ScrollView, StyleSheet} from 'react-native';
+import {Animated, Platform, Pressable, ScrollView, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
@@ -37,6 +37,8 @@ const ChatbotSuggestions = ({
       ]}>
       <ScrollView
         horizontal
+        nestedScrollEnabled
+        keyboardShouldPersistTaps="handled"
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={[styles.chipRow]}>
         {suggestions.map(({keyword, subtext}) => {
