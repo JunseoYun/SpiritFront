@@ -56,6 +56,11 @@ const PostWriteScreen = ({navigation, route}) => {
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const maxPreviewSize = 200;
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardVerticalOffset = useMemo(
+    () => (Platform.OS === 'ios' ? 0 : insets.top + 48),
+    [insets.top],
+  );
 
   const previewPhoto = photos[0];
   const hasMultiplePhotos = photos.length > 1;
@@ -110,6 +115,20 @@ const PostWriteScreen = ({navigation, route}) => {
       isActive = false;
     };
   }, [photos]);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', e => {
+      const height = e?.endCoordinates?.height ?? 0;
+      setKeyboardHeight(height);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub?.remove();
+      hideSub?.remove();
+    };
+  }, []);
 
   const getPreviewSize = photo => {
     const size = photoSizes[photo?.uri];
@@ -342,13 +361,19 @@ const PostWriteScreen = ({navigation, route}) => {
       </View>
       <KeyboardAvoidingView
         style={styles.content}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        behavior="padding"
+        keyboardVerticalOffset={keyboardVerticalOffset}>
         <ScrollView
           ref={scrollViewRef}
           style={styles.content}
           contentContainerStyle={[
             styles.contentContainer,
-            {paddingBottom: Platform.OS === 'ios' ? insets.bottom : 0},
+            {
+              paddingBottom:
+                (Platform.OS === 'ios' ? insets.bottom : 0) +
+                keyboardHeight +
+                24,
+            },
           ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
