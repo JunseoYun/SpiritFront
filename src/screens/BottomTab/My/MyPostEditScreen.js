@@ -21,6 +21,7 @@ import FastImage from 'react-native-fast-image';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import CustomText from '../../../utils/CustomText';
+import CustomTextInput from '../../../utils/CustomTextInput';
 import ColorUtil from '../../../utils/ColorUtil';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import useCustomAlert from '../../../hooks/useCustomAlert';
@@ -68,11 +69,10 @@ const MyPostEditScreen = ({navigation, route}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isEditorFocused, setIsEditorFocused] = useState(false);
+  const contentInputRef = useRef(null);
   const {showToast} = useToast();
-  const keyboardVerticalOffset = useMemo(
-    () => insets.top + 52,
-    [insets.top],
-  );
+  const keyboardVerticalOffset = 0;
 
   useEffect(() => {
     const draft = route.params?.draft;
@@ -256,6 +256,12 @@ const MyPostEditScreen = ({navigation, route}) => {
   }, [navigation, returnTo]);
 
   const handleBackPress = useCallback(() => {
+    if (isEditorFocused) {
+      Keyboard.dismiss();
+      contentInputRef.current?.blur?.();
+      setIsEditorFocused(false);
+      return;
+    }
     if (!hasUnsavedChanges) {
       goBackToOrigin();
       return;
@@ -266,12 +272,18 @@ const MyPostEditScreen = ({navigation, route}) => {
       onConfirm: () => goBackToOrigin(),
       type: 'confirm',
     });
-  }, [goBackToOrigin, hasUnsavedChanges, showAlert]);
+  }, [goBackToOrigin, hasUnsavedChanges, isEditorFocused, showAlert]);
 
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
         const now = Date.now();
+        if (isEditorFocused) {
+          Keyboard.dismiss();
+          contentInputRef.current?.blur?.();
+          setIsEditorFocused(false);
+          return true;
+        }
         if (!hasUnsavedChanges) {
           goBackToOrigin();
           return true;
@@ -296,7 +308,7 @@ const MyPostEditScreen = ({navigation, route}) => {
       );
 
       return () => backHandler.remove();
-    }, [goBackToOrigin, hasUnsavedChanges]),
+    }, [goBackToOrigin, hasUnsavedChanges, isEditorFocused]),
   );
 
   const handleDeleteImage = index => {
@@ -429,190 +441,202 @@ const MyPostEditScreen = ({navigation, route}) => {
         <CustomText style={styles.headerTitle}>게시글 수정</CustomText>
         <Pressable
           hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
-          onPress={handleSubmit}
-          disabled={!hasUnsavedChanges}>
+          onPress={() => {
+            if (isEditorFocused) {
+              Keyboard.dismiss();
+              contentInputRef.current?.blur?.();
+              setIsEditorFocused(false);
+              return;
+            }
+            handleSubmit();
+          }}
+          disabled={!hasUnsavedChanges && !isEditorFocused}>
           <CustomText
             style={[
               styles.submitText,
-              !hasUnsavedChanges && styles.submitTextDisabled,
+              !hasUnsavedChanges &&
+                !isEditorFocused &&
+                styles.submitTextDisabled,
             ]}>
-            완료
+            {isEditorFocused ? '확인' : '완료'}
           </CustomText>
         </Pressable>
       </View>
 
       <KeyboardAvoidingView
         style={styles.keyboardWrapper}
-        behavior="padding"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={keyboardVerticalOffset}>
         <ScrollView
-          contentContainerStyle={[
-            styles.content,
-            {paddingBottom: keyboardHeight + insets.bottom + 30},
-          ]}
+          contentContainerStyle={[styles.content]}
           style={{flex: 1}}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
           <View style={styles.section}>
-          {hasStoreInfo && (
-            <View style={styles.selectedStoreRow}>
-              <View style={styles.selectedStoreIcon}>
-                <Ionicons name="storefront-outline" size={16} color="#333" />
+            {hasStoreInfo && (
+              <View style={styles.selectedStoreRow}>
+                <View style={styles.selectedStoreIcon}>
+                  <Ionicons name="storefront-outline" size={16} color="#333" />
+                </View>
+                <View style={styles.selectedStoreInfo}>
+                  <CustomText
+                    style={styles.selectedStoreText}
+                    numberOfLines={1}>
+                    {storeName || '매장 이름'}
+                  </CustomText>
+                  <CustomText
+                    style={
+                      storeAddress
+                        ? styles.selectedStoreAddress
+                        : styles.selectedAddressPlaceholder
+                    }
+                    numberOfLines={1}>
+                    {storeAddress || '매장 주소'}
+                  </CustomText>
+                </View>
               </View>
-              <View style={styles.selectedStoreInfo}>
-                <CustomText style={styles.selectedStoreText} numberOfLines={1}>
-                  {storeName || '매장 이름'}
-                </CustomText>
-                <CustomText
-                  style={
-                    storeAddress
-                      ? styles.selectedStoreAddress
-                      : styles.selectedAddressPlaceholder
+            )}
+
+            <View style={{width: screenWidth, position: 'relative'}}>
+              <FlatList
+                data={photoData}
+                keyExtractor={(item, index) => `${item.id}-${index}`}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                snapToAlignment="start"
+                decelerationRate="fast"
+                style={{width: screenWidth}}
+                snapToInterval={screenWidth}
+                onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig}
+                renderItem={({item}) => {
+                  const isAdd = item.isAdd;
+                  const aspectRatio = previewAspectRatio;
+
+                  if (isAdd) {
+                    return (
+                      <View
+                        key={item.id}
+                        style={[styles.imageWrapper, {width: screenWidth}]}>
+                        <Pressable
+                          style={[
+                            styles.previewStage,
+                            styles.photoAddCard,
+                            {aspectRatio},
+                          ]}
+                          onPress={handleAddImages}>
+                          <Ionicons name="add" size={28} color="#4B5563" />
+                          <CustomText style={styles.photoAddText}>
+                            사진 추가
+                          </CustomText>
+                        </Pressable>
+                      </View>
+                    );
                   }
-                  numberOfLines={1}>
-                  {storeAddress || '매장 주소'}
-                </CustomText>
-              </View>
-            </View>
-          )}
 
-          <View style={{width: screenWidth, position: 'relative'}}>
-            <FlatList
-              data={photoData}
-              keyExtractor={(item, index) => `${item.id}-${index}`}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              snapToAlignment="start"
-              decelerationRate="fast"
-              style={{width: screenWidth}}
-              snapToInterval={screenWidth}
-              onViewableItemsChanged={onViewableItemsChanged}
-              viewabilityConfig={viewabilityConfig}
-              renderItem={({item}) => {
-                const isAdd = item.isAdd;
-                const aspectRatio = previewAspectRatio;
-
-                if (isAdd) {
+                  const isDeleteDisabled = images.length <= 1;
                   return (
                     <View
                       key={item.id}
                       style={[styles.imageWrapper, {width: screenWidth}]}>
-                      <Pressable
+                      <FastImage
+                        source={{uri: item.uri}}
                         style={[
-                          styles.previewStage,
-                          styles.photoAddCard,
-                          {aspectRatio},
+                          styles.postImage,
+                          {width: screenWidth, aspectRatio},
                         ]}
-                        onPress={handleAddImages}>
-                        <Ionicons name="add" size={28} color="#4B5563" />
-                        <CustomText style={styles.photoAddText}>
-                          사진 추가
-                        </CustomText>
-                      </Pressable>
-                    </View>
-                  );
-                }
-
-                const isDeleteDisabled = images.length <= 1;
-                return (
-                  <View
-                    key={item.id}
-                    style={[styles.imageWrapper, {width: screenWidth}]}>
-                    <FastImage
-                      source={{uri: item.uri}}
-                      style={[
-                        styles.postImage,
-                        {width: screenWidth, aspectRatio},
-                      ]}
-                      resizeMode={FastImage.resizeMode.contain}
-                    />
-                    {!isDeleteDisabled && (
-                      <Pressable
-                        style={styles.previewRemoveButton}
-                        onPress={() => handleDeleteImage(item.index)}
-                        hitSlop={8}>
-                        <Ionicons name="close" size={18} color="#fff" />
-                      </Pressable>
-                    )}
-                  </View>
-                );
-              }}
-            />
-            {hasMultiplePhotos && (
-              <View style={styles.imageIndicatorContainer}>
-                {indicatorIndices.map(index => {
-                  const isActive = index === currentIndex;
-                  const distance = Math.abs(currentIndex - index);
-                  const clampedDistance = Math.min(distance, 3);
-                  const baseSize = isActive ? 8 : 6;
-                  const size = Math.max(
-                    isActive ? baseSize : baseSize - clampedDistance * 1,
-                    isActive ? 8 : 3,
-                  );
-                  const opacity = isActive
-                    ? 1
-                    : Math.max(0.35, 0.8 - clampedDistance * 0.2);
-                  const color = isActive ? '#FFF' : '#CFD5DF';
-
-                  return (
-                    <View
-                      key={`dot-${index}`}
-                      style={styles.imageIndicatorDotWrapper}>
-                      <View
-                        style={[
-                          styles.imageIndicatorDot,
-                          {
-                            width: size,
-                            height: size,
-                            borderRadius: size / 2,
-                            opacity,
-                            backgroundColor: color,
-                          },
-                        ]}
+                        resizeMode={FastImage.resizeMode.contain}
                       />
+                      {!isDeleteDisabled && (
+                        <Pressable
+                          style={styles.previewRemoveButton}
+                          onPress={() => handleDeleteImage(item.index)}
+                          hitSlop={8}>
+                          <Ionicons name="close" size={18} color="#fff" />
+                        </Pressable>
+                      )}
                     </View>
+                  );
+                }}
+              />
+              {hasMultiplePhotos && (
+                <View style={styles.imageIndicatorContainer}>
+                  {indicatorIndices.map(index => {
+                    const isActive = index === currentIndex;
+                    const distance = Math.abs(currentIndex - index);
+                    const clampedDistance = Math.min(distance, 3);
+                    const baseSize = isActive ? 8 : 6;
+                    const size = Math.max(
+                      isActive ? baseSize : baseSize - clampedDistance * 1,
+                      isActive ? 8 : 3,
+                    );
+                    const opacity = isActive
+                      ? 1
+                      : Math.max(0.35, 0.8 - clampedDistance * 0.2);
+                    const color = isActive ? '#FFF' : '#CFD5DF';
+
+                    return (
+                      <View
+                        key={`dot-${index}`}
+                        style={styles.imageIndicatorDotWrapper}>
+                        <View
+                          style={[
+                            styles.imageIndicatorDot,
+                            {
+                              width: size,
+                              height: size,
+                              borderRadius: size / 2,
+                              opacity,
+                              backgroundColor: color,
+                            },
+                          ]}
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+          </View>
+
+          {hasRating && (
+            <View style={styles.ratingSection}>
+              <View style={styles.ratingRow}>
+                {Array.from({length: 5}, (_, index) => {
+                  const starIndex = index + 1;
+                  return (
+                    <Pressable
+                      key={`rating-star-${starIndex}`}
+                      onPress={() => setRating(starIndex)}
+                      hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                      <FontAwesomeIcon
+                        name="star"
+                        size={22}
+                        color={starIndex <= rating ? '#FFD700' : '#E2E2E2'}
+                        style={styles.ratingStar}
+                      />
+                    </Pressable>
                   );
                 })}
               </View>
-            )}
-          </View>
-        </View>
-
-        {hasRating && (
-          <View style={styles.ratingSection}>
-            <View style={styles.ratingRow}>
-              {Array.from({length: 5}, (_, index) => {
-                const starIndex = index + 1;
-                return (
-                  <Pressable
-                    key={`rating-star-${starIndex}`}
-                    onPress={() => setRating(starIndex)}
-                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
-                    <FontAwesomeIcon
-                      name="star"
-                      size={22}
-                      color={starIndex <= rating ? '#FFD700' : '#E2E2E2'}
-                      style={styles.ratingStar}
-                    />
-                  </Pressable>
-                );
-              })}
             </View>
-          </View>
-        )}
+          )}
 
-        <View style={styles.contentSection}>
-          <TextInput
-            value={content}
-            onChangeText={handleContentChange}
-            placeholder="오늘의 기록을 남겨보세요"
-            placeholderTextColor="#9CA3AF"
-            style={styles.contentInput}
-            multiline
-            textAlignVertical="top"
-            maxLength={MAX_CONTENT_LENGTH}
-          />
+          <View style={styles.contentSection}>
+            <CustomTextInput
+              ref={contentInputRef}
+              value={content}
+              onChangeText={handleContentChange}
+              placeholder="오늘의 기록을 남겨보세요"
+              placeholderTextColor="#9CA3AF"
+              style={styles.contentInput}
+              multiline
+              textAlignVertical="top"
+              maxLength={MAX_CONTENT_LENGTH}
+              onFocus={() => setIsEditorFocused(true)}
+              onBlur={() => setIsEditorFocused(false)}
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
