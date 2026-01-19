@@ -687,15 +687,9 @@ const PostDetailScreen = ({navigation, route}) => {
     const targetPostId = postItem?.id ?? postId;
     if (!targetPostId) {
       setCommentList([]);
+      setCommentPage(0);
+      setCommentTotalCount(null);
       setIsLoadingComments(false);
-      return;
-    }
-    fetchComments(targetPostId);
-  }, [fetchComments, postId, postItem?.id]);
-
-  useEffect(() => {
-    const targetPostId = postItem?.id ?? postId;
-    if (!targetPostId) {
       return;
     }
     setCommentPage(0);
