@@ -45,7 +45,7 @@ import formatRelativeTime from '../../utils/formatRelativeTime';
 const defaultProfile = require('../../assets/default_profile.png');
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const COMMENT_SORTS = {
-  latest: null,
+  latest: ['id,DESC'],
   popular: ['likeCount,DESC', 'id,DESC'],
 };
 
@@ -524,7 +524,7 @@ const PostCommentScreen = ({navigation, route}) => {
   );
 
   const fetchComments = useCallback(
-    async targetPostId => {
+    async (targetPostId, sortKey) => {
       if (!targetPostId) {
         setCommentList([]);
         setCommentPage(0);
@@ -538,7 +538,7 @@ const PostCommentScreen = ({navigation, route}) => {
           postId: targetPostId,
           page: 0,
           size: 20,
-          sort: COMMENT_SORTS[commentSortKey],
+          sort: COMMENT_SORTS[sortKey],
         });
         const items = Array.isArray(data?.content) ? data.content : [];
         const totalElements = Number.isFinite(data?.totalElements)
@@ -568,7 +568,7 @@ const PostCommentScreen = ({navigation, route}) => {
         setIsLoadingComments(false);
       }
     },
-    [commentSortKey, mapCommentItem],
+    [mapCommentItem],
   );
 
   const handleRequestMoreComments = useCallback(
@@ -795,7 +795,7 @@ const PostCommentScreen = ({navigation, route}) => {
       if (targetComment.rootCommentId) {
         handleRequestReplies(targetComment.rootCommentId);
       } else {
-        fetchComments(postId);
+        fetchComments(postId, commentSortKey);
         setCommentTotalCount(prev =>
           prev === null ? null : Math.max(0, prev - 1),
         );
@@ -814,17 +814,21 @@ const PostCommentScreen = ({navigation, route}) => {
       setIsLoadingComments(false);
       return;
     }
-    fetchComments(postId);
+    fetchComments(postId, commentSortKey);
   }, [fetchComments, postId]);
 
-  useEffect(() => {
-    if (!postId) {
-      return;
-    }
-    setCommentPage(0);
-    setCommentTotalCount(null);
-    fetchComments(postId);
-  }, [commentSortKey, fetchComments, postId]);
+  const handleChangeCommentSort = useCallback(
+    nextSortKey => {
+      setCommentSortKey(nextSortKey);
+      if (!postId) {
+        return;
+      }
+      setCommentPage(0);
+      setCommentTotalCount(null);
+      fetchComments(postId, nextSortKey);
+    },
+    [fetchComments, postId],
+  );
 
   useEffect(() => {
     const store = replyTargetStoreRef.current;
@@ -1461,7 +1465,9 @@ const PostCommentScreen = ({navigation, route}) => {
         <View style={[styles.commentSheetHeader, {paddingTop: insets.top}]}>
           <CustomText style={styles.commentSheetTitle}>댓글</CustomText>
           <View style={styles.commentSortRow}>
-            <Pressable onPress={() => setCommentSortKey('latest')} hitSlop={6}>
+            <Pressable
+              onPress={() => handleChangeCommentSort('latest')}
+              hitSlop={6}>
               <CustomText
                 style={[
                   styles.commentSortText,
@@ -1470,7 +1476,9 @@ const PostCommentScreen = ({navigation, route}) => {
                 최신순
               </CustomText>
             </Pressable>
-            <Pressable onPress={() => setCommentSortKey('popular')} hitSlop={6}>
+            <Pressable
+              onPress={() => handleChangeCommentSort('popular')}
+              hitSlop={6}>
               <CustomText
                 style={[
                   styles.commentSortText,
