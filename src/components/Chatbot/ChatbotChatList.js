@@ -135,6 +135,7 @@ const ChatbotChatList = ({
                     <>
                       <ScrollView
                         horizontal
+                        nestedScrollEnabled
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.resultList}>
                         {message.stores.map((store, index) => (
