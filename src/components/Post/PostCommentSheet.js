@@ -219,7 +219,6 @@ const CommentFooter = ({
               placeholder="댓글을 남겨보세요."
               placeholderTextColor="#9AA1AE"
               style={styles.commentInput}
-              multiline
               underlineColorAndroid="transparent"
               InputComponent={BottomSheetTextInput}
             />
@@ -893,20 +892,17 @@ const PostCommentSheet = forwardRef(
       ],
     );
 
-    const handleSheetAnimate = useCallback(
-      (fromIndex, toIndex) => {
-        setSheetTargetIndex(toIndex);
-        if (toIndex >= 0) {
-          setIsSheetVisible(true);
-        }
-        if (toIndex === -1) {
-          pendingFocusAfterSnapRef.current = false;
-          pendingSnapOnlyRef.current = false;
-          setIsSheetVisible(false);
-        }
-      },
-      [],
-    );
+    const handleSheetAnimate = useCallback((fromIndex, toIndex) => {
+      setSheetTargetIndex(toIndex);
+      if (toIndex >= 0) {
+        setIsSheetVisible(true);
+      }
+      if (toIndex === -1) {
+        pendingFocusAfterSnapRef.current = false;
+        pendingSnapOnlyRef.current = false;
+        setIsSheetVisible(false);
+      }
+    }, []);
 
     const handleHardwareBackPress = useCallback(() => {
       if (Platform.OS !== 'android') {
@@ -1771,9 +1767,10 @@ const PostCommentSheet = forwardRef(
                               reply.writerId &&
                               String(reply.taggedUserId) ===
                                 String(reply.writerId);
-                            const mention = isSelfTaggedByName || isSelfTaggedById
-                              ? null
-                              : mentionCandidate;
+                            const mention =
+                              isSelfTaggedByName || isSelfTaggedById
+                                ? null
+                                : mentionCandidate;
                             const textWithoutMention =
                               mention && reply.text?.startsWith(`@${mention}`)
                                 ? reply.text
@@ -2281,6 +2278,7 @@ const styles = StyleSheet.create({
     padding: 0,
     margin: 0,
     paddingVertical: 12,
+    marginRight: 10,
   },
   commentSendButton: {
     paddingVertical: 6,
