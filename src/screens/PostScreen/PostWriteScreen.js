@@ -371,7 +371,7 @@ const PostWriteScreen = ({navigation, route}) => {
             {
               paddingBottom:
                 (Platform.OS === 'ios' ? insets.bottom : 0) +
-                keyboardHeight +
+                (Platform.OS === 'android' && keyboardHeight) +
                 24,
             },
           ]}
