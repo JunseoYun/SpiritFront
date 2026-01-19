@@ -18,6 +18,7 @@ import {
   BackHandler,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 
 import {
@@ -69,6 +70,7 @@ const MenuEditScreen = ({route, navigation}) => {
   const {bottom} = useSafeAreaInsets();
   const {showAlert, AlertComponent} = useCustomAlert();
   const {showToast} = useToast();
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const [isNameFocused, setIsNameFocused] = useState(false);
   const [isPriceFocused, setIsPirceFocused] = useState(false);
@@ -405,16 +407,33 @@ const MenuEditScreen = ({route, navigation}) => {
     setDescHasForbidden(containsForbiddenWord(text));
   };
 
-  const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 80;
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', e => {
+      const height = e?.endCoordinates?.height ?? 0;
+      setKeyboardHeight(height);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub?.remove();
+      hideSub?.remove();
+    };
+  }, []);
+
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0;
 
   return (
     <SafeAreaView style={[styles.safe, {paddingBottom: bottom}]}>
       <KeyboardAvoidingView
         style={{flex: 1}}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior="padding"
         keyboardVerticalOffset={keyboardVerticalOffset}>
         <ScrollView
-          contentContainerStyle={styles.scrollContainer}
+          contentContainerStyle={[
+            styles.scrollContainer,
+            {paddingBottom: bottom + keyboardHeight + 24},
+          ]}
           keyboardShouldPersistTaps="handled">
           {/* 이미지 */}
           <View style={styles.imageBoxWrapper}>
