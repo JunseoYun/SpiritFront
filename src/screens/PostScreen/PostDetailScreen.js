@@ -29,7 +29,7 @@ import {useToast} from '../../context/ToastContext';
 
 const defaultProfile = require('../../assets/default_profile.png');
 const COMMENT_SORTS = {
-  latest: null,
+  latest: ['id,DESC'],
   popular: ['likeCount,DESC', 'id,DESC'],
 };
 //TODO
@@ -361,7 +361,7 @@ const PostDetailScreen = ({navigation, route}) => {
   );
 
   const fetchComments = useCallback(
-    async targetPostId => {
+    async (targetPostId, sortKey) => {
       if (!targetPostId) {
         setCommentList([]);
         setCommentPage(0);
@@ -375,7 +375,7 @@ const PostDetailScreen = ({navigation, route}) => {
           postId: targetPostId,
           page: 0,
           size: 20,
-          sort: COMMENT_SORTS[commentSortKey],
+          sort: COMMENT_SORTS[sortKey],
         });
         const items = Array.isArray(data?.content) ? data.content : [];
         const totalElements = Number.isFinite(data?.totalElements)
@@ -406,7 +406,7 @@ const PostDetailScreen = ({navigation, route}) => {
         setIsLoadingComments(false);
       }
     },
-    [commentSortKey, mapCommentItem, promoteNotificationComment],
+    [mapCommentItem, promoteNotificationComment],
   );
 
   const handleRequestMoreComments = useCallback(
@@ -666,7 +666,7 @@ const PostDetailScreen = ({navigation, route}) => {
         handleRequestReplies(targetComment.rootCommentId);
         updatePostCommentCount(targetPostId, -1);
       } else {
-        fetchComments(targetPostId);
+        fetchComments(targetPostId, commentSortKey);
         setCommentTotalCount(prev =>
           prev === null ? null : Math.max(0, prev - 1),
         );
@@ -694,8 +694,8 @@ const PostDetailScreen = ({navigation, route}) => {
     }
     setCommentPage(0);
     setCommentTotalCount(null);
-    fetchComments(targetPostId);
-  }, [commentSortKey, fetchComments, postId, postItem?.id]);
+    fetchComments(targetPostId, commentSortKey);
+  }, [fetchComments, postId, postItem?.id]);
 
   useEffect(() => {
     const targetPostId = postItem?.id ?? postId;
@@ -910,9 +910,19 @@ const PostDetailScreen = ({navigation, route}) => {
     postItem?.id,
   ]);
 
-  const handleChangeCommentSort = useCallback(nextSortKey => {
-    setCommentSortKey(nextSortKey);
-  }, []);
+  const handleChangeCommentSort = useCallback(
+    nextSortKey => {
+      const targetPostId = postItem?.id ?? postId;
+      setCommentSortKey(nextSortKey);
+      if (!targetPostId) {
+        return;
+      }
+      setCommentPage(0);
+      setCommentTotalCount(null);
+      fetchComments(targetPostId, nextSortKey);
+    },
+    [fetchComments, postId, postItem?.id],
+  );
 
   const handleOpenCommentSheet = useCallback(() => {
     commentSheetRef.current?.present();

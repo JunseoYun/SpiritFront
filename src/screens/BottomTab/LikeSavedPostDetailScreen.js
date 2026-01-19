@@ -28,7 +28,7 @@ import Loading from '../../hooks/Loading';
 const defaultProfile = require('../../assets/default_profile.png');
 const defaultStoreImage = require('../../assets/default_store6.png');
 const COMMENT_SORTS = {
-  latest: null,
+  latest: ['id,DESC'],
   popular: ['likeCount,DESC', 'id,DESC'],
 };
 
@@ -253,7 +253,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
   );
 
   const fetchComments = useCallback(
-    async targetPostId => {
+    async (targetPostId, sortKey) => {
       if (!targetPostId) {
         setCommentList([]);
         setCommentPage(0);
@@ -267,7 +267,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
           postId: targetPostId,
           page: 0,
           size: 20,
-          sort: COMMENT_SORTS[commentSortKey],
+          sort: COMMENT_SORTS[sortKey],
         });
         const items = Array.isArray(data?.content) ? data.content : [];
         const totalElements = Number.isFinite(data?.totalElements)
@@ -297,7 +297,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
         setIsLoadingComments(false);
       }
     },
-    [commentSortKey, mapCommentItem],
+    [mapCommentItem],
   );
 
   const handleRequestMoreComments = useCallback(
@@ -565,7 +565,7 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
         handleRequestReplies(targetComment.rootCommentId);
         updatePostCommentCount(targetPostId, -1);
       } else {
-        fetchComments(targetPostId);
+        fetchComments(targetPostId, commentSortKey);
         setCommentTotalCount(prev =>
           prev === null ? null : Math.max(0, prev - 1),
         );
@@ -592,12 +592,22 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
     }
     setCommentPage(0);
     setCommentTotalCount(null);
-    fetchComments(selectedFeed.id);
-  }, [commentSortKey, fetchComments, selectedFeed?.id]);
+    fetchComments(selectedFeed.id, commentSortKey);
+  }, [fetchComments, selectedFeed?.id]);
 
-  const handleChangeCommentSort = useCallback(nextSortKey => {
-    setCommentSortKey(nextSortKey);
-  }, []);
+  const handleChangeCommentSort = useCallback(
+    nextSortKey => {
+      const targetPostId = selectedFeed?.id;
+      setCommentSortKey(nextSortKey);
+      if (!targetPostId) {
+        return;
+      }
+      setCommentPage(0);
+      setCommentTotalCount(null);
+      fetchComments(targetPostId, nextSortKey);
+    },
+    [fetchComments, selectedFeed?.id],
+  );
 
   const handleOpenCommentSheet = useCallback(feed => {
     setSelectedFeed(feed);
