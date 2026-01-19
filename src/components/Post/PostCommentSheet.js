@@ -42,6 +42,7 @@ import {useToast} from '../../context/ToastContext';
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const CommentFooter = ({
   inputRef,
+  commentInputStore,
   onChangeCommentInput,
   onPressSend,
   onFocusInput,
@@ -55,7 +56,9 @@ const CommentFooter = ({
   onClearReplyTarget,
   onLayout,
 }) => {
-  const [localInput, setLocalInput] = useState('');
+  const [localInput, setLocalInput] = useState(
+    commentInputStore?.current?.value ?? '',
+  );
   const [replyTarget, setReplyTarget] = useState(
     replyTargetStore?.current?.value ?? null,
   );
@@ -106,6 +109,19 @@ const CommentFooter = ({
       store.listeners.delete(listener);
     };
   }, [replyTargetStore]);
+
+  useEffect(() => {
+    const store = commentInputStore?.current;
+    if (!store) return;
+    const listener = nextValue => {
+      if (typeof nextValue !== 'string') return;
+      setLocalInput(prev => (prev === nextValue ? prev : nextValue));
+    };
+    store.listeners.add(listener);
+    return () => {
+      store.listeners.delete(listener);
+    };
+  }, [commentInputStore]);
 
   const handleSend = useCallback(() => {
     const content = localInput.trim();
@@ -235,6 +251,7 @@ const PostCommentSheet = forwardRef(
       commentLikeState,
       onToggleLike,
       formatLikeCount,
+      commentInput,
       onChangeCommentInput,
       currentUserProfileImage,
       currentUserNickname = '',
@@ -268,6 +285,10 @@ const PostCommentSheet = forwardRef(
     const [hiddenPreviewReplies, setHiddenPreviewReplies] = useState({});
     const [hideLocalReplies, setHideLocalReplies] = useState({});
     const [replyTarget, setReplyTarget] = useState(null);
+    const commentInputStoreRef = useRef({
+      value: commentInput ?? '',
+      listeners: new Set(),
+    });
     const replyTargetStoreRef = useRef({value: null, listeners: new Set()});
     const expandedRepliesRef = useRef({});
     const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -959,6 +980,14 @@ const PostCommentSheet = forwardRef(
       store.value = replyTarget;
       store.listeners.forEach(listener => listener(replyTarget));
     }, [replyTarget]);
+
+    useEffect(() => {
+      const store = commentInputStoreRef.current;
+      const nextValue = typeof commentInput === 'string' ? commentInput : '';
+      if (store.value === nextValue) return;
+      store.value = nextValue;
+      store.listeners.forEach(listener => listener(nextValue));
+    }, [commentInput]);
     useEffect(() => {
       if (!replyTarget && replyHighlightIdRef.current) {
         clearHighlight(replyHighlightIdRef.current);
@@ -1076,6 +1105,7 @@ const PostCommentSheet = forwardRef(
         <BottomSheetFooter {...props}>
           <CommentFooter
             inputRef={inputRef}
+            commentInputStore={commentInputStoreRef}
             onChangeCommentInput={handleChangeCommentInput}
             onPressSend={handlePressSend}
             onFocusInput={handleInputFocus}
