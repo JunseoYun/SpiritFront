@@ -5,11 +5,13 @@ import {
   Dimensions,
   FlatList,
   Image,
+  Keyboard,
   Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
+  KeyboardAvoidingView,
   TextInput,
   ToastAndroid,
   View,
@@ -65,7 +67,12 @@ const MyPostEditScreen = ({navigation, route}) => {
   const [baseAspectRatio, setBaseAspectRatio] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const {showToast} = useToast();
+  const keyboardVerticalOffset = useMemo(
+    () => insets.top + 52,
+    [insets.top],
+  );
 
   useEffect(() => {
     const draft = route.params?.draft;
@@ -99,6 +106,20 @@ const MyPostEditScreen = ({navigation, route}) => {
       addedImagesToken: undefined,
     });
   }, [navigation, route.params?.addedImages, route.params?.addedImagesToken]);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', e => {
+      const height = e?.endCoordinates?.height ?? 0;
+      setKeyboardHeight(height);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub?.remove();
+      hideSub?.remove();
+    };
+  }, []);
 
   useEffect(() => {
     let isActive = true;
@@ -420,10 +441,19 @@ const MyPostEditScreen = ({navigation, route}) => {
         </Pressable>
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}>
-        <View style={styles.section}>
+      <KeyboardAvoidingView
+        style={styles.keyboardWrapper}
+        behavior="padding"
+        keyboardVerticalOffset={keyboardVerticalOffset}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.content,
+            {paddingBottom: keyboardHeight + insets.bottom + 30},
+          ]}
+          style={{flex: 1}}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled">
+          <View style={styles.section}>
           {hasStoreInfo && (
             <View style={styles.selectedStoreRow}>
               <View style={styles.selectedStoreIcon}>
@@ -583,8 +613,9 @@ const MyPostEditScreen = ({navigation, route}) => {
             textAlignVertical="top"
             maxLength={MAX_CONTENT_LENGTH}
           />
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
       <Loading loading={isSubmitting} />
       <AlertComponent />
     </SafeAreaView>
@@ -620,6 +651,9 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingBottom: 30,
+  },
+  keyboardWrapper: {
+    flex: 1,
   },
   section: {},
   selectedStoreRow: {
