@@ -45,6 +45,7 @@ import {
   requestPhotoPermission,
 } from '../../hooks/usePhotopermis';
 import {IMAGE_PICKER_TEXTS} from '../../constants/imagePickerLabels';
+import {useToast} from '../../context/ToastContext';
 
 const {width} = Dimensions.get('window');
 const CameraRollModule = CameraRollNamed || CameraRollDefault;
@@ -53,6 +54,7 @@ const BATCH_SIZE = 80;
 const MIN_PREVIEW_SCALE = 1;
 const MAX_PREVIEW_SCALE = 3;
 const MAX_LANDSCAPE_RATIO = 16 / 9;
+const DEFAULT_MAX_SELECTED_PHOTOS = 10;
 
 const clampValue = (value, min, max) => Math.max(min, Math.min(value, max));
 const clampNumber = (value, min, max) => Math.max(min, Math.min(value, max));
@@ -163,6 +165,8 @@ const clampCropToBounds = (cropRect, rawSize) => {
 
 const PostPhotoSelectScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
+  const {showToast} = useToast();
+  const routeMaxSelectable = route?.params?.maxSelectable;
   const [albums, setAlbums] = useState([]);
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
   const [selectedPhotoIds, setSelectedPhotoIds] = useState([]);
@@ -237,6 +241,13 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   }, [currentPhotoId, selectedPhotoIds]);
   const isInitialLoading =
     loading && (!selectedAlbum || !(selectedAlbum?.photos?.length > 0));
+  const maxSelectablePhotos = useMemo(() => {
+    const parsed = Number(routeMaxSelectable);
+    if (Number.isFinite(parsed)) {
+      return Math.max(0, Math.min(parsed, DEFAULT_MAX_SELECTED_PHOTOS));
+    }
+    return DEFAULT_MAX_SELECTED_PHOTOS;
+  }, [routeMaxSelectable]);
   const gridPhotos = useMemo(() => {
     const albumPhotos = selectedAlbum?.photos ?? [];
     return [{id: 'camera-tile', isCamera: true}, ...albumPhotos];
@@ -1194,6 +1205,11 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
           setCurrentPhotoId(nextCurrent);
         }
         return nextSelected;
+      }
+      if (prev.length >= maxSelectablePhotos) {
+        const message = `사진은 최대 10장까지 선택할 수 있어요.`;
+        showToast(message, 'center');
+        return prev;
       }
       setCurrentPhotoId(photoId);
       return [...prev, photoId];

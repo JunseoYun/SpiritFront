@@ -32,6 +32,8 @@ import {StoreSuggestion} from '../../api/storeApi';
 import Loading from '../../hooks/Loading';
 import useCustomAlert from '../../hooks/useCustomAlert';
 
+const MAX_CONTENT_LENGTH = 300;
+
 const PostWriteScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
   const lastBackPressed = useRef(0);
@@ -174,6 +176,10 @@ const PostWriteScreen = ({navigation, route}) => {
       scrollViewRef.current.scrollToEnd({animated: true});
     }
   }, [isEditorFocused]);
+
+  const handleContentChange = useCallback(text => {
+    setContent(text.slice(0, MAX_CONTENT_LENGTH));
+  }, []);
 
   const isSubmitEnabled = hasPlaceName
     ? content.trim().length > 0
@@ -436,7 +442,8 @@ const PostWriteScreen = ({navigation, route}) => {
               multiline
               textAlignVertical="top"
               value={content}
-              onChangeText={setContent}
+              onChangeText={handleContentChange}
+              maxLength={MAX_CONTENT_LENGTH}
               onContentSizeChange={handleEditorContentSizeChange}
               onFocus={() => {
                 setIsEditorFocused(true);

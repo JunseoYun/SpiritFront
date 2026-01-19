@@ -28,10 +28,12 @@ import {
   PostUploadImage,
 } from '../../../api/reviewApi';
 import Loading from '../../../hooks/Loading';
+import {useToast} from '../../../context/ToastContext';
 
 const {width: screenWidth} = Dimensions.get('window');
 const MAX_IMAGES = 10;
 const MAX_LANDSCAPE_RATIO = 16 / 9;
+const MAX_CONTENT_LENGTH = 300;
 
 const mapToImageItem = (uri, index) => ({
   id: `${uri}-${Date.now()}-${index}`,
@@ -63,6 +65,7 @@ const MyPostEditScreen = ({navigation, route}) => {
   const [baseAspectRatio, setBaseAspectRatio] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const {showToast} = useToast();
 
   useEffect(() => {
     const draft = route.params?.draft;
@@ -192,6 +195,10 @@ const MyPostEditScreen = ({navigation, route}) => {
     review?.rate,
     review?.rating,
   ]);
+
+  const handleContentChange = useCallback(text => {
+    setContent(text.slice(0, MAX_CONTENT_LENGTH));
+  }, []);
 
   const goToMyProfile = useCallback(() => {
     navigation.reset({
@@ -328,18 +335,17 @@ const MyPostEditScreen = ({navigation, route}) => {
 
   const handleAddImages = async () => {
     if (images.length >= MAX_IMAGES) {
-      Alert.alert(
-        '이미지 추가',
-        `최대 ${MAX_IMAGES}장까지 업로드할 수 있어요.`,
-      );
+      showToast(`최대 ${MAX_IMAGES}장까지 업로드할 수 있어요.`, 'center');
       return;
     }
+    const remainingSlots = Math.max(0, MAX_IMAGES - images.length);
     const baseFrame = await getFirstImageFrame();
     navigation.navigate('PostPhotoSelectScreen', {
       returnTo: 'MyPostEditScreen',
       review,
       draft: {title, content, images},
       draftToken: Date.now(),
+      maxSelectable: remainingSlots,
       ...(baseFrame ? {baseFrame} : {}),
     });
   };
@@ -569,13 +575,13 @@ const MyPostEditScreen = ({navigation, route}) => {
         <View style={styles.contentSection}>
           <TextInput
             value={content}
-            onChangeText={setContent}
+            onChangeText={handleContentChange}
             placeholder="오늘의 기록을 남겨보세요"
             placeholderTextColor="#9CA3AF"
             style={styles.contentInput}
             multiline
             textAlignVertical="top"
-            maxLength={800}
+            maxLength={MAX_CONTENT_LENGTH}
           />
         </View>
       </ScrollView>
