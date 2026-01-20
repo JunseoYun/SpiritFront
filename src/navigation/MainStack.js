@@ -92,6 +92,7 @@ export default function MainStack() {
         options={{
           headerShown: false,
           animation: 'slide_from_bottom',
+          gestureEnabled: false,
         }}
       />
       <Stack.Screen
