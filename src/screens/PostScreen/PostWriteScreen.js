@@ -56,6 +56,7 @@ const PostWriteScreen = ({navigation, route}) => {
   const [content, setContent] = useState('');
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editorHeight, setEditorHeight] = useState(200);
   const maxPreviewSize = 200;
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const keyboardPadding = useMemo(
@@ -195,11 +196,21 @@ const PostWriteScreen = ({navigation, route}) => {
     });
   }, [navigation]);
 
-  const handleEditorContentSizeChange = useCallback(() => {
-    if (isEditorFocused && scrollViewRef.current) {
-      scrollViewRef.current.scrollToEnd({animated: true});
-    }
-  }, [isEditorFocused]);
+  const handleEditorContentSizeChange = useCallback(
+    event => {
+      if (Platform.OS === 'android') {
+        const nextHeight = Math.max(
+          200,
+          Math.ceil(event?.nativeEvent?.contentSize?.height ?? 0),
+        );
+        setEditorHeight(prev => (prev === nextHeight ? prev : nextHeight));
+      }
+      if (isEditorFocused && scrollViewRef.current) {
+        scrollViewRef.current.scrollToEnd({animated: true});
+      }
+    },
+    [isEditorFocused],
+  );
 
   const handleContentChange = useCallback(text => {
     setContent(text.slice(0, MAX_CONTENT_LENGTH));
@@ -468,7 +479,10 @@ const PostWriteScreen = ({navigation, route}) => {
               <CustomTextInput
                 ref={editorRef}
                 pointerEvents={isEditorFocused ? 'auto' : 'none'}
-                style={styles.editorInput}
+                style={[
+                  styles.editorInput,
+                  Platform.OS === 'android' && {height: editorHeight},
+                ]}
                 placeholder={
                   '어떤 술자리를 보냈나요?\n분위기나 기억에 남는 순간을 공유해보세요.'
                 }
@@ -608,7 +622,7 @@ const styles = StyleSheet.create({
   },
   editor: {
     paddingHorizontal: 20,
-    marginTop: 10,
+    paddingTop: 10,
   },
   editorInput: {
     minHeight: 200,
