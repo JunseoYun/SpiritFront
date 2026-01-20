@@ -72,6 +72,7 @@ const MyPostEditScreen = ({navigation, route}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isEditorFocused, setIsEditorFocused] = useState(false);
+  const [contentHeight, setContentHeight] = useState(200);
   const contentInputRef = useRef(null);
   const {showToast} = useToast();
   const keyboardPadding = useMemo(
@@ -230,11 +231,21 @@ const MyPostEditScreen = ({navigation, route}) => {
     setContent(text.slice(0, MAX_CONTENT_LENGTH));
   }, []);
 
-  const handleEditorContentSizeChange = useCallback(() => {
-    if (isEditorFocused && scrollViewRef.current) {
-      scrollViewRef.current.scrollToEnd({animated: true});
-    }
-  }, [isEditorFocused]);
+  const handleEditorContentSizeChange = useCallback(
+    event => {
+      if (Platform.OS === 'android') {
+        const nextHeight = Math.max(
+          200,
+          Math.ceil(event?.nativeEvent?.contentSize?.height ?? 0),
+        );
+        setContentHeight(prev => (prev === nextHeight ? prev : nextHeight));
+      }
+      if (isEditorFocused && scrollViewRef.current) {
+        scrollViewRef.current.scrollToEnd({animated: true});
+      }
+    },
+    [isEditorFocused],
+  );
 
   const goBackToOrigin = useCallback(() => {
     if (returnTo === 'MainScreen') {
@@ -639,7 +650,10 @@ const MyPostEditScreen = ({navigation, route}) => {
               }}>
               <CustomTextInput
                 ref={contentInputRef}
-                style={styles.contentInput}
+                style={[
+                  styles.contentInput,
+                  Platform.OS === 'android' && {height: contentHeight},
+                ]}
                 pointerEvents={isEditorFocused ? 'auto' : 'none'}
                 value={content}
                 onChangeText={handleContentChange}
