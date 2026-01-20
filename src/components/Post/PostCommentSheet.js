@@ -40,6 +40,7 @@ import {report_create} from '../../api/reportApi';
 import {useToast} from '../../context/ToastContext';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const COMMENT_MAX_LENGTH = 300;
 const CommentFooter = ({
   inputRef,
   commentInputStore,
@@ -201,8 +202,9 @@ const CommentFooter = ({
               ref={inputRef}
               value={localInput}
               onChangeText={text => {
-                setLocalInput(text);
-                onChangeCommentInput?.(text);
+                const nextValue = (text ?? '').slice(0, COMMENT_MAX_LENGTH);
+                setLocalInput(nextValue);
+                onChangeCommentInput?.(nextValue);
               }}
               editable
               // showSoftInputOnFocus={
@@ -221,6 +223,7 @@ const CommentFooter = ({
               style={styles.commentInput}
               underlineColorAndroid="transparent"
               InputComponent={BottomSheetTextInput}
+              maxLength={COMMENT_MAX_LENGTH}
             />
           </View>
           {localInput.trim() ? (
