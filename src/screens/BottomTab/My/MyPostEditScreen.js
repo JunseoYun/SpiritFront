@@ -49,6 +49,7 @@ const MyPostEditScreen = ({navigation, route}) => {
   const {review, returnTo} = route.params || {};
   const {showAlert, AlertComponent} = useCustomAlert();
   const lastBackPressed = useRef(0);
+  const scrollViewRef = useRef(null);
   const initialImages = useMemo(() => {
     const list = Array.isArray(review?.postImgUrlList)
       ? review.postImgUrlList
@@ -72,7 +73,14 @@ const MyPostEditScreen = ({navigation, route}) => {
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const contentInputRef = useRef(null);
   const {showToast} = useToast();
-  const keyboardVerticalOffset = 0;
+  const keyboardPadding = useMemo(
+    () => (Platform.OS === 'android' ? keyboardHeight : 0),
+    [keyboardHeight],
+  );
+  const keyboardVerticalOffset = useMemo(
+    () => (Platform.OS === 'ios' ? 0 : insets.top + 48),
+    [insets.top],
+  );
 
   useEffect(() => {
     const draft = route.params?.draft;
@@ -220,6 +228,12 @@ const MyPostEditScreen = ({navigation, route}) => {
   const handleContentChange = useCallback(text => {
     setContent(text.slice(0, MAX_CONTENT_LENGTH));
   }, []);
+
+  const handleEditorContentSizeChange = useCallback(() => {
+    if (isEditorFocused && scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({animated: true});
+    }
+  }, [isEditorFocused]);
 
   const goToMyProfile = useCallback(() => {
     navigation.reset({
@@ -427,7 +441,7 @@ const MyPostEditScreen = ({navigation, route}) => {
   };
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         {paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0)},
@@ -468,7 +482,11 @@ const MyPostEditScreen = ({navigation, route}) => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={keyboardVerticalOffset}>
         <ScrollView
-          contentContainerStyle={[styles.content]}
+          ref={scrollViewRef}
+          contentContainerStyle={[
+            styles.content,
+            {paddingBottom: insets.bottom + keyboardPadding},
+          ]}
           style={{flex: 1}}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
@@ -624,25 +642,41 @@ const MyPostEditScreen = ({navigation, route}) => {
           )}
 
           <View style={styles.contentSection}>
-            <CustomTextInput
-              ref={contentInputRef}
-              value={content}
-              onChangeText={handleContentChange}
-              placeholder="오늘의 기록을 남겨보세요"
-              placeholderTextColor="#9CA3AF"
-              style={styles.contentInput}
-              multiline
-              textAlignVertical="top"
-              maxLength={MAX_CONTENT_LENGTH}
-              onFocus={() => setIsEditorFocused(true)}
-              onBlur={() => setIsEditorFocused(false)}
-            />
+            <Pressable
+              pointerEvents={isEditorFocused ? 'box-none' : 'auto'}
+              onPress={() => {
+                contentInputRef.current?.focus?.();
+              }}>
+              <CustomTextInput
+                ref={contentInputRef}
+                style={styles.contentInput}
+                pointerEvents={isEditorFocused ? 'auto' : 'none'}
+                value={content}
+                onChangeText={handleContentChange}
+                placeholder="오늘의 기록을 남겨보세요"
+                placeholderTextColor="#9CA3AF"
+                multiline
+                scrollEnabled={false}
+                textAlignVertical="top"
+                maxLength={MAX_CONTENT_LENGTH}
+                onContentSizeChange={handleEditorContentSizeChange}
+                onFocus={() => {
+                  setIsEditorFocused(true);
+                  setTimeout(() => {
+                    if (scrollViewRef.current) {
+                      scrollViewRef.current.scrollToEnd({animated: true});
+                    }
+                  }, 50);
+                }}
+                onBlur={() => setIsEditorFocused(false)}
+              />
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
       <Loading loading={isSubmitting} />
       <AlertComponent />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -800,10 +834,11 @@ const styles = StyleSheet.create({
     paddingTop: 6,
   },
   contentInput: {
+    minHeight: 200,
     fontFamily: 'Pretendard-Regular',
-    fontSize: 14,
-    color: '#111',
-    minHeight: 160,
+    fontSize: 15,
+    color: '#333',
+    lineHeight: 22,
   },
 });
 
