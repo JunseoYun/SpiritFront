@@ -422,12 +422,7 @@ const MyPostEditScreen = ({navigation, route}) => {
         if (addedLocalImages.length > 0) {
           await PostUploadImage(review.id, {files: addedLocalImages});
         }
-        showAlert({
-          title: '수정 완료',
-          message: '게시글이 수정되었습니다.',
-          onConfirm: () => goToMyProfile(),
-          type: 'confirm',
-        });
+        goToMyProfile();
       })
       .catch(() => {
         showAlert({
