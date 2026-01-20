@@ -140,9 +140,48 @@ const MyReview = forwardRef(
           );
         },
       );
+      const editSub = DeviceEventEmitter.addListener(
+        'post-updated',
+        payload => {
+          const updated = payload?.review;
+          if (!updated?.id) {
+            return;
+          }
+          setMyReview(prev =>
+            prev.map(item =>
+              String(item?.id) === String(updated.id)
+                ? {
+                    ...item,
+                    ...updated,
+                    content: updated.content ?? item?.content ?? '',
+                    rate:
+                      updated.rate ??
+                      updated.rating ??
+                      item?.rate ??
+                      item?.rating ??
+                      0,
+                    postImgUrlList:
+                      updated.postImgUrlList ??
+                      updated.imgUrlList ??
+                      item?.postImgUrlList ??
+                      item?.imgUrlList ??
+                      [],
+                    imgUrlList:
+                      updated.imgUrlList ??
+                      updated.postImgUrlList ??
+                      item?.imgUrlList ??
+                      item?.postImgUrlList ??
+                      [],
+                  }
+                : item,
+            ),
+          );
+        },
+      );
       return () => {
         likeSub.remove();
         savedSub.remove();
+        editSub.remove();
       };
     }, []);
 
