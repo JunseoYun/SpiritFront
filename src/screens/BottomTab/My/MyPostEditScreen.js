@@ -36,7 +36,7 @@ import {useToast} from '../../../context/ToastContext';
 const {width: screenWidth} = Dimensions.get('window');
 const MAX_IMAGES = 10;
 const MAX_LANDSCAPE_RATIO = 16 / 9;
-const MAX_CONTENT_LENGTH = 300;
+const MAX_CONTENT_LENGTH = 3000;
 
 const mapToImageItem = (uri, index) => ({
   id: `${uri}-${Date.now()}-${index}`,
