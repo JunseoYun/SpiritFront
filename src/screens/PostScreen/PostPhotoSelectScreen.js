@@ -1188,10 +1188,8 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   );
 
   useLayoutEffect(() => {
-    const isIOS = Platform.OS === 'ios';
-
     navigation.setOptions({
-      gestureEnabled: !isIOS,
+      gestureEnabled: false,
     });
   }, [navigation]);
 
@@ -1399,7 +1397,11 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
             numColumns={4}
             renderItem={renderPhotoItem}
             columnWrapperStyle={styles.columnWrapper}
-            contentContainerStyle={styles.grid}
+            style={styles.gridList}
+            contentContainerStyle={[
+              styles.grid,
+              {paddingBottom: insets.bottom},
+            ]}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               loading ? null : (
@@ -1528,6 +1530,10 @@ const styles = StyleSheet.create({
   grid: {
     paddingTop: 1,
     paddingBottom: 18,
+  },
+  gridList: {
+    flex: 1,
+    minHeight: 0,
   },
   skeletonGrid: {
     flexDirection: 'row',
