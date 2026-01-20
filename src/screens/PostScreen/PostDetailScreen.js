@@ -34,6 +34,8 @@ const COMMENT_SORTS = {
 };
 //TODO
 //PostDetailScreen 에서 전 스크린이 매장 리뷰 스크린이면 매장 이름 눌렀을 때 매장으로 이동 안하는 걸로 변경
+const normalizeIsWriter = item => Boolean(item?.isWriter ?? false);
+
 const PostDetailScreen = ({navigation, route}) => {
   const {
     postId,
@@ -45,7 +47,20 @@ const PostDetailScreen = ({navigation, route}) => {
     rootCommentOrderIndex,
     replyCommentOrderIndex,
   } = route.params ?? {};
-  const [postItem, setPostItem] = useState(routeItem ?? null);
+  const [postItem, setPostItem] = useState(() => {
+    if (!routeItem) return null;
+    return {
+      ...routeItem,
+      writerId:
+        routeItem.writerId ??
+        routeItem.writerUserId ??
+        routeItem.userId ??
+        routeItem.memberId ??
+        routeItem.authorId ??
+        null,
+      isWriter: normalizeIsWriter(routeItem),
+    };
+  });
   const [loading, setLoading] = useState(Boolean(postId));
   const insets = useSafeAreaInsets();
   const {showToast} = useToast();
@@ -92,9 +107,7 @@ const PostDetailScreen = ({navigation, route}) => {
         return list;
       }
       const rootKey = String(notificationTargetRootId);
-      const rootIndex = list.findIndex(
-        item => String(item?.id) === rootKey,
-      );
+      const rootIndex = list.findIndex(item => String(item?.id) === rootKey);
       if (rootIndex < 0) return list;
       let rootItem = list[rootIndex];
       const replyKey = notificationTargetReplyId
@@ -191,6 +204,13 @@ const PostDetailScreen = ({navigation, route}) => {
         const mapped = {
           ...data,
           id: String(data.id ?? postId),
+          writerId:
+            data.writerId ??
+            data.writerUserId ??
+            data.userId ??
+            data.memberId ??
+            data.authorId ??
+            null,
           profileImage:
             data.writerImgUrl ??
             data.profileImgUrl ??
@@ -219,6 +239,7 @@ const PostDetailScreen = ({navigation, route}) => {
           isStoreDeleted: data.isStoreDeleted ?? false,
           createdAt: data.createdAt ?? null,
           place: data.place ?? null,
+          isWriter: normalizeIsWriter(data),
         };
         setPostItem(prev => ({...prev, ...mapped}));
       } finally {
@@ -293,11 +314,76 @@ const PostDetailScreen = ({navigation, route}) => {
         });
       },
     );
+    const editSub = DeviceEventEmitter.addListener('post-updated', payload => {
+      const updated = payload?.review;
+      if (!updated?.id) {
+        return;
+      }
+      setPostItem(prev => {
+        if (!prev || String(prev?.id) !== String(updated.id)) {
+          return prev;
+        }
+        const normalizeImages = source =>
+          Array.isArray(source) ? source.filter(Boolean) : [];
+        const nextImages = normalizeImages(
+          updated.postImgUrlList ?? updated.imgUrlList,
+        );
+        return {
+          ...prev,
+          ...updated,
+          content: updated.content ?? prev?.content ?? '',
+          rate:
+            updated.rate ??
+            updated.rating ??
+            prev?.rate ??
+            prev?.rating ??
+            null,
+          postImages: nextImages.length ? nextImages : prev?.postImages ?? [],
+          postImgUrlList:
+            nextImages.length > 0
+              ? nextImages
+              : prev?.postImgUrlList ?? prev?.imgUrlList ?? [],
+          imgUrlList:
+            nextImages.length > 0
+              ? nextImages
+              : prev?.imgUrlList ?? prev?.postImgUrlList ?? [],
+          isWriter: updated.isWriter ?? prev?.isWriter ?? false,
+        };
+      });
+    });
     return () => {
       likeSub.remove();
       savedSub.remove();
+      editSub.remove();
     };
   }, []);
+
+  // Ensure isWriter flag is set once current user info is available
+  useEffect(() => {
+    if (!postItem || !currentUserId) {
+      return;
+    }
+    const writerId =
+      postItem.writerId ??
+      postItem.writerUserId ??
+      postItem.userId ??
+      postItem.memberId ??
+      postItem.authorId ??
+      null;
+    const nextIsWriter =
+      normalizeIsWriter(postItem) ||
+      (writerId && String(writerId) === String(currentUserId));
+    if (nextIsWriter !== postItem.isWriter) {
+      setPostItem(prev =>
+        prev
+          ? {
+              ...prev,
+              isWriter: nextIsWriter,
+            }
+          : prev,
+      );
+    }
+  }, [currentUserId, postItem]);
 
   const handleCommentLikeToggle = useCallback(async commentId => {
     if (!commentId) {
@@ -924,6 +1010,35 @@ const PostDetailScreen = ({navigation, route}) => {
     [fetchComments, postId, postItem?.id],
   );
 
+  const handleEditPress = useCallback(() => {
+    if (!postItem?.id || !postItem?.isWriter) {
+      return;
+    }
+    const review = {
+      id: postItem.id,
+      postImgUrlList: Array.isArray(postItem?.postImages)
+        ? postItem.postImages
+        : Array.isArray(postItem?.postImgUrlList)
+        ? postItem.postImgUrlList
+        : Array.isArray(postItem?.imgUrlList)
+        ? postItem.imgUrlList
+        : [],
+      storeName: postItem?.name ?? '',
+      storeAddress: postItem?.storeAddress ?? '',
+      content: postItem?.content ?? '',
+      rate: postItem?.rate ?? postItem?.rating ?? 0,
+      isWriter: true,
+    };
+    navigation.navigate('MyPostEditScreen', {
+      review,
+      returnTo: 'PostDetailScreen',
+    });
+  }, [navigation, postItem]);
+
+  const handleDeletePress = useCallback(() => {
+    // TODO: hook up delete API if needed
+  }, []);
+
   const handleOpenCommentSheet = useCallback(() => {
     commentSheetRef.current?.present();
   }, []);
@@ -982,6 +1097,9 @@ const PostDetailScreen = ({navigation, route}) => {
             item={postItem}
             onCommentPress={handleOpenCommentSheet}
             hideStoreBadge={screen === 'StoreReview' ? true : false}
+            onEditPress={handleEditPress}
+            onDeletePress={handleDeletePress}
+            isWriter={Boolean(postItem?.isWriter)}
           />
         )}
 

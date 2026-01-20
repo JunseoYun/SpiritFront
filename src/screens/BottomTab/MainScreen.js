@@ -522,9 +522,59 @@ const MainScreen = ({navigation}) => {
         });
       },
     );
+    const editSub = DeviceEventEmitter.addListener('post-updated', payload => {
+      const updated = payload?.review;
+      if (!updated?.id) {
+        return;
+      }
+      const normalizeImages = source => {
+        if (Array.isArray(source)) {
+          return source.filter(Boolean);
+        }
+        return [];
+      };
+      const nextImages = normalizeImages(
+        updated.postImgUrlList ?? updated.imgUrlList,
+      );
+      setFeedData(prev =>
+        prev.map(item =>
+          String(item?.id) === String(updated.id)
+            ? {
+                ...item,
+                content: updated.content ?? item?.content ?? '',
+                rate:
+                  updated.rate ??
+                  updated.rating ??
+                  item?.rate ??
+                  item?.rating ??
+                  null,
+                postImages: nextImages.length ? nextImages : item?.postImages,
+              }
+            : item,
+        ),
+      );
+      setSelectedFeed(prev => {
+        if (!prev || String(prev?.id) !== String(updated.id)) {
+          return prev;
+        }
+        return {
+          ...prev,
+          content: updated.content ?? prev?.content ?? '',
+          rate:
+            updated.rate ??
+            updated.rating ??
+            prev?.rate ??
+            prev?.rating ??
+            null,
+          postImages:
+            nextImages.length > 0 ? nextImages : prev?.postImages ?? [],
+        };
+      });
+    });
     return () => {
       likeSub.remove();
       savedSub.remove();
+      editSub.remove();
     };
   }, []);
 

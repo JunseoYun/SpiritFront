@@ -306,9 +306,46 @@ const MyPostDetailScreen = ({navigation, route}) => {
         );
       },
     );
+    const editSub = DeviceEventEmitter.addListener('post-updated', payload => {
+      const updated = payload?.review;
+      if (!updated?.id) {
+        return;
+      }
+      const normalizeImages = source =>
+        Array.isArray(source) ? source.filter(Boolean) : [];
+      const nextImages = normalizeImages(
+        updated.postImgUrlList ?? updated.imgUrlList,
+      );
+      setPostList(prev =>
+        prev.map(item =>
+          String(item?.id) === String(updated.id)
+            ? {
+                ...item,
+                ...updated,
+                content: updated.content ?? item?.content ?? '',
+                rate:
+                  updated.rate ??
+                  updated.rating ??
+                  item?.rate ??
+                  item?.rating ??
+                  null,
+                postImgUrlList:
+                  nextImages.length > 0
+                    ? nextImages
+                    : item?.postImgUrlList ?? item?.imgUrlList ?? [],
+                imgUrlList:
+                  nextImages.length > 0
+                    ? nextImages
+                    : item?.imgUrlList ?? item?.postImgUrlList ?? [],
+              }
+            : item,
+        ),
+      );
+    });
     return () => {
       likeSub.remove();
       savedSub.remove();
+      editSub.remove();
     };
   }, []);
 

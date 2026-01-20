@@ -110,6 +110,46 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
     return () => sub.remove();
   }, []);
 
+  useEffect(() => {
+    const editSub = DeviceEventEmitter.addListener('post-updated', payload => {
+      const updated = payload?.review;
+      if (!updated?.id) {
+        return;
+      }
+      const normalizeImages = source =>
+        Array.isArray(source) ? source.filter(Boolean) : [];
+      const nextImages = normalizeImages(
+        updated.postImgUrlList ?? updated.imgUrlList,
+      );
+      setSavedPosts(prev =>
+        prev.map(item =>
+          String(item?.id) === String(updated.id)
+            ? {
+                ...item,
+                ...updated,
+                content: updated.content ?? item?.content ?? '',
+                rate:
+                  updated.rate ??
+                  updated.rating ??
+                  item?.rate ??
+                  item?.rating ??
+                  null,
+                postImgUrlList:
+                  nextImages.length > 0
+                    ? nextImages
+                    : item?.postImgUrlList ?? item?.imgUrlList ?? [],
+                imgUrlList:
+                  nextImages.length > 0
+                    ? nextImages
+                    : item?.imgUrlList ?? item?.postImgUrlList ?? [],
+              }
+            : item,
+        ),
+      );
+    });
+    return () => editSub.remove();
+  }, []);
+
   const initialIndex = useMemo(() => {
     if (!savedPosts.length) return 0;
     const safeIndex = Number.isFinite(routeInitialIndex)
@@ -639,6 +679,26 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
     );
   }, []);
 
+  const handleEditPress = useCallback(
+    item => {
+      if (!item) return;
+      const review = {
+        id: item?.id,
+        postImgUrlList: Array.isArray(item?.postImages) ? item.postImages : [],
+        storeName: item?.name ?? '',
+        storeAddress: item?.storeAddress ?? '',
+        content: item?.content ?? '',
+        rate: item?.rate ?? item?.rating ?? 0,
+      };
+      navigation.navigate('MyPostEditScreen', {
+        review,
+        userProfile,
+        returnTo: 'LikeSavedPostDetailScreen',
+      });
+    },
+    [navigation, userProfile],
+  );
+
   const onViewableItemsChanged = useRef(({viewableItems}) => {
     const first = viewableItems?.[0];
     if (first?.index !== undefined) {
@@ -869,7 +929,8 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
               item={feedItems[initialIndex]}
               onCommentPress={handleOpenCommentSheet}
               onSavedChange={handleSavedChange}
-              isWriter
+              onEditPress={handleEditPress}
+              isWriter={Boolean(feedItems[initialIndex]?.isWriter)}
               isCentered
               onPrimaryImageLoad={handleSelectedLoaded}
             />
@@ -896,7 +957,8 @@ const LikeSavedPostDetailScreen = ({navigation, route}) => {
               item={item}
               onCommentPress={handleOpenCommentSheet}
               onSavedChange={handleSavedChange}
-              isWriter
+              onEditPress={handleEditPress}
+              isWriter={Boolean(item?.isWriter)}
               isCentered={index === currentIndex}
             />
           )}

@@ -4,6 +4,7 @@ import {
   BackHandler,
   Dimensions,
   FlatList,
+  DeviceEventEmitter,
   Image,
   Keyboard,
   Platform,
@@ -235,26 +236,6 @@ const MyPostEditScreen = ({navigation, route}) => {
     }
   }, [isEditorFocused]);
 
-  const goToMyProfile = useCallback(() => {
-    navigation.reset({
-      index: 0,
-      routes: [
-        {
-          name: 'MainBtmbar',
-          state: {
-            index: 0,
-            routes: [
-              {
-                name: 'MyStack',
-                state: {index: 0, routes: [{name: 'MyScreen'}]},
-              },
-            ],
-          },
-        },
-      ],
-    });
-  }, [navigation]);
-
   const goBackToOrigin = useCallback(() => {
     if (returnTo === 'MainScreen') {
       if (navigation.canGoBack()) {
@@ -414,15 +395,29 @@ const MyPostEditScreen = ({navigation, route}) => {
           !initialImages.some(initial => initial.uri === uri),
       );
     setIsSubmitting(true);
+    const nextContent = content ?? '';
+    const nextRate = Number.isFinite(rating) ? rating : 0;
+    const nextImages = images.map(item => item?.uri).filter(Boolean);
+
     PostUpdate(review.id, {
-      content: content ?? '',
-      rate: Number.isFinite(rating) ? rating : 0,
+      content: nextContent,
+      rate: nextRate,
     })
       .then(async () => {
         if (addedLocalImages.length > 0) {
           await PostUploadImage(review.id, {files: addedLocalImages});
         }
-        goToMyProfile();
+        const updatedReview = {
+          ...review,
+          content: nextContent,
+          rate: nextRate,
+          rating: nextRate,
+          postImgUrlList: nextImages,
+          imgUrlList: nextImages,
+          isWriter: true,
+        };
+        DeviceEventEmitter.emit('post-updated', {review: updatedReview});
+        goBackToOrigin();
       })
       .catch(() => {
         showAlert({

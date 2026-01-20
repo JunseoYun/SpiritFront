@@ -23,6 +23,7 @@ import ReviewItemSkeleton from '../../components/StoreReviewScreen/ReviewItemSke
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import BottomActionButton from '../../utils/BottomActionButton';
 import CustomText from '../../utils/CustomText';
+import {DeviceEventEmitter} from 'react-native';
 
 const StoreReviewScreen = ({navigation}) => {
   const route = useRoute();
@@ -189,6 +190,53 @@ const StoreReviewScreen = ({navigation}) => {
       showToast('신고 접수에 실패했습니다.');
     }
   }, [postReportTarget?.id, selectedPostReportReason, showToast]);
+
+  useEffect(() => {
+    const editSub = DeviceEventEmitter.addListener('post-updated', payload => {
+      const updated = payload?.review;
+      if (!updated?.id) {
+        return;
+      }
+      const normalizeImages = source =>
+        Array.isArray(source) ? source.filter(Boolean) : [];
+      const nextImages = normalizeImages(
+        updated.postImgUrlList ?? updated.imgUrlList,
+      );
+      setPostData(prev =>
+        prev.map(item =>
+          String(item?.id) === String(updated.id)
+            ? {
+                ...item,
+                ...updated,
+                content: updated.content ?? item?.content ?? '',
+                rate:
+                  updated.rate ??
+                  updated.rating ??
+                  item?.rate ??
+                  item?.rating ??
+                  0,
+                imgUrlList:
+                  nextImages.length > 0
+                    ? nextImages
+                    : item?.imgUrlList ?? item?.postImgUrlList ?? [],
+                postImgUrlList:
+                  nextImages.length > 0
+                    ? nextImages
+                    : item?.postImgUrlList ?? item?.imgUrlList ?? [],
+                postImages:
+                  nextImages.length > 0
+                    ? nextImages
+                    : item?.postImages ?? item?.postImgUrlList ?? [],
+                isWriter: updated.isWriter ?? item?.isWriter ?? false,
+              }
+            : item,
+        ),
+      );
+    });
+    return () => {
+      editSub.remove();
+    };
+  }, []);
 
   const renderItem = ({item}) => (
     <ReviewItem
