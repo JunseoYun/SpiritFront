@@ -32,12 +32,13 @@ import {StoreSuggestion} from '../../api/storeApi';
 import Loading from '../../hooks/Loading';
 import useCustomAlert from '../../hooks/useCustomAlert';
 
-const MAX_CONTENT_LENGTH = 300;
+const MAX_CONTENT_LENGTH = 3000;
 
 const PostWriteScreen = ({navigation, route}) => {
   const insets = useSafeAreaInsets();
   const lastBackPressed = useRef(0);
   const scrollViewRef = useRef(null);
+  const editorRef = useRef(null);
   const {showAlert, AlertComponent} = useCustomAlert();
   const preview = route?.params?.preview ?? {};
   const storeName = route?.params?.storeName ?? '';
@@ -57,6 +58,10 @@ const PostWriteScreen = ({navigation, route}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const maxPreviewSize = 200;
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const keyboardPadding = useMemo(
+    () => (Platform.OS === 'android' ? keyboardHeight : 0),
+    [keyboardHeight],
+  );
   const keyboardVerticalOffset = useMemo(
     () => (Platform.OS === 'ios' ? 0 : insets.top + 48),
     [insets.top],
@@ -361,7 +366,7 @@ const PostWriteScreen = ({navigation, route}) => {
       </View>
       <KeyboardAvoidingView
         style={styles.content}
-        behavior="padding"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={keyboardVerticalOffset}>
         <ScrollView
           ref={scrollViewRef}
@@ -369,7 +374,7 @@ const PostWriteScreen = ({navigation, route}) => {
           contentContainerStyle={[
             styles.contentContainer,
             {
-              paddingBottom: insets.bottom,
+              paddingBottom: insets.bottom + keyboardPadding,
             },
           ]}
           showsVerticalScrollIndicator={false}
@@ -455,28 +460,37 @@ const PostWriteScreen = ({navigation, route}) => {
             </View>
           )}
           <View style={styles.editor}>
-            <CustomTextInput
-              style={styles.editorInput}
-              placeholder={
-                '어떤 술자리를 보냈나요?\n분위기나 기억에 남는 순간을 공유해보세요.'
-              }
-              placeholderTextColor="#777"
-              multiline
-              textAlignVertical="top"
-              value={content}
-              onChangeText={handleContentChange}
-              maxLength={MAX_CONTENT_LENGTH}
-              onContentSizeChange={handleEditorContentSizeChange}
-              onFocus={() => {
-                setIsEditorFocused(true);
-                setTimeout(() => {
-                  if (scrollViewRef.current) {
-                    scrollViewRef.current.scrollToEnd({animated: true});
-                  }
-                }, 50);
-              }}
-              onBlur={() => setIsEditorFocused(false)}
-            />
+            <Pressable
+              pointerEvents={isEditorFocused ? 'box-none' : 'auto'}
+              onPress={() => {
+                editorRef.current?.focus?.();
+              }}>
+              <CustomTextInput
+                ref={editorRef}
+                pointerEvents={isEditorFocused ? 'auto' : 'none'}
+                style={styles.editorInput}
+                placeholder={
+                  '어떤 술자리를 보냈나요?\n분위기나 기억에 남는 순간을 공유해보세요.'
+                }
+                scrollEnabled={false}
+                placeholderTextColor="#777"
+                multiline
+                textAlignVertical="top"
+                value={content}
+                onChangeText={handleContentChange}
+                maxLength={MAX_CONTENT_LENGTH}
+                onContentSizeChange={handleEditorContentSizeChange}
+                onFocus={() => {
+                  setIsEditorFocused(true);
+                  setTimeout(() => {
+                    if (scrollViewRef.current) {
+                      scrollViewRef.current.scrollToEnd({animated: true});
+                    }
+                  }, 50);
+                }}
+                onBlur={() => setIsEditorFocused(false)}
+              />
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -602,7 +616,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#333',
     lineHeight: 22,
-    // backgroundColor: '#999',
   },
 });
 
