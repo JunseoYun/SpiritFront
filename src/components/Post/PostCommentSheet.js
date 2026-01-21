@@ -218,9 +218,14 @@ const CommentFooter = ({
                 }
               }}
               onFocus={onFocusInput}
+              onSubmitEditing={handleSend}
               placeholder="댓글을 남겨보세요."
               placeholderTextColor="#9AA1AE"
               style={styles.commentInput}
+              multiline={false}
+              returnKeyType="send"
+              enablesReturnKeyAutomatically
+              blurOnSubmit={false}
               underlineColorAndroid="transparent"
               InputComponent={BottomSheetTextInput}
               maxLength={COMMENT_MAX_LENGTH}

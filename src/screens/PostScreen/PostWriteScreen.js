@@ -348,9 +348,7 @@ const PostWriteScreen = ({navigation, route}) => {
             <Ionicons name="arrow-back-outline" size={24} color="#333" />
           </Pressable>
         )}
-        <CustomText style={styles.headerTitle}>
-          {isEditorFocused ? '문구' : '글 작성'}
-        </CustomText>
+        <CustomText style={styles.headerTitle}>글 작성</CustomText>
         {isEditorFocused ? (
           <Pressable
             hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}

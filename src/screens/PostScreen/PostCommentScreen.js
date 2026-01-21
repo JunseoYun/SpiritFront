@@ -148,12 +148,16 @@ const CommentFooter = ({
               setLocalInput(text);
               onChangeCommentInput?.(text);
             }}
+            onSubmitEditing={handleSend}
             onFocus={onFocusInput}
             onPressIn={onPressInput}
             placeholder="댓글을 남겨보세요."
             placeholderTextColor="#9AA1AE"
             style={styles.commentInput}
-            multiline
+            multiline={false}
+            returnKeyType="send"
+            enablesReturnKeyAutomatically
+            blurOnSubmit={false}
             underlineColorAndroid="transparent"
           />
           {localInput.trim() ? (
@@ -1985,24 +1989,24 @@ const PostCommentScreen = ({navigation, route}) => {
                             </View>
                             {(() => {
                               const mention = reply.taggedUserNickname;
-                                const textWithoutMention = mention
-                                  ? reply.text?.replace(
-                                      new RegExp(`^@${mention}\\s?`),
-                                      '',
-                                    )
-                                  : reply.text;
-                                const shouldHideMention =
-                                  mention && mention === currentUserNickname;
-                                console.log('[mention-check][reply-preview]', {
-                                  mention,
-                                  currentUserNickname,
-                                  shouldHideMention,
-                                  author: reply.author,
-                                  id: reply.id,
-                                });
-                                const showMention = Boolean(
-                                  mention && !shouldHideMention,
-                                );
+                              const textWithoutMention = mention
+                                ? reply.text?.replace(
+                                    new RegExp(`^@${mention}\\s?`),
+                                    '',
+                                  )
+                                : reply.text;
+                              const shouldHideMention =
+                                mention && mention === currentUserNickname;
+                              console.log('[mention-check][reply-preview]', {
+                                mention,
+                                currentUserNickname,
+                                shouldHideMention,
+                                author: reply.author,
+                                id: reply.id,
+                              });
+                              const showMention = Boolean(
+                                mention && !shouldHideMention,
+                              );
                               return (
                                 <CustomText style={styles.commentText}>
                                   {showMention ? (
