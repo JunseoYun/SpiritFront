@@ -74,6 +74,8 @@ const MyPostEditScreen = ({navigation, route}) => {
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const [contentHeight, setContentHeight] = useState(200);
   const contentInputRef = useRef(null);
+  const selectionRef = useRef({start: 0, end: 0});
+  const contentSizeHeightRef = useRef(0);
   const {showToast} = useToast();
   const keyboardPadding = useMemo(
     () => (Platform.OS === 'android' ? keyboardHeight : 0),
@@ -233,18 +235,24 @@ const MyPostEditScreen = ({navigation, route}) => {
 
   const handleEditorContentSizeChange = useCallback(
     event => {
+      const nextContentHeight = Math.ceil(
+        event?.nativeEvent?.contentSize?.height ?? 0,
+      );
       if (Platform.OS === 'android') {
-        const nextHeight = Math.max(
-          200,
-          Math.ceil(event?.nativeEvent?.contentSize?.height ?? 0),
-        );
+        const nextHeight = Math.max(200, nextContentHeight);
         setContentHeight(prev => (prev === nextHeight ? prev : nextHeight));
       }
-      if (isEditorFocused && scrollViewRef.current) {
+      const shouldAutoScroll =
+        isEditorFocused &&
+        scrollViewRef.current &&
+        selectionRef.current?.end >= Math.max(0, content.length - 1) &&
+        nextContentHeight > contentSizeHeightRef.current;
+      contentSizeHeightRef.current = nextContentHeight;
+      if (shouldAutoScroll) {
         scrollViewRef.current.scrollToEnd({animated: true});
       }
     },
-    [isEditorFocused],
+    [content, isEditorFocused],
   );
 
   const goBackToOrigin = useCallback(() => {
@@ -664,13 +672,14 @@ const MyPostEditScreen = ({navigation, route}) => {
                 textAlignVertical="top"
                 maxLength={MAX_CONTENT_LENGTH}
                 onContentSizeChange={handleEditorContentSizeChange}
+                onSelectionChange={event => {
+                  selectionRef.current = event?.nativeEvent?.selection ?? {
+                    start: 0,
+                    end: 0,
+                  };
+                }}
                 onFocus={() => {
                   setIsEditorFocused(true);
-                  setTimeout(() => {
-                    if (scrollViewRef.current) {
-                      scrollViewRef.current.scrollToEnd({animated: true});
-                    }
-                  }, 50);
                 }}
                 onBlur={() => setIsEditorFocused(false)}
               />
