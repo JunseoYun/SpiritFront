@@ -63,40 +63,8 @@ const CommentFooter = ({
   const [replyTarget, setReplyTarget] = useState(
     replyTargetStore?.current?.value ?? null,
   );
-  const animatedPaddingBottom = useRef(
-    new Animated.Value(
-      Platform.OS === 'android' ? bottomInset + 10 : bottomInset + 10,
-    ),
-  ).current;
-
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent =
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
-    const animatePadding = (toValue, duration = 200) => {
-      Animated.timing(animatedPaddingBottom, {
-        toValue,
-        duration,
-        useNativeDriver: false,
-      }).start();
-    };
-
-    const showSub = Keyboard.addListener(showEvent, event => {
-      const targetPadding = Platform.OS === 'ios' ? 5 : 0;
-      animatePadding(targetPadding, event?.duration);
-    });
-    const hideSub = Keyboard.addListener(hideEvent, event => {
-      const targetPadding = bottomInset + 10;
-      animatePadding(targetPadding, event?.duration);
-    });
-
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, [animatedPaddingBottom, bottomInset]);
+  const basePaddingBottom =
+    Platform.OS === 'ios' ? 10 : (bottomInset ?? 0) + 10;
 
   useEffect(() => {
     const store = replyTargetStore?.current;
@@ -164,10 +132,7 @@ const CommentFooter = ({
       style={[
         styles.commentInputBar,
         {
-          paddingBottom:
-            Platform.OS === 'android'
-              ? bottomInset + 10
-              : animatedPaddingBottom,
+          paddingBottom: basePaddingBottom,
         },
       ]}>
       <FastImage
@@ -823,6 +788,10 @@ const PostCommentSheet = forwardRef(
       ) {
         pendingFocusAfterSnapRef.current = true;
         pendingSnapOnlyRef.current = true;
+        if (Platform.OS === 'android') {
+          inputRef.current?.blur?.();
+          Keyboard.dismiss();
+        }
         ref.current?.snapToIndex?.(finalSnapIndex);
         return;
       }
@@ -1106,7 +1075,9 @@ const PostCommentSheet = forwardRef(
 
     const renderCommentFooter = useCallback(
       props => (
-        <BottomSheetFooter {...props}>
+        <BottomSheetFooter
+          {...props}
+          bottomInset={Platform.OS === 'ios' ? insets.bottom : 0}>
           <CommentFooter
             inputRef={inputRef}
             commentInputStore={commentInputStoreRef}
@@ -1118,7 +1089,7 @@ const PostCommentSheet = forwardRef(
             defaultProfile={defaultProfile}
             currentUserProfileImage={currentUserProfileImage}
             currentUserNickname={currentUserNickname}
-            bottomInset={insets.bottom}
+            bottomInset={Platform.OS === 'ios' ? 0 : insets.bottom}
             replyTargetStore={replyTargetStoreRef}
             onClearReplyTarget={handleClearReplyTarget}
             onLayout={event => {
@@ -1205,7 +1176,7 @@ const PostCommentSheet = forwardRef(
           keyboardBehavior="extend"
           keyboardBlurBehavior="none"
           android_keyboardInputMode="adjustResize"
-          // bottomInset={sheetBottomInset}
+          // bottomInset={20}
           onChange={handleSheetChange}
           onAnimate={handleSheetAnimate}
           onDismiss={() => {

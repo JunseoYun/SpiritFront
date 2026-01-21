@@ -34,7 +34,6 @@ import OrderDetailScreen from '../screens/BottomTab/Order/OrderDetailScreen';
 import {normalizeFont} from '../hooks/normalizeFont';
 import CustomText from '../utils/CustomText';
 import PostDetailScreen from '../screens/PostScreen/PostDetailScreen';
-import PostCommentScreen from '../screens/PostScreen/PostCommentScreen';
 import PostPhotoSelectScreen from '../screens/PostScreen/PostPhotoSelectScreen';
 import PostStoreInputScreen from '../screens/PostScreen/PostStoreInputScreen';
 import PostWriteScreen from '../screens/PostScreen/PostWriteScreen';
@@ -73,18 +72,6 @@ export default function MainStack() {
         name="PostDetailScreen"
         component={PostDetailScreen}
         options={{headerShown: false}}
-      />
-      <Stack.Screen
-        name="PostCommentScreen"
-        component={PostCommentScreen}
-        options={{
-          headerShown: false,
-          presentation: 'transparentModal',
-          animation: Platform.OS === 'android' ? 'fade_from_bottom' : 'fade',
-          cardStyle: {backgroundColor: 'transparent'},
-          cardOverlayEnabled: true,
-          detachPreviousScreen: false,
-        }}
       />
       <Stack.Screen
         name="PostPhotoSelectScreen"
