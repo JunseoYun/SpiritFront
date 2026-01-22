@@ -198,7 +198,7 @@ const PostWriteScreen = ({navigation, route}) => {
     const isIOS = Platform.OS === 'ios';
 
     navigation.setOptions({
-      gestureEnabled: !isIOS,
+      gestureEnabled: isIOS,
     });
   }, [navigation]);
 
