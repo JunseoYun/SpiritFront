@@ -296,7 +296,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
           totalPages: null,
           end: false,
         });
-        setIsManual(false);
+        setIsManual(activeChip === 'manualStore');
         return;
       }
       setSearchState(prev => ({
@@ -332,7 +332,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
     return () => {
       isActive = false;
     };
-  }, [searchValue]);
+  }, [activeChip, searchValue]);
 
   const getStoreId = store => store?.id ?? store?.storeId ?? store?.store_id;
   const getStoreAddress = store => {
@@ -381,9 +381,17 @@ const PostStoreInputScreen = ({navigation, route}) => {
     });
   };
   const activeItems =
-    activeChip === 'viewed' ? viewedState.items : likedState.items;
+    activeChip === 'viewed'
+      ? viewedState.items
+      : activeChip === 'liked'
+      ? likedState.items
+      : [];
   const activeLoading =
-    activeChip === 'viewed' ? viewedState.loading : likedState.loading;
+    activeChip === 'viewed'
+      ? viewedState.loading
+      : activeChip === 'liked'
+      ? likedState.loading
+      : false;
   const trimmedSearchValue = searchValue.trim();
   const isSearching = trimmedSearchValue.length > 0;
   const displayedItems = isSearching ? searchState.items : activeItems;
@@ -400,9 +408,10 @@ const PostStoreInputScreen = ({navigation, route}) => {
 
   const handleChipPress = useCallback(chipKey => {
     setActiveChip(chipKey);
-    if (chipKey === 'manual') {
-      setIsManual(false);
+    if (chipKey === 'manualStore' || chipKey === 'place') {
+      setSearchValue('');
     }
+    setIsManual(chipKey === 'manualStore');
     bottomSheetRef.current?.snapToIndex(2);
   }, []);
 
@@ -434,16 +443,11 @@ const PostStoreInputScreen = ({navigation, route}) => {
   );
 
   const handleManualPress = useCallback(() => {
-    // setSearchValue('');
-    // setActiveChip('manual');
+    setSearchValue('');
+    setActiveChip('manualStore');
     setIsManual(true);
     bottomSheetRef.current?.snapToIndex(2);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        scrollSheetToInput(manualNameInputRef);
-      });
-    });
-  }, [scrollSheetToInput]);
+  }, []);
 
   const handleManualCancel = useCallback(() => {
     setIsManual(false);
@@ -474,7 +478,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
     setIsManualAddressOver(false);
     setIsManualNameFocused(false);
     setIsManualAddressFocused(false);
-    setIsManual(false);
+    setIsManual(true);
     setSearchValue('');
     manualNameInputRef.current?.blur?.();
     manualAddressInputRef.current?.blur?.();
@@ -762,7 +766,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
             onPress={() => {
               setSelectedStore(null);
               setPlaceName('');
-              if (activeChip === 'manual') {
+              if (activeChip === 'place') {
                 setPlaceNameInput('');
               }
             }}
@@ -896,17 +900,8 @@ const PostStoreInputScreen = ({navigation, route}) => {
               }
               ListFooterComponent={
                 <>
-                  {isManual || displayedItems.length === 0 ? (
+                  {isManual && !isSearching ? (
                     <View style={styles.manualForm}>
-                      {!isManual && (
-                        <CustomText
-                          style={[
-                            styles.manualEntryHint,
-                            {marginTop: 20, alignSelf: 'center'},
-                          ]}>
-                          찾는 매장이 없다면 직접 입력해보세요.
-                        </CustomText>
-                      )}
                       <CustomText style={styles.manualLabel}>
                         매장 이름
                       </CustomText>
@@ -1039,6 +1034,19 @@ const PostStoreInputScreen = ({navigation, route}) => {
                         </CustomText>
                       )}
                     </View>
+                  ) : displayedItems.length === 0 ? (
+                    <View style={styles.manualEntryWrap}>
+                      <CustomText style={styles.manualEntryHint}>
+                        찾는 매장이 없다면 직접 입력해보세요.
+                      </CustomText>
+                      <Pressable
+                        style={styles.manualEntryButton}
+                        onPress={handleManualPress}>
+                        <CustomText style={styles.manualEntryText}>
+                          매장 직접 입력
+                        </CustomText>
+                      </Pressable>
+                    </View>
                   ) : (
                     <View style={styles.manualEntryWrap}>
                       <CustomText style={styles.manualEntryHint}>
@@ -1048,7 +1056,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                         style={styles.manualEntryButton}
                         onPress={handleManualPress}>
                         <CustomText style={styles.manualEntryText}>
-                          직접 입력하기
+                          매장 직접 입력
                         </CustomText>
                       </Pressable>
                     </View>
@@ -1103,21 +1111,38 @@ const PostStoreInputScreen = ({navigation, route}) => {
                   <Pressable
                     style={[
                       styles.chip,
-                      activeChip === 'manual' && styles.chipActive,
+                      activeChip === 'manualStore' && styles.chipActive,
                     ]}
-                    onPress={() => handleChipPress('manual')}
+                    onPress={() => handleChipPress('manualStore')}
                     hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
                     <CustomText
                       style={[
                         styles.chipText,
-                        activeChip === 'manual' && styles.chipActiveText,
+                        activeChip === 'manualStore' && styles.chipActiveText,
                       ]}>
-                      장소 직접 입력
+                      매장 직접 입력
+                    </CustomText>
+                  </Pressable>
+
+                  <Pressable
+                    style={[
+                      styles.chip,
+                      activeChip === 'place' && styles.chipActive,
+                    ]}
+                    onPress={() => handleChipPress('place')}
+                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                    <CustomText
+                      style={[
+                        styles.chipText,
+                        activeChip === 'place' && styles.chipActiveText,
+                      ]}>
+                      매장 외 장소
                     </CustomText>
                   </Pressable>
                 </View>
               )}
-              {(isSearching || activeChip !== 'manual') && (
+              {(isSearching ||
+                (activeChip !== 'place' && activeChip !== 'manualStore')) && (
                 <View style={styles.storeGrid}>
                   {displayedLoading ? (
                     <CustomText style={styles.emptyStoreText}>
@@ -1165,7 +1190,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                   )}
                 </View>
               )}
-              {activeChip === 'manual' && !isSearching && (
+              {activeChip === 'place' && !isSearching && (
                 <View style={styles.manualForm}>
                   <CustomText style={styles.manualEntryHint}>
                     매장이 아니라면 장소를 직접 입력해보세요.
@@ -1241,22 +1266,13 @@ const PostStoreInputScreen = ({navigation, route}) => {
                     style={styles.manualEntryButton}
                     onPress={handleManualPress}>
                     <CustomText style={styles.manualEntryText}>
-                      직접 입력하기
+                      매장 직접 입력
                     </CustomText>
                   </Pressable>
                 </View>
               )}
-              {((isSearching && displayedItems.length === 0) || isManual) && (
+              {isManual && !isSearching && (
                 <View style={styles.manualForm}>
-                  {!isManual && (
-                    <CustomText
-                      style={[
-                        styles.manualEntryHint,
-                        {marginTop: 20, alignSelf: 'center'},
-                      ]}>
-                      찾는 매장이 없다면 직접 입력해보세요.
-                    </CustomText>
-                  )}
                   <CustomText style={styles.manualLabel}>매장 이름</CustomText>
                   <CustomTextInput
                     ref={manualNameInputRef}
