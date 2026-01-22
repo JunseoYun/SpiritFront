@@ -166,6 +166,10 @@ const PostWriteScreen = ({navigation, route}) => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
+        if (isSubmitting) {
+          ToastAndroid.show('게시글을 업로드 중입니다.', ToastAndroid.SHORT);
+          return true;
+        }
         const now = Date.now();
         if (now - lastBackPressed.current < 2000) {
           navigation.goBack();
@@ -187,7 +191,7 @@ const PostWriteScreen = ({navigation, route}) => {
       );
 
       return () => backHandler.remove();
-    }, [navigation]),
+    }, [isSubmitting, navigation]),
   );
 
   useLayoutEffect(() => {
@@ -352,7 +356,13 @@ const PostWriteScreen = ({navigation, route}) => {
         ) : (
           <Pressable
             hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
-            onPress={() => navigation.goBack()}>
+            onPress={() => {
+              if (isSubmitting) {
+                ToastAndroid.show('게시글을 업로드 중입니다.', ToastAndroid.SHORT);
+                return;
+              }
+              navigation.goBack();
+            }}>
             <Ionicons name="arrow-back-outline" size={24} color="#333" />
           </Pressable>
         )}
