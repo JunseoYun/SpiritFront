@@ -9,6 +9,7 @@ import React, {
 import {
   Animated,
   Dimensions,
+  Easing,
   FlatList,
   Image,
   PanResponder,
@@ -55,6 +56,7 @@ const MIN_PREVIEW_SCALE = 1;
 const MAX_PREVIEW_SCALE = 3;
 const MAX_LANDSCAPE_RATIO = 16 / 9;
 const DEFAULT_MAX_SELECTED_PHOTOS = 10;
+const OVERLAY_ANIM_DURATION = 260;
 
 const clampValue = (value, min, max) => Math.max(min, Math.min(value, max));
 const clampNumber = (value, min, max) => Math.max(min, Math.min(value, max));
@@ -186,8 +188,13 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [cropLoading, setCropLoading] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const listScrollOffsetRef = useRef(0);
+  const overlayClosingRef = useRef(false);
   const panValue = useRef(new Animated.ValueXY({x: 0, y: 0})).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
+  const overlayTranslateY = useRef(new Animated.Value(-width)).current;
+  const [showOverlayPreview, setShowOverlayPreview] = useState(false);
   const panStartRef = useRef({x: 0, y: 0});
   const scaleStartRef = useRef(1);
   const pinchStartDistanceRef = useRef(0);
@@ -214,12 +221,18 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         typeof baseFrame.aspectRatio === 'number'),
   );
 
+  const headerTopPadding = insets.top + (Platform.OS === 'android' ? 10 : 0);
+  const fallbackHeaderHeight = headerTopPadding + 52;
+  const effectiveHeaderHeight =
+    headerHeight > 0 ? headerHeight : fallbackHeaderHeight;
+  const overlayHiddenOffset = -(width + effectiveHeaderHeight);
+
   const selectedAlbum = useMemo(
     () => albums.find(album => album.id === selectedAlbumId),
     [albums, selectedAlbumId],
   );
   const skeletonItems = useMemo(
-    () => Array.from({length: 12}, (_, index) => `skeleton-${index}`),
+    () => Array.from({length: 16}, (_, index) => `skeleton-${index}`),
     [],
   );
 
@@ -239,6 +252,46 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     }
     return currentPhotoId === firstSelectedId;
   }, [currentPhotoId, selectedPhotoIds]);
+  useEffect(() => {
+    Animated.timing(overlayTranslateY, {
+      toValue: showOverlayPreview ? 0 : overlayHiddenOffset,
+      duration: OVERLAY_ANIM_DURATION,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [overlayHiddenOffset, overlayTranslateY, showOverlayPreview]);
+
+  useEffect(() => {
+    if (showOverlayPreview) {
+      overlayClosingRef.current = false;
+    }
+    if (!showOverlayPreview) {
+      overlayTranslateY.setValue(overlayHiddenOffset);
+    }
+  }, [overlayHiddenOffset, overlayTranslateY, showOverlayPreview]);
+
+  const handleGridScroll = useCallback(
+    event => {
+      listScrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+      if (!showOverlayPreview) {
+        return;
+      }
+      const offsetY = event.nativeEvent.contentOffset.y;
+      if (offsetY > 0 && !overlayClosingRef.current) {
+        overlayClosingRef.current = true;
+        Animated.timing(overlayTranslateY, {
+          toValue: overlayHiddenOffset,
+          duration: OVERLAY_ANIM_DURATION,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }).start(() => {
+          overlayClosingRef.current = false;
+          setShowOverlayPreview(false);
+        });
+      }
+    },
+    [overlayHiddenOffset, overlayTranslateY, showOverlayPreview],
+  );
   const isInitialLoading =
     loading && (!selectedAlbum || !(selectedAlbum?.photos?.length > 0));
   const maxSelectablePhotos = useMemo(() => {
@@ -1209,6 +1262,9 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         showToast(message, 'center');
         return prev;
       }
+      if (listScrollOffsetRef.current >= width) {
+        setShowOverlayPreview(true);
+      }
       setCurrentPhotoId(photoId);
       return [...prev, photoId];
     });
@@ -1236,7 +1292,12 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     return (
       <Pressable
         style={styles.thumbnailWrapper}
-        onPress={() => setCurrentPhotoId(item.id)}>
+        onPress={() => {
+          if (listScrollOffsetRef.current >= width) {
+            setShowOverlayPreview(true);
+          }
+          setCurrentPhotoId(item.id);
+        }}>
         <Image
           source={{uri: item.uri}}
           style={styles.thumbnail}
@@ -1261,12 +1322,15 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0)},
-      ]}>
-      <View style={styles.header}>
+    <View style={styles.container}>
+      <View
+        style={[styles.header, {paddingTop: headerTopPadding}]}
+        onLayout={event => {
+          const nextHeight = event.nativeEvent.layout.height;
+          if (nextHeight && nextHeight !== headerHeight) {
+            setHeaderHeight(nextHeight);
+          }
+        }}>
         <Pressable
           hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
           onPress={handleClose}>
@@ -1303,94 +1367,31 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
 
       {isInitialLoading ? (
         <>
-          <View style={styles.previewContainer}>
-            <SkeletonBox style={styles.previewSkeleton} />
-          </View>
-          <View style={styles.skeletonGrid}>
-            {skeletonItems.map(key => (
-              <View key={key} style={styles.thumbnailWrapper}>
+          <FlatList
+            data={skeletonItems}
+            keyExtractor={item => item}
+            numColumns={4}
+            renderItem={({item}) => (
+              <View key={item} style={styles.thumbnailWrapper}>
                 <SkeletonBox style={styles.skeletonThumbnail} />
               </View>
-            ))}
-          </View>
+            )}
+            columnWrapperStyle={styles.columnWrapper}
+            style={styles.gridList}
+            ListHeaderComponent={
+              <View style={styles.previewContainer}>
+                <SkeletonBox style={styles.previewSkeleton} />
+              </View>
+            }
+            contentContainerStyle={[
+              styles.grid,
+              {paddingTop: effectiveHeaderHeight},
+            ]}
+            showsVerticalScrollIndicator={false}
+          />
         </>
       ) : (
         <>
-          <View style={styles.previewContainer}>
-            {selectedPhoto ? (
-              <>
-                <View
-                  style={[
-                    styles.previewCropFrame,
-                    shouldLockFrame
-                      ? lockedFrameStyle
-                      : isPortraitPhoto
-                      ? previewMode === 'full'
-                        ? styles.previewCropFrameFull
-                        : styles.previewPortraitCropFrame
-                      : previewMode === 'full'
-                      ? styles.previewCropFrameFull
-                      : styles.previewLandscapeFrame,
-                    !shouldLockFrame &&
-                      !isPortraitPhoto &&
-                      previewMode === 'crop' && {
-                        aspectRatio: clampedLandscapeRatio,
-                      },
-                  ]}>
-                  <View
-                    style={styles.previewPanArea}
-                    onLayout={event => {
-                      const {width: nextWidth, height: nextHeight} =
-                        event.nativeEvent.layout;
-                      if (
-                        nextWidth !== frameSize.width ||
-                        nextHeight !== frameSize.height
-                      ) {
-                        setFrameSize({width: nextWidth, height: nextHeight});
-                      }
-                    }}
-                    {...panResponder.panHandlers}>
-                    <Animated.View
-                      style={[
-                        {
-                          width: displaySize.width,
-                          height: displaySize.height,
-                          transform: [
-                            {translateX: panValue.x},
-                            {translateY: panValue.y},
-                          ],
-                        },
-                      ]}>
-                      <Animated.Image
-                        source={{uri: selectedPhoto.uri}}
-                        style={[
-                          styles.previewImage,
-                          {
-                            width: displaySize.width,
-                            height: displaySize.height,
-                            transform: [{scale: scaleValue}],
-                          },
-                        ]}
-                        resizeMode={effectiveResizeMode}
-                      />
-                    </Animated.View>
-                  </View>
-                </View>
-                {isScaleModeEditable ? (
-                  <Pressable
-                    style={styles.scaleButtonSingle}
-                    onPress={() =>
-                      setPreviewMode(prev =>
-                        prev === 'crop' ? 'full' : 'crop',
-                      )
-                    }>
-                    <MaximizeIcon size={22} color="#fff" />
-                  </Pressable>
-                ) : null}
-              </>
-            ) : null}
-          </View>
-
           <FlatList
             data={gridPhotos}
             keyExtractor={item => item.id}
@@ -1398,11 +1399,100 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
             renderItem={renderPhotoItem}
             columnWrapperStyle={styles.columnWrapper}
             style={styles.gridList}
+            ListHeaderComponent={
+              <View style={styles.previewContainer}>
+                {selectedPhoto ? (
+                  <>
+                    <View
+                      style={[
+                        styles.previewCropFrame,
+                        shouldLockFrame
+                          ? lockedFrameStyle
+                          : isPortraitPhoto
+                          ? previewMode === 'full'
+                            ? styles.previewCropFrameFull
+                            : styles.previewPortraitCropFrame
+                          : previewMode === 'full'
+                          ? styles.previewCropFrameFull
+                          : styles.previewLandscapeFrame,
+                        !shouldLockFrame &&
+                          !isPortraitPhoto &&
+                          previewMode === 'crop' && {
+                            aspectRatio: clampedLandscapeRatio,
+                          },
+                      ]}>
+                      <View
+                        style={styles.previewPanArea}
+                        onTouchStart={() => {
+                          if (listScrollOffsetRef.current >= width) {
+                            setShowOverlayPreview(true);
+                          }
+                        }}
+                        onLayout={event => {
+                          const {width: nextWidth, height: nextHeight} =
+                            event.nativeEvent.layout;
+                          if (
+                            nextWidth !== frameSize.width ||
+                            nextHeight !== frameSize.height
+                          ) {
+                            setFrameSize({
+                              width: nextWidth,
+                              height: nextHeight,
+                            });
+                          }
+                        }}
+                        {...panResponder.panHandlers}>
+                        <Animated.View
+                          style={[
+                            {
+                              width: displaySize.width,
+                              height: displaySize.height,
+                              transform: [
+                                {translateX: panValue.x},
+                                {translateY: panValue.y},
+                              ],
+                            },
+                          ]}>
+                          <Animated.Image
+                            source={{uri: selectedPhoto.uri}}
+                            style={[
+                              styles.previewImage,
+                              {
+                                width: displaySize.width,
+                                height: displaySize.height,
+                                transform: [{scale: scaleValue}],
+                              },
+                            ]}
+                            resizeMode={effectiveResizeMode}
+                          />
+                        </Animated.View>
+                      </View>
+                    </View>
+                    {isScaleModeEditable ? (
+                      <Pressable
+                        style={styles.scaleButtonSingle}
+                        onPress={() =>
+                          setPreviewMode(prev =>
+                            prev === 'crop' ? 'full' : 'crop',
+                          )
+                        }>
+                        <MaximizeIcon size={22} color="#fff" />
+                      </Pressable>
+                    ) : null}
+                  </>
+                ) : null}
+              </View>
+            }
             contentContainerStyle={[
               styles.grid,
-              {paddingBottom: insets.bottom},
+              {
+                paddingTop: effectiveHeaderHeight,
+                paddingBottom: insets.bottom,
+              },
             ]}
             showsVerticalScrollIndicator={false}
+            onScroll={handleGridScroll}
+            scrollEventThrottle={16}
             ListEmptyComponent={
               loading ? null : (
                 <View style={styles.emptyGrid}>
@@ -1415,6 +1505,99 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
             onEndReached={handleLoadMore}
             onEndReachedThreshold={1}
           />
+          <Animated.View
+            pointerEvents={showOverlayPreview ? 'auto' : 'none'}
+            style={[
+              styles.previewOverlayContainer,
+              {
+                top: 0,
+                transform: [{translateY: overlayTranslateY}],
+              },
+            ]}>
+            <View
+              style={[
+                styles.previewOverlayTouchArea,
+                {paddingTop: effectiveHeaderHeight},
+              ]}>
+              <View style={styles.previewContainer}>
+                {selectedPhoto ? (
+                  <>
+                    <View
+                      style={[
+                        styles.previewCropFrame,
+                        shouldLockFrame
+                          ? lockedFrameStyle
+                          : isPortraitPhoto
+                          ? previewMode === 'full'
+                            ? styles.previewCropFrameFull
+                            : styles.previewPortraitCropFrame
+                          : previewMode === 'full'
+                          ? styles.previewCropFrameFull
+                          : styles.previewLandscapeFrame,
+                        !shouldLockFrame &&
+                          !isPortraitPhoto &&
+                          previewMode === 'crop' && {
+                            aspectRatio: clampedLandscapeRatio,
+                          },
+                      ]}>
+                      <View
+                        style={styles.previewPanArea}
+                        onLayout={event => {
+                          const {width: nextWidth, height: nextHeight} =
+                            event.nativeEvent.layout;
+                          if (
+                            nextWidth !== frameSize.width ||
+                            nextHeight !== frameSize.height
+                          ) {
+                            setFrameSize({
+                              width: nextWidth,
+                              height: nextHeight,
+                            });
+                          }
+                        }}
+                        {...panResponder.panHandlers}>
+                        <Animated.View
+                          style={[
+                            {
+                              width: displaySize.width,
+                              height: displaySize.height,
+                              transform: [
+                                {translateX: panValue.x},
+                                {translateY: panValue.y},
+                              ],
+                            },
+                          ]}>
+                          <Animated.Image
+                            source={{uri: selectedPhoto.uri}}
+                            style={[
+                              styles.previewImage,
+                              {
+                                width: displaySize.width,
+                                height: displaySize.height,
+                                transform: [{scale: scaleValue}],
+                              },
+                            ]}
+                            resizeMode={effectiveResizeMode}
+                          />
+                        </Animated.View>
+                      </View>
+                    </View>
+                    {isScaleModeEditable ? (
+                      <Pressable
+                        style={styles.scaleButtonSingle}
+                        onPress={() =>
+                          setPreviewMode(prev =>
+                            prev === 'crop' ? 'full' : 'crop',
+                          )
+                        }>
+                        <MaximizeIcon size={22} color="#fff" />
+                      </Pressable>
+                    ) : null}
+                  </>
+                ) : null}
+              </View>
+            </View>
+          </Animated.View>
         </>
       )}
 
@@ -1459,6 +1642,13 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderColor: '#F1F1F1',
+    backgroundColor: '#fff',
+    zIndex: 999,
+    elevation: 10,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
   },
   albumSelector: {
     flexDirection: 'row',
@@ -1487,6 +1677,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#DDE2E6',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  previewOverlayContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 3,
+  },
+  previewOverlayTouchArea: {
+    width: '100%',
+  },
+  initialContent: {
+    flex: 1,
   },
   previewCropFrame: {
     overflow: 'hidden',
@@ -1537,13 +1739,13 @@ const styles = StyleSheet.create({
   },
   skeletonGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     paddingTop: 1,
-    paddingBottom: 18,
+    paddingBottom: 1,
   },
   columnWrapper: {
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
+    justifyContent: 'flex-start',
   },
   emptyGrid: {
     width: '100%',
@@ -1560,6 +1762,7 @@ const styles = StyleSheet.create({
     width: (width - 3) / 4,
     height: (width - 3) / 4,
     marginBottom: 1,
+    marginRight: 1,
   },
   cameraTile: {
     backgroundColor: '#F5F6F8',
@@ -1614,6 +1817,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingTop: 70,
     backgroundColor: 'rgba(0,0,0,0.1)',
+    zIndex: 1000,
+    elevation: 12,
   },
   albumSheet: {
     marginHorizontal: 16,
