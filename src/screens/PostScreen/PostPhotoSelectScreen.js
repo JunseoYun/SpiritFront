@@ -16,6 +16,7 @@ import {
   Platform,
   Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   View,
   BackHandler,
@@ -48,7 +49,7 @@ import {
 import {IMAGE_PICKER_TEXTS} from '../../constants/imagePickerLabels';
 import {useToast} from '../../context/ToastContext';
 
-const {width} = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 const CameraRollModule = CameraRollNamed || CameraRollDefault;
 const PAGE_SIZE = 40;
 const BATCH_SIZE = 80;
@@ -1608,19 +1609,33 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
             onPress={() => setIsAlbumPickerOpen(false)}
           />
           <View style={styles.albumSheet}>
-            {albums.map(album => (
+            <View style={styles.albumSheetHeader}>
+              <CustomText style={styles.albumSheetTitle}>앨범 선택</CustomText>
               <Pressable
-                key={album.id}
-                style={[
-                  styles.albumOption,
-                  album.id === selectedAlbumId && styles.albumOptionActive,
-                ]}
-                onPress={() => handleSelectAlbum(album.id)}>
-                <CustomText style={styles.albumOptionText}>
-                  {album.name}
-                </CustomText>
+                style={styles.albumSheetClose}
+                onPress={() => setIsAlbumPickerOpen(false)}>
+                <Ionicons name="close" size={20} color="#1F1F1F" />
               </Pressable>
-            ))}
+            </View>
+            <View style={styles.albumSheetDivider} />
+            <ScrollView
+              style={styles.albumScroll}
+              contentContainerStyle={styles.albumScrollContent}
+              showsVerticalScrollIndicator={false}>
+              {albums.map(album => (
+                <Pressable
+                  key={album.id}
+                  style={[
+                    styles.albumOption,
+                    album.id === selectedAlbumId && styles.albumOptionActive,
+                  ]}
+                  onPress={() => handleSelectAlbum(album.id)}>
+                  <CustomText style={styles.albumOptionText}>
+                    {album.name}
+                  </CustomText>
+                </Pressable>
+              ))}
+            </ScrollView>
           </View>
         </View>
       )}
@@ -1818,21 +1833,52 @@ const styles = StyleSheet.create({
     paddingTop: 70,
     backgroundColor: 'rgba(0,0,0,0.1)',
     zIndex: 1000,
-    elevation: 12,
+    // elevation: 12,
   },
   albumSheet: {
     marginHorizontal: 16,
     borderRadius: 12,
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: {width: 0, height: 6},
-    elevation: 6,
+    borderWidth: 1,
+    borderColor: '#EEF1F4',
+    overflow: 'hidden',
+  },
+  albumSheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    backgroundColor: '#FBFCFD',
+  },
+  albumSheetTitle: {
+    fontFamily: 'Pretendard-Bold',
+    fontSize: 15,
+    color: '#1F1F1F',
+  },
+  albumSheetClose: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  albumSheetDivider: {
+    height: 1,
+    backgroundColor: '#EFF2F5',
+  },
+  albumScroll: {
+    maxHeight: Math.min(420, height * 0.55),
+  },
+  albumScrollContent: {
+    paddingVertical: 4,
   },
   albumOption: {
     paddingVertical: 12,
     paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderColor: '#F2F4F6',
   },
   albumOptionActive: {
     backgroundColor: '#F5FBFF',
