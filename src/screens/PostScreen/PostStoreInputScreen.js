@@ -91,6 +91,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
       : clampedLandscapeRatio;
   const bottomSheetRef = useRef(null);
   const searchInputRef = useRef(null);
+  const chipScrollRef = useRef(null);
   const bottomSheetSnapPoints = useMemo(() => ['20%', '45%', '90%'], []);
   const storeGridGap = 14;
   const storeCardWidth = useMemo(
@@ -113,11 +114,13 @@ const PostStoreInputScreen = ({navigation, route}) => {
   const [isPlaceNameOver, setIsPlaceNameOver] = useState(false);
   const [isManual, setIsManual] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [chipScrollWidth, setChipScrollWidth] = useState(0);
   const manualNameInputRef = useRef(null);
   const manualAddressInputRef = useRef(null);
   const placeNameInputRef = useRef(null);
   const focusedInputRef = useRef(null);
   const lastBackPressed = useRef(0);
+  const chipLayoutsRef = useRef({});
   const sheetScrollRef = useRef(null);
   const focusStateRef = useRef({
     isSearchFocused: false,
@@ -406,14 +409,33 @@ const PostStoreInputScreen = ({navigation, route}) => {
     : getStoreAddress(selectedStore);
   const isNextEnabled = true;
 
-  const handleChipPress = useCallback(chipKey => {
-    setActiveChip(chipKey);
-    if (chipKey === 'manualStore' || chipKey === 'place') {
-      setSearchValue('');
-    }
-    setIsManual(chipKey === 'manualStore');
-    bottomSheetRef.current?.snapToIndex(2);
-  }, []);
+  const scrollChipIntoView = useCallback(
+    chipKey => {
+      const layout = chipLayoutsRef.current[chipKey];
+      if (!layout || !chipScrollWidth) {
+        return;
+      }
+      const targetX = Math.max(
+        0,
+        layout.x + layout.width / 2 - chipScrollWidth / 2,
+      );
+      chipScrollRef.current?.scrollTo({x: targetX, animated: true});
+    },
+    [chipScrollWidth],
+  );
+
+  const handleChipPress = useCallback(
+    chipKey => {
+      setActiveChip(chipKey);
+      if (chipKey === 'manualStore' || chipKey === 'place') {
+        setSearchValue('');
+      }
+      setIsManual(chipKey === 'manualStore');
+      bottomSheetRef.current?.snapToIndex(2);
+      requestAnimationFrame(() => scrollChipIntoView(chipKey));
+    },
+    [scrollChipIntoView],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -447,17 +469,6 @@ const PostStoreInputScreen = ({navigation, route}) => {
     setActiveChip('manualStore');
     setIsManual(true);
     bottomSheetRef.current?.snapToIndex(2);
-  }, []);
-
-  const handleManualCancel = useCallback(() => {
-    setIsManual(false);
-    setManualStoreName('');
-    setManualStoreAddress('');
-    setIsManualNameOver(false);
-    setIsManualAddressOver(false);
-    manualNameInputRef.current?.blur?.();
-    manualAddressInputRef.current?.blur?.();
-    Keyboard.dismiss();
   }, []);
 
   const handleManualSubmit = useCallback(() => {
@@ -503,14 +514,9 @@ const PostStoreInputScreen = ({navigation, route}) => {
     bottomSheetRef.current?.snapToIndex(0);
   }, [placeNameInput]);
 
-  const isManualEmpty =
-    manualStoreName.trim().length === 0 &&
-    manualStoreAddress.trim().length === 0;
-  const isManualCancelMode = isManual && isManualEmpty;
   const isManualSubmitDisabled =
-    !isManualCancelMode &&
-    (manualStoreName.trim().length === 0 ||
-      manualStoreAddress.trim().length === 0);
+    manualStoreName.trim().length === 0 ||
+    manualStoreAddress.trim().length === 0;
 
   const isPlaceSubmitDisabled = placeNameInput.trim().length === 0;
 
@@ -1014,18 +1020,14 @@ const PostStoreInputScreen = ({navigation, route}) => {
                             styles.manualEntryButtonDisabled,
                         ]}
                         disabled={isManualSubmitDisabled}
-                        onPress={
-                          isManualCancelMode
-                            ? handleManualCancel
-                            : handleManualSubmit
-                        }>
+                        onPress={handleManualSubmit}>
                         <CustomText
                           style={[
                             styles.manualEntryText,
                             isManualSubmitDisabled &&
                               styles.manualEntryTextDisabled,
                           ]}>
-                          {isManualCancelMode ? '취소' : '입력 완료'}
+                          입력 완료
                         </CustomText>
                       </Pressable>
                       {isManualAddressOver && (
@@ -1076,14 +1078,25 @@ const PostStoreInputScreen = ({navigation, route}) => {
               onScroll={handleSheetScroll}
               scrollEventThrottle={16}>
               {!isSearching && (
-                <View style={styles.chipRow}>
+                <ScrollView
+                  ref={chipScrollRef}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.chipRow}
+                  onLayout={event =>
+                    setChipScrollWidth(event.nativeEvent.layout.width)
+                  }>
                   <Pressable
                     style={[
                       styles.chip,
                       activeChip === 'viewed' && styles.chipActive,
                     ]}
                     onPress={() => handleChipPress('viewed')}
-                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}
+                    onLayout={event => {
+                      chipLayoutsRef.current.viewed =
+                        event.nativeEvent.layout;
+                    }}>
                     <CustomText
                       style={[
                         styles.chipText,
@@ -1098,7 +1111,11 @@ const PostStoreInputScreen = ({navigation, route}) => {
                       activeChip === 'liked' && styles.chipActive,
                     ]}
                     onPress={() => handleChipPress('liked')}
-                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}
+                    onLayout={event => {
+                      chipLayoutsRef.current.liked =
+                        event.nativeEvent.layout;
+                    }}>
                     <CustomText
                       style={[
                         styles.chipText,
@@ -1114,7 +1131,11 @@ const PostStoreInputScreen = ({navigation, route}) => {
                       activeChip === 'manualStore' && styles.chipActive,
                     ]}
                     onPress={() => handleChipPress('manualStore')}
-                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}
+                    onLayout={event => {
+                      chipLayoutsRef.current.manualStore =
+                        event.nativeEvent.layout;
+                    }}>
                     <CustomText
                       style={[
                         styles.chipText,
@@ -1130,7 +1151,11 @@ const PostStoreInputScreen = ({navigation, route}) => {
                       activeChip === 'place' && styles.chipActive,
                     ]}
                     onPress={() => handleChipPress('place')}
-                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+                    hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}
+                    onLayout={event => {
+                      chipLayoutsRef.current.place =
+                        event.nativeEvent.layout;
+                    }}>
                     <CustomText
                       style={[
                         styles.chipText,
@@ -1139,7 +1164,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                       매장 외 장소
                     </CustomText>
                   </Pressable>
-                </View>
+                </ScrollView>
               )}
               {(isSearching ||
                 (activeChip !== 'place' && activeChip !== 'manualStore')) && (
@@ -1380,18 +1405,14 @@ const PostStoreInputScreen = ({navigation, route}) => {
                         styles.manualEntryButtonDisabled,
                     ]}
                     disabled={isManualSubmitDisabled}
-                    onPress={
-                      isManualCancelMode
-                        ? handleManualCancel
-                        : handleManualSubmit
-                    }>
+                    onPress={handleManualSubmit}>
                     <CustomText
                       style={[
                         styles.manualEntryText,
                         isManualSubmitDisabled &&
                           styles.manualEntryTextDisabled,
                       ]}>
-                      {isManualCancelMode ? '취소' : '입력 완료'}
+                      입력 완료
                     </CustomText>
                   </Pressable>
                   {isManualAddressOver && (
@@ -1482,7 +1503,7 @@ const styles = StyleSheet.create({
   },
   bottomSheetContent: {
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
   },
   bottomSheetHeader: {
     backgroundColor: '#fff',
@@ -1596,9 +1617,10 @@ const styles = StyleSheet.create({
   chipRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
     gap: 8,
     marginTop: 2,
+
+    paddingHorizontal: 16,
   },
   chip: {
     paddingHorizontal: 14,
@@ -1662,6 +1684,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     borderRadius: 12,
     paddingBottom: 30,
+    paddingHorizontal: 16,
   },
   manualLabel: {
     fontFamily: 'Pretendard-SemiBold',
@@ -1736,6 +1759,7 @@ const styles = StyleSheet.create({
   storeCardWrap: {
     marginTop: 10,
     marginBottom: 14,
+    paddingHorizontal: 16,
   },
   storeCardCheck: {
     position: 'absolute',
