@@ -18,6 +18,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
 import {PostMyGet} from '../../api/reviewApi';
 import Loading from '../../hooks/Loading';
+import SkeletonBox from '../../hooks/SkeletonBox';
 import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
 import Layer2Icon from '../../assets/svg/Layer2Icon';
@@ -40,6 +41,7 @@ const MyReview = forwardRef(
     const [myReview, setMyReview] = useState([]);
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [isEnd, setIsEnd] = useState(false);
     const [totalpage, setTotalpage] = useState(0);
@@ -49,7 +51,10 @@ const MyReview = forwardRef(
       [screenWidth],
     );
 
-    const myReviewsget = async (currentPage, reset = false) => {
+    const myReviewsget = async (currentPage, reset = false, isInitial = false) => {
+      if (isInitial) {
+        setInitialLoading(true);
+      }
       if (!reset) {
         setLoading(true);
       }
@@ -75,6 +80,9 @@ const MyReview = forwardRef(
       } finally {
         setLoading(false);
         setRefreshing(false);
+        if (isInitial) {
+          setInitialLoading(false);
+        }
       }
     };
 
@@ -83,7 +91,7 @@ const MyReview = forwardRef(
         if (myReview.length === 0) {
           setPage(0);
           setIsEnd(false);
-          myReviewsget(0, true);
+          myReviewsget(0, true, true);
         }
       }, [myReview.length]),
     );
@@ -192,6 +200,15 @@ const MyReview = forwardRef(
       }
       return result;
     }, [myReview]);
+
+    const skeletonRows = useMemo(() => {
+      const items = Array.from({length: 9}, (_, index) => index);
+      const result = [];
+      for (let i = 0; i < items.length; i += GRID_COLUMNS) {
+        result.push(items.slice(i, i + GRID_COLUMNS));
+      }
+      return result;
+    }, []);
 
     const getRootNavigation = () =>
       navigation.getParent?.()?.getParent?.() ??
@@ -312,6 +329,31 @@ const MyReview = forwardRef(
             rows.map((row, index) => (
               <View key={`row-${index}`}>{renderRow({item: row, index})}</View>
             ))
+          ) : initialLoading ? (
+            <View style={styles.skeletonContainer}>
+              {skeletonRows.map((row, rowIndex) => (
+                <View
+                  key={`skeleton-row-${rowIndex}`}
+                  style={[styles.row, {marginBottom: GRID_GAP}]}>
+                  {row.map((item, idx) => {
+                    const isLast = idx === row.length - 1;
+                    return (
+                      <SkeletonBox
+                        key={`skeleton-${rowIndex}-${item}`}
+                        style={[
+                          styles.skeletonItem,
+                          {
+                            width: cellSize,
+                            height: cellSize,
+                            marginRight: isLast ? 0 : GRID_GAP,
+                          },
+                        ]}
+                      />
+                    );
+                  })}
+                </View>
+              ))}
+            </View>
           ) : !loading ? (
             <View style={styles.footer}>
               <CustomText style={styles.emptyTitle}>
@@ -351,6 +393,12 @@ const styles = StyleSheet.create({
 
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  skeletonContainer: {
+    paddingTop: 1,
+  },
+  skeletonItem: {
+    borderRadius: 0,
   },
   footer: {
     paddingVertical: 30,
