@@ -189,6 +189,8 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [cropLoading, setCropLoading] = useState(false);
+  const [isPreviewScrollLocked, setIsPreviewScrollLocked] = useState(false);
+  const gridListRef = useRef(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   const listScrollOffsetRef = useRef(0);
   const overlayClosingRef = useRef(false);
@@ -236,6 +238,18 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     () => Array.from({length: 16}, (_, index) => `skeleton-${index}`),
     [],
   );
+  const setGridScrollEnabled = useCallback(enabled => {
+    setIsPreviewScrollLocked(!enabled);
+    if (gridListRef.current?.setNativeProps) {
+      gridListRef.current.setNativeProps({scrollEnabled: enabled});
+    }
+  }, []);
+  const handlePreviewTouchStart = useCallback(() => {
+    setGridScrollEnabled(false);
+  }, [setGridScrollEnabled]);
+  const handlePreviewTouchEnd = useCallback(() => {
+    setGridScrollEnabled(true);
+  }, [setGridScrollEnabled]);
 
   const selectedPhoto = useMemo(() => {
     const fallbackId =
@@ -711,11 +725,18 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       PanResponder.create({
         onStartShouldSetPanResponder: (_, gesture) =>
           canZoom && gesture.numberActiveTouches <= 2,
+        onStartShouldSetPanResponderCapture: (_, gesture) =>
+          canZoom && gesture.numberActiveTouches <= 2,
         onMoveShouldSetPanResponder: (_, gesture) =>
           canZoom &&
           (gesture.numberActiveTouches > 1 ||
             (canPan && (Math.abs(gesture.dx) > 2 || Math.abs(gesture.dy) > 2))),
+        onMoveShouldSetPanResponderCapture: (_, gesture) =>
+          canZoom &&
+          (gesture.numberActiveTouches > 1 ||
+            (canPan && (Math.abs(gesture.dx) > 2 || Math.abs(gesture.dy) > 2))),
         onPanResponderGrant: (event, gesture) => {
+          setIsPreviewScrollLocked(true);
           if (gesture.numberActiveTouches > 1) {
             const distance = getTouchDistance(event.nativeEvent.touches);
             isPinchingRef.current = true;
@@ -764,6 +785,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         },
         onPanResponderRelease: () => {
           isPinchingRef.current = false;
+          setIsPreviewScrollLocked(false);
           if (!currentPhotoId) {
             return;
           }
@@ -779,6 +801,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         },
         onPanResponderTerminate: () => {
           isPinchingRef.current = false;
+          setIsPreviewScrollLocked(false);
           if (!currentPhotoId) {
             return;
           }
@@ -792,6 +815,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
             [currentPhotoId]: activeScale,
           }));
         },
+        onPanResponderTerminationRequest: () => false,
       }),
     [
       activeScale,
@@ -1369,6 +1393,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       {isInitialLoading ? (
         <>
           <FlatList
+            ref={gridListRef}
             data={skeletonItems}
             keyExtractor={item => item}
             numColumns={4}
@@ -1379,6 +1404,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
             )}
             columnWrapperStyle={styles.columnWrapper}
             style={styles.gridList}
+            scrollEnabled={!isPreviewScrollLocked}
             ListHeaderComponent={
               <View style={styles.previewContainer}>
                 <SkeletonBox style={styles.previewSkeleton} />
@@ -1394,12 +1420,14 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       ) : (
         <>
           <FlatList
+            ref={gridListRef}
             data={gridPhotos}
             keyExtractor={item => item.id}
             numColumns={4}
             renderItem={renderPhotoItem}
             columnWrapperStyle={styles.columnWrapper}
             style={styles.gridList}
+            scrollEnabled={!isPreviewScrollLocked}
             ListHeaderComponent={
               <View style={styles.previewContainer}>
                 {selectedPhoto ? (
@@ -1425,10 +1453,13 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
                       <View
                         style={styles.previewPanArea}
                         onTouchStart={() => {
+                          handlePreviewTouchStart();
                           if (listScrollOffsetRef.current >= width) {
                             setShowOverlayPreview(true);
                           }
                         }}
+                        onTouchEnd={handlePreviewTouchEnd}
+                        onTouchCancel={handlePreviewTouchEnd}
                         onLayout={event => {
                           const {width: nextWidth, height: nextHeight} =
                             event.nativeEvent.layout;
@@ -1543,6 +1574,9 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
                       ]}>
                       <View
                         style={styles.previewPanArea}
+                        onTouchStart={handlePreviewTouchStart}
+                        onTouchEnd={handlePreviewTouchEnd}
+                        onTouchCancel={handlePreviewTouchEnd}
                         onLayout={event => {
                           const {width: nextWidth, height: nextHeight} =
                             event.nativeEvent.layout;
@@ -1692,6 +1726,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#DDE2E6',
     alignItems: 'center',
     justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderColor: '#F1F1F1',
   },
   previewOverlayContainer: {
     position: 'absolute',
