@@ -199,9 +199,9 @@ const PostWriteScreen = ({navigation, route}) => {
     const isIOS = Platform.OS === 'ios';
 
     navigation.setOptions({
-      gestureEnabled: isIOS,
+      gestureEnabled: isIOS && !isSubmitting,
     });
-  }, [navigation]);
+  }, [isSubmitting, navigation]);
 
   const handleEditorContentSizeChange = useCallback(
     event => {
