@@ -78,6 +78,7 @@ const PostWriteScreen = ({navigation, route}) => {
   const hasPlaceName = trimmedPlaceName.length > 0;
   const canUseStoreId = Boolean(storeId);
   const isContentOnly = !hasPlaceName && !hasStoreName && !canUseStoreId;
+  const isPlaceOnly = hasPlaceName && !canUseStoreId;
   const showStoreInfo = hasStoreName || hasPlaceName;
   const showRating = hasStoreName && !hasPlaceName;
 
@@ -358,7 +359,10 @@ const PostWriteScreen = ({navigation, route}) => {
             hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
             onPress={() => {
               if (isSubmitting) {
-                ToastAndroid.show('게시글을 업로드 중입니다.', ToastAndroid.SHORT);
+                ToastAndroid.show(
+                  '게시글을 업로드 중입니다.',
+                  ToastAndroid.SHORT,
+                );
                 return;
               }
               navigation.goBack();
@@ -454,7 +458,11 @@ const PostWriteScreen = ({navigation, route}) => {
             <View style={styles.storeInfo}>
               <View style={styles.storeInfoRow}>
                 <View style={styles.storeInfoIcon}>
-                  <Ionicons name="storefront" size={14} color="#333" />
+                  <Ionicons
+                    name={isPlaceOnly ? 'map-outline' : 'storefront-outline'}
+                    size={14}
+                    color="#333"
+                  />
                 </View>
                 <View style={styles.storeInfoText}>
                   <CustomText style={styles.storeName} numberOfLines={2}>
