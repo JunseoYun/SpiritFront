@@ -113,6 +113,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
   const [isManualAddressOver, setIsManualAddressOver] = useState(false);
   const [isPlaceNameOver, setIsPlaceNameOver] = useState(false);
   const [isManual, setIsManual] = useState(false);
+  const [sheetIndex, setSheetIndex] = useState(0);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [chipScrollWidth, setChipScrollWidth] = useState(0);
   const manualNameInputRef = useRef(null);
@@ -175,6 +176,14 @@ const PostStoreInputScreen = ({navigation, route}) => {
     isPlaceFocused,
     isManual,
   ]);
+
+  const openSheet = useCallback(() => {
+    bottomSheetRef.current?.expand?.();
+  }, []);
+
+  const collapseSheet = useCallback(() => {
+    bottomSheetRef.current?.snapToIndex?.(0);
+  }, []);
 
   const scrollSheetToOffset = useCallback(offset => {
     if (sheetScrollRef.current?.scrollToOffset) {
@@ -380,7 +389,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
     });
     setPlaceName('');
     requestAnimationFrame(() => {
-      bottomSheetRef.current?.snapToIndex(1);
+      collapseSheet();
     });
   };
   const activeItems =
@@ -431,10 +440,10 @@ const PostStoreInputScreen = ({navigation, route}) => {
         setSearchValue('');
       }
       setIsManual(chipKey === 'manualStore');
-      bottomSheetRef.current?.snapToIndex(2);
+      openSheet();
       requestAnimationFrame(() => scrollChipIntoView(chipKey));
     },
-    [scrollChipIntoView],
+    [openSheet, scrollChipIntoView],
   );
 
   useFocusEffect(
@@ -468,8 +477,8 @@ const PostStoreInputScreen = ({navigation, route}) => {
     setSearchValue('');
     setActiveChip('manualStore');
     setIsManual(true);
-    bottomSheetRef.current?.snapToIndex(2);
-  }, []);
+    openSheet();
+  }, [openSheet]);
 
   const handleManualSubmit = useCallback(() => {
     const trimmedName = manualStoreName.trim();
@@ -494,8 +503,8 @@ const PostStoreInputScreen = ({navigation, route}) => {
     manualNameInputRef.current?.blur?.();
     manualAddressInputRef.current?.blur?.();
     Keyboard.dismiss();
-    bottomSheetRef.current?.snapToIndex(0);
-  }, [manualStoreAddress, manualStoreName]);
+    collapseSheet();
+  }, [collapseSheet, manualStoreAddress, manualStoreName]);
 
   const handlePlaceSubmit = useCallback(() => {
     const trimmedName = placeNameInput.trim();
@@ -511,8 +520,8 @@ const PostStoreInputScreen = ({navigation, route}) => {
     manualNameInputRef.current?.blur?.();
     placeNameInputRef.current?.blur?.();
     Keyboard.dismiss();
-    bottomSheetRef.current?.snapToIndex(0);
-  }, [placeNameInput]);
+    collapseSheet();
+  }, [collapseSheet, placeNameInput]);
 
   const isManualSubmitDisabled =
     manualStoreName.trim().length === 0 ||
@@ -528,6 +537,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
 
   const handleSheetChange = useCallback(
     index => {
+      setSheetIndex(index);
       if (index < 2 && isSearchFocused) {
         searchInputRef.current?.blur?.();
       }
@@ -722,8 +732,12 @@ const PostStoreInputScreen = ({navigation, route}) => {
       <Pressable
         style={styles.selectedStoreRow}
         onPress={() => {
+          if (sheetIndex < 0) {
+            collapseSheet();
+            return;
+          }
           if (!isStoreLocked && !selectedStore && !trimmedPlaceName) {
-            bottomSheetRef.current?.snapToIndex(2);
+            openSheet();
           }
         }}
         disabled={isStoreLocked || Boolean(selectedStore || trimmedPlaceName)}>
@@ -828,7 +842,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                 onChangeText={setSearchValue}
                 onFocus={() => {
                   setIsSearchFocused(true);
-                  bottomSheetRef.current?.snapToIndex(2);
+                  openSheet();
                 }}
                 onBlur={() => setIsSearchFocused(false)}
                 returnKeyType="done"
@@ -934,7 +948,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                         onFocus={() => {
                           setIsManualNameFocused(true);
                           focusedInputRef.current = manualNameInputRef;
-                          bottomSheetRef.current?.snapToIndex(2);
+                          openSheet();
                           scrollSheetToInput(manualNameInputRef);
                         }}
                         onBlur={() => {
@@ -987,7 +1001,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                           onFocus={() => {
                             setIsManualAddressFocused(true);
                             focusedInputRef.current = manualAddressInputRef;
-                            bottomSheetRef.current?.snapToIndex(2);
+                            openSheet();
                             scrollSheetToInput(manualAddressInputRef);
                           }}
                           onBlur={() => {
@@ -1094,8 +1108,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                     onPress={() => handleChipPress('viewed')}
                     hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}
                     onLayout={event => {
-                      chipLayoutsRef.current.viewed =
-                        event.nativeEvent.layout;
+                      chipLayoutsRef.current.viewed = event.nativeEvent.layout;
                     }}>
                     <CustomText
                       style={[
@@ -1113,8 +1126,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                     onPress={() => handleChipPress('liked')}
                     hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}
                     onLayout={event => {
-                      chipLayoutsRef.current.liked =
-                        event.nativeEvent.layout;
+                      chipLayoutsRef.current.liked = event.nativeEvent.layout;
                     }}>
                     <CustomText
                       style={[
@@ -1153,8 +1165,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                     onPress={() => handleChipPress('place')}
                     hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}
                     onLayout={event => {
-                      chipLayoutsRef.current.place =
-                        event.nativeEvent.layout;
+                      chipLayoutsRef.current.place = event.nativeEvent.layout;
                     }}>
                     <CustomText
                       style={[
@@ -1243,7 +1254,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                     onFocus={() => {
                       setIsPlaceFocused(true);
                       focusedInputRef.current = placeNameInputRef;
-                      bottomSheetRef.current?.snapToIndex(2);
+                      openSheet();
                       scrollSheetToInput(placeNameInputRef);
                     }}
                     onBlur={() => {
@@ -1321,7 +1332,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                     onFocus={() => {
                       setIsManualNameFocused(true);
                       focusedInputRef.current = manualNameInputRef;
-                      bottomSheetRef.current?.snapToIndex(2);
+                      openSheet();
                       scrollSheetToInput(manualNameInputRef);
                     }}
                     onBlur={() => {
@@ -1374,7 +1385,7 @@ const PostStoreInputScreen = ({navigation, route}) => {
                       onFocus={() => {
                         setIsManualAddressFocused(true);
                         focusedInputRef.current = manualAddressInputRef;
-                        bottomSheetRef.current?.snapToIndex(2);
+                        openSheet();
                         scrollSheetToInput(manualAddressInputRef);
                       }}
                       onBlur={() => {
@@ -1764,10 +1775,10 @@ const styles = StyleSheet.create({
   storeCardCheck: {
     position: 'absolute',
     top: 8,
-    right: 8,
+    right: -8,
     backgroundColor: 'rgba(255,255,255,0.9)',
     borderRadius: 50,
-    padding: 1,
+    padding: 0,
   },
   emptyStoreText: {
     fontFamily: 'Pretendard-Regular',
