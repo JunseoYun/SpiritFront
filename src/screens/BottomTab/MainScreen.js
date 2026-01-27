@@ -125,6 +125,7 @@ const MainScreen = ({navigation}) => {
   const isLoadingMoreCommentsRef = useRef(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const commentSheetRef = useRef(null);
+  const topRollScrollRef = useRef(null);
   const isInitialLoading = feedLoading || topRollLoading;
 
   useFocusEffect(
@@ -170,7 +171,7 @@ const MainScreen = ({navigation}) => {
     [],
   );
   const topRollSkeleton = useMemo(
-    () => Array.from({length: 6}, (_, index) => `top-skeleton-${index}`),
+    () => Array.from({length: 10}, (_, index) => `top-skeleton-${index}`),
     [],
   );
   const loadMorePadding = 24;
@@ -415,6 +416,8 @@ const MainScreen = ({navigation}) => {
         if (isRefresh) {
           setRefreshing(false);
           setFeedLoading(false);
+          listRef.current?.scrollToOffset({offset: 0, animated: true});
+          topRollScrollRef.current?.scrollTo({x: 0, y: 0, animated: true});
         } else if (isPaging) {
           if (lastFetchCountRef.current === 0) {
             loadMorePendingRef.current = false;
@@ -1534,6 +1537,7 @@ const MainScreen = ({navigation}) => {
           (topRollLoading || topRollItems.length > 0) && (
             <View style={styles.topCarouselContainer}>
               <ScrollView
+                ref={topRollScrollRef}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.topCarouselContent}>
