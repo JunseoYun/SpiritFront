@@ -154,11 +154,11 @@ const styles = StyleSheet.create({
   storeText: {
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#181a1a',
+    color: '#333',
   },
   storetotaltext: {
     fontFamily: 'Pretendard-Medium',
-    color: '#181a1a',
+    color: '#333',
   },
   totalView: {
     flexDirection: 'row',

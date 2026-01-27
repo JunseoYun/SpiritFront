@@ -5,6 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import HeartIcon from '../../assets/svg/HeartIcon';
 import ColorUtil from '../../utils/ColorUtil';
 import CustomText from '../../utils/CustomText';
+import SkeletonBox from '../../hooks/SkeletonBox';
 
 const TopCarousel = ({
   topRollScrollRef,
@@ -24,12 +25,17 @@ const TopCarousel = ({
 
   return (
     <View style={styles.topCarouselContainer}>
+      {topRollLoading ? (
+        <SkeletonBox style={styles.titleSkeleton} />
+      ) : (
+        <CustomText style={styles.title}>인기 게시글</CustomText>
+      )}
       <ScrollView
         ref={topRollScrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.topCarouselContent}>
-        {items.map(item => {
+        {items.map((item, index) => {
           const isSkeleton = topRollLoading;
           return (
             <View
@@ -37,8 +43,8 @@ const TopCarousel = ({
               style={[
                 styles.topCarouselItem,
                 {
-                  width: windowWidth * 0.26,
-                  height: windowHeight * 0.2,
+                  width: 120,
+                  height: 120 * (4 / 3),
                 },
               ]}>
               {isSkeleton ? (
@@ -63,7 +69,7 @@ const TopCarousel = ({
                   />
 
                   <View style={styles.topCarouselMetaRow}>
-                    <FastImage
+                    {/* <FastImage
                       source={
                         item.profileUri
                           ? {
@@ -80,6 +86,12 @@ const TopCarousel = ({
                       numberOfLines={1}
                       ellipsizeMode="tail">
                       {item.name}
+                    </CustomText> */}
+                    <CustomText
+                      style={styles.topNumber}
+                      numberOfLines={1}
+                      ellipsizeMode="tail">
+                      {index + 1}
                     </CustomText>
                   </View>
                   <LinearGradient
@@ -87,9 +99,14 @@ const TopCarousel = ({
                     style={styles.topCarouselGradient}
                     pointerEvents="none"
                   />
+                  <LinearGradient
+                    colors={['rgba(0,0,0,0.25)', 'transparent']}
+                    style={styles.topCarouselTopGradient}
+                    pointerEvents="none"
+                  />
                   <View style={styles.topCarouselLikeRow}>
                     <HeartIcon
-                      size={16}
+                      size={18}
                       color="#FF6B6B"
                       filled
                       strokeWidth={0}
@@ -110,7 +127,22 @@ const TopCarousel = ({
 
 const styles = StyleSheet.create({
   topCarouselContainer: {
-    paddingTop: 6,
+    paddingTop: 10,
+    paddingBottom: 7,
+  },
+  title: {
+    marginHorizontal: 16,
+    marginBottom: 9,
+    fontSize: 18,
+    fontFamily: 'Pretendard-Bold',
+    color: '#333',
+  },
+  titleSkeleton: {
+    marginHorizontal: 16,
+    marginBottom: 9,
+    width: 88,
+    height: 18,
+    borderRadius: 4,
   },
   topCarouselContent: {
     paddingLeft: 16,
@@ -137,20 +169,29 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   topCarouselAvatar: {
-    width: 26,
-    height: 26,
+    width: 24,
+    height: 24,
     borderRadius: 14,
     borderWidth: 0.5,
     borderColor: ColorUtil.border,
   },
   topCarouselMetaRow: {
     position: 'absolute',
-    top: 8,
-    left: 6,
+    top: 4,
+    left: 8,
     // right: 6,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  topNumber: {
+    color: '#FFF',
+    fontSize: 28,
+    fontFamily: 'Pretendard-Medium',
+    textShadowColor: 'rgba(0,0,0,0.35)',
+    textShadowOffset: {width: 0, height: 1},
+    textShadowRadius: 2,
+    zIndex: 3,
   },
   topCarouselGradient: {
     position: 'absolute',
@@ -158,6 +199,13 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: '45%',
+  },
+  topCarouselTopGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: '35%',
   },
   topCarouselName: {
     color: '#FFF',
