@@ -92,6 +92,7 @@ const PostItem = ({
   const badgeDelayRef = useRef(null);
   const HEART_SIZE = 32;
   const HEART_END_OFFSET_X = 0;
+  const HEART_END_OFFSET_Y = -6;
   const [isLikePending, setIsLikePending] = useState(false);
   const pendingSaveRef = useRef(false);
   const READ_MORE_LABEL = '…더보기';
@@ -674,7 +675,12 @@ const PostItem = ({
           const startY = pageY - cardY - HEART_SIZE / 2;
           const destX =
             targetX + targetW / 2 - cardX - HEART_SIZE / 2 + HEART_END_OFFSET_X;
-          const destY = targetY + targetH / 2 - cardY - HEART_SIZE / 2;
+          const destY =
+            targetY +
+            targetH / 2 -
+            cardY -
+            HEART_SIZE / 2 +
+            HEART_END_OFFSET_Y;
 
           flyingHeartPos.setValue({x: startX, y: startY});
           flyingHeartScale.setValue(0.2);
