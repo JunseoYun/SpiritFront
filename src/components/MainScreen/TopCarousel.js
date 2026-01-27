@@ -12,10 +12,7 @@ const TopCarousel = ({
   topRollLoading,
   topRollSkeleton,
   topRollItems,
-  windowWidth,
-  windowHeight,
   navigation,
-  defaultProfile,
 }) => {
   if (!topRollLoading && topRollItems.length === 0) {
     return null;
@@ -67,33 +64,13 @@ const TopCarousel = ({
                     style={styles.topCarouselImage}
                     resizeMode={FastImage.resizeMode.cover}
                   />
-
-                  <View style={styles.topCarouselMetaRow}>
-                    {/* <FastImage
-                      source={
-                        item.profileUri
-                          ? {
-                              uri: item.profileUri,
-                              priority: FastImage.priority.normal,
-                            }
-                          : defaultProfile
-                      }
-                      style={styles.topCarouselAvatar}
-                      resizeMode={FastImage.resizeMode.cover}
-                    />
-                    <CustomText
-                      style={styles.topCarouselName}
-                      numberOfLines={1}
-                      ellipsizeMode="tail">
-                      {item.name}
-                    </CustomText> */}
-                    <CustomText
-                      style={styles.topNumber}
-                      numberOfLines={1}
-                      ellipsizeMode="tail">
-                      {index + 1}
-                    </CustomText>
-                  </View>
+                  <CustomText
+                    style={styles.topNumber}
+                    maxScale={1.2}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    {index + 1}
+                  </CustomText>
                   <LinearGradient
                     colors={['transparent', 'rgba(0,0,0,0.2)']}
                     style={styles.topCarouselGradient}
@@ -168,23 +145,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  topCarouselAvatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 14,
-    borderWidth: 0.5,
-    borderColor: ColorUtil.border,
-  },
-  topCarouselMetaRow: {
+
+  topNumber: {
     position: 'absolute',
     top: 4,
     left: 8,
-    // right: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  topNumber: {
     color: '#FFF',
     fontSize: 28,
     fontFamily: 'Pretendard-Medium',
@@ -192,6 +157,7 @@ const styles = StyleSheet.create({
     textShadowOffset: {width: 0, height: 1},
     textShadowRadius: 2,
     zIndex: 3,
+    includeFontPadding: false,
   },
   topCarouselGradient: {
     position: 'absolute',
@@ -207,15 +173,7 @@ const styles = StyleSheet.create({
     top: 0,
     height: '35%',
   },
-  topCarouselName: {
-    color: '#FFF',
-    fontSize: 16,
-    fontFamily: 'Pretendard-Medium',
-    textShadowColor: 'rgba(0,0,0,0.35)',
-    textShadowOffset: {width: 0, height: 1},
-    textShadowRadius: 2,
-    flexShrink: 1,
-  },
+
   topCarouselLikeRow: {
     position: 'absolute',
     left: 8,

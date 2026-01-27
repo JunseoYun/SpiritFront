@@ -204,7 +204,7 @@ const MainScreen = ({navigation}) => {
       const data = await PostGetByPopular({page: 0});
       const items = (data?.content ?? []).slice(0, 10).map(item => ({
         id: String(item.id ?? ''),
-        uri: item.postFirstImgUrl ?? null,
+        uri: item.firstImgUrl ?? null,
         profileUri: item.writerImgUrl ?? null,
         name: item.writerNickname ?? '',
         likes: item.likeCount ?? 0,
@@ -352,8 +352,6 @@ const MainScreen = ({navigation}) => {
       }
       try {
         const data = await PostGetByRecent({page, size: FEED_PAGE_SIZE});
-        // console.log('MainScreen 최근 게시글:', data);
-
         const mapped = (data?.content ?? []).map(mapPostItem);
         lastFetchCountRef.current = mapped.length;
         if (isPaging) {
@@ -1536,10 +1534,7 @@ const MainScreen = ({navigation}) => {
               topRollLoading={topRollLoading}
               topRollSkeleton={topRollSkeleton}
               topRollItems={topRollItems}
-              windowWidth={windowWidth}
-              windowHeight={windowHeight}
               navigation={navigation}
-              defaultProfile={defaultProfile}
             />
           )
         }
