@@ -121,3 +121,16 @@ export const PostShare = async postId => {
     functionError(error);
   }
 };
+
+export const PostGetByPopular = async ({page = 0} = {}) => {
+  try {
+    const response = await axiosInstance.get('/post/get-by/popular', {
+      params: {
+        page,
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
