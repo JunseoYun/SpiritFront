@@ -77,7 +77,8 @@ const TopCarousel = ({
                     />
                     <CustomText
                       style={styles.topCarouselName}
-                      numberOfLines={1}>
+                      numberOfLines={1}
+                      ellipsizeMode="tail">
                       {item.name}
                     </CustomText>
                   </View>
@@ -146,6 +147,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     left: 6,
+    right: 6,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -164,6 +166,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.35)',
     textShadowOffset: {width: 0, height: 1},
     textShadowRadius: 2,
+    flexShrink: 1,
   },
   topCarouselLikeRow: {
     position: 'absolute',
