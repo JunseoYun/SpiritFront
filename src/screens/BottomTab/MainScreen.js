@@ -7,12 +7,16 @@ import {
   FlatList,
   Platform,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   ToastAndroid,
+  Text,
   View,
   useWindowDimensions,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
+import FastImage from 'react-native-fast-image';
+import LinearGradient from 'react-native-linear-gradient';
 import {openSettings} from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -35,7 +39,7 @@ import PostItem from '../../components/Post/PostItem';
 import PostItemSkeleton from '../../components/Post/PostItemSkeleton';
 import PostCommentSheet from '../../components/Post/PostCommentSheet';
 import {getLocation} from '../../storage/locationStorage';
-import {PostGetByRecent} from '../../api/postApi';
+import {PostGetByPopular, PostGetByRecent} from '../../api/postApi';
 import {PostDelete} from '../../api/reviewApi';
 import {
   CommentCreate,
@@ -47,6 +51,7 @@ import {
 import {Userdataget} from '../../api/userApi';
 import formatRelativeTime from '../../utils/formatRelativeTime';
 import Loading from '../../hooks/Loading';
+import HeartIcon from '../../assets/svg/HeartIcon';
 
 const defaultProfile = require('../../assets/default_profile.png');
 const COMMENT_SORTS = {
@@ -59,7 +64,7 @@ const PREFETCH_REMAINING_ITEMS = 3;
 const MainScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const {showToast} = useToast();
-  const {height: windowHeight} = useWindowDimensions();
+  const {height: windowHeight, width: windowWidth} = useWindowDimensions();
   const [rejectModalData, setRejectModalData] = useState(null);
   const [unreadNotification, setUnreadNotification] = useState(false);
   const [location, setLocation] = useState(null);
@@ -101,6 +106,8 @@ const MainScreen = ({navigation}) => {
   const [currentUserNickname, setCurrentUserNickname] = useState('');
   const [currentUserProfileImage, setCurrentUserProfileImage] = useState(null);
   const [pendingScrollReplyId, setPendingScrollReplyId] = useState(null);
+  const [topRollItems, setTopRollItems] = useState([]);
+  const [topRollLoading, setTopRollLoading] = useState(true);
   const writeLabelVisibleRef = useRef(true);
   const WRITE_BUTTON_COLLAPSE_OFFSET = 20;
   const writeButtonAnim = useRef(new Animated.Value(1)).current;
@@ -117,6 +124,7 @@ const MainScreen = ({navigation}) => {
   const isLoadingMoreCommentsRef = useRef(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const commentSheetRef = useRef(null);
+  const isInitialLoading = feedLoading || topRollLoading;
 
   useFocusEffect(
     useCallback(() => {
@@ -160,6 +168,10 @@ const MainScreen = ({navigation}) => {
     () => Array.from({length: 4}, (_, index) => `skeleton-${index}`),
     [],
   );
+  const topRollSkeleton = useMemo(
+    () => Array.from({length: 6}, (_, index) => `top-skeleton-${index}`),
+    [],
+  );
   const loadMorePadding = 24;
   const HEADER_TOGGLE_THRESHOLD = 28;
   const HEADER_ANIM_HIDE_DURATION = 300;
@@ -188,13 +200,33 @@ const MainScreen = ({navigation}) => {
       place: post.place ?? null,
     };
   }, []);
+  const fetchTopRoll = useCallback(async () => {
+    setTopRollLoading(true);
+    try {
+      const data = await PostGetByPopular({page: 0});
+      const items = (data?.content ?? []).slice(0, 10).map(item => ({
+        id: String(item.id ?? ''),
+        uri: item.postFirstImgUrl ?? null,
+        profileUri: item.writerImgUrl ?? null,
+        name: item.writerNickname ?? '',
+        likes: item.likeCount ?? 0,
+      }));
+      setTopRollItems(items);
+    } catch (error) {
+      setTopRollItems([]);
+      console.error('인기 포스트 불러오기 실패:', error);
+    } finally {
+      setTopRollLoading(false);
+    }
+  }, []);
   const refreshFeed = useCallback(() => {
     allowLoadMore.current = false;
     setFeedPage(0);
     setFeedTotalPages(0);
     feedTotalPagesRef.current = 0;
+    fetchTopRoll();
     fetchPosts({page: 0, isRefresh: true});
-  }, [fetchPosts]);
+  }, [fetchPosts, fetchTopRoll]);
   const handleScrollToTop = useCallback(() => {
     listRef.current?.scrollToOffset({offset: 0, animated: true});
     // refreshFeed();
@@ -230,6 +262,10 @@ const MainScreen = ({navigation}) => {
     () => setPendingNotification(null),
     data => setRejectModalData(data),
   );
+
+  useEffect(() => {
+    fetchTopRoll();
+  }, [fetchTopRoll]);
 
   useEffect(() => {
     let isMounted = true;
@@ -303,6 +339,7 @@ const MainScreen = ({navigation}) => {
       const isPaging = page > 0 && !isRefresh;
       if (isRefresh) {
         setRefreshing(true);
+        setFeedLoading(true);
       } else if (isPaging) {
         setFeedLoadingMore(true);
         loadMorePendingRef.current = true;
@@ -318,6 +355,7 @@ const MainScreen = ({navigation}) => {
       try {
         const data = await PostGetByRecent({page, size: FEED_PAGE_SIZE});
         // console.log('MainScreen 최근 게시글:', data);
+
         const mapped = (data?.content ?? []).map(mapPostItem);
         lastFetchCountRef.current = mapped.length;
         if (isPaging) {
@@ -375,6 +413,7 @@ const MainScreen = ({navigation}) => {
       } finally {
         if (isRefresh) {
           setRefreshing(false);
+          setFeedLoading(false);
         } else if (isPaging) {
           if (lastFetchCountRef.current === 0) {
             loadMorePendingRef.current = false;
@@ -1486,12 +1525,88 @@ const MainScreen = ({navigation}) => {
 
       <FlatList
         ref={listRef}
-        data={feedLoading ? skeletonData : feedData}
+        data={isInitialLoading ? skeletonData : feedData}
         keyExtractor={(item, index) =>
-          feedLoading ? item : item.id ?? `${index}`
+          isInitialLoading ? item : item.id ?? `${index}`
         }
+        ListHeaderComponent={
+          (topRollLoading || topRollItems.length > 0) && (
+            <View style={styles.topCarouselContainer}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.topCarouselContent}>
+                {(topRollLoading ? topRollSkeleton : topRollItems).map(item => {
+                  const isSkeleton = topRollLoading;
+                  return (
+                    <View
+                      key={isSkeleton ? item : item.id}
+                      style={[
+                        styles.topCarouselItem,
+                        {
+                          width: windowWidth * 0.26,
+                          height: windowHeight * 0.2,
+                        },
+                      ]}>
+                      {isSkeleton ? (
+                        <View style={styles.topCarouselSkeleton} />
+                      ) : (
+                        <View style={styles.topCarouselCard}>
+                          <FastImage
+                            source={{
+                              uri: item.uri,
+                              priority: FastImage.priority.high,
+                            }}
+                            style={styles.topCarouselImage}
+                            resizeMode={FastImage.resizeMode.cover}
+                          />
+                          <View style={styles.topCarouselMetaRow}>
+                            <FastImage
+                              source={
+                                item.profileUri
+                                  ? {
+                                      uri: item.profileUri,
+                                      priority: FastImage.priority.normal,
+                                    }
+                                  : defaultProfile
+                              }
+                              style={styles.topCarouselAvatar}
+                              resizeMode={FastImage.resizeMode.cover}
+                            />
+                            <Text
+                              style={styles.topCarouselName}
+                              numberOfLines={1}>
+                              {item.name}
+                            </Text>
+                          </View>
+                          <LinearGradient
+                            colors={['transparent', 'rgba(0,0,0,0.5)']}
+                            style={styles.topCarouselGradient}
+                            pointerEvents="none"
+                          />
+                          <View style={styles.topCarouselLikeRow}>
+                            <HeartIcon
+                              size={16}
+                              color="#FF6B6B"
+                              filled
+                              strokeWidth={0}
+                            />
+                            <Text style={styles.topCarouselLikeText}>
+                              {item.likes ?? 0}
+                            </Text>
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )
+        }
+        ListHeaderComponentStyle={styles.topCarouselHeaderGap}
         renderItem={({item}) =>
-          feedLoading || item?.__isLoadingMore ? (
+          isInitialLoading || item?.__isLoadingMore ? (
             <PostItemSkeleton />
           ) : (
             <PostItem
@@ -1516,7 +1631,7 @@ const MainScreen = ({navigation}) => {
           },
         ]}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={!feedLoading}
+        scrollEnabled={!isInitialLoading}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -1646,7 +1761,82 @@ const styles = StyleSheet.create({
   },
   feedContent: {
     paddingTop: 10,
-    paddingBottom: 24,
+    paddingBottom: 10,
+  },
+  topCarouselContainer: {
+    // paddingHorizontal: 16,
+    // paddingTop: 6,
+  },
+  topCarouselContent: {
+    paddingLeft: 16,
+    paddingRight: 6,
+  },
+  topCarouselItem: {
+    marginRight: 10,
+    position: 'relative',
+  },
+  topCarouselCard: {
+    borderRadius: 7,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  topCarouselSkeleton: {
+    flex: 1,
+    borderRadius: 7,
+    backgroundColor: '#e9edf3',
+  },
+  topCarouselImage: {
+    width: '100%',
+    height: '100%',
+  },
+  topCarouselAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 0.7,
+    borderColor: '#FFF',
+  },
+  topCarouselMetaRow: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  topCarouselGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '45%',
+  },
+  topCarouselName: {
+    color: '#FFF',
+    fontSize: 16,
+    fontFamily: 'Pretendard-Medium',
+    textShadowColor: 'rgba(0,0,0,0.35)',
+    textShadowOffset: {width: 0, height: 1},
+    textShadowRadius: 2,
+  },
+  topCarouselLikeRow: {
+    position: 'absolute',
+    left: 8,
+    bottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  topCarouselLikeText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    textShadowColor: 'rgba(0,0,0,0.35)',
+    textShadowOffset: {width: 0, height: 1},
+    textShadowRadius: 2,
+  },
+  topCarouselHeaderGap: {
+    marginBottom: 14,
   },
 });
 
