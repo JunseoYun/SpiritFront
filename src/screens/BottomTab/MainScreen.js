@@ -5,6 +5,7 @@ import {
   DeviceEventEmitter,
   Easing,
   FlatList,
+  TouchableOpacity,
   Platform,
   RefreshControl,
   ScrollView,
@@ -1551,7 +1552,15 @@ const MainScreen = ({navigation}) => {
                       {isSkeleton ? (
                         <View style={styles.topCarouselSkeleton} />
                       ) : (
-                        <View style={styles.topCarouselCard}>
+                        <TouchableOpacity
+                          activeOpacity={0.9}
+                          style={styles.topCarouselCard}
+                          onPress={() =>
+                            navigation.navigate('PostDetailScreen', {
+                              postId: item.id,
+                              returnTo: 'MainScreen',
+                            })
+                          }>
                           <FastImage
                             source={{
                               uri: item.uri,
@@ -1595,7 +1604,7 @@ const MainScreen = ({navigation}) => {
                               {item.likes ?? 0}
                             </Text>
                           </View>
-                        </View>
+                        </TouchableOpacity>
                       )}
                     </View>
                   );
