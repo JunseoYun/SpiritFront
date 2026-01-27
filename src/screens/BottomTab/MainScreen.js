@@ -5,10 +5,8 @@ import {
   DeviceEventEmitter,
   Easing,
   FlatList,
-  TouchableOpacity,
   Platform,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   ToastAndroid,
   Text,
@@ -16,8 +14,6 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
-import FastImage from 'react-native-fast-image';
-import LinearGradient from 'react-native-linear-gradient';
 import {openSettings} from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -33,6 +29,7 @@ import StoreIcon from '../../assets/svg/StoreIcon';
 import VerifyIcon from '../../assets/svg/VerifyIcon';
 import WriteMenu from '../../components/MainScreen/WriteMenu';
 import WriteButton from '../../components/MainScreen/WriteButton';
+import TopCarousel from '../../components/MainScreen/TopCarousel';
 import {iniBasictNotification} from '../../hooks/notification/useNotificationPermission';
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useNotification} from '../../context/NotificationContext';
@@ -52,7 +49,6 @@ import {
 import {Userdataget} from '../../api/userApi';
 import formatRelativeTime from '../../utils/formatRelativeTime';
 import Loading from '../../hooks/Loading';
-import HeartIcon from '../../assets/svg/HeartIcon';
 
 const defaultProfile = require('../../assets/default_profile.png');
 const COMMENT_SORTS = {
@@ -1535,86 +1531,16 @@ const MainScreen = ({navigation}) => {
         }
         ListHeaderComponent={
           (topRollLoading || topRollItems.length > 0) && (
-            <View style={styles.topCarouselContainer}>
-              <ScrollView
-                ref={topRollScrollRef}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.topCarouselContent}>
-                {(topRollLoading ? topRollSkeleton : topRollItems).map(item => {
-                  const isSkeleton = topRollLoading;
-                  return (
-                    <View
-                      key={isSkeleton ? item : item.id}
-                      style={[
-                        styles.topCarouselItem,
-                        {
-                          width: windowWidth * 0.26,
-                          height: windowHeight * 0.2,
-                        },
-                      ]}>
-                      {isSkeleton ? (
-                        <View style={styles.topCarouselSkeleton} />
-                      ) : (
-                        <TouchableOpacity
-                          activeOpacity={0.9}
-                          style={styles.topCarouselCard}
-                          onPress={() =>
-                            navigation.navigate('PostDetailScreen', {
-                              postId: item.id,
-                              returnTo: 'MainScreen',
-                            })
-                          }>
-                          <FastImage
-                            source={{
-                              uri: item.uri,
-                              priority: FastImage.priority.high,
-                            }}
-                            style={styles.topCarouselImage}
-                            resizeMode={FastImage.resizeMode.cover}
-                          />
-                          <View style={styles.topCarouselMetaRow}>
-                            <FastImage
-                              source={
-                                item.profileUri
-                                  ? {
-                                      uri: item.profileUri,
-                                      priority: FastImage.priority.normal,
-                                    }
-                                  : defaultProfile
-                              }
-                              style={styles.topCarouselAvatar}
-                              resizeMode={FastImage.resizeMode.cover}
-                            />
-                            <Text
-                              style={styles.topCarouselName}
-                              numberOfLines={1}>
-                              {item.name}
-                            </Text>
-                          </View>
-                          <LinearGradient
-                            colors={['transparent', 'rgba(0,0,0,0.5)']}
-                            style={styles.topCarouselGradient}
-                            pointerEvents="none"
-                          />
-                          <View style={styles.topCarouselLikeRow}>
-                            <HeartIcon
-                              size={16}
-                              color="#FF6B6B"
-                              filled
-                              strokeWidth={0}
-                            />
-                            <Text style={styles.topCarouselLikeText}>
-                              {item.likes ?? 0}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  );
-                })}
-              </ScrollView>
-            </View>
+            <TopCarousel
+              topRollScrollRef={topRollScrollRef}
+              topRollLoading={topRollLoading}
+              topRollSkeleton={topRollSkeleton}
+              topRollItems={topRollItems}
+              windowWidth={windowWidth}
+              windowHeight={windowHeight}
+              navigation={navigation}
+              defaultProfile={defaultProfile}
+            />
           )
         }
         ListHeaderComponentStyle={styles.topCarouselHeaderGap}
@@ -1638,7 +1564,7 @@ const MainScreen = ({navigation}) => {
           {
             paddingTop:
               insets.top +
-              (Platform.OS === 'android' ? 40 : 10) +
+              (Platform.OS === 'android' ? 40 : 0) +
               (insets.top === 0 && 40),
             paddingBottom: loadMorePadding,
           },
@@ -1672,7 +1598,6 @@ const MainScreen = ({navigation}) => {
           }
         }}
         onEndReachedThreshold={0.9}
-        maintainVisibleContentPosition={{minIndexForVisible: 0}}
       />
 
       <PostCommentSheet
@@ -1775,78 +1700,6 @@ const styles = StyleSheet.create({
   feedContent: {
     paddingTop: 10,
     paddingBottom: 10,
-  },
-  topCarouselContainer: {
-    // paddingHorizontal: 16,
-    // paddingTop: 6,
-  },
-  topCarouselContent: {
-    paddingLeft: 16,
-    paddingRight: 6,
-  },
-  topCarouselItem: {
-    marginRight: 10,
-    position: 'relative',
-  },
-  topCarouselCard: {
-    borderRadius: 7,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  topCarouselSkeleton: {
-    flex: 1,
-    borderRadius: 7,
-    backgroundColor: '#e9edf3',
-  },
-  topCarouselImage: {
-    width: '100%',
-    height: '100%',
-  },
-  topCarouselAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 0.7,
-    borderColor: '#FFF',
-  },
-  topCarouselMetaRow: {
-    position: 'absolute',
-    top: 6,
-    left: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  topCarouselGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '45%',
-  },
-  topCarouselName: {
-    color: '#FFF',
-    fontSize: 16,
-    fontFamily: 'Pretendard-Medium',
-    textShadowColor: 'rgba(0,0,0,0.35)',
-    textShadowOffset: {width: 0, height: 1},
-    textShadowRadius: 2,
-  },
-  topCarouselLikeRow: {
-    position: 'absolute',
-    left: 8,
-    bottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  topCarouselLikeText: {
-    color: '#FFF',
-    fontSize: 13,
-    fontFamily: 'Pretendard-Medium',
-    textShadowColor: 'rgba(0,0,0,0.35)',
-    textShadowOffset: {width: 0, height: 1},
-    textShadowRadius: 2,
   },
   topCarouselHeaderGap: {
     marginBottom: 14,
