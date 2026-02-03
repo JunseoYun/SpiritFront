@@ -277,8 +277,7 @@ const MainScreen = ({navigation}) => {
       if (!item || item.__isLoadingMore) {
         continue;
       }
-      const needsRatio =
-        item.postImages?.length > 0 && !item.initialImageRatio;
+      const needsRatio = item.postImages?.length > 0 && !item.initialImageRatio;
       if (needsRatio) {
         return i;
       }
@@ -287,12 +286,44 @@ const MainScreen = ({navigation}) => {
   }, [feedData]);
   firstPendingIndexRef.current = firstPendingIndex;
 
-  const visibleFeedData = useMemo(() => {
-    if (firstPendingIndex === -1) {
-      return feedData;
+  const targetVisibleCount = useMemo(() => {
+    if (isInitialLoading) {
+      return skeletonData.length;
     }
-    return feedData.slice(0, firstPendingIndex + 1);
-  }, [feedData, firstPendingIndex]);
+    if (firstPendingIndex === -1) {
+      return feedData.length;
+    }
+    return firstPendingIndex + 1; // include the pending item (skeleton)
+  }, [
+    feedData.length,
+    firstPendingIndex,
+    isInitialLoading,
+    skeletonData.length,
+  ]);
+
+  const visibleCount = targetVisibleCount;
+
+  const visibleFeedData = useMemo(() => {
+    const count = Math.max(0, Math.min(visibleCount, feedData.length));
+    const sliceData = isInitialLoading
+      ? skeletonData.slice(0, count)
+      : feedData.slice(0, count);
+
+    // 마지막에 스켈레톤 1개를 추가해 빈 공간 대신 채워준다.
+    const needsSkeletonTail =
+      !isInitialLoading &&
+      firstPendingIndex !== -1 &&
+      count === firstPendingIndex + 1;
+    return needsSkeletonTail
+      ? [...sliceData, {id: 'pending-tail', __pendingTail: true}]
+      : sliceData;
+  }, [
+    feedData,
+    firstPendingIndex,
+    isInitialLoading,
+    skeletonData,
+    visibleCount,
+  ]);
 
   useEffect(() => {
     let isMounted = true;
@@ -1447,8 +1478,10 @@ const MainScreen = ({navigation}) => {
   );
 
   useEffect(() => {
-    feedDataLengthRef.current = feedData.length;
-  }, [feedData.length]);
+    feedDataLengthRef.current = isInitialLoading
+      ? skeletonData.length
+      : visibleFeedData.length;
+  }, [isInitialLoading, skeletonData.length, visibleFeedData.length]);
 
   useFocusEffect(
     useCallback(() => {
@@ -1598,6 +1631,10 @@ const MainScreen = ({navigation}) => {
         }
         ListHeaderComponentStyle={styles.topCarouselHeaderGap}
         renderItem={({item, index}) => {
+          if (item?.__pendingTail) {
+            return <PostItemSkeleton />;
+          }
+
           if (isInitialLoading || item?.__isLoadingMore) {
             return <PostItemSkeleton />;
           }
