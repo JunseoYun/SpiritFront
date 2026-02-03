@@ -49,6 +49,11 @@ import {
 import {Userdataget} from '../../api/userApi';
 import formatRelativeTime from '../../utils/formatRelativeTime';
 import Loading from '../../hooks/Loading';
+import {
+  getCachedImageRatio,
+  loadImageRatio,
+  preloadImageRatios,
+} from '../../utils/imageRatioCache';
 
 const defaultProfile = require('../../assets/default_profile.png');
 const COMMENT_SORTS = {
@@ -88,6 +93,7 @@ const MainScreen = ({navigation}) => {
   const loadMorePendingRef = useRef(false);
   const pendingLoadMoreIdsRef = useRef(new Set());
   const loadMoreTimeoutRef = useRef(null);
+  const firstPendingIndexRef = useRef(-1);
   const [showWriteLabel, setShowWriteLabel] = useState(true);
   const [isWriteMenuVisible, setIsWriteMenuVisible] = useState(false);
   const [isWriteMenuOpen, setIsWriteMenuOpen] = useState(false);
@@ -265,6 +271,29 @@ const MainScreen = ({navigation}) => {
     fetchTopRoll();
   }, [fetchTopRoll]);
 
+  const firstPendingIndex = useMemo(() => {
+    for (let i = 0; i < feedData.length; i += 1) {
+      const item = feedData[i];
+      if (!item || item.__isLoadingMore) {
+        continue;
+      }
+      const needsRatio =
+        item.postImages?.length > 0 && !item.initialImageRatio;
+      if (needsRatio) {
+        return i;
+      }
+    }
+    return -1;
+  }, [feedData]);
+  firstPendingIndexRef.current = firstPendingIndex;
+
+  const visibleFeedData = useMemo(() => {
+    if (firstPendingIndex === -1) {
+      return feedData;
+    }
+    return feedData.slice(0, firstPendingIndex + 1);
+  }, [feedData, firstPendingIndex]);
+
   useEffect(() => {
     let isMounted = true;
     const fetchUserNickname = async () => {
@@ -352,7 +381,36 @@ const MainScreen = ({navigation}) => {
       }
       try {
         const data = await PostGetByRecent({page, size: FEED_PAGE_SIZE});
-        const mapped = (data?.content ?? []).map(mapPostItem);
+        const mapped = (data?.content ?? []).map(post => ({
+          ...mapPostItem(post),
+          __page: page,
+        }));
+        preloadImageRatios(mapped.flatMap(post => post?.postImages ?? []));
+
+        // 비율 측정은 백그라운드로 돌리고, 결과가 오면 해당 아이템만 갱신한다.
+        mapped.forEach(post => {
+          if (post.initialImageRatio || !post.postImages?.[0]) {
+            return;
+          }
+          const firstUri = post.postImages[0];
+          const cached = getCachedImageRatio(firstUri);
+          if (cached) {
+            post.initialImageRatio = cached;
+            return;
+          }
+          loadImageRatio(firstUri).then(ratio => {
+            if (!ratio) {
+              return;
+            }
+            setFeedData(prev =>
+              prev.map(item =>
+                String(item?.id) === String(post.id)
+                  ? {...item, initialImageRatio: ratio}
+                  : item,
+              ),
+            );
+          });
+        });
         lastFetchCountRef.current = mapped.length;
         if (isPaging) {
           const nextPending = new Set(
@@ -1523,7 +1581,7 @@ const MainScreen = ({navigation}) => {
 
       <FlatList
         ref={listRef}
-        data={isInitialLoading ? skeletonData : feedData}
+        data={isInitialLoading ? skeletonData : visibleFeedData}
         keyExtractor={(item, index) =>
           isInitialLoading ? item : item.id ?? `${index}`
         }
@@ -1539,10 +1597,19 @@ const MainScreen = ({navigation}) => {
           )
         }
         ListHeaderComponentStyle={styles.topCarouselHeaderGap}
-        renderItem={({item}) =>
-          isInitialLoading || item?.__isLoadingMore ? (
-            <PostItemSkeleton />
-          ) : (
+        renderItem={({item, index}) => {
+          if (isInitialLoading || item?.__isLoadingMore) {
+            return <PostItemSkeleton />;
+          }
+
+          const needsRatio =
+            item?.postImages?.length > 0 && !item?.initialImageRatio;
+
+          if (needsRatio) {
+            return <PostItemSkeleton />;
+          }
+
+          return (
             <PostItem
               item={item}
               onCommentPress={handleOpenCommentSheet}
@@ -1551,9 +1618,10 @@ const MainScreen = ({navigation}) => {
               isWriter={item.isWriter}
               onEditPress={handleEditPress}
               onDeletePress={handleDeletePress}
+              initialImageRatio={item.initialImageRatio}
             />
-          )
-        }
+          );
+        }}
         contentContainerStyle={[
           styles.feedContent,
           {
