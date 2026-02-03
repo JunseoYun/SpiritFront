@@ -6,7 +6,6 @@ import {
   DeviceEventEmitter,
   Easing,
   FlatList,
-  Image,
   Dimensions,
   Platform,
   Share,
@@ -34,6 +33,12 @@ import {PostLike, PostSave, PostShare} from '../../api/postApi';
 import {getGlobalShowAlert} from '../../context/CustomAlertContext';
 import {useNavigation} from '@react-navigation/native';
 import formatRelativeTime from '../../utils/formatRelativeTime';
+import {
+  getCachedImageRatio,
+  loadImageRatio,
+  preloadImageRatios,
+  setCachedImageRatio,
+} from '../../utils/imageRatioCache';
 const defaultProfile = require('../../assets/default_profile.png');
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -69,14 +74,48 @@ const PostItem = ({
     setSaved(Boolean(item?.saved ?? item?.isSaved ?? false));
   }, [item?.id, item?.isLiked, item?.likes, item?.saved, item?.isSaved]);
 
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  useEffect(() => {
+    imageRatiosRef.current = imageRatios;
+  }, [imageRatios]);
+
   const comments = item.comments ?? 0;
   const [shareCount, setShareCount] = useState(item.shares ?? 0);
   const [titleCycleIndex, setTitleCycleIndex] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const [imageRatio, setImageRatio] = useState(1);
+  const [imageRatios, setImageRatios] = useState(() => {
+    const seeded = {};
+    item.postImages?.forEach((uri, idx) => {
+      const cached = getCachedImageRatio(uri);
+      if (cached) {
+        seeded[idx] = cached;
+      }
+    });
+    return seeded;
+  });
+  const [imageRatio, setImageRatio] = useState(() => {
+    const seeded =
+      typeof initialImageRatio === 'number' && initialImageRatio > 0
+        ? initialImageRatio
+        : null;
+    if (seeded && item.postImages?.[0]) {
+      setCachedImageRatio(item.postImages[0], seeded);
+    }
+    if (seeded) {
+      return seeded;
+    }
+    const cachedFirst = item.postImages?.[0]
+      ? getCachedImageRatio(item.postImages[0])
+      : null;
+    return cachedFirst || 1;
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [imageRatios, setImageRatios] = useState({});
   const totalImages = item.postImages?.length ?? 0;
+  const currentIndexRef = useRef(0);
+  const imageRatiosRef = useRef({});
   const lastTapRef = useRef({time: 0, x: 0, y: 0});
   const likeButtonRef = useRef(null);
   const heartIconWrapperRef = useRef(null);
@@ -514,15 +553,17 @@ const PostItem = ({
 
   const handleImageLoad = (event, index) => {
     const {width, height} = event.nativeEvent;
+    const uri = item.postImages?.[index];
     if (width && height) {
       const ratio = width / height;
       if (ratio > 0) {
+        setCachedImageRatio(uri, ratio);
         setImageRatios(prev => {
           if (prev[index] === ratio) {
             return prev;
           }
           const next = {...prev, [index]: ratio};
-          if (index === currentIndex) {
+          if (index === currentIndexRef.current) {
             setImageRatio(ratio);
           }
           return next;
@@ -538,10 +579,30 @@ const PostItem = ({
   const onViewableItemsChanged = useRef(({viewableItems}) => {
     const first = viewableItems?.[0];
     if (first?.index !== undefined) {
-      setCurrentIndex(first.index);
-      const ratio = imageRatios[first.index];
+      const nextIndex = first.index;
+      setCurrentIndex(nextIndex);
+      currentIndexRef.current = nextIndex;
+      const ratio =
+        imageRatiosRef.current[nextIndex] ??
+        getCachedImageRatio(item.postImages?.[nextIndex]);
       if (ratio) {
         setImageRatio(ratio);
+      } else {
+        const uri = item.postImages?.[nextIndex];
+        if (uri) {
+          loadImageRatio(uri).then(nextRatio => {
+            if (!nextRatio || currentIndexRef.current !== nextIndex) {
+              return;
+            }
+            setImageRatios(prev => {
+              if (prev[nextIndex] === nextRatio) {
+                return prev;
+              }
+              return {...prev, [nextIndex]: nextRatio};
+            });
+            setImageRatio(nextRatio);
+          });
+        }
       }
     }
   }).current;
@@ -551,36 +612,56 @@ const PostItem = ({
   }).current;
 
   useEffect(() => {
+    let isMounted = true;
     const seededRatio =
       typeof initialImageRatio === 'number' && initialImageRatio > 0
         ? initialImageRatio
         : null;
-    setImageRatios(seededRatio ? {0: seededRatio} : {});
-    setCurrentIndex(0);
-    setImageRatio(seededRatio || 1);
-    item.postImages?.forEach((uri, idx) => {
-      Image.getSize(
-        uri,
-        (width, height) => {
-          if (width && height) {
-            const ratio = width / height;
-            if (ratio > 0) {
-              setImageRatios(prev => {
-                if (prev[idx] === ratio) {
-                  return prev;
-                }
-                const next = {...prev, [idx]: ratio};
-                if (idx === 0) {
-                  setImageRatio(ratio);
-                }
-                return next;
-              });
-            }
-          }
-        },
-        () => {},
-      );
+
+    const cachedMap = {};
+    let firstRatio = seededRatio || null;
+
+    if (seededRatio && item.postImages?.[0]) {
+      setCachedImageRatio(item.postImages[0], seededRatio);
+    }
+
+    (item.postImages ?? []).forEach((uri, idx) => {
+      const cached = getCachedImageRatio(uri);
+      if (cached) {
+        cachedMap[idx] = cached;
+        if (firstRatio === null && idx === 0) {
+          firstRatio = cached;
+        }
+      }
     });
+
+    setImageRatios(cachedMap);
+    setCurrentIndex(0);
+    currentIndexRef.current = 0;
+    setImageRatio(firstRatio || 1);
+
+    preloadImageRatios(item.postImages);
+
+    (item.postImages ?? []).forEach((uri, idx) => {
+      loadImageRatio(uri).then(ratio => {
+        if (!isMounted || !ratio) {
+          return;
+        }
+        setImageRatios(prev => {
+          if (prev[idx] === ratio) {
+            return prev;
+          }
+          return {...prev, [idx]: ratio};
+        });
+        if (idx === 0 || currentIndexRef.current === idx) {
+          setImageRatio(ratio);
+        }
+      });
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, [initialImageRatio, item.postImages]);
 
   useEffect(() => {
