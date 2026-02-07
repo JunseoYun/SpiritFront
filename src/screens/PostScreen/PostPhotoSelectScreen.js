@@ -41,8 +41,8 @@ import RNFS from 'react-native-fs';
 import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
 import SkeletonBox from '../../hooks/SkeletonBox';
-import Loading from '../../hooks/Loading';
 import MaximizeIcon from '../../assets/svg/MaximizeIcon';
+import PostCropLoadingOverlay from '../../components/Post/PostCropLoadingOverlay';
 import {
   requestCameraPermission,
   requestPhotoPermission,
@@ -199,6 +199,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   const panValue = useRef(new Animated.ValueXY({x: 0, y: 0})).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
   const overlayTranslateY = useRef(new Animated.Value(-width)).current;
+  const cropProgressAnim = useRef(new Animated.Value(0)).current;
   const [showOverlayPreview, setShowOverlayPreview] = useState(false);
   const panStartRef = useRef({x: 0, y: 0});
   const scaleStartRef = useRef(1);
@@ -252,6 +253,24 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   const handlePreviewTouchEnd = useCallback(() => {
     setGridScrollEnabled(true);
   }, [setGridScrollEnabled]);
+
+  useEffect(() => {
+    if (!cropLoading) {
+      cropProgressAnim.stopAnimation();
+      cropProgressAnim.setValue(0);
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.timing(cropProgressAnim, {
+        toValue: 1,
+        duration: 1200,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [cropLoading, cropProgressAnim]);
 
   const selectedPhoto = useMemo(() => {
     const fallbackId =
@@ -1802,7 +1821,10 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
           </View>
         </View>
       )}
-      <Loading loading={cropLoading} />
+      <PostCropLoadingOverlay
+        visible={cropLoading}
+        progressAnim={cropProgressAnim}
+      />
     </View>
   );
 };
