@@ -37,6 +37,7 @@ import CameraRollDefault, {
 } from '@react-native-camera-roll/camera-roll';
 import ImageEditor from '@react-native-community/image-editor';
 import ImagePicker from 'react-native-image-crop-picker';
+import RNFS from 'react-native-fs';
 import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
 import SkeletonBox from '../../hooks/SkeletonBox';
@@ -58,6 +59,7 @@ const MAX_PREVIEW_SCALE = 3;
 const MAX_LANDSCAPE_RATIO = 16 / 9;
 const DEFAULT_MAX_SELECTED_PHOTOS = 10;
 const OVERLAY_ANIM_DURATION = 260;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 const clampValue = (value, min, max) => Math.max(min, Math.min(value, max));
 const clampNumber = (value, min, max) => Math.max(min, Math.min(value, max));
@@ -477,6 +479,126 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     };
   };
 
+  const getImageSizeFromUri = uri =>
+    new Promise(resolve => {
+      if (!uri) {
+        resolve({width: 0, height: 0});
+        return;
+      }
+      Image.getSize(
+        uri,
+        (imgWidth, imgHeight) => resolve({width: imgWidth, height: imgHeight}),
+        () => resolve({width: 0, height: 0}),
+      );
+    });
+
+  const getFileSizeBytes = async uri => {
+    if (!uri || !uri.startsWith('file://')) {
+      return null;
+    }
+    try {
+      const path = uri.replace('file://', '');
+      const stat = await RNFS.stat(path);
+      return typeof stat.size === 'number' ? stat.size : null;
+    } catch (error) {
+      console.warn('파일 크기 조회 실패', error);
+      return null;
+    }
+  };
+
+  const ensureMaxFileSize = async (uri, maxBytes) => {
+    let currentUri = uri;
+    let currentSize = await getFileSizeBytes(currentUri);
+    if (!currentSize || currentSize <= maxBytes) {
+      return currentUri;
+    }
+    // console.log('[PostPhotoSelect] oversized image detected', {
+    //   uri: currentUri,
+    //   sizeBytes: currentSize,
+    //   maxBytes,
+    // });
+
+    let lastSize = currentSize;
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const imageSize = await getImageSizeFromUri(currentUri);
+      if (!imageSize.width || !imageSize.height) {
+        // console.log('[PostPhotoSelect] resize aborted: image size unavailable', {
+        //   uri: currentUri,
+        // });
+        return currentUri;
+      }
+
+      const ratio = Math.sqrt(maxBytes / currentSize);
+      const scale = Math.min(0.9, ratio * 0.95);
+      if (!Number.isFinite(scale) || scale >= 0.99) {
+        console.log('[PostPhotoSelect] resize aborted: invalid scale', {
+          uri: currentUri,
+          scale,
+          currentSize,
+          maxBytes,
+        });
+        return currentUri;
+      }
+
+      const targetWidth = Math.max(1, Math.round(imageSize.width * scale));
+      const targetHeight = Math.max(1, Math.round(imageSize.height * scale));
+
+      try {
+        const resizedResult = await ImageEditor.cropImage(currentUri, {
+          offset: {x: 0, y: 0},
+          size: {
+            width: Math.round(imageSize.width),
+            height: Math.round(imageSize.height),
+          },
+          displaySize: {
+            width: targetWidth,
+            height: targetHeight,
+          },
+        });
+        const resizedUri =
+          typeof resizedResult === 'string'
+            ? resizedResult
+            : resizedResult?.uri;
+        if (!resizedUri) {
+          // console.log('[PostPhotoSelect] resize aborted: missing resized uri', {
+          //   uri: currentUri,
+          // });
+          return currentUri;
+        }
+        currentUri = normalizeImageUri(resizedUri);
+        currentSize = await getFileSizeBytes(currentUri);
+        // if (currentSize) {
+        //   console.log('[PostPhotoSelect] resized image size', {
+        //     uri: currentUri,
+        //     sizeBytes: currentSize,
+        //     maxBytes,
+        //     attempt: attempt + 1,
+        //   });
+        // }
+        if (currentSize && currentSize <= maxBytes) {
+          return currentUri;
+        }
+        if (currentSize && currentSize >= lastSize) {
+          // console.log('[PostPhotoSelect] resize stalled', {
+          //   uri: currentUri,
+          //   sizeBytes: currentSize,
+          //   lastSize,
+          //   attempt: attempt + 1,
+          // });
+          return currentUri;
+        }
+        if (currentSize) {
+          lastSize = currentSize;
+        }
+      } catch (error) {
+        console.warn('이미지 리사이즈 실패', error);
+        return currentUri;
+      }
+    }
+
+    return currentUri;
+  };
+
   const cropPhotoToPreview = async (photo, index) => {
     if (!photo?.uri || typeof photo.uri !== 'string') {
       return photo;
@@ -576,9 +698,13 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       if (!croppedUri) {
         return photo;
       }
+      const resizedUri = await ensureMaxFileSize(
+        normalizeImageUri(croppedUri),
+        MAX_IMAGE_BYTES,
+      );
       return {
         ...photo,
-        uri: normalizeImageUri(croppedUri),
+        uri: resizedUri,
       };
     } catch (error) {
       console.warn('사진 크롭 실패', error);
@@ -1110,7 +1236,8 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         mediaType: 'photo',
         cropping: false,
         includeExif: false,
-        compressImageQuality: 0.95,
+        compressImageQuality: 0.97,
+        // compressImageQuality: 0.95,
         compressImageMaxWidth: 2160,
         compressImageMaxHeight: 2160,
         ...IMAGE_PICKER_TEXTS,
@@ -1122,13 +1249,15 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
 
       const savePermission = await requestPhotoPermission();
       const originalUri = normalizeImageUri(captured.path);
-      let savedUri = originalUri;
+      const resizedUri = await ensureMaxFileSize(originalUri, MAX_IMAGE_BYTES);
+
+      let savedUri = resizedUri;
       if (savePermission) {
         try {
-          savedUri = await CameraRollModule.save(originalUri, {type: 'photo'});
+          savedUri = await CameraRollModule.save(resizedUri, {type: 'photo'});
         } catch (error) {
           console.warn('사진 저장 실패', error);
-          savedUri = originalUri;
+          savedUri = resizedUri;
         }
       }
 
