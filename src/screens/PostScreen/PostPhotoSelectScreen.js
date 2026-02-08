@@ -52,14 +52,15 @@ import {useToast} from '../../context/ToastContext';
 
 const {width, height} = Dimensions.get('window');
 const CameraRollModule = CameraRollNamed || CameraRollDefault;
-const PAGE_SIZE = 40;
-const BATCH_SIZE = 80;
+const PAGE_SIZE = 30;
+const BATCH_SIZE = 50;
 const MIN_PREVIEW_SCALE = 1;
 const MAX_PREVIEW_SCALE = 3;
 const MAX_LANDSCAPE_RATIO = 16 / 9;
 const DEFAULT_MAX_SELECTED_PHOTOS = 10;
 const OVERLAY_ANIM_DURATION = 260;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+// const MAX_OUTPUT_DIMENSION = 2048;
 
 const clampValue = (value, min, max) => Math.max(min, Math.min(value, max));
 const clampNumber = (value, min, max) => Math.max(min, Math.min(value, max));
@@ -200,6 +201,8 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   const scaleValue = useRef(new Animated.Value(1)).current;
   const overlayTranslateY = useRef(new Animated.Value(-width)).current;
   const cropProgressAnim = useRef(new Animated.Value(0)).current;
+  const [cropProgressValue, setCropProgressValue] = useState(0);
+  const [cropNoticeText, setCropNoticeText] = useState('잠시만 기다려 주세요!');
   const [showOverlayPreview, setShowOverlayPreview] = useState(false);
   const panStartRef = useRef({x: 0, y: 0});
   const scaleStartRef = useRef(1);
@@ -258,18 +261,19 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     if (!cropLoading) {
       cropProgressAnim.stopAnimation();
       cropProgressAnim.setValue(0);
+      setCropProgressValue(0);
+      setCropNoticeText('잠시만 기다려 주세요!');
       return;
     }
-    const loop = Animated.loop(
-      Animated.timing(cropProgressAnim, {
-        toValue: 1,
-        duration: 1200,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }),
-    );
-    loop.start();
-    return () => loop.stop();
+    const noticeStart = Date.now();
+    const intervalId = setInterval(() => {
+      const elapsed = Date.now() - noticeStart;
+      const isAlt = Math.floor(elapsed / 5000) % 2 === 1;
+      setCropNoticeText(
+        isAlt ? '사진을 최적화하는 중입니다.' : '잠시만 기다려 주세요!',
+      );
+    }, 1000);
+    return () => clearInterval(intervalId);
   }, [cropLoading, cropProgressAnim]);
 
   const selectedPhoto = useMemo(() => {
@@ -525,103 +529,80 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     }
   };
 
+  const logFileSize = async (label, uri, fallbackSize) => {
+    if (!uri) {
+      console.log('[PostPhotoSelect] file size', {label, uri});
+      return;
+    }
+    const normalized = normalizeImageUri(uri);
+    const sizeBytes = await getFileSizeBytes(normalized);
+    console.log('[PostPhotoSelect] file size', {
+      label,
+      uri: normalized,
+      sizeBytes: sizeBytes ?? fallbackSize ?? null,
+    });
+  };
+
   const ensureMaxFileSize = async (uri, maxBytes) => {
     let currentUri = uri;
     let currentSize = await getFileSizeBytes(currentUri);
     if (!currentSize || currentSize <= maxBytes) {
       return currentUri;
     }
-    // console.log('[PostPhotoSelect] oversized image detected', {
-    //   uri: currentUri,
-    //   sizeBytes: currentSize,
-    //   maxBytes,
-    // });
-
-    let lastSize = currentSize;
-    for (let attempt = 0; attempt < 6; attempt += 1) {
-      const imageSize = await getImageSizeFromUri(currentUri);
-      if (!imageSize.width || !imageSize.height) {
-        // console.log('[PostPhotoSelect] resize aborted: image size unavailable', {
-        //   uri: currentUri,
-        // });
-        return currentUri;
-      }
-
-      const ratio = Math.sqrt(maxBytes / currentSize);
-      const scale = Math.min(0.9, ratio * 0.95);
-      if (!Number.isFinite(scale) || scale >= 0.99) {
-        console.log('[PostPhotoSelect] resize aborted: invalid scale', {
-          uri: currentUri,
-          scale,
-          currentSize,
-          maxBytes,
-        });
-        return currentUri;
-      }
-
-      const targetWidth = Math.max(1, Math.round(imageSize.width * scale));
-      const targetHeight = Math.max(1, Math.round(imageSize.height * scale));
-
-      try {
-        const resizedResult = await ImageEditor.cropImage(currentUri, {
-          offset: {x: 0, y: 0},
-          size: {
-            width: Math.round(imageSize.width),
-            height: Math.round(imageSize.height),
-          },
-          displaySize: {
-            width: targetWidth,
-            height: targetHeight,
-          },
-        });
-        const resizedUri =
-          typeof resizedResult === 'string'
-            ? resizedResult
-            : resizedResult?.uri;
-        if (!resizedUri) {
-          // console.log('[PostPhotoSelect] resize aborted: missing resized uri', {
-          //   uri: currentUri,
-          // });
-          return currentUri;
-        }
-        currentUri = normalizeImageUri(resizedUri);
-        currentSize = await getFileSizeBytes(currentUri);
-        // if (currentSize) {
-        //   console.log('[PostPhotoSelect] resized image size', {
-        //     uri: currentUri,
-        //     sizeBytes: currentSize,
-        //     maxBytes,
-        //     attempt: attempt + 1,
-        //   });
-        // }
-        if (currentSize && currentSize <= maxBytes) {
-          return currentUri;
-        }
-        if (currentSize && currentSize >= lastSize) {
-          // console.log('[PostPhotoSelect] resize stalled', {
-          //   uri: currentUri,
-          //   sizeBytes: currentSize,
-          //   lastSize,
-          //   attempt: attempt + 1,
-          // });
-          return currentUri;
-        }
-        if (currentSize) {
-          lastSize = currentSize;
-        }
-      } catch (error) {
-        console.warn('이미지 리사이즈 실패', error);
-        return currentUri;
-      }
+    // log original size in crop flow only
+    const imageSize = await getImageSizeFromUri(currentUri);
+    if (!imageSize.width || !imageSize.height) {
+      return currentUri;
     }
 
-    return currentUri;
+    // One-pass resize: scale based on byte ratio with a safety margin.
+    const ratio = Math.sqrt(maxBytes / currentSize);
+    const scale = Math.min(0.95, ratio * 0.9);
+    if (!Number.isFinite(scale) || scale >= 0.99) {
+      return currentUri;
+    }
+
+    const targetWidth = Math.max(1, Math.round(imageSize.width * scale));
+    const targetHeight = Math.max(1, Math.round(imageSize.height * scale));
+
+    try {
+      const resizedResult = await ImageEditor.cropImage(currentUri, {
+        offset: {x: 0, y: 0},
+        size: {
+          width: Math.round(imageSize.width),
+          height: Math.round(imageSize.height),
+        },
+        displaySize: {
+          width: targetWidth,
+          height: targetHeight,
+        },
+      });
+      const resizedUri =
+        typeof resizedResult === 'string' ? resizedResult : resizedResult?.uri;
+      if (!resizedUri) {
+        return currentUri;
+      }
+      const normalized = normalizeImageUri(resizedUri);
+      const resizedSize = await getFileSizeBytes(normalized);
+      if (resizedSize) {
+        console.log('[PostPhotoSelect] file size', {
+          label: 'resized',
+          uri: normalized,
+          sizeBytes: resizedSize,
+        });
+      }
+      return normalized;
+    } catch (error) {
+      console.warn('이미지 리사이즈 실패', error);
+      return currentUri;
+    }
   };
 
   const cropPhotoToPreview = async (photo, index) => {
     if (!photo?.uri || typeof photo.uri !== 'string') {
       return photo;
     }
+    await logFileSize('original', photo.uri, photo?.fileSize);
     const imageSize = await getImageSize(photo);
     if (!imageSize.width || !imageSize.height) {
       return photo;
@@ -709,18 +690,60 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         height: Math.round(clampedCrop.size.height),
       },
     };
+    // const maxCropSide = Math.max(cropData.size.width, cropData.size.height);
+    let sizeScale = 1;
+    if (
+      Number.isFinite(photo?.fileSize) &&
+      imageSize.width > 0 &&
+      imageSize.height > 0
+    ) {
+      const bytesPerPixel =
+        photo.fileSize / (imageSize.width * imageSize.height);
+      const cropArea = cropData.size.width * cropData.size.height;
+      const estimatedCropSize = bytesPerPixel * cropArea;
+      if (estimatedCropSize > MAX_IMAGE_BYTES) {
+        sizeScale = Math.min(
+          1,
+          Math.sqrt(MAX_IMAGE_BYTES / estimatedCropSize) * 0.92,
+        );
+      }
+    }
+    // const outputScale =
+    //   maxCropSide > 0
+    //     ? Math.min(1, MAX_OUTPUT_DIMENSION / maxCropSide, sizeScale)
+    //     : 1;
+    const outputScale = sizeScale;
+    const displaySize =
+      outputScale < 1
+        ? {
+            width: Math.max(1, Math.round(cropData.size.width * outputScale)),
+            height: Math.max(1, Math.round(cropData.size.height * outputScale)),
+          }
+        : undefined;
 
     try {
-      const cropResult = await ImageEditor.cropImage(photo.uri, cropData);
+      const cropResult = await ImageEditor.cropImage(photo.uri, {
+        ...cropData,
+        ...(displaySize ? {displaySize} : {}),
+      });
       const croppedUri =
         typeof cropResult === 'string' ? cropResult : cropResult?.uri;
       if (!croppedUri) {
         return photo;
       }
-      const resizedUri = await ensureMaxFileSize(
-        normalizeImageUri(croppedUri),
-        MAX_IMAGE_BYTES,
-      );
+      const normalizedCropped = normalizeImageUri(croppedUri);
+      const croppedSize = await getFileSizeBytes(normalizedCropped);
+      console.log('[PostPhotoSelect] file size', {
+        label: 'cropped',
+        uri: normalizedCropped,
+        sizeBytes: croppedSize,
+        outputScale,
+      });
+      const resizedUri =
+        croppedSize && croppedSize > MAX_IMAGE_BYTES
+          ? await ensureMaxFileSize(normalizedCropped, MAX_IMAGE_BYTES)
+          : normalizedCropped;
+      // resized size is logged inside ensureMaxFileSize
       return {
         ...photo,
         uri: resizedUri,
@@ -989,6 +1012,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
               width: edge?.node?.image?.width ?? null,
               height: edge?.node?.image?.height ?? null,
               orientation: edge?.node?.image?.orientation ?? null,
+              fileSize: edge?.node?.image?.fileSize ?? null,
             };
           })
           .filter(Boolean) || [],
@@ -1016,7 +1040,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       first: after ? BATCH_SIZE : PAGE_SIZE,
       assetType: 'Photos',
       after: afterCursor,
-      include: ['imageSize', 'orientation'],
+      include: ['imageSize', 'orientation', 'fileSize'],
       ...(groupName
         ? {
             groupName,
@@ -1341,10 +1365,31 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       return;
     }
     setCropLoading(true);
+    await new Promise(resolve => requestAnimationFrame(resolve));
     try {
-      const croppedPhotos = await Promise.all(
-        previewPhotos.map((photo, index) => cropPhotoToPreview(photo, index)),
-      );
+      const croppedPhotos = [];
+      const total = previewPhotos.length;
+      const updateProgress = value => {
+        const clamped = Math.max(0, Math.min(1, value));
+        setCropProgressValue(clamped);
+        cropProgressAnim.stopAnimation();
+        Animated.timing(cropProgressAnim, {
+          toValue: clamped,
+          duration: 280,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: false,
+        }).start();
+      };
+      updateProgress(0);
+      for (let index = 0; index < previewPhotos.length; index += 1) {
+        const photo = previewPhotos[index];
+        const cropped = await cropPhotoToPreview(photo, index);
+        croppedPhotos.push(cropped);
+        if (total > 0) {
+          updateProgress((index + 1) / total);
+        }
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
       if (returnTo === 'MyPostEditScreen') {
         const croppedUris = croppedPhotos
           .map(photo => photo?.uri)
@@ -1824,6 +1869,8 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       <PostCropLoadingOverlay
         visible={cropLoading}
         progressAnim={cropProgressAnim}
+        progressValue={cropProgressValue}
+        noticeText={cropNoticeText}
       />
     </View>
   );

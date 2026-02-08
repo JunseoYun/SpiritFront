@@ -5,34 +5,43 @@ import CustomText from '../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 
-const PostCropLoadingOverlay = ({visible, progressAnim}) => {
+const PostCropLoadingOverlay = ({
+  visible,
+  progressAnim,
+  progressValue,
+  noticeText,
+}) => {
   if (!visible) {
     return null;
   }
+  const safeProgress =
+    typeof progressValue === 'number' && Number.isFinite(progressValue)
+      ? Math.max(0, Math.min(1, progressValue))
+      : 0;
+  const percent = Math.round(safeProgress * 100);
 
   return (
     <View style={styles.overlay}>
       <View style={styles.box}>
         <ImageIcon size={64} color="#3cbbff" strokeWidth={1.6} />
         <CustomText style={styles.title}>사진 처리중입니다.</CustomText>
-        <CustomText style={styles.text}>잠시만 기다려 주세요!</CustomText>
+        <CustomText style={styles.text}>
+          {noticeText || '잠시만 기다려 주세요!'}
+        </CustomText>
         <View style={styles.track}>
           <Animated.View
             style={[
               styles.indicator,
               {
-                transform: [
-                  {
-                    translateX: progressAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [-60, 200],
-                    }),
-                  },
-                ],
+                width: progressAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0%', '100%'],
+                }),
               },
             ]}
           />
         </View>
+        <CustomText style={styles.percentText}>{percent}%</CustomText>
       </View>
     </View>
   );
@@ -80,10 +89,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   indicator: {
-    width: 80,
     height: '100%',
     borderRadius: 999,
     backgroundColor: '#3cbbff',
+  },
+  percentText: {
+    marginTop: 6,
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    color: '#8A8A8A',
   },
 });
 
