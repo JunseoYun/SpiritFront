@@ -60,7 +60,7 @@ const MAX_LANDSCAPE_RATIO = 16 / 9;
 const DEFAULT_MAX_SELECTED_PHOTOS = 10;
 const OVERLAY_ANIM_DURATION = 260;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-// const MAX_OUTPUT_DIMENSION = 2048;
+const MAX_OUTPUT_DIMENSION = 2560;
 
 const clampValue = (value, min, max) => Math.max(min, Math.min(value, max));
 const clampNumber = (value, min, max) => Math.max(min, Math.min(value, max));
@@ -530,17 +530,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
   };
 
   const logFileSize = async (label, uri, fallbackSize) => {
-    if (!uri) {
-      console.log('[PostPhotoSelect] file size', {label, uri});
-      return;
-    }
-    const normalized = normalizeImageUri(uri);
-    const sizeBytes = await getFileSizeBytes(normalized);
-    console.log('[PostPhotoSelect] file size', {
-      label,
-      uri: normalized,
-      sizeBytes: sizeBytes ?? fallbackSize ?? null,
-    });
+    return;
   };
 
   const ensureMaxFileSize = async (uri, maxBytes) => {
@@ -584,13 +574,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       }
       const normalized = normalizeImageUri(resizedUri);
       const resizedSize = await getFileSizeBytes(normalized);
-      if (resizedSize) {
-        console.log('[PostPhotoSelect] file size', {
-          label: 'resized',
-          uri: normalized,
-          sizeBytes: resizedSize,
-        });
-      }
       return normalized;
     } catch (error) {
       console.warn('이미지 리사이즈 실패', error);
@@ -602,7 +585,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
     if (!photo?.uri || typeof photo.uri !== 'string') {
       return photo;
     }
-    await logFileSize('original', photo.uri, photo?.fileSize);
+    void logFileSize('original', photo.uri, photo?.fileSize);
     const imageSize = await getImageSize(photo);
     if (!imageSize.width || !imageSize.height) {
       return photo;
@@ -690,7 +673,7 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         height: Math.round(clampedCrop.size.height),
       },
     };
-    // const maxCropSide = Math.max(cropData.size.width, cropData.size.height);
+    const maxCropSide = Math.max(cropData.size.width, cropData.size.height);
     let sizeScale = 1;
     if (
       Number.isFinite(photo?.fileSize) &&
@@ -708,11 +691,10 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         );
       }
     }
-    // const outputScale =
-    //   maxCropSide > 0
-    //     ? Math.min(1, MAX_OUTPUT_DIMENSION / maxCropSide, sizeScale)
-    //     : 1;
-    const outputScale = sizeScale;
+    const outputScale =
+      maxCropSide > 0
+        ? Math.min(1, MAX_OUTPUT_DIMENSION / maxCropSide, sizeScale)
+        : 1;
     const displaySize =
       outputScale < 1
         ? {
@@ -733,12 +715,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       }
       const normalizedCropped = normalizeImageUri(croppedUri);
       const croppedSize = await getFileSizeBytes(normalizedCropped);
-      console.log('[PostPhotoSelect] file size', {
-        label: 'cropped',
-        uri: normalizedCropped,
-        sizeBytes: croppedSize,
-        outputScale,
-      });
       const resizedUri =
         croppedSize && croppedSize > MAX_IMAGE_BYTES
           ? await ensureMaxFileSize(normalizedCropped, MAX_IMAGE_BYTES)
@@ -1365,7 +1341,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       return;
     }
     setCropLoading(true);
-    await new Promise(resolve => requestAnimationFrame(resolve));
     try {
       const croppedPhotos = [];
       const total = previewPhotos.length;
@@ -1388,7 +1363,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         if (total > 0) {
           updateProgress((index + 1) / total);
         }
-        await new Promise(resolve => setTimeout(resolve, 0));
       }
       if (returnTo === 'MyPostEditScreen') {
         const croppedUris = croppedPhotos
@@ -1869,7 +1843,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       <PostCropLoadingOverlay
         visible={cropLoading}
         progressAnim={cropProgressAnim}
-        progressValue={cropProgressValue}
         noticeText={cropNoticeText}
       />
     </View>
