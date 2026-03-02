@@ -304,20 +304,6 @@ export const DeleteStoreImage = async (storeId, image) => {
 
 // Store Query API
 
-// 최근 방문(리뷰) 가게 조회 O
-export const Store_getby_recent = async page => {
-  try {
-    const response = await axiosInstance.get(`/store/get-by/recent`, {
-      params: {
-        page, // page 값만 전달 초기 : 0
-      },
-    });
-    return response.data.data;
-  } catch (error) {
-    functionError(error);
-  }
-};
-
 // 반경 내 가게 리스트 조회 O  - 요청시간 조금 걸림
 export const Store_getby_radius = async (latitude, longitude, radius) => {
   try {
@@ -341,6 +327,19 @@ export const Store_getby_liked = async page => {
     const response = await axiosInstance.get(`/store/get-by/liked`, {
       params: {
         page, // page 값만 전달 초기 : 0
+      },
+    });
+    return response.data.data.content;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const Store_getby_saved = async page => {
+  try {
+    const response = await axiosInstance.get(`/store/get-by/saved`, {
+      params: {
+        page,
       },
     });
     return response.data.data.content;

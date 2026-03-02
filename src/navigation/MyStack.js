@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {Pressable} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 
@@ -9,17 +9,20 @@ import WithdrawScreen from '../screens/BottomTab/My/WithdrawScreen';
 import MyCardScreen from '../screens/BottomTab/My/MyCard/MyCardScreen';
 import CardRegisterScreen from '../screens/BottomTab/My/MyCard/CardRegisterScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomText from '../utils/CustomText';
 const Stack = createStackNavigator();
 
-// 재사용 가능한 옵션 컴포넌트
+const renderHeaderTitle = label => (
+  <CustomText
+    style={{fontSize: 19, color: '#333', fontFamily: 'Pretendard-Bold'}}>
+    {label}
+  </CustomText>
+);
+
 const getScreenOptions = title => ({
   headerShown: true,
-  title: title,
-  headerTitleStyle: {
-    fontSize: 18,
-    color: '#333',
-    fontFamily: 'Pretendard-Bold',
-  },
+  title,
+  headerTitle: () => renderHeaderTitle(title),
 
   headerTitleAlign: 'center',
 });
@@ -31,13 +34,12 @@ export default function MyStack() {
         component={MyScreen}
         options={({navigation}) => ({
           headerShown: true,
-          headerTitleAlign: 'center',
+          headerTitleAlign: 'left',
           headerShadowVisible: false,
           title: '마이프로필',
-          headerTitleStyle: {
-            fontSize: 19,
-            color: '#333',
-            fontFamily: 'Pretendard-Bold',
+          headerTitle: () => renderHeaderTitle('마이프로필'),
+          headerTitleContainerStyle: {
+            paddingLeft: 6,
           },
         })}
       />
@@ -46,7 +48,7 @@ export default function MyStack() {
         component={ConfigScreen}
         options={({navigation}) => ({
           headerShadowVisible: false,
-          ...getScreenOptions('프로필 수정'), // getScreenOptions 객체를 펼쳐 병합
+          ...getScreenOptions('프로필 설정'),
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}
@@ -66,7 +68,7 @@ export default function MyStack() {
         component={Mynickchange}
         options={({navigation}) => ({
           headerShadowVisible: false,
-          ...getScreenOptions('닉네임 변경'), // getScreenOptions 객체를 펼쳐 병합
+          ...getScreenOptions('닉네임 변경'),
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}
@@ -90,6 +92,7 @@ export default function MyStack() {
 
           headerShadowVisible: false,
           title: '회원탈퇴',
+          headerTitle: () => renderHeaderTitle('회원탈퇴'),
           headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
@@ -112,6 +115,7 @@ export default function MyStack() {
           gestureDirection: 'vertical',
           animation: 'slide_from_bottom',
           title: '내 카드 관리',
+          headerTitle: () => renderHeaderTitle('내 카드 관리'),
           headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
@@ -132,6 +136,7 @@ export default function MyStack() {
         component={CardRegisterScreen}
         options={({navigation}) => ({
           title: '카드 등록',
+          headerTitle: () => renderHeaderTitle('카드 등록'),
           headerTitleAlign: 'center',
           animation: 'slide_from_bottom',
           headerLeft: () => (

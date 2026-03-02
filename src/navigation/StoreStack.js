@@ -9,7 +9,6 @@ import StoreMapScreen from '../screens/StoreInfo/StoreMapScreen';
 import StoreReviewScreen from '../screens/StoreInfo/StoreReviewScreen';
 import StoreReviewWriteScreen from '../screens/StoreInfo/StoreReviewWriteScreen';
 import StoreReportScreen from '../screens/StoreInfo/Report/StoreReportScreen';
-import ReviewReportScreen from '../screens/StoreInfo/Report/ReviewReportScreen';
 import StoreReportList from '../screens/StoreInfo/Report/StoreReportList';
 import StoreTimeEditScreen from '../screens/StoreInfo/StoreTimeEditScreen';
 import AlcoholEditScreen from '../screens/StoreInfo/Alcohol/AlcohoEditScreen';
@@ -452,7 +451,7 @@ export default function StoreStack() {
         component={StoreReportList}
         options={({navigation, route}) => {
           const storename = route.params?.storeName || '매장';
-          const displayTitle = storename + ' 신고·제보';
+          const displayTitle = storename + ' 제보';
 
           return {
             headerLeft: () => (
@@ -489,59 +488,12 @@ export default function StoreStack() {
       <Stack.Screen
         name="StoreReportScreen"
         component={StoreReportScreen}
-        options={({navigation}) => ({
-          title: '매장 신고하기',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                navigation.goBack();
-              }}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="close"
-                size={24}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-      <Stack.Screen
-        name="ReviewReportScreen"
-        component={ReviewReportScreen}
-        options={({navigation}) => ({
-          gestureDirection: 'vertical',
+        options={{
+          headerShown: false,
           animation: 'slide_from_bottom',
-          title: '리뷰 신고하기',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 18,
-            color: '#333',
-          },
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                navigation.goBack();
-              }}
-              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
-              <Ionicons
-                name="close"
-                size={23}
-                color="#333"
-                style={{paddingLeft: 12}}
-              />
-            </Pressable>
-          ),
-        })}
+        }}
       />
+
       <Stack.Screen
         name="InfoImageEditScreen"
         component={InfoImageEditScreen}

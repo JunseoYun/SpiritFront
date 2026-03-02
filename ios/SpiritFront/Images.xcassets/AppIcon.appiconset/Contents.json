@@ -1,55 +1,55 @@
 {
   "images" : [
     {
-      "filename" : "AppLogo-8.jpg",
+      "filename" : "AppIcon 40.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "20x20"
     },
     {
-      "filename" : "AppLogo-7.jpg",
+      "filename" : "AppIcon 62.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "20x20"
     },
     {
-      "filename" : "AppLogo-6.jpg",
+      "filename" : "AppIcon 58.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "29x29"
     },
     {
-      "filename" : "AppLogo-5.jpg",
+      "filename" : "AppIcon 87.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "29x29"
     },
     {
-      "filename" : "AppLogo-4.jpg",
+      "filename" : "AppIcon 80.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "40x40"
     },
     {
-      "filename" : "AppLogo-3 1.jpg",
+      "filename" : "AppIcon 120.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "40x40"
     },
     {
-      "filename" : "AppLogo-3.jpg",
+      "filename" : "AppIcon 121.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "60x60"
     },
     {
-      "filename" : "AppLogo-2.jpg",
+      "filename" : "AppIcon 180.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "60x60"
     },
     {
-      "filename" : "AppLogo.jpg",
+      "filename" : "AppIcon 2.png",
       "idiom" : "ios-marketing",
       "scale" : "1x",
       "size" : "1024x1024"

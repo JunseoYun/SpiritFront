@@ -19,8 +19,14 @@ import CustomText from '../../utils/CustomText';
 import CustomTextInput from '../../utils/CustomTextInput';
 import ColorUtil from '../../utils/ColorUtil';
 
-const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const ReviewItem = ({
+  item,
+  navigation,
+  isOwner,
+  handleDeleteReply,
+  isPostItem = false,
+  onReportPress,
+}) => {
   const [reply, setReply] = useState(item.reply); // 현재 답글
   const [repliedAt, setRepliedAt] = useState(item.repliedAt);
   const [isReplying, setIsReplying] = useState(false);
@@ -80,12 +86,16 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
     navigation.navigate('ImageViewerScreen', {images: item.imgUrlList, index});
   };
 
-  const MAX_LENGTH = 70;
-  const isLongText = item.content.length > MAX_LENGTH;
-  const displayedContent =
-    isExpanded || !isLongText
-      ? item.content
-      : item.content.substring(0, MAX_LENGTH) + '...';
+  const handleContentPress = () => {
+    if (!isPostItem) {
+      return;
+    }
+    navigation.navigate('PostDetailScreen', {
+      postId: item.id,
+      item,
+      screen: 'StoreReview',
+    });
+  };
 
   // ✅ 답글 등록
   const handleReplySubmit = async () => {
@@ -121,7 +131,7 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
 
   return (
     <Pressable
-      key={item.reviewId}
+      key={item.id ?? item.reviewId}
       onPress={Keyboard.dismiss}
       style={[styles.reviewContainer]}>
       {/* 상단 리뷰 헤더 */}
@@ -143,26 +153,29 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
             ]}>
             {item.writerNickname}
           </CustomText>
+
           <View style={styles.infoView}>
             <FontAwesomeIcon name="star" size={17} color="#FCC104" />
             <CustomText style={styles.reviewInfo}> {item.rate}</CustomText>
           </View>
         </View>
-        <CustomText style={styles.reviewDate}>
-          {formattedVisitedDate} 방문
-        </CustomText>
+        {!isPostItem ? (
+          <CustomText style={styles.reviewDate}>
+            {formattedVisitedDate} 방문
+          </CustomText>
+        ) : null}
       </View>
 
       {/* 리뷰 본문 */}
       <View style={styles.contentView}>
-        <CustomText style={styles.reviewContent}>{displayedContent}</CustomText>
-        {isLongText && (
-          <Pressable onPress={() => setIsExpanded(!isExpanded)}>
-            <CustomText style={styles.moreText}>
-              {isExpanded ? '간략히 보기' : '더보기'}
-            </CustomText>
-          </Pressable>
-        )}
+        <Pressable onPress={handleContentPress} disabled={!isPostItem}>
+          <CustomText
+            style={styles.reviewContent}
+            numberOfLines={3}
+            ellipsizeMode="tail">
+            {item.content}
+          </CustomText>
+        </Pressable>
       </View>
 
       {/* 리뷰 이미지 */}
@@ -189,16 +202,15 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
         <CustomText style={styles.datetimeText}>
           작성 {formattedCreatedDate}
         </CustomText>
-        <Pressable
-          onPress={() => {
-            navigation.navigate('ReviewReportScreen', {reviewId: item.id});
-          }}>
-          <CustomText style={styles.datetimeText}>신고하기</CustomText>
-        </Pressable>
+        {isPostItem && onReportPress && (
+          <Pressable onPress={onReportPress}>
+            <CustomText style={styles.datetimeText}>신고하기</CustomText>
+          </Pressable>
+        )}
       </View>
 
       {/* 답글 달기 */}
-      {isOwner && !reply && (
+      {/* {isOwner && !reply && (
         <>
           <Pressable
             style={styles.recommentView}
@@ -239,10 +251,10 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
             </View>
           )}
         </>
-      )}
+      )} */}
 
       {/* 답글 UI */}
-      {reply && (
+      {/* {reply && (
         <View style={styles.repliesContainer}>
           <View style={styles.replyItem}>
             <View style={styles.shopImageView}>
@@ -361,7 +373,7 @@ const ReviewItem = ({item, navigation, isOwner, handleDeleteReply}) => {
             </View>
           </View>
         </View>
-      )}
+      )} */}
       <Loading loading={loading} />
     </Pressable>
   );
@@ -386,8 +398,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 100,
     marginRight: 10,
-    borderWidth: 1,
-    borderColor: '#eee',
+    borderWidth: 0.5,
+    borderColor: ColorUtil.border,
   },
 
   reviewHeaderText: {
@@ -409,6 +421,12 @@ const styles = StyleSheet.create({
     color: '#181A1A',
     fontFamily: 'Pretendard-Medium',
   },
+  postTypeText: {
+    fontSize: 13,
+    color: '#777',
+    fontFamily: 'Pretendard-Medium',
+    marginTop: 3,
+  },
   reviewDate: {
     fontSize: 14,
     color: '#767676',
@@ -427,13 +445,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Medium',
     lineHeight: 22,
   },
-  moreText: {
-    color: '#999',
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 3,
-    marginBottom: 7,
-  },
   imageScrollView: {
     marginTop: 7,
   },
@@ -447,6 +458,8 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 7,
+    borderWidth: 0.5,
+    borderColor: ColorUtil.border,
   },
   bottomView: {
     marginHorizontal: 18,

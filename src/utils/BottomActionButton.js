@@ -15,6 +15,7 @@ const BottomActionButton = ({
   cancelLabel = '취소',
   onCancel,
   type = null,
+  paddingBottom = null,
 }) => {
   const insets = useSafeAreaInsets();
 
@@ -23,8 +24,11 @@ const BottomActionButton = ({
       style={[
         type === 'simple' ? styles.simpleContainer : styles.container,
         {
-          paddingBottom:
-            Platform.OS === 'android' ? insets.bottom + 20 : insets.bottom + 10,
+          paddingBottom: paddingBottom
+            ? paddingBottom
+            : Platform.OS === 'android'
+            ? insets.bottom + 20
+            : insets.bottom + 10,
         },
       ]}>
       <View style={styles.row}>

@@ -4,6 +4,8 @@ import {navigate, resetTo} from '../../navigation/NavigationService';
 import {navigationRef} from '../../navigation/NavigationService';
 import {NotifiRead} from '../../api/notificationApi';
 import {ReviewgetbyGet} from '../../api/reviewApi';
+import {PostGetById} from '../../api/postApi';
+import {CommentGetById} from '../../api/commentApi';
 
 const useHandlePendingNotification = (
   loading,
@@ -30,10 +32,30 @@ const useHandlePendingNotification = (
           notificationId,
           body,
         } = pendingNotification;
-
+        const targetPostId = redirectId ?? pendingNotification?.targetId;
         if (
-          redirectType === 'REVIEW_DETAIL' &&
-          notificationType === 'STORE_REVIEW_CREATED'
+          redirectType === 'COMMENT_DETAIL' &&
+          (notificationType === 'COMMENT_LIKED' ||
+            notificationType === 'REPLY_COMMENT_CREATED' ||
+            notificationType === 'ROOT_COMMENT_CREATED')
+        ) {
+          try {
+            const comment = await CommentGetById(redirectId);
+            navigate('PostDetailScreen', {
+              postId: comment.postId,
+              rootCommentId: comment.rootCommentId,
+              rootCommentOrderIndex: comment?.rootCommentOrderIndex,
+              replyCommentOrderIndex: comment?.replyCommentOrderIndex,
+              openCommentSheet: true,
+              scrollToCommentId: comment.id ?? redirectId,
+            });
+          } catch (er) {
+            console.log(er);
+          }
+        }
+        if (
+          redirectType === 'POST_DETAIL' &&
+          notificationType === 'STORE_TAG_POST_CREATED'
         ) {
           const body = pendingNotification?.body || '';
           let storename = '';
@@ -43,10 +65,42 @@ const useHandlePendingNotification = (
             storename = match[1];
           }
           try {
-            const response = await ReviewgetbyGet(redirectId);
-            navigate('StoreStack', {
-              screen: 'StoreReviewScreen',
-              params: {storeId: response.storeId, storename, isOwner: true},
+            const response = await PostGetById(redirectId);
+
+            navigate('PostDetailScreen', {
+              postId: response.id,
+              item: response,
+            });
+          } catch (er) {
+            console.log(er);
+          }
+        }
+        if (
+          targetPostId &&
+          redirectType === 'POST_DETAIL' &&
+          notificationType === 'POST_LIKED'
+        ) {
+          try {
+            const response = await PostGetById(targetPostId);
+            navigate('PostDetailScreen', {
+              postId: response.id,
+              item: response,
+            });
+          } catch (er) {
+            console.log(er);
+          }
+        }
+        if (
+          targetPostId &&
+          redirectType === 'POST_COMMENT_RECENT_LIST' &&
+          notificationType === 'ROOT_COMMENT_CREATED'
+        ) {
+          try {
+            const response = await PostGetById(targetPostId);
+            navigate('PostDetailScreen', {
+              postId: response.id,
+              item: response,
+              openCommentSheet: true,
             });
           } catch (er) {
             console.log(er);
@@ -111,6 +165,11 @@ const useHandlePendingNotification = (
               storename: extractStoreName(body),
             },
           });
+        } else if (
+          notificationType === 'REPORT_RECEIVED' &&
+          redirectType === 'ADMIN_REPORT_LIST'
+        ) {
+          navigate('MainBtmbar');
         }
 
         await NotificationRead(notificationId);

@@ -1,10 +1,11 @@
 import React from 'react';
-import {Pressable, Text} from 'react-native';
+import {Platform, Pressable, Text} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import MainBtmbar from './MainBtmbar';
 import SetLocationScreen from '../screens/SetLocation/SetLocationScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import ChatbotScreen from '../screens/Chatbot/ChatbotScreen';
 
 import LocationSearchScreen from '../screens/SetLocation/LocationSearchScreen';
 
@@ -32,6 +33,13 @@ import NotificationSetScreen from '../screens/Notification/NotificationSetScreen
 import OrderDetailScreen from '../screens/BottomTab/Order/OrderDetailScreen';
 import {normalizeFont} from '../hooks/normalizeFont';
 import CustomText from '../utils/CustomText';
+import PostDetailScreen from '../screens/PostScreen/PostDetailScreen';
+import PostPhotoSelectScreen from '../screens/PostScreen/PostPhotoSelectScreen';
+import PostStoreInputScreen from '../screens/PostScreen/PostStoreInputScreen';
+import PostWriteScreen from '../screens/PostScreen/PostWriteScreen';
+import MyPostDetailScreen from '../screens/BottomTab/My/MyPostDetailScreen';
+import MyPostEditScreen from '../screens/BottomTab/My/MyPostEditScreen';
+import LikeSavedPostDetailScreen from '../screens/BottomTab/LikeSavedPostDetailScreen';
 
 const Stack = createStackNavigator();
 
@@ -54,6 +62,54 @@ export default function MainStack() {
         name="MainBtmbar"
         component={MainBtmbar}
         options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ChatbotScreen"
+        component={ChatbotScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="PostDetailScreen"
+        component={PostDetailScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="PostPhotoSelectScreen"
+        component={PostPhotoSelectScreen}
+        options={{
+          headerShown: false,
+          animation: 'slide_from_bottom',
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="PostStoreInputScreen"
+        component={PostStoreInputScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="MyPostDetailScreen"
+        component={MyPostDetailScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="MyPostEditScreen"
+        component={MyPostEditScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="LikeSavedPostDetailScreen"
+        component={LikeSavedPostDetailScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="PostWriteScreen"
+        component={PostWriteScreen}
+        options={{
+          headerShown: false,
+        }}
       />
       <Stack.Screen
         name="SearchScreen"

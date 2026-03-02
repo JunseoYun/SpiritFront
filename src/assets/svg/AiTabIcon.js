@@ -23,6 +23,15 @@ const AIFullIcon = ({size = 26}) => (
   </Svg>
 );
 
+const AIFullIconDark = ({size = 26, color = '#333'}) => (
+  <Svg width={size} height={size} viewBox="0 0 50 50" fill="none">
+    <Path
+      d="M25 0C38.8071 0 50 11.1929 50 25C50 38.8071 38.8071 50 25 50C11.1929 50 0 38.8071 0 25C0 11.1929 11.1929 0 25 0ZM36.9824 13.707C37.1796 13.284 36.7414 12.8457 36.3184 13.043L20.6172 20.374C20.511 20.4236 20.4256 20.5091 20.376 20.6152L13.0449 36.3164C12.8473 36.7396 13.2858 37.178 13.709 36.9805L29.4102 29.6494C29.5163 29.5997 29.6018 29.5144 29.6514 29.4082L36.9824 13.707Z"
+      fill={color}
+    />
+  </Svg>
+);
+
 const AIEmptyIcon = ({size = 26, color = '#999999'}) => (
   <Svg width={size} height={size} viewBox="0 0 53 53" fill="none">
     <Path
@@ -36,4 +45,4 @@ const AIEmptyIcon = ({size = 26, color = '#999999'}) => (
   </Svg>
 );
 
-export {AIFullIcon, AIEmptyIcon};
+export {AIFullIcon, AIFullIconDark, AIEmptyIcon};

@@ -8,7 +8,7 @@ import CustomText from '../../utils/CustomText';
 const StoreManageTitle = ({
   iconSize = null,
   storeRate = null,
-  reviewCount = null,
+  postCount = null,
   likeCount = null,
   name = null,
   type = '',
@@ -20,7 +20,7 @@ const StoreManageTitle = ({
           <FontAwesomeIcon name="star" size={iconSize} color="#FED348" />
           <CustomText style={[styles.infoText]}>
             {' '}
-            {storeRate || 0} ({reviewCount || 0})
+            {storeRate || 0} ({postCount || 0})
           </CustomText>
 
           <Ionicons

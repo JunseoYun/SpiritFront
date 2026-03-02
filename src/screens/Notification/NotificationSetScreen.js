@@ -34,7 +34,7 @@ const Toggle = ({value, onToggle}) => {
       onPress={onToggle}
       style={[
         styles.toggleContainer,
-        {backgroundColor: value ? '#80D2F4' : '#ccc'},
+        {backgroundColor: value ? '#3CBBFF' : '#ccc'},
       ]}>
       <Animated.View style={[styles.toggleCircle, {marginLeft: translateX}]} />
     </Pressable>
@@ -109,7 +109,7 @@ const NotificationSetScreen = ({navigation}) => {
           <CustomText
             style={[
               styles.statusText,
-              {color: notificationEnabled ? '#80D2F4' : '#999'},
+              {color: notificationEnabled ? '#3CBBFF' : '#999'},
             ]}>
             {notificationEnabled ? 'ON' : 'OFF'}
           </CustomText>

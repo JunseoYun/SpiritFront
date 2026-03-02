@@ -1,12 +1,14 @@
 import React from 'react';
 import {View, Image, Pressable, StyleSheet} from 'react-native';
+import FastImage from 'react-native-fast-image';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import ColorUtil from '../../utils/ColorUtil';
 
 const CFImage = ({imageUrl, onPress}) => {
   return (
     <View style={styles.container}>
       <Pressable style={styles.imageContainer} onPress={onPress}>
-        <Image
+        <FastImage
           source={
             imageUrl
               ? {uri: imageUrl}
@@ -17,7 +19,7 @@ const CFImage = ({imageUrl, onPress}) => {
         <View style={styles.cameraButton}>
           <FontAwesomeIcon
             name="camera"
-            size={15}
+            size={14}
             color="#fff"
             style={styles.cameraicon}
           />
@@ -30,18 +32,20 @@ const CFImage = ({imageUrl, onPress}) => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginVertical: 50,
+    marginVertical: 40,
   },
   imageContainer: {
     position: 'relative',
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
   },
   image: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 100,
     resizeMode: 'cover',
+    borderWidth: 0.5,
+    borderColor: ColorUtil.border,
   },
   cameraButton: {
     position: 'absolute',

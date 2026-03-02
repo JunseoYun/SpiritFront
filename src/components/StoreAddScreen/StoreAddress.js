@@ -98,7 +98,7 @@ const StoreAddress = ({
             <View style={styles.labelView}>
               <CustomText style={styles.label}>매장 주소</CustomText>
               {screen === 'StoreSuggestionScreen' && (
-                <CustomText style={styles.subLabel}>
+                <CustomText maxScale={1.1} style={styles.subLabel}>
                   · 대략적인 위치만 알려주셔도 괜찮아요
                 </CustomText>
               )}
