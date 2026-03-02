@@ -16,6 +16,8 @@ const alcoholMapping = {
   TEQUILA: '데킬라',
 };
 
+export const ALCOHOL_TYPE_SEQUENCE = Object.keys(alcoholMapping);
+
 // 커스텀 훅
 const useTranslateAlcohol = () => {
   const translateAlcohol = useCallback(alcohol => {

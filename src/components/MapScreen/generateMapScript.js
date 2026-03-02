@@ -333,7 +333,7 @@ if (window.overlayMarkers) {
         isCertified: !!s.isCertified,
         isOpen: isOpenNow(s),
         dist2: dist2,
-        reviewCount: s.reviewCount || 0,
+        postCount: s.postCount || 0,
         pt: pt
       };
     });
@@ -342,7 +342,7 @@ if (window.overlayMarkers) {
       if(a.isCertified!==b.isCertified) return a.isCertified? -1: 1;
       if(a.isOpen!==b.isOpen) return a.isOpen? -1: 1;
       if(a.dist2!==b.dist2) return a.dist2 - b.dist2; // nearer first
-      return (b.reviewCount)-(a.reviewCount);
+      return (b.postCount)-(a.postCount);
     });
 
     // build coordinate groups (same lat/lng rounded to 6 decimals)

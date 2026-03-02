@@ -2,7 +2,9 @@ import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {View, Text, Pressable, StyleSheet, Dimensions} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
-import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
+import useTranslateAlcohol, {
+  ALCOHOL_TYPE_SEQUENCE,
+} from '../../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import {useAuth} from '../../../context/AuthContext';
 import {useToast} from '../../../context/ToastContext';
@@ -103,7 +105,22 @@ const MapStoreItem = ({
   const orderedMainDrinks = useMemo(() => {
     const drinks = Array.isArray(item?.mainDrinkDtos) ? item.mainDrinkDtos : [];
     if (!selectedAlcohol) {
-      return drinks;
+      const orderMap = new Map(
+        ALCOHOL_TYPE_SEQUENCE.map((type, idx) => [type, idx]),
+      );
+      return drinks
+        .map((drink, idx) => ({
+          drink,
+          idx,
+          order: orderMap.has(drink.type)
+            ? orderMap.get(drink.type)
+            : Number.MAX_SAFE_INTEGER,
+        }))
+        .sort((a, b) => {
+          if (a.order === b.order) return a.idx - b.idx;
+          return a.order - b.order;
+        })
+        .map(entry => entry.drink);
     }
     const matched = [];
     const others = [];
@@ -236,7 +253,7 @@ const MapStoreItem = ({
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <FontAwesomeIcon name="star" size={15} color="#FCC104" />
               <CustomText style={styles.storeRateText}>
-                {item.storeRate}({item.reviewCount})
+                {item.storeRate}({item.postCount})
               </CustomText>
             </View>
           </View>

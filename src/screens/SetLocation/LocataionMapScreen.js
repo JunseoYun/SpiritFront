@@ -39,32 +39,21 @@ const LocataionMapScreen = ({navigation}) => {
 
   const insets = useSafeAreaInsets();
 
-  const resetToHome = useCallback(
-    (targetIndex = 1) => {
-      if (origin === 'AIExploreScreen') {
-        navigation.reset({
-          index: 0,
-          routes: [
-            {
-              name: 'MainBtmbar',
-              params: {
-                screen: 'AIExploreScreen',
-                initialTab: 'AIExploreScreen',
-                lastFocusedTab: 'AIExploreScreen',
-                lastNonMapTab: 'AIExploreScreen',
-              },
-            },
-          ],
-        });
-        return;
-      }
-      navigation.reset({
-        index: targetIndex,
-        routes: [{name: 'MainBtmbar'}],
-      });
-    },
-    [navigation, origin],
-  );
+  const resetToHome = useCallback(() => {
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: 'MainBtmbar',
+          params: {
+            initialTab: 'ExploreScreen',
+            lastFocusedTab: 'ExploreScreen',
+            lastNonMapTab: 'ExploreScreen',
+          },
+        },
+      ],
+    });
+  }, [navigation]);
   useEffect(() => {
     if (location) {
       updateNewLocation();

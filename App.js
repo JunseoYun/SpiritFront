@@ -25,6 +25,8 @@ import {DeepLinkProvider, useDeepLink} from './src/context/DeepLinkContext';
 import './reanimatedConfig';
 import mobileAds from 'react-native-google-mobile-ads';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {
   initLocationIfNeeded,
   initLocationFromServer,
@@ -54,27 +56,29 @@ const App = () => {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <PaperProvider>
-        <AuthProvider>
-          <CustomAlertProvider>
-            <ToastProvider>
-              <NotificationProvider>
-                <DeepLinkProvider>
-                  <StoreInviteProvider>
-                    <AdConsentProvider>
-                      <MapSearchProvider>
-                        <AppNavigator />
-                      </MapSearchProvider>
-                    </AdConsentProvider>
-                  </StoreInviteProvider>
-                </DeepLinkProvider>
-              </NotificationProvider>
-            </ToastProvider>
-          </CustomAlertProvider>
-        </AuthProvider>
-      </PaperProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <SafeAreaProvider>
+        <PaperProvider>
+          <AuthProvider>
+            <CustomAlertProvider>
+              <ToastProvider>
+                <NotificationProvider>
+                  <DeepLinkProvider>
+                    <StoreInviteProvider>
+                      <AdConsentProvider>
+                        <MapSearchProvider>
+                          <AppNavigator />
+                        </MapSearchProvider>
+                      </AdConsentProvider>
+                    </StoreInviteProvider>
+                  </DeepLinkProvider>
+                </NotificationProvider>
+              </ToastProvider>
+            </CustomAlertProvider>
+          </AuthProvider>
+        </PaperProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 };
 
@@ -82,7 +86,8 @@ const AppNavigator = () => {
   const {token} = useAuth();
   const {isVersionValid, isTestEnabled} = useVersionCheck();
   const {pendingNotification, setPendingNotification} = useNotification();
-  const {pendingStoreId, setPendingStoreId} = useDeepLink();
+  const {pendingStoreId, setPendingStoreId, pendingPostId, setPendingPostId} =
+    useDeepLink();
 
   const [loading, setLoading] = useState(true);
   const [navigationReady, setNavigationReady] = useState(false);
@@ -163,6 +168,23 @@ const AppNavigator = () => {
     setPendingStoreId(null);
   }, [navigationReady, token, pendingStoreId]);
 
+  useEffect(() => {
+    if (!navigationReady || !pendingPostId || !token) return;
+    const currentRoute = navigationRef.getCurrentRoute();
+    if (
+      currentRoute?.name === 'PostDetailScreen' &&
+      String(currentRoute?.params?.postId) === String(pendingPostId)
+    ) {
+      setPendingPostId(null);
+      return;
+    }
+    setTimeout(() => {
+      navigationRef.navigate('PostDetailScreen', {postId: pendingPostId});
+    }, 500);
+
+    setPendingPostId(null);
+  }, [navigationReady, token, pendingPostId]);
+
   if (loading || !isVersionValid) {
     return <MySplashScreen isVersionValid={isVersionValid} />;
   } else {
@@ -170,14 +192,17 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer ref={navigationRef} onReady={onNavigationReady}>
-      {Platform.OS === 'android' && (
-        <StatusBar
-          barStyle="dark-content" // 상태바 글자/아이콘 색
-        />
-      )}
-      {token ? <MainStack /> : <OAuthStack isTestEnabled={isTestEnabled} />}
-    </NavigationContainer>
+    <BottomSheetModalProvider>
+      <NavigationContainer ref={navigationRef} onReady={onNavigationReady}>
+        {Platform.OS === 'android' && (
+          <StatusBar
+            barStyle="dark-content" // 상태바 글자/아이콘 색
+            backgroundColor={'#fff'}
+          />
+        )}
+        {token ? <MainStack /> : <OAuthStack isTestEnabled={isTestEnabled} />}
+      </NavigationContainer>
+    </BottomSheetModalProvider>
   );
 };
 

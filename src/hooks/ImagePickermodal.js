@@ -1,6 +1,8 @@
 import React from 'react';
 import {View, Text, StyleSheet, Modal, TouchableOpacity} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import useSafeAndroidInsets from './useSafeAndroidInsets';
 import CustomText from '../utils/CustomText';
 
@@ -9,6 +11,8 @@ const ImagePickermodal = ({
   setBottomSheetVisible,
   handleCameraPick,
   handleGalleryPick,
+  handleDelete,
+  deleteLabel = '프로필 삭제',
 }) => {
   const close = () => setBottomSheetVisible(false);
   const {bottom} = useSafeAndroidInsets();
@@ -32,12 +36,7 @@ const ImagePickermodal = ({
                 handleCameraPick();
               }, 100); // 모달 닫히는 애니메이션 시간만큼 지연
             }}>
-            <Entypo
-              name="camera"
-              size={23}
-              color="#333"
-              style={{paddingRight: 7}}
-            />
+            <Entypo name="camera" size={23} color="#333" />
             <CustomText style={styles.sheetButtonText}>
               카메라로 촬영
             </CustomText>
@@ -50,16 +49,26 @@ const ImagePickermodal = ({
                 handleGalleryPick();
               }, 100); // 모달 닫히는 애니메이션 시간만큼 지연
             }}>
-            <Entypo
-              name="image"
-              size={23}
-              color="#333"
-              style={{paddingRight: 7}}
-            />
+            <Entypo name="image" size={23} color="#333" />
             <CustomText style={styles.sheetButtonText}>
               앨범에서 선택
             </CustomText>
           </TouchableOpacity>
+          {typeof handleDelete === 'function' && (
+            <TouchableOpacity
+              style={styles.sheetButton}
+              onPress={() => {
+                setBottomSheetVisible(false);
+                setTimeout(() => {
+                  handleDelete();
+                }, 100); // 모달 닫히는 애니메이션 시간만큼 지연
+              }}>
+              <Ionicons name="trash-outline" size={23} color="#F05650" />
+              <CustomText style={[styles.sheetButtonText, styles.deleteText]}>
+                {deleteLabel}
+              </CustomText>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={[styles.sheetButton, styles.cancelButton]}
             onPress={close}>
@@ -99,17 +108,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 10,
     flexDirection: 'row',
+    gap: 7,
   },
   sheetButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Pretendard-Medium',
     color: '#333',
   },
   cancelButton: {
+    marginTop: -5,
     backgroundColor: '#fff',
   },
   cancelText: {
     color: '#007AFF',
+  },
+  deleteText: {
+    color: '#F05650',
   },
 });
 

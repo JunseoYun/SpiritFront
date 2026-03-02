@@ -1,7 +1,11 @@
 import React from 'react';
 import {View, Button, Alert} from 'react-native';
 import {appleAuth} from '@invertase/react-native-apple-authentication';
-import auth from '@react-native-firebase/auth';
+import {
+  getAuth,
+  signInWithCredential,
+  AppleAuthProvider,
+} from '@react-native-firebase/auth';
 
 const AppleLoginScreen = ({navigation}) => {
   const signInWithApple = async () => {
@@ -14,11 +18,9 @@ const AppleLoginScreen = ({navigation}) => {
       const {identityToken} = appleAuthRequestResponse;
 
       if (identityToken) {
-        const appleCredential =
-          auth.AppleAuthProvider.credential(identityToken);
-        const userCredential = await auth().signInWithCredential(
-          appleCredential,
-        );
+        const authInstance = getAuth();
+        const appleCredential = AppleAuthProvider.credential(identityToken);
+        await signInWithCredential(authInstance, appleCredential);
         navigation.goBack(); // 또는 홈 화면 등 이동
       } else {
         console.log('❌ identityToken 없음');

@@ -625,7 +625,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Bold',
   },
   authButton: {
-    backgroundColor: '#80D2F4',
+    backgroundColor: '#3CBBFF',
     paddingVertical: 16,
     borderRadius: 6,
     alignItems: 'center',

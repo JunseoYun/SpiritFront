@@ -2,7 +2,6 @@ import {Platform, PermissionsAndroid} from 'react-native';
 import {
   getMessaging,
   requestPermission,
-  registerDeviceForRemoteMessages,
   getToken,
   AuthorizationStatus,
 } from '@react-native-firebase/messaging';
@@ -40,8 +39,8 @@ export const requestNotificationPermission = async () => {
 
 export const getFcmToken = async () => {
   try {
-    await registerDeviceForRemoteMessages(getMessaging()); // 필수
-    const fcmToken = await getToken(getMessaging());
+    const messagingInstance = getMessaging();
+    const fcmToken = await getToken(messagingInstance);
     if (fcmToken) {
       return fcmToken;
     } else {

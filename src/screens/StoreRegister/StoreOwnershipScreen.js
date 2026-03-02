@@ -131,7 +131,8 @@ const STEP_GUIDES = {
   businessCertificate: {
     type: '사업자등록증',
     title: '사업자등록증을 첨부해주세요',
-    description: '선명한 사업자등록증을 첨부하면 등록 검토가 더 빨라집니다.',
+    description:
+      '사업자등록증에는 주류판매신고번호가 확인 가능한 사진을 첨부해 주세요.',
     tipTitle: '첨부 가이드',
     tip: '전체 정보가 잘 보이도록 밝은 곳에서 촬영해 주세요. 등록증은 최신본을 사용해주세요.',
   },

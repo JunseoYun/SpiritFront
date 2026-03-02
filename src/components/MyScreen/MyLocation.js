@@ -16,18 +16,16 @@ import {
   INITIAL_RADIUS_KM,
 } from '../../context/MapSearchContext';
 
-const MyLocation = ({navigation}) => {
+const MyLocation = ({navigation, onContentLayout}) => {
   const [address, setAddress] = useState('');
   const [radiusLabel, setRadiusLabel] = useState(
     formatRadiusLabel(INITIAL_RADIUS_KM),
   );
-  const [refreshing, setRefreshing] = useState(false);
 
   const fetchLocation = async () => {
     try {
       const storageAddress = await getAddress();
       setAddress(storageAddress || '저장된 주소가 없습니다.');
-
       const storedRadius = await getSearchRadius();
       if (typeof storedRadius === 'number') {
         setRadiusLabel(formatRadiusLabel(storedRadius));
@@ -49,24 +47,12 @@ const MyLocation = ({navigation}) => {
     }, []),
   );
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchLocation();
-    setRefreshing(false);
-  }, []);
-
   const searchAddressHandle = () => {
     navigation.navigate('SetLocationScreen');
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }>
-      {/* Info Card */}
+    <View style={styles.container} onLayout={onContentLayout}>
       <View style={styles.card}>
         <View style={styles.iconWrap}>
           <Ionicons name="location-outline" size={18} color="#64748B" />
@@ -86,14 +72,13 @@ const MyLocation = ({navigation}) => {
         </View>
       </View>
 
-      {/* Action Button */}
       <Pressable
         onPress={searchAddressHandle}
         style={({pressed}) => [styles.button, pressed && styles.buttonPressed]}>
         <Feather name="crosshair" size={16} color="#111827" />
         <CustomText style={styles.buttonText}>내 위치 변경하기</CustomText>
       </Pressable>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -101,6 +86,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   content: {
     paddingHorizontal: 18,

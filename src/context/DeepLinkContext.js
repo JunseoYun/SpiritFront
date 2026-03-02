@@ -8,12 +8,16 @@ let globalPendingStoreId = null;
 let globalSetPendingStoreInviteId = null;
 let globalPendingStoreInviteId = null;
 
+let globalSetPendingPostId = null;
+let globalPendingPostId = null;
+
 let globalSetAppLinkHandling = null;
 let globalIsAppLinkHandling = false;
 
 export const DeepLinkProvider = ({children}) => {
   const [pendingStoreId, setPendingStoreId] = useState(null);
   const [pendingStoreInviteId, setPendingStoreInviteId] = useState(null);
+  const [pendingPostId, setPendingPostId] = useState(null);
   const [isAppLinkHandling, setIsAppLinkHandling] = useState(false);
 
   globalSetPendingStoreId = setPendingStoreId;
@@ -21,6 +25,9 @@ export const DeepLinkProvider = ({children}) => {
 
   globalSetPendingStoreInviteId = setPendingStoreInviteId;
   globalPendingStoreInviteId = pendingStoreInviteId;
+
+  globalSetPendingPostId = setPendingPostId;
+  globalPendingPostId = pendingPostId;
 
   globalSetAppLinkHandling = setIsAppLinkHandling;
   globalIsAppLinkHandling = isAppLinkHandling;
@@ -32,6 +39,8 @@ export const DeepLinkProvider = ({children}) => {
         setPendingStoreId,
         pendingStoreInviteId,
         setPendingStoreInviteId,
+        pendingPostId,
+        setPendingPostId,
         isAppLinkHandling,
         setIsAppLinkHandling,
       }}>
@@ -53,9 +62,16 @@ export const setGlobalPendingStoreInviteId = id => {
   globalSetPendingStoreInviteId?.(id);
 };
 
+export const setGlobalPendingPostId = id => {
+  globalPendingPostId = id;
+  globalSetPendingPostId?.(id);
+};
+
 export const getGlobalPendingStoreId = () => globalPendingStoreId;
 
 export const getGlobalPendingStoreInviteId = () => globalPendingStoreInviteId;
+
+export const getGlobalPendingPostId = () => globalPendingPostId;
 
 // ✅ 앱링크 처리 상태 전역 접근
 export const setGlobalAppLinkHandling = bool => {
