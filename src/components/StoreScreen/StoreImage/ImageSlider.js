@@ -7,10 +7,10 @@ import {
   Text,
   Pressable,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
 import ImageActionModal from './ImageActionModal';
 import CustomText from '../../../utils/CustomText';
+import BookmarkIcon from '../../../assets/svg/BookmarkIcon';
 
 const {width} = Dimensions.get('window');
 
@@ -166,12 +166,14 @@ const ImageSlider = ({
               ]}
               onPress={onToggleLike}
               disabled={likeDisabled}>
-              <Ionicons
-                name={isLiked ? 'heart' : 'heart-outline'}
-                size={18}
-                color={isLiked ? '#FF5E5E' : '#4F5663'}
-                style={{marginRight: 6}}
-              />
+              <View style={{marginRight: 6}}>
+                <BookmarkIcon
+                  size={18}
+                  color={isLiked ? '#3CBBFF' : '#4F5663'}
+                  strokeWidth={2}
+                  filled={isLiked}
+                />
+              </View>
               <CustomText
                 style={[styles.likeText, isLiked && styles.likeTextActive]}>
                 {likeCount ?? 0}
@@ -274,7 +276,7 @@ const styles = StyleSheet.create({
     color: '#4F5663',
   },
   likeTextActive: {
-    color: '#FF5E5E',
+    color: '#3CBBFF',
   },
 });
 

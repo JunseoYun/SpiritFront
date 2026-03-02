@@ -111,6 +111,7 @@ const RRNInput = ({
             textAlignVertical: 'center',
             fontSize: 12,
           }}
+          maxScale={1}
           numberOfLines={1}
           ellipsizeMode="clip">
           ● ● ● ● ● ●

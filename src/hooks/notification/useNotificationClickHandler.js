@@ -1,6 +1,10 @@
 // useNotificationClickHandler.js
 import {useEffect} from 'react';
-import messaging from '@react-native-firebase/messaging';
+import {
+  getInitialNotification,
+  getMessaging,
+  onNotificationOpenedApp,
+} from '@react-native-firebase/messaging';
 import notifee, {EventType} from '@notifee/react-native';
 import {useNotification} from '../../context/NotificationContext';
 
@@ -20,7 +24,9 @@ export const useNotificationClickHandler = () => {
       },
     );
 
-    const unsubscribeOpenedApp = messaging().onNotificationOpenedApp(
+    const messagingInstance = getMessaging();
+    const unsubscribeOpenedApp = onNotificationOpenedApp(
+      messagingInstance,
       remoteMessage => {
         const data = {
           ...remoteMessage?.data,
@@ -30,17 +36,15 @@ export const useNotificationClickHandler = () => {
       },
     );
 
-    messaging()
-      .getInitialNotification()
-      .then(remoteMessage => {
-        if (remoteMessage) {
-          const data = {
-            ...remoteMessage?.data,
-            body: remoteMessage?.notification?.body,
-          };
-          setPendingNotification(data);
-        }
-      });
+    getInitialNotification(messagingInstance).then(remoteMessage => {
+      if (remoteMessage) {
+        const data = {
+          ...remoteMessage?.data,
+          body: remoteMessage?.notification?.body,
+        };
+        setPendingNotification(data);
+      }
+    });
 
     return () => {
       unsubscribeForeground();

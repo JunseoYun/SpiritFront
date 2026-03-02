@@ -87,29 +87,21 @@ const SetLocationScreen = ({navigation, route}) => {
   const setMapStoredRadius = mapSearch?.setStoredRadiusKm;
   const setMapFilters = mapSearch?.setSelectedFilters;
 
-  const resetToHome = useCallback(
-    (targetIndex = 0) => {
-      if (origin === 'AIExploreScreen') {
-        navigation.reset({
-          index: 0,
-          routes: [
-            {
-              name: 'MainBtmbar',
-              params: {
-                screen: 'AIExploreScreen',
-                initialTab: 'AIExploreScreen',
-                lastFocusedTab: 'AIExploreScreen',
-                lastNonMapTab: 'AIExploreScreen',
-              },
-            },
-          ],
-        });
-        return;
-      }
-      navigation.reset({index: targetIndex, routes: [{name: 'MainBtmbar'}]});
-    },
-    [navigation, origin],
-  );
+  const resetToHome = useCallback(() => {
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: 'MainBtmbar',
+          params: {
+            initialTab: 'ExploreScreen',
+            lastFocusedTab: 'ExploreScreen',
+            lastNonMapTab: 'ExploreScreen',
+          },
+        },
+      ],
+    });
+  }, [navigation]);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -181,7 +173,7 @@ const SetLocationScreen = ({navigation, route}) => {
           showToast('저장된 주소가 삭제되었습니다.');
         }
         setTimeout(() => {
-          resetToHome(1);
+          resetToHome();
         }, 100);
       } catch (error) {
         console.log(error);

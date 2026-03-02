@@ -1,5 +1,11 @@
-import React, {useState, useCallback} from 'react';
-import {View, Text, FlatList, Pressable, StyleSheet} from 'react-native';
+import React, {
+  useState,
+  useCallback,
+  useImperativeHandle,
+  forwardRef,
+  useEffect,
+} from 'react';
+import {View, Pressable, StyleSheet} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import ColorUtil from '../../../utils/ColorUtil';
 import FastImage from 'react-native-fast-image';
@@ -7,161 +13,177 @@ import {Store_getby_managed} from '../../../api/storeApi';
 import Loading from '../../../hooks/Loading';
 import CustomText from '../../../utils/CustomText';
 
-const MyManager = ({navigation}) => {
-  const [page, setPage] = useState(0);
-  const [totalpage, setTotalpage] = useState(0);
-  const [mysotredata, setMystoredata] = useState([]);
-  const [loading, setLoading] = useState(false);
+const MyManager = forwardRef(
+  ({navigation, onRefreshingChange, onContentLayout}, ref) => {
+    const [page, setPage] = useState(0);
+    const [totalpage, setTotalpage] = useState(0);
+    const [mysotredata, setMystoredata] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
-  const MyStore = async targetPage => {
-    setLoading(true);
-    try {
-      const data = await Store_getby_managed(targetPage);
-      setTotalpage(data?.totalPages ?? 0);
-      if (targetPage === 0) {
-        setMystoredata(data?.content ?? []);
+    const MyStore = async (targetPage, reset = false) => {
+      if (reset) {
+        setRefreshing(true);
       } else {
-        setMystoredata(prev => [...prev, ...(data?.content ?? [])]);
+        setLoading(true);
       }
-      setPage(targetPage);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        const data = await Store_getby_managed(targetPage);
+        setTotalpage(data?.totalPages ?? 0);
+        if (targetPage === 0) {
+          setMystoredata(data?.content ?? []);
+        } else {
+          setMystoredata(prev => [...prev, ...(data?.content ?? [])]);
+        }
+        setPage(targetPage);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    };
 
-  useFocusEffect(
-    useCallback(() => {
-      MyStore(0);
-    }, []),
-  );
+    useFocusEffect(
+      useCallback(() => {
+        if (mysotredata.length === 0) {
+          MyStore(0, true);
+        }
+      }, [mysotredata.length]),
+    );
 
-  const handleOpenStore = store => {
-    if (!store?.storeId) {
-      return;
-    }
+    useEffect(() => {
+      onRefreshingChange?.(refreshing);
+    }, [refreshing, onRefreshingChange]);
 
-    navigation.navigate('StoreStack', {
-      screen: 'StoreMainScreen',
-      params: {storeId: store.storeId},
-    });
-  };
+    const handleOpenStore = store => {
+      if (!store?.storeId) {
+        return;
+      }
 
-  const handleManageStore = store => {
-    if (!store?.storeId) {
-      return;
-    }
+      navigation.navigate('StoreStack', {
+        screen: 'StoreMainScreen',
+        params: {storeId: store.storeId},
+      });
+    };
 
-    navigation.navigate('StoreStack', {
-      screen: 'StoreManageScreen',
-      params: {
-        storeId: store.storeId,
-        storedata: store,
-        storeName: store.storeName,
-      },
-    });
-  };
+    const handleManageStore = store => {
+      if (!store?.storeId) {
+        return;
+      }
 
-  const loadMoreStores = () => {
-    if (loading || mysotredata.length === 0) {
-      return;
-    }
+      navigation.navigate('StoreStack', {
+        screen: 'StoreManageScreen',
+        params: {
+          storeId: store.storeId,
+          storedata: store,
+          storeName: store.storeName,
+        },
+      });
+    };
 
-    const isLastPage = totalpage !== 0 && page >= totalpage - 1;
-    if (isLastPage) {
-      return;
-    }
+    const loadMore = () => {
+      if (loading || mysotredata.length === 0) {
+        return;
+      }
 
-    MyStore(page + 1);
-  };
+      const isLastPage = totalpage !== 0 && page >= totalpage - 1;
+      if (isLastPage) {
+        return;
+      }
 
-  const renderStoreItem = ({item, index}) => {
-    const isLast = index === mysotredata.length - 1;
-    const address = item.locationDto?.address || '주소 정보 없음';
-    const detail = item.locationDto?.addressDetail
-      ? ` ${item.locationDto.addressDetail}`
-      : '';
+      MyStore(page + 1, false);
+    };
 
-    return (
-      <View style={[styles.storeRow, !isLast && styles.storeRowDivider]}>
-        <Pressable
-          style={styles.rowContent}
-          onPress={() => handleOpenStore(item)}>
-          <FastImage
-            source={
-              item.mainImgUrl
-                ? {uri: item.mainImgUrl}
-                : require('../../../assets/default_store6.png')
-            }
-            style={styles.storeImage}
-          />
-          <View style={styles.textWrapper}>
-            <CustomText style={styles.storeName} numberOfLines={1}>
-              {item.storeName || '매장 이름 없음'}
-            </CustomText>
-            <CustomText style={styles.storeAddress} numberOfLines={1}>
-              {address}
-              {detail ? `,${detail}` : null}
-            </CustomText>
-          </View>
-        </Pressable>
-        <Pressable
-          style={styles.manageButton}
-          hitSlop={15}
-          onPress={() => handleManageStore(item)}>
-          <CustomText style={styles.manageText}>매장 관리</CustomText>
-        </Pressable>
+    const refresh = () => {
+      if (refreshing) {
+        return;
+      }
+      MyStore(0, true);
+    };
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        refresh,
+        loadMore,
+      }),
+      [refresh, loadMore],
+    );
+
+    const renderStoreItem = ({item, index}) => {
+      const isLast = index === mysotredata.length - 1;
+      const address = item.locationDto?.address || '주소 정보 없음';
+      const detail = item.locationDto?.addressDetail
+        ? ` ${item.locationDto.addressDetail}`
+        : '';
+
+      return (
+        <View style={[styles.storeRow, !isLast && styles.storeRowDivider]}>
+          <Pressable
+            style={styles.rowContent}
+            onPress={() => handleOpenStore(item)}>
+            <FastImage
+              source={
+                item.mainImgUrl
+                  ? {uri: item.mainImgUrl}
+                  : require('../../../assets/default_store6.png')
+              }
+              style={styles.storeImage}
+            />
+            <View style={styles.textWrapper}>
+              <CustomText style={styles.storeName} numberOfLines={1}>
+                {item.storeName || '매장 이름 없음'}
+              </CustomText>
+              <CustomText style={styles.storeAddress} numberOfLines={1}>
+                {address}
+                {detail ? `,${detail}` : null}
+              </CustomText>
+            </View>
+          </Pressable>
+          <Pressable
+            style={styles.manageButton}
+            hitSlop={15}
+            onPress={() => handleManageStore(item)}>
+            <CustomText style={styles.manageText}>매장 관리</CustomText>
+          </Pressable>
+        </View>
+      );
+    };
+
+    const renderEmptyComponent = () => (
+      <View style={styles.emptyState}>
+        <CustomText style={styles.emptyTitle}>
+          등록된 매장이 없습니다.
+        </CustomText>
+        <CustomText style={styles.emptySubtitle}>
+          매장을 등록하면 이곳에서 빠르게 관리할 수 있어요.
+        </CustomText>
       </View>
     );
-  };
-
-  const renderEmptyComponent = () => (
-    <View style={styles.emptyState}>
-      <CustomText style={styles.emptyTitle}>등록된 매장이 없습니다.</CustomText>
-      <CustomText style={styles.emptySubtitle}>
-        매장을 등록하면 이곳에서 빠르게 관리할 수 있어요.
-      </CustomText>
-    </View>
-  );
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.listCard}>
-        <FlatList
-          data={mysotredata}
-          keyExtractor={(item, index) =>
-            item.storeId ? item.storeId.toString() : `${index}`
-          }
-          renderItem={renderStoreItem}
-          ListEmptyComponent={!loading ? renderEmptyComponent : null}
-          onEndReached={loadMoreStores}
-          onEndReachedThreshold={0.3}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={
-            mysotredata.length === 0
-              ? styles.emptyContentContainer
-              : styles.listContentContainer
-          }
-        />
+    return (
+      <View style={styles.container}>
+        <View style={styles.listCard} onLayout={onContentLayout}>
+          {mysotredata.length > 0
+            ? mysotredata.map((item, index) => (
+                <View key={item.storeId ? item.storeId.toString() : `${index}`}>
+                  {renderStoreItem({item, index})}
+                </View>
+              ))
+            : !loading && renderEmptyComponent()}
+        </View>
+        <Loading loading={loading} />
       </View>
-      <Loading loading={loading} />
-    </View>
-  );
-};
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#FFF',
   },
   listCard: {
-    flex: 1,
     backgroundColor: '#fff',
-
-    paddingHorizontal: 18,
-  },
-  listContentContainer: {
     paddingVertical: 6,
   },
   storeRow: {
@@ -169,6 +191,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 16,
+    paddingHorizontal: 18,
   },
   storeRowDivider: {
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -220,6 +243,7 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
+    paddingHorizontal: 18,
   },
   emptyTitle: {
     fontSize: 16,
@@ -233,10 +257,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Regular',
     textAlign: 'center',
     lineHeight: 18,
-  },
-  emptyContentContainer: {
-    flex: 1,
-    justifyContent: 'center',
   },
 });
 

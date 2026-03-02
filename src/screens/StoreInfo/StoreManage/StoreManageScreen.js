@@ -179,7 +179,7 @@ const StoreManageScreen = ({route, navigation}) => {
             <StoreManageTitle
               iconSize={iconSize}
               storeRate={storedata?.storeRate}
-              reviewCount={storedata?.reviewCount}
+              postCount={storedata?.postCount}
               likeCount={storedata?.likeCount}
               name={currentStoreName}
               type={activeTab}

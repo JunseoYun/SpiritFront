@@ -17,15 +17,24 @@ import {
 import CustomText from '../../utils/CustomText';
 
 const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
-  const handleImagePick = async () => {
-    const hasCamera = await requestPhotoPermission();
-    if (!hasCamera) {
+  const ensurePermission = async () => {
+    const hasPermission = await requestPhotoPermission();
+    if (!hasPermission) {
       onClose();
-      return;
     }
+    return hasPermission;
+  };
+
+  const prepareAndroidStatusBar = () => {
     if (Platform.OS === 'android') {
       StatusBar.setTranslucent(false); // StatusBar 아래로 UI가 안 겹치게
     }
+  };
+
+  const handleImagePick = async () => {
+    const hasPermission = await ensurePermission();
+    if (!hasPermission) return;
+    prepareAndroidStatusBar();
     try {
       const image = await ImagePicker.openPicker({
         compressImageQuality: 0.95, // 품질
@@ -42,6 +51,26 @@ const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
     }
   };
 
+  const handleCameraPick = async () => {
+    const hasPermission = await ensurePermission();
+    if (!hasPermission) return;
+    prepareAndroidStatusBar();
+    try {
+      const image = await ImagePicker.openCamera({
+        compressImageQuality: 0.95, // 품질
+        compressImageMaxWidth: 2160, // 최대 너비
+        compressImageMaxHeight: 2160, // 최대 높이
+        cropping: true,
+        mediaType: 'photo',
+        ...IMAGE_PICKER_TEXTS,
+        ...IMAGE_CROPPER_TEXTS,
+      });
+      onUpdate(image);
+    } catch (error) {
+      console.error('Camera picker error:', error);
+    }
+  };
+
   return (
     <Modal
       visible={isVisible}
@@ -50,8 +79,12 @@ const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
       statusBarTranslucent={true}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <View style={styles.container}>
+          <Pressable style={styles.button} onPress={handleCameraPick}>
+            <CustomText style={styles.text}>촬영으로 변경</CustomText>
+          </Pressable>
+          <View style={styles.separator} />
           <Pressable style={styles.button} onPress={handleImagePick}>
-            <CustomText style={styles.text}>프로필 수정</CustomText>
+            <CustomText style={styles.text}>앨범에서 변경</CustomText>
           </Pressable>
           <View style={styles.separator} />
           <Pressable style={styles.button} onPress={onDelete}>

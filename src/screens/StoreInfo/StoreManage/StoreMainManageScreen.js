@@ -12,7 +12,9 @@ import {
   Tv2,
 } from 'lucide-react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
-import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
+import useTranslateAlcohol, {
+  ALCOHOL_TYPE_SEQUENCE,
+} from '../../../hooks/useTranslateAlcohol';
 import Loading from '../../../hooks/Loading';
 import ManagementButton from '../../../components/StoreManage/ManagementButton';
 import StoreManageActionButtons from '../../../components/StoreManage/StoreMainManage/StoreManageActionButtons';
@@ -162,8 +164,22 @@ const StoreMainManageScreen = ({
   // Translate main drinks using shared hook
   const translatedMainDrinks = useMemo(() => {
     if (!storeInfo?.mainDrinkDtos) return [];
+    const orderMap = new Map(
+      ALCOHOL_TYPE_SEQUENCE.map((type, idx) => [type, idx]),
+    );
     return storeInfo.mainDrinkDtos
-      .map(drink => translateAlcohol(drink?.type))
+      .map((drink, idx) => ({
+        type: drink?.type,
+        idx,
+        order: orderMap.has(drink?.type)
+          ? orderMap.get(drink?.type)
+          : Number.MAX_SAFE_INTEGER,
+      }))
+      .sort((a, b) => {
+        if (a.order === b.order) return a.idx - b.idx;
+        return a.order - b.order;
+      })
+      .map(entry => translateAlcohol(entry.type))
       .filter(Boolean);
   }, [storeInfo, translateAlcohol]);
 
@@ -266,13 +282,14 @@ const StoreMainManageScreen = ({
             params: {
               storeId: storeInfo?.id,
               storename: storeInfo?.name,
+              storeAddress: storeInfo?.locationDto?.address ?? '',
               isOwner: true,
             },
           }),
       },
       {
         key: 'report',
-        label: '제보·신고',
+        label: '제보',
         icon: {name: 'information-circle', size: 25, color: '#525D6F'},
         onPress: () =>
           navigation.navigate('StoreStack', {

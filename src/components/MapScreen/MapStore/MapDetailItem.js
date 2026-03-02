@@ -15,15 +15,17 @@ import {
 } from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import FastImage from 'react-native-fast-image';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {ShareIcon} from 'lucide-react-native';
 import Clipboard from 'react-native/Libraries/Components/Clipboard/Clipboard';
 import useDirectionsModal from '../../../hooks/useDirectionsModal';
+import BookmarkIcon from '../../../assets/svg/BookmarkIcon';
 
 import ColorUtil from '../../../utils/ColorUtil';
 import {normalizeFont} from '../../../hooks/normalizeFont';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
-import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
+import useTranslateAlcohol, {
+  ALCOHOL_TYPE_SEQUENCE,
+} from '../../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../../hooks/useStoreStatus';
 import useDistance from '../../../hooks/useDistance';
 import {useAuth} from '../../../context/AuthContext';
@@ -35,6 +37,7 @@ import OperationSchedule from '../../StoreScreen/StoreMainInfo/OperationSchedule
 import {Storelikepost, get_store_share} from '../../../api/storeApi';
 import CustomText from '../../../utils/CustomText';
 
+import Ionicons from 'react-native-vector-icons/Ionicons';
 const {width} = Dimensions.get('window');
 const H_PADDING = 16;
 const CONTENT_WIDTH = width - H_PADDING * 2;
@@ -197,6 +200,29 @@ const MapDetailItem = ({
     storeData?.categories?.map(c => translateCategory(c)).join('   ') ||
     '카테고리 미설정';
 
+  const orderedMainDrinks = useMemo(() => {
+    const drinks = Array.isArray(storeData?.mainDrinkDtos)
+      ? storeData.mainDrinkDtos
+      : [];
+    if (drinks.length === 0) return drinks;
+    const orderMap = new Map(
+      ALCOHOL_TYPE_SEQUENCE.map((type, idx) => [type, idx]),
+    );
+    return drinks
+      .map((drink, idx) => ({
+        drink,
+        idx,
+        order: orderMap.has(drink.type)
+          ? orderMap.get(drink.type)
+          : Number.MAX_SAFE_INTEGER,
+      }))
+      .sort((a, b) => {
+        if (a.order === b.order) return a.idx - b.idx;
+        return a.order - b.order;
+      })
+      .map(entry => entry.drink);
+  }, [storeData?.mainDrinkDtos]);
+
   // 이미지 레이아웃
   const leftW = Math.round(CONTENT_WIDTH * 0.66) - 6;
   const rightW = CONTENT_WIDTH - leftW - 6;
@@ -245,15 +271,16 @@ const MapDetailItem = ({
               <Pressable
                 style={[
                   styles.topButton,
-                  isLiked && styles.likeButtonActive,
+                  isLiked && styles.saveButtonActive,
                   likeLoading && {opacity: 0.5},
                 ]}
                 hitSlop={8}
                 onPress={handleToggleLike}>
-                <Ionicons
-                  name={isLiked ? 'heart' : 'heart-outline'}
+                <BookmarkIcon
                   size={18}
-                  color={isLiked ? '#FF5E5E' : '#4B5563'}
+                  color={isLiked ? '#3CBBFF' : '#4B5563'}
+                  strokeWidth={2}
+                  filled={isLiked}
                 />
               </Pressable>
 
@@ -291,7 +318,7 @@ const MapDetailItem = ({
                 style={styles.starIcon}
               />
               <CustomText style={styles.ratingText}>
-                {storeData?.storeRate} ({storeData?.reviewCount})
+                {storeData?.storeRate} ({storeData?.postCount})
               </CustomText>
             </View>
             <CustomText style={{color: '#D4D4D4', marginRight: -24}}>
@@ -324,9 +351,9 @@ const MapDetailItem = ({
           </View>
 
           {/* 주류 */}
-          {storeData?.mainDrinkDtos?.length > 0 && (
+          {orderedMainDrinks?.length > 0 && (
             <Alcohol
-              storeDrinkDtos={storeData.mainDrinkDtos}
+              storeDrinkDtos={orderedMainDrinks}
               translateAlcohol={translateAlcohol}
             />
           )}
@@ -512,8 +539,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 10,
   },
-  likeButtonActive: {
-    backgroundColor: '#FFECEE',
+  saveButtonActive: {
+    backgroundColor: '#E6F3FF',
   },
 
   titleView: {

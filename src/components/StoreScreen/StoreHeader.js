@@ -4,6 +4,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import FastImage from 'react-native-fast-image';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {HomeHeaderIcon} from '../../assets/svg/HomeTabIcon';
+import BookmarkIcon from '../../assets/svg/BookmarkIcon';
 
 const StoreHeader = ({
   navigation,
@@ -56,14 +57,14 @@ const StoreHeader = ({
           style={[styles.headerIconButton, {opacity: titleOpacity}]}
           pointerEvents="box-none">
           <Pressable onPress={onToggleLike} disabled={likeDisabled} hitSlop={8}>
-            <Animated.Text
-              allowFontScaling={false}
-              style={[
-                {color: isLiked ? '#FF5E5E' : iconColor},
-                likeDisabled && {opacity: 0.5},
-              ]}>
-              <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={25} />
-            </Animated.Text>
+            <Animated.View style={likeDisabled && {opacity: 0.5}}>
+              <BookmarkIcon
+                size={25}
+                color={isLiked ? '#3CBBFF' : '#4F5663'}
+                strokeWidth={2}
+                filled={isLiked}
+              />
+            </Animated.View>
           </Pressable>
         </Animated.View>
         <Pressable onPress={() => onShare()}>

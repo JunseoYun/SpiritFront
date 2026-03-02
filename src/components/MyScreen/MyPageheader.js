@@ -1,74 +1,96 @@
-import React from 'react';
-import {View, Text, Pressable, StyleSheet} from 'react-native';
+﻿import React from 'react';
+import {View, Pressable, StyleSheet} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import FastImage from 'react-native-fast-image';
 import CustomText from '../../utils/CustomText';
+import ColorUtil from '../../utils/ColorUtil';
 
 const MyPageheader = ({
   nickname,
+  postCount = 0,
   onProfilePress,
   imageuri,
   handleImagePress,
-}) => (
-  <View style={styles.profiletopview}>
-    {imageuri ? (
-      <Pressable onPress={handleImagePress}>
-        <FastImage
-          source={
-            {uri: imageuri} // 동적으로 설정된 이미지 URI
-          }
-          style={styles.profileimg}
-        />
-      </Pressable>
-    ) : (
-      <FastImage
-        source={
-          require('../../assets/default_profile.png') // 기본 이미지
-        }
-        style={styles.profileimg}
-      />
-    )}
+}) => {
+  return (
+    <View style={styles.wrap}>
+      <View style={styles.row}>
+        {/* Left : Avatar */}
+        <Pressable onPress={handleImagePress} hitSlop={10}>
+          <FastImage
+            source={
+              imageuri
+                ? {uri: imageuri}
+                : require('../../assets/default_profile.png')
+            }
+            style={styles.avatar}
+          />
+        </Pressable>
 
-    <Pressable style={styles.pressView} onPress={onProfilePress}>
-      <CustomText style={[styles.Nickname]}>{nickname}</CustomText>
+        {/* Center : Text */}
+        <Pressable
+          onPress={onProfilePress}
+          hitSlop={10}
+          style={styles.textArea}>
+          <View style={styles.nameLine}>
+            <CustomText numberOfLines={1} style={styles.nickname}>
+              {nickname}
+            </CustomText>
+            <FontAwesomeIcon name="angle-right" size={20} color="#9CA3AF" />
+          </View>
 
-      <FontAwesomeIcon
-        name={'angle-right'}
-        size={22}
-        color={'#999'}
-        style={styles.changenick}
-      />
-    </Pressable>
-  </View>
-);
+          <CustomText style={styles.meta}>게시글 {postCount}</CustomText>
+        </Pressable>
+      </View>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  profiletopview: {
+  wrap: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 26,
+  },
+
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 20,
-    backgroundColor: '#fff',
   },
-  profileimg: {
-    resizeMode: 'cover',
-    width: 55,
-    height: 55,
-    borderRadius: 90,
+
+  avatar: {
+    width: 74,
+    height: 74,
+    borderRadius: 50,
+    backgroundColor: '#F3F4F6',
+    borderColor: ColorUtil.border,
+    borderWidth: 0.5,
   },
-  Nickname: {
+
+  textArea: {
+    flex: 1,
+    marginLeft: 14,
+  },
+
+  nameLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+
+  nickname: {
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
-    marginLeft: 17,
+    color: '#111827',
+    letterSpacing: -0.2,
   },
-  changenick: {
-    marginLeft: 10,
-  },
-  pressView: {
-    flexDirection: 'row',
-    alignItems: 'center',
+
+  meta: {
+    marginTop: 4,
+    fontSize: 13,
+    fontFamily: 'Pretendard-Medium',
+    color: '#6B7280',
   },
 });
 

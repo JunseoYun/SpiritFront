@@ -75,9 +75,9 @@ export const review_set_reply = async (reviewId, reply) => {
   }
 };
 
-export const ReviewRecentGet = async page => {
+export const PostMyGet = async page => {
   try {
-    const response = await axiosInstance.get(`/review/get-by/recent`, {
+    const response = await axiosInstance.get(`/post/get-by/my`, {
       params: {page},
     });
     return response.data.data;
@@ -141,6 +141,69 @@ export const ReviewDeleteImage = async (reviewId, image) => {
 export const ReviewDelete = async reviewId => {
   try {
     const response = await axiosInstance.delete(`/review/delete/${reviewId}`);
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+//Post Api 나중에 옮기기
+
+export const PostDelete = async postId => {
+  try {
+    const response = await axiosInstance.delete(`/post/delete/${postId}`);
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const PostDeleteImage = async (postId, imgUrlList) => {
+  try {
+    const response = await axiosInstance.delete(
+      `/post/delete-image/${postId}`,
+      {
+        data: {
+          imgUrlList: imgUrlList,
+        },
+      },
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const PostUpdate = async (postId, data) => {
+  try {
+    const response = await axiosInstance.put(
+      `/post/update/${postId}`,
+      data,
+      {},
+    );
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
+export const PostUploadImage = async (postId, data) => {
+  const formData = new FormData();
+  const make = (file, idx = 0) => toFileField(file, `post_${idx}`);
+  (data.files || []).forEach((file, idx) => {
+    const f = make(file, idx);
+    if (f) formData.append('files', f);
+  });
+  try {
+    const response = await axiosInstance.post(
+      `/post/upload-image/${postId}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    );
     return response.data.data;
   } catch (error) {
     functionError(error);

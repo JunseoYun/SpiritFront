@@ -197,6 +197,12 @@ const toArray = value => {
   if (Array.isArray(value)) {
     return value;
   }
+  if (value instanceof Set) {
+    return Array.from(value);
+  }
+  if (value && typeof value[Symbol.iterator] === 'function') {
+    return Array.from(value);
+  }
   if (typeof value === 'string') {
     return value
       .split(',')
@@ -526,6 +532,14 @@ const MapScreen = ({navigation, route}) => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
+        if (route?.params?.fromChatbot) {
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          } else {
+            navigation.navigate('MainScreen');
+          }
+          return true;
+        }
         const prevTab = route?.params?.prevTab;
         if (aiSearchModeRef.current) {
           if (prevTab && prevTab !== 'MapScreen') {
@@ -1249,7 +1263,7 @@ const MapScreen = ({navigation, route}) => {
         }
       }
     } catch (err) {
-      console.error('반경 내 매장 조회 중 오류:', err);
+      // console.error('반경 내 매장 조회 중 오류:', err);
       setStoregetloading(false);
     } finally {
       lastNonAiQueryRef.current = {
@@ -1961,6 +1975,7 @@ const MapScreen = ({navigation, route}) => {
         <MapTopBar
           navigation={navigation}
           prevTab={route?.params?.prevTab}
+          useStackBack={route?.params?.fromChatbot}
           onMeasureHeight={handleTopBarHeight}
           forceWhiteBackground={shouldForceListModeUi && !isUpdatingLocation}
           isAiSearchMode={isAiSearchMode}

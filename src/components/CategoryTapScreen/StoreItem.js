@@ -1,13 +1,11 @@
 import React, {useMemo} from 'react';
-import {View, Pressable, ScrollView, PixelRatio} from 'react-native';
+import {View, ScrollView, PixelRatio} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import LinearGradient from 'react-native-linear-gradient';
 import Categorystyles from '../../screens/CategoryTap/CategoryTapStyles';
 import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import useStoreStatus from '../../hooks/useStoreStatus';
-import {useAuth} from '../../context/AuthContext';
-import {useToast} from '../../context/ToastContext';
 import FastImage from 'react-native-fast-image';
 import CustomText from '../../utils/CustomText';
 
@@ -15,7 +13,7 @@ const fontScale = PixelRatio.getFontScale();
 
 const iconSize = fontScale >= 1.5 ? 22 : 16;
 
-const StoreItem = ({store, location, navigation}) => {
+const StoreItem = ({store, location}) => {
   const {translateAlcohol} = useTranslateAlcohol();
 
   const {
@@ -28,20 +26,6 @@ const StoreItem = ({store, location, navigation}) => {
     breakstart,
     breakend,
   } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
-
-  const {token} = useAuth();
-  const {showToast} = useToast();
-  const handleStorePress = () => {
-    if (!token) {
-      showToast('로그인 후 이용할 수 있어요!', 'center');
-      return;
-    }
-
-    navigation.navigate('StoreStack', {
-      screen: 'StoreMainScreen',
-      params: {storeId: store.id},
-    });
-  };
 
   const prioritizedDrinks = useMemo(() => {
     if (!store?.mainDrinkDtos?.length) {
@@ -65,9 +49,7 @@ const StoreItem = ({store, location, navigation}) => {
             paddingHorizontal: 18,
             gap: 1,
           }}>
-          <Pressable
-            onPress={handleStorePress}
-            style={Categorystyles.mainItemView}>
+          <View style={Categorystyles.mainItemView}>
             {store.mainImgUrl ? (
               <FastImage
                 resizeMode={FastImage.resizeMode.cover}
@@ -198,13 +180,10 @@ const StoreItem = ({store, location, navigation}) => {
                 })()}
               </FastImage>
             )}
-          </Pressable>
+          </View>
           {menuRenderList.length > 0 &&
             menuRenderList.map((menu, index, arr) => (
-              <Pressable
-                onPress={handleStorePress}
-                key={index}
-                style={Categorystyles.menuItemView}>
+              <View key={index} style={Categorystyles.menuItemView}>
                 <FastImage
                   source={
                     menu.imgUrl
@@ -261,12 +240,12 @@ const StoreItem = ({store, location, navigation}) => {
                     </CustomText>
                   </View>
                 </FastImage>
-              </Pressable>
+              </View>
             ))}
         </ScrollView>
       </View>
 
-      <Pressable onPress={handleStorePress} style={Categorystyles.infoTopView}>
+      <View style={Categorystyles.infoTopView}>
         <View style={Categorystyles.infoTitleView}>
           <View style={[Categorystyles.infoTitleViewSection, {flex: 1}]}>
             {store.isCertified == true && (
@@ -300,7 +279,7 @@ const StoreItem = ({store, location, navigation}) => {
                   marginLeft: 3,
                 },
               ]}>
-              ({Number(store.reviewCount ?? 0).toLocaleString('ko-KR')})
+              ({Number(store.postCount ?? 0).toLocaleString('ko-KR')})
             </CustomText>
           </View>
         </View>
@@ -368,7 +347,7 @@ const StoreItem = ({store, location, navigation}) => {
             })}
           </View>
         )}
-      </Pressable>
+      </View>
     </View>
   );
 };

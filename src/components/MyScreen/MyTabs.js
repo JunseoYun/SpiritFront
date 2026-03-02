@@ -1,22 +1,16 @@
 import React, {useEffect, useRef} from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  Animated,
-  Dimensions,
-} from 'react-native';
+import {View, Pressable, StyleSheet, Animated, Dimensions} from 'react-native';
 import CustomText from '../../utils/CustomText';
 
 const {width} = Dimensions.get('window');
 
-const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
-  const animatedValue = useRef(new Animated.Value(selectedTab)).current;
+const MyTabs = ({changePage, isManager, selectedTab, tabPosition}) => {
+  const internalAnimatedValue = useRef(new Animated.Value(selectedTab)).current;
+  const animatedValue = tabPosition || internalAnimatedValue;
 
   const tabs = [
-    {name: '리뷰', screen: 'MyReview'},
-    {name: '위치', screen: 'MyLiked'},
+    {name: '게시글', screen: 'MyReview'},
+    {name: '위치', screen: 'MyLocation'},
   ];
 
   if (isManager) {
@@ -25,38 +19,30 @@ const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
 
   const TAB_COUNT = tabs.length;
   const TAB_WIDTH = width / TAB_COUNT;
+  const INDICATOR_WIDTH = TAB_COUNT <= 2 ? TAB_WIDTH * 0.3 : TAB_WIDTH * 0.5;
 
-  // underline 이동 (가장 부드러운 방식)
-  const translateX = Animated.multiply(animatedValue, TAB_WIDTH);
+  const translateX = Animated.add(
+    Animated.multiply(animatedValue, TAB_WIDTH),
+    (TAB_WIDTH - INDICATOR_WIDTH) / 2,
+  );
 
   const handlePress = index => {
-    setSelectedTab(index);
-
-    Animated.spring(animatedValue, {
-      toValue: index,
-      stiffness: 160,
-      damping: 20,
-      mass: 0.35,
-      useNativeDriver: true, // 가능해짐
-    }).start();
-
-    changePage(tabs[index].screen);
+    changePage(index);
   };
 
-  // 외부에서 selectedTab 변경 시 반영
   useEffect(() => {
-    Animated.spring(animatedValue, {
+    if (tabPosition) return;
+    Animated.spring(internalAnimatedValue, {
       toValue: selectedTab,
       stiffness: 160,
       damping: 20,
       mass: 0.35,
       useNativeDriver: true,
     }).start();
-  }, [selectedTab]);
+  }, [selectedTab, tabPosition, internalAnimatedValue]);
 
   return (
     <View style={styles.container}>
-      {/* 탭 버튼 영역 */}
       <View style={styles.tabContainer}>
         {tabs.map((tab, index) => (
           <Pressable
@@ -74,15 +60,12 @@ const MyTabs = ({changePage, isManager, selectedTab, setSelectedTab}) => {
         ))}
       </View>
 
-      {/* 바닥 기본 줄 */}
       <View style={styles.defaultUnderline} />
-
-      {/* 이동하는 밑줄 */}
       <Animated.View
         style={[
           styles.animatedUnderline,
           {
-            width: TAB_WIDTH - 30,
+            width: INDICATOR_WIDTH,
             transform: [{translateX}],
           },
         ]}
@@ -98,12 +81,13 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    marginBottom: 5,
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 15,
-    paddingBottom: 17,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
   tabText: {
     fontSize: 17,
@@ -115,7 +99,7 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   defaultUnderline: {
-    height: 2.5,
+    height: 0.5,
     width: '100%',
     backgroundColor: '#E0E0E0',
     position: 'absolute',
@@ -124,9 +108,8 @@ const styles = StyleSheet.create({
   animatedUnderline: {
     position: 'absolute',
     bottom: 0,
-    height: 2.5,
+    height: 2,
     backgroundColor: '#1a1a1a',
-    marginHorizontal: 15,
   },
 });
 

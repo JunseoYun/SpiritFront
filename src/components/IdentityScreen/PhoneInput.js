@@ -44,6 +44,9 @@ const PhoneInput = ({
         onChangeText={text => {
           setPhoneNumber(text);
           if (text.length === 11 && selectedCarrier == '') {
+            // Blur before opening modal so focus doesn't jump back after selection.
+            phoneRef?.current?.blur();
+            setIsphoneFocused(false);
             setTimeout(() => {
               setIsCarrierModalVisible(true);
             }, 10);

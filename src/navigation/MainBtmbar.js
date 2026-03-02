@@ -1,14 +1,15 @@
-import React, {useRef} from 'react';
+﻿import React, {useRef} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MainScreen from '../screens/BottomTab/MainScreen';
 import MapScreen from '../screens/BottomTab/MapScreen';
 import LikeScreen from '../screens/BottomTab/LikeScreen';
-import AIExploreScreen from '../screens/BottomTab/AIExploreScreen';
+import ExploreScreen from '../screens/BottomTab/ExploreScreen';
 import MyStack from './MyStack';
 import CustomText from '../utils/CustomText';
-import {AIFullIcon, AIEmptyIcon} from '../assets/svg/AiTabIcon';
+import {AIFullIcon, AIFullIconDark, AIEmptyIcon} from '../assets/svg/AiTabIcon';
 import {HomeEmptyIcon, HomeFullIcon} from '../assets/svg/HomeTabIcon';
+import BookmarkIcon from '../assets/svg/BookmarkIcon';
 
 const Tab = createBottomTabNavigator();
 const INITIAL_TAB = 'MainScreen';
@@ -22,11 +23,16 @@ const MainBtmbar = ({route}) => {
   const lastFocusedTabRef = useRef(initialLastFocused);
   const lastNonMapTabRef = useRef(initialLastNonMap);
 
-  // 탭 라벨을 커스텀 Text로 반환
   const renderLabel = (label, color) => (
     <CustomText
       maxScale={1}
       style={{color, fontFamily: 'Pretendard-Medium', fontSize: 12}}>
+      {label}
+    </CustomText>
+  );
+  const renderHeaderTitle = label => (
+    <CustomText
+      style={{fontSize: 19, color: '#333', fontFamily: 'Pretendard-Bold'}}>
       {label}
     </CustomText>
   );
@@ -39,7 +45,10 @@ const MainBtmbar = ({route}) => {
         focus: () => {
           const current = route.name;
           if (current === 'MapScreen') {
-            navigation.setParams({prevTab: lastNonMapTabRef.current});
+            const incomingPrevTab = route.params?.prevTab;
+            if (!incomingPrevTab || incomingPrevTab === 'MapScreen') {
+              navigation.setParams({prevTab: lastNonMapTabRef.current});
+            }
           } else {
             lastNonMapTabRef.current = current;
           }
@@ -65,14 +74,14 @@ const MainBtmbar = ({route}) => {
             );
           } else if (route.name === 'MapScreen')
             iconName = focused ? 'map' : 'map-outline';
-          else if (route.name === 'AIExploreScreen') {
+          else if (route.name === 'ExploreScreen') {
             return focused ? (
-              <AIFullIcon size={25} />
+              <AIFullIconDark size={25} color={color} />
             ) : (
               <AIEmptyIcon size={25} />
             );
           } else if (route.name === 'LikeScreen') {
-            iconName = focused ? 'heart' : 'heart-outline';
+            iconName = focused ? 'bookmark' : 'bookmark-outline';
           } else if (route.name === 'MyStack')
             iconName = focused ? 'person' : 'person-outline';
           return <Ionicons name={iconName} size={25} color={color} />;
@@ -105,28 +114,35 @@ const MainBtmbar = ({route}) => {
         }}
       />
       <Tab.Screen
-        name="AIExploreScreen"
-        component={AIExploreScreen}
+        name="ExploreScreen"
+        component={ExploreScreen}
         options={{
           tabBarLabel: ({color, focused}) =>
-            renderLabel('탐색', focused ? '#3CBBFF' : color),
+            renderLabel('탐색', focused ? '#333' : color),
           headerShown: false,
         }}
+        listeners={({navigation, route}) => ({
+          tabPress: () => {
+            const isFocused = navigation.isFocused();
+
+            if (isFocused && route.params?.scrollToTop) {
+              route.params.scrollToTop();
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="LikeScreen"
         component={LikeScreen}
         options={{
-          tabBarLabel: ({color}) => renderLabel('찜', color),
+          tabBarLabel: ({color}) => renderLabel('저장', color),
           headerShown: true,
-          headerTitleAlign: 'center',
+          headerTitleAlign: 'left',
 
           headerShadowVisible: false,
-          title: '찜',
-          headerTitleStyle: {
-            fontSize: 19,
-            color: '#333',
-            fontFamily: 'Pretendard-Bold',
+          headerTitle: () => renderHeaderTitle('저장'),
+          headerTitleContainerStyle: {
+            paddingLeft: 6,
           },
         }}
       />

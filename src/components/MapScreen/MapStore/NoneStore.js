@@ -22,7 +22,7 @@ const NoneStore = ({navigation, location}) => {
               color="#6B7280"
               style={{marginRight: 3}}
             />
-            <CustomText maxScale={1.2} style={styles.noDatasubText}>
+            <CustomText maxScale={1} style={styles.noDatasubText}>
               현재 한잔할까는 강남구 중심으로 운영 중입니다.
             </CustomText>
           </View>

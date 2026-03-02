@@ -15,6 +15,8 @@ const Review = ({navigation, storeData}) => {
           params: {
             storeId: storeData.id,
             storename: storeData.name,
+            storeAddress:
+              storeData?.locationDto?.address ?? storeData?.address ?? '',
             isOwner: storeData.isOwner,
           },
         });
@@ -30,7 +32,7 @@ const Review = ({navigation, storeData}) => {
             {storeData?.rate}
           </CustomText>
           <CustomText style={styles.reviewtext}>
-            ({storeData?.reviewCount})
+            ({storeData?.postCount})
           </CustomText>
         </View>
         <Entypo

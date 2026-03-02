@@ -11,7 +11,6 @@ import {
 import SearchBar from '../../components/SearchScreen/SearchBar';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
-import MyBanner from '../../components/Ads/MyBanner';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import MapFilterHeader from '../../components/MapScreen/MapStore/MapFilterHeader';
 import FilterPotal from '../../components/MapScreen/MapStore/FilterPotal';
@@ -22,10 +21,11 @@ import {
   formatRadiusLabel,
 } from '../../context/MapSearchContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect, CommonActions} from '@react-navigation/native';
+import {useFocusEffect, CommonActions, StackActions} from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import RecentSearchItem from '../../components/SearchScreen/RecentSearchItem';
 import CustomText from '../../utils/CustomText';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const AVAILABLE_VALUE = '가능';
 const GROUP_VALUE = '단체 방문';
@@ -54,6 +54,7 @@ const SearchScreen = ({navigation, route}) => {
   const [filterInitialTab, setFilterInitialTab] = useState('거리');
   const [recentSearches, setRecentSearches] = useState([]);
   const preserveFiltersRef = useRef(route?.params?.preserveFilters === true);
+  const insets = useSafeAreaInsets();
   const originTabRef = useRef(
     route?.params?.prevTab || route?.params?.lastFocusedTab || null,
   );
@@ -292,10 +293,7 @@ const SearchScreen = ({navigation, route}) => {
   const storedRadiusLabel = formatRadiusLabel(
     typeof storedRadiusKm === 'number' ? storedRadiusKm : INITIAL_RADIUS_KM,
   );
-  const distanceLabel = getFilterValue(
-    '거리',
-    storedRadiusLabel,
-  );
+  const distanceLabel = getFilterValue('거리', storedRadiusLabel);
   const categoryValue = getFilterValue('카테고리', []);
   const categoryArray = toArrayVal(categoryValue);
   const categoryLabel = formatArrayLabel(categoryArray, '카테고리');
@@ -312,29 +310,24 @@ const SearchScreen = ({navigation, route}) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, {paddingTop: insets.top}]}>
         <SearchBar
           value={searchStoreName}
           onChangeText={setSearchStoreName}
           placeholder="술집이나 메뉴를 검색하세요"
           onPress={onPressSearch}
           onBackPress={() => navigation.goBack()}
-          onHomePress={() =>
-            navigation.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: 'MainBtmbar',
-                    params: {
-                      screen: 'AIExploreScreen',
-                      initialTab: 'AIExploreScreen',
-                    },
-                  },
-                ],
-              }),
-            )
-          }
+          onHomePress={() => {
+            if (route?.params?.fromChatbotMap) {
+              if (navigation.canGoBack()) {
+                navigation.dispatch(StackActions.pop(2));
+              } else {
+                navigation.navigate('ChatbotScreen');
+              }
+              return;
+            }
+            navigation.navigate('ChatbotScreen');
+          }}
         />
 
         <MapFilterHeader
@@ -363,12 +356,10 @@ const SearchScreen = ({navigation, route}) => {
           onAmenityToggle={handleAmenityToggle}
         />
 
-        {/* <MyBanner index={'search'} /> */}
-
         {recentSearches.length > 0 && (
           <View style={styles.recentWrap}>
             <ScrollView
-              contentContainerStyle={{paddingBottom: 40}}
+              contentContainerStyle={{paddingBottom: insets.bottom + 20}}
               showsVerticalScrollIndicator={false}
               keyboardDismissMode="on-drag"
               keyboardShouldPersistTaps="handled">
@@ -414,7 +405,7 @@ const SearchScreen = ({navigation, route}) => {
           onApply={filters => setPendingFilters(filters)}
         />
         <Loading loading={isRefreshing || loading} />
-      </SafeAreaView>
+      </View>
     </TouchableWithoutFeedback>
   );
 };
