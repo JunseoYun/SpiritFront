@@ -1,6 +1,12 @@
 import {useEffect, useState} from 'react';
 
-const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
+const EMPTY_OPERATION_INFOS = [];
+
+const useStoreStatus = (operationInfoDtos, isAlwaysOpen = false) => {
+  const safeOperationInfoDtos = Array.isArray(operationInfoDtos)
+    ? operationInfoDtos
+    : EMPTY_OPERATION_INFOS;
+
   const [isOpen, setIsOpen] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [closed, setClosed] = useState(false);
@@ -105,7 +111,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
 
       now.setHours(now.getHours() + 9);
 
-      let todayInfo = operationInfoDtos.find(
+      let todayInfo = safeOperationInfoDtos.find(
         info => info.dayOfWeek === currentDay,
       );
 
@@ -119,7 +125,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         .format(yesterday)
         .toUpperCase();
 
-      const yesterdayInfo = operationInfoDtos.find(
+      const yesterdayInfo = safeOperationInfoDtos.find(
         info => info.dayOfWeek === yesterdayDay,
       );
 
@@ -133,7 +139,7 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
         .format(nextday)
         .toUpperCase();
 
-      const nextdayInfo = operationInfoDtos.find(
+      const nextdayInfo = safeOperationInfoDtos.find(
         info => info.dayOfWeek === nextdayDay,
       );
 
@@ -304,12 +310,12 @@ const useStoreStatus = (operationInfoDtos = [], isAlwaysOpen = false) => {
       }
     };
 
-    setOperationSchedule(reorderScheduleByToday(operationInfoDtos));
+    setOperationSchedule(reorderScheduleByToday(safeOperationInfoDtos));
 
     checkStoreStatus();
     const interval = setInterval(checkStoreStatus, 60 * 1000);
     return () => clearInterval(interval);
-  }, [operationInfoDtos]);
+  }, [isAlwaysOpen, safeOperationInfoDtos]);
 
   // isOpen => 영업중인지 판별
   // isBreak => 브레이크 타임 판별

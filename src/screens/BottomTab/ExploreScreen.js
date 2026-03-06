@@ -52,11 +52,6 @@ const ExploreScreen = ({navigation}) => {
   const listFilterHeaderRef = useRef(null);
   const lastFilterScrollX = useRef(0);
 
-  const contentTopPadding = useMemo(
-    () => (Platform.OS === 'android' ? insets.top + 40 : insets.top + 20),
-    [insets.top],
-  );
-
   const [mainSectionHeight, setMainSectionHeight] = useState(0);
   const [topView2Height, setTopView2Height] = useState(0);
   const [touchable, setTouchable] = useState(false);
@@ -172,24 +167,24 @@ const ExploreScreen = ({navigation}) => {
   }, [fixedFilterOpacity]);
 
   const headerOffsetFallback = useMemo(() => insets.top + 110, [insets.top]);
-  const measuredHeaderHeight = useMemo(
-    () => contentTopPadding,
-    [contentTopPadding],
-  );
-  const headerOffset = useMemo(
-    () =>
-      measuredHeaderHeight > 0 ? measuredHeaderHeight : headerOffsetFallback,
-    [measuredHeaderHeight, headerOffsetFallback],
-  );
   const listTopPadding = useMemo(
-    () => (topView2Height > 0 ? topView2Height : headerOffset),
-    [topView2Height, headerOffset],
+    () => (topView2Height > 0 ? topView2Height : headerOffsetFallback),
+    [topView2Height, headerOffsetFallback],
   );
 
   useFocusEffect(
     useCallback(() => {
+      let lastBackPressed = 0;
+
       const onBackPress = () => {
-        navigation.navigate('MainScreen');
+        const now = Date.now();
+        if (now - lastBackPressed < 2000) {
+          BackHandler.exitApp();
+          return true;
+        }
+
+        lastBackPressed = now;
+        ToastAndroid.show('한 번 더 누르면 종료됩니다.', ToastAndroid.SHORT);
         return true;
       };
 
@@ -199,7 +194,7 @@ const ExploreScreen = ({navigation}) => {
       );
 
       return () => backHandler.remove();
-    }, [navigation]),
+    }, []),
   );
 
   useEffect(() => {
@@ -295,6 +290,16 @@ const ExploreScreen = ({navigation}) => {
   const handleSearchPress = useCallback(() => {
     navigation.navigate('SearchScreen');
   }, [navigation]);
+
+  const handleTopRecommViewAll = useCallback(
+    ({stores} = {}) => {
+      navigation.navigate('TodayRecommStoreScreen', {
+        stores: Array.isArray(stores) ? stores : recommStores,
+        location,
+      });
+    },
+    [location, navigation, recommStores],
+  );
 
   const handleAiChatPress = useCallback(() => {
     navigation.navigate('ChatbotScreen');
@@ -438,22 +443,26 @@ const ExploreScreen = ({navigation}) => {
       recommReason,
       recommStores,
       location,
+      address,
       isRefreshing,
       navigation,
       loading,
       handlestoreItemClick,
       catagoryClick,
+      onPressRecommViewAll: handleTopRecommViewAll,
     }),
     [
       recommCategory,
       recommReason,
       recommStores,
       location,
+      address,
       isRefreshing,
       loading,
       navigation,
       handlestoreItemClick,
       catagoryClick,
+      handleTopRecommViewAll,
     ],
   );
 

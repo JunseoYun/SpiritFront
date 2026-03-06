@@ -345,7 +345,7 @@ const LikeScreen = ({navigation}) => {
     useCallback(() => {
       const onBackPress = () => {
         if (!token) return;
-        navigation.navigate('MainScreen');
+        navigation.navigate('ExploreScreen');
         return true;
       };
 

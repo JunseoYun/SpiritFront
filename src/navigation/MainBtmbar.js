@@ -12,7 +12,7 @@ import {HomeEmptyIcon, HomeFullIcon} from '../assets/svg/HomeTabIcon';
 import BookmarkIcon from '../assets/svg/BookmarkIcon';
 
 const Tab = createBottomTabNavigator();
-const INITIAL_TAB = 'MainScreen';
+const INITIAL_TAB = 'ExploreScreen';
 
 const MainBtmbar = ({route}) => {
   const initialLastFocused = route?.params?.lastFocusedTab || INITIAL_TAB;

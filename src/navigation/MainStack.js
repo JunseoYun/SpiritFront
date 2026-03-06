@@ -27,6 +27,7 @@ import LocataionMapScreen from '../screens/SetLocation/LocataionMapScreen';
 import OpenStoreScreen from '../screens/TotalScreen/OpenStoreScreen';
 import NearStoreScreen from '../screens/TotalScreen/NearStoreScreen';
 import ViewedStoreScreen from '../screens/TotalScreen/ViewedStoreScreen';
+import TodayRecommStoreScreen from '../screens/TotalScreen/TodayRecommStoreScreen';
 import SearchScreen from '../screens/Search/SearchScreen';
 import NotificationScreen from '../screens/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/Notification/NotificationSetScreen';
@@ -472,12 +473,17 @@ export default function MainStack() {
         name="OpenStoreScreen"
         component={OpenStoreScreen}
         options={({navigation}) => ({
-          title: '영업 중인 술집',
+          headerTitle: () => (
+            <CustomText
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: 18,
+                color: '#333',
+              }}>
+              영업 중인 술집
+            </CustomText>
+          ),
           headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}
@@ -497,12 +503,17 @@ export default function MainStack() {
         name="NearStoreScreen"
         component={NearStoreScreen}
         options={({navigation}) => ({
-          title: '가까운 술집',
+          headerTitle: () => (
+            <CustomText
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: 18,
+                color: '#333',
+              }}>
+              가까운 술집
+            </CustomText>
+          ),
           headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}
@@ -521,12 +532,47 @@ export default function MainStack() {
         name="ViewedStoreScreen"
         component={ViewedStoreScreen}
         options={({navigation}) => ({
-          title: '최근 본 매장',
+          headerTitle: () => (
+            <CustomText
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: 18,
+                color: '#333',
+              }}>
+              최근 본 매장
+            </CustomText>
+          ),
           headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: 'Pretendard-Bold',
-            fontSize: 18,
-          },
+          headerLeft: () => (
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={{top: 10, bottom: 10, left: 20, right: 20}}>
+              <Ionicons
+                name="arrow-back-outline"
+                size={23}
+                color="#333"
+                style={{paddingLeft: 12}}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+
+      <Stack.Screen
+        name="TodayRecommStoreScreen"
+        component={TodayRecommStoreScreen}
+        options={({navigation}) => ({
+          headerTitle: () => (
+            <CustomText
+              style={{
+                fontFamily: 'Pretendard-Bold',
+                fontSize: 18,
+                color: '#333',
+              }}>
+              가성비 술집
+            </CustomText>
+          ),
+          headerTitleAlign: 'center',
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.goBack()}

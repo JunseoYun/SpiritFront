@@ -1,5 +1,5 @@
 // TodayRecomm.js
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useCallback} from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,14 @@ import {
   Dimensions,
   PixelRatio,
   Platform,
+  Pressable,
 } from 'react-native';
 import useCategoryTranslation from '../../../hooks/useCategoryTranslation';
 import TodayRecommItem from './TodayRecommItem';
 import FastImage from 'react-native-fast-image';
 import TodayRecommItemSkeleton from './TodayRecommItemSkeleton';
 import CustomText from '../../../utils/CustomText';
+import Feather from 'react-native-vector-icons/Feather';
 
 const {width} = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.9;
@@ -29,6 +31,7 @@ const TodayRecomm = ({
   navigation,
   loading,
   refresh,
+  onPressViewAll,
 }) => {
   const {translateCategory} = useCategoryTranslation();
   const koreanCategory = translateCategory(recommCategory);
@@ -74,6 +77,22 @@ const TodayRecomm = ({
     }
   };
 
+  const handlePressViewAll = useCallback(() => {
+    const payload = {
+      stores: Array.isArray(recommStores) ? recommStores : [],
+    };
+
+    if (typeof onPressViewAll === 'function') {
+      onPressViewAll(payload);
+      return;
+    }
+
+    navigation?.navigate('TodayRecommStoreScreen', {
+      ...payload,
+      location,
+    });
+  }, [location, navigation, onPressViewAll, recommStores]);
+
   if (loading || refresh) {
     return <TodayRecommItemSkeleton />;
   }
@@ -84,6 +103,13 @@ const TodayRecomm = ({
         <CustomText maxScale={1.3} style={[styles.todayReason]}>
           {recommReason}
         </CustomText>
+        <Pressable
+          style={{flexDirection: 'row', alignItems: 'center'}}
+          onPress={handlePressViewAll}
+          hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+          <CustomText style={[styles.footerActionText]}>전체보기</CustomText>
+          <Feather name={'chevron-right'} size={15} color="#333" />
+        </Pressable>
       </View>
 
       {recommStores && ( // ready가 true일 때만 FlatList 렌더링
@@ -169,12 +195,22 @@ const TodayRecomm = ({
 };
 
 const styles = StyleSheet.create({
-  todayPhrasesView: {marginLeft: 20, alignContent: 'center'},
+  todayPhrasesView: {
+    alignContent: 'center',
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+  },
   todayReason: {
     fontSize: 16,
     fontFamily: 'Pretendard-Medium',
     color: '#888',
     paddingLeft: 4,
+  },
+  footerActionText: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-Regular',
+    color: '#333',
   },
   slideItem: {width: ITEM_WIDTH, marginHorizontal: SPACING / 2},
   scrollContainer: {alignItems: 'center'},

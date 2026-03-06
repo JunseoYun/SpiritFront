@@ -1,6 +1,6 @@
 // ExploreSection.js
-import React, {useState} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import React from 'react';
+import {View, StyleSheet} from 'react-native';
 import TodayRecomm from './TodayRecomm/TodayRecomm';
 import CategoryGrid from './Category/CategoryGrid';
 import StoreRegister from './StoreRegister';
@@ -11,18 +11,35 @@ import ViewedStoreList from './ViewedStore/ViewedStoreList';
 import CustomText from '../../utils/CustomText';
 
 const ExploreSection = ({
+  recommCategory,
+  recommReason,
+  recommStores,
+  preferredDrinkType,
   location,
+  address,
   isRefreshing,
   navigation,
+  loading,
   handlestoreItemClick,
   catagoryClick,
+  onPressRecommViewAll,
   onHeaderLayout = () => {},
 }) => {
   return (
-    <View
-      style={{
-        backgroundColor: '#fff',
-      }}>
+    <View style={{backgroundColor: '#fff'}}>
+      <TodayRecomm
+        recommCategory={recommCategory}
+        recommReason={recommReason}
+        recommStores={recommStores}
+        preferredDrinkType={preferredDrinkType}
+        navigation={navigation}
+        loading={loading}
+        refresh={isRefreshing}
+        location={location}
+        locationName={address}
+        onPressViewAll={onPressRecommViewAll}
+      />
+
       <CategoryGrid onPress={catagoryClick} />
 
       <StoreRegister handlestoreItemClick={handlestoreItemClick} />

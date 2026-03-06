@@ -123,7 +123,7 @@ const MyScreen = ({navigation}) => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        navigation.navigate('MainScreen');
+        navigation.navigate('ExploreScreen');
         return true;
       };
 

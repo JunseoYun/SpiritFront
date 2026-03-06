@@ -21,7 +21,6 @@ const styles = StyleSheet.create({
     width: '60%',
     marginLeft: 24,
     alignContent: 'center',
-    marginTop: 10,
   },
   reviewCard: {
     width: ITEM_WIDTH,
