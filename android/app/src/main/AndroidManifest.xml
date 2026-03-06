@@ -14,6 +14,8 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
@@ -22,6 +24,7 @@
       android:allowBackup="true"
       android:theme="@style/AppTheme"
       android:usesCleartextTraffic="true"
+      android:requestLegacyExternalStorage="true"
       android:supportsRtl="true">
 
       <meta-data
@@ -56,6 +59,10 @@ android:resizeableActivity="true"
           android:scheme="https" 
           android:host="@string/BASE_URL"
           android:pathPrefix="/link/store-manager-invite" />
+        <data 
+          android:scheme="https" 
+          android:host="@string/BASE_URL"
+          android:pathPrefix="/link/post" />
         </intent-filter>
 
          <!-- ✅ 앱 내부 스킴 딥링크: spirit://store/{id} -->
@@ -69,6 +76,9 @@ android:resizeableActivity="true"
           <data 
           android:scheme="spirit" 
           android:host="store-manager-invite" />
+          <data 
+          android:scheme="spirit" 
+          android:host="post" />
 
         </intent-filter>
       </activity>
