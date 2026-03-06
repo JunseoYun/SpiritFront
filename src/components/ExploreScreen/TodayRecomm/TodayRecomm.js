@@ -101,7 +101,7 @@ const TodayRecomm = ({
     <>
       <View style={styles.todayPhrasesView}>
         <CustomText maxScale={1.3} style={[styles.todayReason]}>
-          {recommReason}
+          내 주변 가성비 좋은 술집들을 모아봤어요
         </CustomText>
         <Pressable
           style={{flexDirection: 'row', alignItems: 'center'}}
