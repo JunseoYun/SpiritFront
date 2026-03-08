@@ -27,7 +27,7 @@ import LocataionMapScreen from '../screens/SetLocation/LocataionMapScreen';
 import OpenStoreScreen from '../screens/TotalScreen/OpenStoreScreen';
 import NearStoreScreen from '../screens/TotalScreen/NearStoreScreen';
 import ViewedStoreScreen from '../screens/TotalScreen/ViewedStoreScreen';
-import TodayRecommStoreScreen from '../screens/TotalScreen/TodayRecommStoreScreen';
+import RecommStoreScreen from '../screens/TotalScreen/RecommStoreScreen';
 import SearchScreen from '../screens/Search/SearchScreen';
 import NotificationScreen from '../screens/Notification/NotificationScreen';
 import NotificationSetScreen from '../screens/Notification/NotificationSetScreen';
@@ -559,8 +559,8 @@ export default function MainStack() {
       />
 
       <Stack.Screen
-        name="TodayRecommStoreScreen"
-        component={TodayRecommStoreScreen}
+        name="RecommStoreScreen"
+        component={RecommStoreScreen}
         options={({navigation}) => ({
           headerTitle: () => (
             <CustomText

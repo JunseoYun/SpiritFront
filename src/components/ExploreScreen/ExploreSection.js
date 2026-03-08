@@ -1,7 +1,7 @@
-// ExploreSection.js
+﻿// ExploreSection.js
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
-import TodayRecomm from './TodayRecomm/TodayRecomm';
+import RecommItem from './TodayRecomm/RecommItem';
 import CategoryGrid from './Category/CategoryGrid';
 import StoreRegister from './StoreRegister';
 import OpenStoreList from './CurrentOpenStore/OpenStoreList';
@@ -20,6 +20,7 @@ const ExploreSection = ({
   isRefreshing,
   navigation,
   loading,
+  todayRecommInitialTab,
   handlestoreItemClick,
   catagoryClick,
   onPressRecommViewAll,
@@ -27,7 +28,7 @@ const ExploreSection = ({
 }) => {
   return (
     <View style={{backgroundColor: '#fff'}}>
-      <TodayRecomm
+      <RecommItem
         recommCategory={recommCategory}
         recommReason={recommReason}
         recommStores={recommStores}
@@ -35,10 +36,13 @@ const ExploreSection = ({
         navigation={navigation}
         loading={loading}
         refresh={isRefreshing}
+        initialTab={todayRecommInitialTab}
         location={location}
         locationName={address}
         onPressViewAll={onPressRecommViewAll}
       />
+
+      <View style={{height: 8, backgroundColor: '#F5F5F5'}} />
 
       <CategoryGrid onPress={catagoryClick} />
 

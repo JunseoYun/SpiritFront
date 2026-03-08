@@ -41,7 +41,7 @@ const screenWidth = Dimensions.get('window').width;
 const TOP_TOUCHABLE_DISTANCE = 24;
 const POPULAR_SECTION_ITEM = {id: 'popularStoresSection'};
 
-const ExploreScreen = ({navigation}) => {
+const ExploreScreen = ({navigation, route}) => {
   const {pendingStoreId} = useDeepLink();
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
@@ -61,6 +61,7 @@ const ExploreScreen = ({navigation}) => {
   const [recommReason, setRecommReason] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const todayRecommTabFromRoute = route?.params?.todayRecommTab;
 
   const {recommendCategory} = useRecommendation();
   const [unreadNotification, setUnreadNotification] = useState(false);
@@ -292,13 +293,17 @@ const ExploreScreen = ({navigation}) => {
   }, [navigation]);
 
   const handleTopRecommViewAll = useCallback(
-    ({stores} = {}) => {
-      navigation.navigate('TodayRecommStoreScreen', {
+    ({stores, initialTab} = {}) => {
+      const tabNavigatorKey = navigation?.getState?.()?.key;
+      navigation.navigate('RecommStoreScreen', {
         stores: Array.isArray(stores) ? stores : recommStores,
+        initialTab,
+        sourceRouteKey: route?.key,
+        tabNavigatorKey,
         location,
       });
     },
-    [location, navigation, recommStores],
+    [location, navigation, recommStores, route?.key],
   );
 
   const handleAiChatPress = useCallback(() => {
@@ -447,6 +452,7 @@ const ExploreScreen = ({navigation}) => {
       isRefreshing,
       navigation,
       loading,
+      todayRecommInitialTab: todayRecommTabFromRoute,
       handlestoreItemClick,
       catagoryClick,
       onPressRecommViewAll: handleTopRecommViewAll,
@@ -459,6 +465,7 @@ const ExploreScreen = ({navigation}) => {
       address,
       isRefreshing,
       loading,
+      todayRecommTabFromRoute,
       navigation,
       handlestoreItemClick,
       catagoryClick,
