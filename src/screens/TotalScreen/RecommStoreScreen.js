@@ -1,4 +1,10 @@
-import React, {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,7 +18,7 @@ import {CommonActions} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import RecommTotalItem from '../../components/TotalScreen/RecommTotalItem';
-import RecommTotalItemSkeleton from '../../components/TotalScreen/RecommTotalItemSkeleton';
+import RecommTotalItemSkeleton from '../../components/TotalScreen/TotalSkeleton/RecommTotalItemSkeleton';
 import {drinkTabs} from '../../components/ExploreScreen/TodayRecomm/mockRecommData';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
@@ -60,7 +66,9 @@ const RecommStoreScreen = ({navigation, route}) => {
   }, [selectedTab]);
 
   const renderHeaderTitle = useCallback(
-    () => <CustomText style={styles.headerTitle}>{headerTitleText()}</CustomText>,
+    () => (
+      <CustomText style={styles.headerTitle}>{headerTitleText()}</CustomText>
+    ),
     [headerTitleText],
   );
 
@@ -111,8 +119,10 @@ const RecommStoreScreen = ({navigation, route}) => {
       }
 
       const content = Array.isArray(data?.content) ? data.content : [];
-      const nextPage = typeof data?.number === 'number' ? data.number : pageToLoad;
-      const lastFromApi = typeof data?.last === 'boolean' ? data.last : undefined;
+      const nextPage =
+        typeof data?.number === 'number' ? data.number : pageToLoad;
+      const lastFromApi =
+        typeof data?.last === 'boolean' ? data.last : undefined;
       const computedLast =
         typeof lastFromApi === 'boolean'
           ? lastFromApi
@@ -190,7 +200,12 @@ const RecommStoreScreen = ({navigation, route}) => {
       canceled = true;
       requestSeqRef.current += 1;
     };
-  }, [fetchDrinkPricePage, location?.latitude, location?.longitude, selectedTab]);
+  }, [
+    fetchDrinkPricePage,
+    location?.latitude,
+    location?.longitude,
+    selectedTab,
+  ]);
 
   const onRefresh = useCallback(() => {
     const latitude = location?.latitude;
@@ -210,7 +225,12 @@ const RecommStoreScreen = ({navigation, route}) => {
       ?.finally?.(() => {
         setRefreshing(false);
       });
-  }, [fetchDrinkPricePage, location?.latitude, location?.longitude, selectedTab]);
+  }, [
+    fetchDrinkPricePage,
+    location?.latitude,
+    location?.longitude,
+    selectedTab,
+  ]);
 
   const handleEndReached = useCallback(() => {
     const latitude = location?.latitude;
@@ -230,7 +250,11 @@ const RecommStoreScreen = ({navigation, route}) => {
     setLoadingMore(true);
     const nextPage = page + 1;
 
-    fetchDrinkPricePage({tabValue: selectedTab, pageToLoad: nextPage, append: true})
+    fetchDrinkPricePage({
+      tabValue: selectedTab,
+      pageToLoad: nextPage,
+      append: true,
+    })
       ?.catch?.(() => {})
       ?.finally?.(() => {
         loadingMoreRef.current = false;

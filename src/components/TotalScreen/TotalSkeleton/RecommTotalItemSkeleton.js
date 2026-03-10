@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import SkeletonBox from '../../hooks/SkeletonBox';
+import SkeletonBox from '../../../hooks/SkeletonBox';
 
 const RecommTotalItemSkeleton = () => {
   return (
