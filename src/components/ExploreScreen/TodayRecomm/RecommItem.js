@@ -220,7 +220,6 @@ const RecommItem = ({
           options.sort,
         );
         const stores = resolveStorePage(data);
-        console.log(data);
         setTabStoreMap(prev => ({
           ...prev,
           [drinkType]: stores,

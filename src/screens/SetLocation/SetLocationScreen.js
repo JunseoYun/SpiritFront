@@ -20,6 +20,7 @@ import MapPreview from '../../components/SetLocation/MapPreview';
 import RadiusSelector from '../../components/SetLocation/RadiusSelector';
 import SetLocationHeader from '../../components/SetLocation/SetLocationHeader';
 import {useMapSearch, formatRadiusLabel} from '../../context/MapSearchContext';
+import {formatLocationAddress} from '../../utils/locationAddressUtil';
 
 const RADIUS_OPTIONS = [
   {label: '500m', value: 0.5},
@@ -129,11 +130,15 @@ const SetLocationScreen = ({navigation, route}) => {
     try {
       setLoading(true);
       if (address && coords) {
-        await saveLocationAddress(coords, address);
+        let addressText = address || '';
+        if (address) {
+          addressText = formatLocationAddress(addressText);
+        }
+        await saveLocationAddress(coords, addressText);
 
         log_access_create(coords);
         setCurrentLocation(coords);
-        setCurrentAddress(address);
+        setCurrentAddress(addressText);
         showToast('주소 설정이 완료 되었습니다.');
         setTimeout(() => {
           resetToHome();

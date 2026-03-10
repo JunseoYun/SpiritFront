@@ -1,63 +1,38 @@
-import React, {useMemo} from 'react';
-import {
-  PixelRatio,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {PixelRatio, Pressable, StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import LinearGradient from 'react-native-linear-gradient';
 
 import {useAuth} from '../../context/AuthContext';
 import {useToast} from '../../context/ToastContext';
-import useCategoryTranslation from '../../hooks/useCategoryTranslation';
+import useDistance from '../../hooks/useDistance';
 import useStoreStatus from '../../hooks/useStoreStatus';
-import useTranslateAlcohol from '../../hooks/useTranslateAlcohol';
 import CustomText from '../../utils/CustomText';
 
 const fontScale = PixelRatio.getFontScale();
-const iconSize = fontScale >= 1.5 ? 22 : 16;
 
 const toMenuPriceText = price => {
   if (price == null) return '';
   const text = String(price);
+
   if (/^\d+$/.test(text)) {
     return `${Number(text).toLocaleString('ko-KR')}원`;
   }
+
   return text;
 };
 
-const RecommTotalItem = ({store, navigation, drinkType}) => {
-  const {translateAlcohol} = useTranslateAlcohol();
-  const {translateCategory} = useCategoryTranslation();
+const RecommTotalItem = ({store, navigation, location}) => {
   const {token} = useAuth();
   const {showToast} = useToast();
+  const calculateDistance = useDistance();
+  const [distance, setDistance] = useState(null);
+  const [unit, setUnit] = useState('km');
 
-  const {
-    isOpen,
-    isBreak,
-    closed,
-    nextclosed,
-    starttime,
-    endtime,
-    breakstart,
-    breakend,
-  } = useStoreStatus(store?.operationInfoDtos, store?.isAlwaysOpen);
-
-  const prioritizedDrinks = useMemo(() => {
-    if (!store?.mainDrinkDtos?.length) return [];
-    if (!drinkType) return store.mainDrinkDtos;
-
-    const matched = store.mainDrinkDtos.filter(
-      drink => drink.type === drinkType,
-    );
-    const others = store.mainDrinkDtos.filter(
-      drink => drink.type !== drinkType,
-    );
-    return [...matched, ...others];
-  }, [drinkType, store?.mainDrinkDtos]);
+  const {isOpen, closed, nextclosed, starttime} = useStoreStatus(
+    store?.operationInfoDtos,
+    store?.isAlwaysOpen,
+  );
 
   const handleStorePress = () => {
     if (!token) {
@@ -71,364 +46,220 @@ const RecommTotalItem = ({store, navigation, drinkType}) => {
     });
   };
 
-  const menuRenderList = store?.menuList || [];
-  const hasMenuThumb = menuRenderList.length > 0;
+  const mainMenu = store?.menuList?.[0];
 
-  const overlayText = useMemo(() => {
-    if (!isOpen && !nextclosed && !closed) {
-      return `영업 종료${starttime ? `\n${starttime} 오픈` : ''}`;
-    }
-    if (!isOpen && nextclosed && !closed) {
-      return '영업 종료\n익일 휴무';
-    }
-    if (!isOpen && !nextclosed && closed) {
-      return '금일 휴무';
-    }
-    if (isOpen && isBreak) {
-      return `브레이크 타임${breakend ? `\n${breakend} 종료` : ''}`;
-    }
-    return null;
-  }, [breakend, closed, isBreak, isOpen, nextclosed, starttime]);
+  useEffect(() => {
+    const latitude = location?.latitude;
+    const longitude = location?.longitude;
+    const storeLatitude = store?.locationDto?.latitude;
+    const storeLongitude = store?.locationDto?.longitude;
 
+    if (
+      typeof latitude !== 'number' ||
+      typeof longitude !== 'number' ||
+      typeof storeLatitude !== 'number' ||
+      typeof storeLongitude !== 'number'
+    ) {
+      setDistance(null);
+      setUnit('km');
+      return;
+    }
+
+    let tempDistance = calculateDistance(
+      latitude,
+      longitude,
+      storeLatitude,
+      storeLongitude,
+    );
+
+    if (!Number.isFinite(tempDistance)) {
+      setDistance(null);
+      setUnit('km');
+      return;
+    }
+
+    if (tempDistance < 1) {
+      tempDistance *= 1000;
+      setDistance(tempDistance.toFixed(0));
+      setUnit('m');
+      return;
+    }
+
+    setDistance(tempDistance.toFixed(2));
+    setUnit('km');
+  }, [
+    calculateDistance,
+    location?.latitude,
+    location?.longitude,
+    store?.locationDto?.latitude,
+    store?.locationDto?.longitude,
+  ]);
+
+  const isStatusReady = store?.isAlwaysOpen || closed || starttime != null;
+
+  const statusText = (() => {
+    if (!isStatusReady) return '';
+    if (store?.isAlwaysOpen) return '영업 중';
+    if (closed) return '금일 휴무';
+    if (!isOpen && nextclosed) return '영업 종료';
+    if (!isOpen) return `영업 종료`;
+    return '영업 중';
+  })();
+
+  const statusColor = statusText === '영업 중' ? '#3CBFFF' : '#6B7280';
   return (
-    <View style={styles.itemContainer}>
-      <View style={styles.imageView}>
-        <ScrollView
-          horizontal
-          nestedScrollEnabled
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.imageScrollContent}>
-          <Pressable onPress={handleStorePress} style={styles.mainItemView}>
-            <FastImage
-              resizeMode={FastImage.resizeMode.cover}
-              source={
-                store?.mainImgUrl
-                  ? {uri: store.mainImgUrl}
-                  : require('../../assets/default_store6.png')
-              }
-              style={[
-                styles.mainImageView,
-                hasMenuThumb
-                  ? {borderTopLeftRadius: 9, borderBottomLeftRadius: 9}
-                  : {borderRadius: 9},
-              ]}>
-              {!!overlayText && (
-                <View
-                  style={[
-                    styles.overlay,
-                    hasMenuThumb
-                      ? {borderTopLeftRadius: 9, borderBottomLeftRadius: 9}
-                      : {borderRadius: 9},
-                  ]}>
-                  <CustomText maxScale={1.3} style={styles.overlayText}>
-                    {overlayText}
-                  </CustomText>
-                </View>
-              )}
-            </FastImage>
-          </Pressable>
-
-          {menuRenderList.map((menu, index, arr) => (
-            <Pressable
-              key={`${store?.id}-menu-${index}`}
-              onPress={handleStorePress}
-              style={styles.menuItemView}>
-              <FastImage
-                source={
-                  menu?.imgUrl
-                    ? {uri: menu.imgUrl}
-                    : require('../../assets/default_menu2.png')
-                }
-                style={[
-                  styles.menuImageView,
-                  index === arr.length - 1
-                    ? {borderTopRightRadius: 9, borderBottomRightRadius: 9}
-                    : {borderTopRightRadius: 0, borderBottomRightRadius: 0},
-                ]}>
-                <View
-                  style={[
-                    styles.semiOverlay,
-                    index === arr.length - 1
-                      ? {borderTopRightRadius: 9, borderBottomRightRadius: 9}
-                      : {borderTopRightRadius: 0, borderBottomRightRadius: 0},
-                  ]}>
-                  <LinearGradient
-                    colors={
-                      menu?.imgUrl
-                        ? ['rgba(0, 0, 0, 0.3)', 'transparent']
-                        : ['rgba(0, 0, 0, 0.2)', 'transparent']
-                    }
-                    style={styles.gradientTop}
-                    pointerEvents="none"
-                  />
-                  <CustomText style={styles.menuName} numberOfLines={1}>
-                    {menu?.name}
-                  </CustomText>
-                  <CustomText style={styles.menuPrice} numberOfLines={1}>
-                    {toMenuPriceText(menu?.price)}
-                  </CustomText>
-                </View>
-              </FastImage>
-            </Pressable>
-          ))}
-        </ScrollView>
+    <Pressable style={styles.card} onPress={handleStorePress}>
+      <View style={styles.imageWrap}>
+        <FastImage
+          resizeMode={FastImage.resizeMode.cover}
+          source={
+            store?.mainImgUrl
+              ? {uri: store.mainImgUrl}
+              : require('../../assets/default_store6.png')
+          }
+          style={styles.image}
+        />
+        {store?.isCertified && (
+          <FastImage
+            source={require('../../assets/verifyMaker.png')}
+            style={styles.verifyIcon}
+            resizeMode={FastImage.resizeMode.contain}
+          />
+        )}
       </View>
 
-      <Pressable onPress={handleStorePress} style={styles.infoTopView}>
-        {!!store?.categories?.length && (
-          <CustomText style={styles.category} numberOfLines={1}>
-            {store.categories
-              .map(category => translateCategory(category) || category)
-              .join(', ')}
+      <View style={styles.infoBox}>
+        <View style={styles.topRow}>
+          <CustomText style={styles.storeName} numberOfLines={1}>
+            {store?.name}
           </CustomText>
-        )}
 
-        <View style={styles.infoTitleView}>
-          <View style={[styles.infoTitleViewSection, {flex: 1}]}>
-            {store?.isCertified && (
-              <FastImage
-                source={require('../../assets/verifyMaker.png')}
-                style={[
-                  styles.imageStyle,
-                  fontScale >= 1.5 && {width: 21, height: 21},
-                ]}
-              />
-            )}
-            <CustomText style={styles.storeName} numberOfLines={1}>
-              {store?.name}
+          {mainMenu && (
+            <CustomText style={styles.menuName} numberOfLines={1}>
+              1병
             </CustomText>
-          </View>
-
-          <View style={styles.infoTitleViewSection}>
-            <FontAwesomeIcon name="star" size={iconSize} color="#FED348" />
-            <CustomText style={styles.infoText}>
-              {' '}
-              {store?.storeRate ?? 0}
-            </CustomText>
-            <CustomText style={[styles.infoText, styles.infoCountText]}>
-              ({Number(store?.postCount ?? 0).toLocaleString('ko-KR')})
-            </CustomText>
-          </View>
-        </View>
-
-        <View
-          style={[
-            styles.infoTimeView,
-            fontScale >= 1.5
-              ? {flexDirection: 'column', alignItems: 'flex-start'}
-              : {flexDirection: 'row', alignItems: 'center'},
-          ]}>
-          <View style={styles.infoView}>
-            {store?.isAlwaysOpen ? (
-              <CustomText style={styles.subInfoText}>24시간 영업</CustomText>
-            ) : store?.isAlwaysOpen === false && closed ? (
-              <CustomText style={styles.subInfoText}>금일 휴무</CustomText>
-            ) : !isOpen && nextclosed && !closed ? (
-              <CustomText style={styles.subInfoText}>
-                영업 종료 익일 휴무
-              </CustomText>
-            ) : !isOpen && !nextclosed && !closed ? (
-              <CustomText style={styles.subInfoText}>
-                영업 전 {starttime ? `${starttime} 영업 시작` : ''}
-              </CustomText>
-            ) : (
-              <CustomText style={styles.subInfoText}>
-                영업 중 {`${starttime} - ${endtime}` || '정보 없음'}
-              </CustomText>
-            )}
-          </View>
-
-          {breakstart && breakend && (
-            <View style={styles.infoView}>
-              <CustomText style={styles.subInfoText}>
-                휴게시간 {breakstart} ~ {breakend}
-              </CustomText>
-            </View>
           )}
         </View>
 
-        {prioritizedDrinks.length > 0 && (
-          <View style={styles.mainDrinkView}>
-            {prioritizedDrinks.map((drink, idx, arr) => {
-              const isLast = idx === arr.length - 1;
-              return (
-                <View
-                  key={`${store?.id}-${drink?.type}-${idx}`}
-                  style={[styles.drinkBadge, isLast ? {flexShrink: 1} : {}]}>
-                  <CustomText
-                    style={styles.drinkBadgeText}
-                    {...(isLast
-                      ? {numberOfLines: 1, ellipsizeMode: 'tail'}
-                      : {})}>
-                    {translateAlcohol(drink?.type) || drink?.type}
-                    {drink?.price ? ` ${drink.price}` : ''}
-                  </CustomText>
-                </View>
-              );
-            })}
+        <View style={styles.bottomRow}>
+          <View style={styles.metaRow}>
+            <CustomText style={[styles.metaText, {color: statusColor}]}>
+              {statusText}
+            </CustomText>
+
+            <FontAwesomeIcon
+              name="star"
+              size={fontScale >= 1.5 ? 20 : 14}
+              color="#FED348"
+              style={{marginLeft: 6, marginRight: 4}}
+            />
+
+            <CustomText style={styles.metaText}>
+              {store?.storeRate ?? 0}
+            </CustomText>
+
+            <CustomText style={styles.metaText}>
+              {' '}
+              · 리뷰 {store?.postCount ?? 0}
+            </CustomText>
+
+            {distance != null && (
+              <CustomText style={styles.metaText}>
+                {' '}
+                · {`${distance}${unit}`}
+              </CustomText>
+            )}
           </View>
-        )}
-      </Pressable>
-    </View>
+
+          {mainMenu && (
+            <CustomText style={styles.price}>
+              {toMenuPriceText(mainMenu.price)}
+            </CustomText>
+          )}
+        </View>
+      </View>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  itemContainer: {
+  card: {
+    marginHorizontal: 20,
+    marginVertical: 12,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+
+  image: {
     width: '100%',
-    borderColor: '#EDEDED',
-    borderBottomWidth: 1,
-    backgroundColor: 'white',
-    paddingVertical: 20,
+    height: 180,
   },
-  imageView: {
-    width: '100%',
-    flexDirection: 'row',
+  imageWrap: {
+    position: 'relative',
   },
-  imageScrollContent: {
-    paddingHorizontal: 18,
-    gap: 1,
-  },
-  mainItemView: {
-    width: 180,
-    height: 130,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mainImageView: {
-    width: 180,
-    height: 130,
-    alignSelf: 'center',
-    justifyContent: 'center',
-  },
-  menuItemView: {
-    width: 130,
-    height: 130,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuImageView: {
-    width: 130,
-    height: 130,
-    justifyContent: 'center',
-  },
-  gradientTop: {
+  verifyIcon: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 55,
-    zIndex: 1,
+    top: 10,
+    right: 10,
+    width: 24,
+    height: 24,
+    zIndex: 2,
   },
-  menuName: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-Regular',
-    color: '#fff',
-    marginTop: 3,
-    marginLeft: 5,
-    textAlign: 'center',
-    zIndex: 3,
+
+  infoBox: {
+    backgroundColor: '#Fff',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
-  menuPrice: {
-    fontSize: 11,
-    fontFamily: 'Pretendard-Bold',
-    color: '#fff',
-    marginLeft: 5,
-    textAlign: 'center',
-    zIndex: 3,
-    marginTop: -2,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  semiOverlay: {
-    alignItems: 'flex-start',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'flex-start',
-  },
-  overlayText: {
-    color: 'white',
-    fontSize: 16,
-    fontFamily: 'Pretendard-SemiBold',
-    lineHeight: 22,
-    textAlign: 'center',
-  },
-  infoTopView: {
-    width: '100%',
-    marginTop: 10,
-    paddingHorizontal: 20,
-  },
-  category: {
-    fontSize: 13,
-    color: '#6b7280',
-    marginBottom: 5,
-    fontFamily: 'Pretendard-SemiBold',
-  },
-  infoTitleView: {
+
+  topRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  infoTitleViewSection: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
+
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+
   storeName: {
     fontSize: 18,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
-    maxWidth: '95%',
+    fontFamily: 'Pretendard-Bold',
+    color: '#111',
+    flex: 1,
+    marginRight: 10,
   },
-  infoText: {
-    fontSize: 14,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#333',
-    textAlign: 'center',
+
+  menuName: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    fontFamily: 'Pretendard-Medium',
   },
-  infoCountText: {
-    color: '#999',
-    fontFamily: 'Pretendard-Regular',
-    marginLeft: 3,
-  },
-  infoTimeView: {
-    justifyContent: 'space-between',
-    marginTop: 7,
-  },
-  infoView: {
+
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
-  subInfoText: {
-    fontSize: 14,
-    color: '#4b5563',
-    fontFamily: 'Pretendard-Regular',
-    textAlign: 'center',
-  },
-  imageStyle: {
-    alignSelf: 'center',
-    width: 15,
-    height: 15,
-    marginRight: 5,
-  },
-  mainDrinkView: {
-    flexDirection: 'row',
-    marginTop: 16,
-  },
-  drinkBadge: {
-    marginRight: 7,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 3,
-  },
-  drinkBadgeText: {
-    color: '#121212',
+
+  metaText: {
     fontSize: 13,
-    fontFamily: 'Pretendard-Medium',
-    paddingVertical: 2,
-    paddingHorizontal: 4,
+    color: '#6B7280',
+    fontFamily: 'Pretendard-SemiBold',
+  },
+
+  price: {
+    fontSize: 20,
+    color: '#3cbbff',
+    fontFamily: 'Pretendard-Bold',
   },
 });
 
