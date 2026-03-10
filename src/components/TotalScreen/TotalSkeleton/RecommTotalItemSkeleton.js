@@ -5,24 +5,28 @@ import SkeletonBox from '../../../hooks/SkeletonBox';
 
 const RecommTotalItemSkeleton = () => {
   return (
-    <View style={styles.card}>
-      <SkeletonBox style={styles.image} />
+    <View style={styles.cardShadow}>
+      <View style={styles.card}>
+        <SkeletonBox style={styles.image} />
 
-      <View style={styles.infoBox}>
-        <View style={styles.topRow}>
-          <SkeletonBox style={styles.storeName} />
-          <SkeletonBox style={styles.menuName} />
-        </View>
-
-        <View style={styles.bottomRow}>
-          <View style={styles.metaRow}>
-            <SkeletonBox style={styles.metaChip} />
-            <SkeletonBox style={styles.metaDot} />
-            <SkeletonBox style={styles.metaText} />
-            <SkeletonBox style={styles.metaTextWide} />
+        <View style={styles.infoBox}>
+          <View style={styles.topRow}>
+            <SkeletonBox style={styles.storeName} />
           </View>
 
-          <SkeletonBox style={styles.price} />
+          <View style={styles.bottomRow}>
+            <View style={styles.metaRow}>
+              <SkeletonBox style={styles.metaChip} />
+              <SkeletonBox style={styles.sepDot} />
+              <SkeletonBox style={styles.rateText} />
+              <SkeletonBox style={styles.sepDot} />
+              <SkeletonBox style={styles.metaText} />
+              <SkeletonBox style={styles.sepDot} />
+              <SkeletonBox style={styles.metaTextWide} />
+            </View>
+
+            <SkeletonBox style={styles.priceValue} />
+          </View>
         </View>
       </View>
     </View>
@@ -30,16 +34,20 @@ const RecommTotalItemSkeleton = () => {
 };
 
 const styles = StyleSheet.create({
-  card: {
+  cardShadow: {
     marginHorizontal: 20,
-    marginVertical: 12,
+    marginBottom: 24,
+    borderRadius: 16,
+    shadowColor: '#111',
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    shadowOffset: {width: 0, height: 2},
+    elevation: 1,
+  },
+  card: {
     borderRadius: 16,
     overflow: 'hidden',
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
   },
   image: {
     width: '100%',
@@ -53,19 +61,13 @@ const styles = StyleSheet.create({
   },
   topRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
   storeName: {
     height: 18,
     borderRadius: 4,
     flex: 1,
-    marginRight: 12,
-  },
-  menuName: {
-    width: 60,
-    height: 14,
-    borderRadius: 4,
+    marginRight: 10,
   },
   bottomRow: {
     flexDirection: 'row',
@@ -77,31 +79,37 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginRight: 12,
+    flexWrap: 'wrap',
+    gap: 6,
+    marginRight: 10,
   },
   metaChip: {
-    width: 44,
+    width: 42,
     height: 12,
     borderRadius: 4,
   },
-  metaDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+  sepDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+  },
+  rateText: {
+    width: 26,
+    height: 12,
+    borderRadius: 4,
   },
   metaText: {
-    width: 28,
+    width: 46,
     height: 12,
     borderRadius: 4,
   },
   metaTextWide: {
-    width: 72,
+    width: 54,
     height: 12,
     borderRadius: 4,
   },
-  price: {
-    width: 78,
+  priceValue: {
+    width: 64,
     height: 18,
     borderRadius: 4,
   },

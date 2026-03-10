@@ -22,7 +22,7 @@ const toMenuPriceText = price => {
   return text;
 };
 
-const RecommTotalItem = ({store, navigation, location}) => {
+const RecommTotalItem = ({store, navigation, location, drinkType}) => {
   const {token} = useAuth();
   const {showToast} = useToast();
   const calculateDistance = useDistance();
@@ -47,6 +47,10 @@ const RecommTotalItem = ({store, navigation, location}) => {
   };
 
   const mainMenu = store?.menuList?.[0];
+  const selectedDrink = Array.isArray(store?.mainDrinkDtos)
+    ? store.mainDrinkDtos.find(drink => drink?.type === drinkType)
+    : null;
+  const displayPrice = selectedDrink?.price ?? mainMenu?.price;
 
   useEffect(() => {
     const latitude = location?.latitude;
@@ -106,93 +110,104 @@ const RecommTotalItem = ({store, navigation, location}) => {
     return '영업 중';
   })();
 
-  const statusColor = statusText === '영업 중' ? '#3CBFFF' : '#6B7280';
+  const statusStyle =
+    statusText === '영업 중' ? styles.openTag : styles.closeTag;
   return (
-    <Pressable style={styles.card} onPress={handleStorePress}>
-      <View style={styles.imageWrap}>
-        <FastImage
-          resizeMode={FastImage.resizeMode.cover}
-          source={
-            store?.mainImgUrl
-              ? {uri: store.mainImgUrl}
-              : require('../../assets/default_store6.png')
-          }
-          style={styles.image}
-        />
-        {store?.isCertified && (
+    <View style={styles.cardShadow}>
+      <Pressable style={styles.card} onPress={handleStorePress}>
+        <View style={styles.imageWrap}>
           <FastImage
-            source={require('../../assets/verifyMaker.png')}
-            style={styles.verifyIcon}
-            resizeMode={FastImage.resizeMode.contain}
+            resizeMode={FastImage.resizeMode.cover}
+            source={
+              store?.mainImgUrl
+                ? {uri: store.mainImgUrl}
+                : require('../../assets/default_store6.png')
+            }
+            style={styles.image}
           />
-        )}
-      </View>
-
-      <View style={styles.infoBox}>
-        <View style={styles.topRow}>
-          <CustomText style={styles.storeName} numberOfLines={1}>
-            {store?.name}
-          </CustomText>
-
-          {mainMenu && (
-            <CustomText style={styles.menuName} numberOfLines={1}>
-              1병
-            </CustomText>
+          {store?.isCertified && (
+            <FastImage
+              source={require('../../assets/verifyMaker.png')}
+              style={styles.verifyIcon}
+              resizeMode={FastImage.resizeMode.contain}
+            />
           )}
         </View>
 
-        <View style={styles.bottomRow}>
-          <View style={styles.metaRow}>
-            <CustomText style={[styles.metaText, {color: statusColor}]}>
-              {statusText}
+        <View style={styles.infoBox}>
+          <View style={styles.topRow}>
+            <CustomText style={styles.storeName} numberOfLines={1}>
+              {store?.name}
             </CustomText>
-
-            <FontAwesomeIcon
-              name="star"
-              size={fontScale >= 1.5 ? 20 : 14}
-              color="#FED348"
-              style={{marginLeft: 6, marginRight: 4}}
-            />
-
-            <CustomText style={styles.metaText}>
-              {store?.storeRate ?? 0}
-            </CustomText>
-
-            <CustomText style={styles.metaText}>
-              {' '}
-              · 리뷰 {store?.postCount ?? 0}
-            </CustomText>
-
-            {distance != null && (
-              <CustomText style={styles.metaText}>
-                {' '}
-                · {`${distance}${unit}`}
-              </CustomText>
-            )}
           </View>
 
-          {mainMenu && (
-            <CustomText style={styles.price}>
-              {toMenuPriceText(mainMenu.price)}
-            </CustomText>
-          )}
+          <View style={styles.bottomRow}>
+            <View style={styles.metaRow}>
+              {!!statusText && (
+                <>
+                  <CustomText maxScale={1.1} style={statusStyle}>
+                    {statusText}
+                  </CustomText>
+                  <View style={styles.sepDot} />
+                </>
+              )}
+
+              <View style={styles.rateRow}>
+                <FontAwesomeIcon
+                  name="star"
+                  size={fontScale >= 1.5 ? 18 : 12}
+                  color="#FFB800"
+                  style={styles.starIcon}
+                />
+                <CustomText maxScale={1.1} style={styles.rateText}>
+                  {store?.storeRate ?? 0}
+                </CustomText>
+              </View>
+
+              <View style={styles.sepDot} />
+              <CustomText maxScale={1.1} style={styles.metaText}>
+                리뷰 {store?.postCount ?? 0}
+              </CustomText>
+
+              {distance != null && (
+                <>
+                  <View style={styles.sepDot} />
+                  <CustomText maxScale={1.1} style={styles.metaText}>
+                    {`${distance}${unit}`}
+                  </CustomText>
+                </>
+              )}
+            </View>
+
+            {displayPrice != null && (
+              <View style={styles.priceBlock}>
+                <CustomText maxScale={1.1} style={styles.priceValue}>
+                  {toMenuPriceText(displayPrice)}
+                </CustomText>
+              </View>
+            )}
+          </View>
         </View>
-      </View>
-    </Pressable>
+      </Pressable>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
+  cardShadow: {
     marginHorizontal: 20,
-    marginVertical: 12,
+    marginBottom: 24,
+    borderRadius: 16,
+    shadowColor: '#111',
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    shadowOffset: {width: 0, height: 2},
+    elevation: 1,
+  },
+  card: {
     borderRadius: 16,
     overflow: 'hidden',
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
   },
 
   image: {
@@ -231,17 +246,11 @@ const styles = StyleSheet.create({
   },
 
   storeName: {
-    fontSize: 18,
-    fontFamily: 'Pretendard-Bold',
-    color: '#111',
+    fontSize: 16,
+    fontFamily: 'Pretendard-ExtraBold',
+    color: '#333',
     flex: 1,
     marginRight: 10,
-  },
-
-  menuName: {
-    fontSize: 13,
-    color: '#9CA3AF',
-    fontFamily: 'Pretendard-Medium',
   },
 
   metaRow: {
@@ -252,14 +261,46 @@ const styles = StyleSheet.create({
 
   metaText: {
     fontSize: 13,
-    color: '#6B7280',
-    fontFamily: 'Pretendard-SemiBold',
+    color: '#999',
+    fontFamily: 'Pretendard-Medium',
   },
-
-  price: {
-    fontSize: 20,
-    color: '#3cbbff',
+  openTag: {
+    fontSize: 13,
     fontFamily: 'Pretendard-Bold',
+    color: '#3CBFFF',
+  },
+  closeTag: {
+    fontSize: 13,
+    fontFamily: 'Pretendard-SemiBold',
+    color: '#ccc',
+  },
+  rateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  starIcon: {
+    marginRight: 4,
+  },
+  rateText: {
+    fontSize: 13,
+    color: '#333',
+    fontFamily: 'Pretendard-Bold',
+  },
+  sepDot: {
+    width: 2,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: '#ddd',
+    marginHorizontal: 6,
+  },
+  priceBlock: {
+    alignItems: 'flex-end',
+  },
+  priceValue: {
+    fontSize: 18,
+    color: '#3CBFFF',
+    fontFamily: 'Pretendard-ExtraBold',
+    letterSpacing: -0.7,
   },
 });
 

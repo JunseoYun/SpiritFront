@@ -85,6 +85,7 @@ const RecommStoreScreen = ({navigation, route}) => {
     updateVisibility,
     scrollToTop,
   } = useScrollToTopVisibility();
+  const listKey = selectedTab;
   const scrollButtonBottom = (bottom || 16) + 34;
 
   const scrollSelectedTabToLeft = useCallback((tabValue, animated = true) => {
@@ -163,6 +164,14 @@ const RecommStoreScreen = ({navigation, route}) => {
     });
     return () => cancelAnimationFrame(frameId);
   }, [scrollSelectedTabToLeft, selectedTab]);
+
+  useEffect(() => {
+    const frameId = requestAnimationFrame(() => {
+      scrollRef.current?.scrollToOffset({offset: 0, animated: true});
+      updateVisibility(0);
+    });
+    return () => cancelAnimationFrame(frameId);
+  }, [selectedTab, scrollRef, updateVisibility]);
 
   useEffect(() => {
     if (firstloading || refreshing) {
@@ -315,6 +324,7 @@ const RecommStoreScreen = ({navigation, route}) => {
 
       {firstloading || refreshing ? (
         <FlatList
+          key={listKey}
           data={[1, 2, 3, 4]}
           keyExtractor={(item, index) => `${item}-${index}`}
           renderItem={() => <RecommTotalItemSkeleton />}
@@ -324,6 +334,7 @@ const RecommStoreScreen = ({navigation, route}) => {
       ) : (
         <FlatList
           ref={scrollRef}
+          key={listKey}
           data={stores}
           renderItem={renderStoreItem}
           keyExtractor={(item, index) =>
@@ -390,12 +401,13 @@ const styles = StyleSheet.create({
   tabItem: {
     paddingVertical: 7,
     paddingHorizontal: 14,
-    backgroundColor: '#F2F3F5',
     borderRadius: 999,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: ColorUtil.placeholderBorder,
   },
   tabItemActive: {
     backgroundColor: ColorUtil.mainChip,
-    borderWidth: 1.0,
     borderColor: ColorUtil.main,
   },
   tabText: {

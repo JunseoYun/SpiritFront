@@ -53,64 +53,67 @@ const mapMockStoreToStoreItem = item => ({
   operationInfoDtos: [],
 });
 
-const TodayRecommCard = React.memo(({item, currentIndex, totalCount}) => {
-  const formattedPrice = formatPrice(item?.price);
+const TodayRecommCard = React.memo(
+  ({item, currentIndex, totalCount, onPress}) => {
+    const formattedPrice = formatPrice(item?.price);
 
-  return (
-    <Pressable
-      style={styles.card}
-      hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}>
-      {({pressed}) => (
-        <View style={styles.cardImageWrap}>
-          <FastImage
-            source={
-              item?.image
-                ? {
-                    uri: item.image,
-                    priority: FastImage.priority.normal,
-                  }
-                : require('../../../assets/default_store6.png')
-            }
-            style={[styles.cardImage, pressed && styles.cardImagePressed]}
-            resizeMode={FastImage.resizeMode.cover}
-          />
-          <View style={styles.cardOverlay} pointerEvents="none">
-            <View style={styles.semiOverlay}>
-              <LinearGradient
-                colors={['transparent', 'rgba(0, 0, 0, 0.55)']}
-                style={styles.gradientBottom}
-                pointerEvents="none"
-              />
-              <View style={styles.bottomInfoRow}>
-                <View style={styles.storeNameRow}>
-                  {item?.isCertified && (
-                    <FastImage
-                      source={require('../../../assets/verifyMaker.png')}
-                      style={styles.verifyIcon}
-                      resizeMode={FastImage.resizeMode.contain}
-                    />
-                  )}
-                  <CustomText
-                    style={styles.storeName}
-                    numberOfLines={1}
-                    ellipsizeMode="tail">
-                    {item.storeName}
+    return (
+      <Pressable
+        style={styles.card}
+        hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}
+        onPress={onPress}>
+        {({pressed}) => (
+          <View style={styles.cardImageWrap}>
+            <FastImage
+              source={
+                item?.image
+                  ? {
+                      uri: item.image,
+                      priority: FastImage.priority.normal,
+                    }
+                  : require('../../../assets/default_store6.png')
+              }
+              style={[styles.cardImage, pressed && styles.cardImagePressed]}
+              resizeMode={FastImage.resizeMode.cover}
+            />
+            <View style={styles.cardOverlay} pointerEvents="none">
+              <View style={styles.semiOverlay}>
+                <LinearGradient
+                  colors={['transparent', 'rgba(0, 0, 0, 0.35)']}
+                  style={styles.gradientBottom}
+                  pointerEvents="none"
+                />
+                <View style={styles.bottomInfoRow}>
+                  <View style={styles.storeNameRow}>
+                    {item?.isCertified && (
+                      <FastImage
+                        source={require('../../../assets/verifyMaker.png')}
+                        style={styles.verifyIcon}
+                        resizeMode={FastImage.resizeMode.contain}
+                      />
+                    )}
+                    <CustomText
+                      style={styles.storeName}
+                      numberOfLines={1}
+                      ellipsizeMode="tail">
+                      {item.storeName}
+                    </CustomText>
+                  </View>
+                  <CustomText style={styles.priceValue} numberOfLines={1}>
+                    {formattedPrice ? `${formattedPrice}원` : ''}
                   </CustomText>
                 </View>
-                <CustomText style={styles.priceValue} numberOfLines={1}>
-                  {formattedPrice ? `${formattedPrice}원` : ''}
-                </CustomText>
               </View>
             </View>
           </View>
-        </View>
-      )}
-    </Pressable>
-  );
-});
+        )}
+      </Pressable>
+    );
+  },
+);
 
 const CarouselCardItem = React.memo(
-  ({item, animationValue, currentIndex, totalCount}) => {
+  ({item, animationValue, currentIndex, totalCount, onPress}) => {
     const animatedStyle = useAnimatedStyle(() => {
       const opacity = interpolate(
         animationValue.value,
@@ -128,6 +131,7 @@ const CarouselCardItem = React.memo(
           item={item}
           currentIndex={currentIndex}
           totalCount={totalCount}
+          onPress={onPress}
         />
       </Animated.View>
     );
@@ -304,6 +308,17 @@ const RecommItem = ({
     selectedTab,
   ]);
 
+  const handleStorePress = useCallback(
+    storeId => {
+      if (!storeId) return;
+      navigation?.navigate('StoreStack', {
+        screen: 'StoreMainScreen',
+        params: {storeId},
+      });
+    },
+    [navigation],
+  );
+
   if (loading || refresh || tabLoading) {
     return <RecommItemSkeleton />;
   }
@@ -394,6 +409,7 @@ const RecommItem = ({
                 animationValue={animationValue}
                 currentIndex={currentIndex}
                 totalCount={recommCardItems.length}
+                onPress={() => handleStorePress(item?.id)}
               />
             )}
           />
@@ -470,12 +486,13 @@ const styles = StyleSheet.create({
   titleTabItem: {
     paddingVertical: 7,
     paddingHorizontal: 14,
-    backgroundColor: '#F2F3F5',
     borderRadius: 999,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: ColorUtil.placeholderBorder,
   },
   titleTabItemActive: {
     backgroundColor: ColorUtil.mainChip,
-    borderWidth: 1.0,
     borderColor: ColorUtil.main,
   },
   titleTabText: {
@@ -556,8 +573,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: 90,
-    //이새끼도
+    height: 80,
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
     zIndex: 1,
@@ -589,7 +605,7 @@ const styles = StyleSheet.create({
     zIndex: 3,
     gap: 8,
     paddingHorizontal: 3,
-    //이새끼
+    paddingBottom: 3,
   },
 
   priceValue: {

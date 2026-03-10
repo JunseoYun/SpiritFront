@@ -766,7 +766,7 @@ const styles = StyleSheet.create({
   },
   todayAddress2: {
     fontSize: 15,
-    fontFamily: 'Pretendard-Medium',
+    fontFamily: 'Pretendard-SemiBold',
     color: '#181a1a',
     flexShrink: 1,
     marginRight: 3,
@@ -797,6 +797,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     paddingBottom: 1,
     overflow: 'hidden',
+    zIndex: 999,
   },
   aiChatButtonGradient: {
     ...StyleSheet.absoluteFillObject,
