@@ -34,6 +34,7 @@ import PopularStoresSection from '../../components/ExploreScreen/PopularStroe/Po
 import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import CustomText from '../../utils/CustomText';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const screenHeight = Dimensions.get('window').height;
@@ -563,6 +564,12 @@ const ExploreScreen = ({navigation, route}) => {
               hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
               style={[styles.addressPressableCompact, {marginLeft: 0}]}
               onPress={setLocationHandle}>
+              <Ionicons
+                name="location-outline"
+                size={18}
+                color="#333"
+                style={styles.noticeIcon}
+              />
               <CustomText
                 maxScale={1.0}
                 style={styles.todayAddress2}
@@ -571,7 +578,7 @@ const ExploreScreen = ({navigation, route}) => {
                 {formatAddress(address)}
               </CustomText>
               {address && (
-                <Feather name="chevron-right" size={20} color="#181a1a" />
+                <Feather name="chevron-right" size={18} color="#333" />
               )}
             </Pressable>
           </View>
@@ -754,8 +761,11 @@ const styles = StyleSheet.create({
     zIndex: 40,
     backgroundColor: '#fff',
   },
+  noticeIcon: {
+    marginRight: 4,
+  },
   todayAddress2: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Pretendard-Medium',
     color: '#181a1a',
     flexShrink: 1,

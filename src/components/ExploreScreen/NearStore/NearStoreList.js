@@ -117,13 +117,11 @@ const NearStoreList = ({refresh, navigation, location}) => {
             marginRight: 40,
             alignItems: 'center',
           }}>
-          <CustomText style={[styles.storeText]}>
-            제일 가까운 술집은?
-          </CustomText>
+          <CustomText style={[styles.storeText]}>제일 가까운 술집</CustomText>
           {stores.length >= 3 && (
             <View style={styles.totalView}>
               <CustomText style={[styles.totalText]}>전체보기</CustomText>
-              <Feather name={'chevron-right'} size={15} color="#333" />
+              <Feather name={'chevron-right'} size={13} color="#B9B9B9" />
             </View>
           )}
         </View>
@@ -181,16 +179,16 @@ const styles = StyleSheet.create({
   storeText: {
     fontSize: 18,
     fontFamily: 'Pretendard-SemiBold',
-    color: '#181a1a',
+    color: '#333',
   },
   totalView: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   totalText: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-Regular',
-    color: '#333',
+    fontSize: 12.5,
+    fontFamily: 'Pretendard-Medium',
+    color: '#B9B9B9',
   },
   storetotaltext: {
     fontSize: 12,

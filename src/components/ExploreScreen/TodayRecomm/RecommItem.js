@@ -1,7 +1,6 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {
   Dimensions,
-  PixelRatio,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,8 +8,9 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
+import Entypo from 'react-native-vector-icons/Entypo';
+
 import Carousel from 'react-native-reanimated-carousel';
 import Animated, {
   Extrapolation,
@@ -20,15 +20,25 @@ import Animated, {
 import RecommItemSkeleton from './RecommItemSkeleton';
 import {drinkTabs, mockDataByDrinkType} from './mockRecommData';
 import CustomText from '../../../utils/CustomText';
+import {Store_getby_drinkPrice} from '../../../api/storeApi';
+import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
+import ColorUtil from '../../../utils/ColorUtil';
 
-const formatPrice = value => Number(value || 0).toLocaleString('ko-KR');
+const formatPrice = value => {
+  if (value == null) return '';
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value.toLocaleString('ko-KR');
+  }
+  const numeric = String(value).replace(/[^\d]/g, '');
+  if (!numeric) return '';
+  return Number(numeric).toLocaleString('ko-KR');
+};
 const isValidDrinkTab = value => drinkTabs.some(tab => tab.value === value);
-const fontScale = PixelRatio.getFontScale();
 const {width: screenWidth} = Dimensions.get('window');
-const CARD_WIDTH = screenWidth * 0.75;
-const CARD_HEIGHT = 200;
-const PARALLAX_OFFSET = Math.max(24, screenWidth - CARD_WIDTH - 6);
-const TAB_CONTENT_HORIZONTAL_PADDING = 20;
+const CARD_WIDTH = screenWidth * 0.9;
+const CARD_HEIGHT = 210;
+const PARALLAX_OFFSET = 0;
+const DEFAULT_PAGE_SIZE = 10;
 
 const mapMockStoreToStoreItem = item => ({
   id: item.id,
@@ -43,89 +53,86 @@ const mapMockStoreToStoreItem = item => ({
   operationInfoDtos: [],
 });
 
-const TodayRecommCard = React.memo(({item}) => (
-  <Pressable
-    style={styles.card}
-    hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}>
-    <View style={styles.cardImageWrap}>
-      <FastImage
-        source={{
-          uri: item.image,
-          priority: FastImage.priority.normal,
-        }}
-        style={styles.cardImage}
-        resizeMode={FastImage.resizeMode.cover}>
-        {item?.isCertified && (
+const TodayRecommCard = React.memo(({item, currentIndex, totalCount}) => {
+  const formattedPrice = formatPrice(item?.price);
+
+  return (
+    <Pressable
+      style={styles.card}
+      hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}>
+      {({pressed}) => (
+        <View style={styles.cardImageWrap}>
           <FastImage
-            source={require('../../../assets/verifyMaker.png')}
-            style={[
-              styles.imageStyle,
-              fontScale >= 1.5 && {width: 21, height: 21},
-            ]}
-          />
-        )}
-        <View style={styles.semiOverlay}>
-          <LinearGradient
-            colors={
-              item.image
-                ? ['rgba(0, 0, 0, 0.5)', 'transparent']
-                : ['rgba(0, 0, 0, 0.3)', 'transparent']
+            source={
+              item?.image
+                ? {
+                    uri: item.image,
+                    priority: FastImage.priority.normal,
+                  }
+                : require('../../../assets/default_store6.png')
             }
-            style={styles.gradientTop}
-            pointerEvents="none"
+            style={[styles.cardImage, pressed && styles.cardImagePressed]}
+            resizeMode={FastImage.resizeMode.cover}
           />
-          <CustomText
-            style={styles.storeName}
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            {item.storeName}
-          </CustomText>
-          <CustomText
-            style={styles.menuPrice}
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            {item.drink} {formatPrice(item.price)}원
-          </CustomText>
-          <LinearGradient
-            colors={['transparent', 'rgba(0, 0, 0, 0.45)']}
-            style={styles.gradientBottom}
-            pointerEvents="none"
-          />
-          <View style={styles.bottomInfoRow}>
-            <CustomText style={styles.bottomInfoText} numberOfLines={1}>
-              {item.category}
-            </CustomText>
-            <View style={styles.ratingWrap}>
-              <FontAwesomeIcon name="star" size={16} color="#FED348" />
-              <CustomText style={styles.ratingText} numberOfLines={1}>
-                {(Number(item.rating) || 4.7).toFixed(1)}
-              </CustomText>
+          <View style={styles.cardOverlay} pointerEvents="none">
+            <View style={styles.semiOverlay}>
+              <LinearGradient
+                colors={['transparent', 'rgba(0, 0, 0, 0.55)']}
+                style={styles.gradientBottom}
+                pointerEvents="none"
+              />
+              <View style={styles.bottomInfoRow}>
+                <View style={styles.storeNameRow}>
+                  {item?.isCertified && (
+                    <FastImage
+                      source={require('../../../assets/verifyMaker.png')}
+                      style={styles.verifyIcon}
+                      resizeMode={FastImage.resizeMode.contain}
+                    />
+                  )}
+                  <CustomText
+                    style={styles.storeName}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    {item.storeName}
+                  </CustomText>
+                </View>
+                <CustomText style={styles.priceValue} numberOfLines={1}>
+                  {formattedPrice ? `${formattedPrice}원` : ''}
+                </CustomText>
+              </View>
             </View>
           </View>
         </View>
-      </FastImage>
-    </View>
-  </Pressable>
-));
-
-const CarouselCardItem = React.memo(({item, animationValue}) => {
-  const animatedStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      animationValue.value,
-      [-1, 0, 1],
-      [0.6, 1, 0.6],
-      Extrapolation.CLAMP,
-    );
-
-    return {opacity};
-  });
-
-  return (
-    <Animated.View style={[styles.carouselItem, animatedStyle]}>
-      <TodayRecommCard item={item} />
-    </Animated.View>
+      )}
+    </Pressable>
   );
 });
+
+const CarouselCardItem = React.memo(
+  ({item, animationValue, currentIndex, totalCount}) => {
+    const animatedStyle = useAnimatedStyle(() => {
+      const opacity = interpolate(
+        animationValue.value,
+        [-1, 0, 1],
+        [0.85, 1, 0.85],
+        Extrapolation.CLAMP,
+      );
+
+      return {opacity};
+    });
+
+    return (
+      <Animated.View style={[styles.carouselItem, animatedStyle]}>
+        <TodayRecommCard
+          item={item}
+          currentIndex={currentIndex}
+          totalCount={totalCount}
+        />
+      </Animated.View>
+    );
+  },
+);
 
 const RecommItem = ({
   recommStores,
@@ -136,15 +143,24 @@ const RecommItem = ({
   initialTab,
   onPressViewAll,
 }) => {
+  const {translateAlcohol} = useTranslateAlcohol();
   const [selectedTab, setSelectedTab] = useState(() =>
     isValidDrinkTab(initialTab) ? initialTab : drinkTabs[0].value,
   );
   const [currentIndex, setCurrentIndex] = useState(0);
-  const tabScrollRef = useRef(null);
-  const tabPositionMapRef = useRef({});
+  const [isDrinkTabsVisible, setIsDrinkTabsVisible] = useState(false);
+  const [tabStoreMap, setTabStoreMap] = useState({});
+  const [tabLoading, setTabLoading] = useState(false);
 
   const selectedTabCards = useMemo(
     () => mockDataByDrinkType[selectedTab] || [],
+    [selectedTab],
+  );
+
+  const selectedTabLabel = useMemo(
+    () =>
+      drinkTabs.find(tab => tab.value === selectedTab)?.label ||
+      drinkTabs[0].label,
     [selectedTab],
   );
 
@@ -153,18 +169,73 @@ const RecommItem = ({
     [selectedTabCards],
   );
 
+  const selectedTabStores = useMemo(
+    () => tabStoreMap?.[selectedTab] || [],
+    [selectedTab, tabStoreMap],
+  );
+
+  const recommCardItems = useMemo(() => {
+    if (!Array.isArray(selectedTabStores) || selectedTabStores.length === 0) {
+      return selectedTabCards;
+    }
+
+    return selectedTabStores.map(store => {
+      const drinkDtos = Array.isArray(store?.mainDrinkDtos)
+        ? store.mainDrinkDtos
+        : [];
+      const matchedDrink = drinkDtos.find(drink => drink?.type === selectedTab);
+
+      return {
+        id: store?.id ?? `${selectedTab}-${store?.name ?? 'store'}`,
+        image: store?.mainImgUrl,
+        storeName: store?.name || store?.storeName || '이름 없는 매장',
+        drink: translateAlcohol(selectedTab),
+        price: matchedDrink?.price ?? '',
+        isCertified: !!store?.isCertified,
+      };
+    });
+  }, [selectedTab, selectedTabCards, selectedTabStores, translateAlcohol]);
+
+  const resolveStorePage = useCallback(data => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.content)) return data.content;
+    if (Array.isArray(data?.stores)) return data.stores;
+    if (Array.isArray(data?.storeList)) return data.storeList;
+    if (typeof data === 'object' && data?.id && data?.name) return [data];
+    return [];
+  }, []);
+
+  const fetchDrinkPricePage = useCallback(
+    async (drinkType, options = {}) => {
+      if (!location?.latitude || !location?.longitude) return;
+      setTabLoading(true);
+      try {
+        const data = await Store_getby_drinkPrice(
+          location.latitude,
+          location.longitude,
+          drinkType,
+          options.page ?? 0,
+          options.size ?? DEFAULT_PAGE_SIZE,
+          options.sort,
+        );
+        const stores = resolveStorePage(data);
+        console.log(data);
+        setTabStoreMap(prev => ({
+          ...prev,
+          [drinkType]: stores,
+        }));
+      } catch (error) {
+      } finally {
+        setTabLoading(false);
+      }
+    },
+    [location?.latitude, location?.longitude, resolveStorePage],
+  );
+
   useEffect(() => {
     setCurrentIndex(0);
   }, [selectedTab]);
-
-  const scrollSelectedTabToLeft = useCallback((tabValue, animated = true) => {
-    const measuredX = tabPositionMapRef.current?.[tabValue];
-    if (typeof measuredX !== 'number') {
-      return;
-    }
-    const targetX = Math.max(0, measuredX - TAB_CONTENT_HORIZONTAL_PADDING);
-    tabScrollRef.current?.scrollTo({x: targetX, y: 0, animated});
-  }, []);
 
   useEffect(() => {
     if (isValidDrinkTab(initialTab)) {
@@ -173,30 +244,40 @@ const RecommItem = ({
   }, [initialTab]);
 
   useEffect(() => {
-    const frameId = requestAnimationFrame(() => {
-      scrollSelectedTabToLeft(selectedTab, true);
-    });
-    return () => cancelAnimationFrame(frameId);
-  }, [scrollSelectedTabToLeft, selectedTab]);
+    setTabStoreMap({});
+  }, [location?.latitude, location?.longitude]);
+
+  useEffect(() => {
+    if (!isValidDrinkTab(selectedTab)) return;
+    if (tabStoreMap?.[selectedTab]) return;
+    fetchDrinkPricePage(selectedTab);
+  }, [fetchDrinkPricePage, selectedTab, tabStoreMap]);
+
+  useEffect(() => {
+    if (!refresh || !isValidDrinkTab(selectedTab)) return;
+    fetchDrinkPricePage(selectedTab);
+  }, [fetchDrinkPricePage, refresh, selectedTab]);
 
   const handleCarouselProgress = useCallback(
     (_offsetProgress, absoluteProgress) => {
       if (!Number.isFinite(absoluteProgress)) {
         return;
       }
-      const maxIndex = Math.max(selectedTabCards.length - 1, 0);
+      const maxIndex = Math.max(recommCardItems.length - 1, 0);
       const nextIndex = Math.min(
         maxIndex,
         Math.max(0, Math.round(absoluteProgress)),
       );
       setCurrentIndex(prev => (prev === nextIndex ? prev : nextIndex));
     },
-    [selectedTabCards.length],
+    [recommCardItems.length],
   );
 
   const handlePressViewAll = useCallback(() => {
     const stores =
-      Array.isArray(recommStores) && recommStores.length > 0
+      Array.isArray(selectedTabStores) && selectedTabStores.length > 0
+        ? selectedTabStores
+        : Array.isArray(recommStores) && recommStores.length > 0
         ? recommStores
         : fallbackStores;
 
@@ -220,77 +301,105 @@ const RecommItem = ({
     navigation,
     onPressViewAll,
     recommStores,
+    selectedTabStores,
     selectedTab,
   ]);
 
-  if (loading || refresh) {
+  if (loading || refresh || tabLoading) {
     return <RecommItemSkeleton />;
   }
 
   return (
     <View style={styles.sectionContainer}>
       <View style={styles.titleRow}>
-        <CustomText style={styles.sectionTitle}>가성비 술집</CustomText>
+        <View style={styles.sectionTitleGroup}>
+          <Pressable
+            hitSlop={8}
+            onPress={() => setIsDrinkTabsVisible(prev => !prev)}
+            style={styles.titleDrinkPill}>
+            <CustomText style={styles.titleDrinkText}>
+              {selectedTabLabel}
+            </CustomText>
+            <Entypo
+              name="triangle-down"
+              size={12}
+              color="#3CBBFF"
+              style={[
+                styles.titleDrinkArrow,
+                isDrinkTabsVisible && styles.titleDrinkArrowOpen,
+              ]}
+            />
+          </Pressable>
+          <CustomText style={styles.sectionTitle}>최저가 매장</CustomText>
+        </View>
         <Pressable
-          style={{flexDirection: 'row', alignItems: 'center'}}
           onPress={handlePressViewAll}
-          hitSlop={8}>
-          <CustomText style={styles.moreButtonText}>전체보기</CustomText>
-          <Feather name={'chevron-right'} size={15} color="#333" />
+          hitSlop={8}
+          style={styles.viewAllButton}>
+          <CustomText style={styles.viewAllText}>전체보기</CustomText>
+          <Feather name={'chevron-right'} size={13} color="#B9B9B9" />
         </Pressable>
       </View>
 
-      <View style={styles.tabTrack}>
-        <ScrollView
-          ref={tabScrollRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabContentContainer}>
-          {drinkTabs.map(tab => {
-            const isActive = selectedTab === tab.value;
+      {isDrinkTabsVisible && (
+        <View style={styles.titleTabsRow}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.titleTabsContent}>
+            {drinkTabs.map(tab => {
+              const isActive = tab.value === selectedTab;
+              return (
+                <Pressable
+                  key={tab.value}
+                  onPress={() => {
+                    setSelectedTab(tab.value);
+                    setIsDrinkTabsVisible(false);
+                  }}
+                  hitSlop={8}
+                  style={[
+                    styles.titleTabItem,
+                    isActive && styles.titleTabItemActive,
+                  ]}>
+                  <CustomText
+                    style={[
+                      styles.titleTabText,
+                      isActive && styles.titleTabTextActive,
+                    ]}>
+                    {tab.label}
+                  </CustomText>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
 
-            return (
-              <Pressable
-                key={tab.value}
-                onPress={() => setSelectedTab(tab.value)}
-                onLayout={({nativeEvent}) => {
-                  tabPositionMapRef.current[tab.value] = nativeEvent.layout.x;
-                  if (tab.value === selectedTab) {
-                    scrollSelectedTabToLeft(tab.value, true);
-                  }
-                }}
-                style={[styles.tabItem, isActive && styles.tabItemActive]}>
-                <CustomText
-                  style={[styles.tabText, isActive && styles.tabTextActive]}>
-                  {tab.label}
-                </CustomText>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      {selectedTabCards.length > 0 && (
+      {recommCardItems.length > 0 && (
         <View style={styles.carouselWrap}>
           <Carousel
             loop={true}
             width={screenWidth}
             height={CARD_HEIGHT}
-            data={selectedTabCards}
+            data={recommCardItems}
             onProgressChange={handleCarouselProgress}
             mode="parallax"
             modeConfig={{
               parallaxScrollingScale: 1,
               parallaxScrollingOffset: PARALLAX_OFFSET,
-              parallaxAdjacentItemScale: 0.9,
+              parallaxAdjacentItemScale: 1,
             }}
             renderItem={({item, animationValue}) => (
-              <CarouselCardItem item={item} animationValue={animationValue} />
+              <CarouselCardItem
+                item={item}
+                animationValue={animationValue}
+                currentIndex={currentIndex}
+                totalCount={recommCardItems.length}
+              />
             )}
           />
-
-          <View style={styles.pagination}>
-            {selectedTabCards.map((card, index) => (
+          <View style={styles.bottomDots}>
+            {recommCardItems.map((card, index) => (
               <View
                 key={`${card.id}-dot`}
                 style={[styles.dot, index === currentIndex && styles.dotActive]}
@@ -306,58 +415,105 @@ const RecommItem = ({
 const styles = StyleSheet.create({
   sectionContainer: {
     backgroundColor: '#fff',
-    paddingTop: 12,
+    paddingTop: 10,
     paddingBottom: 20,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 8,
+    marginBottom: 4,
+    justifyContent: 'space-between',
   },
-  sectionTitle: {
-    fontSize: 18,
-    color: '#333',
+  sectionTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 1,
+  },
+  titleDrinkPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  titleDrinkArrow: {
+    marginRight: 4,
+    transform: [{rotate: '0deg'}],
+  },
+  titleDrinkArrowOpen: {
+    transform: [{rotate: '180deg'}],
+  },
+  titleDrinkText: {
+    fontSize: 20,
+    color: '#3CBBFF',
     fontFamily: 'Pretendard-SemiBold',
+    letterSpacing: -0.4,
+    marginRight: 4,
   },
-  moreButtonText: {
+
+  viewAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  viewAllText: {
     fontSize: 13,
-    color: '#666',
-    fontFamily: 'Pretendard-Regular',
+    fontFamily: 'Pretendard-Medium',
+    color: '#B9B9B9',
   },
-  tabTrack: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E6E6E6',
+  titleTabsRow: {
+    marginTop: 10,
     marginBottom: 14,
   },
-  tabContentContainer: {
-    paddingLeft: 20,
-    paddingRight: 2,
-  },
-  tabItem: {
-    height: 40,
-    paddingHorizontal: 6,
-    marginRight: 18,
+  titleTabsContent: {
     alignItems: 'center',
-    justifyContent: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+
+    gap: 8,
+    paddingHorizontal: 20,
   },
-  tabItemActive: {
-    borderBottomColor: '#111',
+  titleTabItem: {
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    backgroundColor: '#F2F3F5',
+    borderRadius: 999,
   },
-  tabText: {
-    fontSize: 15,
-    color: '#8E8E8E',
+  titleTabItemActive: {
+    backgroundColor: ColorUtil.mainChip,
+    borderWidth: 1.0,
+    borderColor: ColorUtil.main,
+  },
+  titleTabText: {
+    fontSize: 12,
+    color: '#666',
     fontFamily: 'Pretendard-Medium',
   },
-  tabTextActive: {
-    color: '#111',
+  titleTabTextActive: {
+    color: '#3CBBFF',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    color: '#333',
     fontFamily: 'Pretendard-SemiBold',
+    letterSpacing: -0.4,
+    marginLeft: 2,
   },
   carouselWrap: {
-    marginTop: 2,
+    marginTop: 8,
+  },
+  bottomDots: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#DADADA',
+    marginHorizontal: 3,
+  },
+  dotActive: {
+    width: 16,
+    height: 5,
+    backgroundColor: '#3CBBFF',
   },
   carouselItem: {
     width: screenWidth,
@@ -371,114 +527,76 @@ const styles = StyleSheet.create({
   cardImageWrap: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
-    borderRadius: 12,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   cardImage: {
     width: '100%',
     height: CARD_HEIGHT,
-    borderRadius: 12,
+    borderRadius: 16,
     backgroundColor: '#ECECEC',
+    borderWidth: 0.5,
+    borderColor: '#EEE',
   },
-  imageStyle: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    width: 18,
-    height: 18,
-    zIndex: 5,
+  cardImagePressed: {
+    transform: [{scale: 1.04}],
   },
+  cardOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+
   semiOverlay: {
     alignItems: 'flex-start',
     width: '100%',
     height: '100%',
-    justifyContent: 'flex-start',
-  },
-  gradientTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 60,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    zIndex: 1,
+    justifyContent: 'flex-end',
+    padding: 12,
   },
   gradientBottom: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    height: 66,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+    height: 90,
+    //이새끼도
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
     zIndex: 1,
   },
+
   storeName: {
-    fontSize: 16,
+    fontSize: 17,
     fontFamily: 'Pretendard-Bold',
     color: '#fff',
-    marginTop: 8,
-    marginLeft: 12,
-    marginRight: 22,
-    textAlign: 'center',
     zIndex: 3,
+    flex: 1,
+    minWidth: 0,
   },
-  menuPrice: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-SemiBold',
-    color: '#fff',
-    marginLeft: 15,
-    marginRight: 22,
-    textAlign: 'center',
-    zIndex: 3,
-    marginTop: -1,
-    textShadowColor: 'rgba(0,0,0,0.2)',
-    textShadowOffset: {width: 0, height: 1},
-    textShadowRadius: 3,
+  storeNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    minWidth: 0,
+  },
+  verifyIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 6,
   },
   bottomInfoRow: {
-    position: 'absolute',
-    left: 12,
-    right: 12,
-    bottom: 8,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    width: '100%',
     zIndex: 3,
+    gap: 8,
+    paddingHorizontal: 3,
+    //이새끼
   },
-  bottomInfoText: {
-    fontSize: 13,
-    color: '#fff',
-    fontFamily: 'Pretendard-Medium',
-  },
-  ratingWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingText: {
-    marginLeft: 4,
-    fontSize: 13,
-    color: '#fff',
-    fontFamily: 'Pretendard-SemiBold',
-    textShadowColor: 'rgba(0,0,0,0.85)',
-    textShadowOffset: {width: 0, height: 1},
-    textShadowRadius: 3,
-  },
-  pagination: {
-    marginTop: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#CCC',
-    marginHorizontal: 4,
-  },
-  dotActive: {
-    backgroundColor: '#111',
+
+  priceValue: {
+    fontSize: 17,
+    fontFamily: 'Pretendard-ExtraBold',
+    color: '#FFFFFF',
   },
 });
 

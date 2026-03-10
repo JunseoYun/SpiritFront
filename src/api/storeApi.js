@@ -525,6 +525,35 @@ export const Store_getby_main_banner = async (latitude, longitude) => {
   }
 };
 
+export const Store_getby_drinkPrice = async (
+  latitude,
+  longitude,
+  drinkType,
+  page = 0,
+  size = 10,
+  sort,
+) => {
+  try {
+    const radius = await getRadiusParam();
+
+    const response = await axiosInstance.get(`/store/get-by/drink-price`, {
+      // auth: false,
+      params: {
+        longitude,
+        latitude,
+        radius,
+        drinkType,
+        page,
+        size,
+        ...(sort ? {sort} : {}),
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    functionError(error);
+  }
+};
+
 //관리 중인 매장 리스트 조회
 export const Store_getby_managed = async page => {
   try {

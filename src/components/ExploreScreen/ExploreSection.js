@@ -41,8 +41,10 @@ const ExploreSection = ({
         locationName={address}
         onPressViewAll={onPressRecommViewAll}
       />
-
-      <View style={{height: 8, backgroundColor: '#F5F5F5'}} />
+      {/* 
+      <View
+        style={{height: 6, marginVertical: 15, backgroundColor: '#F4F4F6'}}
+      /> */}
 
       <CategoryGrid onPress={catagoryClick} />
 
