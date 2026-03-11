@@ -4,7 +4,7 @@ import SkeletonBox from '../../../hooks/SkeletonBox';
 
 const {width: screenWidth} = Dimensions.get('window');
 const CARD_WIDTH = screenWidth * 0.9;
-const CARD_HEIGHT = 200;
+const CARD_HEIGHT = 210;
 const DOT_COUNT = 3;
 
 const RecommItemSkeleton = () => {
@@ -23,19 +23,22 @@ const RecommItemSkeleton = () => {
       <View style={styles.carouselWrap}>
         <View style={styles.cardContainer}>
           <SkeletonBox style={styles.card} />
-          <SkeletonBox style={styles.verifyBadge} />
           <View style={styles.cardBottomRow}>
-            <SkeletonBox style={styles.storeName} />
+            <View style={styles.cardStoreNameRow}>
+              <SkeletonBox style={styles.verifyIcon} />
+              <SkeletonBox style={styles.storeName} />
+            </View>
             <SkeletonBox style={styles.priceBox} />
           </View>
         </View>
 
         <View style={styles.pagination}>
           {Array.from({length: DOT_COUNT}).map((_, index) => (
-            <SkeletonBox
-              key={`dot-skeleton-${index}`}
-              style={[styles.dot, index === 0 && styles.dotActive]}
-            />
+            <View key={`dot-skeleton-${index}`} style={styles.dotSlot}>
+              <SkeletonBox
+                style={[styles.dot, index === 0 && styles.dotActive]}
+              />
+            </View>
           ))}
         </View>
       </View>
@@ -46,7 +49,7 @@ const RecommItemSkeleton = () => {
 const styles = StyleSheet.create({
   sectionContainer: {
     backgroundColor: '#fff',
-    paddingTop: 10,
+    paddingTop: 16,
     paddingBottom: 20,
   },
   titleRow: {
@@ -54,7 +57,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   titleGroup: {
     flexDirection: 'row',
@@ -62,13 +65,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   titlePill: {
-    width: 44,
-    height: 18,
-    borderRadius: 9,
+    width: 56,
+    height: 22,
+    borderRadius: 10,
   },
   titleSuffix: {
-    width: 86,
-    height: 18,
+    width: 92,
+    height: 22,
     borderRadius: 6,
   },
   moreRow: {
@@ -77,11 +80,11 @@ const styles = StyleSheet.create({
   },
   moreTextSkeleton: {
     width: 46,
-    height: 12,
+    height: 14,
     borderRadius: 5,
   },
   carouselWrap: {
-    marginTop: 4,
+    marginTop: 8,
   },
   cardContainer: {
     width: '100%',
@@ -91,14 +94,6 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
     borderRadius: 16,
-  },
-  verifyBadge: {
-    position: 'absolute',
-    top: 12,
-    right: (screenWidth - CARD_WIDTH) / 2 + 12,
-    width: 44,
-    height: 16,
-    borderRadius: 8,
   },
   cardBottomRow: {
     position: 'absolute',
@@ -110,15 +105,28 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
   },
+  cardStoreNameRow: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  verifyIcon: {
+    width: 16,
+    height: 16,
+    borderRadius: 4,
+  },
   storeName: {
-    width: '55%',
-    height: 14,
+    flex: 1,
+    minWidth: 0,
+    height: 17,
     borderRadius: 6,
   },
   priceBox: {
-    width: 92,
-    height: 22,
-    borderRadius: 8,
+    width: 72,
+    height: 18,
+    borderRadius: 6,
   },
   pagination: {
     marginTop: 10,
@@ -126,15 +134,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dot: {
-    width: 5,
+  dotSlot: {
+    width: 10,
     height: 5,
-    borderRadius: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginHorizontal: 3,
+    overflow: 'visible',
+  },
+  dot: {
+    height: 5,
+    width: 5,
+    borderRadius: 3,
+    position: 'absolute',
   },
   dotActive: {
-    width: 16,
     height: 5,
+    width: 16,
     borderRadius: 3,
   },
 });

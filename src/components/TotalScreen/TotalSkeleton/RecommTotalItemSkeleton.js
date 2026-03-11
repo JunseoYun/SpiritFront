@@ -7,7 +7,10 @@ const RecommTotalItemSkeleton = () => {
   return (
     <View style={styles.cardShadow}>
       <View style={styles.card}>
-        <SkeletonBox style={styles.image} />
+        <View style={styles.imageWrap}>
+          <SkeletonBox style={styles.image} />
+          <SkeletonBox style={styles.verifyIcon} />
+        </View>
 
         <View style={styles.infoBox}>
           <View style={styles.topRow}>
@@ -16,13 +19,16 @@ const RecommTotalItemSkeleton = () => {
 
           <View style={styles.bottomRow}>
             <View style={styles.metaRow}>
-              <SkeletonBox style={styles.metaChip} />
+              <SkeletonBox style={styles.statusText} />
               <SkeletonBox style={styles.sepDot} />
-              <SkeletonBox style={styles.rateText} />
+              <View style={styles.rateRow}>
+                <SkeletonBox style={styles.starIcon} />
+                <SkeletonBox style={styles.rateText} />
+              </View>
               <SkeletonBox style={styles.sepDot} />
-              <SkeletonBox style={styles.metaText} />
+              <SkeletonBox style={styles.reviewText} />
               <SkeletonBox style={styles.sepDot} />
-              <SkeletonBox style={styles.metaTextWide} />
+              <SkeletonBox style={styles.distanceText} />
             </View>
 
             <SkeletonBox style={styles.priceValue} />
@@ -54,6 +60,17 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 0,
   },
+  imageWrap: {
+    position: 'relative',
+  },
+  verifyIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+  },
   infoBox: {
     backgroundColor: '#fff',
     paddingHorizontal: 16,
@@ -80,36 +97,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 6,
     marginRight: 10,
   },
-  metaChip: {
-    width: 42,
+  statusText: {
+    width: 44,
     height: 12,
     borderRadius: 4,
   },
   sepDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    width: 2,
+    height: 2,
+    borderRadius: 1,
+    marginHorizontal: 6,
+  },
+  rateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  starIcon: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 4,
   },
   rateText: {
     width: 26,
     height: 12,
     borderRadius: 4,
   },
-  metaText: {
-    width: 46,
+  reviewText: {
+    width: 56,
     height: 12,
     borderRadius: 4,
   },
-  metaTextWide: {
-    width: 54,
+  distanceText: {
+    width: 40,
     height: 12,
     borderRadius: 4,
   },
   priceValue: {
-    width: 64,
+    width: 72,
     height: 18,
     borderRadius: 4,
   },
