@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   Dimensions,
   Pressable,
@@ -15,6 +15,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import Animated, {
   Extrapolation,
   interpolate,
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -57,88 +58,79 @@ const PARALLAX_OFFSET = 0;
 const DEFAULT_PAGE_SIZE = 10;
 const TITLE_TABS_HEIGHT = 36;
 
-const TodayRecommCard = React.memo(
-  ({item, currentIndex, totalCount, onPress}) => {
-    const formattedPrice = formatPrice(item?.price);
+const TodayRecommCard = React.memo(({item, onPress}) => {
+  const formattedPrice = formatPrice(item?.price);
 
-    return (
-      <Pressable
-        style={styles.card}
-        hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}
-        onPress={onPress}>
-        <View style={styles.cardImageWrap}>
-          <FastImage
-            source={
-              item?.image
-                ? {
-                    uri: item.image,
-                    priority: FastImage.priority.normal,
-                  }
-                : require('../../../assets/default_store6.png')
-            }
-            style={[styles.cardImage]}
-            resizeMode={FastImage.resizeMode.cover}
-          />
-          <View style={styles.cardOverlay} pointerEvents="none">
-            <View style={styles.semiOverlay}>
-              <LinearGradient
-                colors={['transparent', 'rgba(0, 0, 0, 0.35)']}
-                style={styles.gradientBottom}
-                pointerEvents="none"
-              />
-              <View style={styles.bottomInfoRow}>
-                <View style={styles.storeNameRow}>
-                  {item?.isCertified && (
-                    <FastImage
-                      source={require('../../../assets/verifyMaker.png')}
-                      style={styles.verifyIcon}
-                      resizeMode={FastImage.resizeMode.contain}
-                    />
-                  )}
-                  <CustomText
-                    style={styles.storeName}
-                    numberOfLines={1}
-                    ellipsizeMode="tail">
-                    {item.storeName}
-                  </CustomText>
-                </View>
-                <CustomText style={styles.priceValue} numberOfLines={1}>
-                  {formattedPrice ? `${formattedPrice}원` : ''}
+  return (
+    <Pressable
+      style={styles.card}
+      hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}
+      onPress={onPress}>
+      <View style={styles.cardImageWrap}>
+        <FastImage
+          source={
+            item?.image
+              ? {
+                  uri: item.image,
+                  priority: FastImage.priority.normal,
+                }
+              : require('../../../assets/default_store6.png')
+          }
+          style={[styles.cardImage]}
+          resizeMode={FastImage.resizeMode.cover}
+        />
+        <View style={styles.cardOverlay} pointerEvents="none">
+          <View style={styles.semiOverlay}>
+            <LinearGradient
+              colors={['transparent', 'rgba(0, 0, 0, 0.35)']}
+              style={styles.gradientBottom}
+              pointerEvents="none"
+            />
+            <View style={styles.bottomInfoRow}>
+              <View style={styles.storeNameRow}>
+                {item?.isCertified && (
+                  <FastImage
+                    source={require('../../../assets/verifyMaker.png')}
+                    style={styles.verifyIcon}
+                    resizeMode={FastImage.resizeMode.contain}
+                  />
+                )}
+                <CustomText
+                  style={styles.storeName}
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  {item.storeName}
                 </CustomText>
               </View>
+              <CustomText style={styles.priceValue} numberOfLines={1}>
+                {formattedPrice ? `${formattedPrice}원` : ''}
+              </CustomText>
             </View>
           </View>
         </View>
-      </Pressable>
+      </View>
+    </Pressable>
+  );
+});
+
+const CarouselCardItem = React.memo(({item, animationValue, onPress}) => {
+  const animatedStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      animationValue.value,
+      [-1, 0, 1],
+      [0.85, 1, 0.85],
+      Extrapolation.CLAMP,
     );
-  },
-);
 
-const CarouselCardItem = React.memo(
-  ({item, animationValue, currentIndex, totalCount, onPress}) => {
-    const animatedStyle = useAnimatedStyle(() => {
-      const opacity = interpolate(
-        animationValue.value,
-        [-1, 0, 1],
-        [0.85, 1, 0.85],
-        Extrapolation.CLAMP,
-      );
+    return {opacity};
+  });
 
-      return {opacity};
-    });
-
-    return (
-      <Animated.View style={[styles.carouselItem, animatedStyle]}>
-        <TodayRecommCard
-          item={item}
-          currentIndex={currentIndex}
-          totalCount={totalCount}
-          onPress={onPress}
-        />
-      </Animated.View>
-    );
-  },
-);
+  return (
+    <Animated.View style={[styles.carouselItem, animatedStyle]}>
+      <TodayRecommCard item={item} onPress={onPress} />
+    </Animated.View>
+  );
+});
 
 const RecommItem = ({
   location,
@@ -152,7 +144,9 @@ const RecommItem = ({
   const [selectedTab, setSelectedTab] = useState(() =>
     isValidDrinkTab(initialTab) ? initialTab : drinkTabs[0].value,
   );
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const progress = useSharedValue(0);
+  const progressBase = useRef(0);
+  const progressOffset = useRef(0);
   const [isDrinkTabsVisible, setIsDrinkTabsVisible] = useState(false);
   const [tabStoreMap, setTabStoreMap] = useState({});
   const [tabLoading, setTabLoading] = useState(false);
@@ -243,8 +237,10 @@ const RecommItem = ({
   );
 
   useEffect(() => {
-    setCurrentIndex(0);
-  }, [selectedTab]);
+    progress.value = 0;
+    progressBase.current = 0;
+    progressOffset.current = 0;
+  }, [progress, selectedTab, recommCardItems.length]);
 
   useEffect(() => {
     if (isValidDrinkTab(initialTab)) {
@@ -272,14 +268,22 @@ const RecommItem = ({
       if (!Number.isFinite(absoluteProgress)) {
         return;
       }
-      const maxIndex = Math.max(recommCardItems.length - 1, 0);
-      const nextIndex = Math.min(
-        maxIndex,
-        Math.max(0, Math.round(absoluteProgress)),
-      );
-      setCurrentIndex(prev => (prev === nextIndex ? prev : nextIndex));
+      const itemCount = recommCardItems.length;
+      if (itemCount <= 1) {
+        progress.value = absoluteProgress;
+        return;
+      }
+      const prev = progressBase.current;
+      const next = absoluteProgress;
+      if (prev > next + itemCount / 2) {
+        progressOffset.current += itemCount;
+      } else if (next > prev + itemCount / 2) {
+        progressOffset.current -= itemCount;
+      }
+      progressBase.current = next;
+      progress.value = next + progressOffset.current;
     },
-    [recommCardItems.length],
+    [progress, recommCardItems.length],
   );
 
   const handlePressViewAll = useCallback(() => {
@@ -332,6 +336,45 @@ const RecommItem = ({
           </CustomText>
         </View>
       </GestureDetector>
+    );
+  });
+
+  const IndicatorDot = React.memo(({index, itemCount}) => {
+    const animatedStyle = useAnimatedStyle(() => {
+      if (itemCount <= 1) {
+        return {
+          width: 16,
+          opacity: 1,
+          backgroundColor: '#3CBBFF',
+        };
+      }
+      const p = progress.value;
+      const loopIndex = Math.round((p - index) / itemCount) * itemCount + index;
+      const relative = p - loopIndex;
+      const width = interpolate(
+        relative,
+        [-1, 0, 1],
+        [5, 16, 5],
+        Extrapolation.CLAMP,
+      );
+      const opacity = interpolate(
+        relative,
+        [-1, 0, 1],
+        [0.6, 1, 0.6],
+        Extrapolation.CLAMP,
+      );
+      const backgroundColor = interpolateColor(
+        relative,
+        [-1, 0, 1],
+        ['#DADADA', '#3CBBFF', '#DADADA'],
+      );
+      return {width, opacity, backgroundColor};
+    }, [index, itemCount]);
+
+    return (
+      <View style={styles.dotSlot}>
+        <Animated.View style={[styles.dot, animatedStyle]} />
+      </View>
     );
   });
   const tabsAnimation = useSharedValue(0);
@@ -421,7 +464,7 @@ const RecommItem = ({
       {recommCardItems.length > 0 && (
         <View style={styles.carouselWrap}>
           <Carousel
-            loop={true}
+            loop={recommCardItems.length >= 3}
             width={screenWidth}
             height={CARD_HEIGHT}
             data={recommCardItems}
@@ -440,20 +483,21 @@ const RecommItem = ({
               <CarouselCardItem
                 item={item}
                 animationValue={animationValue}
-                currentIndex={currentIndex}
-                totalCount={recommCardItems.length}
                 onPress={() => handleStorePress(item?.id)}
               />
             )}
           />
-          <View style={styles.bottomDots}>
-            {recommCardItems.map((card, index) => (
-              <View
-                key={`${card.id}-dot`}
-                style={[styles.dot, index === currentIndex && styles.dotActive]}
-              />
-            ))}
-          </View>
+          {recommCardItems.length >= 2 && (
+            <View style={styles.bottomDots}>
+              {recommCardItems.map((card, index) => (
+                <IndicatorDot
+                  key={`${card.id}-dot`}
+                  index={index}
+                  itemCount={recommCardItems.length}
+                />
+              ))}
+            </View>
+          )}
         </View>
       )}
       {recommCardItems.length == 0 && (
@@ -623,17 +667,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  dotSlot: {
+    width: 10,
+    height: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 3,
+    overflow: 'visible',
+  },
   dot: {
-    width: 5,
+    position: 'absolute',
     height: 5,
     borderRadius: 3,
     backgroundColor: '#DADADA',
-    marginHorizontal: 3,
-  },
-  dotActive: {
-    width: 16,
-    height: 5,
-    backgroundColor: '#3CBBFF',
   },
   carouselItem: {
     width: screenWidth,
