@@ -46,11 +46,10 @@ const RecommTotalItem = ({store, navigation, location, drinkType}) => {
     });
   };
 
-  const mainMenu = store?.menuList?.[0];
   const selectedDrink = Array.isArray(store?.mainDrinkDtos)
     ? store.mainDrinkDtos.find(drink => drink?.type === drinkType)
     : null;
-  const displayPrice = selectedDrink?.price ?? mainMenu?.price;
+  const displayPrice = selectedDrink?.price;
 
   useEffect(() => {
     const latitude = location?.latitude;
