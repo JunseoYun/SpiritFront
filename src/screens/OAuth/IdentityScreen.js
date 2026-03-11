@@ -18,6 +18,7 @@ import {
   user_login,
   user_personalInfo_add,
   user_personalInfo_update,
+  log_access_create,
 } from '../../api/userApi';
 import Loading from '../../hooks/Loading';
 import NameInput from '../../components/IdentityScreen/NameInput';
@@ -379,11 +380,12 @@ const IdentityScreen = ({route, navigation}) => {
             fcmToken,
             authorizationCode,
           );
-          loginauth(
+          await loginauth(
             login_data.accessToken,
             login_data.refreshToken,
             login_data.marketingConsent,
           );
+          await log_access_create();
         } catch (error) {}
       } else {
         if (beforeScreen === 'Agree') {

@@ -33,6 +33,7 @@ import {
 } from './src/storage/locationStorage';
 import {AdConsentProvider} from './src/context/AdConsentContext';
 import {MapSearchProvider} from './src/context/MapSearchContext';
+import {log_access_create} from './src/api/userApi';
 
 if (!__DEV__) {
   console.log = () => {};
@@ -53,6 +54,17 @@ const App = () => {
     if (Platform.OS === 'ios') {
       SplashScreen.hide();
     }
+  }, []);
+
+  useEffect(() => {
+    const logInitialAccess = async () => {
+      try {
+        await log_access_create();
+      } catch (error) {
+        // 앱 초기 구동 시 로깅 실패는 앱 흐름을 막지 않음
+      }
+    };
+    logInitialAccess();
   }, []);
 
   return (

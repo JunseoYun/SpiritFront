@@ -13,7 +13,6 @@ import {
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
-import {log_access_create} from '../../api/userApi';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import DeleteLocationButton from '../../components/SetLocation/DeleteLocationButton';
 import MapPreview from '../../components/SetLocation/MapPreview';
@@ -135,8 +134,6 @@ const SetLocationScreen = ({navigation, route}) => {
           addressText = formatLocationAddress(addressText);
         }
         await saveLocationAddress(coords, addressText);
-
-        log_access_create(coords);
         setCurrentLocation(coords);
         setCurrentAddress(addressText);
         showToast('주소 설정이 완료 되었습니다.');

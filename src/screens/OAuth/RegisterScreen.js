@@ -13,6 +13,7 @@ import {
   user_register,
   user_login,
   user_register_tester,
+  log_access_create,
 } from '../../api/userApi';
 import Entypo from 'react-native-vector-icons/Entypo';
 import forbiddenWords from '../../hooks/forbiddenWords';
@@ -157,6 +158,7 @@ const RegisterScreen = ({route, navigation}) => {
           login_data.refreshToken,
           login_data.marketingConsent,
         );
+        await log_access_create();
         navigation.reset({
           index: 0,
           routes: [
