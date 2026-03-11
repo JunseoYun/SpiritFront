@@ -236,13 +236,16 @@ const RecommStoreScreen = ({navigation, route}) => {
     selectedTab,
   ]);
 
-  const renderStoreItem = ({item}) => (
-    <RecommTotalItem
-      store={item}
-      navigation={navigation}
-      location={location}
-      drinkType={selectedTab}
-    />
+  const renderStoreItem = useCallback(
+    ({item}) => (
+      <RecommTotalItem
+        store={item}
+        navigation={navigation}
+        location={location}
+        drinkType={selectedTab}
+      />
+    ),
+    [navigation, location, selectedTab],
   );
 
   return (
@@ -266,7 +269,14 @@ const RecommStoreScreen = ({navigation, route}) => {
             return (
               <Pressable
                 key={tab.value}
-                onPress={() => setSelectedTab(tab.value)}
+                onPress={() => {
+                  setSelectedTab(tab.value);
+                  scrollY.setValue(0);
+                  scrollRef?.current?.scrollToOffset?.({
+                    offset: 0,
+                    animated: false,
+                  });
+                }}
                 hitSlop={8}
                 onLayout={({nativeEvent}) => {
                   tabPositionMapRef.current[tab.value] = nativeEvent.layout.x;
@@ -301,12 +311,9 @@ const RecommStoreScreen = ({navigation, route}) => {
       ) : (
         <AnimatedFlatList
           ref={scrollRef}
-          key={listKey}
           data={stores}
           renderItem={renderStoreItem}
-          keyExtractor={(item, index) =>
-            String(item?.id ?? `${selectedTab}-${index}`)
-          }
+          keyExtractor={item => String(item?.id)}
           showsVerticalScrollIndicator={false}
           bounces={false}
           overScrollMode="never"
@@ -314,10 +321,11 @@ const RecommStoreScreen = ({navigation, route}) => {
             paddingTop: TAB_HEIGHT + TAB_TOP_OFFSET,
             paddingBottom: insets.bottom + 20,
           }}
-          initialNumToRender={8}
-          maxToRenderPerBatch={6}
-          windowSize={6}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={10}
           removeClippedSubviews={Platform.OS === 'android'}
+          updateCellsBatchingPeriod={50}
           scrollEventThrottle={16}
           refreshing={refreshing}
           onRefresh={onRefresh}
