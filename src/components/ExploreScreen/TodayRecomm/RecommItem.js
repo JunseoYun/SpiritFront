@@ -2,27 +2,43 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {
   Dimensions,
   Pressable,
-  ScrollView,
   StyleSheet,
   View,
+  ScrollView,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import Feather from 'react-native-vector-icons/Feather';
 import Entypo from 'react-native-vector-icons/Entypo';
-
+import {GestureDetector, Gesture} from 'react-native-gesture-handler';
 import Carousel from 'react-native-reanimated-carousel';
 import Animated, {
   Extrapolation,
   interpolate,
   useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 import RecommItemSkeleton from './RecommItemSkeleton';
-import {drinkTabs, mockDataByDrinkType} from './mockRecommData';
 import CustomText from '../../../utils/CustomText';
 import {Store_getby_drinkPrice} from '../../../api/storeApi';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import ColorUtil from '../../../utils/ColorUtil';
+
+export const drinkTabs = [
+  {label: '소주', value: 'SOJU'},
+  {label: '맥주', value: 'BEER'},
+  {label: '막걸리', value: 'MAKGEOLLI'},
+  {label: '와인', value: 'WINE'},
+  {label: '칵테일', value: 'COCKTAIL'},
+  {label: '사케', value: 'SAKE'},
+  {label: '고량주', value: 'KAOLIANG'},
+  {label: '위스키', value: 'WHISKEY'},
+  {label: '보드카', value: 'VODKA'},
+  {label: '전통주', value: 'TRADITIONAL'},
+  {label: '하이볼', value: 'HIGHBALL'},
+  {label: '데킬라', value: 'TEQUILA'},
+];
 
 const formatPrice = value => {
   if (value == null) return '';
@@ -39,19 +55,7 @@ const CARD_WIDTH = screenWidth * 0.9;
 const CARD_HEIGHT = 210;
 const PARALLAX_OFFSET = 0;
 const DEFAULT_PAGE_SIZE = 10;
-
-const mapMockStoreToStoreItem = item => ({
-  id: item.id,
-  name: item.storeName,
-  mainImgUrl: item.image,
-  categories: [item.category],
-  mainDrinkDtos: [
-    {type: item.drinkType, price: `${formatPrice(item.price)}원`},
-  ],
-  storeRate: Number(Math.min(5, item.reviewCount / 40).toFixed(1)),
-  isCertified: !!item.isCertified,
-  operationInfoDtos: [],
-});
+const TITLE_TABS_HEIGHT = 36;
 
 const TodayRecommCard = React.memo(
   ({item, currentIndex, totalCount, onPress}) => {
@@ -62,51 +66,49 @@ const TodayRecommCard = React.memo(
         style={styles.card}
         hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}
         onPress={onPress}>
-        {({pressed}) => (
-          <View style={styles.cardImageWrap}>
-            <FastImage
-              source={
-                item?.image
-                  ? {
-                      uri: item.image,
-                      priority: FastImage.priority.normal,
-                    }
-                  : require('../../../assets/default_store6.png')
-              }
-              style={[styles.cardImage, pressed && styles.cardImagePressed]}
-              resizeMode={FastImage.resizeMode.cover}
-            />
-            <View style={styles.cardOverlay} pointerEvents="none">
-              <View style={styles.semiOverlay}>
-                <LinearGradient
-                  colors={['transparent', 'rgba(0, 0, 0, 0.35)']}
-                  style={styles.gradientBottom}
-                  pointerEvents="none"
-                />
-                <View style={styles.bottomInfoRow}>
-                  <View style={styles.storeNameRow}>
-                    {item?.isCertified && (
-                      <FastImage
-                        source={require('../../../assets/verifyMaker.png')}
-                        style={styles.verifyIcon}
-                        resizeMode={FastImage.resizeMode.contain}
-                      />
-                    )}
-                    <CustomText
-                      style={styles.storeName}
-                      numberOfLines={1}
-                      ellipsizeMode="tail">
-                      {item.storeName}
-                    </CustomText>
-                  </View>
-                  <CustomText style={styles.priceValue} numberOfLines={1}>
-                    {formattedPrice ? `${formattedPrice}원` : ''}
+        <View style={styles.cardImageWrap}>
+          <FastImage
+            source={
+              item?.image
+                ? {
+                    uri: item.image,
+                    priority: FastImage.priority.normal,
+                  }
+                : require('../../../assets/default_store6.png')
+            }
+            style={[styles.cardImage]}
+            resizeMode={FastImage.resizeMode.cover}
+          />
+          <View style={styles.cardOverlay} pointerEvents="none">
+            <View style={styles.semiOverlay}>
+              <LinearGradient
+                colors={['transparent', 'rgba(0, 0, 0, 0.35)']}
+                style={styles.gradientBottom}
+                pointerEvents="none"
+              />
+              <View style={styles.bottomInfoRow}>
+                <View style={styles.storeNameRow}>
+                  {item?.isCertified && (
+                    <FastImage
+                      source={require('../../../assets/verifyMaker.png')}
+                      style={styles.verifyIcon}
+                      resizeMode={FastImage.resizeMode.contain}
+                    />
+                  )}
+                  <CustomText
+                    style={styles.storeName}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    {item.storeName}
                   </CustomText>
                 </View>
+                <CustomText style={styles.priceValue} numberOfLines={1}>
+                  {formattedPrice ? `${formattedPrice}원` : ''}
+                </CustomText>
               </View>
             </View>
           </View>
-        )}
+        </View>
       </Pressable>
     );
   },
@@ -139,7 +141,6 @@ const CarouselCardItem = React.memo(
 );
 
 const RecommItem = ({
-  recommStores,
   location,
   navigation,
   loading,
@@ -156,11 +157,6 @@ const RecommItem = ({
   const [tabStoreMap, setTabStoreMap] = useState({});
   const [tabLoading, setTabLoading] = useState(false);
 
-  const selectedTabCards = useMemo(
-    () => mockDataByDrinkType[selectedTab] || [],
-    [selectedTab],
-  );
-
   const selectedTabLabel = useMemo(
     () =>
       drinkTabs.find(tab => tab.value === selectedTab)?.label ||
@@ -168,21 +164,22 @@ const RecommItem = ({
     [selectedTab],
   );
 
-  const fallbackStores = useMemo(
-    () => selectedTabCards.map(mapMockStoreToStoreItem),
-    [selectedTabCards],
+  const canFetchStores =
+    !!location?.latitude &&
+    !!location?.longitude &&
+    isValidDrinkTab(selectedTab);
+  const hasLoadedSelectedTab = useMemo(
+    () => Object.prototype.hasOwnProperty.call(tabStoreMap, selectedTab),
+    [selectedTab, tabStoreMap],
   );
 
   const selectedTabStores = useMemo(
-    () => tabStoreMap?.[selectedTab] || [],
+    () =>
+      Array.isArray(tabStoreMap?.[selectedTab]) ? tabStoreMap[selectedTab] : [],
     [selectedTab, tabStoreMap],
   );
 
   const recommCardItems = useMemo(() => {
-    if (!Array.isArray(selectedTabStores) || selectedTabStores.length === 0) {
-      return selectedTabCards;
-    }
-
     return selectedTabStores.map(store => {
       const drinkDtos = Array.isArray(store?.mainDrinkDtos)
         ? store.mainDrinkDtos
@@ -198,7 +195,7 @@ const RecommItem = ({
         isCertified: !!store?.isCertified,
       };
     });
-  }, [selectedTab, selectedTabCards, selectedTabStores, translateAlcohol]);
+  }, [selectedTab, selectedTabStores, translateAlcohol]);
 
   const resolveStorePage = useCallback(data => {
     if (!data) return [];
@@ -229,6 +226,15 @@ const RecommItem = ({
           [drinkType]: stores,
         }));
       } catch (error) {
+        setTabStoreMap(prev => {
+          if (Object.prototype.hasOwnProperty.call(prev, drinkType)) {
+            return prev;
+          }
+          return {
+            ...prev,
+            [drinkType]: [],
+          };
+        });
       } finally {
         setTabLoading(false);
       }
@@ -277,15 +283,8 @@ const RecommItem = ({
   );
 
   const handlePressViewAll = useCallback(() => {
-    const stores =
-      Array.isArray(selectedTabStores) && selectedTabStores.length > 0
-        ? selectedTabStores
-        : Array.isArray(recommStores) && recommStores.length > 0
-        ? recommStores
-        : fallbackStores;
-
     const payload = {
-      stores,
+      stores: selectedTabStores,
       initialTab: selectedTab,
     };
 
@@ -298,15 +297,7 @@ const RecommItem = ({
       ...payload,
       location,
     });
-  }, [
-    fallbackStores,
-    location,
-    navigation,
-    onPressViewAll,
-    recommStores,
-    selectedTabStores,
-    selectedTab,
-  ]);
+  }, [location, navigation, onPressViewAll, selectedTabStores, selectedTab]);
 
   const handleStorePress = useCallback(
     storeId => {
@@ -319,10 +310,58 @@ const RecommItem = ({
     [navigation],
   );
 
-  if (loading || refresh || tabLoading) {
+  const DrinkTabChip = React.memo(({tab, isActive, onSelect}) => {
+    const gesture = useMemo(
+      () =>
+        Gesture.Tap()
+          .runOnJS(true)
+          .onEnd(() => onSelect(tab.value)),
+      [tab.value, onSelect],
+    );
+
+    return (
+      <GestureDetector gesture={gesture}>
+        <View
+          style={[styles.titleTabItem, isActive && styles.titleTabItemActive]}>
+          <CustomText
+            style={[
+              styles.titleTabText,
+              isActive && styles.titleTabTextActive,
+            ]}>
+            {tab.label}
+          </CustomText>
+        </View>
+      </GestureDetector>
+    );
+  });
+  const tabsAnimation = useSharedValue(0);
+  useEffect(() => {
+    tabsAnimation.value = withTiming(isDrinkTabsVisible ? 1 : 0, {
+      duration: isDrinkTabsVisible ? 220 : 180,
+    });
+  }, [isDrinkTabsVisible, tabsAnimation]);
+  const tabsAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: tabsAnimation.value,
+      height: TITLE_TABS_HEIGHT * tabsAnimation.value,
+      marginTop: 10 * tabsAnimation.value,
+      marginBottom: 14 * tabsAnimation.value,
+      transform: [
+        {
+          translateY: (1 - tabsAnimation.value) * -6,
+        },
+      ],
+    };
+  });
+
+  if (
+    loading ||
+    refresh ||
+    tabLoading ||
+    (canFetchStores && !hasLoadedSelectedTab)
+  ) {
     return <RecommItemSkeleton />;
   }
-
   return (
     <View style={styles.sectionContainer}>
       <View style={styles.titleRow}>
@@ -355,39 +394,29 @@ const RecommItem = ({
         </Pressable>
       </View>
 
-      {isDrinkTabsVisible && (
-        <View style={styles.titleTabsRow}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.titleTabsContent}>
-            {drinkTabs.map(tab => {
-              const isActive = tab.value === selectedTab;
-              return (
-                <Pressable
-                  key={tab.value}
-                  onPress={() => {
-                    setSelectedTab(tab.value);
-                    setIsDrinkTabsVisible(false);
-                  }}
-                  hitSlop={8}
-                  style={[
-                    styles.titleTabItem,
-                    isActive && styles.titleTabItemActive,
-                  ]}>
-                  <CustomText
-                    style={[
-                      styles.titleTabText,
-                      isActive && styles.titleTabTextActive,
-                    ]}>
-                    {tab.label}
-                  </CustomText>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        </View>
-      )}
+      <Animated.View
+        style={[styles.titleTabsRow, tabsAnimatedStyle]}
+        pointerEvents={isDrinkTabsVisible ? 'auto' : 'none'}>
+        <ScrollView
+          horizontal
+          directionalLockEnabled
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="always"
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.titleTabsContent}>
+          {drinkTabs.map(tab => (
+            <DrinkTabChip
+              key={tab.value}
+              tab={tab}
+              isActive={tab.value === selectedTab}
+              onSelect={value => {
+                setSelectedTab(value);
+                setIsDrinkTabsVisible(false);
+              }}
+            />
+          ))}
+        </ScrollView>
+      </Animated.View>
 
       {recommCardItems.length > 0 && (
         <View style={styles.carouselWrap}>
@@ -397,6 +426,10 @@ const RecommItem = ({
             height={CARD_HEIGHT}
             data={recommCardItems}
             onProgressChange={handleCarouselProgress}
+            panGestureHandlerProps={{
+              activeOffsetX: [-20, 20],
+              failOffsetY: [-10, 10],
+            }}
             mode="parallax"
             modeConfig={{
               parallaxScrollingScale: 1,
@@ -423,6 +456,77 @@ const RecommItem = ({
           </View>
         </View>
       )}
+      {recommCardItems.length == 0 && (
+        <View style={[{alignItems: 'center', marginTop: 8}]}>
+          <View style={styles.cardImageWrap}>
+            <FastImage
+              source={require('../../../assets/default_store6.png')}
+              style={[styles.cardImage]}
+              resizeMode={FastImage.resizeMode.cover}
+            />
+            <View style={styles.cardOverlay}>
+              <View style={styles.semiOverlay}>
+                <LinearGradient
+                  colors={['transparent', 'rgba(0, 0, 0, 0.5)']}
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: 150,
+                    borderBottomLeftRadius: 16,
+                    borderBottomRightRadius: 16,
+                    zIndex: 1,
+                  }}
+                  pointerEvents="none"
+                />
+                <View
+                  style={{
+                    alignItems: 'center',
+                    width: '100%',
+                    zIndex: 3,
+                    gap: 3,
+                    paddingHorizontal: 3,
+                    paddingBottom: 3,
+                  }}>
+                  <CustomText
+                    style={{
+                      fontSize: 16,
+                      fontFamily: 'Pretendard-Bold',
+                      color: '#fff',
+                      zIndex: 3,
+                      minWidth: 0,
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    주변에 {selectedTabLabel} 판매 매장이 없어요
+                  </CustomText>
+                  <Pressable
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                    onPress={() => {
+                      setIsDrinkTabsVisible(true);
+                    }}>
+                    <CustomText
+                      style={{
+                        fontSize: 15,
+                        fontFamily: 'Pretendard-SemiBold',
+                        color: '#E4E6E2',
+                        paddingRight: 1,
+                      }}
+                      numberOfLines={1}>
+                      주종 변경하기
+                    </CustomText>
+                    <Feather name={'chevron-right'} size={15} color="#E4E6E2" />
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -443,7 +547,7 @@ const styles = StyleSheet.create({
   sectionTitleGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 1,
+    marginLeft: 4,
   },
   titleDrinkPill: {
     flexDirection: 'row',
@@ -467,15 +571,15 @@ const styles = StyleSheet.create({
   viewAllButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginRight: 3,
   },
   viewAllText: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontFamily: 'Pretendard-Medium',
     color: '#B9B9B9',
   },
   titleTabsRow: {
-    marginTop: 10,
-    marginBottom: 14,
+    overflow: 'hidden',
   },
   titleTabsContent: {
     alignItems: 'center',

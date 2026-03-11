@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Platform,
   Pressable,
@@ -19,7 +20,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import RecommTotalItem from '../../components/TotalScreen/RecommTotalItem';
 import RecommTotalItemSkeleton from '../../components/TotalScreen/TotalSkeleton/RecommTotalItemSkeleton';
-import {drinkTabs} from '../../components/ExploreScreen/TodayRecomm/mockRecommData';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
 import ScrollToTopButton from '../../utils/ScrollToTopButton';
@@ -27,30 +27,67 @@ import CustomText from '../../utils/CustomText';
 import ColorUtil from '../../utils/ColorUtil';
 import {Store_getby_drinkPrice} from '../../api/storeApi';
 
+export const drinkTabs = [
+  {label: '소주', value: 'SOJU'},
+  {label: '맥주', value: 'BEER'},
+  {label: '막걸리', value: 'MAKGEOLLI'},
+  {label: '와인', value: 'WINE'},
+  {label: '칵테일', value: 'COCKTAIL'},
+  {label: '사케', value: 'SAKE'},
+  {label: '고량주', value: 'KAOLIANG'},
+  {label: '위스키', value: 'WHISKEY'},
+  {label: '보드카', value: 'VODKA'},
+  {label: '전통주', value: 'TRADITIONAL'},
+  {label: '하이볼', value: 'HIGHBALL'},
+  {label: '데킬라', value: 'TEQUILA'},
+];
+
 const isValidDrinkTab = value => drinkTabs.some(tab => tab.value === value);
 const TAB_CONTENT_HORIZONTAL_PADDING = 20;
 const DEFAULT_PAGE_SIZE = 10;
+const TAB_HEIGHT = 44;
+const TAB_TOP_OFFSET = 10;
+const TAB_HIDE_START = 16;
+
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const RecommStoreScreen = ({navigation, route}) => {
   const {bottom} = useSafeAndroidInsets();
   const insets = useSafeAreaInsets();
+
   const initialTabFromRoute = route?.params?.initialTab;
   const sourceRouteKey = route?.params?.sourceRouteKey;
   const tabNavigatorKey = route?.params?.tabNavigatorKey;
   const location = route?.params?.location;
+
   const tabScrollRef = useRef(null);
   const tabPositionMapRef = useRef({});
   const requestSeqRef = useRef(0);
   const loadingMoreRef = useRef(false);
+
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const scrollYAdjusted = Animated.subtract(scrollY, TAB_HIDE_START);
+  const clampedScroll = Animated.diffClamp(scrollYAdjusted, 0, TAB_HEIGHT);
+
+  const tabTranslateY = clampedScroll.interpolate({
+    inputRange: [0, TAB_HEIGHT],
+    outputRange: [0, -TAB_HEIGHT],
+    extrapolate: 'clamp',
+  });
+  const tabOpacity = clampedScroll.interpolate({
+    inputRange: [0, TAB_HEIGHT * 0.6, TAB_HEIGHT],
+    outputRange: [1, 0.35, 0],
+    extrapolate: 'clamp',
+  });
 
   const [selectedTab, setSelectedTab] = useState(() =>
     isValidDrinkTab(initialTabFromRoute)
       ? initialTabFromRoute
       : drinkTabs[0].value,
   );
-  const [stores, setStores] = useState(() =>
-    Array.isArray(route?.params?.stores) ? route.params.stores : [],
-  );
+
+  const [stores, setStores] = useState([]);
   const [page, setPage] = useState(0);
   const [isLastPage, setIsLastPage] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -85,25 +122,29 @@ const RecommStoreScreen = ({navigation, route}) => {
     updateVisibility,
     scrollToTop,
   } = useScrollToTopVisibility();
+
   const listKey = selectedTab;
   const scrollButtonBottom = (bottom || 16) + 34;
 
   const scrollSelectedTabToLeft = useCallback((tabValue, animated = true) => {
     const measuredX = tabPositionMapRef.current?.[tabValue];
-    if (typeof measuredX !== 'number') {
-      return;
-    }
+    if (typeof measuredX !== 'number') return;
+
     const targetX = Math.max(0, measuredX - TAB_CONTENT_HORIZONTAL_PADDING);
-    tabScrollRef.current?.scrollTo({x: targetX, y: 0, animated});
+
+    tabScrollRef.current?.scrollTo({
+      x: targetX,
+      y: 0,
+      animated,
+    });
   }, []);
 
   const fetchDrinkPricePage = useCallback(
     async ({tabValue, pageToLoad = 0, append = false} = {}) => {
       const latitude = location?.latitude;
       const longitude = location?.longitude;
-      if (!latitude || !longitude || !isValidDrinkTab(tabValue)) {
-        return;
-      }
+
+      if (!latitude || !longitude || !isValidDrinkTab(tabValue)) return;
 
       const requestSeq = ++requestSeqRef.current;
 
@@ -115,19 +156,18 @@ const RecommStoreScreen = ({navigation, route}) => {
         DEFAULT_PAGE_SIZE,
       );
 
-      if (requestSeq !== requestSeqRef.current) {
-        return;
-      }
+      if (requestSeq !== requestSeqRef.current) return;
 
       const content = Array.isArray(data?.content) ? data.content : [];
+
       const nextPage =
         typeof data?.number === 'number' ? data.number : pageToLoad;
-      const lastFromApi =
-        typeof data?.last === 'boolean' ? data.last : undefined;
+
       const computedLast =
-        typeof lastFromApi === 'boolean'
-          ? lastFromApi
+        typeof data?.last === 'boolean'
+          ? data.last
           : content.length < DEFAULT_PAGE_SIZE;
+
       const effectiveLast = computedLast || content.length === 0;
 
       setPage(nextPage);
@@ -138,145 +178,61 @@ const RecommStoreScreen = ({navigation, route}) => {
   );
 
   useEffect(() => {
-    if (isValidDrinkTab(initialTabFromRoute)) {
-      setSelectedTab(prev =>
-        prev === initialTabFromRoute ? prev : initialTabFromRoute,
-      );
-    }
-  }, [initialTabFromRoute]);
-
-  useEffect(() => {
-    if (!sourceRouteKey || !isValidDrinkTab(selectedTab)) {
-      return;
-    }
-    navigation.dispatch({
-      ...CommonActions.setParams({
-        todayRecommTab: selectedTab,
-      }),
-      source: sourceRouteKey,
-      target: tabNavigatorKey,
-    });
-  }, [navigation, selectedTab, sourceRouteKey, tabNavigatorKey]);
-
-  useEffect(() => {
-    const frameId = requestAnimationFrame(() => {
-      scrollSelectedTabToLeft(selectedTab, true);
-    });
-    return () => cancelAnimationFrame(frameId);
-  }, [scrollSelectedTabToLeft, selectedTab]);
-
-  useEffect(() => {
-    const frameId = requestAnimationFrame(() => {
-      scrollRef.current?.scrollToOffset({offset: 0, animated: true});
-      updateVisibility(0);
-    });
-    return () => cancelAnimationFrame(frameId);
-  }, [selectedTab, scrollRef, updateVisibility]);
-
-  useEffect(() => {
-    if (firstloading || refreshing) {
-      updateVisibility(0);
-    }
-  }, [firstloading, refreshing, updateVisibility]);
-
-  useEffect(() => {
     const latitude = location?.latitude;
     const longitude = location?.longitude;
+
     if (!latitude || !longitude || !isValidDrinkTab(selectedTab)) {
       setStores([]);
-      setPage(0);
-      setIsLastPage(true);
       setFirstloading(false);
       return;
     }
 
-    let canceled = false;
-    loadingMoreRef.current = false;
-    setLoadingMore(false);
     setFirstloading(true);
     setPage(0);
     setIsLastPage(false);
 
-    fetchDrinkPricePage({tabValue: selectedTab, pageToLoad: 0, append: false})
-      ?.catch?.(() => {})
-      ?.finally?.(() => {
-        if (!canceled) {
-          setFirstloading(false);
-        }
-      });
-
-    return () => {
-      canceled = true;
-      requestSeqRef.current += 1;
-    };
-  }, [
-    fetchDrinkPricePage,
-    location?.latitude,
-    location?.longitude,
-    selectedTab,
-  ]);
+    fetchDrinkPricePage({
+      tabValue: selectedTab,
+      pageToLoad: 0,
+      append: false,
+    }).finally(() => {
+      setFirstloading(false);
+    });
+  }, [fetchDrinkPricePage, location, selectedTab]);
 
   const onRefresh = useCallback(() => {
-    const latitude = location?.latitude;
-    const longitude = location?.longitude;
-    if (!latitude || !longitude || !isValidDrinkTab(selectedTab)) {
-      return;
-    }
-
     setRefreshing(true);
-    loadingMoreRef.current = false;
-    setLoadingMore(false);
-    setIsLastPage(false);
-    setPage(0);
 
-    fetchDrinkPricePage({tabValue: selectedTab, pageToLoad: 0, append: false})
-      ?.catch?.(() => {})
-      ?.finally?.(() => {
-        setRefreshing(false);
-      });
-  }, [
-    fetchDrinkPricePage,
-    location?.latitude,
-    location?.longitude,
-    selectedTab,
-  ]);
+    fetchDrinkPricePage({
+      tabValue: selectedTab,
+      pageToLoad: 0,
+      append: false,
+    }).finally(() => setRefreshing(false));
+  }, [fetchDrinkPricePage, selectedTab]);
 
   const handleEndReached = useCallback(() => {
-    const latitude = location?.latitude;
-    const longitude = location?.longitude;
-    if (
-      !latitude ||
-      !longitude ||
-      firstloading ||
-      refreshing ||
-      isLastPage ||
-      loadingMoreRef.current
-    ) {
+    if (firstloading || refreshing || isLastPage || loadingMoreRef.current)
       return;
-    }
 
     loadingMoreRef.current = true;
     setLoadingMore(true);
+
     const nextPage = page + 1;
 
     fetchDrinkPricePage({
       tabValue: selectedTab,
       pageToLoad: nextPage,
       append: true,
-    })
-      ?.catch?.(() => {})
-      ?.finally?.(() => {
-        loadingMoreRef.current = false;
-        setLoadingMore(false);
-      });
+    }).finally(() => {
+      loadingMoreRef.current = false;
+      setLoadingMore(false);
+    });
   }, [
     fetchDrinkPricePage,
     firstloading,
-    isLastPage,
-    location?.latitude,
-    location?.longitude,
-    page,
     refreshing,
+    isLastPage,
+    page,
     selectedTab,
   ]);
 
@@ -291,7 +247,14 @@ const RecommStoreScreen = ({navigation, route}) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.tabTrack}>
+      <Animated.View
+        style={[
+          styles.tabTrack,
+          {
+            transform: [{translateY: tabTranslateY}],
+            opacity: tabOpacity,
+          },
+        ]}>
         <ScrollView
           ref={tabScrollRef}
           horizontal
@@ -307,6 +270,7 @@ const RecommStoreScreen = ({navigation, route}) => {
                 hitSlop={8}
                 onLayout={({nativeEvent}) => {
                   tabPositionMapRef.current[tab.value] = nativeEvent.layout.x;
+
                   if (tab.value === selectedTab) {
                     scrollSelectedTabToLeft(tab.value, true);
                   }
@@ -320,19 +284,22 @@ const RecommStoreScreen = ({navigation, route}) => {
             );
           })}
         </ScrollView>
-      </View>
+      </Animated.View>
 
       {firstloading || refreshing ? (
         <FlatList
-          key={listKey}
           data={[1, 2, 3, 4]}
-          keyExtractor={(item, index) => `${item}-${index}`}
           renderItem={() => <RecommTotalItemSkeleton />}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{paddingBottom: insets.bottom + 20}}
+          keyExtractor={(item, index) => `${item}-${index}`}
+          bounces={false}
+          overScrollMode="never"
+          contentContainerStyle={{
+            paddingTop: TAB_HEIGHT + 20 + TAB_TOP_OFFSET,
+            paddingBottom: insets.bottom + 20,
+          }}
         />
       ) : (
-        <FlatList
+        <AnimatedFlatList
           ref={scrollRef}
           key={listKey}
           data={stores}
@@ -341,20 +308,28 @@ const RecommStoreScreen = ({navigation, route}) => {
             String(item?.id ?? `${selectedTab}-${index}`)
           }
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={[
-            styles.scrollViewContent,
-            {paddingBottom: insets.bottom + 20},
-          ]}
+          bounces={false}
+          overScrollMode="never"
+          contentContainerStyle={{
+            paddingTop: TAB_HEIGHT + TAB_TOP_OFFSET,
+            paddingBottom: insets.bottom + 20,
+          }}
           initialNumToRender={8}
           maxToRenderPerBatch={6}
           windowSize={6}
           removeClippedSubviews={Platform.OS === 'android'}
-          onScroll={handleScroll}
           scrollEventThrottle={16}
           refreshing={refreshing}
           onRefresh={onRefresh}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
+          onScroll={Animated.event(
+            [{nativeEvent: {contentOffset: {y: scrollY}}}],
+            {
+              useNativeDriver: true,
+              listener: handleScroll,
+            },
+          )}
           ListFooterComponent={
             loadingMore ? (
               <View style={styles.listFooter}>
@@ -365,13 +340,9 @@ const RecommStoreScreen = ({navigation, route}) => {
         />
       )}
 
-      {stores.length === 0 && !firstloading && !refreshing && (
-        <CustomText style={styles.emptyText}>추천 매장이 없어요.</CustomText>
-      )}
-
       <ScrollToTopButton
         visible={showScrollToTop}
-        bottom={scrollButtonBottom}
+        bottom={(bottom || 16) + 34}
         onPress={scrollToTop}
       />
     </View>
@@ -383,54 +354,56 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+
   headerTitle: {
     fontFamily: 'Pretendard-Bold',
     fontSize: 18,
     color: '#333',
   },
+
   tabTrack: {
-    marginTop: 10,
-    marginBottom: 14,
-    backgroundColor: '#fff',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    paddingTop: 10,
+    backgroundColor: '#FFF',
+    marginTop: 0,
+    paddingBottom: 8,
   },
+
   tabContentContainer: {
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: TAB_CONTENT_HORIZONTAL_PADDING,
   },
+
   tabItem: {
     paddingVertical: 7,
     paddingHorizontal: 14,
     borderRadius: 999,
-    backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: ColorUtil.placeholderBorder,
   },
+
   tabItemActive: {
     backgroundColor: ColorUtil.mainChip,
     borderColor: ColorUtil.main,
   },
+
   tabText: {
     fontSize: 12,
     color: '#666',
     fontFamily: 'Pretendard-Medium',
   },
+
   tabTextActive: {
     color: ColorUtil.main,
   },
-  scrollViewContent: {
-    paddingBottom: 24,
-  },
+
   listFooter: {
     paddingVertical: 18,
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginVertical: 60,
-    fontFamily: 'Pretendard-Medium',
-    fontSize: 17,
-    color: '#c0c0c0',
-    alignSelf: 'center',
   },
 });
 
