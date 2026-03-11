@@ -25,6 +25,11 @@ import CustomText from '../../../utils/CustomText';
 import {Store_getby_drinkPrice} from '../../../api/storeApi';
 import useTranslateAlcohol from '../../../hooks/useTranslateAlcohol';
 import ColorUtil from '../../../utils/ColorUtil';
+import {
+  DEFAULT_RECOMM_DRINK_TAB,
+  getPreferredDrinkTab,
+  setPreferredDrinkTab,
+} from '../../../storage/recommendationStorage';
 
 export const drinkTabs = [
   {label: '소주', value: 'SOJU'},
@@ -141,9 +146,9 @@ const RecommItem = ({
   onPressViewAll,
 }) => {
   const {translateAlcohol} = useTranslateAlcohol();
-  const [selectedTab, setSelectedTab] = useState(() =>
-    isValidDrinkTab(initialTab) ? initialTab : drinkTabs[0].value,
-  );
+  const [selectedTab, setSelectedTab] = useState(DEFAULT_RECOMM_DRINK_TAB);
+  const [hasHydratedPreferredTab, setHasHydratedPreferredTab] =
+    useState(false);
   const progress = useSharedValue(0);
   const progressBase = useRef(0);
   const progressOffset = useRef(0);
@@ -243,10 +248,30 @@ const RecommItem = ({
   }, [progress, selectedTab, recommCardItems.length]);
 
   useEffect(() => {
-    if (isValidDrinkTab(initialTab)) {
-      setSelectedTab(prev => (prev === initialTab ? prev : initialTab));
-    }
+    let isActive = true;
+    const hydratePreferredTab = async () => {
+      const stored = await getPreferredDrinkTab();
+      if (!isActive) return;
+      if (isValidDrinkTab(initialTab)) {
+        setSelectedTab(initialTab);
+      } else if (isValidDrinkTab(stored)) {
+        setSelectedTab(stored);
+      } else {
+        setSelectedTab(DEFAULT_RECOMM_DRINK_TAB);
+      }
+      setHasHydratedPreferredTab(true);
+    };
+    hydratePreferredTab();
+    return () => {
+      isActive = false;
+    };
   }, [initialTab]);
+
+  useEffect(() => {
+    if (!hasHydratedPreferredTab) return;
+    if (!isValidDrinkTab(selectedTab)) return;
+    setPreferredDrinkTab(selectedTab);
+  }, [hasHydratedPreferredTab, selectedTab]);
 
   useEffect(() => {
     setTabStoreMap({});
@@ -398,6 +423,7 @@ const RecommItem = ({
   });
 
   if (
+    !hasHydratedPreferredTab ||
     loading ||
     refresh ||
     tabLoading ||
