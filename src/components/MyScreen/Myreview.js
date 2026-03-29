@@ -45,13 +45,18 @@ const MyReview = forwardRef(
     const [refreshing, setRefreshing] = useState(false);
     const [isEnd, setIsEnd] = useState(false);
     const [totalpage, setTotalpage] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
 
     const cellSize = useMemo(
       () => (screenWidth - GRID_GAP * (GRID_COLUMNS - 1)) / GRID_COLUMNS,
       [screenWidth],
     );
 
-    const myReviewsget = async (currentPage, reset = false, isInitial = false) => {
+    const myReviewsget = async (
+      currentPage,
+      reset = false,
+      isInitial = false,
+    ) => {
       if (isInitial) {
         setInitialLoading(true);
       }
@@ -62,6 +67,7 @@ const MyReview = forwardRef(
         const data = await PostMyGet(currentPage);
         // console.log(data);
         setTotalpage(data.totalPages);
+        setTotalElements(data.totalElements);
         if (data.content.length === 0) {
           setIsEnd(true);
         } else {
@@ -97,8 +103,8 @@ const MyReview = forwardRef(
     );
 
     useEffect(() => {
-      onCountChange?.(myReview.length);
-    }, [myReview.length, onCountChange]);
+      onCountChange?.(totalElements);
+    }, [totalElements, onCountChange]);
 
     useEffect(() => {
       onRefreshingChange?.(refreshing);
