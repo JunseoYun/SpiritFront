@@ -26,7 +26,6 @@ export const user_login = async (
 
   try {
     const response = await userAxiosInstance.post(`/auth/login`, data); // 요청 본문 전달
-    log_access_create();
     return response.data.data; // 응답 데이터 반환
   } catch (error) {
     functionError(error);

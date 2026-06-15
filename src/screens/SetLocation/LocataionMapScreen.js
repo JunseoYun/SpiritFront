@@ -21,11 +21,11 @@ import {
   handleLocationError,
 } from '../../hooks/useLocation';
 import Loading from '../../hooks/Loading';
-import {log_access_create} from '../../api/userApi';
 import BottomActionButton from '../../utils/BottomActionButton';
 
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import CustomText from '../../utils/CustomText';
+import {formatLocationAddress} from '../../utils/locationAddressUtil';
 const LocataionMapScreen = ({navigation}) => {
   const route = useRoute();
   const [loading, setLoading] = useState(false);
@@ -117,11 +117,14 @@ const LocataionMapScreen = ({navigation}) => {
           targetCoords.latitude,
           targetCoords.longitude,
         );
-        const addressText = addressObj?.address || '';
+
+        let addressText = addressObj?.address || '';
+        if (addressObj?.address) {
+          addressText = formatLocationAddress(addressText);
+        }
 
         if (addressObj) {
           await saveLocationAddress(targetCoords, addressText);
-          log_access_create(targetCoords);
           showToast('주소 설정이 완료 되었습니다.');
           setTimeout(() => {
             resetToHome();

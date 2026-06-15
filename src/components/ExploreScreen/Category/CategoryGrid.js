@@ -1,14 +1,13 @@
 import React from 'react';
-import {View, Pressable, Image, Text, StyleSheet} from 'react-native';
+import {View, Pressable, StyleSheet} from 'react-native';
 import CustomText from '../../../utils/CustomText';
-import FastImage from 'react-native-fast-image';
 
 const CategoryGrid = ({onPress, style}) => {
   return (
     <>
       <View style={styles.contanier}>
         {categories
-          .reduce((acc, {source, text}, index) => {
+          .reduce((acc, {emoji, text}, index) => {
             const rowIndex = Math.floor(index / 5);
             if (!acc[rowIndex]) acc[rowIndex] = [];
             acc[rowIndex].push(
@@ -17,9 +16,13 @@ const CategoryGrid = ({onPress, style}) => {
                 onPress={() => onPress(index)}
                 style={styles.categoryItem}>
                 <View style={styles.iconWrapper}>
-                  <FastImage source={source} style={styles.icon} />
+                  <CustomText maxScale={1} style={styles.icon}>
+                    {emoji}
+                  </CustomText>
                 </View>
-                <CustomText style={styles.text}>{text}</CustomText>
+                <CustomText maxScale={1} style={styles.text}>
+                  {text}
+                </CustomText>
               </Pressable>,
             );
             return acc;
@@ -45,22 +48,21 @@ const styles = StyleSheet.create({
   iconWrapper: {
     width: 50,
     height: 50,
-    borderRadius: 17, // 완전한 원형
-
+    borderRadius: 14,
+    backgroundColor: '#F4F4F6',
     justifyContent: 'center',
     alignItems: 'center',
   },
   icon: {
-    width: 35,
-    height: 35,
-    resizeMode: 'contain',
+    fontSize: 24,
   },
   text: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: '#333',
     textAlign: 'center',
-    fontFamily: 'Pretendard-Medium',
+    fontFamily: 'Pretendard-SemiBold',
     marginHorizontal: 2,
+    marginTop: 7,
   },
   categoryRow: {
     flexDirection: 'row',
@@ -71,44 +73,44 @@ const styles = StyleSheet.create({
 
 const categories = [
   {
-    source: require('../../../assets/category/Izakaya2.png'),
+    emoji: '🏮',
     text: '이자카야',
   },
   {
-    source: require('../../../assets/category/Koreafood2.png'),
+    emoji: '🍲',
     text: '한식',
   },
   {
-    source: require('../../../assets/category/Westernfood2.png'),
+    emoji: '🍕',
     text: '양식',
   },
   {
-    source: require('../../../assets/category/Chinesefood2.png'),
+    emoji: '🥟',
     text: '중식',
   },
   {
-    source: require('../../../assets/category/Pocha2.png'),
+    emoji: '🍢',
     text: '포장마차',
   },
   {
-    source: require('../../../assets/category/Emotional2.png'),
+    emoji: '🎵',
     text: '감성주점',
   },
 
   {
-    source: require('../../../assets/category/Grilled2.png'),
+    emoji: '🥩',
     text: '구이·찜',
   },
   {
-    source: require('../../../assets/category/Hope2.png'),
+    emoji: '🍺',
     text: '치킨·호프',
   },
   {
-    source: require('../../../assets/category/Seafood2.png'),
+    emoji: '🦞',
     text: '회·해산물',
   },
   {
-    source: require('../../../assets/category/Pupbar2.png'),
+    emoji: '🍸',
     text: '펍·바',
   },
 ];

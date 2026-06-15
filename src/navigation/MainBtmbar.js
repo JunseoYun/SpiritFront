@@ -7,12 +7,10 @@ import LikeScreen from '../screens/BottomTab/LikeScreen';
 import ExploreScreen from '../screens/BottomTab/ExploreScreen';
 import MyStack from './MyStack';
 import CustomText from '../utils/CustomText';
-import {AIFullIcon, AIFullIconDark, AIEmptyIcon} from '../assets/svg/AiTabIcon';
 import {HomeEmptyIcon, HomeFullIcon} from '../assets/svg/HomeTabIcon';
-import BookmarkIcon from '../assets/svg/BookmarkIcon';
 
 const Tab = createBottomTabNavigator();
-const INITIAL_TAB = 'MainScreen';
+const INITIAL_TAB = 'ExploreScreen';
 
 const MainBtmbar = ({route}) => {
   const initialLastFocused = route?.params?.lastFocusedTab || INITIAL_TAB;
@@ -74,13 +72,9 @@ const MainBtmbar = ({route}) => {
             );
           } else if (route.name === 'MapScreen')
             iconName = focused ? 'map' : 'map-outline';
-          else if (route.name === 'ExploreScreen') {
-            return focused ? (
-              <AIFullIconDark size={25} color={color} />
-            ) : (
-              <AIEmptyIcon size={25} />
-            );
-          } else if (route.name === 'LikeScreen') {
+          else if (route.name === 'ExploreScreen')
+            iconName = focused ? 'search' : 'search-outline';
+          else if (route.name === 'LikeScreen') {
             iconName = focused ? 'bookmark' : 'bookmark-outline';
           } else if (route.name === 'MyStack')
             iconName = focused ? 'person' : 'person-outline';

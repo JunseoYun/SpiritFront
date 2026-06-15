@@ -104,7 +104,7 @@ const ViewedStoreList = ({refresh, navigation, location, loaded}) => {
               {stores.length >= 4 && (
                 <View style={styles.totalView}>
                   <CustomText style={[styles.totalText]}>전체보기</CustomText>
-                  <Feather name={'chevron-right'} size={15} color="#333" />
+                  <Feather name={'chevron-right'} size={13} color="#B9B9B9" />
                 </View>
               )}
             </View>
@@ -165,9 +165,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalText: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-Regular',
-    color: '#333',
+    fontSize: 12.5,
+    fontFamily: 'Pretendard-Medium',
+    color: '#B9B9B9',
   },
   storeSubText: {
     fontSize: 15,

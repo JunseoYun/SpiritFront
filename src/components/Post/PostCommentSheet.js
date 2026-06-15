@@ -60,11 +60,16 @@ const CommentFooter = ({
   const [localInput, setLocalInput] = useState(
     commentInputStore?.current?.value ?? '',
   );
+
   const [replyTarget, setReplyTarget] = useState(
     replyTargetStore?.current?.value ?? null,
   );
+  // Keep the input bar flush to the bottom while still respecting the safe area
+  // by padding inside the bar instead of creating external space.
+  // When the input can be focused (sheet fully expanded), lock padding to 10
+  // so the bar hugs the bottom; otherwise include safe-area inset.
   const basePaddingBottom =
-    Platform.OS === 'ios' ? 10 : (bottomInset ?? 0) + 10;
+    canFocusInput && Platform.OS === 'ios' ? 10 : (bottomInset ?? 0) + 10;
 
   useEffect(() => {
     const store = replyTargetStore?.current;
@@ -1075,9 +1080,7 @@ const PostCommentSheet = forwardRef(
 
     const renderCommentFooter = useCallback(
       props => (
-        <BottomSheetFooter
-          {...props}
-          bottomInset={Platform.OS === 'ios' ? insets.bottom : 0}>
+        <BottomSheetFooter {...props} bottomInset={0}>
           <CommentFooter
             inputRef={inputRef}
             commentInputStore={commentInputStoreRef}
@@ -1089,7 +1092,7 @@ const PostCommentSheet = forwardRef(
             defaultProfile={defaultProfile}
             currentUserProfileImage={currentUserProfileImage}
             currentUserNickname={currentUserNickname}
-            bottomInset={Platform.OS === 'ios' ? 0 : insets.bottom}
+            bottomInset={insets.bottom}
             replyTargetStore={replyTargetStoreRef}
             onClearReplyTarget={handleClearReplyTarget}
             onLayout={event => {

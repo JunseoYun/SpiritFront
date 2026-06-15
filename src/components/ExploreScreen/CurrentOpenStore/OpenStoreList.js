@@ -95,12 +95,12 @@ const OpenStoreList = ({location, navigation, refresh}) => {
             alignItems: 'center',
           }}>
           <CustomText style={[styles.mylocationlivetext]}>
-            현재 영업 중인 술집은?
+            현재 영업 중인 술집
           </CustomText>
           {distancestores.length >= 3 && (
             <View style={styles.totalView}>
               <CustomText style={[styles.totalText]}>전체보기</CustomText>
-              <Feather name={'chevron-right'} size={15} color="#333" />
+              <Feather name={'chevron-right'} size={13} color="#B9B9B9" />
             </View>
           )}
         </View>
@@ -170,9 +170,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalText: {
-    fontSize: 13,
-    fontFamily: 'Pretendard-Regular',
-    color: '#333',
+    fontSize: 12.5,
+    fontFamily: 'Pretendard-Medium',
+    color: '#B9B9B9',
   },
   mylocationlivesubtext: {
     fontSize: 15,
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    marginTop: 40,
+    marginVertical: 20,
     fontFamily: 'Pretendard-Medium',
     fontSize: 15,
     color: '#c0c0c0',

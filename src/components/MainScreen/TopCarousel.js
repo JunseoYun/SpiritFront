@@ -25,7 +25,7 @@ const TopCarousel = ({
       {topRollLoading ? (
         <SkeletonBox style={styles.titleSkeleton} />
       ) : (
-        <CustomText style={styles.title}>인기 게시글</CustomText>
+        <CustomText style={styles.title}>현재 인기 게시글</CustomText>
       )}
       <ScrollView
         ref={topRollScrollRef}
@@ -89,7 +89,7 @@ const TopCarousel = ({
                       strokeWidth={0}
                     />
                     <CustomText style={styles.topCarouselLikeText}>
-                      {item.likes ?? 0}
+                      +{item.likes ?? 0}
                     </CustomText>
                   </View>
                 </TouchableOpacity>

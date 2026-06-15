@@ -98,8 +98,8 @@ android {
         applicationId "com.spiritfront"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 75
-        versionName "1.5.5"
+        versionCode 78
+        versionName "1.6.0"
         resValue "string", "KAKAO_APP_KEY", project.env.get("KAKAO_APP_KEY")
         resValue "string", "KAKAO_APP_SCHEMES", project.env.get("KAKAO_APP_SCHEMES")
         resValue "string", "GOOGLE_WEB_CLIENT_ID", project.env.get("GOOGLE_WEB_CLIENT_ID")

@@ -14,6 +14,7 @@ import {
   Pressable,
   View,
   ScrollView,
+  Image,
   useWindowDimensions,
 } from 'react-native';
 import {useFocusEffect, useRoute} from '@react-navigation/native';
@@ -123,7 +124,7 @@ const MyScreen = ({navigation}) => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        navigation.navigate('MainScreen');
+        navigation.navigate('ExploreScreen');
         return true;
       };
 
@@ -232,10 +233,18 @@ const MyScreen = ({navigation}) => {
   );
 
   const handleImagePress = () => {
+    const fallbackProfileUri = Image.resolveAssetSource(
+      require('../../../assets/default_profile.png'),
+    )?.uri;
+    const profileImage =
+      typeof userdata?.imgUrl === 'string' && userdata.imgUrl.trim().length > 0
+        ? userdata.imgUrl
+        : fallbackProfileUri;
+
     navigation.navigate('StoreStack', {
       screen: 'ImageViewerScreen',
       params: {
-        images: userdata.imgUrl,
+        images: profileImage,
       },
     });
   };

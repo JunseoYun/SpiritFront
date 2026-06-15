@@ -1,7 +1,7 @@
-// ExploreSection.js
-import React, {useState} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
-import TodayRecomm from './TodayRecomm/TodayRecomm';
+﻿// ExploreSection.js
+import React from 'react';
+import {View, StyleSheet} from 'react-native';
+import RecommItem from './TodayRecomm/RecommItem';
 import CategoryGrid from './Category/CategoryGrid';
 import StoreRegister from './StoreRegister';
 import OpenStoreList from './CurrentOpenStore/OpenStoreList';
@@ -11,18 +11,41 @@ import ViewedStoreList from './ViewedStore/ViewedStoreList';
 import CustomText from '../../utils/CustomText';
 
 const ExploreSection = ({
+  recommCategory,
+  recommReason,
+  recommStores,
+  preferredDrinkType,
   location,
+  address,
   isRefreshing,
   navigation,
+  loading,
+  todayRecommInitialTab,
   handlestoreItemClick,
   catagoryClick,
+  onPressRecommViewAll,
   onHeaderLayout = () => {},
 }) => {
   return (
-    <View
-      style={{
-        backgroundColor: '#fff',
-      }}>
+    <View style={{backgroundColor: '#fff'}}>
+      <RecommItem
+        recommCategory={recommCategory}
+        recommReason={recommReason}
+        recommStores={recommStores}
+        preferredDrinkType={preferredDrinkType}
+        navigation={navigation}
+        loading={loading}
+        refresh={isRefreshing}
+        initialTab={todayRecommInitialTab}
+        location={location}
+        locationName={address}
+        onPressViewAll={onPressRecommViewAll}
+      />
+      {/* 
+      <View
+        style={{height: 6, marginVertical: 15, backgroundColor: '#F4F4F6'}}
+      /> */}
+
       <CategoryGrid onPress={catagoryClick} />
 
       <StoreRegister handlestoreItemClick={handlestoreItemClick} />

@@ -15,7 +15,7 @@ import {
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {appleAuth} from '@invertase/react-native-apple-authentication';
 
-import {user_login} from '../../api/userApi';
+import {log_access_create, user_login} from '../../api/userApi';
 import {useAuth} from '../../context/AuthContext';
 import Config from 'react-native-config';
 import FastImage from 'react-native-fast-image';
@@ -75,6 +75,7 @@ const OAuthLoginScreen = ({navigation, isTestEnabled}) => {
           response.refreshToken,
           response.marketingConsent,
         );
+        await log_access_create();
       }
     } catch (error) {
       if (error.response?.status === 404) {

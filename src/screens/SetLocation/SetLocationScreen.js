@@ -13,13 +13,13 @@ import {
 import useCustomAlert from '../../hooks/useCustomAlert';
 import {useToast} from '../../context/ToastContext';
 import Loading from '../../hooks/Loading';
-import {log_access_create} from '../../api/userApi';
 import useSafeAndroidInsets from '../../hooks/useSafeAndroidInsets';
 import DeleteLocationButton from '../../components/SetLocation/DeleteLocationButton';
 import MapPreview from '../../components/SetLocation/MapPreview';
 import RadiusSelector from '../../components/SetLocation/RadiusSelector';
 import SetLocationHeader from '../../components/SetLocation/SetLocationHeader';
 import {useMapSearch, formatRadiusLabel} from '../../context/MapSearchContext';
+import {formatLocationAddress} from '../../utils/locationAddressUtil';
 
 const RADIUS_OPTIONS = [
   {label: '500m', value: 0.5},
@@ -129,11 +129,13 @@ const SetLocationScreen = ({navigation, route}) => {
     try {
       setLoading(true);
       if (address && coords) {
-        await saveLocationAddress(coords, address);
-
-        log_access_create(coords);
+        let addressText = address || '';
+        if (address) {
+          addressText = formatLocationAddress(addressText);
+        }
+        await saveLocationAddress(coords, addressText);
         setCurrentLocation(coords);
-        setCurrentAddress(address);
+        setCurrentAddress(addressText);
         showToast('주소 설정이 완료 되었습니다.');
         setTimeout(() => {
           resetToHome();

@@ -132,17 +132,8 @@ const MainScreen = ({navigation}) => {
 
   useFocusEffect(
     useCallback(() => {
-      let lastBackPressed = 0;
-
       const onBackPress = () => {
-        const now = Date.now();
-        if (now - lastBackPressed < 2000) {
-          BackHandler.exitApp();
-          return true;
-        }
-
-        lastBackPressed = now;
-        ToastAndroid.show('한 번 더 누르면 종료됩니다.', ToastAndroid.SHORT);
+        navigation.navigate('ExploreScreen');
         return true;
       };
 
@@ -152,7 +143,7 @@ const MainScreen = ({navigation}) => {
       );
 
       return () => backHandler.remove();
-    }, []),
+    }, [navigation]),
   );
 
   const commentSheetSnapPoints = useMemo(() => {

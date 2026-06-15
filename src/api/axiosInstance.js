@@ -30,8 +30,6 @@ const refreshAccessToken = async () => {
         headers: {'x-auth-token': refreshToken},
       },
     );
-    log_access_create();
-
     const newAccessToken = response.data.data.accessToken;
     const newRefreshToken = response.data.data.refreshToken;
 
@@ -41,6 +39,7 @@ const refreshAccessToken = async () => {
       await setToken(newAccessToken, newRefreshToken);
     }
 
+    await log_access_create();
     return newAccessToken;
   } catch (error) {
     if (error?.response?.data?.code === 21002 && !getisLoggingOut()) {

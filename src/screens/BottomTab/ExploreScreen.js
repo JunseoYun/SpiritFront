@@ -34,6 +34,7 @@ import PopularStoresSection from '../../components/ExploreScreen/PopularStroe/Po
 import ScrollToTopButton from '../../utils/ScrollToTopButton';
 import CustomText from '../../utils/CustomText';
 import useScrollToTopVisibility from '../../hooks/useScrollToTopVisibility';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const screenHeight = Dimensions.get('window').height;
@@ -41,7 +42,7 @@ const screenWidth = Dimensions.get('window').width;
 const TOP_TOUCHABLE_DISTANCE = 24;
 const POPULAR_SECTION_ITEM = {id: 'popularStoresSection'};
 
-const ExploreScreen = ({navigation}) => {
+const ExploreScreen = ({navigation, route}) => {
   const {pendingStoreId} = useDeepLink();
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState('');
@@ -52,11 +53,6 @@ const ExploreScreen = ({navigation}) => {
   const listFilterHeaderRef = useRef(null);
   const lastFilterScrollX = useRef(0);
 
-  const contentTopPadding = useMemo(
-    () => (Platform.OS === 'android' ? insets.top + 40 : insets.top + 20),
-    [insets.top],
-  );
-
   const [mainSectionHeight, setMainSectionHeight] = useState(0);
   const [topView2Height, setTopView2Height] = useState(0);
   const [touchable, setTouchable] = useState(false);
@@ -66,6 +62,7 @@ const ExploreScreen = ({navigation}) => {
   const [recommReason, setRecommReason] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const todayRecommTabFromRoute = route?.params?.todayRecommTab;
 
   const {recommendCategory} = useRecommendation();
   const [unreadNotification, setUnreadNotification] = useState(false);
@@ -172,24 +169,24 @@ const ExploreScreen = ({navigation}) => {
   }, [fixedFilterOpacity]);
 
   const headerOffsetFallback = useMemo(() => insets.top + 110, [insets.top]);
-  const measuredHeaderHeight = useMemo(
-    () => contentTopPadding,
-    [contentTopPadding],
-  );
-  const headerOffset = useMemo(
-    () =>
-      measuredHeaderHeight > 0 ? measuredHeaderHeight : headerOffsetFallback,
-    [measuredHeaderHeight, headerOffsetFallback],
-  );
   const listTopPadding = useMemo(
-    () => (topView2Height > 0 ? topView2Height : headerOffset),
-    [topView2Height, headerOffset],
+    () => (topView2Height > 0 ? topView2Height : headerOffsetFallback),
+    [topView2Height, headerOffsetFallback],
   );
 
   useFocusEffect(
     useCallback(() => {
+      let lastBackPressed = 0;
+
       const onBackPress = () => {
-        navigation.navigate('MainScreen');
+        const now = Date.now();
+        if (now - lastBackPressed < 2000) {
+          BackHandler.exitApp();
+          return true;
+        }
+
+        lastBackPressed = now;
+        ToastAndroid.show('한 번 더 누르면 종료됩니다.', ToastAndroid.SHORT);
         return true;
       };
 
@@ -199,7 +196,7 @@ const ExploreScreen = ({navigation}) => {
       );
 
       return () => backHandler.remove();
-    }, [navigation]),
+    }, []),
   );
 
   useEffect(() => {
@@ -295,6 +292,20 @@ const ExploreScreen = ({navigation}) => {
   const handleSearchPress = useCallback(() => {
     navigation.navigate('SearchScreen');
   }, [navigation]);
+
+  const handleTopRecommViewAll = useCallback(
+    ({stores, initialTab} = {}) => {
+      const tabNavigatorKey = navigation?.getState?.()?.key;
+      navigation.navigate('RecommStoreScreen', {
+        stores: Array.isArray(stores) ? stores : recommStores,
+        initialTab,
+        sourceRouteKey: route?.key,
+        tabNavigatorKey,
+        location,
+      });
+    },
+    [location, navigation, recommStores, route?.key],
+  );
 
   const handleAiChatPress = useCallback(() => {
     navigation.navigate('ChatbotScreen');
@@ -438,22 +449,28 @@ const ExploreScreen = ({navigation}) => {
       recommReason,
       recommStores,
       location,
+      address,
       isRefreshing,
       navigation,
       loading,
+      todayRecommInitialTab: todayRecommTabFromRoute,
       handlestoreItemClick,
       catagoryClick,
+      onPressRecommViewAll: handleTopRecommViewAll,
     }),
     [
       recommCategory,
       recommReason,
       recommStores,
       location,
+      address,
       isRefreshing,
       loading,
+      todayRecommTabFromRoute,
       navigation,
       handlestoreItemClick,
       catagoryClick,
+      handleTopRecommViewAll,
     ],
   );
 
@@ -547,6 +564,12 @@ const ExploreScreen = ({navigation}) => {
               hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
               style={[styles.addressPressableCompact, {marginLeft: 0}]}
               onPress={setLocationHandle}>
+              <Ionicons
+                name="location-outline"
+                size={18}
+                color="#333"
+                style={styles.noticeIcon}
+              />
               <CustomText
                 maxScale={1.0}
                 style={styles.todayAddress2}
@@ -555,7 +578,7 @@ const ExploreScreen = ({navigation}) => {
                 {formatAddress(address)}
               </CustomText>
               {address && (
-                <Feather name="chevron-right" size={20} color="#181a1a" />
+                <Feather name="chevron-right" size={18} color="#333" />
               )}
             </Pressable>
           </View>
@@ -738,9 +761,12 @@ const styles = StyleSheet.create({
     zIndex: 40,
     backgroundColor: '#fff',
   },
+  noticeIcon: {
+    marginRight: 4,
+  },
   todayAddress2: {
-    fontSize: 16,
-    fontFamily: 'Pretendard-Medium',
+    fontSize: 15,
+    fontFamily: 'Pretendard-SemiBold',
     color: '#181a1a',
     flexShrink: 1,
     marginRight: 3,
@@ -771,6 +797,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     paddingBottom: 1,
     overflow: 'hidden',
+    zIndex: 999,
   },
   aiChatButtonGradient: {
     ...StyleSheet.absoluteFillObject,
