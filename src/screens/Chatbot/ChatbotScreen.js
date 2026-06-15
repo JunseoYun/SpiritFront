@@ -415,7 +415,6 @@ const ChatbotScreen = ({navigation}) => {
         }
 
         const agentResult = data?.llmAgentResult || data || {};
-        console.log('[agent/chat-search] response', data);
         const responseId = agentResult?.responseId;
         const storeList = data?.stores?.content;
         const searchConditions = agentResult?.searchConditions;

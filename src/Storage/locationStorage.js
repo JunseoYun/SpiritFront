@@ -33,7 +33,6 @@ export const initLocationFromServer = async () => {
     const address = data.getAddressDto.address;
     await saveLocationAddress(location, address);
   } catch (err) {
-    console.log('서버 초기 위치 가져오기 실패:', err);
     return {cachedLocation: fixedLocation, cachedAddress: fixedAddress};
   }
 };
@@ -46,7 +45,6 @@ export const saveLocationAddress = async (location, address) => {
     cachedLocation = location;
     cachedAddress = address;
   } catch (err) {
-    console.log('위치 정보 저장 오류:', err);
   }
 };
 
@@ -56,7 +54,6 @@ export const saveSearchRadius = async radiusKm => {
     await AsyncStorage.setItem('searchRadiusKm', JSON.stringify(radiusKm));
     cachedSearchRadiusKm = radiusKm;
   } catch (err) {
-    console.log('검색 반경 저장 오류:', err);
   }
 };
 
@@ -70,7 +67,6 @@ export const getLocation = async () => {
       return cachedLocation;
     }
   } catch (err) {
-    console.log('위치 정보 가져오기 오류:', err);
   }
   return fixedLocation;
 };
@@ -85,7 +81,6 @@ export const getAddress = async () => {
       return cachedAddress;
     }
   } catch (err) {
-    console.log('주소 정보 가져오기 오류:', err);
   }
   return fixedAddress;
 };
@@ -103,7 +98,6 @@ export const getSearchRadius = async () => {
       }
     }
   } catch (err) {
-    console.log('검색 반경 가져오기 오류:', err);
   }
   return DEFAULT_SEARCH_RADIUS_KM;
 };
@@ -116,7 +110,6 @@ export const clearLocationStorage = async () => {
     cachedLocation = null;
     cachedAddress = null;
   } catch (err) {
-    console.log('캐시 데이터 삭제 오류:', err);
   }
   return {fixedLocation, fixedAddress};
 };

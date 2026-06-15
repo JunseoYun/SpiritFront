@@ -147,7 +147,6 @@ export const ReviewDelete = async reviewId => {
   }
 };
 
-//Post Api 나중에 옮기기
 
 export const PostDelete = async postId => {
   try {

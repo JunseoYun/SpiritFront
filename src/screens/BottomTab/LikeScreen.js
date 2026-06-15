@@ -272,7 +272,6 @@ const LikeScreen = ({navigation}) => {
           setState(prev => ({...prev, hasMore: false}));
         }
       } catch (error) {
-        console.error('Failed to load stores:', error);
       } finally {
         setState(prev => ({
           ...prev,

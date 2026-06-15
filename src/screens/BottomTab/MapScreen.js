@@ -499,7 +499,6 @@ const MapScreen = ({navigation, route}) => {
             : normalized.length > 0;
         setHasMoreStores(nextHasMore);
       } catch (error) {
-        console.error('조건 검색 (목록) 실패:', error);
         if (!append) {
           setStores([]);
           setSelectedStore(null);
@@ -803,7 +802,6 @@ const MapScreen = ({navigation, route}) => {
         {allowUserMarker: true},
       );
     } catch (err) {
-      console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
       setRefresh(false);
       setLoading(false);
       setStoregetloading(false);
@@ -1132,7 +1130,6 @@ const MapScreen = ({navigation, route}) => {
         }
       }
     } catch (err) {
-      console.error('위치 업데이트 중 오류 발생:', err);
     } finally {
       setIsUpdatingLocation(false);
       setRefresh(true);
@@ -1263,7 +1260,6 @@ const MapScreen = ({navigation, route}) => {
         }
       }
     } catch (err) {
-      // console.error('반경 내 매장 조회 중 오류:', err);
       setStoregetloading(false);
     } finally {
       lastNonAiQueryRef.current = {
@@ -1361,7 +1357,6 @@ const MapScreen = ({navigation, route}) => {
         }
       }
     } catch (err) {
-      console.error('위치 또는 가게 데이터를 가져오는 중 오류 발생:', err);
       suppressUserMarkerRef.current = false;
     } finally {
     }
@@ -1556,7 +1551,6 @@ const MapScreen = ({navigation, route}) => {
       // 새로운 메시지 처리
       handleWebViewMessage(message); // 새로운 로직 추가
     } catch (error) {
-      console.error('Error parsing message from WebView:', error);
     }
   };
 
@@ -1601,7 +1595,6 @@ const MapScreen = ({navigation, route}) => {
           setDetailStoreData(data || null);
         }
       } catch (error) {
-        console.error('Failed to fetch store detail', error);
         if (detailFetchSeqRef.current === seq) {
           setDetailStoreData(null);
         }

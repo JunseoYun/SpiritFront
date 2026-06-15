@@ -103,7 +103,6 @@ const StoreImage = ({
         setImageUris([...imageUris, image]);
       })
       .catch(error => {
-        console.log('Camera Error: ', error);
       });
   };
 
@@ -159,7 +158,6 @@ const StoreImage = ({
       setImage(prev => [...prev, ...croppedImages.map(img => img.path)]);
       setImageUris(prev => [...prev, ...croppedImages]);
     } catch (error) {
-      console.log('Picker Error: ', error);
     } finally {
       setLoading(false);
     }

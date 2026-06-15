@@ -141,6 +141,5 @@ export const handleUrl = ({url}) => {
       safeShowToast('지원하지 않는 링크입니다.');
     }
   } catch (error) {
-    console.log('URL 처리 실패', error);
   }
 };

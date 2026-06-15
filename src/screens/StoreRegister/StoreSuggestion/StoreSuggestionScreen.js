@@ -81,7 +81,7 @@ const StoreSuggestionScreen = ({navigation}) => {
         (x, y) => {
           scrollViewRef.current.scrollTo({y: y - 100, animated: true});
         },
-        () => console.log('스크롤 이동 실패'),
+        () => {},
       );
     }
   };

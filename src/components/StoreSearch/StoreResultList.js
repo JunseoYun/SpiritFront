@@ -55,7 +55,6 @@ const StoreResultList = ({trimmedSearchWord, navigation, index}) => {
         setIsEnd(noMore);
         setIsWord(true);
       } catch (err) {
-        console.error('오류 발생:', err?.message ?? err);
       } finally {
         setLoading(false);
         if (isInitial) setFirstLoading(false);

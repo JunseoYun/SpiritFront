@@ -155,7 +155,6 @@ const PostStoreInputScreen = ({navigation, route}) => {
         const saved = await getLocation();
         setLocation(saved ?? null);
       } catch (error) {
-        console.error('현재 위치 불러오기 실패:', error);
       }
     };
     loadLocation();
@@ -271,7 +270,6 @@ const PostStoreInputScreen = ({navigation, route}) => {
           : [];
         setViewedState({items, loading: false, loaded: true});
       } catch (error) {
-        console.error('최근 본 매장 조회 실패:', error);
         setViewedState(prev => ({...prev, loading: false, loaded: true}));
       }
     };
@@ -282,7 +280,6 @@ const PostStoreInputScreen = ({navigation, route}) => {
         const items = (await Store_getby_liked(0)) ?? [];
         setLikedState({items, loading: false, loaded: true});
       } catch (error) {
-        console.error('저장한 매장 조회 실패:', error);
         setLikedState(prev => ({...prev, loading: false, loaded: true}));
       }
     };
@@ -333,7 +330,6 @@ const PostStoreInputScreen = ({navigation, route}) => {
             (totalPages !== null ? 0 >= totalPages - 1 : false),
         });
       } catch (error) {
-        console.error('매장 검색 실패:', error);
         if (isActive) {
           setSearchState(prev => ({...prev, loading: false}));
         }
@@ -383,7 +379,6 @@ const PostStoreInputScreen = ({navigation, route}) => {
       const nextId = getStoreId(store);
       const nextStore = prevId && nextId && prevId === nextId ? null : store;
       if (nextStore) {
-        console.log('선택한 매장 정보:', nextStore);
       }
       return nextStore;
     });
@@ -617,7 +612,6 @@ const PostStoreInputScreen = ({navigation, route}) => {
         };
       });
     } catch (error) {
-      console.error('매장 추가 검색 실패:', error);
       setSearchState(prev => ({...prev, loading: false}));
     }
   }, [searchValue]);

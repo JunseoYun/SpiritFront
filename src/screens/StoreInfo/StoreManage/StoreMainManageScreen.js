@@ -130,7 +130,6 @@ const StoreMainManageScreen = ({
       setStoreInfo(updated);
       return updated;
     } catch (err) {
-      console.log('Failed to refresh store data', err);
       return null;
     }
   }, [storeId]);
@@ -145,7 +144,6 @@ const StoreMainManageScreen = ({
       const list = await getEventsByStore(storeId);
       setEvents(Array.isArray(list) ? list : []);
     } catch (error) {
-      console.log('Failed to load store events', error);
       setEvents([]);
     } finally {
       setEventsLoading(false);

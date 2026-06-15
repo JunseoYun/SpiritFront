@@ -92,7 +92,6 @@ const StoreAddMapScreen = ({navigation}) => {
         }
       }
     } catch (err) {
-      console.error('🔴 위치 가져오는 중 오류 발생:', err);
     } finally {
       setLoading(false);
     }
@@ -128,7 +127,6 @@ const StoreAddMapScreen = ({navigation}) => {
       }
     } catch (err) {
       handleLocationError(err);
-      console.error('지도 재설정 중 오류:', err);
     } finally {
       setLoading(false);
     }
@@ -147,10 +145,8 @@ const StoreAddMapScreen = ({navigation}) => {
   const onMessageHandler = event => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
-      console.log('💬 WebView message:', message);
 
       if (message.action === 'mapLoaded') {
-        console.log('✅ mapLoaded 수신됨');
 
         fetchSaveLocation();
         return;
@@ -173,7 +169,6 @@ const StoreAddMapScreen = ({navigation}) => {
         }
       }
     } catch (err) {
-      console.error('WebView 메시지 파싱 오류:', err);
     }
   };
 

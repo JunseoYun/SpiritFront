@@ -37,7 +37,6 @@ const MyManager = forwardRef(
         }
         setPage(targetPage);
       } catch (error) {
-        console.log(error);
       } finally {
         setLoading(false);
         setRefreshing(false);

@@ -107,7 +107,6 @@ const ReviewItem = ({
       setRepliedAt(new Date().toISOString());
       setIsReplying(false);
     } catch (e) {
-      console.log(e);
     } finally {
       setLoading(false);
     }
@@ -123,7 +122,6 @@ const ReviewItem = ({
       setReply(editText);
       setIsEditing(false);
     } catch (e) {
-      console.log(e);
     } finally {
       setLoading(false);
     }

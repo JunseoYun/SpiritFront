@@ -10,7 +10,6 @@ const MapPreview = ({mapHtml, onMapLoaded, webViewRef}) => {
         onMapLoaded?.();
       }
     } catch (e) {
-      console.log(e);
     }
   };
 

@@ -324,7 +324,6 @@ const StoreAlcoholScreen = ({
       setIsSortDirty(false);
       showToast?.('주류 순서를 저장했어요.', 'center');
     } catch (error) {
-      console.error('Failed to save drink order', error);
       showToast?.('순서 저장에 실패했어요. 다시 시도해주세요.', 'center');
     } finally {
       setIsSavingOrder(false);

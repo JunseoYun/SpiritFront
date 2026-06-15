@@ -51,7 +51,6 @@ const DraggableImageItem = ({
         setImageHeight(Math.min(naturalHeight, DISPLAY_MAX_HEIGHT));
       },
       error => {
-        console.warn('Failed to get image size:', error);
         setImageHeight(DISPLAY_MAX_HEIGHT);
       },
     );

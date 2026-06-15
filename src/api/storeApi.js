@@ -108,7 +108,6 @@ export const StoreSuggestion = async data => {
     );
     return response;
   } catch (error) {
-    console.error(error.response);
   }
 };
 
@@ -259,7 +258,6 @@ export const UpdateStore = async (storeId, data) => {
   try {
     await axiosInstance.patch(`/store/update/${storeId}`, data); // 수정: {data}를 제거
   } catch (error) {
-    console.error('PATCH 실패:', error?.response || error.message);
     throw error;
   }
 };
@@ -812,7 +810,6 @@ export const Store_getby_condition_search = async (
     });
     return response.data.data.content;
   } catch (error) {
-    console.log(error);
     functionError(error);
   }
 };
@@ -842,7 +839,6 @@ export const Store_getby_condition_search_markers = async (
     );
     return response.data.data;
   } catch (error) {
-    console.log(error);
     functionError(error);
   }
 };

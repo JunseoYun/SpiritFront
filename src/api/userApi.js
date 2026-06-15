@@ -149,7 +149,6 @@ export const Userdataget = async () => {
     const response = await userAxiosInstance.get(`/auth/get`, {});
     return response.data.data;
   } catch (error) {
-    console.error(error.response);
 
     throw error;
   }
@@ -195,7 +194,6 @@ export const user_personalInfo_add = async (mokDataId, accessToken) => {
       },
     );
   } catch (error) {
-    console.error('❌ personal-info-add error:', error.response);
 
     throw error;
   }
@@ -213,7 +211,6 @@ export const user_merge = async (originalSocialInfoDto, newSocialInfoDto) => {
       data, // ✅ body를 그대로 전달
     );
   } catch (error) {
-    console.error(error.response);
 
     throw error;
   }
@@ -268,7 +265,6 @@ export const user_personalInfo_update = async mokDataId => {
       },
     );
   } catch (error) {
-    console.error('UserInfo:', error.response);
     throw error;
   }
 };

@@ -50,7 +50,6 @@ const useHandlePendingNotification = (
               scrollToCommentId: comment.id ?? redirectId,
             });
           } catch (er) {
-            console.log(er);
           }
         }
         if (
@@ -72,7 +71,6 @@ const useHandlePendingNotification = (
               item: response,
             });
           } catch (er) {
-            console.log(er);
           }
         }
         if (
@@ -87,7 +85,6 @@ const useHandlePendingNotification = (
               item: response,
             });
           } catch (er) {
-            console.log(er);
           }
         }
         if (
@@ -103,7 +100,6 @@ const useHandlePendingNotification = (
               openCommentSheet: true,
             });
           } catch (er) {
-            console.log(er);
           }
         }
         if (

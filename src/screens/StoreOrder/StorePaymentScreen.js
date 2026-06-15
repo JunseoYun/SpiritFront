@@ -171,8 +171,6 @@ const StorePaymentScreen = () => {
   };
 
   const handlePay = () => {
-    // TODO: 실제 결제 연동 지점
-    // 현재는 페이로드만 구성해서 콘솔 출력
     const payload = {
       storeId,
       storeName,
@@ -191,7 +189,6 @@ const StorePaymentScreen = () => {
     };
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.log('(PAY) ORDER_PAYLOAD', payload);
     }
     // 결제 화면/PG로 이동하거나 성공 토스트 등 연결 지점
   };

@@ -29,7 +29,6 @@ const StoreManageHeader = ({
       });
     } catch (error) {
       showToast('공유 도중 문제가 발생했어요.');
-      console.error('onShare error:', error.response);
     }
   };
 

@@ -47,7 +47,6 @@ const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
       });
       onUpdate(image);
     } catch (error) {
-      console.error('Image picker error:', error);
     }
   };
 
@@ -67,7 +66,6 @@ const CFModal = ({isVisible, onClose, onUpdate, onDelete}) => {
       });
       onUpdate(image);
     } catch (error) {
-      console.error('Camera picker error:', error);
     }
   };
 

@@ -246,7 +246,6 @@ const PostWriteScreen = ({navigation, route}) => {
           const trimmedStoreName = storeName.trim();
           const trimmedStoreAddress = storeAddress.trim();
           if (!trimmedStoreName || !trimmedStoreAddress) {
-            console.warn('게시 실패: storeId가 없습니다.');
             return;
           }
           const suggestionData = {
@@ -272,7 +271,6 @@ const PostWriteScreen = ({navigation, route}) => {
           const response = await StoreSuggestion(suggestionData);
           resolvedStoreId = response?.data?.data?.id ?? null;
           if (!resolvedStoreId) {
-            console.warn('게시 실패: 매장 제보 후 storeId를 받지 못했습니다.');
             return;
           }
         }
@@ -320,7 +318,6 @@ const PostWriteScreen = ({navigation, route}) => {
         });
         return;
       }
-      console.error('게시 실패:', error);
     } finally {
       setIsSubmitting(false);
     }

@@ -47,7 +47,6 @@ const ReceiptImage = ({receiptimageUris, setReceiptImageUris, error}) => {
         setImageUris([...imageUris, image]);
       })
       .catch(error => {
-        console.log('Camera Error: ', error);
       });
   };
 
@@ -69,7 +68,6 @@ const ReceiptImage = ({receiptimageUris, setReceiptImageUris, error}) => {
         setImageUris([...imageUris, image]);
       })
       .catch(error => {
-        console.log('Picker Error: ', error);
       });
   };
 

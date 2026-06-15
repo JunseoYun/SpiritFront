@@ -72,7 +72,6 @@ const NotificationSetScreen = ({navigation}) => {
         if (error.response) {
         } else {
           // 네트워크 또는 다른 에러 처리
-          console.error('Unexpected Error:', error);
         }
       }
     };
@@ -81,7 +80,6 @@ const NotificationSetScreen = ({navigation}) => {
 
   const handleGoToSettings = () => {
     openSettings().catch(() => {
-      console.warn('설정 열기에 실패했습니다.');
     });
   };
 
@@ -93,7 +91,6 @@ const NotificationSetScreen = ({navigation}) => {
       // ⭐️ isAgreed를 경로 파라미터로 넘겨주는 방식으로 호출
       await user_marketing_consent(newValue);
     } catch (error) {
-      console.error('마케팅 알림 상태 업데이트 실패:', error.response);
       // 실패 시 원래 상태로 롤백
       setMarketingEnabled(!newValue);
     }

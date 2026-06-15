@@ -26,10 +26,8 @@ const KakaoMapHTML = () => `
     <script>
       document.addEventListener("DOMContentLoaded", function() {
         if (typeof kakao !== "undefined" && kakao.maps) {
-          console.log("Kakao Maps API 로드 완료");
           window.ReactNativeWebView.postMessage(JSON.stringify({ action: 'mapLoaded' }));
         } else {
-          console.error("Kakao Maps API 로드 실패");
         }
       });
     </script>

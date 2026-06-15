@@ -57,7 +57,6 @@ const PostItem = ({
   isWriter = false,
   hideStoreBadge = false,
 }) => {
-  // console.log(item);
   const navigation = useNavigation();
   const screenWidth = Dimensions.get('window').width;
   const profileSource = item.profileImage

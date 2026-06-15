@@ -48,7 +48,6 @@ const ViewedStoreList = ({refresh, navigation, location, loaded}) => {
           setHasMore(false); // 더 이상 데이터가 없으면 false로 설정
         }
       } catch (error) {
-        console.error(error);
       } finally {
       }
     }

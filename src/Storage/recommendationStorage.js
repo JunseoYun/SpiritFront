@@ -12,7 +12,6 @@ export const setPreferredDrinkTab = async value => {
     await AsyncStorage.setItem(PREFERRED_DRINK_TAB_KEY, value);
     cachedPreferredDrinkTab = value;
   } catch (error) {
-    console.error('추천 주종 저장 중 오류가 발생했습니다:', error);
   }
 };
 
@@ -25,7 +24,6 @@ export const getPreferredDrinkTab = async () => {
       return stored;
     }
   } catch (error) {
-    console.error('추천 주종 가져오기 중 오류가 발생했습니다:', error);
   }
   return null;
 };

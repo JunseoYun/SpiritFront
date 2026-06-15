@@ -173,7 +173,6 @@ const MainScreen = ({navigation}) => {
   const HEADER_ANIM_SHOW_DURATION = 340;
   const headerHideOffset = Math.max(0, headerHeight - insets.top);
   const mapPostItem = useCallback(post => {
-    // console.log(post);
     return {
       id: String(post.id ?? ''),
       nickname: post.writerNickname ?? '게스트',
@@ -209,7 +208,6 @@ const MainScreen = ({navigation}) => {
       setTopRollItems(items);
     } catch (error) {
       setTopRollItems([]);
-      console.error('인기 포스트 불러오기 실패:', error);
     } finally {
       setTopRollLoading(false);
     }
@@ -485,7 +483,6 @@ const MainScreen = ({navigation}) => {
         }
       } catch (error) {
         lastFetchCountRef.current = 0;
-        console.error('게시글 조회 실패:', error);
       } finally {
         if (isRefresh) {
           setRefreshing(false);
@@ -1167,7 +1164,7 @@ const MainScreen = ({navigation}) => {
   );
 
   const handleGoToSettings = useCallback(() => {
-    openSettings().catch(() => console.warn('설정 열기에 실패했습니다.'));
+    openSettings().catch(() => {});
   }, []);
 
   // Track the feed item sitting closest to the vertical center of the screen.
@@ -1533,8 +1530,6 @@ const MainScreen = ({navigation}) => {
         return;
       }
 
-      // TODO: Replace with navigation or action for each menu item when available.
-      console.log('write menu item selected', key);
     },
     [closeWriteMenu, navigation, location, handleGoToSettings, showAlert],
   );

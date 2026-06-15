@@ -267,10 +267,6 @@ const StoreAuthorityScreen = ({navigation}) => {
         });
       }
     } catch (error) {
-      console.error(
-        '[StoreCheckScreen] photo-only error:',
-        error.response.data.code,
-      );
       if (error.response.data.code === 22021) {
         showAlert({
           title: '이미 신청한 매장',

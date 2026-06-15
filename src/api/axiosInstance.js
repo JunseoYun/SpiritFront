@@ -84,7 +84,6 @@ axiosInstance.interceptors.request.use(
         config.headers['x-auth-token'] = token;
       }
     } catch (error) {
-      console.log(error, 'axiosInstanceerror');
       functionError(error); // 에러 처리
     }
     return config;
@@ -108,7 +107,6 @@ userAxiosInstance.interceptors.request.use(
         config.headers['x-auth-token'] = token;
       }
     } catch (error) {
-      console.log(error, 'useraxioserror');
       functionError(error); // 에러 처리
     }
     return config;
@@ -144,7 +142,6 @@ axiosInstance.interceptors.response.use(
 
         if (logout) {
           try {
-            console.log(refreshError, 'axiosInstancerefreshError');
             await logout(1); // 로그아웃 먼저 실행
           } catch (error) {}
         }
@@ -199,7 +196,6 @@ userAxiosInstance.interceptors.response.use(
 
         if (logout) {
           try {
-            console.log(refreshError, 'userAxiosInstancerefreshError');
             await logout(1); // 로그아웃 먼저 실행
           } catch (error) {}
         }

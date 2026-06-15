@@ -282,7 +282,6 @@ const StoreSuggestionDetailScreen = ({navigation}) => {
       await UpdateStore(preStoreId, updatePayload);
       setIsChoiceModalVisible(true);
     } catch (error) {
-      console.error(error);
       showAlert({
         title: '등록 실패',
         message:

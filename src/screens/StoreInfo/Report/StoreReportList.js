@@ -29,7 +29,6 @@ const reasonMap = {
   ETC: '기타 신고 문제',
 };
 
-//TODO 매장 사장 말고 직접 서비스 관리자는 신고 사유도 보이게 변경 예정
 const StoreReportList = () => {
   const route = useRoute();
   const {storeId} = route.params;
@@ -70,7 +69,6 @@ const StoreReportList = () => {
         setStoreReport(reports);
       }
     } catch (error) {
-      console.error('신고 조회 실패:', error);
     } finally {
       setLoading(false);
     }

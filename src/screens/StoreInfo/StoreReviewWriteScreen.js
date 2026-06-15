@@ -92,7 +92,6 @@ const StoreReviewWriteScreen = ({navigation}) => {
         setImages(prevImages => [...prevImages, image]);
       })
       .catch(error => {
-        console.log('ImagePicker Error: ', error);
       });
   };
 
@@ -146,7 +145,6 @@ const StoreReviewWriteScreen = ({navigation}) => {
 
       setImages(prev => [...prev, ...croppedImages]);
     } catch (error) {
-      console.log('ImagePicker Error: ', error);
     }
   };
 

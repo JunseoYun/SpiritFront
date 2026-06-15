@@ -26,8 +26,6 @@ export const ReportMainget = async (target, targetId) => {
     );
     return response.data.data;
   } catch (error) {
-    console.log(error);
-    console.error('❌ status error: ', error);
     throw error;
   }
 };
@@ -40,7 +38,6 @@ export const completeReport = async reportId => {
     );
     return response.data.data;
   } catch (error) {
-    console.error('❌ status error: ', error);
     throw error;
   }
 };

@@ -206,7 +206,6 @@ const StoreEventEditScreen = ({route, navigation}) => {
       try {
         onComplete();
       } catch (error) {
-        console.log('StoreEventEditScreen onComplete error', error);
       }
     }
   }, [onComplete]);
@@ -467,7 +466,6 @@ const StoreEventEditScreen = ({route, navigation}) => {
       setPickedImage(picked);
     } catch (error) {
       if (error?.code !== 'E_PICKER_CANCELLED') {
-        console.log('Camera pick error', error);
       }
     }
   }, []);

@@ -127,7 +127,6 @@ const ReviewEditScreen = ({route, navigation}) => {
         setAddedImages(prev => [...prev, image]);
       })
       .catch(error => {
-        console.log('ImagePicker Error: ', error);
       });
   };
 
@@ -188,7 +187,6 @@ const ReviewEditScreen = ({route, navigation}) => {
 
       setAddedImages(prev => [...prev, ...croppedImages]);
     } catch (error) {
-      console.log('ImagePicker Error: ', error);
     }
   };
 

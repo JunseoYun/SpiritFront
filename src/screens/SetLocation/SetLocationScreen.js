@@ -115,7 +115,6 @@ const SetLocationScreen = ({navigation, route}) => {
           setSearchRadiusKm(storedRadius);
         }
       } catch (error) {
-        console.log(error);
       }
     };
     fetchLocation();
@@ -144,7 +143,6 @@ const SetLocationScreen = ({navigation, route}) => {
         showAlert({title: '주소를 선택해주세요.'});
       }
     } catch (error) {
-      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -159,7 +157,6 @@ const SetLocationScreen = ({navigation, route}) => {
       const location = await getLocation();
       navigation.navigate('LocataionMapScreen', {location, origin});
     } catch (error) {
-      console.log(error);
     }
   };
 
@@ -178,7 +175,6 @@ const SetLocationScreen = ({navigation, route}) => {
           resetToHome();
         }, 100);
       } catch (error) {
-        console.log(error);
       }
     }
   };
@@ -201,7 +197,6 @@ const SetLocationScreen = ({navigation, route}) => {
         updateMapCircle(currentLocation, value);
       }
     } catch (error) {
-      console.log(error);
     }
   };
 

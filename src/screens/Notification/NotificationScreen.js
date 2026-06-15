@@ -71,7 +71,6 @@ const NotificationScreen = ({navigation}) => {
         const unread = await has_unread_notification();
         setUnreadNotification(unread.hasUnread);
       } catch (error) {
-        console.error(error);
       }
     };
     fetchUnread();
@@ -92,7 +91,6 @@ const NotificationScreen = ({navigation}) => {
         });
       }
     } catch (error) {
-      console.log('알림 불러오기 실패:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -121,7 +119,6 @@ const NotificationScreen = ({navigation}) => {
         return stillUnread;
       });
     } catch (err) {
-      console.log('읽기 실패');
     } finally {
       setLoading(false);
     }
@@ -405,7 +402,6 @@ const NotificationScreen = ({navigation}) => {
                       item: response,
                     });
                   } catch (er) {
-                    console.log(er);
                   }
                 }
                 if (
@@ -424,7 +420,6 @@ const NotificationScreen = ({navigation}) => {
                       scrollToCommentId: comment?.id ?? item.redirectId,
                     });
                   } catch (er) {
-                    console.log(er);
                   }
                 }
                 if (
@@ -440,7 +435,6 @@ const NotificationScreen = ({navigation}) => {
                         item: response,
                       });
                     } catch (er) {
-                      console.log(er);
                     }
                   }
                 }
@@ -461,7 +455,6 @@ const NotificationScreen = ({navigation}) => {
                         scrollToCommentId: comment?.id ?? item.redirectId,
                       });
                     } catch (er) {
-                      console.log(er);
                     }
                   }
                 }

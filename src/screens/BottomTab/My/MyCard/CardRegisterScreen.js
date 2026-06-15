@@ -169,7 +169,6 @@ export default function CardRegisterScreen({mode, navigation}) {
       birthYYMMDD: birthDigits,
       nickname: nickname.trim(),
     };
-    console.log('카드 등록:', payload);
     navigation.goBack();
   };
 

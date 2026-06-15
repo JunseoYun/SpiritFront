@@ -136,7 +136,6 @@ const Mynickchange = () => {
             break;
         }
       } else {
-        console.error('Unexpected Error:', error);
         showAlert({
           title: '네트워크 오류',
           message: '인터넷 연결을 확인하고 다시 시도해주세요.',

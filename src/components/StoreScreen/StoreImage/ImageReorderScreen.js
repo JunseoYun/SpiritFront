@@ -49,7 +49,6 @@ const ImageReorderScreen = ({navigation, route}) => {
 
       navigation.goBack();
     } catch (error) {
-      console.error('이미지 순서 변경 실패:', error);
     } finally {
       setLoading(false);
     }

@@ -80,7 +80,6 @@ const LocataionMapScreen = ({navigation}) => {
 
       moveCenterMap(newLocation.latitude, newLocation.longitude);
     } catch (err) {
-      console.error('위치 업데이트 중 오류 발생:', err);
     } finally {
       setLoading(false);
     }
@@ -136,7 +135,6 @@ const LocataionMapScreen = ({navigation}) => {
       }
     } catch (err) {
       handleLocationError(err);
-      console.error('지도 재설정 중 오류:', err);
     } finally {
       setLoading(false);
     }
@@ -172,7 +170,6 @@ const LocataionMapScreen = ({navigation}) => {
         }
       }
     } catch (err) {
-      console.error('WebView 메시지 파싱 오류:', err);
     }
   };
 

@@ -33,7 +33,6 @@ const StoreEventManager = ({storeId, onDirtyChange, localEvents = []}) => {
       const list = await getEventsByStore(storeId);
       setEvents(Array.isArray(list) ? list : []);
     } catch (error) {
-      console.log('Failed to load events', error);
     } finally {
       setListLoading(false);
     }

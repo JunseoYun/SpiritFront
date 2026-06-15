@@ -203,7 +203,6 @@ const StoreMenuScreen = ({
       try {
         await MenuUpdateSort(storeId, payload);
       } catch (error) {
-        console.error('Failed to update menu sort order', error);
         throw error;
       }
     },

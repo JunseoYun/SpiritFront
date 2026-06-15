@@ -86,7 +86,6 @@ const StoreMapScreen = ({navigation}) => {
           }
         }
       } catch (err) {
-        console.error('위치 가져오는 중 오류 발생:', err);
       }
     };
     fetchSaveLocation();
@@ -113,7 +112,6 @@ const StoreMapScreen = ({navigation}) => {
         webViewRef.current.injectJavaScript(script);
       }
     } catch (err) {
-      console.error('위치 가져오는 중 오류 발생:', err);
     }
   };
   const roundToPrecision = (value, precision = 4) => {
@@ -149,7 +147,6 @@ const StoreMapScreen = ({navigation}) => {
         moveCenterMap(newLocation.latitude, newLocation.longitude);
       }
     } catch (err) {
-      console.error('위치 업데이트 중 오류 발생:', err);
     }
   };
 
@@ -199,7 +196,6 @@ const StoreMapScreen = ({navigation}) => {
         shareLink: response.shareLink,
       });
     } catch (error) {
-      console.error('onShare error:', error);
       showToast?.('공유 도중 문제가 발생했어요.', 'center');
     }
   }, [showToast, storeId, storename]);
@@ -213,7 +209,6 @@ const StoreMapScreen = ({navigation}) => {
       await Storelikepost(storeId);
       setIsStoreLiked(prev => !prev);
     } catch (error) {
-      console.error('toggle like error:', error);
       showToast?.('찜 상태를 변경하지 못했어요.', 'center');
     } finally {
       setIsLikeProcessing(false);

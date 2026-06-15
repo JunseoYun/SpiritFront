@@ -53,7 +53,6 @@ const WithdrawScreen = () => {
       await logout(1); // 로그아웃 완료될 때까지 대기
       await removeNotification();
     } catch (error) {
-      console.error(error);
     } finally {
       setLoading(false);
     }

@@ -144,7 +144,6 @@ const MyScreen = ({navigation}) => {
           const unread = await has_unread_notification();
           setUnreadNotification(unread.hasUnread);
         } catch (err) {
-          console.error('알림 조회 실패:', err);
         }
       };
 
@@ -177,7 +176,6 @@ const MyScreen = ({navigation}) => {
               break;
           }
         } else {
-          console.error('Unexpected Error:', error);
           showAlert({
             title: '알 수 없는 오류',
             message: '다시 시도해주세요.',

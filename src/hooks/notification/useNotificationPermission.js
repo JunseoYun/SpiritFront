@@ -32,7 +32,6 @@ export const requestNotificationPermission = async () => {
 
     return isAuthorized;
   } catch (err) {
-    console.error('💥 알림 권한 요청 중 오류:', err);
     return false;
   }
 };
@@ -47,7 +46,6 @@ export const getFcmToken = async () => {
       return null;
     }
   } catch (err) {
-    console.error('💥 FCM 토큰 가져오기 실패:', err);
     return null;
   }
 };
@@ -64,7 +62,6 @@ export const iniBasictNotification = async token => {
       await user_push_consent(isAuthorized);
       await setNotification('basicNotification', isAuthorized.toString());
     } catch (error) {
-      console.error(error);
     }
     return isAuthorized;
   }

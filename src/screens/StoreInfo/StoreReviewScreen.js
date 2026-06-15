@@ -108,7 +108,6 @@ const StoreReviewScreen = ({navigation}) => {
 
         setPage(nextPage);
       } catch (error) {
-        console.error('매장 게시글 조회 실패:', error);
       } finally {
         setPostLoading(false);
         setLoading(false);

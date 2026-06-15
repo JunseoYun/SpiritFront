@@ -60,7 +60,6 @@ const StoreInviteModal = ({storeInviteId, isShowStoreInvite, onDismiss}) => {
       const data = await getby_manager_invitation_preview(storeInviteId);
       setPreviewData(data);
     } catch (e) {
-      console.error(e);
       setPreviewData(null);
       onDismiss();
       showToast('초대가 만료되었습니다.');

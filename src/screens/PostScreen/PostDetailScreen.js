@@ -32,8 +32,6 @@ const COMMENT_SORTS = {
   latest: ['id,DESC'],
   popular: ['likeCount,DESC', 'id,DESC'],
 };
-//TODO
-//PostDetailScreen 에서 전 스크린이 매장 리뷰 스크린이면 매장 이름 눌렀을 때 매장으로 이동 안하는 걸로 변경
 const normalizeIsWriter = item => Boolean(item?.isWriter ?? false);
 
 const PostDetailScreen = ({navigation, route}) => {
@@ -977,7 +975,6 @@ const PostDetailScreen = ({navigation, route}) => {
           }
         }
       } catch (error) {
-        console.log(error);
       }
     };
     ensureCommentVisible();
@@ -1036,7 +1033,6 @@ const PostDetailScreen = ({navigation, route}) => {
   }, [navigation, postItem]);
 
   const handleDeletePress = useCallback(() => {
-    // TODO: hook up delete API if needed
   }, []);
 
   const handleOpenCommentSheet = useCallback(() => {

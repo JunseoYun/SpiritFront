@@ -51,7 +51,6 @@ export const requestCameraPermission = async () => {
         return false;
     }
   } catch (error) {
-    console.warn('카메라 권한 요청 오류:', error);
     return false;
   }
 };
@@ -82,7 +81,6 @@ export const checkPhotoPermissionStatus = async () => {
     const granted = status === RESULTS.GRANTED || limited;
     return {status, granted, limited};
   } catch (error) {
-    console.warn('사진 접근 권한 확인 오류:', error);
     return {status: RESULTS.DENIED, granted: false, limited: false};
   }
 };
@@ -124,7 +122,6 @@ export const requestPhotoPermission = async () => {
     }
     return false;
   } catch (error) {
-    console.warn('사진 접근 권한 요청 오류:', error);
     return false;
   }
 };
@@ -138,7 +135,6 @@ export const openLimitedPhotoPicker = async () => {
     await openPhotoPicker();
     return true;
   } catch (error) {
-    console.warn('Limited photo picker open error:', error);
     return false;
   }
 };

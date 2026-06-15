@@ -72,7 +72,6 @@ const StoreAlcoholManageScreen = ({
       setAlcohols(Alcohols);
       setError(null);
     } catch (error) {
-      console.error('메뉴 다시 불러오기 실패', error);
       setError('주류 불러오기 실패');
     } finally {
       setLoading(false);

@@ -64,7 +64,6 @@ const StoreLikestats = ({storeId}) => {
       const response = await store_like_stats_get(form);
       setResult(response.data);
     } catch (err) {
-      console.error(err);
       setError('API 요청 중 오류가 발생했습니다.');
       setResult(null);
     } finally {

@@ -163,7 +163,6 @@ const IdentityScreen = ({route, navigation}) => {
         scrollViewRef.current.scrollTo({y: y - 100, animated: true});
       },
       error => {
-        console.warn('스크롤 이동 실패', error);
       },
     );
   };
@@ -267,7 +266,6 @@ const IdentityScreen = ({route, navigation}) => {
       const message =
         MOK_ERROR_MESSAGES[code] || '알 수 없는 오류가 발생했습니다.';
       showToast(message, 'center');
-      console.error('MOK 에러 응답:', error?.response?.data);
     } finally {
       setLoading(false);
     }
@@ -333,7 +331,6 @@ const IdentityScreen = ({route, navigation}) => {
       const message =
         MOK_ERROR_MESSAGES[code] || '인증번호 재전송에 실패했어요.';
       showToast(message, 'center');
-      console.error('재전송 실패:', error?.response?.data);
     } finally {
       setLoading(false);
     }

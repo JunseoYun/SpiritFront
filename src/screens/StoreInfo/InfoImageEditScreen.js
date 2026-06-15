@@ -250,7 +250,6 @@ const InfoImageEditScreen = ({navigation, route}) => {
       addImages([picked]);
       showToast('이미지를 추가했습니다');
     } catch (error) {
-      console.log(error);
     }
   };
 
@@ -346,7 +345,6 @@ const InfoImageEditScreen = ({navigation, route}) => {
         showToast(`${duplicated.length}개의 이미지는 이미 추가된 상태입니다`);
       }
     } catch (er) {
-      console.warn(er);
     }
   };
 
@@ -467,10 +465,6 @@ const InfoImageEditScreen = ({navigation, route}) => {
             const list = Array.isArray(response) ? response : [response];
             responsesByType[boardType] = list.slice(); // copy
           } catch (error) {
-            console.error(
-              `Error uploading images for boardType ${boardType}:`,
-              error,
-            );
             responsesByType[boardType] = [];
           }
         }
@@ -518,7 +512,6 @@ const InfoImageEditScreen = ({navigation, route}) => {
 
       navigation.goBack();
     } catch (error) {
-      console.error('handleSave 에러:', error);
     } finally {
       setDeletedImages([]);
       setLoading(false);

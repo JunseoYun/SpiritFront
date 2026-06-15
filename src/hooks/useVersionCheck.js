@@ -19,7 +19,6 @@ const useVersionCheck = () => {
           setIsTestEnabled(true);
         }
       } catch (error) {
-        console.warn('버전 체크 실패:', error.response);
       }
     };
 

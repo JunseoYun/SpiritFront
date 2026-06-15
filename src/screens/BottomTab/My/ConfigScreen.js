@@ -52,7 +52,6 @@ const ConfigScreen = ({navigation}) => {
         const data = await Userdataget();
         setUserdata(data);
       } catch (error) {
-        console.error('Error initializing token or fetching user data:', error);
       } finally {
         setLoading(false);
       }
@@ -152,7 +151,6 @@ const ConfigScreen = ({navigation}) => {
           break;
       }
     } else {
-      console.error('Unexpected Error:', error);
       showAlert({
         title: '네트워크 오류',
         message: '인터넷 연결을 확인하고 다시 시도해주세요.',
@@ -204,7 +202,6 @@ const ConfigScreen = ({navigation}) => {
       });
       UserImagepost(image);
     } catch (error) {
-      console.error('Camera picker error:', error);
     }
   };
 
@@ -224,7 +221,6 @@ const ConfigScreen = ({navigation}) => {
       });
       UserImagepost(image);
     } catch (error) {
-      console.error('Image picker error:', error);
     }
   };
 

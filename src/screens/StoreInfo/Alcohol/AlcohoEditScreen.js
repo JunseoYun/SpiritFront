@@ -341,7 +341,6 @@ const AlcoholEditScreen = ({route, navigation}) => {
       showToast('주류가 추가되었습니다.');
       navigation.goBack();
     } catch (error) {
-      console.log('AlcoholAdd Error:', error);
       showToast('문제가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -649,7 +648,6 @@ const AlcoholEditScreen = ({route, navigation}) => {
                         showToast('주류가 삭제되었습니다.');
                         navigation.goBack();
                       } catch (e) {
-                        console.log(e);
                         showToast('삭제 중 문제가 발생했습니다.');
                       }
                     },

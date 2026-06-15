@@ -23,7 +23,7 @@ const StoreRegister = ({handlestoreItemClick}) => {
   ];
 
   const handleGoToSettings = () => {
-    openSettings().catch(() => console.warn('설정 열기에 실패했습니다.'));
+    openSettings().catch(() => {});
   };
 
   const handlePress = async id => {

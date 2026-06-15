@@ -524,7 +524,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       const stat = await RNFS.stat(path);
       return typeof stat.size === 'number' ? stat.size : null;
     } catch (error) {
-      console.warn('파일 크기 조회 실패', error);
       return null;
     }
   };
@@ -576,7 +575,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       const resizedSize = await getFileSizeBytes(normalized);
       return normalized;
     } catch (error) {
-      console.warn('이미지 리사이즈 실패', error);
       return currentUri;
     }
   };
@@ -725,7 +723,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         uri: resizedUri,
       };
     } catch (error) {
-      console.warn('사진 크롭 실패', error);
       return photo;
     }
   };
@@ -1074,7 +1071,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
           );
         }
       } catch (error) {
-        console.warn('사진 사전 로드 실패', error);
         break;
       }
     }
@@ -1082,7 +1078,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
 
   const hydrateAlbums = async () => {
     if (!CameraRollModule?.getAlbums) {
-      console.warn('CameraRoll native 모듈을 찾을 수 없습니다.');
       return;
     }
     const hasPermission = await requestPhotoPermission();
@@ -1144,7 +1139,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         }
       }
     } catch (error) {
-      console.warn('사진첩 불러오기 실패', error);
     } finally {
       if (isMountedRef.current) {
         setLoading(false);
@@ -1223,7 +1217,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         }
       })
       .catch(error => {
-        console.warn('사진 로드 실패', error);
       })
       .finally(() => setIsAlbumPickerOpen(false));
   };
@@ -1275,7 +1268,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
         try {
           savedUri = await CameraRollModule.save(resizedUri, {type: 'photo'});
         } catch (error) {
-          console.warn('사진 저장 실패', error);
           savedUri = resizedUri;
         }
       }
@@ -1320,7 +1312,6 @@ const PostPhotoSelectScreen = ({navigation, route}) => {
       setSelectedPhotoIds([newPhoto.id]);
       setCurrentPhotoId(newPhoto.id);
     } catch (error) {
-      console.warn('카메라 촬영 실패', error);
     }
   };
 

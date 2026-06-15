@@ -209,7 +209,6 @@ const StoreMainScreen = ({navigation}) => {
         const eventList = await getEventsByStore(storeId);
         setEvents(Array.isArray(eventList) ? eventList : []);
       } catch (eventError) {
-        console.log('Failed to load events', eventError);
         setEvents([]);
       }
 
@@ -218,7 +217,6 @@ const StoreMainScreen = ({navigation}) => {
         setTimeout(() => navigation.goBack(), 100);
       }
     } catch (error) {
-      console.error(error, '!!');
     } finally {
       setSkeletonLoading(false);
       setLoading(false);
@@ -235,7 +233,6 @@ const StoreMainScreen = ({navigation}) => {
       const Drinks = await StoreDrinkget(storeId);
       setAlcohols(Drinks);
     } catch (error) {
-      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -312,7 +309,6 @@ const StoreMainScreen = ({navigation}) => {
       });
     } catch (error) {
       showToast('공유 도중 문제가 발생했어요.');
-      console.error('onShare error:', error.response);
     }
   };
 

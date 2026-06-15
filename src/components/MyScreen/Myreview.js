@@ -65,7 +65,6 @@ const MyReview = forwardRef(
       }
       try {
         const data = await PostMyGet(currentPage);
-        // console.log(data);
         setTotalpage(data.totalPages);
         setTotalElements(data.totalElements);
         if (data.content.length === 0) {
@@ -82,7 +81,6 @@ const MyReview = forwardRef(
           });
         }
       } catch (err) {
-        console.error('Failed to load reviews:', err.message);
       } finally {
         setLoading(false);
         setRefreshing(false);

@@ -31,12 +31,10 @@ export const fetchLocationAddress = () => {
           // 위치와 주소 정보 함께 반환
           resolve({newLocation: newLocation, address});
         } catch (err) {
-          console.error('위치 또는 주소 가져오기 오류:', err);
           reject(err);
         }
       },
       error => {
-        console.error('위치 가져오기 오류:', error);
         handleLocationError(error);
         reject(error);
       },
@@ -61,12 +59,10 @@ export const fetchLocation = () => {
           const currentLocation = {latitude, longitude};
           resolve(currentLocation);
         } catch (err) {
-          console.error('위치 또는 주소 가져오기 오류:', err);
           reject(err);
         }
       },
       error => {
-        console.error('위치 가져오기 오류:', error);
         handleLocationError(error);
         reject(error);
       },
@@ -133,7 +129,6 @@ export const requestLocationPermission = async () => {
       );
       return granted === PermissionsAndroid.RESULTS.GRANTED;
     } catch (error) {
-      console.warn('권한 요청 오류:', error);
       return false;
     }
   } else if (Platform.OS === 'ios') {
@@ -142,16 +137,11 @@ export const requestLocationPermission = async () => {
       if (result === RESULTS.GRANTED) {
         return true;
       } else if (result === RESULTS.DENIED) {
-        console.log('iOS 위치 권한이 거부되었습니다.');
         return false;
       } else if (result === RESULTS.BLOCKED) {
-        console.log(
-          'iOS 위치 권한이 차단되었습니다. 설정에서 변경이 필요합니다.',
-        );
         return false;
       }
     } catch (error) {
-      console.warn('iOS 권한 요청 오류:', error);
       return false;
     }
   }
@@ -170,7 +160,6 @@ export const getAddressFromCoordinates = async cachedLocation => {
       return '주소를 찾을 수 없습니다.';
     }
   } catch (error) {
-    console.error('역 지오코딩 오류:', error);
     return '역 지오코딩 실패';
   }
 };
@@ -184,7 +173,6 @@ export const getLatLngFromAddress = async address => {
       throw new Error('No results found');
     }
   } catch (error) {
-    console.error('Error fetching data:', error);
     throw error;
   }
 };

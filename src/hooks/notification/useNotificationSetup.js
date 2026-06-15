@@ -32,10 +32,6 @@ export const useNotificationSetup = () => {
   useEffect(() => {
     const unsubscribe = onMessage(getMessaging(), async remoteMessage => {
       const platform = Platform.OS;
-      console.log(
-        `🔥 [${platform.toUpperCase()}] 포그라운드 메시지 수신:`,
-        remoteMessage,
-      );
 
       await notifee.displayNotification({
         title: remoteMessage.notification?.title || '알림',

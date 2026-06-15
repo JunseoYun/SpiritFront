@@ -17,7 +17,6 @@ const StoreAddressSearch = ({navigation, route}) => {
       // 이전 화면으로 돌아가기
       navigation.goBack();
     } catch (error) {
-      console.error('에러 발생:', error);
     }
   };
 

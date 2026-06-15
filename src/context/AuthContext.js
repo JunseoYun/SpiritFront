@@ -58,7 +58,6 @@ export const AuthProvider = ({children}) => {
         globalToken = null; // ✅ 전역 초기화
         await deleteToken(getMessaging());
       } catch (error) {
-        console.warn('user_logout 실패:', error.message);
       }
     } else {
       try {
@@ -68,7 +67,6 @@ export const AuthProvider = ({children}) => {
         globalToken = null;
         await deleteToken(getMessaging());
       } catch (error) {
-        console.log(error, '여기');
         if (error.response.data.code === 21002) {
           await removeToken(); // 토큰 제거
           setTokenState(null); // 상태 초기화

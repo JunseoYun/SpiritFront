@@ -273,7 +273,7 @@ const StoreOwnershipScreen = ({navigation}) => {
             animated: true,
           });
         },
-        () => console.log('스크롤 이동 실패'),
+        () => {},
       );
     }
   }, []);
@@ -565,7 +565,6 @@ const StoreOwnershipScreen = ({navigation}) => {
         });
       }
     } catch (apiError) {
-      console.log('[CreateStoreWithOwnership] error', apiError?.response?.data);
       showAlert({
         title: '등록 실패',
         message:

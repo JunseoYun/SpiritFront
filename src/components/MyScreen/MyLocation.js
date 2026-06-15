@@ -33,7 +33,6 @@ const MyLocation = ({navigation, onContentLayout}) => {
         setRadiusLabel(formatRadiusLabel(INITIAL_RADIUS_KM));
       }
     } catch (error) {
-      console.log(error);
     }
   };
 

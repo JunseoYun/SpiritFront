@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/junseoyun/SpiritFront ls-files)",
+      "Bash(git -C /Users/junseoyun/SpiritFront log --oneline --all)",
+      "Bash(git -C /Users/junseoyun/SpiritFront log --oneline -5)",
+      "Bash(xargs ls -la)",
+      "Bash(git -C /Users/junseoyun/SpiritFront log --all --oneline --grep=\"key\\\\|token\\\\|secret\\\\|password\\\\|env\" -i)",
+      "Bash(git -C /Users/junseoyun/SpiritFront show 1382879 --stat)",
+      "Bash(git -C /Users/junseoyun/SpiritFront log --all --follow -p -- \".env\")",
+      "Bash(grep -E \"\\\\.\\(js|ts|tsx\\)$\")",
+      "Bash(git -C /Users/junseoyun/SpiritFront log --all --format=\"%ae %an\")",
+      "Bash(git-filter-repo --version)",
+      "Bash(git -C /Users/junseoyun/SpiritFront remote -v)",
+      "Bash(brew install *)",
+      "Bash(git filter-repo *)",
+      "Bash(git -C /Users/junseoyun/SpiritFront log --all --oneline --follow -- ios/GoogleService-Info.plist)",
+      "Bash(git -C /Users/junseoyun/SpiritFront remote add origin https://github.com/JunseoYun/SpiritFront.git)",
+      "Bash(git -C /Users/junseoyun/SpiritFront add .gitignore)",
+      "Bash(git -C /Users/junseoyun/SpiritFront commit -m \"Security: remove Firebase config files from tracking\")",
+      "Bash(git -C /Users/junseoyun/SpiritFront push origin --force --all)",
+      "Bash(git -C /Users/junseoyun/SpiritFront branch -a)",
+      "Bash(git -C /Users/junseoyun/SpiritFront log --oneline dev main --graph)",
+      "Bash(git -C /Users/junseoyun/SpiritFront log --oneline dev..main)",
+      "Bash(git -C /Users/junseoyun/SpiritFront log --oneline main..dev)",
+      "Bash(git -C /Users/junseoyun/SpiritFront checkout main)",
+      "Bash(git -C /Users/junseoyun/SpiritFront merge dev)",
+      "Bash(git -C /Users/junseoyun/SpiritFront push origin main)",
+      "Bash(git -C /Users/junseoyun/SpiritFront log --all --oneline -- ios/GoogleService-Info.plist android/app/google-services.json)",
+      "Bash(git -C /Users/junseoyun/SpiritFront add README.md docs/screenshots/)",
+      "Bash(git -C /Users/junseoyun/SpiritFront commit -m \"Docs: 채용용 README 작성 및 스크린샷 추가\")",
+      "Bash(git -C /Users/junseoyun/SpiritFront push origin dev)",
+      "Bash(git -C /Users/junseoyun/SpiritFront commit --amend -m \"Docs: README 재작성 및 스크린샷 추가\")",
+      "Bash(git -C /Users/junseoyun/SpiritFront push origin main --force)",
+      "Bash(awk -F: '{print $1}')",
+      "Bash(xargs sed -i '' '/^[[:space:]]*console\\\\.\\\\\\(log\\\\|warn\\\\|error\\\\\\)[^;]*;[[:space:]]*$/d')",
+      "Bash(python3)",
+      "Bash(git -C /Users/junseoyun/SpiritFront add -A)",
+      "Bash(git -C /Users/junseoyun/SpiritFront commit -m \"Refactor: console.log 및 TODO 주석 제거\")"
+    ]
+  }
+}

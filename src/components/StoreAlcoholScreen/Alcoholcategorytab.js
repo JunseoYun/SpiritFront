@@ -166,7 +166,6 @@ const Alcoholcategorytab = ({
                 } else {
                 }
               } else {
-                console.warn();
               }
             }}>
             <CustomText

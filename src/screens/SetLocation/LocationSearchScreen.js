@@ -12,7 +12,6 @@ const LocationSearchScreen = ({route}) => {
         route.params.onAddressSelect({address, coords});
       }
     } catch (error) {
-      console.error('에러 발생:', error);
     }
   };
 

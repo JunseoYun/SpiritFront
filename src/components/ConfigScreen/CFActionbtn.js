@@ -20,7 +20,6 @@ const CFActionbtn = ({navigation}) => {
       // await unLogin();
       await logout();
     } catch (error) {
-      console.error('Log-Out Error:', error);
       showAlert({
         title: '로그아웃 오류',
         message: '로그아웃 중 문제가 발생했습니다.',

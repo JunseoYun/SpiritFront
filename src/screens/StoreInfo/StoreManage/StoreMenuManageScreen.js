@@ -57,7 +57,6 @@ const StoreMenuManageScreen = ({
       setMenus(menusData);
       setError(null);
     } catch (error) {
-      console.error('메뉴 다시 불러오기 실패', error);
       setError('메뉴 불러오기 실패');
     } finally {
       setLoading(false);

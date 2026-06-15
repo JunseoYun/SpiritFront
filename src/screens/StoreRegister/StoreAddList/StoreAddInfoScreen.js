@@ -106,7 +106,7 @@ const StoreAddInfoScreen = ({navigation}) => {
         (x, y) => {
           scrollViewRef.current.scrollTo({y: y - 100, animated: true});
         },
-        () => console.log('스크롤 이동 실패'),
+        () => {},
       );
     }
   };
@@ -365,7 +365,6 @@ const StoreAddInfoScreen = ({navigation}) => {
         }
       }
     } catch (error) {
-      console.error(error?.response);
       setConfirm(false);
       showAlert({
         title: '등록 실패',

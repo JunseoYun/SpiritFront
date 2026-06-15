@@ -45,7 +45,6 @@ const CategoryListTabbar = ({route}) => {
         const currentLocation = await getLocation();
         setLocation(currentLocation);
       } catch (error) {
-        console.error('초기 로드 오류:', error);
       }
     };
     fetchLocation();

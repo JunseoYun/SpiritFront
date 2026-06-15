@@ -150,7 +150,6 @@ const StoreOrderScreen = () => {
           setMenuItems(prev => mapWithQuantity(refreshedMenus, prev));
         }
       } catch (error) {
-        console.error('Failed to refresh menus', error);
         if (isMounted) {
           showToast?.('메뉴 정보를 불러오지 못했어요', 'center');
         }
@@ -169,7 +168,6 @@ const StoreOrderScreen = () => {
           setAlcoholItems(prev => mapWithQuantity(refreshedAlcohols, prev));
         }
       } catch (error) {
-        console.error('Failed to refresh alcohols', error);
         if (isMounted) {
           showToast?.('주류 정보를 불러오지 못했어요', 'center');
         }
@@ -399,18 +397,7 @@ const StoreOrderScreen = () => {
       alcohols: orderedAlcohols,
     });
 
-    if (__DEV__) {
-      console.log('ORDER_PAYLOAD', {
-        storeId,
-        storeName,
-        visitTime,
-        peopleCount,
-        requestNote,
-        totalPrice,
-        menus: orderedMenus,
-        alcohols: orderedAlcohols,
-      });
-    }
+
 
     // showToast?.('주문 요청이 준비되었습니다. 연동을 진행해 주세요.', 'center');
     setSubmitting(false);

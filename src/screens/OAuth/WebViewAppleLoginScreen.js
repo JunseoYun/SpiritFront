@@ -23,11 +23,9 @@ const AppleLoginScreen = ({navigation}) => {
         await signInWithCredential(authInstance, appleCredential);
         navigation.goBack(); // 또는 홈 화면 등 이동
       } else {
-        console.log('❌ identityToken 없음');
         Alert.alert('로그인 실패', '토큰을 가져올 수 없습니다.');
       }
     } catch (error) {
-      console.error('❌ Apple 로그인 오류:', error);
       Alert.alert('로그인 실패', 'Apple 로그인 중 오류가 발생했습니다.');
     }
   };

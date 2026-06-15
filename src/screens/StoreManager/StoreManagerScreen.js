@@ -54,7 +54,6 @@ const StoreManagerScreen = ({navigation}) => {
         if (error.response) {
         } else {
           // 네트워크 또는 다른 에러 처리
-          console.error('Unexpected Error:', error);
         }
       } finally {
         setLoading(false);
@@ -71,7 +70,6 @@ const StoreManagerScreen = ({navigation}) => {
       const owner = data.find(m => m.isOwner);
       if (owner) setOwnerId(owner.userId);
     } catch (error) {
-      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -96,7 +94,6 @@ const StoreManagerScreen = ({navigation}) => {
       });
     } catch (error) {
       showToast('공유 도중 문제가 발생했어요.');
-      console.error('onShare error:', error.response);
     }
   };
 
@@ -140,7 +137,6 @@ const StoreManagerScreen = ({navigation}) => {
       setSelectedManagerId(null); // 버튼 숨기기
     } catch (error) {
       showToast('잠시 후 다시 시도해주세요.');
-      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -160,7 +156,6 @@ const StoreManagerScreen = ({navigation}) => {
       setSelectedManagerId(null); // 버튼 숨기기
     } catch (error) {
       showToast('잠시 후 다시 시도해주세요.');
-      console.error(error);
     } finally {
       setLoading(false);
     }
